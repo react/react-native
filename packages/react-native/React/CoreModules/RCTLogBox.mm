@@ -39,7 +39,7 @@ RCT_EXPORT_MODULE()
   _bridgelessSurfacePresenter = surfacePresenter;
 }
 
-RCT_EXPORT_METHOD(show)
+- (void)show
 {
   if (RCTRedBoxGetEnabled()) {
     __weak RCTLogBox *weakSelf = self;
@@ -63,7 +63,7 @@ RCT_EXPORT_METHOD(show)
   }
 }
 
-RCT_EXPORT_METHOD(hide)
+- (void)hide
 {
   if (RCTRedBoxGetEnabled()) {
     __weak RCTLogBox *weakSelf = self;

@@ -85,9 +85,7 @@ export interface ImageURISource {
 export type ImageRequireSource = number;
 
 export type ImageSource =
-  | ImageRequireSource
-  | ImageURISource
-  | ReadonlyArray<ImageURISource>;
+  ImageRequireSource | ImageURISource | ReadonlyArray<ImageURISource>;
 
 type ImageSourceProperties = {
   body?: ?string,

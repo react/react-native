@@ -24,8 +24,8 @@ jest.mock('../headers-mappings', () => ({
 }));
 
 // Mock fs and path modules
-jest.mock('fs');
-jest.mock('path');
+jest.mock('node:fs');
+jest.mock('node:path');
 
 const {librariesMappings, reactMappings} = require('../headers-mappings');
 const {
@@ -36,8 +36,8 @@ const {
 const {
   symlinkReactNativeHeaders,
 } = require('../prepare-app-dependencies-headers');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 describe('symlinkReactNativeHeaders', () => {
   let originalConsoleLog;

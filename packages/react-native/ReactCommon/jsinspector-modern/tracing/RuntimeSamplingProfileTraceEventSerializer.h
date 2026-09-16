@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "RuntimeSamplingProfile.h"
 
 #include <react/timing/primitives.h>

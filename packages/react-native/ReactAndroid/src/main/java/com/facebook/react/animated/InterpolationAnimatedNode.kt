@@ -185,7 +185,7 @@ internal class InterpolationAnimatedNode(config: ReadableMap) : ValueAnimatedNod
           EXTRAPOLATE_TYPE_EXTEND -> {}
           else ->
               throw JSApplicationIllegalArgumentException(
-                  "Invalid extrapolation type " + extrapolateLeft + "for left extrapolation"
+                  "Invalid extrapolation type " + extrapolateLeft + "for left extrapolation",
               )
         }
       }
@@ -196,7 +196,7 @@ internal class InterpolationAnimatedNode(config: ReadableMap) : ValueAnimatedNod
           EXTRAPOLATE_TYPE_EXTEND -> {}
           else ->
               throw JSApplicationIllegalArgumentException(
-                  "Invalid extrapolation type " + extrapolateRight + "for right extrapolation"
+                  "Invalid extrapolation type " + extrapolateRight + "for right extrapolation",
               )
         }
       }

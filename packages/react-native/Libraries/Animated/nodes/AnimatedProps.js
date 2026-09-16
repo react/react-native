@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -16,8 +16,8 @@ import type {AnimatedStyleAllowlist} from './AnimatedStyle';
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import {getFabricUIManager} from '../../ReactNative/FabricUIManager';
+import {getNodeFromPublicInstance} from '../../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 import {findNodeHandle} from '../../ReactNative/RendererProxy';
-import {getNodeFromPublicInstance} from '../../ReactPrivate/ReactNativePrivateInterface';
 import flattenStyle from '../../StyleSheet/flattenStyle';
 import {AnimatedEvent} from '../AnimatedEvent';
 import AnimatedNode from './AnimatedNode';
@@ -119,6 +119,7 @@ export default class AnimatedProps extends AnimatedNode {
     this._rootTag = rootTag;
   }
 
+  // $FlowFixMe[unclear-type]
   __getValue(): Object {
     const props: {[string]: unknown} = {};
 
@@ -144,6 +145,7 @@ export default class AnimatedProps extends AnimatedNode {
    * `staticProps` object, except with animated nodes for any props that were
    * created by this `AnimatedProps` instance.
    */
+  // $FlowFixMe[unclear-type]
   __getValueWithStaticProps(staticProps: Object): Object {
     const props: {[string]: unknown} = {...staticProps};
 
@@ -196,6 +198,7 @@ export default class AnimatedProps extends AnimatedNode {
     return tuples;
   }
 
+  // $FlowFixMe[unclear-type]
   __getAnimatedValue(): Object {
     const props: {[string]: unknown} = {};
 
@@ -356,6 +359,7 @@ export default class AnimatedProps extends AnimatedNode {
     }
   }
 
+  // $FlowFixMe[unclear-type]
   __getNativeConfig(): Object {
     const platformConfig = this.__getPlatformConfig();
     const propsConfig: {[string]: number} = {};
@@ -384,4 +388,6 @@ export default class AnimatedProps extends AnimatedNode {
 const _hasOwnProp = Object.prototype.hasOwnProperty;
 const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
   // $FlowFixMe[method-unbinding]
+  /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+   * unsoundness in flow */
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

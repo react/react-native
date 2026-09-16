@@ -18,6 +18,7 @@ add_library(react_nativemodule_dom
 target_include_directories(react_nativemodule_dom PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(react_nativemodule_dom
+        react_cxxstableapi
         rrc_root
         react_codegen_rncore
         react_cxxreact

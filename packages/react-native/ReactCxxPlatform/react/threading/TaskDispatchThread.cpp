@@ -27,9 +27,12 @@ TaskDispatchThread::TaskDispatchThread(
     int priorityOffset) noexcept
     : threadName_(threadName) {
 #ifdef ANDROID
-  // Attaches the thread to JVM just in case anything calls out to Java
-  thread_ = std::thread([&]() {
-    facebook::jni::ThreadScope::WithClassLoader([&]() {
+  // Attaches the thread to JVM just in case anything calls out to Java.
+  // Capture priorityOffset by value: it is a constructor parameter whose
+  // storage dies when the constructor returns, and the thread body reads it
+  // asynchronously.
+  thread_ = std::thread([this, priorityOffset]() {
+    facebook::jni::ThreadScope::WithClassLoader([this, priorityOffset]() {
       int result = setpriority(
           PRIO_PROCESS,
           static_cast<pid_t>(::syscall(SYS_gettid)),

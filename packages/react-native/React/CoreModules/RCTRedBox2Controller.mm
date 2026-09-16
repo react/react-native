@@ -373,6 +373,12 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
 
 - (void)autoRetryTick
 {
+  // Don't reload while backgrounded: it re-inits TurboModules, and a
+  // requiresMainQueueSetup module dispatch_syncs onto the blocked main queue,
+  // deadlocking until the watchdog kills the app.
+  if (RCTSharedApplication().applicationState != UIApplicationStateActive) {
+    return;
+  }
   _autoRetryCountdown--;
   if (_autoRetryCountdown <= 0) {
     [self stopAutoRetry];

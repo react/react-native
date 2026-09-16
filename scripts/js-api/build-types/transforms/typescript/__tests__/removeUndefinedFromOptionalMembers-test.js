@@ -42,4 +42,20 @@ describe('removeUndefinedFromOptionalMembers', () => {
       };"
     `);
   });
+
+  test('should unwrap the lone remaining constituent, dropping redundant parens', async () => {
+    const code = `
+      type Foo = {
+        a?: (() => void) | undefined,
+        b?: number | string | undefined,
+      };
+    `;
+    const result = await translate(code);
+    expect(result).toMatchInlineSnapshot(`
+      "type Foo = {
+        a?: () => void;
+        b?: number | string;
+      };"
+    `);
+  });
 });

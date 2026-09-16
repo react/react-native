@@ -103,9 +103,10 @@ export default {
   },
 
   /**
-   * A very common pattern is to create overlays with position absolute and zero positioning,
-   * so `absoluteFill` can be used for convenience and to reduce duplication of these repeated
-   * styles.
+   * A very common pattern is to create overlays with position absolute and
+   * zero positioning (`top`, `right`, `bottom`, `left` all set to `0`), so
+   * `absoluteFill` can be used for convenience and to reduce duplication of
+   * these repeated styles.
    */
   absoluteFill,
 
@@ -176,7 +177,8 @@ export default {
   },
 
   /**
-   * An identity function for creating style sheets.
+   * Creates a StyleSheet style reference from the given object. The values in
+   * the object are frozen in development to prevent mutation.
    */
   // $FlowFixMe[unsupported-variance-annotation]
   create<out S extends ____Styles_Internal>(obj: S): Readonly<S> {

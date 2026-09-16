@@ -136,20 +136,20 @@ RCT_EXPORT_MODULE()
   [self emitEvent:kStatusBarFrameWillChange forNotification:notification];
 }
 
-RCT_EXPORT_METHOD(getHeight : (RCTResponseSenderBlock)callback)
+- (void)getHeight:(RCTResponseSenderBlock)callback
 {
   callback(@[ @{
     @"height" : @(RCTUIStatusBarManager().statusBarFrame.size.height),
   } ]);
 }
 
-RCT_EXPORT_METHOD(setStyle : (NSString *)style animated : (BOOL)animated)
+- (void)setStyle:(NSString *)style animated:(BOOL)animated
 {
   dispatch_async(dispatch_get_main_queue(), ^{
     UIStatusBarStyle statusBarStyle = [RCTConvert UIStatusBarStyle:style];
     if (RCTViewControllerBasedStatusBarAppearance()) {
-      RCTLogError(@"RCTStatusBarManager module requires that the \
-                UIViewControllerBasedStatusBarAppearance key in the Info.plist is set to NO");
+      RCTLogWarn(@"RCTStatusBarManager is a no-op when \
+                UIViewControllerBasedStatusBarAppearance is YES; set the status bar from your view controller instead");
     } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -159,30 +159,19 @@ RCT_EXPORT_METHOD(setStyle : (NSString *)style animated : (BOOL)animated)
   });
 }
 
-RCT_EXPORT_METHOD(setHidden : (BOOL)hidden withAnimation : (NSString *)withAnimation)
+- (void)setHidden:(BOOL)hidden withAnimation:(NSString *)withAnimation
 {
   dispatch_async(dispatch_get_main_queue(), ^{
     UIStatusBarAnimation animation = [RCTConvert UIStatusBarAnimation:withAnimation];
     if (RCTViewControllerBasedStatusBarAppearance()) {
-      RCTLogError(@"RCTStatusBarManager module requires that the \
-                UIViewControllerBasedStatusBarAppearance key in the Info.plist is set to NO");
+      RCTLogWarn(@"RCTStatusBarManager is a no-op when \
+                UIViewControllerBasedStatusBarAppearance is YES; set the status bar from your view controller instead");
     } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
       [RCTSharedApplication() setStatusBarHidden:hidden withAnimation:animation];
 #pragma clang diagnostic pop
     }
-  });
-}
-
-RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
-{
-  dispatch_async(dispatch_get_main_queue(), ^{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    // This is no longer supported in iOS 13 and later. We will remove this method in a future release.
-    RCTSharedApplication().networkActivityIndicatorVisible = visible;
-#pragma clang diagnostic pop
   });
 }
 

@@ -20,7 +20,7 @@ const {
   updatePackageJson,
 } = require('../shared/monorepoUtils');
 const {updateReactNativeArtifacts} = require('./set-rn-artifacts-version');
-const {parseArgs} = require('util');
+const {parseArgs} = require('node:util');
 
 const config = {
   allowPositionals: true,

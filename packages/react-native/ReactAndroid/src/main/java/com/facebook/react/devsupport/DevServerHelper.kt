@@ -27,7 +27,6 @@ import com.facebook.react.devsupport.interfaces.PackagerStatusCallback
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings
 import com.facebook.react.modules.systeminfo.AndroidInfoHelpers.getFriendlyDeviceName
 import com.facebook.react.modules.systeminfo.AndroidInfoHelpers.getInspectorHostMetadata
-import com.facebook.react.packagerconnection.FileIoHandler
 import com.facebook.react.packagerconnection.JSPackagerClient
 import com.facebook.react.packagerconnection.NotificationOnlyHandler
 import com.facebook.react.packagerconnection.PackagerConnectionSettings
@@ -58,7 +57,7 @@ import okio.Okio
  * - Genymotion emulator with default settings: 10.0.3.2
  */
 @SuppressLint(
-    "StaticFieldLeak"
+    "StaticFieldLeak",
 ) // TODO: This entire class should be rewritten to don't use AsyncTask
 public open class DevServerHelper(
     private val settings: DeveloperSettings,
@@ -160,7 +159,6 @@ public open class DevServerHelper(
                   }
                 }
             commandListener.customCommandHandlers()?.let { handlers.putAll(it) }
-            handlers.putAll(FileIoHandler().handlers())
 
             val onPackagerConnectedCallback: ReconnectingWebSocket.ConnectionCallback =
                 object : ReconnectingWebSocket.ConnectionCallback {
@@ -275,7 +273,7 @@ public open class DevServerHelper(
     val additionalOptionsBuilder = StringBuilder()
     val packagerOptions =
         packagerConnectionSettings.updatePackagerOptions(
-            packagerConnectionSettings.additionalOptionsForPackager
+            packagerConnectionSettings.additionalOptionsForPackager,
         )
     for ((key, value) in packagerOptions) {
       if (value.isEmpty()) {
@@ -365,7 +363,7 @@ public open class DevServerHelper(
             DevSupportHttpClient.httpScheme(packagerConnectionSettings.debugServerHost),
             packagerConnectionSettings.debugServerHost,
             Uri.encode(inspectorDeviceId),
-        )
+        ),
     )
 
     if (panel != null) {
@@ -387,7 +385,7 @@ public open class DevServerHelper(
               }
 
               override fun onResponse(call: Call, response: Response) = Unit
-            }
+            },
         )
   }
 

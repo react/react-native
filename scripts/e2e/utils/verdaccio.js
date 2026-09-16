@@ -11,9 +11,9 @@
 'use strict';
 
 const {REPO_ROOT} = require('../../shared/consts');
-const {execSync, spawn} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync, spawn} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const NPM_CONFIG_PATH = path.join(REPO_ROOT, '.npmrc');
 const VERDACCIO_CONFIG_PATH = path.join(__dirname, '..', 'verdaccio.yml');

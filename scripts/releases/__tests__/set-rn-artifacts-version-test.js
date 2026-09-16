@@ -11,10 +11,10 @@
 const readFileMock = jest.fn();
 const writeFileMock = jest.fn();
 
-jest.mock('fs', () => ({
-  ...jest.requireActual<$FlowFixMe>('fs'),
+jest.mock('node:fs', () => ({
+  ...jest.requireActual<$FlowFixMe>('node:fs'),
   promises: {
-    ...jest.requireActual<$FlowFixMe>('fs').promises,
+    ...jest.requireActual<$FlowFixMe>('node:fs').promises,
     readFile: readFileMock,
     writeFile: writeFileMock,
   },
@@ -22,7 +22,7 @@ jest.mock('fs', () => ({
 
 const {REPO_ROOT} = require('../../shared/consts');
 const {updateReactNativeArtifacts} = require('../set-rn-artifacts-version');
-const path = require('path');
+const path = require('node:path');
 
 describe('updateReactNativeArtifacts', () => {
   beforeAll(() => {

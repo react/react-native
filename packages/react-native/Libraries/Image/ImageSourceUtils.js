@@ -12,6 +12,7 @@
 
 import type {ResolvedAssetSource} from './AssetSourceResolver';
 import type {ImageProps} from './ImageProps';
+import type {ImageURISource} from './ImageSource';
 
 import resolveAssetSource from './resolveAssetSource';
 
@@ -87,7 +88,14 @@ export function getImageSourcesFromImageProps(imageProps: ImageProps):
   } else if (src != null) {
     sources = [{uri: src, headers: headers, width, height}];
   } else if (source != null && source.uri && Object.keys(headers).length > 0) {
-    sources = [{...source, headers}];
+    const sourceHeaders = (source as ImageURISource).headers;
+    sources = [
+      {
+        ...source,
+        headers:
+          sourceHeaders != null ? {...headers, ...sourceHeaders} : headers,
+      },
+    ];
   } else {
     sources = source;
   }

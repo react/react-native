@@ -36,7 +36,7 @@ private constructor(
 
   override fun initHybrid(): HybridData {
     throw UnsupportedOperationException(
-        "DefaultTurboModuleManagerDelegate.initHybrid() must never be called!"
+        "DefaultTurboModuleManagerDelegate.initHybrid() must never be called!",
     )
   }
 
@@ -49,11 +49,11 @@ private constructor(
     }
 
     public fun addCxxReactPackage(
-        provider: (context: ReactApplicationContext) -> CxxReactPackage
+        provider: (context: ReactApplicationContext) -> CxxReactPackage,
     ): Builder = apply { cxxReactPackageProviders.add { context -> listOf(provider(context)) } }
 
     public fun addCxxReactPackages(
-        provider: (context: ReactApplicationContext) -> List<CxxReactPackage>
+        provider: (context: ReactApplicationContext) -> List<CxxReactPackage>,
     ): Builder = apply { cxxReactPackageProviders.add(provider) }
 
     override fun build(

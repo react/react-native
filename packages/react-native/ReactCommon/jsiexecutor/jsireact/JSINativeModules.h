@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #ifndef RCT_REMOVE_LEGACY_ARCH
 
 #include <memory>

@@ -184,6 +184,8 @@ class Snapshot:
             scope = current_scope.inner_scopes[enum_name]
             if scope.kind.name == "temporary":
                 scope.kind = EnumScopeKind()
+            elif scope.kind.name == "enum":
+                return scope
             else:
                 raise RuntimeError(
                     f"Identifier {enum_name} already exists in scope {current_scope.name}"

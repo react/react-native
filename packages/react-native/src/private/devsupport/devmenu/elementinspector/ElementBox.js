@@ -16,8 +16,6 @@ import type {InspectedElementFrame} from './Inspector';
 import * as React from 'react';
 
 const View = require('../../../../../Libraries/Components/View/View').default;
-const flattenStyle =
-  require('../../../../../Libraries/StyleSheet/flattenStyle').default;
 const StyleSheet =
   require('../../../../../Libraries/StyleSheet/StyleSheet').default;
 const Dimensions =
@@ -31,9 +29,10 @@ type Props = Readonly<{
 }>;
 
 function ElementBox({frame, style}: Props): React.Node {
-  const flattenedStyle = flattenStyle(style) || {};
-  let margin: ?Readonly<Style> = resolveBoxStyle('margin', flattenedStyle);
-  let padding: ?Readonly<Style> = resolveBoxStyle('padding', flattenedStyle);
+  const marginBox = resolveBoxStyle('margin', style);
+  const paddingBox = resolveBoxStyle('padding', style);
+  let margin: ?ResolvedStyle = null;
+  let padding: ?ResolvedStyle = null;
 
   const frameStyle = {...frame};
   const contentStyle: {width: number, height: number} = {
@@ -41,8 +40,8 @@ function ElementBox({frame, style}: Props): React.Node {
     height: frame.height,
   };
 
-  if (margin != null) {
-    margin = resolveRelativeSizes(margin);
+  if (marginBox != null) {
+    margin = resolveRelativeSizes(marginBox);
 
     frameStyle.top -= margin.top;
     frameStyle.left -= margin.left;
@@ -63,8 +62,8 @@ function ElementBox({frame, style}: Props): React.Node {
     }
   }
 
-  if (padding != null) {
-    padding = resolveRelativeSizes(padding);
+  if (paddingBox != null) {
+    padding = resolveRelativeSizes(paddingBox);
 
     contentStyle.width -= padding.left + padding.right;
     contentStyle.height -= padding.top + padding.bottom;
@@ -97,6 +96,14 @@ const styles = StyleSheet.create({
 });
 
 type Style = {
+  top: number | string,
+  right: number | string,
+  bottom: number | string,
+  left: number | string,
+  ...
+};
+
+type ResolvedStyle = {
   top: number,
   right: number,
   bottom: number,
@@ -110,12 +117,13 @@ type Style = {
  * @param style the style to resolve
  * @return a modified copy
  */
-function resolveRelativeSizes(style: Readonly<Style>): Style {
-  let resolvedStyle = {...style};
+function resolveRelativeSizes(style: Readonly<Style>): ResolvedStyle {
+  const resolvedStyle = {...style};
   resolveSizeInPlace(resolvedStyle, 'top', 'height');
   resolveSizeInPlace(resolvedStyle, 'right', 'width');
   resolveSizeInPlace(resolvedStyle, 'bottom', 'height');
   resolveSizeInPlace(resolvedStyle, 'left', 'width');
+  // $FlowFixMe[incompatible-type] resolveSizeInPlace has converted every percentage/`auto` value to a number
   return resolvedStyle;
 }
 

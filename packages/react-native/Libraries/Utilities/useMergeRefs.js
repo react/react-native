@@ -8,7 +8,6 @@
  * @format
  */
 
-import useRefEffect from './useRefEffect';
 import * as React from 'react';
 import {useCallback} from 'react';
 
@@ -24,36 +23,28 @@ import {useCallback} from 'react';
 export default function useMergeRefs<Instance>(
   ...refs: ReadonlyArray<?React.RefSetter<Instance>>
 ): React.RefSetter<Instance> {
-  const refEffect = useCallback(
+  // $FlowFixMe[incompatible-type] - blocked on refined refsetter types
+  return useCallback(
     (current: Instance) => {
       const cleanups: ReadonlyArray<void | (() => void)> = refs.map(ref => {
-        if (ref == null) {
-          return undefined;
-        } else {
-          if (typeof ref === 'function') {
-            // $FlowFixMe[incompatible-type] - Flow does not understand ref cleanup.
-            const cleanup: void | (() => void) = ref(current);
-            return typeof cleanup === 'function'
-              ? cleanup
-              : () => {
-                  ref(null);
-                };
-          } else {
-            ref.current = current;
-            return () => {
-              ref.current = null;
-            };
-          }
+        if (typeof ref === 'function') {
+          // $FlowFixMe[incompatible-type] - Flow does not understand ref cleanup.
+          const cleanup: void | (() => void) = ref(current);
+          return typeof cleanup === 'function'
+            ? cleanup
+            : () => {
+                ref(null);
+              };
+        } else if (ref != null) {
+          ref.current = current;
+          return () => {
+            ref.current = null;
+          };
         }
       });
 
-      return () => {
-        for (const cleanup of cleanups) {
-          cleanup?.();
-        }
-      };
+      return () => cleanups.forEach(cleanup => cleanup?.());
     },
     [...refs], // eslint-disable-line react-hooks/exhaustive-deps
-  );
-  return useRefEffect(refEffect);
+  ) as React.RefSetter<Instance>;
 }

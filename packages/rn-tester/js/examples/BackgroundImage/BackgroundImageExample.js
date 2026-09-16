@@ -195,8 +195,8 @@ exports.examples = [
                   height: 200,
                   backgroundImage:
                     'linear-gradient(45deg, #ff6b6b 25%, transparent 25%), linear-gradient(-45deg, #4ecdc4 25%, transparent 25%)',
-                  experimental_backgroundRepeat: 'repeat',
-                  experimental_backgroundSize: '20px 20px',
+                  backgroundRepeat: 'repeat',
+                  backgroundSize: '20px 20px',
                 }}
                 testID="background-image-repeat-1"
               />
@@ -208,8 +208,8 @@ exports.examples = [
                   width: 200,
                   height: 200,
                   backgroundImage: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
-                  experimental_backgroundRepeat: 'space',
-                  experimental_backgroundSize: '50px 50px',
+                  backgroundRepeat: 'space',
+                  backgroundSize: '50px 50px',
                 }}
                 testID="background-image-repeat-2"
               />
@@ -223,8 +223,8 @@ exports.examples = [
                   width: 200,
                   height: 200,
                   backgroundImage: 'linear-gradient(90deg, #a8edea, #fed6e3)',
-                  experimental_backgroundRepeat: 'round',
-                  experimental_backgroundSize: '60px 60px',
+                  backgroundRepeat: 'round',
+                  backgroundSize: '60px 60px',
                 }}
                 testID="background-image-repeat-3"
               />
@@ -236,8 +236,8 @@ exports.examples = [
                   width: 200,
                   height: 200,
                   backgroundImage: 'radial-gradient(circle, #ffecd2, #fcb69f)',
-                  experimental_backgroundRepeat: 'no-repeat',
-                  experimental_backgroundSize: '100px 100px',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '100px 100px',
                   backgroundColor: 'purple',
                 }}
                 testID="background-image-repeat-4"
@@ -259,9 +259,9 @@ exports.examples = [
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #ff6b6b, #4ecdc4)',
-                experimental_backgroundRepeat: 'no-repeat',
-                experimental_backgroundPosition: 'center',
-                experimental_backgroundSize: '50px 50px',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                backgroundSize: '50px 50px',
                 borderWidth: 1,
               }}
               testID="background-image-position-1"
@@ -272,10 +272,10 @@ exports.examples = [
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #a8edea, #fed6e3)',
-                experimental_backgroundRepeat: 'no-repeat',
-                experimental_backgroundPosition: '25% 75%',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: '25% 75%',
                 borderWidth: 1,
-                experimental_backgroundSize: '50px 50px',
+                backgroundSize: '50px 50px',
               }}
               testID="background-image-position-2"
             />
@@ -285,10 +285,10 @@ exports.examples = [
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #ffecd2, #fcb69f)',
-                experimental_backgroundRepeat: 'no-repeat',
-                experimental_backgroundPosition: 'right bottom',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right bottom',
                 borderWidth: 1,
-                experimental_backgroundSize: '50px 50px',
+                backgroundSize: '50px 50px',
               }}
               testID="background-image-position-3"
             />
@@ -316,16 +316,16 @@ exports.examples = [
               linear-gradient(135deg, rgba(255,255,255,0.02) 25%, transparent 25%),
               linear-gradient(225deg, rgba(255,255,255,0.02) 25%, transparent 25%);
             `,
-            experimental_backgroundRepeat:
+            backgroundRepeat:
               'no-repeat, no-repeat, repeat, repeat, repeat, repeat',
-            experimental_backgroundSize: `
+            backgroundSize: `
               500px 500px,
               400px 400px,
               50px 50px,
               50px 50px,
               100px 100px,
               100px 100px`,
-            experimental_backgroundPosition: `
+            backgroundPosition: `
               top left,
               bottom right,
               0 0,
@@ -412,19 +412,19 @@ exports.examples = [
                 ],
               },
             ],
-            experimental_backgroundRepeat: [
+            backgroundRepeat: [
               {
                 x: 'no-repeat',
                 y: 'no-repeat',
               },
             ],
-            experimental_backgroundPosition: [
+            backgroundPosition: [
               {
                 top: '50%',
                 left: '50%',
               },
             ],
-            experimental_backgroundSize: [
+            backgroundSize: [
               {
                 x: '100%',
                 y: '100%',

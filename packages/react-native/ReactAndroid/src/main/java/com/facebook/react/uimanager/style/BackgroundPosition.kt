@@ -23,12 +23,12 @@ import com.facebook.react.uimanager.LengthPercentage
  * @property bottom Offset from the bottom edge, or null if not specified
  */
 internal class BackgroundPosition(
-    public val top: LengthPercentage?,
-    public val left: LengthPercentage?,
-    public val right: LengthPercentage?,
-    public val bottom: LengthPercentage?,
+    val top: LengthPercentage?,
+    val left: LengthPercentage?,
+    val right: LengthPercentage?,
+    val bottom: LengthPercentage?,
 ) {
-  public companion object {
+  companion object {
     /**
      * Parses a ReadableMap into a BackgroundPosition.
      *
@@ -38,7 +38,7 @@ internal class BackgroundPosition(
      * @param backgroundPositionMap The map containing position values
      * @return A BackgroundPosition instance, or null if the map is null
      */
-    public fun parse(backgroundPositionMap: ReadableMap?): BackgroundPosition? {
+    fun parse(backgroundPositionMap: ReadableMap?): BackgroundPosition? {
       if (backgroundPositionMap == null) return null
 
       val top =

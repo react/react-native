@@ -71,11 +71,23 @@ TEST_F(TaskDispatchThreadTest, RunAsyncWithDelay) {
 // Test: Multiple delayed tasks execute in order
 TEST_F(TaskDispatchThreadTest, MultipleDelayedTasksOrder) {
   std::vector<int> results;
+  std::promise<void> secondTaskDone;
+  auto future = secondTaskDone.get_future();
   dispatcher->runAsync(
       [&] { results.push_back(1); }, std::chrono::milliseconds(50));
   dispatcher->runAsync(
-      [&] { results.push_back(2); }, std::chrono::milliseconds(100));
-  std::this_thread::sleep_for(std::chrono::milliseconds(120));
+      [&] {
+        results.push_back(2);
+        secondTaskDone.set_value();
+      },
+      std::chrono::milliseconds(100));
+  // Block until the later task has actually run rather than racing a fixed
+  // sleep against the 100ms deadline. Both tasks run serially on the single
+  // dispatch thread in deadline order, so once the 100ms task completes the
+  // 50ms task is guaranteed to have already run; waiting on the future also
+  // establishes the happens-before needed to read `results` safely.
+  ASSERT_EQ(
+      future.wait_for(std::chrono::seconds(5)), std::future_status::ready);
   ASSERT_EQ(results.size(), 2);
   EXPECT_EQ(results[0], 1);
   EXPECT_EQ(results[1], 2);

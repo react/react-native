@@ -14,8 +14,9 @@ import RNTesterText from '../../components/RNTesterText';
 import styles from './TurboModuleExampleCommon';
 import * as React from 'react';
 import {FlatList, RootTagContext, TouchableOpacity, View} from 'react-native';
-import NativeSampleTurboModule from 'react-native/Libraries/TurboModule/samples/NativeSampleTurboModule';
-import {EnumInt} from 'react-native/Libraries/TurboModule/samples/NativeSampleTurboModule';
+import NativeSampleTurboModule, {
+  EnumInt,
+} from 'react-native/Libraries/TurboModule/samples/NativeSampleTurboModule';
 
 type State = {
   testResults: {
@@ -33,6 +34,7 @@ type Examples =
   | 'getArray'
   | 'getBool'
   | 'getConstants'
+  | 'getEnum'
   | 'getCustomEnum'
   | 'getCustomHostObject'
   | 'getBinaryTreeNode'
@@ -42,10 +44,15 @@ type Examples =
   | 'getMap'
   | 'getNumber'
   | 'getObject'
+  | 'getRootTag'
   | 'getSet'
   | 'getString'
   | 'getUnion'
+  | 'getUnsafeObject'
   | 'getValue'
+  | 'getArrayBuffer'
+  | 'createNativeBuffer'
+  | 'processAsyncBuffer'
   | 'promise'
   | 'rejectPromise'
   | 'voidFunc'
@@ -59,7 +66,8 @@ type ErrorExamples =
   | 'promiseThrows'
   | 'voidFuncAssert'
   | 'getObjectAssert'
-  | 'promiseAssert';
+  | 'promiseAssert'
+  | 'installJSIBindings';
 
 class SampleTurboModuleExample extends React.Component<{}, State> {
   static contextType: React.Context<RootTag> = RootTagContext;
@@ -76,6 +84,46 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       NativeSampleTurboModule.getValueWithCallback(callbackValue =>
         this._setResult('callback', callbackValue),
       ),
+    getArray: () =>
+      NativeSampleTurboModule.getArray([
+        {a: 1, b: 'foo'},
+        {a: 2, b: 'bar'},
+        null,
+      ]),
+    getArrayBuffer: () => {
+      const input = new Uint8Array([1, 2, 3, 4]);
+      const result = NativeSampleTurboModule.getArrayBuffer(input.buffer);
+      // The native module mutates the bytes in place and returns the same buffer,
+      // but a returned ArrayBuffer is always a new JS object. Whether it aliases
+      // the input bytes depends on whether the platform lent them to native or
+      // copied them.
+      return {
+        bytes: Array.from(new Uint8Array(result)),
+        isSameObject: result === input.buffer,
+        aliasesInput: Array.from(input).toString() === [2, 4, 6, 8].toString(),
+      };
+    },
+    createNativeBuffer: () =>
+      NativeSampleTurboModule.createNativeBuffer(8).byteLength,
+    processAsyncBuffer: () =>
+      NativeSampleTurboModule.processAsyncBuffer(
+        new Uint8Array([1, 2, 3]).buffer,
+      ).then(length => this._setResult('processAsyncBuffer', length)),
+    getBool: () => NativeSampleTurboModule.getBool(true),
+    getConstants: () => NativeSampleTurboModule.getConstants(),
+    getEnum: () =>
+      NativeSampleTurboModule.getEnum
+        ? NativeSampleTurboModule.getEnum(EnumInt.A)
+        : null,
+    getNumber: () => NativeSampleTurboModule.getNumber(99.95),
+    getObject: () =>
+      NativeSampleTurboModule.getObject({a: 1, b: 'foo', c: null}),
+    getRootTag: () => NativeSampleTurboModule.getRootTag(this.context),
+    getString: () => NativeSampleTurboModule.getString('Hello'),
+    getUnsafeObject: () =>
+      NativeSampleTurboModule.getUnsafeObject({a: 1, b: 'foo', c: null}),
+    getValue: () =>
+      NativeSampleTurboModule.getValue(5, 'test', {a: 1, b: 'foo'}),
     promise: () =>
       NativeSampleTurboModule.getValueWithPromise(false).then(valuePromise =>
         this._setResult('promise', valuePromise),
@@ -83,31 +131,8 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
     rejectPromise: () =>
       NativeSampleTurboModule.getValueWithPromise(true)
         .then(() => {})
-        .catch(e => {
-          this._setResult('rejectPromise', e.message);
-        }),
-    getConstants: () => NativeSampleTurboModule.getConstants(),
+        .catch(e => this._setResult('rejectPromise', e.message)),
     voidFunc: () => NativeSampleTurboModule.voidFunc(),
-    getBool: () => NativeSampleTurboModule.getBool(true),
-    getEnum: () =>
-      NativeSampleTurboModule.getEnum
-        ? NativeSampleTurboModule.getEnum(EnumInt.A)
-        : null,
-    getNumber: () => NativeSampleTurboModule.getNumber(99.95),
-    getString: () => NativeSampleTurboModule.getString('Hello'),
-    getArray: () =>
-      NativeSampleTurboModule.getArray([
-        {a: 1, b: 'foo'},
-        {a: 2, b: 'bar'},
-        null,
-      ]),
-    getObject: () =>
-      NativeSampleTurboModule.getObject({a: 1, b: 'foo', c: null}),
-    getUnsafeObject: () =>
-      NativeSampleTurboModule.getObject({a: 1, b: 'foo', c: null}),
-    getRootTag: () => NativeSampleTurboModule.getRootTag(this.context),
-    getValue: () =>
-      NativeSampleTurboModule.getValue(5, 'test', {a: 1, b: 'foo'}),
   };
 
   // $FlowFixMe[missing-local-annot]
@@ -116,7 +141,6 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       try {
         NativeSampleTurboModule.voidFuncThrows?.();
       } catch (e) {
-        console.error(e);
         return e.message;
       }
     },
@@ -124,22 +148,17 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       try {
         NativeSampleTurboModule.getObjectThrows?.({a: 1, b: 'foo', c: null});
       } catch (e) {
-        console.error(e);
         return e.message;
       }
     },
-    promiseThrows: () => {
+    promiseThrows: () =>
       NativeSampleTurboModule.promiseThrows?.()
         .then(() => {})
-        .catch(e => {
-          console.error(e);
-        });
-    },
+        .catch(e => this._setResult('promiseThrows', e.message)),
     voidFuncAssert: () => {
       try {
         NativeSampleTurboModule.voidFuncAssert?.();
       } catch (e) {
-        console.error(e);
         return e.message;
       }
     },
@@ -147,20 +166,14 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       try {
         NativeSampleTurboModule.getObjectAssert?.({a: 1, b: 'foo', c: null});
       } catch (e) {
-        console.error(e);
         return e.message;
       }
     },
-    promiseAssert: () => {
+    promiseAssert: () =>
       NativeSampleTurboModule.promiseAssert?.()
         .then(() => {})
-        .catch(e => {
-          console.error(e);
-        });
-    },
-    installJSIBindings: () => {
-      return global.__SampleTurboModuleJSIBindings;
-    },
+        .catch(e => this._setResult('promiseAssert', e.message)),
+    installJSIBindings: () => global.__SampleTurboModuleJSIBindings,
   };
 
   _setResult(
@@ -177,9 +190,6 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       | Array<$FlowFixMe>,
   ) {
     this.setState(({testResults}) => ({
-      /* $FlowFixMe[cannot-spread-indexer] (>=0.122.0 site=react_native_fb)
-       * This comment suppresses an error found when Flow v0.122.0 was
-       * deployed. To see the error, delete this comment and run Flow. */
       testResults: {
         ...testResults,
         /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
@@ -190,7 +200,7 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
     }));
   }
 
-  _renderResult(name: string): React.Node {
+  _renderResult(name: Examples | ErrorExamples): React.Node {
     const result = this.state.testResults[name] || {};
     return (
       <View style={styles.result}>
@@ -255,7 +265,7 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
               )
             }>
             <RNTesterText style={styles.buttonTextLarge}>
-              Run all tests
+              Run function call tests
             </RNTesterText>
           </TouchableOpacity>
           <TouchableOpacity

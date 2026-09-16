@@ -244,6 +244,7 @@ const WebSocketInterceptor = {
     ) {
       return `ArrayBuffer {${String(Array.from(new Uint8Array(value)))}}`;
     }
+    // $FlowFixMe[incompatible-type]
     return value;
   },
 

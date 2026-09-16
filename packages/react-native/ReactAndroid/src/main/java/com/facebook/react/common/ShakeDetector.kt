@@ -34,7 +34,7 @@ constructor(private val shakeListener: ShakeListener, private val minNumShakes: 
   private var lastShakeTimestamp: Long = 0
 
   /** Start listening for shakes. */
-  public fun start(manager: SensorManager): Unit {
+  public fun start(manager: SensorManager) {
     val accelerometer = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) ?: return
     sensorManager = manager
     lastTimestamp = -1
@@ -44,7 +44,7 @@ constructor(private val shakeListener: ShakeListener, private val minNumShakes: 
   }
 
   /** Stop listening for shakes. */
-  public fun stop(): Unit {
+  public fun stop() {
     sensorManager?.unregisterListener(this)
     sensorManager = null
   }

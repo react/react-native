@@ -1,21 +1,10 @@
 # @react-native/js-polyfills
 
-[![Version][version-badge]][package]
+[![npm]](https://www.npmjs.com/package/@react-native/js-polyfills) [![npm downloads]](https://www.npmjs.com/package/@react-native/js-polyfills)
 
-## Installation
+[npm]: https://img.shields.io/npm/v/@react-native/js-polyfills.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/js-polyfills.svg
 
-```
-yarn add @react-native/js-polyfills
-```
+> This is an internal dependency of React Native. **Please don't depend on it directly.**
 
-*Note: We're using `yarn` to install deps. Feel free to change commands to use `npm` 3+ and `npx` if you like*
-
-[version-badge]: https://img.shields.io/npm/v/@react-native/js-polyfills?style=flat-square
-[package]: https://www.npmjs.com/package/@react-native/js-polyfills
-
-## Testing
-
-To run the tests in this package, run the following commands from the React Native root folder:
-
-1. `yarn` to install the dependencies. You just need to run this once
-2. `yarn jest packages/polyfills`.
+JavaScript environment polyfills set up by React Native at startup (e.g. `Promise`, timers, and other runtime globals).

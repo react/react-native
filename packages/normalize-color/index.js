@@ -12,6 +12,8 @@
 
 'use strict';
 
+const cachedColors = new Map();
+
 function normalizeColor(color) {
   if (typeof color === 'number') {
     if (color >>> 0 === color && color >= 0 && color <= 0xffffffff) {
@@ -24,6 +26,23 @@ function normalizeColor(color) {
     return null;
   }
 
+  if (cachedColors.has(color)) {
+    // Map iteration order follows insertion order, so re-inserting on every
+    // hit keeps the least-recently-used entry first.
+    const cachedColor = cachedColors.get(color);
+    cachedColors.delete(color);
+    cachedColors.set(color, cachedColor);
+    return cachedColor;
+  }
+  const normalizedColor = parseColorString(color);
+  if (cachedColors.size >= 1024) {
+    cachedColors.delete(cachedColors.keys().next().value);
+  }
+  cachedColors.set(color, normalizedColor);
+  return normalizedColor;
+}
+
+function parseColorString(color) {
   const matchers = getMatchers();
   let match;
 

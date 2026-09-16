@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/css/CSSDataType.h>
 #include <react/renderer/css/CSSKeyword.h>
 #include <react/renderer/css/CSSList.h>

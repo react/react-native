@@ -7,11 +7,12 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "InstanceTracingProfile.h"
 #include "RuntimeSamplingProfile.h"
 #include "TracingMode.h"
 
-#include <oscompat/OSCompat.h>
 #include <react/timing/primitives.h>
 
 #include <vector>
@@ -30,6 +31,17 @@ struct TraceRecordingState {
       : mode(tracingMode), enabledCategories(std::move(enabledCategories)), windowSize(windowSize)
   {
   }
+
+  // Explicitly move-only: RuntimeSamplingProfile is not copyable, so the
+  // implicit copy constructor is ill-formed the moment it is instantiated.
+  // Plain C++ never instantiates it, but Swift's C++ interop (ClangImporter)
+  // does when a consumer imports these headers as part of a module, turning
+  // it into a hard compile error (Xcode 26.3).
+  TraceRecordingState(const TraceRecordingState &) = delete;
+  TraceRecordingState &operator=(const TraceRecordingState &) = delete;
+  TraceRecordingState(TraceRecordingState &&) = default;
+  TraceRecordingState &operator=(TraceRecordingState &&) = default;
+  ~TraceRecordingState() = default;
 
   // The mode of this Trace Recording.
   tracing::Mode mode;

@@ -26,9 +26,9 @@
 
 'use strict';
 
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // SignedSource token - this placeholder gets replaced with the actual hash
 // Use string concatenation to avoid marking THIS script as generated
@@ -86,6 +86,9 @@ const REACT_SCROLL_VIEW_PATTERN =
 // Regex pattern for matching the original copyright header
 const COPYRIGHT_HEADER_PATTERN = /\/\*\s*\n\s*\* Copyright.*?\*\/\s*\n/s;
 
+const KOTLIN_DECLARATION_PATTERN =
+  /\bpublic\s+(?=(?:\w+\s+)*(?:class|fun|interface|object|val|var)\b)/g;
+
 /**
  * Replace ReactScrollView with ReactNestedScrollView in content.
  */
@@ -98,6 +101,10 @@ function replaceClassNames(content) {
  */
 function replaceCopyrightHeader(content, sourceFile) {
   return content.replace(COPYRIGHT_HEADER_PATTERN, generatedHeader(sourceFile));
+}
+
+function removePublicModifiers(content) {
+  return content.replace(KOTLIN_DECLARATION_PATTERN, '');
 }
 
 /**
@@ -127,6 +134,8 @@ function transformScrollView(content) {
     'internal open class ReactNestedScrollView',
   );
 
+  content = removePublicModifiers(content);
+
   // Remove original copyright header and add generated header
   content = replaceCopyrightHeader(content, 'ReactScrollView.kt');
 
@@ -148,6 +157,8 @@ function transformViewManager(content) {
     'public open class ReactNestedScrollViewManager',
     'internal open class ReactNestedScrollViewManager',
   );
+
+  content = removePublicModifiers(content);
 
   // Remove original copyright header and add generated header
   content = replaceCopyrightHeader(content, 'ReactScrollViewManager.kt');

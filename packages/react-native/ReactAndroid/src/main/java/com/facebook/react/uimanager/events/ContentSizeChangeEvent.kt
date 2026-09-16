@@ -29,7 +29,7 @@ public class ContentSizeChangeEvent(
 
   public override fun getEventName(): String = "topContentSizeChange"
 
-  protected override fun getEventData(): WritableMap {
+  override fun getEventData(): WritableMap {
     val res = Arguments.createMap()
     res.putDouble("width", toDIPFromPixel(width.toFloat()).toDouble())
     res.putDouble("height", toDIPFromPixel(height.toFloat()).toDouble())

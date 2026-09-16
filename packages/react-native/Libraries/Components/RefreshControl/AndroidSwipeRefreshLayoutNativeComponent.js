@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/AndroidSwipeRefreshLayoutNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/AndroidSwipeRefreshLayoutNativeComponent';
+export * from '../../../src/private/components/refreshcontrol/specs/AndroidSwipeRefreshLayoutNativeComponent';
+export {default} from '../../../src/private/components/refreshcontrol/specs/AndroidSwipeRefreshLayoutNativeComponent';

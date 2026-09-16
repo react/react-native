@@ -105,7 +105,9 @@ function getJavaValueForProp(
       return `value == null ? ${typeAnnotation.default} : ((Double) value).intValue()`;
     case 'DoubleTypeAnnotation':
       if (prop.optional) {
-        return `value == null ? ${typeAnnotation.default}f : ((Double) value).doubleValue()`;
+        // The setter takes a `double`, so the default must be a double literal.
+        // A `f` suffix here would silently round the default to float precision.
+        return `value == null ? ${typeAnnotation.default}d : ((Double) value).doubleValue()`;
       } else {
         return 'value == null ? Double.NaN : ((Double) value).doubleValue()';
       }

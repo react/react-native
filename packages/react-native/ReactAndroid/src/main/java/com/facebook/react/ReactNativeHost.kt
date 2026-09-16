@@ -100,7 +100,7 @@ public abstract class ReactNativeHost protected constructor(private val mApplica
             .setUIManagerProvider(getUIManagerProvider())
             .setInitialLifecycleState(LifecycleState.BEFORE_CREATE)
             .setReactPackageTurboModuleManagerDelegateBuilder(
-                getReactPackageTurboModuleManagerDelegateBuilder()
+                getReactPackageTurboModuleManagerDelegateBuilder(),
             )
             .setChoreographerProvider(getChoreographerProvider())
             .setPausedInDebuggerOverlayManager(getPausedInDebuggerOverlayManager())
@@ -114,7 +114,7 @@ public abstract class ReactNativeHost protected constructor(private val mApplica
       builder.setJSBundleFile(jsBundleFile)
     } else {
       builder.setBundleAssetName(
-          com.facebook.infer.annotation.Assertions.assertNotNull(getBundleAssetName())
+          com.facebook.infer.annotation.Assertions.assertNotNull(getBundleAssetName()),
       )
     }
     return builder

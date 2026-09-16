@@ -26,7 +26,8 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources("jsireact/*.{cpp,h}", "jsireact/*.h")
-  s.pod_target_xcconfig    = { "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard() }
+  s.pod_target_xcconfig    = { "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
+                               "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/..\"" }
   s.header_dir             = "jsireact"
 
   s.dependency "React-cxxreact"
@@ -34,6 +35,7 @@ Pod::Spec.new do |s|
   s.dependency "React-jsi"
   s.dependency "React-jsitooling"
   s.dependency "React-perflogger"
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-debug")
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-jsinspector", :framework_name => 'jsinspector_modern')
@@ -47,4 +49,6 @@ Pod::Spec.new do |s|
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

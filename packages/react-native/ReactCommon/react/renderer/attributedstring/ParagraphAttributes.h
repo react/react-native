@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <limits>
 
 #include <react/renderer/attributedstring/primitives.h>
@@ -45,6 +47,8 @@ class ParagraphAttributes : public DebugStringConvertible {
    * (Android only) Break strategy for breaking paragraphs into lines.
    */
   TextBreakStrategy textBreakStrategy{TextBreakStrategy::HighQuality};
+
+  TextWidthMode textWidthMode{TextWidthMode::Auto};
 
   /*
    * Enables font size adjustment to fit constrained boundaries.
@@ -103,6 +107,7 @@ struct hash<facebook::react::ParagraphAttributes> {
         attributes.maximumNumberOfLines,
         attributes.ellipsizeMode,
         attributes.textBreakStrategy,
+        attributes.textWidthMode,
         attributes.adjustsFontSizeToFit,
         attributes.minimumFontSize,
         attributes.maximumFontSize,

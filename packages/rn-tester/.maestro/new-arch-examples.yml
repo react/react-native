@@ -2,32 +2,32 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 ---
 - runFlow: ./helpers/launch-app-and-search.yml
 - inputText:
-    text: "New Architecture"
+    text: 'New Architecture'
 - assertVisible:
-    id: "New Architecture Examples"
+    id: 'New Architecture Examples'
 - tapOn:
-    id: "New Architecture Examples"
-- assertVisible: "HSBA: h: 0, s: 0, b: 0, a: 0"
-- assertVisible: "Constants From Interop Layer: 3.14"
-- tapOn: "Change Background"
+    id: 'New Architecture Examples'
+- assertVisible: 'HSBA: h: 0, s: 0, b: 0, a: 0'
+- assertVisible: 'Constants From Interop Layer: 3.14'
+- tapOn: 'Change Background'
 - assertVisible:
-    text: "HSBA: h: 0, s: 1, b: 1, a: 255"
+    text: 'HSBA: h: 0, s: 1, b: 1, a: 255'
 - assertVisible:
-    text: "> Interop Layer Measurements <"
+    text: '> Interop Layer Measurements <'
 - assertVisible:
-    text: "measure x: 0, y: 0, width: 0, height: 0"
-- tapOn: "Console.log Measure"
+    text: 'measure x: 0, y: 0, width: 0, height: 0'
+- tapOn: 'Console.log Measure'
 - assertNotVisible:
-    text: "measure x: 0, y: 0, width: 0, height: 0"
+    text: 'measure x: 0, y: 0, width: 0, height: 0'
 - assertNotVisible:
-    text: "InWindow x: 0, y: 0, width: 0, height: 0"
+    text: 'InWindow x: 0, y: 0, width: 0, height: 0'
 - assertNotVisible:
-    text: "InLayout x: 0, y: 0, width: 0, height: 0"
-- assertVisible: "Legacy Style Event Fired 0 times"
+    text: 'InLayout x: 0, y: 0, width: 0, height: 0'
+- assertVisible: 'Legacy Style Event Fired 0 times'
 - tapOn:
-    text: "Fire Legacy Style Event"
+    text: 'Fire Legacy Style Event'
     repeat: 10
-- assertVisible: "Legacy Style Event Fired 10 times"
-- assertVisible: "Opacity: 1.0"
-- tapOn: "Set Opacity"
-- assertVisible: "Opacity: 0.8"
+- assertVisible: 'Legacy Style Event Fired 10 times'
+- assertVisible: 'Opacity: 1.0'
+- tapOn: 'Set Opacity'
+- assertVisible: 'Opacity: 0.8'

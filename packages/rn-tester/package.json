@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/rn-tester"
   },
   "engines": {
@@ -30,10 +30,12 @@
     "@react-native/popup-menu-android": "0.87.0-main",
     "flow-enums-runtime": "^0.0.6",
     "invariant": "^2.2.4",
-    "nullthrows": "^1.1.1"
+    "nullthrows": "^1.1.1",
+    "react-native-test-library-apple": "0.87.0-main",
+    "react-native-test-library-common": "0.87.0-main"
   },
   "peerDependencies": {
-    "react": "19.2.3",
+    "react": "19.3.0",
     "react-native": "1000.0.0"
   },
   "codegenConfig": {
@@ -52,12 +54,39 @@
     }
   },
   "devDependencies": {
-    "@react-native-community/cli": "20.0.0",
-    "@react-native-community/cli-platform-android": "20.0.0",
-    "@react-native-community/cli-platform-ios": "20.0.0",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native-community/cli-platform-ios": "20.2.0",
     "@react-native/core-cli-utils": "*",
     "commander": "^12.0.0",
     "listr2": "^6.4.1",
     "rxjs": "npm:@react-native-community/rxjs@6.5.4-custom"
+  },
+  "swiftpmConfig": {
+    "modules": [
+      {
+        "name": "ReactCommonSamples",
+        "path": "../react-native/ReactCommon/react/nativemodule/samples/platform/ios"
+      },
+      {
+        "name": "ReactRCTPushNotification",
+        "path": "../react-native/Libraries/PushNotificationIOS",
+        "exclude": [
+          "React-RCTPushNotification.podspec"
+        ]
+      },
+      {
+        "name": "ScreenshotManager",
+        "path": "NativeModuleExample"
+      },
+      {
+        "name": "MyNativeView",
+        "path": "NativeComponentExample/ios"
+      },
+      {
+        "name": "NativeCxxModuleExample",
+        "path": "NativeCxxModuleExample"
+      }
+    ]
   }
 }

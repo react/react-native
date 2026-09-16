@@ -23,4 +23,5 @@ target_include_directories(jsinspector_cdp PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(jsinspector_cdp
         folly_runtime
+        react_cxxstableapi
 )

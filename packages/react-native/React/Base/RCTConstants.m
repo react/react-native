@@ -20,6 +20,7 @@ NSString *const RCTJavaScriptWillStartExecutingNotification = @"RCTJavaScriptWil
 NSString *const RCTJavaScriptWillStartLoadingNotification = @"RCTJavaScriptWillStartLoadingNotification";
 
 NSString *const RCTDidInitializeModuleNotification = @"RCTDidInitializeModuleNotification";
+NSString *const RCTDidInitializeModuleNotificationModuleKey = @"module";
 
 NSString *const RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED =
     @"RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED";

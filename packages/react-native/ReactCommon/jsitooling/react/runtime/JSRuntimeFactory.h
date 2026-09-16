@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #ifdef __cplusplus
 
 #include <jsi/jsi.h>

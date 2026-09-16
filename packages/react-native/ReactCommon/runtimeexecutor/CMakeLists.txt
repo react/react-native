@@ -14,6 +14,6 @@ add_library(runtimeexecutor OBJECT ${runtimeexecutor_SRC})
 
 target_include_directories(runtimeexecutor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/cxx)
 
-target_link_libraries(runtimeexecutor jsi)
+target_link_libraries(runtimeexecutor jsi react_cxxstableapi)
 target_compile_reactnative_options(runtimeexecutor PRIVATE)
 target_compile_options(runtimeexecutor PRIVATE -Wpedantic)

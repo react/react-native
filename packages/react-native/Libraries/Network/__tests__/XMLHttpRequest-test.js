@@ -268,6 +268,39 @@ describe('XMLHttpRequest', function () {
     );
   });
 
+  it('should append values when setRequestHeader is called with the same header', function () {
+    xhr.open('GET', 'blabla');
+    xhr.setRequestHeader('X-Custom', 'value1');
+    xhr.setRequestHeader('X-Custom', 'value2');
+
+    // $FlowFixMe[prop-missing]
+    expect(xhr._headers['x-custom']).toBe('value1, value2');
+  });
+
+  it('should append to a header previously set to an empty string', function () {
+    xhr.open('GET', 'blabla');
+    xhr.setRequestHeader('X-Custom', '');
+    xhr.setRequestHeader('X-Custom', 'value');
+
+    // $FlowFixMe[prop-missing]
+    expect(xhr._headers['x-custom']).toBe(', value');
+  });
+
+  it('should lowercase header names in setRequestHeader', function () {
+    xhr.open('GET', 'blabla');
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('content-type', 'text/plain');
+
+    // $FlowFixMe[prop-missing]
+    expect(xhr._headers['content-type']).toBe('application/json, text/plain');
+  });
+
+  it('should throw when setRequestHeader is called before open', function () {
+    expect(() => {
+      xhr.setRequestHeader('foo', 'bar');
+    }).toThrow('Request has not been opened');
+  });
+
   it('should sort and lowercase response headers', function () {
     // Derived from XHR Web Platform Test: https://github.com/web-platform-tests/wpt/blob/master/xhr/getallresponseheaders.htm
     xhr.open('GET', 'blabla');

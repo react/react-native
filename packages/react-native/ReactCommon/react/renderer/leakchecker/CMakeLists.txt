@@ -14,6 +14,7 @@ add_library(react_renderer_leakchecker STATIC ${react_renderer_leakchecker_SRC})
 target_include_directories(react_renderer_leakchecker PUBLIC ${REACT_COMMON_DIR})
 target_link_libraries(react_renderer_leakchecker
         glog
+        react_cxxstableapi
         react_renderer_core
         runtimeexecutor)
 target_compile_reactnative_options(react_renderer_leakchecker PRIVATE)

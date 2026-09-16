@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/debug/react_native_assert.h>
 
 #if defined(__APPLE__)

@@ -45,7 +45,7 @@ internal class ReactSwitch(context: Context) : SwitchCompat(context) {
         RippleDrawable(createRippleDrawableColorStateList(color), ColorDrawable(color), null)
   }
 
-  fun setColor(drawable: Drawable, color: Int?): Unit {
+  fun setColor(drawable: Drawable, color: Int?) {
     if (color == null) {
       drawable.clearColorFilter()
     } else {
@@ -53,11 +53,11 @@ internal class ReactSwitch(context: Context) : SwitchCompat(context) {
     }
   }
 
-  fun setTrackColor(color: Int?): Unit {
+  fun setTrackColor(color: Int?) {
     setColor(super.getTrackDrawable(), color)
   }
 
-  fun setThumbColor(color: Int?): Unit {
+  fun setThumbColor(color: Int?) {
     setColor(super.getThumbDrawable(), color)
 
     // Set the ripple color if background is instance of RippleDrawable
@@ -67,7 +67,7 @@ internal class ReactSwitch(context: Context) : SwitchCompat(context) {
     }
   }
 
-  fun setOn(on: Boolean): Unit {
+  fun setOn(on: Boolean) {
     // If the switch has a different value than the value sent by JS, we must change it.
     if (isChecked != on) {
       super.setChecked(on)
@@ -76,7 +76,7 @@ internal class ReactSwitch(context: Context) : SwitchCompat(context) {
     allowChange = true
   }
 
-  fun setTrackColorForTrue(color: Int?): Unit {
+  fun setTrackColorForTrue(color: Int?) {
     if (color == trackColorForTrue) {
       return
     }
@@ -86,7 +86,7 @@ internal class ReactSwitch(context: Context) : SwitchCompat(context) {
     }
   }
 
-  fun setTrackColorForFalse(color: Int?): Unit {
+  fun setTrackColorForFalse(color: Int?) {
     if (color == trackColorForFalse) {
       return
     }

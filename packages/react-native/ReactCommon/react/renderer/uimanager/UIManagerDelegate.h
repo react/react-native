@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
@@ -95,7 +97,7 @@ class UIManagerDelegate {
   virtual void uiManagerDidPromoteReactRevision(const ShadowTree &shadowTree) = 0;
 
   using OnSurfaceStartCallback = std::function<void(const ShadowTree &shadowTree)>;
-  virtual void uiManagerShouldSetOnSurfaceStartCallback(OnSurfaceStartCallback &&callback) = 0;
+  virtual void uiManagerShouldAddOnSurfaceStartCallback(OnSurfaceStartCallback &&callback) = 0;
 
   // View transition bitmap snapshot capture and application.
   virtual void uiManagerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) = 0;

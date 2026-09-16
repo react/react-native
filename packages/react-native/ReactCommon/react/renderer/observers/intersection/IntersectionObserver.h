@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/components/root/RootShadowNode.h>
 #include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/graphics/Float.h>

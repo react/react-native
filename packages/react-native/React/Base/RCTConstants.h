@@ -44,6 +44,7 @@ RCT_EXTERN NSString *const RCTJavaScriptDidFailToLoadNotification;
  * the `[bridge moduleForClass:]` method.
  */
 RCT_EXTERN NSString *const RCTDidInitializeModuleNotification;
+RCT_EXTERN NSString *const RCTDidInitializeModuleNotificationModuleKey;
 
 /*
  * W3C Pointer Events

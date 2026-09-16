@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -17,10 +17,7 @@ import {alertWithArgs} from './RCTAlertManager';
  * @platform ios
  */
 export type AlertType =
-  | 'default'
-  | 'plain-text'
-  | 'secure-text'
-  | 'login-password';
+  'default' | 'plain-text' | 'secure-text' | 'login-password';
 
 /**
  * @platform ios
@@ -29,6 +26,7 @@ export type AlertButtonStyle = 'default' | 'cancel' | 'destructive';
 
 export type AlertButton = {
   text?: string,
+  // $FlowFixMe[unclear-type]
   onPress?: ?((value?: string) => any) | ?Function,
   isPreferred?: boolean,
   style?: AlertButtonStyle,
@@ -57,9 +55,43 @@ export type AlertOptions = {
  * alerts. On iOS, you can show an alert that prompts the user to enter
  * some information.
  *
- * See https://reactnative.dev/docs/alert
+ * ## iOS
+ *
+ * On iOS you can specify any number of buttons. Each button can optionally
+ * specify a style, which is one of 'default', 'cancel' or 'destructive'.
+ *
+ * ## Android
+ *
+ * On Android at most three buttons can be specified. Android has a concept
+ * of a neutral, negative and a positive button:
+ *
+ *   - If you specify one button, it will be the 'positive' one (such as 'OK')
+ *   - Two buttons mean 'negative', 'positive' (such as 'Cancel', 'OK')
+ *   - Three buttons mean 'neutral', 'negative', 'positive' (such as 'Later', 'Cancel', 'OK')
+ *
+ * Example:
+ *
+ * ```tsx
+ * // Works on both iOS and Android
+ * Alert.alert(
+ *   'Alert Title',
+ *   'My Alert Msg',
+ *   [
+ *     {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+ *     {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+ *     {text: 'OK', onPress: () => console.log('OK Pressed')},
+ *   ]
+ * )
+ * ```
+ *
+ * @see https://reactnative.dev/docs/alert
  */
 class Alert {
+  /**
+   * Display an alert dialog with the specified title, message, and buttons.
+   * On Android, at most three buttons can be specified. On iOS, any number of
+   * buttons can be used.
+   */
   static alert(
     title: ?string,
     message?: ?string,
@@ -90,7 +122,7 @@ class Alert {
         cancelable: false,
       };
 
-      if (options && options.cancelable) {
+      if (options != null && options.cancelable === true) {
         config.cancelable = options.cancelable;
       }
       // At most three buttons (neutral, negative, positive). Ignore rest.
@@ -110,25 +142,20 @@ class Alert {
         config.buttonNegative = buttonNegative.text || '';
       }
       if (buttonPositive) {
-        config.buttonPositive = buttonPositive.text || defaultPositiveText;
+        config.buttonPositive =
+          buttonPositive.text != null && buttonPositive.text !== ''
+            ? buttonPositive.text
+            : defaultPositiveText;
       }
 
-      /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
-       * Flow's LTI update could not be added via codemod */
-      const onAction = (action, buttonKey) => {
+      const onAction = (action: string, buttonKey?: number) => {
         if (action === constants.buttonClicked) {
           if (buttonKey === constants.buttonNeutral) {
-            // $FlowFixMe[incompatible-type]
-            // $FlowFixMe[incompatible-use]
-            buttonNeutral.onPress && buttonNeutral.onPress();
+            buttonNeutral?.onPress?.();
           } else if (buttonKey === constants.buttonNegative) {
-            // $FlowFixMe[incompatible-type]
-            // $FlowFixMe[incompatible-use]
-            buttonNegative.onPress && buttonNegative.onPress();
+            buttonNegative?.onPress?.();
           } else if (buttonKey === constants.buttonPositive) {
-            // $FlowFixMe[incompatible-type]
-            // $FlowFixMe[incompatible-use]
-            buttonPositive.onPress && buttonPositive.onPress();
+            buttonPositive?.onPress?.();
           }
         } else if (action === constants.dismissed) {
           options && options.onDismiss && options.onDismiss();
@@ -140,6 +167,9 @@ class Alert {
   }
 
   /**
+   * Create and display a prompt to enter text. Accepts a title, message,
+   * callback or buttons, input type, default value, keyboard type, and options.
+   *
    * @platform ios
    */
   static prompt(
@@ -152,7 +182,7 @@ class Alert {
     options?: AlertOptions,
   ): void {
     if (Platform.OS === 'ios') {
-      let callbacks: Array<?any> = [];
+      let callbacks: Array<?(value: string) => unknown> = [];
       const buttons = [];
       let cancelButtonKey;
       let destructiveButtonKey;
@@ -161,16 +191,20 @@ class Alert {
         callbacks = [callbackOrButtons];
       } else if (Array.isArray(callbackOrButtons)) {
         callbackOrButtons.forEach((btn, index) => {
-          callbacks[index] = btn.onPress;
+          callbacks[index] =
+            btn.onPress == null ? null : value => btn.onPress?.(value);
           if (btn.style === 'cancel') {
             cancelButtonKey = String(index);
           } else if (btn.style === 'destructive') {
             destructiveButtonKey = String(index);
           }
-          if (btn.isPreferred) {
+          if (btn.isPreferred === true) {
             preferredButtonKey = String(index);
           }
-          if (btn.text || index < (callbackOrButtons || []).length - 1) {
+          if (
+            (btn.text != null && btn.text !== '') ||
+            index < callbackOrButtons.length - 1
+          ) {
             const btnDef: {[number]: string} = {};
             btnDef[index] = btn.text || '';
             buttons.push(btnDef);
@@ -181,7 +215,7 @@ class Alert {
       alertWithArgs(
         {
           title: title || '',
-          message: message || undefined,
+          message: message != null && message !== '' ? message : undefined,
           buttons,
           type: type || undefined,
           defaultValue,

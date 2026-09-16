@@ -9,6 +9,7 @@ package com.facebook.react.views.view
 
 import android.view.View
 import com.facebook.react.bridge.UiThreadUtil
+import com.facebook.react.uimanager.HasElevatedDescendantCache
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -35,6 +36,7 @@ public abstract class ReactClippingViewManager<T : ReactViewGroup> : ViewGroupMa
     } else {
       parent.addView(child, index)
     }
+    HasElevatedDescendantCache.invalidateAncestors(parent)
   }
 
   override fun getChildCount(parent: T): Int {
@@ -67,6 +69,7 @@ public abstract class ReactClippingViewManager<T : ReactViewGroup> : ViewGroupMa
     } else {
       parent.removeViewAt(index)
     }
+    HasElevatedDescendantCache.invalidateAncestors(parent)
   }
 
   override fun removeAllViews(parent: T) {
@@ -78,5 +81,6 @@ public abstract class ReactClippingViewManager<T : ReactViewGroup> : ViewGroupMa
     } else {
       parent.removeAllViews()
     }
+    HasElevatedDescendantCache.invalidateAncestors(parent)
   }
 }

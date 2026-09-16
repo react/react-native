@@ -28,6 +28,7 @@ from .member import (
     TypedefMember,
     VariableMember,
 )
+from .member.base import is_function_pointer_argstring
 from .scope import InterfaceScopeKind, ProtocolScopeKind, StructLikeScopeKind
 from .snapshot import Snapshot
 from .template import Template
@@ -460,7 +461,21 @@ def get_typedef_member(
 
     typedef_keyword = "using"
     if typedef_definition.startswith("typedef"):
-        typedef_keyword = "typedef"
+        # Doxygen's "combining using relations" pass can emit hybrid definitions
+        # like "typedef Type Name = Type" for using-declarations on macOS, while
+        # Linux builds report "using Name = Type". Normalise the hybrid form for
+        # codegen component aliases so snapshots are stable across platforms.
+        if (
+            "=" in typedef_definition
+            and not is_function_pointer_argstring(typedef_argstring)
+            and (
+                "ConcreteComponentDescriptor" in typedef_definition
+                or "ConcreteViewShadowNode" in typedef_definition
+            )
+        ):
+            typedef_keyword = "using"
+        else:
+            typedef_keyword = "typedef"
 
     typedef = TypedefMember(
         typedef_name,
@@ -605,6 +620,14 @@ def create_enum_scope(snapshot: Snapshot, enum_def: compound.EnumdefType) -> Non
     """
     Create an enum scope in the snapshot.
     """
+    path = parse_qualified_path(enum_def.qualifiedname)
+    parent_scope = snapshot.ensure_scope(path[0:-1])
+    enum_name = path[-1]
+    if enum_name in parent_scope.inner_scopes:
+        existing = parent_scope.inner_scopes[enum_name]
+        if existing.kind.name == "enum":
+            return
+
     scope = snapshot.create_enum(enum_def.qualifiedname)
     scope.kind.type = resolve_linked_text_name(enum_def.get_type())[0]
     scope.location = enum_def.location.file

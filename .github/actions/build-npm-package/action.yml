@@ -31,6 +31,15 @@ runs:
         pattern: ReactCore*
         path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts
         merge-multiple: true
+    # ReactNativeDependenciesHeaders* is already covered by the
+    # ReactNativeDependencies* pattern above; ReactNativeHeaders* needs its own.
+    - name: Download ReactNativeHeaders artifacts
+      if: ${{ inputs.skip-apple-prebuilts != 'true' }}
+      uses: actions/download-artifact@v7
+      with:
+        pattern: ReactNativeHeaders*
+        path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts
+        merge-multiple: true
     - name: Print Artifacts Directory
       if: ${{ inputs.skip-apple-prebuilts != 'true' }}
       shell: bash
@@ -42,6 +51,7 @@ runs:
     - name: Setup node.js
       uses: ./.github/actions/setup-node
       with:
+        node-version: '24'
         registry-url: 'https://registry.npmjs.org'
     - name: Install dependencies
       uses: ./.github/actions/yarn-install

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -19,9 +19,12 @@ type Point = {
 const dummyPoint: Point = {x: undefined, y: undefined};
 
 function pointsDiffer(one: ?Point, two: ?Point): boolean {
-  one = one || dummyPoint;
-  two = two || dummyPoint;
-  return one !== two && (one.x !== two.x || one.y !== two.y);
+  const onePoint = one || dummyPoint;
+  const twoPoint = two || dummyPoint;
+  return (
+    onePoint !== twoPoint &&
+    (onePoint.x !== twoPoint.x || onePoint.y !== twoPoint.y)
+  );
 }
 
 export default pointsDiffer;

@@ -2,45 +2,45 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 ---
 - runFlow: ./helpers/launch-app-and-search.yml
 - inputText:
-    text: "Pressable"
+    text: 'Pressable'
 - assertVisible:
-    id: "Pressable"
+    id: 'Pressable'
 - tapOn:
-    id: "Pressable"
+    id: 'Pressable'
 - assertVisible:
-    text: "Change content based on Press"
+    text: 'Change content based on Press'
 - assertVisible:
-    text: "Change style based on Press"
+    text: 'Change style based on Press'
 - tapOn:
-    id: "one_press_me_button"
+    id: 'one_press_me_button'
 - assertVisible:
-    text: "onPress"
+    text: 'onPress'
 - tapOn:
-    id: "one_press_me_button"
+    id: 'one_press_me_button'
 - assertVisible:
-    text: "2x onPress"
+    text: '2x onPress'
 - scrollUntilVisible:
     element:
-      id: "pressable_feedback_events"
+      id: 'pressable_feedback_events'
     direction: DOWN
     speed: 10
     visibilityPercentage: 100
 - tapOn:
-    id: "pressable_feedback_events_button"
+    id: 'pressable_feedback_events_button'
 - scrollUntilVisible:
     element:
-      text: "pressIn"
+      text: 'pressIn'
     direction: DOWN
     speed: 10
 - assertVisible:
-    text: "press"
+    text: 'press'
 - assertVisible:
-    text: "pressOut"
+    text: 'pressOut'
 - longPressOn:
-    id: "pressable_feedback_events_button"
+    id: 'pressable_feedback_events_button'
 - assertVisible:
-    text: "pressIn"
+    text: 'pressIn'
 - assertVisible:
-    text: "longPress"
+    text: 'longPress'
 - assertVisible:
-    text: "pressOut"
+    text: 'pressOut'

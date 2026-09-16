@@ -33,6 +33,7 @@ import {
   getEventPhase,
   getInPassiveListenerFlag,
   getIsTrusted,
+  getStopPropagationFlag,
   getTarget,
   setStopImmediatePropagationFlag,
   setStopPropagationFlag,
@@ -42,6 +43,11 @@ export interface EventInit {
   readonly bubbles?: boolean;
   readonly cancelable?: boolean;
   readonly composed?: boolean;
+  // React Native-specific. When true, the event is a "direct" event: it is
+  // dispatched only to the target node (single AT_TARGET phase) and never
+  // captures or bubbles through ancestors. A direct event must not bubble, so
+  // `bubbles` cannot also be true.
+  readonly rnIsDirect?: boolean;
 }
 
 export default class Event {
@@ -58,33 +64,42 @@ export default class Event {
   _bubbles: boolean;
   _cancelable: boolean;
   _composed: boolean;
+  _rnIsDirect: boolean;
   _type: string;
 
   _defaultPrevented: boolean = false;
   _timeStamp: number;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [COMPOSED_PATH_KEY]: boolean = [];
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [CURRENT_TARGET_KEY]: EventTarget | null = null;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [EVENT_PHASE_KEY]: boolean = Event.NONE;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [IN_PASSIVE_LISTENER_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [IS_TRUSTED_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [STOP_IMMEDIATE_PROPAGATION_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [STOP_PROPAGATION_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [TARGET_KEY]: EventTarget | null = null;
 
   constructor(type: string, options?: ?EventInit) {
@@ -110,6 +125,16 @@ export default class Event {
     this._bubbles = Boolean(options?.bubbles);
     this._cancelable = Boolean(options?.cancelable);
     this._composed = Boolean(options?.composed);
+    this._rnIsDirect = Boolean(options?.rnIsDirect);
+
+    // A direct event is dispatched only to its target and never propagates, so
+    // it cannot bubble. Reject the contradictory combination at construction
+    // time.
+    if (this._rnIsDirect && this._bubbles) {
+      throw new TypeError(
+        "Failed to construct 'Event': 'rnIsDirect' cannot be true when 'bubbles' is also true.",
+      );
+    }
 
     // For internal construction of events using a custom timestamp (instead of
     // event object creation), for use cases like dispatching events from the
@@ -128,8 +153,33 @@ export default class Event {
     return this._cancelable;
   }
 
+  /**
+   * Historical alias for the stop-propagation flag. Reading it returns whether
+   * `stopPropagation()` has been called (or `cancelBubble` has been set to
+   * `true`). Setting it to `true` stops propagation; setting it to `false` is a
+   * no-op. See https://dom.spec.whatwg.org/#dom-event-cancelbubble.
+   */
+  get cancelBubble(): boolean {
+    return getStopPropagationFlag(this);
+  }
+
+  set cancelBubble(value: boolean) {
+    if (value) {
+      setStopPropagationFlag(this, true);
+    }
+  }
+
   get composed(): boolean {
     return this._composed;
+  }
+
+  /**
+   * React Native-specific. When true, this event is dispatched only to its
+   * target (single `AT_TARGET` phase) and never captures or bubbles through
+   * ancestors.
+   */
+  get rnIsDirect(): boolean {
+    return this._rnIsDirect;
   }
 
   get currentTarget(): EventTarget | null {

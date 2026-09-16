@@ -31,6 +31,7 @@
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 static NSMutableArray<Class> *RCTModuleClasses;
 static dispatch_queue_t RCTModuleClassesSyncQueue;
 NSArray<Class> *RCTGetModuleClasses(void)
@@ -53,7 +54,6 @@ NSSet<NSString *> *getCoreModuleClasses(void)
       @"RCTActivityIndicatorViewManager",
       @"RCTDebuggingOverlayManager",
       @"RCTModalHostViewManager",
-      @"RCTModalManager",
       @"RCTRefreshControlManager",
       @"RCTSafeAreaViewManager",
       @"RCTScrollContentViewManager",
@@ -83,7 +83,6 @@ NSSet<NSString *> *getCoreModuleClasses(void)
       @"RCTStatusBarManager",
       @"RCTTiming",
       @"RCTWebSocketModule",
-      @"RCTNativeAnimatedModule",
       @"RCTNativeAnimatedTurboModule",
       @"RCTBlobManager",
       @"RCTFileReaderModule",
@@ -115,6 +114,7 @@ NSSet<NSString *> *getCoreModuleClasses(void)
 
   return coreModuleClasses;
 }
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 
 static NSMutableArray<NSString *> *modulesLoadedWithOldArch;
 void addModuleLoadedWithOldArch(NSString * /*moduleName*/);
@@ -133,6 +133,7 @@ NSMutableArray<NSString *> *getModulesLoadedWithOldArch(void)
   return modulesLoadedWithOldArch;
 }
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 /**
  * Register the given class as a bridge module. All modules must be registered
  * prior to the first bridge initialization.
@@ -161,6 +162,7 @@ void RCTRegisterModule(Class moduleClass)
     [RCTModuleClasses addObject:moduleClass];
   });
 }
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 
 /**
  * This function returns the module name for a given class.
@@ -174,7 +176,7 @@ NSString *RCTBridgeModuleNameForClass(Class cls)
       cls);
 #endif
 
-  NSString *name = [cls moduleName];
+  NSString *name = [cls respondsToSelector:@selector(moduleName)] ? [cls moduleName] : nil;
   if (name.length == 0) {
     name = NSStringFromClass(cls);
   }

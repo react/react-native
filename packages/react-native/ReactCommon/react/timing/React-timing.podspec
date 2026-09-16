@@ -19,7 +19,7 @@ end
 header_search_paths = []
 
 if ENV['USE_FRAMEWORKS']
-  header_search_paths << "\"$(PODS_TARGET_SRCROOT)/../..\"" # this is needed to allow the target access its own files
+  header_search_paths << "\"$(PODS_TARGET_SRCROOT)/../..\"" # ReactCommon, for the target's own files and <react/cxxstableapi/...>
 end
 
 Pod::Spec.new do |s|
@@ -31,7 +31,7 @@ Pod::Spec.new do |s|
   s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = min_supported_versions
   s.source                 = source
-  s.source_files           = podspec_sources("*.{cpp,h}", "**/*.h")
+  s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
   s.header_dir             = "react/timing"
   s.pod_target_xcconfig    = { "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                "HEADER_SEARCH_PATHS" => header_search_paths.join(' '),
@@ -40,6 +40,15 @@ Pod::Spec.new do |s|
   resolve_use_frameworks(s, header_mappings_dir: "./", module_name: "React_timing")
 
   add_dependency(s, "React-debug")
+  s.dependency "React-cxxstableapi"
+
+  s.subspec "timingUmbrella" do |ss|
+    ss.source_files         = "React/*.h"
+    ss.header_dir           = ""
+    ss.header_mappings_dir  = "."
+  end
 
   s.resource_bundles = {'React-timing_privacy' => 'PrivacyInfo.xcprivacy'}
+
+  mark_as_react_native_build(s)
 end

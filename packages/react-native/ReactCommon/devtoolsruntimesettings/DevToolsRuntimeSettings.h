@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <FBReactNativeSpec/FBReactNativeSpecJSI.h>
 
 namespace facebook::react {

@@ -863,19 +863,19 @@ public class DoublePropNativeComponentManagerDelegate<T extends View, U extends 
         mViewManager.setBlurRadius(view, value == null ? Double.NaN : ((Double) value).doubleValue());
         break;
       case \\"blurRadius2\\":
-        mViewManager.setBlurRadius2(view, value == null ? 0.001f : ((Double) value).doubleValue());
+        mViewManager.setBlurRadius2(view, value == null ? 0.001d : ((Double) value).doubleValue());
         break;
       case \\"blurRadius3\\":
-        mViewManager.setBlurRadius3(view, value == null ? 2.1f : ((Double) value).doubleValue());
+        mViewManager.setBlurRadius3(view, value == null ? 2.1d : ((Double) value).doubleValue());
         break;
       case \\"blurRadius4\\":
-        mViewManager.setBlurRadius4(view, value == null ? 0f : ((Double) value).doubleValue());
+        mViewManager.setBlurRadius4(view, value == null ? 0d : ((Double) value).doubleValue());
         break;
       case \\"blurRadius5\\":
-        mViewManager.setBlurRadius5(view, value == null ? 1f : ((Double) value).doubleValue());
+        mViewManager.setBlurRadius5(view, value == null ? 1d : ((Double) value).doubleValue());
         break;
       case \\"blurRadius6\\":
-        mViewManager.setBlurRadius6(view, value == null ? 0f : ((Double) value).doubleValue());
+        mViewManager.setBlurRadius6(view, value == null ? 0d : ((Double) value).doubleValue());
         break;
       default:
         super.setProperty(view, propName, value);

@@ -11,7 +11,7 @@
 #include <react/common/mapbuffer/JReadableMapBuffer.h>
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
-#include <react/jni/ReadableNativeMap.h>
+#include <react/jni/NativeArray.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/core/conversions.h>
 #include <react/renderer/mapbuffer/MapBuffer.h>

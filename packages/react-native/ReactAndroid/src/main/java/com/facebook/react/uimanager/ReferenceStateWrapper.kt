@@ -9,5 +9,5 @@ package com.facebook.react.uimanager
 
 internal interface ReferenceStateWrapper : StateWrapper {
   /** Returns state data backed by JNI reference. The underlying object should not be modified. */
-  public val stateDataReference: Any?
+  val stateDataReference: Any?
 }

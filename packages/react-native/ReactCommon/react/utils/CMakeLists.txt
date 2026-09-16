@@ -26,11 +26,13 @@ target_include_directories(react_utils
           ${REACT_COMMON_DIR}
           ${platform_DIR}
 )
+target_include_directories(react_utils INTERFACE ${REACT_COMMON_DIR}/react/utils)
 
 target_link_libraries(react_utils
         glog
         glog_init
         jsi
+        react_cxxstableapi
         react_debug)
 target_compile_reactnative_options(react_utils PRIVATE)
 target_compile_options(react_utils PRIVATE -Wpedantic)

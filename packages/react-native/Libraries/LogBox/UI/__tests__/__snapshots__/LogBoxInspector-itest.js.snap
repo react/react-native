@@ -1,0 +1,367 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
+<rn-view
+  backgroundColor="rgba(255, 255, 255, 1)"
+  flex="1"
+  nativeID="logbox_inspector"
+>
+  <rn-view
+    backgroundColor="rgba(243, 83, 105, 1)"
+  />
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_prev"
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      resizeMode="cover"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronleft.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="16"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_header_title_text"
+    overflow="hidden"
+  >
+    Log 3 of 3
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_next"
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      resizeMode="cover"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronright.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    flex="0"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontSize="20"
+      fontSizeMultiplier="NaN"
+      fontWeight="600"
+      foregroundColor="rgba(243, 83, 105, 1)"
+      includeFontPadding="false"
+      lineHeight="28"
+      nativeID="logbox_message_title_text"
+      overflow="hidden"
+    >
+      Uncaught Error
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      nativeID="logbox_message_contents_text"
+      overflow="hidden"
+      paddingBottom="10"
+      paddingHorizontal="12"
+    >
+      <rn-text
+        allowFontScaling="true"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        layoutDirection="ltr"
+        lineHeight="20"
+      >
+        Some kind of message (third)
+      </rn-text>
+    </rn-paragraph>
+  </rn-view>
+  <rn-scrollView
+    backgroundColor="rgba(51, 51, 51, 0.901961)"
+    flex="1"
+    flexGrow="1"
+    flexShrink="1"
+    overflow="scroll"
+  >
+    <rn-view />
+  </rn-scrollView>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    flexDirection="row"
+  >
+    <rn-view
+      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_dismiss"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        overflow="hidden"
+      >
+        Dismiss
+      </rn-paragraph>
+    </rn-view>
+    <rn-view
+      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_minimize"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        overflow="hidden"
+      >
+        Minimize
+      </rn-paragraph>
+    </rn-view>
+    <rn-view
+      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_copy"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        overflow="hidden"
+      >
+        Copy
+      </rn-paragraph>
+    </rn-view>
+  </rn-view>
+</rn-view>
+`;
+
+exports[`LogBoxInspector should render null with no logs 1`] = `null`;
+
+exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
+<rn-view
+  backgroundColor="rgba(255, 255, 255, 1)"
+  flex="1"
+  nativeID="logbox_inspector"
+>
+  <rn-view
+    backgroundColor="rgba(250, 186, 48, 1)"
+  />
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_prev"
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      resizeMode="cover"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronleft.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="16"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_header_title_text"
+    overflow="hidden"
+  >
+    Log 1 of 3
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_next"
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      resizeMode="cover"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronright.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    flex="0"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontSize="20"
+      fontSizeMultiplier="NaN"
+      fontWeight="600"
+      foregroundColor="rgba(250, 186, 48, 1)"
+      includeFontPadding="false"
+      lineHeight="28"
+      nativeID="logbox_message_title_text"
+      overflow="hidden"
+    >
+      Console Warning
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      nativeID="logbox_message_contents_text"
+      overflow="hidden"
+      paddingBottom="10"
+      paddingHorizontal="12"
+    >
+      <rn-text
+        allowFontScaling="true"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        layoutDirection="ltr"
+        lineHeight="20"
+      >
+        Some kind of message (first)
+      </rn-text>
+    </rn-paragraph>
+  </rn-view>
+  <rn-scrollView
+    backgroundColor="rgba(51, 51, 51, 0.901961)"
+    flex="1"
+    flexGrow="1"
+    flexShrink="1"
+    overflow="scroll"
+  >
+    <rn-view />
+  </rn-scrollView>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    flexDirection="row"
+  >
+    <rn-view
+      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_dismiss"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        overflow="hidden"
+      >
+        Dismiss
+      </rn-paragraph>
+    </rn-view>
+    <rn-view
+      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_minimize"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        overflow="hidden"
+      >
+        Minimize
+      </rn-paragraph>
+    </rn-view>
+    <rn-view
+      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_copy"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        overflow="hidden"
+      >
+        Copy
+      </rn-paragraph>
+    </rn-view>
+  </rn-view>
+</rn-view>
+`;

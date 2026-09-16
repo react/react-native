@@ -10,9 +10,12 @@
 
 import type {AssetData} from 'metro';
 
-import assetPathUtils from './assetPathUtils';
-import fs from 'fs';
-import path from 'path';
+import {
+  drawableFileTypes,
+  getAndroidResourceIdentifier,
+} from '@react-native/asset-utils';
+import fs from 'node:fs';
+import path from 'node:path';
 
 async function createKeepFileAsync(
   assets: ReadonlyArray<AssetData>,
@@ -23,12 +26,8 @@ async function createKeepFileAsync(
   }
   const assetsList = [];
   for (const asset of assets) {
-    const prefix = assetPathUtils.drawableFileTypes.has(asset.type)
-      ? 'drawable'
-      : 'raw';
-    assetsList.push(
-      `@${prefix}/${assetPathUtils.getResourceIdentifier(asset)}`,
-    );
+    const prefix = drawableFileTypes.has(asset.type) ? 'drawable' : 'raw';
+    assetsList.push(`@${prefix}/${getAndroidResourceIdentifier(asset)}`);
   }
   const keepPath = path.join(outputDirectory, 'raw/keep.xml');
   const content = `<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="${assetsList.join(',')}" />\n`;

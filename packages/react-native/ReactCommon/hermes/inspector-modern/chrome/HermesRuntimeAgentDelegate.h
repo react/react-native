@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #ifdef HERMES_ENABLE_DEBUGGER
 
 #include "HermesRuntimeTargetDelegate.h"

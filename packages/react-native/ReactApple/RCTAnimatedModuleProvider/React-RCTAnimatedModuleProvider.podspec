@@ -18,11 +18,12 @@ end
 
 is_new_arch_enabled = ENV["RCT_NEW_ARCH_ENABLED"] != "0"
 new_arch_enabled_flag = (is_new_arch_enabled ? " -DRCT_NEW_ARCH_ENABLED=1" : "")
-other_cflags = "$(inherited) " + new_arch_enabled_flag + js_engine_flags()
+other_cflags = "$(inherited) " + new_arch_enabled_flag + " " + js_engine_flags()
 
 header_search_paths = [
   "$(PODS_TARGET_SRCROOT)/../../ReactCommon",
   "$(PODS_ROOT)/Headers/Private/React-Core",
+  "$(PODS_ROOT)/Headers/Private/Yoga",
   "$(PODS_ROOT)/Headers/Public/ReactCommon",
 ]
 
@@ -52,10 +53,13 @@ Pod::Spec.new do |s|
   s.dependency "React-Core"
   s.dependency "React-featureflags"
   s.dependency "React-Fabric/animated"
+  s.dependency "Yoga"
 
   add_dependency(s, "ReactCommon", :subspec => "turbomodule/core", :additional_framework_paths => ["react/nativemodule/core"])
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

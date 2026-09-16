@@ -12,17 +12,12 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
-import ensureInstance from '../../../src/private/__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef, startTransition, useDeferredValue, useState} from 'react';
 import {View} from 'react-native';
 import {NativeEventCategory} from 'react-native/src/private/testing/fantom/specs/NativeFantom';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
-
-function ensureReactNativeElement(value: unknown): ReactNativeElement {
-  return ensureInstance(value, ReactNativeElement);
-}
 
 describe('stale event handlers from interrupted render', () => {
   // This test demonstrates a bug where canonical.currentProps (which stores
@@ -79,7 +74,7 @@ describe('stale event handlers from interrupted render', () => {
     }) {
       if (shouldDispatchDuringRender && deferredLabel === label) {
         shouldDispatchDuringRender = false;
-        const element = ensureReactNativeElement(viewRef.current);
+        const element = nullthrows(viewRef.current);
         Fantom.dispatchNativeEvent(
           element,
           'onPointerUp',

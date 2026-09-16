@@ -5,7 +5,7 @@ inputs:
     required: true
     description: The type of release we are building. It could be nightly, release or dry-run
   gradle-cache-encryption-key:
-    description: "The encryption key needed to store the Gradle Configuration cache"
+    description: 'The encryption key needed to store the Gradle Configuration cache'
 runs:
   using: composite
   steps:
@@ -34,7 +34,7 @@ runs:
     - name: Setup gradle
       uses: ./.github/actions/setup-gradle
       with:
-        cache-read-only: "false"
+        cache-read-only: 'false'
         cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
     - name: Restore Android ccache
       uses: actions/cache/restore@v5
@@ -51,10 +51,17 @@ runs:
     - name: Build and publish all the Android Artifacts to /tmp/maven-local
       shell: bash
       run: |
+        GRADLE_ARGS=()
         if [[ "${{ inputs.release-type }}" == "dry-run" ]]; then
-          # dry-run: we only build ARM64 to save time/resources. For release/nightlies the default is to build all archs.
-          export ORG_GRADLE_PROJECT_reactNativeArchitectures="arm64-v8a,x86" # x86 is required for E2E testing
+          # dry-run: we only build ARM64 to save time/resources. Android E2E
+          # runs this APK on an x86_64 API 35 image using NDK translation.
+          # For release/nightlies the default is to build all architectures.
+          export ORG_GRADLE_PROJECT_reactNativeArchitectures="arm64-v8a"
           export HERMES_PREBUILT_FLAG="ORG_GRADLE_PROJECT_react.internal.useHermesNightly=true"
+          GRADLE_ARGS=(
+            --init-script
+            "$GITHUB_WORKSPACE/.github/workflow-scripts/legacy-jni-packaging.gradle"
+          )
           TASKS="publishAllToMavenTempLocal build"
         elif [[ "${{ inputs.release-type }}" == "nightly" ]]; then
           # nightly: we set isSnapshot to true so artifacts are sent to the right repository on Maven Central.
@@ -62,11 +69,12 @@ runs:
           export HERMES_PREBUILT_FLAG="ORG_GRADLE_PROJECT_react.internal.useHermesNightly=true"
           TASKS="publishAllToMavenTempLocal publishAndroidToSonatype build"
         else
-          # release: we want to build all archs (default)
+          # release: build all archs and close the repository so that Sonatype can validate it.
+          # Releasing to Maven Central happens only after the Apple builds succeed.
           export HERMES_PREBUILT_FLAG="ORG_GRADLE_PROJECT_react.internal.useHermesStable=true"
-          TASKS="publishAllToMavenTempLocal publishAndroidToSonatype build"
+          TASKS="publishAllToMavenTempLocal publishAndroidToSonatype closeSonatypeStagingRepository build"
         fi
-        env "$HERMES_PREBUILT_FLAG" ./gradlew $TASKS -PenableWarningsAsErrors=true
+        env "$HERMES_PREBUILT_FLAG" ./gradlew "${GRADLE_ARGS[@]}" $TASKS -PenableWarningsAsErrors=true
     - name: Save Android ccache
       if: ${{ github.ref == 'refs/heads/main' || contains(github.ref, '-stable') }}
       uses: actions/cache/save@v5

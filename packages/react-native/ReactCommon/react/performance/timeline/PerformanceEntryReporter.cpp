@@ -29,11 +29,8 @@ std::vector<PerformanceEntryType> getSupportedEntryTypesInternal() {
       PerformanceEntryType::MEASURE,
       PerformanceEntryType::EVENT,
       PerformanceEntryType::LONGTASK,
+      PerformanceEntryType::RESOURCE,
   };
-
-  if (ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-    supportedEntryTypes.emplace_back(PerformanceEntryType::RESOURCE);
-  }
 
   return supportedEntryTypes;
 }

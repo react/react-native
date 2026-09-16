@@ -35,7 +35,8 @@ id convertJSIValueToObjCObject(
     jsi::Runtime &runtime,
     const jsi::Value &value,
     const std::shared_ptr<CallInvoker> &jsInvoker,
-    BOOL useNSNull = NO);
+    BOOL useNSNull = NO,
+    BOOL mustCopyBytes = YES);
 } // namespace TurboModuleConvertUtils
 
 template <>
@@ -113,6 +114,9 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
    * ObjCInteropTurboModule relies heavily on RCTConvert to convert arguments from JavaScript values to Objective C
    * values. ObjCTurboModule tries to minimize reliance on RCTConvert: RCTConvert uses the RCT_EXPORT_METHOD macros,
    * which we want to remove long term from React Native.
+   *
+   * mustCopyBytes says whether the invocation may outlive the JS call, in which case ArrayBuffer arguments must be
+   * copied rather than aliased.
    */
   virtual void setInvocationArg(
       jsi::Runtime &runtime,
@@ -121,7 +125,8 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
       const jsi::Value &arg,
       size_t i,
       NSInvocation *inv,
-      NSMutableArray *retainedObjectsForInvocation);
+      NSMutableArray *retainedObjectsForInvocation,
+      bool mustCopyBytes);
 
  private:
   // Does the NativeModule dispatch async methods to the JS thread?
@@ -137,11 +142,13 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
   NSDictionary<NSString *, NSArray<NSString *> *> *methodArgumentTypeNames_;
 
   bool isMethodSync(TurboModuleMethodValueKind returnType);
+  bool mustCopyJSHeapArrayBufferBytes(TurboModuleMethodValueKind returnType);
   BOOL hasMethodArgConversionSelector(NSString *methodName, size_t argIndex);
   SEL getMethodArgConversionSelector(NSString *methodName, size_t argIndex);
   NSInvocation *createMethodInvocation(
       jsi::Runtime &runtime,
       bool isSync,
+      bool mustCopyBytes,
       const char *methodName,
       SEL selector,
       const jsi::Value *args,

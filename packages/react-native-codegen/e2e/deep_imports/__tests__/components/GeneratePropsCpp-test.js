@@ -12,7 +12,7 @@
 
 const generator = require('../../../../src/generators/components/GeneratePropsCpp');
 const {FlowParser} = require('../../../../src/parsers/flow/parser');
-const fs = require('fs');
+const fs = require('node:fs');
 
 const FIXTURE_DIR = `${__dirname}/../../__test_fixtures__/components`;
 

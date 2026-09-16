@@ -18,6 +18,7 @@ target_include_directories(react_performance_cdpmetrics PUBLIC ${REACT_COMMON_DI
 target_link_libraries(react_performance_cdpmetrics
         folly_runtime
         jsi
+        react_cxxstableapi
         react_performance_timeline
         react_timing
         runtimeexecutor)

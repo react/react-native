@@ -21,6 +21,7 @@ target_link_libraries(jsinspector_tracing
         jsi
         jsinspector_network
         oscompat
+        react_cxxstableapi
         react_timing
         react_utils
 )

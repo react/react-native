@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <jsinspector-modern/ExecutionContext.h>
 #include <jsinspector-modern/FallbackRuntimeTargetDelegate.h>
 #include <jsinspector-modern/HostTarget.h>

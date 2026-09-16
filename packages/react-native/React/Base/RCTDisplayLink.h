@@ -7,23 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol RCTBridgeModule;
-@class RCTModuleData;
-
-@protocol RCTDisplayLinkModuleHolder
-- (id<RCTBridgeModule>)instance;
-- (Class)moduleClass;
-- (dispatch_queue_t)methodQueue;
-@end
+@protocol RCTFrameUpdateObserver;
 
 @interface RCTDisplayLink : NSObject
 
-- (instancetype)init;
+- (instancetype)initWithFrameUpdateObserver:(id<RCTFrameUpdateObserver>)observer;
 - (void)invalidate;
-- (void)registerModuleForFrameUpdates:(id<RCTBridgeModule>)module
-                     withModuleHolder:(id<RCTDisplayLinkModuleHolder>)moduleHolder
-    __attribute__((deprecated(
-        "registerModuleForFrameUpdates is part of the legacy architecture and will be removed in a future React Native release.")));
 - (void)addToRunLoop:(NSRunLoop *)runLoop;
 
 @end

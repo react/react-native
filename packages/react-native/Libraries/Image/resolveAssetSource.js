@@ -16,10 +16,10 @@ import type {ImageSource} from './ImageSource';
 
 import SourceCode from '../NativeModules/specs/NativeSourceCode';
 
+const {AssetRegistry} = require('../../src/private/assets/AssetRegistry');
 const AssetSourceResolver: AssetSourceResolverT =
   require('./AssetSourceResolver').default;
 const {pickScale} = require('./AssetUtils');
-const AssetRegistry = require('@react-native/assets-registry/registry');
 
 type CustomSourceTransformer = (
   resolver: AssetSourceResolver,

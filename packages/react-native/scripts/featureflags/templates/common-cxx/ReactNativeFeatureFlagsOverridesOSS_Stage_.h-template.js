@@ -54,6 +54,8 @@ ${DO_NOT_MODIFY_COMMENT}
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/featureflags/${getParentClassName(ossReleaseStage)}.h>
 
 namespace facebook::react {

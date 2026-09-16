@@ -409,10 +409,7 @@ type AnimationPlayState = 'idle' | 'running' | 'paused' | 'finished';
 type AnimationReplaceState = 'active' | 'removed' | 'persisted';
 type FillMode = 'none' | 'forwards' | 'backwards' | 'both' | 'auto';
 type PlaybackDirection =
-  | 'normal'
-  | 'reverse'
-  | 'alternate'
-  | 'alternate-reverse';
+  'normal' | 'reverse' | 'alternate' | 'alternate-reverse';
 type IterationCompositeOperation = 'replace' | 'accumulate';
 type CompositeOperation = 'replace' | 'add' | 'accumulate';
 type CompositeOperationOrAuto = CompositeOperation | 'auto';
@@ -481,12 +478,7 @@ type PropertyIndexedKeyframes = {
   easing?: string | string[],
   offset?: number | (number | null)[],
   [property: string]:
-    | string
-    | string[]
-    | number
-    | null
-    | (number | null)[]
-    | void,
+    string | string[] | number | null | (number | null)[] | void,
   ...
 };
 

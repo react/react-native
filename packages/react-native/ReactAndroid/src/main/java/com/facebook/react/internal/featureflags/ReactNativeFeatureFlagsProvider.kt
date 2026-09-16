@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4f18bde7c0680691cd6fceb63c41ad65>>
+ * @generated SignedSource<<18ffa42c9d28304df99548a350b014ac>>
  */
 
 /**
@@ -47,9 +47,13 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
+  @DoNotStrip public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
+
   @DoNotStrip public fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip public fun enableBridgelessArchitecture(): Boolean
+
+  @DoNotStrip public fun enableBufferedCallInvoker(): Boolean
 
   @DoNotStrip public fun enableCppPropsIteratorSetter(): Boolean
 
@@ -71,15 +75,19 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableFontScaleChangesUpdatingLayout(): Boolean
 
+  @DoNotStrip public fun enableIOSCompressedTextFrameAdjustment(): Boolean
+
   @DoNotStrip public fun enableIOSTextBaselineOffsetPerLine(): Boolean
 
   @DoNotStrip public fun enableIOSViewClipToPaddingBox(): Boolean
 
   @DoNotStrip public fun enableImagePrefetchingAndroid(): Boolean
 
-  @DoNotStrip public fun enableImageRequestDowngradingForNonVisibleImages(): Boolean
+  @DoNotStrip public fun enableImageTransparentTintColor(): Boolean
 
   @DoNotStrip public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
+
+  @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
 
@@ -95,19 +103,17 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableModuleArgumentNSNullConversionIOS(): Boolean
 
+  @DoNotStrip public fun enableMountingCoordinatorPullModelAndroid(): Boolean
+
   @DoNotStrip public fun enableMutationObserverByDefault(): Boolean
 
   @DoNotStrip public fun enableNativeCSSParsing(): Boolean
-
-  @DoNotStrip public fun enableNetworkEventReporting(): Boolean
 
   @DoNotStrip public fun enablePreparedTextLayout(): Boolean
 
   @DoNotStrip public fun enablePropsUpdateReconciliationAndroid(): Boolean
 
-  @DoNotStrip public fun enableRuntimeSchedulerQueueClearingOnError(): Boolean
-
-  @DoNotStrip public fun enableSchedulerDelegateInvalidation(): Boolean
+  @DoNotStrip public fun enableResizeObserverByDefault(): Boolean
 
   @DoNotStrip public fun enableSwiftUIBasedFilters(): Boolean
 
@@ -137,9 +143,9 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun fuseboxFrameRecordingEnabled(): Boolean
 
-  @DoNotStrip public fun fuseboxNetworkInspectionEnabled(): Boolean
-
   @DoNotStrip public fun fuseboxScreenshotCaptureEnabled(): Boolean
+
+  @DoNotStrip public fun fuseboxWebSocketEventsEnabled(): Boolean
 
   @DoNotStrip public fun optimizedAnimatedPropUpdates(): Boolean
 

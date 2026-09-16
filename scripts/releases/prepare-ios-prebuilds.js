@@ -14,7 +14,7 @@ const {createFramework} = require('./ios-prebuild/compose-framework');
 const {cleanFolder} = require('./ios-prebuild/folders');
 const {setupDependencies} = require('./ios-prebuild/setupDependencies');
 const {createSwiftPackageFile} = require('./ios-prebuild/swift-package');
-const path = require('path');
+const path = require('node:path');
 
 require('../shared/babelRegister').registerForScript();
 

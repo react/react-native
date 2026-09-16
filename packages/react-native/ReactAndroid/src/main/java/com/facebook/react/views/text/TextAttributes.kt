@@ -132,6 +132,6 @@ public class TextAttributes {
 
   internal companion object {
     // Setting the default to 0 indicates that there is no max.
-    public const val DEFAULT_MAX_FONT_SIZE_MULTIPLIER: Float = 0.0f
+    const val DEFAULT_MAX_FONT_SIZE_MULTIPLIER: Float = 0.0f
   }
 }

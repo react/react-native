@@ -55,12 +55,15 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   s.dependency "ReactCommon/turbomodule/core"
+  s.dependency "React-bridging"
 
   s.dependency "React-Fabric"
   s.dependency "React-Fabric/bridging"
   s.dependency "React-Fabric/observers/mutation"
   s.dependency "React-featureflags"
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
 
+  mark_as_react_native_build(s)
 end

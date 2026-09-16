@@ -1,5 +1,10 @@
 # @react-native/community-cli-plugin
 
+[![npm]](https://www.npmjs.com/package/@react-native/community-cli-plugin) [![npm downloads]](https://www.npmjs.com/package/@react-native/community-cli-plugin)
+
+[npm]: https://img.shields.io/npm/v/@react-native/community-cli-plugin.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/community-cli-plugin.svg
+
 > This is an internal dependency of React Native. **Please don't depend on it directly.**
 
 CLI entry points supporting core React Native development features.
@@ -69,6 +74,48 @@ npx @react-native-community/cli bundle --entry-file <path> [options]
 | `--reset-cache` | Remove cached files. |
 | `--read-global-cache` | Attempt to fetch transformed JS code from the global cache, if configured. Defaults to `false`. |
 | `--config <string>` | Path to the CLI configuration file. |
+
+### `codegen`
+
+Run the React Native codegen, generating native boilerplate from JS spec files.
+
+#### Usage
+
+```sh
+npx @react-native-community/cli codegen [options]
+```
+
+#### Options
+
+| Option | Description |
+| - | - |
+| `--path <path>` | Path to the React Native project root. Defaults to the current working directory. |
+| `--platform <string>` | Target platform. Supported values: `"android"`, `"ios"`, `"all"`. Defaults to `"all"`. |
+| `--outputPath <path>` | Path where generated artifacts will be output to. |
+| `--source <string>` | Whether the script is invoked from an `app` or a `library`. Defaults to `"app"`. |
+
+### `spm [action]`
+
+Set up or maintain Swift Package Manager support for the iOS/macOS app. Actions: `add`, `update`, `deinit`, `scaffold`. With no action: `add` (or `update` if SPM is already set up).
+
+#### Usage
+
+```sh
+npx @react-native-community/cli spm [action] [options]
+```
+
+#### Options
+
+| Option | Description |
+| - | - |
+| `--version <string>` | React Native version (e.g. `0.80.0`). Defaults to the version in `node_modules/react-native/package.json`. |
+| `--yes` | Skip the dirty-pbxproj confirmation prompt. |
+| `--xcodeproj <path>` | **[add]** Path to the `.xcodeproj` to inject SPM packages into (disambiguates when several exist). |
+| `--productName <string>` | **[add]** App target to inject into (disambiguates when several exist). |
+| `--deintegrate` | **[add]** Run `pod deintegrate` and strip React Native from the Podfile before injecting (CocoaPods → SwiftPM migration). |
+| `--artifacts <path>` | **[advanced]** Local artifact root containing complete `debug/` and `release/` slots. |
+| `--download <string>` | **[advanced]** Artifact download policy: `auto` (default), `skip`, or `force`. |
+| `--skipCodegen` | **[advanced]** Skip the react-native codegen step. |
 
 ## Contributing
 

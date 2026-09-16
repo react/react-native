@@ -46,7 +46,7 @@ internal class PropsAnimatedNode(
   fun connectToView(viewTag: Int, uiManager: UIManager?) {
     if (connectedViewTag != -1) {
       throw JSApplicationIllegalArgumentException(
-          "Animated node $tag is already attached to a view: $connectedViewTag"
+          "Animated node $tag is already attached to a view: $connectedViewTag",
       )
     }
     connectedViewTag = viewTag
@@ -58,7 +58,7 @@ internal class PropsAnimatedNode(
       throw JSApplicationIllegalArgumentException(
           "Attempting to disconnect view that has " +
               "not been connected with the given animated node: $viewTag " +
-              "but is connected to view $connectedViewTag"
+              "but is connected to view $connectedViewTag",
       )
     }
     connectedViewTag = -1
@@ -75,7 +75,12 @@ internal class PropsAnimatedNode(
     }
     for ((key, value) in propNodeMapping) {
       val node = nativeAnimatedNodesManager.getNodeById(value)
-      requireNotNull(node) { "Mapped property node does not exist" }
+      // The mapped node can be dropped mid-teardown (e.g. component unmounts during
+      // navigation) while this prop update is still in flight. Skip it instead of
+      // throwing, mirroring the connectedViewTag == -1 guard.
+      if (node == null) {
+        continue
+      }
       if (node is StyleAnimatedNode) {
         node.collectViewUpdates(propMap)
       } else if (node is ValueAnimatedNode) {
@@ -93,7 +98,7 @@ internal class PropsAnimatedNode(
         node.collectViewUpdates(key, propMap)
       } else {
         throw IllegalArgumentException(
-            "Unsupported type of node used in property node ${node.javaClass}"
+            "Unsupported type of node used in property node ${node.javaClass}",
         )
       }
     }

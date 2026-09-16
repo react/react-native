@@ -79,7 +79,7 @@ RCT_EXPORT_MODULE()
  * Set one or more values in the settings.
  * TODO: would it be useful to have a callback for when this has completed?
  */
-RCT_EXPORT_METHOD(setValues : (NSDictionary *)values)
+- (void)setValues:(NSDictionary *)values
 {
   _ignoringUpdates = YES;
   [values enumerateKeysAndObjectsUsingBlock:^(NSString *key, id json, BOOL *stop) {
@@ -98,8 +98,9 @@ RCT_EXPORT_METHOD(setValues : (NSDictionary *)values)
 /**
  * Remove some values from the settings.
  */
-RCT_EXPORT_METHOD(deleteValues : (NSArray<NSString *> *)keys)
+- (void)deleteValues:(NSArray *)keysRaw
 {
+  NSArray<NSString *> *keys = [RCTConvert NSStringArray:keysRaw];
   _ignoringUpdates = YES;
   for (NSString *key in keys) {
     [_defaults removeObjectForKey:key];

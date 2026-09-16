@@ -316,6 +316,8 @@ RCT_ENUM_CONVERTER(
     NSTextAlignment,
     (@{
       @"auto" : @(NSTextAlignmentNatural),
+      @"start" : @(NSTextAlignmentLeft),
+      @"end" : @(NSTextAlignmentRight),
       @"left" : @(NSTextAlignmentLeft),
       @"center" : @(NSTextAlignmentCenter),
       @"right" : @(NSTextAlignmentRight),

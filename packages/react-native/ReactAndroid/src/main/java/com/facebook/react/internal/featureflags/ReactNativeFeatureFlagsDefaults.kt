@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0dcc15b419f6805bdbeec4727ad94761>>
+ * @generated SignedSource<<0c228a0f53ced43d6744551a92d0ed86>>
  */
 
 /**
@@ -27,7 +27,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun cdpInteractionMetricsEnabled(): Boolean = false
 
-  override fun cxxNativeAnimatedEnabled(): Boolean = true
+  override fun cxxNativeAnimatedEnabled(): Boolean = false
 
   override fun defaultTextToOverflowHidden(): Boolean = true
 
@@ -47,9 +47,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
 
+  override fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = false
+
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
 
-  override fun enableBridgelessArchitecture(): Boolean = false
+  override fun enableBridgelessArchitecture(): Boolean = true
+
+  override fun enableBufferedCallInvoker(): Boolean = true
 
   override fun enableCppPropsIteratorSetter(): Boolean = false
 
@@ -71,15 +75,19 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableFontScaleChangesUpdatingLayout(): Boolean = true
 
+  override fun enableIOSCompressedTextFrameAdjustment(): Boolean = false
+
   override fun enableIOSTextBaselineOffsetPerLine(): Boolean = false
 
   override fun enableIOSViewClipToPaddingBox(): Boolean = false
 
   override fun enableImagePrefetchingAndroid(): Boolean = false
 
-  override fun enableImageRequestDowngradingForNonVisibleImages(): Boolean = false
+  override fun enableImageTransparentTintColor(): Boolean = false
 
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
+
+  override fun enableImperativeEvents(): Boolean = false
 
   override fun enableImperativeFocus(): Boolean = false
 
@@ -95,19 +103,17 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableModuleArgumentNSNullConversionIOS(): Boolean = false
 
+  override fun enableMountingCoordinatorPullModelAndroid(): Boolean = false
+
   override fun enableMutationObserverByDefault(): Boolean = false
 
   override fun enableNativeCSSParsing(): Boolean = false
-
-  override fun enableNetworkEventReporting(): Boolean = true
 
   override fun enablePreparedTextLayout(): Boolean = false
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
 
-  override fun enableRuntimeSchedulerQueueClearingOnError(): Boolean = false
-
-  override fun enableSchedulerDelegateInvalidation(): Boolean = false
+  override fun enableResizeObserverByDefault(): Boolean = false
 
   override fun enableSwiftUIBasedFilters(): Boolean = false
 
@@ -137,9 +143,9 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxFrameRecordingEnabled(): Boolean = false
 
-  override fun fuseboxNetworkInspectionEnabled(): Boolean = true
+  override fun fuseboxScreenshotCaptureEnabled(): Boolean = true
 
-  override fun fuseboxScreenshotCaptureEnabled(): Boolean = false
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = false
 
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 

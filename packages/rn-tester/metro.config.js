@@ -12,7 +12,7 @@
 
 const {getDefaultConfig} = require('@react-native/metro-config');
 const {mergeConfig} = require('metro-config');
-const path = require('path');
+const path = require('node:path');
 
 /**
  * This cli config is needed for development purposes, e.g. for running
@@ -24,7 +24,7 @@ const config = {
   // Make Metro able to resolve required external dependencies
   watchFolders: [
     path.resolve(__dirname, '../../node_modules'),
-    path.resolve(__dirname, '../assets-registry'),
+    path.resolve(__dirname, '../asset-utils'),
     path.resolve(__dirname, '../community-cli-plugin'),
     path.resolve(__dirname, '../dev-middleware'),
     path.resolve(__dirname, '../new-app-screen'),
@@ -33,6 +33,8 @@ const config = {
     path.resolve(__dirname, '../react-native'),
     path.resolve(__dirname, '../virtualized-lists'),
     path.resolve(__dirname, '../react-native-popup-menu-android'),
+    path.resolve(__dirname, '../react-native-test-library/apple'),
+    path.resolve(__dirname, '../react-native-test-library/common'),
   ],
   resolver: {
     blockList: [/..\/react-native\/sdks\/hermes/],

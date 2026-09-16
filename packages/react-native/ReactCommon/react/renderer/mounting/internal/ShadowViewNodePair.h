@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/graphics/Point.h>
 #include <react/renderer/mounting/ShadowView.h>

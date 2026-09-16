@@ -14,6 +14,7 @@ add_library(react_renderer_dom OBJECT ${react_renderer_dom_SRC})
 target_include_directories(react_renderer_dom PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(react_renderer_dom
+        react_cxxstableapi
         react_renderer_core
         react_renderer_graphics
         rrc_root

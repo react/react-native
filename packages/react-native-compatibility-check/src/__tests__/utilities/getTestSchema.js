@@ -11,7 +11,7 @@
 import type {SchemaType} from '@react-native/codegen/src/CodegenSchema';
 
 import {FlowParser} from '@react-native/codegen/src/parsers/flow/parser';
-import path from 'path';
+import path from 'node:path';
 
 const flowParser = new FlowParser();
 

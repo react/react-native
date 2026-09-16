@@ -16,7 +16,7 @@ const {TypeScriptParser} = require('../../parser');
 
 const typeScriptParser = new TypeScriptParser();
 
-jest.mock('fs', () => ({
+jest.mock('node:fs', () => ({
   readFileSync: filename => {
     // Jest in the OSS does not allow to capture variables in closures.
     // Therefore, we have to bring the variables inside the closure.

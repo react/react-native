@@ -40,7 +40,7 @@ import java.util.HashMap
             DeviceEventManagerModule::class,
             ExceptionsManagerModule::class,
             HeadlessJsTaskSupportModule::class,
-        ]
+        ],
 )
 internal class CoreReactPackage(
     private val devSupportManager: DevSupportManager,

@@ -17,6 +17,12 @@ namespace facebook::react::jsinspector_modern {
 namespace {
 
 /**
+ * WebSocket frame opcodes for data messages (RFC 6455).
+ */
+constexpr int kWebSocketOpcodeText = 1;
+constexpr int kWebSocketOpcodeBinary = 2;
+
+/**
  * Get the current Unix timestamp in seconds (µs precision, CDP format).
  */
 double getCurrentUnixTimestampSeconds() {
@@ -198,6 +204,135 @@ void NetworkHandler::onLoadingFailed(
     sendToAllAgents(
         cdp::jsonNotification("Network.loadingFailed", params.toDynamic()));
   }
+}
+
+void NetworkHandler::onWebSocketCreated(
+    const std::string& requestId,
+    const std::string& url) {
+  if (!isEnabledNoSync()) {
+    return;
+  }
+
+  std::optional<folly::dynamic> initiator =
+      consumeStoredRequestInitiator(requestId);
+  auto params = cdp::network::WebSocketCreatedParams{
+      .requestId = requestId,
+      .url = url,
+      .initiator = initiator.has_value()
+          ? std::move(initiator.value())
+          : folly::dynamic::object("type", "script"),
+  };
+
+  sendToAllAgents(
+      cdp::jsonNotification("Network.webSocketCreated", params.toDynamic()));
+}
+
+void NetworkHandler::onWebSocketWillSendHandshakeRequest(
+    const std::string& requestId,
+    const Headers& headers) {
+  if (!isEnabledNoSync()) {
+    return;
+  }
+
+  double timestamp = getCurrentUnixTimestampSeconds();
+  auto params = cdp::network::WebSocketWillSendHandshakeRequestParams{
+      .requestId = requestId,
+      // NOTE: Both timestamp and wallTime use the same unit, however wallTime
+      // is relative to an "arbitrary epoch". In our implementation, use the
+      // Unix epoch for both.
+      .timestamp = timestamp,
+      .wallTime = timestamp,
+      .headers = headers,
+  };
+
+  sendToAllAgents(
+      cdp::jsonNotification(
+          "Network.webSocketWillSendHandshakeRequest", params.toDynamic()));
+}
+
+void NetworkHandler::onWebSocketHandshakeResponseReceived(
+    const std::string& requestId,
+    uint16_t status,
+    const Headers& headers) {
+  if (!isEnabledNoSync()) {
+    return;
+  }
+
+  auto params = cdp::network::WebSocketHandshakeResponseReceivedParams{
+      .requestId = requestId,
+      .timestamp = getCurrentUnixTimestampSeconds(),
+      .response =
+          cdp::network::WebSocketResponse::fromInputParams(status, headers),
+  };
+
+  sendToAllAgents(
+      cdp::jsonNotification(
+          "Network.webSocketHandshakeResponseReceived", params.toDynamic()));
+}
+
+void NetworkHandler::onWebSocketFrameSent(
+    const std::string& requestId,
+    const std::string& payloadData,
+    bool isBinary) {
+  if (!isEnabledNoSync()) {
+    return;
+  }
+
+  auto params = cdp::network::WebSocketFrameParams{
+      .requestId = requestId,
+      .timestamp = getCurrentUnixTimestampSeconds(),
+      .response =
+          {
+              .opcode =
+                  isBinary ? kWebSocketOpcodeBinary : kWebSocketOpcodeText,
+              // Client-to-server messages are always masked (RFC 6455).
+              .mask = true,
+              .payloadData = payloadData,
+          },
+  };
+
+  sendToAllAgents(
+      cdp::jsonNotification("Network.webSocketFrameSent", params.toDynamic()));
+}
+
+void NetworkHandler::onWebSocketFrameReceived(
+    const std::string& requestId,
+    const std::string& payloadData,
+    bool isBinary) {
+  if (!isEnabledNoSync()) {
+    return;
+  }
+
+  auto params = cdp::network::WebSocketFrameParams{
+      .requestId = requestId,
+      .timestamp = getCurrentUnixTimestampSeconds(),
+      .response =
+          {
+              .opcode =
+                  isBinary ? kWebSocketOpcodeBinary : kWebSocketOpcodeText,
+              // Server-to-client messages are never masked (RFC 6455).
+              .mask = false,
+              .payloadData = payloadData,
+          },
+  };
+
+  sendToAllAgents(
+      cdp::jsonNotification(
+          "Network.webSocketFrameReceived", params.toDynamic()));
+}
+
+void NetworkHandler::onWebSocketClosed(const std::string& requestId) {
+  if (!isEnabledNoSync()) {
+    return;
+  }
+
+  auto params = cdp::network::WebSocketClosedParams{
+      .requestId = requestId,
+      .timestamp = getCurrentUnixTimestampSeconds(),
+  };
+
+  sendToAllAgents(
+      cdp::jsonNotification("Network.webSocketClosed", params.toDynamic()));
 }
 
 void NetworkHandler::storeResponseBody(

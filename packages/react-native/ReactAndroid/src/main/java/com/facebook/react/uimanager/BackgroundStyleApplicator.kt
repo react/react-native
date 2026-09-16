@@ -63,7 +63,7 @@ public object BackgroundStyleApplicator {
    * @param color The color to set, or null to remove the background color
    */
   @JvmStatic
-  public fun setBackgroundColor(view: View, @ColorInt color: Int?): Unit {
+  public fun setBackgroundColor(view: View, @ColorInt color: Int?) {
     // No color to set, and no color already set
     if (
         (color == null || color == Color.TRANSPARENT) &&
@@ -85,12 +85,12 @@ public object BackgroundStyleApplicator {
   public fun setBackgroundImage(
       view: View,
       backgroundImageLayers: List<BackgroundImageLayer>?,
-  ): Unit {
+  ) {
     ensureBackgroundImageDrawable(view).backgroundImageLayers = backgroundImageLayers
   }
 
   @JvmStatic
-  internal fun setBackgroundSize(view: View, backgroundSizes: List<BackgroundSize>?): Unit {
+  internal fun setBackgroundSize(view: View, backgroundSizes: List<BackgroundSize>?) {
     ensureBackgroundImageDrawable(view).backgroundSize = backgroundSizes
   }
 
@@ -98,12 +98,12 @@ public object BackgroundStyleApplicator {
   internal fun setBackgroundPosition(
       view: View,
       backgroundPositions: List<BackgroundPosition>?,
-  ): Unit {
+  ) {
     ensureBackgroundImageDrawable(view).backgroundPosition = backgroundPositions
   }
 
   @JvmStatic
-  internal fun setBackgroundRepeat(view: View, backgroundRepeats: List<BackgroundRepeat>?): Unit {
+  internal fun setBackgroundRepeat(view: View, backgroundRepeats: List<BackgroundRepeat>?) {
     ensureBackgroundImageDrawable(view).backgroundRepeat = backgroundRepeats
   }
 
@@ -127,7 +127,7 @@ public object BackgroundStyleApplicator {
    * @param width The border width in DIPs, or null to remove
    */
   @JvmStatic
-  public fun setBorderWidth(view: View, edge: LogicalEdge, width: Float?): Unit {
+  public fun setBorderWidth(view: View, edge: LogicalEdge, width: Float?) {
     val composite = ensureCompositeBackgroundDrawable(view)
     composite.borderInsets = composite.borderInsets ?: BorderInsets()
     composite.borderInsets?.setBorderWidth(edge, width)
@@ -176,7 +176,7 @@ public object BackgroundStyleApplicator {
    * @param color The border color, or null to remove
    */
   @JvmStatic
-  public fun setBorderColor(view: View, edge: LogicalEdge, @ColorInt color: Int?): Unit {
+  public fun setBorderColor(view: View, edge: LogicalEdge, @ColorInt color: Int?) {
     ensureBorderDrawable(view).setBorderColor(edge, color)
   }
 
@@ -205,7 +205,7 @@ public object BackgroundStyleApplicator {
       view: View,
       corner: BorderRadiusProp,
       radius: LengthPercentage?,
-  ): Unit {
+  ) {
     val compositeBackgroundDrawable = ensureCompositeBackgroundDrawable(view)
     compositeBackgroundDrawable.borderRadius =
         compositeBackgroundDrawable.borderRadius ?: BorderRadiusStyle()
@@ -305,7 +305,7 @@ public object BackgroundStyleApplicator {
    * @param outlineOffset The outline offset in DIPs
    */
   @JvmStatic
-  public fun setOutlineOffset(view: View, outlineOffset: Float): Unit {
+  public fun setOutlineOffset(view: View, outlineOffset: Float) {
     val outline = ensureOutlineDrawable(view)
     outline.outlineOffset = outlineOffset.dpToPx()
   }
@@ -325,7 +325,7 @@ public object BackgroundStyleApplicator {
    * @param outlineStyle The outline style (solid, dashed, dotted), or null to remove
    */
   @JvmStatic
-  public fun setOutlineStyle(view: View, outlineStyle: OutlineStyle?): Unit {
+  public fun setOutlineStyle(view: View, outlineStyle: OutlineStyle?) {
     val outline = ensureOutlineDrawable(view)
     if (outlineStyle != null) {
       outline.outlineStyle = outlineStyle
@@ -368,8 +368,8 @@ public object BackgroundStyleApplicator {
    */
   @JvmStatic
   public fun setBoxShadow(view: View, shadows: List<BoxShadow>) {
-    var innerShadows = mutableListOf<InsetBoxShadowDrawable>()
-    var outerShadows = mutableListOf<OutsetBoxShadowDrawable>()
+    val innerShadows = mutableListOf<InsetBoxShadowDrawable>()
+    val outerShadows = mutableListOf<OutsetBoxShadowDrawable>()
 
     val compositeBackgroundDrawable = ensureCompositeBackgroundDrawable(view)
     val borderInsets = compositeBackgroundDrawable.borderInsets
@@ -398,7 +398,7 @@ public object BackgroundStyleApplicator {
                 offsetY = offsetY,
                 blurRadius = blurRadius,
                 spread = spreadDistance,
-            )
+            ),
         )
       } else if (!inset && Build.VERSION.SDK_INT >= MIN_OUTSET_BOX_SHADOW_SDK_VERSION) {
         outerShadows.add(
@@ -410,7 +410,7 @@ public object BackgroundStyleApplicator {
                 offsetY = offsetY,
                 blurRadius = blurRadius,
                 spread = spreadDistance,
-            )
+            ),
         )
       }
     }

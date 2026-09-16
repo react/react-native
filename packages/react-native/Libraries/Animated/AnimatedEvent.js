@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -21,9 +21,7 @@ import AnimatedValueXY from './nodes/AnimatedValueXY';
 import invariant from 'invariant';
 
 export type Mapping =
-  | {[key: string]: Mapping, ...}
-  | AnimatedValue
-  | AnimatedValueXY;
+  {[key: string]: Mapping, ...} | AnimatedValue | AnimatedValueXY;
 export type EventConfig<T> = {
   listener?: ?(NativeSyntheticEvent<T>) => unknown,
   useNativeDriver: boolean,
@@ -31,6 +29,7 @@ export type EventConfig<T> = {
 };
 
 export function attachNativeEventImpl(
+  // $FlowFixMe[unclear-type]
   viewRef: any,
   eventName: string,
   argMapping: ReadonlyArray<?Mapping>,
@@ -58,13 +57,20 @@ export function attachNativeEventImpl(
     }
   };
 
+  const firstMapping = argMapping[0];
+  const nativeEventMapping =
+    firstMapping != null &&
+    !(firstMapping instanceof AnimatedValue) &&
+    !(firstMapping instanceof AnimatedValueXY)
+      ? firstMapping.nativeEvent
+      : null;
   invariant(
-    argMapping[0] && argMapping[0].nativeEvent,
+    nativeEventMapping != null,
     'Native driven events only support animated values contained inside `nativeEvent`.',
   );
 
   // Assume that the event containing `nativeEvent` is always the first argument.
-  traverse(argMapping[0].nativeEvent, []);
+  traverse(nativeEventMapping, []);
 
   const viewTag = findNodeHandle(viewRef);
   if (viewTag != null) {
@@ -93,7 +99,9 @@ export function attachNativeEventImpl(
   };
 }
 
+// $FlowFixMe[unclear-type]
 function validateMapping(argMapping: ReadonlyArray<?Mapping>, args: any) {
+  // $FlowFixMe[unclear-type]
   const validate = (recMapping: ?Mapping, recEvt: any, key: string) => {
     if (recMapping instanceof AnimatedValue) {
       invariant(
@@ -147,35 +155,42 @@ function validateMapping(argMapping: ReadonlyArray<?Mapping>, args: any) {
 
 export class AnimatedEvent {
   _argMapping: ReadonlyArray<?Mapping>;
+  // $FlowFixMe[unclear-type]
   _listeners: Array<Function> = [];
   _attachedEvent: ?{detach: () => void, ...};
   __isNative: boolean;
   __platformConfig: ?PlatformConfig;
 
+  // $FlowFixMe[unclear-type]
   constructor(argMapping: ReadonlyArray<?Mapping>, config: EventConfig<any>) {
     this._argMapping = argMapping;
 
-    if (config == null) {
+    let resolvedConfig = config;
+    if (resolvedConfig == null) {
       console.warn('Animated.event now requires a second argument for options');
-      config = {useNativeDriver: false};
+      resolvedConfig = {useNativeDriver: false};
     }
 
-    if (config.listener) {
-      this.__addListener(config.listener);
+    if (resolvedConfig.listener) {
+      this.__addListener(resolvedConfig.listener);
     }
     this._attachedEvent = null;
-    this.__isNative = NativeAnimatedHelper.shouldUseNativeDriver(config);
-    this.__platformConfig = config.platformConfig;
+    this.__isNative =
+      NativeAnimatedHelper.shouldUseNativeDriver(resolvedConfig);
+    this.__platformConfig = resolvedConfig.platformConfig;
   }
 
+  // $FlowFixMe[unclear-type]
   __addListener(callback: Function): void {
     this._listeners.push(callback);
   }
 
+  // $FlowFixMe[unclear-type]
   __removeListener(callback: Function): void {
     this._listeners = this._listeners.filter(listener => listener !== callback);
   }
 
+  // $FlowFixMe[unclear-type]
   __attach(viewRef: any, eventName: string): void {
     invariant(
       this.__isNative,
@@ -190,6 +205,7 @@ export class AnimatedEvent {
     );
   }
 
+  // $FlowFixMe[unclear-type]
   __detach(viewTag: any, eventName: string): void {
     invariant(
       this.__isNative,
@@ -199,10 +215,12 @@ export class AnimatedEvent {
     this._attachedEvent && this._attachedEvent.detach();
   }
 
-  __getHandler(): any | ((...args: any) => void) {
+  // $FlowFixMe[unclear-type]
+  __getHandler(): (...args: any) => void {
     if (this.__isNative) {
       if (__DEV__) {
         let validatedMapping = false;
+        // $FlowFixMe[unclear-type]
         return (...args: any) => {
           if (!validatedMapping) {
             validateMapping(this._argMapping, args);
@@ -216,6 +234,7 @@ export class AnimatedEvent {
     }
 
     let validatedMapping = false;
+    // $FlowFixMe[unclear-type]
     return (...args: any) => {
       if (__DEV__ && !validatedMapping) {
         validateMapping(this._argMapping, args);
@@ -224,6 +243,7 @@ export class AnimatedEvent {
 
       const traverse = (
         recMapping: ?(Mapping | AnimatedValue),
+        // $FlowFixMe[unclear-type]
         recEvt: any,
       ) => {
         if (recMapping instanceof AnimatedValue) {
@@ -252,6 +272,7 @@ export class AnimatedEvent {
     };
   }
 
+  // $FlowFixMe[unclear-type]
   _callListeners = (...args: any) => {
     this._listeners.forEach(listener => listener(...args));
   };

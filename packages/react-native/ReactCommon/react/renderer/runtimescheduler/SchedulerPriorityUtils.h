@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <ReactCommon/SchedulerPriority.h>
 #include <react/debug/react_native_assert.h>
 #include <react/timing/primitives.h>

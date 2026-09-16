@@ -97,18 +97,9 @@ void PropsAnimatedNode::restoreDefaultValues() {
   }
 }
 
-void PropsAnimatedNode::update() {
-  return update(false);
-}
-
-void PropsAnimatedNode::update(bool forceFabricCommit) {
-  if (connectedViewTag_ == animated::undefinedAnimatedNodeIdentifier) {
-    return;
-  }
-
+void PropsAnimatedNode::collectPropsLocked() {
   // TODO: T190192206 consolidate shared update logic between
   // Props/StyleAnimatedNode
-  std::lock_guard<std::mutex> lock(propsMutex_);
   const auto& configProps = getConfig()["props"];
   for (const auto& entry : configProps.items()) {
     auto propName = entry.first.asString();
@@ -164,6 +155,28 @@ void PropsAnimatedNode::update(bool forceFabricCommit) {
   }
 
   layoutStyleUpdated_ = isLayoutStyleUpdated(getConfig()["props"], *manager_);
+}
+
+void PropsAnimatedNode::collectProps() {
+  if (connectedViewTag_ == animated::undefinedAnimatedNodeIdentifier) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(propsMutex_);
+  collectPropsLocked();
+}
+
+void PropsAnimatedNode::update() {
+  return update(false);
+}
+
+void PropsAnimatedNode::update(bool forceFabricCommit) {
+  if (connectedViewTag_ == animated::undefinedAnimatedNodeIdentifier) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(propsMutex_);
+  collectPropsLocked();
 
   if (manager_->useSharedAnimatedBackend()) {
     manager_->schedulePropsCommit(

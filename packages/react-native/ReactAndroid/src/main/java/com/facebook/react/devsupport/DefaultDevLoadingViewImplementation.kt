@@ -28,7 +28,7 @@ import java.util.Locale
  * screen. All methods are thread safe.
  */
 public class DefaultDevLoadingViewImplementation(
-    private val reactInstanceDevHelper: ReactInstanceDevHelper
+    private val reactInstanceDevHelper: ReactInstanceDevHelper,
 ) : DevLoadingViewManager {
   private var devLoadingView: TextView? = null
   private var devLoadingPopup: PopupWindow? = null

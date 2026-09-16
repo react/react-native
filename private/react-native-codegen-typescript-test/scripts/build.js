@@ -9,8 +9,8 @@
  * @noflow
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function repositoryPath(relativePath) {
   return path.join(__dirname, '..', '..', '..', relativePath);

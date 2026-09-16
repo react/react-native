@@ -73,7 +73,7 @@ internal class PackagerStatusCheck(private val client: OkHttpClient) {
                 }
                 callback.onPackagerStatusFetched(true)
               }
-            }
+            },
         )
   }
 

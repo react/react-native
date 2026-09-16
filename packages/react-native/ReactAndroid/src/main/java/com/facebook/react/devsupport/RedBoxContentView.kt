@@ -139,7 +139,7 @@ internal class RedBoxContentView(
         holder.fileView.text = StackTraceHelper.formatFrameSource(frame)
         holder.methodView.setTextColor(if (frame.isCollapsed) 0xFFAAAAAA.toInt() else Color.WHITE)
         holder.fileView.setTextColor(
-            if (frame.isCollapsed) 0xFF808080.toInt() else 0xFFB3B3B3.toInt()
+            if (frame.isCollapsed) 0xFF808080.toInt() else 0xFFB3B3B3.toInt(),
         )
         return frameView
       }
@@ -188,7 +188,7 @@ internal class RedBoxContentView(
                   "methodName" to frame.method,
                   "lineNumber" to frame.line,
                   "column" to frame.column,
-              )
+              ),
           )
     }
   }

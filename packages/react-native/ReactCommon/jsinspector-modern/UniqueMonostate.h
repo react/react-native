@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <functional>
 
 namespace facebook::react::jsinspector_modern {

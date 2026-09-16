@@ -328,7 +328,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
             }
             return false
           }
-        }
+        },
     )
 
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
@@ -395,6 +395,9 @@ public class ReactModalHostView(context: ThemedReactContext) :
       // Navigation bar cannot be translucent without status bar being translucent too
       if (navigationBarTranslucent) {
         dialogWindow.enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && transparent) {
+          dialogWindow.isNavigationBarContrastEnforced = false
+        }
       } else {
         dialogWindow.disableEdgeToEdge()
         dialogWindow.setStatusBarTranslucency(statusBarTranslucent)
@@ -567,7 +570,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
                       .getNativeModule(UIManagerModule::class.java)
                       ?.updateNodeSize(id, viewWidth, viewHeight)
                 }
-              }
+              },
           )
         }
       }

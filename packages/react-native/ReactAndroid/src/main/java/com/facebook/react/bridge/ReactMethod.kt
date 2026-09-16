@@ -30,5 +30,5 @@ public annotation class ReactMethod(
      * [WritableArray]). Calling these methods when running under the websocket executor is
      * currently not supported.
      */
-    public val isBlockingSynchronousMethod: Boolean = false
+    public val isBlockingSynchronousMethod: Boolean = false,
 )

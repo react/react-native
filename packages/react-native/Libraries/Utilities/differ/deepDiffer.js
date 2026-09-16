@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -29,8 +29,8 @@ function unstable_setLogListeners(listeners: ?LogListeners) {
  * @returns {bool} true if different, false if equal
  */
 function deepDiffer(
-  one: any,
-  two: any,
+  one: unknown,
+  two: unknown,
   maxDepthOrOptions: Options | number = -1,
   maybeOptions?: Options,
 ): boolean {
@@ -73,7 +73,9 @@ function deepDiffer(
     return true;
   }
   if (Array.isArray(one)) {
-    // We know two is also an array because the constructors are equal
+    if (!Array.isArray(two)) {
+      return true;
+    }
     const len = one.length;
     if (two.length !== len) {
       return true;

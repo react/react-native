@@ -8,10 +8,10 @@
  * @noflow
  */
 
-const fs = require('fs');
 const {sync: makeDirSync} = require('make-dir');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const packageJson = JSON.parse(
   fs.readFileSync(require.resolve('../package.json'), 'utf8'),

@@ -425,4 +425,76 @@ TEST(CSSTransformOrigin, percentage_percentage) {
   EXPECT_EQ(origin.z, CSSLength{});
 }
 
+TEST(CSSTransformOrigin, decimal_length_length) {
+  auto val = parseCSSProperty<CSSTransformOrigin>("12.5px 7.5px");
+  EXPECT_TRUE(std::holds_alternative<CSSTransformOrigin>(val));
+  auto& origin = std::get<CSSTransformOrigin>(val);
+
+  EXPECT_TRUE(std::holds_alternative<CSSLength>(origin.x));
+  EXPECT_EQ(std::get<CSSLength>(origin.x).value, 12.5f);
+  EXPECT_EQ(std::get<CSSLength>(origin.x).unit, CSSLengthUnit::Px);
+
+  EXPECT_TRUE(std::holds_alternative<CSSLength>(origin.y));
+  EXPECT_EQ(std::get<CSSLength>(origin.y).value, 7.5f);
+  EXPECT_EQ(std::get<CSSLength>(origin.y).unit, CSSLengthUnit::Px);
+
+  EXPECT_EQ(origin.z, CSSLength{});
+}
+
+TEST(CSSTransformOrigin, decimal_percentage_percentage) {
+  auto val = parseCSSProperty<CSSTransformOrigin>("50.5% 30.2%");
+  EXPECT_TRUE(std::holds_alternative<CSSTransformOrigin>(val));
+  auto& origin = std::get<CSSTransformOrigin>(val);
+
+  EXPECT_TRUE(std::holds_alternative<CSSPercentage>(origin.x));
+  EXPECT_EQ(std::get<CSSPercentage>(origin.x).value, 50.5f);
+
+  EXPECT_TRUE(std::holds_alternative<CSSPercentage>(origin.y));
+  EXPECT_EQ(std::get<CSSPercentage>(origin.y).value, 30.2f);
+
+  EXPECT_EQ(origin.z, CSSLength{});
+}
+
+TEST(CSSTransformOrigin, negative_lengths) {
+  auto value = parseCSSProperty<CSSTransformOrigin>("-12.5px -7.5px -2.5px");
+  EXPECT_TRUE(std::holds_alternative<CSSTransformOrigin>(value));
+  auto& origin = std::get<CSSTransformOrigin>(value);
+
+  EXPECT_TRUE(std::holds_alternative<CSSLength>(origin.x));
+  EXPECT_EQ(std::get<CSSLength>(origin.x).value, -12.5f);
+  EXPECT_EQ(std::get<CSSLength>(origin.x).unit, CSSLengthUnit::Px);
+
+  EXPECT_TRUE(std::holds_alternative<CSSLength>(origin.y));
+  EXPECT_EQ(std::get<CSSLength>(origin.y).value, -7.5f);
+  EXPECT_EQ(std::get<CSSLength>(origin.y).unit, CSSLengthUnit::Px);
+
+  EXPECT_EQ(origin.z.value, -2.5f);
+  EXPECT_EQ(origin.z.unit, CSSLengthUnit::Px);
+}
+
+TEST(CSSTransformOrigin, negative_percentages) {
+  auto value = parseCSSProperty<CSSTransformOrigin>("-50.5% -30.2%");
+  EXPECT_TRUE(std::holds_alternative<CSSTransformOrigin>(value));
+  auto& origin = std::get<CSSTransformOrigin>(value);
+
+  EXPECT_TRUE(std::holds_alternative<CSSPercentage>(origin.x));
+  EXPECT_EQ(std::get<CSSPercentage>(origin.x).value, -50.5f);
+
+  EXPECT_TRUE(std::holds_alternative<CSSPercentage>(origin.y));
+  EXPECT_EQ(std::get<CSSPercentage>(origin.y).value, -30.2f);
+}
+
+TEST(CSSTransformOrigin, negative_leading_dot_values) {
+  auto value = parseCSSProperty<CSSTransformOrigin>("-.5% -.5px");
+  EXPECT_TRUE(std::holds_alternative<CSSTransformOrigin>(value));
+  auto& origin = std::get<CSSTransformOrigin>(value);
+
+  EXPECT_TRUE(std::holds_alternative<CSSPercentage>(origin.x));
+  EXPECT_EQ(std::get<CSSPercentage>(origin.x).value, -0.5f);
+
+  EXPECT_TRUE(std::holds_alternative<CSSLength>(origin.y));
+  EXPECT_EQ(std::get<CSSLength>(origin.y).value, -0.5f);
+  EXPECT_EQ(std::get<CSSLength>(origin.y).unit, CSSLengthUnit::Px);
+}
+
 } // namespace facebook::react

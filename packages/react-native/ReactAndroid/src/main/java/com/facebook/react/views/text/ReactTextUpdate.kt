@@ -11,15 +11,15 @@ import android.text.Spanned
 
 /** Class that contains the data needed for a text update. Used by both <Text/> and <TextInput/>. */
 internal class ReactTextUpdate(
-    public val text: Spanned,
-    public val jsEventCounter: Int,
-    public val textAlign: Int,
-    public val textBreakStrategy: Int,
-    public val justificationMode: Int,
+    val text: Spanned,
+    val jsEventCounter: Int,
+    val textAlign: Int,
+    val textBreakStrategy: Int,
+    val justificationMode: Int,
 ) {
-  public companion object {
+  companion object {
     @JvmStatic
-    public fun buildReactTextUpdateFromState(
+    fun buildReactTextUpdateFromState(
         text: Spanned,
         jsEventCounter: Int,
         textAlign: Int,

@@ -31,20 +31,23 @@ module.exports.getCacheKey = () => {
   // For anyone working with a `-main` version, contents may vary over time
   // even though the version does not. Hash the relevant contents of this
   // package. Lazy-load dependencies we only need on this slow path.
-  const {createHash} = require('crypto');
-  const {readFileSync} = require('fs');
+  const {createHash} = require('node:crypto');
+  const {readFileSync} = require('node:fs');
   const key = createHash('md5');
   [
+    readFileSync(require.resolve('../package.json')),
     readFileSync(__filename),
     readFileSync(require.resolve('./configs/main.js')),
     readFileSync(require.resolve('./configs/hmr.js')),
     readFileSync(require.resolve('./configs/lazy-imports.js')),
     readFileSync(require.resolve('./passthrough-syntax-plugins.js')),
     readFileSync(require.resolve('./plugin-warn-on-deep-imports.js')),
+    readFileSync(require.resolve('./inline-platform-plugin.js')),
   ].forEach(part => key.update(part));
   cacheKey = key.digest('hex');
   return cacheKey;
 };
 
 module.exports.getPreset = main.getPreset;
+module.exports.inlinePlatformPlugin = require('./inline-platform-plugin');
 module.exports.passthroughSyntaxPlugins = require('./passthrough-syntax-plugins');

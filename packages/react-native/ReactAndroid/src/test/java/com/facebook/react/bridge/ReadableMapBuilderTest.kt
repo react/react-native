@@ -35,7 +35,7 @@ import org.robolectric.annotation.Config
             ShadowWritableNativeArray::class,
             ShadowReadableNativeMap::class,
             ShadowReadableNativeArray::class,
-        ]
+        ],
 )
 class ReadableMapBuilderTest {
 

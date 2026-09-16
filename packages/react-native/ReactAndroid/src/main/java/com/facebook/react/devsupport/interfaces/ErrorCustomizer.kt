@@ -16,6 +16,6 @@ public fun interface ErrorCustomizer {
    * is called before passing the error to the RedBox.
    */
   public fun customizeErrorInfo(
-      errorInfo: Pair<String, Array<StackFrame>>
+      errorInfo: Pair<String, Array<StackFrame>>,
   ): Pair<String, Array<StackFrame>>
 }

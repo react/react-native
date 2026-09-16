@@ -14,6 +14,7 @@
 #import <React/NSTextStorage+FontScaling.h>
 #import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/textlayoutmanager/TextMeasurementRounding.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <react/utils/SimpleThreadSafeCache.h>
 
@@ -66,6 +67,64 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                      paragraphAttributes:paragraphAttributes
                            layoutContext:layoutContext
                        layoutConstraints:layoutConstraints];
+}
+
+- (CGRect)drawingFrameForAttributedString:(AttributedString)attributedString
+                      paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                    frame:(CGRect)frame
+                           containerFrame:(CGRect *)containerFrame
+{
+  if (containerFrame != nullptr) {
+    *containerFrame = frame;
+  }
+
+  if (!ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment()) {
+    return frame;
+  }
+
+  NSTextStorage *textStorage = [self
+      _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
+                                   paragraphAttributes:paragraphAttributes
+                                                  size:frame.size];
+  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+  [layoutManager ensureLayoutForTextContainer:textContainer];
+
+  NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+  [self processTruncatedAttributedText:textStorage textContainer:textContainer layoutManager:layoutManager];
+
+  __block CGFloat maximumLineHeight = 0;
+  [textStorage enumerateAttribute:NSParagraphStyleAttributeName
+                          inRange:NSMakeRange(0, textStorage.length)
+                          options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+                       usingBlock:^(NSParagraphStyle *paragraphStyle, __unused NSRange range, __unused BOOL *stop) {
+                         if (paragraphStyle != nil) {
+                           maximumLineHeight = MAX(paragraphStyle.maximumLineHeight, maximumLineHeight);
+                         }
+                       }];
+  if (maximumLineHeight == 0 || glyphRange.length == 0) {
+    return frame;
+  }
+
+  CGRect glyphBounds = [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
+  CGFloat glyphHeight = CGRectGetMaxY(glyphBounds) - MIN(glyphBounds.origin.y, 0);
+  CGFloat drawingHeight = MAX(frame.size.height, glyphHeight);
+  CGFloat extraHeight = drawingHeight - frame.size.height;
+
+  CGRect localContainerFrame = frame;
+  localContainerFrame.origin.y -= extraHeight / 2.0;
+  localContainerFrame.size.height = drawingHeight;
+  if (containerFrame != nullptr) {
+    *containerFrame = localContainerFrame;
+  }
+
+  CGRect drawingFrame = frame;
+  drawingFrame.size.height = drawingHeight;
+  drawingFrame.origin.y = localContainerFrame.origin.y;
+  if (glyphBounds.origin.y < 0) {
+    drawingFrame.origin.y += (drawingHeight - glyphBounds.size.height) / 2.0 - glyphBounds.origin.y;
+  }
+  return drawingFrame;
 }
 
 - (void)drawAttributedString:(AttributedString)attributedString
@@ -341,9 +400,11 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                          .width = usedRect.size.width, .height = usedRect.size.height}};
 
                                  CGFloat baseline = [layoutManager locationForGlyphAtIndex:range.location].y;
-                                 const char *renderedUTF8 = [renderedString UTF8String];
+                                 NSData *renderedData = [renderedString dataUsingEncoding:NSUTF8StringEncoding];
                                  auto line = LineMeasurement{
-                                     std::string(renderedUTF8 != nullptr ? renderedUTF8 : ""),
+                                     std::string(
+                                         renderedData != nil ? static_cast<const char *>(renderedData.bytes) : "",
+                                         renderedData != nil ? renderedData.length : 0),
                                      rect,
                                      overallRect.size.height - baseline,
                                      font.capHeight,
@@ -504,9 +565,10 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                  }
                                }];
 
-  CGSize size = [layoutManager usedRectForTextContainer:textContainer].size;
+  CGRect usedBounds = [layoutManager usedRectForTextContainer:textContainer];
+  CGSize size = usedBounds.size;
 
-  if (textDidWrap) {
+  if (textDidWrap && paragraphAttributes.textWidthMode == TextWidthMode::Auto) {
     size.width = textContainer.size.width;
   }
 
@@ -522,8 +584,11 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
     size.height = enumeratedLinesHeight;
   }
 
-  size = (CGSize){ceil(size.width * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor,
-                  ceil(size.height * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor};
+  facebook::react::Size roundedSize = facebook::react::internal_roundTextMeasurementToPixelGrid(
+      {.width = static_cast<facebook::react::Float>(size.width),
+       .height = static_cast<facebook::react::Float>(size.height)},
+      layoutContext.pointScaleFactor);
+  size = CGSize{roundedSize.width, roundedSize.height};
 
   NSRange visibleGlyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
 

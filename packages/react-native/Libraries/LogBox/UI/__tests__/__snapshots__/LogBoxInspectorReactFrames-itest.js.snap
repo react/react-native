@@ -1,0 +1,475 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorReactFrames should render componentStack frames with full path pressable 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Component Stack
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    flex="1"
+    paddingHorizontal="10"
+    paddingVertical="4"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontFamily="monospace"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="18"
+      nativeID="logbox_component_stack_frame_text"
+      overflow="hidden"
+    >
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+        &lt;
+      </rn-text>
+      MyComponent
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+         /&gt;
+      </rn-text>
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+      paddingLeft="10"
+    >
+      MyComponentFile.js:1
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      lineHeight="20"
+      marginTop="0"
+      overflow="hidden"
+      paddingHorizontal="10"
+      paddingVertical="5"
+    />
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorReactFrames should render componentStack frames with more than 3 stacks 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Component Stack
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    flex="1"
+    paddingHorizontal="10"
+    paddingVertical="4"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontFamily="monospace"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="18"
+      nativeID="logbox_component_stack_frame_text"
+      overflow="hidden"
+    >
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+        &lt;
+      </rn-text>
+      MyComponent
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+         /&gt;
+      </rn-text>
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+      paddingLeft="10"
+    >
+      to/​index.js:1
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    flex="1"
+    paddingHorizontal="10"
+    paddingVertical="4"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontFamily="monospace"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="18"
+      nativeID="logbox_component_stack_frame_text"
+      overflow="hidden"
+    >
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+        &lt;
+      </rn-text>
+      MyComponent2
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+         /&gt;
+      </rn-text>
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+      paddingLeft="10"
+    >
+      index2.js:1
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    flex="1"
+    paddingHorizontal="10"
+    paddingVertical="4"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontFamily="monospace"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="18"
+      nativeID="logbox_component_stack_frame_text"
+      overflow="hidden"
+    >
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+        &lt;
+      </rn-text>
+      MyComponent3
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+         /&gt;
+      </rn-text>
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+      paddingLeft="10"
+    >
+      index3.js:1
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      lineHeight="20"
+      marginTop="0"
+      overflow="hidden"
+      paddingHorizontal="10"
+      paddingVertical="5"
+    >
+      See 1 more components
+    </rn-paragraph>
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorReactFrames should render componentStack frames with parent folder of index.js 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Component Stack
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    flex="1"
+    paddingHorizontal="10"
+    paddingVertical="4"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontFamily="monospace"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="18"
+      nativeID="logbox_component_stack_frame_text"
+      overflow="hidden"
+    >
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+        &lt;
+      </rn-text>
+      MyComponent
+      <rn-text
+        allowFontScaling="true"
+        fontFamily="monospace"
+        fontWeight="500"
+        foregroundColor="rgba(255, 255, 255, 0.4)"
+        layoutDirection="ltr"
+        lineHeight="18"
+      >
+         /&gt;
+      </rn-text>
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+      paddingLeft="10"
+    >
+      to/​index.js:1
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      lineHeight="20"
+      marginTop="0"
+      overflow="hidden"
+      paddingHorizontal="10"
+      paddingVertical="5"
+    />
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorReactFrames should render componentStack frames without full path pressable 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Component Stack
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontFamily="monospace"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="18"
+    nativeID="logbox_component_stack_frame_text"
+    overflow="hidden"
+  >
+    <rn-text
+      allowFontScaling="true"
+      fontFamily="monospace"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 0.4)"
+      layoutDirection="ltr"
+      lineHeight="18"
+    >
+      &lt;
+    </rn-text>
+    MyComponent
+    <rn-text
+      allowFontScaling="true"
+      fontFamily="monospace"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 0.4)"
+      layoutDirection="ltr"
+      lineHeight="18"
+    >
+       /&gt;
+    </rn-text>
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="12"
+    fontSizeMultiplier="NaN"
+    fontWeight="300"
+    foregroundColor="rgba(255, 255, 255, 0.701961)"
+    includeFontPadding="false"
+    lineHeight="16"
+    overflow="hidden"
+    paddingLeft="10"
+  >
+    MyComponentFile.js:1
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      lineHeight="20"
+      marginTop="0"
+      overflow="hidden"
+      paddingHorizontal="10"
+      paddingVertical="5"
+    />
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorReactFrames should render null for no componentStack frames 1`] = `null`;

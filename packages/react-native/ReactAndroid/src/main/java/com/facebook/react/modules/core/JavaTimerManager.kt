@@ -32,8 +32,6 @@ import kotlin.math.sign
 /**
  * This class is the native implementation for JS timer execution on Android. It schedules JS timers
  * to be invoked on frame boundaries using [ReactChoreographer].
- *
- * This is used by the NativeModule [TimingModule].
  */
 public open class JavaTimerManager(
     private val reactApplicationContext: ReactApplicationContext,
@@ -214,7 +212,7 @@ public open class JavaTimerManager(
       if (driftTime > 60000) {
         javaScriptTimerExecutor.emitTimeDriftWarning(
             "Debugger and device times have drifted by more than 60s. Please correct this by " +
-                "running adb shell \"date `date +%m%d%H%M%Y.%S`\" on your debugger machine."
+                "running adb shell \"date `date +%m%d%H%M%Y.%S`\" on your debugger machine.",
         )
       }
     }
@@ -294,7 +292,7 @@ public open class JavaTimerManager(
       val frameTimeMillis = frameTimeNanos / 1000000
       synchronized(timerGuard) {
         while (!timers.isEmpty() && timers.peek()!!.targetTime < frameTimeMillis) {
-          var timer = timers.poll()
+          val timer = timers.poll()
           if (timer == null) {
             break
           }
@@ -352,7 +350,7 @@ public open class JavaTimerManager(
       if (FRAME_DURATION_MS - frameTimeElapsed.toFloat() < IDLE_CALLBACK_FRAME_DEADLINE_MS) {
         return
       }
-      var sendIdleEvents: Boolean
+      val sendIdleEvents: Boolean
       synchronized(idleCallbackGuard) { sendIdleEvents = this@JavaTimerManager.sendIdleEvents }
       if (sendIdleEvents) {
         javaScriptTimerExecutor.callIdleCallbacks(absoluteFrameStartTime.toDouble())

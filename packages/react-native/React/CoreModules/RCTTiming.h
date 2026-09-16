@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import <React/RCTBridgeModule.h>
 #import <React/RCTFrameUpdate.h>
 #import <React/RCTInitializing.h>
 #import <React/RCTInvalidating.h>
@@ -22,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface RCTTiming : NSObject <RCTBridgeModule, RCTInvalidating, RCTFrameUpdateObserver, RCTInitializing>
+@interface RCTTiming : NSObject <RCTInvalidating, RCTFrameUpdateObserver, RCTInitializing>
 
 - (instancetype)initWithDelegate:(id<RCTTimingDelegate>)delegate;
 - (void)createTimerForNextFrame:(NSNumber *)callbackID

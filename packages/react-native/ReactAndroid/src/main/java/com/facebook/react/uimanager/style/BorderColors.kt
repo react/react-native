@@ -43,7 +43,7 @@ internal data class ColorEdges(
  */
 @JvmInline
 internal value class BorderColors(
-    @param:ColorInt val edgeColors: Array<Int?> = arrayOfNulls<Int?>(LogicalEdge.values().size)
+    @param:ColorInt val edgeColors: Array<Int?> = arrayOfNulls<Int?>(LogicalEdge.values().size),
 ) {
 
   /**

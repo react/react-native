@@ -14,8 +14,8 @@ import type {ExceptionData} from '../NativeExceptionsManager';
 
 const ExceptionsManager = require('../ExceptionsManager').default;
 const ReactFiberErrorDialog = require('../ReactFiberErrorDialog').default;
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const capturedErrorDefaults = {
   componentName: 'A',

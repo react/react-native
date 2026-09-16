@@ -1,0 +1,127 @@
+# @ref LLP 0009#workflow-security-posture — auto-review workflow; base-only checkout, npx-published engine
+name: AI code review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+# Comment-only: read the repo, write PR comments (issue comments API).
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ai-code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    env:
+      # Version of the published engine used for BOTH the guard and the review, so
+      # the guard that clears a config is the same engine that then reads it. Override
+      # with repo variable ECR_VERSION; pin to a specific version to freeze it.
+      ECR_VERSION: ${{ vars.ECR_VERSION || '0.14.0' }}
+    # Auto-review only labeled same-repository branches. GitHub withholds the model
+    # secret and write token from fork pull_request jobs; maintainers can use /review
+    # for forks through the base-context issue_comment workflow.
+    # @ref LLP 0009#guard-step-ordering-and-job-budgets [explains] — exact label and fork gates avoid guaranteed no-op runners
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'ai-review') &&
+      !contains(github.event.pull_request.labels.*.name, 'ai-review:skip') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    # Backstop so a stalled review fails fast instead of hanging. This is the ONE cap
+    # with no soft landing (GitHub hard-kills the job and nothing is posted), so keep
+    # margin over the worst-case internal chain: the passes budget
+    # (budget.totalPassesMinutes, 55m — the cross-file pass expands to fill it) +
+    # coordinator (10m) + verification + CI setup.
+    # @ref LLP 0009#guard-step-ordering-and-job-budgets [constrained-by] — the one cap with no soft landing
+    timeout-minutes: 90
+    # A reviewer failure must never fail the PR's checks.
+    continue-on-error: true
+    steps:
+      # SECURITY: check out the PR's immutable BASE commit, never the PR head or
+      # merge ref. Everything security-sensitive on this runner (`ecr verify-config`'s
+      # sweep, and any ambient files) therefore comes from a commit that already
+      # merged. `ecr ci` additionally enforces this itself: it materializes the base
+      # commit via the GitHub API for configuration and the head commit (scrubbed of
+      # runtime config) for source reads, so this checkout is defense in depth, not
+      # the only line. persist-credentials off — the CLI's own git fetches
+      # authenticate through `gh` from GH_TOKEN, so the token never lands in
+      # .git/config.
+      # @ref LLP 0009#workflow-security-posture [implements] — immutable base commit, never PR head/merge ref
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          # Shallow is enough — the reviewer gets the diff from the API (`gh`).
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          # The reviewer runs via npx and never installs with a package manager, so
+          # disable setup-node's auto package-manager cache (its post step would try
+          # to save an empty cache and error).
+          package-manager-cache: false
+
+      # SECURITY: the TRUSTED BASE checkout above includes every
+      # .expo-code-review/config.jsonc + routing.jsonc, whose auth.tokenEnv names the
+      # env var the CLI forwards as the model credential. The canonical guard ships
+      # with the CLI: `ecr verify-config` sweeps every config (root + routing + all
+      # scopes, referenced or not) with the engine's real JSONC parser and refuses
+      # unless tokenEnv appears exactly once, in a ROOT-owned file, equal to the
+      # expected value (repo var ECR_EXPECTED_TOKEN_ENV) — so a config change can't
+      # repoint it at another runner secret, sneak in a JSON-escaped key, or stage an
+      # unreferenced scope config with its own auth. This is layer 2; layer 1 is the
+      # runtime ECR_EXPECTED_TOKEN_ENV lock in `ecr ci` itself, so guard/loader drift
+      # fails safe.
+      #
+      # This step MUST run BEFORE `ecr ci` (before any PR code is built or loaded).
+      # Only setup-node (runtime install) precedes it; running the PUBLISHED package
+      # via npx is safe pre-review because npx fetches @expo/code-review-cli@$ECR_VERSION
+      # from the registry — it never builds or executes the PR's code.
+      # @ref LLP 0009#guard-step-ordering-and-job-budgets [implements] — layer 2; layer 1 is ecr ci's own runtime check
+      - name: Guard config tokenEnv (root + routing + all scopes)
+        env:
+          # (Comma-separated set for a multi-credential auth.providers config.)
+          ECR_EXPECTED_TOKEN_ENV: ${{ vars.ECR_EXPECTED_TOKEN_ENV || 'META_API_KEY' }}
+        run: npx --yes -p "@expo/code-review-cli@$ECR_VERSION" ecr verify-config
+
+      - name: Run AI review
+        # npx installs @expo/code-review-cli and its bundled `opencode` binary and
+        # puts them on PATH for this process — the SAME $ECR_VERSION the guard cleared.
+        run: npx --yes -p "@expo/code-review-cli@$ECR_VERSION" ecr ci
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Layer-1 auth lock: the CLI refuses to run when the tokenEnv it would
+          # honor (root config.jsonc, or routing.jsonc defaults.auth) differs from
+          # this — it catches what the guard step above can't. Keep it in sync
+          # with the guard.
+          ECR_EXPECTED_TOKEN_ENV: ${{ vars.ECR_EXPECTED_TOKEN_ENV || 'META_API_KEY' }}
+          # Model credential — the env var named by auth.tokenEnv in config.jsonc.
+          # Store each as a repo secret under the same name.
+          # Updated per your setting: secret is EXPO_CODE_REVIEW_API_KEY, forwarded as META_API_KEY
+          META_API_KEY: ${{ secrets.EXPO_CODE_REVIEW_API_KEY }}
+          # Optional search-only credential for trusted platform documentation research.
+          BRAVE_SEARCH_API_KEY: ${{ secrets.EXPO_BRAVE_SEARCH_API_KEY }}
+          # Optional: override the model for every agent.
+          REVIEWER_MODEL: ${{ vars.REVIEWER_MODEL }}
+
+      # Observability: the per-run log (token/cache/cost totals + per-pass timing +
+      # coverage notes) is written under .expo-code-review/.runs/ but git-ignored, so
+      # in CI it is otherwise ephemeral — gone when the runner is torn down. Upload it
+      # as an artifact so a reviewer run can be inspected after the fact (why a finding
+      # did/didn't surface, cache-reuse, spend). always() so it is captured even when
+      # the review step timed out or errored; if-no-files-found: ignore because a run
+      # that failed before writing the log (or a no-op skip) legitimately has no file.
+      - name: Upload review run log
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: review-run-log-pr${{ github.event.pull_request.number }}
+          path: .expo-code-review/.runs/reviews.jsonl
+          if-no-files-found: ignore
+          retention-days: 14

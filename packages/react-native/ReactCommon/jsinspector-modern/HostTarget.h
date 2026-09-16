@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "ExecutionContextManager.h"
 #include "HostCommand.h"
 #include "InspectorInterfaces.h"
@@ -17,6 +19,7 @@
 #include "WeakList.h"
 
 #include <functional>
+#include <mutex>
 #include <optional>
 #include <set>
 #include <string>

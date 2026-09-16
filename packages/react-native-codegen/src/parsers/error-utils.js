@@ -27,6 +27,7 @@ const {
   UnsupportedArrayElementTypeAnnotationParserError,
   UnsupportedFunctionParamTypeAnnotationParserError,
   UnsupportedFunctionReturnTypeAnnotationParserError,
+  UnsupportedModuleEventEmitterPayloadTypeParserError,
   UnsupportedModuleEventEmitterPropertyParserError,
   UnsupportedModuleEventEmitterTypePropertyParserError,
   UnsupportedModulePropertyParserError,
@@ -192,6 +193,25 @@ function throwIfEventEmitterEventTypeIsUnsupported(
       propertyValueType,
       parser.language(),
       nullable,
+    );
+  }
+}
+
+// ArrayBuffer is not emittable on any platform: Android emitters always carry a
+// folly::dynamic payload, which cannot hold raw bytes, and neither the ObjC nor
+// the C++ emitter contract can hand out a buffer that outlives the emit call.
+function throwIfEventEmitterPayloadTypeIsUnsupported(
+  nativeModuleName: string,
+  propertyValue: $FlowFixMe,
+  propertyName: string,
+  payloadTypeAnnotation: NativeModuleTypeAnnotation,
+) {
+  if (payloadTypeAnnotation.type === 'ArrayBufferTypeAnnotation') {
+    throw new UnsupportedModuleEventEmitterPayloadTypeParserError(
+      nativeModuleName,
+      propertyValue,
+      propertyName,
+      'ArrayBuffer',
     );
   }
 }
@@ -418,6 +438,7 @@ module.exports = {
   throwIfUntypedModule,
   throwIfEventEmitterTypeIsUnsupported,
   throwIfEventEmitterEventTypeIsUnsupported,
+  throwIfEventEmitterPayloadTypeIsUnsupported,
   throwIfModuleTypeIsUnsupported,
   throwIfMoreThanOneModuleInterfaceParserError,
   throwIfUnsupportedFunctionParamTypeAnnotationParserError,

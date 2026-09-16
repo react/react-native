@@ -24,8 +24,8 @@ const {
   validateDotSlashArtifactData,
 } = require('./utils/dotslash-utils');
 const {diff: jestDiff} = require('jest-diff');
-const path = require('path');
-const {parseArgs} = require('util');
+const path = require('node:path');
+const {parseArgs} = require('node:util');
 
 const FIRST_PARTY_DOTSLASH_FILES = [
   'packages/debugger-shell/bin/react-native-devtools',

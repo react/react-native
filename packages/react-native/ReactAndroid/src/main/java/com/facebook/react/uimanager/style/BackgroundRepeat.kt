@@ -36,10 +36,10 @@ internal enum class BackgroundRepeatKeyword {
  * @property y The repeat behavior for the vertical axis
  */
 internal class BackgroundRepeat(
-    public val x: BackgroundRepeatKeyword,
-    public val y: BackgroundRepeatKeyword,
+    val x: BackgroundRepeatKeyword,
+    val y: BackgroundRepeatKeyword,
 ) {
-  public companion object {
+  companion object {
     /**
      * Parses a ReadableMap into a BackgroundRepeat.
      *
@@ -49,7 +49,7 @@ internal class BackgroundRepeat(
      * @param backgroundRepeatMap The map containing repeat values
      * @return A BackgroundRepeat instance, or null if the map is null
      */
-    public fun parse(backgroundRepeatMap: ReadableMap?): BackgroundRepeat? {
+    fun parse(backgroundRepeatMap: ReadableMap?): BackgroundRepeat? {
       if (backgroundRepeatMap == null) return null
 
       val x = parseRepeatStyle(backgroundRepeatMap, "x") ?: BackgroundRepeatKeyword.Repeat

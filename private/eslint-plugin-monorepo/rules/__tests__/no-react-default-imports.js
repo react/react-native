@@ -14,7 +14,7 @@ const rule = require('../no-react-default-imports');
 const {RuleTester} = require('eslint');
 
 const ruleTester = new RuleTester({
-  parser: require.resolve('hermes-eslint'),
+  parser: require.resolve('flow-eslint'),
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',

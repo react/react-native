@@ -11,11 +11,11 @@
 import type {
   ElementRectangle,
   TraceUpdate,
-} from '../../src/private/specs_DEPRECATED/components/DebuggingOverlayNativeComponent';
+} from '../../src/private/components/debuggingoverlay/specs/DebuggingOverlayNativeComponent';
 
 import DebuggingOverlayNativeComponent, {
   Commands,
-} from '../../src/private/specs_DEPRECATED/components/DebuggingOverlayNativeComponent';
+} from '../../src/private/components/debuggingoverlay/specs/DebuggingOverlayNativeComponent';
 import View from '../Components/View/View';
 import UIManager from '../ReactNative/UIManager';
 import StyleSheet from '../StyleSheet/StyleSheet';

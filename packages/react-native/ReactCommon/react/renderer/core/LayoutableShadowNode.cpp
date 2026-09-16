@@ -181,7 +181,8 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
       resultFrame.origin += currentShadowNode->getContentOriginOffset(true);
     }
 
-    if (policy.enableOverflowClipping) {
+    if (policy.enableOverflowClipping &&
+        (i != size - 1 || policy.clipSpecifiedAncestor)) {
       auto overflowInset = currentShadowNode->getLayoutMetrics().overflowInset;
       auto overflowRect = insetBy(
           currentFrame * currentShadowNode->getTransform(), overflowInset);

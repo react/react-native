@@ -10,7 +10,7 @@
 #include <ReactCommon/RuntimeExecutorSyncUIThreadUtils.h>
 #include <cxxreact/TraceSection.h>
 #include <jsinspector-modern/tracing/EventLoopReporter.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/consistency/ScopedShadowTreeRevisionLock.h>
 #include <react/timing/primitives.h>
 #include <react/utils/OnScopeExit.h>
@@ -45,6 +45,23 @@ RuntimeScheduler_Modern::RuntimeScheduler_Modern(
 void RuntimeScheduler_Modern::scheduleWork(RawCallback&& callback) noexcept {
   TraceSection s("RuntimeScheduler::scheduleWork");
   scheduleTask(SchedulerPriority::ImmediatePriority, std::move(callback));
+}
+
+void RuntimeScheduler_Modern::scheduleTask(const std::function<void()>& task) {
+  scheduleIdleTask([task](jsi::Runtime& /*runtime*/) { task(); });
+}
+
+uint64_t RuntimeScheduler_Modern::registerTaskQueueSource() {
+  // It's fine to wrap around, as it's impossible to hold so many live task
+  // queue sources in practice.
+  return nextTaskQueueSourceId_.fetch_add(1) + 1;
+}
+
+void RuntimeScheduler_Modern::unregisterTaskQueueSource(uint64_t /*sourceId*/) {
+  // For now, we don't need to do unregistering. The reason is that the event
+  // loop of the runtime scheduler doesn't need to be blocked on the task
+  // producer of IEventLoopControl. When the event loop ends, we just ignore
+  // all queueing tasks.
 }
 
 std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleTask(
@@ -215,6 +232,11 @@ void RuntimeScheduler_Modern::setIntersectionObserverDelegate(
   intersectionObserverDelegate_ = intersectionObserverDelegate;
 }
 
+void RuntimeScheduler_Modern::setResizeObserverDelegate(
+    RuntimeSchedulerResizeObserverDelegate* resizeObserverDelegate) {
+  resizeObserverDelegate_ = resizeObserverDelegate;
+}
+
 #pragma mark - Private
 
 void RuntimeScheduler_Modern::scheduleTask(std::shared_ptr<Task> task) {
@@ -319,7 +341,7 @@ void RuntimeScheduler_Modern::runEventLoopTick(
   reportLongTasks(task, taskStartTime, taskEndTime);
 
   // "Update the rendering" step.
-  updateRendering(taskEndTime);
+  updateRendering(runtime, taskEndTime);
 
   currentTask_ = nullptr;
 }
@@ -329,7 +351,9 @@ void RuntimeScheduler_Modern::runEventLoopTick(
  * event loop. See
  * https://html.spec.whatwg.org/multipage/webappapis.html#update-the-rendering.
  */
-void RuntimeScheduler_Modern::updateRendering(HighResTimeStamp taskEndTime) {
+void RuntimeScheduler_Modern::updateRendering(
+    jsi::Runtime& runtime,
+    HighResTimeStamp taskEndTime) {
   TraceSection s("RuntimeScheduler::updateRendering");
 
   // This is the integration of the Event Timing API in the Event Loop.
@@ -338,6 +362,28 @@ void RuntimeScheduler_Modern::updateRendering(HighResTimeStamp taskEndTime) {
   if (eventTimingDelegate != nullptr) {
     eventTimingDelegate->dispatchPendingEventTimingEntries(
         taskEndTime, surfaceIdsWithPendingRenderingUpdates_);
+  }
+
+  // This is the integration of the Resize Observer API in the Event Loop. See
+  // https://w3c.github.io/csswg-drafts/resize-observer/#broadcast-resize-notifications-h
+  // The delegate runs the spec's depth-bounded gather/broadcast loop
+  // internally; this call site stays a single invocation per tick.
+  if (resizeObserverDelegate_ != nullptr) {
+    // This delivers the observations to JS synchronously, so it is outside the
+    // error boundary of `executeTask`. Report the error without going through
+    // `handleTaskError`: we are already inside the "update the rendering" step,
+    // so clearing the queues here would drop the pending rendering updates this
+    // step is about to drain, and a throwing observer callback would abort the
+    // remaining steps below.
+    try {
+      resizeObserverDelegate_->runResizeObservations(runtime);
+    } catch (jsi::JSError& error) {
+      onTaskError_(runtime, error);
+    } catch (std::exception& ex) {
+      jsi::JSError error(
+          runtime, std::string("Non-JS exception: ") + ex.what());
+      onTaskError_(runtime, error);
+    }
   }
 
   // This is the integration of the Intersection Observer API in the Event Loop.
@@ -382,7 +428,7 @@ void RuntimeScheduler_Modern::executeTask(
   } catch (jsi::JSError& error) {
     handleTaskError(runtime, error);
   } catch (std::exception& ex) {
-    jsi::JSError error(runtime, std::string("Non-js exception: ") + ex.what());
+    jsi::JSError error(runtime, std::string("Non-JS exception: ") + ex.what());
     handleTaskError(runtime, error);
   }
 }
@@ -422,7 +468,7 @@ void RuntimeScheduler_Modern::performMicrotaskCheckpoint(
       handleTaskError(runtime, error);
     } catch (std::exception& ex) {
       jsi::JSError error(
-          runtime, std::string("Non-js exception: ") + ex.what());
+          runtime, std::string("Non-JS exception: ") + ex.what());
       handleTaskError(runtime, error);
     }
     retries++;
@@ -452,9 +498,7 @@ void RuntimeScheduler_Modern::reportLongTasks(
 void RuntimeScheduler_Modern::handleTaskError(
     jsi::Runtime& runtime,
     jsi::JSError& error) {
-  if (ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError()) {
-    clearQueues();
-  }
+  clearQueues();
 
   onTaskError_(runtime, error);
 }

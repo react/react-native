@@ -26,7 +26,7 @@ public object TransformHelper {
       }
 
   internal fun convertToRadians(transformMap: ReadableMap, key: String): Double {
-    var value: Double
+    val value: Double
     var inRadians = true
     if (transformMap.getType(key) == ReadableType.String) {
       var stringValue = transformMap.getString(key)!!

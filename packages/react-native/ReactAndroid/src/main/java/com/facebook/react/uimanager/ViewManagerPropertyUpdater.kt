@@ -98,7 +98,7 @@ public object ViewManagerPropertyUpdater {
   }
 
   private fun <V : View> findManagerSetter(
-      managerClass: Class<out ViewManager<V, *>>
+      managerClass: Class<out ViewManager<V, *>>,
   ): ViewManagerSetter<ViewManager<V, *>, V> {
     var setter = VIEW_MANAGER_SETTER_MAP[managerClass]
     if (setter == null) {
@@ -113,7 +113,7 @@ public object ViewManagerPropertyUpdater {
   }
 
   private fun <@Suppress("DEPRECATION") T : ReactShadowNode<T>> findNodeSetter(
-      nodeClass: Class<out T>
+      nodeClass: Class<out T>,
   ): ShadowNodeSetter<T> {
     var setter = SHADOW_NODE_SETTER_MAP[nodeClass]
     if (setter == null) {
@@ -145,7 +145,7 @@ public object ViewManagerPropertyUpdater {
   }
 
   private class FallbackViewManagerSetter<V : View>(
-      viewManagerClass: Class<out ViewManager<V, *>>
+      viewManagerClass: Class<out ViewManager<V, *>>,
   ) : ViewManagerSetter<ViewManager<V, *>, V> {
     private val propSetters: Map<String, PropSetter> =
         ViewManagersPropertyCache.getNativePropSettersForViewManagerClass(viewManagerClass)

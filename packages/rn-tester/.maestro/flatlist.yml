@@ -1,18 +1,22 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
 - launchApp
-- assertVisible: "Components"
+# Wait for the JS bundle to render the landing screen instead of asserting
+# immediately, which races app cold start on CI.
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "Flatlist"
+      id: 'Flatlist'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "Flatlist"
+    id: 'Flatlist'
 - tapOn:
-    id: "Basic"
+    id: 'Basic'
 - assertVisible:
-    id: "item_550"
+    id: 'item_550'
 # - repeat:
 #     while:
 #       notVisible:
@@ -26,8 +30,8 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 # - assertVisible:
 #     id: "item_600"
 - assertVisible:
-    text: "Empty:"
+    text: 'Empty:'
 - tapOn:
-    id: "switch_empty_option"
+    id: 'switch_empty_option'
 - assertVisible:
-    text: "The list is empty :o"
+    text: 'The list is empty :o'

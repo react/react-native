@@ -31,15 +31,35 @@ internal class CustomStyleSpan(
     private val privateStyle: Int,
     private val privateWeight: Int,
     val fontFeatureSettings: String?,
+    val fontVariationSettings: String?,
     val fontFamily: String?,
     private val assetManager: AssetManager,
+    private val fontWeightAdjustment: Int = 0,
 ) : MetricAffectingSpan(), ReactSpan {
   override fun updateDrawState(ds: TextPaint) {
-    apply(ds, privateStyle, privateWeight, fontFeatureSettings, fontFamily, assetManager)
+    apply(
+        ds,
+        privateStyle,
+        privateWeight,
+        fontFeatureSettings,
+        fontVariationSettings,
+        fontFamily,
+        assetManager,
+        fontWeightAdjustment,
+    )
   }
 
   override fun updateMeasureState(paint: TextPaint) {
-    apply(paint, privateStyle, privateWeight, fontFeatureSettings, fontFamily, assetManager)
+    apply(
+        paint,
+        privateStyle,
+        privateWeight,
+        fontFeatureSettings,
+        fontVariationSettings,
+        fontFamily,
+        assetManager,
+        fontWeightAdjustment,
+    )
   }
 
   val style: Int
@@ -64,14 +84,19 @@ internal class CustomStyleSpan(
         style: Int,
         weight: Int,
         fontFeatureSettingsParam: String?,
+        fontVariationSettingsParam: String?,
         family: String?,
         assetManager: AssetManager,
+        fontWeightAdjustment: Int,
     ) {
       val typeface =
           ReactTypefaceUtils.applyStyles(paint.typeface, style, weight, family, assetManager)
+      val adjustedTypeface =
+          ReactTypefaceUtils.applyFontWeightAdjustment(typeface, fontWeightAdjustment)
       paint.apply {
         fontFeatureSettings = fontFeatureSettingsParam
-        setTypeface(typeface)
+        setTypeface(adjustedTypeface)
+        ReactTypefaceUtils.applyFontVariationSettings(this, fontVariationSettingsParam)
         isSubpixelText = true
         isLinearText = true
       }

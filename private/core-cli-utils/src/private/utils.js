@@ -13,7 +13,7 @@ import type {Task} from './types';
 */
 
 const execa = require('execa');
-const os = require('os');
+const os = require('node:os');
 
 function task /*:: <R> */(
   order /*: number */,

@@ -5,25 +5,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <UIKit/UIKit.h>
 
 #import <React/RCTDefines.h>
 #import <React/RCTJavaScriptLoader.h>
 #import <jsinspector-modern/ReactCdp.h>
 #import <react/runtime/JSRuntimeFactory.h>
-#import <react/runtime/ReactInstance.h>
 
 #import "RCTContextContainerHandling.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-/**
- * A utility to enable diagnostics mode at runtime. Useful for test runs.
- * The flags are comma-separated string tokens, or an empty string when
- * nothing is enabled.
- */
-RCT_EXTERN NSString *RCTInstanceRuntimeDiagnosticFlags(void);
-RCT_EXTERN void RCTInstanceSetRuntimeDiagnosticFlags(NSString *_Nullable flags);
 
 @class RCTBundleManager;
 @class RCTInstance;

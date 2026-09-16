@@ -2,19 +2,19 @@ name: Retry workflow
 # Based on https://stackoverflow.com/a/78314483
 
 on:
-    workflow_dispatch:
-        inputs:
-            run_id:
-                required: true
+  workflow_dispatch:
+    inputs:
+      run_id:
+        required: true
 jobs:
-    rerun:
-        runs-on: ubuntu-latest
-        if: github.repository == 'react/react-native'
-        steps:
-            - name: rerun ${{ inputs.run_id }}
-              env:
-                  GH_REPO: ${{ github.repository }}
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                  gh run watch ${{ inputs.run_id }} > /dev/null 2>&1
-                  gh run rerun ${{ inputs.run_id }} --failed
+  rerun:
+    runs-on: ubuntu-latest
+    if: github.repository == 'react/react-native'
+    steps:
+      - name: rerun ${{ inputs.run_id }}
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run watch ${{ inputs.run_id }} > /dev/null 2>&1
+          gh run rerun ${{ inputs.run_id }} --failed

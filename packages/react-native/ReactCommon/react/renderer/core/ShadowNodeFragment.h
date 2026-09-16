@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/core/EventEmitter.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/ReactPrimitives.h>

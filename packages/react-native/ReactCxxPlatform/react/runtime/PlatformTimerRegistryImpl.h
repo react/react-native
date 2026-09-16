@@ -31,7 +31,7 @@ class PlatformTimerRegistryImpl : public PlatformTimerRegistry {
 
   void createRecurringTimer(uint32_t timerID, double delayMs) override;
 
-  void setTimerManager(std::weak_ptr<TimerManager> timerManager);
+  void setTimerManager(std::weak_ptr<TimerManager> timerManager) override;
 
   void quit() override;
 

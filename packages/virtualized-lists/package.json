@@ -5,24 +5,24 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/virtualized-lists"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/virtualized-lists#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/virtualized-lists#readme",
   "keywords": [
     "lists",
     "virtualized-lists",
     "section-lists",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "exports": {
     ".": {
-      "react-native-strict-api": "./types_generated/index.d.ts",
-      "types": "./index.d.ts",
+      "react-native-legacy-deep-imports": "./index.d.ts",
+      "types": "./types_generated/index.d.ts",
       "default": "./index.js"
     },
     "./*": {
@@ -48,7 +48,7 @@
     "nullthrows": "^1.1.1"
   },
   "devDependencies": {
-    "react-test-renderer": "19.2.3"
+    "react-test-renderer": "19.3.0"
   },
   "peerDependencies": {
     "@types/react": "^19.2.0",

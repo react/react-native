@@ -27,6 +27,27 @@ import defineLazyObjectProperty from '../Utilities/defineLazyObjectProperty';
 
 export type NodeSet = Array<Node>;
 export type NodeProps = {...};
+type EventHandler = (
+  target: ?InternalInstanceHandle,
+  type: string,
+  payload: {[string]: unknown},
+) => void;
+type Rect = {
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+};
+type RelativeLayoutMetrics = {
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+};
+type ViewTransition = {
+  ready: Promise<void>,
+  finished: Promise<void>,
+};
 export interface Spec {
   readonly createNode: (
     reactTag: number,
@@ -35,7 +56,6 @@ export interface Spec {
     props: NodeProps,
     instanceHandle: InternalInstanceHandle,
   ) => Node;
-  readonly cloneNode: (node: Node) => Node;
   readonly cloneNodeWithNewChildren: (node: Node) => Node;
   readonly cloneNodeWithNewProps: (node: Node, newProps: NodeProps) => Node;
   readonly cloneNodeWithNewChildrenAndProps: (
@@ -46,10 +66,16 @@ export interface Spec {
   readonly appendChild: (parentNode: Node, child: Node) => Node;
   readonly appendChildToSet: (childSet: NodeSet, child: Node) => void;
   readonly completeRoot: (rootTag: RootTag, childSet: NodeSet) => void;
+  readonly registerEventHandler: (eventHandler: EventHandler) => void;
+  readonly getRelativeLayoutMetrics: (
+    node: Node,
+    ancestorNode: Node,
+  ) => RelativeLayoutMetrics;
   readonly measure: (
     node: Node | NativeElementReference,
     callback: MeasureOnSuccessCallback,
   ) => void;
+  readonly measureInstance: (node: Node) => Rect;
   readonly measureInWindow: (
     node: Node | NativeElementReference,
     callback: MeasureInWindowOnSuccessCallback,
@@ -100,6 +126,25 @@ export interface Spec {
     isJSResponder: boolean,
     blockNativeResponder: boolean,
   ) => void;
+  readonly applyViewTransitionName: (
+    node: Node,
+    transitionName: string,
+    className: string,
+  ) => void;
+  readonly createViewTransitionInstance: (
+    transitionName: string,
+    pseudoElementTag: number,
+  ) => void;
+  readonly cancelViewTransitionName: (
+    node: Node,
+    transitionName: string,
+  ) => void;
+  readonly restoreViewTransitionName: (node: Node) => void;
+  readonly suspendOnActiveViewTransition: () => void;
+  readonly startViewTransitionReadyFinished: () => void;
+  readonly startViewTransition: (
+    mutationCallback: () => void,
+  ) => ?ViewTransition;
   readonly unstable_DefaultEventPriority: number;
   readonly unstable_DiscreteEventPriority: number;
   readonly unstable_ContinuousEventPriority: number;
@@ -112,9 +157,8 @@ let nativeFabricUIManagerProxy: ?Spec;
 // This is a list of all the methods in global.nativeFabricUIManager that we'll
 // cache in JavaScript, as the current implementation of the binding
 // creates a new host function every time methods are accessed.
-const CACHED_PROPERTIES = [
+const CACHED_PROPERTIES: ReadonlyArray<keyof Spec> = [
   'createNode',
-  'cloneNode',
   'cloneNodeWithNewChildren',
   'cloneNodeWithNewProps',
   'cloneNodeWithNewChildrenAndProps',
@@ -122,7 +166,10 @@ const CACHED_PROPERTIES = [
   'appendChild',
   'appendChildToSet',
   'completeRoot',
+  'registerEventHandler',
+  'getRelativeLayoutMetrics',
   'measure',
+  'measureInstance',
   'measureInWindow',
   'measureLayout',
   'configureNextLayoutAnimation',
@@ -130,9 +177,17 @@ const CACHED_PROPERTIES = [
   'findShadowNodeByTag_DEPRECATED',
   'setNativeProps',
   'dispatchCommand',
+  'findNodeAtPoint',
   'compareDocumentPosition',
   'getBoundingClientRect',
   'setIsJSResponder',
+  'applyViewTransitionName',
+  'createViewTransitionInstance',
+  'cancelViewTransitionName',
+  'restoreViewTransitionName',
+  'suspendOnActiveViewTransition',
+  'startViewTransitionReadyFinished',
+  'startViewTransition',
   'unstable_DefaultEventPriority',
   'unstable_DiscreteEventPriority',
   'unstable_ContinuousEventPriority',
@@ -163,12 +218,11 @@ export function getFabricUIManager(): ?Spec {
  */
 function createProxyWithCachedProperties(
   implementation: Spec,
-  propertiesToCache: ReadonlyArray<string>,
+  propertiesToCache: ReadonlyArray<keyof Spec>,
 ): Spec {
   const proxy = Object.create(implementation);
   for (const propertyName of propertiesToCache) {
     defineLazyObjectProperty(proxy, propertyName, {
-      // $FlowExpectedError[prop-missing]
       get: () => implementation[propertyName],
     });
   }

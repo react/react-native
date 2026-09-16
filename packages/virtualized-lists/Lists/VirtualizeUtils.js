@@ -13,7 +13,7 @@
 import type ListMetricsAggregator from './ListMetricsAggregator';
 import type {CellMetricProps} from './ListMetricsAggregator';
 
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 /**
  * Used to find the indices of the frames that overlap the given offsets. Useful for finding the
@@ -219,17 +219,15 @@ export function computeWindowedRenderLimits(
       last++;
     }
   }
-  if (
-    !(
-      last >= first &&
-      first >= 0 &&
-      last < itemCount &&
-      first >= overscanFirst &&
-      last <= overscanLast &&
-      first <= visible.first &&
-      last >= visible.last
-    )
-  ) {
+  if (!(
+    last >= first &&
+    first >= 0 &&
+    last < itemCount &&
+    first >= overscanFirst &&
+    last <= overscanLast &&
+    first <= visible.first &&
+    last >= visible.last
+  )) {
     throw new Error(
       'Bad window calculation ' +
         JSON.stringify({

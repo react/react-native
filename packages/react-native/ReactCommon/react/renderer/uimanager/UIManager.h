@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <folly/dynamic.h>
 #include <jsi/jsi.h>
 
@@ -14,12 +16,10 @@
 #include <shared_mutex>
 
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
-#include <react/renderer/consistency/ShadowTreeRevisionConsistencyManager.h>
 #include <react/renderer/core/InstanceHandle.h>
 #include <react/renderer/core/RawValue.h>
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/core/StateData.h>
-#include <react/renderer/leakchecker/LeakChecker.h>
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 #include <react/renderer/mounting/ShadowTreeRegistry.h>
@@ -28,13 +28,15 @@
 #include <react/renderer/uimanager/UIManagerDelegate.h>
 #include <react/renderer/uimanager/UIManagerNativeAnimatedDelegate.h>
 #include <react/renderer/uimanager/UIManagerViewTransitionDelegate.h>
-#include <react/renderer/uimanager/consistency/LazyShadowTreeRevisionConsistencyManager.h>
-#include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 #include <react/renderer/uimanager/primitives.h>
 #include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 
+class LazyShadowTreeRevisionConsistencyManager;
+class LeakChecker;
+class ShadowTreeRevisionConsistencyManager;
+class ShadowTreeRevisionProvider;
 class UIManagerBinding;
 class UIManagerCommitHook;
 class UIManagerMountHook;
@@ -116,17 +118,14 @@ class UIManager final : public ShadowTreeDelegate {
 
   void startSurface(
       ShadowTree::Unique &&shadowTree,
-      const std::string &moduleName,
-      const folly::dynamic &props,
+      std::string moduleName,
+      folly::dynamic props,
       DisplayMode displayMode) const noexcept;
 
   void startEmptySurface(ShadowTree::Unique &&shadowTree) const noexcept;
 
-  void setSurfaceProps(
-      SurfaceId surfaceId,
-      const std::string &moduleName,
-      const folly::dynamic &props,
-      DisplayMode displayMode) const noexcept;
+  void setSurfaceProps(SurfaceId surfaceId, std::string moduleName, folly::dynamic props, DisplayMode displayMode)
+      const noexcept;
 
   ShadowTree::Unique stopSurface(SurfaceId surfaceId) const;
 
@@ -145,6 +144,11 @@ class UIManager final : public ShadowTreeDelegate {
   void shadowTreeDidFinishReactCommit(const ShadowTree &shadowTree) const override;
 
   void shadowTreeDidPromoteReactRevision(const ShadowTree &shadowTree) const override;
+
+  void shadowTreeDidCommit(
+      const ShadowTree &shadowTree,
+      const RootShadowNode::Shared &rootShadowNode,
+      const std::vector<const LayoutableShadowNode *> &affectedLayoutableNodes) const noexcept override;
 
   std::shared_ptr<ShadowNode> createNode(
       Tag tag,
@@ -223,8 +227,8 @@ class UIManager final : public ShadowTreeDelegate {
 
   void removeEventListener(const std::shared_ptr<const EventListener> &listener);
 
-#pragma mark - Set on surface start callback
-  void setOnSurfaceStartCallback(UIManagerDelegate::OnSurfaceStartCallback &&callback);
+#pragma mark - Add on surface start callback
+  void addOnSurfaceStartCallback(UIManagerDelegate::OnSurfaceStartCallback &&callback);
 
  private:
   friend class UIManagerBinding;

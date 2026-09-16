@@ -7,13 +7,13 @@
 
 #include "jsireact/JSIExecutor.h"
 
-#include <cxxreact/ErrorUtils.h>
 #include <cxxreact/JSBigString.h>
 #include <cxxreact/ModuleRegistry.h>
 #include <cxxreact/ReactMarker.h>
 #include <cxxreact/TraceSection.h>
 #include <folly/json.h>
 #include <glog/logging.h>
+#include <jserrorhandler/ErrorUtils.h>
 #include <jsi/JSIDynamic.h>
 #include <jsi/instrumentation.h>
 #include <reactperflogger/BridgeNativeModulePerfLogger.h>

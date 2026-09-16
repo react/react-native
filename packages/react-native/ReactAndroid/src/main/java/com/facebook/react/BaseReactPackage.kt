@@ -24,7 +24,7 @@ public abstract class BaseReactPackage : ReactPackage {
   @Deprecated("Migrate to [BaseReactPackage] and implement [getModule] instead.")
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
     throw UnsupportedOperationException(
-        "createNativeModules method is not supported. Use getModule() method instead."
+        "createNativeModules method is not supported. Use getModule() method instead.",
     )
   }
 
@@ -49,7 +49,7 @@ public abstract class BaseReactPackage : ReactPackage {
    * @return
    */
   internal fun getNativeModuleIterator(
-      reactContext: ReactApplicationContext
+      reactContext: ReactApplicationContext,
   ): Iterable<ModuleHolder> {
     val entrySet = getReactModuleInfoProvider().getReactModuleInfos().entries
     val entrySetIterator = entrySet.iterator()
@@ -107,7 +107,7 @@ public abstract class BaseReactPackage : ReactPackage {
       emptyList()
 
   override fun createViewManagers(
-      reactContext: ReactApplicationContext
+      reactContext: ReactApplicationContext,
   ): List<ViewManager<in Nothing, in Nothing>> {
     val viewManagerModuleSpecs = getViewManagers(reactContext)
     if (viewManagerModuleSpecs.isNullOrEmpty()) {

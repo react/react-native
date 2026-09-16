@@ -10,8 +10,8 @@
 
 const {publishPackage} = require('../releases/utils/npm-utils');
 const {getPackages} = require('../shared/monorepoUtils');
-const {execSync} = require('child_process');
-const {parseArgs} = require('util');
+const {execSync} = require('node:child_process');
+const {parseArgs} = require('node:util');
 
 const PUBLISH_PACKAGES_TAG = '#publish-packages-to-npm';
 

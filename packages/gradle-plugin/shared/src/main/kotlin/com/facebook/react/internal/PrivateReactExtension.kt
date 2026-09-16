@@ -46,7 +46,7 @@ abstract class PrivateReactExtension @Inject constructor(project: Project) {
                 project.rootProject.layout.projectDirectory.dir("../../")
               } else {
                 project.rootProject.layout.projectDirectory.dir("../")
-              }
+              },
           )
 
   val reactNativeDir: DirectoryProperty =

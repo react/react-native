@@ -37,10 +37,10 @@ Pod::Spec.new do |s|
     s.source_files = podspec_sources("ReactCommon/**/*.{mm,cpp,h}", "ReactCommon/**/*.{h}")
 
     s.dependency "ReactCommon/turbomodule/core"
-    s.dependency "ReactCommon/turbomodule/bridging"
+    s.dependency "React-bridging"
     s.dependency "React-callinvoker"
     s.dependency "React-Core"
-    s.dependency "React-cxxreact"
+    add_dependency(s, "React-cxxreact")
     s.dependency "React-jsi"
     s.dependency "React-featureflags"
     add_dependency(s, "React-debug")
@@ -52,4 +52,6 @@ Pod::Spec.new do |s|
     depend_on_js_engine(s)
     add_rn_third_party_dependencies(s)
     add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

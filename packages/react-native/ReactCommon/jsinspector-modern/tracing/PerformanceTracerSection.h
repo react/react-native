@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <folly/dynamic.h>
 
 #include <jsinspector-modern/tracing/PerformanceTracer.h>

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -184,6 +184,7 @@ export default class AnimatedStyle extends AnimatedWithChildren {
     }
   }
 
+  // $FlowFixMe[unclear-type]
   __getAnimatedValue(): Object {
     const style: {[string]: unknown} = {};
 
@@ -225,6 +226,7 @@ export default class AnimatedStyle extends AnimatedWithChildren {
     super.__makeNative(platformConfig);
   }
 
+  // $FlowFixMe[unclear-type]
   __getNativeConfig(): Object {
     const platformConfig = this.__getPlatformConfig();
     const styleConfig: {[string]: ?number} = {};
@@ -255,4 +257,6 @@ export default class AnimatedStyle extends AnimatedWithChildren {
 const _hasOwnProp = Object.prototype.hasOwnProperty;
 const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
   // $FlowFixMe[method-unbinding]
+  /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+   * unsoundness in flow */
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

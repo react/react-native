@@ -30,6 +30,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator
+import com.facebook.react.uimanager.HasChildPressedStateDelay
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions
@@ -55,6 +56,7 @@ import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_DISA
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_END
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_START
 import com.facebook.react.views.scroll.ReactScrollViewHelper.findNextFocusableView
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import com.facebook.systrace.Systrace
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -85,7 +87,8 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     HasFlingAnimator,
     HasScrollEventThrottle,
     HasSmoothScroll,
-    VirtualViewContainer {
+    VirtualViewContainer,
+    HasChildPressedStateDelay {
 
   private companion object {
     private var scrollerField: java.lang.reflect.Field? = null
@@ -99,8 +102,13 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override var stateWrapper: StateWrapper? = null
   override var scrollEventThrottle: Int = 0
   override var lastScrollDispatchTime: Long = 0L
+  override var hasChildPressedStateDelay: Boolean? = null
 
   public open var pointerEvents: PointerEvents = PointerEvents.AUTO
+    set(value) {
+      field = value
+      ImportantForInteractionHelper.setImportantForInteraction(this, value, _overflow)
+    }
 
   public open var fadingEdgeLengthStart: Int = 0
     set(value) {
@@ -376,16 +384,18 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
         if (overflow == null) {
           Overflow.SCROLL
         } else {
-          Overflow.fromString(overflow)
-              ?: if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid())
-                  Overflow.VISIBLE
-              else Overflow.SCROLL
+          Overflow.fromString(
+              overflow,
+              if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
+              else Overflow.SCROLL,
+          )
         }
+    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
     invalidate()
   }
 
   internal open fun setMaintainVisibleContentPosition(
-      config: MaintainVisibleScrollPositionHelper.Config?
+      config: MaintainVisibleScrollPositionHelper.Config?,
   ) {
     if (config != null && maintainVisibleContentPositionHelper == null) {
       maintainVisibleContentPositionHelper =
@@ -543,6 +553,9 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
   }
+
+  override fun shouldDelayChildPressedState(): Boolean =
+      hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false

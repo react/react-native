@@ -11,7 +11,7 @@ import android.annotation.SuppressLint
 import kotlin.concurrent.Volatile
 
 internal class BridgelessAtomicRef<T>(
-    @field:Volatile @get:Synchronized @get:JvmName("getNullable") var value: T? = null
+    @field:Volatile @get:Synchronized @get:JvmName("getNullable") var value: T? = null,
 ) {
 
   internal fun interface Provider<T> {
@@ -41,7 +41,7 @@ internal class BridgelessAtomicRef<T>(
       }
       if (state == State.Failure) {
         throw RuntimeException(
-            "BridgelessAtomicRef: Failed to create object. Reason: $failureMessage"
+            "BridgelessAtomicRef: Failed to create object. Reason: $failureMessage",
         )
       }
       if (state != State.Creating) {
@@ -90,7 +90,7 @@ internal class BridgelessAtomicRef<T>(
 
       if (state == State.Failure) {
         throw RuntimeException(
-            "BridgelessAtomicRef: Failed to create object. Reason: $failureMessage"
+            "BridgelessAtomicRef: Failed to create object. Reason: $failureMessage",
         )
       }
       return get()

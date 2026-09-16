@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -31,6 +33,7 @@ enum TurboModuleMethodValueKind {
   ArrayKind,
   FunctionKind,
   PromiseKind,
+  ArrayBufferKind,
 };
 
 /**

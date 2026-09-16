@@ -21,8 +21,8 @@ jobs:
         uses: react-native-community/needs-attention@v2.0.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          response-required-label: "Needs: Author Feedback"
-          needs-attention-label: "Needs: Attention"
+          response-required-label: 'Needs: Author Feedback'
+          needs-attention-label: 'Needs: Attention'
         id: needs-attention
       - name: Result
         run: echo '${{ steps.needs-attention.outputs.result }}'

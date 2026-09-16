@@ -15,6 +15,7 @@
 #include <ReactCommon/RuntimeExecutor.h>
 #include <hermes/hermes.h>
 #include <jserrorhandler/JsErrorHandler.h>
+#include <jsi/hermes-interfaces.h>
 #include <jsi/jsi.h>
 #include <react/runtime/ReactInstance.h>
 
@@ -138,6 +139,12 @@ class ReactInstanceTest : public ::testing::Test {
         std::move(onJsError));
     timerManager_->setRuntimeExecutor(instance_->getBufferedRuntimeExecutor());
 
+    // ReactInstance construction defers registering the RuntimeScheduler as the
+    // Hermes IEventLoopControl onto the runtime executor, which enqueues a
+    // callback on messageQueueThread_. Drain it so each test starts from an
+    // empty queue and its step() bookkeeping is unaffected.
+    step();
+
     // Install a C++ error handler
     errorHandler_ = std::make_shared<ErrorUtils>();
     runtime_->global().setProperty(
@@ -222,6 +229,23 @@ class ReactInstanceTest : public ::testing::Test {
   MockTimerRegistry* mockRegistry_{};
   std::shared_ptr<ErrorUtils> errorHandler_;
 };
+
+TEST_F(ReactInstanceTest, testRegistersRuntimeSchedulerAsEventLoopControl) {
+  auto* setEventLoopControl =
+      jsi::castInterface<facebook::hermes::ISetEventLoopControl>(runtime_);
+  if (setEventLoopControl == nullptr) {
+    // This Hermes build does not implement ISetEventLoopControl, so
+    // ReactInstance's registration is a no-op and there is nothing to observe.
+    GTEST_SKIP()
+        << "Hermes runtime does not expose ISetEventLoopControl in this build";
+  }
+
+  // SetUp() already drained the deferred registration callback, so by now the
+  // RuntimeScheduler is registered as the runtime's event loop control.
+  facebook::hermes::IEventLoopControl* expected =
+      instance_->getRuntimeScheduler().get();
+  EXPECT_EQ(setEventLoopControl->getEventLoopControl(), expected);
+}
 
 TEST_F(ReactInstanceTest, testBridgelessFlagIsSet) {
   auto valBefore = tryEval("RN$Bridgeless === true", "false");

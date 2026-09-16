@@ -10,4 +10,8 @@
 
 import type {PlatformType} from './PlatformTypes';
 
+/**
+ * Provides information about the platform the app is running on and utility
+ * methods for platform-specific logic.
+ */
 declare export default PlatformType;

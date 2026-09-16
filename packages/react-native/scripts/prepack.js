@@ -11,7 +11,7 @@
 const {
   generateFBReactNativeSpecIOS,
 } = require('./codegen/generate-artifacts-executor/generateFBReactNativeSpecIOS');
-const fs = require('fs');
+const fs = require('node:fs');
 
 function main() {
   console.info('[Prepack] Copying README.md');

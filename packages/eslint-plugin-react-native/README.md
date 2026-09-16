@@ -1,34 +1,14 @@
 # @react-native/eslint-plugin
 
-This plugin is intended to be used in [`@react-native/eslint-config`](https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native). You probably want to install that package instead.
+[![npm]](https://www.npmjs.com/package/@react-native/eslint-plugin) [![npm downloads]](https://www.npmjs.com/package/@react-native/eslint-plugin)
 
-## Installation
+[npm]: https://img.shields.io/npm/v/@react-native/eslint-plugin.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/eslint-plugin.svg
 
-```
-yarn add --dev eslint @react-native/eslint-plugin
-```
-
-*Note: We're using `yarn` to install deps. Feel free to change commands to use `npm` 3+ and `npx` if you like*
-
-## Usage
-
-Add to your eslint config (`.eslintrc`, or `eslintConfig` field in `package.json`):
-
-```json
-{
-    "plugins": ["@react-native"]
-}
-```
+ESLint rules for [`@react-native/eslint-config`](https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native). You probably want to install that package instead.
 
 ## Rules
 
 ### `platform-colors`
 
 Enforces that calls to `PlatformColor` and `DynamicColorIOS` are statically analyzable to enable performance optimizations.
-
-## Testing
-
-To run the tests in this package, run the following commands from the React Native root folder:
-
-1. `yarn` to install the dependencies. You just need to run this once
-2. `yarn jest packages/eslint-plugin-react-native`.

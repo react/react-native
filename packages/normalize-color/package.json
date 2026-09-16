@@ -5,17 +5,17 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/normalize-color"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/normalize-color#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/normalize-color#readme",
   "keywords": [
     "color",
     "normalization",
     "normalize-colors",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "files": [
     "index.js",
     "README.md",

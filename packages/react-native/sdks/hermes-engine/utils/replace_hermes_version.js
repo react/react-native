@@ -14,7 +14,7 @@ const {spawnSync} = require('child_process');
 const fs = require('fs');
 const yargs = require('yargs');
 
-const LAST_BUILD_FILENAME = '.last_build_configuration';
+const LAST_BUILD_FILENAME = 'hermes-engine/.last_build_configuration';
 
 function validateBuildConfiguration(configuration) {
   if (!['Debug', 'Release'].includes(configuration)) {
@@ -56,15 +56,29 @@ function shouldReplaceHermesConfiguration(configuration) {
 function replaceHermesConfiguration(configuration, version, podsRoot) {
   const tarballURLPath = `${podsRoot}/hermes-engine-artifacts/hermes-ios-${version.toLowerCase()}-${configuration.toLowerCase()}.tar.gz`;
 
+  if (!fs.existsSync(tarballURLPath)) {
+    throw new Error(`Hermes tarball not found at ${tarballURLPath}`);
+  }
+
   const finalLocation = 'hermes-engine';
   console.log('Preparing the final location');
   fs.rmSync(finalLocation, {force: true, recursive: true});
   fs.mkdirSync(finalLocation, {recursive: true});
 
   console.log('Extracting the tarball');
-  spawnSync('tar', ['-xf', tarballURLPath, '-C', finalLocation], {
-    stdio: 'inherit',
-  });
+  const result = spawnSync(
+    'tar',
+    ['-xf', tarballURLPath, '-C', finalLocation],
+    {
+      stdio: 'inherit',
+    },
+  );
+  if (result.status !== 0) {
+    fs.rmSync(finalLocation, {force: true, recursive: true});
+    throw new Error(
+      `Failed to extract ${tarballURLPath}: ${result.error?.message ?? `tar exited with status ${result.status}`}`,
+    );
+  }
 }
 
 function updateLastBuildConfiguration(configuration) {

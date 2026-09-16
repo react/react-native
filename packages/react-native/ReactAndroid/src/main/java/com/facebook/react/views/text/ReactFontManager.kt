@@ -15,7 +15,7 @@ import com.facebook.react.common.assets.ReactFontManager as ReactFontAssetManage
 /** Responsible for loading and caching Typeface objects. */
 @Deprecated(
     message =
-        "This class is deprecated and will be deleted in the near future. Please use [com.facebook.react.common.assets.ReactFontManager] instead."
+        "This class is deprecated and will be deleted in the near future. Please use [com.facebook.react.common.assets.ReactFontManager] instead.",
 )
 @Suppress("DEPRECATION")
 public class ReactFontManager private constructor(private val delegate: ReactFontAssetManager) {

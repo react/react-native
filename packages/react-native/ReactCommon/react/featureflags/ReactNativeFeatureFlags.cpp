@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0bafa89fa8781cb3c7aebf5d0bb8678e>>
+ * @generated SignedSource<<37ceecaa4ef7ce8b076a46652b6cf0f0>>
  */
 
 /**
@@ -74,12 +74,20 @@ bool ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid() {
   return getAccessor().enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
+bool ReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation() {
+  return getAccessor().enableAndroidAutoOffscreenCompositingForElevation();
+}
+
 bool ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations() {
   return getAccessor().enableAndroidTextMeasurementOptimizations();
 }
 
 bool ReactNativeFeatureFlags::enableBridgelessArchitecture() {
   return getAccessor().enableBridgelessArchitecture();
+}
+
+bool ReactNativeFeatureFlags::enableBufferedCallInvoker() {
+  return getAccessor().enableBufferedCallInvoker();
 }
 
 bool ReactNativeFeatureFlags::enableCppPropsIteratorSetter() {
@@ -122,6 +130,10 @@ bool ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() {
   return getAccessor().enableFontScaleChangesUpdatingLayout();
 }
 
+bool ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() {
+  return getAccessor().enableIOSCompressedTextFrameAdjustment();
+}
+
 bool ReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine() {
   return getAccessor().enableIOSTextBaselineOffsetPerLine();
 }
@@ -134,12 +146,16 @@ bool ReactNativeFeatureFlags::enableImagePrefetchingAndroid() {
   return getAccessor().enableImagePrefetchingAndroid();
 }
 
-bool ReactNativeFeatureFlags::enableImageRequestDowngradingForNonVisibleImages() {
-  return getAccessor().enableImageRequestDowngradingForNonVisibleImages();
+bool ReactNativeFeatureFlags::enableImageTransparentTintColor() {
+  return getAccessor().enableImageTransparentTintColor();
 }
 
 bool ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges() {
   return getAccessor().enableImmediateUpdateModeForContentOffsetChanges();
+}
+
+bool ReactNativeFeatureFlags::enableImperativeEvents() {
+  return getAccessor().enableImperativeEvents();
 }
 
 bool ReactNativeFeatureFlags::enableImperativeFocus() {
@@ -170,16 +186,16 @@ bool ReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS() {
   return getAccessor().enableModuleArgumentNSNullConversionIOS();
 }
 
+bool ReactNativeFeatureFlags::enableMountingCoordinatorPullModelAndroid() {
+  return getAccessor().enableMountingCoordinatorPullModelAndroid();
+}
+
 bool ReactNativeFeatureFlags::enableMutationObserverByDefault() {
   return getAccessor().enableMutationObserverByDefault();
 }
 
 bool ReactNativeFeatureFlags::enableNativeCSSParsing() {
   return getAccessor().enableNativeCSSParsing();
-}
-
-bool ReactNativeFeatureFlags::enableNetworkEventReporting() {
-  return getAccessor().enableNetworkEventReporting();
 }
 
 bool ReactNativeFeatureFlags::enablePreparedTextLayout() {
@@ -190,12 +206,8 @@ bool ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid() {
   return getAccessor().enablePropsUpdateReconciliationAndroid();
 }
 
-bool ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError() {
-  return getAccessor().enableRuntimeSchedulerQueueClearingOnError();
-}
-
-bool ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation() {
-  return getAccessor().enableSchedulerDelegateInvalidation();
+bool ReactNativeFeatureFlags::enableResizeObserverByDefault() {
+  return getAccessor().enableResizeObserverByDefault();
 }
 
 bool ReactNativeFeatureFlags::enableSwiftUIBasedFilters() {
@@ -254,12 +266,12 @@ bool ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled() {
   return getAccessor().fuseboxFrameRecordingEnabled();
 }
 
-bool ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled() {
-  return getAccessor().fuseboxNetworkInspectionEnabled();
-}
-
 bool ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled() {
   return getAccessor().fuseboxScreenshotCaptureEnabled();
+}
+
+bool ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled() {
+  return getAccessor().fuseboxWebSocketEventsEnabled();
 }
 
 bool ReactNativeFeatureFlags::optimizedAnimatedPropUpdates() {

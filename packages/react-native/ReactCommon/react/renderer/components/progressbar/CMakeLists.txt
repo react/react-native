@@ -22,6 +22,7 @@ target_link_libraries(rrc_progressbar
         folly_runtime
         glog_init
         react_codegen_rncore
+        react_cxxstableapi
         react_debug
         react_renderer_componentregistry
         react_renderer_core

@@ -4,9 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
+
+// flowlint unsafe-getters-setters:off
 
 // Small subset from whatwg-url: https://github.com/jsdom/whatwg-url/tree/master/src
 // The reference code bloat comes from Unicode issues with URLs, so those won't work here.

@@ -18,7 +18,7 @@ const execSync = jest.fn();
 const execMock = jest.fn();
 const fetchMock = jest.fn();
 
-jest.mock('child_process', () => ({execSync}));
+jest.mock('node:child_process', () => ({execSync}));
 jest.mock('shelljs', () => ({exec: execMock}));
 jest.mock('../../shared/monorepoUtils', () => ({
   getPackages: getPackagesMock,

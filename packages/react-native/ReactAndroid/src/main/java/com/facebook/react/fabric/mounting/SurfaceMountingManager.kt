@@ -119,7 +119,7 @@ internal constructor(
   private val tagToSynchronousMountProps = SparseArrayCompat<MutableMap<String, Any>>()
 
   @AnyThread
-  public fun attachRootView(rootView: View, themedReactContext: ThemedReactContext): Unit {
+  public fun attachRootView(rootView: View, themedReactContext: ThemedReactContext) {
     this.context = themedReactContext
 
     if (isStopped) {
@@ -147,7 +147,7 @@ internal constructor(
               ReactSoftExceptionLogger.logSoftException(
                   TAG,
                   IllegalViewOperationException(
-                      "Race condition in addRootView detected. Trying to set an id of [$surfaceId] on the RootView, but that id has already been set. "
+                      "Race condition in addRootView detected. Trying to set an id of [$surfaceId] on the RootView, but that id has already been set. ",
                   ),
               )
             } else if (rootView.id != View.NO_ID) {
@@ -163,7 +163,7 @@ internal constructor(
               ReactSoftExceptionLogger.logSoftException(
                   TAG,
                   IllegalViewOperationException(
-                      "Trying to add a root view with an explicit id already set. React Native uses the id field to track react tags and will overwrite this field. If that is fine, explicitly overwrite the id field to View.NO_ID before calling addRootView."
+                      "Trying to add a root view with an explicit id already set. React Native uses the id field to track react tags and will overwrite this field. If that is fine, explicitly overwrite the id field to View.NO_ID before calling addRootView.",
                   ),
               )
             }
@@ -201,7 +201,7 @@ internal constructor(
 
   @UiThread
   @ThreadConfined(ThreadConfined.UI)
-  internal fun scheduleMountItemOnViewAttach(item: MountItem): Unit {
+  internal fun scheduleMountItemOnViewAttach(item: MountItem) {
     onViewAttachMountItems.add(item)
   }
 
@@ -229,7 +229,7 @@ internal constructor(
    * garbage collection will take care of destroying it and all descendents.
    */
   @AnyThread
-  public fun stopSurface(): Unit {
+  public fun stopSurface() {
     FLog.e(TAG, "Stopping surface [$surfaceId]")
     if (isStopped) {
       return
@@ -294,7 +294,7 @@ internal constructor(
   }
 
   @UiThread
-  public fun addViewAt(parentTag: Int, tag: Int, index: Int): Unit {
+  public fun addViewAt(parentTag: Int, tag: Int, index: Int) {
     UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
@@ -308,13 +308,16 @@ internal constructor(
       )
       return
     }
-    if (parentViewState.view !is ViewGroup) {
+
+    val parentView = parentViewState.view
+    checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
+    if (parentView !is ViewGroup) {
       val message =
-          "Unable to add a view into a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
+          "Unable to add a view into a non-ViewGroup ${parentView.javaClass.simpleName} when inserting [$tag] into parent [$parentTag]"
       FLog.e(TAG, message)
       throw IllegalStateException(message)
     }
-    val parentView = parentViewState.view as ViewGroup
+
     val viewState = getNullableViewState(tag)
     if (viewState == null) {
       ReactSoftExceptionLogger.logSoftException(
@@ -332,13 +335,13 @@ internal constructor(
       logViewHierarchy(parentView, false)
     }
 
-    val viewParent = view.parent
-    if (viewParent != null) {
-      val actualParentId = if (viewParent is ViewGroup) viewParent.id else View.NO_ID
+    val currParentView = view.parent
+    if (currParentView != null) {
+      val actualParentId = if (currParentView is ViewGroup) currParentView.id else View.NO_ID
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           IllegalStateException(
-              "addViewAt: cannot insert view [$tag] into parent [$parentTag]: View already has a parent: [$actualParentId]  Parent: ${viewParent.javaClass.simpleName} View: ${view.javaClass.simpleName}"
+              "addViewAt: cannot insert view [$tag] into parent [$parentTag]: View already has a parent: [$actualParentId] Parent: ${currParentView.javaClass.simpleName} View: ${view.javaClass.simpleName}",
           ),
       )
 
@@ -356,8 +359,8 @@ internal constructor(
       // should be impossible - we mark this as a "readded" View and
       // thus prevent the RemoveDeleteTree worker from deleting this
       // View in the future.
-      if (viewParent is ViewGroup) {
-        viewParent.removeView(view)
+      if (currParentView is ViewGroup) {
+        currParentView.removeView(view)
       }
       erroneouslyReaddedReactTags.add(tag)
     }
@@ -393,7 +396,8 @@ internal constructor(
   }
 
   @UiThread
-  public fun removeViewAt(tag: Int, parentTag: Int, index: Int): Unit {
+  public fun removeViewAt(tag: Int, parentTag: Int, index: Int) {
+    UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
     }
@@ -403,30 +407,33 @@ internal constructor(
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           IllegalViewOperationException(
-              "removeViewAt tried to remove a React View that was actually reused. This indicates a bug in the Differ (specifically instruction ordering). [$tag]"
+              "removeViewAt tried to remove a React View that was actually reused. This indicates a bug in the Differ (specifically instruction ordering). [$tag]",
           ),
       )
       return
     }
 
-    UiThreadUtil.assertOnUiThread()
     val parentViewState = getNullableViewState(parentTag)
-
-    // TODO: throw exception here?
     if (parentViewState == null) {
       ReactSoftExceptionLogger.logSoftException(
           ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
-          IllegalStateException("Unable to find viewState for tag: [$parentTag] for removeViewAt"),
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag: [$parentTag] for removeViewAt",
+          ),
       )
       return
     }
 
     val parentView = parentViewState.view
+    checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
     if (parentView !is ViewGroup) {
-      val message =
-          "Unable to remove a view from a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
-      FLog.e(TAG, message)
-      throw IllegalStateException(message)
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          ReactNoCrashSoftException(
+              "Unable to remove a view from a non-ViewGroup ${parentView.javaClass.simpleName} when removing [$tag] from parent [$parentTag]",
+          ),
+      )
+      return
     }
 
     if (SHOW_CHANGED_VIEW_HIERARCHIES) {
@@ -478,8 +485,8 @@ internal constructor(
       logViewHierarchy(parentView, true)
       ReactSoftExceptionLogger.logSoftException(
           TAG,
-          IllegalStateException(
-              "Tried to remove view [$tag] of parent [$parentTag] at index $index, but got view tag $actualTag - actual index of view: $tagActualIndex"
+          ReactNoCrashSoftException(
+              "Tried to remove view [$tag] of parent [$parentTag] at index $index, but got view tag $actualTag - actual index of view: $tagActualIndex",
           ),
       )
       actualIndex = tagActualIndex
@@ -530,7 +537,7 @@ internal constructor(
       stateWrapper: StateWrapper?,
       eventEmitterWrapper: EventEmitterWrapper?,
       isLayoutable: Boolean,
-  ): Unit {
+  ) {
     if (isStopped) {
       return
     }
@@ -575,7 +582,7 @@ internal constructor(
       stateWrapper: StateWrapper?,
       eventEmitterWrapper: EventEmitterWrapper?,
       isLayoutable: Boolean,
-  ): Unit {
+  ) {
     Systrace.beginSection(
         Systrace.TRACE_TAG_REACT,
         "SurfaceMountingManager::createViewUnsafe($componentName)",
@@ -609,7 +616,7 @@ internal constructor(
     }
   }
 
-  public fun storeSynchronousMountPropsOverride(reactTag: Int, props: ReadableMap): Unit {
+  public fun storeSynchronousMountPropsOverride(reactTag: Int, props: ReadableMap) {
     if (ReactNativeFeatureFlags.overrideBySynchronousMountPropsAtMountingAndroid()) {
       val propsMap = getAnimatedPropsMap(props)
       val synchronousMountProps = tagToSynchronousMountProps[reactTag] ?: mutableMapOf()
@@ -623,11 +630,11 @@ internal constructor(
     }
   }
 
-  public fun updatePropsSynchronously(reactTag: Int, props: ReadableMap): Unit {
+  public fun updatePropsSynchronously(reactTag: Int, props: ReadableMap) {
     updateProps(reactTag, props, true)
   }
 
-  public fun updateProps(reactTag: Int, props: ReadableMap): Unit {
+  public fun updateProps(reactTag: Int, props: ReadableMap) {
     updateProps(reactTag, props, false)
   }
 
@@ -683,7 +690,7 @@ internal constructor(
       surfaceId: Int,
       componentName: String,
       params: MapBuffer?,
-  ): Unit {
+  ) {
     if (isStopped) {
       return
     }
@@ -693,7 +700,7 @@ internal constructor(
   }
 
   @Deprecated("")
-  public fun receiveCommand(reactTag: Int, commandId: Int, commandArgs: ReadableArray?): Unit {
+  public fun receiveCommand(reactTag: Int, commandId: Int, commandArgs: ReadableArray?) {
     if (isStopped) {
       return
     }
@@ -701,7 +708,7 @@ internal constructor(
     val viewState =
         getNullableViewState(reactTag)
             ?: throw RetryableMountingLayerException(
-                "Unable to find viewState for tag $reactTag for commandId $commandId"
+                "Unable to find viewState for tag $reactTag for commandId $commandId",
             )
 
     // It's not uncommon for JS to send events as/after a component is being removed from the
@@ -722,7 +729,7 @@ internal constructor(
     @Suppress("DEPRECATION") viewManager.receiveCommand(view, commandId, commandArgs)
   }
 
-  public fun receiveCommand(reactTag: Int, commandId: String, commandArgs: ReadableArray?): Unit {
+  public fun receiveCommand(reactTag: Int, commandId: String, commandArgs: ReadableArray?) {
     if (isStopped) {
       return
     }
@@ -730,7 +737,7 @@ internal constructor(
     val viewState =
         getNullableViewState(reactTag)
             ?: throw RetryableMountingLayerException(
-                "Unable to find viewState for tag $reactTag for commandId $commandId"
+                "Unable to find viewState for tag $reactTag for commandId $commandId",
             )
 
     // It's not uncommon for JS to send events as/after a component is being removed from the
@@ -751,14 +758,21 @@ internal constructor(
     viewManager.receiveCommand(view, commandId, commandArgs)
   }
 
-  public fun sendAccessibilityEvent(reactTag: Int, eventType: Int): Unit {
+  public fun sendAccessibilityEvent(reactTag: Int, eventType: Int) {
     if (isStopped) {
       return
     }
 
-    val view = getViewState(reactTag).view
+    val viewState = getNullableViewState(reactTag)
+    val view = viewState?.view
     if (view == null) {
-      throw RetryableMountingLayerException("Unable to find viewState view for tag $reactTag")
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for sendAccessibilityEvent",
+          ),
+      )
+      return
     }
 
     view.sendAccessibilityEvent(eventType)
@@ -774,7 +788,7 @@ internal constructor(
       height: Int,
       displayType: Int,
       layoutDirection: Int,
-  ): Unit {
+  ) {
     if (isStopped) {
       return
     }
@@ -853,7 +867,7 @@ internal constructor(
   }
 
   @UiThread
-  public fun updatePadding(reactTag: Int, left: Int, top: Int, right: Int, bottom: Int): Unit {
+  public fun updatePadding(reactTag: Int, left: Int, top: Int, right: Int, bottom: Int) {
     UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
@@ -887,7 +901,7 @@ internal constructor(
       overflowInsetTop: Int,
       overflowInsetRight: Int,
       overflowInsetBottom: Int,
-  ): Unit {
+  ) {
     if (isStopped) {
       return
     }
@@ -897,7 +911,7 @@ internal constructor(
       ReactSoftExceptionLogger.logSoftException(
           ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
           ReactNoCrashSoftException(
-              "Unable to find viewState for tag $reactTag for updateOverflowInset"
+              "Unable to find viewState for tag $reactTag for updateOverflowInset",
           ),
       )
       return
@@ -921,7 +935,7 @@ internal constructor(
   }
 
   @UiThread
-  public fun updateState(reactTag: Int, stateWrapper: StateWrapper?): Unit {
+  public fun updateState(reactTag: Int, stateWrapper: StateWrapper?) {
     UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
@@ -955,7 +969,7 @@ internal constructor(
 
   /** We update the event emitter from the main thread when the view is mounted. */
   @UiThread
-  internal fun updateEventEmitter(reactTag: Int, eventEmitter: EventEmitterWrapper): Unit {
+  internal fun updateEventEmitter(reactTag: Int, eventEmitter: EventEmitterWrapper) {
     UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
@@ -963,9 +977,8 @@ internal constructor(
 
     // TODO T62717437 - Use a flag to determine that these event emitters belong to virtual nodes
     // only.
-    val viewState: ViewState = registryLock.write {
-      tagToViewState.getOrPut(reactTag) { ViewState(reactTag) }
-    }
+    val viewState: ViewState =
+        registryLock.write { tagToViewState.getOrPut(reactTag) { ViewState(reactTag) } }
 
     val previousEventEmitterWrapper = viewState.eventEmitter
     synchronized(viewState) {
@@ -987,7 +1000,7 @@ internal constructor(
       reactTag: Int,
       initialReactTag: Int,
       blockNativeResponder: Boolean,
-  ): Unit {
+  ) {
     UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
@@ -1000,21 +1013,29 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
-    val view = viewState.view
+    val viewState = getNullableViewState(reactTag)
+
+    val view = viewState?.view
+    if (view == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for setJSResponder",
+          ),
+      )
+      return
+    }
+
     if (initialReactTag != reactTag && view is ViewParent) {
       // In this case, initialReactTag corresponds to a virtual/layout-only View, and we already
       // have a parent of that View in reactTag, so we can use it.
       jsResponderHandler.setJSResponder(initialReactTag, view as ViewParent)
       return
-    } else if (view == null) {
-      SoftAssertions.assertUnreachable("Cannot find view for tag [$reactTag].")
-      return
     }
 
     if (viewState.isRoot) {
       SoftAssertions.assertUnreachable(
-          "Cannot block native responder on [$reactTag] that is a root view"
+          "Cannot block native responder on [$reactTag] that is a root view",
       )
     }
     jsResponderHandler.setJSResponder(initialReactTag, view.parent)
@@ -1040,7 +1061,7 @@ internal constructor(
   }
 
   @UiThread
-  public fun deleteView(reactTag: Int): Unit {
+  public fun deleteView(reactTag: Int) {
     UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
@@ -1087,7 +1108,7 @@ internal constructor(
       props: ReadableMap,
       stateWrapper: StateWrapper?,
       isLayoutable: Boolean,
-  ): Unit {
+  ) {
     UiThreadUtil.assertOnUiThread()
 
     if (isStopped) {
@@ -1114,19 +1135,12 @@ internal constructor(
     val state = getNullableViewState(reactTag)
     return state?.view
         ?: throw IllegalViewOperationException(
-            "Unable to find view for tag $reactTag. Surface $surfaceId stopped: $isStopped, rootViewAttached: $isRootViewAttached"
+            "Unable to find view for tag $reactTag. Surface $surfaceId stopped: $isStopped, rootViewAttached: $isRootViewAttached",
         )
   }
 
-  private fun getViewState(reactTag: Int): ViewState =
-      getNullableViewState(reactTag)
-          ?: throw RetryableMountingLayerException(
-              "Unable to find viewState for tag $reactTag. Surface stopped: $isStopped"
-          )
-
-  private fun getNullableViewState(reactTag: Int): ViewState? = registryLock.read {
-    tagToViewState[reactTag]
-  }
+  private fun getNullableViewState(reactTag: Int): ViewState? =
+      registryLock.read { tagToViewState[reactTag] }
 
   /** Applies a bitmap as the background of the view with the given tag, if it exists. */
   @UiThread
@@ -1135,7 +1149,7 @@ internal constructor(
     view.background = bitmap.toDrawable(view.resources)
   }
 
-  public fun printSurfaceState(): Unit {
+  public fun printSurfaceState() {
     FLog.e(TAG, "Views created for surface $surfaceId:")
     registryLock.read {
       tagToViewState.forEachValue { viewState ->
@@ -1181,7 +1195,7 @@ internal constructor(
               viewState.pendingEventQueue
                   ?: LinkedList<PendingViewEvent>().also { viewState.pendingEventQueue = it }
           queue.add(
-              PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent, eventTimestamp)
+              PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent, eventTimestamp),
           )
           return
         }
@@ -1203,11 +1217,11 @@ internal constructor(
     }
   }
 
-  public fun markActiveTouchForTag(reactTag: Int): Unit {
+  public fun markActiveTouchForTag(reactTag: Int) {
     viewsWithActiveTouches.add(reactTag)
   }
 
-  public fun sweepActiveTouchForTag(reactTag: Int): Unit {
+  public fun sweepActiveTouchForTag(reactTag: Int) {
     viewsWithActiveTouches.remove(reactTag)
     if (viewsToDeleteAfterTouchFinishes.contains(reactTag)) {
       viewsToDeleteAfterTouchFinishes.remove(reactTag)
@@ -1292,7 +1306,7 @@ internal constructor(
             val outputType = outputReadableMap.getType(propKey)
             assert(
                 (outputType == ReadableType.Array || outputType == ReadableType.Null) &&
-                    propValue is List<*>
+                    propValue is List<*>,
             )
             val array = WritableNativeArray()
             for (item in propValue as List<*>) {
@@ -1314,7 +1328,7 @@ internal constructor(
             val outputType = outputReadableMap.getType(propKey)
             assert(
                 (outputType == ReadableType.Number || outputType == ReadableType.Null) &&
-                    propValue is Number
+                    propValue is Number,
             )
             outputReadableMap.putDouble(propKey, (propValue as Number).toDouble())
           }

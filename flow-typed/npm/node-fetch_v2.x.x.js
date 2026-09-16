@@ -17,12 +17,12 @@ declare module 'node-fetch' {
   import type {Readable} from 'stream';
 
   declare type AbortSignal = {
-    +aborted: boolean,
-    +onabort: (event?: {...}) => void,
+    readonly aborted: boolean,
+    readonly onabort: (event?: {...}) => void,
 
-    +addEventListener: (name: string, cb: () => unknown) => void,
-    +removeEventListener: (name: string, cb: () => unknown) => void,
-    +dispatchEvent: (event: {...}) => void,
+    readonly addEventListener: (name: string, cb: () => unknown) => void,
+    readonly removeEventListener: (name: string, cb: () => unknown) => void,
+    readonly dispatchEvent: (event: {...}) => void,
     ...
   };
 
@@ -157,12 +157,7 @@ declare module 'node-fetch' {
   }
 
   declare type ResponseType =
-    | 'basic'
-    | 'cors'
-    | 'default'
-    | 'error'
-    | 'opaque'
-    | 'opaqueredirect';
+    'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 
   declare interface ResponseInit {
     headers?: HeaderInit;
@@ -172,12 +167,7 @@ declare module 'node-fetch' {
 
   declare type HeaderInit = Headers | Array<string>;
   declare type BodyInit =
-    | string
-    | null
-    | Buffer
-    | Blob
-    | Readable
-    | URLSearchParams;
+    string | null | Buffer | Blob | Readable | URLSearchParams;
 
   declare function fetch(
     url: string | URL | Request,

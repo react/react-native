@@ -22,6 +22,7 @@
 #include <react/nativemodule/defaults/DefaultTurboModules.h>
 #include <react/nativemodule/intersectionobserver/NativeIntersectionObserver.h>
 #include <react/nativemodule/mutationobserver/NativeMutationObserver.h>
+#include <react/nativemodule/resizeobserver/NativeResizeObserver.h>
 #include <react/nativemodule/webperformance/NativePerformance.h>
 #include <react/renderer/animated/AnimatedModule.h>
 
@@ -95,6 +96,8 @@ std::shared_ptr<TurboModule> ReactCxxTurboModuleProvider::operator()(
     return std::make_shared<NativeIntersectionObserver>(jsInvoker_);
   } else if (name == NativeMutationObserver::kModuleName) {
     return std::make_shared<NativeMutationObserver>(jsInvoker_);
+  } else if (name == NativeResizeObserver::kModuleName) {
+    return std::make_shared<NativeResizeObserver>(jsInvoker_);
   } else if (name == NetworkingModule::kModuleName) {
     return std::make_shared<NetworkingModule>(jsInvoker_, httpClientFactory_);
   } else if (name == LogBoxModule::kModuleName) {

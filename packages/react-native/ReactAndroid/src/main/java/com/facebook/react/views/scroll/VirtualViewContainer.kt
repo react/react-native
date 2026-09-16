@@ -21,7 +21,7 @@ public interface VirtualView {
   public val virtualViewID: String
   public val containerRelativeRect: Rect
 
-  public fun onModeChange(newMode: VirtualViewMode, thresholdRect: Rect): Unit
+  public fun onModeChange(newMode: VirtualViewMode, thresholdRect: Rect)
 }
 
 /**

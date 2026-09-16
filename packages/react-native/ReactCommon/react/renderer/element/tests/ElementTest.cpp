@@ -26,7 +26,7 @@ TEST(ElementTest, testNormalCases) {
   auto shadowNodeAB = std::shared_ptr<ViewShadowNode>{};
   auto shadowNodeABA = std::shared_ptr<ViewShadowNode>{};
 
-  auto propsAA = std::make_shared<ViewShadowNodeProps>();
+  auto propsAA = std::make_shared<ViewProps>();
   propsAA->nativeId = "node AA";
 
   // clang-format off
@@ -51,7 +51,7 @@ TEST(ElementTest, testNormalCases) {
             .reference(shadowNodeAB)
             .tag(3)
             .props([]() {
-               auto props = std::make_shared<ViewShadowNodeProps>();
+               auto props = std::make_shared<ViewProps>();
                props->nativeId = "node AB";
                return props;
             })
@@ -60,7 +60,7 @@ TEST(ElementTest, testNormalCases) {
                 .reference(shadowNodeABA)
                 .tag(4)
                 .props([]() {
-                  auto props = std::make_shared<ViewShadowNodeProps>();
+                  auto props = std::make_shared<ViewProps>();
                   props->nativeId = "node ABA";
                   return props;
                 })

@@ -83,7 +83,7 @@ public class ReactFontManager {
    *
    * ReactFontManager.getInstance().addCustomFont(this, "Srisakdi", R.font.srisakdi);
    */
-  public fun addCustomFont(context: Context, fontFamily: String, fontId: Int): Unit {
+  public fun addCustomFont(context: Context, fontFamily: String, fontId: Int) {
     addCustomFont(fontFamily, ResourcesCompat.getFont(context, fontId))
   }
 
@@ -91,7 +91,7 @@ public class ReactFontManager {
    * Equivalent method to {@see addCustomFont(Context, String, int)} which accepts a Typeface
    * object.
    */
-  public fun addCustomFont(fontFamily: String, font: Typeface?): Unit {
+  public fun addCustomFont(fontFamily: String, font: Typeface?) {
     if (font != null) {
       customTypefaceCache[fontFamily] = font
     }
@@ -105,7 +105,7 @@ public class ReactFontManager {
    * @see [Typeface.ITALIC]
    * @see [Typeface.BOLD_ITALIC]
    */
-  public fun setTypeface(fontFamilyName: String, style: Int, typeface: Typeface?): Unit {
+  public fun setTypeface(fontFamilyName: String, style: Int, typeface: Typeface?) {
     if (typeface != null) {
       fontCache.getOrPut(fontFamilyName) { AssetFontFamily() }.setTypefaceForStyle(style, typeface)
     }

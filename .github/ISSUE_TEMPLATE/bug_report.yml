@@ -1,10 +1,10 @@
 name: 🐛 React Native - Bug Report
 description: Report a reproducible bug or regression in React Native.
-labels: ["Needs: Triage :mag:"]
+labels: ['Needs: Triage :mag:']
 body:
   - type: markdown
     attributes:
-      value: "## Reporting a bug to React Native"
+      value: '## Reporting a bug to React Native'
   - type: markdown
     attributes:
       value: |
@@ -46,7 +46,7 @@ body:
     attributes:
       label: React Native Version
       description: The version of react-native that this issue reproduces on. Bear in mind that only issues on [supported versions](https://github.com/reactwg/react-native-releases#which-versions-are-currently-supported) will be looked into.
-      placeholder: "0.73.0"
+      placeholder: '0.73.0'
     validations:
       required: true
   - type: dropdown
@@ -111,7 +111,7 @@ body:
     attributes:
       label: MANDATORY Reproducer
       description: A link to either a failing RNTesterPlayground.js file, an Expo Snack or a public repository from [this template](https://github.com/react-native-community/reproducer-react-native) that reproduces this bug. Reproducers are **mandatory**, issues without a reproducer will be closed.
-      placeholder: "https://github.com/<myuser>/<myreproducer>"
+      placeholder: 'https://github.com/<myuser>/<myreproducer>'
     validations:
       required: true
   - type: textarea

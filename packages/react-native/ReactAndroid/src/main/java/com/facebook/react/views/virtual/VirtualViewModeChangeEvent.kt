@@ -29,7 +29,7 @@ internal class VirtualViewModeChangeEvent(
   override fun getEventName(): String = "modeChange"
 
   @VisibleForTesting
-  public override fun getEventData(): WritableMap {
+  override fun getEventData(): WritableMap {
     return Arguments.createMap().apply {
       putInt("mode", mode.value)
       putMap("targetRect", targetRectAsMap)

@@ -25,8 +25,10 @@ constructor(reactContext: ReactApplicationContext? = null) :
 
   public override fun updateExtraData(root: T, extraData: Any): Unit = Unit
 
-  public override fun addView(parent: T, child: View, index: Int): Unit =
-      parent.addView(child, index)
+  public override fun addView(parent: T, child: View, index: Int) {
+    parent.addView(child, index)
+    HasElevatedDescendantCache.invalidateAncestors(parent)
+  }
 
   /**
    * Convenience method for batching a set of addView calls Note that this adds the views to the
@@ -47,6 +49,7 @@ constructor(reactContext: ReactApplicationContext? = null) :
   public override fun removeViewAt(parent: T, index: Int) {
     UiThreadUtil.assertOnUiThread()
     parent.removeViewAt(index)
+    HasElevatedDescendantCache.invalidateAncestors(parent)
   }
 
   /**

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ShadowNodeFamily.h>
 #include <unordered_map>

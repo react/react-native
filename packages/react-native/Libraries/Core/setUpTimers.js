@@ -20,12 +20,6 @@ if (__DEV__) {
 
 // In bridgeless mode, timers are host functions installed from cpp.
 if (global.RN$Bridgeless === true) {
-  // This is the flag that tells React to use `queueMicrotask` to batch state
-  // updates, instead of using the scheduler to schedule a regular task.
-  // We use a global variable because we don't currently have any other
-  // mechanism to pass feature flags from RN to React in OSS.
-  global.RN$enableMicrotasksInReact = true;
-
   polyfillGlobal(
     'queueMicrotask',
     () =>

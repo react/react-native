@@ -130,8 +130,7 @@ class MessageQueue {
   }
 
   flushedQueue():
-    | null
-    | [Array<number>, Array<number>, Array<unknown>, number] {
+    null | [Array<number>, Array<number>, Array<unknown>, number] {
     this.__guard(() => {
       this.__callReactNativeMicrotasks();
     });

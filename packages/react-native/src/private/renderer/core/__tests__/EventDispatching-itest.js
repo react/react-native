@@ -20,112 +20,106 @@ import * as FabricUIManager from 'react-native/Libraries/ReactNative/FabricUIMan
 const UIManager = nullthrows(FabricUIManager.getFabricUIManager());
 
 describe('Event Dispatching', () => {
-  // The OSS renderer hasn't been synced yet to have these changes
-  // TODO(next-major) Remove this condition
-  if (!Fantom.getConstants().isOSS) {
-    it('provides the native event timeStamp (camel case) when available', () => {
-      const root = Fantom.createRoot();
+  it('provides the native event timeStamp (camel case) when available', () => {
+    const root = Fantom.createRoot();
 
-      const ref = React.createRef<React.ElementRef<typeof View>>();
+    const ref = React.createRef<React.ElementRef<typeof View>>();
 
-      const onPointerUp = jest.fn((e: PointerEvent) => {
-        e.persist();
-      });
-
-      Fantom.runTask(() => {
-        root.render(<View ref={ref} onPointerUp={onPointerUp} />);
-      });
-
-      expect(onPointerUp).toHaveBeenCalledTimes(0);
-
-      const NATIVE_EVENT_TIMESTAMP = 1234;
-
-      Fantom.dispatchNativeEvent(
-        ref,
-        'onPointerUp',
-        {x: 0, y: 0, timeStamp: NATIVE_EVENT_TIMESTAMP},
-        {
-          category: Fantom.NativeEventCategory.Discrete,
-        },
-      );
-
-      expect(onPointerUp).toHaveBeenCalledTimes(1);
-      expect(onPointerUp.mock.calls[0][0].timeStamp).toBe(
-        NATIVE_EVENT_TIMESTAMP,
-      );
+    const onPointerUp = jest.fn((e: PointerEvent) => {
+      e.persist();
     });
 
-    it('provides a default timeStamp when the native event timeStamp is NOT available', () => {
-      const root = Fantom.createRoot();
-
-      const ref = React.createRef<React.ElementRef<typeof View>>();
-
-      const onPointerUp = jest.fn((e: PointerEvent) => {
-        e.persist();
-      });
-
-      Fantom.runTask(() => {
-        root.render(<View ref={ref} onPointerUp={onPointerUp} />);
-      });
-
-      expect(onPointerUp).toHaveBeenCalledTimes(0);
-
-      const lowerBound = performance.now();
-
-      Fantom.dispatchNativeEvent(
-        ref,
-        'onPointerUp',
-        {x: 0, y: 0},
-        {
-          category: Fantom.NativeEventCategory.Discrete,
-        },
-      );
-
-      const upperBound = performance.now();
-
-      expect(onPointerUp).toHaveBeenCalledTimes(1);
-      expect(onPointerUp.mock.calls[0][0].timeStamp).toBeGreaterThanOrEqual(
-        lowerBound,
-      );
-      expect(onPointerUp.mock.calls[0][0].timeStamp).toBeLessThanOrEqual(
-        upperBound,
-      );
+    Fantom.runTask(() => {
+      root.render(<View ref={ref} onPointerUp={onPointerUp} />);
     });
 
-    it('exposes dispatched events in the global scope', () => {
-      const root = Fantom.createRoot();
+    expect(onPointerUp).toHaveBeenCalledTimes(0);
 
-      const ref = React.createRef<React.ElementRef<typeof View>>();
+    const NATIVE_EVENT_TIMESTAMP = 1234;
 
-      let globalEventIsDispatchedEvent: boolean = false;
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onPointerUp',
+      {x: 0, y: 0, timeStamp: NATIVE_EVENT_TIMESTAMP},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
 
-      const onPointerUp = jest.fn((e: PointerEvent) => {
-        globalEventIsDispatchedEvent = global.event === e;
-      });
+    expect(onPointerUp).toHaveBeenCalledTimes(1);
+    expect(onPointerUp.mock.calls[0][0].timeStamp).toBe(NATIVE_EVENT_TIMESTAMP);
+  });
 
-      Fantom.runTask(() => {
-        root.render(<View ref={ref} onPointerUp={onPointerUp} />);
-      });
+  it('provides a default timeStamp when the native event timeStamp is NOT available', () => {
+    const root = Fantom.createRoot();
 
-      const globalEventValueBeforeDispatch = {type: 'some-event'};
-      global.event = globalEventValueBeforeDispatch;
+    const ref = React.createRef<React.ElementRef<typeof View>>();
 
-      expect(onPointerUp).toHaveBeenCalledTimes(0);
-
-      Fantom.dispatchNativeEvent(
-        ref,
-        'onPointerUp',
-        {x: 0, y: 0},
-        {
-          category: Fantom.NativeEventCategory.Discrete,
-        },
-      );
-
-      expect(onPointerUp).toHaveBeenCalledTimes(1);
-      expect(globalEventIsDispatchedEvent).toBe(true);
-      expect(global.event).toBe(globalEventValueBeforeDispatch);
+    const onPointerUp = jest.fn((e: PointerEvent) => {
+      e.persist();
     });
-  }
+
+    Fantom.runTask(() => {
+      root.render(<View ref={ref} onPointerUp={onPointerUp} />);
+    });
+
+    expect(onPointerUp).toHaveBeenCalledTimes(0);
+
+    const lowerBound = performance.now();
+
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onPointerUp',
+      {x: 0, y: 0},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
+
+    const upperBound = performance.now();
+
+    expect(onPointerUp).toHaveBeenCalledTimes(1);
+    expect(onPointerUp.mock.calls[0][0].timeStamp).toBeGreaterThanOrEqual(
+      lowerBound,
+    );
+    expect(onPointerUp.mock.calls[0][0].timeStamp).toBeLessThanOrEqual(
+      upperBound,
+    );
+  });
+
+  it('exposes dispatched events in the global scope', () => {
+    const root = Fantom.createRoot();
+
+    const ref = React.createRef<React.ElementRef<typeof View>>();
+
+    let globalEventIsDispatchedEvent: boolean = false;
+
+    const onPointerUp = jest.fn((e: PointerEvent) => {
+      globalEventIsDispatchedEvent = global.event === e;
+    });
+
+    Fantom.runTask(() => {
+      root.render(<View ref={ref} onPointerUp={onPointerUp} />);
+    });
+
+    const globalEventValueBeforeDispatch = {type: 'some-event'};
+    global.event = globalEventValueBeforeDispatch;
+
+    expect(onPointerUp).toHaveBeenCalledTimes(0);
+
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onPointerUp',
+      {x: 0, y: 0},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
+
+    expect(onPointerUp).toHaveBeenCalledTimes(1);
+    expect(globalEventIsDispatchedEvent).toBe(true);
+    expect(global.event).toBe(globalEventValueBeforeDispatch);
+  });
 
   it('dispatches events with discrete priority', () => {
     const root = Fantom.createRoot();

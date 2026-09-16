@@ -26,6 +26,7 @@ exports[`GenerateModuleObjCpp can generate a header file NativeModule specs 1`] 
 #import <RCTRequired/RCTRequired.h>
 #import <RCTTypeSafety/RCTConvertHelpers.h>
 #import <RCTTypeSafety/RCTTypedModuleConstants.h>
+#import <React/RCTArrayBuffer.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTCxxConvert.h>
 #import <React/RCTManagedPointer.h>
@@ -1578,6 +1579,7 @@ exports[`GenerateModuleObjCpp can generate a header file NativeModule specs with
 #import <RCTRequired/RCTRequired.h>
 #import <RCTTypeSafety/RCTConvertHelpers.h>
 #import <RCTTypeSafety/RCTTypedModuleConstants.h>
+#import <React/RCTArrayBuffer.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTCxxConvert.h>
 #import <React/RCTManagedPointer.h>

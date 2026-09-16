@@ -6,6 +6,8 @@ exports[`RN Codegen TypeScript Parser Fails with error message MAP_WITH_EXTRA_KE
 
 exports[`RN Codegen TypeScript Parser Fails with error message MIXED_VALUES_ENUM_NATIVE_MODULE 1`] = `"Module NativeSampleTurboModule: Failed parsing the enum SomeEnum in NativeSampleTurboModule with the error: Enum values can not be mixed. They all must be either blank, number, or string values."`;
 
+exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_EVENT_EMITTER 1`] = `"Module NativeSampleTurboModule: EventEmitter 'onBuffer' cannot have payload type 'ArrayBuffer'."`;
+
 exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY 1`] = `"Module NativeSampleTurboModule: Object property '[object Object]' cannot have type 'ArrayBuffer'."`;
 
 exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_ARRAY_WITH_NO_TYPE_FOR_CONTENT 1`] = `"Module NativeSampleTurboModule: Generic 'Array' must have type parameters."`;
@@ -811,6 +813,62 @@ exports[`RN Codegen TypeScript Parser can generate fixture NAMESPACED_NATIVE_MOD
                   'optional': false,
                   'typeAnnotation': {
                     'type': 'Int32TypeAnnotation'
+                  }
+                }
+              ]
+            }
+          },
+          {
+            'name': 'getFloat',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'FloatTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'arg',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'FloatTypeAnnotation'
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      'moduleName': 'SampleTurboModule'
+    }
+  }
+}"
+`;
+
+exports[`RN Codegen TypeScript Parser can generate fixture NAMESPACED_NATIVE_MODULE_WITH_LOCAL_TYPE_ALIASES 1`] = `
+"{
+  'modules': {
+    'NativeSampleTurboModule': {
+      'type': 'NativeModule',
+      'aliasMap': {},
+      'enumMap': {},
+      'spec': {
+        'eventEmitters': [],
+        'methods': [
+          {
+            'name': 'getDouble',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'DoubleTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'arg',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'DoubleTypeAnnotation'
                   }
                 }
               ]
@@ -2285,6 +2343,36 @@ exports[`RN Codegen TypeScript Parser can generate fixture NATIVE_MODULE_WITH_EV
                 'dictionaryValueType': {
                   'type': 'StringTypeAnnotation'
                 }
+              }
+            }
+          },
+          {
+            'name': 'onEvent8',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'EventEmitterTypeAnnotation',
+              'typeAnnotation': {
+                'type': 'DoubleTypeAnnotation'
+              }
+            }
+          },
+          {
+            'name': 'onEvent9',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'EventEmitterTypeAnnotation',
+              'typeAnnotation': {
+                'type': 'FloatTypeAnnotation'
+              }
+            }
+          },
+          {
+            'name': 'onEvent10',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'EventEmitterTypeAnnotation',
+              'typeAnnotation': {
+                'type': 'Int32TypeAnnotation'
               }
             }
           }

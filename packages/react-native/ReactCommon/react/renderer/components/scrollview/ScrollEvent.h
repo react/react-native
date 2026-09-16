@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <folly/dynamic.h>
 #include <react/renderer/core/EventPayload.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -21,6 +23,7 @@ struct ScrollEvent : public EventPayload {
   EdgeInsets contentInset;
   Size containerSize;
   Float zoomScale{};
+  bool responderIgnoreScroll{false};
 
   /*
    * The time in seconds when the touch occurred or when it was last mutated.

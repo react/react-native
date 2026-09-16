@@ -8,7 +8,7 @@
  * @noflow
  */
 
-const {spawnSync} = require('child_process');
+const {spawnSync} = require('node:child_process');
 
 async function retry(command, options, maxRetries, delay, args) {
   for (let i = 1; i <= maxRetries; i++) {

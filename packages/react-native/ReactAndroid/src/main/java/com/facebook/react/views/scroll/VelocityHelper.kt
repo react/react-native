@@ -28,7 +28,7 @@ internal class VelocityHelper {
    * Call from a ScrollView in onTouchEvent. Calculating the velocity for END_DRAG movement and send
    * them back to react ScrollResponder.js
    */
-  fun calculateVelocity(ev: MotionEvent): Unit {
+  fun calculateVelocity(ev: MotionEvent) {
     if (velocityTracker == null) {
       velocityTracker = VelocityTracker.obtain()
     }

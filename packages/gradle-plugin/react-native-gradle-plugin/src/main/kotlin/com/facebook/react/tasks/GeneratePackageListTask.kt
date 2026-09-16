@@ -39,13 +39,13 @@ abstract class GeneratePackageListTask : DefaultTask() {
                    
                    The file is either missing or not containing valid JSON so the build won't succeed. 
                  """
-                    .trimIndent()
+                    .trimIndent(),
             )
 
     val packageName =
         model.project?.android?.packageName
             ?: error(
-                "RNGP - Autolinking: Could not find project.android.packageName in react-native config output! Could not autolink packages without this field."
+                "RNGP - Autolinking: Could not find project.android.packageName in react-native config output! Could not autolink packages without this field.",
             )
 
     val androidPackages = filterAndroidPackages(model)
@@ -105,7 +105,7 @@ abstract class GeneratePackageListTask : DefaultTask() {
   }
 
   internal fun filterAndroidPackages(
-      model: ModelAutolinkingConfigJson?
+      model: ModelAutolinkingConfigJson?,
   ): Map<String, ModelAutolinkingDependenciesPlatformAndroidJson> {
     val packages = model?.dependencies?.values ?: emptyList()
     return packages

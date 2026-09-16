@@ -13,7 +13,7 @@
 const Dimensions = require('./Dimensions').default;
 
 /**
- * PixelRatio class gives access to the device pixel density.
+ * Provides access to the device's pixel density and font scale.
  *
  * ## Fetching a correctly sized image
  *
@@ -21,7 +21,9 @@ const Dimensions = require('./Dimensions').default;
  * device. A good rule of thumb is to multiply the size of the image you display
  * by the pixel ratio.
  *
- * ```
+ * Example:
+ *
+ * ```tsx
  * var image = getImage({
  *   width: PixelRatio.getPixelSizeForLayoutSize(200),
  *   height: PixelRatio.getPixelSizeForLayoutSize(100),
@@ -55,6 +57,7 @@ const Dimensions = require('./Dimensions').default;
  * rounding is done relative to the root rather than the parent, again to avoid
  * accumulating rounding errors.
  *
+ * @see https://reactnative.dev/docs/pixelratio
  */
 class PixelRatio {
   /**

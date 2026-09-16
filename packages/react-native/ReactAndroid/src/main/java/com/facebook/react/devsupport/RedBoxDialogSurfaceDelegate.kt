@@ -156,7 +156,7 @@ internal class RedBoxDialogSurfaceDelegate(private val devSupportManager: DevSup
             override fun onHostPause() = Unit
 
             override fun onHostDestroy() = Unit
-          }
+          },
       )
     }
   }

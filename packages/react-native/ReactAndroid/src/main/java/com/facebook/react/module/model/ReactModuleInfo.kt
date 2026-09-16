@@ -27,7 +27,7 @@ public class ReactModuleInfo(
       replaceWith =
           ReplaceWith(
               expression =
-                  "ReactModuleInfo(name, className, canOverrideExistingModule, needsEagerInit, isCxxModule, isTurboModule)"
+                  "ReactModuleInfo(name, className, canOverrideExistingModule, needsEagerInit, isCxxModule, isTurboModule)",
           ),
       level = DeprecationLevel.WARNING,
   )

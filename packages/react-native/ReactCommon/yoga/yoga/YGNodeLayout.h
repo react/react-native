@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <stdbool.h>
-
 #include <yoga/YGConfig.h>
 #include <yoga/YGEnums.h>
 #include <yoga/YGMacros.h>

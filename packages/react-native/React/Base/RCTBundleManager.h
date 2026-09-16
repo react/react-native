@@ -72,5 +72,13 @@ typedef NSMutableArray<NSURLQueryItem *> *_Nullable (^RCTPackagerOptionsUpdater)
                     andDefaultGetter:(nullable RCTBridgelessBundleURLGetter)defaultGetter;
 - (void)resetBundleURL;
 @property (nonatomic, nullable) NSURL *bundleURL;
+
+/**
+ * File URL of the most recently downloaded bundle persisted to disk. Only set
+ * when the bundle was fetched from a remote URL (e.g. the packager); nil when
+ * the bundle was loaded from a local file, in which case its location on disk
+ * is the bundleURL itself.
+ */
+@property (nonatomic, nullable) NSURL *downloadedBundleFileURL;
 @property (nonatomic, nonnull) RCTBundleConfiguration *bundleConfig;
 @end

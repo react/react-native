@@ -350,6 +350,31 @@ export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
 
 `;
 
+const NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_EVENT_EMITTER = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import type {EventEmitter} from '../CodegenTypes';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +onBuffer: EventEmitter<ArrayBuffer>;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
 module.exports = {
   NATIVE_MODULES_WITH_READ_ONLY_OBJECT_NO_TYPE_FOR_CONTENT,
   NATIVE_MODULES_WITH_UNNAMED_PARAMS,
@@ -364,4 +389,5 @@ module.exports = {
   NUMERIC_VALUES_ENUM_NATIVE_MODULE,
   MAP_WITH_EXTRA_KEYS_NATIVE_MODULE,
   NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY,
+  NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_EVENT_EMITTER,
 };

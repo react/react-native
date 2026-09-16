@@ -155,7 +155,7 @@ public class ScrollEvent private constructor() : Event<ScrollEvent>() {
     @Deprecated(
         "Use the obtain version that explicitly takes surfaceId as an argument",
         ReplaceWith(
-            "obtain(surfaceId, viewTag, scrollEventType, scrollX, scrollY, xVelocity, yVelocity, contentWidth, contentHeight, scrollViewWidth, scrollViewHeight)"
+            "obtain(surfaceId, viewTag, scrollEventType, scrollX, scrollY, xVelocity, yVelocity, contentWidth, contentHeight, scrollViewWidth, scrollViewHeight)",
         ),
     )
     @JvmStatic

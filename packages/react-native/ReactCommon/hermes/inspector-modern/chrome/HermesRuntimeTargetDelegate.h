@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <ReactCommon/RuntimeExecutor.h>
 
 #include <cxxreact/MessageQueueThread.h>

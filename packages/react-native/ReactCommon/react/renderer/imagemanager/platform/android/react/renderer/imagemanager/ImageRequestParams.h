@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <utility>
 
 #include <react/renderer/graphics/Color.h>
@@ -26,7 +28,7 @@ class ImageRequestParams {
       Float resizeMultiplier,
       bool shouldNotifyLoadEvents,
       SharedColor overlayColor,
-      SharedColor tintColor,
+      std::optional<SharedColor> tintColor,
       Float fadeDuration,
       bool progressiveRenderingEnabled,
       ImageSource loadingIndicatorSource,
@@ -55,14 +57,12 @@ class ImageRequestParams {
   Float resizeMultiplier{};
   bool shouldNotifyLoadEvents{};
   SharedColor overlayColor{};
-  SharedColor tintColor{};
+  std::optional<SharedColor> tintColor{};
   Float fadeDuration{};
   bool progressiveRenderingEnabled{};
   ImageSource loadingIndicatorSource{};
   std::string analyticTag{};
   Size size{};
-  // Consumed by Apple image managers for now; Android keeps Immediate.
-  ImageRequestPriority priority{ImageRequestPriority::Immediate};
 
   bool operator==(const ImageRequestParams &rhs) const = default;
 };

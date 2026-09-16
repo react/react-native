@@ -9,11 +9,14 @@
 declare interface rxjs$UnaryFunction<T, R> {
   (source: T): R;
 }
-declare interface rxjs$OperatorFunction<T, R>
-  extends rxjs$UnaryFunction<rxjs$Observable<T>, rxjs$Observable<R>> {}
+declare interface rxjs$OperatorFunction<T, R> extends rxjs$UnaryFunction<
+  rxjs$Observable<T>,
+  rxjs$Observable<R>,
+> {}
 declare type rxjs$FactoryOrValue<T> = T | (() => T);
-declare interface rxjs$MonoTypeOperatorFunction<T>
-  extends rxjs$OperatorFunction<T, T> {}
+declare interface rxjs$MonoTypeOperatorFunction<
+  T,
+> extends rxjs$OperatorFunction<T, T> {}
 declare interface rxjs$Timestamp<T> {
   value: T;
   timestamp: number;
@@ -29,7 +32,7 @@ declare interface rxjs$Unsubscribable {
 declare type rxjs$TeardownLogic = rxjs$Unsubscribable | Function | void;
 declare interface rxjs$SubscriptionLike extends rxjs$Unsubscribable {
   unsubscribe(): void;
-  +closed: boolean;
+  readonly closed: boolean;
 }
 declare type rxjs$SubscribableOrPromise<T> =
   | rxjs$Subscribable<T>
@@ -47,9 +50,7 @@ declare interface rxjs$Subscribable<T> {
   ): rxjs$Unsubscribable;
 }
 declare type rxjs$ObservableInput<T> =
-  | rxjs$SubscribableOrPromise<T>
-  | Array<T>
-  | Iterable<T>;
+  rxjs$SubscribableOrPromise<T> | Array<T> | Iterable<T>;
 
 declare type rxjs$InteropObservable<T> = {
   [string | unknown]: () => rxjs$Subscribable<T>,
@@ -58,27 +59,27 @@ declare type rxjs$InteropObservable<T> = {
 /** OBSERVER INTERFACES */
 declare interface rxjs$NextObserver<T> {
   closed?: boolean;
-  +next: (value: T) => void;
-  +error?: (err: any) => void;
-  +complete?: () => void;
+  readonly next: (value: T) => void;
+  readonly error?: (err: any) => void;
+  readonly complete?: () => void;
 }
 declare interface rxjs$ErrorObserver<T> {
   closed?: boolean;
-  +next?: (value: T) => void;
-  +error: (err: any) => void;
-  +complete?: () => void;
+  readonly next?: (value: T) => void;
+  readonly error: (err: any) => void;
+  readonly complete?: () => void;
 }
 declare interface rxjs$CompletionObserver<T> {
   closed?: boolean;
-  +next?: (value: T) => void;
-  +error?: (err: any) => void;
-  +complete: () => void;
+  readonly next?: (value: T) => void;
+  readonly error?: (err: any) => void;
+  readonly complete: () => void;
 }
 declare interface rxjs$PartialObserver<T> {
   closed?: boolean;
-  +next?: (value: T) => void;
-  +error?: (err: any) => void;
-  +complete?: () => void;
+  readonly next?: (value: T) => void;
+  readonly error?: (err: any) => void;
+  readonly complete?: () => void;
 }
 declare interface rxjs$Observer<T> {
   closed?: boolean;
@@ -588,8 +589,7 @@ declare module 'rxjs' {
       (<T>(...sources: rxjs$ObservableInput<T>[]) => rxjs$Observable<T[]>),
     from<T>(
       input:
-        | rxjs$ObservableInput<T>
-        | rxjs$ObservableInput<rxjs$ObservableInput<T>>,
+        rxjs$ObservableInput<T> | rxjs$ObservableInput<rxjs$ObservableInput<T>>,
       scheduler?: rxjs$SchedulerLike,
     ): rxjs$Observable<T>,
     ArgumentOutOfRangeError: ArgumentOutOfRangeError,
@@ -630,9 +630,7 @@ declare module 'rxjs' {
     ) => rxjs$Observable<T>) &
       (<T, R>(
         ...observables: (
-          | rxjs$ObservableInput<any>
-          | rxjs$SchedulerLike
-          | number
+          rxjs$ObservableInput<any> | rxjs$SchedulerLike | number
         )[]
       ) => rxjs$Observable<R>) &
       (<T>(
@@ -1736,7 +1734,7 @@ declare module 'rxjs' {
 
   declare class BehaviorSubject<T> extends rxjs$Subject<T> {
     constructor(_value: T): void;
-    +value: T;
+    readonly value: T;
     // @deprecated  This is an internal implementation detail, do not use.
     _subscribe(subscriber: rxjs$Subscriber<T>): rxjs$Subscription;
     getValue(): T;
@@ -1814,7 +1812,7 @@ declare module 'rxjs' {
   declare interface ObjectUnsubscribedError extends Error {}
 
   declare interface UnsubscriptionError extends Error {
-    +errors: any[];
+    readonly errors: any[];
   }
 
   declare interface TimeoutError extends Error {}
@@ -3349,9 +3347,7 @@ declare module 'rxjs/webSocket' {
     _output: rxjs$Subject<T>;
     constructor(
       urlConfigOrSource:
-        | string
-        | WebSocketSubjectConfig<T>
-        | rxjs$Observable<T>,
+        string | WebSocketSubjectConfig<T> | rxjs$Observable<T>,
       destination?: rxjs$Observer<T>,
     ): void;
     lift<R>(operator: rxjs$Operator<T, R>): WebSocketSubject<R>;

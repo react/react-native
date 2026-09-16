@@ -1,0 +1,76 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorSourceMapStatus should render for failed 1`] = `
+<rn-view
+  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessible="true"
+  alignItems="center"
+  flexDirection="row"
+  height="24"
+  paddingHorizontal="8"
+>
+  <rn-image
+    height="14"
+    marginEnd="4"
+    overflow="hidden"
+    resizeMode="cover"
+    source-scale="1"
+    source-size="{48, 42}"
+    source-type="local"
+    source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_alerttriangle.png"
+    tintColor="rgba(243, 83, 105, 1)"
+    width="16"
+  />
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="12"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(243, 83, 105, 1)"
+    includeFontPadding="false"
+    lineHeight="16"
+    overflow="hidden"
+  >
+    Source Map
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorSourceMapStatus should render for pending 1`] = `
+<rn-view
+  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessible="true"
+  alignItems="center"
+  flexDirection="row"
+  height="24"
+  paddingHorizontal="8"
+>
+  <rn-image
+    height="14"
+    marginEnd="4"
+    overflow="hidden"
+    resizeMode="cover"
+    source-scale="1"
+    source-size="{44, 44}"
+    source-type="local"
+    source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_loader.png"
+    tintColor="rgba(250, 186, 48, 1)"
+    transform="[]"
+    width="16"
+  />
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="12"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(250, 186, 48, 1)"
+    includeFontPadding="false"
+    lineHeight="16"
+    overflow="hidden"
+  >
+    Source Map
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorSourceMapStatus should render null for complete 1`] = `null`;

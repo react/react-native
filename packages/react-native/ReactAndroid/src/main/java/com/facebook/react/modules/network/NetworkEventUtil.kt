@@ -6,6 +6,7 @@
  */
 
 @file:Suppress("DEPRECATION_ERROR") // Conflicting okhttp versions
+@file:OptIn(UnstableReactNativeAPI::class)
 
 package com.facebook.react.modules.network
 
@@ -15,7 +16,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.buildReadableArray
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import java.io.IOException
 import java.net.SocketTimeoutException
 import okhttp3.Headers
@@ -39,17 +40,15 @@ internal object NetworkEventUtil {
       requestBodyForDevTools: String?,
       encodedDataLength: Long,
   ) {
-    if (ReactNativeFeatureFlags.enableNetworkEventReporting()) {
-      InspectorNetworkReporter.reportRequestStart(
-          devToolsRequestId,
-          requestUrl,
-          requestMethod,
-          requestHeaders,
-          requestBodyForDevTools.orEmpty(),
-          encodedDataLength,
-      )
-      InspectorNetworkReporter.reportConnectionTiming(devToolsRequestId, requestHeaders)
-    }
+    InspectorNetworkReporter.reportRequestStart(
+        devToolsRequestId,
+        requestUrl,
+        requestMethod,
+        requestHeaders,
+        requestBodyForDevTools.orEmpty(),
+        encodedDataLength,
+    )
+    InspectorNetworkReporter.reportConnectionTiming(devToolsRequestId, requestHeaders)
   }
 
   @JvmStatic
@@ -78,7 +77,7 @@ internal object NetworkEventUtil {
       progress: Long,
       total: Long,
   ) {
-    if (ReactNativeFeatureFlags.enableNetworkEventReporting() && data != null) {
+    if (data != null) {
       InspectorNetworkReporter.reportDataReceived(devToolsRequestId, data)
       InspectorNetworkReporter.maybeStoreResponseBodyIncremental(devToolsRequestId, data)
     }
@@ -118,13 +117,11 @@ internal object NetworkEventUtil {
       data: String?,
       responseType: String,
   ) {
-    if (ReactNativeFeatureFlags.enableNetworkEventReporting()) {
-      InspectorNetworkReporter.maybeStoreResponseBody(
-          devToolsRequestId,
-          data.orEmpty(),
-          responseType == "base64",
-      )
-    }
+    InspectorNetworkReporter.maybeStoreResponseBody(
+        devToolsRequestId,
+        data.orEmpty(),
+        responseType == "base64",
+    )
     reactContext?.emitDeviceEvent(
         "didReceiveNetworkData",
         buildReadableArray {
@@ -142,13 +139,11 @@ internal object NetworkEventUtil {
       data: WritableMap,
       rawData: ByteArray,
   ) {
-    if (ReactNativeFeatureFlags.enableNetworkEventReporting()) {
-      InspectorNetworkReporter.maybeStoreResponseBody(
-          devToolsRequestId,
-          Base64.encodeToString(rawData, Base64.NO_WRAP),
-          true,
-      )
-    }
+    InspectorNetworkReporter.maybeStoreResponseBody(
+        devToolsRequestId,
+        Base64.encodeToString(rawData, Base64.NO_WRAP),
+        true,
+    )
     reactContext?.emitDeviceEvent(
         "didReceiveNetworkData",
         Arguments.createArray().apply {
@@ -166,9 +161,7 @@ internal object NetworkEventUtil {
       error: String?,
       e: Throwable?,
   ) {
-    if (ReactNativeFeatureFlags.enableNetworkEventReporting()) {
-      InspectorNetworkReporter.reportRequestFailed(devToolsRequestId, false)
-    }
+    InspectorNetworkReporter.reportRequestFailed(devToolsRequestId, false)
     reactContext?.emitDeviceEvent(
         "didCompleteNetworkResponse",
         buildReadableArray {
@@ -188,9 +181,7 @@ internal object NetworkEventUtil {
       devToolsRequestId: String,
       encodedDataLength: Long,
   ) {
-    if (ReactNativeFeatureFlags.enableNetworkEventReporting()) {
-      InspectorNetworkReporter.reportResponseEnd(devToolsRequestId, encodedDataLength)
-    }
+    InspectorNetworkReporter.reportResponseEnd(devToolsRequestId, encodedDataLength)
     reactContext?.emitDeviceEvent(
         "didCompleteNetworkResponse",
         buildReadableArray {
@@ -215,15 +206,13 @@ internal object NetworkEventUtil {
       headersBundle.putString(headerName, headerValue)
     }
 
-    if (ReactNativeFeatureFlags.enableNetworkEventReporting()) {
-      InspectorNetworkReporter.reportResponseStart(
-          devToolsRequestId,
-          requestUrl.orEmpty(),
-          statusCode,
-          headers,
-          contentLength,
-      )
-    }
+    InspectorNetworkReporter.reportResponseStart(
+        devToolsRequestId,
+        requestUrl.orEmpty(),
+        statusCode,
+        headers,
+        contentLength,
+    )
     reactContext?.emitDeviceEvent(
         "didReceiveNetworkResponse",
         Arguments.createArray().apply {

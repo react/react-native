@@ -7,6 +7,8 @@
 
 #import "RCTJavaScriptLoader.h"
 
+#import <errno.h>
+#import <string.h>
 #import <sys/stat.h>
 
 #import <cxxreact/JSBundleType.h>
@@ -25,6 +27,7 @@ NSString *const RCTJavaScriptLoaderErrorDomain = @"RCTJavaScriptLoaderErrorDomai
   NSData *_data;
   NSUInteger _length;
   NSInteger _filesChangedCount;
+  NSURL *_downloadedBundleFileURL;
 }
 
 @end
@@ -137,12 +140,20 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
   // modules into JSC as they're required.
   FILE *bundle = fopen(scriptURL.path.UTF8String, "r");
   if (!bundle) {
+    // Read errno before anything else can clobber it. Without it a missing bundle (ENOENT) is
+    // indistinguishable from one that exists but cannot be read (EACCES, EIO), which is the
+    // difference between a packaging bug and a transient filesystem failure.
+    const int openErrno = errno;
     if (error) {
       *error = [NSError
           errorWithDomain:RCTJavaScriptLoaderErrorDomain
                      code:RCTJavaScriptLoaderErrorFailedOpeningFile
                  userInfo:@{
-                   NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Error opening bundle %@", scriptURL.path]
+                   NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Error opening bundle %@ (errno %d: %s)",
+                                                                          scriptURL.path,
+                                                                          openErrno,
+                                                                          strerror(openErrno)],
+                   NSUnderlyingErrorKey : [NSError errorWithDomain:NSPOSIXErrorDomain code:openErrno userInfo:nil]
                  }];
     }
     return nil;
@@ -189,12 +200,17 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 
   struct stat statInfo;
   if (stat(scriptURL.path.UTF8String, &statInfo) != 0) {
+    const int statErrno = errno;
     if (error) {
       *error = [NSError
           errorWithDomain:RCTJavaScriptLoaderErrorDomain
                      code:RCTJavaScriptLoaderErrorFailedStatingFile
                  userInfo:@{
-                   NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Error stating bundle %@", scriptURL.path]
+                   NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Error stating bundle %@ (errno %d: %s)",
+                                                                          scriptURL.path,
+                                                                          statErrno,
+                                                                          strerror(statErrno)],
+                   NSUnderlyingErrorKey : [NSError errorWithDomain:NSPOSIXErrorDomain code:statErrno userInfo:nil]
                  }];
     }
     return nil;
@@ -208,6 +224,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 static void parseHeaders(NSDictionary *headers, RCTSource *source)
 {
   source->_filesChangedCount = [headers[@"X-Metro-Files-Changed-Count"] integerValue];
+}
+
+static NSURL *persistDownloadedBundle(NSData *data, NSError **error)
+{
+  NSString *bundlePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"ReactNativeDevBundle.js"];
+  if (![data writeToFile:bundlePath options:NSDataWritingAtomic error:error]) {
+    return nil;
+  }
+  return [NSURL fileURLWithPath:bundlePath];
 }
 
 static void attemptAsynchronousLoadOfBundleAtURL(
@@ -247,7 +272,7 @@ static void attemptAsynchronousLoadOfBundleAtURL(
                              [@"Could not connect to development server.\n\n"
                                "Ensure the following:\n"
                                "- Node server is running and available on the same network - run 'npm start' from react-native root\n"
-                               "- Node server URL is correctly set in AppDelegate\n"
+                               "- Node server URL is correctly set in your AppDelegate or SceneDelegate factory delegate\n"
                                "- WiFi is enabled and connected to the same network as the Node Server\n\n"
                                "URL: " stringByAppendingString:scriptURL.absoluteString],
                          NSLocalizedFailureReasonErrorKey : error.localizedDescription,
@@ -314,7 +339,24 @@ static void attemptAsynchronousLoadOfBundleAtURL(
           }
         }
 
-        RCTSource *source = RCTSourceCreate(sourceURL, data, data.length);
+        NSError *persistError;
+        NSURL *downloadedBundleFileURL = persistDownloadedBundle(data, &persistError);
+        if (downloadedBundleFileURL == nil) {
+          onComplete(persistError, nil);
+          return;
+        }
+
+        NSError *mappingError;
+        NSData *bundleData = [NSData dataWithContentsOfURL:downloadedBundleFileURL
+                                                   options:NSDataReadingMappedIfSafe
+                                                     error:&mappingError];
+        if (bundleData == nil) {
+          onComplete(mappingError, nil);
+          return;
+        }
+
+        RCTSource *source = RCTSourceCreate(sourceURL, bundleData, static_cast<int64_t>(bundleData.length));
+        source->_downloadedBundleFileURL = downloadedBundleFileURL;
         parseHeaders(headers, source);
         onComplete(nil, source);
       }

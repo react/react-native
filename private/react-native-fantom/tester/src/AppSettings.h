@@ -23,6 +23,11 @@ class AppSettings {
 
   static std::optional<unsigned int> inspectorPort;
 
+  // When true, the tester loads the bundle as a warm-up environment (without
+  // running tests) and then reads JS snippets to evaluate from stdin, acting
+  // as an interactive REPL. See `fantom-cli`.
+  static bool interactive;
+
   static std::optional<folly::dynamic> dynamicFeatureFlags;
 
   static void init(int argc, char *argv[]);

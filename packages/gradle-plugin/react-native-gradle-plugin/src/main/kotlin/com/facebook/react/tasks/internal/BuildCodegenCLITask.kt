@@ -54,7 +54,7 @@ abstract class BuildCodegenCLITask : Exec() {
         windowsAwareBashCommandLine(
             codegenDir.asFile.get().canonicalPath.unixifyPath().plus(BUILD_SCRIPT_PATH),
             bashWindowsHome = bashWindowsHome.orNull,
-        )
+        ),
     )
     super.exec()
   }

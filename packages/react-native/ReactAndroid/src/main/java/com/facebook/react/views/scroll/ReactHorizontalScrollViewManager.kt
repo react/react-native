@@ -250,7 +250,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     val child =
         scrollView.getChildAt(0)
             ?: throw RetryableMountingLayerException(
-                "scrollToEnd called on HorizontalScrollView without child"
+                "scrollToEnd called on HorizontalScrollView without child",
             )
     val right = child.width + scrollView.paddingRight
     scrollView.abortAnimation()
@@ -375,7 +375,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     if (view.fadingEdgeLengthStart > 0 || view.fadingEdgeLengthEnd > 0) {
       view.isHorizontalFadingEdgeEnabled = true
       view.setFadingEdgeLength(
-          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx())
+          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx()),
       )
     } else {
       view.isHorizontalFadingEdgeEnabled = false

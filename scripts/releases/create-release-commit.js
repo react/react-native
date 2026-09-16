@@ -17,7 +17,7 @@ const {
   writeReleaseAssetUrlsToDotSlashFiles,
 } = require('../releases/write-dotslash-release-asset-urls');
 const {parseVersion} = require('./utils/version-utils');
-const {execSync} = require('child_process');
+const {execSync} = require('node:child_process');
 const yargs = require('yargs');
 
 async function main() {

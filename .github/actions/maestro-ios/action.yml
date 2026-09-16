@@ -16,15 +16,23 @@ inputs:
     default: Release
   working-directory:
     required: false
-    default: "."
+    default: '.'
     description: The directory from which metro should be started
+  device-model:
+    required: false
+    default: ''
+    description: Maestro device model name, such as iPhone-17-Pro
+  device-os:
+    required: false
+    default: ''
+    description: Maestro device OS name, such as iOS-26-2
 
 runs:
   using: composite
   steps:
     - name: Installing Maestro
       shell: bash
-      run: export MAESTRO_VERSION=1.40.0; curl -Ls "https://get.maestro.mobile.dev" | bash
+      run: export MAESTRO_VERSION=2.6.1; curl -Ls "https://get.maestro.mobile.dev" | bash
     - name: Installing Maestro dependencies
       shell: bash
       run: |
@@ -63,7 +71,9 @@ runs:
           "${{ inputs.maestro-flow }}" \
           "Hermes" \
           "${{ inputs.flavor }}" \
-          "${{ inputs.working-directory }}"
+          "${{ inputs.working-directory }}" \
+          "${{ inputs.device-model }}" \
+          "${{ inputs.device-os }}"
     - name: Store video record
       if: always()
       uses: actions/upload-artifact@v6

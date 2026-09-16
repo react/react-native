@@ -24,8 +24,8 @@ import java.util.Objects
     level = DeprecationLevel.WARNING,
 )
 internal class ViewAtIndex(
-    @Suppress("NoHungarianNotation") @JvmField public val mTag: Int,
-    @Suppress("NoHungarianNotation") @JvmField public val mIndex: Int,
+    @Suppress("NoHungarianNotation") @JvmField val mTag: Int,
+    @Suppress("NoHungarianNotation") @JvmField val mIndex: Int,
 ) {
 
   override fun equals(other: Any?): Boolean {

@@ -40,7 +40,7 @@ public class ReactScrollViewCommandHelper {
         COMMAND_FLASH_SCROLL_INDICATORS -> viewManager.flashScrollIndicators(scrollView)
         else ->
             throw IllegalArgumentException(
-                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}."
+                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}.",
             )
       }
     }
@@ -60,7 +60,7 @@ public class ReactScrollViewCommandHelper {
         "flashScrollIndicators" -> viewManager.flashScrollIndicators(scrollView)
         else ->
             throw IllegalArgumentException(
-                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}."
+                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}.",
             )
       }
     }

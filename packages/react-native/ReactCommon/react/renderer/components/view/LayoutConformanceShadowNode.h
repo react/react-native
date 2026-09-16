@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/view/LayoutConformanceProps.h>
 #include <react/renderer/components/view/YogaLayoutableShadowNode.h>

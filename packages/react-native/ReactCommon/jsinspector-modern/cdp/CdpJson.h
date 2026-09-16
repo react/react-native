@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <folly/dynamic.h>
 #include <folly/json.h>
 #include <string>

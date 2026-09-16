@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import <react/renderer/components/view/ViewProps.h>
 #import <react/renderer/components/view/ViewShadowNode.h>
+#import <react/renderer/graphics/Color.h>
 
 using namespace facebook::react;
 
@@ -181,6 +182,103 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
 
   view.layer.transform = CATransform3DMakeScale(1, 0, 1);
   XCTAssertNil([view hitTest:CGPointMake(50, 50) withEvent:nil]);
+}
+
+#pragma mark - Full Keyboard Access focusability
+
+static RCTViewComponentView *makeViewWithRole(bool accessible, const std::string &accessibilityRole)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto props = std::make_shared<ViewProps>();
+  props->accessible = accessible;
+  props->accessibilityRole = accessibilityRole;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  return view;
+}
+
+- (void)testInteractiveRolesWithoutUIKitTraitsAreKeyboardFocusable
+{
+  // These roles intentionally map to no interactive UIKit trait, because
+  // VoiceOver conveys them through accessibilityValue. They must still be
+  // reachable under Full Keyboard Access.
+  for (const std::string &role : {"checkbox", "radio", "combobox", "dropdownlist", "menuitem", "spinbutton", "tab"}) {
+    RCTViewComponentView *view = makeViewWithRole(true, role);
+    XCTAssertTrue(view.canBecomeFocused, @"role '%s' should be keyboard focusable", role.c_str());
+  }
+}
+
+- (void)testTraitBackedInteractiveRolesRemainKeyboardFocusable
+{
+  for (const std::string &role :
+       {"button", "togglebutton", "link", "search", "keyboardkey", "adjustable", "imagebutton", "switch"}) {
+    RCTViewComponentView *view = makeViewWithRole(true, role);
+    XCTAssertTrue(view.canBecomeFocused, @"role '%s' should be keyboard focusable", role.c_str());
+  }
+}
+
+- (void)testNonInteractiveRolesAreNotKeyboardFocusable
+{
+  for (const std::string &role : {"none", "text", "header", "image", "progressbar", "timer"}) {
+    RCTViewComponentView *view = makeViewWithRole(true, role);
+    XCTAssertFalse(view.canBecomeFocused, @"role '%s' should not be keyboard focusable", role.c_str());
+  }
+}
+
+- (void)testNonAccessibleViewIsNotKeyboardFocusable
+{
+  // An interactive role on a view opted out of accessibility must stay
+  // unreachable, otherwise the focus ring lands on an invisible element.
+  RCTViewComponentView *view = makeViewWithRole(false, "button");
+  XCTAssertFalse(view.canBecomeFocused);
+}
+
+- (void)testViewWithoutRoleIsNotKeyboardFocusable
+{
+  RCTViewComponentView *view = makeViewWithRole(true, "");
+  XCTAssertFalse(view.canBecomeFocused);
+}
+
+#pragma mark - outline style on square corners (#57841)
+
+static RCTViewComponentView *makeViewWithOutlineStyle(OutlineStyle outlineStyle)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  view.frame = CGRectMake(0, 0, 100, 100);
+
+  auto props = std::make_shared<ViewProps>();
+  props->outlineWidth = 8;
+  props->outlineColor = colorFromRGBA(255, 165, 0, 255);
+  props->outlineStyle = outlineStyle;
+
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+  return view;
+}
+
+- (void)testSquareSolidOutlineUsesCoreAnimationBorder
+{
+  // Solid outlines keep the cheaper Core Animation path.
+  RCTViewComponentView *view = makeViewWithOutlineStyle(OutlineStyle::Solid);
+  CALayer *outlineLayer = [view valueForKey:@"_outlineLayer"];
+
+  XCTAssertNotNil(outlineLayer);
+  XCTAssertEqualWithAccuracy(outlineLayer.borderWidth, 8.0, 0.001);
+  XCTAssertNil(outlineLayer.contents);
+}
+
+- (void)testSquareDottedAndDashedOutlinesAreDrawnWithCoreGraphics
+{
+  // A view without border radii used to take the Core Animation path, which can
+  // only render solid contours, so `outlineStyle` was silently dropped.
+  for (OutlineStyle outlineStyle : {OutlineStyle::Dotted, OutlineStyle::Dashed}) {
+    RCTViewComponentView *view = makeViewWithOutlineStyle(outlineStyle);
+    CALayer *outlineLayer = [view valueForKey:@"_outlineLayer"];
+
+    XCTAssertNotNil(outlineLayer);
+    XCTAssertEqualWithAccuracy(outlineLayer.borderWidth, 0.0, 0.001);
+    XCTAssertNotNil(outlineLayer.contents);
+  }
 }
 
 @end

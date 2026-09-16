@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include "AppleSwitchShadowNode.h"
 
 #include <react/renderer/core/ConcreteComponentDescriptor.h>

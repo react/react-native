@@ -61,14 +61,14 @@ function publishAndroidArtifactsToMaven(
   // We want to gate ourselves against accidentally publishing a 1.x or a 1000.x on
   // maven central which will break the semver for our artifacts.
   if (buildType === 'release' && releaseVersion.startsWith('0.')) {
-    // -------- For stable releases, we also need to close and release the staging repository.
+    // -------- The Android job already uploaded and closed this staging repository.
     if (
       exec(
-        './gradlew publishAndroidToSonatype closeAndReleaseSonatypeStagingRepository',
+        './gradlew findSonatypeStagingRepository releaseSonatypeStagingRepository',
       ).code
     ) {
       echo(
-        'Failed to close and release the staging repository on Sonatype (Maven Central) for Android artifacts',
+        'Failed to release the staging repository on Sonatype (Maven Central) for Android artifacts',
       );
       exit(1);
     }

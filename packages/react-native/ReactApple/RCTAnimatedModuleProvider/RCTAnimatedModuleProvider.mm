@@ -7,12 +7,15 @@
 
 #import "RCTAnimatedModuleProvider.h"
 
+#import "RCTAnimatedModuleProvider+Private.h"
+
 #import <functional>
 
 #if TARGET_OS_OSX
 #import <React/RCTPlatformDisplayLink.h>
 #else
 #import <QuartzCore/CADisplayLink.h>
+#import <UIKit/UIKit.h>
 #endif
 
 #import <react/featureflags/ReactNativeFeatureFlags.h>
@@ -28,6 +31,21 @@
   std::function<void()> _onRender;
 
   std::weak_ptr<facebook::react::NativeAnimatedNodesManagerProvider> _nativeAnimatedNodesManagerProvider;
+
+  BOOL _skipFramesDuringForegroundTransition;
+}
+
+- (instancetype)init
+{
+  return [self initWithSkipFramesDuringForegroundTransition:NO];
+}
+
+- (instancetype)initWithSkipFramesDuringForegroundTransition:(BOOL)skipFramesDuringForegroundTransition
+{
+  if (self = [super init]) {
+    _skipFramesDuringForegroundTransition = skipFramesDuringForegroundTransition;
+  }
+  return self;
 }
 
 - (void)dealloc
@@ -61,6 +79,15 @@
   // use-after-free during hot reload. The provider must remain alive for the
   // entire duration of _onRender() since it holds references to the animation
   // nodes manager and related data structures.
+#if !TARGET_OS_OSX
+  // See initWithSkipFramesDuringForegroundTransition: the frame is skipped,
+  // never the clock.
+  if (_skipFramesDuringForegroundTransition &&
+      UIApplication.sharedApplication.applicationState == UIApplicationStateInactive) {
+    return;
+  }
+#endif
+
   auto strongProvider = _nativeAnimatedNodesManagerProvider.lock();
   if (strongProvider != nullptr && _displayLink != nullptr && _onRender != nullptr) {
     _onRender();

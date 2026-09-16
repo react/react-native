@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2b0cbc5249ac34ae7f030a9c0fffd1f3>>
+ * @generated SignedSource<<2f9a2ea0c223b08d9d1ea4517fd9671b>>
  */
 
 /**
@@ -38,6 +38,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator
+import com.facebook.react.uimanager.HasChildPressedStateDelay
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions
@@ -63,6 +64,7 @@ import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_DISA
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_END
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_START
 import com.facebook.react.views.scroll.ReactScrollViewHelper.findNextFocusableView
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import com.facebook.systrace.Systrace
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -93,7 +95,8 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     HasFlingAnimator,
     HasScrollEventThrottle,
     HasSmoothScroll,
-    VirtualViewContainer {
+    VirtualViewContainer,
+    HasChildPressedStateDelay {
 
   private companion object {
     private var scrollerField: java.lang.reflect.Field? = null
@@ -107,16 +110,21 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override var stateWrapper: StateWrapper? = null
   override var scrollEventThrottle: Int = 0
   override var lastScrollDispatchTime: Long = 0L
+  override var hasChildPressedStateDelay: Boolean? = null
 
-  public open var pointerEvents: PointerEvents = PointerEvents.AUTO
+  open var pointerEvents: PointerEvents = PointerEvents.AUTO
+    set(value) {
+      field = value
+      ImportantForInteractionHelper.setImportantForInteraction(this, value, _overflow)
+    }
 
-  public open var fadingEdgeLengthStart: Int = 0
+  open var fadingEdgeLengthStart: Int = 0
     set(value) {
       field = value
       invalidate()
     }
 
-  public open var fadingEdgeLengthEnd: Int = 0
+  open var fadingEdgeLengthEnd: Int = 0
     set(value) {
       field = value
       invalidate()
@@ -314,58 +322,58 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     }
   }
 
-  public open fun setDisableIntervalMomentum(disableIntervalMomentum: Boolean) {
+  open fun setDisableIntervalMomentum(disableIntervalMomentum: Boolean) {
     this.disableIntervalMomentum = disableIntervalMomentum
   }
 
-  public open fun setSendMomentumEvents(sendMomentumEvents: Boolean) {
+  open fun setSendMomentumEvents(sendMomentumEvents: Boolean) {
     this.sendMomentumEvents = sendMomentumEvents
   }
 
-  public open fun setScrollPerfTag(scrollPerfTag: String?) {
+  open fun setScrollPerfTag(scrollPerfTag: String?) {
     this.scrollPerfTag = scrollPerfTag
   }
 
-  public open fun setPagingEnabled(pagingEnabled: Boolean) {
+  open fun setPagingEnabled(pagingEnabled: Boolean) {
     this.pagingEnabled = pagingEnabled
   }
 
-  public open fun setScrollsChildToFocus(scrollsChildToFocus: Boolean) {
+  open fun setScrollsChildToFocus(scrollsChildToFocus: Boolean) {
     this.scrollsChildToFocus = scrollsChildToFocus
   }
 
-  public open fun setDecelerationRate(decelerationRate: Float) {
+  open fun setDecelerationRate(decelerationRate: Float) {
     reactScrollViewScrollState.decelerationRate = decelerationRate
     scroller?.setFriction(1.0f - decelerationRate)
   }
 
-  public open fun abortAnimation() {
+  open fun abortAnimation() {
     if (scroller != null && !scroller.isFinished) {
       scroller.abortAnimation()
     }
   }
 
-  public open fun setSnapInterval(snapInterval: Int) {
+  open fun setSnapInterval(snapInterval: Int) {
     this.snapInterval = snapInterval
   }
 
-  public open fun setSnapOffsets(snapOffsets: List<Int>?) {
+  open fun setSnapOffsets(snapOffsets: List<Int>?) {
     this.snapOffsets = snapOffsets
   }
 
-  public open fun setSnapToStart(snapToStart: Boolean) {
+  open fun setSnapToStart(snapToStart: Boolean) {
     this.snapToStart = snapToStart
   }
 
-  public open fun setSnapToEnd(snapToEnd: Boolean) {
+  open fun setSnapToEnd(snapToEnd: Boolean) {
     this.snapToEnd = snapToEnd
   }
 
-  public open fun setSnapToAlignment(snapToAlignment: Int) {
+  open fun setSnapToAlignment(snapToAlignment: Int) {
     this.snapToAlignment = snapToAlignment
   }
 
-  public open fun flashScrollIndicators() {
+  open fun flashScrollIndicators() {
     awakenScrollBars()
   }
 
@@ -379,21 +387,23 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     return fadingEdgeLengthEnd / max
   }
 
-  public open fun setOverflow(overflow: String?) {
+  open fun setOverflow(overflow: String?) {
     _overflow =
         if (overflow == null) {
           Overflow.SCROLL
         } else {
-          Overflow.fromString(overflow)
-              ?: if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid())
-                  Overflow.VISIBLE
-              else Overflow.SCROLL
+          Overflow.fromString(
+              overflow,
+              if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
+              else Overflow.SCROLL,
+          )
         }
+    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
     invalidate()
   }
 
   internal open fun setMaintainVisibleContentPosition(
-      config: MaintainVisibleScrollPositionHelper.Config?
+      config: MaintainVisibleScrollPositionHelper.Config?,
   ) {
     if (config != null && maintainVisibleContentPositionHelper == null) {
       maintainVisibleContentPositionHelper =
@@ -551,6 +561,9 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
   }
+
+  override fun shouldDelayChildPressedState(): Boolean =
+      hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false
@@ -761,7 +774,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     super.draw(canvas)
   }
 
-  public override fun onDraw(canvas: Canvas) {
+  override fun onDraw(canvas: Canvas) {
     if (_overflow != Overflow.VISIBLE) {
       BackgroundStyleApplicator.clipToPaddingBox(this, canvas)
     }
@@ -1060,7 +1073,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
   private fun getSnapInterval(): Int = if (snapInterval != 0) snapInterval else height
 
-  public open fun setEndFillColor(color: Int) {
+  open fun setEndFillColor(color: Int) {
     if (color != endFillColor) {
       endFillColor = color
       endBackground = ColorDrawable(endFillColor)
@@ -1101,7 +1114,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     contentView = null
   }
 
-  public open fun setContentOffset(value: ReadableMap?) {
+  open fun setContentOffset(value: ReadableMap?) {
     if (currentContentOffset == null || currentContentOffset != value) {
       currentContentOffset = value
       if (value != null) {
@@ -1213,7 +1226,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     BackgroundStyleApplicator.setBackgroundColor(this, color)
   }
 
-  public open fun setBorderWidth(position: Int, width: Float) {
+  open fun setBorderWidth(position: Int, width: Float) {
     BackgroundStyleApplicator.setBorderWidth(
         this,
         LogicalEdge.entries[position],
@@ -1221,22 +1234,22 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     )
   }
 
-  public open fun setBorderColor(position: Int, color: Int?) {
+  open fun setBorderColor(position: Int, color: Int?) {
     BackgroundStyleApplicator.setBorderColor(this, LogicalEdge.entries[position], color)
   }
 
-  public open fun setBorderRadius(borderRadius: Float) {
+  open fun setBorderRadius(borderRadius: Float) {
     setBorderRadius(borderRadius, BorderRadiusProp.BORDER_RADIUS.ordinal)
   }
 
-  public open fun setBorderRadius(borderRadius: Float, position: Int) {
+  open fun setBorderRadius(borderRadius: Float, position: Int) {
     val radius =
         if (borderRadius.isNaN()) null
         else LengthPercentage(PixelUtil.toDIPFromPixel(borderRadius), LengthPercentageType.POINT)
     BackgroundStyleApplicator.setBorderRadius(this, BorderRadiusProp.entries[position], radius)
   }
 
-  public open fun setBorderStyle(style: String?) {
+  open fun setBorderStyle(style: String?) {
     BackgroundStyleApplicator.setBorderStyle(
         this,
         if (style == null) null else BorderStyle.fromString(style),
@@ -1256,11 +1269,11 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
    * that you are **not** overriding the NestedScrollView content view to pass in a `translateY` style.
    * `translateY` must never be set from ReactJS while using this feature!
    */
-  public open fun setScrollAwayPaddingEnabledUnstable(topPadding: Int, bottomPadding: Int) {
+  open fun setScrollAwayPaddingEnabledUnstable(topPadding: Int, bottomPadding: Int) {
     setScrollAwayPaddingEnabledUnstable(topPadding, bottomPadding, true)
   }
 
-  public open fun setScrollAwayPaddingEnabledUnstable(
+  open fun setScrollAwayPaddingEnabledUnstable(
       topPadding: Int,
       bottomPadding: Int,
       updateState: Boolean,

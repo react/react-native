@@ -76,7 +76,8 @@ class YG_EXPORT Config : public ::YGConfig {
 
   uint32_t version_ = 0;
   ExperimentalFeatureSet experimentalFeatures_{};
-  Errata errata_ = Errata::MinSizeUndefinedInsteadOfAuto;
+  Errata errata_ = Errata::MinSizeUndefinedInsteadOfAuto |
+      Errata::FlexFirstPassUsesRunningTotals;
   float pointScaleFactor_ = 1.0f;
   void* context_ = nullptr;
 };

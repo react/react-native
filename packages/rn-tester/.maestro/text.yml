@@ -2,20 +2,20 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 ---
 - runFlow: ./helpers/launch-app-and-search.yml
 - inputText:
-    text: "Text"
+    text: 'Text'
 - assertVisible:
-    id: "Text"
+    id: 'Text'
 - tapOn:
-    id: "Text"
+    id: 'Text'
 - assertVisible:
-    id: "example_search"
+    id: 'example_search'
 - tapOn:
-    id: "example_search"
+    id: 'example_search'
 - inputText:
-    text: "Background Color"
+    text: 'Background Color'
 - hideKeyboard
-- assertVisible: "Text with background color only"
-- assertVisible: "Text with background color and uniform borderRadii"
-- assertVisible: "Text with background color and non-uniform borders"
-- assertVisible: "Text with borderWidth"
-- assertVisible: "Text with background AND borderWidth"
+- assertVisible: 'Text with background color only'
+- assertVisible: 'Text with background color and uniform borderRadii'
+- assertVisible: 'Text with background color and non-uniform borders'
+- assertVisible: 'Text with borderWidth'
+- assertVisible: 'Text with background AND borderWidth'

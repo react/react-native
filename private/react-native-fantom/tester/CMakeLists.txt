@@ -38,6 +38,10 @@ add_fantom_third_party_subdir(folly)
 add_fantom_third_party_subdir(gflags)
 add_fantom_third_party_subdir(nlohmann_json)
 
+# Marks everything added below as React Native's own build, to enable private
+# includes in Fantom.
+add_compile_definitions(RN_BUILDING)
+
 add_subdirectory(${FANTOM_CODEGEN_DIR} codegen)
 
 add_library(glog_init INTERFACE)
@@ -58,6 +62,7 @@ add_react_common_subdir(jsitooling)
 add_react_common_subdir(logger)
 add_react_common_subdir(oscompat)
 add_react_common_subdir(react/bridging)
+add_react_common_subdir(react/cxxstableapi)
 add_react_common_subdir(react/debug)
 add_react_common_subdir(react/featureflags)
 add_react_common_subdir(react/nativemodule/core)
@@ -71,6 +76,7 @@ add_react_common_subdir(react/nativemodule/idlecallbacks)
 add_react_common_subdir(react/nativemodule/intersectionobserver)
 add_react_common_subdir(react/nativemodule/microtasks)
 add_react_common_subdir(react/nativemodule/mutationobserver)
+add_react_common_subdir(react/nativemodule/resizeobserver)
 add_react_common_subdir(react/nativemodule/viewtransition)
 add_react_common_subdir(react/nativemodule/webperformance)
 add_react_common_subdir(react/performance/cdpmetrics)
@@ -101,6 +107,7 @@ add_react_common_subdir(react/renderer/mounting)
 add_react_common_subdir(react/renderer/observers/events)
 add_react_common_subdir(react/renderer/observers/intersection)
 add_react_common_subdir(react/renderer/observers/mutation)
+add_react_common_subdir(react/renderer/observers/resize)
 add_react_common_subdir(react/renderer/runtimescheduler)
 add_react_common_subdir(react/renderer/scheduler)
 add_react_common_subdir(react/renderer/telemetry)
@@ -189,6 +196,7 @@ target_link_libraries(fantom_tester
     react_nativemodule_intersectionobserver
     react_nativemodule_microtasks
     react_nativemodule_mutationobserver
+    react_nativemodule_resizeobserver
     react_nativemodule_viewtransition
     react_nativemodule_webperformance
     react_performance_cdpmetrics
@@ -208,6 +216,7 @@ target_link_libraries(fantom_tester
     react_renderer_observers_events
     react_renderer_observers_intersection
     react_renderer_observers_mutation
+    react_renderer_observers_resize
     react_renderer_runtimescheduler
     react_renderer_scheduler
     react_renderer_telemetry

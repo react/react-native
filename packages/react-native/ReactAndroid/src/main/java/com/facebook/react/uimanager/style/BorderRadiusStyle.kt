@@ -161,11 +161,11 @@ internal data class BorderRadiusStyle(
                     CornerRadii(it, width, height)
                   } ?: zeroRadii,
               topRight =
-                  (endStart ?: topEnd ?: topRight ?: uniform)?.let {
+                  (startEnd ?: topEnd ?: topRight ?: uniform)?.let {
                     CornerRadii(it, width, height)
                   } ?: zeroRadii,
               bottomLeft =
-                  (startEnd ?: bottomStart ?: bottomLeft ?: uniform)?.let {
+                  (endStart ?: bottomStart ?: bottomLeft ?: uniform)?.let {
                     CornerRadii(it, width, height)
                   } ?: zeroRadii,
               bottomRight =
@@ -179,7 +179,7 @@ internal data class BorderRadiusStyle(
           if (I18nUtil.instance.doLeftAndRightSwapInRTL(context)) {
             ensureNoOverlap(
                 topLeft =
-                    (endStart ?: topEnd ?: topRight ?: uniform)?.let {
+                    (startEnd ?: topEnd ?: topRight ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 topRight =
@@ -191,7 +191,7 @@ internal data class BorderRadiusStyle(
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 bottomRight =
-                    (startEnd ?: bottomStart ?: bottomLeft ?: uniform)?.let {
+                    (endStart ?: bottomStart ?: bottomLeft ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 width = width,
@@ -200,7 +200,7 @@ internal data class BorderRadiusStyle(
           } else {
             ensureNoOverlap(
                 topLeft =
-                    (endStart ?: topEnd ?: topLeft ?: uniform)?.let {
+                    (startEnd ?: topEnd ?: topLeft ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 topRight =
@@ -212,7 +212,7 @@ internal data class BorderRadiusStyle(
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 bottomRight =
-                    (startEnd ?: bottomEnd ?: bottomRight ?: uniform)?.let {
+                    (endStart ?: bottomEnd ?: bottomRight ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 width = width,

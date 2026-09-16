@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <UIKit/UIKit.h>
 
 #include <react/renderer/graphics/RCTPlatformColorUtils.h>
@@ -24,6 +26,10 @@ inline static NSTextAlignment RCTNSTextAlignmentFromTextAlignment(facebook::reac
       return NSTextAlignmentCenter;
     case facebook::react::TextAlignment::Justified:
       return NSTextAlignmentJustified;
+    case facebook::react::TextAlignment::Start:
+      return NSTextAlignmentNatural;
+    case facebook::react::TextAlignment::End:
+      return NSTextAlignmentRight;
   }
 }
 

@@ -10,6 +10,7 @@
  */
 
 import type {NodePath} from '@babel/traverse';
+import type {TSType as BabelNodeTSType} from '@babel/types';
 
 import traverse from '@babel/traverse';
 

@@ -2,15 +2,15 @@
 # Android versions
 minSdk = "24"
 targetSdk = "36"
-compileSdk = "36"
-buildTools = "36.0.0"
+compileSdk = "37"
+buildTools = "37.0.0"
 ndkVersion = "27.1.12297006"
 # Dependencies versions
 agp = "9.2.1"
 androidx-annotation = "1.6.0"
 androidx-appcompat = "1.7.0"
 androidx-autofill = "1.3.0"
-androidx-collection = "1.4.0"
+androidx-collection = "1.4.4"
 androidx-benchmark-macro-junit4 = "1.3.3"
 androidx-profileinstaller = "1.4.1"
 androidx-swiperefreshlayout = "1.1.0"
@@ -23,7 +23,7 @@ binary-compatibility-validator = "0.13.2"
 download = "5.4.0"
 espresso-core = "3.6.1"
 fbjni = "0.7.0"
-fresco = "3.6.0"
+fresco = "3.7.0"
 infer-annotation = "0.18.0"
 javax-annotation-api = "1.3.2"
 javax-inject = "1"
@@ -31,7 +31,6 @@ jsc-android = "2026004.0.1"
 jsr305 = "3.0.2"
 junit = "4.13.2"
 kotlin = "2.2.0"
-ktfmt = "0.22.0"
 mockito = "3.12.4"
 mockito-kotlin = "3.2.0"
 nexus-publish = "2.0.0"
@@ -97,7 +96,6 @@ thoughtworks = {module = "com.thoughtworks.xstream:xstream", version.ref = "xstr
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 download = { id = "de.undercouch.download", version.ref = "download" }
-ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }

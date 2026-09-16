@@ -20,9 +20,9 @@ import createKeepFileAsync from './createKeepFileAsync';
 import filterPlatformAssetScales from './filterPlatformAssetScales';
 import getAssetDestPathAndroid from './getAssetDestPathAndroid';
 import getAssetDestPathIOS from './getAssetDestPathIOS';
-import fs from 'fs';
-import path from 'path';
-import {styleText} from 'util';
+import fs from 'node:fs';
+import path from 'node:path';
+import {styleText} from 'node:util';
 
 type CopiedFiles = {
   [src: string]: string,
@@ -74,12 +74,7 @@ async function saveAssets(
     cleanAssetCatalog(catalogDir);
     for (const asset of assets) {
       if (isCatalogAsset(asset)) {
-        const imageSet = getImageSet(
-          catalogDir,
-          asset,
-          filterPlatformAssetScales(platform, asset.scales),
-        );
-        writeImageSet(imageSet);
+        writeImageSet(getImageSet(catalogDir, asset));
       } else {
         addAssetToCopy(asset);
       }

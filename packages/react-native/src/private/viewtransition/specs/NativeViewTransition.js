@@ -25,7 +25,7 @@ export interface Spec extends TurboModule {
   };
   readonly findPseudoElementShadowNodeByTag: (
     reactTag: number,
-  ) => ?unknown /* Node */;
+  ) => ?unknown; /* Node */
   readonly waitForTransitionAnimation: (animationId: number) => void;
   readonly transitionAnimationFinished: (animationId: number) => void;
 }

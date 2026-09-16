@@ -33,24 +33,26 @@ def add_rn_third_party_dependencies(s)
             s.dependency "RCT-Folly/Fabric"
         end
 
-        header_search_paths = current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] || []
-
-        if header_search_paths.is_a?(String)
-            header_search_paths = header_search_paths.split(" ")
-        end
-
-        header_search_paths << "$(PODS_ROOT)/glog"
-        header_search_paths << "$(PODS_ROOT)/boost"
-        header_search_paths << "$(PODS_ROOT)/DoubleConversion"
-        header_search_paths << "$(PODS_ROOT)/fast_float/include"
-        header_search_paths << "$(PODS_ROOT)/fmt/include"
-        header_search_paths << "$(PODS_ROOT)/SocketRocket"
-        header_search_paths << "$(PODS_ROOT)/RCT-Folly"
-
-        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths
+        ReactNativeDependenciesUtils.append_header_search_paths(current_pod_target_xcconfig, [
+            "$(PODS_ROOT)/glog",
+            "$(PODS_ROOT)/boost",
+            "$(PODS_ROOT)/DoubleConversion",
+            "$(PODS_ROOT)/fast_float/include",
+            "$(PODS_ROOT)/fmt/include",
+            "$(PODS_ROOT)/SocketRocket",
+            "$(PODS_ROOT)/RCT-Folly",
+        ])
     else
+        # Prebuilt-deps mode: this pod SELF-SERVES the third-party headers from its
+        # own xcframework (incl. SocketRocket - sole supplier in this mode). See
+        # scripts/cocoapods/__docs__/prebuilt-deps.md for the full contract.
         s.dependency "ReactNativeDependencies"
-        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] ||= [] << "$(PODS_ROOT)/ReactNativeDependencies"
+
+        # Artifact headers are flattened into the pod-local Headers/ by the podspec
+        # prepare_command (see __docs__/prebuilt-deps.md).
+        ReactNativeDependenciesUtils.append_header_search_paths(current_pod_target_xcconfig, [
+            "$(PODS_ROOT)/ReactNativeDependencies/Headers",
+        ])
     end
 
     s.pod_target_xcconfig = current_pod_target_xcconfig
@@ -133,10 +135,75 @@ class ReactNativeDependenciesUtils
         end
     end
 
+    # Xcode splits HEADER_SEARCH_PATHS on whitespace, so every path we add is
+    # quoted - PODS_ROOT can expand to a directory with spaces in its name.
+    # Paths already in the xcconfig are left untouched: they carry the podspec
+    # author's own quoting, and re-quoting them would break it.
+    def self.append_header_search_paths(xcconfig, paths)
+        quoted = paths.map { |path| "\"#{path}\"" }
+        existing = xcconfig["HEADER_SEARCH_PATHS"]
+
+        # reject so a second call on the same spec can't duplicate entries.
+        case existing
+        when nil
+            xcconfig["HEADER_SEARCH_PATHS"] = quoted
+        when Array
+            xcconfig["HEADER_SEARCH_PATHS"] = existing + quoted.reject { |path| existing.include?(path) }
+        else
+            xcconfig["HEADER_SEARCH_PATHS"] = ([existing] + quoted.reject { |path| existing.include?(path) }).join(" ")
+        end
+    end
+
     def self.abort_if_use_local_rndeps_with_no_file()
       if !File.exist?(ENV["RCT_USE_LOCAL_RN_DEP"])
         abort("RCT_USE_LOCAL_RN_DEP is set to #{ENV["RCT_USE_LOCAL_RN_DEP"]} but the file does not exist!")
       end
+    end
+
+    # Single post-install injection site for the prebuilt deps header resolution.
+    # Adds the flattened ReactNativeDependencies/Headers search path to the
+    # aggregate (main app) target AND every pod target, mirroring
+    # ReactNativeCoreUtils.configure_aggregate_xcconfig. ReactNativeHeaders is
+    # pure-RN, so this path is the single global home of the third-party
+    # namespaces (folly/glog/boost/fmt/double-conversion/fast_float/
+    # SocketRocket): pods that never call add_rn_third_party_dependencies (nor
+    # depend on a facade) still compile RN headers that textually reach
+    # <folly/...>. No module-map activation needed — the deps headers are
+    # served textually; modules come from the ReactNativeDependencies pod.
+    def self.configure_aggregate_xcconfig(installer)
+        return if @@build_from_source
+
+        rndeps_log("Configuring xcconfig for prebuilt React Native Dependencies...")
+        headers_search_path = " \"$(PODS_ROOT)/ReactNativeDependencies/Headers\""
+
+        # Add the header search path to aggregate target xcconfigs (used by the main app target)
+        installer.aggregate_targets.each do |aggregate_target|
+            aggregate_target.xcconfigs.each do |config_name, config_file|
+                ReactNativePodsUtils.add_flag_to_map_with_inheritance(config_file.attributes, "HEADER_SEARCH_PATHS", headers_search_path)
+                xcconfig_path = aggregate_target.xcconfig_path(config_name)
+                config_file.save_as(xcconfig_path)
+            end
+        end
+
+        # Add the header search path to ALL pod targets (for pods that don't go
+        # through add_rn_third_party_dependencies)
+        installer.pod_targets.each do |pod_target|
+            pod_target.build_settings.each do |config_name, build_settings|
+                xcconfig_path = pod_target.xcconfig_path(config_name)
+                next unless File.exist?(xcconfig_path)
+
+                xcconfig = Xcodeproj::Config.new(xcconfig_path)
+
+                # Skip if the deps header search path is already present
+                header_search_paths = xcconfig.attributes["HEADER_SEARCH_PATHS"] || ""
+                next if header_search_paths.include?("ReactNativeDependencies/Headers")
+
+                ReactNativePodsUtils.add_flag_to_map_with_inheritance(xcconfig.attributes, "HEADER_SEARCH_PATHS", headers_search_path)
+                xcconfig.save_as(xcconfig_path)
+            end
+        end
+
+        rndeps_log("Prebuilt deps xcconfig configuration complete")
     end
 
     def self.podspec_source_download_prebuild_release_tarball()
@@ -165,24 +232,31 @@ class ReactNativeDependenciesUtils
     end
 
     def self.release_tarball_url(version, build_type)
-        ## You can use the `ENTERPRISE_REPOSITORY` ariable to customise the base url from which artifacts will be downloaded.
-        ## The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
-        maven_repo_url =
-            ENV['ENTERPRISE_REPOSITORY'] != nil && ENV['ENTERPRISE_REPOSITORY'] != "" ?
-            ENV['ENTERPRISE_REPOSITORY'] :
-            "https://repo1.maven.org/maven2"
+        candidates = release_tarball_urls(version, build_type)
+        return candidates.find { |url| artifact_exists(url) } || candidates.first
+    end
+
+    def self.release_tarball_urls(version, build_type)
         group = "com/facebook/react"
+
         # Sample url from Maven:
         # https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.79.0-rc.0/react-native-artifacts-0.79.0-rc.0-reactnative-dependencies-debug.tar.gz
-        return "#{maven_repo_url}/#{group}/react-native-artifacts/#{version}/react-native-artifacts-#{version}-reactnative-dependencies-#{build_type.to_s}.tar.gz"
+
+        # Sample url from mirror server:
+        # https://repo.reactnative.dev/maven2/com/facebook/react/react-native-artifacts/0.79.0-rc.0/react-native-artifacts-0.79.0-rc.0-reactnative-dependencies-debug.tar.gz
+        return ReactNativePodsUtils.maven_repository_urls().map { |maven_repo_url|
+            "#{maven_repo_url}/#{group}/react-native-artifacts/#{version}/react-native-artifacts-#{version}-reactnative-dependencies-#{build_type.to_s}.tar.gz"
+        }
     end
 
     def self.nightly_tarball_url(version, build_type)
+        return "" if !ReactNativePodsUtils.maven_artifact_version_published?(version)
+
         artifact_coordinate = "react-native-artifacts"
         artifact_name = "reactnative-dependencies-#{build_type.to_s}.tar.gz"
         xml_url = "https://central.sonatype.com/repository/maven-snapshots/com/facebook/react/#{artifact_coordinate}/#{version}-SNAPSHOT/maven-metadata.xml"
 
-        response = Net::HTTP.get_response(URI(xml_url))
+        response = ReactNativePodsUtils.memoized_get_response(xml_url)
         if response.is_a?(Net::HTTPSuccess)
           xml = REXML::Document.new(response.body)
           timestamp = xml.elements['metadata/versioning/snapshot/timestamp'].text
@@ -301,10 +375,12 @@ class ReactNativeDependenciesUtils
     end
 
     def self.release_artifact_exists(version)
-        return artifact_exists(release_tarball_url(version, :debug))
+        return release_tarball_urls(version, :debug).any? { |url| artifact_exists(url) }
     end
 
     def self.nightly_artifact_exists(version)
+        return false if !ReactNativePodsUtils.maven_artifact_version_published?(version)
+
         return artifact_exists(nightly_tarball_url(version, :debug).gsub("\\", ""))
     end
 
@@ -312,11 +388,11 @@ class ReactNativeDependenciesUtils
         return File.join(Pod::Config.instance.project_pods_root, "ReactNativeDependencies-artifacts")
     end
 
-    # This function checks that ReactNativeDependencies artifact exists on the maven repo
+    # This function checks that ReactNativeDependencies artifact exists on the maven repo.
+    # The probe is memoized, so repeated podspec evaluations in one `pod install`
+    # don't re-request the same URL.
     def self.artifact_exists(tarball_url)
-        # -L is used to follow redirects, useful for the nightlies
-        # I also needed to wrap the url in quotes to avoid escaping & and ?.
-        return (`curl -o /dev/null --silent -Iw '%{http_code}' -L "#{tarball_url}"` == "200")
+        return ReactNativePodsUtils.artifact_exists?(tarball_url)
     end
 
     def self.rndeps_log(message, level = :info)

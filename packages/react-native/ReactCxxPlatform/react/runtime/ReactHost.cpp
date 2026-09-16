@@ -24,7 +24,6 @@
 #include <react/io/ResourceLoader.h>
 #include <react/logging/LogOnce.h>
 #include <react/renderer/componentregistry/native/NativeComponentRegistryBinding.h>
-#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #include <react/renderer/scheduler/SchedulerDelegate.h>
 #include <react/renderer/scheduler/SchedulerDelegateImpl.h>
 #include <react/renderer/scheduler/SurfaceDelegate.h>
@@ -114,7 +113,12 @@ ReactHost::~ReactHost() noexcept {
 
 void ReactHost::createReactInstance() {
   // Set up timers
-  auto platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  std::unique_ptr<PlatformTimerRegistry> platformTimers;
+  if (reactInstanceConfig_.platformTimerRegistryFactory) {
+    platformTimers = reactInstanceConfig_.platformTimerRegistryFactory();
+  } else {
+    platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  }
   auto* platformTimersPtr = platformTimers.get();
   auto timerManager = std::make_shared<TimerManager>(std::move(platformTimers));
   platformTimersPtr->setTimerManager(timerManager);
@@ -243,8 +247,10 @@ void ReactHost::createReactInstance() {
 
   reactInstanceData_->mountingManager->setUIManager(scheduler_->getUIManager());
 
-  auto jsInvoker = std::make_shared<RuntimeSchedulerCallInvoker>(
-      reactInstance_->getRuntimeScheduler());
+  // Behind `enableBufferedCallInvoker` this shares the instance's buffered
+  // runtime executor, so async calls are ordered against callable module calls
+  // and cannot run before the bundle has evaluated.
+  auto jsInvoker = reactInstance_->createJSCallInvoker();
 
   if (inspector_ != nullptr) {
     inspector_->connectDebugger(devServerHelper_->getInspectorUrl());

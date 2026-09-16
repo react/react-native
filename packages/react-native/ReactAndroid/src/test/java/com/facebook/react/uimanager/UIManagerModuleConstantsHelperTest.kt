@@ -51,13 +51,13 @@ class UIManagerModuleConstantsHelperTest {
                         mutableMapOf<String, Any>(
                             "bubbled" to "onColorChanged",
                             "captured" to "onColorChangedCapture",
-                        )
-                )
+                        ),
+                ),
         )
     val result =
         checkNotNull(
             UIManagerModuleConstantsHelper.normalizeEventTypes(nestedObjects)
-                as Map<String, Map<String, Map<String, String>>>
+                as Map<String, Map<String, Map<String, String>>>,
         ) {
           "returned map was null"
         }

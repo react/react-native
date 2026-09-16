@@ -75,6 +75,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask NS_REQUIRES_SUPER;
 - (void)prepareForRecycle NS_REQUIRES_SUPER;
 - (UIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event;
+#if TARGET_OS_TV
+- (UIView *)viewToFocus;
+- (void)focus;
+- (void)blur;
+#endif
 
 /*
  * This is the label that would be coopted by another element

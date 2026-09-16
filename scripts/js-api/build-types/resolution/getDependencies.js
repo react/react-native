@@ -9,12 +9,12 @@
  */
 
 import type {DependencyContext} from './simpleResolve';
-import type {ParseResult} from 'hermes-transform/dist/transform/parse';
+import type {ParseResult} from 'flow-transform/dist/transform/parse';
 
 const resolveTypeInputFile = require('./resolveTypeInputFile');
 const simpleResolve = require('./simpleResolve');
 const debug = require('debug')('build-types:resolution');
-const {traverse} = require('hermes-transform/dist/traverse/traverse');
+const {traverse} = require('flow-transform/dist/traverse/traverse');
 
 const reportedUnresolvedDeps = new Set<string>();
 

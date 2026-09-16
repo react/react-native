@@ -4,46 +4,47 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
+import type {UnsafeObject} from '../../../../Libraries/Types/CodegenTypes';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
   readonly getCurrentBoldTextState: (
     onSuccess: (isBoldTextEnabled: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly getCurrentGrayscaleState: (
     onSuccess: (isGrayscaleEnabled: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly getCurrentInvertColorsState: (
     onSuccess: (isInvertColorsEnabled: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly getCurrentReduceMotionState: (
     onSuccess: (isReduceMotionEnabled: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly getCurrentDarkerSystemColorsState?: (
     onSuccess: (isDarkerSystemColorsEnabled: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly getCurrentPrefersCrossFadeTransitionsState?: (
     onSuccess: (prefersCrossFadeTransitions: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly getCurrentReduceTransparencyState: (
     onSuccess: (isReduceTransparencyEnabled: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly getCurrentVoiceOverState: (
     onSuccess: (isScreenReaderEnabled: boolean) => void,
-    onError: (error: Object) => void,
+    onError: (error: UnsafeObject) => void,
   ) => void;
   readonly setAccessibilityContentSizeMultipliers: (JSMultipliers: {
     readonly extraSmall?: ?number,

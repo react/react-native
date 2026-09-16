@@ -27,6 +27,8 @@ ${DO_NOT_MODIFY_COMMENT}
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/featureflags/ReactNativeFeatureFlagsAccessor.h>
 #include <react/featureflags/ReactNativeFeatureFlagsProvider.h>
 #include <memory>

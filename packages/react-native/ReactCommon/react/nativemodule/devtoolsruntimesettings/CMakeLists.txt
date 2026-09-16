@@ -15,6 +15,7 @@ target_include_directories(react_nativemodule_devtoolsruntimesettings PUBLIC ${R
 
 target_link_libraries(react_nativemodule_devtoolsruntimesettings
         devtoolsruntimesettings
+        react_cxxstableapi
 )
 target_compile_reactnative_options(react_nativemodule_devtoolsruntimesettings PRIVATE)
 target_compile_options(react_nativemodule_devtoolsruntimesettings PRIVATE -Wpedantic)

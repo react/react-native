@@ -13,45 +13,45 @@ tags:
       # Navigate to Image examples
       - runFlow: ./helpers/launch-app-and-search.yml
       - inputText:
-          text: "Image"
+          text: 'Image'
       - assertVisible:
-          id: "Image"
+          id: 'Image'
       - tapOn:
-          id: "Image"
+          id: 'Image'
 
       # Search for the local drawables example
       - assertVisible:
-          id: "example_search"
+          id: 'example_search'
       - tapOn:
-          id: "example_search"
+          id: 'example_search'
       - inputText:
-          text: "local drawables"
+          text: 'local drawables'
       - hideKeyboard
 
       # Navigate to the example
       # RNTester appends " (android only)" to platform-scoped example titles, so
       # match with an inline regex rather than the bare title.
       - scrollUntilVisible:
-          element: "Image.getSize with local drawables.*"
+          element: 'Image.getSize with local drawables.*'
           direction: DOWN
           speed: 40
           timeout: 10000
-      - tapOn: "Image.getSize with local drawables.*"
+      - tapOn: 'Image.getSize with local drawables.*'
 
       # Tap the run button
-      - tapOn: "Run Image.getSize on local drawable resources"
+      - tapOn: 'Run Image.getSize on local drawable resources'
 
       # Assert success results contain dp dimensions
       - extendedWaitUntil:
-          visible: "24x24 dp"
+          visible: '24x24 dp'
           timeout: 10000
-      - assertVisible: "108x108 dp"
+      - assertVisible: '108x108 dp'
 
       # Assert error case shows error message. The six getSize results render
       # asynchronously in callback-completion order, so the non-existent resource
       # row may land below the fold; scroll until the error text is visible.
       - scrollUntilVisible:
-          element: "error:.*"
+          element: 'error:.*'
           direction: DOWN
           speed: 40
           timeout: 10000

@@ -42,7 +42,7 @@ public object UIManagerHelper {
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           ReactNoCrashSoftException(
-              "Cannot get UIManager because the context doesn't contain an active React instance."
+              "Cannot get UIManager because the context doesn't contain an active React instance.",
           ),
       )
       return null
@@ -53,7 +53,7 @@ public object UIManagerHelper {
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           ReactNoCrashSoftException(
-              "Cannot get UIManager because the instance hasn't been initialized yet."
+              "Cannot get UIManager because the instance hasn't been initialized yet.",
           ),
       )
     }
@@ -132,7 +132,7 @@ public object UIManagerHelper {
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           IllegalStateException(
-              "Fabric View [${view.id}] does not have SurfaceId associated with it"
+              "Fabric View [${view.id}] does not have SurfaceId associated with it",
           ),
       )
     }

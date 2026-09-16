@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {PackagerAsset} from '../../../../assets-registry/registry';
+import type {PackagerAsset} from '../../../src/private/assets/AssetRegistry';
 import type {ResolvedAssetSource} from '../AssetSourceResolver';
 
 describe('resolveAssetSource', () => {
@@ -20,7 +20,8 @@ describe('resolveAssetSource', () => {
   beforeEach(() => {
     jest.resetModules();
 
-    AssetRegistry = require('@react-native/assets-registry/registry');
+    AssetRegistry =
+      require('../../../src/private/assets/AssetRegistry').AssetRegistry;
     resolveAssetSource = require('../resolveAssetSource').default;
     NativeSourceCode =
       require('../../NativeModules/specs/NativeSourceCode').default;

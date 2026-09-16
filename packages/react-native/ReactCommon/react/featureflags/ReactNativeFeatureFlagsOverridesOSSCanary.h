@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<72ef3ea85f4833a96fe222950d16278b>>
+ * @generated SignedSource<<c26b8f81fcc99469d0535a89bac18280>>
  */
 
 /**
@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/featureflags/ReactNativeFeatureFlagsOverridesOSSStable.h>
 
 namespace facebook::react {
@@ -27,11 +29,15 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
  public:
     ReactNativeFeatureFlagsOverridesOSSCanary() = default;
 
+  bool cxxNativeAnimatedEnabled() override {
+    return true;
+  }
+
   bool enableAccessibilityOrder() override {
     return true;
   }
 
-  bool enableBridgelessArchitecture() override {
+  bool enableImperativeEvents() override {
     return true;
   }
 
@@ -40,6 +46,14 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
   }
 
   bool enableSwiftUIBasedFilters() override {
+    return true;
+  }
+
+  bool fuseboxFrameRecordingEnabled() override {
+    return true;
+  }
+
+  bool fuseboxWebSocketEventsEnabled() override {
     return true;
   }
 

@@ -1,0 +1,14 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+// Extract native libraries when installing ARM64-only APKs on x86_64 emulators. This lets Android's
+// native bridge select the translated ABI without relying on SoLoader's direct-from-APK ABI lookup.
+allprojects { project ->
+  project.pluginManager.withPlugin("com.android.application") {
+    project.extensions.getByName("android").packaging.jniLibs.useLegacyPackaging = true
+  }
+}

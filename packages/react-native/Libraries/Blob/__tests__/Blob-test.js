@@ -81,6 +81,38 @@ describe('Blob', function () {
     expect(sliceC.size).toBe(Math.min(blob.data.size, 34569) - 34543);
   });
 
+  it('should slice a blob with a negative start', () => {
+    const blob = new Blob();
+    blob.data.size = 34546;
+
+    // A negative start is relative to the end of the blob.
+    const slice = blob.slice(-100);
+
+    expect(slice.data.offset).toBe(34446);
+    expect(slice.size).toBe(100);
+  });
+
+  it('should slice a blob with a negative end', () => {
+    const blob = new Blob();
+    blob.data.size = 34546;
+
+    // A negative end is relative to the end of the blob.
+    const slice = blob.slice(0, -100);
+
+    expect(slice.data.offset).toBe(0);
+    expect(slice.size).toBe(34446);
+  });
+
+  it('should return an empty slice when end precedes start', () => {
+    const blob = new Blob();
+    blob.data.size = 34546;
+
+    const slice = blob.slice(200, 100);
+
+    expect(slice.data.offset).toBe(200);
+    expect(slice.size).toBe(0);
+  });
+
   it('should slice a blob and sets a contentType', () => {
     const blob = new Blob();
 

@@ -12,12 +12,6 @@ import NativeVibration from './NativeVibration';
 
 const Platform = require('../Utilities/Platform').default;
 
-/**
- * Vibration API
- *
- * See https://reactnative.dev/docs/vibration
- */
-
 let _vibrating: boolean = false;
 let _id: number = 0; // _id is necessary to prevent race condition.
 const _default_vibration_length = 400;
@@ -64,11 +58,21 @@ function vibrateScheduler(
   );
 }
 
+/**
+ * Vibrates the device. On Android, requires the `android.permission.VIBRATE`
+ * permission. On iOS, vibration duration is fixed at approximately 400ms
+ * (implemented via `AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)`).
+ *
+ * @see https://reactnative.dev/docs/vibration
+ */
 const Vibration = {
   /**
-   * Trigger a vibration with specified `pattern`.
+   * Trigger a vibration with the specified `pattern`.
    *
-   * See https://reactnative.dev/docs/vibration#vibrate
+   * The pattern can be a number (duration in ms) or an array of numbers. When
+   * an array is provided on Android, odd indices represent vibration duration
+   * and even indices represent separation time. On iOS, the duration value is
+   * ignored and each vibration lasts approximately 400ms.
    */
   vibrate: function (
     pattern?: number | Array<number> = _default_vibration_length,
@@ -95,10 +99,9 @@ const Vibration = {
       }
     }
   },
+
   /**
-   * Stop vibration
-   *
-   * See https://reactnative.dev/docs/vibration#cancel
+   * Stop vibrating after `vibrate()` was called with repetition enabled.
    */
   cancel: function () {
     if (Platform.OS === 'ios') {

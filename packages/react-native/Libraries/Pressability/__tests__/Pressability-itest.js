@@ -16,11 +16,10 @@ import type {HostInstance} from 'react-native';
 
 import usePressability from '../usePressability';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {View} from 'react-native';
-import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 function PressabilityTestView({
   config,
@@ -52,7 +51,7 @@ describe('Pressability', () => {
           );
         });
 
-        const element = ensureInstance(ref.current, ReactNativeElement);
+        const element = nullthrows(ref.current);
         Fantom.dispatchNativeEvent(element, 'click');
 
         expect(onPress).toHaveBeenCalledTimes(1);
@@ -73,7 +72,7 @@ describe('Pressability', () => {
           );
         });
 
-        const element = ensureInstance(ref.current, ReactNativeElement);
+        const element = nullthrows(ref.current);
         Fantom.dispatchNativeEvent(element, 'click');
 
         expect(onPress).toHaveBeenCalledTimes(0);
@@ -94,7 +93,7 @@ describe('Pressability', () => {
           );
         });
 
-        const element = ensureInstance(ref.current, ReactNativeElement);
+        const element = nullthrows(ref.current);
         Fantom.dispatchNativeEvent(element, 'click');
         expect(onPress).toHaveBeenCalledTimes(0);
 
@@ -187,7 +186,7 @@ describe('Pressability', () => {
           );
         });
 
-        const element = ensureInstance(ref.current, ReactNativeElement);
+        const element = nullthrows(ref.current);
         Fantom.dispatchNativeEvent(element, 'click');
         expect(onPressFirst).toHaveBeenCalledTimes(1);
         expect(onPressSecond).toHaveBeenCalledTimes(0);
@@ -232,7 +231,7 @@ describe('Pressability', () => {
           root.render(<TestApp showPressable={true} />);
         });
 
-        const element = ensureInstance(ref.current, ReactNativeElement);
+        const element = nullthrows(ref.current);
         Fantom.dispatchNativeEvent(element, 'click');
         expect(onPress).toHaveBeenCalledTimes(1);
 

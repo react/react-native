@@ -21,8 +21,10 @@
 #include <folly/json.h>
 #include <jsinspector-modern/cdp/CdpJson.h>
 
+#include <algorithm>
 #include <chrono>
 #include <functional>
+#include <string>
 #include <string_view>
 
 using namespace std::chrono;
@@ -146,36 +148,34 @@ class HostAgent::Impl final {
           .shouldSendOKResponse = true,
       };
     }
-    if (InspectorFlags::getInstance().getNetworkInspectionEnabled()) {
-      if (req.method == "Network.enable") {
-        auto& inspector = getInspectorInstance();
-        if (inspector.getSystemState().registeredHostsCount > 1) {
-          frontendChannel_(
-              cdp::jsonError(
-                  req.id,
-                  cdp::ErrorCode::InternalError,
-                  "The Network domain is unavailable when multiple React Native hosts are registered."));
-          return {
-              .isFinishedHandlingRequest = true,
-              .shouldSendOKResponse = false,
-          };
-        }
-
-        sessionState_.isNetworkDomainEnabled = true;
-
+    if (req.method == "Network.enable") {
+      auto& inspector = getInspectorInstance();
+      if (inspector.getSystemState().registeredHostsCount > 1) {
+        frontendChannel_(
+            cdp::jsonError(
+                req.id,
+                cdp::ErrorCode::InternalError,
+                "The Network domain is unavailable when multiple React Native hosts are registered."));
         return {
-            .isFinishedHandlingRequest = false,
-            .shouldSendOKResponse = true,
+            .isFinishedHandlingRequest = true,
+            .shouldSendOKResponse = false,
         };
       }
-      if (req.method == "Network.disable") {
-        sessionState_.isNetworkDomainEnabled = false;
 
-        return {
-            .isFinishedHandlingRequest = false,
-            .shouldSendOKResponse = true,
-        };
-      }
+      sessionState_.isNetworkDomainEnabled = true;
+
+      return {
+          .isFinishedHandlingRequest = false,
+          .shouldSendOKResponse = true,
+      };
+    }
+    if (req.method == "Network.disable") {
+      sessionState_.isNetworkDomainEnabled = false;
+
+      return {
+          .isFinishedHandlingRequest = false,
+          .shouldSendOKResponse = true,
+      };
     }
 
     // Methods other than domain enables/disables: handle anything we know how
@@ -235,6 +235,53 @@ class HostAgent::Impl final {
             .shouldSendOKResponse = false,
         };
       }
+    }
+    if (req.method == "Page.addScriptToEvaluateOnNewDocument") {
+      // @cdp Page.addScriptToEvaluateOnNewDocument registers a script that
+      // will be evaluated in every new JS runtime created for this Host
+      // (e.g. after a reload), BEFORE the app's main bundle runs. We store
+      // it as session state and let each new RuntimeAgent replay it onto its
+      // runtime, mirroring the handling of @cdp Runtime.addBinding. Per CDP
+      // semantics the script does NOT run in the runtime that is current
+      // when it is registered; the client must reload to apply it.
+      std::string source =
+          req.params.isObject() && (req.params.count("source") != 0u)
+          ? req.params.at("source").asString()
+          : std::string();
+      std::string identifier =
+          std::to_string(sessionState_.nextScriptToEvaluateOnNewDocumentId++);
+      sessionState_.scriptsToEvaluateOnNewDocument.push_back(
+          {.identifier = identifier, .source = std::move(source)});
+
+      frontendChannel_(
+          cdp::jsonResult(
+              req.id, folly::dynamic::object("identifier", identifier)));
+
+      return {
+          .isFinishedHandlingRequest = true,
+          .shouldSendOKResponse = false,
+      };
+    }
+    if (req.method == "Page.removeScriptToEvaluateOnNewDocument") {
+      std::string identifier =
+          req.params.isObject() && (req.params.count("identifier") != 0u)
+          ? req.params.at("identifier").asString()
+          : std::string();
+      auto& scripts = sessionState_.scriptsToEvaluateOnNewDocument;
+      scripts.erase(
+          std::remove_if(
+              scripts.begin(),
+              scripts.end(),
+              [&identifier](
+                  const SessionState::ScriptToEvaluateOnNewDocument& script) {
+                return script.identifier == identifier;
+              }),
+          scripts.end());
+
+      return {
+          .isFinishedHandlingRequest = true,
+          .shouldSendOKResponse = true,
+      };
     }
     if (req.method == "Overlay.setPausedInDebuggerMessage") {
       auto message =
@@ -394,6 +441,11 @@ class HostAgent::Impl final {
 
     if (requestState.shouldSendOKResponse) {
       frontendChannel_(cdp::jsonResult(req.id));
+      return;
+    }
+
+    if (requestState.isFinishedHandlingRequest) {
+      // The handler already sent its own response via frontendChannel_.
       return;
     }
 

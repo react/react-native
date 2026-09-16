@@ -1,5 +1,6 @@
 {
   "name": "@react-native/core-cli-utils",
+  "private": true,
   "version": "0.0.0",
   "description": "Reference implementation of React Native CLI tooling",
   "license": "MIT",
@@ -10,7 +11,7 @@
     "./version.js": "./src/public/version.js"
   },
   "dependencies": {
-    "metro-babel-register": "^0.84.3"
+    "metro-babel-register": "^0.87.0"
   },
   "devDependencies": {},
   "engines": {

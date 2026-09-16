@@ -1,0 +1,1837 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @format
+ * @noflow
+ */
+
+'use strict';
+
+const {
+  SCAFFOLDER_MARKER,
+  SCAFFOLDER_VERSION,
+  emitScaffoldedPackageSwift,
+  refreshScaffoldedPlatformFloors,
+  scaffoldAll,
+  scaffoldPackageSwiftForDep,
+  translatePodspecToSpmTarget,
+} = require('../scaffold-package-swift');
+const {RemoteVersionError} = require('../spm-utils');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+// Minimal PodspecModel fixture builder so each test stays focused on the
+// field it exercises.
+function podspec(overrides /*: Object */ = {}) {
+  return {
+    name: 'react-native-foo',
+    version: '1.0',
+    sourceFiles: [],
+    publicHeaderFiles: [],
+    privateHeaderFiles: [],
+    excludeFiles: [],
+    headerMappingsDir: null,
+    headerMappingsDirs: [],
+    headerDir: null,
+    frameworks: [],
+    weakFrameworks: [],
+    libraries: [],
+    dependencies: [],
+    compilerFlags: [],
+    headerSearchPaths: [],
+    preprocessorDefines: [],
+    resources: [],
+    requiresArc: true,
+    warnings: [],
+    partial: false,
+    usesInstallModulesDependencies: false,
+    ...overrides,
+  };
+}
+
+function autolinkedDep(overrides = {}) {
+  return {
+    name: 'react-native-foo',
+    root: '/fake/node_modules/react-native-foo',
+    swiftName: 'ReactNativeFoo',
+    platforms: {
+      ios: {
+        podspecPath:
+          '/fake/node_modules/react-native-foo/react-native-foo.podspec',
+      },
+    },
+    ...overrides,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// translatePodspecToSpmTarget — pure: PodspecModel + AutolinkedDep →
+// SpmScaffoldSpec. Buckets deps, substitutes Xcode tokens, validates names.
+// ---------------------------------------------------------------------------
+
+describe('translatePodspecToSpmTarget', () => {
+  it('uses the name the autolinker resolved, never one derived here', () => {
+    // The autolinker registers every dep in its aggregator under the name it
+    // resolved; the scaffolded product MUST match or SPM resolution fails on
+    // the .product(name:, package:) lookup.
+    const model = podspec({
+      headerDir: 'react/renderer/components/safeareacontext',
+    });
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({
+        name: 'react-native-safe-area-context',
+        swiftName: 'react-native-safe-area-context',
+      }),
+    );
+    expect(spec.swiftName).toBe('react-native-safe-area-context');
+  });
+
+  it('fails loudly for a dep whose name was never resolved', () => {
+    const dep = autolinkedDep();
+    delete dep.swiftName;
+    expect(() => translatePodspecToSpmTarget(podspec(), dep)).toThrow(
+      /expandSpmDependencies/,
+    );
+  });
+
+  it('adds dirname(header_mappings_dir) as a header search path so namespaced includes resolve (reanimated/worklets pattern)', () => {
+    // reanimated/worklets ship headers at `apple/reanimated/...` and
+    // `Common/cpp/reanimated/...` with per-subspec header_mappings_dir, and
+    // include them as `<reanimated/...>`. SPM has no header_mappings_dir copy
+    // step, so the parent of each mappings dir must be on the search path.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rea-scaffold-'));
+    try {
+      fs.mkdirSync(path.join(root, 'apple', 'reanimated'), {recursive: true});
+      fs.mkdirSync(path.join(root, 'Common', 'cpp', 'reanimated'), {
+        recursive: true,
+      });
+      const model = podspec({
+        headerMappingsDirs: ['Common/cpp/reanimated', 'apple/reanimated'],
+      });
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-reanimated', root}),
+      );
+      expect(spec.headerSearchPaths).toContain('apple');
+      expect(spec.headerSearchPaths).toContain('Common/cpp');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('skips a header_mappings_dir whose parent dir does not exist on disk', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rea-scaffold-'));
+    try {
+      const model = podspec({headerMappingsDirs: ['nope/reanimated']});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-foo', root}),
+      );
+      expect(spec.headerSearchPaths).not.toContain('nope');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('wires a pod-style dependency (RNWorklets) to its npm sibling via the podToNpm index', () => {
+    const model = podspec({dependencies: ['RNWorklets', 'React-jsi']});
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({name: 'react-native-reanimated'}),
+      new Map([
+        ['RNWorklets', 'react-native-worklets'],
+        ['RNReanimated', 'react-native-reanimated'],
+      ]),
+    );
+    // RNWorklets → sibling; React-jsi → collapses into ReactNative core.
+    expect(spec.siblingNames).toContain('react-native-worklets');
+    expect(spec.coreReactNative).toBe(true);
+  });
+
+  it('uses the resolved swiftName (spm.name override) so the manifest matches what the autolinker registers', () => {
+    const model = podspec({name: 'react-native-worklets'});
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({name: 'react-native-worklets', swiftName: 'worklets'}),
+    );
+    expect(spec.swiftName).toBe('worklets');
+  });
+
+  it('falls back to toSwiftName when the dep carries no resolved name', () => {
+    const spec = translatePodspecToSpmTarget(
+      podspec(),
+      autolinkedDep({name: 'react-native-foo'}),
+    );
+    expect(spec.swiftName).toBe('ReactNativeFoo');
+  });
+
+  it('resolves each sibling through the same overrides, not through toSwiftName', () => {
+    const model = podspec({dependencies: ['RNWorklets']});
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({name: 'react-native-reanimated', swiftName: 'reanimated'}),
+      new Map([['RNWorklets', 'react-native-worklets']]),
+      new Map([['react-native-worklets', 'worklets']]),
+    );
+    expect(spec.siblingNames).toEqual(['react-native-worklets']);
+    expect(spec.siblingSwiftNames).toEqual({
+      'react-native-worklets': 'worklets',
+    });
+  });
+
+  it('does not self-wire when a pod dependency maps back to the dep itself', () => {
+    const model = podspec({dependencies: ['RNReanimated']});
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({name: 'react-native-reanimated'}),
+      new Map([['RNReanimated', 'react-native-reanimated']]),
+    );
+    expect(spec.siblingNames).not.toContain('react-native-reanimated');
+  });
+
+  it('derives publicHeadersPath from header_mappings_dir, preferring the cross-platform (Common) namespace root', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wk-scaffold-'));
+    try {
+      fs.mkdirSync(path.join(root, 'Common', 'cpp', 'worklets'), {
+        recursive: true,
+      });
+      fs.mkdirSync(path.join(root, 'apple', 'worklets'), {recursive: true});
+      const model = podspec({
+        headerMappingsDirs: ['Common/cpp/worklets', 'apple/worklets'],
+        publicHeaderFiles: ['Common/cpp/worklets/**/*.h'],
+      });
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-worklets', root}),
+      );
+      // Common/cpp (parent of Common/cpp/worklets) is what dependents need to
+      // resolve <worklets/...>; the apple/ root is not preferred.
+      expect(spec.publicHeadersPath).toBe('Common/cpp');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('header-map emulation: adds every header-containing subdir to the search path (flat-include libs like svg)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hmap-scaffold-'));
+    try {
+      fs.mkdirSync(path.join(root, 'apple', 'Elements'), {recursive: true});
+      fs.mkdirSync(path.join(root, 'apple', 'Text'), {recursive: true});
+      fs.writeFileSync(path.join(root, 'apple', 'Elements', 'A.h'), '');
+      fs.writeFileSync(path.join(root, 'apple', 'Text', 'B.h'), '');
+      fs.writeFileSync(path.join(root, 'apple', 'C.mm'), '');
+      const model = podspec({
+        sourceFiles: ['apple/Elements/A.h', 'apple/Text/B.h', 'apple/C.mm'],
+      });
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-svg', root}),
+      );
+      expect(spec.headerSearchPaths).toContain('apple/Elements');
+      expect(spec.headerSearchPaths).toContain('apple/Text');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('expands a recursive `/**` HEADER_SEARCH_PATH into the base dir + all subdirs (skia shape)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rec-scaffold-'));
+    try {
+      fs.mkdirSync(path.join(root, 'cpp', 'skia', 'include', 'core'), {
+        recursive: true,
+      });
+      const model = podspec({
+        headerSearchPaths: ['$(PODS_TARGET_SRCROOT)/cpp//**'],
+      });
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-skia', root}),
+      );
+      expect(spec.headerSearchPaths).toContain('cpp'); // base
+      expect(spec.headerSearchPaths).toContain('cpp/skia'); // makes <include/core/X.h> resolve
+      expect(spec.headerSearchPaths).toContain('cpp/skia/include/core');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('flags needsObjCPrefix (and adds "." to the search path) when the target has ObjC(++) sources', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'objc-scaffold-'));
+    try {
+      fs.writeFileSync(path.join(root, 'A.mm'), '');
+      const model = podspec({sourceFiles: ['A.mm', 'B.cpp']});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-foo', root}),
+      );
+      expect(spec.needsObjCPrefix).toBe(true);
+      expect(spec.headerSearchPaths).toContain('.');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('does not flag needsObjCPrefix for a C++-only target', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cpp-scaffold-'));
+    try {
+      fs.writeFileSync(path.join(root, 'A.cpp'), '');
+      const model = podspec({sourceFiles: ['A.cpp']});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-foo', root}),
+      );
+      expect(spec.needsObjCPrefix).toBe(false);
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('does not add "." for a single-segment header_mappings_dir', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rea-scaffold-'));
+    try {
+      fs.mkdirSync(path.join(root, 'ios'), {recursive: true});
+      const model = podspec({headerMappingsDirs: ['ios']});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-foo', root}),
+      );
+      expect(spec.headerSearchPaths).not.toContain('.');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it("ignores the model's own header_dir — the resolved name already accounts for it", () => {
+    const model = podspec({headerDir: 'reanimated'});
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({
+        name: 'react-native-reanimated',
+        swiftName: 'reanimated',
+      }),
+    );
+    expect(spec.swiftName).toBe('reanimated');
+  });
+
+  it('substitutes $(PODS_TARGET_SRCROOT) in HEADER_SEARCH_PATHS with the target-relative form', () => {
+    const model = podspec({
+      headerSearchPaths: ['$(PODS_TARGET_SRCROOT)/common/cpp'],
+    });
+    const spec = translatePodspecToSpmTarget(model, autolinkedDep());
+    expect(spec.headerSearchPaths).toEqual(['common/cpp']);
+  });
+
+  it('drops HEADER_SEARCH_PATHS entries with unresolved Xcode tokens and warns', () => {
+    const model = podspec({
+      headerSearchPaths: [
+        '$(PODS_TARGET_SRCROOT)/ok',
+        '$(SOMETHING_UNKNOWN)/foo',
+      ],
+    });
+    const spec = translatePodspecToSpmTarget(model, autolinkedDep());
+    expect(spec.headerSearchPaths).toEqual(['ok']);
+    expect(spec.warnings.some(w => /SOMETHING_UNKNOWN/.test(w))).toBe(true);
+  });
+
+  it('buckets React-Core / React-jsi / RCT-Folly / glog into the single ReactNative product', () => {
+    const model = podspec({
+      dependencies: ['React-Core', 'React-jsi', 'RCT-Folly', 'glog'],
+    });
+    const spec = translatePodspecToSpmTarget(model, autolinkedDep());
+    expect(spec.coreReactNative).toBe(true);
+    expect(spec.siblingNames).toEqual([]);
+  });
+
+  it('routes sibling RN deps (react-native-*) into siblingNames', () => {
+    const model = podspec({
+      dependencies: ['React-Core', 'react-native-worklets'],
+    });
+    const spec = translatePodspecToSpmTarget(model, autolinkedDep());
+    expect(spec.coreReactNative).toBe(true);
+    expect(spec.siblingNames).toEqual(['react-native-worklets']);
+  });
+
+  it('treats a package.json codegenConfig as an implicit React-core dep (New-Arch libs strip install_modules_dependencies — svg shape)', () => {
+    // svg declares its React-core dep only via install_modules_dependencies(s),
+    // which we strip — so model.dependencies has NO React-Core. The codegenConfig
+    // marker is what tells us it still needs the React-GeneratedCode package.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'codegen-dep-'));
+    try {
+      fs.writeFileSync(
+        path.join(root, 'package.json'),
+        JSON.stringify({
+          name: 'react-native-svg',
+          codegenConfig: {name: 'rnsvg'},
+        }),
+      );
+      const model = podspec({dependencies: []}); // nothing explicit
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-svg', root}),
+      );
+      expect(spec.coreReactNative).toBe(true);
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('treats install_modules_dependencies (no codegenConfig) as an implicit React-core dep (rn-tester TestLibrary shape)', () => {
+    // A plain ObjC module (rn-tester's TestLibraryApple/Common) wires React
+    // core ONLY via install_modules_dependencies(s) and has NO codegenConfig.
+    // The stripped helper leaves model.dependencies without React-Core, so the
+    // usesInstallModulesDependencies marker is what keeps coreReactNative true.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'imd-dep-'));
+    try {
+      fs.writeFileSync(
+        path.join(root, 'package.json'),
+        JSON.stringify({name: 'TestLibraryApple'}), // no codegenConfig
+      );
+      const model = podspec({
+        dependencies: [],
+        usesInstallModulesDependencies: true,
+      });
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'TestLibraryApple', root}),
+      );
+      expect(spec.coreReactNative).toBe(true);
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('does NOT force coreReactNative for a non-codegen dep with no React deps', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'no-codegen-dep-'));
+    try {
+      fs.writeFileSync(
+        path.join(root, 'package.json'),
+        JSON.stringify({name: 'react-native-foo'}), // no codegenConfig
+      );
+      const model = podspec({dependencies: []});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({name: 'react-native-foo', root}),
+      );
+      expect(spec.coreReactNative).toBe(false);
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  it('warns + drops unknown non-RN dependencies (MMKV, AFNetworking)', () => {
+    const model = podspec({dependencies: ['MMKV', 'AFNetworking']});
+    const spec = translatePodspecToSpmTarget(model, autolinkedDep());
+    expect(spec.coreReactNative).toBe(false);
+    expect(spec.siblingNames).toEqual([]);
+    expect(spec.warnings.some(w => /MMKV/.test(w))).toBe(true);
+    expect(spec.warnings.some(w => /AFNetworking/.test(w))).toBe(true);
+  });
+
+  it('silently drops cross-subspec refs like "react-native-foo/common" from the same podspec', () => {
+    // CocoaPods uses this for one subspec depending on another from the
+    // SAME spec — after flattenSubspecs merges everything into one SPM
+    // target the ref is meaningless. Must not be treated as a sibling.
+    const model = podspec({
+      name: 'react-native-safe-area-context',
+      dependencies: ['React-Core', 'react-native-safe-area-context/common'],
+    });
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({name: 'react-native-safe-area-context'}),
+    );
+    expect(spec.siblingNames).toEqual([]);
+    expect(spec.coreReactNative).toBe(true);
+  });
+
+  it('strips subspec suffix from sibling RN deps ("react-native-worklets/foo" → "react-native-worklets")', () => {
+    const model = podspec({
+      dependencies: ['react-native-worklets/foo', 'react-native-worklets/bar'],
+    });
+    const spec = translatePodspecToSpmTarget(model, autolinkedDep());
+    expect(spec.siblingNames).toEqual(['react-native-worklets']);
+  });
+
+  it('passes through frameworks, weak frameworks, compiler flags, resources', () => {
+    const model = podspec({
+      frameworks: ['UIKit', 'CoreMotion'],
+      weakFrameworks: ['SafariServices'],
+      compilerFlags: ['-Wno-documentation'],
+      resources: ['Foo.png'],
+    });
+    const spec = translatePodspecToSpmTarget(model, autolinkedDep());
+    expect(spec.extraFrameworks).toEqual(['UIKit', 'CoreMotion']);
+    expect(spec.weakFrameworks).toEqual(['SafariServices']);
+    expect(spec.compilerFlags).toEqual(['-Wno-documentation']);
+    expect(spec.resources).toEqual(['Foo.png']);
+  });
+
+  it('expands podspec source globs into explicit file paths against the dep root, and infers publicHeadersPath', () => {
+    // Fake a dep on disk so glob expansion can find real files.
+    const depDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-translate-'));
+    try {
+      fs.mkdirSync(path.join(depDir, 'ios', 'Sub'), {recursive: true});
+      fs.writeFileSync(path.join(depDir, 'ios', 'Foo.h'), '');
+      fs.writeFileSync(path.join(depDir, 'ios', 'Foo.mm'), '');
+      fs.writeFileSync(path.join(depDir, 'ios', 'Sub', 'Bar.h'), '');
+      const model = podspec({sourceFiles: ['ios/**/*.{h,m,mm}']});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({root: depDir}),
+      );
+      // SPM rejects globs — these must be explicit relative paths now.
+      expect(spec.sources).toEqual(
+        expect.arrayContaining(['ios/Foo.h', 'ios/Foo.mm', 'ios/Sub/Bar.h']),
+      );
+      // publicHeadersPath is inferred from the first existing prefix dir
+      // (so SPM's "publicHeadersPath defaults to non-existent include/"
+      // error doesn't fire).
+      expect(spec.publicHeadersPath).toBe('ios');
+    } finally {
+      fs.rmSync(depDir, {recursive: true, force: true});
+    }
+  });
+
+  it('filters out files matching exclude_files globs after expansion', () => {
+    const depDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-translate-'));
+    try {
+      fs.mkdirSync(path.join(depDir, 'ios', 'Fabric'), {recursive: true});
+      fs.writeFileSync(path.join(depDir, 'ios', 'KeepMe.h'), '');
+      fs.writeFileSync(path.join(depDir, 'ios', 'Fabric', 'SkipMe.h'), '');
+      const model = podspec({
+        sourceFiles: ['ios/**/*.h'],
+        excludeFiles: ['ios/Fabric/**'],
+      });
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({root: depDir}),
+      );
+      expect(spec.sources).toContain('ios/KeepMe.h');
+      expect(spec.sources).not.toContain('ios/Fabric/SkipMe.h');
+    } finally {
+      fs.rmSync(depDir, {recursive: true, force: true});
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// emitScaffoldedPackageSwift — pure: SpmScaffoldSpec → Swift string.
+// Snapshot-style "contains" assertions on the key emitted lines.
+// ---------------------------------------------------------------------------
+
+describe('emitScaffoldedPackageSwift', () => {
+  function baseSpec(overrides = {}) {
+    return {
+      swiftName: 'foo',
+      sources: [],
+      headerSearchPaths: [],
+      preprocessorDefines: [],
+      needsObjCPrefix: false,
+      coreReactNative: false,
+      siblingNames: [],
+      extraFrameworks: [],
+      weakFrameworks: [],
+      compilerFlags: [],
+      publicHeadersPath: null,
+      resources: [],
+      warnings: [],
+      ...overrides,
+    };
+  }
+
+  it('contains the SCAFFOLDER marker (after the line-1 swift-tools-version directive) and NOT the autolinker AUTOGEN marker', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec());
+    // Line 1 is reserved for the swift-tools-version directive — SPM ignores
+    // it elsewhere. The scaffolder marker lives on a subsequent line.
+    expect(out.split('\n', 1)[0]).toMatch(/^\/\/ swift-tools-version: /);
+    expect(out).toContain(SCAFFOLDER_MARKER);
+    // The autolinker's marker — must be absent so isSelfManagedPackage
+    // treats this file as self-managed.
+    expect(out).not.toContain(
+      '// AUTO-GENERATED by scripts/generate-spm-autolinking.js',
+    );
+  });
+
+  it('includes a cache-slot label comment when provided (bumps SPM manifest hash on slot change)', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec(), {
+      cacheSlotLabel: '0.87.0-nightly-20260513-abc/debug',
+    });
+    expect(out).toContain('// Cache slot: 0.87.0-nightly-20260513-abc/debug');
+  });
+
+  it('floors the platform at the React Native minimum by default, in string form', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec());
+    expect(out).toContain('platforms: [.iOS("15.1")]');
+  });
+
+  it('raises the platform floor to the app deployment target', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec(), {
+      cacheSlotLabel: null,
+      iosDeploymentTarget: '16.4',
+    });
+    expect(out).toContain('platforms: [.iOS("16.4")]');
+  });
+
+  it('emits DEBUG/NDEBUG config-gated cxxSettings so Fabric C++ matches the prebuilt React.framework ABI', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec());
+    expect(out).toContain('.define("DEBUG", .when(configuration: .debug))');
+    expect(out).toContain('.define("NDEBUG", .when(configuration: .release))');
+  });
+
+  it('is fully declarative — no runtime discovery code, no Foundation import', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec());
+    expect(out).not.toContain('import Foundation');
+    expect(out).not.toContain('#filePath');
+    expect(out).not.toContain('FileManager');
+  });
+
+  it('emits a header-search-path directive per podspec entry (.headerSearchPath("common/cpp"))', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({headerSearchPaths: ['common/cpp']}),
+    );
+    expect(out).toContain('.headerSearchPath("common/cpp")');
+  });
+
+  it('declares the ReactNative package + product via scaffold-time relative paths when coreReactNative is true', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec({coreReactNative: true}), {
+      cacheSlotLabel: null,
+      remote: null,
+      codegenPackageDir: '../../ios/build/generated/ios',
+      localXcfwPackageDir: '../../ios/build/xcframeworks',
+    });
+    expect(out).toContain(
+      '.package(name: "ReactNative", path: "../../ios/build/xcframeworks")',
+    );
+    expect(out).toContain(
+      '.package(name: "React-GeneratedCode", path: "../../ios/build/generated/ios")',
+    );
+    expect(out).toContain(
+      '.product(name: "ReactHeaders", package: "ReactNative")',
+    );
+  });
+
+  it('throws when coreReactNative is set but no codegenPackageDir was provided', () => {
+    expect(() =>
+      emitScaffoldedPackageSwift(baseSpec({coreReactNative: true})),
+    ).toThrow(/codegenPackageDir is required/);
+  });
+
+  it('remote mode: declares .package(url:exact:) and needs no local xcframeworks path', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec({coreReactNative: true}), {
+      cacheSlotLabel: null,
+      remote: {
+        url: 'https://github.com/facebook/react-native-apple',
+        version: '0.87.0',
+        identity: 'react-native-apple',
+      },
+      codegenPackageDir: '../../ios/build/generated/ios',
+      localXcfwPackageDir: null,
+    });
+    expect(out).toContain(
+      '.package(url: "https://github.com/facebook/react-native-apple", exact: "0.87.0")',
+    );
+    expect(out).toContain(
+      '.product(name: "ReactHeaders", package: "react-native-apple")',
+    );
+    expect(out).not.toContain('build/xcframeworks');
+  });
+
+  it('emits sibling .package(path: "../<SwiftName>") + .product entries for sibling RN deps', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({
+        siblingNames: ['react-native-worklets'],
+        siblingSwiftNames: {'react-native-worklets': 'ReactNativeWorklets'},
+      }),
+    );
+    // Path uses the libs/<SwiftName> symlink name (where the autolinker places
+    // the sibling), NOT the npm name — `../react-native-worklets` would be
+    // `libs/react-native-worklets`, which does not exist.
+    expect(out).toContain(
+      '.package(name: "ReactNativeWorklets", path: "../ReactNativeWorklets")',
+    );
+    expect(out).toContain(
+      '.product(name: "ReactNativeWorklets", package: "ReactNativeWorklets")',
+    );
+  });
+
+  it('fails loudly for a sibling whose name was never resolved', () => {
+    // Deriving one here would write a name nothing in the package graph
+    // matches into a manifest that outlives the run.
+    expect(() =>
+      emitScaffoldedPackageSwift(
+        baseSpec({siblingNames: ['react-native-worklets']}),
+      ),
+    ).toThrow(/expandSpmDependencies/);
+  });
+
+  it('emits the sibling override name for both the package and the product', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({
+        siblingNames: ['react-native-worklets'],
+        siblingSwiftNames: {'react-native-worklets': 'worklets'},
+      }),
+    );
+    expect(out).toContain('.package(name: "worklets", path: "../worklets")');
+    expect(out).toContain('.product(name: "worklets", package: "worklets")');
+    expect(out).not.toContain('ReactNativeWorklets');
+  });
+
+  it('-includes the ObjC prefix header in c/cxx settings when needsObjCPrefix is set', () => {
+    const withPrefix = emitScaffoldedPackageSwift(
+      baseSpec({needsObjCPrefix: true}),
+    );
+    expect(
+      (
+        withPrefix.match(
+          /\.unsafeFlags\(\["-include", "react-native-spm-prefix\.h"\]\)/g,
+        ) ?? []
+      ).length,
+    ).toBe(2); // cSettings + cxxSettings
+    // Not emitted for a C/C++-only target.
+    const noPrefix = emitScaffoldedPackageSwift(
+      baseSpec({needsObjCPrefix: false}),
+    );
+    expect(noPrefix).not.toContain('-include');
+  });
+
+  it('emits preprocessor defines as .define(...) in c/cxx settings, escaping quoted values and honoring config', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({
+        preprocessorDefines: [
+          {name: 'WORKLETS_VERSION', value: '0.9.2', config: null},
+          {
+            name: 'WORKLETS_FEATURE_FLAGS',
+            value: '"[A:false][B:true]"',
+            config: null,
+          },
+          {name: 'HERMES_ENABLE_DEBUGGER', value: '1', config: 'debug'},
+          {name: 'NDEBUG', value: null, config: 'release'},
+        ],
+      }),
+    );
+    expect(out).toContain('.define("WORKLETS_VERSION", to: "0.9.2")');
+    // Embedded quotes escaped for the Swift string literal.
+    expect(out).toContain(
+      '.define("WORKLETS_FEATURE_FLAGS", to: "\\"[A:false][B:true]\\"")',
+    );
+    expect(out).toContain(
+      '.define("HERMES_ENABLE_DEBUGGER", to: "1", .when(configuration: .debug))',
+    );
+    // Valueless define + release config.
+    expect(out).toContain('.define("NDEBUG", .when(configuration: .release))');
+  });
+
+  it('emits sources: array when podspec declared globs', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({sources: ['ios/**/*.{h,m,mm}', 'common/cpp/**/*.{cpp,h}']}),
+    );
+    expect(out).toContain('sources: [');
+    expect(out).toContain('"ios/**/*.{h,m,mm}"');
+    expect(out).toContain('"common/cpp/**/*.{cpp,h}"');
+  });
+
+  it('omits sources: line when no globs (SPM auto-scans target dir)', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec({sources: []}));
+    expect(out).not.toContain('sources: [');
+  });
+
+  it('emits publicHeadersPath when header_mappings_dir set', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({publicHeadersPath: 'common/cpp/foo'}),
+    );
+    expect(out).toContain('publicHeadersPath: "common/cpp/foo"');
+  });
+
+  it('dedups linker frameworks (default + extras = no UIKit twice)', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({extraFrameworks: ['UIKit', 'CoreMotion']}),
+    );
+    const uikitCount = (out.match(/\.linkedFramework\("UIKit"\)/g) || [])
+      .length;
+    expect(uikitCount).toBe(1);
+    expect(out).toContain('.linkedFramework("CoreMotion")');
+  });
+
+  it('embeds podspec compiler_flags into cxxSettings unsafeFlags', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({compilerFlags: ['-Wno-documentation']}),
+    );
+    expect(out).toContain('"-Wno-documentation"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scaffoldPackageSwiftForDep — orchestrator with I/O. Tested via temp dirs;
+// covers each skip rule + the happy path.
+// ---------------------------------------------------------------------------
+
+describe('scaffoldPackageSwiftForDep', () => {
+  let appRoot;
+  let depRoot;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-scaffold-app-'));
+    depRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-scaffold-dep-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(appRoot, {recursive: true, force: true});
+    fs.rmSync(depRoot, {recursive: true, force: true});
+  });
+
+  function makePodspec() {
+    // Minimal valid podspec — exercises the regex-parser fallback path.
+    const podspecPath = path.join(depRoot, 'react-native-foo.podspec');
+    fs.writeFileSync(
+      podspecPath,
+      `
+Pod::Spec.new do |s|
+  s.name = "react-native-foo"
+  s.version = "1.0"
+  s.source_files = "ios/**/*.{h,m,mm}"
+  s.dependency "React-Core"
+end
+`,
+    );
+    return podspecPath;
+  }
+
+  function makeCtx(overrides = {}) {
+    return {
+      appRoot,
+      projectRoot: appRoot,
+      reactNativeRoot: appRoot,
+      force: false,
+      dryRun: false,
+      cacheSlotLabel: null,
+      ...overrides,
+    };
+  }
+
+  function makeDep(overrides = {}) {
+    return {
+      name: 'react-native-foo',
+      root: depRoot,
+      swiftName: 'ReactNativeFoo',
+      platforms: {ios: {}},
+      ...overrides,
+    };
+  }
+
+  it('names the scaffolded package with the spm.name override the autolinker resolved', () => {
+    makePodspec();
+    const result = scaffoldPackageSwiftForDep(
+      makeDep({swiftName: 'foo'}),
+      makeCtx(),
+    );
+    expect(result.status).toBe('written');
+    const content = fs.readFileSync(
+      path.join(depRoot, 'Package.swift'),
+      'utf8',
+    );
+    expect(content).toContain('name: "foo"');
+    expect(content).not.toContain('ReactNativeFoo');
+  });
+
+  it('writes Package.swift into the dep root on the happy path', () => {
+    makePodspec();
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('written');
+    expect(fs.existsSync(path.join(depRoot, 'Package.swift'))).toBe(true);
+    const content = fs.readFileSync(
+      path.join(depRoot, 'Package.swift'),
+      'utf8',
+    );
+    // Line 1 is the swift-tools-version directive; the scaffolder marker
+    // appears immediately after (still detectable by `isScaffolded` checks
+    // that scan the whole file).
+    expect(content.split('\n', 1)[0]).toMatch(/^\/\/ swift-tools-version: /);
+    expect(content).toContain(SCAFFOLDER_MARKER);
+  });
+
+  it('skips (does not write) a mixed-language dep — Swift + ObjC(++) cannot share one SPM target', () => {
+    // react-native-screens shape: a single source glob mixing .swift and .mm.
+    const podspecPath = path.join(depRoot, 'react-native-foo.podspec');
+    fs.writeFileSync(
+      podspecPath,
+      `
+Pod::Spec.new do |s|
+  s.name = "react-native-foo"
+  s.version = "1.0"
+  s.source_files = "ios/**/*.{h,m,mm,swift}"
+  s.dependency "React-Core"
+end
+`,
+    );
+    fs.mkdirSync(path.join(depRoot, 'ios'), {recursive: true});
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Foo.swift'), '');
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Foo.mm'), '');
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-mixed-language');
+    // Fail-closed: no half-baked manifest left behind.
+    expect(fs.existsSync(path.join(depRoot, 'Package.swift'))).toBe(false);
+  });
+
+  it('computes app paths relative to the libs/<SwiftName> symlink, not dep.root (fresh-resolve correctness)', () => {
+    makePodspec();
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('written');
+    const content = fs.readFileSync(
+      path.join(depRoot, 'Package.swift'),
+      'utf8',
+    );
+    // swiftName = ReactNativeFoo; the autolinker references the dep via
+    // build/generated/autolinking/libs/ReactNativeFoo. SwiftPM resolves the
+    // manifest's relative paths against THAT location, so:
+    //   build/generated/ios  -> ../../../ios
+    //   build/xcframeworks    -> ../../../../xcframeworks
+    expect(content).toContain(
+      '.package(name: "React-GeneratedCode", path: "../../../ios")',
+    );
+    expect(content).toContain(
+      '.package(name: "ReactNative", path: "../../../../xcframeworks")',
+    );
+    // The old dep.root-relative form (doubled to …/autolinking/ios/build/...
+    // through the symlink) must NOT be emitted.
+    expect(content).not.toContain('../../ios/build/generated/ios');
+  });
+
+  it('reports previouslyExisted=false for first-time scaffolds (so the CLI can prompt)', () => {
+    makePodspec();
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('written');
+    expect(result.previouslyExisted).toBe(false);
+  });
+
+  it('reports previouslyExisted=true when regenerating an existing scaffolder-marker file (slot change)', () => {
+    makePodspec();
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      `${SCAFFOLDER_MARKER}\n// Cache slot: OLD\n`,
+    );
+    const result = scaffoldPackageSwiftForDep(
+      makeDep(),
+      makeCtx({cacheSlotLabel: 'NEW'}),
+    );
+    expect(result.status).toBe('written');
+    expect(result.previouslyExisted).toBe(true);
+  });
+
+  it('skips with skipped-no-ios when autolinking.json has no ios platform', () => {
+    const result = scaffoldPackageSwiftForDep(
+      makeDep({platforms: {ios: null}}),
+      makeCtx(),
+    );
+    expect(result.status).toBe('skipped-no-ios');
+  });
+
+  it('skips with skipped-no-podspec when no .podspec exists in dep root', () => {
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-no-podspec');
+  });
+
+  it('refuses to touch a Package.swift that lacks the scaffolder marker (user/upstream-managed)', () => {
+    makePodspec();
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      '// Hand-written. Do not touch.',
+    );
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-self-managed');
+    // File unchanged
+    expect(fs.readFileSync(path.join(depRoot, 'Package.swift'), 'utf8')).toBe(
+      '// Hand-written. Do not touch.',
+    );
+  });
+
+  it('refuses to scaffold when a nested ios/Package.swift exists without markers', () => {
+    makePodspec();
+    // Library ships its manifest under ios/ to keep the npm-package root
+    // free of SPM artifacts. The scaffolder should NOT write a stray root
+    // Package.swift — that would shadow the nested one (the autolinker
+    // checks the root first).
+    fs.mkdirSync(path.join(depRoot, 'ios'), {recursive: true});
+    const nestedContent =
+      '// swift-tools-version: 6.0\n// Hand-written nested manifest.\n';
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Package.swift'), nestedContent);
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-self-managed');
+    // Root stayed clean
+    expect(fs.existsSync(path.join(depRoot, 'Package.swift'))).toBe(false);
+    // Nested file untouched
+    expect(
+      fs.readFileSync(path.join(depRoot, 'ios', 'Package.swift'), 'utf8'),
+    ).toBe(nestedContent);
+  });
+
+  it('refuses to overwrite a Package.swift carrying the autolinker AUTOGEN_MARKER', () => {
+    makePodspec();
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      '// AUTO-GENERATED by scripts/generate-spm-autolinking.js – do not edit.\n',
+    );
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-autogen');
+  });
+
+  it('skips re-scaffolding when the existing file carries the scaffolder marker AND the same cache slot', () => {
+    makePodspec();
+    // Pre-existing scaffold from same slot AND current generator version
+    // — otherwise the version-bump skip-bypass kicks in.
+    const prior =
+      SCAFFOLDER_MARKER +
+      `\n// AUTO-SCAFFOLDED-VERSION: ${SCAFFOLDER_VERSION}` +
+      '\n// Cache slot: 0.87.0-X/debug\n// rest unchanged';
+    fs.writeFileSync(path.join(depRoot, 'Package.swift'), prior);
+    const result = scaffoldPackageSwiftForDep(
+      makeDep(),
+      makeCtx({cacheSlotLabel: '0.87.0-X/debug'}),
+    );
+    expect(result.status).toBe('skipped-scaffolder-marker');
+    expect(fs.readFileSync(path.join(depRoot, 'Package.swift'), 'utf8')).toBe(
+      prior,
+    );
+  });
+
+  it('REGENERATES when the existing scaffolder file is from a different cache slot (manifest hash bump)', () => {
+    makePodspec();
+    const prior =
+      SCAFFOLDER_MARKER + '\n// Cache slot: OLD-slot/debug\n// rest';
+    fs.writeFileSync(path.join(depRoot, 'Package.swift'), prior);
+    const result = scaffoldPackageSwiftForDep(
+      makeDep(),
+      makeCtx({cacheSlotLabel: 'NEW-slot/debug'}),
+    );
+    expect(result.status).toBe('written');
+    expect(
+      fs.readFileSync(path.join(depRoot, 'Package.swift'), 'utf8'),
+    ).toContain('// Cache slot: NEW-slot/debug');
+  });
+
+  it('--force re-overwrites a scaffolder-marker file even when the slot is unchanged', () => {
+    makePodspec();
+    const prior =
+      SCAFFOLDER_MARKER +
+      '\n// Cache slot: SLOT-A/debug\n// hand edits here will be lost';
+    fs.writeFileSync(path.join(depRoot, 'Package.swift'), prior);
+    const result = scaffoldPackageSwiftForDep(
+      makeDep(),
+      makeCtx({cacheSlotLabel: 'SLOT-A/debug', force: true}),
+    );
+    expect(result.status).toBe('written');
+    expect(
+      fs.readFileSync(path.join(depRoot, 'Package.swift'), 'utf8'),
+    ).not.toContain('hand edits here will be lost');
+  });
+
+  it('--dry-run produces a ScaffoldResult but writes nothing', () => {
+    makePodspec();
+    const result = scaffoldPackageSwiftForDep(
+      makeDep(),
+      makeCtx({dryRun: true}),
+    );
+    expect(result.status).toBe('written');
+    expect(fs.existsSync(path.join(depRoot, 'Package.swift'))).toBe(false);
+  });
+
+  it("honors a dep's swiftpmConfig.scaffold = false opt-out", () => {
+    makePodspec();
+    fs.writeFileSync(
+      path.join(depRoot, 'package.json'),
+      JSON.stringify({
+        name: 'react-native-foo',
+        swiftpmConfig: {scaffold: false},
+      }),
+    );
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-opt-out');
+  });
+
+  it('still honors the deprecated spm.scaffold = false opt-out', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      makePodspec();
+      fs.writeFileSync(
+        path.join(depRoot, 'react-native.config.js'),
+        'module.exports = { spm: { scaffold: false } };',
+      );
+      const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+      expect(result.status).toBe('skipped-opt-out');
+      expect(warnSpy).toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  // The migration step: a name derived from the podspec is recorded in the
+  // library's package.json, so the next run needs no podspec to find it.
+  describe('swiftpmConfig.name', () => {
+    const pkgJsonPath = () => path.join(depRoot, 'package.json');
+    const writePkgJson = pkg =>
+      fs.writeFileSync(pkgJsonPath(), JSON.stringify(pkg, null, 2) + '\n');
+    const readPkgJson = () =>
+      JSON.parse(fs.readFileSync(pkgJsonPath(), 'utf8'));
+    const podspecNamed = overrides =>
+      makeDep({swiftName: 'RNFoo', swiftNameSource: 'podspec', ...overrides});
+
+    it('records a podspec-derived name in the package.json', () => {
+      makePodspec();
+      writePkgJson({name: 'react-native-foo', version: '1.0.0'});
+      const result = scaffoldPackageSwiftForDep(podspecNamed(), makeCtx());
+      expect(result.status).toBe('written');
+      expect(result.swiftpmName).toBe('created');
+      expect(readPkgJson().swiftpmConfig).toEqual({name: 'RNFoo'});
+    });
+
+    // Only a derived name is recorded: a guess would freeze into someone's
+    // config, and a declared one is already where it belongs.
+    it.each([
+      ['guessed from the npm name', 'npm', {name: 'react-native-foo'}],
+      [
+        'declared by the library',
+        'config',
+        {name: 'react-native-foo', swiftpmConfig: {name: 'RNFoo'}},
+      ],
+    ])(
+      'leaves the package.json alone when the name was %s',
+      (_, source, pkg) => {
+        makePodspec();
+        writePkgJson(pkg);
+        const result = scaffoldPackageSwiftForDep(
+          makeDep({swiftName: 'RNFoo', swiftNameSource: source}),
+          makeCtx(),
+        );
+        expect(result.swiftpmName).toBeUndefined();
+        expect(readPkgJson().swiftpmConfig).toEqual(pkg.swiftpmConfig);
+      },
+    );
+
+    it('writes nothing on a dry run', () => {
+      makePodspec();
+      writePkgJson({name: 'react-native-foo'});
+      const before = fs.readFileSync(pkgJsonPath(), 'utf8');
+      scaffoldPackageSwiftForDep(podspecNamed(), makeCtx({dryRun: true}));
+      expect(fs.readFileSync(pkgJsonPath(), 'utf8')).toBe(before);
+    });
+
+    it('keeps the manifest when recording the name fails, and reports the failure', () => {
+      makePodspec();
+      writePkgJson({name: 'react-native-foo'});
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const realWriteFileSync = fs.writeFileSync;
+      const writeSpy = jest
+        .spyOn(fs, 'writeFileSync')
+        .mockImplementation((file, ...rest) => {
+          if (String(file).includes('package.json')) {
+            throw new Error('EACCES: permission denied');
+          }
+          return realWriteFileSync(file, ...rest);
+        });
+      let result;
+      try {
+        result = scaffoldPackageSwiftForDep(podspecNamed(), makeCtx());
+      } finally {
+        writeSpy.mockRestore();
+        warnSpy.mockRestore();
+      }
+      // What is reported matches what is on disk: manifest yes, name no.
+      expect(result.status).toBe('written');
+      expect(result.swiftpmName).toBe('failed');
+      expect(fs.existsSync(path.join(depRoot, 'Package.swift'))).toBe(true);
+      expect(readPkgJson().swiftpmConfig).toBeUndefined();
+    });
+
+    it('does not touch a package.json when the manifest was not written', () => {
+      writePkgJson({name: 'react-native-foo'});
+      const result = scaffoldPackageSwiftForDep(podspecNamed(), makeCtx());
+      expect(result.status).toBe('skipped-no-podspec');
+      expect(readPkgJson().swiftpmConfig).toBeUndefined();
+    });
+  });
+
+  // The name is the header import prefix, and scaffold persists a derived one
+  // into the library's package.json — so the run has to say what it picked.
+  describe('name report', () => {
+    let logSpy;
+    let warnSpy;
+
+    beforeEach(() => {
+      logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      logSpy.mockRestore();
+      warnSpy.mockRestore();
+    });
+
+    const output = spy => spy.mock.calls.map(call => call.join(' ')).join('\n');
+
+    // A podspec whose identity fields are the test's subject.
+    function writePodspec(...identityLines) {
+      fs.writeFileSync(
+        path.join(depRoot, 'react-native-foo.podspec'),
+        [
+          'Pod::Spec.new do |s|',
+          '  s.name = "react-native-foo"',
+          '  s.version = "1.0"',
+          '  s.source_files = "ios/**/*.{h,m,mm}"',
+          ...identityLines.map(line => `  ${line}`),
+          'end',
+          '',
+        ].join('\n'),
+      );
+    }
+
+    it.each([
+      [
+        'a podspec header_dir',
+        {
+          swiftName: 'RNThing',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        },
+        "'header_dir'",
+      ],
+      [
+        'a podspec module_name',
+        {
+          swiftName: 'ReactNativeFoo',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'module_name',
+        },
+        "'module_name'",
+      ],
+      [
+        'the pod name',
+        {
+          swiftName: 'RNFoo',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'name',
+        },
+        'pod name',
+      ],
+      [
+        'a declared swiftpmConfig.name',
+        {swiftName: 'RNFoo', swiftNameSource: 'config'},
+        "'swiftpmConfig.name'",
+      ],
+      [
+        'the npm package name',
+        {swiftName: 'ReactNativeFoo', swiftNameSource: 'npm'},
+        'npm package name',
+      ],
+    ])('reports a name that came from %s', (_label, depOverrides, origin) => {
+      writePodspec('s.header_dir = "RNThing"');
+      const result = scaffoldPackageSwiftForDep(
+        makeDep(depOverrides),
+        makeCtx(),
+      );
+      expect(result.status).toBe('written');
+      const reported = output(logSpy);
+      expect(reported).toContain('react-native-foo');
+      expect(reported).toContain(`'${depOverrides.swiftName}'`);
+      expect(reported).toContain(origin);
+    });
+
+    it('reports the name it chose on a dry run too', () => {
+      writePodspec('s.header_dir = "RNThing"');
+      scaffoldPackageSwiftForDep(
+        makeDep({
+          swiftName: 'RNThing',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        }),
+        makeCtx({dryRun: true}),
+      );
+      expect(output(logSpy)).toContain("'RNThing'");
+    });
+
+    // A podspec with two distinct namespaces declared, only one of them used.
+    it('notes the module_name it dropped when the podspec declares both', () => {
+      writePodspec(
+        's.header_dir = "RNThing"',
+        's.module_name = "react_native_thing"',
+      );
+      scaffoldPackageSwiftForDep(
+        makeDep({
+          swiftName: 'RNThing',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        }),
+        makeCtx(),
+      );
+      const noted = output(warnSpy);
+      expect(noted).toContain("'RNThing'");
+      expect(noted).toContain("'react_native_thing'");
+      expect(noted).toContain("'swiftpmConfig.name'");
+    });
+
+    it.each([
+      ['only a header_dir is declared', ['s.header_dir = "RNThing"']],
+      [
+        'the two agree',
+        ['s.header_dir = "RNThing"', 's.module_name = "RNThing"'],
+      ],
+    ])('says nothing about a dropped namespace when %s', (_label, lines) => {
+      writePodspec(...lines);
+      scaffoldPackageSwiftForDep(
+        makeDep({
+          swiftName: 'RNThing',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        }),
+        makeCtx(),
+      );
+      expect(output(warnSpy)).not.toContain('module_name');
+    });
+  });
+
+  it('returns skipped-is-react-native for `react-native` itself (handled by the xcframework path)', () => {
+    const result = scaffoldPackageSwiftForDep(
+      makeDep({name: 'react-native'}),
+      makeCtx(),
+    );
+    expect(result.status).toBe('skipped-is-react-native');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scaffoldAll — minimal smoke test. The orchestrator delegates everything
+// to scaffoldPackageSwiftForDep (already covered above); here we just
+// verify it reads autolinking.json and produces one result per dep.
+// ---------------------------------------------------------------------------
+
+describe('scaffoldAll', () => {
+  let appRoot;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-scaffold-all-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  it('returns [] and logs when autolinking.json is absent', () => {
+    const results = scaffoldAll({
+      appRoot,
+      projectRoot: appRoot,
+      reactNativeRoot: appRoot,
+    });
+    expect(results).toEqual([]);
+  });
+
+  it('walks dependencies in autolinking.json and produces one result per entry', () => {
+    const autolinkingDir = path.join(appRoot, 'build/generated/autolinking');
+    fs.mkdirSync(autolinkingDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(autolinkingDir, 'autolinking.json'),
+      JSON.stringify({
+        dependencies: {
+          'react-native-a': {root: '/no/such/a', platforms: {ios: {}}},
+          'react-native-b': {root: '/no/such/b', platforms: {ios: null}},
+        },
+      }),
+    );
+    const results = scaffoldAll({
+      appRoot,
+      projectRoot: appRoot,
+      reactNativeRoot: appRoot,
+    });
+    expect(results.length).toBe(2);
+    expect(results.find(r => r.depName === 'react-native-b').status).toBe(
+      'skipped-no-ios',
+    );
+    // react-native-a's root doesn't exist → skipped-no-podspec
+    expect(results.find(r => r.depName === 'react-native-a').status).toBe(
+      'skipped-no-podspec',
+    );
+  });
+
+  function writeAutolinkingJson(dependencies) {
+    const autolinkingDir = path.join(appRoot, 'build/generated/autolinking');
+    fs.mkdirSync(autolinkingDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(autolinkingDir, 'autolinking.json'),
+      JSON.stringify({dependencies}),
+    );
+  }
+
+  it('propagates a Swift name collision instead of scaffolding anyway, plugin or not', () => {
+    // 'react-headers' derives the reserved 'ReactHeaders'. Degrading to the
+    // direct deps would scaffold manifests SPM rejects later, and a plugin buys
+    // no exemption — `spm scaffold` has no plugin code.
+    const depRoot = path.join(appRoot, 'node_modules', 'react-headers');
+    fs.mkdirSync(depRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(depRoot, 'package.json'),
+      JSON.stringify({
+        name: 'react-headers',
+        swiftpmConfig: {autolinkingPlugin: './spm-plugin.js'},
+      }),
+    );
+    writeAutolinkingJson({
+      'react-headers': {root: depRoot, platforms: {ios: {}}},
+    });
+    expect(() =>
+      scaffoldAll({appRoot, projectRoot: appRoot, reactNativeRoot: appRoot}),
+    ).toThrow(/React Native reserves/);
+  });
+
+  it('still falls back to the direct deps when a transitive dep cannot be resolved', () => {
+    const depRoot = path.join(appRoot, 'node_modules', 'react-native-a');
+    fs.mkdirSync(depRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native.config.js'),
+      "module.exports = {spm: {dependencies: ['ghost-dep-that-is-not-installed']}};\n",
+    );
+    writeAutolinkingJson({
+      'react-native-a': {root: depRoot, platforms: {ios: {}}},
+    });
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const results = scaffoldAll({
+        appRoot,
+        projectRoot: appRoot,
+        reactNativeRoot: appRoot,
+      });
+      expect(results.map(r => r.depName)).toEqual(['react-native-a']);
+      expect(logSpy.mock.calls.map(call => call.join(' ')).join('\n')).toMatch(
+        /Transitive dependency expansion failed/,
+      );
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it('names a degraded dep from its podspec, so the manifest it writes still matches the autolinker', () => {
+    const depRoot = path.join(appRoot, 'node_modules', 'react-native-svg');
+    fs.mkdirSync(path.join(depRoot, 'ios'), {recursive: true});
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Lib.mm'), '// src\n');
+    fs.writeFileSync(
+      path.join(depRoot, 'package.json'),
+      JSON.stringify({
+        name: 'react-native-svg',
+        swiftpmConfig: {dependencies: ['ghost-dep-that-is-not-installed']},
+      }),
+    );
+    fs.writeFileSync(
+      path.join(depRoot, 'RNSVG.podspec'),
+      [
+        'Pod::Spec.new do |s|',
+        '  s.name = "RNSVG"',
+        '  s.version = "1.0.0"',
+        '  s.source_files = "ios/**/*.{h,m,mm}"',
+        'end',
+        '',
+      ].join('\n'),
+    );
+    writeAutolinkingJson({
+      'react-native-svg': {root: depRoot, platforms: {ios: {}}},
+    });
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const [result] = scaffoldAll({
+        appRoot,
+        projectRoot: appRoot,
+        reactNativeRoot: appRoot,
+      });
+      expect(result.status).toBe('written');
+      const manifest = fs.readFileSync(
+        path.join(depRoot, 'Package.swift'),
+        'utf8',
+      );
+      expect(manifest).toContain('name: "RNSVG"');
+      expect(manifest).not.toContain('ReactNativeSvg');
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it('emits the remote package reference for every dep it scaffolds', () => {
+    const depRoot = path.join(appRoot, 'node_modules', 'react-native-foo');
+    fs.mkdirSync(path.join(depRoot, 'ios'), {recursive: true});
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Foo.mm'), '// native\n');
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native-foo.podspec'),
+      'Pod::Spec.new do |s|\n' +
+        '  s.name = "react-native-foo"\n' +
+        '  s.version = "1.0"\n' +
+        '  s.source_files = "ios/**/*.{h,m,mm}"\n' +
+        '  s.dependency "React-Core"\n' +
+        'end\n',
+    );
+    writeAutolinkingJson({
+      'react-native-foo': {root: depRoot, platforms: {ios: {}}},
+    });
+    const prevUrl = process.env.RN_SPM_REMOTE_URL;
+    const prevVersion = process.env.RN_SPM_REMOTE_VERSION;
+    process.env.RN_SPM_REMOTE_URL = 'https://example.com/rn.git';
+    process.env.RN_SPM_REMOTE_VERSION = '9.9.9';
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const results = scaffoldAll({
+        appRoot,
+        projectRoot: appRoot,
+        reactNativeRoot: appRoot,
+      });
+      expect(results.map(r => r.status)).toEqual(['written']);
+      const manifest = fs.readFileSync(
+        path.join(depRoot, 'Package.swift'),
+        'utf8',
+      );
+      expect(manifest).toContain(
+        '.package(url: "https://example.com/rn.git", exact: "9.9.9")',
+      );
+      expect(manifest).not.toContain('.package(name: "ReactNative"');
+    } finally {
+      logSpy.mockRestore();
+      if (prevUrl == null) delete process.env.RN_SPM_REMOTE_URL;
+      else process.env.RN_SPM_REMOTE_URL = prevUrl;
+      if (prevVersion == null) delete process.env.RN_SPM_REMOTE_VERSION;
+      else process.env.RN_SPM_REMOTE_VERSION = prevVersion;
+    }
+  });
+
+  it('propagates a RemoteVersionError from the remote package config', () => {
+    writeAutolinkingJson({
+      'react-native-a': {root: '/no/such/a', platforms: {ios: {}}},
+    });
+    const prevUrl = process.env.RN_SPM_REMOTE_URL;
+    const prevVersion = process.env.RN_SPM_REMOTE_VERSION;
+    process.env.RN_SPM_REMOTE_URL = 'https://example.com/react-native-spm.git';
+    delete process.env.RN_SPM_REMOTE_VERSION;
+    try {
+      // No react-native under the temp appRoot, so no version resolves — the
+      // author must see that, not have it degraded into "expansion failed".
+      expect(() =>
+        scaffoldAll({appRoot, projectRoot: appRoot, reactNativeRoot: appRoot}),
+      ).toThrow(RemoteVersionError);
+    } finally {
+      if (prevUrl == null) {
+        delete process.env.RN_SPM_REMOTE_URL;
+      } else {
+        process.env.RN_SPM_REMOTE_URL = prevUrl;
+      }
+      if (prevVersion != null) {
+        process.env.RN_SPM_REMOTE_VERSION = prevVersion;
+      }
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SCAFFOLDER_VERSION — auto-regen when the emitter's output format changes
+//
+// Without versioning, a Package.swift scaffolded by an older generator stays
+// on disk indefinitely (skip-on-marker), even when our template has since
+// been fixed. Bumping SCAFFOLDER_VERSION triggers a one-time regeneration
+// on next scaffold. Edits are persisted via patch-package per the marker
+// comment, so destructive regen here aligns with the documented workflow.
+// ---------------------------------------------------------------------------
+
+describe('SCAFFOLDER_VERSION', () => {
+  it('is a positive integer', () => {
+    expect(Number.isInteger(SCAFFOLDER_VERSION)).toBe(true);
+    expect(SCAFFOLDER_VERSION).toBeGreaterThanOrEqual(1);
+  });
+
+  it('is at the version the current emitter output requires', () => {
+    expect(SCAFFOLDER_VERSION).toBe(20);
+  });
+
+  it('emitter writes the current version to the file', () => {
+    const out = emitScaffoldedPackageSwift({
+      swiftName: 'foo',
+      sources: [],
+      headerSearchPaths: [],
+      preprocessorDefines: [],
+      needsObjCPrefix: false,
+      coreReactNative: false,
+      siblingNames: [],
+      extraFrameworks: [],
+      weakFrameworks: [],
+      compilerFlags: [],
+      publicHeadersPath: null,
+      resources: [],
+      warnings: [],
+    });
+    expect(out).toMatch(
+      new RegExp(`^// AUTO-SCAFFOLDED-VERSION: ${SCAFFOLDER_VERSION}$`, 'm'),
+    );
+  });
+});
+
+describe('scaffoldPackageSwiftForDep — version-based regen', () => {
+  let tempDir;
+  let depRoot;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-scaffold-version-'));
+    depRoot = path.join(tempDir, 'node_modules', 'react-native-foo');
+    fs.mkdirSync(depRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(depRoot, 'package.json'),
+      JSON.stringify({name: 'react-native-foo', version: '1.0.0'}),
+    );
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native-foo.podspec'),
+      "Pod::Spec.new do |s|\n  s.name = 'react-native-foo'\n  s.version = '1.0'\n  s.source_files = 'ios/**/*.{h,m,mm}'\nend\n",
+    );
+  });
+
+  afterEach(() => {
+    fs.rmSync(tempDir, {recursive: true, force: true});
+  });
+
+  function makeDep() {
+    return {
+      name: 'react-native-foo',
+      root: depRoot,
+      swiftName: 'ReactNativeFoo',
+      platforms: {ios: {}},
+    };
+  }
+
+  function makeCtx(overrides = {}) {
+    return {
+      appRoot: tempDir,
+      reactNativeRoot: depRoot,
+      force: false,
+      dryRun: false,
+      cacheSlotLabel: 'SLOT-A/debug',
+      skipDeps: new Set(),
+      ...overrides,
+    };
+  }
+
+  it('regenerates a file scaffolded under an older version, even without --force', () => {
+    const olderVersion = Math.max(1, SCAFFOLDER_VERSION - 1);
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      `${SCAFFOLDER_MARKER}\n// AUTO-SCAFFOLDED-VERSION: ${olderVersion}\n// Cache slot: SLOT-A/debug\n`,
+    );
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('written');
+    const after = fs.readFileSync(path.join(depRoot, 'Package.swift'), 'utf8');
+    expect(after).toContain(
+      `// AUTO-SCAFFOLDED-VERSION: ${SCAFFOLDER_VERSION}`,
+    );
+  });
+
+  it('regenerates a marker-tagged file with NO version line (treats as v1)', () => {
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      `${SCAFFOLDER_MARKER}\n// Cache slot: SLOT-A/debug\n// pre-versioning scaffold\n`,
+    );
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('written');
+    const after = fs.readFileSync(path.join(depRoot, 'Package.swift'), 'utf8');
+    expect(after).not.toContain('pre-versioning scaffold');
+    expect(after).toContain(
+      `// AUTO-SCAFFOLDED-VERSION: ${SCAFFOLDER_VERSION}`,
+    );
+  });
+
+  it('skips when the existing file is already at the current version and slot', () => {
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      `${SCAFFOLDER_MARKER}\n// AUTO-SCAFFOLDED-VERSION: ${SCAFFOLDER_VERSION}\n// Cache slot: SLOT-A/debug\n`,
+    );
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-scaffolder-marker');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// refreshScaffoldedPlatformFloors — `spm add`/`update` bring the floor of
+// manifests scaffolded earlier (possibly by an older generator) up to the
+// app's current deployment target, without regenerating them.
+// ---------------------------------------------------------------------------
+
+describe('refreshScaffoldedPlatformFloors', () => {
+  let appRoot;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-refresh-floor-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  function manifest(floorLine) {
+    return (
+      `// swift-tools-version: 6.0\n${SCAFFOLDER_MARKER}\n` +
+      '// AUTO-SCAFFOLDED-VERSION: 19\n\nlet package = Package(\n' +
+      '    name: "foo",\n' +
+      `    ${floorLine}\n` +
+      '    products: [],\n)\n'
+    );
+  }
+
+  // One dep per entry: `content` is written to <root>/Package.swift unless null.
+  function writeApp(deps) {
+    const autolinkingDir = path.join(appRoot, 'build/generated/autolinking');
+    fs.mkdirSync(autolinkingDir, {recursive: true});
+    const dependencies = {};
+    for (const [name, content] of Object.entries(deps)) {
+      const root = path.join(appRoot, 'node_modules', name);
+      fs.mkdirSync(root, {recursive: true});
+      if (content != null) {
+        fs.writeFileSync(path.join(root, 'Package.swift'), content, 'utf8');
+      }
+      dependencies[name] = {root, platforms: {ios: {}}};
+    }
+    fs.writeFileSync(
+      path.join(autolinkingDir, 'autolinking.json'),
+      JSON.stringify({dependencies}),
+    );
+  }
+
+  function refresh() {
+    return refreshScaffoldedPlatformFloors({
+      appRoot,
+      iosDeploymentTarget: '16.4',
+    });
+  }
+
+  function read(depName) {
+    return fs.readFileSync(
+      path.join(appRoot, 'node_modules', depName, 'Package.swift'),
+      'utf8',
+    );
+  }
+
+  it('rewrites only the platform line of a scaffolded manifest', () => {
+    const before = manifest('platforms: [.iOS("15.1")],');
+    writeApp({'react-native-foo': before});
+
+    expect(refresh()).toEqual([
+      {
+        depName: 'react-native-foo',
+        path: path.join(appRoot, 'node_modules/react-native-foo/Package.swift'),
+        from: '15.1',
+        to: '16.4',
+      },
+    ]);
+    expect(read('react-native-foo')).toBe(
+      before.replace('.iOS("15.1")', '.iOS("16.4")'),
+    );
+  });
+
+  it('rewrites the enum form an older scaffolder emitted', () => {
+    writeApp({'react-native-foo': manifest('platforms: [.iOS(.v15)],')});
+
+    expect(refresh()).toEqual([
+      expect.objectContaining({from: '.v15', to: '16.4'}),
+    ]);
+    expect(read('react-native-foo')).toContain('platforms: [.iOS("16.4")]');
+  });
+
+  it('rewrites only the .iOS element of an extended platforms array', () => {
+    writeApp({
+      'react-native-foo': manifest(
+        'platforms: [.iOS("15.1"), .macOS(.v13), .tvOS("16.0")],',
+      ),
+    });
+
+    expect(refresh()).toEqual([expect.objectContaining({from: '15.1'})]);
+    expect(read('react-native-foo')).toContain(
+      'platforms: [.iOS("16.4"), .macOS(.v13), .tvOS("16.0")],',
+    );
+  });
+
+  it('leaves a manifest already on the floor untouched', () => {
+    writeApp({'react-native-foo': manifest('platforms: [.iOS("16.4")],')});
+    const manifestPath = path.join(
+      appRoot,
+      'node_modules/react-native-foo/Package.swift',
+    );
+    const before = fs.statSync(manifestPath).mtimeMs;
+
+    expect(refresh()).toEqual([]);
+    expect(fs.statSync(manifestPath).mtimeMs).toBe(before);
+  });
+
+  it('ignores manifests it does not own, and deps with none', () => {
+    const upstream = '// hand-authored\nplatforms: [.iOS("15.1")],\n';
+    const autogen = `// AUTO-GENERATED by scripts/generate-spm-autolinking.js\n${SCAFFOLDER_MARKER}\nplatforms: [.iOS("15.1")],\n`;
+    writeApp({
+      'react-native-upstream': upstream,
+      'react-native-autogen': autogen,
+      'react-native-none': null,
+    });
+
+    expect(refresh()).toEqual([]);
+    expect(read('react-native-upstream')).toBe(upstream);
+    expect(read('react-native-autogen')).toBe(autogen);
+  });
+
+  it('refreshes a transitive spm.dependency that autolinking.json never lists', () => {
+    writeApp({'react-native-a': manifest('platforms: [.iOS("15.1")],')});
+    fs.writeFileSync(
+      path.join(appRoot, 'node_modules/react-native-a/package.json'),
+      JSON.stringify({
+        name: 'react-native-a',
+        swiftpmConfig: {dependencies: ['react-native-transitive']},
+      }),
+    );
+    const transitiveRoot = path.join(
+      appRoot,
+      'node_modules',
+      'react-native-transitive',
+    );
+    fs.mkdirSync(transitiveRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'package.json'),
+      JSON.stringify({name: 'react-native-transitive', version: '1.0.0'}),
+    );
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'react-native.config.js'),
+      'module.exports = {dependency: {platforms: {ios: {}}}};\n',
+    );
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'Package.swift'),
+      manifest('platforms: [.iOS("15.1")],'),
+      'utf8',
+    );
+
+    expect(
+      refresh()
+        .map(entry => entry.depName)
+        .sort(),
+    ).toEqual(['react-native-a', 'react-native-transitive']);
+    expect(read('react-native-transitive')).toContain(
+      'platforms: [.iOS("16.4")]',
+    );
+  });
+
+  it('returns nothing when there is no autolinking.json', () => {
+    expect(refresh()).toEqual([]);
+  });
+
+  it('honors an autolinking.json written outside the default location', () => {
+    writeApp({'react-native-foo': manifest('platforms: [.iOS("15.1")],')});
+    const moved = path.join(appRoot, 'elsewhere', 'autolinking.json');
+    fs.mkdirSync(path.dirname(moved));
+    fs.renameSync(
+      path.join(appRoot, 'build/generated/autolinking/autolinking.json'),
+      moved,
+    );
+
+    expect(refresh()).toEqual([]);
+    expect(
+      refreshScaffoldedPlatformFloors({
+        appRoot,
+        autolinkingJsonPath: moved,
+        iosDeploymentTarget: '16.4',
+      }),
+    ).toEqual([expect.objectContaining({depName: 'react-native-foo'})]);
+  });
+});

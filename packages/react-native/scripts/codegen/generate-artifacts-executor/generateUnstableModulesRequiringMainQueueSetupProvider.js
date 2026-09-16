@@ -12,8 +12,8 @@
 
 const {TEMPLATES_FOLDER_PATH} = require('./constants');
 const {parseiOSAnnotations, writeFileSyncIfChanged} = require('./utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const UNSTABLE_MODULES_REQUIRING_MAIN_QUEUE_SETUP_PROVIDER_H_TEMPLATE_PATH =
   path.join(

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/components/scrollview/BaseScrollViewProps.h>
 #include <react/renderer/components/scrollview/primitives.h>
 #include <react/renderer/components/view/ViewProps.h>

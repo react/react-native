@@ -222,12 +222,12 @@ RCT_EXPORT_MODULE()
   });
 }
 
-RCT_EXPORT_METHOD(setExtraData : (NSDictionary *)extraData forIdentifier : (NSString *)identifier)
+- (void)setExtraData:(NSDictionary *)extraData forIdentifier:(NSString *)identifier
 {
   [_extraDataViewController addExtraData:extraData forIdentifier:identifier];
 }
 
-RCT_EXPORT_METHOD(dismiss)
+- (void)dismiss
 {
   dispatch_async(dispatch_get_main_queue(), ^{
     [self->_controller dismiss];

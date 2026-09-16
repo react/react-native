@@ -12,11 +12,13 @@
 #include "InterpolationAnimatedNode.h"
 
 #include <glog/logging.h>
+#include <react/debug/react_native_assert.h>
 #include <react/renderer/animated/NativeAnimatedNodesManager.h>
 #include <react/renderer/animated/drivers/AnimationDriverUtils.h>
 #include <react/renderer/animated/internal/primitives.h>
 #include <react/renderer/animated/nodes/PropsAnimatedNode.h>
 #include <react/renderer/graphics/HostPlatformColor.h>
+#include <algorithm>
 
 namespace facebook::react {
 
@@ -52,6 +54,47 @@ InterpolationAnimatedNode::InterpolationAnimatedNode(
 
   extrapolateLeft_ = nodeConfig["extrapolateLeft"].asString();
   extrapolateRight_ = nodeConfig["extrapolateRight"].asString();
+
+  // Optional non-uniform easing stops baked from a JS interpolation `easing`
+  // function, as [position, value] pairs. Absent for interpolations without
+  // custom easing.
+  if (auto easingStopsIt = nodeConfig.find("easingStops");
+      easingStopsIt != nodeConfig.items().end()) {
+    const auto& easingStops = easingStopsIt->second;
+    react_native_assert(easingStops.type() == folly::dynamic::ARRAY);
+    for (const auto& stop : easingStops) {
+      react_native_assert(
+          stop.type() == folly::dynamic::ARRAY && stop.size() == 2);
+      easingStopInputs_.push_back(stop[0].asDouble());
+      easingStopOutputs_.push_back(stop[1].asDouble());
+    }
+  }
+}
+
+double InterpolationAnimatedNode::easeRatio(double ratio) const {
+  // No easing, or out-of-range ratio (extrapolation) — leave it untouched.
+  if (easingStopInputs_.size() < 2 || ratio < 0.0 || ratio > 1.0) {
+    return ratio;
+  }
+  // Binary search for the stop segment [lower, upper] bracketing `ratio`.
+  const auto it = std::upper_bound(
+      easingStopInputs_.begin(), easingStopInputs_.end(), ratio);
+  if (it == easingStopInputs_.begin()) {
+    return easingStopOutputs_.front();
+  }
+  if (it == easingStopInputs_.end()) {
+    return easingStopOutputs_.back();
+  }
+  const auto upper = static_cast<size_t>(it - easingStopInputs_.begin());
+  const auto lower = upper - 1;
+  const auto inputLo = easingStopInputs_[lower];
+  const auto inputHi = easingStopInputs_[upper];
+  if (inputHi == inputLo) {
+    return easingStopOutputs_[upper];
+  }
+  const auto weight = (ratio - inputLo) / (inputHi - inputLo);
+  return easingStopOutputs_[lower] +
+      (easingStopOutputs_[upper] - easingStopOutputs_[lower]) * weight;
 }
 
 void InterpolationAnimatedNode::update() {
@@ -91,12 +134,30 @@ double InterpolationAnimatedNode::interpolateValue(double value) {
   }
   index--;
 
+  const auto inputMin = inputRanges_[index];
+  const auto inputMax = inputRanges_[index + 1];
+  const auto outputMin = defaultOutputRanges_[index];
+  const auto outputMax = defaultOutputRanges_[index + 1];
+
+  if (!easingStopInputs_.empty() && inputMin != inputMax) {
+    const auto ratio = (value - inputMin) / (inputMax - inputMin);
+    if (ratio >= 0.0 && ratio <= 1.0) {
+      // In-range: map the eased ratio straight to the output. The easing may
+      // overshoot [0, 1] (e.g. Easing.back/elastic); that overshoot must be
+      // preserved, not clamped — it comes from the easing, not from an
+      // out-of-range input. This matches JS, where easing runs after
+      // extrapolation handling. Out-of-range inputs fall through to linear
+      // extrapolation below (the stops only cover [0, 1]).
+      return outputMin + easeRatio(ratio) * (outputMax - outputMin);
+    }
+  }
+
   return interpolate(
       value,
-      inputRanges_[index],
-      inputRanges_[index + 1],
-      defaultOutputRanges_[index],
-      defaultOutputRanges_[index + 1],
+      inputMin,
+      inputMax,
+      outputMin,
+      outputMax,
       extrapolateLeft_,
       extrapolateRight_);
 }
@@ -127,7 +188,7 @@ double InterpolationAnimatedNode::interpolateColor(double value) {
     }
   }
 
-  auto ratio = (value - inputMin) / (inputMax - inputMin);
+  auto ratio = easeRatio((value - inputMin) / (inputMax - inputMin));
 
   auto outputMinA = alphaFromHostPlatformColor(outputMin);
   auto outputMinR = redFromHostPlatformColor(outputMin);
@@ -193,7 +254,7 @@ double InterpolationAnimatedNode::interpolatePlatformColor(double value) {
     }
   }
 
-  auto ratio = (value - inputMin) / (inputMax - inputMin);
+  auto ratio = easeRatio((value - inputMin) / (inputMax - inputMin));
 
   auto outputMinA = alphaFromHostPlatformColor(outputMin);
   auto outputMinR = redFromHostPlatformColor(outputMin);

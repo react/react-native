@@ -36,6 +36,7 @@ import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator
+import com.facebook.react.uimanager.HasChildPressedStateDelay
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions
@@ -61,6 +62,7 @@ import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_DISA
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_END
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_START
 import com.facebook.react.views.scroll.ReactScrollViewHelper.findNextFocusableView
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import com.facebook.systrace.Systrace
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -84,10 +86,11 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     HasFlingAnimator,
     HasScrollEventThrottle,
     HasSmoothScroll,
-    VirtualViewContainer {
+    VirtualViewContainer,
+    HasChildPressedStateDelay {
 
   private companion object {
-    private val DEBUG_MODE = false && ReactBuildConfig.DEBUG
+    private val DEBUG_MODE = ReactBuildConfig.DEBUG && false
     private val TAG = ReactHorizontalScrollView::class.java.simpleName
 
     private const val NO_SCROLL_POSITION = Int.MIN_VALUE
@@ -173,6 +176,11 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   private var pendingContentOffsetX = UNSET_CONTENT_OFFSET
   private var pendingContentOffsetY = UNSET_CONTENT_OFFSET
   public open var pointerEvents: PointerEvents = PointerEvents.AUTO
+    set(value) {
+      field = value
+      ImportantForInteractionHelper.setImportantForInteraction(this, value, _overflow)
+    }
+
   private var contentView: View? = null
   private var maintainVisibleContentPositionHelper:
       MaintainVisibleScrollPositionHelper<ReactHorizontalScrollView>? =
@@ -197,6 +205,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override var stateWrapper: StateWrapper? = null
   override var scrollEventThrottle: Int = 0
   override var lastScrollDispatchTime: Long = 0L
+  override var hasChildPressedStateDelay: Boolean? = null
 
   override val virtualViewContainerState: VirtualViewContainerState
     get() =
@@ -416,16 +425,18 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
         if (overflow == null) {
           Overflow.SCROLL
         } else {
-          Overflow.fromString(overflow)
-              ?: if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid())
-                  Overflow.VISIBLE
-              else Overflow.SCROLL
+          Overflow.fromString(
+              overflow,
+              if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
+              else Overflow.SCROLL,
+          )
         }
+    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
     invalidate()
   }
 
   internal open fun setMaintainVisibleContentPosition(
-      config: MaintainVisibleScrollPositionHelper.Config?
+      config: MaintainVisibleScrollPositionHelper.Config?,
   ) {
     if (config != null && maintainVisibleContentPositionHelper == null) {
       val helper = MaintainVisibleScrollPositionHelper(this, true)
@@ -630,6 +641,9 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
   }
+
+  override fun shouldDelayChildPressedState(): Boolean =
+      hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false

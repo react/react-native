@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/SwitchNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/SwitchNativeComponent';
+export * from '../../../src/private/components/switch/specs/SwitchNativeComponent';
+export {default} from '../../../src/private/components/switch/specs/SwitchNativeComponent';

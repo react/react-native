@@ -107,7 +107,7 @@ public open class ReadableNativeMap protected constructor() : NativeMap(), Reada
   private inline fun <reified T> checkInstance(name: String, instance: Any?, type: Class<T>): T =
       instance as? T
           ?: throw UnexpectedNativeTypeException(
-              "Value for $name cannot be cast from ${instance?.javaClass?.simpleName ?: "NULL"} to ${type.simpleName}"
+              "Value for $name cannot be cast from ${instance?.javaClass?.simpleName ?: "NULL"} to ${type.simpleName}",
           )
 
   private fun getValue(name: String): Any {
@@ -215,7 +215,7 @@ public open class ReadableNativeMap protected constructor() : NativeMap(), Reada
     return hashMap
   }
 
-  private companion object {
+  internal companion object {
     @get:JvmStatic
     @get:JvmName("getJNIPassCounter")
     var jniPassCounter: Int = 0

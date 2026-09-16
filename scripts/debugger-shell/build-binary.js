@@ -28,10 +28,10 @@ if (isMetaInternal) {
 }
 
 const {packager} = require('@electron/packager');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+const util = require('node:util');
 const signedsource = require('signedsource');
-const util = require('util');
 
 const APP_NAME = 'React Native DevTools';
 const COMPANY_NAME = 'Meta Platforms Technologies LLC';
@@ -45,6 +45,28 @@ const PACKAGE_ROOT = path.join(
   'packages',
   'debugger-shell',
 );
+const ICON_BASE = path.join(PACKAGE_ROOT, 'src/electron/resources');
+
+const platformConfigs = [
+  {
+    platform: ['darwin'],
+    arch: ['x64', 'arm64'],
+    icon: [
+      path.join(ICON_BASE, 'AppIcon.icns'),
+      path.join(ICON_BASE, 'AppIcon.icon'),
+    ],
+  },
+  {
+    platform: ['win32'],
+    arch: ['x64', 'arm64'],
+    icon: path.join(ICON_BASE, 'icon.ico'),
+  },
+  {
+    platform: ['linux'],
+    arch: ['x64', 'arm64'],
+    icon: path.join(ICON_BASE, 'icon.png'),
+  },
+];
 
 async function main() {
   const pkg = JSON.parse(
@@ -73,31 +95,37 @@ async function main() {
 
   await writeBuildInfo();
 
-  await packager({
-    dir: PACKAGE_ROOT,
-    icon: path.join(PACKAGE_ROOT, 'src/electron/resources/icon'),
-    platform: ['win32', 'darwin', 'linux'],
-    arch: ['x64', 'arm64'],
-    name: APP_NAME,
-    appVersion: pkg.version,
-    appCopyright: COPYRIGHT,
-    appCategoryType: 'public.app-category.developer-tools',
-    asar: true,
-    appBundleId: APP_BUNDLE_IDENTIFIER,
-    out: path.join(PACKAGE_ROOT, 'build'),
-    win32metadata: {
-      CompanyName: COMPANY_NAME,
-      ProductName: APP_NAME,
-      InternalName: APP_NAME,
-      FileDescription: `${APP_NAME}.exe`,
-      OriginalFilename: `${APP_NAME}.exe`,
-    },
-    overwrite: true,
-    ignore: [
-      ...IGNORE_PREFIXES.map(prefix => new RegExp('^' + escapeRegex(prefix))),
-      ...IGNORE_FILES.map(file => new RegExp('^' + escapeRegex(file) + '$')),
-    ],
-  });
+  await Promise.all(
+    platformConfigs.map(platformConfig =>
+      packager({
+        ...platformConfig,
+        dir: PACKAGE_ROOT,
+        name: APP_NAME,
+        appVersion: pkg.version,
+        appCopyright: COPYRIGHT,
+        appCategoryType: 'public.app-category.developer-tools',
+        asar: true,
+        appBundleId: APP_BUNDLE_IDENTIFIER,
+        out: path.join(PACKAGE_ROOT, 'build'),
+        win32metadata: {
+          CompanyName: COMPANY_NAME,
+          ProductName: APP_NAME,
+          InternalName: APP_NAME,
+          FileDescription: `${APP_NAME}.exe`,
+          OriginalFilename: `${APP_NAME}.exe`,
+        },
+        overwrite: true,
+        ignore: [
+          ...IGNORE_PREFIXES.map(
+            prefix => new RegExp('^' + escapeRegex(prefix)),
+          ),
+          ...IGNORE_FILES.map(
+            file => new RegExp('^' + escapeRegex(file) + '$'),
+          ),
+        ],
+      }),
+    ),
+  );
 }
 
 async function writeBuildInfo() {

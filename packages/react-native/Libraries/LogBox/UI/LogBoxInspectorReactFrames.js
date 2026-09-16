@@ -101,13 +101,24 @@ component LogBoxInspectorReactFrames(log: LogBoxLog) {
             <View style={componentStyles.component}>
               <Text
                 id="logbox_component_stack_frame_text"
+                maxFontSizeMultiplier={1.5}
                 style={componentStyles.frameName}>
-                <Text style={componentStyles.bracket}>{'<'}</Text>
+                <Text
+                  maxFontSizeMultiplier={1.5}
+                  style={componentStyles.bracket}>
+                  {'<'}
+                </Text>
                 {frame.methodName}
-                <Text style={componentStyles.bracket}>{' />'}</Text>
+                <Text
+                  maxFontSizeMultiplier={1.5}
+                  style={componentStyles.bracket}>
+                  {' />'}
+                </Text>
               </Text>
             </View>
-            <Text style={componentStyles.frameLocation}>
+            <Text
+              maxFontSizeMultiplier={1.5}
+              style={componentStyles.frameLocation}>
               {frame.file != null ? getPrettyFileName(frame.file) : ''}
               {frame.lineNumber != null ? `:${frame.lineNumber}` : ''}
             </Text>
@@ -122,7 +133,9 @@ component LogBoxInspectorReactFrames(log: LogBoxLog) {
           }}
           onPress={() => setCollapsed(!collapsed)}
           style={componentStyles.collapseButton}>
-          <Text style={componentStyles.collapse}>{getCollapseMessage()}</Text>
+          <Text maxFontSizeMultiplier={1.5} style={componentStyles.collapse}>
+            {getCollapseMessage()}
+          </Text>
         </LogBoxButton>
       </View>
     </LogBoxInspectorSection>

@@ -236,6 +236,154 @@ function FallbackColorsExample() {
   );
 }
 
+function LazyFallbackColorsExample() {
+  // A token that resolves to a real system color on each platform.
+  const validToken = Platform.select({
+    ios: 'systemBlue',
+    android: '?attr/colorAccent',
+    default: 'systemBlue',
+  });
+  // A token that intentionally does not resolve on any platform, so the lazy
+  // raw-string fallback is what actually gets rendered.
+  const invalidToken = Platform.select({
+    ios: 'nonExistentSystemColor',
+    android: '?attr/nonExistentColor',
+    default: 'nonExistentToken',
+  });
+
+  return (
+    <View style={styles.column}>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          Valid token '{validToken}' (shows the system color)
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            backgroundColor: PlatformColor(validToken),
+          }}
+        />
+      </View>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          Invalid token, NO fallback (miss → transparent, outlined below)
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            backgroundColor: PlatformColor(invalidToken),
+            borderColor: 'black',
+            borderWidth: 1,
+          }}
+        />
+      </View>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          Invalid token + fallback '#FF0000' → RED (backgroundColor)
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            backgroundColor: PlatformColor(invalidToken, {fallback: '#FF0000'}),
+          }}
+        />
+      </View>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          Invalid token + fallback '#FFFF00' → YELLOW (backgroundColor)
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            backgroundColor: PlatformColor(invalidToken, {fallback: '#FFFF00'}),
+          }}
+        />
+      </View>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          Invalid token + fallback '#00FF00' → GREEN (text color)
+        </RNTesterText>
+        <View style={styles.colorCell}>
+          <RNTesterText
+            style={{
+              color: PlatformColor(invalidToken, {fallback: '#00FF00'}),
+              fontWeight: 'bold',
+            }}>
+            GREEN
+          </RNTesterText>
+        </View>
+      </View>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          Invalid token + fallback '#0000FF' → BLUE (borderColor)
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            borderColor: PlatformColor(invalidToken, {fallback: '#0000FF'}),
+            borderWidth: 3,
+          }}
+        />
+      </View>
+      <RNTesterText style={styles.note}>
+        The fallback is parsed by each platform's shared native CSS color
+        parser, so hex (#RGB / #RRGGBB / #RRGGBBAA), rgb(), rgba(), hsl(),
+        hsla() and named colors all resolve consistently on every platform. Only
+        a representative subset is demoed below.
+      </RNTesterText>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          fallback 'rgb(255, 0, 128)' → PINK (backgroundColor)
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            backgroundColor: PlatformColor(invalidToken, {
+              fallback: 'rgb(255, 0, 128)',
+            }),
+          }}
+        />
+      </View>
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          fallback 'rgba(0, 128, 255, 0.7)' → semi-transparent BLUE
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            backgroundColor: PlatformColor(invalidToken, {
+              fallback: 'rgba(0, 128, 255, 0.7)',
+            }),
+            borderColor: 'black',
+            borderWidth: 1,
+          }}
+        />
+      </View>
+      {/*
+        hsl()/hsla() and named-color fallbacks (e.g. 'cornflowerblue') are
+        intentionally not demoed here. They resolve on every platform, since the
+        fallback is parsed by the shared CSS color parser; they are omitted only
+        to keep this example concise.
+      */}
+      <View style={styles.row}>
+        <RNTesterText style={styles.labelCell}>
+          fallback '#FF000080' (#RRGGBBAA) → 50% transparent RED
+        </RNTesterText>
+        <View
+          style={{
+            ...styles.colorCell,
+            backgroundColor: PlatformColor(invalidToken, {
+              fallback: '#FF000080',
+            }),
+            borderColor: 'black',
+            borderWidth: 1,
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
 function DynamicColorsExample() {
   return Platform.OS === 'ios' ? (
     <View style={styles.column}>
@@ -372,6 +520,13 @@ const styles = StyleSheet.create({
   },
   colorCell: {flex: 0.25, alignItems: 'stretch'},
   separator: {height: 8},
+  note: {
+    fontStyle: 'italic',
+    paddingVertical: 8,
+    ...Platform.select({
+      ios: {color: PlatformColor('secondaryLabel')},
+    }),
+  },
 });
 
 exports.title = 'PlatformColor';
@@ -390,6 +545,12 @@ exports.examples = [
     title: 'Fallback Colors',
     render(): React.MixedElement {
       return <FallbackColorsExample />;
+    },
+  },
+  {
+    title: 'Lazy Fallback Colors',
+    render(): React.MixedElement {
+      return <LazyFallbackColorsExample />;
     },
   },
   {

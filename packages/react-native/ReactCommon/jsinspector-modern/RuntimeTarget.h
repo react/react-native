@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "ConsoleMessage.h"
 #include "EnumArray.h"
 #include "ExecutionContext.h"
@@ -128,6 +130,14 @@ class RuntimeTargetController {
    * sessions that have registered to receive binding events for that name.
    */
   void installBindingHandler(const std::string &bindingName);
+
+  /**
+   * Evaluates the given JavaScript source on the runtime's thread before any
+   * user code runs. Used to replay @cdp
+   * Page.addScriptToEvaluateOnNewDocument scripts onto a freshly created
+   * runtime.
+   */
+  void installScriptToEvaluateOnNewDocument(const std::string &source);
 
   /**
    * Notifies the target that an agent has received an enable or disable
@@ -288,6 +298,14 @@ class JSINSPECTOR_EXPORT RuntimeTarget : public EnableExecutorFromThis<RuntimeTa
    * sessions that have registered to receive binding events for that name.
    */
   void installBindingHandler(const std::string &bindingName);
+
+  /**
+   * Evaluates the given JavaScript source on the runtime's thread before any
+   * user code runs. Used to replay @cdp
+   * Page.addScriptToEvaluateOnNewDocument scripts onto a freshly created
+   * runtime.
+   */
+  void installScriptToEvaluateOnNewDocument(const std::string &source);
 
   /**
    * Installs any global values we want to expose to framework/user JavaScript

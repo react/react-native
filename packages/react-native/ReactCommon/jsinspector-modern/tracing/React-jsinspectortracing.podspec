@@ -44,6 +44,7 @@ Pod::Spec.new do |s|
   resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: module_name)
 
   add_dependency(s, "React-jsinspectornetwork", :framework_name => 'jsinspector_modernnetwork')
+  s.dependency "React-cxxstableapi"
   s.dependency "React-jsi"
   s.dependency "React-oscompat"
   s.dependency "React-timing"
@@ -55,4 +56,6 @@ Pod::Spec.new do |s|
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

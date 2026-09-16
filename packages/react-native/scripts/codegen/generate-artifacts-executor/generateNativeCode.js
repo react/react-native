@@ -13,9 +13,9 @@
 const generateSpecsCLIExecutor = require('../generate-specs-cli-executor');
 const {CORE_LIBRARIES_WITH_OUTPUT_FOLDER} = require('./constants');
 const {codegenLog, cpSyncRecursiveIfChanged} = require('./utils');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 function generateNativeCode(
   outputPath /*: string */,

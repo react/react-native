@@ -13,5 +13,5 @@ add_library(devtoolsruntimesettings OBJECT ${devtoolsruntimesettings_SRCS})
 
 target_include_directories(devtoolsruntimesettings PUBLIC .)
 
-target_link_libraries(devtoolsruntimesettings jsi react_codegen_rncore)
+target_link_libraries(devtoolsruntimesettings jsi react_codegen_rncore react_cxxstableapi)
 target_compile_reactnative_options(devtoolsruntimesettings PRIVATE)

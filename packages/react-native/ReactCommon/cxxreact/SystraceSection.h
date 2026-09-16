@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "TraceSection.h"
 
 // NOTE: This is here for a backwards compatibility and should be removed once

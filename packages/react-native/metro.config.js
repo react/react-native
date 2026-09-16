@@ -16,7 +16,7 @@ import type {ConfigT} from 'metro-config';
 
 const {getDefaultConfig} = require('@react-native/metro-config');
 const {mergeConfig} = require('metro-config');
-const path = require('path');
+const path = require('node:path');
 
 /**
  * This cli config is needed for development purposes, e.g. for running
@@ -26,7 +26,7 @@ const config = {
   // Make Metro able to resolve required packages that might be imported from /packages/react-native
   watchFolders: [
     path.resolve(__dirname, '../../node_modules'),
-    path.resolve(__dirname, '../assets-registry'),
+    path.resolve(__dirname, '../asset-utils'),
     path.resolve(__dirname, '../normalize-color'),
     path.resolve(__dirname, '../polyfills'),
     path.resolve(__dirname, '../virtualized-lists'),
@@ -39,7 +39,9 @@ const config = {
   },
 };
 
-module.exports = mergeConfig(
+const mergedConfig /*: ConfigT */ = mergeConfig(
   getDefaultConfig(__dirname),
   config,
-) /*:: as ConfigT */;
+);
+
+module.exports = mergedConfig;

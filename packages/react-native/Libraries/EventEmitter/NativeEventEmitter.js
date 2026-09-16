@@ -19,8 +19,22 @@ import Platform from '../Utilities/Platform';
 import RCTDeviceEventEmitter from './RCTDeviceEventEmitter';
 import invariant from 'invariant';
 
+/**
+ * The React Native implementation of the IOS RCTEventEmitter which is required when creating
+ * a module that communicates with IOS
+ */
 interface NativeModule {
+  /**
+   * Add the provided eventType as an active listener
+   * @param eventType name of the event for which we are registering listener
+   */
   addListener(eventType: string): void;
+  /**
+   * Remove a specified number of events.  There are no eventTypes in this case, as
+   * the native side doesn't remove the name, but only manages a counter of total
+   * listeners
+   * @param count number of listeners to remove (of any type)
+   */
   removeListeners(count: number): void;
 }
 
@@ -48,10 +62,13 @@ export default class NativeEventEmitter<
   TEventToArgsMap extends Readonly<
     Record<string, ReadonlyArray<UnsafeNativeEventObject>>,
   > = Readonly<Record<string, ReadonlyArray<UnsafeNativeEventObject>>>,
-> implements IEventEmitter<TEventToArgsMap>
-{
+> implements IEventEmitter<TEventToArgsMap> {
   _nativeModule: ?NativeModule;
 
+  /**
+   * @param nativeModule the NativeModule implementation.  This is required on IOS and will throw
+   *      an invariant error if undefined.
+   */
   constructor(nativeModule?: ?NativeModule) {
     if (Platform.OS === 'ios') {
       invariant(
@@ -83,6 +100,14 @@ export default class NativeEventEmitter<
     }
   }
 
+  /**
+   * Add the specified listener, this call passes through to the NativeModule
+   * addListener
+   *
+   * @param eventType name of the event for which we are registering listener
+   * @param listener the listener function
+   * @param context context of the listener
+   */
   addListener<TEvent extends keyof TEventToArgsMap>(
     eventType: TEvent,
     listener: (...args: TEventToArgsMap[TEvent]) => unknown,
@@ -116,6 +141,9 @@ export default class NativeEventEmitter<
     RCTDeviceEventEmitter.emit(eventType, ...args);
   }
 
+  /**
+   * @param eventType  name of the event whose registered listeners to remove
+   */
   removeAllListeners<TEvent extends keyof TEventToArgsMap>(
     eventType?: ?TEvent,
   ): void {

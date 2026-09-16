@@ -11,7 +11,6 @@
 #include <jsinspector-modern/tracing/PerformanceTracerSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
-#include <react/renderer/components/view/ViewShadowNode.h>
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/core/LayoutPrimitives.h>
 #include <react/renderer/mounting/ShadowTreeRevision.h>
@@ -347,7 +346,8 @@ CommitStatus ShadowTree::tryCommit(
       getShadowTreeCommitSourceName(commitOptions.source));
 
   auto isReactBranch = ReactNativeFeatureFlags::enableFabricCommitBranching() &&
-      commitOptions.source == CommitSource::React;
+      (commitOptions.source == CommitSource::React ||
+       commitOptions.source == CommitSource::AnimationEndSync);
 
   // Commits on the JS branch are never synchronous.
   react_native_assert(!isReactBranch || !commitOptions.mountSynchronously);
@@ -428,7 +428,9 @@ CommitStatus ShadowTree::tryCommit(
       return CommitStatus::Failed;
     }
 
-    auto newRevisionNumber = currentRevision_.number + 1;
+    auto newRevisionNumber = isReactBranch
+        ? oldRevisionForStateProgression.number + 1
+        : currentRevision_.number + 1;
 
     {
       std::scoped_lock dispatchLock(EventEmitter::DispatchMutex());
@@ -460,7 +462,8 @@ CommitStatus ShadowTree::tryCommit(
     }
   }
 
-  emitLayoutEvents(affectedLayoutableNodes);
+  delegate_.shadowTreeDidCommit(
+      *this, newRevision.rootShadowNode, affectedLayoutableNodes);
 
   if (isReactBranch) {
     scheduleReactRevisionPromotion();
@@ -513,11 +516,12 @@ void ShadowTree::mergeReactRevision() const {
     }
   }
 
-  ShadowTreeRevision::Number lastMergedRevisionNumber;
+  RootShadowNode::Shared lastMergedRootShadowNode;
+  bool lastMergeSucceeded = false;
 
   if (isPropsUpdatesAccumulationGuaranteed()) {
-    lastMergedRevisionNumber = promotedRevision.number;
-    this->commit(
+    lastMergedRootShadowNode = promotedRevision.rootShadowNode;
+    auto status = this->commit(
         [revision = std::move(promotedRevision)](
             const RootShadowNode& /*oldRootShadowNode*/) {
           return std::make_shared<RootShadowNode>(
@@ -528,13 +532,14 @@ void ShadowTree::mergeReactRevision() const {
             .mountSynchronously = true,
             .source = CommitSource::ReactRevisionMerge,
         });
+    lastMergeSucceeded = status == CommitStatus::Succeeded;
   } else {
     for (size_t i = 0; i < promotedRevisions.size(); ++i) {
       auto& revision = promotedRevisions[i];
       bool isLast = i == promotedRevisions.size() - 1;
-      lastMergedRevisionNumber = revision.number;
+      lastMergedRootShadowNode = revision.rootShadowNode;
 
-      this->commit(
+      auto status = this->commit(
           [revision = std::move(revision)](
               const RootShadowNode& /*oldRootShadowNode*/) {
             return std::make_shared<RootShadowNode>(
@@ -545,6 +550,7 @@ void ShadowTree::mergeReactRevision() const {
               .mountSynchronously = true,
               .source = CommitSource::ReactRevisionMerge,
           });
+      lastMergeSucceeded = status == CommitStatus::Succeeded;
     }
   }
 
@@ -554,8 +560,9 @@ void ShadowTree::mergeReactRevision() const {
 
     // If the current react revision is the same as the one that was just
     // merged, clear it.
-    if (currentReactRevision_.has_value() &&
-        lastMergedRevisionNumber == currentReactRevision_.value().number) {
+    if (lastMergeSucceeded && currentReactRevision_.has_value() &&
+        currentReactRevision_.value().rootShadowNode ==
+            lastMergedRootShadowNode) {
       currentReactRevision_.reset();
     }
   }
@@ -625,25 +632,6 @@ void ShadowTree::commitEmptyTree() const {
             });
       },
       {/* default commit options */});
-}
-
-void ShadowTree::emitLayoutEvents(
-    std::vector<const LayoutableShadowNode*>& affectedLayoutableNodes) const {
-  TraceSection s(
-      "ShadowTree::emitLayoutEvents",
-      "affectedLayoutableNodes",
-      affectedLayoutableNodes.size());
-
-  for (const auto* layoutableNode : affectedLayoutableNodes) {
-    if (auto viewProps =
-            dynamic_cast<const ViewProps*>(layoutableNode->getProps().get())) {
-      if (viewProps->onLayout) {
-        static_cast<const BaseViewEventEmitter&>(
-            *layoutableNode->getEventEmitter())
-            .onLayout(layoutableNode->getLayoutMetrics());
-      }
-    }
-  }
 }
 
 void ShadowTree::notifyDelegatesOfUpdates() const {

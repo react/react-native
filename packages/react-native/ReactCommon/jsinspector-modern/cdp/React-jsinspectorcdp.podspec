@@ -45,4 +45,8 @@ Pod::Spec.new do |s|
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  s.dependency "React-cxxstableapi"
+
+  mark_as_react_native_build(s)
 end

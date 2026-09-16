@@ -28,11 +28,14 @@ object ReactLibraryCodegenConfigurator {
       localExtension: ReactExtension,
       rootExtension: PrivateReactExtension,
   ) {
+    // First, we set up the output dir for the codegen.
     val generatedSrcDir: Provider<Directory> =
         project.layout.buildDirectory.dir("generated/source/codegen")
 
+    // It's the package folder for library (so ../ from the Gradle project)
     localExtension.jsRootDir.convention(project.layout.projectDirectory.dir("../"))
 
+    // We create the tasks to produce schema from JS files and generate artifacts from schema.
     val generateCodegenArtifactsTask =
         registerCodegenTasks(
             project = project,
@@ -42,6 +45,9 @@ object ReactLibraryCodegenConfigurator {
             schemaTaskName = "generateCodegenSchemaFromJavaScript",
             artifactsTaskName = "generateCodegenArtifactsFromSchema",
             configureJsRoot = { task, packageJson ->
+              // We're reading the package.json at configuration time to properly feed
+              // the `jsRootDir` @Input property of this task & the onlyIf. Therefore, the
+              // parsePackageJson should be invoked inside this lambda.
               val parsedPackageJson = packageJson?.let { JsonUtils.fromPackageJson(it) }
               val jsSrcsDirInPackageJson = parsedPackageJson?.codegenConfig?.jsSrcsDir
 
@@ -63,6 +69,10 @@ object ReactLibraryCodegenConfigurator {
             },
         )
 
+    // We update the android configuration to include the generated sources.
+    // This is equivalent to this DSL:
+    //
+    // android { sourceSets { main { java { srcDirs += "$generatedSrcDir/java" } } } }
     project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext
       ->
       ext.sourceSets
@@ -72,6 +82,8 @@ object ReactLibraryCodegenConfigurator {
           .add(generatedSrcDir.get().dir("java").asFile.path)
     }
 
+    // `preBuild` is one of the base tasks automatically registered by AGP.
+    // This will invoke the codegen before compiling the entire project.
     project.tasks.named("preBuild", Task::class.java).dependsOn(generateCodegenArtifactsTask)
   }
 
@@ -86,6 +98,7 @@ object ReactLibraryCodegenConfigurator {
       configureCodegenArtifacts: (GenerateCodegenArtifactsTask, File?) -> Unit,
       onlyIf: (File?) -> Boolean = { true },
   ): TaskProvider<GenerateCodegenArtifactsTask> {
+    // We create the task to produce schema from JS files.
     val generateCodegenSchemaTask =
         project.tasks.register(
             schemaTaskName,
@@ -109,13 +122,16 @@ object ReactLibraryCodegenConfigurator {
 
                 tree.exclude("node_modules/**/*")
                 tree.exclude("**/*.d.ts")
+                // We want to exclude the build directory, to avoid picking them up for execution
+                // avoidance.
                 tree.exclude("**/build/**/*")
-              }
+              },
           )
           val shouldRunTask = onlyIf(packageJson)
           task.onlyIf { shouldRunTask }
         }
 
+    // We create the task to generate Java code from schema.
     return project.tasks.register(
         artifactsTaskName,
         GenerateCodegenArtifactsTask::class.java,
@@ -131,6 +147,9 @@ object ReactLibraryCodegenConfigurator {
 
       configureCodegenArtifacts(task, packageJson)
 
+      // The caller decides whether codegen should run. For app/library projects this depends on
+      // package.json and includesGeneratedCode. Pure C++ dependencies are filtered before task
+      // registration, so their generated tasks can always run.
       val shouldRunTask = onlyIf(packageJson)
       task.onlyIf { shouldRunTask }
     }

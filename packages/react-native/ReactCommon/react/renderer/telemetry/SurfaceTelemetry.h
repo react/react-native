@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <vector>
 
 #include <react/renderer/telemetry/TransactionTelemetry.h>

@@ -349,8 +349,16 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
     return;
   }
 
-  std::lock_guard<std::mutex> lock(_pendingReactRevisionMergesMutex);
-  _pendingReactRevisionMerges.insert(surfaceId);
+  bool needsWake = false;
+  {
+    std::lock_guard<std::mutex> lock(_pendingReactRevisionMergesMutex);
+    needsWake = _pendingReactRevisionMerges.empty();
+    _pendingReactRevisionMerges.insert(surfaceId);
+  }
+
+  if (needsWake) {
+    CFRunLoopWakeUp(CFRunLoopGetMain());
+  }
 }
 
 - (void)_mergeReactRevisionForSurfaceId:(SurfaceId)surfaceId

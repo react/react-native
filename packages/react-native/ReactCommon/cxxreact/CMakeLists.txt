@@ -12,15 +12,19 @@ file(GLOB react_cxxreact_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_cxxreact OBJECT ${react_cxxreact_SRC})
 
 target_include_directories(react_cxxreact PUBLIC ${REACT_COMMON_DIR})
+target_include_directories(react_cxxreact INTERFACE ${REACT_COMMON_DIR}/cxxreact)
 
 target_link_libraries(react_cxxreact
         boost
         callinvoker
         folly_runtime
         glog
+        jserrorhandler
         jsi
         jsinspector
         logger
+        react_cxxstableapi
+        react_utils
         reactperflogger
         runtimeexecutor
         react_debug)

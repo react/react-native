@@ -13,7 +13,7 @@
 const ESLintTester = require('eslint').RuleTester;
 
 ESLintTester.setDefaultConfig({
-  parser: require.resolve('hermes-eslint'),
+  parser: require.resolve('flow-eslint'),
   parserOptions: {
     requireConfigFile: false,
     ecmaVersion: 6,

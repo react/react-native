@@ -83,10 +83,17 @@ namespace facebook::react {
               .join('')
           : ''
       }${
+        // The callback outlives this module, so it captures a copy of the map
+        // instead of referencing eventEmitterMap_. Every emitter is registered
+        // directly above, so the copy is complete; an emitter registered after
+        // construction would not be reachable from the callback.
         eventEmitters.length > 0
           ? `
-        setEventEmitterCallback([&](const std::string &name, id value) {
-          static_cast<AsyncEventEmitter<id> &>(*eventEmitterMap_[name]).emit(value);
+        setEventEmitterCallback([eventEmitterMap = eventEmitterMap_](const std::string &name, id value) {
+          auto it = eventEmitterMap.find(name);
+          if (it != eventEmitterMap.end() && it->second) {
+            static_cast<AsyncEventEmitter<id> &>(*it->second).emit(value);
+          }
         });`
           : ''
       }

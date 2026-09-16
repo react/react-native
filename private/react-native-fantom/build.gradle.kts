@@ -63,11 +63,12 @@ val testerBuildOutputFileTree =
     fileTree(testerBuildDir.toString())
         .include("**/*.cmake", "**/*.marks", "**/compiler_depends.ts", "**/Makefile", "**/link.txt")
 
-val createNativeDepsDirectories by tasks.registering {
-  downloadsDir.mkdirs()
-  thirdParty.mkdirs()
-  reportsDir.mkdirs()
-}
+val createNativeDepsDirectories by
+    tasks.registering {
+      downloadsDir.mkdirs()
+      thirdParty.mkdirs()
+      reportsDir.mkdirs()
+    }
 
 val downloadFollyDest = File(reactAndroidDownloadsDir, "folly-${FOLLY_VERSION}.tar.gz")
 
@@ -143,36 +144,40 @@ val prepareRNCodegen by
       into(codegenOutDir)
     }
 
-val enableHermesBuild by tasks.registering {
-  project(":packages:react-native:ReactAndroid:hermes-engine") {
-    tasks.configureEach { enabled = true }
-  }
-}
+val enableHermesBuild by
+    tasks.registering {
+      project(":packages:react-native:ReactAndroid:hermes-engine") {
+        tasks.configureEach { enabled = true }
+      }
+    }
 
-val prepareHermesDependencies by tasks.registering {
-  dependsOn(
-      enableHermesBuild,
-      ":packages:react-native:ReactAndroid:hermes-engine:buildHermesLibWithDebugger",
-      ":packages:react-native:ReactAndroid:hermes-engine:prepareHeadersForPrefabWithDebugger",
-  )
-}
+val prepareHermesDependencies by
+    tasks.registering {
+      dependsOn(
+          enableHermesBuild,
+          ":packages:react-native:ReactAndroid:hermes-engine:buildHermesLibWithDebugger",
+          ":packages:react-native:ReactAndroid:hermes-engine:prepareHeadersForPrefabWithDebugger",
+      )
+    }
 
-val prepareNative3pDependencies by tasks.registering {
-  dependsOn(
-      prepareGflags,
-      prepareNlohmannJson,
-      prepareFolly,
-      ":packages:react-native:ReactAndroid:prepareBoost",
-      ":packages:react-native:ReactAndroid:prepareDoubleConversion",
-      ":packages:react-native:ReactAndroid:prepareFastFloat",
-      ":packages:react-native:ReactAndroid:prepareFmt",
-      ":packages:react-native:ReactAndroid:prepareGlog",
-  )
-}
+val prepareNative3pDependencies by
+    tasks.registering {
+      dependsOn(
+          prepareGflags,
+          prepareNlohmannJson,
+          prepareFolly,
+          ":packages:react-native:ReactAndroid:prepareBoost",
+          ":packages:react-native:ReactAndroid:prepareDoubleConversion",
+          ":packages:react-native:ReactAndroid:prepareFastFloat",
+          ":packages:react-native:ReactAndroid:prepareFmt",
+          ":packages:react-native:ReactAndroid:prepareGlog",
+      )
+    }
 
-val prepareAllDependencies by tasks.registering {
-  dependsOn(prepareRNCodegen, prepareHermesDependencies, prepareNative3pDependencies)
-}
+val prepareAllDependencies by
+    tasks.registering {
+      dependsOn(prepareRNCodegen, prepareHermesDependencies, prepareNative3pDependencies)
+    }
 
 val configureFantomTester by
     tasks.registering(CustomExecTask::class) {

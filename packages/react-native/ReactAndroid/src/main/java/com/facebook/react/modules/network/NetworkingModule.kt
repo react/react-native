@@ -10,8 +10,13 @@
 
 package com.facebook.react.modules.network
 
+import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Base64
+import androidx.annotation.VisibleForTesting
 import com.facebook.common.logging.FLog
 import com.facebook.fbreact.specs.NativeNetworkingAndroidSpec
 import com.facebook.react.bridge.ReactApplicationContext
@@ -60,30 +65,30 @@ public class NetworkingModule(
    */
   internal interface UriHandler {
     /** Returns if the handler should be used for an URI. */
-    public fun supports(uri: Uri, responseType: String): Boolean
+    fun supports(uri: Uri, responseType: String): Boolean
 
     /**
      * Fetch the URI and return a tuple containing the JS body payload and the raw response body.
      */
-    @Throws(IOException::class) public fun fetch(uri: Uri): Pair<WritableMap, ByteArray>
+    @Throws(IOException::class) fun fetch(uri: Uri): Pair<WritableMap, ByteArray>
   }
 
   /** Allows adding custom handling to build the [RequestBody] from the JS body payload. */
   internal interface RequestBodyHandler {
     /** Returns if the handler should be used for a JS body payload. */
-    public fun supports(map: ReadableMap): Boolean
+    fun supports(map: ReadableMap): Boolean
 
     /** Returns the [RequestBody] for the JS body payload. */
-    public fun toRequestBody(map: ReadableMap, contentType: String?): RequestBody?
+    fun toRequestBody(map: ReadableMap, contentType: String?): RequestBody?
   }
 
   /** Allows adding custom handling to build the JS body payload from the [ResponseBody]. */
   internal interface ResponseHandler {
     /** Returns if the handler should be used for a response type. */
-    public fun supports(responseType: String): Boolean
+    fun supports(responseType: String): Boolean
 
     /** Returns the JS body payload for the [ResponseBody]. */
-    @Throws(IOException::class) public fun toResponseData(data: ByteArray): WritableMap
+    @Throws(IOException::class) fun toResponseData(data: ByteArray): WritableMap
   }
 
   private val client: OkHttpClient
@@ -114,13 +119,18 @@ public class NetworkingModule(
         } else {
           null
         }
-    this.defaultUserAgent = defaultUserAgent
+    val resolvedUserAgent =
+        defaultUserAgent ?: createDefaultUserAgent(reactContext.applicationContext ?: reactContext)
+    this.defaultUserAgent = resolvedUserAgent
   }
 
   /**
    * @param context the ReactContext of the application
    * @param defaultUserAgent the User-Agent header that will be set for all requests where the
-   *   caller does not provide one explicitly
+   *   caller (JS) does not provide one explicitly. When `null`, a default is derived from the
+   *   application's label and version name (`AppName/versionName`). If neither the label nor the
+   *   package name can be resolved (e.g. no PackageManager), no default User-Agent is applied and
+   *   requests are sent without one unless JS supplies the header.
    * @param client the [OkHttpClient] to be used for networking
    */
   internal constructor(
@@ -131,7 +141,7 @@ public class NetworkingModule(
 
   /** @param context the ReactContext of the application */
   public constructor(
-      context: ReactApplicationContext
+      context: ReactApplicationContext,
   ) : this(context, null, OkHttpClientProvider.createClient(context.applicationContext), null)
 
   /**
@@ -152,7 +162,9 @@ public class NetworkingModule(
   /**
    * @param context the ReactContext of the application
    * @param defaultUserAgent the User-Agent header that will be set for all requests where the
-   *   caller does not provide one explicitly
+   *   caller (JS) does not provide one explicitly. When `null`, a default is derived from the
+   *   application's label and version name; see the [NetworkingModule] constructor taking a
+   *   `client` for the full null/fallback behavior.
    */
   public constructor(
       context: ReactApplicationContext,
@@ -166,7 +178,7 @@ public class NetworkingModule(
 
   @Deprecated(
       """To be removed in a future release. See
-        https://github.com/facebook/react-native/pull/37798#pullrequestreview-1518338914"""
+        https://github.com/facebook/react-native/pull/37798#pullrequestreview-1518338914""",
   )
   public interface CustomClientBuilder : com.facebook.react.modules.network.CustomClientBuilder
 
@@ -783,7 +795,7 @@ public class NetworkingModule(
                   )
                 }
               }
-            }
+            },
         )
   }
 
@@ -1047,6 +1059,89 @@ public class NetworkingModule(
     return headersBuilder.build()
   }
 
+  /**
+   * Visible for testing so the null / fallback branches can be exercised without a real
+   * PackageManager.
+   */
+  @VisibleForTesting internal fun getDefaultUserAgentForTest(): String? = defaultUserAgent
+
+  private fun createDefaultUserAgent(context: Context): String? {
+    val pm = context.packageManager ?: return null
+    val packageName = context.packageName ?: return null
+    val packageInfo =
+        try {
+          pm.getPackageInfo(packageName, 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+          null
+        }
+    val appInfo =
+        try {
+          pm.getApplicationInfo(packageName, 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+          null
+        }
+    return createDefaultUserAgentInternal(pm, packageName, packageInfo, appInfo)
+  }
+
+  @VisibleForTesting
+  internal fun createDefaultUserAgentInternal(
+      pm: PackageManager?,
+      packageName: String?,
+      packageInfo: PackageInfo?,
+      appInfo: ApplicationInfo?,
+  ): String? {
+    if (pm == null || packageName == null) return null
+    // The application label is human-facing and may contain whitespace, punctuation, or
+    // non-ASCII characters (localized names, emoji, symbols like the (c) sign). OkHttp's
+    // Headers.Builder.add() rejects any value outside \u0020..\u007E, so an unsanitized label
+    // would throw on every request, and spaces/invalid chars would violate the RFC 7231
+    // User-Agent product-token syntax. Reduce the label to token-safe characters; if nothing
+    // usable remains, fall back to the package name, which is always a valid token.
+    val label = appInfo?.let { pm.getApplicationLabel(it)?.toString() }
+    val appName = sanitizeToUserAgentToken(label).ifEmpty { sanitizeToUserAgentToken(packageName) }
+    if (appName.isEmpty()) return null
+    val version =
+        packageInfo?.versionName?.let { sanitizeToUserAgentToken(it) }?.takeIf { it.isNotEmpty() }
+    return if (version != null) "$appName/$version" else appName
+  }
+
+  /**
+   * Reduces [value] to characters allowed in an RFC 7231 `token` (ASCII letters and digits plus
+   * `!#$%&'*+-.^_\`|~`). All other characters - whitespace, punctuation outside that set, and any
+   * non-ASCII character - are dropped, so the result is always a well-formed User-Agent product
+   * token that OkHttp will accept without throwing.
+   */
+  private fun sanitizeToUserAgentToken(value: String?): String {
+    if (value.isNullOrEmpty()) return ""
+    val sb = StringBuilder(value.length)
+    for (c in value) {
+      if (isUserAgentTokenChar(c)) {
+        sb.append(c)
+      }
+    }
+    return sb.toString()
+  }
+
+  private fun isUserAgentTokenChar(c: Char): Boolean =
+      c in 'a'..'z' ||
+          c in 'A'..'Z' ||
+          c in '0'..'9' ||
+          c == '!' ||
+          c == '#' ||
+          c == '\u0024' ||
+          c == '%' ||
+          c == '&' ||
+          c == '\'' ||
+          c == '*' ||
+          c == '+' ||
+          c == '-' ||
+          c == '.' ||
+          c == '^' ||
+          c == '_' ||
+          c == '`' ||
+          c == '|' ||
+          c == '~'
+
   public companion object {
     public const val NAME: String = NativeNetworkingAndroidSpec.NAME
     private const val TAG: String = NativeNetworkingAndroidSpec.NAME
@@ -1065,7 +1160,7 @@ public class NetworkingModule(
 
     @JvmStatic
     public fun setCustomClientBuilder(
-        ccb: com.facebook.react.modules.network.CustomClientBuilder?
+        ccb: com.facebook.react.modules.network.CustomClientBuilder?,
     ) {
       customClientBuilder = ccb
     }

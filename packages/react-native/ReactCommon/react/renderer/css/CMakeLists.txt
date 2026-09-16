@@ -14,10 +14,13 @@ file(GLOB react_renderer_css_SRC CONFIGURE_DEPENDS *.cpp)
 if("${react_renderer_css_SRC}" STREQUAL "")
   add_library(react_renderer_css INTERFACE)
 
-  target_include_directories(react_renderer_css INTERFACE ${REACT_COMMON_DIR})
+  target_include_directories(react_renderer_css INTERFACE
+        ${REACT_COMMON_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR})
   target_link_libraries(react_renderer_css INTERFACE
         fast_float
         glog
+        react_cxxstableapi
         react_debug
         react_utils)
   target_compile_reactnative_options(react_renderer_css INTERFACE)
@@ -25,10 +28,13 @@ if("${react_renderer_css_SRC}" STREQUAL "")
 else()
   add_library(react_renderer_css OBJECT ${react_renderer_css_SRC})
 
-  target_include_directories(react_renderer_css PUBLIC ${REACT_COMMON_DIR})
+  target_include_directories(react_renderer_css PUBLIC
+        ${REACT_COMMON_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR})
   target_link_libraries(react_renderer_css
         fast_float
         glog
+        react_cxxstableapi
         react_debug
         react_utils)
   target_compile_reactnative_options(react_renderer_css PRIVATE)

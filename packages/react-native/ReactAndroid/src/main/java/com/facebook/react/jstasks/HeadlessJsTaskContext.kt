@@ -76,7 +76,7 @@ public class HeadlessJsTaskContext private constructor(reactContext: ReactContex
         )
     check(
         !(reactContext.lifecycleState == LifecycleState.RESUMED &&
-            !taskConfig.isAllowedInForeground)
+            !taskConfig.isAllowedInForeground),
     ) {
       "Tried to start task ${taskConfig.taskKey} while in foreground, but this is not allowed."
     }

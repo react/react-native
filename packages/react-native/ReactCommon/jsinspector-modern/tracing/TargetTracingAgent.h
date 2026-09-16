@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "TraceRecordingState.h"
 
 namespace facebook::react::jsinspector_modern::tracing {

@@ -15,21 +15,21 @@ module.exports = {
 
   extends: ['@react-native'],
 
-  plugins: ['@react-native/monorepo', '@react-native/specs'],
+  plugins: ['@react-native/monorepo', '@react-native/specs', 'import'],
 
   overrides: [
     // overriding the JS config from @react-native/eslint-config to ensure
-    // that we use hermes-eslint for all js files
+    // that we use flow-eslint for all js files
     {
       files: ['*.js', '*.js.flow', '*.jsx'],
-      parser: 'hermes-eslint',
+      parser: 'flow-eslint',
       rules: {
         '@react-native/monorepo/sort-imports': 'warn',
         'eslint-comments/no-unlimited-disable': 'off',
         'ft-flow/require-valid-file-annotation': ['error', 'always'],
         'no-extra-boolean-cast': 'off',
         'no-void': 'off',
-        // These rules are not required with hermes-eslint
+        // These rules are not required with flow-eslint
         'ft-flow/define-flow-type': 'off',
         'ft-flow/use-flow-type': 'off',
         // Flow handles these checks for us, so they aren't required
@@ -44,6 +44,7 @@ module.exports = {
       files: ['*.js', '*.jsx', '*.ts', '*.tsx'],
       rules: {
         '@react-native/no-deep-imports': 'off',
+        'import/enforce-node-protocol-usage': ['warn', 'always'],
       },
     },
     {
@@ -52,7 +53,7 @@ module.exports = {
         './packages/react-native/src/**/*.{js,flow}',
         './packages/assets-registry/registry.js',
       ],
-      parser: 'hermes-eslint',
+      parser: 'flow-eslint',
       rules: {
         '@react-native/monorepo/no-commonjs-exports': 'warn',
       },
@@ -62,16 +63,13 @@ module.exports = {
       parser: 'jsonc-eslint-parser',
     },
     {
-      files: ['package.json'],
-      rules: {
-        '@react-native/monorepo/react-native-manifest': 'error',
-      },
-    },
-    {
       files: ['flow-typed/**/*.js', 'packages/react-native/flow/**/*'],
       rules: {
         '@react-native/monorepo/valid-flow-typed-signature': 'error',
         'ft-flow/require-valid-file-annotation': 'off',
+        // These libdefs are kept byte-identical across projects (see
+        // flow-typed-sync-test), so they must not be migrated independently.
+        'import/enforce-node-protocol-usage': 'off',
         'no-shadow': 'off',
         'no-unused-vars': 'off',
         quotes: 'off',

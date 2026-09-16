@@ -563,7 +563,9 @@ class SelectionExample extends React.Component<
             onChangeText={value => this.setState({value})}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onSelectionChange={this.onSelectionChange.bind(this)}
-            ref={textInput => (this._textInput = textInput)}
+            ref={textInput => {
+              this._textInput = textInput;
+            }}
             selection={this.props.imperative ? undefined : this.state.selection}
             style={this.props.style}
             value={this.state.value}
@@ -1196,6 +1198,31 @@ module.exports = [
           <WithLabel label="showSoftInputOnFocus: false">
             <ExampleTextInput showSoftInputOnFocus={false} />
           </WithLabel>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Placeholder ellipsizing',
+    name: 'placeholderEllipsizing',
+    render: function (): React.Node {
+      const placeholder =
+        'This placeholder is too long to fit on a single line';
+
+      return (
+        <View>
+          <ExampleTextInput
+            multiline={false}
+            placeholder={placeholder}
+            style={{height: 40, width: 200}}
+            testID="textinput-placeholder-singleline"
+          />
+          <ExampleTextInput
+            multiline={true}
+            placeholder={placeholder}
+            style={{height: 60, width: 200}}
+            testID="textinput-placeholder-multiline"
+          />
         </View>
       );
     },

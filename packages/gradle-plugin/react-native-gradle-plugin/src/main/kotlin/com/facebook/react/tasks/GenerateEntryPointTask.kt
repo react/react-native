@@ -37,13 +37,13 @@ abstract class GenerateEntryPointTask : DefaultTask() {
                   
                   The file is either missing or not containing valid JSON so the build won't succeed. 
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
 
     val packageName =
         model.project?.android?.packageName
             ?: error(
-                "RNGP - Autolinking: Could not find project.android.packageName in react-native config output! Could not autolink packages without this field."
+                "RNGP - Autolinking: Could not find project.android.packageName in react-native config output! Could not autolink packages without this field.",
             )
     val generatedFileContents = composeFileContent(packageName)
 

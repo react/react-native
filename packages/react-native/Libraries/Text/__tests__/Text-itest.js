@@ -10,10 +10,12 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {AccessibilityProps, HostInstance} from 'react-native';
+import type {HostInstance} from 'react-native';
+import type {AccessibilityProps} from 'react-native';
 
 import ensureInstance from '../../../src/private/__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Text} from 'react-native';
@@ -21,7 +23,7 @@ import accessibilityPropsSuite, {
   rolePropSuite,
 } from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
 import {testIDPropSuite} from 'react-native/src/private/__tests__/utilities/commonPropsSuite';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
+import ReadOnlyElement from 'react-native/src/private/webapis/dom/nodes/ReadOnlyElement';
 import ReadOnlyText from 'react-native/src/private/webapis/dom/nodes/ReadOnlyText';
 
 const TEST_TEXT = 'the text';
@@ -46,6 +48,44 @@ describe('<Text>', () => {
             overflow="hidden">
             {TEST_TEXT}
           </rn-paragraph>,
+        );
+      });
+    });
+
+    describe('fontVariationSettings', () => {
+      it('serializes object settings', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Text style={{fontVariationSettings: {wght: 552.5, opsz: 17.25}}}>
+              {TEST_TEXT}
+            </Text>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['fontVariationSettings']}).toJSX(),
+        ).toEqual(
+          <rn-paragraph fontVariationSettings="'opsz' 17.25, 'wght' 552.5">
+            {TEST_TEXT}
+          </rn-paragraph>,
+        );
+      });
+
+      it('serializes an empty object as an explicit clear', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Text style={{fontVariationSettings: {}}}>{TEST_TEXT}</Text>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['fontVariationSettings']}).toJSX(),
+        ).toEqual(
+          <rn-paragraph fontVariationSettings="">{TEST_TEXT}</rn-paragraph>,
         );
       });
     });
@@ -552,6 +592,32 @@ describe('<Text>', () => {
       });
     });
 
+    describe('accessibilityState', () => {
+      it('does not mutate the prop when disabled overrides it', () => {
+        const accessibilityState: AccessibilityProps['accessibilityState'] = {
+          disabled: false,
+        };
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Text disabled accessibilityState={accessibilityState}>
+              {TEST_TEXT}
+            </Text>,
+          );
+        });
+
+        expect(accessibilityState).toEqual({disabled: false});
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-paragraph accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}">
+            {TEST_TEXT}
+          </rn-paragraph>,
+        );
+      });
+    });
+
     describe('aria-hidden', () => {
       it('is is passed as importantForAccessibility', () => {
         const root = Fantom.createRoot();
@@ -579,7 +645,7 @@ describe('<Text>', () => {
         root.render(<Text ref={elementRef}>{TEST_TEXT}</Text>);
       });
 
-      const element = ensureInstance(elementRef.current, ReactNativeElement);
+      const element = nullthrows(elementRef.current);
       expect(element.tagName).toBe('RN:Paragraph');
     });
 
@@ -592,7 +658,7 @@ describe('<Text>', () => {
         root.render(<Text ref={elementRef}>{TEST_TEXT}</Text>);
       });
 
-      const element = ensureInstance(elementRef.current, ReactNativeElement);
+      const element = nullthrows(elementRef.current);
       expect(element.childNodes.length).toBe(1);
 
       const textChild = ensureInstance(element.childNodes[0], ReadOnlyText);
@@ -612,7 +678,7 @@ describe('<Text>', () => {
         );
       });
 
-      const element = ensureInstance(elementRef.current, ReactNativeElement);
+      const element = nullthrows(elementRef.current);
       expect(element.childNodes.length).toBe(2);
 
       const firstChild = ensureInstance(element.childNodes[0], ReadOnlyText);
@@ -620,7 +686,7 @@ describe('<Text>', () => {
 
       const secondChild = ensureInstance(
         element.childNodes[1],
-        ReactNativeElement,
+        ReadOnlyElement,
       );
       expect(secondChild.tagName).toBe('RN:Text');
       expect(secondChild.childNodes.length).toBe(1);
@@ -630,6 +696,224 @@ describe('<Text>', () => {
         ReadOnlyText,
       );
       expect(secondChildText.textContent).toBe('also in bold');
+    });
+  });
+
+  describe('displayName', () => {
+    it('is "Text"', () => {
+      expect(Text.displayName).toBe('Text');
+    });
+  });
+
+  describe('press handlers set accessibilityRole', () => {
+    const PRESS_PROPS = [
+      'accessibilityRole',
+      'role',
+      'isHighlighted',
+      'isPressable',
+      'disabled',
+      'accessibilityState',
+    ];
+
+    it('automatically sets accessibilityRole="link" when onPress is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text onPress={() => {}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" when onLongPress is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text onLongPress={() => {}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" when onStartShouldSetResponder is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text onStartShouldSetResponder={() => true}>{TEST_TEXT}</Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('respects explicit accessibilityRole', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text accessibilityRole="button" onPress={() => {}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="button"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('respects explicit role prop', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          // $FlowFixMe[prop-missing]
+          <Text onPress={() => {}} role="button">
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          isHighlighted="false"
+          isPressable="true"
+          role="button"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('does not automatically set accessibilityRole when disabled', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text disabled onPress={() => {}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" for nested Text with onPress', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text>
+            Parent Text<Text onPress={() => {}}>Nested Clickable Link</Text>
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph>
+          Parent Text
+          <rn-text
+            accessibilityRole="link"
+            isHighlighted="false"
+            isPressable="true"
+          >
+            Nested Clickable Link
+          </rn-text>
+        </rn-paragraph>
+      `);
+    });
+
+    it('does not set accessibilityRole when no press handlers are provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph>
+          the text
+        </rn-paragraph>
+      `);
+    });
+  });
+
+  describe('compat with web', () => {
+    it('maps verticalAlign style to textAlignVertical', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text style={{verticalAlign: 'middle'}}>{TEST_TEXT}</Text>);
+      });
+      expect(
+        root.getRenderedOutput({props: ['textAlignVertical']}).toJSX(),
+      ).toEqual(
+        <rn-paragraph textAlignVertical="center">{TEST_TEXT}</rn-paragraph>,
+      );
+    });
+  });
+
+  describe('text style props', () => {
+    it('propagates letterSpacing to the mounting layer', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text style={{letterSpacing: 2}}>{TEST_TEXT}</Text>);
+      });
+      expect(
+        root.getRenderedOutput({props: ['letterSpacing']}).toJSX(),
+      ).toEqual(<rn-paragraph letterSpacing="2">{TEST_TEXT}</rn-paragraph>);
+    });
+
+    it('propagates lineHeight to the mounting layer', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text style={{lineHeight: 30}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: ['lineHeight']}).toJSX()).toEqual(
+        <rn-paragraph lineHeight="30">{TEST_TEXT}</rn-paragraph>,
+      );
+    });
+
+    it('propagates fontVariant to the mounting layer', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text style={{fontVariant: ['small-caps']}}>{TEST_TEXT}</Text>,
+        );
+      });
+      const fontVariant = root
+        .getRenderedOutput({props: ['fontVariant']})
+        .toJSONObject().props.fontVariant;
+      expect(fontVariant).toContain('small-caps');
     });
   });
 

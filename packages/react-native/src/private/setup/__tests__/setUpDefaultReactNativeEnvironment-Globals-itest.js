@@ -14,12 +14,81 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 declare var PerformanceObserverEntryList: unknown;
 declare var EventCounts: unknown;
 
+function expectGlobalDescriptorToMatch(
+  name: string,
+  expected: {
+    enumerable: boolean,
+    configurable: boolean,
+    writable: boolean,
+  },
+) {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);
+  if (descriptor == null) {
+    throw new Error(`Expected globalThis.${name} to be defined`);
+  }
+  expect({
+    enumerable: descriptor.enumerable,
+    configurable: descriptor.configurable,
+    writable: descriptor.writable,
+  }).toEqual(expected);
+}
+
 describe('setUpDefaultReactNativeEnvironment (globals)', () => {
   describe('global object', () => {
     it('should be exposed as globalThis, global, window and self', () => {
       expect(globalThis).toBe(global);
       expect(globalThis).toBe(window);
       expect(globalThis).toBe(self);
+    });
+  });
+
+  describe('property descriptors', () => {
+    it('should define window as enumerable but not configurable or writable', () => {
+      expectGlobalDescriptorToMatch('window', {
+        enumerable: true,
+        configurable: false,
+        writable: false,
+      });
+    });
+
+    it('should define self as configurable, enumerable and writable', () => {
+      expectGlobalDescriptorToMatch('self', {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    it('should define navigator as configurable and enumerable but not writable', () => {
+      expectGlobalDescriptorToMatch('navigator', {
+        enumerable: true,
+        configurable: true,
+        writable: false,
+      });
+    });
+
+    it('should define Infinity as not configurable, writable or enumerable', () => {
+      expectGlobalDescriptorToMatch('Infinity', {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      });
+    });
+
+    it('should define NaN as not configurable, writable or enumerable', () => {
+      expectGlobalDescriptorToMatch('NaN', {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      });
+    });
+
+    it('should define undefined as not configurable, writable or enumerable', () => {
+      expectGlobalDescriptorToMatch('undefined', {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      });
     });
   });
 

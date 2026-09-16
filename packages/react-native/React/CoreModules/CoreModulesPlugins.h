@@ -49,7 +49,9 @@ Class RCTPlatformCls(void) __attribute__((used));
 Class RCTRedBoxCls(void) __attribute__((used));
 Class RCTSourceCodeCls(void) __attribute__((used));
 Class RCTStatusBarManagerCls(void) __attribute__((used));
+#ifndef RCT_REMOVE_LEGACY_ARCH
 Class RCTTimingCls(void) __attribute__((used));
+#endif
 Class RCTWebSocketModuleCls(void) __attribute__((used));
 Class RCTBlobManagerCls(void) __attribute__((used));
 

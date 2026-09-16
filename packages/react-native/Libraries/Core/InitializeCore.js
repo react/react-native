@@ -22,8 +22,16 @@
  *   1. Require system.
  *   2. Bridged modules.
  *
+ * @deprecated Since 0.87. Use `'react-native/setup-env'` instead.
  */
 
 'use strict';
 
-require('../../src/private/setup/setUpDefaultReactNativeEnvironment').default();
+// NOTE: This delegates to the `'react-native/setup-env'` entry point (rather
+// than calling `setUpDefaultReactNativeEnvironment` directly) so that
+// `src/setup-env.js` is pulled into the module graph. Metro's
+// `getModulesRunBeforeMainModule` only runs modules that are already part of
+// the bundle, and `InitializeCore` is a guaranteed graph entry (via
+// `ReactNativePrivateInitializeCore`). This keeps `'react-native/setup-env'`
+// reachable so it runs before the main module.
+require('../../src/setup-env');

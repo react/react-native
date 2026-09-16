@@ -18,6 +18,24 @@
 
 using namespace facebook::react;
 
+inline static TextAlignment RCTResolveTextAlignment(TextAlignment textAlignment, bool isRTL)
+{
+  switch (textAlignment) {
+    case TextAlignment::Natural:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
+    case TextAlignment::Start:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
+    case TextAlignment::End:
+      return isRTL ? TextAlignment::Left : TextAlignment::Right;
+    case TextAlignment::Right:
+      return isRTL ? TextAlignment::Left : TextAlignment::Right;
+    case TextAlignment::Left:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
+    default:
+      return textAlignment;
+  }
+}
+
 inline static UIFontWeight RCTUIFontWeightFromInteger(NSInteger fontWeight)
 {
   assert(fontWeight > 50);
@@ -136,6 +154,10 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
   fontProperties.weight = textAttributes.fontWeight.has_value()
       ? RCTUIFontWeightFromInteger((NSInteger)textAttributes.fontWeight.value())
       : NAN;
+  if (textAttributes.fontVariationSettings.has_value()) {
+    NSString *variationSettings = [NSString stringWithUTF8String:textAttributes.fontVariationSettings->c_str()];
+    fontProperties.variations = RCTParseFontVariationSettings(variationSettings);
+  }
   fontProperties.sizeMultiplier = RCTEffectiveFontSizeMultiplierFromTextAttributes(textAttributes);
 
   return RCTFontWithFontProperties(fontProperties);
@@ -195,15 +217,10 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   // Paragraph Style
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
-  if (textAttributes.alignment.has_value()) {
-    TextAlignment textAlignment = textAttributes.alignment.value_or(TextAlignment::Natural);
-    if (textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight) == LayoutDirection::RightToLeft) {
-      if (textAlignment == TextAlignment::Right) {
-        textAlignment = TextAlignment::Left;
-      } else if (textAlignment == TextAlignment::Left) {
-        textAlignment = TextAlignment::Right;
-      }
-    }
+  const bool isRTL = textAttributes.layoutDirection == LayoutDirection::RightToLeft;
+  if (textAttributes.alignment.has_value() || isRTL) {
+    TextAlignment textAlignment =
+        RCTResolveTextAlignment(textAttributes.alignment.value_or(TextAlignment::Natural), isRTL);
 
     paragraphStyle.alignment = RCTNSTextAlignmentFromTextAlignment(textAlignment);
     isParagraphStyleUsed = YES;
@@ -357,7 +374,7 @@ static void RCTApplyBaselineOffsetForRange(NSMutableAttributedString *attributed
                             maximumFontLineHeight = MAX(font.lineHeight, maximumFontLineHeight);
                           }];
 
-  if (maximumLineHeight < maximumFontLineHeight) {
+  if (maximumLineHeight < maximumFontLineHeight && !ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment()) {
     return;
   }
 
@@ -400,7 +417,10 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
 
     return [[NSMutableAttributedString attributedStringWithAttachment:attachment] mutableCopy];
   } else {
-    NSString *string = [NSString stringWithUTF8String:fragment.string.c_str()];
+    NSString *decoded = [[NSString alloc] initWithBytes:fragment.string.data()
+                                                 length:fragment.string.size()
+                                               encoding:NSUTF8StringEncoding];
+    NSString *string = decoded != nil ? decoded : @"";
 
     if (fragment.textAttributes.textTransform.has_value()) {
       auto textTransform = fragment.textAttributes.textTransform.value();

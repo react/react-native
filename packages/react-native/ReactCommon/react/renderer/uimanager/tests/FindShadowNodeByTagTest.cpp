@@ -85,7 +85,7 @@ class FindShadowNodeByTagTest : public ::testing::Test {
               .tag(viewTag_)
               .surfaceId(surfaceId_)
               .props([] {
-                auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                auto sharedProps = std::make_shared<ViewProps>();
                 auto& yogaStyle = sharedProps->yogaStyle;
                 yogaStyle.setDimension(
                     yoga::Dimension::Width,

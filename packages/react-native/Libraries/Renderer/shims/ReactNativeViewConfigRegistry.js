@@ -7,7 +7,7 @@
  * @noformat
  * @nolint
  * @flow strict-local
- * @generated SignedSource<<1f7876c0dc0b05685a730513dc410236>>
+ * @generated SignedSource<<260b8a01781c54c31a520f00cb1bde7f>>
  */
 
 'use strict';
@@ -17,8 +17,8 @@ import invariant from 'invariant';
 
 // Event configs
 export const customBubblingEventTypes: {
-  [eventName: string]: $ReadOnly<{
-    phasedRegistrationNames: $ReadOnly<{
+  [eventName: string]: Readonly<{
+    phasedRegistrationNames: Readonly<{
       captured: string,
       bubbled: string,
       skipBubbling?: ?boolean,
@@ -26,7 +26,7 @@ export const customBubblingEventTypes: {
   }>,
 } = {};
 export const customDirectEventTypes: {
-  [eventName: string]: $ReadOnly<{
+  [eventName: string]: Readonly<{
     registrationName: string,
   }>,
 } = {};

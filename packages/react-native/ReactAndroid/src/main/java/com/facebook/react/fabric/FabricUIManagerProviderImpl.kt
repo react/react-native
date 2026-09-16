@@ -58,8 +58,6 @@ public class FabricUIManagerProviderImpl(
     val runtimeExecutor = catalystInstance?.runtimeExecutor
     val runtimeScheduler = catalystInstance?.runtimeScheduler
 
-    val animationBackendChoreographer = AnimationBackendChoreographer(context)
-
     if (runtimeExecutor != null && runtimeScheduler != null) {
       binding.register(
           runtimeExecutor,
@@ -67,12 +65,11 @@ public class FabricUIManagerProviderImpl(
           fabricUIManager,
           eventBeatManager,
           componentFactory,
-          animationBackendChoreographer,
       )
     } else {
       throw IllegalStateException(
           "Unable to register FabricUIManager with CatalystInstance, runtimeExecutor and" +
-              " runtimeScheduler must not be null"
+              " runtimeScheduler must not be null",
       )
     }
 

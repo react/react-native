@@ -156,7 +156,8 @@ static Rect getClippedTargetBoundingRect(
       targetAncestors,
       {/* .includeTransform = */ .includeTransform = true,
        /* .includeViewportOffset = */ .includeViewportOffset = true,
-       /* .applyParentClipping = */ .enableOverflowClipping = true});
+       /* .applyParentClipping = */ .enableOverflowClipping = true,
+       /* .clipSpecifiedAncestor = */ .clipSpecifiedAncestor = false});
 
   return layoutMetrics == EmptyLayoutMetrics ? Rect{} : layoutMetrics.frame;
 }
@@ -205,9 +206,10 @@ static std::optional<Rect> computeIntersection(
     return std::nullopt;
   }
 
-  // Coordinates of the target after clipping the parts hidden by a parent,
-  // until till the root (e.g.: in scroll views, or in views with a parent with
-  // overflow: hidden)
+  // Clip against ancestors *until* the observation root (scroll views or
+  // overflow: hidden between target and root). The root itself is not a
+  // clipper here; intersecting with rootMarginBoundingRect is the spec's
+  // final clip against the root intersection rectangle.
   auto clippedTargetFromRoot =
       getClippedTargetBoundingRect(targetToRootAncestors);
 

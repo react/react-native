@@ -7,6 +7,8 @@
 
 #include "TurboModulePerfLogger.h"
 
+#include <reactperflogger/NativeModulePerfLogger.h>
+
 namespace facebook::react::TurboModulePerfLogger {
 
 std::unique_ptr<NativeModulePerfLogger> g_perfLogger = nullptr;

@@ -24,7 +24,7 @@ internal class ReactSwitchEvent(surfaceId: Int, viewId: Int, private val isCheck
 
   override fun getEventName(): String = EVENT_NAME
 
-  public override fun getEventData(): WritableMap =
+  override fun getEventData(): WritableMap =
       Arguments.createMap().apply {
         putInt("target", viewTag)
         putBoolean("value", isChecked)

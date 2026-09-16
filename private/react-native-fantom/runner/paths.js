@@ -11,7 +11,7 @@
 import type {FantomTestConfig} from './getFantomTestConfigs';
 
 import formatFantomConfig from './formatFantomConfig';
-import path from 'path';
+import path from 'node:path';
 
 export const PROJECT_ROOT: string = path.resolve(__dirname, '..', '..', '..');
 

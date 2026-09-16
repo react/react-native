@@ -13,8 +13,8 @@ import type {HandleFunction} from 'connect';
 
 import {createDevMiddleware} from '../';
 import connect from 'connect';
-import http from 'http';
-import https from 'https';
+import http from 'node:http';
+import https from 'node:https';
 import * as selfsigned from 'selfsigned';
 
 type CreateDevMiddlewareOptions = Parameters<typeof createDevMiddleware>[0];

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #if __has_include("FBReactNativeSpecJSI.h") // CocoaPod headers on Apple
 #include "FBReactNativeSpecJSI.h"
 #else

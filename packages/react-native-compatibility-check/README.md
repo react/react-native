@@ -1,4 +1,9 @@
-# **React Native compatibility-check**
+# @react-native/compatibility-check
+
+[![npm]](https://www.npmjs.com/package/@react-native/compatibility-check) [![npm downloads]](https://www.npmjs.com/package/@react-native/compatibility-check)
+
+[npm]: https://img.shields.io/npm/v/@react-native/compatibility-check.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/compatibility-check.svg
 
 Status: Experimental (stage 1)
 

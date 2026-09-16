@@ -48,5 +48,8 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   s.dependency "ReactCommon/turbomodule/core"
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-RCTFBReactNativeSpec")
+
+  mark_as_react_native_build(s)
 end

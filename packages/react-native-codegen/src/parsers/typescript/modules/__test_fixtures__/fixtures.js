@@ -766,6 +766,7 @@ const NATIVE_MODULE_WITH_EVENT_EMITTERS = `
  */
 
 import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
+import type {Double, Float, Int32} from 'react-native/Libraries/Types/CodegenTypes';
 import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 export type ObjectStruct = {
@@ -784,6 +785,9 @@ export interface Spec extends TurboModule {
   readonly onEvent5: EventEmitter<ObjectStruct>;
   readonly onEvent6: EventEmitter<ObjectStruct[]>;
   readonly onEvent7: EventEmitter<MappedObject>;
+  readonly onEvent8: EventEmitter<Double>;
+  readonly onEvent9: EventEmitter<Float>;
+  readonly onEvent10: EventEmitter<Int32>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
@@ -959,6 +963,31 @@ export interface Spec extends TurboModule {
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
 `;
 
+const NAMESPACED_NATIVE_MODULE_WITH_LOCAL_TYPE_ALIASES = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @format
+ */
+
+import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
+import type {CodegenTypes} from 'react-native';
+import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
+type Double = CodegenTypes.Double;
+type MyFloat = CodegenTypes.Float;
+
+export interface Spec extends TurboModule {
+  readonly getDouble: (arg: Double) => Double;
+  readonly getFloat: (arg: MyFloat) => MyFloat;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+`;
+
 const NAMESPACED_NATIVE_MODULE_WITH_EVENT_EMITTERS = `
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -1057,4 +1086,5 @@ module.exports = {
   NAMESPACED_NATIVE_MODULE_WITH_FLOAT_AND_INT32,
   NAMESPACED_NATIVE_MODULE_WITH_UNSAFE_OBJECT,
   NAMESPACED_NATIVE_MODULE_WITH_EVENT_EMITTERS,
+  NAMESPACED_NATIVE_MODULE_WITH_LOCAL_TYPE_ALIASES,
 };

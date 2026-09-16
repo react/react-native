@@ -136,17 +136,27 @@ const dependencies /*: ReadonlyArray<Dependency> */ = [
     },
   },
   {
-    name: 'socket-rocket',
+    name: 'SocketRocket',
     version: '0.7.1',
+    // Xcode 26's SwiftPM rejects a public-headers dir where the umbrella
+    // header (SocketRocket.h) has sibling directories (SocketRocket/Internal):
+    // "target 'SocketRocket' has invalid header layout". Stage the flat public
+    // headers into include/ and point publicHeaderFiles there. The artifact's
+    // Headers/SocketRocket namespace (files.headers) is unaffected, and
+    // Xcode 16 accepts both layouts.
+    prepareScript: 'mkdir -p include && cp SocketRocket/*.h include/',
     url: new URL(
       'https://github.com/facebookincubator/SocketRocket/archive/refs/tags/0.7.1.tar.gz',
     ),
     files: {
-      sources: ['SocketRocket/**/*.{h,m}'],
+      sources: ['SocketRocket/**/*.{h,m}', 'include/*.h'],
       headers: ['SocketRocket/*.h'],
+      resources: [
+        '../../../scripts/releases/ios-prebuild/resources/SocketRocket/PrivacyInfo.xcprivacy',
+      ],
     },
     settings: {
-      publicHeaderFiles: './SocketRocket',
+      publicHeaderFiles: './include',
       headerSearchPaths: [
         './',
         'SocketRocket',
@@ -254,7 +264,7 @@ const dependencies /*: ReadonlyArray<Dependency> */ = [
       'fmt',
       'boost',
       'fast_float',
-      'socket-rocket',
+      'SocketRocket',
     ],
     settings: {
       publicHeaderFiles: './',

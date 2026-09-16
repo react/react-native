@@ -9,7 +9,6 @@
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
-#include <react/renderer/uimanager/primitives.h>
 
 #ifdef RN_DISABLE_OSS_PLUGIN_HEADER
 #include "Plugins.h"
@@ -29,12 +28,11 @@ namespace {
 jsi::Object tokenFromShadowNodeFamily(
     jsi::Runtime& runtime,
     ShadowNodeFamily::Shared shadowNodeFamily) {
-  jsi::Object obj(runtime);
-  // Need to const_cast since JSI only allows non-const pointees
-  obj.setNativeState(
+  jsi::Object token(runtime);
+  token.setNativeState(
       runtime,
       std::const_pointer_cast<ShadowNodeFamily>(std::move(shadowNodeFamily)));
-  return obj;
+  return token;
 }
 
 ShadowNodeFamily::Shared shadowNodeFamilyFromToken(

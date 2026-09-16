@@ -69,6 +69,18 @@ RCT_EXTERN_C_END
  * will be used as the JS module name. If omitted, the JS module name will
  * match the Objective-C class name.
  */
+#if defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) && defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
+
+// With both legacy interop layers removed, RCTRegisterModule is compiled out, so
+// static module registration is a no-op: only the JS module name is emitted.
+#define RCT_EXPORT_MODULE(js_name) \
+  +(NSString *)moduleName          \
+  {                                \
+    return @ #js_name;             \
+  }
+
+#else
+
 #ifndef RCT_DISABLE_STATIC_MODULE_REGISTRATION
 #define RCT_EXPORT_MODULE(js_name)          \
   RCT_EXTERN void RCTRegisterModule(Class); \
@@ -108,10 +120,13 @@ RCT_EXTERN_C_END
     RCTRegisterModule([objc_name class]);                                           \
   }
 
-// Implemented by RCT_EXPORT_MODULE
-+ (NSString *)moduleName;
+#endif // defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) && defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 
 @optional
+
+// Implemented by RCT_EXPORT_MODULE. When absent, callers fall back to the ObjC class
+// name, so a TurboModule resolved via a provider or plugin socket need not declare it.
++ (NSString *)moduleName;
 
 /**
  * A reference to the RCTModuleRegistry. Useful for modules that require access

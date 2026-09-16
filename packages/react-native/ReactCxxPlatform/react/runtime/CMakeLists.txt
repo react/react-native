@@ -41,6 +41,7 @@ target_link_libraries(react_cxx_platform_react_runtime
       react_nativemodule_defaults
       react_nativemodule_intersectionobserver
       react_nativemodule_mutationobserver
+      react_nativemodule_resizeobserver
       react_nativemodule_webperformance
       react_renderer_graphics
       react_renderer_runtimescheduler

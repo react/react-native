@@ -59,6 +59,36 @@ class JInspectorNetworkReporter : public jni::HybridClass<JInspectorNetworkRepor
       jni::alias_ref<jstring> requestId,
       jni::alias_ref<jstring> data);
 
+  static void reportWebSocketCreated(
+      jni::alias_ref<jclass> /*unused*/,
+      jni::alias_ref<jstring> requestId,
+      jni::alias_ref<jstring> url);
+
+  static void reportWebSocketWillSendHandshakeRequest(
+      jni::alias_ref<jclass> /*unused*/,
+      jni::alias_ref<jstring> requestId,
+      jni::alias_ref<jni::JMap<jstring, jstring>> headers);
+
+  static void reportWebSocketHandshakeResponseReceived(
+      jni::alias_ref<jclass> /*unused*/,
+      jni::alias_ref<jstring> requestId,
+      jint statusCode,
+      jni::alias_ref<jni::JMap<jstring, jstring>> headers);
+
+  static void reportWebSocketMessageSentImpl(
+      jni::alias_ref<jclass> /*unused*/,
+      jni::alias_ref<jstring> requestId,
+      jni::alias_ref<jstring> payloadData,
+      jboolean isBinary);
+
+  static void reportWebSocketMessageReceivedImpl(
+      jni::alias_ref<jclass> /*unused*/,
+      jni::alias_ref<jstring> requestId,
+      jni::alias_ref<jstring> payloadData,
+      jboolean isBinary);
+
+  static void reportWebSocketClosed(jni::alias_ref<jclass> /*unused*/, jni::alias_ref<jstring> requestId);
+
   static void registerNatives();
 
  private:

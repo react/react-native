@@ -10,8 +10,36 @@
 
 'use strict';
 
+import type {SchemaType} from '../../../CodegenSchema';
+
 const fixtures = require('../__test_fixtures__/fixtures.js');
 const generator = require('../GenerateModuleH.js');
+
+const ARRAY_BUFFER_EVENT_EMITTER_SCHEMA: SchemaType = {
+  modules: {
+    NativeSampleTurboModule: {
+      type: 'NativeModule',
+      aliasMap: {},
+      enumMap: {},
+      spec: {
+        eventEmitters: [
+          {
+            name: 'onBuffer',
+            optional: false,
+            typeAnnotation: {
+              type: 'EventEmitterTypeAnnotation',
+              typeAnnotation: {
+                type: 'ArrayBufferTypeAnnotation',
+              },
+            },
+          },
+        ],
+        methods: [],
+      },
+      moduleName: 'SampleTurboModule',
+    },
+  },
+};
 
 describe('GenerateModuleH', () => {
   Object.keys(fixtures)
@@ -29,4 +57,13 @@ describe('GenerateModuleH', () => {
         ).toMatchSnapshot();
       });
     });
+
+  it('throws for an EventEmitter with an ArrayBuffer payload', () => {
+    expect(() =>
+      generator.generate(
+        'array_buffer_event_emitter_throws',
+        ARRAY_BUFFER_EVENT_EMITTER_SCHEMA,
+      ),
+    ).toThrow(/ArrayBuffer is not supported as an EventEmitter payload/);
+  });
 });

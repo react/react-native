@@ -88,7 +88,7 @@ Pod::Spec.new do |spec|
     # We ignore this if we provide a specific tarball: the assumption here is that if you are providing a tarball, is because you want to
     # test something specific for that tarball.
     if source_type == HermesEngineSourceType::DOWNLOAD_PREBUILD_RELEASE_TARBALL
-      spec.script_phase = {
+      script_phase = {
         :name => "[Hermes] Replace Hermes for the right configuration, if needed",
         :execution_position => :before_compile,
         :script => <<-EOS
@@ -102,6 +102,15 @@ Pod::Spec.new do |spec|
         "$NODE_BINARY" "$REACT_NATIVE_PATH/sdks/hermes-engine/utils/replace_hermes_version.js" -c "$CONFIG" -r "#{version}" -p "$PODS_ROOT"
         EOS
       }
+
+
+      # :always_out_of_date is only available in CocoaPods 1.13.0 and later
+      if Gem::Version.new(Pod::VERSION) >= Gem::Version.new('1.13.0')
+        # always run the script without warning
+        script_phase[:always_out_of_date] = "1"
+      end
+
+      spec.script_phase = script_phase
     end
 
   elsif HermesEngineSourceType::isFromSource(source_type) then

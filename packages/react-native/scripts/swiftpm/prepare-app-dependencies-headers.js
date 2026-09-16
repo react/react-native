@@ -16,8 +16,8 @@ const {
   symlinkReactCommonHeaders,
   symlinkThirdPartyDependenciesHeaders,
 } = require('./headers-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*::
 type RequiredHeaders = 'react-native' | 'codegen' | 'third-party-dependencies' | 'all';

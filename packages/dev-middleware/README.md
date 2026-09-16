@@ -1,6 +1,9 @@
 # @react-native/dev-middleware
 
-![npm package](https://img.shields.io/npm/v/@react-native/dev-middleware?color=brightgreen&label=npm%20package)
+[![npm]](https://www.npmjs.com/package/@react-native/dev-middleware) [![npm downloads]](https://www.npmjs.com/package/@react-native/dev-middleware)
+
+[npm]: https://img.shields.io/npm/v/@react-native/dev-middleware.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/dev-middleware.svg
 
 Dev server middleware supporting core React Native development features. This package is preconfigured in all React Native projects.
 

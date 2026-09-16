@@ -29,10 +29,12 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
   s.pod_target_xcconfig    = {
-    "HEADER_SEARCH_PATHS" => "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers\"",
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/..\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers\"",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
   s.header_dir             = "cxxreact"
+
+  resolve_use_frameworks(s, header_mappings_dir: "..", module_name: "React_cxxreact")
 
   add_dependency(s, "React-jsinspector", :framework_name => 'jsinspector_modern')
   add_dependency(s, "React-jsinspectorcdp", :framework_name => 'jsinspector_moderncdp')
@@ -40,10 +42,12 @@ Pod::Spec.new do |s|
   s.dependency "React-callinvoker", version
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   s.dependency "React-perflogger", version
+  s.dependency "React-jserrorhandler", version
   s.dependency "React-jsi", version
   s.dependency "React-logger", version
   s.dependency "React-debug", version
   s.dependency "React-timing", version
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-utils", :additional_framework_paths => ["react/utils/platform/ios"])
 
   s.resource_bundles = {'React-cxxreact_privacy' => 'PrivacyInfo.xcprivacy'}
@@ -54,4 +58,12 @@ Pod::Spec.new do |s|
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  s.subspec "cxxreactUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = ""
+    ss.header_mappings_dir = "."
+  end
+
+  mark_as_react_native_build(s)
 end

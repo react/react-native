@@ -71,7 +71,7 @@ public class ViewManagerRegistry : ComponentCallbacks2 {
 
       throw IllegalViewOperationException(
           "Can't find ViewManager '$className' nor '$rctViewManagerName' in ViewManagerRegistry, " +
-              "existing names are: ${viewManagerResolver.getViewManagerNames()}"
+              "existing names are: ${viewManagerResolver.getViewManagerNames()}",
       )
     }
 

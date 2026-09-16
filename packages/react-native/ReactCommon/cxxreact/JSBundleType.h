@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <folly/Portability.h>
 #include <cstdint>
 #include <cstring>

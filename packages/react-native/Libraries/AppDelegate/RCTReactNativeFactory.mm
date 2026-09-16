@@ -9,7 +9,6 @@
 #import <React/RCTBundleManager.h>
 #import <React/RCTColorSpaceUtils.h>
 #import <React/RCTDevMenu.h>
-#import <React/RCTLog.h>
 #import <React/RCTRootView.h>
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
 #import <React/RCTUtils.h>
@@ -40,7 +39,35 @@ using namespace facebook::react;
     RCTHostDelegate,
     RCTJSRuntimeConfiguratorProtocol,
     RCTTurboModuleManagerDelegate>
+
 @end
+
+static NSDictionary *RCTConvertConnectionOptionsToLaunchOptions(UISceneConnectionOptions *connectionOptions)
+{
+  NSMutableDictionary *launchOptions = [NSMutableDictionary dictionary];
+
+  if (connectionOptions.URLContexts.count > 0) {
+    UIOpenURLContext *urlContext = connectionOptions.URLContexts.allObjects.firstObject;
+
+    if (urlContext.URL != nil) {
+      launchOptions[UIApplicationLaunchOptionsURLKey] = urlContext.URL;
+    }
+  }
+
+  if (connectionOptions.userActivities.count > 0) {
+    NSUserActivity *activity = connectionOptions.userActivities.allObjects.firstObject;
+
+    if (activity != nil) {
+      NSMutableDictionary *userActivityDict = [NSMutableDictionary dictionary];
+      userActivityDict[UIApplicationLaunchOptionsUserActivityTypeKey] = activity.activityType;
+      userActivityDict[@"UIApplicationLaunchOptionsUserActivityKey"] = activity;
+
+      launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey] = userActivityDict;
+    }
+  }
+
+  return launchOptions;
+}
 
 @implementation RCTReactNativeFactory
 
@@ -93,6 +120,29 @@ using namespace facebook::react;
   [_delegate setRootView:rootView toRootViewController:rootViewController];
   window.rootViewController = rootViewController;
   [window makeKeyAndVisible];
+}
+
+#pragma mark - UIScene.ConnectionOptions
+
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(UIWindow *_Nullable)window
+                     connectionOptions:(UISceneConnectionOptions *_Nullable)connectionOptions
+{
+  [self startReactNativeWithModuleName:moduleName
+                              inWindow:window
+                     initialProperties:nil
+                         launchOptions:RCTConvertConnectionOptionsToLaunchOptions(connectionOptions)];
+}
+
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(UIWindow *_Nullable)window
+                     initialProperties:(NSDictionary *_Nullable)initialProperties
+                     connectionOptions:(UISceneConnectionOptions *_Nullable)connectionOptions
+{
+  [self startReactNativeWithModuleName:moduleName
+                              inWindow:window
+                     initialProperties:initialProperties
+                         launchOptions:RCTConvertConnectionOptionsToLaunchOptions(connectionOptions)];
 }
 
 #pragma mark - RCTUIConfiguratorProtocol
@@ -212,6 +262,13 @@ using namespace facebook::react;
   }
 }
 
+- (void)host:(RCTHost *)host didInitializeRuntime:(facebook::jsi::Runtime &)runtime
+{
+  if ([_delegate respondsToSelector:@selector(host:didInitializeRuntime:)]) {
+    [_delegate host:host didInitializeRuntime:runtime];
+  }
+}
+
 - (NSArray<NSString *> *)unstableModulesRequiringMainQueueSetup
 {
 #if RN_DISABLE_OSS_PLUGIN_HEADER
@@ -232,10 +289,7 @@ using namespace facebook::react;
   };
 
   RCTRootViewFactoryConfiguration *configuration =
-      [[RCTRootViewFactoryConfiguration alloc] initWithBundleURLBlock:bundleUrlBlock
-                                                       newArchEnabled:YES
-                                                   turboModuleEnabled:YES
-                                                    bridgelessEnabled:YES];
+      [[RCTRootViewFactoryConfiguration alloc] initWithBundleURLBlock:bundleUrlBlock newArchEnabled:YES];
 
   configuration.customizeRootView = ^(UIView *_Nonnull rootView) {
     [weakSelf.delegate customizeRootView:(RCTRootView *)rootView];

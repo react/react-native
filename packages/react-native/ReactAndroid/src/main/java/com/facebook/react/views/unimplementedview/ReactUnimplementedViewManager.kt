@@ -27,7 +27,7 @@ internal class ReactUnimplementedViewManager :
   private val delegate: ViewManagerDelegate<ReactUnimplementedView> =
       UnimplementedNativeViewManagerDelegate(this)
 
-  public override fun getDelegate(): ViewManagerDelegate<ReactUnimplementedView> = delegate
+  override fun getDelegate(): ViewManagerDelegate<ReactUnimplementedView> = delegate
 
   override fun createViewInstance(reactContext: ThemedReactContext): ReactUnimplementedView =
       ReactUnimplementedView(reactContext)

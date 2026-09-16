@@ -152,7 +152,7 @@ internal class VirtualViewContainerStateExperimental(scrollView: ViewGroup) :
  * overlapping VirtualViews
  */
 private data class Interval(val start: Int, val end: Int, val id: String) {
-  public fun intersects(other: Interval): Boolean {
+  fun intersects(other: Interval): Boolean {
     debugLog(
         "Interval: intersect",
         { "${id}:(${start}, ${end}) vs ${other.id}:(${other.start}, ${other.end})" },
@@ -251,7 +251,7 @@ internal class IntervalTree(private val horizontal: Boolean) : MutableCollection
             rotateLeft(
                 requireNotNull(node.left) {
                   "[IntervalTree] node.left must not be null when performing left rotation around it"
-                }
+                },
             )
       }
       return rotateRight(node)
@@ -264,7 +264,7 @@ internal class IntervalTree(private val horizontal: Boolean) : MutableCollection
             rotateRight(
                 requireNotNull(node.right) {
                   "[IntervalTree] node.right must not be null when performing right rotation around it"
-                }
+                },
             )
       }
       return rotateLeft(node)
@@ -329,7 +329,7 @@ internal class IntervalTree(private val horizontal: Boolean) : MutableCollection
                     findMin(
                         requireNotNull(node.right) {
                           "[IntervalTree] node.right must not be null when finding node's successor"
-                        }
+                        },
                     )
                 node.virtualView = successor.virtualView
                 node.interval = successor.interval

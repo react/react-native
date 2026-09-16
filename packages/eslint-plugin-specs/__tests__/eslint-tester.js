@@ -13,13 +13,13 @@
 const ESLintTester = require('eslint').RuleTester;
 
 ESLintTester.setDefaultConfig({
-  parser: require.resolve('hermes-eslint'),
+  parser: require.resolve('flow-eslint'),
   parserOptions: {
     requireConfigFile: false,
     ecmaVersion: 6,
     sourceType: 'module',
     babelOptions: {
-      presets: [require.resolve('babel-plugin-syntax-hermes-parser')],
+      presets: [require.resolve('flow-parser/babel-plugin')],
     },
   },
 });

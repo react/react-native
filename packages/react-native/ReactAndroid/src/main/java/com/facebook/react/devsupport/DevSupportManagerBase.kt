@@ -239,7 +239,7 @@ public abstract class DevSupportManagerBase(
                   return@Supplier null
                 }
                 context
-              }
+              },
           )
     }
     if (
@@ -286,7 +286,7 @@ public abstract class DevSupportManagerBase(
   }
 
   override fun processErrorCustomizers(
-      errorInfo: Pair<String, Array<StackFrame>>
+      errorInfo: Pair<String, Array<StackFrame>>,
   ): Pair<String, Array<StackFrame>> {
     var errorInfoLocal = errorInfo
     for (errorCustomizer in errorCustomizers) {
@@ -382,7 +382,7 @@ public abstract class DevSupportManagerBase(
       val debuggerItemString =
           applicationContext.getString(
               if (isConnected) R.string.catalyst_debug_open
-              else R.string.catalyst_debug_open_disabled
+              else R.string.catalyst_debug_open_disabled,
           )
       if (!isConnected) {
         disabledItemKeys.add(debuggerItemString)
@@ -584,7 +584,7 @@ public abstract class DevSupportManagerBase(
                         safeGetDefaultTextColor(context)
                       } else {
                         safeGetTextColorSecondary(context)
-                      }
+                      },
                   )
                 }
               }
@@ -743,7 +743,7 @@ public abstract class DevSupportManagerBase(
         applicationContext.getString(
             R.string.catalyst_loading_from_url,
             parsedURL.host + ":" + port,
-        )
+        ),
     )
     devLoadingViewVisible = true
   }
@@ -751,7 +751,7 @@ public abstract class DevSupportManagerBase(
   @UiThread
   protected fun showDevLoadingViewForRemoteJSEnabled() {
     devLoadingViewManager?.showMessage(
-        applicationContext.getString(R.string.catalyst_debug_connecting)
+        applicationContext.getString(R.string.catalyst_debug_connecting),
     )
     devLoadingViewVisible = true
   }
@@ -1019,7 +1019,7 @@ public abstract class DevSupportManagerBase(
   }
 
   override fun setPackagerLocationCustomizer(
-      packagerLocationCustomizer: PackagerLocationCustomizer
+      packagerLocationCustomizer: PackagerLocationCustomizer,
   ) {
     this.packagerLocationCustomizer = packagerLocationCustomizer
   }

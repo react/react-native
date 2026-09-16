@@ -10,7 +10,7 @@
 
 const {startCommand} = require('@react-native/community-cli-plugin');
 const {program} = require('commander');
-const path = require('path');
+const path = require('node:path');
 
 program
   .description('Starts the React Native Metro bundler for internal testing app')

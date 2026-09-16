@@ -9,6 +9,7 @@
  */
 
 import type {PluginObj} from '@babel/core';
+import type {File as BabelNodeFile} from '@babel/types';
 
 import * as babel from '@babel/core';
 

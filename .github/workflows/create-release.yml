@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "The version of React Native we want to release. For example 0.75.0-rc.0"
+        description: 'The version of React Native we want to release. For example 0.75.0-rc.0'
         required: true
         type: string
       is-latest-on-npm:
-        description: "Whether we want to tag this release as latest on NPM"
+        description: 'Whether we want to tag this release as latest on NPM'
         required: true
         type: boolean
         default: false
       dry-run:
-        description: "Whether the job should be executed in dry-run mode or not"
+        description: 'Whether the job should be executed in dry-run mode or not'
         type: boolean
         default: true
 

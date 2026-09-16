@@ -31,6 +31,7 @@ internal class AppStateModule(reactContext: ReactApplicationContext) :
         else APP_STATE_BACKGROUND
   }
 
+  @Suppress("REDUNDANT_VISIBILITY_MODIFIER")
   public override fun getTypedExportedConstants(): Map<String, Any> =
       mapOf(INITIAL_STATE to appState)
 

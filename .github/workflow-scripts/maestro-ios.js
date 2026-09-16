@@ -12,7 +12,7 @@ const fs = require('fs');
 
 const usage = `
 === Usage ===
-node maestro-android.js <path to app> <app_id> <maestro_flow> <flavor> <working_directory>
+node maestro-ios.js <path to app> <app_id> <maestro_flow> <jsengine> <flavor> <working_directory> [device_model] [device_os]
 
 @param {string} appPath - Path to the app APK
 @param {string} appId - App ID that needs to be launched
@@ -20,28 +20,53 @@ node maestro-android.js <path to app> <app_id> <maestro_flow> <flavor> <working_
 @param {string} jsengine - The JSEngine to use for the test
 @param {string} flavor - Flavor of the app to be launched. Can be 'Release' or 'Debug'
 @param {string} workingDirectory - Working directory from where to run Metro
+@param {string} deviceModel - Optional Maestro device model, such as iPhone-17-Pro
+@param {string} deviceOS - Optional Maestro device OS, such as iOS-26-2
 ==============
 `;
 
-const args = process.argv.slice(2);
-
-if (args.length !== 6) {
-  throw new Error(`Invalid number of arguments.\n${usage}`);
-}
-
-const APP_PATH = args[0];
-const APP_ID = args[1];
-const MAESTRO_FLOW = args[2];
-const JS_ENGINE = args[3];
-const IS_DEBUG = args[4] === 'Debug';
-const WORKING_DIRECTORY = args[5];
-
 const MAX_ATTEMPTS = 5;
 
-function launchSimulator(simulatorName) {
-  console.log(`Launching simulator ${simulatorName}`);
+function findAvailableSimulator(deviceModel, deviceOS) {
+  const output = childProcess.execSync(
+    'xcrun simctl list devices available -j',
+  );
+  const devicesByRuntime = JSON.parse(String(output)).devices;
+
+  if ((deviceModel == null) !== (deviceOS == null)) {
+    throw new Error('Device model and OS must be configured together');
+  }
+
+  if (deviceModel != null && deviceOS != null) {
+    const runtime = `com.apple.CoreSimulator.SimRuntime.${deviceOS}`;
+    const simulatorName = deviceModel.replaceAll('-', ' ');
+    const simulator = devicesByRuntime[runtime]?.find(
+      device => device.name === simulatorName,
+    );
+
+    if (simulator == null) {
+      throw new Error(
+        `Unable to find ${simulatorName} simulator on ${deviceOS}`,
+      );
+    }
+
+    return simulator;
+  }
+
+  const devices = Object.values(devicesByRuntime).flat().reverse();
+  const simulator = devices.find(device => /^iPhone .* Pro$/.test(device.name));
+
+  if (simulator == null) {
+    throw new Error('Unable to find an available iPhone Pro simulator');
+  }
+
+  return simulator;
+}
+
+function launchSimulator(simulator) {
+  console.log(`Launching simulator ${simulator.name} (${simulator.udid})`);
   try {
-    childProcess.execSync(`xcrun simctl boot "${simulatorName}"`);
+    childProcess.execSync(`xcrun simctl boot "${simulator.udid}"`);
   } catch (error) {
     if (
       !error.message.includes('Unable to boot device in current state: Booted')
@@ -54,14 +79,6 @@ function launchSimulator(simulatorName) {
 function installAppOnSimulator(appPath) {
   console.log(`Installing app at path ${appPath}`);
   childProcess.execSync(`xcrun simctl install booted "${appPath}"`);
-}
-
-function extractSimulatorUDID() {
-  console.log('Retrieving device UDID');
-  const command = `xcrun simctl list devices booted -j | jq -r '[.devices[]] | add | first | .udid'`;
-  const udid = String(childProcess.execSync(command)).trim();
-  console.log(`UDID is ${udid}`);
-  return udid;
 }
 
 function bringSimulatorInForeground() {
@@ -91,7 +108,7 @@ function startVideoRecording(jsengine, currentAttempt) {
   );
 
   const recordingArgs =
-    `simctl io booted recordVideo video_record_${currentAttempt}.mov`.split(
+    `simctl io booted recordVideo --force video_record_${currentAttempt}.mov`.split(
       ' ',
     );
   const recordingProcess = childProcess.spawn('xcrun', recordingArgs, {
@@ -113,17 +130,12 @@ function stopVideoRecording(recordingProcess) {
   recordingProcess.kill('SIGINT');
 }
 
-function executeTestsWithRetries(
-  appId,
-  udid,
-  maestroFlow,
-  jsengine,
-  currentAttempt,
-) {
+function executeFlowWithRetries(appId, udid, flow, jsengine, currentAttempt) {
   const recProcess = startVideoRecording(jsengine, currentAttempt);
   try {
     const timeout = 1000 * 60 * 10; // 10 minutes
-    const command = `$HOME/.maestro/bin/maestro --udid="${udid}" test "${maestroFlow}" --format junit -e APP_ID="${appId}"`;
+    const command = `$HOME/.maestro/bin/maestro --udid="${udid}" test "${flow}" --format junit -e APP_ID="${appId}"`;
+    console.info(`Executing flow: ${flow} (attempt ${currentAttempt})`);
     console.log(command);
     childProcess.execSync(`MAESTRO_DRIVER_STARTUP_TIMEOUT=1500000 ${command}`, {
       stdio: 'inherit',
@@ -132,45 +144,76 @@ function executeTestsWithRetries(
 
     stopVideoRecording(recProcess);
   } catch (error) {
-    // Can't put this in the finally block because it will be executed after the
-    // recursive call of executeTestsWithRetries
     stopVideoRecording(recProcess);
 
     if (currentAttempt < MAX_ATTEMPTS) {
-      executeTestsWithRetries(
-        appId,
-        udid,
-        maestroFlow,
-        jsengine,
-        currentAttempt + 1,
-      );
+      console.info(`Retrying flow: ${flow}`);
+      executeFlowWithRetries(appId, udid, flow, jsengine, currentAttempt + 1);
     } else {
-      console.error(`Failed to execute flow after ${MAX_ATTEMPTS} attempts.`);
+      console.error(
+        `Failed to execute flow ${flow} after ${MAX_ATTEMPTS} attempts.`,
+      );
       throw error;
     }
   }
 }
 
-async function main() {
-  console.info('\n==============================');
-  console.info('Running tests for iOS with the following parameters:');
-  console.info(`APP_PATH: ${APP_PATH}`);
-  console.info(`APP_ID: ${APP_ID}`);
-  console.info(`MAESTRO_FLOW: ${MAESTRO_FLOW}`);
-  console.info(`JS_ENGINE: ${JS_ENGINE}`);
-  console.info(`IS_DEBUG: ${IS_DEBUG}`);
-  console.info(`WORKING_DIRECTORY: ${WORKING_DIRECTORY}`);
-  console.info('==============================\n');
+function executeFlows(appId, udid, maestroFlow, jsengine) {
+  if (!fs.existsSync(maestroFlow) || !fs.lstatSync(maestroFlow).isDirectory()) {
+    executeFlowWithRetries(appId, udid, maestroFlow, jsengine, 1);
+    return;
+  }
 
-  const simulatorName = 'iPhone 16 Pro';
-  launchSimulator(simulatorName);
-  installAppOnSimulator(APP_PATH);
-  const udid = extractSimulatorUDID();
-  bringSimulatorInForeground();
-  await launchAppOnSimulator(APP_ID, udid, IS_DEBUG);
-  executeTestsWithRetries(APP_ID, udid, MAESTRO_FLOW, JS_ENGINE, 1);
-  console.log('Test finished');
-  process.exit(0);
+  for (const file of fs.readdirSync(maestroFlow).sort()) {
+    const filePath = `${maestroFlow.replace(/\/$/, '')}/${file}`;
+    if (fs.lstatSync(filePath).isDirectory()) {
+      executeFlows(appId, udid, filePath, jsengine);
+    } else if (file.endsWith('.yml') || file.endsWith('.yaml')) {
+      executeFlowWithRetries(appId, udid, filePath, jsengine, 1);
+    }
+  }
 }
 
-main();
+async function main(args = process.argv.slice(2)) {
+  if (args.length < 6 || args.length > 8) {
+    throw new Error(`Invalid number of arguments.\n${usage}`);
+  }
+
+  const appPath = args[0];
+  const appId = args[1];
+  const maestroFlow = args[2];
+  const jsengine = args[3];
+  const isDebug = args[4] === 'Debug';
+  const workingDirectory = args[5];
+  const deviceModel = args[6] || null;
+  const deviceOS = args[7] || null;
+
+  console.info('\n==============================');
+  console.info('Running tests for iOS with the following parameters:');
+  console.info(`APP_PATH: ${appPath}`);
+  console.info(`APP_ID: ${appId}`);
+  console.info(`MAESTRO_FLOW: ${maestroFlow}`);
+  console.info(`JS_ENGINE: ${jsengine}`);
+  console.info(`IS_DEBUG: ${isDebug}`);
+  console.info(`WORKING_DIRECTORY: ${workingDirectory}`);
+  console.info(`DEVICE_MODEL: ${deviceModel ?? '<automatic>'}`);
+  console.info(`DEVICE_OS: ${deviceOS ?? '<automatic>'}`);
+  console.info('==============================\n');
+
+  const simulator = findAvailableSimulator(deviceModel, deviceOS);
+  launchSimulator(simulator);
+  installAppOnSimulator(appPath);
+  bringSimulatorInForeground();
+  await launchAppOnSimulator(appId, simulator.udid, isDebug);
+  executeFlows(appId, simulator.udid, maestroFlow, jsengine);
+  console.log('Test finished');
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  executeFlows,
+  findAvailableSimulator,
+};

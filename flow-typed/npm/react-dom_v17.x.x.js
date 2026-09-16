@@ -7,17 +7,17 @@ declare module 'react-dom' {
     componentOrElement: Element | ?Component<any, any>,
   ): null | Element | Text;
 
-  declare function render<ElementType: React.ElementType>(
-    element: ExactReactElement_DEPRECATED<ElementType>,
+  declare function render(
+    element: React.MixedElement,
     container: Element,
     callback?: () => void,
-  ): React.ElementRef<ElementType>;
+  ): unknown;
 
-  declare function hydrate<ElementType: React.ElementType>(
-    element: ExactReactElement_DEPRECATED<ElementType>,
+  declare function hydrate(
+    element: React.MixedElement,
     container: Element,
     callback?: () => void,
-  ): React.ElementRef<ElementType>;
+  ): unknown;
 
   declare function createPortal(
     node: React.Node,
@@ -35,14 +35,12 @@ declare module 'react-dom' {
     e: E,
   ): void;
 
-  declare function unstable_renderSubtreeIntoContainer<
-    ElementType: React.ElementType,
-  >(
+  declare function unstable_renderSubtreeIntoContainer(
     parentComponent: Component<any, any>,
-    nextElement: ExactReactElement_DEPRECATED<ElementType>,
+    nextElement: React.MixedElement,
     container: any,
     callback?: () => void,
-  ): React.ElementRef<ElementType>;
+  ): unknown;
 }
 
 declare module 'react-dom/server' {

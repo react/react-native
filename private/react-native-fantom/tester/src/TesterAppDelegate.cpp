@@ -7,6 +7,7 @@
 
 #include "TesterAppDelegate.h"
 
+#include "FantomTimerRegistry.h"
 #include "NativeFantom.h"
 #include "platform/TesterTurboModuleProvider.h"
 #include "stubs/StubClock.h"
@@ -17,6 +18,7 @@
 #include <folly/dynamic.h>
 #include <folly/json.h>
 #include <glog/logging.h>
+#include <jsi/jsi.h>
 #include <logger/react_native_log.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/io/ImageLoaderModule.h>
@@ -24,7 +26,6 @@
 #include <react/nativemodule/cputime/NativeCPUTime.h>
 #include <react/nativemodule/fantomtestspecificmethods/NativeFantomTestSpecificMethods.h>
 #include <react/renderer/animated/NativeAnimatedNodesManagerProvider.h>
-#include <react/renderer/components/image/ImageComponentDescriptor.h>
 #include <react/renderer/core/LayoutConstraints.h>
 #include <react/renderer/mounting/stubs/stubs.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
@@ -33,6 +34,7 @@
 #include <react/utils/ContextContainer.h>
 #include <react/utils/RunLoopObserverManager.h>
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace facebook::react {
@@ -59,6 +61,14 @@ void reportConsoleLog(const std::string& message, unsigned int logLevel) {
   log["level"] = logLevelToString(logLevel);
   log["message"] = message;
   std::cout << folly::toJson(log) << std::endl;
+}
+
+void reportReplError(const std::string& message, const std::string& stack) {
+  folly::dynamic error = folly::dynamic::object();
+  error["type"] = "repl-error";
+  error["message"] = message;
+  error["stack"] = stack;
+  std::cout << folly::toJson(error) << std::endl;
 }
 } // namespace
 
@@ -87,7 +97,6 @@ TesterAppDelegate::TesterAppDelegate(
       DevToolsHttpClientFactoryKey, getHttpClientFactory());
   contextContainer->insert(
       DevToolsWebSocketClientFactoryKey, getWebSocketClientFactory());
-  contextContainer->insert(ImageManagerKey, mountingManager_->imageManager_);
 
   runLoopObserverManager_ = std::make_shared<RunLoopObserverManager>();
 
@@ -124,8 +133,15 @@ TesterAppDelegate::TesterAppDelegate(
 
   animationChoreographer_ = std::make_shared<TesterAnimationChoreographer>();
 
+  ReactInstanceConfig reactInstanceConfigWithTimers = reactInstanceConfig;
+  reactInstanceConfigWithTimers.platformTimerRegistryFactory = [this]() {
+    auto registry = std::make_unique<FantomTimerRegistry>();
+    timerRegistry_ = registry.get();
+    return registry;
+  };
+
   reactHost_ = std::make_unique<ReactHost>(
-      reactInstanceConfig,
+      reactInstanceConfigWithTimers,
       mountingManager_,
       runLoopObserverManager_,
       std::move(contextContainer),
@@ -155,20 +171,93 @@ void TesterAppDelegate::loadScript(
   LOG(INFO) << "Loading script: " << bundlePath << " source " << sourcePath;
   reactHost_->loadScript(bundlePath, sourcePath);
 
-  jsi::Runtime* runtimePtr = nullptr;
   reactHost_->runOnRuntimeScheduler(
-      [&runtimePtr](jsi::Runtime& runtime) { runtimePtr = &runtime; });
+      [this](jsi::Runtime& runtime) { runtime_ = &runtime; });
 
-  // Run JS code to copy out pointer to the runtime to `runtimePtr`.
+  // Run JS code to copy out pointer to the runtime to `runtime_`.
   flushMessageQueue();
+}
+
+void TesterAppDelegate::loadScriptAndRunTests(
+    const std::string& bundlePath,
+    const std::string& sourcePath) {
+  loadScript(bundlePath, sourcePath);
 
   // Invoke the test function directly, so it happens outside of the runloop
-  auto func = runtimePtr->global()
-                  .getProperty(*runtimePtr, "$$RunTests$$")
-                  .asObject(*runtimePtr)
-                  .asFunction(*runtimePtr);
+  auto func = runtime_->global()
+                  .getProperty(*runtime_, "$$RunTests$$")
+                  .asObject(*runtime_)
+                  .asFunction(*runtime_);
 
-  func.call(*runtimePtr);
+  func.call(*runtime_);
+}
+
+void TesterAppDelegate::evaluateInteractiveChunk(
+    const std::string& source,
+    const std::string& sourceURL) {
+  if (runtime_ == nullptr) {
+    reportReplError("Runtime is not initialized", "");
+    return;
+  }
+
+  try {
+    runtime_->evaluateJavaScript(
+        std::make_shared<jsi::StringBuffer>(source), sourceURL);
+  } catch (jsi::JSError& error) {
+    reportReplError(error.getMessage(), error.getStack());
+  } catch (std::exception& error) {
+    reportReplError(error.what(), "");
+  }
+
+  flushMessageQueue();
+}
+
+void TesterAppDelegate::runInteractiveLoop() {
+  std::string countLine;
+  int evalId = 0;
+
+  while (std::getline(std::cin, countLine)) {
+    if (countLine.empty()) {
+      continue;
+    }
+
+    size_t byteCount = 0;
+    try {
+      byteCount = static_cast<size_t>(std::stoul(countLine));
+    } catch (const std::exception&) {
+      reportReplError("Invalid REPL frame header: " + countLine, "");
+      continue;
+    }
+
+    // Guard against a corrupted/desynced stream requesting a huge allocation.
+    constexpr size_t kMaxFrameSize = 64ULL * 1024 * 1024; // 64 MiB
+    if (byteCount > kMaxFrameSize) {
+      reportReplError("REPL frame too large: " + countLine + " bytes", "");
+      break;
+    }
+
+    std::string source(byteCount, '\0');
+    size_t totalRead = 0;
+    while (totalRead < byteCount && std::cin) {
+      std::cin.read(
+          &source[totalRead],
+          static_cast<std::streamsize>(byteCount - totalRead));
+      totalRead += static_cast<size_t>(std::cin.gcount());
+    }
+
+    if (totalRead < byteCount) {
+      // stdin closed in the middle of a frame.
+      break;
+    }
+
+    int id = evalId++;
+    evaluateInteractiveChunk(source, "<repl-" + std::to_string(id) + ">");
+
+    folly::dynamic done = folly::dynamic::object();
+    done["type"] = "repl-eval-complete";
+    done["id"] = id;
+    std::cout << folly::toJson(done) << std::endl;
+  }
 }
 
 void TesterAppDelegate::openDebugger() const {
@@ -193,7 +282,6 @@ void TesterAppDelegate::startSurface(
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
       .viewportOffset = {.x = offsetX, .y = offsetY},
-      .viewportSize = extentsDp,
   };
 
   reactHost_->startSurface(
@@ -229,7 +317,6 @@ void TesterAppDelegate::updateSurfaceConstraints(
 
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
-      .viewportSize = extentsDp,
   };
 
   reactHost_->setSurfaceConstraints(
@@ -263,6 +350,28 @@ void TesterAppDelegate::produceFramesForDuration(double milliseconds) {
 
     remainingTimeMicrosecs -= timeStep;
   }
+}
+
+void TesterAppDelegate::setTimerMockEnabled(bool enabled) {
+  if (timerRegistry_ != nullptr) {
+    timerRegistry_->setMockEnabled(enabled);
+  }
+}
+
+void TesterAppDelegate::advanceTimers(double deltaMs) {
+  if (timerRegistry_ != nullptr) {
+    timerRegistry_->advanceTimersByTime(deltaMs);
+  }
+}
+
+void TesterAppDelegate::runAllTimers() {
+  if (timerRegistry_ != nullptr) {
+    timerRegistry_->runAllTimers();
+  }
+}
+
+uint32_t TesterAppDelegate::getPendingTimerCount() {
+  return timerRegistry_ != nullptr ? timerRegistry_->getPendingTimerCount() : 0;
 }
 
 void TesterAppDelegate::runUITick() {

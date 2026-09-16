@@ -37,11 +37,12 @@
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <ReactCommon/RuntimeExecutor.h>
 #import <cxxreact/ReactMarker.h>
+#import <jserrorhandler/JsErrorHandler.h>
 #import <jsinspector-modern/InspectorFlags.h>
 #import <jsinspector-modern/ReactCdp.h>
 #import <jsireact/JSIExecutor.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
-#import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
+#import <react/runtime/ReactInstance.h>
 #import <react/utils/ContextContainer.h>
 #import <react/utils/FollyConvert.h>
 #import <react/utils/ManagedObjectWrapper.h>
@@ -59,51 +60,6 @@
 
 using namespace facebook;
 using namespace facebook::react;
-
-static NSString *sRuntimeDiagnosticFlags = nil;
-NSString *RCTInstanceRuntimeDiagnosticFlags(void)
-{
-  return sRuntimeDiagnosticFlags ? [sRuntimeDiagnosticFlags copy] : [NSString new];
-}
-
-void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
-{
-  if (!flags) {
-    return;
-  }
-  sRuntimeDiagnosticFlags = [flags copy];
-}
-
-__attribute__((deprecated(
-    "RCTBridgelessDisplayLinkModuleHolder is part of the legacy architecture and will be removed in a future React Native release.")))
-@interface RCTBridgelessDisplayLinkModuleHolder : NSObject<RCTDisplayLinkModuleHolder>
-- (instancetype)initWithModule:(id<RCTBridgeModule>)module;
-@end
-
-@implementation RCTBridgelessDisplayLinkModuleHolder {
-  id<RCTBridgeModule> _module;
-}
-- (instancetype)initWithModule:(id<RCTBridgeModule>)module
-{
-  _module = module;
-  return self;
-}
-
-- (id<RCTBridgeModule>)instance
-{
-  return _module;
-}
-
-- (Class)moduleClass
-{
-  return [_module class];
-}
-
-- (dispatch_queue_t)methodQueue
-{
-  return _module.methodQueue;
-}
-@end
 
 @interface RCTInstance () <RCTTurboModuleManagerDelegate>
 @end
@@ -333,7 +289,7 @@ __attribute__((deprecated(
   RuntimeExecutor bufferedRuntimeExecutor = _reactInstance->getBufferedRuntimeExecutor();
   timerManager->setRuntimeExecutor(bufferedRuntimeExecutor);
 
-  auto jsCallInvoker = make_shared<RuntimeSchedulerCallInvoker>(_reactInstance->getRuntimeScheduler());
+  auto jsCallInvoker = _reactInstance->createJSCallInvoker();
   RCTBridgeProxy *bridgeProxy =
       [[RCTBridgeProxy alloc] initWithViewRegistry:_bridgeModuleDecorator.viewRegistry_DEPRECATED
           moduleRegistry:_bridgeModuleDecorator.moduleRegistry
@@ -436,12 +392,10 @@ __attribute__((deprecated(
   }];
 
   // DisplayLink is used to call timer callbacks.
-  _displayLink = [RCTDisplayLink new];
+  _displayLink = [[RCTDisplayLink alloc] initWithFrameUpdateObserver:timing];
 
   auto &inspectorFlags = jsinspector_modern::InspectorFlags::getInstance();
-  ReactInstance::JSRuntimeFlags options = {
-      .isProfiling = inspectorFlags.getIsProfilingBuild(),
-      .runtimeDiagnosticFlags = [RCTInstanceRuntimeDiagnosticFlags() UTF8String]};
+  ReactInstance::JSRuntimeFlags options = {.isProfiling = inspectorFlags.getIsProfilingBuild()};
   _reactInstance->initializeRuntime(options, [=](jsi::Runtime &runtime) {
     __strong __typeof(self) strongSelf = weakSelf;
     if (!strongSelf) {
@@ -462,12 +416,7 @@ __attribute__((deprecated(
 
     [strongSelf->_delegate instance:strongSelf didInitializeRuntime:runtime];
 
-// Set up Display Link
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    id<RCTDisplayLinkModuleHolder> moduleHolder = [[RCTBridgelessDisplayLinkModuleHolder alloc] initWithModule:timing];
-    [strongSelf->_displayLink registerModuleForFrameUpdates:timing withModuleHolder:moduleHolder];
-#pragma clang diagnostic pop
+    // Set up Display Link
     [strongSelf->_displayLink addToRunLoop:[NSRunLoop currentRunLoop]];
 
     // Attempt to load bundle synchronously, fallback to asynchronously.
@@ -536,6 +485,10 @@ __attribute__((deprecated(
 
 - (void)_loadJSBundle:(NSURL *)sourceURL
 {
+  // DevSettings is needed by _loadScriptFromSource's callback, so it must be initialized first. Doing it before
+  // the request, not after a successful load, also lets Metro reload when the initial bundle request fails.
+  [_turboModuleManager moduleForName:"DevSettings"];
+
 #if RCT_DEV_MENU && __has_include(<React/RCTDevLoadingViewProtocol.h>)
   {
     id<RCTDevLoadingViewProtocol> loadingView =
@@ -568,7 +521,6 @@ __attribute__((deprecated(
           [strongSelf handleBundleLoadingError:error];
           return;
         }
-        // DevSettings module is needed by _loadScriptFromSource's callback so prior initialization is required
         RCTDevSettings *const devSettings =
             (RCTDevSettings *)[strongSelf->_turboModuleManager moduleForName:"DevSettings"];
         [strongSelf _loadScriptFromSource:source];

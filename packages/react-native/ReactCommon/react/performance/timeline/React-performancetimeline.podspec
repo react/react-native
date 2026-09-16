@@ -40,6 +40,8 @@ Pod::Spec.new do |s|
 
   resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_performancetimeline")
 
+  s.dependency "React-cxxstableapi"
+
   s.dependency "React-featureflags"
   add_dependency(s, "React-jsinspector", :framework_name => 'jsinspector_modern')
   add_dependency(s, "React-jsinspectortracing", :framework_name => 'jsinspector_moderntracing')
@@ -48,4 +50,6 @@ Pod::Spec.new do |s|
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

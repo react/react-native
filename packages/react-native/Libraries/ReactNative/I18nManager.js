@@ -27,11 +27,20 @@ function getI18nManagerConstants(): I18nManagerConstants {
   };
 }
 
+/**
+ * Utilities for managing Right-to-Left (RTL) layout support.
+ *
+ * @see https://reactnative.dev/docs/i18nmanager
+ */
 export default {
   getConstants: (): I18nManagerConstants => {
     return i18nConstants;
   },
 
+  /**
+   * Allows the app to opt in to RTL layout behavior. Should be called early
+   * in app startup. Takes effect on the next app reload.
+   */
   allowRTL: (shouldAllow: boolean) => {
     if (!NativeI18nManager) {
       return;
@@ -40,6 +49,10 @@ export default {
     NativeI18nManager.allowRTL(shouldAllow);
   },
 
+  /**
+   * Forces the app into RTL layout mode, regardless of the device locale.
+   * Takes effect on the next app reload.
+   */
   forceRTL: (shouldForce: boolean) => {
     if (!NativeI18nManager) {
       return;
@@ -48,6 +61,10 @@ export default {
     NativeI18nManager.forceRTL(shouldForce);
   },
 
+  /**
+   * Controls whether `left`/`right` style properties are automatically swapped
+   * in RTL layouts. When enabled, `left` becomes `right` and vice versa.
+   */
   swapLeftAndRightInRTL: (flipStyles: boolean) => {
     if (!NativeI18nManager) {
       return;
@@ -56,7 +73,10 @@ export default {
     NativeI18nManager.swapLeftAndRightInRTL(flipStyles);
   },
 
+  /** Whether the current layout direction is Right-to-Left. */
   isRTL: i18nConstants.isRTL as I18nManagerConstants['isRTL'],
+
+  /** Whether left and right style properties are swapped in RTL mode. */
   doLeftAndRightSwapInRTL:
     i18nConstants.doLeftAndRightSwapInRTL as I18nManagerConstants['doLeftAndRightSwapInRTL'],
 };

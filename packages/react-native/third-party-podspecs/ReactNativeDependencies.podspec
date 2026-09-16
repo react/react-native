@@ -53,13 +53,13 @@ Pod::Spec.new do |spec|
     # Check if XCFRAMEWORK_PATH is empty
     if [ -z "$XCFRAMEWORK_PATH" ]; then
       echo "ERROR: XCFRAMEWORK_PATH is empty."
-      exit 0
+      exit 1
     fi
 
     # Check if HEADERS_PATH is empty
     if [ -z "$HEADERS_PATH" ]; then
       echo "ERROR: HEADERS_PATH is empty."
-      exit 0
+      exit 1
     fi
 
     cp -R "$HEADERS_PATH/." Headers

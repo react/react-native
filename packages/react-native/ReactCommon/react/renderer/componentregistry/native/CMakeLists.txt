@@ -17,6 +17,7 @@ target_link_libraries(rrc_native
         folly_runtime
         glog_init
         jsi
+        react_cxxstableapi
         react_debug
         react_renderer_core
         react_renderer_debug

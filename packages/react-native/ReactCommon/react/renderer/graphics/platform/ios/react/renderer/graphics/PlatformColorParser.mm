@@ -8,9 +8,13 @@
 #import "PlatformColorParser.h"
 
 #import <react/renderer/core/RawValue.h>
+#import <react/renderer/css/CSSColor.h>
+#import <react/renderer/css/CSSValueParser.h>
+#import <react/renderer/graphics/Color.h>
 #import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/utils/ManagedObjectWrapper.h>
+#import <optional>
 #import <string>
 #import <unordered_map>
 
@@ -51,13 +55,39 @@ inline facebook::react::SharedColor RCTPlatformColorComponentsFromDynamicItems(
   return SharedColor(color);
 }
 
+// nullopt only on a parse failure, so a fallback that resolves to transparent is
+// still honored.
+static std::optional<SharedColor> fallbackColorFromString(const std::string &fallbackString)
+{
+  auto cssColor = parseCSSProperty<CSSColor>(fallbackString);
+  if (std::holds_alternative<CSSColor>(cssColor)) {
+    const auto &c = std::get<CSSColor>(cssColor);
+    return colorFromRGBA(c.r, c.g, c.b, c.a);
+  }
+  return std::nullopt;
+}
+
 SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value)
 {
   if (value.hasType<std::unordered_map<std::string, RawValue>>()) {
     auto items = (std::unordered_map<std::string, RawValue>)value;
     if (items.find("semantic") != items.end() && items.at("semantic").hasType<std::vector<std::string>>()) {
       auto semanticItems = (std::vector<std::string>)items.at("semantic");
-      return SharedColor(Color::createSemanticColor(semanticItems));
+      auto semanticColor = SharedColor(Color::createSemanticColor(semanticItems));
+      // The sentinel (null UIColor) means a true miss; apply the fallback only
+      // then, not when a name resolves to transparent.
+      if (!semanticColor) {
+        if (items.find("fallback") != items.end() && items.at("fallback").hasType<std::string>()) {
+          auto fallbackColor = fallbackColorFromString((std::string)items.at("fallback"));
+          // has_value(), not != 0, so a transparent fallback is kept.
+          if (fallbackColor.has_value()) {
+            return *fallbackColor;
+          }
+        }
+        // Miss with no usable fallback: clearColor, never leaking the sentinel.
+        return clearColor();
+      }
+      return semanticColor;
     } else if (
         items.find("dynamic") != items.end() &&
         items.at("dynamic").hasType<std::unordered_map<std::string, RawValue>>()) {

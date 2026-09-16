@@ -241,6 +241,68 @@ void NetworkReporter::reportRequestFailed(
 #endif
 }
 
+void NetworkReporter::reportWebSocketCreated(
+    const std::string& requestId,
+    const std::string& url) const {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  // Debugger enabled: CDP event handling
+  jsinspector_modern::NetworkHandler::getInstance().onWebSocketCreated(
+      requestId, url);
+#endif
+}
+
+void NetworkReporter::reportWebSocketWillSendHandshakeRequest(
+    const std::string& requestId,
+    const Headers& headers) const {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  // Debugger enabled: CDP event handling
+  jsinspector_modern::NetworkHandler::getInstance()
+      .onWebSocketWillSendHandshakeRequest(requestId, headers);
+#endif
+}
+
+void NetworkReporter::reportWebSocketHandshakeResponseReceived(
+    const std::string& requestId,
+    uint16_t statusCode,
+    const Headers& headers) const {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  // Debugger enabled: CDP event handling
+  jsinspector_modern::NetworkHandler::getInstance()
+      .onWebSocketHandshakeResponseReceived(requestId, statusCode, headers);
+#endif
+}
+
+void NetworkReporter::reportWebSocketMessageSent(
+    const std::string& requestId,
+    const std::string& payloadData,
+    bool isBinary) const {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  // Debugger enabled: CDP event handling
+  jsinspector_modern::NetworkHandler::getInstance().onWebSocketFrameSent(
+      requestId, payloadData, isBinary);
+#endif
+}
+
+void NetworkReporter::reportWebSocketMessageReceived(
+    const std::string& requestId,
+    const std::string& payloadData,
+    bool isBinary) const {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  // Debugger enabled: CDP event handling
+  jsinspector_modern::NetworkHandler::getInstance().onWebSocketFrameReceived(
+      requestId, payloadData, isBinary);
+#endif
+}
+
+void NetworkReporter::reportWebSocketClosed(
+    const std::string& requestId) const {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  // Debugger enabled: CDP event handling
+  jsinspector_modern::NetworkHandler::getInstance().onWebSocketClosed(
+      requestId);
+#endif
+}
+
 void NetworkReporter::storeResponseBody(
     const std::string& requestId,
     std::string_view body,

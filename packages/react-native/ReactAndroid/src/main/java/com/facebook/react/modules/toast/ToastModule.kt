@@ -21,7 +21,7 @@ internal class ToastModule(reactContext: ReactApplicationContext) :
     NativeToastAndroidSpec(reactContext) {
 
   override fun getTypedExportedConstants(): Map<String, Any> =
-      mutableMapOf(
+      mapOf(
           DURATION_SHORT_KEY to Toast.LENGTH_SHORT,
           DURATION_LONG_KEY to Toast.LENGTH_LONG,
           GRAVITY_TOP_KEY to (Gravity.TOP or Gravity.CENTER_HORIZONTAL),

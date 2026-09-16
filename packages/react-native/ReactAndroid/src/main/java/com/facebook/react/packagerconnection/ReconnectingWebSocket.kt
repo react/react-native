@@ -59,11 +59,17 @@ public class ReconnectingWebSocket(
     }
   }
 
-  private fun reconnect() {
+  private fun reconnect(detail: String? = null, cause: Throwable? = null) {
     check(!closed) { "Can't reconnect closed client" }
 
     if (!suppressConnectionErrors) {
-      FLog.w(TAG, "Couldn't connect to \"$url\", will silently retry")
+      val suffix = if (detail == null) "" else " ($detail)"
+      val message = "Couldn't connect to \"$url\"$suffix, will silently retry"
+      if (cause == null) {
+        FLog.w(TAG, message)
+      } else {
+        FLog.w(TAG, message, cause)
+      }
       suppressConnectionErrors = true
     }
 
@@ -107,7 +113,10 @@ public class ReconnectingWebSocket(
     }
     if (!closed) {
       connectionCallback?.onDisconnected()
-      reconnect()
+      // `t` distinguishes a rejected upgrade from never reaching the server: okhttp
+      // reports the former as `Expected HTTP 101 response but was '<code> <message>'`,
+      // so `response` carries nothing extra worth reading off it here.
+      reconnect(cause = t)
     }
   }
 
@@ -126,7 +135,7 @@ public class ReconnectingWebSocket(
     this.webSocket = null
     if (!closed) {
       connectionCallback?.onDisconnected()
-      reconnect()
+      reconnect("closed by peer with code $code: \"$reason\"")
     }
   }
 

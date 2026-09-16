@@ -35,4 +35,6 @@ Pod::Spec.new do |s|
   resolve_use_frameworks(s, header_mappings_dir: './', module_name: "React_jsitracing")
 
   s.dependency "React-jsi"
+
+  mark_as_react_native_build(s)
 end

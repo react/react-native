@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/components/text/TextShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 

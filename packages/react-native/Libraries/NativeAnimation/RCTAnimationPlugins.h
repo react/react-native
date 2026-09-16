@@ -29,7 +29,6 @@ extern "C" {
 Class RCTAnimationClassProvider(const char *name);
 
 // Lookup functions
-Class RCTNativeAnimatedModuleCls(void) __attribute__((used));
 Class RCTNativeAnimatedTurboModuleCls(void) __attribute__((used));
 
 #ifdef __cplusplus

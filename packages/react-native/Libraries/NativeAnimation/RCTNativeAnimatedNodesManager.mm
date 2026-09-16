@@ -46,7 +46,6 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
 }
 
 @implementation RCTNativeAnimatedNodesManager {
-  __weak RCTBridge *_bridge;
   __weak id<RCTSurfacePresenterStub> _surfacePresenter;
   NSMutableDictionary<NSNumber *, RCTAnimatedNode *> *_animationNodes;
   // Mapping of a view tag and an event name to a list of event animation drivers. 99% of the time
@@ -56,11 +55,9 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
   CADisplayLink *_displayLink;
 }
 
-- (instancetype)initWithBridge:(nullable RCTBridge *)bridge
-              surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
+- (instancetype)initWithSurfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
 {
   if ((self = [super init]) != nullptr) {
-    _bridge = bridge;
     _surfacePresenter = surfacePresenter;
     _animationNodes = [NSMutableDictionary new];
     _eventDrivers = [NSMutableDictionary new];
@@ -147,15 +144,11 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
   [childNode setNeedsUpdate];
 }
 
-- (void)connectAnimatedNodeToView:(NSNumber *)nodeTag viewTag:(NSNumber *)viewTag viewName:(nullable NSString *)viewName
+- (void)connectAnimatedNodeToView:(NSNumber *)nodeTag viewTag:(NSNumber *)viewTag
 {
   RCTAnimatedNode *node = _animationNodes[nodeTag];
   if ([node isKindOfClass:[RCTPropsAnimatedNode class]]) {
-    // viewName is not used when node is managed by Fabric
-    [(RCTPropsAnimatedNode *)node connectToView:viewTag
-                                       viewName:viewName
-                                         bridge:_bridge
-                               surfacePresenter:_surfacePresenter];
+    [(RCTPropsAnimatedNode *)node connectToView:viewTag surfacePresenter:_surfacePresenter];
   }
   [node setNeedsUpdate];
 }

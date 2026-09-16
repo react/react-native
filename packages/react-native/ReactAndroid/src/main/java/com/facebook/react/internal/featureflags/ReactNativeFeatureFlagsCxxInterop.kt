@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4c03e1b03360e7703ffd1d7aa0afc277>>
+ * @generated SignedSource<<7d6ce76213f08ecb356fa68e77edfe84>>
  */
 
 /**
@@ -52,9 +52,13 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
+
   @DoNotStrip @JvmStatic public external fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableBridgelessArchitecture(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableBufferedCallInvoker(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableCppPropsIteratorSetter(): Boolean
 
@@ -76,15 +80,19 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableFontScaleChangesUpdatingLayout(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun enableIOSCompressedTextFrameAdjustment(): Boolean
+
   @DoNotStrip @JvmStatic public external fun enableIOSTextBaselineOffsetPerLine(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSViewClipToPaddingBox(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImagePrefetchingAndroid(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableImageRequestDowngradingForNonVisibleImages(): Boolean
+  @DoNotStrip @JvmStatic public external fun enableImageTransparentTintColor(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableImperativeEvents(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImperativeFocus(): Boolean
 
@@ -100,19 +108,17 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableModuleArgumentNSNullConversionIOS(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun enableMountingCoordinatorPullModelAndroid(): Boolean
+
   @DoNotStrip @JvmStatic public external fun enableMutationObserverByDefault(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableNativeCSSParsing(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun enableNetworkEventReporting(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePreparedTextLayout(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePropsUpdateReconciliationAndroid(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableRuntimeSchedulerQueueClearingOnError(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun enableSchedulerDelegateInvalidation(): Boolean
+  @DoNotStrip @JvmStatic public external fun enableResizeObserverByDefault(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableSwiftUIBasedFilters(): Boolean
 
@@ -142,9 +148,9 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun fuseboxFrameRecordingEnabled(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun fuseboxNetworkInspectionEnabled(): Boolean
-
   @DoNotStrip @JvmStatic public external fun fuseboxScreenshotCaptureEnabled(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun fuseboxWebSocketEventsEnabled(): Boolean
 
   @DoNotStrip @JvmStatic public external fun optimizedAnimatedPropUpdates(): Boolean
 

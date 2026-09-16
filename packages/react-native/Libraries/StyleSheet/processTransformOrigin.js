@@ -4,14 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import invariant from 'invariant';
 
 // Pre-compiled regex pattern for performance - avoids regex compilation on each call
-const TRANSFORM_ORIGIN_REGEX = /(top|bottom|left|right|center|\d+(?:%|px)|0)/gi;
+const TRANSFORM_ORIGIN_REGEX =
+  /(top|bottom|left|right|center|-?\d*\.?\d+(?:%|px)|0)/gi;
 
 const INDEX_X = 0;
 const INDEX_Y = 1;
@@ -19,10 +20,11 @@ const INDEX_Z = 2;
 
 /* eslint-disable no-labels */
 export default function processTransformOrigin(
-  transformOrigin: Array<string | number> | string,
+  transformOriginInput: Array<string | number> | string,
 ): Array<string | number> {
-  if (typeof transformOrigin === 'string') {
-    const transformOriginString = transformOrigin;
+  let transformOrigin: Array<string | number>;
+  if (typeof transformOriginInput === 'string') {
+    const transformOriginString = transformOriginInput;
     TRANSFORM_ORIGIN_REGEX.lastIndex = 0;
     const transformOriginArray: Array<string | number> = ['50%', '50%', 0];
 
@@ -110,6 +112,8 @@ export default function processTransformOrigin(
     }
 
     transformOrigin = transformOriginArray;
+  } else {
+    transformOrigin = transformOriginInput;
   }
 
   if (__DEV__) {

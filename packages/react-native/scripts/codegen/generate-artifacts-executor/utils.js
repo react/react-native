@@ -14,9 +14,9 @@ const {
   CORE_LIBRARIES_WITH_OUTPUT_FOLDER,
   REACT_NATIVE,
 } = require('./constants');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function pkgJsonIncludesGeneratedCode(
   pkgJson /*: $FlowFixMe */,
@@ -126,16 +126,33 @@ function readReactNativeConfig(
     projectRoot,
     baseOutputPath,
   );
-  const rnConfigFilePath = path.resolve(projectRoot, 'react-native.config.js');
   if (autolinkingOutput) {
     return autolinkingOutput;
-  } else if (fs.existsSync(rnConfigFilePath)) {
-    // $FlowFixMe[unsupported-syntax]
-    return require(rnConfigFilePath);
-  } else {
-    codegenLog(`Could not find React Native config at: ${rnConfigFilePath}`);
-    return {};
   }
+  const rnConfigFilePaths = [
+    'react-native.config.js',
+    'react-native.config.cjs',
+  ]
+    .map(fileName => path.resolve(projectRoot, fileName))
+    .filter(candidatePath => fs.existsSync(candidatePath));
+  for (const rnConfigFilePath of rnConfigFilePaths) {
+    try {
+      // $FlowFixMe[unsupported-syntax]
+      return require(rnConfigFilePath);
+    } catch (error) {
+      // In a `"type": "module"` package, requiring the `.js` config throws;
+      // keep going so a sibling `.cjs` config is still picked up.
+      codegenLog(
+        `Could not load React Native config at: ${rnConfigFilePath}\n${error.message}`,
+      );
+    }
+  }
+  codegenLog(
+    rnConfigFilePaths.length > 0
+      ? `Could not load any React Native config in: ${projectRoot}`
+      : `Could not find React Native config in: ${projectRoot}`,
+  );
+  return {};
 }
 
 /**
@@ -396,17 +413,17 @@ function parseiOSAnnotations(
   const map = {};
 
   for (const library of libraries) {
-    const iosConfig = library?.config?.ios;
-    if (!iosConfig) {
-      continue;
-    }
-
     const libraryName = getLibraryName(library);
     map[libraryName] = map[libraryName] || {
       library,
       modules: {},
       components: {},
     };
+
+    const iosConfig = library?.config?.ios;
+    if (!iosConfig) {
+      continue;
+    }
 
     const {modules, components} = iosConfig;
     if (modules) {

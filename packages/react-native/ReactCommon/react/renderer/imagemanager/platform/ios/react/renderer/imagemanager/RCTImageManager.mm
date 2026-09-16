@@ -36,9 +36,7 @@ using namespace facebook::react;
   return self;
 }
 
-- (ImageRequest)requestImage:(ImageSource)imageSource
-                   surfaceId:(SurfaceId)surfaceId
-                    priority:(ImageRequestPriority)priority
+- (ImageRequest)requestImage:(ImageSource)imageSource surfaceId:(SurfaceId)surfaceId
 {
   TraceSection s("RCTImageManager::requestImage");
 
@@ -98,7 +96,7 @@ using namespace facebook::react;
                                                 scale:imageSource.scale
                                               clipped:NO
                                            resizeMode:RCTResizeModeStretch
-                                             priority:RCTImageLoaderPriorityFromImageRequestPriority(priority)
+                                             priority:RCTImageLoaderPriorityImmediate
                                           attribution:{
                                                           .surfaceId = surfaceId,
                                                       }

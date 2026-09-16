@@ -20,6 +20,7 @@ target_include_directories(react_renderer_animated PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(react_renderer_animated
       react_codegen_rncore
+      react_cxxstableapi
       react_debug
       react_renderer_core
       react_renderer_graphics

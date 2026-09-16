@@ -4,11 +4,13 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 'use strict';
+
+import type {ViewManagerConfig} from './NativeUIManager';
 
 import processBoxShadow from '../StyleSheet/processBoxShadow';
 
@@ -26,6 +28,8 @@ const processBackgroundSize =
 const processColor = require('../StyleSheet/processColor').default;
 const processColorArray = require('../StyleSheet/processColorArray').default;
 const processFilter = require('../StyleSheet/processFilter').default;
+const processFontVariationSettings =
+  require('../StyleSheet/processFontVariationSettings').default;
 const insetsDiffer = require('../Utilities/differ/insetsDiffer').default;
 const matricesDiffer = require('../Utilities/differ/matricesDiffer').default;
 const pointsDiffer = require('../Utilities/differ/pointsDiffer').default;
@@ -33,7 +37,9 @@ const sizesDiffer = require('../Utilities/differ/sizesDiffer').default;
 const UIManager = require('./UIManager').default;
 const nullthrows = require('nullthrows');
 
-function getNativeComponentAttributes(uiViewClassName: string): any {
+function getNativeComponentAttributes(
+  uiViewClassName: string,
+): ViewManagerConfig {
   const viewConfig = UIManager.getViewManagerConfig(uiViewClassName);
 
   if (viewConfig == null) {
@@ -74,7 +80,7 @@ function getNativeComponentAttributes(uiViewClassName: string): any {
   for (const key in nativeProps) {
     const typeName = nativeProps[key];
     const diff = getDifferForType(typeName);
-    const process = getProcessorForType(typeName);
+    const process = getProcessorForAttribute(key, typeName);
 
     // If diff or process == null, omit the corresponding property from the Attribute
     // Why:
@@ -104,21 +110,20 @@ function getNativeComponentAttributes(uiViewClassName: string): any {
     directEventTypes,
   });
 
-  attachDefaultEventTypes(viewConfig);
-
-  return viewConfig;
+  return attachDefaultEventTypes(viewConfig);
 }
 
-function attachDefaultEventTypes(viewConfig: any) {
+function attachDefaultEventTypes(
+  viewConfig: ViewManagerConfig,
+): ViewManagerConfig {
   // This is supported on UIManager platforms (ex: Android),
   // as lazy view managers are not implemented for all platforms.
   // See [UIManager] for details on constants and implementations.
   const constants = UIManager.getConstants();
   if (constants.ViewManagerNames || constants.LazyViewManagersEnabled) {
     // Lazy view managers enabled.
-    viewConfig = merge(
-      viewConfig,
-      nullthrows(UIManager.getDefaultEventTypes)(),
+    return nullthrows(
+      merge(viewConfig, nullthrows(UIManager.getDefaultEventTypes)()),
     );
   } else {
     viewConfig.bubblingEventTypes = merge(
@@ -129,11 +134,15 @@ function attachDefaultEventTypes(viewConfig: any) {
       viewConfig.directEventTypes,
       constants.genericDirectEventTypes,
     );
+    return viewConfig;
   }
 }
 
 // TODO: Figure out how to avoid all this runtime initialization cost.
-function merge(destination: ?Object, source: ?Object): ?Object {
+function merge(
+  destination: ?ViewManagerConfig,
+  source: ?ViewManagerConfig,
+): ?ViewManagerConfig {
   if (!source) {
     return destination;
   }
@@ -163,7 +172,12 @@ function merge(destination: ?Object, source: ?Object): ?Object {
 
 function getDifferForType(
   typeName: string,
-): ?(prevProp: any, nextProp: any) => boolean {
+): ?(
+  | typeof insetsDiffer
+  | typeof matricesDiffer
+  | typeof pointsDiffer
+  | typeof sizesDiffer
+) {
   switch (typeName) {
     // iOS Types
     case 'CATransform3D':
@@ -183,7 +197,25 @@ function getDifferForType(
   return null;
 }
 
-function getProcessorForType(typeName: string): ?(nextProp: any) => any {
+function getProcessorForAttribute(
+  attributeName: string,
+  typeName: string,
+): ?(
+  | typeof processBackgroundImage
+  | typeof processBackgroundPosition
+  | typeof processBackgroundRepeat
+  | typeof processBackgroundSize
+  | typeof processBoxShadow
+  | typeof processColor
+  | typeof processColorArray
+  | typeof processFilter
+  | typeof processFontVariationSettings
+  | typeof resolveAssetSource
+) {
+  if (attributeName === 'fontVariationSettings') {
+    return processFontVariationSettings;
+  }
+
   switch (typeName) {
     // iOS Types
     case 'CGColor':

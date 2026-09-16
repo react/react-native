@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <ReactCommon/SchedulerPriority.h>
 #include <jsi/jsi.h>
 #include <react/timing/primitives.h>

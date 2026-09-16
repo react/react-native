@@ -22,13 +22,13 @@ const {
   ExtractorConfig,
   // $FlowFixMe[cannot-resolve-module]
 } = require('@microsoft/api-extractor');
-const {promises: fs} = require('fs');
 const {diff} = require('jest-diff');
-const path = require('path');
+const {promises: fs} = require('node:fs');
+const path = require('node:path');
+const {styleText} = require('node:util');
 const prettier = require('prettier');
 const osTempDir = require('temp-dir');
 const {globSync} = require('tinyglobby');
-const {styleText} = require('util');
 
 const inputFilesPostTransforms: ReadonlyArray<PluginObj<unknown>> = [
   require('./transforms/typescript/renameDefaultExportedIdentifiers'),
@@ -148,7 +148,7 @@ async function validateSnapshots(
     // $FlowFixMe[prop-missing]
     // $FlowFixMe[incompatible-type]
     const diffResult = diff(prevSnapshot, newSnapshot, options);
-    const rerunCommand = isGitRepo() ? 'yarn build-types' : 'js1 build-js-api';
+    const rerunCommand = isGitRepo() ? 'yarn build-types' : 'js1 build js-api';
     console.error(
       `${styleText(['bold', 'inverse', 'red'], ' FAIL ')} ReactNativeApi.d.ts has changed. Please re-run '${rerunCommand}' and commit the updated snapshot.\n`,
     );

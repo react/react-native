@@ -42,8 +42,8 @@ public class AndroidInfoModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun getTypedExportedConstants(): Map<String, Any?> {
-    val constants = mutableMapOf<String, Any?>()
+  override fun getTypedExportedConstants(): Map<String, Any> {
+    val constants = mutableMapOf<String, Any>()
     constants["Version"] = Build.VERSION.SDK_INT
     constants["Release"] = Build.VERSION.RELEASE
     constants["Serial"] = Build.SERIAL

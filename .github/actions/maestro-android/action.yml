@@ -20,19 +20,35 @@ inputs:
     default: release
   working-directory:
     required: false
-    default: "."
+    default: '.'
     description: The directory from which metro should be started
   emulator-arch:
     required: false
     default: x86
     description: The architecture of the emulator to run
+  emulator-api-level:
+    required: false
+    default: '24'
+    description: The Android API level of the emulator to run
+  emulator-target:
+    required: false
+    default: default
+    description: The Android system image target to use
+  test-state-path:
+    required: false
+    default: /tmp/maestro-android-state/results.json
+    description: The path used to persist per-flow test results between retries
+  exclude-tags:
+    required: false
+    default: ''
+    description: Comma-separated flow tags to exclude from the test run
 
 runs:
   using: composite
   steps:
     - name: Installing Maestro
       shell: bash
-      run: export MAESTRO_VERSION=1.40.0; curl -Ls "https://get.maestro.mobile.dev" | bash
+      run: export MAESTRO_VERSION=2.6.1; curl -Ls "https://get.maestro.mobile.dev" | bash
     - name: Set up JDK 17
       if: ${{ inputs.install-java == 'true' }}
       uses: actions/setup-java@v5
@@ -56,7 +72,8 @@ runs:
       id: run-tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 24
+        api-level: ${{ inputs.emulator-api-level }}
+        target: ${{ inputs.emulator-target }}
         arch: ${{ inputs.emulator-arch }}
         ram-size: '8192M'
         heap-size: '4096M'
@@ -64,7 +81,7 @@ runs:
         cores: '4'
         disable-animations: false
         avd-name: e2e_emulator
-        script: node .github/workflow-scripts/maestro-android.js ${{ inputs.app-path }} ${{ inputs.app-id }} ${{ inputs.maestro-flow }} ${{ inputs.flavor }} ${{ inputs.working-directory }}
+        script: node .github/workflow-scripts/maestro-android.js ${{ inputs.app-path }} ${{ inputs.app-id }} ${{ inputs.maestro-flow }} ${{ inputs.flavor }} ${{ inputs.working-directory }} ${{ inputs.test-state-path }} "${{ inputs.exclude-tags }}"
     - name: Normalize APP_ID
       id: normalize-app-id
       shell: bash
@@ -82,9 +99,10 @@ runs:
           report.xml
           screen.mp4
     - name: Store Logs
-      if: steps.run-tests.outcome == 'failure'
+      if: always()
       uses: actions/upload-artifact@v6
       with:
         name: maestro-logs-android-${{ steps.normalize-app-id.outputs.app-id }}-${{ inputs.flavor }}-${{ inputs.emulator-arch }}-NewArch
         overwrite: true
+        if-no-files-found: ignore
         path: /tmp/MaestroLogs

@@ -23,24 +23,24 @@ import com.facebook.react.uimanager.LengthPercentage
  * @property y The vertical size component, or null for "auto"
  */
 internal class BackgroundSizeLengthPercentage(
-    public val x: LengthPercentage?,
-    public val y: LengthPercentage?,
+    val x: LengthPercentage?,
+    val y: LengthPercentage?,
 ) {
   /**
    * Checks if the horizontal dimension is set to auto.
    *
    * @return true if x is null (auto), false otherwise
    */
-  public fun isXAuto(): Boolean = x == null
+  fun isXAuto(): Boolean = x == null
 
   /**
    * Checks if the vertical dimension is set to auto.
    *
    * @return true if y is null (auto), false otherwise
    */
-  public fun isYAuto(): Boolean = y == null
+  fun isYAuto(): Boolean = y == null
 
-  public companion object {
+  companion object {
     /**
      * Parses a ReadableMap into a BackgroundSizeLengthPercentage.
      *
@@ -50,7 +50,7 @@ internal class BackgroundSizeLengthPercentage(
      * @param backgroundSizeMap The map containing x and y size values
      * @return A BackgroundSizeLengthPercentage instance, or null if the map is null
      */
-    public fun parse(backgroundSizeMap: ReadableMap?): BackgroundSizeLengthPercentage? {
+    fun parse(backgroundSizeMap: ReadableMap?): BackgroundSizeLengthPercentage? {
       if (backgroundSizeMap == null) return null
 
       val x =
@@ -121,10 +121,10 @@ internal sealed class BackgroundSize {
    *
    * @property lengthPercentage The parsed size values for x and y dimensions
    */
-  public class LengthPercentageAuto(public val lengthPercentage: BackgroundSizeLengthPercentage) :
+  class LengthPercentageAuto(val lengthPercentage: BackgroundSizeLengthPercentage) :
       BackgroundSize()
 
-  public companion object {
+  companion object {
     /**
      * Parses a Dynamic value into a BackgroundSize.
      *
@@ -133,7 +133,7 @@ internal sealed class BackgroundSize {
      * @param backgroundSizeValue The dynamic value to parse
      * @return A BackgroundSize instance, or null if parsing fails
      */
-    public fun parse(backgroundSizeValue: Dynamic?): BackgroundSize? {
+    fun parse(backgroundSizeValue: Dynamic?): BackgroundSize? {
       if (backgroundSizeValue == null) return null
 
       return when (backgroundSizeValue.type) {

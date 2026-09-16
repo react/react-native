@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/ActivityIndicatorViewNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/ActivityIndicatorViewNativeComponent';
+export * from '../../../src/private/components/activityindicator/specs/ActivityIndicatorViewNativeComponent';
+export {default} from '../../../src/private/components/activityindicator/specs/ActivityIndicatorViewNativeComponent';

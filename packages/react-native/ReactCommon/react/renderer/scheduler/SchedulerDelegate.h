@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <memory>
 
 #include <react/renderer/core/ReactPrimitives.h>

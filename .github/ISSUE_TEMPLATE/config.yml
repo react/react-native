@@ -1,26 +1,26 @@
 blank_issues_enabled: false
 contact_links:
-    - name: ⬆️ Upgrade - Build Regression
-      url: https://github.com/reactwg/react-native-releases/issues/new/choose
-      about: |
-        If you are upgrading to a new React Native version (stable or pre-release) and encounter a build regression.
-    - name: 🚀 Expo Issue
-      url: https://github.com/expo/expo/issues/new
-      about: |
-        If you're using Expo in your project, please report the issue first in the Expo issue tracker.
-    - name: 📃 Documentation Issue
-      url: https://github.com/facebook/react-native-website/issues
-      about: Please report documentation issues in the React Native website repository.
-    - name: 📦 Metro Issue
-      url: https://github.com/facebook/metro/issues/new
-      about: |
-        If you've encountered a module resolution problem, e.g. "Error: Unable to resolve module ...", or something else that might be related to Metro, please open an issue in the Metro repo instead.
-    - name: 🤔 Questions and Help
-      url: https://reactnative.dev/help
-      about: Looking for help with your app? Please refer to the React Native community's support resources.
-    - name: 💫 New Architecture - Questions & Technical Deep dive insights
-      url: https://github.com/reactwg/react-native-new-architecture
-      about: Questions and doubts related to technical questions for the New Architecture should be directed to the Working Group. Instructions on how to join are available in the README.
-    - name: 🚀 Discussions and Proposals
-      url: https://github.com/react-native-community/discussions-and-proposals
-      about: Discuss the future of React Native in the React Native community's discussions and proposals repository.
+  - name: ⬆️ Upgrade - Build Regression
+    url: https://github.com/reactwg/react-native-releases/issues/new/choose
+    about: |
+      If you are upgrading to a new React Native version (stable or pre-release) and encounter a build regression.
+  - name: 🚀 Expo Issue
+    url: https://github.com/expo/expo/issues/new
+    about: |
+      If you're using Expo in your project, please report the issue first in the Expo issue tracker.
+  - name: 📃 Documentation Issue
+    url: https://github.com/facebook/react-native-website/issues
+    about: Please report documentation issues in the React Native website repository.
+  - name: 📦 Metro Issue
+    url: https://github.com/facebook/metro/issues/new
+    about: |
+      If you've encountered a module resolution problem, e.g. "Error: Unable to resolve module ...", or something else that might be related to Metro, please open an issue in the Metro repo instead.
+  - name: 🤔 Questions and Help
+    url: https://reactnative.dev/help
+    about: Looking for help with your app? Please refer to the React Native community's support resources.
+  - name: 💫 New Architecture - Questions & Technical Deep dive insights
+    url: https://github.com/reactwg/react-native-new-architecture
+    about: Questions and doubts related to technical questions for the New Architecture should be directed to the Working Group. Instructions on how to join are available in the README.
+  - name: 🚀 Discussions and Proposals
+    url: https://github.com/react-native-community/discussions-and-proposals
+    about: Discuss the future of React Native in the React Native community's discussions and proposals repository.

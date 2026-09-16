@@ -33,6 +33,13 @@ RuntimeAgent::RuntimeAgent(
     }
   }
 
+  // Replay any scripts registered via @cdp
+  // Page.addScriptToEvaluateOnNewDocument onto this newly created runtime, in
+  // registration order, so they evaluate before the app's main bundle.
+  for (const auto& script : sessionState_.scriptsToEvaluateOnNewDocument) {
+    targetController_.installScriptToEvaluateOnNewDocument(script.source);
+  }
+
   if (sessionState_.isRuntimeDomainEnabled) {
     targetController_.notifyDomainStateChanged(
         RuntimeTargetController::Domain::Runtime, true, *this);

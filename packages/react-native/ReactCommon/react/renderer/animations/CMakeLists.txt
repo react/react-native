@@ -18,6 +18,7 @@ target_link_libraries(react_renderer_animations
         glog
         glog_init
         jsi
+        react_cxxstableapi
         react_debug
         react_renderer_componentregistry
         react_renderer_core

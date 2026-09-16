@@ -31,6 +31,8 @@ ${DO_NOT_MODIFY_COMMENT}
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <folly/dynamic.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 

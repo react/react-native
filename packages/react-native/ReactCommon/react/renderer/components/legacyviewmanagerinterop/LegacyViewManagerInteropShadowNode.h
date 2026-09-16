@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
 #include <react/renderer/components/legacyviewmanagerinterop/LegacyViewManagerInteropState.h>

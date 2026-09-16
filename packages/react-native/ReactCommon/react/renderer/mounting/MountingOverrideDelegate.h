@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/mounting/MountingTransaction.h>
 
 #pragma once

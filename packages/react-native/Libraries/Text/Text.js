@@ -36,7 +36,11 @@ export type TextInstance = HostInstance;
 export type {TextProps} from './TextProps';
 
 /**
- * Text is the fundamental component for displaying text.
+ * A React component for displaying text. `Text` supports nesting, styling,
+ * and touch handling.
+ *
+ * `Text` uses text layout instead of flexbox — elements inside wrap at end of
+ * line rather than being positioned as rectangles.
  *
  * @see https://reactnative.dev/docs/text
  */
@@ -88,9 +92,22 @@ const TextImpl: component(
     ...NativeTextProps,
   };
   const _accessibilityLabel = ariaLabel ?? accessibilityLabel;
+  const _accessibilityStateDisabled =
+    ariaDisabled ?? accessibilityState?.disabled;
+  const _disabled = disabled ?? _accessibilityStateDisabled;
+
+  // If the disabled prop and accessibilityState.disabled are out of sync but not both in
+  // falsy states we need to update the accessibilityState object to use the disabled prop.
+  const needsAccessibilityStateDisabledUpdate =
+    _disabled !== _accessibilityStateDisabled &&
+    ((_disabled != null && _disabled !== false) ||
+      (_accessibilityStateDisabled != null &&
+        _accessibilityStateDisabled !== false));
+
   let _accessibilityState: ?TextProps['accessibilityState'] =
     accessibilityState;
   if (
+    needsAccessibilityStateDisabledUpdate ||
     ariaBusy != null ||
     ariaChecked != null ||
     ariaDisabled != null ||
@@ -101,7 +118,7 @@ const TextImpl: component(
       _accessibilityState = {
         busy: ariaBusy ?? _accessibilityState.busy,
         checked: ariaChecked ?? _accessibilityState.checked,
-        disabled: ariaDisabled ?? _accessibilityState.disabled,
+        disabled: _disabled,
         expanded: ariaExpanded ?? _accessibilityState.expanded,
         selected: ariaSelected ?? _accessibilityState.selected,
       };
@@ -109,28 +126,10 @@ const TextImpl: component(
       _accessibilityState = {
         busy: ariaBusy,
         checked: ariaChecked,
-        disabled: ariaDisabled,
+        disabled: _disabled,
         expanded: ariaExpanded,
         selected: ariaSelected,
       };
-    }
-  }
-
-  const _accessibilityStateDisabled = _accessibilityState?.disabled;
-  const _disabled = disabled ?? _accessibilityStateDisabled;
-
-  // If the disabled prop and accessibilityState.disabled are out of sync but not both in
-  // falsy states we need to update the accessibilityState object to use the disabled prop.
-  if (
-    _disabled !== _accessibilityStateDisabled &&
-    ((_disabled != null && _disabled !== false) ||
-      (_accessibilityStateDisabled != null &&
-        _accessibilityStateDisabled !== false))
-  ) {
-    if (_accessibilityState == null) {
-      _accessibilityState = {disabled};
-    } else {
-      _accessibilityState.disabled = _disabled;
     }
   }
 

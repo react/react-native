@@ -13,12 +13,11 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
-import ensureInstance from '../../../__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {View} from 'react-native';
 import NativeFantomTestSpecificMethods from 'react-native/src/private/testing/fantom/specs/NativeFantomTestSpecificMethods';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('ShadowTreeBranching', () => {
   function LayoutEffectObserver({onCommit}: {onCommit: () => void}) {
@@ -177,10 +176,7 @@ describe('ShadowTreeBranching', () => {
 
               // The React revision is not merged yet but the new dimensions
               // should be visible from JS
-              const viewNode = ensureInstance(
-                viewRef.current,
-                ReactNativeElement,
-              );
+              const viewNode = nullthrows(viewRef.current);
               const rect = viewNode.getBoundingClientRect();
               dimensions = [rect.width, rect.height];
             }}

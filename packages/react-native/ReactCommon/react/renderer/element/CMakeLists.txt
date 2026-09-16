@@ -16,6 +16,7 @@ target_include_directories(react_renderer_element PUBLIC ${REACT_COMMON_DIR})
 target_link_libraries(react_renderer_element
         folly_runtime
         glog
+        react_cxxstableapi
         react_renderer_core
         react_renderer_componentregistry
 )

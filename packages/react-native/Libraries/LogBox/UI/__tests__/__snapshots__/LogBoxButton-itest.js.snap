@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxButton should render Pressable and pass through props 1`] = `
+<rn-view
+  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessible="true"
+  backgroundColor="rgba(0, 0, 0, 1)"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    Press me
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxButton should render only a view without an onPress 1`] = `
+<React.Fragment>
+  <rn-view
+    backgroundColor="rgba(0, 0, 0, 1)"
+  />
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    Press me
+  </rn-paragraph>
+</React.Fragment>
+`;

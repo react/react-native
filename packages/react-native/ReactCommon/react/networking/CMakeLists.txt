@@ -19,6 +19,7 @@ target_link_libraries(react_networking
         folly_runtime
         jsinspector_network
         jsinspector_tracing
+        react_cxxstableapi
         react_performance_timeline
         react_timing)
 

@@ -71,10 +71,12 @@ export type TouchableOpacityTVProps = Readonly<{
 
 type TouchableOpacityBaseProps = Readonly<{
   /**
-   * Determines what the opacity of the wrapped view should be when touch is active.
-   * Defaults to 0.2
+   * Opacity of the wrapped view when touch is active.
+   *
+   * @default `0.2`
    */
   activeOpacity?: ?number,
+
   style?: ?Animated.WithAnimatedValue<ViewStyleProp>,
 
   hostRef?: ?React.RefSetter<TouchableOpacityInstance>,
@@ -92,88 +94,13 @@ type TouchableOpacityState = Readonly<{
 }>;
 
 /**
- * A wrapper for making views respond properly to touches.
- * On press down, the opacity of the wrapped view is decreased, dimming it.
+ * A wrapper for making views respond properly to touches. On press down, the opacity of the wrapped view is decreased, dimming it.
  *
- * Opacity is controlled by wrapping the children in an Animated.View, which is
- * added to the view hierarchy.  Be aware that this can affect layout.
+ * Opacity is controlled by wrapping the children in an `Animated.View`, which is added to the view hierarchy. Be aware that this can affect layout.
  *
- * Example:
+ * If you need more extensive and future-proof touch handling, use `Pressable`.
  *
- * ```
- * renderButton: function() {
- *   return (
- *     <TouchableOpacity onPress={this._onPressButton}>
- *       <Image
- *         style={styles.button}
- *         source={require('./myButton.png')}
- *       />
- *     </TouchableOpacity>
- *   );
- * },
- * ```
- * ### Example
- *
- * ```ReactNativeWebPlayer
- * import React, { Component } from 'react'
- * import {
- *   AppRegistry,
- *   StyleSheet,
- *   TouchableOpacity,
- *   Text,
- *   View,
- * } from 'react-native'
- *
- * class App extends Component {
- *   state = { count: 0 }
- *
- *   onPress = () => {
- *     this.setState(state => ({
- *       count: state.count + 1
- *     }));
- *   };
- *
- *  render() {
- *    return (
- *      <View style={styles.container}>
- *        <TouchableOpacity
- *          style={styles.button}
- *          onPress={this.onPress}>
- *          <Text> Touch Here </Text>
- *        </TouchableOpacity>
- *        <View style={[styles.countContainer]}>
- *          <Text style={[styles.countText]}>
- *             { this.state.count !== 0 ? this.state.count: null}
- *           </Text>
- *         </View>
- *       </View>
- *     )
- *   }
- * }
- *
- * const styles = StyleSheet.create({
- *   container: {
- *     flex: 1,
- *     justifyContent: 'center',
- *     paddingHorizontal: 10
- *   },
- *   button: {
- *     alignItems: 'center',
- *     backgroundColor: '#DDDDDD',
- *     padding: 10
- *   },
- *   countContainer: {
- *     alignItems: 'center',
- *     padding: 10
- *   },
- *   countText: {
- *     color: '#FF00FF'
- *   }
- * })
- *
- * AppRegistry.registerComponent('App', () => App)
- * ```
- *
+ * @see https://reactnative.dev/docs/touchableopacity
  */
 class TouchableOpacity extends React.Component<
   TouchableOpacityProps,

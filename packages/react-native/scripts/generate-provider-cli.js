@@ -11,7 +11,7 @@
 'use strict';
 
 const utils = require('./codegen/codegen-utils');
-const fs = require('fs');
+const fs = require('node:fs');
 const yargs = require('yargs');
 
 const argv = yargs

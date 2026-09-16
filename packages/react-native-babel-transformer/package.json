@@ -4,7 +4,7 @@
   "description": "Babel transformer for React Native applications.",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/facebook/react-native.git",
+    "url": "git+ssh://git@github.com/react/react-native.git",
     "directory": "packages/react-native-babel-transformer"
   },
   "keywords": [
@@ -28,7 +28,7 @@
   "dependencies": {
     "@babel/core": "^7.25.2",
     "@react-native/babel-preset": "0.87.0-main",
-    "hermes-parser": "0.36.1",
+    "flow-parser": "0.331.0",
     "nullthrows": "^1.1.1"
   },
   "peerDependencies": {

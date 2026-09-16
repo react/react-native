@@ -119,4 +119,54 @@ describe('requestIdleCallback', () => {
       requestIdleCallback(idleCallback);
     });
   });
+
+  it('should not yield while executing a low priority task even when scheduling an idle callback', () => {
+    const {
+      unstable_scheduleCallback,
+      unstable_LowPriority,
+      unstable_shouldYield,
+    } = global.nativeRuntimeScheduler;
+
+    let shouldYieldBeforeSchedulingIdleCallback;
+    let shouldYieldAfterSchedulingIdleCallback;
+
+    Fantom.runTask(() => {
+      unstable_scheduleCallback(unstable_LowPriority, () => {
+        shouldYieldBeforeSchedulingIdleCallback = unstable_shouldYield();
+
+        // Scheduling an idle callback (a lower priority task) must not turn
+        // the currently executing low priority task into something that should
+        // yield, as no higher priority work is pending.
+        requestIdleCallback(() => {});
+
+        shouldYieldAfterSchedulingIdleCallback = unstable_shouldYield();
+      });
+    });
+
+    expect(shouldYieldBeforeSchedulingIdleCallback).toBe(false);
+    expect(shouldYieldAfterSchedulingIdleCallback).toBe(false);
+  });
+
+  it('should execute a low priority task scheduled after an idle callback before the idle callback', () => {
+    const {unstable_scheduleCallback, unstable_LowPriority} =
+      global.nativeRuntimeScheduler;
+
+    const executionOrder: Array<string> = [];
+
+    Fantom.runTask(() => {
+      unstable_scheduleCallback(unstable_LowPriority, () => {
+        // Even though the idle callback is scheduled first, the low priority
+        // task scheduled after it has a higher priority, so it must run first.
+        requestIdleCallback(() => {
+          executionOrder.push('idleCallback');
+        });
+
+        unstable_scheduleCallback(unstable_LowPriority, () => {
+          executionOrder.push('lowPriorityTask');
+        });
+      });
+    });
+
+    expect(executionOrder).toEqual(['lowPriorityTask', 'idleCallback']);
+  });
 });

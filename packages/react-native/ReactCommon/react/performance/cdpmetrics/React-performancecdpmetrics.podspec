@@ -40,6 +40,8 @@ Pod::Spec.new do |s|
 
   resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_performancecdpmetrics")
 
+  s.dependency "React-cxxstableapi"
+
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   s.dependency "React-jsi"
   s.dependency "React-performancetimeline"
@@ -50,4 +52,6 @@ Pod::Spec.new do |s|
   if use_hermes()
     s.dependency 'hermes-engine'
   end
+
+  mark_as_react_native_build(s)
 end

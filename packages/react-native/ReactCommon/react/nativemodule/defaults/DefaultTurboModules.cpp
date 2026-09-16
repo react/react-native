@@ -13,6 +13,7 @@
 #include <react/nativemodule/intersectionobserver/NativeIntersectionObserver.h>
 #include <react/nativemodule/microtasks/NativeMicrotasks.h>
 #include <react/nativemodule/mutationobserver/NativeMutationObserver.h>
+#include <react/nativemodule/resizeobserver/NativeResizeObserver.h>
 #include <react/nativemodule/viewtransition/NativeViewTransition.h>
 #include <react/nativemodule/webperformance/NativePerformance.h>
 #include <react/renderer/animated/AnimatedModule.h>
@@ -55,6 +56,12 @@ namespace facebook::react {
   if (ReactNativeFeatureFlags::enableMutationObserverByDefault()) {
     if (name == NativeMutationObserver::kModuleName) {
       return std::make_shared<NativeMutationObserver>(jsInvoker);
+    }
+  }
+
+  if (ReactNativeFeatureFlags::enableResizeObserverByDefault()) {
+    if (name == NativeResizeObserver::kModuleName) {
+      return std::make_shared<NativeResizeObserver>(jsInvoker);
     }
   }
 

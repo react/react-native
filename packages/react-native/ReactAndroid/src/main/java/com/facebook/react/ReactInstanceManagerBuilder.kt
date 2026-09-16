@@ -73,14 +73,14 @@ public class ReactInstanceManagerBuilder {
 
   /** Factory for desired implementation of JavaScriptExecutor. */
   public fun setJavaScriptExecutorFactory(
-      javaScriptExecutorFactory: JavaScriptExecutorFactory?
+      javaScriptExecutorFactory: JavaScriptExecutorFactory?,
   ): ReactInstanceManagerBuilder {
     this.javaScriptExecutorFactory = javaScriptExecutorFactory
     return this
   }
 
   public fun setUIManagerProvider(
-      uiManagerProvider: UIManagerProvider?
+      uiManagerProvider: UIManagerProvider?,
   ): ReactInstanceManagerBuilder {
     this.uiManagerProvider = uiManagerProvider
     return this
@@ -155,7 +155,7 @@ public class ReactInstanceManagerBuilder {
   }
 
   public fun setDefaultHardwareBackBtnHandler(
-      defaultHardwareBackBtnHandler: DefaultHardwareBackBtnHandler
+      defaultHardwareBackBtnHandler: DefaultHardwareBackBtnHandler,
   ): ReactInstanceManagerBuilder {
     this.defaultHardwareBackBtnHandler = defaultHardwareBackBtnHandler
     return this
@@ -176,7 +176,7 @@ public class ReactInstanceManagerBuilder {
    * [DefaultDevSupportManagerFactory].
    */
   public fun setDevSupportManagerFactory(
-      devSupportManagerFactory: DevSupportManagerFactory?
+      devSupportManagerFactory: DevSupportManagerFactory?,
   ): ReactInstanceManagerBuilder {
     this.devSupportManagerFactory = devSupportManagerFactory
     return this
@@ -206,7 +206,7 @@ public class ReactInstanceManagerBuilder {
    * provided by runtime.
    */
   public fun setSurfaceDelegateFactory(
-      surfaceDelegateFactory: SurfaceDelegateFactory?
+      surfaceDelegateFactory: SurfaceDelegateFactory?,
   ): ReactInstanceManagerBuilder {
     this.surfaceDelegateFactory = surfaceDelegateFactory
     return this
@@ -214,14 +214,14 @@ public class ReactInstanceManagerBuilder {
 
   /** Sets the Dev Loading View Manager. */
   public fun setDevLoadingViewManager(
-      devLoadingViewManager: DevLoadingViewManager?
+      devLoadingViewManager: DevLoadingViewManager?,
   ): ReactInstanceManagerBuilder {
     this.devLoadingViewManager = devLoadingViewManager
     return this
   }
 
   public fun setPausedInDebuggerOverlayManager(
-      pausedInDebuggerOverlayManager: PausedInDebuggerOverlayManager?
+      pausedInDebuggerOverlayManager: PausedInDebuggerOverlayManager?,
   ): ReactInstanceManagerBuilder {
     this.pausedInDebuggerOverlayManager = pausedInDebuggerOverlayManager
     return this
@@ -232,7 +232,7 @@ public class ReactInstanceManagerBuilder {
    * creation time, we wouldn't expect an onResume call until we get an onPause call.
    */
   public fun setInitialLifecycleState(
-      initialLifecycleState: LifecycleState
+      initialLifecycleState: LifecycleState,
   ): ReactInstanceManagerBuilder {
     this.initialLifecycleState = initialLifecycleState
     return this
@@ -254,14 +254,14 @@ public class ReactInstanceManagerBuilder {
   }
 
   public fun setLazyViewManagersEnabled(
-      lazyViewManagersEnabled: Boolean
+      lazyViewManagersEnabled: Boolean,
   ): ReactInstanceManagerBuilder {
     this.lazyViewManagersEnabled = lazyViewManagersEnabled
     return this
   }
 
   public fun setDevBundleDownloadListener(
-      listener: DevBundleDownloadListener?
+      listener: DevBundleDownloadListener?,
   ): ReactInstanceManagerBuilder {
     devBundleDownloadListener = listener
     return this
@@ -273,28 +273,28 @@ public class ReactInstanceManagerBuilder {
   }
 
   public fun setMinTimeLeftInFrameForNonBatchedOperationMs(
-      minTimeLeftInFrameForNonBatchedOperationMs: Int
+      minTimeLeftInFrameForNonBatchedOperationMs: Int,
   ): ReactInstanceManagerBuilder {
     this.minTimeLeftInFrameForNonBatchedOperationMs = minTimeLeftInFrameForNonBatchedOperationMs
     return this
   }
 
   public fun setCustomPackagerCommandHandlers(
-      customPackagerCommandHandlers: Map<String, RequestHandler>?
+      customPackagerCommandHandlers: Map<String, RequestHandler>?,
   ): ReactInstanceManagerBuilder {
     this.customPackagerCommandHandlers = customPackagerCommandHandlers
     return this
   }
 
   public fun setReactPackageTurboModuleManagerDelegateBuilder(
-      builder: ReactPackageTurboModuleManagerDelegate.Builder?
+      builder: ReactPackageTurboModuleManagerDelegate.Builder?,
   ): ReactInstanceManagerBuilder {
     tmmDelegateBuilder = builder
     return this
   }
 
   public fun setChoreographerProvider(
-      choreographerProvider: ChoreographerProvider?
+      choreographerProvider: ChoreographerProvider?,
   ): ReactInstanceManagerBuilder {
     this.choreographerProvider = choreographerProvider
     return this

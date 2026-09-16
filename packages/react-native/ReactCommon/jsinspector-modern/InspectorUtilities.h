@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "InspectorInterfaces.h"
 
 // Utilities that are useful when integrating with InspectorInterfaces.h but

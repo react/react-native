@@ -12,12 +12,18 @@ import com.facebook.react.utils.DependencyUtils.configureDependencies
 import com.facebook.react.utils.DependencyUtils.configureRepositories
 import com.facebook.react.utils.DependencyUtils.exclusiveEnterpriseRepository
 import com.facebook.react.utils.DependencyUtils.getDependencySubstitutions
+import com.facebook.react.utils.DependencyUtils.isMavenArtifactVersionPublished
 import com.facebook.react.utils.DependencyUtils.isNightly
+import com.facebook.react.utils.DependencyUtils.isReactNativeMavenMirrorEnabled
 import com.facebook.react.utils.DependencyUtils.mavenRepoFromURI
 import com.facebook.react.utils.DependencyUtils.mavenRepoFromUrl
 import com.facebook.react.utils.DependencyUtils.readVersionAndGroupStrings
 import com.facebook.react.utils.DependencyUtils.shouldAddJitPack
+import com.sun.net.httpserver.HttpServer
+import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.URI
+import java.util.concurrent.atomic.AtomicInteger
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.testfixtures.ProjectBuilder
@@ -41,7 +47,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == localMavenURI
-            }
+            },
         )
         .isNotNull()
   }
@@ -56,9 +62,61 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
+  }
+
+  @Test
+  fun configureRepositories_withReactNativeMavenMirrorEnabled_containsMavenMirror() {
+    val repositoryURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "true")
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == repositoryURI
+            },
+        )
+        .isNotNull()
+  }
+
+  @Test
+  fun configureRepositories_withUnpublishedVersion_doesNotQueryRemoteRepository() {
+    val requests = AtomicInteger()
+    val loopbackAddress = InetAddress.getLoopbackAddress()
+    val server = HttpServer.create(InetSocketAddress(loopbackAddress, 0), 0)
+    server.createContext("/") { exchange ->
+      requests.incrementAndGet()
+      exchange.sendResponseHeaders(404, -1)
+      exchange.close()
+    }
+    server.start()
+
+    try {
+      val project = createProject()
+      project.extensions.extraProperties.set(
+          "exclusiveEnterpriseRepository",
+          "http://${loopbackAddress.hostAddress}:${server.address.port}",
+      )
+      configureRepositories(project, DependencyUtils.Coordinates("1000.0.0", "4.5.6"))
+      (project.repositories.first() as MavenArtifactRepository).isAllowInsecureProtocol = true
+
+      val published = project.configurations.create("published")
+      project.dependencies.add(published.name, "com.facebook.react:react-android:0.88.0")
+      assertThat(runCatching { published.resolve() }.isFailure).isTrue()
+      assertThat(requests.get()).isGreaterThan(0)
+
+      requests.set(0)
+      val unpublished = project.configurations.create("unpublished")
+      project.dependencies.add(unpublished.name, "com.facebook.react:react-android:1000.0.0")
+      assertThat(runCatching { unpublished.resolve() }.isFailure).isTrue()
+      assertThat(requests.get()).isZero()
+    } finally {
+      server.stop(0)
+    }
   }
 
   @Test
@@ -71,7 +129,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
   }
@@ -86,7 +144,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
   }
@@ -107,7 +165,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
   }
@@ -123,7 +181,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNull()
 
@@ -136,7 +194,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNull()
   }
@@ -152,7 +210,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
 
@@ -165,7 +223,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
   }
@@ -180,7 +238,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNull()
   }
@@ -195,7 +253,7 @@ class DependencyUtilsTest {
     assertThat(
             project.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
   }
@@ -219,6 +277,107 @@ class DependencyUtilsTest {
           it is MavenArtifactRepository && it.url == mavenCentralURI
         }
     assertThat(indexOfLocalRepo < indexOfMavenCentral).isTrue()
+  }
+
+  @Test
+  fun configureRepositories_mavenMirrorHasHigherPriorityThanMavenCentral() {
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val mavenCentralURI = URI.create("https://repo.maven.apache.org/maven2/")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "true")
+
+    configureRepositories(project, false)
+
+    val indexOfMavenMirror =
+        project.repositories.indexOfFirst {
+          it is MavenArtifactRepository && it.url == mavenMirrorURI
+        }
+    val indexOfMavenCentral =
+        project.repositories.indexOfFirst {
+          it is MavenArtifactRepository && it.url == mavenCentralURI
+        }
+    assertThat(indexOfMavenMirror < indexOfMavenCentral).isTrue()
+  }
+
+  @Test
+  fun configureRepositories_withProjectPropertySet_doesNotContainMavenMirror() {
+    val localMaven = tempFolder.newFolder("m2")
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.mavenLocalRepo", localMaven.absolutePath)
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == mavenMirrorURI
+            },
+        )
+        .isNull()
+  }
+
+  @Test
+  fun configureRepositories_byDefault_containsMavenMirror() {
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == mavenMirrorURI
+            },
+        )
+        .isNotNull()
+  }
+
+  @Test
+  fun configureRepositories_withReactNativeMavenMirrorDisabled_doesNotContainMavenMirror() {
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "false")
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == mavenMirrorURI
+            },
+        )
+        .isNull()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_withEnvironmentVariableEnabled_returnsTrue() {
+    val project = createProject()
+
+    assertThat(project.isReactNativeMavenMirrorEnabled("true")).isTrue()
+    assertThat(project.isReactNativeMavenMirrorEnabled("1")).isTrue()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_withEnvironmentVariableDisabled_returnsFalse() {
+    val project = createProject()
+
+    assertThat(project.isReactNativeMavenMirrorEnabled("false")).isFalse()
+    assertThat(project.isReactNativeMavenMirrorEnabled("FALSE")).isFalse()
+    assertThat(project.isReactNativeMavenMirrorEnabled("0")).isFalse()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_byDefault_returnsTrue() {
+    val project = createProject()
+
+    assertThat(project.isReactNativeMavenMirrorEnabled(null)).isTrue()
+    assertThat(project.isReactNativeMavenMirrorEnabled("")).isTrue()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_withProjectProperty_ignoresEnvironmentVariable() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "false")
+
+    assertThat(project.isReactNativeMavenMirrorEnabled("true")).isFalse()
   }
 
   @Test
@@ -252,13 +411,13 @@ class DependencyUtilsTest {
     assertThat(
             appProject.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
     assertThat(
             libProject.repositories.firstOrNull {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isNotNull()
   }
@@ -282,7 +441,7 @@ class DependencyUtilsTest {
     assertThat(
             libProject.repositories.count {
               it is MavenArtifactRepository && it.url == repositoryURI
-            }
+            },
         )
         .isEqualTo(2)
   }
@@ -294,6 +453,30 @@ class DependencyUtilsTest {
     configureDependencies(project, DependencyUtils.Coordinates("", ""))
 
     assertThat(project.configurations.first().resolutionStrategy.forcedModules.isEmpty()).isTrue()
+  }
+
+  @Test
+  fun configureDependencies_withUnpublishedVersion_preservesResolutionStrategy() {
+    val project = createProject()
+
+    configureDependencies(project, DependencyUtils.Coordinates("1000.0.0", "4.5.6"))
+
+    val forcedModules = project.configurations.first().resolutionStrategy.forcedModules
+    assertThat(
+            forcedModules.any { it.toString() == "com.facebook.react:react-android:1000.0.0" },
+        )
+        .isTrue()
+    assertThat(forcedModules.any { it.toString() == "com.facebook.hermes:hermes-android:4.5.6" })
+        .isTrue()
+
+    val dependencySubstitutions =
+        getDependencySubstitutions(DependencyUtils.Coordinates("1000.0.0", "4.5.6"))
+    assertThat(
+            dependencySubstitutions.any {
+              it.second == "com.facebook.react:react-android:1000.0.0"
+            },
+        )
+        .isTrue()
   }
 
   @Test
@@ -354,13 +537,13 @@ class DependencyUtilsTest {
     assertThat(appForcedModules.any { it.toString() == "io.github.test:react-android:1.2.3" })
         .isTrue()
     assertThat(
-            appForcedModules.any { it.toString() == "io.github.test.hermes:hermes-android:4.5.6" }
+            appForcedModules.any { it.toString() == "io.github.test.hermes:hermes-android:4.5.6" },
         )
         .isTrue()
     assertThat(libForcedModules.any { it.toString() == "io.github.test:react-android:1.2.3" })
         .isTrue()
     assertThat(
-            libForcedModules.any { it.toString() == "io.github.test.hermes:hermes-android:4.5.6" }
+            libForcedModules.any { it.toString() == "io.github.test.hermes:hermes-android:4.5.6" },
         )
         .isTrue()
   }
@@ -374,14 +557,14 @@ class DependencyUtilsTest {
     assertThat("com.facebook.react:react-android:0.42.0")
         .isEqualTo(dependencySubstitutions[0].second)
     assertThat(
-            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210."
+            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210.",
         )
         .isEqualTo(dependencySubstitutions[0].third)
     assertThat("com.facebook.react:hermes-engine").isEqualTo(dependencySubstitutions[1].first)
     assertThat("com.facebook.hermes:hermes-android:0.42.0")
         .isEqualTo(dependencySubstitutions[1].second)
     assertThat(
-            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210."
+            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210.",
         )
         .isEqualTo(dependencySubstitutions[1].third)
   }
@@ -395,20 +578,20 @@ class DependencyUtilsTest {
                 "0.42.0",
                 "io.github.test",
                 "io.github.test.hermes",
-            )
+            ),
         )
 
     assertThat("com.facebook.react:react-native").isEqualTo(dependencySubstitutions[0].first)
     assertThat("io.github.test:react-android:0.42.0").isEqualTo(dependencySubstitutions[0].second)
     assertThat(
-            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210."
+            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210.",
         )
         .isEqualTo(dependencySubstitutions[0].third)
     assertThat("com.facebook.react:hermes-engine").isEqualTo(dependencySubstitutions[1].first)
     assertThat("io.github.test.hermes:hermes-android:0.42.0")
         .isEqualTo(dependencySubstitutions[1].second)
     assertThat(
-            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210."
+            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210.",
         )
         .isEqualTo(dependencySubstitutions[1].third)
     assertThat("com.facebook.react:hermes-android").isEqualTo(dependencySubstitutions[2].first)
@@ -436,7 +619,7 @@ class DependencyUtilsTest {
               VERSION_NAME=1000.0.0
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -447,7 +630,7 @@ class DependencyUtilsTest {
               HERMES_VERSION_NAME=1000.0.0
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -461,6 +644,12 @@ class DependencyUtilsTest {
   }
 
   @Test
+  fun isMavenArtifactVersionPublished_withMainVersion_returnsFalse() {
+    assertThat("1000.0.0".isMavenArtifactVersionPublished()).isFalse()
+    assertThat("0.88.0".isMavenArtifactVersionPublished()).isTrue()
+  }
+
+  @Test
   fun readVersionString_withNightlyVersionString_returnsSnapshotVersion() {
     val propertiesFile =
         tempFolder.newFile("gradle.properties").apply {
@@ -470,7 +659,7 @@ class DependencyUtilsTest {
               HERMES_VERSION_NAME=0.12.0-commitly-20221101-2019-cfe811ab1
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -481,7 +670,7 @@ class DependencyUtilsTest {
               HERMES_VERSION_NAME=0.14.0
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -502,7 +691,7 @@ class DependencyUtilsTest {
               """
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -512,7 +701,7 @@ class DependencyUtilsTest {
               """
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -533,7 +722,7 @@ class DependencyUtilsTest {
               VERSION_NAME=
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -544,7 +733,7 @@ class DependencyUtilsTest {
               HERMES_VERSION_NAME=
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -566,7 +755,7 @@ class DependencyUtilsTest {
               react.internal.hermesPublishingGroup=io.github.test
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -577,7 +766,7 @@ class DependencyUtilsTest {
               HERMES_VERSION_NAME=
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -598,7 +787,7 @@ class DependencyUtilsTest {
               """
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -609,7 +798,7 @@ class DependencyUtilsTest {
               HERMES_VERSION_NAME=
               ANOTHER_PROPERTY=true
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 

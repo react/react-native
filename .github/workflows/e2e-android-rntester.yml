@@ -9,14 +9,17 @@ on:
       fail-on-error:
         type: boolean
         default: false
+      retry-attempt:
+        type: number
+        default: 0
     outputs:
       status:
-        description: "The result of the E2E tests (success or failure)"
+        description: 'The result of the E2E tests (success or failure)'
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: 4-core-ubuntu
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
@@ -37,16 +40,49 @@ jobs:
           path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/
       - name: Print folder structure
         run: ls -lR ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/
+      - name: Download previous per-flow test state
+        if: ${{ inputs.retry-attempt > 0 }}
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          name: e2e_android_rntester_state_${{ matrix.flavor }}_arm64-v8a_NewArch
+          path: /tmp/maestro-android-state
+      - name: Check for unfinished E2E flows
+        id: test-state
+        shell: bash
+        run: |
+          SHOULD_RUN=true
+          if [[ -f /tmp/maestro-android-state/results.json ]] && \
+            jq -e '(.flows | length > 0) and all(.flows[]; .status == "passed")' /tmp/maestro-android-state/results.json > /dev/null; then
+            SHOULD_RUN=false
+          fi
+          echo "should-run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
       - name: Run E2E Tests
         id: run-tests
+        if: steps.test-state.outputs.should-run == 'true'
         continue-on-error: true
         uses: ./.github/actions/maestro-android
-        timeout-minutes: 60
+        timeout-minutes: 90
         with:
-          app-path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/app-x86-${{ matrix.flavor }}.apk
+          app-path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/app-arm64-v8a-${{ matrix.flavor }}.apk
           app-id: com.facebook.react.uiapp
           maestro-flow: ./packages/rn-tester/.maestro
           flavor: ${{ matrix.flavor }}
+          emulator-api-level: '35'
+          emulator-target: google_apis
+          emulator-arch: x86_64
+          # These timing-sensitive flows remain covered by the release APK.
+          # Running the debug ARM64 APK through native translation can delay
+          # React commits long enough for Maestro to miss taps and assertions.
+          exclude-tags: ${{ matrix.flavor == 'debug' && 'android-release-only' || '' }}
+      - name: Store per-flow test state
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e_android_rntester_state_${{ matrix.flavor }}_arm64-v8a_NewArch
+          overwrite: true
+          if-no-files-found: warn
+          path: /tmp/maestro-android-state/results.json
       - name: Report status
         id: report-status
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}

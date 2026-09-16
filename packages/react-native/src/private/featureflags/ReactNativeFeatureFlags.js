@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<960e77b9abee222a2f1480870a33560a>>
+ * @generated SignedSource<<6ad9c99b513e5482b907ff75f6784818>>
  * @flow strict
  * @noformat
  */
@@ -31,11 +31,10 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   jsOnlyTestFlag: Getter<boolean>,
   animatedDeferStartOfTimingAnimations: Getter<boolean>,
   animatedForceNativeDriver: Getter<boolean>,
-  animatedShouldDebounceQueueFlush: Getter<boolean>,
+  animatedKeepListenersOnDetach: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
-  animatedShouldUseSingleOp: Getter<boolean>,
   deferFlatListFocusChangeRenderUpdate: Getter<boolean>,
-  enableImperativeEvents: Getter<boolean>,
+  enableImperativeEvents_DEPRECATED: Getter<boolean>,
   enableNativeEventTargetEventDispatching: Getter<boolean>,
   externalElementInspectionEnabled: Getter<boolean>,
   fixVirtualizeListCollapseWindowSize: Getter<boolean>,
@@ -62,8 +61,10 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
+  enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
+  enableBufferedCallInvoker: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
@@ -74,11 +75,13 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFabricLogs: Getter<boolean>,
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
   enableFontScaleChangesUpdatingLayout: Getter<boolean>,
+  enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
   enableImagePrefetchingAndroid: Getter<boolean>,
-  enableImageRequestDowngradingForNonVisibleImages: Getter<boolean>,
+  enableImageTransparentTintColor: Getter<boolean>,
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
+  enableImperativeEvents: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
   enableIntersectionObserverByDefault: Getter<boolean>,
@@ -86,13 +89,12 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableLayoutAnimationsOnAndroid: Getter<boolean>,
   enableLayoutAnimationsOnIOS: Getter<boolean>,
   enableModuleArgumentNSNullConversionIOS: Getter<boolean>,
+  enableMountingCoordinatorPullModelAndroid: Getter<boolean>,
   enableMutationObserverByDefault: Getter<boolean>,
   enableNativeCSSParsing: Getter<boolean>,
-  enableNetworkEventReporting: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
-  enableRuntimeSchedulerQueueClearingOnError: Getter<boolean>,
-  enableSchedulerDelegateInvalidation: Getter<boolean>,
+  enableResizeObserverByDefault: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
   enableViewCulling: Getter<boolean>,
   enableViewRecycling: Getter<boolean>,
@@ -107,8 +109,8 @@ export type ReactNativeFeatureFlags = Readonly<{
   fuseboxAssertSingleHostState: Getter<boolean>,
   fuseboxEnabledRelease: Getter<boolean>,
   fuseboxFrameRecordingEnabled: Getter<boolean>,
-  fuseboxNetworkInspectionEnabled: Getter<boolean>,
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
+  fuseboxWebSocketEventsEnabled: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
   overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean>,
   perfIssuesEnabled: Getter<boolean>,
@@ -153,9 +155,9 @@ export const animatedDeferStartOfTimingAnimations: Getter<boolean> = createJavaS
 export const animatedForceNativeDriver: Getter<boolean> = createJavaScriptFlagGetter('animatedForceNativeDriver', false);
 
 /**
- * Enables an experimental flush-queue debouncing in Animated.js.
+ * When enabled, detaching an animated node from the graph retains listeners registered with `addListener` instead of removing them, so an `Animated.Value` that outlives the components using it still notifies them once it is attached again.
  */
-export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldDebounceQueueFlush', false);
+export const animatedKeepListenersOnDetach: Getter<boolean> = createJavaScriptFlagGetter('animatedKeepListenersOnDetach', true);
 
 /**
  * When a useNativeDriver animation completes, syncs the JS-side AnimatedValue with the post-animation value BEFORE invoking the user-supplied start({finished}) callback. Without the flag, the callback observes the pre-animation value, which can cause downstream re-renders to read stale interpolation outputs.
@@ -163,24 +165,19 @@ export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScrip
 export const animatedShouldSyncValueBeforeStartCallback: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldSyncValueBeforeStartCallback', true);
 
 /**
- * Enables an experimental mega-operation for Animated.js that replaces many calls to native with a single call into native, to reduce JSI/JNI traffic.
- */
-export const animatedShouldUseSingleOp: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldUseSingleOp', false);
-
-/**
  * Use the deferred cell render update mechanism for focus change in FlatList.
  */
 export const deferFlatListFocusChangeRenderUpdate: Getter<boolean> = createJavaScriptFlagGetter('deferFlatListFocusChangeRenderUpdate', false);
 
 /**
- * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
+ * Deprecated in favor of the common flag with the same name, which is the one that can be configured by OSS release stage. This is only kept so JS bundles delivered to older native builds, where the common flag is unavailable, can still enable the feature.
  */
-export const enableImperativeEvents: Getter<boolean> = createJavaScriptFlagGetter('enableImperativeEvents', false);
+export const enableImperativeEvents_DEPRECATED: Getter<boolean> = createJavaScriptFlagGetter('enableImperativeEvents_DEPRECATED', false);
 
 /**
  * When enabled, the React Native renderer dispatches events through the W3C EventTarget API (addEventListener/dispatchEvent) instead of the legacy plugin-based system.
  */
-export const enableNativeEventTargetEventDispatching: Getter<boolean> = createJavaScriptFlagGetter('enableNativeEventTargetEventDispatching', false);
+export const enableNativeEventTargetEventDispatching: Getter<boolean> = createJavaScriptFlagGetter('enableNativeEventTargetEventDispatching', true);
 
 /**
  * Enable the external inspection API for DevTools to communicate with the Inspector overlay.
@@ -227,7 +224,7 @@ export const cdpInteractionMetricsEnabled: Getter<boolean> = createNativeFlagGet
 /**
  * Use a C++ implementation of Native Animated instead of the platform implementation.
  */
-export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', true);
+export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', false);
 /**
  * When enabled, sets the default overflow style for Text components to hidden instead of visible.
  */
@@ -265,13 +262,21 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
 /**
+ * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
+ */
+export const enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean> = createNativeFlagGetter('enableAndroidAutoOffscreenCompositingForElevation', false);
+/**
  * Enables various optimizations throughout the path of measuring text on Android.
  */
 export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = createNativeFlagGetter('enableAndroidTextMeasurementOptimizations', false);
 /**
  * Feature flag to enable the new bridgeless architecture.
  */
-export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', false);
+export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', true);
+/**
+ * Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.
+ */
+export const enableBufferedCallInvoker: Getter<boolean> = createNativeFlagGetter('enableBufferedCallInvoker', true);
 /**
  * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
  */
@@ -313,6 +318,10 @@ export const enableFlexboxAutoMinSizeInStrictMode: Getter<boolean> = createNativ
  */
 export const enableFontScaleChangesUpdatingLayout: Getter<boolean> = createNativeFlagGetter('enableFontScaleChangesUpdatingLayout', true);
 /**
+ * Adjusts iOS Text drawing frames for compressed explicit line heights.
+ */
+export const enableIOSCompressedTextFrameAdjustment: Getter<boolean> = createNativeFlagGetter('enableIOSCompressedTextFrameAdjustment', false);
+/**
  * Applies base offset for each line of text separately on iOS.
  */
 export const enableIOSTextBaselineOffsetPerLine: Getter<boolean> = createNativeFlagGetter('enableIOSTextBaselineOffsetPerLine', false);
@@ -325,13 +334,17 @@ export const enableIOSViewClipToPaddingBox: Getter<boolean> = createNativeFlagGe
  */
 export const enableImagePrefetchingAndroid: Getter<boolean> = createNativeFlagGetter('enableImagePrefetchingAndroid', false);
 /**
- * When enabled, ImageShadowNode downgrades image requests to prefetch priority when layout determines that the image does not intersect the viewport.
+ * When enabled, Image `tintColor` is handled as a true optional: any defined color is applied as a tint — including `transparent` (alpha 0), which renders the image invisible — and an unset value clears a previously applied tint. When disabled, the prior behavior is preserved, where a transparent `tintColor` is treated as unassigned and the image renders untinted.
  */
-export const enableImageRequestDowngradingForNonVisibleImages: Getter<boolean> = createNativeFlagGetter('enableImageRequestDowngradingForNonVisibleImages', false);
+export const enableImageTransparentTintColor: Getter<boolean> = createNativeFlagGetter('enableImageTransparentTintColor', false);
 /**
  * Dispatches state updates for content offset changes synchronously on the main thread.
  */
 export const enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean> = createNativeFlagGetter('enableImmediateUpdateModeForContentOffsetChanges', false);
+/**
+ * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
+ */
+export const enableImperativeEvents: Getter<boolean> = createNativeFlagGetter('enableImperativeEvents', false);
 /**
  * Enable ref.focus() and ref.blur() for all views, not just TextInput.
  */
@@ -361,6 +374,10 @@ export const enableLayoutAnimationsOnIOS: Getter<boolean> = createNativeFlagGett
  */
 export const enableModuleArgumentNSNullConversionIOS: Getter<boolean> = createNativeFlagGetter('enableModuleArgumentNSNullConversionIOS', false);
 /**
+ * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
+ */
+export const enableMountingCoordinatorPullModelAndroid: Getter<boolean> = createNativeFlagGetter('enableMountingCoordinatorPullModelAndroid', false);
+/**
  * Enables the MutationObserver Web API in React Native.
  */
 export const enableMutationObserverByDefault: Getter<boolean> = createNativeFlagGetter('enableMutationObserverByDefault', false);
@@ -368,10 +385,6 @@ export const enableMutationObserverByDefault: Getter<boolean> = createNativeFlag
  * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
  */
 export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('enableNativeCSSParsing', false);
-/**
- * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
- */
-export const enableNetworkEventReporting: Getter<boolean> = createNativeFlagGetter('enableNetworkEventReporting', true);
 /**
  * Enables caching text layout artifacts for later reuse
  */
@@ -381,13 +394,9 @@ export const enablePreparedTextLayout: Getter<boolean> = createNativeFlagGetter(
  */
 export const enablePropsUpdateReconciliationAndroid: Getter<boolean> = createNativeFlagGetter('enablePropsUpdateReconciliationAndroid', false);
 /**
- * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
+ * Enables the ResizeObserver Web API in React Native.
  */
-export const enableRuntimeSchedulerQueueClearingOnError: Getter<boolean> = createNativeFlagGetter('enableRuntimeSchedulerQueueClearingOnError', false);
-/**
- * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
- */
-export const enableSchedulerDelegateInvalidation: Getter<boolean> = createNativeFlagGetter('enableSchedulerDelegateInvalidation', false);
+export const enableResizeObserverByDefault: Getter<boolean> = createNativeFlagGetter('enableResizeObserverByDefault', false);
 /**
  * When enabled, it will use SwiftUI for filter effects like blur on iOS.
  */
@@ -445,13 +454,13 @@ export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fu
  */
 export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', false);
 /**
- * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
- */
-export const fuseboxNetworkInspectionEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxNetworkInspectionEnabled', true);
-/**
  * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
-export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxScreenshotCaptureEnabled', false);
+export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxScreenshotCaptureEnabled', true);
+/**
+ * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
+ */
+export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
 /**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
  */

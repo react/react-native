@@ -10,7 +10,7 @@
 #import "OCMock/OCMock.h"
 
 #import <React/RCTNativeAnimatedNodesManager.h>
-#import <React/RCTUIManager.h>
+#import <React/RCTSurfacePresenterStub.h>
 #import <React/RCTValueAnimatedNode.h>
 
 static const NSTimeInterval FRAME_LENGTH = 1.0 / 60.0;
@@ -114,7 +114,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 @end
 
 @implementation RCTNativeAnimatedNodesManagerTests {
-  id _uiManager;
+  id _surfacePresenter;
   RCTNativeAnimatedNodesManager *_nodesManager;
   RCTFakeDisplayLink *_displayLink;
 }
@@ -123,11 +123,8 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 {
   [super setUp];
 
-  RCTBridge *bridge = [OCMockObject niceMockForClass:[RCTBridge class]];
-  _uiManager = [OCMockObject niceMockForClass:[RCTUIManager class]];
-  OCMStub([bridge uiManager]).andReturn(_uiManager);
-  _nodesManager = [[RCTNativeAnimatedNodesManager alloc] initWithBridge:bridge
-                                                       surfacePresenter:bridge.surfacePresenter];
+  _surfacePresenter = [OCMockObject niceMockForProtocol:@protocol(RCTSurfacePresenterStub)];
+  _nodesManager = [[RCTNativeAnimatedNodesManager alloc] initWithSurfacePresenter:_surfacePresenter];
   _displayLink = [RCTFakeDisplayLink new];
 }
 
@@ -146,12 +143,12 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   [_nodesManager connectAnimatedNodes:@101 childTag:@201];
   [_nodesManager connectAnimatedNodes:@201 childTag:@301];
-  [_nodesManager connectAnimatedNodeToView:@301 viewTag:viewTag viewName:@"UIView"];
+  [_nodesManager connectAnimatedNodeToView:@301 viewTag:viewTag];
 }
 
 - (void)testFramesAnimation
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   NSArray<NSNumber *> *frames = @[ @0, @0.2, @0.4, @0.6, @0.8, @1 ];
   [_nodesManager startAnimatingNode:@1
                             nodeTag:@101
@@ -159,25 +156,23 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                         endCallback:nil];
 
   for (NSNumber *frame in frames) {
-    [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001
-                                                  viewName:@"UIView"
-                                                     props:RCTPropChecker(@"opacity", frame)];
+    [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"opacity", frame)];
     [_nodesManager stepAnimations:_displayLink];
-    [_uiManager verify];
+    [_surfacePresenter verify];
   }
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001 viewName:@"UIView" props:RCTPropChecker(@"opacity", @1)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"opacity", @1)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testFramesAnimationLoop
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   NSArray<NSNumber *> *frames = @[ @0, @0.2, @0.4, @0.6, @0.8, @1 ];
   [_nodesManager startAnimatingNode:@1
                             nodeTag:@101
@@ -186,28 +181,26 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   for (NSUInteger it = 0; it < 5; it++) {
     for (NSNumber *frame in frames) {
-      [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001
-                                                    viewName:@"UIView"
-                                                       props:RCTPropChecker(@"opacity", frame)];
+      [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"opacity", frame)];
       [_nodesManager stepAnimations:_displayLink];
-      [_uiManager verify];
+      [_surfacePresenter verify];
     }
   }
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001 viewName:@"UIView" props:RCTPropChecker(@"opacity", @1)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"opacity", @1)];
 
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testNodeValueListenerIfNotListening
 {
   NSNumber *nodeId = @101;
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   NSArray<NSNumber *> *frames = @[ @0, @0.2, @0.4, @0.6, @0.8, @1 ];
 
   RCTFakeValueObserver *observer = [RCTFakeValueObserver new];
@@ -231,7 +224,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 - (void)testNodeValueListenerIfListening
 {
   NSNumber *nodeId = @101;
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   NSArray<NSNumber *> *frames = @[ @0, @0.2, @0.4, @0.6, @0.8, @1 ];
 
   RCTFakeValueObserver *observer = [RCTFakeValueObserver new];
@@ -258,17 +251,17 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
 - (void)performSpringAnimationTestWithConfig:(NSDictionary *)config isCriticallyDamped:(BOOL)testForCriticallyDamped
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   [_nodesManager startAnimatingNode:@1 nodeTag:@101 config:config endCallback:nil];
 
   BOOL wasGreaterThanOne = NO;
   CGFloat previousValue = 0;
   __block CGFloat currentValue;
-  [[[_uiManager stub] andDo:^(NSInvocation *invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *invocation) {
     __unsafe_unretained NSDictionary<NSString *, NSNumber *> *props;
-    [invocation getArgument:&props atIndex:4];
+    [invocation getArgument:&props atIndex:3];
     currentValue = props[@"opacity"].doubleValue;
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
 
   // Run for 3 seconds.
   for (NSUInteger i = 0; i < 3 * 60; i++) {
@@ -294,9 +287,9 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
     XCTAssertTrue(wasGreaterThanOne);
   }
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testUnderdampedSpringAnimation
@@ -333,7 +326,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
 - (void)testDecayAnimation
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   [_nodesManager startAnimatingNode:@1
                             nodeTag:@101
                              config:@{@"type" : @"decay", @"velocity" : @0.5, @"deceleration" : @0.998}
@@ -345,11 +338,11 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   [_nodesManager stepAnimations:_displayLink];
 
-  [[[_uiManager stub] andDo:^(NSInvocation *invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *invocation) {
     __unsafe_unretained NSDictionary<NSString *, NSNumber *> *props;
-    [invocation getArgument:&props atIndex:4];
+    [invocation getArgument:&props atIndex:3];
     currentValue = props[@"opacity"].doubleValue;
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
 
   // Run 3 secs of animation.
   for (NSUInteger i = 0; i < 3 * 60; i++) {
@@ -365,14 +358,14 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   }
 
   // Should be done in 3 secs.
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testDecayAnimationLoop
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   [_nodesManager
       startAnimatingNode:@1
                  nodeTag:@101
@@ -384,11 +377,11 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   BOOL didComeToRest = NO;
   NSUInteger numberOfResets = 0;
 
-  [[[_uiManager stub] andDo:^(NSInvocation *invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *invocation) {
     __unsafe_unretained NSDictionary<NSString *, NSNumber *> *props;
-    [invocation getArgument:&props atIndex:4];
+    [invocation getArgument:&props atIndex:3];
     currentValue = props[@"opacity"].doubleValue;
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
 
   // Run 3 secs of animation five times.
   for (NSUInteger i = 0; i < 3 * 60 * 5; i++) {
@@ -413,14 +406,14 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   // The animation should have reset 4 times.
   XCTAssertEqual(numberOfResets, 4u);
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testSpringAnimationLoop
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   [_nodesManager startAnimatingNode:@1
                             nodeTag:@101
                              config:@{
@@ -441,11 +434,11 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   CGFloat previousValue = 0;
   NSUInteger numberOfResets = 0;
   __block CGFloat currentValue;
-  [[[_uiManager stub] andDo:^(NSInvocation *invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *invocation) {
     __unsafe_unretained NSDictionary<NSString *, NSNumber *> *props;
-    [invocation getArgument:&props atIndex:4];
+    [invocation getArgument:&props atIndex:3];
     currentValue = props[@"opacity"].doubleValue;
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
 
   // Run for 3 seconds five times.
   for (NSUInteger i = 0; i < 3 * 60 * 5; i++) {
@@ -472,14 +465,14 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(numberOfResets, 4u);
   XCTAssertTrue(didComeToRest);
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testAnimationCallbackFinish
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   NSArray<NSNumber *> *frames = @[ @0, @1 ];
 
   __block NSInteger endCallbackCalls = 0;
@@ -526,12 +519,12 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   [_nodesManager connectAnimatedNodes:@201 childTag:@301];
   [_nodesManager connectAnimatedNodes:@301 childTag:@401];
   [_nodesManager connectAnimatedNodes:@401 childTag:@501];
-  [_nodesManager connectAnimatedNodeToView:@501 viewTag:viewTag viewName:@"UIView"];
+  [_nodesManager connectAnimatedNodeToView:@501 viewTag:viewTag];
 }
 
 - (void)testAdditionNode
 {
-  NSNumber *viewTag = @51;
+  NSNumber *viewTag = @52;
   [self createAnimatedGraphWithAdditionNode:viewTag firstValue:100 secondValue:1000];
 
   NSArray<NSNumber *> *frames = @[ @0, @1 ];
@@ -544,27 +537,21 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                              config:@{@"type" : @"frames", @"frames" : frames, @"toValue" : @1010}
                         endCallback:nil];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1100)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1100)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1111)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1111)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1111)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1111)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 /**
@@ -576,7 +563,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
  */
 - (void)testViewReceiveUpdatesIfOneOfAnimationHasntStarted
 {
-  NSNumber *viewTag = @51;
+  NSNumber *viewTag = @52;
   [self createAnimatedGraphWithAdditionNode:viewTag firstValue:100 secondValue:1000];
 
   NSArray<NSNumber *> *frames = @[ @0, @1 ];
@@ -585,27 +572,21 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                              config:@{@"type" : @"frames", @"frames" : frames, @"toValue" : @101}
                         endCallback:nil];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1100)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1100)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1101)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1101)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1101)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1101)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 /**
@@ -618,7 +599,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
  */
 - (void)testViewReceiveUpdatesWhenOneOfAnimationHasFinished
 {
-  NSNumber *viewTag = @51;
+  NSNumber *viewTag = @52;
   [self createAnimatedGraphWithAdditionNode:viewTag firstValue:100 secondValue:1000];
 
   NSArray<NSNumber *> *firstFrames = @[ @0, @1 ];
@@ -632,35 +613,30 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                              config:@{@"type" : @"frames", @"frames" : secondFrames, @"toValue" : @1010}
                         endCallback:nil];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1100)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1100)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
   for (NSUInteger i = 1; i < secondFrames.count; i++) {
     CGFloat expected = 1200.0 + secondFrames[i].doubleValue * 10.0;
-    [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                  viewName:@"UIView"
-                                                     props:RCTPropChecker(@"translateX", @(expected))];
+    [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag
+                                                            props:RCTPropChecker(@"translateX", @(expected))];
     [_nodesManager stepAnimations:_displayLink];
-    [_uiManager verify];
+    [_surfacePresenter verify];
   }
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @1210)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @1210)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testMultiplicationNode
 {
-  NSNumber *viewTag = @51;
+  NSNumber *viewTag = @52;
   [_nodesManager createAnimatedNode:@101 config:@{@"type" : @"value", @"value" : @1, @"offset" : @0}];
   [_nodesManager createAnimatedNode:@201 config:@{@"type" : @"value", @"value" : @5, @"offset" : @0}];
   [_nodesManager createAnimatedNode:@301 config:@{@"type" : @"multiplication", @"input" : @[ @101, @201 ]}];
@@ -671,7 +647,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   [_nodesManager connectAnimatedNodes:@201 childTag:@301];
   [_nodesManager connectAnimatedNodes:@301 childTag:@401];
   [_nodesManager connectAnimatedNodes:@401 childTag:@501];
-  [_nodesManager connectAnimatedNodeToView:@501 viewTag:viewTag viewName:@"UIView"];
+  [_nodesManager connectAnimatedNodeToView:@501 viewTag:viewTag];
 
   NSArray<NSNumber *> *frames = @[ @0, @1 ];
   [_nodesManager startAnimatingNode:@1
@@ -683,32 +659,26 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                              config:@{@"type" : @"frames", @"frames" : frames, @"toValue" : @10}
                         endCallback:nil];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @5)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @5)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @20)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @20)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", @20)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"translateX", @20)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testHandleStoppingAnimation
 {
-  [self createSimpleAnimatedView:@1001 withOpacity:0];
+  [self createSimpleAnimatedView:@1002 withOpacity:0];
   NSArray<NSNumber *> *frames = @[ @0, @0.2, @0.4, @0.6, @0.8, @1 ];
 
   __block BOOL endCallbackCalled = NO;
@@ -724,12 +694,12 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                              config:@{@"type" : @"frames", @"frames" : frames, @"toValue" : @1}
                         endCallback:endCallback];
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [_surfacePresenter verify];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
   [_nodesManager stopAnimation:@404];
   XCTAssertEqual(endCallbackCalled, YES);
@@ -737,15 +707,15 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   // Run "update" loop a few more times -> we expect no further updates nor callback calls to be
   // triggered
   for (NSUInteger i = 0; i < 5; i++) {
-    [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+    [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
     [_nodesManager stepAnimations:_displayLink];
-    [_uiManager verify];
+    [_surfacePresenter verify];
   }
 }
 
 - (void)testInterpolationNode
 {
-  NSNumber *viewTag = @51;
+  NSNumber *viewTag = @52;
   [_nodesManager createAnimatedNode:@101 config:@{@"type" : @"value", @"value" : @10, @"offset" : @0}];
   [_nodesManager createAnimatedNode:@201
                              config:@{
@@ -761,7 +731,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   [_nodesManager connectAnimatedNodes:@101 childTag:@201];
   [_nodesManager connectAnimatedNodes:@201 childTag:@301];
   [_nodesManager connectAnimatedNodes:@301 childTag:@401];
-  [_nodesManager connectAnimatedNodeToView:@401 viewTag:viewTag viewName:@"UIView"];
+  [_nodesManager connectAnimatedNodeToView:@401 viewTag:viewTag];
 
   NSArray<NSNumber *> *frames = @[ @0, @0.2, @0.4, @0.6, @0.8, @1 ];
   [_nodesManager startAnimatingNode:@1
@@ -770,22 +740,18 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                         endCallback:nil];
 
   for (NSNumber *frame in frames) {
-    [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                  viewName:@"UIView"
-                                                     props:RCTPropChecker(@"opacity", frame)];
+    [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"opacity", frame)];
     [_nodesManager stepAnimations:_displayLink];
-    [_uiManager verify];
+    [_surfacePresenter verify];
   }
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"opacity", @1)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"opacity", @1)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (id<RCTEvent>)createScrollEventWithTag:(NSNumber *)viewTag value:(CGFloat)value
@@ -797,7 +763,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
 - (void)testNativeAnimatedEventDoUpdate
 {
-  NSNumber *viewTag = @1001;
+  NSNumber *viewTag = @1002;
   [self createSimpleAnimatedView:viewTag withOpacity:0];
 
   [_nodesManager
@@ -807,20 +773,18 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   // Make sure that the update actually happened synchronously in `handleAnimatedEvent` and does
   // not wait for the next animation loop.
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:viewTag
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"opacity", @10)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:viewTag props:RCTPropChecker(@"opacity", @10)];
   [_nodesManager handleAnimatedEvent:[self createScrollEventWithTag:viewTag value:10]];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testNativeAnimatedEventDoNotUpdate
 {
-  NSNumber *viewTag = @1001;
+  NSNumber *viewTag = @1002;
   [self createSimpleAnimatedView:viewTag withOpacity:0];
 
   [_nodesManager
@@ -833,9 +797,9 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                    eventName:@"topScroll"
                 eventMapping:@{@"animatedValueTag" : @101, @"nativeEventPath" : @[ @"contentOffset", @"y" ]}];
 
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager handleAnimatedEvent:[self createScrollEventWithTag:viewTag value:10]];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 - (void)testGetValue
@@ -881,7 +845,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   [_nodesManager connectAnimatedNodes:@101 childTag:@201];
   [_nodesManager connectAnimatedNodes:@301 childTag:@401];
   [_nodesManager connectAnimatedNodes:@401 childTag:@501];
-  [_nodesManager connectAnimatedNodeToView:@501 viewTag:viewTag viewName:@"UIView"];
+  [_nodesManager connectAnimatedNodeToView:@501 viewTag:viewTag];
 }
 
 /**
@@ -893,14 +857,12 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 {
   NSArray *frames = @[ @0, @0.25, @0.5, @0.75, @1 ];
   NSDictionary *animationConfig = @{@"type" : @"frames", @"frames" : frames};
-  [self createAnimatedGraphWithTrackingNode:@1001 initialValue:0 animationConfig:animationConfig];
+  [self createAnimatedGraphWithTrackingNode:@1002 initialValue:0 animationConfig:animationConfig];
   [_nodesManager stepAnimations:_displayLink]; // kick off the tracking
 
-  [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001
-                                                viewName:@"UIView"
-                                                   props:RCTPropChecker(@"translateX", 0)];
+  [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"translateX", 0)];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
   // update "toValue" to 100, we expect tracking animation to animate now from 0 to 100 in 5 steps
   [_nodesManager setAnimatedNodeValue:@101 value:@100];
@@ -908,11 +870,9 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   for (NSNumber *frame in frames) {
     NSNumber *expected = @([frame doubleValue] * 100);
-    [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001
-                                                  viewName:@"UIView"
-                                                     props:RCTPropChecker(@"translateX", expected)];
+    [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"translateX", expected)];
     [_nodesManager stepAnimations:_displayLink];
-    [_uiManager verify];
+    [_surfacePresenter verify];
   }
 
   // update "toValue" to 0 but run only two frames from the animation,
@@ -922,11 +882,9 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   for (int i = 0; i < 2; i++) {
     NSNumber *expected = @(100. * (1. - [frames[i] doubleValue]));
-    [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001
-                                                  viewName:@"UIView"
-                                                     props:RCTPropChecker(@"translateX", expected)];
+    [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"translateX", expected)];
     [_nodesManager stepAnimations:_displayLink];
-    [_uiManager verify];
+    [_surfacePresenter verify];
   }
 
   // at this point we expect tracking value to be at 75
@@ -936,17 +894,15 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   for (NSNumber *frame in frames) {
     NSNumber *expected = @(50. + 50. * [frame doubleValue]);
-    [[_uiManager expect] synchronouslyUpdateViewOnUIThread:@1001
-                                                  viewName:@"UIView"
-                                                     props:RCTPropChecker(@"translateX", expected)];
+    [[_surfacePresenter expect] synchronouslyUpdateViewOnUIThread:@1002 props:RCTPropChecker(@"translateX", expected)];
     [_nodesManager stepAnimations:_displayLink];
-    [_uiManager verify];
+    [_surfacePresenter verify];
   }
 
   [_nodesManager stepAnimations:_displayLink];
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 /**
@@ -961,15 +917,15 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 {
   NSArray *frames = @[ @0, @0.5, @1 ];
   NSDictionary *animationConfig = @{@"type" : @"frames", @"frames" : frames};
-  [self createAnimatedGraphWithTrackingNode:@1001 initialValue:0 animationConfig:animationConfig];
+  [self createAnimatedGraphWithTrackingNode:@1002 initialValue:0 animationConfig:animationConfig];
 
   [_nodesManager setAnimatedNodeValue:@101 value:@100];
   [_nodesManager stepAnimations:_displayLink]; // kick off the tracking
 
   __block int callCount = 0;
-  [[[_uiManager stub] andDo:^(NSInvocation *__unused invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *__unused invocation) {
     callCount++;
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
 
   for (NSUInteger i = 0; i < frames.count; i++) {
     [_nodesManager stepAnimations:_displayLink];
@@ -978,17 +934,17 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(callCount, 4);
 
   // the animation has completed, we expect no updates to be done
-  [[[_uiManager stub] andDo:^(NSInvocation *__unused invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *__unused invocation) {
     XCTFail("Expected not to be called");
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 
   // restore rejected method, we will use it later on
   callCount = 0;
-  [[[_uiManager stub] andDo:^(NSInvocation *__unused invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *__unused invocation) {
     callCount++;
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
 
   // we update end value and expect the animation to restart
   [_nodesManager setAnimatedNodeValue:@101 value:@200];
@@ -1001,9 +957,9 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(callCount, 4);
 
   // the animation has completed, we expect no updates to be done
-  [[_uiManager reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  [[_surfacePresenter reject] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
   [_nodesManager stepAnimations:_displayLink];
-  [_uiManager verify];
+  [_surfacePresenter verify];
 }
 
 /**
@@ -1025,14 +981,14 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
     @"stiffness" : @157.8,
     @"overshootClamping" : @NO
   };
-  [self createAnimatedGraphWithTrackingNode:@1001 initialValue:0 animationConfig:springConfig];
+  [self createAnimatedGraphWithTrackingNode:@1002 initialValue:0 animationConfig:springConfig];
 
   __block CGFloat lastTranslateX = 0;
-  [[[_uiManager stub] andDo:^(NSInvocation *invocation) {
+  [[[_surfacePresenter stub] andDo:^(NSInvocation *invocation) {
     __unsafe_unretained NSDictionary *props = nil;
-    [invocation getArgument:&props atIndex:4];
+    [invocation getArgument:&props atIndex:3];
     lastTranslateX = [props[@"translateX"] doubleValue];
-  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY viewName:OCMOCK_ANY props:OCMOCK_ANY];
+  }] synchronouslyUpdateViewOnUIThread:OCMOCK_ANY props:OCMOCK_ANY];
 
   // update "toValue" to 1, we expect tracking animation to animate now from 0 to 1
   [_nodesManager setAnimatedNodeValue:@101 value:@1];

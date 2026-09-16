@@ -38,6 +38,7 @@ public abstract class ReactActivity extends AppCompatActivity
         }
       };
 
+  @SuppressWarnings("this-escape")
   protected ReactActivity() {
     mDelegate = createReactActivityDelegate();
   }

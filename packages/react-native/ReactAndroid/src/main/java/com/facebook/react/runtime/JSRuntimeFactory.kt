@@ -14,7 +14,7 @@ import com.facebook.soloader.SoLoader
 public abstract class JSRuntimeFactory(
     @Suppress("unused", "NoHungarianNotation", "NotAccessedPrivateField")
     @DoNotStrip
-    private val mHybridData: HybridData
+    private val mHybridData: HybridData,
 ) {
   private companion object {
     init {

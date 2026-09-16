@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  * @deprecated
  */
@@ -29,13 +29,15 @@ export type JSTimerType =
   | 'queueReactNativeMicrotask'
   | 'requestIdleCallback';
 
+type TimerFunc = (...args: Array<unknown>) => unknown;
+
 // These timing constants should be kept in sync with the ones in native ios and
 // android `RCTTiming` module.
 const FRAME_DURATION = 1000 / 60;
 const IDLE_CALLBACK_FRAME_DEADLINE = 1;
 
 // Parallel arrays
-const callbacks: Array<?Function> = [];
+const callbacks: Array<?TimerFunc> = [];
 const types: Array<?JSTimerType> = [];
 const timerIDs: Array<?number> = [];
 const freeIdxs: Array<number> = [];
@@ -57,7 +59,7 @@ function _getFreeIndex(): number {
   return freeIdx;
 }
 
-function _allocateCallback(func: Function, type: JSTimerType): number {
+function _allocateCallback(func: TimerFunc, type: JSTimerType): number {
   const id = GUID++;
   const freeIndex = _getFreeIndex();
   timerIDs[freeIndex] = id;
@@ -210,9 +212,9 @@ const JSTimers = {
    * @param {number} duration Number of milliseconds.
    */
   setTimeout: function (
-    func: Function,
+    func: TimerFunc,
     duration: number,
-    ...args: any
+    ...args: Array<unknown>
   ): number {
     const id = _allocateCallback(
       () => func.apply(undefined, args),
@@ -227,9 +229,9 @@ const JSTimers = {
    * @param {number} duration Number of milliseconds.
    */
   setInterval: function (
-    func: Function,
+    func: TimerFunc,
     duration: number,
-    ...args: any
+    ...args: Array<unknown>
   ): number {
     const id = _allocateCallback(
       () => func.apply(undefined, args),
@@ -247,7 +249,10 @@ const JSTimers = {
    * @param {function} func Callback to be invoked before the end of the
    * current JavaScript execution loop.
    */
-  queueReactNativeMicrotask: function (func: Function, ...args: any): number {
+  queueReactNativeMicrotask: function (
+    func: TimerFunc,
+    ...args: Array<unknown>
+  ): number {
     const id = _allocateCallback(
       () => func.apply(undefined, args),
       'queueReactNativeMicrotask',
@@ -259,7 +264,7 @@ const JSTimers = {
   /**
    * @param {function} func Callback to be invoked every frame.
    */
-  requestAnimationFrame: function (func: Function): any | number {
+  requestAnimationFrame: function (func: TimerFunc): number {
     const id = _allocateCallback(func, 'requestAnimationFrame');
     createTimer(id, 1, Date.now(), /* recurring */ false);
     return id;
@@ -271,9 +276,9 @@ const JSTimers = {
    * @param {?object} options
    */
   requestIdleCallback: function (
-    func: Function,
-    options: ?Object,
-  ): any | number {
+    func: TimerFunc,
+    options: ?{timeout?: number, ...},
+  ): number {
     if (requestIdleCallbacks.length === 0) {
       setSendIdleEvents(true);
     }
@@ -281,7 +286,7 @@ const JSTimers = {
     const timeout = options && options.timeout;
     const id: number = _allocateCallback(
       timeout != null
-        ? (deadline: any) => {
+        ? (deadline: unknown) => {
             const timeoutId: number = requestIdleCallbackTimeouts[id];
             if (timeoutId) {
               JSTimers.clearTimeout(timeoutId);
@@ -353,7 +358,7 @@ const JSTimers = {
    * This is called from the native side. We are passed an array of timerIDs,
    * and
    */
-  callTimers: function (timersToCall: Array<number>): any | void {
+  callTimers: function (timersToCall: Array<number>): void {
     invariant(
       timersToCall.length !== 0,
       'Cannot call `callTimers` with an empty list of IDs.',
@@ -458,20 +463,34 @@ function setSendIdleEvents(sendIdleEvents: boolean): void {
 }
 
 let ExportedJSTimers: {
-  callIdleCallbacks: (frameTime: number) => any | void,
+  callIdleCallbacks: (frameTime: number) => void,
   callReactNativeMicrotasks: () => void,
-  callTimers: (timersToCall: Array<number>) => any | void,
+  callTimers: (timersToCall: Array<number>) => void,
   cancelAnimationFrame: (timerID: number) => void,
   cancelIdleCallback: (timerID: number) => void,
   clearReactNativeMicrotask: (timerID: number) => void,
   clearInterval: (timerID: number) => void,
   clearTimeout: (timerID: number) => void,
-  emitTimeDriftWarning: (warningMessage: string) => any | void,
-  requestAnimationFrame: (func: any) => any | number,
-  requestIdleCallback: (func: any, options: ?any) => any | number,
-  queueReactNativeMicrotask: (func: any, ...args: any) => number,
-  setInterval: (func: any, duration: number, ...args: any) => number,
-  setTimeout: (func: any, duration: number, ...args: any) => number,
+  emitTimeDriftWarning: (warningMessage: string) => void,
+  requestAnimationFrame: (func: TimerFunc) => number,
+  requestIdleCallback: (
+    func: TimerFunc,
+    options: ?{timeout?: number, ...},
+  ) => number,
+  queueReactNativeMicrotask: (
+    func: TimerFunc,
+    ...args: Array<unknown>
+  ) => number,
+  setInterval: (
+    func: TimerFunc,
+    duration: number,
+    ...args: Array<unknown>
+  ) => number,
+  setTimeout: (
+    func: TimerFunc,
+    duration: number,
+    ...args: Array<unknown>
+  ) => number,
 };
 
 if (!NativeTiming) {

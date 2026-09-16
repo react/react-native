@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
 #include <react/debug/react_native_assert.h>
 #include <vector>
 #include "MapBuffer.h"
@@ -38,6 +39,10 @@ class MapBufferBuilder {
   void putMapBuffer(MapBuffer::Key key, const MapBuffer &map);
 
   void putMapBufferList(MapBuffer::Key key, const std::vector<MapBuffer> &mapBufferList);
+
+  void putIntBuffer(MapBuffer::Key key, const std::vector<int32_t> &value);
+
+  void putDoubleBuffer(MapBuffer::Key key, const std::vector<double> &value);
 
   MapBuffer build();
 

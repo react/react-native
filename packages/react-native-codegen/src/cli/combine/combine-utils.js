@@ -10,7 +10,7 @@
 
 'use strict';
 
-const path = require('path');
+const path = require('node:path');
 
 /**
  * This function is used by the CLI to decide whether a JS/TS file has to be

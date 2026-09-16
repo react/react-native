@@ -104,7 +104,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
               eventState,
               motionEvent,
               activeHitPathViewIds,
-          )
+          ),
       )
     }
 
@@ -120,7 +120,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
                 activeTargetTag,
                 eventState,
                 motionEvent,
-            )
+            ),
         )
       }
 
@@ -151,7 +151,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
                 clickTarget.getViewId(),
                 eventState,
                 motionEvent,
-            )
+            ),
         )
       }
     }
@@ -190,7 +190,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
                 activeTargetTag,
                 eventState,
                 motionEvent,
-            )
+            ),
         )
       }
 
@@ -229,7 +229,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
               eventState,
               motionEvent,
               activeHitPathViewIds,
-          )
+          ),
       )
     }
   }
@@ -492,7 +492,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
                   lastTargetTag,
                   eventState,
                   motionEvent,
-              )
+              ),
           )
         }
 
@@ -520,7 +520,12 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
           isAnyoneListeningForBubblingEvent(activeHitPath, EVENT.OVER, EVENT.OVER_CAPTURE)
       if (listeningForOver) {
         eventDispatcher.dispatchEvent(
-            PointerEvent.obtain(PointerEventHelper.POINTER_OVER, targetTag, eventState, motionEvent)
+            PointerEvent.obtain(
+                PointerEventHelper.POINTER_OVER,
+                targetTag,
+                eventState,
+                motionEvent,
+            ),
         )
       }
 
@@ -575,7 +580,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
               eventState,
               motionEvent,
               getCoalescingKey(),
-          )
+          ),
       )
     }
   }
@@ -616,7 +621,7 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
                     targetTag,
                     normalizedEventState,
                     motionEvent,
-                )
+                ),
             )
       }
 

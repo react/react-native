@@ -11,6 +11,7 @@ import android.content.Context
 import android.view.View
 import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ColorPropConverter
+import com.facebook.react.bridge.DimensionPropConverter
 import com.facebook.react.bridge.Dynamic
 import com.facebook.react.bridge.DynamicFromObject
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException
@@ -18,6 +19,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.annotations.ReactPropGroup
+import com.facebook.yoga.YogaValue
 import java.lang.reflect.Method
 
 /**
@@ -192,6 +194,15 @@ internal object ViewManagersPropertyCache {
     }
   }
 
+  private class DimensionPropSetter(prop: ReactProp, setter: Method) :
+      PropSetter(prop, "mixed", setter) {
+
+    // A DimensionValue arrives from JS as either a number (points) or a string
+    // (e.g. "100%"), and is nullable, so the conversion is delegated wholesale.
+    override fun getValueOrDefault(value: Any?, context: Context): Any? =
+        DimensionPropConverter.getDimension(value)
+  }
+
   private class BooleanPropSetter(
       prop: ReactProp,
       setter: Method,
@@ -254,6 +265,18 @@ internal object ViewManagersPropertyCache {
     override fun getValueOrDefault(value: Any?, context: Context): Any? {
       if (value != null) {
         return if (value as Boolean) java.lang.Boolean.TRUE else java.lang.Boolean.FALSE
+      }
+      return null
+    }
+  }
+
+  private class BoxedFloatPropSetter(prop: ReactProp, setter: Method) :
+      PropSetter(prop, "number", setter) {
+
+    override fun getValueOrDefault(value: Any?, context: Context): Any? {
+      if (value != null) {
+        // All numbers from JS are Doubles which can't be simply cast to Float
+        return if (value is Double) value.toFloat() else value as Float
       }
       return null
     }
@@ -322,7 +345,7 @@ internal object ViewManagersPropertyCache {
    */
   @JvmStatic
   internal fun getNativePropSettersForViewManagerClass(
-      cls: Class<out ViewManager<*, *>>
+      cls: Class<out ViewManager<*, *>>,
   ): Map<String, PropSetter> {
     if (cls == ViewManager::class.java) {
       return EMPTY_PROPS_MAP
@@ -335,7 +358,7 @@ internal object ViewManagersPropertyCache {
     @Suppress("UNCHECKED_CAST")
     val props: MutableMap<String, PropSetter> =
         HashMap(
-            getNativePropSettersForViewManagerClass(cls.superclass as Class<out ViewManager<*, *>>)
+            getNativePropSettersForViewManagerClass(cls.superclass as Class<out ViewManager<*, *>>),
         )
     extractPropSettersFromViewManagerClassDefinition(cls, props)
     CLASS_PROPS_CACHE[cls] = props
@@ -349,7 +372,7 @@ internal object ViewManagersPropertyCache {
    */
   @JvmStatic
   internal fun getNativePropSettersForShadowNodeClass(
-      cls: Class<out ReactShadowNode<*>>
+      cls: Class<out ReactShadowNode<*>>,
   ): Map<String, PropSetter> {
     for (iface in cls.interfaces) {
       if (iface == ReactShadowNode::class.java) {
@@ -391,8 +414,9 @@ internal object ViewManagersPropertyCache {
         Double::class.javaPrimitiveType ->
             DoublePropSetter(annotation, method, annotation.defaultDouble)
         String::class.java -> StringPropSetter(annotation, method)
-        java.lang.Boolean::class.java -> BoxedBooleanPropSetter(annotation, method)
-        java.lang.Integer::class.java ->
+        Boolean::class.javaObjectType -> BoxedBooleanPropSetter(annotation, method)
+        Float::class.javaObjectType -> BoxedFloatPropSetter(annotation, method)
+        Int::class.javaObjectType ->
             if ("Color" == annotation.customType) {
               BoxedColorPropSetter(annotation, method)
             } else {
@@ -400,9 +424,10 @@ internal object ViewManagersPropertyCache {
             }
         ReadableArray::class.java -> ArrayPropSetter(annotation, method)
         ReadableMap::class.java -> MapPropSetter(annotation, method)
+        YogaValue::class.java -> DimensionPropSetter(annotation, method)
         else ->
             throw RuntimeException(
-                "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}"
+                "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}",
             )
       }
 
@@ -435,7 +460,7 @@ internal object ViewManagersPropertyCache {
           for (i in names.indices) {
             props[names[i]] = DoublePropSetter(annotation, method, i, annotation.defaultDouble)
           }
-      java.lang.Integer::class.java ->
+      Int::class.javaObjectType ->
           for (i in names.indices) {
             props[names[i]] =
                 if ("Color" == annotation.customType) {
@@ -446,7 +471,7 @@ internal object ViewManagersPropertyCache {
           }
       else ->
           throw RuntimeException(
-              "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}"
+              "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}",
           )
     }
   }
@@ -464,7 +489,7 @@ internal object ViewManagersPropertyCache {
         }
         if (!View::class.java.isAssignableFrom(paramTypes[0])) {
           throw RuntimeException(
-              "First param should be a view subclass to be updated: ${cls.name}#${method.name}"
+              "First param should be a view subclass to be updated: ${cls.name}#${method.name}",
           )
         }
         props[annotation.name] = createPropSetter(annotation, method, paramTypes[1])
@@ -475,17 +500,17 @@ internal object ViewManagersPropertyCache {
         val paramTypes = method.parameterTypes
         if (paramTypes.size != 3) {
           throw RuntimeException(
-              "Wrong number of args for group prop setter: ${cls.name}#${method.name}"
+              "Wrong number of args for group prop setter: ${cls.name}#${method.name}",
           )
         }
         if (!View::class.java.isAssignableFrom(paramTypes[0])) {
           throw RuntimeException(
-              "First param should be a view subclass to be updated: ${cls.name}#${method.name}"
+              "First param should be a view subclass to be updated: ${cls.name}#${method.name}",
           )
         }
         if (paramTypes[1] != Int::class.javaPrimitiveType) {
           throw RuntimeException(
-              "Second argument should be property index: ${cls.name}#${method.name}"
+              "Second argument should be property index: ${cls.name}#${method.name}",
           )
         }
         createPropSetters(groupAnnotation, method, paramTypes[2], props)
@@ -512,12 +537,12 @@ internal object ViewManagersPropertyCache {
         val paramTypes = method.parameterTypes
         if (paramTypes.size != 2) {
           throw RuntimeException(
-              "Wrong number of args for group prop setter: ${cls.name}#${method.name}"
+              "Wrong number of args for group prop setter: ${cls.name}#${method.name}",
           )
         }
         if (paramTypes[0] != Int::class.javaPrimitiveType) {
           throw RuntimeException(
-              "Second argument should be property index: ${cls.name}#${method.name}"
+              "Second argument should be property index: ${cls.name}#${method.name}",
           )
         }
         createPropSetters(groupAnnotation, method, paramTypes[1], props)

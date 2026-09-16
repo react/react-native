@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0642a793f11832205a362e6d1ae6e081>>
+ * @generated SignedSource<<843b2fa7e358dd73c9db083e42b93be6>>
  */
 
 /**
@@ -23,13 +23,19 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
   // We could use JNI to get the defaults from C++,
   // but that is more expensive than just duplicating the defaults here.
 
+  override fun cxxNativeAnimatedEnabled(): Boolean = true
+
   override fun enableAccessibilityOrder(): Boolean = true
 
-  override fun enableBridgelessArchitecture(): Boolean = true
+  override fun enableImperativeEvents(): Boolean = true
 
   override fun enableIntersectionObserverByDefault(): Boolean = true
 
   override fun enableSwiftUIBasedFilters(): Boolean = true
+
+  override fun fuseboxFrameRecordingEnabled(): Boolean = true
+
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = true
 
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
 

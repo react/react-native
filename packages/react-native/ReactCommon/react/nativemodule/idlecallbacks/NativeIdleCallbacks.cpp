@@ -87,6 +87,7 @@ CallbackHandle NativeIdleCallbacks::requestIdleCallback(
   if (options.has_value() && options.value().timeout.has_value()) {
     HighResDuration userTimeout = options.value().timeout.value();
     if (userTimeout > HighResDuration::zero()) {
+      timeout = userTimeout;
       expirationTime = runtimeScheduler->now() + userTimeout;
     }
   }

@@ -7,20 +7,21 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <atomic>
 #include <memory>
+#include <optional>
+#include <shared_mutex>
+#include <vector>
 
 #include <ReactCommon/RuntimeExecutor.h>
-#include <react/performance/cdpmetrics/CdpMetricsReporter.h>
-#include <react/performance/cdpmetrics/CdpPerfIssuesReporter.h>
-#include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/core/EventEmitter.h>
 #include <react/renderer/core/EventListener.h>
 #include <react/renderer/core/LayoutConstraints.h>
 #include <react/renderer/mounting/MountingOverrideDelegate.h>
-#include <react/renderer/observers/events/EventPerformanceLogger.h>
 #include <react/renderer/scheduler/InspectorData.h>
 #include <react/renderer/scheduler/SchedulerDelegate.h>
 #include <react/renderer/scheduler/SchedulerToolbox.h>
@@ -28,10 +29,15 @@
 #include <react/renderer/uimanager/UIManagerAnimationDelegate.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <react/renderer/uimanager/UIManagerDelegate.h>
-#include <react/renderer/viewtransition/ViewTransitionModule.h>
 #include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
+
+class CdpMetricsReporter;
+class CdpPerfIssuesReporter;
+class EventPerformanceLogger;
+class PerformanceEntryReporter;
+class ViewTransitionModule;
 
 /*
  * Scheduler coordinates Shadow Tree updates and event flows.
@@ -117,17 +123,12 @@ class Scheduler final : public UIManagerDelegate {
   void removeEventListener(const std::shared_ptr<const EventListener> &listener);
 
 #pragma mark - Surface start callback
-  void uiManagerShouldSetOnSurfaceStartCallback(OnSurfaceStartCallback &&callback) override;
+  void uiManagerShouldAddOnSurfaceStartCallback(OnSurfaceStartCallback &&callback) override;
 
  private:
   friend class SurfaceHandler;
 
   SchedulerDelegate *delegate_;
-  // Invalidation token captured by-value into lambdas deferred via
-  // runtimeScheduler_->scheduleRenderingUpdate. Set to true on delegate
-  // change or Scheduler destruction so a lambda that outlives its captured
-  // raw delegate pointer can no-op instead of dereferencing dangling memory.
-  std::shared_ptr<std::atomic<bool>> delegateInvalidated_;
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   RuntimeExecutor runtimeExecutor_;
   std::shared_ptr<UIManager> uiManager_;
@@ -144,8 +145,8 @@ class Scheduler final : public UIManagerDelegate {
   std::shared_ptr<std::optional<const EventDispatcher>> eventDispatcher_;
 
   std::shared_ptr<PerformanceEntryReporter> performanceEntryReporter_;
-  std::optional<CdpMetricsReporter> cdpMetricsReporter_;
-  std::optional<CdpPerfIssuesReporter> cdpPerfIssuesReporter_;
+  std::unique_ptr<CdpMetricsReporter> cdpMetricsReporter_;
+  std::unique_ptr<CdpPerfIssuesReporter> cdpPerfIssuesReporter_;
   std::shared_ptr<EventPerformanceLogger> eventPerformanceLogger_;
 
   /**
@@ -159,7 +160,7 @@ class Scheduler final : public UIManagerDelegate {
   std::shared_ptr<ViewTransitionModule> viewTransitionModule_;
 
   mutable std::shared_mutex onSurfaceStartCallbackMutex_;
-  OnSurfaceStartCallback onSurfaceStartCallback_;
+  std::vector<OnSurfaceStartCallback> onSurfaceStartCallbacks_;
 };
 
 } // namespace facebook::react

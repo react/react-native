@@ -124,14 +124,15 @@ interface Spec extends TurboModule {
   ): () => ?number;
   saveJSMemoryHeapSnapshot: (filePath: string) => void;
   forceHighResTimeStamp: (timeStamp: ?number) => void;
+  setTimerMockEnabled: (enabled: boolean) => void;
+  advanceTimers: (deltaMs: number) => void;
+  runAllTimers: () => void;
+  getPendingTimerCount: () => number;
   startJSSamplingProfiler: () => void;
   stopJSSamplingProfilerAndSaveToFile: (filePath: string) => void;
   setImageResponse(uri: string, imageResponse: ImageResponse): void;
   clearImage(uri: string): void;
   clearAllImages(): void;
-  getImageRequestCount(uri: string): number;
-  getImageRequestPriority(uri: string): string;
-  clearImageRequests(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>(

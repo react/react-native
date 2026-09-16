@@ -60,6 +60,7 @@ Pod::Spec.new do |s|
   s.dependency "React-logger"
   s.dependency "React-Core"
   s.dependency "React-debug"
+  s.dependency "React-cxxstableapi"
   s.dependency "React-featureflags"
   s.dependency "React-utils"
   s.dependency "React-runtimescheduler"
@@ -99,17 +100,6 @@ Pod::Spec.new do |s|
       # Exclude tests to avoid conflicts with the react-native-safe-area-context package
       sss.exclude_files        = "react/renderer/components/safeareaview/tests"
       sss.header_dir           = "react/renderer/components/safeareaview"
-    end
-
-    ss.subspec "scrollview" do |sss|
-      sss.source_files         = podspec_sources(["react/renderer/components/scrollview/*.{m,mm,cpp,h}",
-                                  "react/renderer/components/scrollview/platform/cxx/**/*.{m,mm,cpp,h}",
-                                  "react/renderer/components/scrollview/platform/ios/**/*.{m,mm,cpp,h}"],
-                                  ["react/renderer/components/scrollview/*.h",
-                                  "react/renderer/components/scrollview/platform/cxx/**/*.h",
-                                  "react/renderer/components/scrollview/platform/ios/**/*.h"])
-      sss.exclude_files        = "react/renderer/components/scrollview/tests"
-      sss.header_dir           = "react/renderer/components/scrollview"
     end
 
     ss.subspec "text" do |sss|
@@ -171,4 +161,6 @@ Pod::Spec.new do |s|
                               "react/renderer/textlayoutmanager/platform/cxx"
     ss.header_dir           = "react/renderer/textlayoutmanager"
   end
+
+  mark_as_react_native_build(s)
 end

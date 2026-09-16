@@ -79,7 +79,7 @@ class ReactRootProjectPlugin : Plugin<Project> {
           ********************************************************************************
 
           """
-              .trimIndent()
+              .trimIndent(),
       )
     }
   }

@@ -41,42 +41,38 @@ export type ShareAction = {
   activityType?: string | null,
 };
 
+/**
+ * Opens a dialog to share text content.
+ *
+ * @see https://reactnative.dev/docs/share
+ */
 class Share {
   /**
-   * Open a dialog to share text content.
+   * Open a share dialog to share text content.
    *
-   * In iOS, Returns a Promise which will be invoked an object containing `action`, `activityType`.
-   * If the user dismissed the dialog, the Promise will still be resolved with action being `Share.dismissedAction`
-   * and all the other keys being undefined.
+   * On iOS, returns a Promise which resolves to an object containing `action`
+   * and `activityType`. If the user dismissed the dialog, the Promise will
+   * still resolve with action being `Share.dismissedAction` and all the other
+   * keys being undefined.
    *
-   * In Android, Returns a Promise which always resolves with action being `Share.sharedAction`.
+   * On Android, returns a Promise which always resolves with action being
+   * `Share.sharedAction`.
    *
-   * ### Content
+   * **Content:**
    *
-   * #### iOS
+   * - `message` - A message to share.
+   * - `url` (iOS) - A URL to share.
+   * - `title` (Android) - Title of the message.
    *
-   *  - `url` - a URL to share
-   *  - `message` - a message to share
+   * At least one of `url` or `message` is required.
    *
-   * At least one of `URL` or `message` is required.
+   * **Options:**
    *
-   * #### Android
-   *
-   * - `title` - title of the message (optional)
-   * - `message` - a message to share (often will include a URL).
-   *
-   * ### Options
-   *
-   * #### iOS
-   *
-   *  - `subject` - a subject to share via email
-   *  - `excludedActivityTypes`
-   *  - `tintColor`
-   *
-   * #### Android
-   *
-   *  - `dialogTitle`
-   *
+   * - `dialogTitle` (Android) - Title of the share dialog.
+   * - `excludedActivityTypes` (iOS) - Activity types to exclude.
+   * - `subject` (iOS) - A subject to share via email.
+   * - `tintColor` (iOS) - Tint color for the share dialog.
+   * - `anchor` (iOS) - The anchor point for the popover (iPad).
    */
   static share(
     content: ShareContent,
@@ -173,7 +169,8 @@ class Share {
   static sharedAction: 'sharedAction' = 'sharedAction';
 
   /**
-   * The dialog has been dismissed.
+   * The dialog was dismissed.
+   *
    * @platform ios
    */
   static dismissedAction: 'dismissedAction' = 'dismissedAction';

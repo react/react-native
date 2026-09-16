@@ -51,7 +51,7 @@ class YogaDirtyFlagTest : public ::testing::Test {
                     /*
                      * Some non-default props.
                      */
-                    auto mutableViewProps = std::make_shared<ViewShadowNodeProps>();
+                    auto mutableViewProps = std::make_shared<ViewProps>();
                     auto &props = *mutableViewProps;
                     props.nativeId = "native Id";
                     props.opacity = 0.5;
@@ -113,7 +113,7 @@ TEST_F(YogaDirtyFlagTest, changingNonLayoutSubPropsMustNotDirtyYogaNode) {
    */
   auto newRootShadowNode = rootShadowNode_->cloneTree(
       innerShadowNode_->getFamily(), [](const ShadowNode& oldShadowNode) {
-        auto viewProps = std::make_shared<ViewShadowNodeProps>();
+        auto viewProps = std::make_shared<ViewProps>();
         auto& props = *viewProps;
 
         props.nativeId = "some new native Id";
@@ -136,7 +136,7 @@ TEST_F(YogaDirtyFlagTest, changingLayoutSubPropsMustDirtyYogaNode) {
    */
   auto newRootShadowNode = rootShadowNode_->cloneTree(
       innerShadowNode_->getFamily(), [](const ShadowNode& oldShadowNode) {
-        auto viewProps = std::make_shared<ViewShadowNodeProps>();
+        auto viewProps = std::make_shared<ViewProps>();
         auto& props = *viewProps;
 
         props.yogaStyle.setAlignContent(yoga::Align::Baseline);
@@ -243,7 +243,7 @@ TEST_F(YogaDirtyFlagTest, clonedPropsPreserveAspectRatio) {
   auto newRootShadowNode = rootShadowNode_->cloneTree(
       innerShadowNode_->getFamily(), [&](const ShadowNode& oldShadowNode) {
         // First clone: set aspectRatio to 1.5
-        auto viewProps = std::make_shared<ViewShadowNodeProps>();
+        auto viewProps = std::make_shared<ViewProps>();
         viewProps->yogaStyle.setAspectRatio(yoga::FloatOptional(1.5f));
         auto nodeWithAspectRatio =
             oldShadowNode.clone(ShadowNodeFragment{.props = viewProps});
@@ -255,8 +255,7 @@ TEST_F(YogaDirtyFlagTest, clonedPropsPreserveAspectRatio) {
         auto clonedProps = componentDescriptor.cloneProps(
             parserContext, nodeWithAspectRatio->getProps(), RawProps());
 
-        auto& clonedViewProps =
-            static_cast<const ViewShadowNodeProps&>(*clonedProps);
+        auto& clonedViewProps = static_cast<const ViewProps&>(*clonedProps);
         EXPECT_TRUE(clonedViewProps.yogaStyle.aspectRatio().isDefined());
         EXPECT_EQ(clonedViewProps.yogaStyle.aspectRatio().unwrap(), 1.5f);
 
@@ -303,7 +302,7 @@ class YogaCloneTest : public ::testing::Test {
               .reference(parentShadowNode_)
               .tag(2)
               .props([] {
-                auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                auto sharedProps = std::make_shared<ViewProps>();
                 auto &props = *sharedProps;
                 auto &yogaStyle = props.yogaStyle;
                 yogaStyle.setFlexDirection(yoga::FlexDirection::Row);
@@ -320,7 +319,7 @@ class YogaCloneTest : public ::testing::Test {
                   .reference(childAShadowNode_)
                   .tag(3)
                   .props([] {
-                    auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                    auto sharedProps = std::make_shared<ViewProps>();
                     sharedProps->yogaStyle.setDimension(
                         yoga::Dimension::Width,
                         yoga::StyleSizeLength::points(100));
@@ -333,7 +332,7 @@ class YogaCloneTest : public ::testing::Test {
                   .reference(childBShadowNode_)
                   .tag(4)
                   .props([] {
-                    auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                    auto sharedProps = std::make_shared<ViewProps>();
                     sharedProps->yogaStyle.setDimension(
                         yoga::Dimension::Width,
                         yoga::StyleSizeLength::points(100));
@@ -346,7 +345,7 @@ class YogaCloneTest : public ::testing::Test {
                   .reference(childCShadowNode_)
                   .tag(5)
                   .props([] {
-                    auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                    auto sharedProps = std::make_shared<ViewProps>();
                     sharedProps->yogaStyle.setDimension(
                         yoga::Dimension::Width,
                         yoga::StyleSizeLength::points(100));

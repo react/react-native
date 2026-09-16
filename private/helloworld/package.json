@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "react": "19.2.3",
+    "react": "19.3.0",
     "react-native": "1000.0.0"
   },
   "devDependencies": {
@@ -22,6 +22,7 @@
     "@react-native/babel-preset": "0.87.0-main",
     "@react-native/core-cli-utils": "*",
     "@react-native/eslint-config": "0.87.0-main",
+    "@react-native/jest-preset": "0.87.0-main",
     "@react-native/metro-config": "0.87.0-main",
     "@react-native/typescript-config": "0.87.0-main",
     "@types/jest": "^29.5.14",
@@ -29,7 +30,7 @@
     "eslint": "^8.19.0",
     "jest": "^29.7.0",
     "listr2": "^8.2.1",
-    "react-test-renderer": "19.2.3",
+    "react-test-renderer": "19.3.0",
     "rxjs": "^7.8.1"
   },
   "engines": {

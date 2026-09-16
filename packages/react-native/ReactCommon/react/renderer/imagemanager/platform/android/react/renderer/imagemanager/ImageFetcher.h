@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/imagemanager/ImageRequest.h>
 #include <react/renderer/imagemanager/ImageRequestParams.h>
 #include <react/utils/ContextContainer.h>

@@ -15,6 +15,7 @@ target_include_directories(react_nativemodule_mutationobserver PUBLIC ${REACT_CO
 
 target_link_libraries(react_nativemodule_mutationobserver
         react_codegen_rncore
+        react_cxxstableapi
         react_renderer_bridging
         react_renderer_core
         react_renderer_uimanager

@@ -100,13 +100,13 @@ public class DevToolsReactPerfLogger : FabricMarkerListener {
     }
   }
 
-  public fun addDevToolsReactPerfLoggerListener(listener: DevToolsReactPerfLoggerListener): Unit {
+  public fun addDevToolsReactPerfLoggerListener(listener: DevToolsReactPerfLoggerListener) {
     devToolsReactPerfLoggerListeners.add(listener)
   }
 
   public fun removeDevToolsReactPerfLoggerListener(
-      listener: DevToolsReactPerfLoggerListener
-  ): Unit {
+      listener: DevToolsReactPerfLoggerListener,
+  ) {
     devToolsReactPerfLoggerListeners.remove(listener)
   }
 
@@ -135,8 +135,8 @@ public class DevToolsReactPerfLogger : FabricMarkerListener {
       commitPoint.addPoint(name, FabricCommitPointData(timestamp, counter))
 
       if (
-          (name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_END ||
-              name == ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END) && timestamp > 0
+          ((name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_END) ||
+              (name == ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END)) && (timestamp > 0)
       ) {
         onFabricCommitEnd(commitPoint)
         fabricCommitMarkers.remove(instanceKey)
@@ -151,29 +151,35 @@ public class DevToolsReactPerfLogger : FabricMarkerListener {
   }
 
   private companion object {
-    @JvmField internal val streamingCommitStats: LongStreamingStats = LongStreamingStats()
-
-    @JvmField internal val streamingLayoutStats: LongStreamingStats = LongStreamingStats()
-
-    @JvmField internal val streamingDiffStats: LongStreamingStats = LongStreamingStats()
-
-    @JvmField internal val streamingTransactionEndStats: LongStreamingStats = LongStreamingStats()
-
-    @JvmField internal val streamingBatchExecutionStats: LongStreamingStats = LongStreamingStats()
+    @Suppress("REDUNDANT_VISIBILITY_MODIFIER")
+    @JvmField
+    internal val streamingCommitStats: LongStreamingStats = LongStreamingStats()
+    @Suppress("REDUNDANT_VISIBILITY_MODIFIER")
+    @JvmField
+    internal val streamingLayoutStats: LongStreamingStats = LongStreamingStats()
+    @Suppress("REDUNDANT_VISIBILITY_MODIFIER")
+    @JvmField
+    internal val streamingDiffStats: LongStreamingStats = LongStreamingStats()
+    @Suppress("REDUNDANT_VISIBILITY_MODIFIER")
+    @JvmField
+    internal val streamingTransactionEndStats: LongStreamingStats = LongStreamingStats()
+    @Suppress("REDUNDANT_VISIBILITY_MODIFIER")
+    @JvmField
+    internal val streamingBatchExecutionStats: LongStreamingStats = LongStreamingStats()
 
     private fun isFabricCommitMarker(name: ReactMarkerConstants): Boolean =
-        name == ReactMarkerConstants.FABRIC_COMMIT_START ||
-            name == ReactMarkerConstants.FABRIC_COMMIT_END ||
-            name == ReactMarkerConstants.FABRIC_FINISH_TRANSACTION_START ||
-            name == ReactMarkerConstants.FABRIC_FINISH_TRANSACTION_END ||
-            name == ReactMarkerConstants.FABRIC_DIFF_START ||
-            name == ReactMarkerConstants.FABRIC_DIFF_END ||
-            name == ReactMarkerConstants.FABRIC_LAYOUT_START ||
-            name == ReactMarkerConstants.FABRIC_LAYOUT_END ||
-            name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_START ||
-            name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_END ||
-            name == ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_START ||
-            name == ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END ||
-            name == ReactMarkerConstants.FABRIC_LAYOUT_AFFECTED_NODES
+        (name == ReactMarkerConstants.FABRIC_COMMIT_START) ||
+            (name == ReactMarkerConstants.FABRIC_COMMIT_END) ||
+            (name == ReactMarkerConstants.FABRIC_FINISH_TRANSACTION_START) ||
+            (name == ReactMarkerConstants.FABRIC_FINISH_TRANSACTION_END) ||
+            (name == ReactMarkerConstants.FABRIC_DIFF_START) ||
+            (name == ReactMarkerConstants.FABRIC_DIFF_END) ||
+            (name == ReactMarkerConstants.FABRIC_LAYOUT_START) ||
+            (name == ReactMarkerConstants.FABRIC_LAYOUT_END) ||
+            (name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_START) ||
+            (name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_END) ||
+            (name == ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_START) ||
+            (name == ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END) ||
+            (name == ReactMarkerConstants.FABRIC_LAYOUT_AFFECTED_NODES)
   }
 }

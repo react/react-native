@@ -7,8 +7,11 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/debug/flags.h>
 #include <chrono>
+#include <cmath>
 #include <functional>
 
 #ifdef __APPLE__
@@ -60,10 +63,15 @@ class HighResDuration {
   }
 
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
-  static constexpr HighResDuration fromDOMHighResTimeStamp(double units)
+  // TODO: restore `constexpr` once this builds as C++23, where `std::llround`
+  // becomes usable in a constant expression (P0533).
+  static HighResDuration fromDOMHighResTimeStamp(double units)
   {
-    auto nanoseconds = static_cast<int64_t>(units * 1e6);
-    return fromNanoseconds(nanoseconds);
+    // Both the conversion to milliseconds and the multiplication back are
+    // inexact, so the product often lands just below the original count.
+    // Rounding to the nearest nanosecond (rather than truncating towards zero)
+    // is what makes the round trip through a DOMHighResTimeStamp lossless.
+    return fromNanoseconds(std::llround(units * 1e6));
   }
 
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
@@ -225,10 +233,11 @@ class HighResTimeStamp {
   }
 
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
-  static constexpr HighResTimeStamp fromDOMHighResTimeStamp(double units)
+  // TODO: restore `constexpr` together with
+  // `HighResDuration::fromDOMHighResTimeStamp`, which this delegates to.
+  static HighResTimeStamp fromDOMHighResTimeStamp(double units)
   {
-    auto nanoseconds = static_cast<int64_t>(units * 1e6);
-    return HighResTimeStamp(std::chrono::steady_clock::time_point(std::chrono::nanoseconds(nanoseconds)));
+    return HighResTimeStamp(std::chrono::steady_clock::time_point(HighResDuration::fromDOMHighResTimeStamp(units)));
   }
 
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp

@@ -53,10 +53,6 @@
   [super layoutSubviews];
 }
 
-- (void)dealloc
-{
-}
-
 - (void)show
 {
   [self becomeFirstResponder];

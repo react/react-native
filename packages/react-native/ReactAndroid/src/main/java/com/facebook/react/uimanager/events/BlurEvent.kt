@@ -17,7 +17,7 @@ internal class BlurEvent(surfaceId: Int, viewId: Int) : Event<BlurEvent>(surface
 
   override fun canCoalesce(): Boolean = false
 
-  protected override fun getEventData(): WritableMap {
+  override fun getEventData(): WritableMap {
     return Arguments.createMap().apply { putInt("target", viewTag) }
   }
 

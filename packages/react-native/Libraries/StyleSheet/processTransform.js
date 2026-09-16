@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -12,6 +12,9 @@
 
 const stringifySafe = require('../Utilities/stringifySafe').default;
 const invariant = require('invariant');
+
+type TransformObject = {[string]: unknown, ...};
+type TransformArray = Array<TransformObject>;
 
 /**
  * Generate a transform matrix based on the provided transforms, and use that
@@ -21,12 +24,11 @@ const invariant = require('invariant');
  * be applied in an arbitrary order, and yet have a universal, singular
  * interface to native code.
  */
-function processTransform(
-  transform: Array<Object> | string,
-): Array<Object> | Array<number> {
+function processTransform(transform: TransformArray | string): TransformArray {
+  let normalizedTransform;
   if (typeof transform === 'string') {
     const regex = new RegExp(/(\w+)\(([^)]+)\)/g);
-    const transformArray: Array<Object> = [];
+    const transformArray: TransformArray = [];
     let matches;
 
     while ((matches = regex.exec(transform))) {
@@ -39,14 +41,16 @@ function processTransform(
         transformArray.push({[key]: value});
       }
     }
-    transform = transformArray;
+    normalizedTransform = transformArray;
+  } else {
+    normalizedTransform = transform;
   }
 
   if (__DEV__) {
-    _validateTransforms(transform);
+    _validateTransforms(normalizedTransform);
   }
 
-  return transform;
+  return normalizedTransform;
 }
 
 const _getKeyAndValueFromCSSTransform: (
@@ -138,7 +142,7 @@ const _getKeyAndValueFromCSSTransform: (
   }
 };
 
-function _validateTransforms(transform: Array<Object>): void {
+function _validateTransforms(transform: TransformArray): void {
   transform.forEach(transformation => {
     const keys = Object.keys(transformation);
     invariant(
@@ -160,11 +164,16 @@ function _validateTransforms(transform: Array<Object>): void {
 
 function _validateTransform(
   key: string,
-  value: any | number | string,
-  transformation: any,
+  value: unknown,
+  transformation: TransformObject,
 ) {
+  const isAnimatedValue =
+    value != null &&
+    typeof value === 'object' &&
+    'getValue' in value &&
+    typeof value.getValue === 'function';
   invariant(
-    !value.getValue,
+    !isAnimatedValue,
     'You passed an Animated.Value to a normal component. ' +
       'You need to wrap that component in an Animated. For example, ' +
       'replace <View /> by <Animated.View />.',
@@ -182,23 +191,29 @@ function _validateTransform(
   switch (key) {
     case 'matrix':
       invariant(
+        Array.isArray(value),
+        'Transform with key of %s must have an array as the value: %s',
+        key,
+        stringifySafe(transformation),
+      );
+      invariant(
         value.length === 9 || value.length === 16,
         'Matrix transform must have a length of 9 (2d) or 16 (3d). ' +
           'Provided matrix has a length of %s: %s',
-        /* $FlowFixMe[prop-missing] (>=0.84.0 site=react_native_fb) This
-         * comment suppresses an error found when Flow v0.84 was deployed. To
-         * see the error, delete this comment and run Flow. */
         value.length,
         stringifySafe(transformation),
       );
       break;
     case 'translate':
       invariant(
+        Array.isArray(value),
+        'Transform with key of %s must have an array as the value: %s',
+        key,
+        stringifySafe(transformation),
+      );
+      invariant(
         value.length === 2 || value.length === 3,
         'Transform with key translate must be an array of length 2 or 3, found %s: %s',
-        /* $FlowFixMe[prop-missing] (>=0.84.0 site=react_native_fb) This
-         * comment suppresses an error found when Flow v0.84 was deployed. To
-         * see the error, delete this comment and run Flow. */
         value.length,
         stringifySafe(transformation),
       );

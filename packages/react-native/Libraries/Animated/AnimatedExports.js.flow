@@ -4,13 +4,13 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import AnimatedImplementation from './AnimatedImplementation';
 
-export type {CompositeAnimation} from './AnimatedImplementation';
+export type {CompositeAnimation, Numeric} from './AnimatedImplementation';
 export type {DecayAnimationConfig} from './animations/DecayAnimation';
 export type {SpringAnimationConfig} from './animations/SpringAnimation';
 export type {TimingAnimationConfig} from './animations/TimingAnimation';

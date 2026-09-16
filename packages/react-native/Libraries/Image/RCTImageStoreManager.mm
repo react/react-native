@@ -95,20 +95,20 @@ RCT_EXPORT_MODULE()
   });
 }
 
-RCT_EXPORT_METHOD(removeImageForTag : (NSString *)imageTag)
+- (void)removeImageForTag:(NSString *)imageTag
 {
   [_store removeObjectForKey:imageTag];
 }
 
-RCT_EXPORT_METHOD(hasImageForTag : (NSString *)imageTag callback : (RCTResponseSenderBlock)callback)
+- (void)hasImageForTag:(NSString *)imageTag callback:(RCTResponseSenderBlock)callback
 {
   callback(@[ @(_store[imageTag] != nil) ]);
 }
 
 // TODO (#5906496): Name could be more explicit - something like getBase64EncodedDataForTag:?
-RCT_EXPORT_METHOD(
-    getBase64ForTag : (NSString *)imageTag successCallback : (RCTResponseSenderBlock)
-        successCallback errorCallback : (RCTResponseSenderBlock)errorCallback)
+- (void)getBase64ForTag:(NSString *)imageTag
+        successCallback:(RCTResponseSenderBlock)successCallback
+          errorCallback:(RCTResponseSenderBlock)errorCallback
 {
   NSData *imageData = _store[imageTag];
   if (imageData == nullptr) {
@@ -122,9 +122,9 @@ RCT_EXPORT_METHOD(
   });
 }
 
-RCT_EXPORT_METHOD(
-    addImageFromBase64 : (NSString *)base64String successCallback : (RCTResponseSenderBlock)
-        successCallback errorCallback : (RCTResponseSenderBlock)errorCallback)
+- (void)addImageFromBase64:(NSString *)base64String
+           successCallback:(RCTResponseSenderBlock)successCallback
+             errorCallback:(RCTResponseSenderBlock)errorCallback
 
 {
   // Dispatching to a background thread to perform base64 decoding

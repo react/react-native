@@ -15,14 +15,19 @@
  * Sets up global variables for React Native.
  * You can use this module directly, or just require InitializeCore.
  */
-if (global.window === undefined) {
+if (globalThis.window === undefined) {
   // $FlowExpectedError[cannot-write] The global isn't writable anywhere but here, where we define it.
-  global.window = global;
+  Object.defineProperty(globalThis, 'window', {
+    value: globalThis,
+    configurable: false,
+    enumerable: true,
+    writable: false,
+  });
 }
 
-if (global.self === undefined) {
+if (globalThis.self === undefined) {
   // $FlowExpectedError[cannot-write] The global isn't writable anywhere but here, where we define it.
-  global.self = global;
+  globalThis.self = globalThis;
 }
 
 // Set up process

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/components/textinput/basePrimitives.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawValue.h>

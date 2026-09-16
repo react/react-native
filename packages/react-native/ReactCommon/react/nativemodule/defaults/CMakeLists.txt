@@ -15,6 +15,7 @@ target_include_directories(react_nativemodule_defaults PUBLIC ${REACT_COMMON_DIR
 
 target_link_libraries(react_nativemodule_defaults
         react_codegen_rncore
+        react_cxxstableapi
         react_nativemodule_core
         react_nativemodule_dom
         react_nativemodule_devtoolsruntimesettings
@@ -23,6 +24,7 @@ target_link_libraries(react_nativemodule_defaults
         react_nativemodule_idlecallbacks
         react_nativemodule_intersectionobserver
         react_nativemodule_mutationobserver
+        react_nativemodule_resizeobserver
         react_nativemodule_viewtransition
         react_nativemodule_webperformance
         react_renderer_animated

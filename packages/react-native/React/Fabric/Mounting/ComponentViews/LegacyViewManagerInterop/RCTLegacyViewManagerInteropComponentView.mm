@@ -130,9 +130,10 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
 
   for (Class moduleClass in registeredModules) {
     id<RCTBridgeModule> bridgeModule = (id<RCTBridgeModule>)moduleClass;
-    NSString *moduleName = [[bridgeModule moduleName] isEqualToString:@""]
+    NSString *exportedName = [bridgeModule respondsToSelector:@selector(moduleName)] ? [bridgeModule moduleName] : nil;
+    NSString *moduleName = exportedName.length == 0
         ? [NSStringFromClass(moduleClass) stringByReplacingOccurrencesOfString:@"Manager" withString:@""]
-        : [bridgeModule moduleName];
+        : exportedName;
 
     if (supportedLegacyViewComponents[moduleName] == NULL) {
       supportedLegacyViewComponents[moduleName] = moduleClass;

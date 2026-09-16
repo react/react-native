@@ -20,7 +20,7 @@ import com.facebook.soloader.annotation.SoLoaderLibrary
 @SoLoaderLibrary("reactnativejni")
 @DoNotStripAny
 internal class InspectorNetworkRequestListener(
-    @field:DoNotStrip private val mHybridData: HybridData
+    @field:DoNotStrip private val mHybridData: HybridData,
 ) {
   external fun onHeaders(httpStatusCode: Int, headers: Map<String?, String?>?)
 

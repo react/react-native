@@ -291,7 +291,7 @@ TEST(LayoutableShadowNodeTest, relativeLayoutMetricsOnTransformedNode) {
           shadowNode.setLayoutMetrics(layoutMetrics);
         })
         .props([] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           sharedProps->transform = Transform::Scale(0.5, 0.5, 1);
           return sharedProps;
         })
@@ -340,7 +340,7 @@ TEST(LayoutableShadowNodeTest, noOverflow) {
       }).children({
         Element<ViewShadowNode>()
         .props([=] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           auto &props = *sharedProps;
           auto &yogaStyle = props.yogaStyle;
           yogaStyle.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(100));
@@ -351,7 +351,7 @@ TEST(LayoutableShadowNodeTest, noOverflow) {
         .children({
           Element<ViewShadowNode>()
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             auto &props = *sharedProps;
             auto &yogaStyle = props.yogaStyle;
             yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -405,7 +405,7 @@ TEST(LayoutableShadowNodeTest, overflowInsetFrameToRightAndDown) {
       }).children({
         Element<ViewShadowNode>()
         .props([=] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           auto &props = *sharedProps;
           auto &yogaStyle = props.yogaStyle;
           yogaStyle.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(100));
@@ -416,7 +416,7 @@ TEST(LayoutableShadowNodeTest, overflowInsetFrameToRightAndDown) {
         .children({
           Element<ViewShadowNode>()
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             auto &props = *sharedProps;
             auto &yogaStyle = props.yogaStyle;
             yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -471,7 +471,7 @@ TEST(LayoutableShadowNodeTest, overflowInsetFrameToLeftAndTop) {
       }).children({
         Element<ViewShadowNode>()
         .props([=] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           auto &props = *sharedProps;
           auto &yogaStyle = props.yogaStyle;
           yogaStyle.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(100));
@@ -482,7 +482,7 @@ TEST(LayoutableShadowNodeTest, overflowInsetFrameToLeftAndTop) {
         .children({
           Element<ViewShadowNode>()
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             auto &props = *sharedProps;
             auto &yogaStyle = props.yogaStyle;
             yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -541,7 +541,7 @@ TEST(LayoutableShadowNodeTest, overflowInsetFrameToAllSides) {
       }).children({
         Element<ViewShadowNode>()
         .props([=] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           auto &props = *sharedProps;
           auto &yogaStyle = props.yogaStyle;
           yogaStyle.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(100));
@@ -552,7 +552,7 @@ TEST(LayoutableShadowNodeTest, overflowInsetFrameToAllSides) {
         .children({
           Element<ViewShadowNode>()
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             auto &props = *sharedProps;
             auto &yogaStyle = props.yogaStyle;
             yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -564,7 +564,7 @@ TEST(LayoutableShadowNodeTest, overflowInsetFrameToAllSides) {
           }),
           Element<ViewShadowNode>()
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             auto &props = *sharedProps;
             auto &yogaStyle = props.yogaStyle;
             yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -620,7 +620,7 @@ TEST(LayoutableShadowNodeTest, relativeLayoutMetricsOnTransformedParent) {
       .children({
         Element<ViewShadowNode>()
         .props([] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           sharedProps->transform = Transform::Scale(0.5, 0.5, 1);
           return sharedProps;
         })
@@ -755,7 +755,7 @@ TEST(
       .children({
         Element<ViewShadowNode>()
         .props([] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           sharedProps->transform = Transform::Scale(0.5, 0.5, 1);
           return sharedProps;
         })
@@ -840,7 +840,7 @@ TEST(LayoutableShadowNodeTest, relativeLayoutMetricsOnSameTransformedNode) {
   auto element =
     Element<ViewShadowNode>()
       .props([] {
-        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+        auto sharedProps = std::make_shared<ViewProps>();
         sharedProps->transform = Transform::Scale(2, 2, 1);
         return sharedProps;
       })
@@ -1017,7 +1017,7 @@ TEST(LayoutableShadowNodeTest, invertedVerticalView) {
   auto element =
         Element<ViewShadowNode>()
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             sharedProps->transform = Transform::VerticalInversion(); // Inverted <ScrollView>
             return sharedProps;
           })
@@ -1093,7 +1093,7 @@ TEST(LayoutableShadowNodeTest, nestedInvertedVerticalView) {
   auto element =
     Element<ViewShadowNode>()
       .props([] {
-        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+        auto sharedProps = std::make_shared<ViewProps>();
         sharedProps->transform = Transform::VerticalInversion(); // Inverted <ScrollView>
         return sharedProps;
       })
@@ -1179,7 +1179,7 @@ TEST(LayoutableShadowNodeTest, nestedDoubleInvertedVerticalView) {
   auto element =
     Element<ViewShadowNode>()
       .props([] {
-        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+        auto sharedProps = std::make_shared<ViewProps>();
         sharedProps->transform = Transform::VerticalInversion(); // Inverted
         return sharedProps;
       })
@@ -1195,7 +1195,7 @@ TEST(LayoutableShadowNodeTest, nestedDoubleInvertedVerticalView) {
                 layoutMetrics.frame.size = {.width=100, .height=200};
                 shadowNode.setLayoutMetrics(layoutMetrics);
               }).props([] {
-                  auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                  auto sharedProps = std::make_shared<ViewProps>();
                   sharedProps->transform = Transform::VerticalInversion(); // Inverted
                   return sharedProps;
                 }).children({
@@ -1259,7 +1259,7 @@ TEST(LayoutableShadowNodeTest, invertedHorizontalView) {
   auto element =
         Element<ViewShadowNode>()
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             sharedProps->transform = Transform::HorizontalInversion(); // Inverted <ScrollView>
             return sharedProps;
           })
@@ -1331,7 +1331,7 @@ TEST(LayoutableShadowNodeTest, nestedInvertedHorizontalView) {
   auto element =
     Element<ViewShadowNode>()
       .props([] {
-        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+        auto sharedProps = std::make_shared<ViewProps>();
         sharedProps->transform = Transform::HorizontalInversion(); // Inverted <ScrollView>
         return sharedProps;
       })

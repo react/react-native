@@ -4,7 +4,7 @@ inputs:
     required: true
     description: The type of release we are building. It could be nightly, release or dry-run
   gradle-cache-encryption-key:
-    description: "The encryption key needed to store the Gradle Configuration cache"
+    description: 'The encryption key needed to store the Gradle Configuration cache'
 
 runs:
   using: composite
@@ -24,22 +24,22 @@ runs:
     - name: Setup gradle
       uses: ./.github/actions/setup-gradle
       with:
-        cache-read-only: "false"
+        cache-read-only: 'false'
         cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
     - name: Restore Fantom ccache
       uses: actions/cache/restore@v5
       with:
         path: /github/home/.cache/ccache
         key: v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
-            'packages/react-native/ReactAndroid/**/*.cpp',
-            'packages/react-native/ReactAndroid/**/*.h',
-            'packages/react-native/ReactAndroid/**/CMakeLists.txt',
-            'packages/react-native/ReactCommon/**/*.cpp',
-            'packages/react-native/ReactCommon/**/*.h',
-            'packages/react-native/ReactCommon/**/CMakeLists.txt',
-            'private/react-native-fantom/tester/**/*.cpp',
-            'private/react-native-fantom/tester/**/*.h',
-            'private/react-native-fantom/tester/**/CMakeLists.txt'
+          'packages/react-native/ReactAndroid/**/*.cpp',
+          'packages/react-native/ReactAndroid/**/*.h',
+          'packages/react-native/ReactAndroid/**/CMakeLists.txt',
+          'packages/react-native/ReactCommon/**/*.cpp',
+          'packages/react-native/ReactCommon/**/*.h',
+          'packages/react-native/ReactCommon/**/CMakeLists.txt',
+          'private/react-native-fantom/tester/**/*.cpp',
+          'private/react-native-fantom/tester/**/*.h',
+          'private/react-native-fantom/tester/**/CMakeLists.txt'
           ) }}
         restore-keys: |
           v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-
@@ -60,15 +60,15 @@ runs:
       with:
         path: /github/home/.cache/ccache
         key: v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
-            'packages/react-native/ReactAndroid/**/*.cpp',
-            'packages/react-native/ReactAndroid/**/*.h',
-            'packages/react-native/ReactAndroid/**/CMakeLists.txt',
-            'packages/react-native/ReactCommon/**/*.cpp',
-            'packages/react-native/ReactCommon/**/*.h',
-            'packages/react-native/ReactCommon/**/CMakeLists.txt',
-            'private/react-native-fantom/tester/**/*.cpp',
-            'private/react-native-fantom/tester/**/*.h',
-            'private/react-native-fantom/tester/**/CMakeLists.txt'
+          'packages/react-native/ReactAndroid/**/*.cpp',
+          'packages/react-native/ReactAndroid/**/*.h',
+          'packages/react-native/ReactAndroid/**/CMakeLists.txt',
+          'packages/react-native/ReactCommon/**/*.cpp',
+          'packages/react-native/ReactCommon/**/*.h',
+          'packages/react-native/ReactCommon/**/CMakeLists.txt',
+          'private/react-native-fantom/tester/**/*.cpp',
+          'private/react-native-fantom/tester/**/*.h',
+          'private/react-native-fantom/tester/**/CMakeLists.txt'
           ) }}
     - name: Show ccache stats (after)
       shell: bash

@@ -1,21 +1,29 @@
 # @react-native/metro-config
 
-[![Version][version-badge]][package]
+[![npm]](https://www.npmjs.com/package/@react-native/metro-config) [![npm downloads]](https://www.npmjs.com/package/@react-native/metro-config)
 
-## Installation
+[npm]: https://img.shields.io/npm/v/@react-native/metro-config.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/metro-config.svg
 
+Metro configuration for React Native. In React Native, your Metro config should extend either `@react-native/metro-config` or `@expo/metro-config`. These packages contain essential defaults necessary to build and run React Native apps.
+
+See [Configuring Metro](https://reactnative.dev/docs/next/metro#configuring-metro) for the full guide.
+
+## Usage
+
+```js
+const {
+  getDefaultConfig,
+  mergeConfig,
+} = require('@react-native/metro-config');
+
+/**
+ * Metro configuration
+ * https://metrobundler.dev/docs/configuration
+ *
+ * @type {import('metro-config').MetroConfig}
+ */
+const config = {};
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);
 ```
-yarn add --dev @react-native/js-polyfills metro-config @react-native/metro-babel-transformer metro-runtime @react-native/metro-config
-```
-
-*Note: We're using `yarn` to install deps. Feel free to change commands to use `npm` 3+ and `npx` if you like*
-
-[version-badge]: https://img.shields.io/npm/v/@react-native/metro-config?style=flat-square
-[package]: https://www.npmjs.com/package/@react-native/metro-config
-
-## Testing
-
-To run the tests in this package, run the following commands from the React Native root folder:
-
-1. `yarn` to install the dependencies. You just need to run this once
-2. `yarn jest packages/metro-config`.

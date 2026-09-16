@@ -46,6 +46,7 @@ import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
+import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
@@ -69,9 +70,11 @@ import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorH
 import com.facebook.react.views.text.ReactTextUpdate
 import com.facebook.react.views.text.ReactTextUpdate.Companion.buildReactTextUpdateFromState
 import com.facebook.react.views.text.ReactTextViewManagerCallback
+import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariant
 import com.facebook.react.views.text.TextAttributeProps
 import com.facebook.react.views.text.TextLayoutManager
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import java.util.LinkedList
 
 /** Manages instances of TextInput. */
@@ -102,7 +105,7 @@ public open class ReactTextInputManager public constructor() :
   override fun createShadowNodeInstance(): LayoutShadowNode = LayoutShadowNode()
 
   public fun createShadowNodeInstance(
-      reactTextViewManagerCallback: ReactTextViewManagerCallback?
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
   ): LayoutShadowNode = LayoutShadowNode()
 
   override fun getShadowNodeClass(): Class<out LayoutShadowNode> = LayoutShadowNode::class.java
@@ -118,19 +121,19 @@ public open class ReactTextInputManager public constructor() :
                         mapOf(
                             "bubbled" to "onSubmitEditing",
                             "captured" to "onSubmitEditingCapture",
-                        )
+                        ),
                 ),
             "topEndEditing" to
                 mapOf(
                     "phasedRegistrationNames" to
-                        mapOf("bubbled" to "onEndEditing", "captured" to "onEndEditingCapture")
+                        mapOf("bubbled" to "onEndEditing", "captured" to "onEndEditingCapture"),
                 ),
             "topKeyPress" to
                 mapOf(
                     "phasedRegistrationNames" to
-                        mapOf("bubbled" to "onKeyPress", "captured" to "onKeyPressCapture")
+                        mapOf("bubbled" to "onKeyPress", "captured" to "onKeyPressCapture"),
                 ),
-        )
+        ),
     )
     return eventTypeConstants
   }
@@ -139,7 +142,7 @@ public open class ReactTextInputManager public constructor() :
     val baseEventTypeConstants = super.getExportedCustomDirectEventTypeConstants()
     val eventTypeConstants = baseEventTypeConstants ?: mutableMapOf()
     eventTypeConstants.putAll(
-        mapOf(getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"))
+        mapOf(getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll")),
     )
     return eventTypeConstants
   }
@@ -251,6 +254,11 @@ public open class ReactTextInputManager public constructor() :
   @ReactProp(name = ViewProps.FONT_VARIANT)
   public fun setFontVariant(view: ReactEditText, fontVariant: ReadableArray?) {
     view.fontFeatureSettings = parseFontVariant(fontVariant)
+  }
+
+  @ReactProp(name = ViewProps.FONT_VARIATION_SETTINGS)
+  public fun setFontVariationSettings(view: ReactEditText, fontVariationSettings: String?) {
+    view.setReactFontVariationSettings(fontVariationSettings)
   }
 
   @ReactProp(name = ViewProps.INCLUDE_FONT_PADDING, defaultBoolean = true)
@@ -505,7 +513,7 @@ public open class ReactTextInputManager public constructor() :
             TAG,
             IllegalStateException(
                 "Could not get default text color from View Context: " +
-                    (if (c != null) c.javaClass.canonicalName else "null")
+                    (if (c != null) c.javaClass.canonicalName else "null"),
             ),
         )
       }
@@ -557,6 +565,8 @@ public open class ReactTextInputManager public constructor() :
       when (textAlign) {
         null,
         "auto" -> view.gravityHorizontal = Gravity.NO_GRAVITY
+        "start" -> view.gravityHorizontal = Gravity.START
+        "end" -> view.gravityHorizontal = Gravity.END
         "left" -> view.gravityHorizontal = Gravity.LEFT
         "right" -> view.gravityHorizontal = Gravity.RIGHT
         "center" -> view.gravityHorizontal = Gravity.CENTER_HORIZONTAL
@@ -750,7 +760,7 @@ public open class ReactTextInputManager public constructor() :
       //  the flags work out, the underlying field will end up a URI-type field.
       flagsToSet = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
     } else if (KEYBOARD_TYPE_URI.equals(keyboardType, ignoreCase = true)) {
-      flagsToSet = InputType.TYPE_TEXT_VARIATION_URI
+      flagsToSet = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
     }
 
     updateStagedInputTypeFlag(view, InputType.TYPE_MASK_CLASS, flagsToSet)
@@ -879,13 +889,21 @@ public open class ReactTextInputManager public constructor() :
   @ReactProp(name = "overflow")
   public fun setOverflow(view: ReactEditText, overflow: String?) {
     view.setOverflow(overflow)
+    ImportantForInteractionHelper.setImportantForInteraction(
+        view,
+        // <TextInput> has no pointerEvents prop, so it always behaves as AUTO.
+        PointerEvents.AUTO,
+        view.overflow,
+    )
   }
 
   override fun onAfterUpdateTransaction(view: ReactEditText) {
     super.onAfterUpdateTransaction(view)
-    view.maybeUpdateTypeface()
     reconcileAutoCapitalize(view)
     view.commitStagedInputType()
+    // setInputType() clears paint-level font variation settings, so update the typeface last to
+    // reapply any variation axes after the staged input type is committed.
+    view.maybeUpdateTypeface()
   }
 
   override fun addEventEmitters(reactContext: ThemedReactContext, editText: ReactEditText) {
@@ -902,7 +920,7 @@ public open class ReactTextInputManager public constructor() :
       } else {
         eventDispatcher?.dispatchEvent(BlurEvent(surfaceId, editText.id))
         eventDispatcher?.dispatchEvent(
-            ReactTextInputEndEditingEvent(surfaceId, editText.id, editText.text.toString())
+            ReactTextInputEndEditingEvent(surfaceId, editText.id, editText.text.toString()),
         )
       }
     }
@@ -928,7 +946,7 @@ public open class ReactTextInputManager public constructor() :
                   reactContext.surfaceId,
                   editText.id,
                   editText.text.toString(),
-              )
+              ),
           )
         }
 
@@ -964,7 +982,7 @@ public open class ReactTextInputManager public constructor() :
                   "characters" to InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
                   "words" to InputType.TYPE_TEXT_FLAG_CAP_WORDS,
                   "sentences" to InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
-              )
+              ),
       )
 
   override fun setPadding(view: ReactEditText, left: Int, top: Int, right: Int, bottom: Int) {
@@ -1016,13 +1034,14 @@ public open class ReactTextInputManager public constructor() :
     val spanned =
         TextLayoutManager.getOrCreateSpannableForText(
             view.context.assets,
+            getFontWeightAdjustment(view.context),
             attributedString,
             reactTextViewManagerCallback,
         )
 
     val textBreakStrategy =
         TextAttributeProps.getTextBreakStrategy(
-            paragraphAttributes.getString(TextLayoutManager.PA_KEY_TEXT_BREAK_STRATEGY.toInt())
+            paragraphAttributes.getString(TextLayoutManager.PA_KEY_TEXT_BREAK_STRATEGY),
         )
     val currentJustificationMode =
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {

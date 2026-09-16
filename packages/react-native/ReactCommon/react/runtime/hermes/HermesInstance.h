@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <cxxreact/MessageQueueThread.h>
 #include <hermes/hermes.h>
 #include <jsi/jsi.h>

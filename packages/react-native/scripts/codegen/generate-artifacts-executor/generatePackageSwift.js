@@ -11,8 +11,8 @@
 'use strict';
 const {TEMPLATES_FOLDER_PATH} = require('./constants');
 const {codegenLog, writeFileSyncIfChanged} = require('./utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const PACKAGE_SWIFT_TEMPLATE_PATH = path.join(
   TEMPLATES_FOLDER_PATH,

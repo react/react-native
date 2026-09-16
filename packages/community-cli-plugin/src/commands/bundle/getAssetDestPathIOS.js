@@ -8,9 +8,9 @@
  * @format
  */
 
-import type {PackagerAsset} from './assetPathUtils';
+import type {PackagerAsset} from '@react-native/asset-utils';
 
-import path from 'path';
+import path from 'node:path';
 
 function getAssetDestPathIOS(asset: PackagerAsset, scale: number): string {
   const suffix = scale === 1 ? '' : `@${scale}x`;

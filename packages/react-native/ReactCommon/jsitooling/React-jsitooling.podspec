@@ -16,6 +16,12 @@ else
   source[:tag] = "v#{version}"
 end
 
+header_search_paths = []
+
+if ENV['USE_FRAMEWORKS']
+  header_search_paths << "\"$(PODS_TARGET_SRCROOT)/..\"" # ReactCommon, for <react/cxxstableapi/...>
+end
+
 Pod::Spec.new do |s|
   s.name                   = "React-jsitooling"
   s.version                = version
@@ -31,12 +37,14 @@ Pod::Spec.new do |s|
   resolve_use_frameworks(s, header_mappings_dir: "./", module_name: "JSITooling")
 
   s.pod_target_xcconfig    = {
+    "HEADER_SEARCH_PATHS" => header_search_paths.join(' '),
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
     "DEFINES_MODULE" => "YES",
   }
 
   s.dependency "React-cxxreact", version
   s.dependency "React-jsi", version
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-debug")
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-jsinspector", :framework_name => 'jsinspector_modern')
@@ -50,4 +58,6 @@ Pod::Spec.new do |s|
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

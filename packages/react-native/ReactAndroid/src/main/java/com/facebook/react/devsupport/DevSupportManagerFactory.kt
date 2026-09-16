@@ -24,7 +24,7 @@ public interface DevSupportManagerFactory {
           "Use the other create() method with useDevSupport parameter for New Architecture. This method will be removed in a future release.",
       replaceWith =
           ReplaceWith(
-              "create(applicationContext, reactInstanceManagerHelper, packagerPathForJSBundleName, enableOnCreate, redBoxHandler, devBundleDownloadListener, minNumShakes, customPackagerCommandHandlers, surfaceDelegateFactory, devLoadingViewManager, pausedInDebuggerOverlayManager)"
+              "create(applicationContext, reactInstanceManagerHelper, packagerPathForJSBundleName, enableOnCreate, redBoxHandler, devBundleDownloadListener, minNumShakes, customPackagerCommandHandlers, surfaceDelegateFactory, devLoadingViewManager, pausedInDebuggerOverlayManager)",
           ),
   )
   public fun create(
@@ -48,15 +48,15 @@ public interface DevSupportManagerFactory {
   public fun create(
       applicationContext: Context,
       reactInstanceManagerHelper: ReactInstanceDevHelper,
-      packagerPathForJSBundleName: String?,
-      enableOnCreate: Boolean,
-      redBoxHandler: RedBoxHandler?,
-      devBundleDownloadListener: DevBundleDownloadListener?,
-      minNumShakes: Int,
-      customPackagerCommandHandlers: Map<String, RequestHandler>?,
-      surfaceDelegateFactory: SurfaceDelegateFactory?,
-      devLoadingViewManager: DevLoadingViewManager?,
-      pausedInDebuggerOverlayManager: PausedInDebuggerOverlayManager?,
-      useDevSupport: Boolean,
+      packagerPathForJSBundleName: String? = null,
+      enableOnCreate: Boolean = true,
+      redBoxHandler: RedBoxHandler? = null,
+      devBundleDownloadListener: DevBundleDownloadListener? = null,
+      minNumShakes: Int = 2,
+      customPackagerCommandHandlers: Map<String, RequestHandler>? = null,
+      surfaceDelegateFactory: SurfaceDelegateFactory? = null,
+      devLoadingViewManager: DevLoadingViewManager? = null,
+      pausedInDebuggerOverlayManager: PausedInDebuggerOverlayManager? = null,
+      useDevSupport: Boolean = true,
   ): DevSupportManager
 }

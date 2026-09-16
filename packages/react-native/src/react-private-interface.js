@@ -1,0 +1,109 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+// ----------------------------------------------------------------------------
+// react-native/react-private-interface
+//
+// This is a private entry point allowing React to require React Native
+// internals. These APIs should ONLY be used by first party React internals and
+// are not part of our public API.
+//
+// IMPORTANT: Keep this file in sync with react-private-interface.js.flow.
+// ----------------------------------------------------------------------------
+
+import typeof BatchedBridge from '../Libraries/BatchedBridge/BatchedBridge';
+import typeof RawEventEmitter from '../Libraries/Core/RawEventEmitter';
+import typeof ReactFiberErrorDialog from '../Libraries/Core/ReactFiberErrorDialog';
+import type {Spec as FabricUIManager} from '../Libraries/ReactNative/FabricUIManager';
+import typeof {
+  createPublicInstance,
+  createPublicRootInstance,
+  createPublicTextInstance,
+  getInternalInstanceHandleFromPublicInstance,
+  getNativeTagFromPublicInstance,
+  getNodeFromPublicInstance,
+} from '../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
+import typeof {
+  create as createAttributePayload,
+  diff as diffAttributePayloads,
+} from '../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload';
+import typeof * as ReactNativeViewConfigRegistry from '../Libraries/Renderer/shims/ReactNativeViewConfigRegistry';
+import typeof deepFreezeAndThrowOnMutationInDev from '../Libraries/Utilities/deepFreezeAndThrowOnMutationInDev';
+import typeof * as ReactNativeFeatureFlags from './private/featureflags/ReactNativeFeatureFlags';
+import typeof dispatchNativeEvent from './private/renderer/events/dispatchNativeEvent';
+
+export type {PublicRootInstance} from '../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
+export type PublicTextInstance = ReturnType<createPublicTextInstance>;
+
+// flowlint unsafe-getters-setters:off
+// eslint-disable-next-line @react-native/monorepo/no-commonjs-exports
+module.exports = {
+  get BatchedBridge(): BatchedBridge {
+    return require('../Libraries/BatchedBridge/BatchedBridge').default;
+  },
+  get ReactNativeFeatureFlags(): ReactNativeFeatureFlags {
+    return require('./private/featureflags/ReactNativeFeatureFlags');
+  },
+  get ReactNativeViewConfigRegistry(): ReactNativeViewConfigRegistry {
+    return require('../Libraries/Renderer/shims/ReactNativeViewConfigRegistry');
+  },
+  get fabricUIManager(): ?FabricUIManager {
+    return require('../Libraries/ReactNative/FabricUIManager').getFabricUIManager();
+  },
+  get deepFreezeAndThrowOnMutationInDev(): deepFreezeAndThrowOnMutationInDev<
+    {...} | Array<unknown>,
+  > {
+    return require('../Libraries/Utilities/deepFreezeAndThrowOnMutationInDev')
+      .default;
+  },
+  get ReactFiberErrorDialog(): ReactFiberErrorDialog {
+    return require('../Libraries/Core/ReactFiberErrorDialog').default;
+  },
+  get RawEventEmitter(): RawEventEmitter {
+    return require('../Libraries/Core/RawEventEmitter').default;
+  },
+  get createAttributePayload(): createAttributePayload {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload')
+      .create;
+  },
+  get diffAttributePayloads(): diffAttributePayloads {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload')
+      .diff;
+  },
+  get createPublicRootInstance(): createPublicRootInstance {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
+      .createPublicRootInstance;
+  },
+  get createPublicInstance(): createPublicInstance {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
+      .createPublicInstance;
+  },
+  get createPublicTextInstance(): createPublicTextInstance {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
+      .createPublicTextInstance;
+  },
+  get getNativeTagFromPublicInstance(): getNativeTagFromPublicInstance {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
+      .getNativeTagFromPublicInstance;
+  },
+  get getNodeFromPublicInstance(): getNodeFromPublicInstance {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
+      .getNodeFromPublicInstance;
+  },
+  get getInternalInstanceHandleFromPublicInstance(): getInternalInstanceHandleFromPublicInstance {
+    return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
+      .getInternalInstanceHandleFromPublicInstance;
+  },
+  get dispatchNativeEvent(): dispatchNativeEvent {
+    return require('./private/renderer/events/dispatchNativeEvent').default;
+  },
+};

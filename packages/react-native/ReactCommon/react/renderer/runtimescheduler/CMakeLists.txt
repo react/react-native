@@ -15,7 +15,9 @@ target_include_directories(react_renderer_runtimescheduler PUBLIC ${REACT_COMMON
 
 target_link_libraries(react_renderer_runtimescheduler
         callinvoker
+        jserrorhandler
         jsi
+        react_cxxstableapi
         react_debug
         react_performance_timeline
         react_renderer_consistency

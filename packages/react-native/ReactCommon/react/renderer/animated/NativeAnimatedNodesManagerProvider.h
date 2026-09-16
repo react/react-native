@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/animated/MergedValueDispatcher.h>
 #include <react/renderer/uimanager/UIManagerNativeAnimatedDelegate.h>
 #include "NativeAnimatedNodesManager.h"

@@ -12,7 +12,6 @@ const VALID_ENVIRONMENT_VARIABLES = [
   'FANTOM_DEBUG_CPP',
   'FANTOM_ENABLE_ASAN',
   'FANTOM_ENABLE_TSAN',
-  'FANTOM_ENABLE_CPP_DEBUGGING',
   'FANTOM_FORCE_CI_MODE',
   'FANTOM_FORCE_OSS_BUILD',
   'FANTOM_RUN_BENCHMARKS',
@@ -37,10 +36,7 @@ export const logCommands: boolean = Boolean(process.env.FANTOM_LOG_COMMANDS);
 /**
  * Enables the C++ debugger for the current test run.
  */
-export const debugCpp: boolean =
-  Boolean(process.env.FANTOM_DEBUG_CPP) ||
-  // Legacy
-  Boolean(process.env.FANTOM_ENABLE_CPP_DEBUGGING);
+export const debugCpp: boolean = Boolean(process.env.FANTOM_DEBUG_CPP);
 
 /**
  * Indicates if the current test run is done in an OSS environment (as opposed

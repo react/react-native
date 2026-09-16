@@ -9,6 +9,7 @@
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTBridge.h>
+#import <React/RCTConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 
@@ -16,23 +17,37 @@
 
 static NSString *const kOpenURLNotification = @"RCTOpenURLNotification";
 
-static void postNotificationWithURL(NSURL *URL, id sender)
-{
-  NSDictionary<NSString *, id> *payload = @{@"url" : URL.absoluteString};
-  [[NSNotificationCenter defaultCenter] postNotificationName:kOpenURLNotification object:sender userInfo:payload];
-}
-
 @interface RCTLinkingManager () <NativeLinkingManagerSpec>
+
+/// Common logic for handling user activities originating from both AppDelegate- and SceneDelegate- lifecycle methods
++ (void)handleUserActivity:(NSUserActivity *)userActivity window:(UIWindow *)window;
+
+/// Common logic for handling user activities from AppDelegate-lifecycle methods.
++ (BOOL)handleAppDelegateURL:(NSURL *)URL app:(UIApplication *)app;
+
+/// Posts a URL notification that will be handled by the emitter to JS; this method is used to invoke instance methods
+/// of RCTLinkingManager from class methods via NSNotificationCenter.
+/// @param URL The URL to be emitted.
++ (void)postNotificationWithURL:(NSURL *)URL;
+
 @end
 
 @implementation RCTLinkingManager
 
 RCT_EXPORT_MODULE()
 
++ (void)postNotificationWithURL:(NSURL *)URL
+{
+  NSDictionary<NSString *, id> *payload = @{@"url" : URL.absoluteString};
+  [[NSNotificationCenter defaultCenter] postNotificationName:kOpenURLNotification object:nil userInfo:payload];
+}
+
 - (dispatch_queue_t)methodQueue
 {
   return dispatch_get_main_queue();
 }
+
+#pragma mark - RCTEventEmitter methods
 
 - (void)startObserving
 {
@@ -52,33 +67,72 @@ RCT_EXPORT_MODULE()
   return @[ @"url" ];
 }
 
+#pragma mark - JS methods
+
 + (BOOL)application:(UIApplication *)app
             openURL:(NSURL *)URL
             options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
-  postNotificationWithURL(URL, self);
-  return YES;
+  return [self handleAppDelegateURL:URL app:app];
 }
 
-// Corresponding api deprecated in iOS 9
 + (BOOL)application:(UIApplication *)application
               openURL:(NSURL *)URL
     sourceApplication:(NSString *)sourceApplication
            annotation:(id)annotation
 {
-  postNotificationWithURL(URL, self);
-  return YES;
+  return [self handleAppDelegateURL:URL app:application];
 }
 
 + (BOOL)application:(UIApplication *)application
     continueUserActivity:(NSUserActivity *)userActivity
       restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler
 {
+  if (RCTIsSceneDelegateApp()) {
+    return NO;
+  }
+
+  [RCTLinkingManager handleUserActivity:userActivity window:RCTKeyWindow()];
+  return YES;
+}
+
+#pragma mark - SceneDelegate methods
+
++ (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity
+{
+  [RCTLinkingManager handleUserActivity:userActivity window:RCTKeyWindow()];
+}
+
++ (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
+{
+  if (URLContexts.count == 0) {
+    return;
+  }
+
+  NSURL *URL = URLContexts.allObjects.firstObject.URL;
+  if (URL == nil) {
+    return;
+  }
+  [RCTLinkingManager postNotificationWithURL:URL];
+}
+
+#pragma mark - Common logic methods
+
++ (void)handleUserActivity:(NSUserActivity *)userActivity window:(UIWindow *)window
+{
   // This can be nullish when launching an App Clip.
   if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb] && userActivity.webpageURL != nil) {
-    NSDictionary *payload = @{@"url" : userActivity.webpageURL.absoluteString};
-    [[NSNotificationCenter defaultCenter] postNotificationName:kOpenURLNotification object:self userInfo:payload];
+    [RCTLinkingManager postNotificationWithURL:userActivity.webpageURL];
   }
+}
+
++ (BOOL)handleAppDelegateURL:(NSURL *)URL app:(UIApplication *)app
+{
+  if (RCTIsSceneDelegateApp()) {
+    return NO;
+  }
+
+  [RCTLinkingManager postNotificationWithURL:URL];
   return YES;
 }
 
@@ -87,34 +141,36 @@ RCT_EXPORT_MODULE()
   [self sendEventWithName:@"url" body:notification.userInfo];
 }
 
-RCT_EXPORT_METHOD(
-    openURL : (NSURL *)URL resolve : (RCTPromiseResolveBlock)resolve reject : (RCTPromiseRejectBlock)reject)
+- (void)openURL:(NSString *)urlString resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
+  NSURL *URL = [RCTConvert NSURL:urlString];
   [RCTSharedApplication() openURL:URL
-      options:@{}
-      completionHandler:^(BOOL success) {
-        if (success) {
-          resolve(@YES);
-        } else {
+                          options:@{}
+                completionHandler:^(BOOL success) {
+                  if (success) {
+                    resolve(@YES);
+                  } else {
 #if TARGET_OS_SIMULATOR
-          // Simulator-specific code
-          if ([URL.absoluteString hasPrefix:@"tel:"]) {
-            RCTLogWarn(@"Unable to open the Phone app in the simulator for telephone URLs. URL:  %@", URL);
-            resolve(@NO);
-          } else {
-            reject(RCTErrorUnspecified, [NSString stringWithFormat:@"Unable to open URL: %@", URL], nil);
-          }
+                    // Simulator-specific code
+                    if ([URL.absoluteString hasPrefix:@"tel:"]) {
+                      RCTLogWarn(@"Unable to open the Phone app in the simulator for telephone URLs. URL:  %@", URL);
+                      resolve(@NO);
+                    } else {
+                      reject(RCTErrorUnspecified, [NSString stringWithFormat:@"Unable to open URL: %@", URL], nil);
+                    }
 #else
           // Device-specific code
           reject(RCTErrorUnspecified, [NSString stringWithFormat:@"Unable to open URL: %@", URL], nil);
 #endif
-        }
-      }];
+                  }
+                }];
 }
 
-RCT_EXPORT_METHOD(
-    canOpenURL : (NSURL *)URL resolve : (RCTPromiseResolveBlock)resolve reject : (__unused RCTPromiseRejectBlock)reject)
+- (void)canOpenURL:(NSString *)urlString
+           resolve:(RCTPromiseResolveBlock)resolve
+            reject:(__unused RCTPromiseRejectBlock)reject
 {
+  NSURL *URL = [RCTConvert NSURL:urlString];
   if (RCTRunningInAppExtension()) {
     // Technically Today widgets can open urls, but supporting that would require
     // a reference to the NSExtensionContext
@@ -148,7 +204,7 @@ RCT_EXPORT_METHOD(
   }
 }
 
-RCT_EXPORT_METHOD(getInitialURL : (RCTPromiseResolveBlock)resolve reject : (__unused RCTPromiseRejectBlock)reject)
+- (void)getInitialURL:(RCTPromiseResolveBlock)resolve reject:(__unused RCTPromiseRejectBlock)reject
 {
   NSURL *initialURL = nil;
   if (self.bridge.launchOptions[UIApplicationLaunchOptionsURLKey] != nullptr) {
@@ -163,25 +219,18 @@ RCT_EXPORT_METHOD(getInitialURL : (RCTPromiseResolveBlock)resolve reject : (__un
   resolve(RCTNullIfNil(initialURL.absoluteString));
 }
 
-RCT_EXPORT_METHOD(openSettings : (RCTPromiseResolveBlock)resolve reject : (__unused RCTPromiseRejectBlock)reject)
+- (void)openSettings:(RCTPromiseResolveBlock)resolve reject:(__unused RCTPromiseRejectBlock)reject
 {
   NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
   [RCTSharedApplication() openURL:url
-      options:@{}
-      completionHandler:^(BOOL success) {
-        if (success) {
-          resolve(nil);
-        } else {
-          reject(RCTErrorUnspecified, @"Unable to open app settings", nil);
-        }
-      }];
-}
-
-RCT_EXPORT_METHOD(
-    sendIntent : (NSString *)action extras : (NSArray *_Nullable)extras resolve : (RCTPromiseResolveBlock)
-        resolve reject : (RCTPromiseRejectBlock)reject)
-{
-  RCTLogError(@"Not implemented: %@", NSStringFromSelector(_cmd));
+                          options:@{}
+                completionHandler:^(BOOL success) {
+                  if (success) {
+                    resolve(nil);
+                  } else {
+                    reject(RCTErrorUnspecified, @"Unable to open app settings", nil);
+                  }
+                }];
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:

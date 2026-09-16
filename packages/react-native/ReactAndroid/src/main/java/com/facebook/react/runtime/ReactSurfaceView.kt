@@ -58,7 +58,7 @@ public class ReactSurfaceView(context: Context?, internal val surface: ReactSurf
         ViewCompat.getRootWindowInsets(this)?.apply {
           val insets =
               getInsets(
-                  WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+                  WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout(),
               )
 
           locationInWindow[0] -= insets.left

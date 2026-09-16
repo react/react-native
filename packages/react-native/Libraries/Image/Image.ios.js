@@ -29,6 +29,7 @@ import ImageViewNativeComponent from './ImageViewNativeComponent';
 import NativeImageLoaderIOS from './NativeImageLoaderIOS';
 import resolveAssetSource from './resolveAssetSource';
 import * as React from 'react';
+import {use} from 'react';
 
 export type ImageInstance = HostInstance;
 
@@ -102,6 +103,12 @@ async function queryCache(
   return NativeImageLoaderIOS.queryCache(urls);
 }
 
+const EMPTY_IMAGE_SOURCE = {
+  uri: undefined,
+  width: undefined,
+  height: undefined,
+};
+
 /**
  * A React component for displaying different types of images,
  * including network images, static resources, temporary local images, and
@@ -111,90 +118,127 @@ async function queryCache(
  */
 let BaseImage: AbstractImageIOS = ({
   ref: forwardedRef,
-  ...props
+  'aria-labelledby': ariaLabelledBy,
+  'aria-busy': ariaBusy,
+  'aria-checked': ariaChecked,
+  'aria-disabled': ariaDisabled,
+  'aria-expanded': ariaExpanded,
+  'aria-hidden': ariaHidden,
+  'aria-label': ariaLabel,
+  'aria-selected': ariaSelected,
+  accessibilityState,
+  alt,
+  children,
+  crossOrigin,
+  height,
+  referrerPolicy,
+  resizeMode,
+  source,
+  src,
+  srcSet,
+  style,
+  tintColor,
+  width,
+  ...restProps
 }: {
   ref?: React.RefSetter<ImageInstance>,
   ...ImageProps,
 }) => {
-  const source = getImageSourcesFromImageProps(props) || {
-    uri: undefined,
-    width: undefined,
-    height: undefined,
+  const nativeProps = restProps as {
+    ...React.PropsOf<ImageViewNativeComponent>,
   };
 
-  let style: ImageStyleProp;
+  const resolvedSource =
+    getImageSourcesFromImageProps({
+      crossOrigin,
+      height,
+      referrerPolicy,
+      source,
+      src,
+      srcSet,
+      width,
+    }) || EMPTY_IMAGE_SOURCE;
+
+  let resolvedStyle: ImageStyleProp;
   let sources;
-  if (Array.isArray(source)) {
-    style = [styles.base, props.style];
-    sources = source;
+  if (Array.isArray(resolvedSource)) {
+    resolvedStyle = [styles.base, style];
+    sources = resolvedSource;
   } else {
-    const {uri} = source;
+    const {uri} = resolvedSource;
     if (uri === '') {
       console.warn('source.uri should not be an empty string');
     }
-    const width = source.width ?? props.width;
-    const height = source.height ?? props.height;
-    style = [{width, height}, styles.base, props.style];
-    sources = [source];
+    resolvedStyle = [
+      {
+        width: resolvedSource.width ?? width,
+        height: resolvedSource.height ?? height,
+      },
+      styles.base,
+      style,
+    ];
+    sources = [resolvedSource];
   }
 
-  const flattenedStyle = flattenStyle<ImageStyleProp>(style);
-  const objectFit = convertObjectFitToResizeMode(flattenedStyle?.objectFit);
-  const resizeMode =
-    objectFit || props.resizeMode || flattenedStyle?.resizeMode || 'cover';
-  const tintColor = props.tintColor ?? flattenedStyle?.tintColor;
-
-  if (props.children != null) {
+  if (children != null) {
     throw new Error(
       'The <Image> component cannot contain children. If you want to render content on top of the image, consider using the <ImageBackground> component or absolute positioning.',
     );
   }
-  const {
-    'aria-busy': ariaBusy,
-    'aria-checked': ariaChecked,
-    'aria-disabled': ariaDisabled,
-    'aria-expanded': ariaExpanded,
-    'aria-selected': ariaSelected,
-    'aria-hidden': ariaHidden,
-    src,
-    ...restProps
-  } = props;
 
-  const _accessibilityState = {
-    busy: ariaBusy ?? props.accessibilityState?.busy,
-    checked: ariaChecked ?? props.accessibilityState?.checked,
-    disabled: ariaDisabled ?? props.accessibilityState?.disabled,
-    expanded: ariaExpanded ?? props.accessibilityState?.expanded,
-    selected: ariaSelected ?? props.accessibilityState?.selected,
-  };
+  nativeProps.style = resolvedStyle;
+  nativeProps.source = sources;
 
-  // In order for `aria-hidden` to work on iOS we must set `accessible` to false (`accessibilityElementsHidden` is not enough).
-  const accessible =
-    ariaHidden !== true && (props.alt !== undefined ? true : props.accessible);
-  const accessibilityLabel = props['aria-label'] ?? props.accessibilityLabel;
+  const flattenedStyle = flattenStyle<ImageStyleProp>(resolvedStyle);
+  const objectFit = convertObjectFitToResizeMode(flattenedStyle?.objectFit);
+  nativeProps.resizeMode =
+    objectFit || resizeMode || flattenedStyle?.resizeMode || 'cover';
+  nativeProps.tintColor = tintColor ?? flattenedStyle?.tintColor;
+
+  // Maintain pre-existing order, accessibilityLabel takes priority over alt
+  if (ariaLabel != null) {
+    nativeProps.accessibilityLabel = ariaLabel;
+  } else if (alt != null && nativeProps.accessibilityLabel == null) {
+    nativeProps.accessibilityLabel = alt;
+  }
+
+  if (ariaLabelledBy != null) {
+    nativeProps.accessibilityLabelledBy = ariaLabelledBy;
+  }
+
+  if (ariaHidden === true) {
+    // In order for `aria-hidden` to work on iOS we must set `accessible` to
+    // false (`accessibilityElementsHidden` is not enough).
+    nativeProps.accessible = false;
+  } else if (alt != null) {
+    nativeProps.accessible = true;
+  }
+
+  if (
+    accessibilityState != null ||
+    ariaBusy != null ||
+    ariaChecked != null ||
+    ariaDisabled != null ||
+    ariaExpanded != null ||
+    ariaSelected != null
+  ) {
+    nativeProps.accessibilityState = {
+      busy: ariaBusy ?? accessibilityState?.busy,
+      checked: ariaChecked ?? accessibilityState?.checked,
+      disabled: ariaDisabled ?? accessibilityState?.disabled,
+      expanded: ariaExpanded ?? accessibilityState?.expanded,
+      selected: ariaSelected ?? accessibilityState?.selected,
+    };
+  }
 
   const actualRef = useWrapRefWithImageAttachedCallbacks(forwardedRef);
 
-  return (
-    <ImageAnalyticsTagContext.Consumer>
-      {analyticTag => {
-        return (
-          <ImageViewNativeComponent
-            accessibilityState={_accessibilityState}
-            {...restProps}
-            accessible={accessible}
-            accessibilityLabel={accessibilityLabel ?? props.alt}
-            ref={actualRef}
-            style={style}
-            resizeMode={resizeMode}
-            tintColor={tintColor}
-            source={sources}
-            internal_analyticTag={analyticTag}
-          />
-        );
-      }}
-    </ImageAnalyticsTagContext.Consumer>
-  );
+  const analyticTag = use(ImageAnalyticsTagContext);
+  if (analyticTag != null) {
+    nativeProps.internal_analyticTag = analyticTag;
+  }
+
+  return <ImageViewNativeComponent {...nativeProps} ref={actualRef} />;
 };
 
 const imageComponentDecorator = unstable_getImageComponentDecorator();

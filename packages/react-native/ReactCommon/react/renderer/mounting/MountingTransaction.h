@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/mounting/ShadowViewMutation.h>
 #include <react/renderer/telemetry/SurfaceTelemetry.h>
 #include <react/renderer/telemetry/TransactionTelemetry.h>

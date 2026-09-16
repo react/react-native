@@ -1,15 +1,19 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
 - launchApp
-- assertVisible: "Components"
+# Wait for the JS bundle to render the landing screen instead of asserting
+# immediately, which races app cold start on CI.
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "Button"
+      id: 'Button'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "Button"
+    id: 'Button'
 - tapOn:
-    id: "button_default_styling"
-- assertVisible: "Your application has been submitted!"
-- tapOn: "OK"
+    id: 'button_default_styling'
+- assertVisible: 'Your application has been submitted!'
+- tapOn: 'OK'

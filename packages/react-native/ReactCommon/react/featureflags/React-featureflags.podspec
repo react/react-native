@@ -39,6 +39,15 @@ Pod::Spec.new do |s|
 
   resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: "React_featureflags")
 
+  s.dependency "React-cxxstableapi"
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  s.subspec "featureflagsUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = ""
+    ss.header_mappings_dir = "."
+  end
+
+  mark_as_react_native_build(s)
 end

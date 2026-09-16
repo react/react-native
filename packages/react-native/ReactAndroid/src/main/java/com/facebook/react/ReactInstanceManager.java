@@ -170,11 +170,15 @@ public class ReactInstanceManager {
   // Identifies whether the instance manager destroy function is in process,
   // while true any spawned create thread should wait for proper clean up before initializing
   private volatile Boolean mHasStartedDestroying = false;
+  private final Object mHasStartedDestroyingLock = new Object();
   private final MemoryPressureRouter mMemoryPressureRouter;
   private final @Nullable JSExceptionHandler mJSExceptionHandler;
   private final @Nullable UIManagerProvider mUIManagerProvider;
   private final @Nullable ReactPackageTurboModuleManagerDelegate.Builder mTMMDelegateBuilder;
+
+  @SuppressWarnings("rawtypes")
   private List<ViewManager> mViewManagers;
+
   private boolean mUseFallbackBundle = true;
   private volatile boolean mInstanceManagerInvalidated = false;
 
@@ -776,11 +780,11 @@ public class ReactInstanceManager {
       mCurrentActivity = null;
     }
 
-    ResourceDrawableIdHelper.getInstance().clear();
+    ResourceDrawableIdHelper.clear();
 
     mHasStartedDestroying = false;
-    synchronized (mHasStartedDestroying) {
-      mHasStartedDestroying.notifyAll();
+    synchronized (mHasStartedDestroyingLock) {
+      mHasStartedDestroyingLock.notifyAll();
     }
     synchronized (mPackages) {
       mViewManagerNames = null;
@@ -939,6 +943,7 @@ public class ReactInstanceManager {
   }
 
   /** Uses configured {@link ReactPackage} instances to create all view managers. */
+  @SuppressWarnings("rawtypes")
   public List<ViewManager> getOrCreateViewManagers(
       ReactApplicationContext catalystApplicationContext) {
     ReactMarker.logMarker(CREATE_VIEW_MANAGERS_START);
@@ -963,6 +968,7 @@ public class ReactInstanceManager {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   public @Nullable ViewManager createViewManager(String viewManagerName) {
     ReactApplicationContext context;
     synchronized (mReactContextLock) {
@@ -1136,10 +1142,10 @@ public class ReactInstanceManager {
             null,
             () -> {
               ReactMarker.logMarker(REACT_CONTEXT_THREAD_END);
-              synchronized (ReactInstanceManager.this.mHasStartedDestroying) {
+              synchronized (ReactInstanceManager.this.mHasStartedDestroyingLock) {
                 while (ReactInstanceManager.this.mHasStartedDestroying) {
                   try {
-                    ReactInstanceManager.this.mHasStartedDestroying.wait();
+                    ReactInstanceManager.this.mHasStartedDestroyingLock.wait();
                   } catch (InterruptedException e) {
                     // Interrupted while waiting for destruction to complete, just retry
                     continue;

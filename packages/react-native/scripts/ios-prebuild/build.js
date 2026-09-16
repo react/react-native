@@ -13,9 +13,9 @@ import type {BuildFlavor, Destination} from './types';
 */
 
 const {createLogger} = require('./utils');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 const {globSync} = require('tinyglobby');
 
 const buildLog = createLogger('SPM');

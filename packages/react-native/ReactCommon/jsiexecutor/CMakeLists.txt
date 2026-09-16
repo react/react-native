@@ -17,6 +17,7 @@ target_include_directories(jsireact PUBLIC .)
 
 target_link_libraries(jsireact
         react_cxxreact
+        react_cxxstableapi
         reactperflogger
         folly_runtime
         glog

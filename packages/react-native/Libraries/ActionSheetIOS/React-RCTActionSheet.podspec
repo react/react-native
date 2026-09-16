@@ -31,4 +31,6 @@ Pod::Spec.new do |s|
   s.header_dir             = "RCTActionSheet"
 
   s.dependency "React-Core/RCTActionSheetHeaders", version
+
+  mark_as_react_native_build(s)
 end

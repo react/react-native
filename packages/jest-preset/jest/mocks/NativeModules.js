@@ -186,15 +186,8 @@ const NativeModules = {
     },
   },
   StatusBarManager: {
-    setColor: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
     setStyle: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
     setHidden: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    setNetworkActivityIndicatorVisible: jest.fn() as JestMockFn<
-      $FlowFixMe,
-      $FlowFixMe,
-    >,
-    setBackgroundColor: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    setTranslucent: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
     getConstants: (): $FlowFixMe => ({
       HEIGHT: 42,
     }),

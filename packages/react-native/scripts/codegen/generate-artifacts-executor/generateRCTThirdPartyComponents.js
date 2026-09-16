@@ -17,8 +17,8 @@ const {
   parseiOSAnnotations,
   writeFileSyncIfChanged,
 } = require('./utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const THIRD_PARTY_COMPONENTS_H_TEMPLATE_PATH = path.join(
   TEMPLATES_FOLDER_PATH,
@@ -177,10 +177,24 @@ function findFilesWithExtension(
       return null;
     }
 
-    if (
-      fs.existsSync(absolutePath) &&
-      fs.statSync(absolutePath).isDirectory()
-    ) {
+    // A library's own sources never live in its dependencies, and crawling them
+    // is what makes this walk explode on large projects.
+    if (file === 'node_modules') {
+      return null;
+    }
+
+    if (!fs.existsSync(absolutePath)) {
+      return null;
+    }
+
+    // `lstatSync` does not resolve symlinks: following them can loop forever,
+    // e.g. workspace packages that link into each other under pnpm.
+    const stats = fs.lstatSync(absolutePath);
+    if (stats.isSymbolicLink()) {
+      return null;
+    }
+
+    if (stats.isDirectory()) {
       files.push(...findFilesWithExtension(absolutePath, extension));
     } else if (file.endsWith(extension)) {
       files.push(absolutePath);

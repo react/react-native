@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/components/FBReactNativeSpec/EventEmitters.h>
 #include <react/renderer/components/FBReactNativeSpec/Props.h>
 #include <react/renderer/components/inputaccessory/InputAccessoryState.h>

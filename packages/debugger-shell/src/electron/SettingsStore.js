@@ -11,8 +11,8 @@
 
 // $FlowFixMe[unclear-type] We have no Flow types for the Electron API.
 const {app} = require('electron') as any;
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 type Options = Readonly<{
   name?: string,

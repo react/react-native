@@ -6,6 +6,7 @@
  */
 
 #include "YGJNIVanilla.h"
+#include <array>
 #include <bit>
 #include <cstring>
 #include <iostream>
@@ -276,7 +277,7 @@ YGTransferLayoutOutputsRecursive(JNIEnv* env, jobject thiz, YGNodeRef root) {
 
   const int arrSize = 6 + (marginFieldSet ? 4 : 0) + (paddingFieldSet ? 4 : 0) +
       (borderFieldSet ? 4 : 0);
-  float arr[18];
+  std::array<float, 18> arr; // NOLINT(cppcoreguidelines-pro-type-member-init)
   arr[LAYOUT_EDGE_SET_FLAG_INDEX] = static_cast<float>(fieldFlags);
   arr[LAYOUT_WIDTH_INDEX] = YGNodeLayoutGetWidth(root);
   arr[LAYOUT_HEIGHT_INDEX] = YGNodeLayoutGetHeight(root);
@@ -293,8 +294,8 @@ YGTransferLayoutOutputsRecursive(JNIEnv* env, jobject thiz, YGNodeRef root) {
         YGNodeLayoutGetMargin(root, YGEdgeBottom);
   }
   if (paddingFieldSet) {
-    int paddingStartIndex =
-        LAYOUT_PADDING_START_INDEX - (marginFieldSet ? 0 : 4);
+    auto paddingStartIndex = static_cast<size_t>(
+        LAYOUT_PADDING_START_INDEX - (marginFieldSet ? 0 : 4));
     arr[paddingStartIndex] = YGNodeLayoutGetPadding(root, YGEdgeLeft);
     arr[paddingStartIndex + 1] = YGNodeLayoutGetPadding(root, YGEdgeTop);
     arr[paddingStartIndex + 2] = YGNodeLayoutGetPadding(root, YGEdgeRight);
@@ -302,8 +303,9 @@ YGTransferLayoutOutputsRecursive(JNIEnv* env, jobject thiz, YGNodeRef root) {
   }
 
   if (borderFieldSet) {
-    int borderStartIndex = LAYOUT_BORDER_START_INDEX -
-        (marginFieldSet ? 0 : 4) - (paddingFieldSet ? 0 : 4);
+    auto borderStartIndex = static_cast<size_t>(
+        LAYOUT_BORDER_START_INDEX - (marginFieldSet ? 0 : 4) -
+        (paddingFieldSet ? 0 : 4));
     arr[borderStartIndex] = YGNodeLayoutGetBorder(root, YGEdgeLeft);
     arr[borderStartIndex + 1] = YGNodeLayoutGetBorder(root, YGEdgeTop);
     arr[borderStartIndex + 2] = YGNodeLayoutGetBorder(root, YGEdgeRight);
@@ -321,7 +323,7 @@ YGTransferLayoutOutputsRecursive(JNIEnv* env, jobject thiz, YGNodeRef root) {
 
     ScopedLocalRef<jfloatArray> arrFinal =
         make_local_ref(env, env->NewFloatArray(arrSize));
-    env->SetFloatArrayRegion(arrFinal.get(), 0, arrSize, arr);
+    env->SetFloatArrayRegion(arrFinal.get(), 0, arrSize, arr.data());
     env->SetObjectField(obj.get(), arrField, arrFinal.get());
   }
 
@@ -839,6 +841,7 @@ static void jni_YGNodeStyleSetGapPercentJNI(
 // Yoga specific properties, not compatible with flexbox specification
 YG_NODE_JNI_STYLE_PROP(jfloat, float, AspectRatio);
 
+// NOLINTNEXTLINE(facebook-hte-CArray, modernize-avoid-c-arrays)
 static JNINativeMethod methods[] = {
     {"jni_YGConfigNewJNI", "()J", (void*)jni_YGConfigNewJNI},
     {"jni_YGConfigFreeJNI", "(J)V", (void*)jni_YGConfigFreeJNI},

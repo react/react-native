@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #if __has_include("FBReactNativeSpecJSI.h") // CocoaPod headers on Apple
 #include "FBReactNativeSpecJSI.h"
 #else
@@ -208,14 +210,14 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
 
   bool isOnRenderThread() const noexcept;
 
+  void flushAnimatedNodesCreatedAsync() noexcept;
+
   void resolvePlatformColor(SurfaceId surfaceId, const RawValue &value, SharedColor &result) const;
 
  private:
   void stopRenderCallbackIfNeeded(bool isAsync) noexcept;
 
   bool onAnimationFrame(double timestamp);
-
-  void flushAnimatedNodesCreatedAsync() noexcept;
 
   bool isAnimationUpdateNeeded() const noexcept;
 
@@ -298,7 +300,10 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
   bool warnedAboutGraphTraversal_ = false;
 #endif
 
-  CallbackId animationBackendCallbackId_{0};
+  // Protects the register/publish and exchange/stop lifecycle for the shared
+  // AnimationBackend callback.
+  std::mutex animationBackendCallbackMutex_;
+  std::optional<CallbackId> animationBackendCallbackId_;
 
   friend class ColorAnimatedNode;
   friend class AnimationDriver;

@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/AndroidSwitchNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/AndroidSwitchNativeComponent';
+export * from '../../../src/private/components/switch/specs/AndroidSwitchNativeComponent';
+export {default} from '../../../src/private/components/switch/specs/AndroidSwitchNativeComponent';

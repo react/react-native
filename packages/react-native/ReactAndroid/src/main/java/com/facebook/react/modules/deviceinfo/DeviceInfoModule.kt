@@ -43,7 +43,19 @@ internal class DeviceInfoModule(reactContext: ReactApplicationContext) :
     windowDisplayMetrics.setTo(reactApplicationContext.resources.displayMetrics)
 
     val activity = reactApplicationContext.currentActivity ?: return windowDisplayMetrics
-    val bounds = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity).bounds
+    val bounds =
+        try {
+          WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity).bounds
+        } catch (error: NoSuchMethodError) {
+          ReactSoftExceptionLogger.logSoftException(
+              NAME,
+              ReactNoCrashSoftException(
+                  "WindowMetrics API is unavailable; falling back to resource display metrics.",
+                  error,
+              ),
+          )
+          return windowDisplayMetrics
+        }
 
     if (isEdgeToEdgeFeatureFlagOn) {
       windowDisplayMetrics.widthPixels = bounds.width()
@@ -56,7 +68,7 @@ internal class DeviceInfoModule(reactContext: ReactApplicationContext) :
       ViewCompat.getRootWindowInsets(activity.window.decorView)?.let {
         val insets =
             it.getInsets(
-                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
             )
         windowDisplayMetrics.widthPixels = bounds.width() - (insets.left + insets.right)
         windowDisplayMetrics.heightPixels = bounds.height() - (insets.top + insets.bottom)
@@ -90,6 +102,7 @@ internal class DeviceInfoModule(reactContext: ReactApplicationContext) :
         putDouble("densityDpi", displayMetrics.densityDpi.toDouble())
       }
 
+  @Suppress("REDUNDANT_VISIBILITY_MODIFIER")
   public override fun getTypedExportedConstants(): Map<String, Any> {
     val displayMetrics = getDisplayMetricsWritableMap()
 
@@ -129,7 +142,7 @@ internal class DeviceInfoModule(reactContext: ReactApplicationContext) :
         ReactSoftExceptionLogger.logSoftException(
             NativeDeviceInfoSpec.NAME,
             ReactNoCrashSoftException(
-                "No active CatalystInstance, cannot emitUpdateDimensionsEvent"
+                "No active CatalystInstance, cannot emitUpdateDimensionsEvent",
             ),
         )
       }

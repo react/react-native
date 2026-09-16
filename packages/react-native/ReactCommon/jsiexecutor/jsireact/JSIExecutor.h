@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <cxxreact/JSBigString.h>
 #include <cxxreact/JSExecutor.h>
 #include <cxxreact/RAMBundleRegistry.h>

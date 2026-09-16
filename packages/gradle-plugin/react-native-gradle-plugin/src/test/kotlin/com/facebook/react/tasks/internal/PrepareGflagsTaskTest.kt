@@ -125,7 +125,7 @@ typedef unsigned __int64 uint64;
 #endif
 
 } // namespace GFLAGS_NAMESPACE
-"""
+""",
       )
     }
     File(gflagspath, "gflags-1.0.0/src/config.h.in").apply {

@@ -4,11 +4,12 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
+import type {UnsafeObject} from '../../../../Libraries/Types/CodegenTypes';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
@@ -21,7 +22,7 @@ type Permissions = {
 type Notification = {
   readonly alertTitle?: ?string,
   readonly alertBody?: ?string,
-  readonly userInfo?: ?Object,
+  readonly userInfo?: ?UnsafeObject,
   /**
    * Identifier for the notification category. See the [Apple documentation](https://developer.apple.com/documentation/usernotifications/declaring_your_actionable_notification_types)
    * for more details.
@@ -85,7 +86,7 @@ export interface Spec extends TurboModule {
   readonly presentLocalNotification: (notification: Notification) => void;
   readonly scheduleLocalNotification: (notification: Notification) => void;
   readonly cancelAllLocalNotifications: () => void;
-  readonly cancelLocalNotifications: (userInfo: Object) => void;
+  readonly cancelLocalNotifications: (userInfo: UnsafeObject) => void;
   readonly getInitialNotification: () => Promise<?Notification>;
   readonly getScheduledLocalNotifications: (
     callback: (notification: Notification) => void,

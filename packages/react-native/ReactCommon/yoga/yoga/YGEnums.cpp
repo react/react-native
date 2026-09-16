@@ -119,6 +119,8 @@ const char* YGErrataToString(const YGErrata value) {
       return "absolute-percent-against-inner-size";
     case YGErrataMinSizeUndefinedInsteadOfAuto:
       return "min-size-undefined-instead-of-auto";
+    case YGErrataFlexFirstPassUsesRunningTotals:
+      return "flex-first-pass-uses-running-totals";
     case YGErrataAll:
       return "all";
     case YGErrataClassic:

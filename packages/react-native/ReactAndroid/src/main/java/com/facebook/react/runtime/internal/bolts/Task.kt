@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
  * @param <TResult> The type of the result of the task.
  */
 public class Task<TResult> : TaskInterface<TResult> {
-  private val lock = Object()
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN") private val lock = Object()
   private var complete = false
   private var cancelled = false
 
@@ -101,13 +101,15 @@ public class Task<TResult> : TaskInterface<TResult> {
 
   /** Turns a Task<T> into a Task<Void>, dropping any result */
   public fun makeVoid(): Task<Void> =
-      continueWithTask({ task ->
-        when {
-          task.isCancelled() -> cancelled()
-          task.isFaulted() -> forError(task.getError())
-          else -> TASK_NULL
-        }
-      })
+      continueWithTask(
+          { task ->
+            when {
+              task.isCancelled() -> cancelled()
+              task.isFaulted() -> forError(task.getError())
+              else -> TASK_NULL
+            }
+          },
+      )
 
   /**
    * Adds a continuation that will be scheduled using the executor, returning a new task that
@@ -125,7 +127,7 @@ public class Task<TResult> : TaskInterface<TResult> {
       completed = this.isCompleted()
       if (!completed) {
         continuations.add(
-            Continuation { task -> completeImmediately(tcs, continuation, task, executor) }
+            Continuation { task -> completeImmediately(tcs, continuation, task, executor) },
         )
       }
     }
@@ -150,7 +152,7 @@ public class Task<TResult> : TaskInterface<TResult> {
       completed = this.isCompleted()
       if (!completed) {
         continuations.add(
-            Continuation { task -> completeAfterTask(tcs, continuation, task, executor) }
+            Continuation { task -> completeAfterTask(tcs, continuation, task, executor) },
         )
       }
     }
@@ -395,13 +397,15 @@ public class Task<TResult> : TaskInterface<TResult> {
             if (result == null) {
               tcs.setResult(null)
             } else {
-              result.continueWith({ task ->
-                when {
-                  task.isCancelled() -> tcs.setCancelled()
-                  task.isFaulted() -> tcs.setError(task.getError())
-                  else -> tcs.setResult(task.getResult())
-                }
-              })
+              result.continueWith(
+                  { task ->
+                    when {
+                      task.isCancelled() -> tcs.setCancelled()
+                      task.isFaulted() -> tcs.setError(task.getError())
+                      else -> tcs.setResult(task.getResult())
+                    }
+                  },
+              )
             }
           } catch (e: CancellationException) {
             tcs.setCancelled()

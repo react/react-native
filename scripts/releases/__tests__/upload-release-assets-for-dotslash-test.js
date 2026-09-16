@@ -19,10 +19,10 @@ const {
   removeCurlPaths,
   sanitizeSnapshots,
 } = require('./snapshot-utils');
-const fs = require('fs/promises');
-const http = require('http');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs/promises');
+const http = require('node:http');
+const os = require('node:os');
+const path = require('node:path');
 
 let server, serverUrl, tmpDir, consoleLog;
 

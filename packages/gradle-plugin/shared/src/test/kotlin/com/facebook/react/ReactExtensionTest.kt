@@ -27,7 +27,7 @@ class ReactExtensionTest {
               "reactNativeVersion": "1000.0.0"
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
@@ -55,7 +55,7 @@ class ReactExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
@@ -84,7 +84,7 @@ class ReactExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
@@ -113,7 +113,7 @@ class ReactExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
@@ -155,7 +155,7 @@ class ReactExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
@@ -190,7 +190,7 @@ class ReactExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
@@ -229,7 +229,7 @@ class ReactExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val deps = getGradleDependenciesToApply(validJsonFile)

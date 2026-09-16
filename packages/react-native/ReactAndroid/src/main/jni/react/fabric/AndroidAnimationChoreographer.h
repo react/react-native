@@ -7,32 +7,32 @@
 
 #pragma once
 
-#include <fbjni/fbjni.h>
 #include <react/renderer/animationbackend/AnimationChoreographer.h>
-
-#include "JAnimationBackendChoreographer.h"
+#include <atomic>
 
 namespace facebook::react {
 
 class AndroidAnimationChoreographer : public AnimationChoreographer {
  public:
-  explicit AndroidAnimationChoreographer(jni::alias_ref<JAnimationBackendChoreographer> jChoreographer)
-      : jChoreographer_(jni::make_global(jChoreographer))
-  {
-  }
-
   void resume() override
   {
-    jChoreographer_->resume();
+    active_.store(true);
   }
 
   void pause() override
   {
-    jChoreographer_->pause();
+    active_.store(false);
+  }
+
+  void onAnimationFrameIfActive(AnimationTimestamp timestamp) const
+  {
+    if (active_.load()) {
+      onAnimationFrame(timestamp);
+    }
   }
 
  private:
-  jni::global_ref<JAnimationBackendChoreographer> jChoreographer_;
+  std::atomic_bool active_{false};
 };
 
 } // namespace facebook::react

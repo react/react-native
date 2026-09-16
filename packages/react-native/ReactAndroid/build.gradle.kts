@@ -18,7 +18,6 @@ plugins {
   id("com.facebook.react")
   alias(libs.plugins.android.library)
   alias(libs.plugins.download)
-  alias(libs.plugins.ktfmt)
 }
 
 version = project.findProperty("VERSION_NAME")?.toString()!!
@@ -113,8 +112,10 @@ val preparePrefab by
                       // reactnativejni
                       Pair("src/main/jni/react/jni", "react/jni/"),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
+                      Pair("../ReactCommon/cxxreact/React/", "React/"),
                       // react_featureflags
                       Pair("../ReactCommon/react/featureflags/", "react/featureflags/"),
+                      Pair("../ReactCommon/react/featureflags/React/", "React/"),
                       // react_devtoolsruntimesettings
                       Pair(
                           "../ReactCommon/react/devtoolsruntimesettings/",
@@ -132,6 +133,7 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/componentregistry/",
                           "react/renderer/componentregistry/",
                       ),
+                      Pair("../ReactCommon/react/renderer/componentregistry/React/", "React/"),
                       // react_renderer_consistency
                       Pair(
                           "../ReactCommon/react/renderer/consistency/",
@@ -139,12 +141,16 @@ val preparePrefab by
                       ),
                       // react_renderer_core
                       Pair("../ReactCommon/react/renderer/core/", "react/renderer/core/"),
+                      Pair("../ReactCommon/react/renderer/core/React/", "React/"),
                       // react_renderer_css
                       Pair("../ReactCommon/react/renderer/css/", "react/renderer/css/"),
+                      Pair("../ReactCommon/react/renderer/css/React/", "React/"),
                       // react_debug
                       Pair("../ReactCommon/react/debug/", "react/debug/"),
+                      Pair("../ReactCommon/react/debug/React/", "React/"),
                       // react_renderer_debug
                       Pair("../ReactCommon/react/renderer/debug/", "react/renderer/debug/"),
+                      Pair("../ReactCommon/react/renderer/debug/React/", "React/"),
                       // react_renderer_graphics
                       Pair("../ReactCommon/react/renderer/graphics/", "react/renderer/graphics/"),
                       Pair("../ReactCommon/react/renderer/graphics/platform/android/", ""),
@@ -153,7 +159,8 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/imagemanager/",
                           "react/renderer/imagemanager/",
                       ),
-                      Pair("../ReactCommon/react/renderer/imagemanager/platform/cxx/", ""),
+                      Pair("../ReactCommon/react/renderer/imagemanager/React/", "React/"),
+                      Pair("../ReactCommon/react/renderer/imagemanager/platform/android/", ""),
                       // react_renderer_mounting
                       Pair("../ReactCommon/react/renderer/mounting/", "react/renderer/mounting/"),
                       // react_renderer_scheduler
@@ -162,15 +169,22 @@ val preparePrefab by
                       Pair("../ReactCommon/react/renderer/uimanager/", "react/renderer/uimanager/"),
                       // react_utils
                       Pair("../ReactCommon/react/utils/", "react/utils/"),
+                      Pair("../ReactCommon/react/utils/platform/android/", ""),
+                      Pair("../ReactCommon/react/utils/React/", "React/"),
                       // rrc_image
                       Pair(
                           "../ReactCommon/react/renderer/components/image/",
                           "react/renderer/components/image/",
                       ),
+                      Pair("../ReactCommon/react/renderer/components/image/React/", "React/"),
                       // rrc_view
                       Pair(
                           "../ReactCommon/react/renderer/components/view/",
                           "react/renderer/components/view/",
+                      ),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/view/React/",
+                          "React/",
                       ),
                       Pair("../ReactCommon/react/renderer/components/view/platform/android/", ""),
                       // rrc_root
@@ -180,6 +194,8 @@ val preparePrefab by
                       ),
                       // runtimeexecutor
                       Pair("../ReactCommon/runtimeexecutor/", ""),
+                      Pair("../ReactCommon/runtimeexecutor/platform/cxx/", ""),
+                      Pair("../ReactCommon/runtimeexecutor/React/", "React/"),
                       // react_renderer_textlayoutmanager
                       Pair(
                           "../ReactCommon/react/renderer/textlayoutmanager/",
@@ -191,6 +207,7 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/text/",
                           "react/renderer/components/text/",
                       ),
+                      Pair("../ReactCommon/react/renderer/components/text/platform/android/", ""),
                       Pair(
                           "../ReactCommon/react/renderer/attributedstring",
                           "react/renderer/attributedstring",
@@ -214,9 +231,14 @@ val preparePrefab by
                       Pair(File(buildDir, "third-party-ndk/folly/").absolutePath, ""),
                       Pair(File(buildDir, "third-party-ndk/glog/exported/").absolutePath, ""),
                       Pair("../ReactCommon/callinvoker/", ""),
+                      Pair("../ReactCommon/callinvoker/React/", "React/"),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
+                      // Exported because the public cxxreact/ErrorUtils.h includes it
+                      Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
+                      Pair("../ReactCommon/react/bridging/React/", "React/"),
                       Pair("../ReactCommon/react/nativemodule/core/", ""),
+                      Pair("../ReactCommon/react/nativemodule/core/React/", "React/"),
                       Pair("../ReactCommon/react/nativemodule/core/platform/android/", ""),
                       Pair(
                           "../ReactCommon/react/renderer/componentregistry/",
@@ -233,6 +255,7 @@ val preparePrefab by
                           "react/renderer/leakchecker/",
                       ),
                       Pair("../ReactCommon/react/renderer/mapbuffer/", "react/renderer/mapbuffer/"),
+                      Pair("../ReactCommon/react/renderer/mapbuffer/React/", "React/"),
                       Pair("../ReactCommon/react/renderer/mounting/", "react/renderer/mounting/"),
                       Pair(
                           "../ReactCommon/react/renderer/runtimescheduler/",
@@ -242,6 +265,8 @@ val preparePrefab by
                       Pair("../ReactCommon/react/renderer/telemetry/", "react/renderer/telemetry/"),
                       Pair("../ReactCommon/react/renderer/uimanager/", "react/renderer/uimanager/"),
                       Pair("../ReactCommon/react/debug/", "react/debug/"),
+                      Pair("../ReactCommon/react/debug/React/", "React/"),
+                      Pair("../ReactCommon/react/cxxstableapi/", "react/cxxstableapi/"),
                       Pair("../ReactCommon/react/utils/", "react/utils/"),
                       Pair("src/main/jni/react/jni", "react/jni/"),
                       // react_cxxreactpackage
@@ -263,6 +288,7 @@ val preparePrefab by
                       ),
                       // react_timing
                       Pair("../ReactCommon/react/timing/", "react/timing/"),
+                      Pair("../ReactCommon/react/timing/React/", "React/"),
                       // yoga
                       Pair("../ReactCommon/yoga/", ""),
                       Pair("src/main/jni/first-party/yogajni/jni", ""),
@@ -285,22 +311,23 @@ val preparePrefab by
                   // hermes_executor
                   Pair("../ReactCommon/hermes/inspector-modern/", "hermes/inspector-modern/"),
               ),
-          )
+          ),
       )
       outputDir.set(prefabHeadersDir)
     }
 
-val createNativeDepsDirectories by tasks.registering {
-  downloadsDir.mkdirs()
-  thirdPartyNdkDir.mkdirs()
-}
+val createNativeDepsDirectories by
+    tasks.registering {
+      downloadsDir.mkdirs()
+      thirdPartyNdkDir.mkdirs()
+    }
 
 val downloadBoostDest = File(downloadsDir, "boost_${BOOST_VERSION}.tar.gz")
 val downloadBoost by
     tasks.registering(Download::class) {
       dependsOn(createNativeDepsDirectories)
       src(
-          "https://archives.boost.io/release/${BOOST_VERSION.replace("_", ".")}/source/boost_${BOOST_VERSION}.tar.gz"
+          "https://archives.boost.io/release/${BOOST_VERSION.replace("_", ".")}/source/boost_${BOOST_VERSION}.tar.gz",
       )
       onlyIfModified(true)
       overwrite(false)
@@ -324,7 +351,7 @@ val downloadDoubleConversion by
     tasks.registering(Download::class) {
       dependsOn(createNativeDepsDirectories)
       src(
-          "https://github.com/google/double-conversion/archive/v${DOUBLE_CONVERSION_VERSION}.tar.gz"
+          "https://github.com/google/double-conversion/archive/v${DOUBLE_CONVERSION_VERSION}.tar.gz",
       )
       onlyIfModified(true)
       overwrite(false)
@@ -434,21 +461,23 @@ val prepareGlog by
     }
 
 // Tasks used by Fantom to download the Native 3p dependencies used.
-val prepareNative3pDependencies by tasks.registering {
-  dependsOn(
-      prepareBoost,
-      prepareDoubleConversion,
-      prepareFastFloat,
-      prepareFmt,
-      prepareFolly,
-      prepareGlog,
-  )
-}
+val prepareNative3pDependencies by
+    tasks.registering {
+      dependsOn(
+          prepareBoost,
+          prepareDoubleConversion,
+          prepareFastFloat,
+          prepareFmt,
+          prepareFolly,
+          prepareGlog,
+      )
+    }
 
-val prepareKotlinBuildScriptModel by tasks.registering {
-  // This task is run when Gradle Sync is running.
-  // We create it here so we can let it depend on preBuild inside the android{}
-}
+val prepareKotlinBuildScriptModel by
+    tasks.registering {
+      // This task is run when Gradle Sync is running.
+      // We create it here so we can let it depend on preBuild inside the android{}
+    }
 
 // As ReactAndroid builds from source, the codegen needs to be built before it can be invoked.
 // This is not the case for users of React Native, as we ship a compiled version of the codegen.
@@ -462,7 +491,7 @@ val buildCodegenCLI by
           fileTree(codegenDir) {
             include("lib/**/*.js")
             include("lib/**/*.js.flow")
-          }
+          },
       )
       rootProjectName.set(rootProject.name)
     }
@@ -553,6 +582,15 @@ android {
   defaultConfig {
     minSdk = libs.versions.minSdk.get().toInt()
 
+    aarMetadata {
+      // RN's public ABI exposes no android API newer than 34, and the source is written to
+      // compile against SDK 34 (see util/AndroidVersion.kt). compileSdk is 36 only to build
+      // against the latest platform — it is not an API requirement. Without this, AGP 9
+      // defaults minCompileSdk to compileSdk (36), needlessly forcing every consuming
+      // library/app to compileSdk 36.
+      minCompileSdk = 34
+    }
+
     consumerProguardFiles("proguard-rules.pro")
 
     buildConfigField("boolean", "IS_INTERNAL_BUILD", "false")
@@ -608,21 +646,24 @@ android {
   tasks.getByName("generateCodegenSchemaFromJavaScript").dependsOn(buildCodegenCLI)
   prepareKotlinBuildScriptModel.dependsOn("preBuild")
   prepareKotlinBuildScriptModel.dependsOn(
-      ":packages:react-native:ReactAndroid:hermes-engine:preBuild"
+      ":packages:react-native:ReactAndroid:hermes-engine:preBuild",
   )
 
   sourceSets {
     named("main") {
-      res.directories.addAll(
-          listOf(
-              "src/main/res/devsupport",
-              "src/main/res/shell",
-              "src/main/res/views/alert",
-              "src/main/res/views/modal",
-              "src/main/res/views/uimanager",
-              "src/main/res/views/view",
-          )
-      )
+      res.directories.apply {
+        clear()
+        addAll(
+            listOf(
+                "src/main/res/devsupport",
+                "src/main/res/shell",
+                "src/main/res/views/alert",
+                "src/main/res/views/modal",
+                "src/main/res/views/uimanager",
+                "src/main/res/views/view",
+            ),
+        )
+      }
     }
   }
 

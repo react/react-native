@@ -14,7 +14,7 @@ type FormDataValue = string | {name?: string, type?: string, uri: string};
 type FormDataNameValuePair = [string, FormDataValue];
 
 type Headers = {[name: string]: string, ...};
-type FormDataPart =
+export type FormDataPart =
   | {
       string: string,
       headers: Headers,

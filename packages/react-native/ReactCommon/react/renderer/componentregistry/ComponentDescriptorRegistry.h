@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <memory>
 #include <shared_mutex>
 #include <unordered_map>

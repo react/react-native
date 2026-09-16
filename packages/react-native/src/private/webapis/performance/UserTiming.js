@@ -18,8 +18,10 @@ import type {
   ExtensionTrackEntryPayload,
 } from './UserTimingExtensibility';
 
-import {getCurrentTimeStamp} from './internals/Utilities';
 import {PerformanceEntry} from './PerformanceEntry';
+import NativePerformance from './specs/NativePerformance';
+
+const {now} = NativePerformance;
 
 export type DetailType =
   | unknown
@@ -47,7 +49,7 @@ class PerformanceMarkTemplate extends PerformanceEntry {
   constructor(markName: string, markOptions?: PerformanceMarkOptions) {
     super('mark', {
       name: markName,
-      startTime: markOptions?.startTime ?? getCurrentTimeStamp(),
+      startTime: markOptions?.startTime ?? now(),
       duration: 0,
     });
 
@@ -73,7 +75,7 @@ export const PerformanceMark: typeof PerformanceMarkTemplate =
   ) {
     this.__entryType = 'mark';
     this.__name = markName;
-    this.__startTime = markOptions?.startTime ?? getCurrentTimeStamp();
+    this.__startTime = markOptions?.startTime ?? now();
     this.__duration = 0;
 
     this.__detail = markOptions?.detail ?? null;

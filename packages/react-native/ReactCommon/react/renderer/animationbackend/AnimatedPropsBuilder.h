@@ -6,6 +6,9 @@
  */
 
 #pragma once
+
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/components/view/BaseViewProps.h>
 #include <react/renderer/graphics/Filter.h>
 #include "AnimatedProps.h"

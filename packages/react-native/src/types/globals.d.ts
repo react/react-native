@@ -7,7 +7,7 @@
  * @format
  */
 
-import type {ErrorUtils} from '../../Libraries/vendor/core/ErrorUtils';
+import type {ErrorUtils} from './ErrorUtils';
 
 declare global {
   interface NodeRequire {
@@ -124,6 +124,15 @@ declare global {
 
   function cancelAnimationFrame(handle: number | null | undefined): void;
   function requestAnimationFrame(callback: (time: number) => void): number;
+
+  function requestIdleCallback(
+    callback: (deadline: {
+      didTimeout: boolean;
+      timeRemaining: () => number;
+    }) => void,
+    options?: {timeout?: number | undefined},
+  ): number;
+  function cancelIdleCallback(handle: number | null | undefined): void;
 
   function fetchBundle(
     bundleId: number,
@@ -322,12 +331,7 @@ declare global {
   type RequestCredentials_ = 'omit' | 'same-origin' | 'include';
   type RequestMode_ = 'navigate' | 'same-origin' | 'no-cors' | 'cors';
   type ResponseType_ =
-    | 'basic'
-    | 'cors'
-    | 'default'
-    | 'error'
-    | 'opaque'
-    | 'opaqueredirect';
+    'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 
   // #endregion
   // #region XMLHttpRequest
@@ -429,8 +433,7 @@ declare global {
   }
 
   interface XMLHttpRequestUpload
-    extends EventTarget,
-      XMLHttpRequestEventTarget {
+    extends EventTarget, XMLHttpRequestEventTarget {
     addEventListener<K extends keyof XMLHttpRequestEventTargetEventMap>(
       type: K,
       listener: (
@@ -453,12 +456,7 @@ declare global {
   };
 
   type XMLHttpRequestResponseType =
-    | ''
-    | 'arraybuffer'
-    | 'blob'
-    | 'document'
-    | 'json'
-    | 'text';
+    '' | 'arraybuffer' | 'blob' | 'document' | 'json' | 'text';
 
   interface URL {
     readonly hash: string;
@@ -600,6 +598,12 @@ declare global {
      * Returns `true` if this `AbortSignal`'s `AbortController` has signaled to abort, and `false` otherwise.
      */
     readonly aborted: boolean;
+    /**
+     * The **`reason`** read-only property returns a JavaScript value that indicates the abort reason.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/reason)
+     */
+    readonly reason: any;
 
     onabort: (event: AbortEvent) => void;
 
@@ -626,6 +630,32 @@ declare global {
             capture?: boolean | undefined;
           },
     ) => void;
+
+    /**
+     * Throws the abort reason if the signal has been aborted.
+     * Otherwise, does nothing.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/throwIfAborted)
+     */
+    throwIfAborted(): void;
+    /**
+     * The **`AbortSignal.abort(reason)`** static method returns an AbortSignal that is already set as aborted (and which does not trigger an abort event).
+     *
+     * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/abort_static)
+     */
+    static abort(reason: any): AbortSignal;
+    /**
+     * The **`AbortSignal.any()`** static method takes an iterable of abort signals and returns an AbortSignal.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/any_static)
+     */
+    static any(signals: AbortSignal[]): AbortSignal;
+    /**
+     * The **`AbortSignal.timeout()`** static method returns an AbortSignal that will automatically abort after a specified time.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/timeout_static)
+     */
+    static timeout(milliseconds: number): AbortSignal;
   }
 
   class AbortController {
@@ -640,7 +670,7 @@ declare global {
     /**
      * Abort and signal to any observers that the associated activity is to be aborted.
      */
-    abort(): void;
+    abort(reason?: any): void;
   }
 
   interface FileReaderEventMap {
@@ -658,14 +688,11 @@ declare global {
     onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onloadend:
-      | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
-      | null;
+      ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onloadstart:
-      | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
-      | null;
+      ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onprogress:
-      | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
-      | null;
+      ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     readonly readyState: number;
     readonly result: string | ArrayBuffer;
     abort(): void;

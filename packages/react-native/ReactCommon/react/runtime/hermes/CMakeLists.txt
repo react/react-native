@@ -25,6 +25,7 @@ target_link_libraries(bridgelesshermes
         jsi
         jsitooling
         jsinspector
+        react_cxxstableapi
         ${reactnative}
 )
 

@@ -1,23 +1,8 @@
 # @react-native/gradle-plugin
 
-[![Version][version-badge]][package]
+[![npm]](https://www.npmjs.com/package/@react-native/gradle-plugin) [![npm downloads]](https://www.npmjs.com/package/@react-native/gradle-plugin)
 
-A Gradle Plugin used to support development of React Native applications for Android.
+[npm]: https://img.shields.io/npm/v/@react-native/gradle-plugin.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/gradle-plugin.svg
 
-## Installation
-
-```
-yarn add @react-native/gradle-plugin
-```
-
-*Note: We're using `yarn` to install deps. Feel free to change commands to use `npm` 3+ and `npx` if you like*
-
-[version-badge]: https://img.shields.io/npm/v/@react-native/gradle-plugin?style=flat-square
-[package]: https://www.npmjs.com/package/@react-native/gradle-plugin
-
-## Testing
-
-To run the tests in this package, run the following commands from the React Native root folder:
-
-1. `yarn` to install the dependencies. You just need to run this once
-2. `./gradlew -p packages/gradle-plugin test`.
+Gradle plugin used to build and configure React Native applications for Android. It is applied automatically by apps created from the React Native template.

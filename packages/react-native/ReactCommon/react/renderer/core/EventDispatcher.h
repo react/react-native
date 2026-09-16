@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/core/EventBeat.h>
 #include <react/renderer/core/EventListener.h>
 #include <react/renderer/core/EventLogger.h>

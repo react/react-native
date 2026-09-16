@@ -56,6 +56,23 @@ AnimationBackend::AnimationBackend(
       commitHook_(*uiManager, animatedPropsRegistry_),
       uiManager_(std::move(uiManager)) {
   react_native_assert(uiManager_.expired() == false);
+
+  auto weakAnimatedPropsRegistry =
+      std::weak_ptr<AnimatedPropsRegistry>(animatedPropsRegistry_);
+  auto initializeSurfaceContext =
+      [weakAnimatedPropsRegistry](const ShadowTree& shadowTree) {
+        if (auto animatedPropsRegistry = weakAnimatedPropsRegistry.lock()) {
+          animatedPropsRegistry->initializeSurface(shadowTree.getSurfaceId());
+        }
+      };
+
+  if (auto lockedUIManager = uiManager_.lock()) {
+    lockedUIManager->addOnSurfaceStartCallback(initializeSurfaceContext);
+    lockedUIManager->getShadowTreeRegistry().enumerate(
+        [&](const ShadowTree& shadowTree, bool& /*stop*/) {
+          animatedPropsRegistry_->initializeSurface(shadowTree.getSurfaceId());
+        });
+  }
 }
 
 void AnimationBackend::unpackMutations(

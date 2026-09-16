@@ -54,10 +54,14 @@ Pod::Spec.new do |s|
   s.dependency "React-idlecallbacksnativemodule"
   s.dependency "React-intersectionobservernativemodule"
   s.dependency "React-mutationobservernativemodule"
+  s.dependency "React-resizeobservernativemodule"
   s.dependency "React-viewtransitionnativemodule"
   s.dependency "React-webperformancenativemodule"
   s.dependency "React-Fabric/animated"
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-featureflags")
   add_dependency(s, "React-featureflagsnativemodule")
+
+  mark_as_react_native_build(s)
 end

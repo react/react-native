@@ -11,7 +11,6 @@
 #import <React/RCTRootView.h>
 #import <React/RCTUtils.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
-#import "RCTAppDelegate.h"
 #import "RCTAppSetupUtils.h"
 
 #if RN_DISABLE_OSS_PLUGIN_HEADER
@@ -28,7 +27,6 @@
 #import <ReactCommon/RCTHost.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
-#import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/runtime/JSRuntimeFactory.h>
 #import <react/runtime/JSRuntimeFactoryCAPI.h>
 
@@ -44,37 +42,12 @@
   return [self initWithBundleURLBlock:bundleURLBlock];
 }
 
-- (instancetype)initWithBundleURL:(NSURL *)bundleURL
-                   newArchEnabled:(BOOL)newArchEnabled
-               turboModuleEnabled:(BOOL)turboModuleEnabled
-                bridgelessEnabled:(BOOL)bridgelessEnabled
-{
-  return [self initWithBundleURLBlock:^{
-    return bundleURL;
-  }];
-}
-
-- (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock
-                        newArchEnabled:(BOOL)newArchEnabled
-                    turboModuleEnabled:(BOOL)turboModuleEnabled
-                     bridgelessEnabled:(BOOL)bridgelessEnabled
-{
-  if (self = [super init]) {
-    _bundleURLBlock = bundleURLBlock;
-    _fabricEnabled = YES;
-    _turboModuleEnabled = YES;
-    _bridgelessEnabled = YES;
-  }
-  return self;
-}
-
 - (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock
 {
   if (self = [super init]) {
     _bundleURLBlock = bundleURLBlock;
     _fabricEnabled = YES;
     _turboModuleEnabled = YES;
-    _bridgelessEnabled = YES;
   }
   return self;
 }

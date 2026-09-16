@@ -13,7 +13,7 @@
 // This is a stub for flow to make it understand require('./icon.png')
 // See metro/src/Bundler/index.js
 
-const AssetRegistry = require('@react-native/assets-registry/registry');
+const {AssetRegistry} = require('../../src/private/assets/AssetRegistry');
 
 const RelativeImageStub = AssetRegistry.registerAsset({
   __packager_asset: true,

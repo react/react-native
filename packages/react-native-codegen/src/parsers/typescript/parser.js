@@ -59,8 +59,8 @@ const {typeScriptTranslateTypeAnnotation} = require('./modules');
 const {parseTopLevelType} = require('./parseTopLevelType');
 // $FlowFixMe[untyped-import] Use flow-types for @babel/parser
 const babelParser = require('@babel/parser');
-const fs = require('fs');
 const invariant = require('invariant');
+const fs = require('node:fs');
 
 class TypeScriptParser implements Parser {
   typeParameterInstantiation: string = 'TSTypeParameterInstantiation';
@@ -455,6 +455,7 @@ class TypeScriptParser implements Parser {
     let typeResolutionStatus: TypeResolutionStatus = {
       successful: false,
     };
+    const resolvedTypeAliases = new Set<string>();
 
     for (;;) {
       const topLevelType = parseTopLevelType(node, parser);
@@ -465,11 +466,21 @@ class TypeScriptParser implements Parser {
         break;
       }
 
-      const typeAnnotationName = this.getTypeAnnotationName(node);
-      const resolvedTypeAnnotation = types[typeAnnotationName];
-      if (resolvedTypeAnnotation == null) {
+      // A qualified name (e.g. CodegenTypes.Double) refers to a namespace
+      // member, not to the local type alias of the same unqualified name.
+      if (node.typeName.type === 'TSQualifiedName') {
         break;
       }
+
+      const typeAnnotationName = this.getTypeAnnotationName(node);
+      const resolvedTypeAnnotation = types[typeAnnotationName];
+      if (
+        resolvedTypeAnnotation == null ||
+        resolvedTypeAliases.has(typeAnnotationName)
+      ) {
+        break;
+      }
+      resolvedTypeAliases.add(typeAnnotationName);
 
       const {typeAnnotation: typeAnnotationNode, typeResolutionStatus: status} =
         handleGenericTypeAnnotation(node, resolvedTypeAnnotation, this);

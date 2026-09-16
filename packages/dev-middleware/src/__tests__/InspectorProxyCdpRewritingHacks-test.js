@@ -20,7 +20,7 @@ import {
   serveStaticText,
   withServerForEachTest,
 } from './ServerUtils';
-import {createHash} from 'crypto';
+import {createHash} from 'node:crypto';
 
 // WebSocket is unreliable when using fake timers.
 jest.useRealTimers();

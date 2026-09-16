@@ -113,6 +113,12 @@ struct JFrameTimingSequence : public jni::JavaClass<JFrameTimingSequence> {
     }
     return std::nullopt;
   }
+
+  HighResDuration getVsyncInterval() const
+  {
+    auto field = javaClassStatic()->getField<jlong>("vsyncIntervalNanos");
+    return HighResDuration::fromNanoseconds(static_cast<int64_t>(getFieldValue(field)));
+  }
 };
 
 struct JReactHostImpl : public jni::JavaClass<JReactHostImpl> {

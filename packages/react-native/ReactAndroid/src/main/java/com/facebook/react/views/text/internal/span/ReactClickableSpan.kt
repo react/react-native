@@ -44,7 +44,7 @@ internal class ReactClickableSpan(val reactTag: Int) : ClickableSpan(), ReactSpa
     val context = view.context as ReactContext
     val eventDispatcher = UIManagerHelper.getEventDispatcher(context)
     eventDispatcher?.dispatchEvent(
-        ViewGroupClickEvent(UIManagerHelper.getSurfaceId(context), reactTag)
+        ViewGroupClickEvent(UIManagerHelper.getSurfaceId(context), reactTag),
     )
   }
 

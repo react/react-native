@@ -336,7 +336,7 @@ StaticHostTargetMetadata getStaticHostMetadata() {
 
   return {
       .isProfilingBuild = inspectorFlags.getIsProfilingBuild(),
-      .networkInspectionEnabled = inspectorFlags.getNetworkInspectionEnabled(),
+      .networkInspectionEnabled = true,
       .frameRecordingEnabled = inspectorFlags.getFrameRecordingEnabled()};
 }
 

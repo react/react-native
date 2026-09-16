@@ -33,7 +33,7 @@ class ReactSettingsExtensionTest {
               "value": "¯\\_(ツ)_/¯"
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
     assertThat(computeSha256(validFile))
         .isEqualTo("838aa9a72a16fdd55b0d49b510a82e264a30f59333b5fdd97c7798a29146f6a8")
@@ -48,7 +48,7 @@ class ReactSettingsExtensionTest {
               "reactNativeVersion": "1000.0.0"
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val map = getLibrariesToAutolink(validJsonFile)
@@ -94,7 +94,7 @@ class ReactSettingsExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val map = getLibrariesToAutolink(validJsonFile)
@@ -126,7 +126,7 @@ class ReactSettingsExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     val map = getLibrariesToAutolink(validJsonFile)
@@ -262,7 +262,7 @@ class ReactSettingsExtensionTest {
                 }
               }
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
     tempFolder.newFile("yarn.lock").apply { writeText("I'm a lockfile") }
@@ -316,7 +316,7 @@ class ReactSettingsExtensionTest {
                 }
               }
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
     tempFolder.newFile("yarn.lock").apply { writeText("I'm a lockfile") }
@@ -364,7 +364,7 @@ class ReactSettingsExtensionTest {
             """
             {}
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))
@@ -388,7 +388,7 @@ class ReactSettingsExtensionTest {
               "reactNativeVersion": "1000.0.0"
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))
@@ -413,7 +413,7 @@ class ReactSettingsExtensionTest {
               "dependencies": {}
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))
@@ -451,7 +451,7 @@ class ReactSettingsExtensionTest {
               }
             }
             """
-                .trimIndent()
+                .trimIndent(),
         )
 
     assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))

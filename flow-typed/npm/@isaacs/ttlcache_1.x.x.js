@@ -17,7 +17,7 @@ declare module '@isaacs/ttlcache' {
     /**
      * The total number of items held in the cache at the current moment.
      */
-    +size: number;
+    readonly size: number;
 
     /**
      * Add a value to the cache.

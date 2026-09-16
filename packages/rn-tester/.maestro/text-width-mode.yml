@@ -1,0 +1,27 @@
+appId: ${APP_ID}
+tags:
+  - local-screenshot-baseline
+---
+- runFlow: ./helpers/launch-app-and-search.yml
+- inputText: 'Text'
+- assertVisible:
+    id: 'Text'
+- tapOn:
+    id: 'Text'
+- assertVisible:
+    id: 'example_search'
+- tapOn:
+    id: 'example_search'
+- inputText: 'Wrapped text width mode'
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: 'text-width-mode-example'
+    direction: DOWN
+    speed: 40
+    timeout: 10000
+- assertScreenshot:
+    path: screenshots/text-width-mode-${maestro.platform}
+    cropOn:
+      id: 'text-width-mode-example'
+    thresholdPercentage: 95

@@ -18,7 +18,7 @@ import ReactNativeFeatureFlagsDefaultsH from './templates/common-cxx/ReactNative
 import ReactNativeFeatureFlagsDynamicProviderH from './templates/common-cxx/ReactNativeFeatureFlagsDynamicProvider.h-template';
 import ReactNativeFeatureFlagsOverrides from './templates/common-cxx/ReactNativeFeatureFlagsOverridesOSS_Stage_.h-template';
 import ReactNativeFeatureFlagsProviderH from './templates/common-cxx/ReactNativeFeatureFlagsProvider.h-template';
-import path from 'path';
+import path from 'node:path';
 
 export default function generateCommonCxxModules(
   generatorConfig: GeneratorConfig,

@@ -31,7 +31,6 @@ export type DispatchConfig =
  */
 export default class LegacySyntheticEvent extends Event {
   _nativeEvent: {[string]: unknown};
-  _propagationStopped: boolean;
   _dispatchConfig: DispatchConfig | null;
 
   constructor(
@@ -42,7 +41,6 @@ export default class LegacySyntheticEvent extends Event {
   ) {
     super(type, options);
     this._nativeEvent = nativeEvent;
-    this._propagationStopped = false;
     this._dispatchConfig = dispatchConfig ?? null;
   }
 
@@ -52,16 +50,6 @@ export default class LegacySyntheticEvent extends Event {
 
   get dispatchConfig(): DispatchConfig | null {
     return this._dispatchConfig;
-  }
-
-  stopPropagation(): void {
-    super.stopPropagation();
-    this._propagationStopped = true;
-  }
-
-  stopImmediatePropagation(): void {
-    super.stopImmediatePropagation();
-    this._propagationStopped = true;
   }
 
   /**
@@ -85,6 +73,6 @@ export default class LegacySyntheticEvent extends Event {
    * has been called.
    */
   isPropagationStopped(): boolean {
-    return this._propagationStopped;
+    return this.cancelBubble;
   }
 }

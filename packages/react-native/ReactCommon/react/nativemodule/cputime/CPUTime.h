@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #if defined USE_POSIX_TIME
 #include <time.h>
 #elif defined __MACH__

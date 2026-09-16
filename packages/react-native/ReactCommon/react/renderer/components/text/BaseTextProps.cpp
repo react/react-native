@@ -7,7 +7,6 @@
 
 #include "BaseTextProps.h"
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
@@ -68,6 +67,12 @@ static TextAttributes convertRawProp(
       "fontVariant",
       sourceTextAttributes.fontVariant,
       defaultTextAttributes.fontVariant);
+  textAttributes.fontVariationSettings = convertRawProp(
+      context,
+      rawProps,
+      "fontVariationSettings",
+      sourceTextAttributes.fontVariationSettings,
+      defaultTextAttributes.fontVariationSettings);
   textAttributes.allowFontScaling = convertRawProp(
       context,
       rawProps,
@@ -230,14 +235,11 @@ BaseTextProps::BaseTextProps(
     const PropsParserContext& context,
     const BaseTextProps& sourceProps,
     const RawProps& rawProps)
-    : textAttributes(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.textAttributes
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    sourceProps.textAttributes,
-                    TextAttributes{})) {};
+    : textAttributes(convertRawProp(
+          context,
+          rawProps,
+          sourceProps.textAttributes,
+          TextAttributes{})) {};
 
 void BaseTextProps::setProp(
     const PropsParserContext& context,
@@ -266,6 +268,12 @@ void BaseTextProps::setProp(
     REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, fontVariant, "fontVariant");
     REBUILD_FIELD_SWITCH_CASE(
+        defaults,
+        value,
+        textAttributes,
+        fontVariationSettings,
+        "fontVariationSettings");
+    REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, allowFontScaling, "allowFontScaling");
     REBUILD_FIELD_SWITCH_CASE(
         defaults,
@@ -273,6 +281,8 @@ void BaseTextProps::setProp(
         textAttributes,
         maxFontSizeMultiplier,
         "maxFontSizeMultiplier");
+    REBUILD_FIELD_SWITCH_CASE(
+        defaults, value, textAttributes, dynamicTypeRamp, "dynamicTypeRamp");
     REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, letterSpacing, "letterSpacing");
     REBUILD_FIELD_SWITCH_CASE(
@@ -286,7 +296,7 @@ void BaseTextProps::setProp(
         value,
         textAttributes,
         baseWritingDirection,
-        "baseWritingDirection");
+        "writingDirection");
     REBUILD_FIELD_SWITCH_CASE(
         defaults,
         value,
@@ -392,6 +402,14 @@ void BaseTextProps::appendTextAttributesProps(
   if (textAttributes.fontVariant != oldProps->textAttributes.fontVariant) {
     result["fontVariant"] = textAttributes.fontVariant.has_value()
         ? toString(textAttributes.fontVariant.value())
+        : folly::dynamic(nullptr);
+  }
+
+  if (textAttributes.fontVariationSettings !=
+      oldProps->textAttributes.fontVariationSettings) {
+    result["fontVariationSettings"] =
+        textAttributes.fontVariationSettings.has_value()
+        ? folly::dynamic(*textAttributes.fontVariationSettings)
         : folly::dynamic(nullptr);
   }
 

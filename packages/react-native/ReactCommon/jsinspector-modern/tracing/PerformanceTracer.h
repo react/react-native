@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "ConsoleTimeStamp.h"
 #include "TraceEvent.h"
 #include "TraceEventProfile.h"

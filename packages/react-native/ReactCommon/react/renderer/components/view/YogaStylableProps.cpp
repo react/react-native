@@ -7,7 +7,6 @@
 
 #include "YogaStylableProps.h"
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/components/view/propsConversions.h>
 #include <react/renderer/core/propsConversions.h>
@@ -24,16 +23,9 @@ YogaStylableProps::YogaStylableProps(
     const YogaStylableProps& sourceProps,
     const RawProps& rawProps,
     const std::function<bool(const std::string&)>& filterObjectKeys)
-    : Props() {
-  initialize(context, sourceProps, rawProps, filterObjectKeys);
-
-  yogaStyle = ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-      ? sourceProps.yogaStyle
-      : convertRawProp(context, rawProps, sourceProps.yogaStyle);
-
-  if (!ReactNativeFeatureFlags::enableCppPropsIteratorSetter()) {
-    convertRawPropAliases(context, sourceProps, rawProps);
-  }
+    : Props(context, sourceProps, rawProps, filterObjectKeys),
+      yogaStyle(convertRawProp(context, rawProps, sourceProps.yogaStyle)) {
+  convertRawPropAliases(context, sourceProps, rawProps);
 };
 
 template <typename T>

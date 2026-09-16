@@ -1,0 +1,38 @@
+name: Format Report
+
+on:
+  workflow_run:
+    workflows: [Format]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    if: >-
+      github.repository == 'react/react-native' &&
+      github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Check out trusted reporter
+        uses: actions/checkout@v6
+      - name: Download formatting report
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          name: format-results
+          path: .format-results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Comment on formatting failures
+        if: steps.download.outcome == 'success'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const reportFormattingErrors = require('./.github/workflow-scripts/reportFormattingErrors');
+            await reportFormattingErrors({github, context, core});

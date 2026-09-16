@@ -1,0 +1,289 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorMessageHeader should not render "See More" if expanded 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flex="0"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="20"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(250, 186, 48, 1)"
+    includeFontPadding="false"
+    lineHeight="28"
+    nativeID="logbox_message_title_text"
+    overflow="hidden"
+  >
+    Warning
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSizeMultiplier="NaN"
+    fontWeight="500"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_message_contents_text"
+    overflow="hidden"
+    paddingBottom="10"
+    paddingHorizontal="12"
+  >
+    <rn-text
+      allowFontScaling="true"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      layoutDirection="ltr"
+      lineHeight="20"
+    >
+      #############################################################################################################################################################################################################################################################################################################
+    </rn-text>
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorMessageHeader should not render See More button for short content 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flex="0"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="20"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(250, 186, 48, 1)"
+    includeFontPadding="false"
+    lineHeight="28"
+    nativeID="logbox_message_title_text"
+    overflow="hidden"
+  >
+    Warning
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSizeMultiplier="NaN"
+    fontWeight="500"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_message_contents_text"
+    overflow="hidden"
+    paddingBottom="10"
+    paddingHorizontal="12"
+  >
+    <rn-text
+      allowFontScaling="true"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      layoutDirection="ltr"
+      lineHeight="20"
+    >
+      Short
+    </rn-text>
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorMessageHeader should render "See More" if collapsed 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flex="0"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="20"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(250, 186, 48, 1)"
+    includeFontPadding="false"
+    lineHeight="28"
+    nativeID="logbox_message_title_text"
+    overflow="hidden"
+  >
+    Warning
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSizeMultiplier="NaN"
+    fontWeight="500"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_message_contents_text"
+    overflow="hidden"
+    paddingBottom="10"
+    paddingHorizontal="12"
+  >
+    <rn-text
+      allowFontScaling="true"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      layoutDirection="ltr"
+      lineHeight="20"
+    >
+      ############################################################################################################################################################################################################################################################################################################
+    </rn-text>
+    <rn-text
+      accessibilityRole="link"
+      allowFontScaling="true"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      isHighlighted="false"
+      isPressable="true"
+      layoutDirection="ltr"
+      lineHeight="12"
+    >
+      ... See More
+    </rn-text>
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorMessageHeader should render error 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flex="0"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="20"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(243, 83, 105, 1)"
+    includeFontPadding="false"
+    lineHeight="28"
+    nativeID="logbox_message_title_text"
+    overflow="hidden"
+  >
+    Error
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSizeMultiplier="NaN"
+    fontWeight="500"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_message_contents_text"
+    overflow="hidden"
+    paddingBottom="10"
+    paddingHorizontal="12"
+  >
+    <rn-text
+      allowFontScaling="true"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      layoutDirection="ltr"
+      lineHeight="20"
+    >
+      Some error message
+    </rn-text>
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorMessageHeader should render fatal 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flex="0"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="20"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(243, 83, 105, 1)"
+    includeFontPadding="false"
+    lineHeight="28"
+    nativeID="logbox_message_title_text"
+    overflow="hidden"
+  >
+    Fatal Error
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSizeMultiplier="NaN"
+    fontWeight="500"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_message_contents_text"
+    overflow="hidden"
+    paddingBottom="10"
+    paddingHorizontal="12"
+  >
+    <rn-text
+      allowFontScaling="true"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      layoutDirection="ltr"
+      lineHeight="20"
+    >
+      Some fatal message
+    </rn-text>
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorMessageHeader should render syntax error 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flex="0"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="20"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(243, 83, 105, 1)"
+    includeFontPadding="false"
+    lineHeight="28"
+    nativeID="logbox_message_title_text"
+    overflow="hidden"
+  >
+    Syntax Error
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSizeMultiplier="NaN"
+    fontWeight="500"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_message_contents_text"
+    overflow="hidden"
+    paddingBottom="10"
+    paddingHorizontal="12"
+  >
+    <rn-text
+      allowFontScaling="true"
+      fontWeight="500"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      layoutDirection="ltr"
+      lineHeight="20"
+    >
+      Some syntax error message
+    </rn-text>
+  </rn-paragraph>
+</rn-view>
+`;

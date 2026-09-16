@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     # Run every 2hrs during weekdays
-    - cron: "0 0/2 * * 1-5"
+    - cron: '0 0/2 * * 1-5'
 
 jobs:
   cache-cleaner:

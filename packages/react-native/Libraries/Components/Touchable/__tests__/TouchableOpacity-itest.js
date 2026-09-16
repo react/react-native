@@ -14,13 +14,16 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {HostInstance} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Text, TouchableOpacity} from 'react-native';
-import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<TouchableOpacity>', () => {
+  it('sets displayName', () => {
+    expect(TouchableOpacity.displayName).toBe('TouchableOpacity');
+  });
+
   describe('props', () => {
     describe('rendering', () => {
       it('renders as a view with accessible="true"', () => {
@@ -112,7 +115,7 @@ describe('<TouchableOpacity>', () => {
           );
         });
 
-        const element = ensureInstance(elementRef.current, ReactNativeElement);
+        const element = nullthrows(elementRef.current);
         Fantom.dispatchNativeEvent(element, 'click');
 
         expect(onPressCallback).toHaveBeenCalledTimes(1);
@@ -136,7 +139,7 @@ describe('<TouchableOpacity>', () => {
           );
         });
 
-        const element = ensureInstance(elementRef.current, ReactNativeElement);
+        const element = nullthrows(elementRef.current);
         Fantom.dispatchNativeEvent(element, 'click');
 
         expect(onPressCallback).toHaveBeenCalledTimes(0);
@@ -147,6 +150,22 @@ describe('<TouchableOpacity>', () => {
 
         Fantom.runTask(() => {
           root.render(<TouchableOpacity disabled={true} />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('sets accessibilityState disabled to true via accessibilityState prop', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableOpacity accessibilityState={{disabled: true}} />,
+          );
         });
 
         expect(
@@ -169,9 +188,8 @@ describe('<TouchableOpacity>', () => {
           );
         });
 
-        const element = ensureInstance(
+        const element = nullthrows(
           root.document.documentElement.firstElementChild,
-          ReactNativeElement,
         );
         expect(element.childNodes.length).toBe(1);
 
@@ -195,7 +213,7 @@ describe('<TouchableOpacity>', () => {
           root.render(<TouchableOpacity ref={elementRef} />);
         });
 
-        expect(elementRef.current).toBeInstanceOf(ReactNativeElement);
+        expect(elementRef.current).toBeInstanceOf(HTMLElement);
       });
 
       it('uses the "RN:View" tag name', () => {
@@ -207,7 +225,7 @@ describe('<TouchableOpacity>', () => {
           root.render(<TouchableOpacity ref={elementRef} />);
         });
 
-        const element = ensureInstance(elementRef.current, ReactNativeElement);
+        const element = nullthrows(elementRef.current);
         expect(element.tagName).toBe('RN:View');
       });
     });

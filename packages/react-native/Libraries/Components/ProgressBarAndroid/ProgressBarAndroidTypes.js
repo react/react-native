@@ -20,10 +20,23 @@ import type {ViewProps} from '../View/ViewPropTypes';
 type DeterminateProgressBarAndroidStyleAttrProp = {
   styleAttr: 'Horizontal',
   indeterminate: false,
+  /**
+   * The progress value (between 0 and 1).
+   */
   progress: number,
 };
 
 type IndeterminateProgressBarAndroidStyleAttrProp = {
+  /**
+   * Style of the ProgressBar. One of:
+   *     Horizontal
+   *     Normal (default)
+   *     Small
+   *     Large
+   *     Inverse
+   *     SmallInverse
+   *     LargeInverse
+   */
   styleAttr:
     | 'Horizontal'
     | 'Normal'
@@ -32,6 +45,10 @@ type IndeterminateProgressBarAndroidStyleAttrProp = {
     | 'Inverse'
     | 'SmallInverse'
     | 'LargeInverse',
+  /**
+   * If the progress bar will show indeterminate progress.
+   * Note that this can only be false if styleAttr is Horizontal.
+   */
   indeterminate: true,
 };
 

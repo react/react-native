@@ -21,7 +21,7 @@ import openDebuggerMiddleware from './middleware/openDebuggerMiddleware';
 import DefaultToolLauncher from './utils/DefaultToolLauncher';
 import reactNativeDebuggerFrontendPath from '@react-native/debugger-frontend';
 import connect from 'connect';
-import path from 'path';
+import path from 'node:path';
 import serveStaticMiddleware from 'serve-static';
 
 type Options = Readonly<{

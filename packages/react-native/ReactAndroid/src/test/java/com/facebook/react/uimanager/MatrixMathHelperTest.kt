@@ -84,6 +84,39 @@ class MatrixMathHelperTest {
   }
 
   @Test
+  fun testDecomposingTranslationAndScale() {
+    val ctx = MatrixDecompositionContext()
+
+    MatrixMathHelper.decomposeMatrix(
+        doubleArrayOf(
+            2.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            3.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            4.0,
+            0.0,
+            5.0,
+            6.0,
+            7.0,
+            1.0,
+        ),
+        ctx,
+    )
+
+    assertThat(ctx.perspective).containsExactly(0.0, 0.0, 0.0, 1.0)
+    assertThat(ctx.scale).containsExactly(2.0, 3.0, 4.0)
+    assertThat(ctx.skew).containsExactly(0.0, 0.0, 0.0)
+    assertThat(ctx.translation).containsExactly(5.0, 6.0, 7.0)
+    assertThat(ctx.rotationDegrees).containsExactly(0.0, 0.0, 0.0)
+  }
+
+  @Test
   fun testDecomposing4x4MatrixToProduceAccurateYaxisAngles() {
     val angles = doubleArrayOf(30.0, 45.0, 60.0, 75.0, 90.0)
     for (angle in angles) {

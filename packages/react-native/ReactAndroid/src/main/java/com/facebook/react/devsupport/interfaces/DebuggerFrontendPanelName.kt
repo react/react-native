@@ -7,7 +7,7 @@
 
 package com.facebook.react.devsupport.interfaces
 
-internal enum class DebuggerFrontendPanelName(public val internalName: String) {
+internal enum class DebuggerFrontendPanelName(val internalName: String) {
   CONSOLE("console"),
   MEMORY("heap-profiler"),
   NETWORK("network"),

@@ -75,7 +75,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
       val accessibilityStateExpanded = host.getTag(R.id.accessibility_state_expanded) as Boolean
       info.addAction(
           if (accessibilityStateExpanded) AccessibilityNodeInfoCompat.ACTION_COLLAPSE
-          else AccessibilityNodeInfoCompat.ACTION_EXPAND
+          else AccessibilityNodeInfoCompat.ACTION_EXPAND,
       )
     }
     val accessibilityRole = AccessibilityRole.fromViewTag(host)
@@ -234,7 +234,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
         val uiManager = getUIManager(reactContext, UIManagerType.FABRIC)
         if (uiManager != null) {
           uiManager.eventDispatcher.dispatchEvent(
-              AccessibilityActionEvent(eventData, surfaceId, reactTag)
+              AccessibilityActionEvent(eventData, surfaceId, reactTag),
           )
         }
       } else {
@@ -399,7 +399,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
       return TOP_ACCESSIBILITY_ACTION_EVENT
     }
 
-    public override fun getEventData(): WritableMap? {
+    override fun getEventData(): WritableMap? {
       return accessibilityEventData
     }
   }
@@ -437,6 +437,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
     SPINBUTTON,
     SWITCH,
     TAB,
+    TABBAR,
     TABLIST,
     TIMER,
     LIST,
@@ -491,6 +492,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
           RADIOGROUP,
           SCROLLBAR,
           TAB,
+          TABBAR,
           TABLIST,
           TIMER,
           TOOLBAR -> "android.view.View"

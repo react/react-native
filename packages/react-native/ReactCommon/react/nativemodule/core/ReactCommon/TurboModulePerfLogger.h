@@ -7,8 +7,14 @@
 
 #pragma once
 
-#include <reactperflogger/NativeModulePerfLogger.h>
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
+#include <cstdint>
 #include <memory>
+
+namespace facebook::react {
+class NativeModulePerfLogger;
+} // namespace facebook::react
 
 namespace facebook::react::TurboModulePerfLogger {
 void enableLogging(std::unique_ptr<NativeModulePerfLogger> &&logger);

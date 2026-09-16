@@ -10,10 +10,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins {
-  alias(libs.plugins.kotlin.jvm)
-  alias(libs.plugins.ktfmt)
-}
+plugins { alias(libs.plugins.kotlin.jvm) }
 
 repositories { mavenCentral() }
 
@@ -31,7 +28,7 @@ tasks.withType<KotlinCompile>().configureEach {
     // See comment above on JDK 11 support
     jvmTarget.set(JvmTarget.JVM_11)
     allWarningsAsErrors.set(
-        project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false
+        project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false,
     )
   }
 }

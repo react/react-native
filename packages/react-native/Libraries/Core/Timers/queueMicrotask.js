@@ -4,13 +4,13 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 'use strict';
 
-let resolvedPromise;
+let resolvedPromise: ?Promise<void>;
 
 /**
  * Polyfill for the microtask queueing API defined by WHATWG HTML spec.
@@ -19,7 +19,7 @@ let resolvedPromise;
  * The method must queue a microtask to invoke @param {function} callback, and
  * if the callback throws an exception, report the exception.
  */
-export default function queueMicrotask(callback: Function) {
+export default function queueMicrotask(callback: () => unknown) {
   if (arguments.length < 1) {
     throw new TypeError(
       'queueMicrotask must be called with at least one argument (a function to call)',
@@ -30,7 +30,6 @@ export default function queueMicrotask(callback: Function) {
   }
 
   // Try to reuse a lazily allocated resolved promise from closure.
-  // $FlowFixMe[constant-condition]
   (resolvedPromise || (resolvedPromise = Promise.resolve()))
     .then(callback)
     .catch(error =>

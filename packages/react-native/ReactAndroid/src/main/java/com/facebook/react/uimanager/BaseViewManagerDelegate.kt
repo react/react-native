@@ -104,7 +104,13 @@ public abstract class BaseViewManagerDelegate<
         mViewManager.setAccessibilityLabelledBy(view, dynamicFromObject)
       }
       ViewProps.OPACITY -> mViewManager.setOpacity(view, (value as Double?)?.toFloat() ?: 1.0f)
-      ViewProps.OUTLINE_COLOR -> mViewManager.setOutlineColor(view, value as Int?)
+      ViewProps.OUTLINE_COLOR ->
+          mViewManager.setOutlineColor(
+              view,
+              // Use the overload without a default value to preserve outlineColor's nullable
+              // contract.
+              ColorPropConverter.getColor(value, view.context),
+          )
 
       ViewProps.OUTLINE_OFFSET ->
           mViewManager.setOutlineOffset(

@@ -30,7 +30,7 @@ internal class DebuggingOverlayManager :
 
   override fun getDelegate(): ViewManagerDelegate<DebuggingOverlay> = delegate
 
-  override fun highlightTraceUpdates(view: DebuggingOverlay, updates: ReadableArray): Unit {
+  override fun highlightTraceUpdates(view: DebuggingOverlay, updates: ReadableArray) {
     val formattedTraceUpdates = mutableListOf<TraceUpdate>()
 
     var successfullyParsedPayload = true
@@ -41,7 +41,7 @@ internal class DebuggingOverlayManager :
         ReactSoftExceptionLogger.logSoftException(
             REACT_CLASS,
             ReactNoCrashSoftException(
-                "Unexpected payload for highlighting trace updates: rectangle field is null"
+                "Unexpected payload for highlighting trace updates: rectangle field is null",
             ),
         )
         successfullyParsedPayload = false
@@ -68,7 +68,7 @@ internal class DebuggingOverlayManager :
                 REACT_CLASS,
                 ReactNoCrashSoftException(
                     "Unexpected payload for highlighting trace updates: rectangle field should" +
-                        " have x, y, width, height fields"
+                        " have x, y, width, height fields",
                 ),
             )
             successfullyParsedPayload = false
@@ -83,7 +83,7 @@ internal class DebuggingOverlayManager :
     }
   }
 
-  override fun highlightElements(view: DebuggingOverlay, elements: ReadableArray): Unit {
+  override fun highlightElements(view: DebuggingOverlay, elements: ReadableArray) {
     val elementsRectangles = mutableListOf<RectF>()
 
     var successfullyParsedPayload = true
@@ -105,7 +105,7 @@ internal class DebuggingOverlayManager :
                 REACT_CLASS,
                 ReactNoCrashSoftException(
                     "Unexpected payload for highlighting elements: every element should have x," +
-                        " y, width, height fields"
+                        " y, width, height fields",
                 ),
             )
             successfullyParsedPayload = false
@@ -120,7 +120,7 @@ internal class DebuggingOverlayManager :
     }
   }
 
-  override fun clearElementsHighlights(view: DebuggingOverlay): Unit {
+  override fun clearElementsHighlights(view: DebuggingOverlay) {
     view.clearElementsHighlights()
   }
 

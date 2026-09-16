@@ -81,7 +81,7 @@ try {
    */
   jest.mock('prettier', () => {
     // $FlowExpectedError[underconstrained-implicit-instantiation]
-    const module = jest.requireActual('module');
+    const module = jest.requireActual('node:module');
     return module.prototype.require(require.resolve('prettier'));
   });
 } catch {}
@@ -133,6 +133,7 @@ mock(
   'm#react-native/Libraries/Core/InitializeCore',
   'm#./mocks/InitializeCore',
 );
+mock('m#react-native/setup-env', 'm#./mocks/InitializeCore');
 mock('m#react-native/Libraries/Core/NativeExceptionsManager');
 mock('m#react-native/Libraries/Image/Image', 'm#./mocks/Image');
 mock(

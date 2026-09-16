@@ -9,7 +9,6 @@
 
 #include <react/debug/react_native_assert.h>
 
-#include <glog/logging.h>
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -33,11 +32,14 @@ bool RawPropsKeyMap::shouldFirstOneBeBeforeSecondOne(
 }
 
 void RawPropsKeyMap::insert(
-    const RawPropsKey& key,
+    std::string_view key,
     RawPropsValueIndex value) noexcept {
   auto item = Item{};
   item.value = value;
-  key.render(item.name, &item.length);
+  auto length =
+      std::min(key.size(), static_cast<size_t>(kPropNameLengthHardCap - 1));
+  std::copy_n(key.data(), length, item.name);
+  item.length = static_cast<RawPropsPropNameLength>(length);
   items_.push_back(item);
   react_native_assert(
       items_.size() < std::numeric_limits<RawPropsPropNameLength>::max());
@@ -52,26 +54,9 @@ void RawPropsKeyMap::reindex() noexcept {
       &RawPropsKeyMap::shouldFirstOneBeBeforeSecondOne);
 
   // Filtering out duplicating keys.
-  // Accessing the same key twice is supported by RawPropsPorser, but the
-  // RawPropsKey used must be identical, and if not, lookup will be
-  // inconsistent.
-  auto it = items_.begin();
-  auto end = items_.end();
-  // Implements std::unique with additional logging
-  if (it != end) {
-    auto result = it;
-    while (++it != end) {
-      if (hasSameName(*result, *it)) {
-        LOG(WARNING)
-            << "Component property map contains multiple entries for '"
-            << std::string_view(it->name, it->length)
-            << "'. Ensure all calls to convertRawProp use a consistent prefix, name and suffix.";
-      } else if (++result != it) {
-        *result = *it;
-      }
-    }
-    items_.erase(++result, items_.end());
-  }
+  items_.erase(
+      std::unique(items_.begin(), items_.end(), &RawPropsKeyMap::hasSameName),
+      items_.end());
 
   buckets_.resize(kPropNameLengthHardCap);
 
@@ -91,9 +76,8 @@ void RawPropsKeyMap::reindex() noexcept {
   }
 }
 
-RawPropsValueIndex RawPropsKeyMap::at(
-    const char* name,
-    RawPropsPropNameLength length) noexcept {
+RawPropsValueIndex RawPropsKeyMap::at(std::string_view name) noexcept {
+  auto length = static_cast<RawPropsPropNameLength>(name.size());
   react_native_assert(length > 0);
   react_native_assert(length < kPropNameLengthHardCap);
   if (length == 0 || length >= kPropNameLengthHardCap) [[unlikely]] {
@@ -107,7 +91,7 @@ RawPropsValueIndex RawPropsKeyMap::at(
   // 2. Binary search in the bucket.
   while (lower <= upper) {
     auto median = (lower + upper) / 2;
-    auto condition = std::memcmp(items_[median].name, name, length);
+    auto condition = std::memcmp(items_[median].name, name.data(), length);
     if (condition < 0) {
       lower = median + 1;
     } else if (condition == 0) {

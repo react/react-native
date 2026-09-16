@@ -11,7 +11,7 @@
 import type {PluginObj} from '@babel/core';
 
 import * as babel from '@babel/core';
-import path from 'path';
+import path from 'node:path';
 
 type PackageConfig = ReadonlyArray<{
   directory: string,

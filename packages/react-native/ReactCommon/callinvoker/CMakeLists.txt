@@ -11,5 +11,6 @@ include(${REACT_COMMON_DIR}/cmake-utils/react-native-flags.cmake)
 add_library(callinvoker INTERFACE)
 
 target_include_directories(callinvoker INTERFACE .)
+target_link_libraries(callinvoker INTERFACE react_cxxstableapi)
 target_compile_reactnative_options(callinvoker INTERFACE)
 target_compile_options(callinvoker INTERFACE -Wpedantic)

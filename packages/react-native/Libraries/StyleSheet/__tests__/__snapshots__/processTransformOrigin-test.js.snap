@@ -1,5 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`processTransformOrigin validation only accepts three values 1`] = `"Transform origin must have exactly 3 values."`;
-
-exports[`processTransformOrigin validation only accepts three values 2`] = `"Transform origin must have exactly 3 values."`;

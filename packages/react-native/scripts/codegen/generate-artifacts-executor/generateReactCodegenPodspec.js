@@ -16,9 +16,9 @@ const {
   packageJson,
 } = require('./constants');
 const {codegenLog, writeFileSyncIfChanged} = require('./utils');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const REACT_CODEGEN_PODSPEC_TEMPLATE_PATH = path.join(
   TEMPLATES_FOLDER_PATH,
@@ -75,6 +75,7 @@ function getInputFiles(appPath /*: string */, appPkgJson /*: $FlowFixMe */) {
   const list = String(execSync(findCommand))
     .trim()
     .split('\n')
+    .filter(Boolean)
     .sort()
     .map(filepath => `"\${PODS_ROOT}/${path.relative(xcodeproj, filepath)}"`)
     .join(',\n');

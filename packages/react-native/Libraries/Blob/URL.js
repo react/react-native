@@ -4,9 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
+
+// flowlint unsafe-getters-setters:off
 
 import type Blob from './Blob';
 
@@ -79,6 +81,7 @@ export class URL {
   // $FlowFixMe[missing-local-annot]
   constructor(url: string, base?: string | URL) {
     let baseUrl = null;
+    // $FlowFixMe[sketchy-null-string]
     if (!base || validateBaseUrl(url)) {
       this._url = url;
       if (this._url.includes('#')) {
@@ -112,13 +115,14 @@ export class URL {
       if (baseUrl.endsWith('/')) {
         baseUrl = baseUrl.slice(0, baseUrl.length - 1);
       }
-      if (!url.startsWith('/')) {
-        url = `/${url}`;
+      let path = url;
+      if (!path.startsWith('/')) {
+        path = `/${path}`;
       }
-      if (baseUrl.endsWith(url)) {
-        url = '';
+      if (baseUrl.endsWith(path)) {
+        path = '';
       }
-      this._url = `${baseUrl}${url}`;
+      this._url = `${baseUrl}${path}`;
     }
   }
 

@@ -2,15 +2,15 @@ name: create_release
 description: Creates a new React Native release
 inputs:
   version:
-    description: "The version of React Native we want to release. For example 0.75.0-rc.0"
+    description: 'The version of React Native we want to release. For example 0.75.0-rc.0'
     required: true
   is-latest-on-npm:
-    description: "Whether we want to tag this release as latest on NPM"
+    description: 'Whether we want to tag this release as latest on NPM'
     required: true
-    default: "false"
+    default: 'false'
   dry-run:
-    description: "Whether the job should be executed in dry-run mode or not"
-    default: "true"
+    description: 'Whether the job should be executed in dry-run mode or not'
+    default: 'true'
 runs:
   using: composite
   steps:

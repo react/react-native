@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "AndroidTextInputEventEmitter.h"
 #include "AndroidTextInputProps.h"
 #include "AndroidTextInputState.h"

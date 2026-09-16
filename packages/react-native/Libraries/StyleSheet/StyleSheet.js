@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -41,7 +41,7 @@ export type {
  * most useful when using DynamicColorIOS which can be a string or a dynamic
  * color object.
  *
- * type props = {backgroundColor: ColorValue};
+ * `type Props = {backgroundColor: ColorValue};`
  */
 export type ColorValue = ____ColorValue_Internal;
 
@@ -136,6 +136,7 @@ export type TypeForStyleKey<
  * object of styles to pass to a View that can't be precomputed with
  * StyleSheet.create.
  */
+/** @build-types emit-as-interface react-native-web compatibility */
 export type ViewStyle = ____ViewStyle_Internal;
 
 /**
@@ -153,6 +154,7 @@ export type ViewStyle = ____ViewStyle_Internal;
  * object of styles to pass to a Text that can't be precomputed with
  * StyleSheet.create.
  */
+/** @build-types emit-as-interface react-native-web compatibility */
 export type TextStyle = ____TextStyle_Internal;
 
 /**
@@ -170,6 +172,7 @@ export type TextStyle = ____TextStyle_Internal;
  * object of styles to pass to an Image that can't be precomputed with
  * StyleSheet.create.
  */
+/** @build-types emit-as-interface react-native-web compatibility */
 export type ImageStyle = ____ImageStyle_Internal;
 
 /**
@@ -186,4 +189,44 @@ export type ImageStyle = ____ImageStyle_Internal;
  */
 export type DangerouslyImpreciseStyle = ____DangerouslyImpreciseStyle_Internal;
 
+/**
+ * A styling abstraction for React Native, inspired by CSS stylesheets.
+ *
+ * Use `StyleSheet.create()` to define a group of named styles in one place,
+ * separate from your render logic. The styles are plain objects, so the call
+ * is effectively an identity function — its main benefit is static type
+ * checking of each style against the valid native style properties for a
+ * `View`, `Text`, or `Image`. Naming styles and moving them out of the render
+ * tree also keeps components easier to read.
+ *
+ * Example:
+ *
+ * ```tsx
+ * const styles = StyleSheet.create({
+ *   container: {
+ *     flex: 1,
+ *     padding: 24,
+ *   },
+ *   title: {
+ *     fontSize: 20,
+ *     fontWeight: '600',
+ *   },
+ * });
+ *
+ * function Screen() {
+ *   return (
+ *     <View style={styles.container}>
+ *       <Text style={styles.title}>Hello</Text>
+ *     </View>
+ *   );
+ * }
+ * ```
+ *
+ * The module also provides helpers for combining styles — `compose` (merge
+ * two styles, with the second overriding the first) and `flatten` (collapse
+ * an array of styles into a single object) — plus the constants `absoluteFill`,
+ * `absoluteFillObject`, and `hairlineWidth` for common layout patterns.
+ *
+ * @see https://reactnative.dev/docs/stylesheet
+ */
 export default StyleSheet;

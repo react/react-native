@@ -8,5 +8,5 @@
 package com.facebook.react.devsupport.perfmonitor
 
 internal interface PerfMonitorEventDispatcher {
-  public fun addPerfMonitorListener(listener: PerfMonitorUpdateListener)
+  fun addPerfMonitorListener(listener: PerfMonitorUpdateListener)
 }

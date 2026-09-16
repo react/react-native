@@ -7,11 +7,19 @@
 
 #include <gtest/gtest.h>
 
+#include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 
 #include "TestComponent.h"
 
 using namespace facebook::react;
+
+static_assert(
+    HasIteratorSetterCtor<Props>,
+    "base `Props` must itself satisfy `HasIteratorSetterCtor` — it is copy-constructible, "
+    "derived from itself, and declares its own `setProp`. If this fails, "
+    "`ConcreteComponentDescriptor::cloneProps` will silently fall back to the classic "
+    "path for any concrete props whose nearest setProp-declaring ancestor is `Props` itself.");
 
 TEST(ComponentDescriptorTest, createShadowNode) {
   auto eventDispatcher = std::shared_ptr<const EventDispatcher>();

@@ -15,16 +15,22 @@ import {
 } from './NativeDeviceInfo';
 import {useEffect, useState} from 'react';
 
+/**
+ * React hook that provides the application window's width, height, scale, and
+ * font scale. Automatically updates when screen size or font scale changes.
+ *
+ * @see https://reactnative.dev/docs/usewindowdimensions
+ */
 export default function useWindowDimensions():
-  | DisplayMetrics
-  | DisplayMetricsAndroid {
+  DisplayMetrics | DisplayMetricsAndroid {
   const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
   useEffect(() => {
     function handleChange({
       window,
-    }: {
+    }: Readonly<{
       window: DisplayMetrics | DisplayMetricsAndroid,
-    }) {
+      ...
+    }>) {
       if (
         dimensions.width !== window.width ||
         dimensions.height !== window.height ||

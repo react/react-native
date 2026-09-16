@@ -113,7 +113,7 @@ public class ReactVirtualView(context: Context) :
     recycleView()
   }
 
-  override internal fun recycleView() {
+  override fun recycleView() {
     cleanupLayoutListeners()
     scrollView?.virtualViewContainerState?.remove(this)
     scrollView = null

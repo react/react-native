@@ -20,13 +20,14 @@ import TextInputState from '../../../../../../Libraries/Components/TextInput/Tex
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {createRef} from 'react';
-import {ScrollView, Text, TextInput, View} from 'react-native';
+import {Modal, ScrollView, Text, TextInput, View} from 'react-native';
 import {
   NativeText,
   NativeVirtualText,
 } from 'react-native/Libraries/Text/TextNativeComponent';
 import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
 import Event from 'react-native/src/private/webapis/dom/events/Event';
+import ReactNativeDocument from 'react-native/src/private/webapis/dom/nodes/ReactNativeDocument';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 import ReadOnlyElement from 'react-native/src/private/webapis/dom/nodes/ReadOnlyElement';
 import ReadOnlyNode from 'react-native/src/private/webapis/dom/nodes/ReadOnlyNode';
@@ -397,6 +398,47 @@ describe('ReactNativeElement', () => {
         expect(childNodeC.nextSibling).toBe(null);
         expect(childNodeC.parentNode).toBe(null);
         expect(childNodeC.parentElement).toBe(null);
+      });
+
+      it('returns the containing element as the parent of a modal host view, not the document', () => {
+        const parentRef = createRef<HostInstance>();
+        const modalRef = createRef<HostInstance>();
+
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(
+            <View ref={parentRef}>
+              <Modal ref={modalRef} />
+            </View>,
+          );
+        });
+
+        const parentNode = ensureReactNativeElement(parentRef.current);
+        const modalNode = ensureReactNativeElement(modalRef.current);
+        const document = ensureInstance(
+          parentNode.ownerDocument,
+          ReactNativeDocument,
+        );
+
+        // Capture the relations before tearing down, so cleanup runs even if
+        // the assertions below fail.
+        const modalParentNode = modalNode.parentNode;
+        const modalParentElement = modalNode.parentElement;
+
+        // Unmount and drain the queue so the modal's AppContainer passive
+        // effects (in __DEV__) don't trip the global "MessageQueue is not
+        // empty" validation hook.
+        root.destroy();
+        Fantom.runWorkLoop();
+
+        // The <Modal> host view is a root-kind shadow node, but its parent
+        // must still be its actual containing element, NOT the document.
+        // Two-phase event propagation (e.g. focus/blur bubbling to ancestors
+        // rendered above the modal) walks this parent chain, so returning the
+        // document here silently severs bubbling at the modal boundary.
+        expect(modalParentNode).toBe(parentNode);
+        expect(modalParentElement).toBe(parentNode);
+        expect(modalParentNode).not.toBe(document);
       });
     });
 
@@ -1656,8 +1698,6 @@ describe('ReactNativeElement', () => {
     // EventTarget API is gated behind `enableImperativeEvents`: when it is off
     // the methods are removed from this final class, when it is on they are
     // available.
-    const {isOSS} = Fantom.getConstants();
-
     if (!ReactNativeFeatureFlags.enableImperativeEvents()) {
       describe('when `enableImperativeEvents` is off (default)', () => {
         it('removes the public EventTarget methods', () => {
@@ -1678,31 +1718,28 @@ describe('ReactNativeElement', () => {
 
         // Removing the public API must not affect native/prop event delivery,
         // which goes through the internal (symbol-keyed) dispatch path.
-        (isOSS ? it.skip : it)(
-          'still delivers native events to prop handlers',
-          () => {
-            const ref = createRef<HostInstance>();
-            const onPointerUp = jest.fn();
-            const root = Fantom.createRoot();
+        it('still delivers native events to prop handlers', () => {
+          const ref = createRef<HostInstance>();
+          const onPointerUp = jest.fn();
+          const root = Fantom.createRoot();
 
-            Fantom.runTask(() => {
-              root.render(<View ref={ref} onPointerUp={onPointerUp} />);
-            });
+          Fantom.runTask(() => {
+            root.render(<View ref={ref} onPointerUp={onPointerUp} />);
+          });
 
-            expect(onPointerUp).toHaveBeenCalledTimes(0);
+          expect(onPointerUp).toHaveBeenCalledTimes(0);
 
-            Fantom.dispatchNativeEvent(
-              ref,
-              'onPointerUp',
-              {x: 0, y: 0},
-              {
-                category: Fantom.NativeEventCategory.Discrete,
-              },
-            );
+          Fantom.dispatchNativeEvent(
+            ref,
+            'onPointerUp',
+            {x: 0, y: 0},
+            {
+              category: Fantom.NativeEventCategory.Discrete,
+            },
+          );
 
-            expect(onPointerUp).toHaveBeenCalledTimes(1);
-          },
-        );
+          expect(onPointerUp).toHaveBeenCalledTimes(1);
+        });
       });
     }
 

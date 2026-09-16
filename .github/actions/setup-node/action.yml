@@ -13,7 +13,7 @@ inputs:
     required: false
     default: ''
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Setup node.js
       uses: actions/setup-node@v6

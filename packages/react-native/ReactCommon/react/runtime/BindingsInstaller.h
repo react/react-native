@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/runtime/ReactInstance.h>
 
 namespace facebook::react {

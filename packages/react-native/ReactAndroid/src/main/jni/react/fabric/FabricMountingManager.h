@@ -54,7 +54,23 @@ class FabricMountingManager final {
    */
   bool isViewAllocated(SurfaceId surfaceId, Tag tag);
 
-  void executeMount(const MountingTransaction &transaction);
+  /*
+   * Converts the transaction's mutations into an IntBufferBatchMountItem and
+   * hands it to Java.
+   *
+   * In the push model (`synchronous` = false), the batch is
+   * scheduled onto the UI thread asynchronously.
+   *
+   * In the pull model (`synchronous` = true) the batch is
+   * applied immediately on the calling (UI) thread.
+   */
+  void executeMount(const MountingTransaction &transaction, bool synchronous = false);
+
+  /*
+   * Pull model: notify Java that a transaction is available for `surfaceId` so
+   * the UI thread can pull it via a PullTransactionMountItem.
+   */
+  void onTransactionAvailable(SurfaceId surfaceId);
 
   void dispatchCommand(const ShadowView &shadowView, const std::string &commandName, const folly::dynamic &args);
 

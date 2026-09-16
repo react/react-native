@@ -9,7 +9,7 @@
 
 #ifndef RCT_REMOVE_LEGACY_ARCH
 
-#include "ErrorUtils.h"
+#include <jserrorhandler/ErrorUtils.h>
 #include "JSBigString.h"
 #include "JSBundleType.h"
 #include "JSExecutor.h"

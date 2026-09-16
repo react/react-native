@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d321b1f5f7a34b5717cb7ef5300dda96>>
+ * @generated SignedSource<<cc2b79daa48993203e35cb663b733ccc>>
  */
 
 /**
@@ -85,11 +85,11 @@ constructor(private val fpsListener: FpsListener? = null) :
 
   override fun getName(): String = REACT_CLASS
 
-  public override fun createViewInstance(context: ThemedReactContext): ReactNestedScrollView =
+  override fun createViewInstance(context: ThemedReactContext): ReactNestedScrollView =
       ReactNestedScrollView(context, fpsListener)
 
   @ReactProp(name = "scrollEnabled", defaultBoolean = true)
-  public fun setScrollEnabled(view: ReactNestedScrollView, value: Boolean) {
+  fun setScrollEnabled(view: ReactNestedScrollView, value: Boolean) {
     view.scrollEnabled = value
 
     // Set focusable to match whether scroll is enabled. This improves keyboarding
@@ -98,34 +98,34 @@ constructor(private val fpsListener: FpsListener? = null) :
   }
 
   @ReactProp(name = "showsVerticalScrollIndicator", defaultBoolean = true)
-  public fun setShowsVerticalScrollIndicator(view: ReactNestedScrollView, value: Boolean) {
+  fun setShowsVerticalScrollIndicator(view: ReactNestedScrollView, value: Boolean) {
     view.isVerticalScrollBarEnabled = value
   }
 
   @ReactProp(name = "decelerationRate")
-  public fun setDecelerationRate(view: ReactNestedScrollView, decelerationRate: Float) {
+  fun setDecelerationRate(view: ReactNestedScrollView, decelerationRate: Float) {
     view.setDecelerationRate(decelerationRate)
   }
 
   @ReactProp(name = "disableIntervalMomentum")
-  public fun setDisableIntervalMomentum(view: ReactNestedScrollView, disableIntervalMomentum: Boolean) {
+  fun setDisableIntervalMomentum(view: ReactNestedScrollView, disableIntervalMomentum: Boolean) {
     view.setDisableIntervalMomentum(disableIntervalMomentum)
   }
 
   @ReactProp(name = "scrollsChildToFocus", defaultBoolean = true)
-  public fun setScrollsChildToFocus(view: ReactNestedScrollView, scrollsChildToFocus: Boolean) {
+  fun setScrollsChildToFocus(view: ReactNestedScrollView, scrollsChildToFocus: Boolean) {
     view.setScrollsChildToFocus(scrollsChildToFocus)
   }
 
   @ReactProp(name = "snapToInterval")
-  public fun setSnapToInterval(view: ReactNestedScrollView, snapToInterval: Float) {
+  fun setSnapToInterval(view: ReactNestedScrollView, snapToInterval: Float) {
     // snapToInterval needs to be exposed as a float because of the Javascript interface.
     val density = getDisplayMetricDensity()
     view.setSnapInterval((snapToInterval * density).toInt())
   }
 
   @ReactProp(name = "snapToOffsets")
-  public fun setSnapToOffsets(view: ReactNestedScrollView, snapToOffsets: ReadableArray?) {
+  fun setSnapToOffsets(view: ReactNestedScrollView, snapToOffsets: ReadableArray?) {
     if (snapToOffsets == null || snapToOffsets.size() == 0) {
       view.setSnapOffsets(null)
       return
@@ -140,22 +140,22 @@ constructor(private val fpsListener: FpsListener? = null) :
   }
 
   @ReactProp(name = "snapToAlignment")
-  public fun setSnapToAlignment(view: ReactNestedScrollView, alignment: String?) {
+  fun setSnapToAlignment(view: ReactNestedScrollView, alignment: String?) {
     view.setSnapToAlignment(parseSnapToAlignment(alignment))
   }
 
   @ReactProp(name = "snapToStart")
-  public fun setSnapToStart(view: ReactNestedScrollView, snapToStart: Boolean) {
+  fun setSnapToStart(view: ReactNestedScrollView, snapToStart: Boolean) {
     view.setSnapToStart(snapToStart)
   }
 
   @ReactProp(name = "snapToEnd")
-  public fun setSnapToEnd(view: ReactNestedScrollView, snapToEnd: Boolean) {
+  fun setSnapToEnd(view: ReactNestedScrollView, snapToEnd: Boolean) {
     view.setSnapToEnd(snapToEnd)
   }
 
   @ReactProp(name = ReactClippingViewGroupHelper.PROP_REMOVE_CLIPPED_SUBVIEWS)
-  public fun setRemoveClippedSubviews(view: ReactNestedScrollView, removeClippedSubviews: Boolean) {
+  fun setRemoveClippedSubviews(view: ReactNestedScrollView, removeClippedSubviews: Boolean) {
     view.removeClippedSubviews = removeClippedSubviews
   }
 
@@ -168,7 +168,7 @@ constructor(private val fpsListener: FpsListener? = null) :
    * @param sendMomentumEvents
    */
   @ReactProp(name = "sendMomentumEvents")
-  public fun setSendMomentumEvents(view: ReactNestedScrollView, sendMomentumEvents: Boolean) {
+  fun setSendMomentumEvents(view: ReactNestedScrollView, sendMomentumEvents: Boolean) {
     view.setSendMomentumEvents(sendMomentumEvents)
   }
 
@@ -180,12 +180,12 @@ constructor(private val fpsListener: FpsListener? = null) :
    * @param scrollPerfTag
    */
   @ReactProp(name = "scrollPerfTag")
-  public fun setScrollPerfTag(view: ReactNestedScrollView, scrollPerfTag: String?) {
+  fun setScrollPerfTag(view: ReactNestedScrollView, scrollPerfTag: String?) {
     view.setScrollPerfTag(scrollPerfTag)
   }
 
   @ReactProp(name = "pagingEnabled")
-  public fun setPagingEnabled(view: ReactNestedScrollView, pagingEnabled: Boolean) {
+  fun setPagingEnabled(view: ReactNestedScrollView, pagingEnabled: Boolean) {
     view.setPagingEnabled(pagingEnabled)
   }
 
@@ -197,18 +197,18 @@ constructor(private val fpsListener: FpsListener? = null) :
    * @param color
    */
   @ReactProp(name = "endFillColor", defaultInt = Color.TRANSPARENT, customType = "Color")
-  public fun setBottomFillColor(view: ReactNestedScrollView, color: Int) {
+  fun setBottomFillColor(view: ReactNestedScrollView, color: Int) {
     view.setEndFillColor(color)
   }
 
   /** Controls overScroll behaviour */
   @ReactProp(name = "overScrollMode")
-  public open fun setOverScrollMode(view: ReactNestedScrollView, value: String?) {
+  open fun setOverScrollMode(view: ReactNestedScrollView, value: String?) {
     view.overScrollMode = parseOverScrollMode(value)
   }
 
   @ReactProp(name = "nestedScrollEnabled")
-  public fun setNestedScrollEnabled(view: ReactNestedScrollView?, value: Boolean) {
+  fun setNestedScrollEnabled(view: ReactNestedScrollView?, value: Boolean) {
     if (view != null) {
       ViewCompat.setNestedScrollingEnabled(view, value)
     }
@@ -257,7 +257,7 @@ constructor(private val fpsListener: FpsListener? = null) :
           ],
       defaultFloat = Float.NaN,
   )
-  public fun setBorderRadius(view: ReactNestedScrollView?, index: Int, borderRadius: Float) {
+  fun setBorderRadius(view: ReactNestedScrollView?, index: Int, borderRadius: Float) {
     if (view != null) {
       val radius =
           if (borderRadius.isNaN()) null
@@ -267,7 +267,7 @@ constructor(private val fpsListener: FpsListener? = null) :
   }
 
   @ReactProp(name = "borderStyle")
-  public fun setBorderStyle(view: ReactNestedScrollView?, borderStyle: String?) {
+  fun setBorderStyle(view: ReactNestedScrollView?, borderStyle: String?) {
     if (view != null) {
       val parsedBorderStyle = if (borderStyle == null) null else fromString(borderStyle)
       setBorderStyle(view, parsedBorderStyle)
@@ -285,7 +285,7 @@ constructor(private val fpsListener: FpsListener? = null) :
           ],
       defaultFloat = Float.NaN,
   )
-  public fun setBorderWidth(view: ReactNestedScrollView?, index: Int, width: Float) {
+  fun setBorderWidth(view: ReactNestedScrollView?, index: Int, width: Float) {
     if (view != null) {
       setBorderWidth(view, LogicalEdge.entries[index], width)
     }
@@ -303,14 +303,14 @@ constructor(private val fpsListener: FpsListener? = null) :
       customType = "Color",
   )
   @Suppress("UNUSED_PARAMETER")
-  public fun setBorderColor(view: ReactNestedScrollView?, index: Int, color: Int?) {
+  fun setBorderColor(view: ReactNestedScrollView?, index: Int, color: Int?) {
     if (view != null) {
       setBorderColor(view, LogicalEdge.ALL, color)
     }
   }
 
   @ReactProp(name = "overflow")
-  public fun setOverflow(view: ReactNestedScrollView, overflow: String?) {
+  fun setOverflow(view: ReactNestedScrollView, overflow: String?) {
     view.setOverflow(overflow)
   }
 
@@ -321,7 +321,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     val child =
         scrollView.getChildAt(0)
             ?: throw RetryableMountingLayerException(
-                "scrollToEnd called on ScrollView without child"
+                "scrollToEnd called on ScrollView without child",
             )
 
     // ScrollView always has one child - the scrollable area
@@ -335,12 +335,12 @@ constructor(private val fpsListener: FpsListener? = null) :
   }
 
   @ReactProp(name = "persistentScrollbar")
-  public fun setPersistentScrollbar(view: ReactNestedScrollView, value: Boolean) {
+  fun setPersistentScrollbar(view: ReactNestedScrollView, value: Boolean) {
     view.isScrollbarFadingEnabled = !value
   }
 
   @ReactProp(name = "fadingEdgeLength")
-  public fun setFadingEdgeLength(view: ReactNestedScrollView, value: Dynamic) {
+  fun setFadingEdgeLength(view: ReactNestedScrollView, value: Dynamic) {
     when (value.type) {
       ReadableType.Number -> {
         view.fadingEdgeLengthStart = value.asInt()
@@ -367,7 +367,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     if (view.fadingEdgeLengthStart > 0 || view.fadingEdgeLengthEnd > 0) {
       view.isVerticalFadingEdgeEnabled = true
       view.setFadingEdgeLength(
-          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx())
+          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx()),
       )
     } else {
       view.isVerticalFadingEdgeEnabled = false
@@ -376,15 +376,15 @@ constructor(private val fpsListener: FpsListener? = null) :
   }
 
   @ReactProp(name = "contentOffset", customType = "Point")
-  public fun setContentOffset(view: ReactNestedScrollView, value: ReadableMap?) {
+  fun setContentOffset(view: ReactNestedScrollView, value: ReadableMap?) {
     view.setContentOffset(value)
   }
 
   @ReactProp(name = "maintainVisibleContentPosition")
-  public fun setMaintainVisibleContentPosition(view: ReactNestedScrollView, value: ReadableMap?) {
+  fun setMaintainVisibleContentPosition(view: ReactNestedScrollView, value: ReadableMap?) {
     if (value != null) {
       view.setMaintainVisibleContentPosition(
-          MaintainVisibleScrollPositionHelper.Config.fromReadableMap(value)
+          MaintainVisibleScrollPositionHelper.Config.fromReadableMap(value),
       )
     } else {
       view.setMaintainVisibleContentPosition(null)
@@ -414,23 +414,23 @@ constructor(private val fpsListener: FpsListener? = null) :
   }
 
   @ReactProp(name = ViewProps.POINTER_EVENTS)
-  public fun setPointerEvents(view: ReactNestedScrollView, pointerEventsStr: String?) {
+  fun setPointerEvents(view: ReactNestedScrollView, pointerEventsStr: String?) {
     view.pointerEvents = parsePointerEvents(pointerEventsStr)
   }
 
   @ReactProp(name = "scrollEventThrottle")
-  public fun setScrollEventThrottle(view: ReactNestedScrollView, scrollEventThrottle: Int) {
+  fun setScrollEventThrottle(view: ReactNestedScrollView, scrollEventThrottle: Int) {
     view.scrollEventThrottle = scrollEventThrottle
   }
 
   @ReactProp(name = "horizontal")
   @Suppress("UNUSED_PARAMETER")
-  public fun setHorizontal(view: ReactNestedScrollView?, horizontal: Boolean) {
+  fun setHorizontal(view: ReactNestedScrollView?, horizontal: Boolean) {
     // Do Nothing: Align with static ViewConfigs
   }
 
   @ReactProp(name = "isInvertedVirtualizedList")
-  public fun setIsInvertedVirtualizedList(view: ReactNestedScrollView, applyFix: Boolean) {
+  fun setIsInvertedVirtualizedList(view: ReactNestedScrollView, applyFix: Boolean) {
     // Usually when inverting the scroll view we are using scaleY: -1 on the list
     // and on the parent container. HOWEVER, starting from android API 33 there is
     // a bug that can cause an ANR due to that. Thus we are using different transform
@@ -447,20 +447,18 @@ constructor(private val fpsListener: FpsListener? = null) :
     }
   }
 
-  public companion object {
-    public const val REACT_CLASS: String = "RCTScrollView"
+  companion object {
+    const val REACT_CLASS: String = "RCTScrollView"
 
-    public fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> =
-        mapOf(
-            getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
-            getJSEventName(ScrollEventType.BEGIN_DRAG) to
-                mapOf("registrationName" to "onScrollBeginDrag"),
-            getJSEventName(ScrollEventType.END_DRAG) to
-                mapOf("registrationName" to "onScrollEndDrag"),
-            getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
-                mapOf("registrationName" to "onMomentumScrollBegin"),
-            getJSEventName(ScrollEventType.MOMENTUM_END) to
-                mapOf("registrationName" to "onMomentumScrollEnd"),
-        )
+    fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> = mapOf(
+        getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
+        getJSEventName(ScrollEventType.BEGIN_DRAG) to
+            mapOf("registrationName" to "onScrollBeginDrag"),
+        getJSEventName(ScrollEventType.END_DRAG) to mapOf("registrationName" to "onScrollEndDrag"),
+        getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
+            mapOf("registrationName" to "onMomentumScrollBegin"),
+        getJSEventName(ScrollEventType.MOMENTUM_END) to
+            mapOf("registrationName" to "onMomentumScrollEnd"),
+    )
   }
 }

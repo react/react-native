@@ -22,9 +22,9 @@ import {
   runCommand,
   runCommandSync,
 } from '../utils';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const FANTOM_DIR = path.resolve(__dirname, '..', '..');
 const RN_ROOT = path.resolve(FANTOM_DIR, '..', '..');

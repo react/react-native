@@ -34,7 +34,10 @@ project(":packages:react-native:ReactAndroid:hermes-engine").projectDir =
 // As we build :packages:react-native:ReactAndroid, we need to declare the folders
 // for :packages and :packages:react-native as well as otherwise the build from
 // source will fail with a missing folder exception.
+// We point them at the JVM temp dir rather than a hardcoded "/tmp": the latter is
+// not an absolute path on Windows, where Gradle would resolve it to a
+// non-existing <rootDir>\tmp and fail at configuration time.
 
-project(":packages").projectDir = file("/tmp")
+project(":packages").projectDir = file(System.getProperty("java.io.tmpdir", "/tmp"))
 
-project(":packages:react-native").projectDir = file("/tmp")
+project(":packages:react-native").projectDir = file(System.getProperty("java.io.tmpdir", "/tmp"))

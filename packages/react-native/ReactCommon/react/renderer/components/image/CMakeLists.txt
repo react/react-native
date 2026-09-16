@@ -12,12 +12,14 @@ file(GLOB rrc_image_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(rrc_image OBJECT ${rrc_image_SRC})
 
 target_include_directories(rrc_image PUBLIC ${REACT_COMMON_DIR})
+target_include_directories(rrc_image INTERFACE ${REACT_COMMON_DIR}/react/renderer/components/image)
 
 target_link_libraries(rrc_image
         glog
         folly_runtime
         glog_init
         jsi
+        react_cxxstableapi
         react_debug
         react_utils
         react_renderer_core

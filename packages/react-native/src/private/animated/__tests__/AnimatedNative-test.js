@@ -11,9 +11,9 @@
 import typeof TNativeAnimatedModule from '../../specs_DEPRECATED/modules/NativeAnimatedModule';
 
 import {create, unmount, update} from '@react-native/jest-preset/jest/renderer';
+import {format} from 'node:util';
 import * as React from 'react';
 import {createRef} from 'react';
-import {format} from 'util';
 
 describe('Native Animated', () => {
   let NativeAnimatedModule: Exclude<TNativeAnimatedModule, null | void>;
@@ -286,6 +286,117 @@ describe('Native Animated', () => {
       });
       expect(listener).toHaveBeenCalledTimes(4);
     });
+
+    it('should stop listening to native updates on unmount, but keep listeners', async () => {
+      const {Animated, NativeAnimatedHelper} = importModules();
+
+      const value1 = new Animated.Value(0, {useNativeDriver: true});
+      const listener = jest.fn();
+      value1.addListener(listener);
+
+      const tag = value1.__getNativeTag();
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(tag);
+
+      const root = await create(<Animated.View style={{opacity: value1}} />);
+      await unmount(root);
+      jest.runAllTicks();
+
+      expect(
+        NativeAnimatedModule.stopListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(tag);
+      expect(NativeAnimatedModule.dropAnimatedNode).toHaveBeenCalledWith(tag);
+      NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
+        value: 42,
+        tag,
+      });
+      expect(listener).not.toHaveBeenCalled();
+      expect(value1.hasListeners()).toBe(true);
+    });
+
+    it('should resume delivering native updates when remounted', async () => {
+      const {Animated, NativeAnimatedHelper} = importModules();
+
+      const value1 = new Animated.Value(0, {useNativeDriver: true});
+      const listener = jest.fn();
+      value1.addListener(listener);
+
+      const initialTag = value1.__getNativeTag();
+      const root = await create(<Animated.View style={{opacity: value1}} />);
+      await unmount(root);
+      jest.runAllTicks();
+
+      await create(<Animated.View style={{opacity: value1}} />);
+      jest.runAllTicks();
+
+      // The node is recreated with a new tag, which the retained listener must
+      // be resubscribed to.
+      const tag = value1.__getNativeTag();
+      expect(tag).not.toBe(initialTag);
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(tag);
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledTimes(2);
+
+      NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
+        value: 42,
+        tag,
+      });
+      expect(listener).toBeCalledWith({value: 42});
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('subscribes to native updates for nodes derived from a value', () => {
+      const {Animated} = importModules();
+
+      const base = new Animated.Value(0);
+      // Every operator and interpolation node is backed by a native value
+      // node, so each must subscribe for its own tag rather than relying on
+      // the JS graph, which native updates bypass. Listening starts here from
+      // an already-native node, exercising the `__isNative` branch of
+      // `addListener`; AnimatedComposition-itest covers the `__makeNative`
+      // one, where the listener predates the node going native.
+      const derived = [
+        Animated.add(base, 10),
+        Animated.subtract(base, 10),
+        Animated.multiply(base, 2),
+        Animated.divide(base, 2),
+        Animated.modulo(base, 7),
+        Animated.diffClamp(base, 0, 20),
+        base.interpolate({inputRange: [0, 1], outputRange: [0, 1]}),
+      ];
+
+      for (const node of derived) {
+        node.__makeNative();
+        node.addListener(jest.fn());
+        expect(
+          NativeAnimatedModule.startListeningToAnimatedNodeValue,
+        ).toHaveBeenCalledWith(node.__getNativeTag());
+      }
+
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledTimes(derived.length);
+    });
+
+    it('never subscribes to native updates for a non-value node', () => {
+      const {Animated} = importModules();
+
+      // `startListeningToAnimatedNodeValue` throws on Android for any tag that
+      // is not backed by a `ValueAnimatedNode`, so nodes that do not hold a
+      // number must never reach it. `Animated.Color` is the only such node
+      // that is publicly constructible.
+      const color = new Animated.Color('red');
+      color.__makeNative();
+      color.addListener(jest.fn());
+
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).not.toHaveBeenCalledWith(color.__getNativeTag());
+    });
   });
 
   describe('Animated Events', () => {
@@ -369,7 +480,7 @@ describe('Native Animated', () => {
       const value = new Animated.Value(0);
       value.__makeNative();
       const listener = jest.fn();
-      const event = Animated.event([{nativeEvent: {foo: value}}], {
+      const event = new Animated.Event([{nativeEvent: {foo: value}}], {
         useNativeDriver: true,
         listener,
       });

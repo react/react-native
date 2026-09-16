@@ -8,5 +8,5 @@
 package com.facebook.react.views.textinput
 
 public interface ScrollWatcher {
-  public fun onScrollChanged(horiz: Int, vert: Int, oldHoriz: Int, oldVert: Int): Unit
+  public fun onScrollChanged(horiz: Int, vert: Int, oldHoriz: Int, oldVert: Int)
 }

@@ -19,7 +19,7 @@ namespace facebook::react {
 // which props are accessed during parsing, and in which order.
 const RawValue* RawPropsParser::at(
     const RawProps& rawProps,
-    const RawPropsKey& key) const noexcept {
+    std::string_view key) const noexcept {
   if (!ready_) [[unlikely]] {
     // Check against the same key being inserted more than once.
     // This happens commonly with nested Props structs, where the higher-level
@@ -74,7 +74,7 @@ const RawValue* RawPropsParser::at(
       if (resetLoop) {
         LOG(ERROR)
             << "Looked up property name which was not seen when preparing: "
-            << (std::string)key;
+            << key;
         return nullptr;
       }
       resetLoop = true;
@@ -126,8 +126,7 @@ void RawPropsParser::preparse(const RawProps& rawProps) const noexcept {
       for (size_t i = 0; i < count; i++) {
         auto nameValue = names.getValueAtIndex(runtime, i).getString(runtime);
         auto name = nameValue.utf8(runtime);
-        auto keyIndex = nameToIndex_.at(
-            name.data(), static_cast<RawPropsPropNameLength>(name.size()));
+        auto keyIndex = nameToIndex_.at(name);
 
         if (keyIndex == kRawPropsValueIndexEmpty) {
           continue;
@@ -150,8 +149,7 @@ void RawPropsParser::preparse(const RawProps& rawProps) const noexcept {
       for (const auto& pair : dynamic.items()) {
         auto name = pair.first.getString();
 
-        auto keyIndex = nameToIndex_.at(
-            name.data(), static_cast<RawPropsPropNameLength>(name.size()));
+        auto keyIndex = nameToIndex_.at(name);
 
         if (keyIndex == kRawPropsValueIndexEmpty) {
           continue;

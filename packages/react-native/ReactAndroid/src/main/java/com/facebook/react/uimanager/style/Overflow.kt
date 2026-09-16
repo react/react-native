@@ -25,17 +25,18 @@ internal enum class Overflow {
     /**
      * Parses a string into an Overflow value.
      *
-     * @param overflow The string value (case-insensitive)
-     * @return The corresponding Overflow, or null if not recognized
+     * @param overflow The string value (case-insensitive), or null
+     * @param default The value to return when [overflow] is null or unrecognized
+     * @return The corresponding Overflow, or [default]
      */
     @JvmStatic
-    fun fromString(overflow: String): Overflow? {
-      return when (overflow.lowercase()) {
-        "visible" -> VISIBLE
-        "hidden" -> HIDDEN
-        "scroll" -> SCROLL
-        else -> null
-      }
-    }
+    @JvmOverloads
+    fun fromString(overflow: String?, default: Overflow = VISIBLE): Overflow =
+        when (overflow?.lowercase()) {
+          "visible" -> VISIBLE
+          "hidden" -> HIDDEN
+          "scroll" -> SCROLL
+          else -> default
+        }
   }
 }

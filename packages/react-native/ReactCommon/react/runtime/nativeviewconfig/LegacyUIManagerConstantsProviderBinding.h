@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <jsi/jsi.h>
 
 namespace facebook::react::LegacyUIManagerConstantsProviderBinding {

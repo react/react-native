@@ -28,7 +28,7 @@ public class PopupMenuPackage() : BaseReactPackage(), ViewManagerOnDemandReactPa
     return null
   }
 
-  protected override fun getViewManagers(reactContext: ReactApplicationContext): List<ModuleSpec> {
+  override fun getViewManagers(reactContext: ReactApplicationContext): List<ModuleSpec> {
     return viewManagersMap.values.toList()
   }
 

@@ -11,8 +11,10 @@
 @class RCTModuleData;
 @protocol RCTJavaScriptExecutor;
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXTERN NSArray<Class> *RCTGetModuleClasses(void);
 RCT_EXTERN void RCTRegisterModule(Class);
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 
 @interface RCTBridge ()
 
@@ -83,12 +85,6 @@ RCT_EXTERN void RCTRegisterModule(Class);
  * Called on the child bridge to run the executor and start loading.
  */
 - (void)start;
-
-/**
- * Used by RCTModuleData to register the module for frame updates after it is
- * lazily initialized.
- */
-- (void)registerModuleForFrameUpdates:(id<RCTBridgeModule>)module withModuleData:(RCTModuleData *)moduleData;
 
 /**
  * Dispatch work to a module's queue - this is also supports the fake RCTJSThread

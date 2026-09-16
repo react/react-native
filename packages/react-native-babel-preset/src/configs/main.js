@@ -45,17 +45,38 @@ function isFirstParty(fileName) {
 // getPreset, which is otherwise cached based on `options`. This must be pure,
 // and should be cheap.
 function getTransformProfile(caller) {
-  return caller?.unstable_transformProfile ?? 'default';
+  return caller?.unstable_transformProfile ?? 'hermes-stable';
+}
+
+// The target platform, currently only used for platform inlining.
+function getPlatform(caller) {
+  return caller?.platform ?? null;
+}
+
+// Boolean, whether to inline `Platform`. Separate from `platform` (string)
+// because a platform already reaches the preset and may be used for other
+// purposes.
+function getInlinePlatform(caller) {
+  return caller?.inlinePlatform ?? false;
 }
 
 // use `this.foo = bar` instead of `this.defineProperty('foo', ...)`
 const loose = true;
 
 const getPreset = (src, options, babel) => {
-  const transformProfile =
-    options?.unstable_transformProfile ?? babel?.caller(getTransformProfile);
+  options = options ?? {};
 
-  const dev = options?.dev ?? babel?.env('development') ?? false;
+  const transformProfile =
+    options.unstable_transformProfile ??
+    babel?.caller(getTransformProfile) ??
+    'hermes-stable';
+
+  const dev = options.dev ?? babel?.env('development') ?? false;
+
+  const platform = options.platform ?? babel?.caller(getPlatform);
+
+  const inlinePlatform =
+    options.inlinePlatform ?? babel?.caller(getInlinePlatform) ?? false;
 
   // Hermes V1 uses more optimised transform profiles. There is currently no
   // difference between stable and canary, but canary may in future be used to
@@ -77,24 +98,27 @@ const getPreset = (src, options, babel) => {
   // Preserve class syntax and related features for Hermes V1 profiles.
   const preserveClasses = isHermesProfile;
 
-  // Preserve private class fields and methods if the experiment is enabled.
-  const preserveClassPrivate = TRUE_VALS.has(
-    options?.customTransformOptions?.unstable_preserveClassPrivate,
-  );
+  // Private fields can only be preserved when the surrounding class syntax is
+  // also preserved. Babel's class transform requires the private transforms.
+  const preserveClassPrivate =
+    preserveClasses &&
+    TRUE_VALS.has(
+      options.customTransformOptions?.unstable_preserveClassPrivate,
+    );
 
   // Preserve async/await syntax if the experiment is enabled.
   const preserveAsync = TRUE_VALS.has(
-    options?.customTransformOptions?.unstable_preserveAsync,
+    options.customTransformOptions?.unstable_preserveAsync,
   );
 
   // Preserve block scoping (let/const) if the experiment is enabled.
   const preserveBlockScoping = TRUE_VALS.has(
-    options?.customTransformOptions?.unstable_preserveBlockScoping,
+    options.customTransformOptions?.unstable_preserveBlockScoping,
   );
 
   // Preserve destructuring syntax if the experiment is enabled.
   const preserveDestructuring = TRUE_VALS.has(
-    options?.customTransformOptions?.unstable_preserveDestructuring,
+    options.customTransformOptions?.unstable_preserveDestructuring,
   );
 
   const isNull = src == null;
@@ -102,6 +126,16 @@ const getPreset = (src, options, babel) => {
 
   const extraPlugins = [];
   const firstPartyPlugins = [];
+
+  // Inline `Platform.OS` and `Platform.select(...)` for provably React
+  // Native-owned `Platform` imports. This must run before the CommonJS module
+  // transform below (and before Metro's own import lowering when
+  // `disableImportExportTransform` is set), while the source-level import that
+  // proves provenance is still intact. It is a no-op when `platform` is null or
+  // the empty string.
+  if (inlinePlatform) {
+    extraPlugins.push([require('../inline-platform-plugin'), {platform}]);
+  }
 
   if (!options.useTransformReactJSXExperimental) {
     extraPlugins.push([
@@ -112,12 +146,12 @@ const getPreset = (src, options, babel) => {
 
   if (
     !options.disableStaticViewConfigsCodegen &&
-    (src === null || /\bcodegenNativeComponent</.test(src))
+    (isNull || src.indexOf('codegenNativeComponent') !== -1)
   ) {
     extraPlugins.push([require('@react-native/babel-plugin-codegen')]);
   }
 
-  if (!options || !options.disableImportExportTransform) {
+  if (!options.disableImportExportTransform) {
     extraPlugins.push(
       [require('@babel/plugin-proposal-export-default-from')],
       [
@@ -126,7 +160,7 @@ const getPreset = (src, options, babel) => {
           strict: false,
           strictMode: false, // prevent "use strict" injections
           lazy:
-            options && options.lazyImportExportTransform != null
+            options.lazyImportExportTransform != null
               ? options.lazyImportExportTransform
               : importSpecifier => lazyImports.has(importSpecifier),
           allowTopLevelThis: true, // dont rewrite global `this` -> `undefined`
@@ -163,7 +197,7 @@ const getPreset = (src, options, babel) => {
   }
   if (
     isNull ||
-    src.indexOf('React.createClass') !== -1 ||
+    src.indexOf('createClass') !== -1 ||
     src.indexOf('createReactClass') !== -1
   ) {
     extraPlugins.push([require('@babel/plugin-transform-react-display-name')]);
@@ -183,11 +217,11 @@ const getPreset = (src, options, babel) => {
     ]);
   }
 
-  if (options && dev && !options.disableDeepImportWarnings) {
+  if (dev && !options.disableDeepImportWarnings) {
     firstPartyPlugins.push([require('../plugin-warn-on-deep-imports.js')]);
   }
 
-  if (options && dev && !options.useTransformReactJSXExperimental) {
+  if (dev && !options.useTransformReactJSXExperimental) {
     extraPlugins.push([require('@babel/plugin-transform-react-jsx-source')]);
     extraPlugins.push([require('@babel/plugin-transform-react-jsx-self')]);
   }
@@ -203,9 +237,9 @@ const getPreset = (src, options, babel) => {
     ]);
   }
 
-  if (!options || options.enableBabelRuntime !== false) {
+  if (options.enableBabelRuntime !== false) {
     // Allows configuring a specific runtime version to optimize output
-    const isVersion = typeof options?.enableBabelRuntime === 'string';
+    const isVersion = typeof options.enableBabelRuntime === 'string';
 
     extraPlugins.push([
       require('@babel/plugin-transform-runtime'),
@@ -231,7 +265,7 @@ const getPreset = (src, options, babel) => {
       {
         plugins: [
           [
-            require('babel-plugin-syntax-hermes-parser'),
+            require('flow-parser/babel-plugin'),
             {
               parseLangTypes: 'flow',
               reactRuntimeTarget: '19',

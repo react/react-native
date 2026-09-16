@@ -1,14 +1,17 @@
 # @react-native/eslint-config
 
-[![Version][version-badge]][package]
+[![npm]](https://www.npmjs.com/package/@react-native/eslint-config) [![npm downloads]](https://www.npmjs.com/package/@react-native/eslint-config)
+
+[npm]: https://img.shields.io/npm/v/@react-native/eslint-config.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/eslint-config.svg
+
+ESLint and Prettier configuration used by React Native apps.
 
 ## Installation
 
-```
+```sh
 yarn add --dev eslint prettier @react-native/eslint-config
 ```
-
-*Note: We're using `yarn` to install deps. Feel free to change commands to use `npm` 3+ and `npx` if you like*
 
 ## Usage
 
@@ -45,6 +48,3 @@ Add to your eslint config (`.eslintrc`, or `eslintConfig` field in `package.json
     "extends": "@react-native"
 }
 ```
-
-[version-badge]: https://img.shields.io/npm/v/@react-native/eslint-config.svg?style=flat-square
-[package]: https://www.npmjs.com/package/@react-native/eslint-config

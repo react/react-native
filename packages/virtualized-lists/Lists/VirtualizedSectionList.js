@@ -131,16 +131,14 @@ type State = {childProps: VirtualizedListProps, ...};
  */
 class VirtualizedSectionList<
   ItemT,
-  SectionT extends SectionBase<
-    ItemT,
+  SectionT extends SectionBase<ItemT, DefaultVirtualizedSectionT> =
     DefaultVirtualizedSectionT,
-  > = DefaultVirtualizedSectionT,
 > extends React.PureComponent<
   VirtualizedSectionListProps<ItemT, SectionT>,
   State,
 > {
   scrollToLocation(params: ScrollToLocationParamsType) {
-    let index = params.itemIndex;
+    let index = params.itemIndex + 1;
     for (let i = 0; i < params.sectionIndex; i++) {
       index += this.props.getItemCount(this.props.sections[i].data) + 2;
     }
@@ -149,10 +147,10 @@ class VirtualizedSectionList<
       return;
     }
     const listRef = this._listRef;
-    if (params.itemIndex > 0 && this.props.stickySectionHeadersEnabled) {
+    if (this.props.stickySectionHeadersEnabled) {
       const frame = listRef
         .__getListMetrics()
-        .getCellMetricsApprox(index - params.itemIndex, listRef.props);
+        .getCellMetricsApprox(index - params.itemIndex - 1, listRef.props);
       viewOffset += frame.length;
     }
     const toIndexParams: {
@@ -643,10 +641,8 @@ function ItemWithSeparator<ItemT>(
 
 const VirtualizedSectionListComponent = VirtualizedSectionList as component<
   ItemT,
-  SectionT extends SectionBase<
-    ItemT,
+  SectionT extends SectionBase<ItemT, DefaultVirtualizedSectionT> =
     DefaultVirtualizedSectionT,
-  > = DefaultVirtualizedSectionT,
 >(
   ref?: React.RefSetter<
     interface {

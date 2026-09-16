@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <react/renderer/css/CSSColor.h>
 #include <react/renderer/css/CSSValueParser.h>
+#include <string_view>
 
 namespace facebook::react {
 
@@ -490,6 +491,41 @@ TEST(CSSColor, constexpr_values) {
 
   [[maybe_unused]] constexpr auto rgbFunctionValue =
       parseCSSProperty<CSSColor>("rgb(255, 255, 255)");
+}
+
+// The PlatformColor fallback is a raw CSS <color> parsed by this same parser on
+// a token miss. Pins the promised fallback formats to their RGBA, and checks
+// that unparseable input yields std::monostate so native degrades to
+// transparent.
+TEST(CSSColor, platform_color_fallback_contract) {
+  auto expectColor = [](std::string_view input, int r, int g, int b, int a) {
+    auto value = parseCSSProperty<CSSColor>(input);
+    ASSERT_TRUE(std::holds_alternative<CSSColor>(value)) << input;
+    EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).r), r) << input;
+    EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).g), g) << input;
+    EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).b), b) << input;
+    EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).a), a) << input;
+  };
+
+  expectColor("#0f0", 0, 255, 0, 255); // #RGB
+  expectColor("#ff0000", 255, 0, 0, 255); // #RRGGBB
+  expectColor(
+      "#ff000080", 255, 0, 0, 128); // #RRGGBBAA — alpha is the LAST byte
+  expectColor("rgb(0, 128, 255)", 0, 128, 255, 255);
+  expectColor("rgba(0, 128, 255, 0.5)", 0, 128, 255, 128);
+  expectColor("hsl(120, 100%, 50%)", 0, 255, 0, 255);
+  expectColor("hsla(120, 100%, 50%, 0.5)", 0, 255, 0, 128);
+  expectColor("cornflowerblue", 100, 149, 237, 255);
+  expectColor("transparent", 0, 0, 0, 0);
+
+  EXPECT_TRUE(
+      std::holds_alternative<std::monostate>(parseCSSProperty<CSSColor>("")));
+  EXPECT_TRUE(
+      std::holds_alternative<std::monostate>(
+          parseCSSProperty<CSSColor>("not-a-color")));
+  EXPECT_TRUE(
+      std::holds_alternative<std::monostate>(
+          parseCSSProperty<CSSColor>("#GG0000")));
 }
 
 } // namespace facebook::react

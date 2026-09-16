@@ -117,16 +117,19 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
   private int mLastOffsetY = Integer.MIN_VALUE;
   private final AtomicInteger mState = new AtomicInteger(STATE_STOPPED);
 
+  @SuppressWarnings("this-escape")
   public ReactRootView(Context context) {
     super(context);
     init();
   }
 
+  @SuppressWarnings("this-escape")
   public ReactRootView(Context context, AttributeSet attrs) {
     super(context, attrs);
     init();
   }
 
+  @SuppressWarnings("this-escape")
   public ReactRootView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
     init();

@@ -7,6 +7,10 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -17,3 +21,5 @@ namespace facebook::react {
  */
 void installLegacyUIManagerConstantsProviderBinding(jsi::Runtime &runtime);
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

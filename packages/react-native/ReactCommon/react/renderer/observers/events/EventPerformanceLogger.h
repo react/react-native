@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/core/EventLogger.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerEventTimingDelegate.h>

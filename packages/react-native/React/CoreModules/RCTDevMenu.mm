@@ -430,7 +430,7 @@ RCT_EXPORT_MODULE()
   return items;
 }
 
-RCT_EXPORT_METHOD(show)
+- (void)show
 {
   if ((_actionSheet != nullptr) || RCTRunningInAppExtension() || !_devMenuEnabled) {
     return;
@@ -495,13 +495,13 @@ RCT_EXPORT_METHOD(show)
   return ((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]).isShakeToShowDevMenuEnabled;
 }
 
-RCT_EXPORT_METHOD(reload)
+- (void)reload
 {
   WARN_DEPRECATED_DEV_MENU_EXPORT();
   RCTTriggerReloadCommandListeners(@"Unknown from JS");
 }
 
-RCT_EXPORT_METHOD(setProfilingEnabled : (BOOL)enabled)
+- (void)setProfilingEnabled:(BOOL)enabled
 {
   WARN_DEPRECATED_DEV_MENU_EXPORT();
   ((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]).isProfilingEnabled = enabled;
@@ -512,7 +512,7 @@ RCT_EXPORT_METHOD(setProfilingEnabled : (BOOL)enabled)
   return ((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]).isProfilingEnabled;
 }
 
-RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
+- (void)setHotLoadingEnabled:(BOOL)enabled
 {
   WARN_DEPRECATED_DEV_MENU_EXPORT();
   ((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]).isHotLoadingEnabled = enabled;

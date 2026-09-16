@@ -26,18 +26,15 @@ component VirtualRowLayout(
   );
 }
 
-const VirtualRow = createVirtualCollectionView(
-  VirtualRowLayout,
-  VirtualRowGenerator,
-);
-
 // TODO: Figure out component generic resolution.
 // @see https://fb.workplace.com/groups/flow/posts/29355518614070041
-// export default VirtualRow as VirtualCollectionViewComponent<VirtualRowLayoutProps>;
-export default VirtualRow as component<out TItem extends Item>(
+// const VirtualRow: VirtualCollectionViewComponent<VirtualRowLayoutProps> = ...
+const VirtualRow: component<out TItem extends Item>(
   children: (item: TItem, key: string) => React.Node,
   items: VirtualCollection<TItem>,
   itemToKey?: (TItem) => string,
   removeClippedSubviews?: boolean,
   testID?: ?string,
-);
+) = createVirtualCollectionView(VirtualRowLayout, VirtualRowGenerator);
+
+export default VirtualRow;

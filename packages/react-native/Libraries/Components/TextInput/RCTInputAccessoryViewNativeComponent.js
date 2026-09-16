@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/RCTInputAccessoryViewNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/RCTInputAccessoryViewNativeComponent';
+export * from '../../../src/private/components/inputaccessoryview/specs/RCTInputAccessoryViewNativeComponent';
+export {default} from '../../../src/private/components/inputaccessoryview/specs/RCTInputAccessoryViewNativeComponent';

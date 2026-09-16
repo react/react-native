@@ -141,6 +141,87 @@ folly::dynamic LoadingFinishedParams::toDynamic() const {
   return params;
 }
 
+/* static */ WebSocketResponse WebSocketResponse::fromInputParams(
+    uint16_t status,
+    const Headers& headers) {
+  return {
+      .status = status,
+      .statusText = httpReasonPhrase(status),
+      .headers = headers,
+  };
+}
+
+folly::dynamic WebSocketResponse::toDynamic() const {
+  folly::dynamic result = folly::dynamic::object;
+
+  result["status"] = status;
+  result["statusText"] = statusText;
+  result["headers"] = headersToDynamic(headers);
+
+  return result;
+}
+
+folly::dynamic WebSocketFrame::toDynamic() const {
+  folly::dynamic result = folly::dynamic::object;
+
+  result["opcode"] = opcode;
+  result["mask"] = mask;
+  result["payloadData"] = payloadData;
+
+  return result;
+}
+
+folly::dynamic WebSocketCreatedParams::toDynamic() const {
+  folly::dynamic params = folly::dynamic::object;
+
+  params["requestId"] = requestId;
+  params["url"] = url;
+  params["initiator"] = initiator;
+
+  return params;
+}
+
+folly::dynamic WebSocketWillSendHandshakeRequestParams::toDynamic() const {
+  folly::dynamic params = folly::dynamic::object;
+
+  params["requestId"] = requestId;
+  params["timestamp"] = timestamp;
+  params["wallTime"] = wallTime;
+  params["request"] =
+      folly::dynamic::object("headers", headersToDynamic(headers));
+
+  return params;
+}
+
+folly::dynamic WebSocketHandshakeResponseReceivedParams::toDynamic() const {
+  folly::dynamic params = folly::dynamic::object;
+
+  params["requestId"] = requestId;
+  params["timestamp"] = timestamp;
+  params["response"] = response.toDynamic();
+
+  return params;
+}
+
+folly::dynamic WebSocketFrameParams::toDynamic() const {
+  folly::dynamic params = folly::dynamic::object;
+
+  params["requestId"] = requestId;
+  params["timestamp"] = timestamp;
+  params["response"] = response.toDynamic();
+
+  return params;
+}
+
+folly::dynamic WebSocketClosedParams::toDynamic() const {
+  folly::dynamic params = folly::dynamic::object;
+
+  params["requestId"] = requestId;
+  params["timestamp"] = timestamp;
+
+  return params;
+}
+
 std::string resourceTypeFromMimeType(const std::string& mimeType) {
   if (mimeType.find("image/") == 0) {
     return "Image";

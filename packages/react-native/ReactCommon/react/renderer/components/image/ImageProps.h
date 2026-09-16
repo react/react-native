@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/graphics/Color.h>
@@ -31,7 +33,7 @@ class ImageProps final : public ViewProps {
   ImageResizeMode resizeMode{ImageResizeMode::Stretch};
   Float blurRadius{};
   EdgeInsets capInsets{};
-  SharedColor tintColor{};
+  std::optional<SharedColor> tintColor{};
   std::string internal_analyticTag{};
   std::string resizeMethod{"auto"};
   Float resizeMultiplier{1.f};

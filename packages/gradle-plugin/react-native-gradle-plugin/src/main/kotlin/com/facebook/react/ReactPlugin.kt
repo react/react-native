@@ -25,6 +25,7 @@ import com.facebook.react.utils.DependencyUtils.readVersionAndGroupStrings
 import com.facebook.react.utils.JdkConfiguratorUtils.configureJavaToolChains
 import com.facebook.react.utils.JsonUtils
 import com.facebook.react.internal.deprecated.DeprecatedKotlinPluginUtils.applyKotlinAndroidPluginIfNeeded
+import com.facebook.react.internal.deprecated.DeprecatedLibraryAgpConfiguratorUtils.configureNamespaceForLibraries
 import com.facebook.react.internal.deprecated.DeprecatedReactLibraryConfigurator
 import com.facebook.react.utils.NdkConfiguratorUtils.configureReactNativeNdk
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
@@ -62,11 +63,11 @@ class ReactPlugin : Plugin<Project> {
               .toBoolean()
       if (value) {
         project.logger.warn(
-            "WARNING: The 'hermesV1Enabled' property is no longer needed. Hermes V1 is now always enabled. You can safely remove this property from your gradle.properties."
+            "WARNING: The 'hermesV1Enabled' property is no longer needed. Hermes V1 is now always enabled. You can safely remove this property from your gradle.properties.",
         )
       } else {
         project.logger.warn(
-            "WARNING: Opting out of Hermes V1 is no longer supported. The 'hermesV1Enabled=false' property will be ignored. Hermes V1 is now always enabled. Please remove this property from your gradle.properties."
+            "WARNING: Opting out of Hermes V1 is no longer supported. The 'hermesV1Enabled=false' property will be ignored. Hermes V1 is now always enabled. Please remove this property from your gradle.properties.",
         )
       }
     }
@@ -85,7 +86,7 @@ class ReactPlugin : Plugin<Project> {
         val versionAndGroupStrings =
             readVersionAndGroupStrings(project, propertiesFile, hermesVersionPropertiesFile)
         configureDependencies(project, versionAndGroupStrings)
-        configureRepositories(project, versionAndGroupStrings.isNightly)
+        configureRepositories(project, versionAndGroupStrings)
       }
 
       configureReactNativeNdk(project, extension)
@@ -110,6 +111,30 @@ class ReactPlugin : Plugin<Project> {
       )
       configureResources(project, extension)
       configureBuildTypesForApp(project)
+
+      // Apply the namespace fallback to every Android library in the build, including third-party
+      // libraries that don't apply the `com.facebook.react` plugin and still rely on the manifest
+      // `package` attribute (which AGP 9 no longer accepts as a namespace). The per-library hook
+      // below only covers libraries that apply our plugin, so we additionally sweep all library
+      // subprojects from the app. We do this once, from the application project, because re-running
+      // a rootProject-wide traversal from every library breaks on AGP 9, which errors when
+      // `finalizeDsl` is registered after a project's DSL has been finalized.
+      // See https://github.com/facebook/react-native/pull/57038.
+      //
+      // We skip projects that have already been evaluated: AGP finalizes a project's DSL during/
+      // after its evaluation, so registering a `finalizeDsl` callback on an already-evaluated
+      // project is "too late" and fails on AGP 9. In a regular app build the app is evaluated
+      // before its libraries (see ReactRootProjectPlugin's `evaluationDependsOn(":app")`), so every
+      // library is still pending here. In composite/monorepo builds (e.g. rn-tester, where
+      // ReactAndroid is a sibling) some library projects are already evaluated by this point; those
+      // already define their own namespace, so skipping them is safe.
+      project.rootProject.allprojects { subproject ->
+        subproject.pluginManager.withPlugin("com.android.library") {
+          if (!subproject.state.executed) {
+            configureNamespaceForLibraries(subproject)
+          }
+        }
+      }
     }
 
     // Library Only Configuration
@@ -117,7 +142,7 @@ class ReactPlugin : Plugin<Project> {
       project.logger.warn(
           "WARNING: Using ${ReactPluginIds.REACT_APP_PLUGIN} with Android library project " +
               "'${project.name}' is deprecated and will be removed in a future release. " +
-              "Please use the ${ReactPluginIds.REACT_LIBRARY_PLUGIN} plugin instead."
+              "Please use the ${ReactPluginIds.REACT_LIBRARY_PLUGIN} plugin instead.",
       )
       applyKotlinAndroidPluginIfNeeded(project)
       DeprecatedReactLibraryConfigurator.configure(project, extension, rootExtension)
@@ -138,7 +163,7 @@ class ReactPlugin : Plugin<Project> {
       ********************************************************************************
 
       """
-              .trimIndent()
+              .trimIndent(),
       )
       exitProcess(1)
     }
@@ -235,7 +260,7 @@ class ReactPlugin : Plugin<Project> {
     project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java).apply {
       onVariants(selector().all()) { variant ->
         variant.sources.java?.addStaticSourceDirectory(
-            generatedAutolinkingJavaDir.get().asFile.absolutePath
+            generatedAutolinkingJavaDir.get().asFile.absolutePath,
         )
       }
     }
@@ -288,7 +313,7 @@ class ReactPlugin : Plugin<Project> {
   }
 
   internal fun getPureCxxCodegenDependencies(
-      autolinkingFile: File
+      autolinkingFile: File,
   ): List<ModelAutolinkingDependenciesJson> {
     val model = JsonUtils.fromAutolinkingConfigJson(autolinkingFile)
     return model?.dependencies?.values?.filter { dependency ->

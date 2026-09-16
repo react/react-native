@@ -36,7 +36,7 @@ internal object UIManagerModuleConstantsHelper {
           mapOf(
               "ViewManagerNames" to ArrayList<String?>(resolver.getViewManagerNames()),
               "LazyViewManagersEnabled" to true,
-          )
+          ),
       )
 
   @JvmStatic
@@ -191,7 +191,7 @@ internal object UIManagerModuleConstantsHelper {
 
   @VisibleForTesting
   internal fun normalizeEventTypes(
-      eventsToNormalize: MutableMap<String, Any>
+      eventsToNormalize: MutableMap<String, Any>,
   ): MutableMap<String, Any> {
     var events = eventsToNormalize
     val keysToNormalize: MutableSet<String> = hashSetOf()

@@ -30,7 +30,7 @@ type EventPropNames = {
 };
 
 // Cache of already-resolved event types.
-const eventTypeToProps: {[string]: EventPropNames} = {};
+const eventTypeToProps = new Map<string, EventPropNames>();
 
 /**
  * Converts a topLevelType (e.g., "topPointerUp") to a DOM event type
@@ -90,13 +90,13 @@ export function getEventTypePropName(
   eventType: string,
   isCapture: boolean,
 ): string | null {
-  const cached = eventTypeToProps[eventType];
+  const cached = eventTypeToProps.get(eventType);
   if (cached !== undefined) {
     return isCapture ? cached.captured : cached.bubbled;
   }
   const entry = findEventPropNames(eventType);
   if (entry != null) {
-    eventTypeToProps[eventType] = entry;
+    eventTypeToProps.set(eventType, entry);
     return isCapture ? entry.captured : entry.bubbled;
   }
   return null;

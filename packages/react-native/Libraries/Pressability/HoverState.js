@@ -19,9 +19,9 @@ let isEnabled = false;
 if (Platform.OS === 'web') {
   const canUseDOM = Boolean(
     typeof window !== 'undefined' &&
-      window.document &&
-      // $FlowFixMe[method-unbinding]
-      window.document.createElement,
+    window.document &&
+    // $FlowFixMe[method-unbinding]
+    window.document.createElement,
   );
 
   if (canUseDOM) {

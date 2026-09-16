@@ -1,0 +1,121 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorStackFrame should render collapsed stack frame with dimmed text 1`] = `
+<rn-view
+  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessible="true"
+  flex="1"
+  paddingHorizontal="10"
+  paddingVertical="4"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontFamily="monospace"
+    fontSizeMultiplier="NaN"
+    fontWeight="300"
+    foregroundColor="rgba(255, 255, 255, 0.4)"
+    includeFontPadding="false"
+    lineHeight="18"
+    nativeID="logbox_stack_frame_text"
+    overflow="hidden"
+  >
+    foo
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="middle"
+    fontSize="12"
+    fontSizeMultiplier="NaN"
+    fontWeight="300"
+    foregroundColor="rgba(255, 255, 255, 0.4)"
+    includeFontPadding="false"
+    lineHeight="16"
+    maximumNumberOfLines="1"
+    overflow="hidden"
+    paddingLeft="10"
+  >
+    app.js:1:2
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorStackFrame should render stack frame 1`] = `
+<rn-view
+  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessible="true"
+  flex="1"
+  paddingHorizontal="10"
+  paddingVertical="4"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontFamily="monospace"
+    fontSizeMultiplier="NaN"
+    fontWeight="400"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="18"
+    nativeID="logbox_stack_frame_text"
+    overflow="hidden"
+  >
+    foo
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="middle"
+    fontSize="12"
+    fontSizeMultiplier="NaN"
+    fontWeight="300"
+    foregroundColor="rgba(255, 255, 255, 0.8)"
+    includeFontPadding="false"
+    lineHeight="16"
+    maximumNumberOfLines="1"
+    overflow="hidden"
+    paddingLeft="10"
+  >
+    app.js:1:2
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorStackFrame should render stack frame without press feedback 1`] = `
+<rn-view
+  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessible="true"
+  flex="1"
+  paddingHorizontal="10"
+  paddingVertical="4"
+>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontFamily="monospace"
+    fontSizeMultiplier="NaN"
+    fontWeight="400"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="18"
+    nativeID="logbox_stack_frame_text"
+    overflow="hidden"
+  >
+    foo
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="middle"
+    fontSize="12"
+    fontSizeMultiplier="NaN"
+    fontWeight="300"
+    foregroundColor="rgba(255, 255, 255, 0.8)"
+    includeFontPadding="false"
+    lineHeight="16"
+    maximumNumberOfLines="1"
+    overflow="hidden"
+    paddingLeft="10"
+  >
+    app.js:1:2
+  </rn-paragraph>
+</rn-view>
+`;

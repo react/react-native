@@ -8,10 +8,13 @@
  * @format
  */
 
-const {PACKAGES_DIR} = require('../../../shared/consts');
+const {
+  PACKAGES_DIR,
+  REACT_NATIVE_PACKAGE_DIR,
+} = require('../../../shared/consts');
 const {getPackages} = require('../../../shared/monorepoUtils');
-const {existsSync} = require('fs');
-const path = require('path');
+const {existsSync} = require('node:fs');
+const path = require('node:path');
 
 export type DependencyContext = Readonly<{
   reportUnresolvedDependency(importPath: string): void,
@@ -36,6 +39,14 @@ async function simpleResolve(
       includeReactNative: true,
       includePrivate: false,
     });
+  }
+
+  // Resolve the 'react-native/react-private-interface' subpath export
+  if (importPath === 'react-native/react-private-interface') {
+    return path.join(
+      REACT_NATIVE_PACKAGE_DIR,
+      'src/react-private-interface.js',
+    );
   }
 
   // Resolve exact '@react-native/<package>' import

@@ -117,7 +117,7 @@ public object ReactNativeVersion {
 "
 `;
 
-exports[`updateReactNativeArtifacts should set nightly version: packages/react-native/ReactCommon/cxxreact/ReactNativeVersion.h 1`] = `
+exports[`updateReactNativeArtifacts should set nightly version: packages/react-native/ReactCommon/react/utils/ReactNativeVersion.h 1`] = `
 "/**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -128,6 +128,8 @@ exports[`updateReactNativeArtifacts should set nightly version: packages/react-n
  */
 
 #pragma once
+
+#include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <cstdint>
 #include <string_view>
@@ -274,7 +276,7 @@ public object ReactNativeVersion {
 "
 `;
 
-exports[`updateReactNativeArtifacts should set release version: packages/react-native/ReactCommon/cxxreact/ReactNativeVersion.h 1`] = `
+exports[`updateReactNativeArtifacts should set release version: packages/react-native/ReactCommon/react/utils/ReactNativeVersion.h 1`] = `
 "/**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -285,6 +287,8 @@ exports[`updateReactNativeArtifacts should set release version: packages/react-n
  */
 
 #pragma once
+
+#include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <cstdint>
 #include <string_view>

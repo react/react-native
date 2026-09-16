@@ -7,7 +7,6 @@
 
 #include "HostPlatformParagraphProps.h"
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/attributedstring/primitives.h>
 #include <react/renderer/components/text/conversions.h>
@@ -24,33 +23,24 @@ HostPlatformParagraphProps::HostPlatformParagraphProps(
     const HostPlatformParagraphProps& sourceProps,
     const RawProps& rawProps)
     : BaseParagraphProps(context, sourceProps, rawProps),
-      disabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.disabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "disabled",
-                    sourceProps.disabled,
-                    false)),
-      selectionColor(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.selectionColor
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "selectionColor",
-                    sourceProps.selectionColor,
-                    {})),
-      dataDetectorType(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.dataDetectorType
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "dataDetectorType",
-                    sourceProps.dataDetectorType,
-                    {}))
+      disabled(convertRawProp(
+          context,
+          rawProps,
+          "disabled",
+          sourceProps.disabled,
+          false)),
+      selectionColor(convertRawProp(
+          context,
+          rawProps,
+          "selectionColor",
+          sourceProps.selectionColor,
+          {})),
+      dataDetectorType(convertRawProp(
+          context,
+          rawProps,
+          "dataDetectorType",
+          sourceProps.dataDetectorType,
+          {}))
 
 {};
 

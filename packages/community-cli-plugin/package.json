@@ -6,11 +6,11 @@
     "react-native",
     "tools"
   ],
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/community-cli-plugin#readme",
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/community-cli-plugin#readme",
+  "bugs": "https://github.com/react/react-native/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/community-cli-plugin"
   },
   "license": "MIT",
@@ -31,16 +31,16 @@
     "prepack": "node ../../scripts/build/prepack.js"
   },
   "dependencies": {
+    "@react-native/asset-utils": "0.87.0-main",
     "@react-native/dev-middleware": "0.87.0-main",
+    "commander": "^12.0.0",
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
-    "metro": "^0.84.3",
-    "metro-config": "^0.84.3",
-    "metro-core": "^0.84.3",
+    "metro": "^0.87.0",
     "semver": "^7.1.3"
   },
   "devDependencies": {
-    "metro-resolver": "^0.84.3"
+    "metro-resolver": "^0.87.0"
   },
   "peerDependencies": {
     "@react-native-community/cli": "*",

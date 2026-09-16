@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -19,25 +19,37 @@ export type ReactRenderer = {
       inspectedView: ?HostInstance,
       locationX: number,
       locationY: number,
-      callback: Function,
+      callback: (viewData: TouchedViewDataAtPoint) => void,
     ) => void,
     ...
   },
 };
 type AttachedRendererEventPayload = {id: number, renderer: ReactRenderer};
 
-const reactDevToolsHook = (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__;
+type ReactDevToolsHook = {
+  readonly on: (
+    eventName: string,
+    handler: (payload: AttachedRendererEventPayload) => void,
+  ) => void,
+  readonly renderers: ReadonlyMap<unknown, ReactRenderer>,
+  ...
+};
+
+const reactDevToolsHook: ?ReactDevToolsHook = (
+  window as {readonly __REACT_DEVTOOLS_GLOBAL_HOOK__?: ReactDevToolsHook, ...}
+).__REACT_DEVTOOLS_GLOBAL_HOOK__;
 invariant(
-  Boolean(reactDevToolsHook),
+  reactDevToolsHook != null,
   'getInspectorDataForViewAtPoint should not be used if React DevTools hook is not injected',
 );
 
 const renderers: Array<ReactRenderer> = Array.from(
-  (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.renderers.values(),
+  reactDevToolsHook.renderers.values(),
 );
 
-const appendRenderer = ({renderer}: AttachedRendererEventPayload) =>
+const appendRenderer = ({renderer}: AttachedRendererEventPayload) => {
   renderers.push(renderer);
+};
 reactDevToolsHook.on('renderer', appendRenderer);
 
 function validateRenderers(): void {

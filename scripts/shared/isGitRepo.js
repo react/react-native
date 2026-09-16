@@ -10,7 +10,7 @@
 
 'use strict';
 
-const childProcess = require('child_process');
+const childProcess = require('node:child_process');
 
 function isGitRepo() /*: boolean */ {
   try {

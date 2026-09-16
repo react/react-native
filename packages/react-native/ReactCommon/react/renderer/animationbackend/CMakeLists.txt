@@ -15,6 +15,7 @@ target_include_directories(react_renderer_animationbackend PUBLIC ${REACT_COMMON
 
 target_link_libraries(react_renderer_animationbackend
       react_codegen_rncore
+      react_cxxstableapi
       react_debug
       react_renderer_core
       react_renderer_graphics

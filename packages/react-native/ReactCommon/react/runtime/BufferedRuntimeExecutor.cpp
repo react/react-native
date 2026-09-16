@@ -7,18 +7,22 @@
 
 #include "BufferedRuntimeExecutor.h"
 
+#include <algorithm>
+#include <utility>
+
 namespace facebook::react {
 
-BufferedRuntimeExecutor::BufferedRuntimeExecutor(
-    RuntimeExecutor runtimeExecutor)
-    : runtimeExecutor_(std::move(runtimeExecutor)),
+BufferedRuntimeExecutor::BufferedRuntimeExecutor(Executor executor)
+    : executor_(std::move(executor)),
       isBufferingEnabled_(true),
       lastIndex_(0) {}
 
-void BufferedRuntimeExecutor::execute(Work&& callback) {
+void BufferedRuntimeExecutor::execute(
+    SchedulerPriority priority,
+    Work&& callback) {
   if (!isBufferingEnabled_) {
-    // Fast path: Schedule directly to RuntimeExecutor, without locking
-    runtimeExecutor_(std::move(callback));
+    // Fast path: Schedule directly to the executor, without locking
+    executor_(priority, std::move(callback));
     return;
   }
 
@@ -30,14 +34,31 @@ void BufferedRuntimeExecutor::execute(Work&& callback) {
   uint64_t newIndex = lastIndex_++;
   std::scoped_lock guard(lock_);
   if (isBufferingEnabled_) {
-    queue_.push({.index_ = newIndex, .work_ = std::move(callback)});
+    queue_.push_back(
+        {.index_ = newIndex,
+         .work_ = std::move(callback),
+         .priority_ = priority});
     return;
   }
 
   // Force flush the queue to maintain the execution order.
   unsafeFlush();
 
-  runtimeExecutor_(std::move(callback));
+  executor_(priority, std::move(callback));
+}
+
+RuntimeExecutor BufferedRuntimeExecutor::asRuntimeExecutor() {
+  return [self = shared_from_this()](Work&& callback) {
+    self->execute(SchedulerPriority::ImmediatePriority, std::move(callback));
+  };
+}
+
+RuntimeExecutor BufferedRuntimeExecutor::asWeakRuntimeExecutor() {
+  return [weakSelf = weak_from_this()](Work&& callback) {
+    if (auto self = weakSelf.lock()) {
+      self->execute(SchedulerPriority::ImmediatePriority, std::move(callback));
+    }
+  };
 }
 
 void BufferedRuntimeExecutor::flush() {
@@ -47,11 +68,20 @@ void BufferedRuntimeExecutor::flush() {
 }
 
 void BufferedRuntimeExecutor::unsafeFlush() {
-  while (!queue_.empty()) {
-    const BufferedWork& bufferedWork = queue_.top();
-    Work work = bufferedWork.work_;
-    runtimeExecutor_(std::move(work));
-    queue_.pop();
+  // Indices are handed out before the lock is taken, so arrival order can
+  // differ from submission order. Sorting once here restores it, and costs less
+  // than a heap did: nothing sifts on the way in, and each callback is moved
+  // out rather than copied.
+  auto batch = std::move(queue_);
+  queue_.clear();
+  std::sort(
+      batch.begin(),
+      batch.end(),
+      [](const BufferedWork& lhs, const BufferedWork& rhs) {
+        return lhs.index_ < rhs.index_;
+      });
+  for (auto& bufferedWork : batch) {
+    executor_(bufferedWork.priority_, std::move(bufferedWork.work_));
   }
 }
 

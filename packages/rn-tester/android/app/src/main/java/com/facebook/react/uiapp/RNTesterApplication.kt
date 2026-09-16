@@ -13,6 +13,7 @@ import android.app.Application
 import com.facebook.fbreact.specs.SampleLegacyModule
 import com.facebook.fbreact.specs.SampleTurboModule
 import com.facebook.react.BaseReactPackage
+import com.facebook.react.FBRNTesterEndToEndHelper
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -74,11 +75,13 @@ internal class RNTesterApplication : Application(), ReactApplication {
                                   ),
                           )
                         }
-                  }
+                  },
               )
               add(
                   object : ReactPackage, ViewManagerOnDemandReactPackage {
-                    override fun getViewManagerNames(reactContext: ReactApplicationContext) =
+                    override fun getViewManagerNames(
+                        reactContext: ReactApplicationContext,
+                    ) =
                         listOf(
                             "RNTMyNativeView",
                             "RNTMyLegacyNativeView",
@@ -86,7 +89,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                         )
 
                     override fun createViewManagers(
-                        reactContext: ReactApplicationContext
+                        reactContext: ReactApplicationContext,
                     ): List<ViewManager<*, *>> =
                         listOf(
                             MyNativeViewManager(),
@@ -104,7 +107,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                           "RNTReportFullyDrawnView" -> ReportFullyDrawnViewManager()
                           else -> null
                         }
-                  }
+                  },
               )
             }
 
@@ -121,6 +124,9 @@ internal class RNTesterApplication : Application(), ReactApplication {
     ReactFontManager.getInstance().addCustomFont(this, "Rubik", R.font.rubik)
     ReactFontManager.getInstance().addCustomFont(this, "FiraCode", R.font.firacode)
     super.onCreate()
+    // Must run before loadReactNative so E2E-provided system properties are readable by the
+    // feature flag overrides applied during React Native startup.
+    FBRNTesterEndToEndHelper.initializeConfig(this)
     loadReactNative(this)
   }
 }

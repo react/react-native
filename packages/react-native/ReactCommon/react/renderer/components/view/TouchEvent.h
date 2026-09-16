@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/debug/DebugStringConvertible.h>
 
 #include <react/renderer/components/view/Touch.h>

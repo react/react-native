@@ -9,7 +9,7 @@
  */
 
 const resolveCyclicImportsInDefinition = require('../resolveCyclicImportsInDefinition');
-const path = require('path');
+const path = require('node:path');
 
 const packagesPath = '/path/to/package/definition/files';
 

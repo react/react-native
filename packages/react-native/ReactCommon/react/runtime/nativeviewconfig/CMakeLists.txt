@@ -16,5 +16,5 @@ add_library(
 )
 target_include_directories(bridgelessnativeviewconfig PUBLIC .)
 
-target_link_libraries(bridgelessnativeviewconfig jsi)
+target_link_libraries(bridgelessnativeviewconfig jsi react_cxxstableapi)
 target_compile_reactnative_options(bridgelessnativeviewconfig PRIVATE)

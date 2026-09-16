@@ -15,6 +15,7 @@ target_include_directories(react_nativemodule_cpu PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(react_nativemodule_cpu
         react_codegen_rncore
+        react_cxxstableapi
 )
 target_compile_reactnative_options(react_nativemodule_cpu PRIVATE)
 target_compile_options(react_nativemodule_cpu PRIVATE -Wpedantic)

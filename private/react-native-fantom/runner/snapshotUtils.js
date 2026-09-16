@@ -15,8 +15,8 @@ import type {
 import type {SnapshotState} from 'jest-snapshot';
 
 import {symbolicateStackTrace} from './utils';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 type JestSnapshotResult = {
   added: number,

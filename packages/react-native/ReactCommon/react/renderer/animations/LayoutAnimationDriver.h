@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/animations/LayoutAnimationKeyFrameManager.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>

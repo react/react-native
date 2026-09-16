@@ -23,7 +23,10 @@ import org.gradle.api.Project
  *
  * @param config The [ReactExtension] configured for this project
  */
-internal fun detectedEntryFile(config: ReactExtension, envVariableOverride: String? = null): File =
+internal fun detectedEntryFile(
+    config: ReactExtension,
+    envVariableOverride: String? = null,
+): File =
     detectEntryFile(
         entryFile = config.entryFile.orNull?.asFile,
         reactRoot = config.root.get().asFile,
@@ -111,7 +114,7 @@ private fun detectCliFile(
       build.gradle to the path of the react-native cli.js file.
       This file typically resides in `node_modules/react-native/cli.js`
       """
-          .trimIndent()
+          .trimIndent(),
   )
 }
 
@@ -163,7 +166,7 @@ internal fun detectOSAwareHermesCommand(
   error(
       "Couldn't determine Hermesc location. " +
           "Please set `react.hermesCommand` to the path of the hermesc binary file. " +
-          "node_modules/react-native/sdks/hermesc/%OS-BIN%/hermesc"
+          "node_modules/react-native/sdks/hermesc/%OS-BIN%/hermesc",
   )
 }
 
@@ -190,7 +193,7 @@ internal fun getHermesOSBin(): String {
   if (Os.isLinuxAmd64()) return "linux64-bin"
   error(
       "OS not recognized. Please set project.react.hermesCommand " +
-          "to the path of a working Hermes compiler."
+          "to the path of a working Hermes compiler.",
   )
 }
 

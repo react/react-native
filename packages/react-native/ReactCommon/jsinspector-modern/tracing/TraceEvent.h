@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <jsinspector-modern/tracing/TracingCategory.h>
 #include <react/timing/primitives.h>
 

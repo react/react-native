@@ -26,11 +26,11 @@ declare type $HermesInternalType = {
   // All members are optional because they may not exist when OTA'd to older
   // VMs.
 
-  +getNumGCs?: () => number,
-  +getGCTime?: () => number,
-  +getNativeCallTime?: () => number,
-  +getNativeCallCount?: () => number,
-  +getGCCPUTime?: () => number,
+  readonly getNumGCs?: () => number,
+  readonly getGCTime?: () => number,
+  readonly getNativeCallTime?: () => number,
+  readonly getNativeCallCount?: () => number,
+  readonly getGCCPUTime?: () => number,
 
   /**
    * Hermes can embed an "epilogue" to the bytecode file with arbitrary bytes.
@@ -39,7 +39,7 @@ declare type $HermesInternalType = {
    * Calling this function will return all such epilogues and convert the
    * bytes to numbers in the range of 0-255.
    */
-  +getEpilogues?: () => Array<Array<number>>,
+  readonly getEpilogues?: () => Array<Array<number>>,
 
   /**
    * Query the VM for various statistics about performance.
@@ -48,7 +48,7 @@ declare type $HermesInternalType = {
    * @return An object that maps strings to various types of performance
    *    statistics.
    */
-  +getInstrumentedStats?: () => {[string]: number | string, ...},
+  readonly getInstrumentedStats?: () => {[string]: number | string, ...},
 
   /**
    * Query the VM for any sort of runtime properties that it wants to report.
@@ -56,7 +56,7 @@ declare type $HermesInternalType = {
    * printed for informational purposes.
    * @return An object that maps strings to various types of runtime properties.
    */
-  +getRuntimeProperties?: () => {
+  readonly getRuntimeProperties?: () => {
     'OSS Release Version': string,
     Build: string,
     [string]: unknown,
@@ -69,7 +69,7 @@ declare type $HermesInternalType = {
    * This can be called several times but will have no effect after the first
    * call.
    */
-  +ttiReached?: () => void,
+  readonly ttiReached?: () => void,
 
   /**
    * Tell Hermes that at this point the surface has transitioned from TTRC to
@@ -78,12 +78,12 @@ declare type $HermesInternalType = {
    * This can be called several times but will have no effect after the first
    * call.
    */
-  +ttrcReached?: () => void,
+  readonly ttrcReached?: () => void,
 
   /**
    * Query the VM to see whether or not it enabled Promise.
    */
-  +hasPromise?: () => boolean,
+  readonly hasPromise?: () => boolean,
 
   /**
    * Enable promise rejection tracking with the given options.
@@ -91,7 +91,7 @@ declare type $HermesInternalType = {
    * the `enable` function of module `promise/setimmediate/rejection-tracking`
    * declared in ./flow-typed/npm/promise_v8.x.x.js.
    */
-  +enablePromiseRejectionTracker?: (
+  readonly enablePromiseRejectionTracker?: (
     options: ?{
       whitelist?: ?Array<unknown>,
       allRejections?: ?boolean,
@@ -103,12 +103,12 @@ declare type $HermesInternalType = {
   /**
    * Query the VM to see whether or not it use the engine Job queue.
    */
-  +useEngineQueue?: () => boolean,
+  readonly useEngineQueue?: () => boolean,
 
   /**
    * Enqueue a JavaScript callback function as a Job into the engine Job queue.
    */
-  +enqueueJob?: <TArguments extends Array<unknown>>(
+  readonly enqueueJob?: <TArguments extends Array<unknown>>(
     jobCallback: (...args: TArguments) => unknown,
   ) => void,
 };

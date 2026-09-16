@@ -14,11 +14,11 @@ import android.app.Activity
  * hooks used to implement the V2 Perf Monitor overlay (experimental).
  */
 internal interface PerfMonitorDevHelper {
-  public val currentActivity: Activity?
+  val currentActivity: Activity?
 
   /**
    * The inspector target object. Matches the lifetime of the ReactHost. May be null if modern JS
    * debugging is disabled.
    */
-  public val inspectorTarget: PerfMonitorInspectorTarget?
+  val inspectorTarget: PerfMonitorInspectorTarget?
 }

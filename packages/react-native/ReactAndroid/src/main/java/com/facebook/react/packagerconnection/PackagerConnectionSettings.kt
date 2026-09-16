@@ -21,7 +21,7 @@ public open class PackagerConnectionSettings(private val appContext: Context) {
   public val packageName: String = appContext.packageName
 
   init {
-    resetDebugServerHost()
+    _cachedOrOverrideHost = null
   }
 
   public open var debugServerHost: String
@@ -50,13 +50,16 @@ public open class PackagerConnectionSettings(private val appContext: Context) {
     }
     set(host) {
       if (host.isEmpty()) {
+        preferences.edit().remove(PREFS_DEBUG_SERVER_HOST_KEY).apply()
         _cachedOrOverrideHost = null
       } else {
+        preferences.edit().putString(PREFS_DEBUG_SERVER_HOST_KEY, host).apply()
         _cachedOrOverrideHost = host
       }
     }
 
   public open fun resetDebugServerHost() {
+    preferences.edit().remove(PREFS_DEBUG_SERVER_HOST_KEY).apply()
     _cachedOrOverrideHost = null
   }
 

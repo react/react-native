@@ -11,6 +11,7 @@
 
 import type {BaseVisitorState} from './visitorState';
 import type {NodePath} from '@babel/traverse';
+import type {TSType as BabelNodeTSType} from '@babel/types';
 
 import {replaceWithCleanup} from './utils';
 

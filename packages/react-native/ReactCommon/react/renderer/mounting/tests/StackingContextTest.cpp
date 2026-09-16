@@ -162,7 +162,7 @@ class StackingContextTest : public ::testing::Test {
     rootShadowNode_ =
         std::static_pointer_cast<RootShadowNode>(rootShadowNode_->cloneTree(
             node->getFamily(), [&](const ShadowNode& oldShadowNode) {
-              auto viewProps = std::make_shared<ViewShadowNodeProps>();
+              auto viewProps = std::make_shared<ViewProps>();
               callback(*viewProps);
               return oldShadowNode.clone(
                   ShadowNodeFragment{.props = viewProps});

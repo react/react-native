@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/view/ViewProps.h>
 
@@ -15,22 +17,12 @@ namespace facebook::react {
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
 extern const char ViewComponentName[];
 
-/**
- * Implementation of the ViewProps that propagates feature flag.
- */
-class ViewShadowNodeProps final : public ViewProps {
- public:
-  ViewShadowNodeProps() = default;
-  ViewShadowNodeProps(
-      const PropsParserContext &context,
-      const ViewShadowNodeProps &sourceProps,
-      const RawProps &rawProps);
-};
+using ViewShadowNodeProps = ViewProps;
 
 /*
  * `ShadowNode` for <View> component.
  */
-class ViewShadowNode final : public ConcreteViewShadowNode<ViewComponentName, ViewShadowNodeProps, ViewEventEmitter> {
+class ViewShadowNode final : public ConcreteViewShadowNode<ViewComponentName, ViewProps, ViewEventEmitter> {
  public:
   ViewShadowNode(const ShadowNodeFragment &fragment, const ShadowNodeFamily::Shared &family, ShadowNodeTraits traits);
 

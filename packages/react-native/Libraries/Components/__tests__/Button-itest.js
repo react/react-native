@@ -243,5 +243,48 @@ describe('<Button>', () => {
         expect(onPressCallback).toHaveBeenCalledTimes(0);
       });
     });
+
+    describe('importantForAccessibility', () => {
+      it('propagates "no-hide-descendants"', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Button
+              title="Hello"
+              importantForAccessibility="no-hide-descendants"
+            />,
+          );
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['importantForAccessibility']})
+            .toJSX(),
+        ).toEqual(
+          <rn-view importantForAccessibility="no-hide-descendants">
+            <rn-paragraph>HELLO</rn-paragraph>
+          </rn-view>,
+        );
+      });
+
+      it('maps "no" to "no-hide-descendants"', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<Button title="Hello" importantForAccessibility="no" />);
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['importantForAccessibility']})
+            .toJSX(),
+        ).toEqual(
+          <rn-view importantForAccessibility="no-hide-descendants">
+            <rn-paragraph>HELLO</rn-paragraph>
+          </rn-view>,
+        );
+      });
+    });
   });
 });

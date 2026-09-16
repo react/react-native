@@ -6,6 +6,7 @@
  */
 
 package com.facebook.react.bridge
+
 public interface PerformanceCounter {
   public fun profileNextBatch()
 

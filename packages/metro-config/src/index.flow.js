@@ -59,9 +59,9 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
       unstable_conditionNames: ['react-native'],
     },
     serializer: {
-      // Note: This option is overridden in cli-plugin-metro (getOverrideConfig)
+      // NOTE: Overridden in community-cli-plugin
       getModulesRunBeforeMainModule: () => [
-        require.resolve('react-native/Libraries/Core/InitializeCore'),
+        require.resolve('react-native/setup-env'),
       ],
       getPolyfills: () => require('@react-native/js-polyfills')(),
       isThirdPartyModule({path: modulePath}: Readonly<{path: string, ...}>) {
@@ -84,13 +84,11 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     },
     transformer: {
       allowOptionalDependencies: true,
-      assetRegistryPath: 'react-native/Libraries/Image/AssetRegistry',
-      asyncRequireModulePath: require.resolve(
-        'metro-runtime/src/modules/asyncRequire',
-      ),
-      babelTransformerPath: require.resolve(
-        '@react-native/metro-babel-transformer',
-      ),
+      assetRegistryPath: 'react-native/asset-registry',
+      asyncRequireModulePath:
+        require.resolve('metro-runtime/src/modules/asyncRequire'),
+      babelTransformerPath:
+        require.resolve('@react-native/metro-babel-transformer'),
       getTransformOptions: async () => ({
         transform: {
           experimentalImportSupport: false,
@@ -100,9 +98,6 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     },
     watchFolders: [],
   };
-
-  // Set global hook so that the CLI can detect when this config has been loaded
-  global.__REACT_NATIVE_METRO_CONFIG_LOADED = true;
 
   const metroDefaults = getBaseConfig.getDefaultValues(projectRoot);
 

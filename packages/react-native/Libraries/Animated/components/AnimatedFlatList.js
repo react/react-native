@@ -14,10 +14,12 @@ import FlatList, {type FlatListProps} from '../../Lists/FlatList';
 import createAnimatedComponent from '../createAnimatedComponent';
 import * as React from 'react';
 
-export default createAnimatedComponent(FlatList) as $FlowFixMe as component<
+const AnimatedFlatList: component<
   // $FlowExpectedError[unclear-type]
   ItemT = any,
 >(
   ref?: React.RefSetter<FlatList<ItemT>>,
   ...props: AnimatedProps<FlatListProps<ItemT>>
-);
+) = createAnimatedComponent(FlatList) as $FlowFixMe;
+
+export default AnimatedFlatList;

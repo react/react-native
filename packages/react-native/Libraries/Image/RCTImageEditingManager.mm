@@ -38,20 +38,22 @@ RCT_EXPORT_MODULE()
  *        be scaled down to `displaySize` rather than `size`.
  *        All units are in px (not points).
  */
-RCT_EXPORT_METHOD(
-    cropImage : (NSURLRequest *)imageRequest cropData : (JS::NativeImageEditor::Options &)cropData successCallback : (
-        RCTResponseSenderBlock)successCallback errorCallback : (RCTResponseSenderBlock)errorCallback)
+- (void)cropImage:(NSString *)imageRequestString
+           cropData:(JS::NativeImageEditor::Options &)cropData
+    successCallback:(RCTResponseSenderBlock)successCallback
+      errorCallback:(RCTResponseSenderBlock)errorCallback
 {
+  NSURLRequest *imageRequest = [RCTConvert NSURLRequest:imageRequestString];
+
   CGRect rect = {
-    [RCTConvert CGPoint:@{
-      @"x" : @(cropData.offset().x()),
-      @"y" : @(cropData.offset().y()),
-    }],
-    [RCTConvert CGSize:@{
-      @"width" : @(cropData.size().width()),
-      @"height" : @(cropData.size().height()),
-    }]
-  };
+      [RCTConvert CGPoint:@{
+        @"x" : @(cropData.offset().x()),
+        @"y" : @(cropData.offset().y()),
+      }],
+      [RCTConvert CGSize:@{
+        @"width" : @(cropData.size().width()),
+        @"height" : @(cropData.size().height()),
+      }]};
 
   // We must keep a copy of cropData so that we can access data from it at a later time
   JS::NativeImageEditor::Options cropDataCopy = cropData;

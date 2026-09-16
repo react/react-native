@@ -30,8 +30,8 @@ import type {
 
 import CdpDebugLogging from './CdpDebugLogging';
 import DeviceEventReporter from './DeviceEventReporter';
-import crypto from 'crypto';
 import invariant from 'invariant';
+import crypto from 'node:crypto';
 import WS from 'ws';
 
 const debug = require('debug')('Metro:InspectorProxy');
@@ -500,6 +500,8 @@ export default class Device {
     // $FlowFixMe[cannot-write]
     socket.send = function (message: string) {
       cdpDebugLogging.log('ProxyToDebugger', message);
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       return sendFunc.call(socket, message);
     };
   }

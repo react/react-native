@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <string>
 #include <vector>
 #include "JsErrorHandler.h"

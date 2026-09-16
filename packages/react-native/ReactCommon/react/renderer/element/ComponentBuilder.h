@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <memory>
 
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>

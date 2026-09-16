@@ -14,7 +14,7 @@
 
 const createCacheKeyFunction =
   require('@jest/create-cache-key-function').default;
-const path = require('path');
+const path = require('node:path');
 
 // NOTE: This file used to be at `react-native/jest/assetFileTransformer.js`
 // To keep the mock `testUri` paths the same, we create a fake path that outputs the same relative path as before

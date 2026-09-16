@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 namespace facebook::react {
 
 class LayoutAnimationStatusDelegate {

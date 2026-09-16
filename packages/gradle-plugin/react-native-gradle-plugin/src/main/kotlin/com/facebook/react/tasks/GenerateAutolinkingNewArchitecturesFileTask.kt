@@ -48,12 +48,12 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
   }
 
   internal fun filterAndroidPackages(
-      model: ModelAutolinkingConfigJson?
+      model: ModelAutolinkingConfigJson?,
   ): List<ModelAutolinkingDependenciesPlatformAndroidJson> =
       model?.dependencies?.values?.mapNotNull { it.platforms?.android } ?: emptyList()
 
   internal fun generateCmakeFileContent(
-      packages: List<ModelAutolinkingDependenciesPlatformAndroidJson>
+      packages: List<ModelAutolinkingDependenciesPlatformAndroidJson>,
   ): String {
     val libraryIncludes =
         packages.joinToString("\n") { dep ->
@@ -102,7 +102,7 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
   }
 
   internal fun cmakeListsPathForDependency(
-      dep: ModelAutolinkingDependenciesPlatformAndroidJson
+      dep: ModelAutolinkingDependenciesPlatformAndroidJson,
   ): String? {
     if (dep.cmakeListsPath != null) {
       return dep.cmakeListsPath
@@ -124,7 +124,7 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
   }
 
   internal fun generateCppFileContent(
-      packages: List<ModelAutolinkingDependenciesPlatformAndroidJson>
+      packages: List<ModelAutolinkingDependenciesPlatformAndroidJson>,
   ): String {
     val packagesWithLibraryNames = packages.filter { android -> android.libraryName != null }
 

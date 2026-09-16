@@ -33,15 +33,13 @@ function buildCommandSchemaInternal(
   parser: Parser,
 ): NamedShape<CommandTypeAnnotation> {
   const firstParam = parameters[0].typeAnnotation;
-  if (
-    !(
-      firstParam.typeAnnotation != null &&
-      firstParam.typeAnnotation.type === 'TSTypeReference' &&
-      firstParam.typeAnnotation.typeName.left?.name === 'React' &&
-      (firstParam.typeAnnotation.typeName.right?.name === 'ElementRef' ||
-        firstParam.typeAnnotation.typeName.right?.name === 'ComponentRef')
-    )
-  ) {
+  if (!(
+    firstParam.typeAnnotation != null &&
+    firstParam.typeAnnotation.type === 'TSTypeReference' &&
+    firstParam.typeAnnotation.typeName.left?.name === 'React' &&
+    (firstParam.typeAnnotation.typeName.right?.name === 'ElementRef' ||
+      firstParam.typeAnnotation.typeName.right?.name === 'ComponentRef')
+  )) {
     throw new Error(
       `The first argument of method ${name} must be of type React.ElementRef<> or React.ComponentRef<>`,
     );

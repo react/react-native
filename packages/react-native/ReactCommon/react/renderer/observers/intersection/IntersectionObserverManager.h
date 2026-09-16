@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/graphics/Float.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>

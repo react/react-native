@@ -7,7 +7,6 @@
 
 #include "HostPlatformScrollViewProps.h"
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/scrollview/conversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
@@ -21,51 +20,36 @@ HostPlatformScrollViewProps::HostPlatformScrollViewProps(
     const HostPlatformScrollViewProps& sourceProps,
     const RawProps& rawProps)
     : BaseScrollViewProps(context, sourceProps, rawProps),
-      sendMomentumEvents(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.sendMomentumEvents
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "sendMomentumEvents",
-                    sourceProps.sendMomentumEvents,
-                    true)),
-      nestedScrollEnabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nestedScrollEnabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nestedScrollEnabled",
-                    sourceProps.nestedScrollEnabled,
-                    true)),
-      fadingEdgeLength(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.fadingEdgeLength
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "fadingEdgeLength",
-                    sourceProps.fadingEdgeLength,
-                    nullptr)),
-      overScrollMode(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.overScrollMode
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "overScrollMode",
-                    sourceProps.overScrollMode,
-                    "auto")),
-      endFillColor(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.endFillColor
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "endFillColor",
-                    sourceProps.endFillColor,
-                    clearColor())) {}
+      sendMomentumEvents(convertRawProp(
+          context,
+          rawProps,
+          "sendMomentumEvents",
+          sourceProps.sendMomentumEvents,
+          true)),
+      nestedScrollEnabled(convertRawProp(
+          context,
+          rawProps,
+          "nestedScrollEnabled",
+          sourceProps.nestedScrollEnabled,
+          true)),
+      fadingEdgeLength(convertRawProp(
+          context,
+          rawProps,
+          "fadingEdgeLength",
+          sourceProps.fadingEdgeLength,
+          nullptr)),
+      overScrollMode(convertRawProp(
+          context,
+          rawProps,
+          "overScrollMode",
+          sourceProps.overScrollMode,
+          "auto")),
+      endFillColor(convertRawProp(
+          context,
+          rawProps,
+          "endFillColor",
+          sourceProps.endFillColor,
+          clearColor())) {}
 
 void HostPlatformScrollViewProps::setProp(
     const PropsParserContext& context,

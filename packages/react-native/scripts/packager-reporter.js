@@ -10,13 +10,14 @@
 
 'use strict';
 
-let reporter /*: $FlowFixMe */;
+// $FlowFixMe[signature-verification-failure]
+let reporter;
 
 const logPath = process.env.RCT_PACKAGER_LOG_PATH;
 if (logPath != null && logPath !== '') {
   const {JsonReporter} = require('metro');
-  const fs = require('fs');
-  const path = require('path');
+  const fs = require('node:fs');
+  const path = require('node:path');
   // $FlowFixMe[missing-type-arg]
   reporter = class extends JsonReporter {
     constructor() {

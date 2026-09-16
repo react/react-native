@@ -11,5 +11,5 @@ import com.facebook.proguard.annotations.DoNotStripAny
 
 @DoNotStripAny
 internal fun interface TracingStateListener {
-  public fun onStateChanged(state: TracingState, screenshotsEnabled: Boolean)
+  fun onStateChanged(state: TracingState, screenshotsEnabled: Boolean)
 }

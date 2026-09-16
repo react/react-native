@@ -8,7 +8,7 @@
  * @format
  */
 
-export * from '../../src/private/specs_DEPRECATED/components/RCTModalHostViewNativeComponent';
-import RCTModalHostViewNativeComponent from '../../src/private/specs_DEPRECATED/components/RCTModalHostViewNativeComponent';
+export * from '../../src/private/components/modal/specs/RCTModalHostViewNativeComponent';
+import RCTModalHostViewNativeComponent from '../../src/private/components/modal/specs/RCTModalHostViewNativeComponent';
 
 export default RCTModalHostViewNativeComponent;

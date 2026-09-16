@@ -100,7 +100,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     setWillNotDraw(false)
   }
 
-  fun recycleView(): Unit {
+  fun recycleView() {
     BackgroundStyleApplicator.reset(this)
     overflow = Overflow.VISIBLE
     clickableSpans = emptyList()
@@ -210,7 +210,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     val layout = checkNotNull(preparedLayout).layout
     if (start < 0 || end > layout.text.length || start >= end) {
       throw IllegalArgumentException(
-          "setSelection start and end are not in valid range. start: $start, end: $end, text length: ${layout.text.length}"
+          "setSelection start and end are not in valid range. start: $start, end: $end, text length: ${layout.text.length}",
       )
     }
 
@@ -404,10 +404,9 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
 
   override fun shouldDelayChildPressedState(): Boolean = false
 
-  public override fun dispatchHoverEvent(event: MotionEvent): Boolean =
-      super.dispatchHoverEvent(event)
+  override fun dispatchHoverEvent(event: MotionEvent): Boolean = super.dispatchHoverEvent(event)
 
-  public override fun onFocusChanged(
+  override fun onFocusChanged(
       gainFocus: Boolean,
       direction: Int,
       previouslyFocusedRect: Rect?,

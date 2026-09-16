@@ -84,7 +84,7 @@ internal class MountingManager(
       logSoftException(
           TAG,
           IllegalStateException(
-              "Called startSurface more than once for the SurfaceId [$surfaceId]"
+              "Called startSurface more than once for the SurfaceId [$surfaceId]",
           ),
       )
     }
@@ -151,7 +151,7 @@ internal class MountingManager(
   fun getSurfaceManagerEnforced(surfaceId: Int, context: String): SurfaceMountingManager =
       getSurfaceManager(surfaceId)
           ?: throw RetryableMountingLayerException(
-              ("Unable to find SurfaceMountingManager for surfaceId: [$surfaceId]. Context: $context")
+              ("Unable to find SurfaceMountingManager for surfaceId: [$surfaceId]. Context: $context"),
           )
 
   fun surfaceIsStopped(surfaceId: Int): Boolean {
@@ -208,7 +208,7 @@ internal class MountingManager(
   fun getSurfaceManagerForViewEnforced(reactTag: Int): SurfaceMountingManager =
       getSurfaceManagerForView(reactTag)
           ?: throw RetryableMountingLayerException(
-              "Unable to find SurfaceMountingManager for tag: [$reactTag]"
+              "Unable to find SurfaceMountingManager for tag: [$reactTag]",
           )
 
   fun getViewExists(reactTag: Int): Boolean = getSurfaceManagerForView(reactTag) != null

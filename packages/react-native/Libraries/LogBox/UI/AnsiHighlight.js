@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -13,6 +13,7 @@ import type {TextStyleProp} from '../../StyleSheet/StyleSheet';
 import View from '../../Components/View/View';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
+// $FlowFixMe[untyped-import]
 import {ansiToJson} from 'anser';
 import * as React from 'react';
 
@@ -87,7 +88,7 @@ export default function Ansi({
     <View style={styles.container}>
       {parsedLines.map((items, i) => (
         <View style={styles.line} key={i}>
-          <Text style={styles.text}>
+          <Text maxFontSizeMultiplier={1.5} style={styles.text}>
             {items.map((bundle, key) => {
               const textStyle =
                 bundle.fg && COLORS[bundle.fg]
@@ -101,6 +102,7 @@ export default function Ansi({
               return (
                 <Text
                   id="logbox_codeframe_contents_text"
+                  maxFontSizeMultiplier={1.5}
                   style={[style, textStyle]}
                   key={key}>
                   {getText(bundle.content, key)}

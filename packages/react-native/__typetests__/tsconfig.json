@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "module": "esnext",
+    "lib": ["es2020"],
+    "strict": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "types": [],
+    "jsx": "react",
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler"
+  },
+  "include": ["**/*"]
+}

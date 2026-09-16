@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "HostTarget.h"
 #include "InspectorInterfaces.h"
 

@@ -41,7 +41,7 @@ class ModelAutolinkingDependenciesJsonTest {
                     "@this*is~a(more)complicated/example!of~weird)packages",
                     null,
                 )
-                .nameCleansed
+                .nameCleansed,
         )
         .isEqualTo("this_is_a_more_complicated_example_of_weird_packages")
   }

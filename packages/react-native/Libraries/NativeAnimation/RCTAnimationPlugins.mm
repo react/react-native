@@ -20,10 +20,6 @@ using namespace std::literals;
 Class RCTAnimationClassProvider(const char *name)
 {
 
-  if (name == "NativeAnimatedModule"sv) {
-    return RCTNativeAnimatedModuleCls();
-  }
-
   if (name == "NativeAnimatedTurboModule"sv) {
     return RCTNativeAnimatedTurboModuleCls();
   }

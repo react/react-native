@@ -130,7 +130,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
 
   @ReactProp(name = "collapsableChildren")
   public open fun setCollapsableChildren(
-      @Suppress("UNUSED_PARAMETER") collapsableChildren: Boolean
+      @Suppress("UNUSED_PARAMETER") collapsableChildren: Boolean,
   ) {
     // Do Nothing: Align with static ViewConfigs
   }
@@ -572,7 +572,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
               ViewProps.MARGIN_BOTTOM,
               ViewProps.MARGIN_LEFT,
               ViewProps.MARGIN_RIGHT,
-          ]
+          ],
   )
   public open fun setMargins(index: Int, margin: Dynamic) {
     if (isVirtual()) {
@@ -606,7 +606,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
               ViewProps.PADDING_BOTTOM,
               ViewProps.PADDING_LEFT,
               ViewProps.PADDING_RIGHT,
-          ]
+          ],
   )
   public open fun setPaddings(index: Int, padding: Dynamic) {
     if (isVirtual()) {
@@ -657,7 +657,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
               ViewProps.RIGHT,
               ViewProps.TOP,
               ViewProps.BOTTOM,
-          ]
+          ],
   )
   public open fun setPositionValues(index: Int, position: Dynamic) {
     if (isVirtual()) {

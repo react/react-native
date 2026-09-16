@@ -64,7 +64,7 @@ internal class ReactTextInputTextWatcher(
             editText.incrementAndGetEventCounter(),
             editText.selectionStart,
             editText.selectionEnd,
-        )
+        ),
     )
   }
 

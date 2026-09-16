@@ -15,6 +15,7 @@
 #include <react/renderer/mounting/MountingTransaction.h>
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/uimanager/UIManager.h>
+#include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 
 namespace facebook::react {
 
@@ -59,7 +60,7 @@ void ViewTransitionModule::initialize(
         });
 
     // Register on surfaces started in the future
-    uiManager_->setOnSurfaceStartCallback(
+    uiManager_->addOnSurfaceStartCallback(
         [weakThis](const ShadowTree& shadowTree) {
           shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
               weakThis);

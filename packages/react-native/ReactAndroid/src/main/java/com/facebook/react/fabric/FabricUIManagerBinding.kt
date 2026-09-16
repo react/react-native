@@ -79,15 +79,13 @@ internal class FabricUIManagerBinding : HybridClassBase() {
 
   external fun driveCxxAnimations()
 
-  external fun driveAnimationBackend(frameTimeMs: Double)
+  external fun driveAnimationBackend(frameTimeNanos: Long)
 
   external fun drainPreallocateViewsQueue()
 
   external fun reportMount(surfaceId: Int)
 
-  external fun setAnimationBackendChoreographer(
-      animationBackendChoreographer: AnimationBackendChoreographer
-  )
+  external fun pullAndExecuteTransaction(surfaceId: Int)
 
   external fun mergeReactRevision(surfaceId: Int)
 
@@ -97,13 +95,8 @@ internal class FabricUIManagerBinding : HybridClassBase() {
       fabricUIManager: FabricUIManager,
       eventBeatManager: EventBeatManager,
       componentFactory: ComponentFactory,
-      animationBackendChoreographer: AnimationBackendChoreographer,
   ) {
     fabricUIManager.setBinding(this)
-    animationBackendChoreographer.frameCallback = AnimationFrameCallback { frameTimeMs: Double ->
-      driveAnimationBackend(frameTimeMs)
-    }
-    setAnimationBackendChoreographer(animationBackendChoreographer)
 
     installFabricUIManager(
         runtimeExecutor,

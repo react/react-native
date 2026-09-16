@@ -1,0 +1,40 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+tags:
+  - android-only
+---
+# Android-only: loads a JPEG with progressiveRenderingEnabled and logs load
+# events. iOS skips this flow (empty=pass).
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow: ./helpers/launch-app-and-search.yml
+      - inputText:
+          text: 'Image'
+      - assertVisible:
+          id: 'Image'
+      - tapOn:
+          id: 'Image'
+      - assertVisible:
+          id: 'example_search'
+      - tapOn:
+          id: 'example_search'
+      - inputText: 'Progressive JPEG'
+      - hideKeyboard
+      - scrollUntilVisible:
+          element:
+            id: 'image-progressive-jpeg'
+          direction: DOWN
+          speed: 40
+          timeout: 10000
+      # loadStart fires on mount -> proves the progressive load path engaged.
+      # Assert by id since each event is its own element (progress % is dynamic).
+      - extendedWaitUntil:
+          visible:
+            id: 'progressive-jpeg-loadstart'
+          timeout: 15000
+      # Final load event (network image; relies on the same host as image.yml).
+      - extendedWaitUntil:
+          visible:
+            id: 'progressive-jpeg-load'
+          timeout: 20000

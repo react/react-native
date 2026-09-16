@@ -15,6 +15,7 @@ target_include_directories(react_nativemodule_idlecallbacks PUBLIC ${REACT_COMMO
 target_link_libraries(react_nativemodule_idlecallbacks
         react_codegen_rncore
         react_cxxreact
+        react_cxxstableapi
         react_renderer_runtimescheduler
 )
 target_compile_reactnative_options(react_nativemodule_idlecallbacks PRIVATE)

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/graphics/Float.h>
 #include <react/renderer/graphics/Point.h>
 #include <react/renderer/graphics/Rect.h>

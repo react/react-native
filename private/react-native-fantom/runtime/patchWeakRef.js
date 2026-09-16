@@ -38,6 +38,8 @@ export default function patchWeakRef(): void {
       );
     }
 
+    /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+     * unsoundness in flow */
     return originalDeref.call(this);
   };
 

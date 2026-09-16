@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -20,6 +20,7 @@ import invariant from 'invariant';
  */
 /* $FlowFixMe[missing-this-annot] The 'this' type annotation(s) required by
  * Flow's LTI update could not be added via codemod */
+// $FlowFixMe[unclear-type]
 const oneArgumentPooler = function (copyFieldsFrom: any) {
   const Klass = this; // eslint-disable-line consistent-this
   if (Klass.instancePool.length) {
@@ -33,6 +34,7 @@ const oneArgumentPooler = function (copyFieldsFrom: any) {
 
 /* $FlowFixMe[missing-this-annot] The 'this' type annotation(s) required by
  * Flow's LTI update could not be added via codemod */
+// $FlowFixMe[unclear-type]
 const twoArgumentPooler = function (a1: any, a2: any) {
   const Klass = this; // eslint-disable-line consistent-this
   if (Klass.instancePool.length) {
@@ -46,6 +48,7 @@ const twoArgumentPooler = function (a1: any, a2: any) {
 
 /* $FlowFixMe[missing-this-annot] The 'this' type annotation(s) required by
  * Flow's LTI update could not be added via codemod */
+// $FlowFixMe[unclear-type]
 const threeArgumentPooler = function (a1: any, a2: any, a3: any) {
   const Klass = this; // eslint-disable-line consistent-this
   if (Klass.instancePool.length) {
@@ -59,6 +62,7 @@ const threeArgumentPooler = function (a1: any, a2: any, a3: any) {
 
 /* $FlowFixMe[missing-this-annot] The 'this' type annotation(s) required by
  * Flow's LTI update could not be added via codemod */
+// $FlowFixMe[unclear-type]
 const fourArgumentPooler = function (a1: any, a2: any, a3: any, a4: any) {
   const Klass = this; // eslint-disable-line consistent-this
   if (Klass.instancePool.length) {
@@ -89,6 +93,7 @@ const standardReleaser = function (instance) {
 const DEFAULT_POOL_SIZE = 10;
 const DEFAULT_POOLER = oneArgumentPooler;
 
+// $FlowFixMe[unclear-type]
 type Pooler = any;
 
 /**
@@ -112,6 +117,7 @@ const addPoolingTo = function <T>(
 } {
   // Casting as any so that flow ignores the actual implementation and trusts
   // it to match the type we declared
+  // $FlowFixMe[unclear-type]
   const NewKlass: any = CopyConstructor;
   NewKlass.instancePool = [];
   NewKlass.getPooled = pooler || DEFAULT_POOLER;

@@ -16,6 +16,12 @@ else
   source[:tag] = "v#{version}"
 end
 
+header_search_paths = []
+
+if ENV['USE_FRAMEWORKS']
+  header_search_paths << "\"$(PODS_TARGET_SRCROOT)/..\"" # ReactCommon, for <react/cxxstableapi/...>
+end
+
 Pod::Spec.new do |s|
   s.name                   = "React-oscompat"
   s.version                = version
@@ -26,6 +32,10 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources("*.{cpp,h}", "*.{h}")
-  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "" }
+  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => header_search_paths.join(' ') }
   s.header_dir             = "oscompat"
+
+  s.dependency "React-cxxstableapi"
+
+  mark_as_react_native_build(s)
 end

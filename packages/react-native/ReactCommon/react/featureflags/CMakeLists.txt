@@ -12,7 +12,8 @@ file(GLOB react_featureflags_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_featureflags OBJECT ${react_featureflags_SRC})
 
 target_include_directories(react_featureflags PUBLIC ${REACT_COMMON_DIR})
+target_include_directories(react_featureflags INTERFACE ${REACT_COMMON_DIR}/react/featureflags)
 
-target_link_libraries(react_featureflags folly_runtime)
+target_link_libraries(react_featureflags folly_runtime react_cxxstableapi)
 target_compile_reactnative_options(react_featureflags PRIVATE)
 target_compile_options(react_featureflags PRIVATE -Wpedantic)

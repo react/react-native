@@ -1,0 +1,116 @@
+# @ref LLP 0009#guard-step-ordering-and-job-budgets — no model call, so no model secret and a 10-minute cap
+name: AI code review (dismiss)
+
+# Maintainer PR-comment command to hide/restore a reviewer finding on this PR:
+#   /dismiss <id> [<id> …] [-- reason]   hide finding(s); they move to a collapsed
+#                                        "Dismissed" section and stay there on re-review
+#   /undismiss <id> [<id> …]             restore finding(s)
+# <id> is the short `id:` shown on each finding in the reviewer comment. This only
+# edits the reviewer's comment (no review run, no model secret).
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  # Published reviewer run via npx (override with repo variable ECR_VERSION).
+  ECR_VERSION: ${{ vars.ECR_VERSION || '0.14.0' }}
+
+concurrency:
+  group: ai-code-review-dismiss-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  dismiss:
+    # PR comments starting with /dismiss or /undismiss, from a maintainer only.
+    if: >-
+      github.event.issue.pull_request != null &&
+      (startsWith(github.event.comment.body, '/dismiss') || startsWith(github.event.comment.body, '/undismiss')) &&
+      contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    # @ref LLP 0009#guard-step-ordering-and-job-budgets [constrained-by] — no review budget to cover; capped low regardless
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      # @ref LLP 0009#workflow-security-posture [implements] — ids restricted to fingerprint alphabet; reason trimmed, newlines stripped
+      - name: Parse command
+        id: cmd
+        env:
+          # Via env (never inline ${{ }}) so an untrusted comment can't inject shell.
+          COMMENT: ${{ github.event.comment.body }}
+        run: |
+          line=$(printf '%s' "$COMMENT" | head -n1 | tr -d '\r')
+          verb=$(printf '%s' "$line" | awk '{print $1}')
+          case "$verb" in
+            /dismiss) sub=dismiss ;;
+            /undismiss) sub=undismiss ;;
+            *) echo "run=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
+          esac
+          rest=$(printf '%s' "$line" | cut -s -d' ' -f2-)
+          # Optional reason after ' -- '.
+          reason=""
+          ids_part="$rest"
+          case "$rest" in
+            *" -- "*) ids_part="${rest%% -- *}"; reason="${rest#* -- }" ;;
+          esac
+          # ids: fingerprint alphabet + spaces only. reason: trimmed, bounded, no newlines.
+          ids=$(printf '%s' "$ids_part" | tr -cd 'a-f0-9 ' | tr -s ' ')
+          reason=$(printf '%s' "$reason" | tr -d '\r\n' | cut -c1-200)
+          if [ -z "$(printf '%s' "$ids" | tr -d ' ')" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          {
+            echo "run=true"
+            echo "sub=$sub"
+            echo "ids=$ids"
+            echo "reason=$reason"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Acknowledge
+        if: steps.cmd.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api -X POST "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" -f content=eyes
+
+      # Base ref only (issue_comment runs with base-repo context). Dismiss just edits
+      # the reviewer's comment via the published CLI + gh; it needs no repo code and
+      # no model secret.
+      - name: Checkout (base ref only)
+        if: steps.cmd.outputs.run == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          # Dismiss never fetches; gh authenticates from GH_TOKEN. Keep the token
+          # out of .git/config.
+          persist-credentials: false
+
+      - name: Set up Node
+        if: steps.cmd.outputs.run == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          # No package-manager install here (runs via npx) — disable the auto cache so
+          # the post step doesn't error trying to save an empty cache.
+          package-manager-cache: false
+
+      # @ref LLP 0009#guard-step-ordering-and-job-budgets [explains] — GH_TOKEN only, no OPENAI_API_KEY or model credential
+      - name: Apply dismissal
+        if: steps.cmd.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SUB: ${{ steps.cmd.outputs.sub }}
+          IDS: ${{ steps.cmd.outputs.ids }}
+          REASON: ${{ steps.cmd.outputs.reason }}
+          BY: ${{ github.event.comment.user.login }}
+          PR: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          ARGS=(--pr "$PR" --repo "$REPO" --by "$BY")
+          [ -n "$REASON" ] && ARGS+=(--reason "$REASON")
+          for id in $IDS; do ARGS+=("$id"); done
+          npx --yes -p "@expo/code-review-cli@$ECR_VERSION" ecr "$SUB" "${ARGS[@]}"

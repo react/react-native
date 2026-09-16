@@ -42,7 +42,7 @@ public object RootViewUtil {
       ViewCompat.getRootWindowInsets(v)?.apply {
         val insets =
             getInsets(
-                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout(),
             )
 
         locationInWindow[0] -= insets.left

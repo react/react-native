@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <mutex>
 #include <optional>
 
@@ -51,11 +53,6 @@ class InspectorFlags {
   bool getFrameRecordingEnabled() const;
 
   /**
-   * Flag determining if network inspection is enabled.
-   */
-  bool getNetworkInspectionEnabled() const;
-
-  /**
    * Flag determining if the V2 in-app Performance Monitor is enabled.
    */
   bool getPerfIssuesEnabled() const;
@@ -79,7 +76,6 @@ class InspectorFlags {
     bool frameRecordingEnabled;
     bool fuseboxEnabled;
     bool isProfilingBuild;
-    bool networkInspectionEnabled;
     bool perfIssuesEnabled;
     bool operator==(const Values &) const = default;
   };

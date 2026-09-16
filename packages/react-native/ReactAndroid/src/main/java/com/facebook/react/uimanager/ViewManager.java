@@ -41,7 +41,7 @@ import java.util.Stack;
  * and size for the corresponding native view.
  */
 @ReactPropertyHolder
-public abstract class ViewManager<T extends View, C extends ReactShadowNode>
+public abstract class ViewManager<T extends View, C extends ReactShadowNode<?>>
     extends BaseJavaModule {
 
   private static final String TAG = "ViewManager";

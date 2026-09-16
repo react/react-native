@@ -8,7 +8,7 @@
  * @format
  */
 
-const ALLOWED_SCALES: {[key: string]: number[]} = {
+export const ALLOWED_SCALES: {[key: string]: number[]} = {
   ios: [1, 2, 3],
 };
 

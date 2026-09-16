@@ -33,7 +33,9 @@ internal fun interface ReactJsExceptionHandler {
     val stack: List<StackFrame>
     val id: Int
     val isFatal: Boolean
-    val extraData: ReadableMap
+    // Nullable: native marshalling may fail or the error may carry none (see
+    // JReactExceptionManager.cpp).
+    val extraData: ReadableMap?
   }
 
   @DoNotStripAny
@@ -53,7 +55,7 @@ internal fun interface ReactJsExceptionHandler {
       override val stack: ArrayList<ProcessedErrorStackFrameImpl>,
       override val id: Int,
       override val isFatal: Boolean,
-      override val extraData: ReadableNativeMap,
+      override val extraData: ReadableNativeMap?,
   ) : ProcessedError
 
   fun reportJsException(errorMap: ProcessedError)

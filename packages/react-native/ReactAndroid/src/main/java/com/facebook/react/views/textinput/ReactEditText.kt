@@ -14,6 +14,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -47,6 +48,7 @@ import androidx.core.view.ViewCompat
 import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.common.assets.ReactFontManager
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
@@ -71,7 +73,9 @@ import com.facebook.react.uimanager.style.LogicalEdge
 import com.facebook.react.uimanager.style.Overflow
 import com.facebook.react.views.text.ReactTextUpdate
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
+import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariationSettings
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.react.views.text.TextAttributes
 import com.facebook.react.views.text.TextLayoutManager
@@ -134,12 +138,17 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var fontFamily: String? = null
   private var fontWeight = ReactConstants.UNSET
   private var fontStyle = ReactConstants.UNSET
+  internal var parsedFontVariationSettings: String? = null
+    private set
+
   private var autoFocus = false
   private var contextMenuHidden = false
   private var didAttachToWindow = false
   private var selectTextOnFocus = false
   private var placeholder: String? = null
-  private var overflow = Overflow.VISIBLE
+  internal var overflow = Overflow.VISIBLE
+    private set
+
   private var wasMultiline = false
 
   public var stateWrapper: StateWrapper? = null
@@ -257,6 +266,13 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
             if (contextMenuHidden) {
               return false
             }
+            // setTextIsSelectable(true) (see onAttachedToWindow) makes the platform Editor
+            // treat this view as read-only selectable text and skip its "Show the IME to be
+            // able to replace text" branch when a selection or insertion action mode starts
+            // (Editor#startActionModeInternal gates it on !isTextSelectable()). Compensate
+            // here so long-pressing an editable input summons the keyboard, matching stock
+            // EditText behavior.
+            showSoftKeyboardIfEditable()
             menu.removeItem(android.R.id.pasteAsPlainText)
             return true
           }
@@ -369,7 +385,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
    */
   override fun onTextContextMenuItem(id: Int): Boolean =
       super.onTextContextMenuItem(
-          if (id == android.R.id.paste) android.R.id.pasteAsPlainText else id
+          if (id == android.R.id.paste) android.R.id.pasteAsPlainText else id,
       )
 
   internal fun clearFocusAndMaybeRefocus() {
@@ -379,11 +395,20 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       // Avoid refocusing to a new view on old versions of Android by default
       // by preventing `requestFocus()` on the rootView from moving focus to any child.
       // https://cs.android.com/android/_/android/platform/frameworks/base/+/bdc66cb5a0ef513f4306edf9156cc978b08e06e4
-      val rootViewGroup = rootView as ViewGroup
-      val oldDescendantFocusability = rootViewGroup.descendantFocusability
-      rootViewGroup.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
-      super.clearFocus()
-      rootViewGroup.descendantFocusability = oldDescendantFocusability
+      //
+      // getRootView() returns the view itself when it is detached from the window, so the root
+      // is not necessarily a ViewGroup: an IME editor action delivered over Binder can race the
+      // removal of this view from the hierarchy. There is no focus to move in that case, so a
+      // plain clearFocus() is enough.
+      val rootViewGroup = rootView as? ViewGroup
+      if (rootViewGroup != null) {
+        val oldDescendantFocusability = rootViewGroup.descendantFocusability
+        rootViewGroup.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+        super.clearFocus()
+        rootViewGroup.descendantFocusability = oldDescendantFocusability
+      } else {
+        super.clearFocus()
+      }
     }
     hideSoftKeyboard()
   }
@@ -489,6 +514,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     if (focused && selectionWatcher != null) {
       selectionWatcher?.onSelectionChanged(selectionStart, selectionEnd)
     }
+    // Gaining focus with a non-collapsed selection means focus arrived through a
+    // long-press text selection rather than a tap or programmatic focus — the one focus
+    // path that never requests the soft keyboard (see onCreateActionMode). The action
+    // mode can be created before this view becomes the IME-served view, so request the
+    // keyboard again now that focus has landed.
+    if (focused && hasSelection()) {
+      showSoftKeyboardIfEditable()
+    }
   }
 
   internal fun setSelectionWatcher(selectionWatcher: SelectionWatcher?) {
@@ -581,6 +614,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     }
     wasMultiline = isMultiline
 
+    updatePlaceholderEllipsize()
+
     // We override the KeyListener so that all keys on the soft input keyboard as well as hardware
     // keyboards work. Some KeyListeners like DigitsKeyListener will display the keyboard but not
     // accept all input from it
@@ -596,6 +631,16 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       this.placeholder = placeholder
       hint = placeholder
     }
+    updatePlaceholderEllipsize()
+  }
+
+  private fun updatePlaceholderEllipsize() {
+    ellipsize =
+        if (!isMultiline) {
+          TextUtils.TruncateAt.END
+        } else {
+          null
+        }
   }
 
   public fun setFontFamily(fontFamily: String?) {
@@ -619,6 +664,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     }
   }
 
+  internal fun setReactFontVariationSettings(fontVariationSettings: String?) {
+    val newParsedFontVariationSettings = parseFontVariationSettings(fontVariationSettings)
+    if (newParsedFontVariationSettings != parsedFontVariationSettings) {
+      parsedFontVariationSettings = newParsedFontVariationSettings
+      typefaceDirty = true
+    }
+  }
+
   override fun setFontFeatureSettings(fontFeatureSettings: String?) {
     if (fontFeatureSettings != getFontFeatureSettings()) {
       super.setFontFeatureSettings(fontFeatureSettings)
@@ -635,6 +688,13 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
     val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
     typeface = newTypeface
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      // TextView skips unchanged settings even after a typeface change, so clear them first.
+      if (getFontVariationSettings() != null && parsedFontVariationSettings != null) {
+        super.setFontVariationSettings(null)
+      }
+      super.setFontVariationSettings(parsedFontVariationSettings)
+    }
 
     // Match behavior of CustomStyleSpan and enable SUBPIXEL_TEXT_FLAG when setting anything
     // nonstandard
@@ -642,7 +702,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         fontStyle != ReactConstants.UNSET ||
             fontWeight != ReactConstants.UNSET ||
             fontFamily != null ||
-            fontFeatureSettings != null
+            fontFeatureSettings != null ||
+            parsedFontVariationSettings != null
     paintFlags =
         if (enableSubpixelText) {
           paintFlags or Paint.SUBPIXEL_TEXT_FLAG
@@ -795,11 +856,16 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       span.spacing == textAttributes.effectiveLetterSpacing
     }
 
+    val effectiveFontStyle = if (fontStyle == ReactConstants.UNSET) Typeface.NORMAL else fontStyle
+    val effectiveFontWeight =
+        if (fontWeight == ReactConstants.UNSET) ReactFontManager.TypefaceStyle.NORMAL
+        else fontWeight
     stripSpansOfKind(sb, CustomStyleSpan::class.java) { span: CustomStyleSpan ->
-      span.style == fontStyle &&
+      span.style == effectiveFontStyle &&
           span.fontFamily == fontFamily &&
-          span.weight == fontWeight &&
-          span.fontFeatureSettings == fontFeatureSettings
+          span.weight == effectiveFontWeight &&
+          span.fontFeatureSettings == fontFeatureSettings &&
+          span.fontVariationSettings == parsedFontVariationSettings
     }
   }
 
@@ -874,10 +940,19 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         fontStyle != ReactConstants.UNSET ||
             fontWeight != ReactConstants.UNSET ||
             fontFamily != null ||
-            fontFeatureSettings != null
+            fontFeatureSettings != null ||
+            parsedFontVariationSettings != null
     ) {
       workingText.setSpan(
-          CustomStyleSpan(fontStyle, fontWeight, fontFeatureSettings, fontFamily, context.assets),
+          CustomStyleSpan(
+              fontStyle,
+              fontWeight,
+              fontFeatureSettings,
+              parsedFontVariationSettings,
+              fontFamily,
+              context.assets,
+              getFontWeightAdjustment(context),
+          ),
           0,
           workingText.length,
           spanFlags,
@@ -891,6 +966,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   }
 
   protected fun showSoftKeyboard(): Boolean = inputMethodManager.showSoftInput(this, 0)
+
+  // Mirrors the guard on requestFocusProgrammatically(), plus editability ("editable"
+  // prop maps to isEnabled): never summon the keyboard for a read-only input.
+  private fun showSoftKeyboardIfEditable() {
+    if (isEnabled && isInTouchMode && showSoftInputOnFocus) {
+      showSoftKeyboard()
+    }
+  }
 
   protected fun hideSoftKeyboard() {
     inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
@@ -1145,13 +1228,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   }
 
   public fun setOverflow(overflow: String?) {
-    if (overflow == null) {
-      this.overflow = Overflow.VISIBLE
-    } else {
-      val parsedOverflow = Overflow.fromString(overflow)
-      this.overflow = parsedOverflow ?: Overflow.VISIBLE
-    }
-
+    this.overflow = Overflow.fromString(overflow)
     invalidate()
   }
 
@@ -1246,7 +1323,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
      */
     override fun getInputType() = _inputType
 
-    public fun setInputType(inputType: Int) {
+    fun setInputType(inputType: Int) {
       _inputType = inputType
     }
 

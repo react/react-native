@@ -27,7 +27,7 @@ internal class SimpleSettableFuture<T> : Future<T> {
    * Sets the result. If another thread has called [get], they will immediately receive the value.
    * set or setException must only be called once.
    */
-  fun set(result: T?): Unit {
+  fun set(result: T?) {
     checkNotSet()
     this.result = result
     readyLatch.countDown()
@@ -37,7 +37,7 @@ internal class SimpleSettableFuture<T> : Future<T> {
    * Sets the exception. If another thread has called [get], they will immediately receive the
    * exception. set or setException must only be called once.
    */
-  fun setException(exception: Exception): Unit {
+  fun setException(exception: Exception) {
     checkNotSet()
     this.exception = exception
     readyLatch.countDown()

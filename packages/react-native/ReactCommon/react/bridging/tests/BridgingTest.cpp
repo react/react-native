@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <chrono>
 #include <span>
 #include <utility>
 
@@ -542,6 +543,59 @@ TEST_F(BridgingTest, eventEmitterTest) {
   }
 }
 
+TEST_F(BridgingTest, eventEmitterMapLookupTest) {
+  // Mirrors the lookup the codegen'd setEventEmitterCallback lambda performs:
+  // an unknown event name must not insert an entry, and a null emitter must not
+  // be dereferenced.
+  std::unordered_map<std::string, std::shared_ptr<IAsyncEventEmitter>>
+      eventEmitterMap;
+  eventEmitterMap["onEvent"] = std::make_shared<AsyncEventEmitter<EventType>>();
+  eventEmitterMap["onNullEvent"] = nullptr;
+
+  // Subscribe to the valid emitter so the emit("onEvent") case can be verified
+  // by an observable side effect, not merely EXPECT_NO_THROW.
+  EventSubscriptionsWithLastEvent eventSubscriptionsWithListener;
+  addEventSubscription<EventType>(
+      rt,
+      static_cast<AsyncEventEmitter<EventType>&>(*eventEmitterMap["onEvent"]),
+      eventSubscriptionsWithListener,
+      invoker);
+
+  auto emit = [&eventEmitterMap](const std::string& name) {
+    auto it = eventEmitterMap.find(name);
+    if (it == eventEmitterMap.end() || !it->second) {
+      return;
+    }
+    static_cast<AsyncEventEmitter<EventType>&>(*it->second)
+        .emit({"one", "two", "three"});
+  };
+
+  EXPECT_NO_THROW(emit("onUnknownEvent"));
+  EXPECT_NO_THROW(emit("onNullEvent"));
+  EXPECT_NO_THROW(emit("onEvent"));
+
+  // The valid emit must actually reach the subscribed listener.
+  flushQueue();
+  ASSERT_EQ(1, eventSubscriptionsWithListener.size());
+  const auto& lastEvent = eventSubscriptionsWithListener[0].second;
+  ASSERT_EQ(3, lastEvent->size());
+  EXPECT_EQ("one", lastEvent->at(0));
+  EXPECT_EQ("two", lastEvent->at(1));
+  EXPECT_EQ("three", lastEvent->at(2));
+
+  // The miss must not have grown the map, which operator[] would have done.
+  EXPECT_EQ(2, eventEmitterMap.size());
+  EXPECT_FALSE(eventEmitterMap.contains("onUnknownEvent"));
+
+  // Clean up the subscription so the LongLivedObjectCollection leak check in
+  // TearDown passes.
+  for (const auto& [eventSubscription, _] : eventSubscriptionsWithListener) {
+    eventSubscription.getPropertyAsFunction(rt, "remove")
+        .callWithThis(rt, eventSubscription);
+  }
+  flushQueue();
+}
+
 TEST_F(BridgingTest, optionalTest) {
   EXPECT_EQ(
       1, bridging::fromJs<std::optional<int>>(rt, jsi::Value(1), invoker));
@@ -955,17 +1009,29 @@ TEST_F(BridgingTest, asyncArrayBufferBridgingTest) {
 }
 
 TEST_F(BridgingTest, highResTimeStampTest) {
-  HighResTimeStamp timestamp = HighResTimeStamp::now();
-  EXPECT_EQ(
-      timestamp,
-      bridging::fromJs<HighResTimeStamp>(
-          rt, bridging::toJs(rt, timestamp), invoker));
+  // Nanosecond counts that are not a whole number of milliseconds, spanning the
+  // magnitudes a monotonic clock reports (seconds to weeks since boot). Fixed
+  // values are used instead of `HighResTimeStamp::now()` so that the precision
+  // of the round trip does not depend on the uptime of the host running this
+  // test.
+  for (int64_t nanoseconds :
+       {1LL, 999'999LL, 1'000'001LL, 12'345'678'901LL, 537'648'854'729'250LL}) {
+    auto timestamp = HighResTimeStamp::fromChronoSteadyClockTimePoint(
+        std::chrono::steady_clock::time_point(
+            std::chrono::nanoseconds(nanoseconds)));
+    EXPECT_EQ(
+        timestamp,
+        bridging::fromJs<HighResTimeStamp>(
+            rt, bridging::toJs(rt, timestamp), invoker))
+        << "timestamp of " << nanoseconds << "ns did not round trip";
 
-  auto duration = HighResDuration::fromNanoseconds(1);
-  EXPECT_EQ(
-      duration,
-      bridging::fromJs<HighResDuration>(
-          rt, bridging::toJs(rt, duration), invoker));
+    auto duration = HighResDuration::fromNanoseconds(nanoseconds);
+    EXPECT_EQ(
+        duration,
+        bridging::fromJs<HighResDuration>(
+            rt, bridging::toJs(rt, duration), invoker))
+        << "duration of " << nanoseconds << "ns did not round trip";
+  }
 
   EXPECT_EQ(1.0, bridging::toJs(rt, HighResDuration::fromNanoseconds(1e6)));
   EXPECT_EQ(

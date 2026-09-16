@@ -323,7 +323,7 @@ function normalizeThreshold(
       return threshold
         .map(t => normalizeThresholdValue(t, 'threshold'))
         .map(t => t ?? 0)
-        .sort();
+        .sort((a, b) => a - b);
     } else if (defaultEmpty) {
       return [];
     } else {
@@ -359,7 +359,7 @@ function normalizeRootThreshold(
     const normalizedArr = rootThreshold
       .map(rt => normalizeThresholdValue(rt, 'rnRootThreshold'))
       .filter((rt): rt is number => rt != null)
-      .sort();
+      .sort((a, b) => a - b);
     return normalizedArr.length === 0 ? null : normalizedArr;
   }
 

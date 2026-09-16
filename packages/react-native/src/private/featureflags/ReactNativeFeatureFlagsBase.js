@@ -26,9 +26,10 @@ export type Getter<T> = () => T;
 
 // This defines the types for the overrides object, whose methods can return
 // null or undefined to fallback to the default value.
-export type OverridesFor<T> = Partial<{
-  [key in keyof T]: Getter<?ReturnType<T[key]>>,
-}>;
+export type OverridesFor<T extends {readonly [string]: () => unknown}> =
+  Partial<{
+    [key in keyof T]: Getter<?ReturnType<T[key]>>,
+  }>;
 
 function createGetter<T extends boolean | number | string>(
   configName: string,

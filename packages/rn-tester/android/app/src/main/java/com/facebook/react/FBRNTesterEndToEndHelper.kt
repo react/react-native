@@ -12,6 +12,8 @@ import java.io.PrintWriter
 
 @Suppress("UNUSED_PARAMETER")
 internal object FBRNTesterEndToEndHelper {
+  fun initializeConfig(application: Application) = Unit
+
   fun onCreate(application: Application) {
     // no-op This is an empty implementation to stub out Meta's internal test coverage
     // instrumentation.

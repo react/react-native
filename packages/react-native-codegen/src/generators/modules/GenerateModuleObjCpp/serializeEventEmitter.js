@@ -11,11 +11,14 @@
 import type {NativeModuleEventEmitterShape} from '../../../CodegenSchema';
 
 const {parseValidUnionType, toPascalCase} = require('../../Utils');
+const {throwIfUnsupportedEventEmitterPayload} = require('../Utils');
 
 function getEventEmitterTypeObjCType(
   eventEmitter: NativeModuleEventEmitterShape,
 ): string {
   const typeAnnotation = eventEmitter.typeAnnotation.typeAnnotation;
+
+  throwIfUnsupportedEventEmitterPayload(eventEmitter.name, typeAnnotation);
 
   switch (typeAnnotation.type) {
     case 'StringTypeAnnotation':
@@ -39,6 +42,9 @@ function getEventEmitterTypeObjCType(
       }
     case 'NumberTypeAnnotation':
     case 'NumberLiteralTypeAnnotation':
+    case 'DoubleTypeAnnotation':
+    case 'FloatTypeAnnotation':
+    case 'Int32TypeAnnotation':
       return 'NSNumber *_Nonnull';
     case 'BooleanTypeAnnotation':
     case 'BooleanLiteralTypeAnnotation':
@@ -49,11 +55,8 @@ function getEventEmitterTypeObjCType(
       return 'NSDictionary *';
     case 'ArrayTypeAnnotation':
       return 'NSArray<id<NSObject>> *';
-    case 'DoubleTypeAnnotation':
-    case 'FloatTypeAnnotation':
-    case 'Int32TypeAnnotation':
     case 'VoidTypeAnnotation':
-      // TODO: Add support for these types
+      // Void emitters take no argument, so both callers skip this function.
       throw new Error(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
       );
@@ -78,20 +81,28 @@ function EventEmitterHeaderTemplate(
 function EventEmitterImplementationTemplate(
   eventEmitter: NativeModuleEventEmitterShape,
 ): string {
+  // _eventEmitterCallback is installed by the generated SpecJSI constructor,
+  // which runs when JS first looks the module up. Emitting before that would
+  // call an empty std::function, so the emitted code no-ops instead. The local
+  // copy is for readability; it does not synchronize against a concurrent
+  // install.
   return `- (void)emit${toPascalCase(eventEmitter.name)}${
     eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
       ? `:(${getEventEmitterTypeObjCType(eventEmitter)})value`
       : ''
   }
 {
-  _eventEmitterCallback("${eventEmitter.name}", ${
-    eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
-      ? eventEmitter.typeAnnotation.typeAnnotation.type !==
-        'BooleanTypeAnnotation'
-        ? 'value'
-        : '[NSNumber numberWithBool:value]'
-      : 'nil'
-  });
+  auto eventEmitterCallback = _eventEmitterCallback;
+  if (eventEmitterCallback) {
+    eventEmitterCallback("${eventEmitter.name}", ${
+      eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
+        ? eventEmitter.typeAnnotation.typeAnnotation.type !==
+          'BooleanTypeAnnotation'
+          ? 'value'
+          : '[NSNumber numberWithBool:value]'
+        : 'nil'
+    });
+  }
 }`;
 }
 

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/components/scrollview/BaseScrollViewProps.h>
 
 namespace facebook::react {

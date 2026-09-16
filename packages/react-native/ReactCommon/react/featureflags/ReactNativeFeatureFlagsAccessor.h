@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<80fcb1756caccd2259335a67984d76d5>>
+ * @generated SignedSource<<0050c3fd04df99633d455ee88e0cf789>>
  */
 
 /**
@@ -18,6 +18,8 @@
  */
 
 #pragma once
+
+#include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <react/featureflags/ReactNativeFeatureFlagsProvider.h>
 #include <array>
@@ -44,8 +46,10 @@ class ReactNativeFeatureFlagsAccessor {
   bool disableViewPreallocationAndroid();
   bool enableAccessibilityOrder();
   bool enableAccumulatedUpdatesInRawPropsAndroid();
+  bool enableAndroidAutoOffscreenCompositingForElevation();
   bool enableAndroidTextMeasurementOptimizations();
   bool enableBridgelessArchitecture();
+  bool enableBufferedCallInvoker();
   bool enableCppPropsIteratorSetter();
   bool enableCustomFocusSearchOnClippedElementsAndroid();
   bool enableDestroyShadowTreeRevisionAsync();
@@ -56,11 +60,13 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableFabricLogs();
   bool enableFlexboxAutoMinSizeInStrictMode();
   bool enableFontScaleChangesUpdatingLayout();
+  bool enableIOSCompressedTextFrameAdjustment();
   bool enableIOSTextBaselineOffsetPerLine();
   bool enableIOSViewClipToPaddingBox();
   bool enableImagePrefetchingAndroid();
-  bool enableImageRequestDowngradingForNonVisibleImages();
+  bool enableImageTransparentTintColor();
   bool enableImmediateUpdateModeForContentOffsetChanges();
+  bool enableImperativeEvents();
   bool enableImperativeFocus();
   bool enableInteropViewManagerClassLookUpOptimizationIOS();
   bool enableIntersectionObserverByDefault();
@@ -68,13 +74,12 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableLayoutAnimationsOnAndroid();
   bool enableLayoutAnimationsOnIOS();
   bool enableModuleArgumentNSNullConversionIOS();
+  bool enableMountingCoordinatorPullModelAndroid();
   bool enableMutationObserverByDefault();
   bool enableNativeCSSParsing();
-  bool enableNetworkEventReporting();
   bool enablePreparedTextLayout();
   bool enablePropsUpdateReconciliationAndroid();
-  bool enableRuntimeSchedulerQueueClearingOnError();
-  bool enableSchedulerDelegateInvalidation();
+  bool enableResizeObserverByDefault();
   bool enableSwiftUIBasedFilters();
   bool enableViewCulling();
   bool enableViewRecycling();
@@ -89,8 +94,8 @@ class ReactNativeFeatureFlagsAccessor {
   bool fuseboxAssertSingleHostState();
   bool fuseboxEnabledRelease();
   bool fuseboxFrameRecordingEnabled();
-  bool fuseboxNetworkInspectionEnabled();
   bool fuseboxScreenshotCaptureEnabled();
+  bool fuseboxWebSocketEventsEnabled();
   bool optimizedAnimatedPropUpdates();
   bool overrideBySynchronousMountPropsAtMountingAndroid();
   bool perfIssuesEnabled();
@@ -128,7 +133,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 85> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 88> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -142,8 +147,10 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> disableViewPreallocationAndroid_;
   std::atomic<std::optional<bool>> enableAccessibilityOrder_;
   std::atomic<std::optional<bool>> enableAccumulatedUpdatesInRawPropsAndroid_;
+  std::atomic<std::optional<bool>> enableAndroidAutoOffscreenCompositingForElevation_;
   std::atomic<std::optional<bool>> enableAndroidTextMeasurementOptimizations_;
   std::atomic<std::optional<bool>> enableBridgelessArchitecture_;
+  std::atomic<std::optional<bool>> enableBufferedCallInvoker_;
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
   std::atomic<std::optional<bool>> enableCustomFocusSearchOnClippedElementsAndroid_;
   std::atomic<std::optional<bool>> enableDestroyShadowTreeRevisionAsync_;
@@ -154,11 +161,13 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableFabricLogs_;
   std::atomic<std::optional<bool>> enableFlexboxAutoMinSizeInStrictMode_;
   std::atomic<std::optional<bool>> enableFontScaleChangesUpdatingLayout_;
+  std::atomic<std::optional<bool>> enableIOSCompressedTextFrameAdjustment_;
   std::atomic<std::optional<bool>> enableIOSTextBaselineOffsetPerLine_;
   std::atomic<std::optional<bool>> enableIOSViewClipToPaddingBox_;
   std::atomic<std::optional<bool>> enableImagePrefetchingAndroid_;
-  std::atomic<std::optional<bool>> enableImageRequestDowngradingForNonVisibleImages_;
+  std::atomic<std::optional<bool>> enableImageTransparentTintColor_;
   std::atomic<std::optional<bool>> enableImmediateUpdateModeForContentOffsetChanges_;
+  std::atomic<std::optional<bool>> enableImperativeEvents_;
   std::atomic<std::optional<bool>> enableImperativeFocus_;
   std::atomic<std::optional<bool>> enableInteropViewManagerClassLookUpOptimizationIOS_;
   std::atomic<std::optional<bool>> enableIntersectionObserverByDefault_;
@@ -166,13 +175,12 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableLayoutAnimationsOnAndroid_;
   std::atomic<std::optional<bool>> enableLayoutAnimationsOnIOS_;
   std::atomic<std::optional<bool>> enableModuleArgumentNSNullConversionIOS_;
+  std::atomic<std::optional<bool>> enableMountingCoordinatorPullModelAndroid_;
   std::atomic<std::optional<bool>> enableMutationObserverByDefault_;
   std::atomic<std::optional<bool>> enableNativeCSSParsing_;
-  std::atomic<std::optional<bool>> enableNetworkEventReporting_;
   std::atomic<std::optional<bool>> enablePreparedTextLayout_;
   std::atomic<std::optional<bool>> enablePropsUpdateReconciliationAndroid_;
-  std::atomic<std::optional<bool>> enableRuntimeSchedulerQueueClearingOnError_;
-  std::atomic<std::optional<bool>> enableSchedulerDelegateInvalidation_;
+  std::atomic<std::optional<bool>> enableResizeObserverByDefault_;
   std::atomic<std::optional<bool>> enableSwiftUIBasedFilters_;
   std::atomic<std::optional<bool>> enableViewCulling_;
   std::atomic<std::optional<bool>> enableViewRecycling_;
@@ -187,8 +195,8 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> fuseboxAssertSingleHostState_;
   std::atomic<std::optional<bool>> fuseboxEnabledRelease_;
   std::atomic<std::optional<bool>> fuseboxFrameRecordingEnabled_;
-  std::atomic<std::optional<bool>> fuseboxNetworkInspectionEnabled_;
   std::atomic<std::optional<bool>> fuseboxScreenshotCaptureEnabled_;
+  std::atomic<std::optional<bool>> fuseboxWebSocketEventsEnabled_;
   std::atomic<std::optional<bool>> optimizedAnimatedPropUpdates_;
   std::atomic<std::optional<bool>> overrideBySynchronousMountPropsAtMountingAndroid_;
   std::atomic<std::optional<bool>> perfIssuesEnabled_;

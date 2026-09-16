@@ -11,5 +11,7 @@ include(${REACT_COMMON_DIR}/cmake-utils/react-native-flags.cmake)
 add_library(react_renderer_bridging INTERFACE)
 
 target_include_directories(react_renderer_bridging INTERFACE ${REACT_COMMON_DIR})
+
+target_link_libraries(react_renderer_bridging INTERFACE react_cxxstableapi)
 target_compile_reactnative_options(react_renderer_bridging INTERFACE)
 target_compile_options(react_renderer_bridging INTERFACE -Wpedantic)

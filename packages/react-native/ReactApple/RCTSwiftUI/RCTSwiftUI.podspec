@@ -36,4 +36,5 @@ Pod::Spec.new do |s|
     "DEFINES_MODULE" => "YES",
   }
 
+  mark_as_react_native_build(s)
 end

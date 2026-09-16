@@ -15,6 +15,7 @@ target_include_directories(react_renderer_viewtransition PUBLIC ${REACT_COMMON_D
 
 target_link_libraries(react_renderer_viewtransition
         glog
+        react_cxxstableapi
         react_renderer_core
         react_renderer_mounting
         react_renderer_uimanager

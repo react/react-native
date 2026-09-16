@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <devtoolsruntimesettings/DevToolsRuntimeSettings.h>
 
 namespace facebook::react {

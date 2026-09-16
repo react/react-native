@@ -53,11 +53,37 @@ class ProcessedErrorImpl
       stack->add(ProcessedErrorStackFrameImpl::create(frame));
     }
 
-    auto extraDataDynamic =
-        jsi::dynamicFromValue(runtime, jsi::Value(runtime, error.extraData));
+    // Marshalling `extraData` out of the runtime can throw (e.g. a
+    // jsi::JSIException when the runtime is in a bad state during a fatal
+    // error). This runs inside the `noexcept` onJsError callback, so an
+    // escaping exception aborts the whole process; contain it and report the
+    // error without its extra data instead. `extraData` may end up null (here,
+    // or when the JS value is null/undefined); the Java field is nullable.
+    jni::local_ref<ReadableNativeMap::jhybridobject> extraData;
 
-    auto extraData =
-        ReadableNativeMap::createWithContents(std::move(extraDataDynamic));
+    auto reportWithoutExtraData = [&](const char* reason) {
+      LOG(ERROR)
+          << "JReactExceptionManager: failed to marshal JS error extraData; reporting the error without it: "
+          << reason;
+      try {
+        extraData = ReadableNativeMap::createWithContents(
+            folly::dynamic::object("extraDataMarshallingError", reason));
+      } catch (...) {
+        // The fallback allocation can itself throw; leave extraData null.
+        extraData = nullptr;
+      }
+    };
+
+    try {
+      auto extraDataDynamic =
+          jsi::dynamicFromValue(runtime, jsi::Value(runtime, error.extraData));
+      extraData =
+          ReadableNativeMap::createWithContents(std::move(extraDataDynamic));
+    } catch (const std::exception& e) {
+      reportWithoutExtraData(e.what());
+    } catch (...) {
+      reportWithoutExtraData("unknown exception");
+    }
 
     return newInstance(
         error.message,

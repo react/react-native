@@ -29,12 +29,10 @@ import {
   performanceEntryTypeToRaw,
   rawToPerformanceEntry,
 } from './internals/RawPerformanceEntry';
-import {getCurrentTimeStamp} from './internals/Utilities';
 import MemoryInfo from './MemoryInfo';
 import ReactNativeStartupTiming from './ReactNativeStartupTiming';
-import MaybeNativePerformance from './specs/NativePerformance';
+import NativePerformance from './specs/NativePerformance';
 import {PerformanceMark, PerformanceMeasure} from './UserTiming';
-import nullthrows from 'nullthrows';
 
 export type PerformanceMeasureOptions =
   | Readonly<{
@@ -56,13 +54,8 @@ export type PerformanceMeasureOptions =
 const ENTRY_TYPES_AVAILABLE_FROM_TIMELINE: ReadonlyArray<PerformanceEntryType> =
   ['mark', 'measure'];
 
-const NativePerformance = nullthrows(MaybeNativePerformance);
-
-const cachedReportMark = NativePerformance.reportMark;
-const cachedReportMeasure = NativePerformance.reportMeasure;
-const cachedGetMarkTime = NativePerformance.getMarkTime;
-const cachedNativeClearMarks = NativePerformance.clearMarks;
-const cachedNativeClearMeasures = NativePerformance.clearMeasures;
+const {now, reportMark, reportMeasure, getMarkTime, clearMarks, clearMeasures} =
+  NativePerformance;
 let cachedTimeOrigin: ?DOMHighResTimeStamp;
 
 const MARK_OPTIONS_REUSABLE_OBJECT: PerformanceMarkOptions = {
@@ -78,7 +71,7 @@ const MEASURE_OPTIONS_REUSABLE_OBJECT: PerformanceMeasureInit = {
 };
 
 const getMarkTimeForMeasure = (markName: string): number => {
-  const markTime = cachedGetMarkTime(markName);
+  const markTime = getMarkTime(markName);
   if (markTime == null) {
     throw new DOMException(
       `Failed to execute 'measure' on 'Performance': The mark '${markName}' does not exist.`,
@@ -147,12 +140,7 @@ export default class Performance {
    */
   get timeOrigin(): DOMHighResTimeStamp {
     if (cachedTimeOrigin == null) {
-      if (NativePerformance.timeOrigin) {
-        cachedTimeOrigin = NativePerformance?.timeOrigin();
-      } else {
-        // Very naive polyfill.
-        cachedTimeOrigin = Date.now() - getCurrentTimeStamp();
-      }
+      cachedTimeOrigin = NativePerformance.timeOrigin();
     }
 
     return cachedTimeOrigin;
@@ -202,7 +190,7 @@ export default class Performance {
         );
       }
     } else {
-      resolvedStartTime = getCurrentTimeStamp();
+      resolvedStartTime = now();
     }
 
     if (detail !== undefined) {
@@ -219,13 +207,13 @@ export default class Performance {
       MARK_OPTIONS_REUSABLE_OBJECT,
     );
 
-    cachedReportMark(resolvedMarkName, resolvedStartTime, entry);
+    reportMark(resolvedMarkName, resolvedStartTime, entry);
 
     return entry;
   }
 
   clearMarks(markName?: string): void {
-    cachedNativeClearMarks(markName);
+    clearMarks(markName);
   }
 
   measure(
@@ -347,7 +335,7 @@ export default class Performance {
             ) {
               resolvedDuration = resolvedEndTime - resolvedStartTime;
             } else {
-              resolvedDuration = getCurrentTimeStamp() - resolvedStartTime;
+              resolvedDuration = now() - resolvedStartTime;
             }
           }
 
@@ -364,7 +352,7 @@ export default class Performance {
             resolvedDuration =
               getMarkTimeForMeasure(endMark) - resolvedStartTime;
           } else {
-            resolvedDuration = getCurrentTimeStamp() - resolvedStartTime;
+            resolvedDuration = now() - resolvedStartTime;
           }
           break;
         }
@@ -375,7 +363,7 @@ export default class Performance {
             resolvedDuration =
               getMarkTimeForMeasure(endMark) - resolvedStartTime;
           } else {
-            resolvedDuration = getCurrentTimeStamp() - resolvedStartTime;
+            resolvedDuration = now() - resolvedStartTime;
           }
         }
       }
@@ -385,7 +373,7 @@ export default class Performance {
       if (endMark !== undefined) {
         resolvedDuration = getMarkTimeForMeasure(endMark) - resolvedStartTime;
       } else {
-        resolvedDuration = getCurrentTimeStamp() - resolvedStartTime;
+        resolvedDuration = now() - resolvedStartTime;
       }
     }
 
@@ -400,7 +388,7 @@ export default class Performance {
 
     const entry = new PerformanceMeasure(MEASURE_OPTIONS_REUSABLE_OBJECT);
 
-    cachedReportMeasure(
+    reportMeasure(
       resolvedMeasureName,
       resolvedStartTime,
       resolvedDuration,
@@ -411,14 +399,14 @@ export default class Performance {
   }
 
   clearMeasures(measureName?: string): void {
-    cachedNativeClearMeasures(measureName);
+    clearMeasures(measureName);
   }
 
   /**
    * Returns a double, measured in milliseconds.
    * https://developer.mozilla.org/en-US/docs/Web/API/Performance/now
    */
-  now: () => DOMHighResTimeStamp = getCurrentTimeStamp;
+  now: () => DOMHighResTimeStamp = now;
 
   /**
    * An extension that allows to get back to JS all currently logged marks/measures

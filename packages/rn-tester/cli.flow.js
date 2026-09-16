@@ -11,7 +11,7 @@
 import {run} from './scripts/utils';
 import {apple} from '@react-native/core-cli-utils';
 import {Option, program} from 'commander';
-import {readFileSync} from 'fs';
+import {readFileSync} from 'node:fs';
 
 program.version(JSON.parse(readFileSync('./package.json', 'utf8')).version);
 

@@ -12,7 +12,7 @@
 
 const {FlowParser} = require('../../parsers/flow/parser');
 const {TypeScriptParser} = require('../../parsers/typescript/parser');
-const path = require('path');
+const path = require('node:path');
 
 const flowParser = new FlowParser();
 const typescriptParser = new TypeScriptParser();

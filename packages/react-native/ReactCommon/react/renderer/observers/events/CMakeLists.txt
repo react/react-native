@@ -13,6 +13,7 @@ add_library(react_renderer_observers_events OBJECT ${react_renderer_observers_ev
 
 target_include_directories(react_renderer_observers_events PUBLIC ${REACT_COMMON_DIR})
 target_link_libraries(react_renderer_observers_events
+        react_cxxstableapi
         react_debug
         react_performance_timeline
         react_timing

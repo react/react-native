@@ -15,6 +15,7 @@ target_include_directories(react_renderer_observers_mutation PUBLIC ${REACT_COMM
 
 target_link_libraries(react_renderer_observers_mutation
       react_cxxreact
+      react_cxxstableapi
       react_renderer_core
       react_renderer_uimanager
       react_renderer_mounting

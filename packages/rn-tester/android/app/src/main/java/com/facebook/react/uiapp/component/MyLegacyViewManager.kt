@@ -55,8 +55,8 @@ internal class MyLegacyViewManager(reactContext: ReactApplicationContext) :
                     mapOf(
                         "bubbled" to "onColorChanged",
                         "captured" to "onColorChangedCapture",
-                    )
-            )
+                    ),
+            ),
     )
   }
 

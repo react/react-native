@@ -46,9 +46,7 @@ function touchEnd(
   };
 }
 
-const {isOSS} = Fantom.getConstants();
-
-(isOSS ? describe.skip : describe)('Responder System', () => {
+describe('Responder System', () => {
   // --- Basic Grant / Release ---
 
   it('grants responder on touch start when onStartShouldSetResponder returns true', () => {

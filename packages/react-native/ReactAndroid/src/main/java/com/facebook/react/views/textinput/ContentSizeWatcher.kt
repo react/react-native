@@ -8,5 +8,5 @@
 package com.facebook.react.views.textinput
 
 public interface ContentSizeWatcher {
-  public fun onLayout(): Unit
+  public fun onLayout()
 }

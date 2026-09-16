@@ -7,10 +7,13 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/components/root/RootShadowNode.h>
 
 namespace facebook::react {
 
+class LayoutableShadowNode;
 class ShadowTree;
 struct ShadowTreeCommitOptions;
 class UIManager;
@@ -52,6 +55,18 @@ class UIManagerCommitHook {
     // No longer a pure method as subclasses are expected to implement the other
     // flavor instead.
     return newRootShadowNode;
+  }
+
+  /*
+   * Called right after a `ShadowTree` commits a new tree.
+   * The semantic of the method corresponds to a method of the same name
+   * from `ShadowTreeDelegate`.
+   */
+  virtual void shadowTreeDidCommit(
+      const ShadowTree & /*shadowTree*/,
+      const RootShadowNode::Shared & /*rootShadowNode*/,
+      const std::vector<const LayoutableShadowNode *> & /*affectedLayoutableNodes*/) noexcept
+  {
   }
 
   virtual ~UIManagerCommitHook() noexcept = default;

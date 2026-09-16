@@ -14,9 +14,9 @@ const {
   prepareAppDependenciesHeaders,
   symlinkReactNativeHeaders,
 } = require('./prepare-app-dependencies-headers');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * Find the directory containing the Xcode project within the app path

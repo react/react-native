@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/react-native"
   },
   "homepage": "https://reactnative.dev/",
@@ -19,7 +19,7 @@
     "app-framework",
     "mobile-development"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
@@ -27,45 +27,39 @@
     "react-native": "cli.js"
   },
   "main": "./index.js",
-  "types": "types",
   "exports": {
     ".": {
-      "react-native-strict-api": "./types_generated/index.d.ts",
-      "types": "./types/index.d.ts",
+      "react-native-legacy-deep-imports": "./types_DEPRECATED/index.d.ts",
+      "types": "./types_generated/index.d.ts",
       "default": "./index.js"
     },
-    "./*": {
-      "react-native-strict-api": null,
-      "types": "./*.d.ts",
-      "default": "./*.js"
+    "./Libraries/*": {
+      "react-native-legacy-deep-imports": "./types_DEPRECATED/Libraries/*.d.ts",
+      "types": null,
+      "default": "./Libraries/*.js"
     },
-    "./*.js": {
-      "react-native-strict-api": null,
-      "default": "./*.js"
+    "./Libraries/*.js": {
+      "types": null,
+      "default": "./Libraries/*.js"
     },
-    "./Libraries/*.d.ts": {
-      "react-native-strict-api": null,
-      "default": "./Libraries/*.d.ts"
+    "./scripts/*": "./scripts/*.js",
+    "./scripts/*.sh": "./scripts/*.sh",
+    "./scripts/*.rb": "./scripts/*.rb",
+    "./asset-registry": {
+      "types": null,
+      "default": "./src/asset-registry.js"
     },
-    "./scripts/*": "./scripts/*",
-    "./src/*": {
-      "react-native-strict-api": null,
-      "default": "./src/*.js"
+    "./react-private-interface": {
+      "types": null,
+      "default": "./src/react-private-interface.js"
     },
-    "./types/*.d.ts": {
-      "react-native-strict-api": null,
-      "default": "./types/*.d.ts"
+    "./setup-env": "./src/setup-env.js",
+    "./unstable-internals-do-not-use": {
+      "react-native-unstable-internals": "./src/unstable-internals-do-not-use.d.ts",
+      "types": null,
+      "default": "./src/unstable-internals-do-not-use.js"
     },
-    "./gradle/*": null,
-    "./React/*": null,
-    "./ReactAndroid/*": null,
-    "./ReactApple/*": null,
-    "./ReactCommon/*": null,
-    "./sdks/*": null,
     "./src/fb_internal/*": "./src/fb_internal/*",
-    "./third-party-podspecs/*": null,
-    "./types/*": null,
-    "./types_generated/*": null,
     "./package.json": "./package.json"
   },
   "jest-junit": {
@@ -80,8 +74,6 @@
     "gradle/libs.versions.toml",
     "index.js",
     "index.js.flow",
-    "interface.js",
-    "jest-preset.js",
     "Libraries",
     "LICENSE",
     "React-Core.podspec",
@@ -102,7 +94,6 @@
     "ReactApple",
     "ReactCommon",
     "README.md",
-    "rn-get-polyfills.js",
     "scripts/replace-rncore-version.js",
     "scripts/bundle.js",
     "scripts/cocoapods",
@@ -123,6 +114,9 @@
     "scripts/react_native_pods_utils/script_phases.sh",
     "scripts/react_native_pods.rb",
     "scripts/react-native-xcode.sh",
+    "scripts/setup-apple-spm.js",
+    "scripts/spm",
+    "scripts/xcode/asset-catalog.sh",
     "scripts/xcode/ccache-clang.sh",
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
@@ -134,7 +128,7 @@
     "src",
     "!src/private/testing",
     "third-party-podspecs",
-    "types",
+    "types_DEPRECATED",
     "types_generated",
     "!**/__docs__/**",
     "!**/__fixtures__/**",
@@ -148,45 +142,38 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
-    "@react-native/jest-preset": "0.87.0-main",
     "@types/react": "^19.1.1",
-    "react": "^19.2.3"
+    "react": "^19.3.0"
   },
   "peerDependenciesMeta": {
     "@types/react": {
       "optional": true
-    },
-    "@react-native/jest-preset": {
-      "optional": true
     }
   },
   "dependencies": {
-    "@react-native/assets-registry": "0.87.0-main",
+    "@react-native/asset-utils": "0.87.0-main",
     "@react-native/codegen": "0.87.0-main",
     "@react-native/community-cli-plugin": "0.87.0-main",
     "@react-native/gradle-plugin": "0.87.0-main",
-    "@react-native/js-polyfills": "0.87.0-main",
     "@react-native/normalize-colors": "0.87.0-main",
     "@react-native/virtualized-lists": "0.87.0-main",
-    "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
-    "babel-plugin-syntax-hermes-parser": "0.36.1",
+    "flow-parser": "0.331.0",
     "base64-js": "^1.5.1",
-    "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
     "hermes-compiler": "260318099.0.1",
     "invariant": "^2.2.4",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.84.3",
-    "metro-source-map": "^0.84.3",
+    "metro-runtime": "^0.87.0",
+    "metro-source-map": "^0.87.0",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",
     "react-devtools-core": "^6.1.5",
     "react-refresh": "^0.14.0",
     "regenerator-runtime": "^0.13.2",
-    "scheduler": "0.27.0",
+    "scheduler": "0.28.0",
     "semver": "^7.1.3",
     "stacktrace-parser": "^0.1.10",
     "tinyglobby": "^0.2.15",

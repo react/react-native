@@ -9,6 +9,8 @@
  * @oncall react_native
  */
 
+import type {File as BabelNodeFile} from '@babel/types';
+
 const babel = require('@babel/core');
 const t = require('@babel/types');
 

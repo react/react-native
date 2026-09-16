@@ -31,4 +31,5 @@ target_link_libraries(hermes_inspector_modern
         hermes-engine::hermesvm
         jsi
         jsinspector
+        react_cxxstableapi
         ${reactnative})

@@ -12,11 +12,13 @@ file(GLOB react_renderer_core_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_renderer_core OBJECT ${react_renderer_core_SRC})
 
 target_include_directories(react_renderer_core PUBLIC ${REACT_COMMON_DIR})
+target_include_directories(react_renderer_core INTERFACE ${REACT_COMMON_DIR}/react/renderer/core)
 target_link_libraries(react_renderer_core
         folly_runtime
         glog
         jsi
         logger
+        react_cxxstableapi
         react_debug
         react_featureflags
         react_renderer_debug

@@ -24,12 +24,12 @@
 'use strict';
 
 const babel = require('@babel/core');
-const fs = require('fs');
 const micromatch = require('micromatch');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+const {styleText} = require('node:util');
 const prettier = require('prettier');
 const {globSync} = require('tinyglobby');
-const {styleText} = require('util');
 
 const prettierConfig = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, '..', 'build.prettierrc'), 'utf8'),

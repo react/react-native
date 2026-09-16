@@ -16,6 +16,7 @@ target_include_directories(react_renderer_observers_intersection PUBLIC ${REACT_
 target_link_libraries(react_renderer_observers_intersection
       react_cxxreact
       react_bridging
+      react_cxxstableapi
       react_debug
       react_renderer_core
       react_renderer_graphics

@@ -88,11 +88,11 @@ internal object SkewMatrixHelper {
     } else {
       pivotXPx =
           PixelUtil.toPixelFromDIP(
-              resolveOriginAxis(transformOrigin, 0, viewWidthDip, viewWidthDip / 2f)
+              resolveOriginAxis(transformOrigin, 0, viewWidthDip, viewWidthDip / 2f),
           )
       pivotYPx =
           PixelUtil.toPixelFromDIP(
-              resolveOriginAxis(transformOrigin, 1, viewHeightDip, viewHeightDip / 2f)
+              resolveOriginAxis(transformOrigin, 1, viewHeightDip, viewHeightDip / 2f),
           )
     }
 

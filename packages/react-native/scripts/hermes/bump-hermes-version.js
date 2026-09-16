@@ -60,9 +60,14 @@ async function main() {
     return;
   }
 
-  await setHermesTag(hermesVersion);
-  await updateHermesCompilerVersionInDependencies(hermesVersion);
-  await updateHermesRuntimeDependenciesVersions(hermesVersion);
+  // `.hermesv1version` is used as a git ref to download the Hermes source
+  // (https://github.com/facebook/hermes/tarball/<ref>), where release tags are
+  // named `hermes-v<version>`. While hermes-compiler and prebuilt dependencies
+  // use the bare npm version.
+  const bareVersion = hermesVersion.replace(/^hermes-v/, '');
+  await setHermesTag(`hermes-v${bareVersion}`);
+  await updateHermesCompilerVersionInDependencies(bareVersion);
+  await updateHermesRuntimeDependenciesVersions(bareVersion);
 }
 
 void main().then(() => {

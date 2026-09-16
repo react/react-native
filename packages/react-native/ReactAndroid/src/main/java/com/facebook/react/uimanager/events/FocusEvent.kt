@@ -17,7 +17,7 @@ internal class FocusEvent(surfaceId: Int, viewId: Int) : Event<FocusEvent>(surfa
 
   override fun canCoalesce(): Boolean = false
 
-  protected override fun getEventData(): WritableMap {
+  override fun getEventData(): WritableMap {
     return Arguments.createMap().apply { putInt("target", viewTag) }
   }
 

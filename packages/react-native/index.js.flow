@@ -63,6 +63,7 @@ export type {
 export {default as Image} from './Libraries/Image/Image';
 export type {ImageBackgroundInstance} from './Libraries/Image/ImageBackground';
 export {default as ImageBackground} from './Libraries/Image/ImageBackground';
+export type {ImageResizeMode} from './Libraries/Image/ImageResizeMode';
 
 export type {InputAccessoryViewProps} from './Libraries/Components/TextInput/InputAccessoryView';
 export {default as InputAccessoryView} from './Libraries/Components/TextInput/InputAccessoryView';
@@ -161,6 +162,7 @@ export type {
   TextInputInstance,
   TextInputIOSProps,
   TextInputProps,
+  TextInputBlurEvent,
   TextInputChangeEvent,
   TextInputContentSizeChangeEvent,
   TextInputEndEditingEvent,
@@ -172,8 +174,6 @@ export type {
   SubmitBehavior,
 } from './Libraries/Components/TextInput/TextInput';
 export {default as TextInput} from './Libraries/Components/TextInput/TextInput';
-
-export {default as Touchable} from './Libraries/Components/Touchable/Touchable';
 
 export type {
   TouchableHighlightInstance,
@@ -198,6 +198,7 @@ export {default as TouchableWithoutFeedback} from './Libraries/Components/Toucha
 
 export type {
   AccessibilityActionEvent,
+  AccessibilityActionInfo,
   AccessibilityProps,
   AccessibilityRole,
   AccessibilityState,
@@ -224,6 +225,11 @@ export type {
 } from './Libraries/Lists/VirtualizedList';
 export type {VirtualizedListInstance} from './Libraries/Lists/VirtualizedList';
 export {default as VirtualizedList} from './Libraries/Lists/VirtualizedList';
+
+export type {
+  ViewabilityConfig,
+  ViewabilityConfigCallbackPair,
+} from './Libraries/Lists/ViewabilityHelper';
 
 export type {
   ScrollToLocationParamsType,
@@ -275,6 +281,12 @@ export type {
   AppStateEvent,
 } from './Libraries/AppState/AppState';
 export {default as AppState} from './Libraries/AppState/AppState';
+
+export {AssetRegistry} from './src/private/assets/AssetRegistry';
+export type {
+  AssetDestPathResolver,
+  PackagerAsset,
+} from './src/private/assets/AssetRegistry';
 
 export type {BackPressEventName} from './Libraries/Utilities/BackHandler';
 export {default as BackHandler} from './Libraries/Utilities/BackHandler';
@@ -422,6 +434,7 @@ export type {
   EdgeInsetsValue,
   PointValue,
 } from './Libraries/StyleSheet/StyleSheetTypes';
+export type {EdgeInsetsProp} from './Libraries/StyleSheet/EdgeInsetsPropType';
 export type {Insets} from './Libraries/StyleSheet/Rect';
 export {default as StyleSheet} from './Libraries/StyleSheet/StyleSheet';
 
@@ -489,7 +502,7 @@ export type {ErrorUtils} from './Libraries/vendor/core/ErrorUtils';
 export type {
   PublicRootInstance,
   PublicTextInstance,
-} from './Libraries/ReactPrivate/ReactNativePrivateInterface';
+} from './Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 
 export type {
   EventSubscription,

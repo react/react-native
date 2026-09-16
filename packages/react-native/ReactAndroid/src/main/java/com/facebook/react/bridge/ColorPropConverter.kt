@@ -30,6 +30,7 @@ public object ColorPropConverter {
   private const val ATTR = "attr"
   private const val ATTR_SEGMENT = "attr/"
 
+  @Throws(JSApplicationCausedNativeException::class)
   private fun getColorInteger(value: Any?, context: Context): Int? {
     if (value == null) {
       return null
@@ -54,7 +55,7 @@ public object ColorPropConverter {
       val resourcePaths =
           value.getArray(JSON_KEY)
               ?: throw JSApplicationCausedNativeException(
-                  "ColorValue: The `$JSON_KEY` must be an array of color resource path strings."
+                  "ColorValue: The `$JSON_KEY` must be an array of color resource path strings.",
               )
 
       for (i in 0 until resourcePaths.size()) {
@@ -64,8 +65,14 @@ public object ColorPropConverter {
         }
       }
 
+      val attemptedPaths = (0 until resourcePaths.size()).map { resourcePaths.getString(it) }
+      FLog.w(
+          ReactConstants.TAG,
+          "ColorValue: Failed to resolve resource paths: ${attemptedPaths.joinToString(", ")}",
+      )
+
       throw JSApplicationCausedNativeException(
-          "ColorValue: None of the paths in the `$JSON_KEY` array resolved to a color resource."
+          "ColorValue: None of the paths in the `$JSON_KEY` array resolved to a color resource.",
       )
     }
 
@@ -73,6 +80,7 @@ public object ColorPropConverter {
   }
 
   @JvmStatic
+  @Throws(JSApplicationCausedNativeException::class)
   public fun getColorInstance(value: Any?, context: Context): Color? {
     if (value == null) {
       return null
@@ -103,7 +111,7 @@ public object ColorPropConverter {
       val resourcePaths =
           value.getArray(JSON_KEY)
               ?: throw JSApplicationCausedNativeException(
-                  "ColorValue: The `$JSON_KEY` must be an array of color resource path strings."
+                  "ColorValue: The `$JSON_KEY` must be an array of color resource path strings.",
               )
 
       for (i in 0 until resourcePaths.size()) {
@@ -113,8 +121,14 @@ public object ColorPropConverter {
         }
       }
 
+      val attemptedPaths = (0 until resourcePaths.size()).map { resourcePaths.getString(it) }
+      FLog.w(
+          ReactConstants.TAG,
+          "ColorValue: Failed to resolve resource paths: ${attemptedPaths.joinToString(", ")}",
+      )
+
       throw JSApplicationCausedNativeException(
-          "ColorValue: None of the paths in the `$JSON_KEY` array resolved to a color resource."
+          "ColorValue: None of the paths in the `$JSON_KEY` array resolved to a color resource.",
       )
     }
 
@@ -122,6 +136,7 @@ public object ColorPropConverter {
   }
 
   @JvmStatic
+  @Throws(JSApplicationCausedNativeException::class)
   public fun getColor(value: Any?, context: Context): Int? {
     try {
       if (supportWideGamut()) {
@@ -188,6 +203,7 @@ public object ColorPropConverter {
     return ResourcesCompat.getColor(context.resources, resourceId, context.theme)
   }
 
+  @Throws(Resources.NotFoundException::class)
   private fun resolveThemeAttribute(context: Context, resourcePath: String): Int {
     val path = resourcePath.replace(ATTR_SEGMENT, "")
     val pathTokens = path.split(PACKAGE_DELIMITER)

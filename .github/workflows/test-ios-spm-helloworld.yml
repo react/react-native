@@ -1,0 +1,137 @@
+name: Test iOS SwiftPM - Hello World
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: macos-15-large
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Debug, Release]
+    env:
+      APP_IOS_DIR: private/helloworld/ios
+      XCODE_PROJECT: HelloWorld.xcodeproj
+      XCODE_SCHEME: HelloWorld
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup xcode
+        uses: ./.github/actions/setup-xcode
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn install
+        uses: ./.github/actions/yarn-install
+      - name: Set Hermes prebuilt version
+        shell: bash
+        run: node ./scripts/releases/use-hermes-prebuilt.js
+      - name: Run yarn install again, with the correct hermes version
+        uses: ./.github/actions/yarn-install
+      - name: Ensure CocoaPods (`spm add --deintegrate` shells out to `pod`)
+        shell: bash
+        run: pod --version || sudo gem install cocoapods --no-document
+      # Both flavors are needed by every matrix cell, not just the one it builds:
+      # `spm add` stages both flavor framework trees and lets a per-configuration
+      # build setting pick one at build time, so it validates the debug/ and
+      # release/ artifact slots together (and `--download skip` refuses an
+      # incomplete slot). Please don't "optimise" this down to one flavor.
+      - name: Download ReactCore (Debug)
+        uses: actions/download-artifact@v7
+        with:
+          name: ReactCoreDebug.xcframework.tar.gz
+          path: /tmp/rc-debug
+      - name: Download ReactCore (Release)
+        uses: actions/download-artifact@v7
+        with:
+          name: ReactCoreRelease.xcframework.tar.gz
+          path: /tmp/rc-release
+      - name: Download ReactNativeDependencies (Debug)
+        uses: actions/download-artifact@v7
+        with:
+          name: ReactNativeDependenciesDebug.xcframework.tar.gz
+          path: /tmp/deps-debug
+      - name: Download ReactNativeDependencies (Release)
+        uses: actions/download-artifact@v7
+        with:
+          name: ReactNativeDependenciesRelease.xcframework.tar.gz
+          path: /tmp/deps-release
+      # The ordinary `spm download`, pointed at the XCFrameworks this run just
+      # built rather than at the published nightly (RN_CORE_TARBALL_PATH /
+      # RN_DEPS_TARBALL_PATH are overrides download-spm-artifacts.js already
+      # supports). It fills both flavor slots per call and skips any slot that
+      # already validates, so it runs twice: the first pass fills both slots
+      # from the Release tarballs, then debug/ is dropped and refilled from the
+      # Debug tarballs while release/ is left alone. hermes-engine is fetched
+      # from Maven by the command itself.
+      - name: Download XCFrameworks built in this run (Debug + Release)
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: |
+          RN_CORE_TARBALL_PATH=/tmp/rc-release/ReactCoreRelease.xcframework.tar.gz \
+          RN_DEPS_TARBALL_PATH=/tmp/deps-release/ReactNativeDependenciesRelease.xcframework.tar.gz \
+            npx react-native spm download --artifacts /tmp/spm-artifacts
+          rm -rf /tmp/spm-artifacts/debug
+          RN_CORE_TARBALL_PATH=/tmp/rc-debug/ReactCoreDebug.xcframework.tar.gz \
+          RN_DEPS_TARBALL_PATH=/tmp/deps-debug/ReactNativeDependenciesDebug.xcframework.tar.gz \
+            npx react-native spm download --artifacts /tmp/spm-artifacts
+      - name: Scaffold Package.swift manifests for community dependencies
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: npx react-native spm scaffold || true
+      - name: Convert the app to SwiftPM
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+      - name: Assert the app is on SwiftPM
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: |
+          if [[ ! -f "$XCODE_PROJECT/.spm-injected.json" ]]; then
+            echo "::error::spm add did not inject SwiftPM: $XCODE_PROJECT/.spm-injected.json is missing"
+            exit 1
+          fi
+          if [[ -f Podfile ]] && grep -q 'use_react_native!' Podfile; then
+            echo "::error::spm add --deintegrate left use_react_native! in the Podfile"
+            exit 1
+          fi
+          echo "SwiftPM injected in place; Podfile de-integrated."
+      - name: Build ${{ env.XCODE_SCHEME }} (${{ matrix.flavor }})
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: |
+          xcodebuild \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration "${{ matrix.flavor }}" \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/spm-e2e-dd \
+            build
+      - name: Check the embedded React.framework flavor
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: |
+          PRODUCTS="build/spm-e2e-dd/Build/Products/${{ matrix.flavor }}-iphonesimulator"
+          if [[ ! -d "$PRODUCTS" ]]; then
+            echo "Skipping flavor check: no build products directory."
+            exit 0
+          fi
+          BINARY=$(find "$PRODUCTS" -maxdepth 4 -path '*.app/Frameworks/React.framework/React' -type f 2>/dev/null | head -1 || true)
+          if [[ -z "$BINARY" ]] || ! command -v nm >/dev/null; then
+            echo "Skipping flavor check: no embedded React.framework binary or no nm."
+            exit 0
+          fi
+          COUNT=$(nm "$BINARY" | grep -c getDebugProps || true)
+          echo "getDebugProps symbols in $BINARY: $COUNT"
+          if [[ "${{ matrix.flavor }}" == 'Debug' && "$COUNT" -eq 0 ]]; then
+            echo "::error::Debug build embeds a Release React.framework (expected getDebugProps symbols, found none)"
+            exit 1
+          fi
+          if [[ "${{ matrix.flavor }}" == 'Release' && "$COUNT" -ne 0 ]]; then
+            echo "::error::Release build embeds a Debug React.framework ($COUNT getDebugProps symbols, expected none)"
+            exit 1
+          fi

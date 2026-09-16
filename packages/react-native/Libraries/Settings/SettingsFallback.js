@@ -4,19 +4,19 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 'use strict';
 
 const Settings = {
-  get(key: string): any {
+  get<T = unknown>(key: string): ?T {
     console.warn('Settings is not yet supported on this platform.');
     return null;
   },
 
-  set(settings: Object) {
+  set(settings: {[string]: unknown, ...}) {
     console.warn('Settings is not yet supported on this platform.');
   },
 

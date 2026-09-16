@@ -10,7 +10,7 @@ package com.facebook.react.views.virtual
 import android.graphics.Rect
 
 internal fun interface VirtualViewModeChangeEmitter {
-  public fun emitModeChange(
+  fun emitModeChange(
       mode: VirtualViewMode,
       targetRect: Rect,
       thresholdRect: Rect,

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <memory>
 
 #ifdef RN_SERIALIZABLE_STATE

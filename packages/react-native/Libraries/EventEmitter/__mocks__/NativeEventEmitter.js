@@ -20,8 +20,7 @@ import RCTDeviceEventEmitter from '../RCTDeviceEventEmitter';
  */
 export default class NativeEventEmitter<
   TEventToArgsMap extends Readonly<Record<string, ReadonlyArray<unknown>>>,
-> implements IEventEmitter<TEventToArgsMap>
-{
+> implements IEventEmitter<TEventToArgsMap> {
   addListener<TEvent extends keyof TEventToArgsMap>(
     eventType: TEvent,
     listener: (...args: TEventToArgsMap[TEvent]) => unknown,

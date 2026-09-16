@@ -10,8 +10,8 @@
 
 const {reactCommonMappings} = require('./headers-mappings');
 const {listHeadersInFolder, setupSymlink} = require('./utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * Helper function to create symlinks from a source path

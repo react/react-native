@@ -1,0 +1,332 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxMessage Should handle multiple links 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  <rn-text
+    accessibilityRole="link"
+    allowFontScaling="true"
+    isHighlighted="false"
+    isPressable="true"
+    layoutDirection="ltr"
+    textDecorationLineType="underline"
+  >
+    https://reactnative.dev
+  </rn-text>
+  <rn-text
+    allowFontScaling="true"
+    layoutDirection="ltr"
+  >
+     and 
+  </rn-text>
+  <rn-text
+    accessibilityRole="link"
+    allowFontScaling="true"
+    isHighlighted="false"
+    isPressable="true"
+    layoutDirection="ltr"
+    textDecorationLineType="underline"
+  >
+    https://react.dev
+  </rn-text>
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage Should handle truncated links 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  <rn-text
+    accessibilityRole="link"
+    allowFontScaling="true"
+    isHighlighted="false"
+    isPressable="true"
+    layoutDirection="ltr"
+    textDecorationLineType="underline"
+  >
+    https://reactnative.dev
+  </rn-text>
+  <rn-text
+    allowFontScaling="true"
+    layoutDirection="ltr"
+  >
+     and https:/
+  </rn-text>
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage Should make links tappable 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  <rn-text
+    accessibilityRole="link"
+    allowFontScaling="true"
+    isHighlighted="false"
+    isPressable="true"
+    layoutDirection="ltr"
+    textDecorationLineType="underline"
+  >
+    https://reactnative.dev
+  </rn-text>
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage Should strip "TransformError " without breaking substitution 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    normal 
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    substitution
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+     normal
+  </rn-paragraph>
+</React.Fragment>
+`;
+
+exports[`LogBoxMessage should render a plaintext message and clean the content 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  This should not start with Error:
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage should render a plaintext message with no substitutions 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  normal substitution normal
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage should render message 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  Some kind of message
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage should render message truncated to 6 chars 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  Some 
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage should render message with substitution 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    normal 
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    substitution
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+     normal
+  </rn-paragraph>
+</React.Fragment>
+`;
+
+exports[`LogBoxMessage should render message with substitution, truncating the first word 3 letters in 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  nor
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage should render message with substitution, truncating the second word 6 letters in 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    normal 
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    substi
+  </rn-paragraph>
+</React.Fragment>
+`;
+
+exports[`LogBoxMessage should render message with substitution, truncating the third word 2 letters in 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    normal 
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    substitution
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+     no
+  </rn-paragraph>
+</React.Fragment>
+`;
+
+exports[`LogBoxMessage should render the whole message when maxLength = message length 1`] = `
+<rn-paragraph
+  allowFontScaling="true"
+  ellipsizeMode="tail"
+  fontSize="NaN"
+  fontSizeMultiplier="NaN"
+  foregroundColor="rgba(0, 0, 0, 0)"
+  overflow="hidden"
+>
+  Some kind of message
+</rn-paragraph>
+`;
+
+exports[`LogBoxMessage should render the whole message with substitutions when maxLength = message length 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    normal 
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    substitution
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+     normal
+  </rn-paragraph>
+</React.Fragment>
+`;

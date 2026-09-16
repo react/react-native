@@ -16,6 +16,7 @@ target_include_directories(react_nativemodule_intersectionobserver PUBLIC ${REAC
 target_link_libraries(react_nativemodule_intersectionobserver
         react_codegen_rncore
         react_cxxreact
+        react_cxxstableapi
         react_renderer_bridging
         react_renderer_core
         react_renderer_graphics

@@ -18,6 +18,7 @@ target_link_libraries(rrc_legacyviewmanagerinterop
         glog_init
         folly_runtime
         jsi
+        react_cxxstableapi
         react_renderer_core
         rrc_view
         yoga

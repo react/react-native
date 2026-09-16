@@ -10,13 +10,16 @@
 #import <Foundation/Foundation.h>
 
 /**
- * [Experimental] An interface for reporting network events to the modern
- * debugger server and Web Performance APIs.
+ * An interface for reporting network events to the modern debugger server and
+ * Web Performance APIs.
  *
  * In a production (non dev or profiling) build, CDP reporting is disabled.
  *
- * This is a helper class wrapping
- * `facebook::react::jsinspector_modern::NetworkReporter`.
+ * This is a helper class wrapping `facebook::react::NetworkReporter`, and is
+ * the integration point for third-party networking stacks that replace React
+ * Native's networking modules.
+ *
+ * This is an unstable API. Its exact location and shape may change over time.
  */
 @interface RCTInspectorNetworkReporter : NSObject
 

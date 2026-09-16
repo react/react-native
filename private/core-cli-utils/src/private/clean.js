@@ -21,9 +21,9 @@ const {
   task,
 } = require('./utils');
 const execa = require('execa');
-const {existsSync, readdirSync, rm} = require('fs');
-const os = require('os');
-const path = require('path');
+const {existsSync, readdirSync, rm} = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const FIRST = 1,
   SECOND = 2;

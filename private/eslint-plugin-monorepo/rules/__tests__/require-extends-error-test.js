@@ -14,7 +14,7 @@ const rule = require('../require-extends-error.js');
 const {RuleTester} = require('eslint');
 
 const ruleTester = new RuleTester({
-  parser: require.resolve('hermes-eslint'),
+  parser: require.resolve('flow-eslint'),
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',

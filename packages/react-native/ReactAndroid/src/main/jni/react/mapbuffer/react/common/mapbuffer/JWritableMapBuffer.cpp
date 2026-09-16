@@ -35,6 +35,8 @@ MapBuffer JWritableMapBuffer::getMapBuffer() {
     static const auto stringClass = jni::JString::javaClassStatic();
     static const auto readableMapClass = JReadableMapBuffer::javaClassStatic();
     static const auto writableMapClass = JWritableMapBuffer::javaClassStatic();
+    static const auto intArrayClass = jni::JArrayInt::javaClassStatic();
+    static const auto doubleArrayClass = jni::JArrayDouble::javaClassStatic();
 
     if (value->isInstanceOf(booleanClass)) {
       auto element = jni::static_ref_cast<jni::JBoolean>(value);
@@ -56,6 +58,17 @@ MapBuffer JWritableMapBuffer::getMapBuffer() {
       auto element =
           jni::static_ref_cast<JWritableMapBuffer::javaobject>(value);
       builder.putMapBuffer(key, element->getMapBuffer());
+    } else if (value->isInstanceOf(intArrayClass)) {
+      auto array = jni::static_ref_cast<jni::JArrayInt>(value);
+      auto pinned = array->pin();
+      builder.putIntBuffer(
+          key,
+          std::vector<int32_t>(pinned.get(), pinned.get() + pinned.size()));
+    } else if (value->isInstanceOf(doubleArrayClass)) {
+      auto array = jni::static_ref_cast<jni::JArrayDouble>(value);
+      auto pinned = array->pin();
+      builder.putDoubleBuffer(
+          key, std::vector<double>(pinned.get(), pinned.get() + pinned.size()));
     }
   }
 

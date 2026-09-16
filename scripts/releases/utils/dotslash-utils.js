@@ -11,12 +11,14 @@
 'use strict';
 
 const dotslash = require('fb-dotslash');
-const {promises: fs} = require('fs');
 const {applyEdits, modify, parse} = require('jsonc-parser');
-const os = require('os');
-const path = require('path');
+const {promises: fs} = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const execFile = require('node:util').promisify(
+  require('node:child_process').execFile,
+);
 const signedsource = require('signedsource');
-const execFile = require('util').promisify(require('child_process').execFile);
 
 /*::
 export type DotSlashHttpProvider = {

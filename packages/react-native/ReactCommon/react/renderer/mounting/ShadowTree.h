@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -160,8 +162,6 @@ class ShadowTree final {
   constexpr static ShadowTreeRevision::Number INITIAL_REVISION{0};
 
   void mount(ShadowTreeRevision revision, bool mountSynchronously) const;
-
-  void emitLayoutEvents(std::vector<const LayoutableShadowNode *> &affectedLayoutableNodes) const;
 
   void scheduleReactRevisionPromotion() const;
 

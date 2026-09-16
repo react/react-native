@@ -21,7 +21,11 @@ Pod::Spec.new do |s|
   header_search_paths = [
     "\"$(PODS_TARGET_SRCROOT)/../../../\"",
     "\"$(PODS_TARGET_SRCROOT)\"",
-  ].join(" ")
+  ]
+
+  if ENV['USE_FRAMEWORKS']
+    header_search_paths << "\"$(PODS_TARGET_SRCROOT)/../../../../..\"" # ReactCommon, for <react/cxxstableapi/...>
+  end
 
   s.name                   = "React-ImageManager"
   s.version                = version
@@ -38,12 +42,13 @@ Pod::Spec.new do |s|
 
   s.pod_target_xcconfig  = {
     "USE_HEADERMAP" => "NO",
-    "HEADER_SEARCH_PATHS" => header_search_paths,
+    "HEADER_SEARCH_PATHS" => header_search_paths.join(" "),
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
     "DEFINES_MODULE" => "YES",
   }
 
   s.dependency "React-Core/Default"
+  s.dependency "React-cxxstableapi"
 
   add_dependency(s, "React-Fabric")
   add_dependency(s, "React-graphics", :additional_framework_paths => ["react/renderer/graphics/platform/ios"])
@@ -53,4 +58,6 @@ Pod::Spec.new do |s|
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

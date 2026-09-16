@@ -74,10 +74,10 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
                                 name = "a-dependency",
                                 platforms =
                                     ModelAutolinkingDependenciesPlatformJson(android = null),
-                            )
+                            ),
                     ),
                 project = null,
-            )
+            ),
         )
     assertThat(result).isEmpty()
   }
@@ -105,10 +105,10 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
                                 name = "a-dependency",
                                 platforms =
                                     ModelAutolinkingDependenciesPlatformJson(android = android),
-                            )
+                            ),
                     ),
                 project = null,
-            )
+            ),
         )
     assertThat(result).containsExactly(android)
   }
@@ -150,7 +150,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
 
     assertThat(task.cmakeListsPathForDependency(dependency))
         .isEqualTo(
-            File(generatedPureCxxSourceDirectory, "aPackage/jni/CMakeLists.txt").absolutePath
+            File(generatedPureCxxSourceDirectory, "aPackage/jni/CMakeLists.txt").absolutePath,
         )
   }
 
@@ -211,7 +211,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
 
 
             """
-                .trimIndent()
+                .trimIndent(),
         )
   }
 
@@ -253,7 +253,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
               message(WARNING "React Native: Skipping autolinked C++ module 'another_cxxModule' because the source directory does not exist: ./another/directory/cxx/")
             endif()
             """
-                .trimIndent()
+                .trimIndent(),
         )
   }
 
@@ -279,8 +279,8 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
                     buildTypes = emptyList(),
                     libraryName = "aPackage",
                     isPureCxxDependency = true,
-                )
-            )
+                ),
+            ),
         )
 
     assertThat(output)
@@ -293,7 +293,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
               message(WARNING "React Native: Skipping autolinked library 'react_codegen_aPackage' because the source directory does not exist: $generatedNativeFolderPath")
             endif()
             """
-                .trimIndent()
+                .trimIndent(),
         )
   }
 
@@ -317,8 +317,8 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
                     libraryName = "aPackage",
                     cmakeListsPath = "./a/directory/CMakeLists.txt",
                     isPureCxxDependency = true,
-                )
-            )
+                ),
+            ),
         )
 
     assertThat(output)
@@ -331,7 +331,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
               message(WARNING "React Native: Skipping autolinked library 'react_codegen_aPackage' because the source directory does not exist: ./a/directory/")
             endif()
             """
-                .trimIndent()
+                .trimIndent(),
         )
     assertThat(output).doesNotContain(generatedPureCxxSourceDirectory.absolutePath)
   }
@@ -355,8 +355,8 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
                     buildTypes = emptyList(),
                     libraryName = "aPackage",
                     isPureCxxDependency = false,
-                )
-            )
+                ),
+            ),
         )
 
     assertThat(output).doesNotContain("aPackage_autolinked_build")
@@ -376,8 +376,8 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
                         buildTypes = emptyList(),
                         libraryName = "aPackage",
                         isPureCxxDependency = true,
-                    )
-                )
+                    ),
+                ),
             )
 
     assertThat(output).doesNotContain("aPackage_autolinked_build")
@@ -424,7 +424,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
             } // namespace react
             } // namespace facebook
             """
-                .trimIndent()
+                .trimIndent(),
         )
   }
 
@@ -481,7 +481,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
             } // namespace react
             } // namespace facebook
             """
-                .trimIndent()
+                .trimIndent(),
         )
   }
 

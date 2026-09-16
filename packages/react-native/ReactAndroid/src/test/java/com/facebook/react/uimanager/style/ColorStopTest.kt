@@ -158,4 +158,29 @@ class ColorStopTest {
     assertThat(processed[20].color).isEqualTo(Color.BLUE)
     assertThat(processed[20].position).isEqualTo(1f)
   }
+
+  @Test
+  fun testColorStopsWithPositionedStopAdjacentToUnpositionedStop() {
+    val colorStops =
+        listOf(
+            ColorStop(Color.RED, LengthPercentage(0f, LengthPercentageType.PERCENT)),
+            ColorStop(Color.GREEN, LengthPercentage(20f, LengthPercentageType.PERCENT)),
+            ColorStop(Color.BLUE),
+            ColorStop(Color.YELLOW, LengthPercentage(80f, LengthPercentageType.PERCENT)),
+            ColorStop(Color.MAGENTA, LengthPercentage(100f, LengthPercentageType.PERCENT)),
+        )
+    val processed = ColorStopUtils.getFixedColorStops(colorStops, 100f)
+
+    assertThat(processed).hasSize(5)
+    assertThat(processed[0].color).isEqualTo(Color.RED)
+    assertThat(processed[0].position).isEqualTo(0f)
+    assertThat(processed[1].color).isEqualTo(Color.GREEN)
+    assertThat(processed[1].position).isEqualTo(0.2f)
+    assertThat(processed[2].color).isEqualTo(Color.BLUE)
+    assertThat(processed[2].position).isEqualTo(0.5f)
+    assertThat(processed[3].color).isEqualTo(Color.YELLOW)
+    assertThat(processed[3].position).isEqualTo(0.8f)
+    assertThat(processed[4].color).isEqualTo(Color.MAGENTA)
+    assertThat(processed[4].position).isEqualTo(1f)
+  }
 }

@@ -11,7 +11,10 @@
 import type {PartialViewConfig} from '../../Renderer/shims/ReactNativeTypes';
 
 import {ConditionallyIgnoredEventHandlers} from '../../NativeComponent/ViewConfigIgnore';
-import {colorAttribute} from '../View/ReactNativeStyleAttributes';
+import {
+  colorAttribute,
+  fontVariationSettingsAttribute,
+} from '../View/ReactNativeStyleAttributes';
 
 type PartialViewConfigWithoutName = Omit<PartialViewConfig, 'uiViewClassName'>;
 
@@ -102,6 +105,7 @@ const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
     },
     allowFontScaling: true,
     fontStyle: true,
+    fontVariationSettings: fontVariationSettingsAttribute,
     textTransform: true,
     textAlign: true,
     fontFamily: true,

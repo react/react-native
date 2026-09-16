@@ -46,9 +46,6 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
 /// This property controls whether the App will use the Fabric renderer of the New Architecture or not.
 @property (nonatomic, assign, readonly) BOOL fabricEnabled;
 
-/// This property controls whether React Native's new initialization layer is enabled.
-@property (nonatomic, assign, readonly) BOOL bridgelessEnabled;
-
 /// This method controls whether the `turboModules` feature of the New Architecture is turned on or off
 @property (nonatomic, assign, readonly) BOOL turboModuleEnabled;
 
@@ -64,16 +61,6 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
  * pointing to a path inside the app resources, e.g. `file://.../main.jsbundle`.
  *
  */
-- (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock
-                        newArchEnabled:(BOOL)newArchEnabled
-                    turboModuleEnabled:(BOOL)turboModuleEnabled
-                     bridgelessEnabled:(BOOL)bridgelessEnabled __deprecated;
-
-- (instancetype)initWithBundleURL:(NSURL *)bundleURL
-                   newArchEnabled:(BOOL)newArchEnabled
-               turboModuleEnabled:(BOOL)turboModuleEnabled
-                bridgelessEnabled:(BOOL)bridgelessEnabled __deprecated;
-
 - (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock
                         newArchEnabled:(BOOL)newArchEnabled NS_DESIGNATED_INITIALIZER;
 
@@ -183,11 +170,6 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
  * `viewWithModuleName:initialProperties:launchOptions` method to create new RCTRootView.
  */
 @interface RCTRootViewFactory : NSObject
-
-#if !defined(RCT_REMOVE_LEGACY_ARCH)
-@property (nonatomic, strong, nullable) RCTBridge *bridge;
-@property (nonatomic, strong, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
-#endif
 
 @property (nonatomic, strong, nullable) RCTHost *reactHost;
 

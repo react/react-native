@@ -7,6 +7,12 @@
    -->
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
+  <!--
+    On Android 17 (SDK 37) devices, apps that declare this must hold ACCESS_LOCAL_NETWORK
+    to reach the dev server over the local network. Loopback via `adb reverse` is exempt.
+   -->
+  <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
+
   <application>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity"
               android:exported="false" />

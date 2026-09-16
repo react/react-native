@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <string>
 #include <vector>
 
@@ -167,11 +169,6 @@ enum class ImageResizeMode : int8_t {
   Center = 3,
   Repeat = 4,
   None = 5,
-};
-
-enum class ImageRequestPriority : int8_t {
-  Immediate = 0,
-  Prefetch = 1,
 };
 
 class ImageErrorInfo {

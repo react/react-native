@@ -43,6 +43,9 @@ void TextAttributes::apply(TextAttributes textAttributes) {
   fontVariant = textAttributes.fontVariant.has_value()
       ? textAttributes.fontVariant
       : fontVariant;
+  fontVariationSettings = textAttributes.fontVariationSettings.has_value()
+      ? textAttributes.fontVariationSettings
+      : fontVariationSettings;
   allowFontScaling = textAttributes.allowFontScaling.has_value()
       ? textAttributes.allowFontScaling
       : allowFontScaling;
@@ -128,6 +131,7 @@ bool TextAttributes::operator==(const TextAttributes& rhs) const {
              fontWeight,
              fontStyle,
              fontVariant,
+             fontVariationSettings,
              allowFontScaling,
              dynamicTypeRamp,
              alignment,
@@ -152,6 +156,7 @@ bool TextAttributes::operator==(const TextAttributes& rhs) const {
              rhs.fontWeight,
              rhs.fontStyle,
              rhs.fontVariant,
+             rhs.fontVariationSettings,
              rhs.allowFontScaling,
              rhs.dynamicTypeRamp,
              rhs.alignment,
@@ -218,6 +223,10 @@ SharedDebugStringConvertibleList TextAttributes::getDebugProps() const {
           "fontStyle", fontStyle, textAttributes.fontStyle),
       debugStringConvertibleItem(
           "fontVariant", fontVariant, textAttributes.fontVariant),
+      debugStringConvertibleItem(
+          "fontVariationSettings",
+          fontVariationSettings,
+          textAttributes.fontVariationSettings),
       debugStringConvertibleItem(
           "allowFontScaling",
           allowFontScaling,

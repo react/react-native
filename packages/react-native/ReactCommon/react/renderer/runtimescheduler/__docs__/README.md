@@ -157,14 +157,31 @@ behavior as on the Web.
 
 #### 4. Update the rendering
 
-The last step is to check if the previous work produced any rendering updates
-(transactions produced by commits in React, or view commands being dispatched).
-If that is the case, it notifies the host platform that it should apply the
-necessary mutations to reach that state.
+The last step applies work that browsers perform after task and microtask
+execution, before the next task is selected (see
+[HTML — update the rendering](https://html.spec.whatwg.org/multipage/webappapis.html#update-the-rendering)).
 
-In the future, this step could be extended to do more of the work that browsers
-do. For example, it could run resize observations and run resize observer
-callbacks, or update animations and run animation frame callbacks.
+In [`RuntimeScheduler_Modern`](../RuntimeScheduler_Modern.h), this step
+currently:
+
+1. Dispatches pending Event Timing entries (when enabled).
+2. Runs
+   [Resize Observer](https://drafts.csswg.org/resize-observer/#broadcast-resize-notifications-h)
+   observations via
+   `RuntimeSchedulerResizeObserverDelegate::runResizeObservations()`. See the
+   [ResizeObserver API](../../../../../src/private/webapis/resizeobserver/__docs__/README.md).
+3. Updates [Intersection Observer](https://www.w3.org/TR/intersection-observer/)
+   observations via `RuntimeSchedulerIntersectionObserverDelegate`.
+4. Drains pending rendering updates (commits, view commands) so the host
+   platform can apply mutations.
+
+Observer steps run before the rendering-update queue is drained. Resize and
+intersection observer integration is only implemented in
+`RuntimeScheduler_Modern`; `RuntimeScheduler_Legacy` treats the corresponding
+delegates as no-ops.
+
+Additional browser work in this phase (e.g. animation frame callbacks) may be
+added in the future.
 
 ### Synchronous execution, events and rendering
 
@@ -205,6 +222,11 @@ processing of those tasks within the event loop.
 
 - [MutationObserver](../../../../../src/private/webapis/mutationobserver/__docs__/README.md)
   uses the event loop to schedule mutation observer callbacks as microtasks.
+- [ResizeObserver](../../../../../src/private/webapis/resizeobserver/__docs__/README.md)
+  uses the event loop to run resize observations during the "update the
+  rendering" step.
+- [IntersectionObserver](../../../../../src/private/webapis/intersectionobserver/__docs__/README.md)
+  uses the event loop to update intersection observations during the same step.
 - `Scheduler` integrates with the event loop to register reporters (for
   `PerformanceObserver`) and schedules the specific work to be done as part of
   the rendering updates.

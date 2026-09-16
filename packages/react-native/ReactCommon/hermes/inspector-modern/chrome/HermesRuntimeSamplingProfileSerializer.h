@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <hermes/hermes.h>
 
 #include <jsinspector-modern/tracing/RuntimeSamplingProfile.h>

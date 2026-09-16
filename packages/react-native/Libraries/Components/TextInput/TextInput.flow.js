@@ -171,36 +171,20 @@ export type KeyboardTypeIOS =
 export type KeyboardTypeAndroid = 'visible-password';
 
 export type KeyboardTypeOptions =
-  | KeyboardType
-  | KeyboardTypeIOS
-  | KeyboardTypeAndroid;
+  KeyboardType | KeyboardTypeIOS | KeyboardTypeAndroid;
 
 export type InputModeOptions =
-  | 'none'
-  | 'text'
-  | 'decimal'
-  | 'numeric'
-  | 'tel'
-  | 'search'
-  | 'email'
-  | 'url';
+  'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url';
 
 export type ReturnKeyType = 'done' | 'go' | 'next' | 'search' | 'send';
 
 export type ReturnKeyTypeIOS =
-  | 'default'
-  | 'emergency-call'
-  | 'google'
-  | 'join'
-  | 'route'
-  | 'yahoo';
+  'default' | 'emergency-call' | 'google' | 'join' | 'route' | 'yahoo';
 
 export type ReturnKeyTypeAndroid = 'none' | 'previous';
 
 export type ReturnKeyTypeOptions =
-  | ReturnKeyType
-  | ReturnKeyTypeIOS
-  | ReturnKeyTypeAndroid;
+  ReturnKeyType | ReturnKeyTypeIOS | ReturnKeyTypeAndroid;
 
 export type SubmitBehavior = 'submit' | 'blurAndSubmit' | 'newline';
 
@@ -261,9 +245,7 @@ export type EnterKeyHintTypeIOS = 'enter';
 export type EnterKeyHintType = 'done' | 'go' | 'next' | 'search' | 'send';
 
 export type EnterKeyHintTypeOptions =
-  | EnterKeyHintType
-  | EnterKeyHintTypeAndroid
-  | EnterKeyHintTypeIOS;
+  EnterKeyHintType | EnterKeyHintTypeAndroid | EnterKeyHintTypeIOS;
 
 type PasswordRules = string;
 
@@ -306,8 +288,7 @@ export type TextInputIOSProps = Readonly<{
    * @platform ios
    */
   dataDetectorTypes?:
-    | ?DataDetectorTypesType
-    | ReadonlyArray<DataDetectorTypesType>,
+    ?DataDetectorTypesType | ReadonlyArray<DataDetectorTypesType>,
 
   /**
    * If `true`, the keyboard disables the return key when there is no text and
@@ -385,12 +366,7 @@ export type TextInputIOSProps = Readonly<{
    * @platform ios
    */
   lineBreakModeIOS?: ?(
-    | 'wordWrapping'
-    | 'char'
-    | 'clip'
-    | 'head'
-    | 'middle'
-    | 'tail'
+    'wordWrapping' | 'char' | 'clip' | 'head' | 'middle' | 'tail'
   ),
 
   /**
@@ -447,11 +423,7 @@ export type TextInputAndroidProps = Readonly<{
    * - `yesExcludeDescendants` - this view is important for autofill but its children aren't
    */
   importantForAutofill?: ?(
-    | 'auto'
-    | 'no'
-    | 'noExcludeDescendants'
-    | 'yes'
-    | 'yesExcludeDescendants'
+    'auto' | 'no' | 'noExcludeDescendants' | 'yes' | 'yesExcludeDescendants'
   ),
 
   /**
@@ -505,6 +477,13 @@ export type TextInputAndroidProps = Readonly<{
    * @platform android
    */
   textBreakStrategy?: ?('simple' | 'highQuality' | 'balanced'),
+
+  /**
+   * Align the input text to the top, center, or bottom of the field.
+   * Defaults to `'auto'`.
+   * @platform android
+   */
+  textAlignVertical?: ?('auto' | 'top' | 'bottom' | 'center'),
 
   /**
    * The color of the `TextInput` underline.
@@ -1051,9 +1030,9 @@ type TextInputBaseProps = Readonly<{
   value?: ?Stringish,
 
   /**
-   * Align the input text to the left, center, or right sides of the input field.
+   * Align the input text to the left, center, right, start, or end side of the input field.
    */
-  textAlign?: ?('left' | 'center' | 'right'),
+  textAlign?: ?('left' | 'center' | 'right' | 'start' | 'end'),
 }>;
 
 /** @build-types emit-as-interface Uniwind compatibility */
@@ -1069,9 +1048,18 @@ export type TextInputProps = Readonly<{
  * It isn't technically a class but this is the most elegant way to type it.
  */
 declare class _TextInputInstance extends ReactNativeElement {
+  /**
+   * Removes all text from the input.
+   */
   clear(): void;
+  /**
+   * Returns if the input is currently focused.
+   */
   isFocused(): boolean;
   getNativeRef(): ?ReactNativeElement;
+  /**
+   * Sets the start and end positions of text selection.
+   */
   setSelection(start: number, end: number): void;
 }
 

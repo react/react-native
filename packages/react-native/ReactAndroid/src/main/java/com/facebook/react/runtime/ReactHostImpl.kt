@@ -113,14 +113,6 @@ public class ReactHostImpl(
               applicationContext = context.applicationContext,
               reactInstanceManagerHelper = reactHostImplDevHelper,
               packagerPathForJSBundleName = reactHostDelegate.jsMainModulePath,
-              enableOnCreate = true,
-              redBoxHandler = null,
-              devBundleDownloadListener = null,
-              minNumShakes = 2,
-              customPackagerCommandHandlers = null,
-              surfaceDelegateFactory = null,
-              devLoadingViewManager = null,
-              pausedInDebuggerOverlayManager = null,
               useDevSupport = useDevSupport,
           )
           .also { devSupportManager ->
@@ -156,12 +148,14 @@ public class ReactHostImpl(
 
   @Volatile private var hostInvalidated = false
 
+  @JvmOverloads
   public constructor(
       context: Context,
       delegate: ReactHostDelegate,
       componentFactory: ComponentFactory,
       allowPackagerServerAccess: Boolean,
       useDevSupport: Boolean,
+      devSupportManagerFactory: DevSupportManagerFactory? = null,
   ) : this(
       context,
       delegate,
@@ -170,6 +164,7 @@ public class ReactHostImpl(
       Task.UI_THREAD_EXECUTOR,
       allowPackagerServerAccess,
       useDevSupport,
+      devSupportManagerFactory,
   )
 
   public override val lifecycleState: LifecycleState
@@ -522,11 +517,13 @@ public class ReactHostImpl(
       onDestroyFinished: (instanceDestroyedSuccessfully: Boolean) -> Unit,
   ): TaskInterface<Void> {
     val destroyTask = destroy(reason, ex) as Task<Void>
-    return destroyTask.continueWith({ task: Task<Void> ->
-      val instanceDestroyedSuccessfully = task.isCompleted() && !task.isFaulted()
-      onDestroyFinished(instanceDestroyedSuccessfully)
-      null
-    })
+    return destroyTask.continueWith(
+        { task: Task<Void> ->
+          val instanceDestroyedSuccessfully = task.isCompleted() && !task.isFaulted()
+          onDestroyFinished(instanceDestroyedSuccessfully)
+          null
+        },
+    )
   }
 
   /**
@@ -611,7 +608,7 @@ public class ReactHostImpl(
       ReactSoftExceptionLogger.logSoftExceptionVerbose(
           TAG,
           ReactNoCrashSoftException(
-              "getNativeModule(UIManagerModule.class) cannot be called when the bridge is disabled"
+              "getNativeModule(UIManagerModule.class) cannot be called when the bridge is disabled",
           ),
       )
     }
@@ -1031,10 +1028,11 @@ public class ReactHostImpl(
           jsBundleLoader.onSuccess(
               { task ->
                 val bundleLoader = checkNotNull(task.getResult())
-                val reactContext = bridgelessReactContextRef.getOrCreate {
-                  stateTracker.enterState(method, "Creating BridgelessReactContext")
-                  BridgelessReactContext(context, this)
-                }
+                val reactContext =
+                    bridgelessReactContextRef.getOrCreate {
+                      stateTracker.enterState(method, "Creating BridgelessReactContext")
+                      BridgelessReactContext(context, this)
+                    }
                 reactContext.jsExceptionHandler = devSupportManager
 
                 stateTracker.enterState(method, "Creating ReactInstance")
@@ -1139,7 +1137,7 @@ public class ReactHostImpl(
       if (devSupportManager.bundleFilePath != null) {
         return try {
           Task.forResult(
-              JSBundleLoader.createFileLoader(checkNotNull(devSupportManager.bundleFilePath))
+              JSBundleLoader.createFileLoader(checkNotNull(devSupportManager.bundleFilePath)),
           )
         } catch (e: Exception) {
           Task.forError(e)
@@ -1151,8 +1149,7 @@ public class ReactHostImpl(
             { task ->
               val isMetroRunning = checkNotNull(task.getResult())
               if (isMetroRunning) {
-                // Since metro is running, fetcxception(method, "ReactContext is null. Reload
-                // reason: $h the JS bundle from the server
+                // Since metro is running, fetch the JS bundle from the server
                 loadJSBundleFromMetro()
               } else {
                 Task.forResult(reactHostDelegate.jsBundleLoader)
@@ -1161,7 +1158,16 @@ public class ReactHostImpl(
             bgExecutor,
         )
       } else {
-        if (ReactBuildConfig.DEBUG) {
+        if (useDevSupport) {
+          // Dev support is on, so the developer expects to be editing JS against a packager, but
+          // the bundle can only come from the app. Nothing downstream reports this, because no
+          // packager request is ever made.
+          FLog.w(
+              TAG,
+              "Dev support is enabled but packager server access is not. The JS bundle will be " +
+                  "loaded from the app and the development server will not be used.",
+          )
+        } else if (ReactBuildConfig.DEBUG) {
           FLog.d(TAG, "Packager server access is disabled in this environment")
         }
 
@@ -1204,7 +1210,7 @@ public class ReactHostImpl(
     val asyncDevSupportManager = devSupportManager as DevSupportManagerBase
     val bundleURL =
         asyncDevSupportManager.devServerHelper.getDevServerBundleURL(
-            checkNotNull(asyncDevSupportManager.jsAppBundleName)
+            checkNotNull(asyncDevSupportManager.jsAppBundleName),
         )
 
     asyncDevSupportManager.reloadJSFromServer(
@@ -1570,23 +1576,25 @@ public class ReactHostImpl(
             },
             bgExecutor,
         )
-        .continueWith<Void>({ task: Task<ReactInstance> ->
-          if (task.isFaulted()) {
-            val fault = checkNotNull(task.getError())
-            raiseSoftException(
-                method,
-                ("React destruction failed. ReactInstance task faulted. Fault reason: ${fault.message}. Destroy reason: $reason"),
-                task.getError(),
-            )
-          }
-          if (task.isCancelled()) {
-            raiseSoftException(
-                method,
-                "React destruction failed. ReactInstance task cancelled. Destroy reason: $reason",
-            )
-          }
-          null
-        })
+        .continueWith<Void>(
+            { task: Task<ReactInstance> ->
+              if (task.isFaulted()) {
+                val fault = checkNotNull(task.getError())
+                raiseSoftException(
+                    method,
+                    ("React destruction failed. ReactInstance task faulted. Fault reason: ${fault.message}. Destroy reason: $reason"),
+                    task.getError(),
+                )
+              }
+              if (task.isCancelled()) {
+                raiseSoftException(
+                    method,
+                    "React destruction failed. ReactInstance task cancelled. Destroy reason: $reason",
+                )
+              }
+              null
+            },
+        )
         .also { destroyTask = it }
   }
 
@@ -1624,7 +1632,7 @@ public class ReactHostImpl(
               frameTimingsObserver = null
             }
           }
-        }
+        },
     )
 
     return inspectorTarget

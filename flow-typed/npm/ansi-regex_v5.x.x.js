@@ -8,7 +8,7 @@ declare module 'ansi-regex' {
     /**
      * Match only the first ANSI escape.
      */
-    +onlyFirst?: boolean,
+    readonly onlyFirst?: boolean,
   };
   declare export default function ansiRegex(options?: Options): RegExp;
 }

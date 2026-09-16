@@ -8,13 +8,11 @@
  * @format
  */
 
-import ReactNativeElement from '../../webapis/dom/nodes/ReadOnlyNode';
-import ensureInstance from './ensureInstance';
+import type {HostInstance} from 'react-native';
+
 import * as Fantom from '@react-native/fantom';
 
-function createShadowNodeRevisionGetter(
-  element: ReactNativeElement,
-): () => ?number {
+function createShadowNodeRevisionGetter(element: HostInstance): () => ?number {
   const getRevision = Fantom.createShadowNodeRevisionGetter(element);
   return () => {
     return getRevision();
@@ -23,7 +21,7 @@ function createShadowNodeRevisionGetter(
 
 export function createShadowNodeReferenceGetterRef(): [
   () => ?number,
-  React.RefSetter<unknown>,
+  React.RefSetter<HostInstance>,
 ] {
   let getRevision: ?() => ?number;
 
@@ -34,15 +32,14 @@ export function createShadowNodeReferenceGetterRef(): [
     return getRevision();
   }
 
-  function ref(instance: unknown | null) {
+  function ref(instance: HostInstance | null) {
     if (instance == null) {
       return;
     }
-    const element = ensureInstance(instance, ReactNativeElement);
     if (getRevision != null) {
       throw new Error('ShadowNode revision getter was already initialized.');
     }
-    getRevision = createShadowNodeRevisionGetter(element);
+    getRevision = createShadowNodeRevisionGetter(instance);
   }
 
   return [getShadowNodeReferenceCount, ref];

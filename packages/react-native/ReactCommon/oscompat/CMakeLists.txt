@@ -12,4 +12,7 @@ file(GLOB oscompat_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(oscompat OBJECT ${oscompat_SRC})
 
 target_include_directories(oscompat PUBLIC .)
+
+target_link_libraries(oscompat
+        react_cxxstableapi)
 target_compile_reactnative_options(oscompat PRIVATE)

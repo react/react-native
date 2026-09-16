@@ -22,7 +22,7 @@ public interface SurfaceDelegate {
    *
    * @param appKey
    */
-  public fun createContentView(appKey: String): Unit
+  public fun createContentView(appKey: String)
 
   /**
    * Check if the content view is created and ready to be shown
@@ -32,13 +32,13 @@ public interface SurfaceDelegate {
   public fun isContentViewReady(): Boolean
 
   /** Destroy the React content view to avoid memory leak */
-  public fun destroyContentView(): Unit
+  public fun destroyContentView()
 
   /** Show the surface containing the React content view */
-  public fun show(): Unit
+  public fun show()
 
   /** Hide the surface containing the React content view */
-  public fun hide(): Unit
+  public fun hide()
 
   /** Check if the surface is currently showing */
   public fun isShowing(): Boolean

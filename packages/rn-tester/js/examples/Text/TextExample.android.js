@@ -17,6 +17,7 @@ import RNTesterText from '../../components/RNTesterText';
 import TextLegend from '../../components/TextLegend';
 import TextAdjustsDynamicLayoutExample from './TextAdjustsDynamicLayoutExample';
 import TextSharedExamples from './TextSharedExamples';
+import TextWidthModeExample from './TextWidthModeExample';
 
 const TextInlineView = require('../../components/TextInlineView');
 const React = require('react');
@@ -1337,6 +1338,13 @@ function TextBaseLineLayoutExample(props: {}): React.Node {
 
 const examples = [
   {
+    title: 'Wrapped text width mode',
+    name: 'textWidthMode',
+    description:
+      'Compares automatic constrained text width with text sized to its longest rendered line.',
+    render: TextWidthModeExample,
+  },
+  {
     title: 'Background Color and Border Width',
     name: 'background-border-width',
     render(): React.Node {
@@ -1439,6 +1447,51 @@ const examples = [
         <RNTesterText testID="text-padding" style={{padding: 10}}>
           This text is indented by 10px padding on all sides.
         </RNTesterText>
+      );
+    },
+  },
+  {
+    title: 'Android 15+ glyph overhang (last line must not disappear)',
+    name: 'androidGlyphOverhangLineBreaking',
+    render(): React.Node {
+      // Android's generic `cursive` family (Dancing Script) has glyphs whose
+      // ink extends past their advance. In a shrink-wrapping container the view
+      // is measured on advances; if the drawn TextView breaks lines on bounds
+      // instead, the trailing colored "f" wraps to a line outside the measured
+      // height and is never painted. Every row must show its green "f".
+      const rows = [
+        'Enjoy your',
+        'Enjoy your coffee',
+        'Enjoy your coffee, my',
+        'Enjoy your morning coffee, my friend',
+      ];
+      return (
+        <View>
+          {rows.map(text => (
+            <View key={text} style={{flexDirection: 'row', gap: 8}}>
+              <View style={styles.overhangBubble}>
+                <Text
+                  allowFontScaling={false}
+                  style={{fontFamily: 'cursive', fontSize: 18, lineHeight: 27}}>
+                  {text}
+                  <Text style={{color: 'green'}}> f</Text>
+                </Text>
+              </View>
+              <View style={styles.overhangBubble}>
+                <Text
+                  allowFontScaling={false}
+                  style={{fontSize: 18, lineHeight: 27}}>
+                  {text}
+                  <Text style={{color: 'green'}}> f</Text>
+                </Text>
+              </View>
+            </View>
+          ))}
+          <RNTesterText style={{marginTop: 8}}>
+            Left: cursive (overhangs). Right: default font (control). A missing
+            green f on the left is the bug.
+          </RNTesterText>
+        </View>
       );
     },
   },
@@ -1846,6 +1899,15 @@ const examples = [
 ];
 
 const styles = StyleSheet.create({
+  overhangBubble: {
+    alignSelf: 'flex-start',
+    maxWidth: '48%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
   backgroundColorText: {
     left: 5,
     backgroundColor: 'rgba(100, 100, 100, 0.3)',

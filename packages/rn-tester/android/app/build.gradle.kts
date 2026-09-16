@@ -135,7 +135,7 @@ android {
   sourceSets.named("main") {
     // SampleTurboModule.
     kotlin.directories.add(
-        "$reactNativeDirPath/ReactCommon/react/nativemodule/samples/platform/android"
+        "$reactNativeDirPath/ReactCommon/react/nativemodule/samples/platform/android",
     )
     res.directories.apply {
       clear() // Mimics setSrcDirs by wiping out the defaults
@@ -143,7 +143,7 @@ android {
           listOf(
               "src/main/res",
               "src/main/public_res",
-          )
+          ),
       )
     }
   }

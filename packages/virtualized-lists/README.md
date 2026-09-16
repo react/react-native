@@ -1,21 +1,10 @@
 # @react-native/virtualized-lists
 
-[![Version][version-badge]][package]
+[![npm]](https://www.npmjs.com/package/@react-native/virtualized-lists) [![npm downloads]](https://www.npmjs.com/package/@react-native/virtualized-lists)
 
-## Installation
+[npm]: https://img.shields.io/npm/v/@react-native/virtualized-lists.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/virtualized-lists.svg
 
-```
-yarn add @react-native/virtualized-lists
-```
+> This is an internal dependency of React Native. **Please don't depend on it directly.**
 
-*Note: We're using `yarn` to install deps. Feel free to change commands to use `npm` 3+ and `npx` if you like*
-
-[version-badge]: https://img.shields.io/npm/v/@react-native/virtualized-lists?style=flat-square
-[package]: https://www.npmjs.com/package/@react-native/virtualized-lists
-
-## Testing
-
-To run the tests in this package, run the following commands from the React Native root folder:
-
-1. `yarn` to install the dependencies. You just need to run this once
-2. `yarn jest packages/virtualized-lists`.
+Virtualized list primitives (`VirtualizedList`, `VirtualizedSectionList`) backing React Native's `FlatList` and `SectionList` components.

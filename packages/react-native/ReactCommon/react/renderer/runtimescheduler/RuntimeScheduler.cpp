@@ -11,8 +11,8 @@
 #include "RuntimeScheduler_Legacy.h"
 #endif
 
-#include <cxxreact/ErrorUtils.h>
 #include <cxxreact/TraceSection.h>
+#include <jserrorhandler/ErrorUtils.h>
 #ifndef RCT_REMOVE_LEGACY_ARCH
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #endif
@@ -59,6 +59,18 @@ RuntimeScheduler::RuntimeScheduler(
 
 void RuntimeScheduler::scheduleWork(RawCallback&& callback) noexcept {
   return runtimeSchedulerImpl_->scheduleWork(std::move(callback));
+}
+
+void RuntimeScheduler::scheduleTask(const std::function<void()>& task) {
+  return runtimeSchedulerImpl_->scheduleTask(task);
+}
+
+uint64_t RuntimeScheduler::registerTaskQueueSource() {
+  return runtimeSchedulerImpl_->registerTaskQueueSource();
+}
+
+void RuntimeScheduler::unregisterTaskQueueSource(uint64_t sourceId) {
+  return runtimeSchedulerImpl_->unregisterTaskQueueSource(sourceId);
 }
 
 std::shared_ptr<Task> RuntimeScheduler::scheduleTask(
@@ -139,6 +151,12 @@ void RuntimeScheduler::setIntersectionObserverDelegate(
         intersectionObserverDelegate) {
   return runtimeSchedulerImpl_->setIntersectionObserverDelegate(
       intersectionObserverDelegate);
+}
+
+void RuntimeScheduler::setResizeObserverDelegate(
+    RuntimeSchedulerResizeObserverDelegate* resizeObserverDelegate) {
+  return runtimeSchedulerImpl_->setResizeObserverDelegate(
+      resizeObserverDelegate);
 }
 
 } // namespace facebook::react

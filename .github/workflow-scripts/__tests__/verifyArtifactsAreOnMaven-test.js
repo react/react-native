@@ -22,6 +22,28 @@ jest.mock('../utils.js', () => ({
 process.exit = mockExit;
 global.fetch = mockFetch;
 
+const BASE_URL =
+  'https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts';
+
+// The verifier HEAD-checks the POM plus every classifier tarball attached to
+// the react-native-artifacts publication (external-artifacts/build.gradle.kts).
+const expectedUrls = version => [
+  `${BASE_URL}/${version}/react-native-artifacts-${version}.pom`,
+  ...[
+    'reactnative-core-debug',
+    'reactnative-core-release',
+    'reactnative-dependencies-debug',
+    'reactnative-dependencies-release',
+    'reactnative-headers-debug',
+    'reactnative-headers-release',
+    'reactnative-dependencies-headers-debug',
+    'reactnative-dependencies-headers-release',
+  ].map(
+    classifier =>
+      `${BASE_URL}/${version}/react-native-artifacts-${version}-${classifier}.tar.gz`,
+  ),
+];
+
 describe('#verifyArtifactsAreOnMaven', () => {
   beforeEach(jest.clearAllMocks);
 
@@ -29,17 +51,18 @@ describe('#verifyArtifactsAreOnMaven', () => {
     mockSleep.mockReturnValueOnce(Promise.resolve()).mockImplementation(() => {
       throw new Error('Should not be called again!');
     });
+    // First attempt: the POM is not there yet. Second attempt: every URL is.
     mockFetch
       .mockReturnValueOnce(Promise.resolve({status: 404}))
-      .mockReturnValueOnce(Promise.resolve({status: 200}));
+      .mockReturnValue(Promise.resolve({status: 200}));
 
     const version = '0.78.1';
     await verifyArtifactsAreOnMaven(version);
 
     expect(mockSleep).toHaveBeenCalledTimes(1);
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.78.1/react-native-artifacts-0.78.1.pom',
-    );
+    for (const url of expectedUrls('0.78.1')) {
+      expect(mockFetch).toHaveBeenCalledWith(url, {method: 'HEAD'});
+    }
   });
 
   it('waits for the packages to be published on maven, when version starts with v', async () => {
@@ -48,27 +71,46 @@ describe('#verifyArtifactsAreOnMaven', () => {
     });
     mockFetch
       .mockReturnValueOnce(Promise.resolve({status: 404}))
-      .mockReturnValueOnce(Promise.resolve({status: 200}));
+      .mockReturnValue(Promise.resolve({status: 200}));
 
     const version = 'v0.78.1';
     await verifyArtifactsAreOnMaven(version);
 
     expect(mockSleep).toHaveBeenCalledTimes(1);
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.78.1/react-native-artifacts-0.78.1.pom',
-    );
+    for (const url of expectedUrls('0.78.1')) {
+      expect(mockFetch).toHaveBeenCalledWith(url, {method: 'HEAD'});
+    }
   });
 
   it('passes immediately if packages are already on Maven', async () => {
-    mockFetch.mockReturnValueOnce(Promise.resolve({status: 200}));
+    mockFetch.mockReturnValue(Promise.resolve({status: 200}));
 
     const version = '0.78.1';
     await verifyArtifactsAreOnMaven(version);
 
     expect(mockSleep).toHaveBeenCalledTimes(0);
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.78.1/react-native-artifacts-0.78.1.pom',
-    );
+    // All nine URLs (POM + 8 classifier tarballs) are verified in one pass.
+    expect(mockFetch).toHaveBeenCalledTimes(9);
+    for (const url of expectedUrls('0.78.1')) {
+      expect(mockFetch).toHaveBeenCalledWith(url, {method: 'HEAD'});
+    }
+  });
+
+  it('waits when a classifier artifact is missing even though the POM exists', async () => {
+    mockSleep.mockReturnValueOnce(Promise.resolve()).mockImplementation(() => {
+      throw new Error('Should not be called again!');
+    });
+    // First attempt: POM ok, first classifier missing. Second attempt: all ok.
+    mockFetch
+      .mockReturnValueOnce(Promise.resolve({status: 200}))
+      .mockReturnValueOnce(Promise.resolve({status: 404}))
+      .mockReturnValue(Promise.resolve({status: 200}));
+
+    const version = '0.78.1';
+    await verifyArtifactsAreOnMaven(version);
+
+    expect(mockSleep).toHaveBeenCalledTimes(1);
+    expect(mockExit).not.toHaveBeenCalled();
   });
 
   it('tries 90 times and then exits', async () => {
@@ -82,6 +124,7 @@ describe('#verifyArtifactsAreOnMaven', () => {
     expect(mockExit).toHaveBeenCalledWith(1);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.78.1/react-native-artifacts-0.78.1.pom',
+      {method: 'HEAD'},
     );
   });
 });

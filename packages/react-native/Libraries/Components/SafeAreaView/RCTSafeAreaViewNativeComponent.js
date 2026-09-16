@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/RCTSafeAreaViewNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/RCTSafeAreaViewNativeComponent';
+export * from '../../../src/private/components/safeareaview/specs/RCTSafeAreaViewNativeComponent';
+export {default} from '../../../src/private/components/safeareaview/specs/RCTSafeAreaViewNativeComponent';

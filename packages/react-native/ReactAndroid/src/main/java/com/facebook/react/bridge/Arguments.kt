@@ -75,7 +75,7 @@ public object Arguments {
             get() = java.lang.reflect.Array.getLength(objects)
 
           override fun get(index: Int): Any? = java.lang.reflect.Array.get(objects, index)
-        }
+        },
     )
   }
 
@@ -134,7 +134,7 @@ public object Arguments {
   @Suppress("UNCHECKED_CAST")
   @JvmStatic
   @Deprecated(
-      "Use fromJavaArgs(Array<Any?>) instead. This method is added only to retain compatibility with Java consumers."
+      "Use fromJavaArgs(Array<Any?>) instead. This method is added only to retain compatibility with Java consumers.",
   )
   public fun fromJavaArgs(args: Any?): WritableNativeArray = fromJavaArgs(args as Array<Any?>)
 

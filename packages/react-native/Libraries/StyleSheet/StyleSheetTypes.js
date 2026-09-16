@@ -540,12 +540,7 @@ type ____LayoutStyle_Internal = Readonly<{
    *  for more details.
    */
   alignSelf?:
-    | 'auto'
-    | 'flex-start'
-    | 'flex-end'
-    | 'center'
-    | 'stretch'
-    | 'baseline',
+    'auto' | 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline',
 
   /** `alignContent` controls how rows align in the cross direction,
    *  overriding the `alignContent` of the parent.
@@ -736,10 +731,7 @@ type LinearGradientValue = {
 };
 
 type RadialExtent =
-  | 'closest-corner'
-  | 'closest-side'
-  | 'farthest-corner'
-  | 'farthest-side';
+  'closest-corner' | 'closest-side' | 'farthest-corner' | 'farthest-side';
 export type RadialGradientPosition =
   | {
       top: number | string,
@@ -785,10 +777,7 @@ export type BackgroundSizeValue = {
 };
 
 export type BackgroundRepeatKeyword =
-  | 'repeat'
-  | 'space'
-  | 'round'
-  | 'no-repeat';
+  'repeat' | 'space' | 'round' | 'no-repeat';
 
 export type BackgroundPositionValue =
   | {
@@ -845,6 +834,10 @@ export type ____ViewStyle_InternalBase = Readonly<{
   backfaceVisibility?: 'visible' | 'hidden',
   backgroundColor?: ____ColorValue_Internal,
   borderColor?: ____ColorValue_Internal,
+  /**
+   * On iOS 13+, it is possible to change the corner curve of borders.
+   * @platform ios
+   */
   borderCurve?: 'circular' | 'continuous',
   borderBottomColor?: ____ColorValue_Internal,
   borderEndColor?: ____ColorValue_Internal,
@@ -881,7 +874,18 @@ export type ____ViewStyle_InternalBase = Readonly<{
   outlineOffset?: number,
   outlineStyle?: 'solid' | 'dotted' | 'dashed',
   outlineWidth?: number,
+  /**
+   * Sets the elevation of a view, using Android's underlying
+   * [elevation API](https://developer.android.com/training/material/shadows-clipping.html#Elevation).
+   * This adds a drop shadow to the item and affects z-order for overlapping views.
+   * Only supported on Android 5.0+, has no effect on earlier versions.
+   *
+   * @platform android
+   */
   elevation?: number,
+  /**
+   * Controls whether the View can be the target of touch events.
+   */
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only',
   cursor?: CursorValue,
   boxShadow?: ReadonlyArray<BoxShadowValue> | string,
@@ -889,10 +893,12 @@ export type ____ViewStyle_InternalBase = Readonly<{
   mixBlendMode?: ____BlendMode_Internal,
   backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
   experimental_backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
+  backgroundSize?: ReadonlyArray<BackgroundSizeValue> | string,
   experimental_backgroundSize?: ReadonlyArray<BackgroundSizeValue> | string,
+  backgroundPosition?: ReadonlyArray<BackgroundPositionValue> | string,
   experimental_backgroundPosition?:
-    | ReadonlyArray<BackgroundPositionValue>
-    | string,
+    ReadonlyArray<BackgroundPositionValue> | string,
+  backgroundRepeat?: ReadonlyArray<BackgroundRepeatValue> | string,
   experimental_backgroundRepeat?: ReadonlyArray<BackgroundRepeatValue> | string,
   isolation?: 'auto' | 'isolate',
 }>;
@@ -996,13 +1002,36 @@ export type ____FontVariant_Internal =
 export type ____FontVariantArray_Internal =
   ReadonlyArray<____FontVariant_Internal>;
 
+export type ____FontVariationSettings_Internal =
+  string | Readonly<{[axis: string]: number}>;
+
 type ____TextStyle_InternalBase = Readonly<{
   color?: ____ColorValue_Internal,
+  /**
+   * Controls how wrapped text contributes its width to layout. `longest-line`
+   * uses the width of the longest rendered line instead of the wrapping
+   * constraint.
+   *
+   * @default `'auto'`
+   */
+  experimental_textWidthMode?: 'auto' | 'longest-line',
   fontFamily?: string,
   fontSize?: number,
   fontStyle?: 'normal' | 'italic',
+  /**
+   * Specifies font weight. The values 'normal' and 'bold' are supported
+   * for most fonts. Not all fonts have a variant for each of the numeric
+   * values, in that case the closest one is chosen.
+   */
   fontWeight?: ____FontWeight_Internal,
   fontVariant?: ____FontVariantArray_Internal | string,
+  /**
+   * Specifies OpenType font variation axis values using CSS syntax or an
+   * object keyed by four-character axis tags. An empty string or object resets
+   * inherited variation settings. On Android, this requires API level 26 or
+   * later.
+   */
+  fontVariationSettings?: ____FontVariationSettings_Internal,
   textShadowOffset?: Readonly<{
     width: number,
     height: number,
@@ -1011,14 +1040,12 @@ type ____TextStyle_InternalBase = Readonly<{
   textShadowColor?: ____ColorValue_Internal,
   letterSpacing?: number,
   lineHeight?: number,
-  textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify',
+  textAlign?:
+    'auto' | 'left' | 'right' | 'center' | 'justify' | 'start' | 'end',
   textAlignVertical?: 'auto' | 'top' | 'bottom' | 'center',
   includeFontPadding?: boolean,
   textDecorationLine?:
-    | 'none'
-    | 'underline'
-    | 'line-through'
-    | 'underline line-through',
+    'none' | 'underline' | 'line-through' | 'underline line-through',
   textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy',
   textDecorationColor?: ____ColorValue_Internal,
   textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase',
@@ -1066,12 +1093,7 @@ export type ____DangerouslyImpreciseStyle_Internal = Readonly<{
 }>;
 
 export type StyleProp<out T> =
-  | null
-  | void
-  | T
-  | false
-  | ''
-  | ReadonlyArray<StyleProp<T>>;
+  null | void | T | false | '' | ReadonlyArray<StyleProp<T>>;
 
 export type ____DangerouslyImpreciseStyleProp_Internal = StyleProp<
   Partial<____DangerouslyImpreciseStyle_Internal>,

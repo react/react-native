@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/BaseViewProps.h>
 #include <react/renderer/components/view/NativeDrawable.h>
 #include <react/renderer/components/view/primitives.h>

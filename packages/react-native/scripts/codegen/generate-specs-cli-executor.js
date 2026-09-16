@@ -11,8 +11,8 @@
 'use strict';
 
 const utils = require('./codegen-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const GENERATORS /*: {[string]: {[string]: ReadonlyArray<string>}} */ = {
   all: {

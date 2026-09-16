@@ -1,4 +1,6 @@
 appId: ${APP_ID} # iOS: org.reactjs.native.example.RNTestProject  | Android: com.rntestproject
 ---
 - launchApp
-- assertVisible: "Welcome to React Native"
+- extendedWaitUntil:
+    visible: 'Welcome to React Native'
+    timeout: 60000

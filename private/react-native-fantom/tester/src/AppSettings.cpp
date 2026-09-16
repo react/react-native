@@ -17,6 +17,11 @@ DEFINE_uint32(windowWidth, DEFAULT_WINDOW_WIDTH, "Application window width");
 DEFINE_uint32(windowHeight, DEFAULT_WINDOW_HEIGHT, "Application window height");
 DEFINE_string(bundlePath, "", "Default path to the application's bundle");
 DEFINE_uint32(inspectorPort, 0, "React Native inspector port");
+DEFINE_bool(
+    interactive,
+    false,
+    "Load the bundle as a warm-up environment (without running tests) and then "
+    "read JS snippets to evaluate from stdin (REPL mode)");
 DEFINE_string(
     featureFlags,
     "",
@@ -32,6 +37,7 @@ unsigned int AppSettings::windowWidth{DEFAULT_WINDOW_WIDTH};
 unsigned int AppSettings::windowHeight{DEFAULT_WINDOW_HEIGHT};
 std::string AppSettings::defaultBundlePath{};
 std::optional<uint32_t> AppSettings::inspectorPort{};
+bool AppSettings::interactive{false};
 std::optional<folly::dynamic> AppSettings::dynamicFeatureFlags;
 int AppSettings::minLogLevel{google::GLOG_INFO};
 
@@ -60,6 +66,8 @@ void AppSettings::initInternal() {
   if (FLAGS_inspectorPort != 0) {
     inspectorPort = FLAGS_inspectorPort;
   }
+
+  interactive = FLAGS_interactive;
 
   if (!FLAGS_minLogLevel.empty()) {
     if (FLAGS_minLogLevel == "info") {

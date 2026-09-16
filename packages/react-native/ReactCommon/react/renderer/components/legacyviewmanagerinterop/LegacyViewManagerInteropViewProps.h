@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
 #include <folly/dynamic.h>

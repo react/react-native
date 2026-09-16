@@ -9,9 +9,6 @@
 
 #include "NativeArray.h"
 
-#include "NativeCommon.h"
-#include "NativeMap.h"
-
 namespace facebook::react {
 
 struct ReadableArray : jni::JavaClass<ReadableArray> {

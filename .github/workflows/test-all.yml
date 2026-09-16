@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - main
-      - "*-stable"
+      - '*-stable'
 
 permissions:
   contents: read
@@ -107,8 +107,7 @@ jobs:
 
   test_ios_rntester_ruby_3_2_0:
     runs-on: macos-15
-    needs:
-      [prebuild_apple_dependencies, prebuild_react_native_core]
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     steps:
       - name: Checkout
@@ -116,7 +115,7 @@ jobs:
       - name: Run it
         uses: ./.github/actions/test-ios-rntester
         with:
-          ruby-version: "3.2.0"
+          ruby-version: '3.2.0'
           flavor: Debug
 
   test_ios_rntester_dynamic_frameworks:
@@ -141,8 +140,7 @@ jobs:
 
   test_ios_rntester:
     runs-on: macos-15-large
-    needs:
-      [prebuild_apple_dependencies, prebuild_react_native_core]
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     continue-on-error: true
     strategy:
@@ -157,7 +155,39 @@ jobs:
         uses: ./.github/actions/test-ios-rntester
         with:
           use-frameworks: ${{ matrix.frameworks }}
+          # Consume the prebuilt artifacts in the dynamic-frameworks cells too:
+          # prebuilt + use_frameworks is the config of the 2026-07-03
+          # SocketRocket dual-copy regression, previously covered by no lane
+          # (source-built dynamic frameworks stay covered by
+          # test_ios_rntester_dynamic_frameworks).
+          use-prebuilds: true
           flavor: ${{ matrix.flavor }}
+
+  test_maestro_cloud_ios:
+    needs: test_ios_rntester
+    # test_ios_rntester is continue-on-error. If its Release artifact is missing,
+    # the reusable workflow fails explicitly while downloading or validating it.
+    if: |
+      needs.test_ios_rntester.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
+        )
+      )
+    uses: ./.github/workflows/maestro-cloud-rntester.yml
+    with:
+      platform: iOS
+      artifact-name: RNTesterApp-NewArch-Release
+      download-path: /tmp/RNTesterBuild/RNTester.app
+      app-file: /tmp/RNTesterBuild/RNTester.app
+      app-id: com.meta.RNTester.localDevelopment
+      device-model: iPhone-17-Pro
+      device-os: iOS-26-2
+      exclude-tags: android-only
+    secrets: inherit
 
   test_e2e_ios_rntester:
     needs: test_ios_rntester
@@ -199,6 +229,40 @@ jobs:
       fail-on-error: true
     secrets: inherit
 
+  test_ios_spm_rntester:
+    needs:
+      [
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
+    uses: ./.github/workflows/test-ios-spm-rntester.yml
+    secrets: inherit
+
+  test_ios_spm_helloworld:
+    needs:
+      [
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
+    uses: ./.github/workflows/test-ios-spm-helloworld.yml
+    secrets: inherit
+
+  test_ios_spm_newapp:
+    needs:
+      [
+        build_npm_package,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.build_npm_package.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
+    uses: ./.github/workflows/test-ios-spm-newapp.yml
+    secrets: inherit
+
   test_e2e_android_templateapp:
     needs: [build_npm_package, build_android]
     if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
@@ -209,6 +273,8 @@ jobs:
     needs: test_e2e_android_templateapp
     if: ${{ always() && needs.test_e2e_android_templateapp.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_android_templateapp_retry_2:
@@ -217,10 +283,11 @@ jobs:
     uses: ./.github/workflows/e2e-android-templateapp.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
 
   build_fantom_runner:
-    runs-on: ubuntu-latest
+    runs-on: 8-core-ubuntu
     needs: [set_release_type, check_code_changes, lint]
     if: needs.check_code_changes.outputs.any_code_change == 'true'
     container:
@@ -229,8 +296,8 @@ jobs:
         # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
         # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
         LC_ALL: C.UTF8
-        TERM: "dumb"
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
         REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
@@ -263,7 +330,7 @@ jobs:
     secrets: inherit
 
   build_android:
-    runs-on: ubuntu-latest
+    runs-on: 8-core-ubuntu
     needs: [set_release_type, check_code_changes]
     if: |
       needs.check_code_changes.outputs.any_code_change == 'true' &&
@@ -274,8 +341,8 @@ jobs:
         # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
         # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
         LC_ALL: C.UTF8
-        TERM: "dumb"
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
         REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
@@ -288,6 +355,28 @@ jobs:
           release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
+  test_maestro_cloud_android:
+    needs: build_android
+    if: |
+      needs.build_android.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
+        )
+      )
+    uses: ./.github/workflows/maestro-cloud-rntester.yml
+    with:
+      platform: Android
+      artifact-name: rntester-release
+      download-path: /tmp/rntester-android
+      app-file: /tmp/rntester-android/app-arm64-v8a-release.apk
+      app-id: com.facebook.react.uiapp
+      exclude-tags: ios-only,local-screenshot-baseline
+    secrets: inherit
+
   test_e2e_android_rntester:
     needs: build_android
     if: ${{ needs.build_android.result == 'success' }}
@@ -298,6 +387,8 @@ jobs:
     needs: test_e2e_android_rntester
     if: ${{ always() && needs.test_e2e_android_rntester.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-rntester.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_android_rntester_retry_2:
@@ -306,10 +397,11 @@ jobs:
     uses: ./.github/workflows/e2e-android-rntester.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
 
   build_npm_package:
-    runs-on: ubuntu-latest
+    runs-on: 8-core-ubuntu
     needs:
       [
         set_release_type,
@@ -321,15 +413,18 @@ jobs:
     if: |
       always() &&
       !contains(needs.*.result, 'failure') &&
-      !contains(needs.*.result, 'cancelled')
+      !contains(needs.*.result, 'cancelled') &&
+      (needs.build_android.result == 'success' ||
+        needs.prebuild_apple_dependencies.result == 'success' ||
+        needs.prebuild_react_native_core.result == 'success')
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
-        TERM: "dumb"
+        TERM: 'dumb'
         # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
         # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
         LC_ALL: C.UTF8
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     steps:
       - name: Checkout
@@ -342,7 +437,7 @@ jobs:
           skip-apple-prebuilts: ${{ needs.check_code_changes.outputs.should_test_ios == 'false' }}
 
   test_android_helloworld:
-    runs-on: ubuntu-latest
+    runs-on: 4-core-ubuntu
     needs: [build_npm_package, build_android]
     if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
     container:
@@ -352,9 +447,9 @@ jobs:
       # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
       LC_ALL: C.UTF8
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
-      TERM: "dumb"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-      TARGET_ARCHITECTURE: "arm64-v8a"
+      TERM: 'dumb'
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+      TARGET_ARCHITECTURE: 'arm64-v8a'
       REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     continue-on-error: true
     strategy:
@@ -455,15 +550,9 @@ jobs:
         uses: ./.github/actions/setup-node
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
-      - name: Lint file structure
-        shell: bash
-        run: ./.github/workflow-scripts/lint_files.sh
       - name: Run shellcheck
         shell: bash
         run: ./.github/workflow-scripts/analyze_scripts.sh
-      - name: Prettier
-        shell: bash
-        run: yarn run format-check
       - name: markdownlint
         shell: bash
         run: yarn run lint-markdown
@@ -473,9 +562,9 @@ jobs:
       - name: Flow
         shell: bash
         run: yarn flow-check
-      - name: TypeScript
+      - name: TypeScript (legacy deep imports / manual types)
         shell: bash
-        run: yarn test-typescript
+        run: yarn test-typescript-legacy
 
   test_js:
     runs-on: ubuntu-latest
@@ -484,7 +573,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ["24", "22.13.0"]
+        node-version: ['24', '22.13.0']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -512,7 +601,7 @@ jobs:
         run: yarn test-generated-typescript
 
   build_debugger_shell:
-    runs-on: ubuntu-latest
+    runs-on: macos-26
     needs: check_code_changes
     if: needs.check_code_changes.outputs.debugger_shell == 'true'
     steps:

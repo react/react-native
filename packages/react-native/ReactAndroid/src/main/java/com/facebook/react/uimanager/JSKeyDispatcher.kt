@@ -40,7 +40,7 @@ internal class JSKeyDispatcher {
                 surfaceId,
                 focusedViewTag,
                 keyEvent,
-            )
+            ),
         )
       }
       AndroidKeyEvent.ACTION_UP -> {
@@ -49,7 +49,7 @@ internal class JSKeyDispatcher {
                 surfaceId,
                 focusedViewTag,
                 keyEvent,
-            )
+            ),
         )
       }
     }

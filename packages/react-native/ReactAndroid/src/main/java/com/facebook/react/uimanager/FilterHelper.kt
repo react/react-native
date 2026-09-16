@@ -242,7 +242,7 @@ internal object FilterHelper {
             0f,
             1f,
             0f,
-        )
+        ),
     )
   }
 
@@ -275,7 +275,7 @@ internal object FilterHelper {
             0f,
             1f,
             0f,
-        )
+        ),
     )
   }
 
@@ -308,7 +308,7 @@ internal object FilterHelper {
             0f,
             1f,
             0f,
-        )
+        ),
     )
   }
 
@@ -354,7 +354,7 @@ internal object FilterHelper {
             0f,
             1f,
             0f,
-        )
+        ),
     )
   }
 
@@ -388,7 +388,7 @@ internal object FilterHelper {
             0f,
             1f,
             0f,
-        )
+        ),
     )
   }
 

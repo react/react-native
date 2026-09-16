@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <utility>
 
 #include <jsinspector-modern/tracing/RuntimeSamplingProfile.h>

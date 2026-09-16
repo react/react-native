@@ -15,7 +15,6 @@
 #include <jsi/jsi.h>
 #include <react/jni/JRuntimeExecutor.h>
 #include <react/jni/JSLogging.h>
-#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #include <react/runtime/BridgelessNativeMethodCallInvoker.h>
 #include <react/runtime/JSRuntimeBindings.h>
 
@@ -89,10 +88,11 @@ JReactInstance::JReactInstance(
 
   auto unbufferedRuntimeExecutor = instance_->getUnbufferedRuntimeExecutor();
   // Set up the JS and native modules call invokers (for TurboModules)
-  auto jsInvoker = std::make_unique<RuntimeSchedulerCallInvoker>(
-      instance_->getRuntimeScheduler());
+  // Shares the instance's BufferedRuntimeExecutor so async calls from native
+  // are ordered against callFunctionOnModule and cannot run before the bundle
+  // has evaluated. invokeSync still goes straight to the scheduler.
   jsCallInvokerHolder_ = jni::make_global(
-      CallInvokerHolder::newObjectCxxArgs(std::move(jsInvoker)));
+      CallInvokerHolder::newObjectCxxArgs(instance_->createJSCallInvoker()));
   auto nativeMethodCallInvoker =
       std::make_unique<BridgelessNativeMethodCallInvoker>(
           sharedNativeMessageQueueThread);

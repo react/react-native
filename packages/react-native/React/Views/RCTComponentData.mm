@@ -544,7 +544,7 @@ NSString *RCTViewManagerModuleNameForClass(Class managerClass)
   // We want to get rid of RCT and RK prefixes, but a lot of JS code still references
   // view names by prefix. So, while RCTBridgeModuleNameForClass now drops these
   // prefixes by default, we'll still keep them around here.
-  NSString *name = [managerClass moduleName];
+  NSString *name = [managerClass respondsToSelector:@selector(moduleName)] ? [managerClass moduleName] : nil;
   if (name.length == 0) {
     name = NSStringFromClass(managerClass);
   }

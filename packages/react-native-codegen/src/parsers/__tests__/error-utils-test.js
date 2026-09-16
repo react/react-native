@@ -18,6 +18,7 @@ const {
   throwIfArgumentPropsAreNull,
   throwIfArrayElementTypeAnnotationIsUnsupported,
   throwIfBubblingTypeIsNull,
+  throwIfEventEmitterPayloadTypeIsUnsupported,
   throwIfEventHasNoName,
   throwIfIncorrectModuleRegistryCallArgument,
   throwIfIncorrectModuleRegistryCallTypeParameterParserError,
@@ -822,6 +823,35 @@ describe('throwIfArrayElementTypeAnnotationIsUnsupported', () => {
         'StringTypeAnnotation',
       );
     }).not.toThrow(UnsupportedArrayElementTypeAnnotationParserError);
+  });
+});
+
+describe('throwIfEventEmitterPayloadTypeIsUnsupported', () => {
+  const {
+    UnsupportedModuleEventEmitterPayloadTypeParserError,
+  } = require('../errors.js');
+  const moduleName = 'moduleName';
+
+  it('throws the error if the payload is an ArrayBuffer', () => {
+    expect(() => {
+      throwIfEventEmitterPayloadTypeIsUnsupported(
+        moduleName,
+        undefined,
+        'onBuffer',
+        {type: 'ArrayBufferTypeAnnotation'},
+      );
+    }).toThrow(UnsupportedModuleEventEmitterPayloadTypeParserError);
+  });
+
+  it('does not throw the error if the payload is a supported type', () => {
+    expect(() => {
+      throwIfEventEmitterPayloadTypeIsUnsupported(
+        moduleName,
+        undefined,
+        'onCount',
+        {type: 'DoubleTypeAnnotation'},
+      );
+    }).not.toThrow();
   });
 });
 

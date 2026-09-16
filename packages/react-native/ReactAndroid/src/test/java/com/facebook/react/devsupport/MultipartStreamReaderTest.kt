@@ -25,7 +25,7 @@ class MultipartStreamReaderTest {
                 "Content-Length: 2\r\n\r\n" +
                 "{}\r\n" +
                 "--sample_boundary--\r\n" +
-                "epilogue, should be ignored"
+                "epilogue, should be ignored",
         )
 
     val source = Buffer()
@@ -66,7 +66,7 @@ class MultipartStreamReaderTest {
                 "--sample_boundary\r\n" +
                 "3\r\n" +
                 "--sample_boundary--\r\n" +
-                "epilogue, should be ignored"
+                "epilogue, should be ignored",
         )
 
     val source = Buffer()
@@ -119,7 +119,7 @@ class MultipartStreamReaderTest {
                 "Content-Length: 2\r\n\r\n" +
                 "{}\r\n" +
                 "--sample_boundary\r\n" +
-                "incomplete message..."
+                "incomplete message...",
         )
 
     val source = Buffer()
@@ -148,7 +148,7 @@ class MultipartStreamReaderTest {
                 "Content-Type: text/plain\r\n" +
                 "Content-Length: 1\r\n\r\n" +
                 "Z\r\n" +
-                "--sample_boundary--\r\n"
+                "--sample_boundary--\r\n",
         )
 
     val source = Buffer().apply { write(response) }
@@ -189,7 +189,7 @@ class MultipartStreamReaderTest {
                 "content-type: application/json\r\n" +
                 "content-length: 2\r\n\r\n" +
                 "{}\r\n" +
-                "--sample_boundary--\r\n"
+                "--sample_boundary--\r\n",
         )
 
     val source = Buffer().apply { write(response) }

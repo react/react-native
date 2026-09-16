@@ -15,7 +15,7 @@
 'use strict';
 
 const RNCodegen = require('../../generators/RNCodegen.js');
-const fs = require('fs');
+const fs = require('node:fs');
 
 const args = process.argv.slice(2);
 if (args.length < 3) {

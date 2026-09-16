@@ -55,7 +55,7 @@ import org.robolectric.annotation.Config
             ShadowReadableNativeMap::class,
             ShadowWritableNativeArray::class,
             ShadowReadableNativeArray::class,
-        ]
+        ],
 )
 class SurfaceMountingManagerSynchronousMountPropsTest {
   private lateinit var mountingManager: MountingManager

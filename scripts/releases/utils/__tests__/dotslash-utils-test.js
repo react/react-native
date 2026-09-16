@@ -16,9 +16,9 @@ const {
   validateAndParseDotSlashFile,
   validateDotSlashArtifactData,
 } = require('../dotslash-utils');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 jest.useRealTimers();
 

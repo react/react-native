@@ -44,7 +44,7 @@ class PointerEventsProcessorTest : public ::testing::Test {
         componentDescriptorProviderRegistry.createComponentDescriptorRegistry(
             ComponentDescriptorParameters{
                 .eventDispatcher = eventDispatcher,
-                .contextContainer = std::move(contextContainer),
+                .contextContainer = contextContainer,
                 .flavor = nullptr});
 
     componentDescriptorProviderRegistry.add(
@@ -101,7 +101,7 @@ class PointerEventsProcessorTest : public ::testing::Test {
               .surfaceId(surfaceId_)
               .reference(nodeA_)
               .props([] {
-                auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                auto sharedProps = std::make_shared<ViewProps>();
                 auto &props = *sharedProps;
                 listenToAllPointerEvents(props);
                 auto &yogaStyle = props.yogaStyle;
@@ -119,7 +119,7 @@ class PointerEventsProcessorTest : public ::testing::Test {
                   .surfaceId(surfaceId_)
                   .reference(nodeAA_)
                   .props([] {
-                    auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                    auto sharedProps = std::make_shared<ViewProps>();
                     auto &props = *sharedProps;
                     listenToAllPointerEvents(props);
                     auto &yogaStyle = props.yogaStyle;
@@ -133,7 +133,7 @@ class PointerEventsProcessorTest : public ::testing::Test {
               .surfaceId(surfaceId_)
               .reference(nodeB_)
               .props([] {
-                auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                auto sharedProps = std::make_shared<ViewProps>();
                 auto &props = *sharedProps;
                 listenToAllPointerEvents(props);
                 auto &yogaStyle = props.yogaStyle;
@@ -151,7 +151,7 @@ class PointerEventsProcessorTest : public ::testing::Test {
                   .surfaceId(surfaceId_)
                   .reference(nodeBB_)
                   .props([] {
-                    auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                    auto sharedProps = std::make_shared<ViewProps>();
                     auto &props = *sharedProps;
                     listenToAllPointerEvents(props);
                     auto &yogaStyle = props.yogaStyle;

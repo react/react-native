@@ -154,9 +154,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     view.setFocusable(false);
     view.setFocusableInTouchMode(false);
 
-    // https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-mainline-12.0.0_r96/core/java/android/view/View.java#5491
-    view.setElevation(0);
-
     // Predictably, alpha defaults to 1:
     // https://android.googlesource.com/platform/frameworks/base/+/a175a5b/core/java/android/view/View.java#2186
     // This accounts for resetting mBackfaceOpacity and mBackfaceVisibility
@@ -218,7 +215,9 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       ReadableArray transformOrigin = (ReadableArray) v.getTag(R.id.transform_origin);
       ReadableArray transforms = (ReadableArray) v.getTag(R.id.transform);
       if (transforms != null || transformOrigin != null) {
-        setTransformProperty((T) v, transforms, transformOrigin);
+        @SuppressWarnings("unchecked")
+        T typedView = (T) v;
+        setTransformProperty(typedView, transforms, transformOrigin);
       }
     }
   }
@@ -272,7 +271,12 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ELEVATION)
   public void setElevation(@NonNull T view, float elevation) {
-    ViewCompat.setElevation(view, PixelUtil.toPixelFromDIP(elevation));
+    float px = PixelUtil.toPixelFromDIP(elevation);
+    boolean wasElevated = view.getElevation() > 0f;
+    ViewCompat.setElevation(view, px);
+    if (wasElevated != (px > 0f)) {
+      HasElevatedDescendantCache.invalidateAncestors(view.getParent());
+    }
   }
 
   @ReactProp(name = ViewProps.SHADOW_COLOR, defaultInt = Color.BLACK, customType = "Color")

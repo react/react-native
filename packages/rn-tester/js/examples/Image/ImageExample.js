@@ -29,15 +29,72 @@ import {
   View,
 } from 'react-native';
 
+const ALPHA_PNG_ASSET = require('../../assets/alpha-hotdog.png');
+
 const IMAGE1 =
   'https://www.facebook.com/assets/fb_lite_messaging/E2EE-settings@3x.png';
 const IMAGE2 =
   'https://www.facebook.com/ar_effect/external_textures/648609739826677.png';
-
 const base64Icon =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEsAAABLCAQAAACSR7JhAAADtUlEQVR4Ac3YA2Bj6QLH0XPT1Fzbtm29tW3btm3bfLZtv7e2ObZnms7d8Uw098tuetPzrxv8wiISrtVudrG2JXQZ4VOv+qUfmqCGGl1mqLhoA52oZlb0mrjsnhKpgeUNEs91Z0pd1kvihA3ULGVHiQO2narKSHKkEMulm9VgUyE60s1aWoMQUbpZOWE+kaqs4eLEjdIlZTcFZB0ndc1+lhB1lZrIuk5P2aib1NBpZaL+JaOGIt0ls47SKzLC7CqrlGF6RZ09HGoNy1lYl2aRSWL5GuzqWU1KafRdoRp0iOQEiDzgZPnG6DbldcomadViflnl/cL93tOoVbsOLVM2jylvdWjXolWX1hmfZbGR/wjypDjFLSZIRov09BgYmtUqPQPlQrPapecLgTIy0jMgPKtTeob2zWtrGH3xvjUkPCtNg/tm1rjwrMa+mdUkPd3hWbH0jArPGiU9ufCsNNWFZ40wpwn+62/66R2RUtoso1OB34tnLOcy7YB1fUdc9e0q3yru8PGM773vXsuZ5YIZX+5xmHwHGVvlrGPN6ZSiP1smOsMMde40wKv2VmwPPVXNut4sVpUreZiLBHi0qln/VQeI/LTMYXpsJtFiclUN+5HVZazim+Ky+7sAvxWnvjXrJFneVtLWLyPJu9K3cXLWeOlbMTlrIelbMDlrLenrjEQOtIF+fuI9xRp9ZBFp6+b6WT8RrxEpdK64BuvHgDk+vUy+b5hYk6zfyfs051gRoNO1usU12WWRWL73/MMEy9pMi9qIrR4ZpV16Rrvduxazmy1FSvuFXRkqTnE7m2kdb5U8xGjLw/spRr1uTov4uOgQE+0N/DvFrG/Jt7i/FzwxbA9kDanhf2w+t4V97G8lrT7wc08aA2QNUkuTfW/KimT01wdlfK4yEw030VfT0RtZbzjeMprNq8m8tnSTASrTLti64oBNdpmMQm0eEwvfPwRbUBywG5TzjPCsdwk3IeAXjQblLCoXnDVeoAz6SfJNk5TTzytCNZk/POtTSV40NwOFWzw86wNJRpubpXsn60NJFlHeqlYRbslqZm2jnEZ3qcSKgm0kTli3zZVS7y/iivZTweYXJ26Y+RTbV1zh3hYkgyFGSTKPfRVbRqWWVReaxYeSLarYv1Qqsmh1s95S7G+eEWK0f3jYKTbV6bOwepjfhtafsvUsqrQvrGC8YhmnO9cSCk3yuY984F1vesdHYhWJ5FvASlacshUsajFt2mUM9pqzvKGcyNJW0arTKN1GGGzQlH0tXwLDgQTurS8eIQAAAABJRU5ErkJggg==';
 const IMAGE_PREFETCH_URL = `${IMAGE1}?r=1&t=${Date.now()}`;
 const prefetchTask = Image.prefetch(IMAGE_PREFETCH_URL);
+// The Image Loading Events example reports this failure when it consumes the
+// task. Handle rejection immediately as the prefetch can finish before that
+// example mounts, which would otherwise produce an unhandled rejection.
+void prefetchTask.catch(() => {});
+// Remote JPEG (RN OSS test fixture) used by the progressive example. Trusted by
+// the API 24 Android CI emulator and reachable on both platforms.
+const LARGE_JPEG =
+  'https://www.facebook.com/assets/react_native_oss_tests/large-image@1x.jpg';
+// Display-P3 wide-gamut sample from the WebKit color-gamut test. Keep the
+// ICC-profiled fixture inline so the example does not depend on network access.
+const WIDE_GAMUT_P3_DATA_URI =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABY2lDQ1BrQ0dDb2xvclNwYWNlRGlzcGxheVAzAAAokX2QsUvDUBDG' +
+  'v1aloHUQHRwcMolDlJIKuji0FURxCFXB6pS+pqmQxkeSIgU3/4GC/4EKzm4Whzo6OAiik+jm5KTgouV5L4mkInqP435877vjOCA5' +
+  'bnBu9wOoO75bXMorm6UtJfWMBL0gDObxnK6vSv6uP+P9PvTeTstZv///jcGK6TGqn5QZxl0fSKjE+p7PJe8Tj7m0FHFLshXyieRy' +
+  'yOeBZ71YIL4mVljNqBC/EKvlHt3q4brdYNEOcvu06WysyTmUE1jEDjxw2DDQhAId2T/8s4G/gF1yN+FSn4UafOrJkSInmMTLcMAw' +
+  'A5VYQ4ZSk3eO7ncX3U+NtYMnYKEjhLiItZUOcDZHJ2vH2tQ8MDIEXLW54RqB1EeZrFaB11NguASM3lDPtlfNauH26Tww8CjE2ySQ' +
+  'OgS6LSE+joToHlPzA3DpfAEDp2ITpJYOWwAAACBjSFJNAABtmAAAc48AAQg1AAB+agAAZMkAAQmxAAAxcQAAE7wS/w/XAAAABGNJ' +
+  'Q1AMDQABbgPj7wAAAOhlWElmTU0AKgAAAAgABwESAAMAAAABAAEAAAEaAAUAAAABAAAAYgEbAAUAAAABAAAAagEoAAMAAAABAAIA' +
+  'AAExAAIAAAAkAAAAcgEyAAIAAAAUAAAAlodpAAQAAAABAAAAqgAAAAAAAABIAAAAAQAAAEgAAAABQWRvYmUgUGhvdG9zaG9wIEND' +
+  'IDIwMTUgKE1hY2ludG9zaCkAMjAxNjowNjoyMiAxMTozNDo1NwAAA5AEAAIAAAAUAAAA1KACAAQAAAABAAAAQKADAAQAAAABAAAA' +
+  'QAAAAAAyMDE2OjA2OjIyIDExOjM0OjU3ABq+17sAAAAJcEhZcwAACxMAAAsTAQCanBgAAAPRaVRYdFhNTDpjb20uYWRvYmUueG1w' +
+  'AAAAAAA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA2LjAuMCI+CiAgIDxyZGY6' +
+  'UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVz' +
+  'Y3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIK' +
+  'ICAgICAgICAgICAgeG1sbnM6ZXhpZj0iaHR0cDovL25zLmFkb2JlLmNvbS9leGlmLzEuMC8iCiAgICAgICAgICAgIHhtbG5zOnRp' +
+  'ZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIj4KICAgICAgICAgPHhtcDpDcmVhdG9yVG9vbD5BZG9iZSBQaG90b3No' +
+  'b3AgQ0MgMjAxNSAoTWFjaW50b3NoKTwveG1wOkNyZWF0b3JUb29sPgogICAgICAgICA8eG1wOk1vZGlmeURhdGU+MjAxNi0wNi0y' +
+  'MlQxMTozNDo1NzwveG1wOk1vZGlmeURhdGU+CiAgICAgICAgIDx4bXA6Q3JlYXRlRGF0ZT4yMDE2LTA2LTIyVDExOjM0OjU3PC94' +
+  'bXA6Q3JlYXRlRGF0ZT4KICAgICAgICAgPGV4aWY6UGl4ZWxYRGltZW5zaW9uPjEwMDA8L2V4aWY6UGl4ZWxYRGltZW5zaW9uPgog' +
+  'ICAgICAgICA8ZXhpZjpDb2xvclNwYWNlPjY1NTM1PC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWURpbWVu' +
+  'c2lvbj4xMDAwPC9leGlmOlBpeGVsWURpbWVuc2lvbj4KICAgICAgICAgPHRpZmY6UmVzb2x1dGlvblVuaXQ+MjwvdGlmZjpSZXNv' +
+  'bHV0aW9uVW5pdD4KICAgICAgICAgPHRpZmY6WFJlc29sdXRpb24+NzI8L3RpZmY6WFJlc29sdXRpb24+CiAgICAgICAgIDx0aWZm' +
+  'OllSZXNvbHV0aW9uPjcyPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8dGlmZjpPcmllbnRhdGlvbj4xPC90aWZmOk9yaWVu' +
+  'dGF0aW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4Kl/0+VQAABktJREFUeAHt' +
+  '2gl34yoMBeD27dv//6Vv3/nS3gx1jQHb6ZmeRmeIMUji6kpgJ53H/x4eyr+PK1983NCfIr8TcK+AD87AfQt88AJ4+PAV8NVbVIAX' +
+  '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';
 
 type ImageSource = Readonly<{
   uri: string,
@@ -752,6 +809,22 @@ const smallImage = {
   uri: IMAGE1,
 };
 
+// 16x8 JPEG with no EXIF orientation, inline so the check needs no network.
+const GET_SIZE_JPEG_DATA_URI =
+  'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiU' +
+  'FVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f' +
+  'Hx8fHx8fHx8fHx8fHz/wAARCAAIABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAT/xAAWEAEBAQAAAAAAAAAAAAAAAAAAFWL/x' +
+  'AAVAQEBAAAAAAAAAAAAAAAAAAAFBv/EABcRAAMBAAAAAAAAAAAAAAAAAAADFFH/2gAMAwEAAhEDEQA/AKYuSLkExQzRSpun/9k=';
+
+// The same 16x8 raster tagged EXIF orientation 6 (rotate 90 CW to display), so a
+// decoder that honours the tag reports 8x16 and one that ignores it reports 16x8.
+const GET_SIZE_EXIF_ROTATED_JPEG_DATA_URI =
+  'data:image/jpeg;base64,/9j/4QAiRXhpZgAASUkqAAgAAAABABIBAwABAAAABgAAAAAAAAD/4AAQSkZJRgABAQAAAQABAAD/2wBDABQOD' +
+  'xIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTf' +
+  'Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAIABADASIAAhEBAxEB/8QAFQABAQAAAAAAA' +
+  'AAAAAAAAAAAAAT/xAAWEAEBAQAAAAAAAAAAAAAAAAAAFWL/xAAVAQEBAAAAAAAAAAAAAAAAAAAFBv/EABcRAAMBAAAAAAAAAAAAAAAAAAADF' +
+  'FH/2gAMAwEAAhEDEQA/AJYuSLkDVDNJqpun/9k=';
+
 const GET_SIZE_TEST_IMAGES: ReadonlyArray<{
   expectedHeight: number,
   expectedWidth: number,
@@ -776,6 +849,20 @@ const GET_SIZE_TEST_IMAGES: ReadonlyArray<{
     // Rotated 90 degrees counter-clockwise
     uri: 'https://www.facebook.com/assets/react_native_oss_tests/exif-6@1x.jpg',
     name: 'EXIF rotated JPEG',
+  },
+  {
+    expectedHeight: 8,
+    expectedWidth: 16,
+    uri: GET_SIZE_JPEG_DATA_URI,
+    name: 'data: URI JPEG',
+  },
+  {
+    // Transposed against the row above: the tag must be applied, so these are
+    // the visible dimensions rather than the 16x8 stored raster.
+    expectedHeight: 16,
+    expectedWidth: 8,
+    uri: GET_SIZE_EXIF_ROTATED_JPEG_DATA_URI,
+    name: 'EXIF rotated data: URI JPEG',
   },
 ];
 
@@ -840,8 +927,144 @@ function ImageGetSizePlatformTest(props: PlatformTestComponentBaseProps) {
 
   return (
     <RNTesterText>
-      Calling Image.getSize for {GET_SIZE_TEST_IMAGES.length} remote images.
+      Calling Image.getSize for {GET_SIZE_TEST_IMAGES.length} images.
     </RNTesterText>
+  );
+}
+
+function ProgressiveJpegExample(): React.Node {
+  const [loadStarted, setLoadStarted] = useState(false);
+  const [progress, setProgress] = useState<?number>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [uri] = useState(() => `${LARGE_JPEG}?progressive=${Date.now()}`);
+  return (
+    <View testID="image-progressive-jpeg">
+      <Image
+        testID="progressive-jpeg-image"
+        style={styles.base}
+        source={{uri}}
+        progressiveRenderingEnabled={true}
+        onLoadStart={() => setLoadStarted(true)}
+        onProgress={event => {
+          const {loaded: bytesLoaded, total} = event.nativeEvent;
+          if (total > 0) {
+            setProgress(Math.round((bytesLoaded / total) * 100));
+          }
+        }}
+        onLoad={() => setLoaded(true)}
+      />
+      {loadStarted ? (
+        <RNTesterText testID="progressive-jpeg-loadstart">
+          loadStart
+        </RNTesterText>
+      ) : null}
+      {progress != null ? (
+        <RNTesterText testID="progressive-jpeg-progress">
+          progress {progress}%
+        </RNTesterText>
+      ) : null}
+      {loaded ? (
+        <RNTesterText testID="progressive-jpeg-load">load</RNTesterText>
+      ) : null}
+    </View>
+  );
+}
+
+function BlurRadiusPrefetchExample(): React.Node {
+  const [uri] = useState(() => `${IMAGE2}?blurPrefetch=${Date.now()}`);
+  const [prefetchStatus, setPrefetchStatus] = useState('pending');
+  const [loadStatus, setLoadStatus] = useState('pending');
+
+  useEffect(() => {
+    let cancelled = false;
+    void Image.prefetch(uri).then(
+      () => {
+        if (!cancelled) {
+          setPrefetchStatus('ok');
+        }
+      },
+      () => {
+        if (!cancelled) {
+          setPrefetchStatus('failed');
+        }
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
+
+  return (
+    <View testID="image-blur-prefetch">
+      <RNTesterText testID="blur-prefetch-prefetch-status">
+        prefetch: {prefetchStatus}
+      </RNTesterText>
+      {prefetchStatus === 'ok' ? (
+        <Image
+          testID="blur-prefetch-image"
+          style={styles.base}
+          source={{uri}}
+          blurRadius={15}
+          onLoad={() => setLoadStatus('loaded')}
+          onError={() => setLoadStatus('error')}
+        />
+      ) : null}
+      <RNTesterText testID="blur-prefetch-load-status">
+        blurred image: {loadStatus}
+      </RNTesterText>
+    </View>
+  );
+}
+
+function WideGamutTransparencyExample(): React.Node {
+  const [alphaStatus, setAlphaStatus] = useState('loading');
+  const [srgbStatus, setSrgbStatus] = useState('loading');
+  const [p3Status, setP3Status] = useState('loading');
+  return (
+    <View testID="image-wide-gamut">
+      <RNTesterText style={styles.sectionText}>
+        Alpha / transparency
+      </RNTesterText>
+      <View style={styles.checkerBackground}>
+        <Image
+          testID="wide-gamut-alpha-image"
+          style={styles.base}
+          source={ALPHA_PNG_ASSET}
+          onLoad={() => setAlphaStatus('loaded')}
+          onError={() => setAlphaStatus('error')}
+        />
+      </View>
+      <RNTesterText testID="wide-gamut-alpha-status">
+        alpha: {alphaStatus}
+      </RNTesterText>
+      <RNTesterText style={styles.sectionText}>sRGB vs Display-P3</RNTesterText>
+      <View style={styles.horizontal}>
+        <View>
+          <RNTesterText style={styles.resizeModeText}>sRGB</RNTesterText>
+          <Image
+            testID="wide-gamut-srgb-image"
+            style={styles.base}
+            source={smallImage}
+            onLoad={() => setSrgbStatus('loaded')}
+            onError={() => setSrgbStatus('error')}
+          />
+        </View>
+        <View style={styles.leftMargin}>
+          <RNTesterText style={styles.resizeModeText}>Display-P3</RNTesterText>
+          <Image
+            testID="wide-gamut-p3-image"
+            style={styles.base}
+            source={{uri: WIDE_GAMUT_P3_DATA_URI}}
+            onLoad={() => setP3Status('loaded')}
+            onError={() => setP3Status('error')}
+          />
+        </View>
+      </View>
+      <RNTesterText testID="wide-gamut-srgb-status">
+        sRGB: {srgbStatus}
+      </RNTesterText>
+      <RNTesterText testID="wide-gamut-p3-status">P3: {p3Status}</RNTesterText>
+    </View>
   );
 }
 
@@ -1042,6 +1265,11 @@ const styles = StyleSheet.create({
     borderColor: 'red',
     backgroundColor: 'yellow',
   },
+  borderRadiusPercentage: {
+    borderWidth: 4,
+    borderRadius: '50%',
+    borderColor: 'green',
+  },
   boxShadow: {
     margin: 10,
   },
@@ -1095,6 +1323,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
+  checkerBackground: {
+    backgroundColor: '#cccccc',
+    padding: 4,
+    alignSelf: 'flex-start',
+  },
 });
 
 exports.displayName = undefined as ?string;
@@ -1103,6 +1336,41 @@ exports.title = 'Image';
 exports.category = 'Basic';
 exports.description =
   'Base component for displaying different types of images.';
+
+component BoxShadowExample() {
+  const [loadedImageCount, setLoadedImageCount] = useState(0);
+  const onLoad = () => setLoadedImageCount(count => count + 1);
+
+  return (
+    <View
+      style={styles.horizontal}
+      testID={loadedImageCount >= 3 ? 'box-shadow-example' : undefined}>
+      <Image
+        onLoad={onLoad}
+        style={[styles.base, styles.boxShadow, styles.boxShadowWithBackground]}
+        source={smallImage}
+      />
+      <Image
+        onLoad={onLoad}
+        style={[
+          styles.base,
+          styles.boxShadow,
+          styles.boxShadowMultiOutsetInset,
+        ]}
+        source={smallImage}
+      />
+      <Image
+        onLoad={onLoad}
+        style={[
+          styles.base,
+          styles.boxShadow,
+          styles.boxShadowAsymetricallyRounded,
+        ]}
+        source={fullImage}
+      />
+    </View>
+  );
+}
 
 exports.examples = [
   {
@@ -1299,6 +1567,10 @@ exports.examples = [
             style={[styles.base, styles.borderRadius5]}
             source={fullImage}
           />
+          <Image
+            style={[styles.base, styles.borderRadiusPercentage]}
+            source={fullImage}
+          />
         </View>
       );
     },
@@ -1330,34 +1602,7 @@ exports.examples = [
     title: 'Box Shadow',
     name: 'box-shadow',
     render: function (): React.Node {
-      return (
-        <View style={styles.horizontal} testID="box-shadow-example">
-          <Image
-            style={[
-              styles.base,
-              styles.boxShadow,
-              styles.boxShadowWithBackground,
-            ]}
-            source={smallImage}
-          />
-          <Image
-            style={[
-              styles.base,
-              styles.boxShadow,
-              styles.boxShadowMultiOutsetInset,
-            ]}
-            source={smallImage}
-          />
-          <Image
-            style={[
-              styles.base,
-              styles.boxShadow,
-              styles.boxShadowAsymetricallyRounded,
-            ]}
-            source={fullImage}
-          />
-        </View>
-      );
+      return <BoxShadowExample />;
     },
   },
   {
@@ -1956,5 +2201,33 @@ exports.examples = [
       );
     },
     platform: 'android',
+  },
+  {
+    title: 'Progressive JPEG',
+    name: 'progressive-jpeg',
+    description:
+      'Loads a JPEG with progressiveRenderingEnabled and logs progress/load events.',
+    render: function (): React.Node {
+      return <ProgressiveJpegExample />;
+    },
+    platform: 'android',
+  },
+  {
+    title: 'Blur Radius with Prefetch',
+    name: 'blur-radius-prefetch',
+    description:
+      'Prefetches then renders the same URI with blurRadius to ensure the blur postprocessor is applied on prefetched images.',
+    render: function (): React.Node {
+      return <BlurRadiusPrefetchExample />;
+    },
+  },
+  {
+    title: 'Wide Gamut and Transparency',
+    name: 'wide-gamut',
+    description:
+      'Alpha transparency and sRGB vs Display-P3 comparison targets for screenshot tests.',
+    render: function (): React.Node {
+      return <WideGamutTransparencyExample />;
+    },
   },
 ] as Array<RNTesterModuleExample>;

@@ -127,11 +127,13 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void driveCxxAnimations();
 
-  void driveAnimationBackend(jdouble frameTimeMs);
+  void driveAnimationBackend(jlong frameTimeNanos);
 
   void drainPreallocateViewsQueue();
 
   void reportMount(SurfaceId surfaceId);
+
+  void pullAndExecuteTransaction(SurfaceId surfaceId);
 
   jint findNextFocusableElement(jint parentTag, jint focusedTag, jint direction);
 
@@ -168,8 +170,6 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   bool enableFabricLogs_{false};
 
   std::shared_ptr<AndroidAnimationChoreographer> animationChoreographer_;
-
-  void setAnimationBackendChoreographer(jni::alias_ref<JAnimationBackendChoreographer::javaobject> animationBackend);
 };
 
 } // namespace facebook::react

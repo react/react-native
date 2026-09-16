@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -52,6 +54,7 @@ struct RCTFontProperties {
   UIFontWeight weight = NAN;
   RCTFontStyle style = RCTFontStyleUndefined;
   RCTFontVariant variant = RCTFontVariantUndefined;
+  NSDictionary<NSNumber *, NSNumber *> *_Nullable variations = nil;
   CGFloat sizeMultiplier = NAN;
 };
 

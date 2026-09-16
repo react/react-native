@@ -7,15 +7,20 @@
 
 #include <gtest/gtest.h>
 #include <hermes/hermes.h>
+#include <jsi/hermes-interfaces.h>
 #include <jsi/jsi.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
+#include <react/utils/OnScopeExit.h>
+#include <algorithm>
 #include <chrono>
+#include <functional>
 #include <memory>
 #include <semaphore>
 #include <thread>
+#include <unordered_set>
 #include <variant>
 
 #include "StubClock.h"
@@ -29,24 +34,15 @@ using namespace std::chrono_literals;
 class RuntimeSchedulerTestFeatureFlags
     : public ReactNativeFeatureFlagsDefaults {
  public:
-  explicit RuntimeSchedulerTestFeatureFlags(
-      bool enableEventLoop,
-      bool enableRuntimeSchedulerQueueClearingOnError = false)
-      : enableEventLoop_(enableEventLoop),
-        enableRuntimeSchedulerQueueClearingOnError_(
-            enableRuntimeSchedulerQueueClearingOnError) {}
+  explicit RuntimeSchedulerTestFeatureFlags(bool enableEventLoop)
+      : enableEventLoop_(enableEventLoop) {}
 
   bool enableBridgelessArchitecture() override {
     return enableEventLoop_;
   }
 
-  bool enableRuntimeSchedulerQueueClearingOnError() override {
-    return enableRuntimeSchedulerQueueClearingOnError_;
-  }
-
  private:
   bool enableEventLoop_;
-  bool enableRuntimeSchedulerQueueClearingOnError_;
 };
 
 class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
@@ -92,12 +88,10 @@ class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
     ReactNativeFeatureFlags::dangerouslyReset();
   }
 
-  void setUpFeatureFlags(
-      bool enableRuntimeSchedulerQueueClearingOnError = false) {
+  void setUpFeatureFlags() {
     ReactNativeFeatureFlags::dangerouslyReset();
     ReactNativeFeatureFlags::override(
-        std::make_unique<RuntimeSchedulerTestFeatureFlags>(
-            GetParam(), enableRuntimeSchedulerQueueClearingOnError));
+        std::make_unique<RuntimeSchedulerTestFeatureFlags>(GetParam()));
   }
 
   jsi::Function createHostFunctionFromLambda(
@@ -168,6 +162,31 @@ TEST_P(RuntimeSchedulerTest, scheduleSingleTask) {
 
   EXPECT_TRUE(didRunTask);
   EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+TEST_P(RuntimeSchedulerTest, scheduleTaskViaEventLoopControl) {
+  // The RuntimeScheduler proxy is what gets registered with Hermes as an
+  // IEventLoopControl. scheduleTask() forwards to the selected fork, which
+  // schedules the work as an idle task.
+  facebook::hermes::IEventLoopControl& eventLoopControl = *runtimeScheduler_;
+
+  bool didRunTask = false;
+  eventLoopControl.scheduleTask([&didRunTask]() { didRunTask = true; });
+
+  if (GetParam()) {
+    // Modern scheduler: the task is queued on the event loop and runs on tick.
+    EXPECT_FALSE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 1);
+
+    stubQueue_->tick();
+
+    EXPECT_TRUE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 0);
+  } else {
+    // Legacy scheduler: idle tasks are not supported, so this is a no-op.
+    EXPECT_FALSE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 0);
+  }
 }
 
 TEST_P(
@@ -895,8 +914,6 @@ TEST_P(RuntimeSchedulerTest, clearsQueuesOnError) {
     return;
   }
 
-  setUpFeatureFlags(/*enableRuntimeSchedulerQueueClearingOnError=*/true);
-
   bool didRunThrowingTask = false;
   bool didRunQueuedTask = false;
   bool didRunRenderingUpdate = false;
@@ -1428,12 +1445,436 @@ TEST_P(RuntimeSchedulerTest, reportsLongTasksWithYielding) {
       entry);
 }
 
+/*
+ * Stub delegates for the "update the rendering" step, used by the resize
+ * observer tests below.
+ *
+ * Records every delivery of resize observations, together with the runtime it
+ * was given, so tests can assert *which* runtime reached the delegate (resize
+ * observations are broadcast to JS synchronously, so it has to be the runtime
+ * the task ran with) and whether deliveries ever nest.
+ */
+class StubResizeObserverDelegate
+    : public RuntimeSchedulerResizeObserverDelegate {
+ public:
+  void runResizeObservations(jsi::Runtime& runtime) override {
+    callCount++;
+    lastRuntime = &runtime;
+
+    concurrentInvocationCount++;
+    maxConcurrentInvocationCount =
+        std::max(maxConcurrentInvocationCount, concurrentInvocationCount);
+    // Decrement even if the hook throws, so `maxConcurrentInvocationCount`
+    // stays meaningful in the error tests.
+    OnScopeExit onExit([this]() { concurrentInvocationCount--; });
+
+    if (onRunResizeObservations != nullptr) {
+      onRunResizeObservations(runtime);
+    }
+  }
+
+  uint callCount{0};
+  jsi::Runtime* lastRuntime{nullptr};
+  uint concurrentInvocationCount{0};
+  uint maxConcurrentInvocationCount{0};
+  std::function<void(jsi::Runtime&)> onRunResizeObservations{nullptr};
+};
+
+class StubEventTimingDelegate : public RuntimeSchedulerEventTimingDelegate {
+ public:
+  void dispatchPendingEventTimingEntries(
+      HighResTimeStamp /*taskEndTime*/,
+      const std::unordered_set<SurfaceId>&
+      /*surfaceIdsWithPendingRenderingUpdates*/) override {
+    callCount++;
+    if (onDispatchPendingEventTimingEntries != nullptr) {
+      onDispatchPendingEventTimingEntries();
+    }
+  }
+
+  uint callCount{0};
+  std::function<void()> onDispatchPendingEventTimingEntries{nullptr};
+};
+
+class StubIntersectionObserverDelegate
+    : public RuntimeSchedulerIntersectionObserverDelegate {
+ public:
+  void updateIntersectionObservations(
+      const std::unordered_set<SurfaceId>&
+      /*surfaceIdsWithPendingRenderingUpdates*/) override {
+    callCount++;
+    if (onUpdateIntersectionObservations != nullptr) {
+      onUpdateIntersectionObservations();
+    }
+  }
+
+  uint callCount{0};
+  std::function<void()> onUpdateIntersectionObservations{nullptr};
+};
+
+TEST_P(RuntimeSchedulerTest, resizeObservationsReceiveTheRuntimeOfTheTask) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+
+  jsi::Runtime* runtimeFromTask = nullptr;
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [&](jsi::Runtime& runtime) {
+        runtimeFromTask = &runtime;
+        // Resize observations are part of the "update the rendering" step,
+        // which runs after the task.
+        EXPECT_EQ(resizeObserverDelegate.callCount, 0);
+      });
+
+  EXPECT_EQ(resizeObserverDelegate.callCount, 0);
+
+  stubQueue_->tick();
+
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+  EXPECT_EQ(runtimeFromTask, static_cast<jsi::Runtime*>(runtime_.get()));
+  // The crux of synchronous delivery: the delegate gets the very same runtime
+  // instance the task ran with, so it can call into JS right away.
+  EXPECT_EQ(resizeObserverDelegate.lastRuntime, runtimeFromTask);
+}
+
+TEST_P(RuntimeSchedulerTest, resizeObservationsRunSynchronouslyWithinTheTick) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+
+  bool didRunTask = false;
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority,
+      [&](jsi::Runtime& /*runtime*/) { didRunTask = true; });
+
+  EXPECT_EQ(stubQueue_->size(), 1);
+
+  stubQueue_->tick();
+
+  // Already delivered when the tick returns.
+  EXPECT_TRUE(didRunTask);
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+  // And not deferred to a task on the JS queue: nothing is left to run.
+  EXPECT_EQ(stubQueue_->size(), 0);
+
+  stubQueue_->flush();
+
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+}
+
+TEST_P(RuntimeSchedulerTest, updateRenderingStepRunsDelegatesInOrder) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  uint nextOperationPosition = 1;
+
+  uint taskPosition = 0;
+  uint eventTimingPosition = 0;
+  uint resizeObservationsPosition = 0;
+  uint intersectionObservationsPosition = 0;
+  uint updateRenderingPosition = 0;
+
+  StubEventTimingDelegate eventTimingDelegate;
+  eventTimingDelegate.onDispatchPendingEventTimingEntries = [&]() {
+    eventTimingPosition = nextOperationPosition;
+    nextOperationPosition++;
+  };
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  resizeObserverDelegate.onRunResizeObservations =
+      [&](jsi::Runtime& /*runtime*/) {
+        resizeObservationsPosition = nextOperationPosition;
+        nextOperationPosition++;
+      };
+
+  StubIntersectionObserverDelegate intersectionObserverDelegate;
+  intersectionObserverDelegate.onUpdateIntersectionObservations = [&]() {
+    intersectionObservationsPosition = nextOperationPosition;
+    nextOperationPosition++;
+  };
+
+  runtimeScheduler_->setEventTimingDelegate(&eventTimingDelegate);
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+  runtimeScheduler_->setIntersectionObserverDelegate(
+      &intersectionObserverDelegate);
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [&](jsi::Runtime& /*runtime*/) {
+        taskPosition = nextOperationPosition;
+        nextOperationPosition++;
+
+        runtimeScheduler_->scheduleRenderingUpdate(0, [&]() {
+          updateRenderingPosition = nextOperationPosition;
+          nextOperationPosition++;
+        });
+      });
+
+  stubQueue_->tick();
+
+  EXPECT_EQ(taskPosition, 1);
+  EXPECT_EQ(eventTimingPosition, 2);
+  EXPECT_EQ(resizeObservationsPosition, 3);
+  EXPECT_EQ(intersectionObservationsPosition, 4);
+  EXPECT_EQ(updateRenderingPosition, 5);
+}
+
+TEST_P(RuntimeSchedulerTest, resizeObservationsRunWithoutRenderingUpdates) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+
+  // No task below schedules a rendering update for any surface. Resize
+  // observations still run on every tick, which is what makes the initial
+  // delivery in `ResizeObserverManager::observe` prompt.
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [](jsi::Runtime& /*runtime*/) {});
+
+  stubQueue_->tick();
+
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+  EXPECT_EQ(stubQueue_->size(), 0);
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [](jsi::Runtime& /*runtime*/) {});
+
+  stubQueue_->tick();
+
+  EXPECT_EQ(resizeObserverDelegate.callCount, 2);
+  EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+TEST_P(RuntimeSchedulerTest, resizeObservationsStopAfterDelegateIsUnset) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+
+  bool didRunFirstTask = false;
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority,
+      [&](jsi::Runtime& /*runtime*/) { didRunFirstTask = true; });
+
+  stubQueue_->tick();
+
+  EXPECT_TRUE(didRunFirstTask);
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+
+  // This is what happens when the last observer disconnects (or the surface
+  // tears down): the scheduler is left without a delegate.
+  runtimeScheduler_->setResizeObserverDelegate(nullptr);
+
+  bool didRunSecondTask = false;
+  bool didRunRenderingUpdate = false;
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [&](jsi::Runtime& /*runtime*/) {
+        didRunSecondTask = true;
+        runtimeScheduler_->scheduleRenderingUpdate(
+            0, [&]() { didRunRenderingUpdate = true; });
+      });
+
+  stubQueue_->tick();
+
+  EXPECT_TRUE(didRunSecondTask);
+  // The rest of the "update the rendering" step is unaffected.
+  EXPECT_TRUE(didRunRenderingUpdate);
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+  EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+TEST_P(RuntimeSchedulerTest, resizeObservationsCanUnsetTheDelegateFromWithin) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  StubIntersectionObserverDelegate intersectionObserverDelegate;
+
+  // A resize callback can disconnect the last observer, which clears the
+  // delegate from inside the delivery itself.
+  resizeObserverDelegate.onRunResizeObservations =
+      [&](jsi::Runtime& /*runtime*/) {
+        runtimeScheduler_->setResizeObserverDelegate(nullptr);
+      };
+
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+  runtimeScheduler_->setIntersectionObserverDelegate(
+      &intersectionObserverDelegate);
+
+  bool didRunRenderingUpdate = false;
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [&](jsi::Runtime& /*runtime*/) {
+        runtimeScheduler_->scheduleRenderingUpdate(
+            0, [&]() { didRunRenderingUpdate = true; });
+      });
+
+  stubQueue_->tick();
+
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+  // The rest of the step still runs after the delegate went away.
+  EXPECT_EQ(intersectionObserverDelegate.callCount, 1);
+  EXPECT_TRUE(didRunRenderingUpdate);
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [](jsi::Runtime& /*runtime*/) {});
+
+  stubQueue_->tick();
+
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+  EXPECT_EQ(intersectionObserverDelegate.callCount, 2);
+  EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+TEST_P(RuntimeSchedulerTest, resizeObservationsSchedulingWorkDoesNotReenter) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+
+  uint nextOperationPosition = 1;
+
+  uint firstResizeObservationsPosition = 0;
+  uint renderingUpdateFromObservationsPosition = 0;
+  uint taskFromObservationsPosition = 0;
+  uint secondResizeObservationsPosition = 0;
+
+  // Simulates a JS resize callback that commits and schedules more work.
+  resizeObserverDelegate.onRunResizeObservations =
+      [&](jsi::Runtime& /*runtime*/) {
+        EXPECT_EQ(resizeObserverDelegate.concurrentInvocationCount, 1);
+
+        if (resizeObserverDelegate.callCount > 1) {
+          secondResizeObservationsPosition = nextOperationPosition;
+          nextOperationPosition++;
+          return;
+        }
+
+        firstResizeObservationsPosition = nextOperationPosition;
+        nextOperationPosition++;
+
+        runtimeScheduler_->scheduleRenderingUpdate(0, [&]() {
+          renderingUpdateFromObservationsPosition = nextOperationPosition;
+          nextOperationPosition++;
+        });
+
+        runtimeScheduler_->scheduleTask(
+            SchedulerPriority::NormalPriority, [&](jsi::Runtime& /*runtime*/) {
+              taskFromObservationsPosition = nextOperationPosition;
+              nextOperationPosition++;
+            });
+      };
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [](jsi::Runtime& /*runtime*/) {});
+
+  stubQueue_->tick();
+
+  // The task scheduled from the observations runs as another tick of the event
+  // loop that is already running, so it neither hangs nor needs another trip
+  // through the JS queue.
+  EXPECT_EQ(resizeObserverDelegate.callCount, 2);
+  EXPECT_EQ(resizeObserverDelegate.maxConcurrentInvocationCount, 1);
+  EXPECT_EQ(stubQueue_->size(), 0);
+
+  EXPECT_EQ(firstResizeObservationsPosition, 1);
+  // A rendering update scheduled from the observations is flushed by the same
+  // "update the rendering" step, because it runs before the pending updates.
+  EXPECT_EQ(renderingUpdateFromObservationsPosition, 2);
+  // The task, on the other hand, is a new tick: it runs after the current
+  // "update the rendering" step is done, and gets its own observations
+  // afterwards. Not nested in the first one.
+  EXPECT_EQ(taskFromObservationsPosition, 3);
+  EXPECT_EQ(secondResizeObservationsPosition, 4);
+}
+
+TEST_P(RuntimeSchedulerTest, errorInResizeObservationsDoesNotStopUpdate) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  resizeObserverDelegate.onRunResizeObservations = [](jsi::Runtime& runtime) {
+    throw jsi::JSError(runtime, "Test error");
+  };
+
+  StubIntersectionObserverDelegate intersectionObserverDelegate;
+
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+  runtimeScheduler_->setIntersectionObserverDelegate(
+      &intersectionObserverDelegate);
+
+  bool didRunRenderingUpdate = false;
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, [&](jsi::Runtime& /*runtime*/) {
+        runtimeScheduler_->scheduleRenderingUpdate(
+            0, [&]() { didRunRenderingUpdate = true; });
+      });
+
+  stubQueue_->tick();
+
+  // Delivering observations to JS synchronously happens outside the error
+  // boundary of the task, so the step handles the error itself and carries on.
+  // In particular the error must not be routed through `handleTaskError`:
+  // that clears the pending rendering updates this same step is about to
+  // drain, and `didRunRenderingUpdate` below would be false.
+  EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
+  EXPECT_EQ(resizeObserverDelegate.callCount, 1);
+  EXPECT_EQ(intersectionObserverDelegate.callCount, 1);
+  EXPECT_TRUE(didRunRenderingUpdate);
+  EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+TEST_P(RuntimeSchedulerTest, resizeObserverDelegateIsIgnoredInLegacyScheduler) {
+  // Only for the legacy scheduler, which has no "update the rendering" step.
+  if (GetParam()) {
+    return;
+  }
+
+  StubResizeObserverDelegate resizeObserverDelegate;
+  runtimeScheduler_->setResizeObserverDelegate(&resizeObserverDelegate);
+
+  bool didRunTask = false;
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority,
+      [&](jsi::Runtime& /*runtime*/) { didRunTask = true; });
+
+  stubQueue_->tick();
+
+  EXPECT_TRUE(didRunTask);
+  EXPECT_EQ(resizeObserverDelegate.callCount, 0);
+  EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+#ifdef RCT_REMOVE_LEGACY_ARCH
 INSTANTIATE_TEST_SUITE_P(
     UseModernRuntimeScheduler,
     RuntimeSchedulerTest,
-#ifdef RCT_REMOVE_LEGACY_ARCH
     testing::Values(true));
 #else
+INSTANTIATE_TEST_SUITE_P(
+    UseModernRuntimeScheduler,
+    RuntimeSchedulerTest,
     testing::Values(false, true));
 #endif
 

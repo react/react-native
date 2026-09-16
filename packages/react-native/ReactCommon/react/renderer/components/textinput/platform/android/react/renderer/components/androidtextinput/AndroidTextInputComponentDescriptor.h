@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "AndroidTextInputShadowNode.h"
 #include "AndroidTextInputState.h"
 

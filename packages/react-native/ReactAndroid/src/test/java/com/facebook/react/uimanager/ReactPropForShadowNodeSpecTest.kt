@@ -64,7 +64,7 @@ class ReactPropForShadowNodeSpecTest {
                   @ReactProp(name = "prop")
                   fun setterWithIncorrectNumberOfArgs(value: Boolean, anotherValue: Int) = Unit
                 }
-                .javaClass
+                .javaClass,
         )
         .nativeProps
   }
@@ -75,7 +75,7 @@ class ReactPropForShadowNodeSpecTest {
             object : ReactShadowNodeImpl() {
                   @ReactProp(name = "prop") fun setterWithNoArgs() = Unit
                 }
-                .javaClass
+                .javaClass,
         )
         .nativeProps
   }
@@ -88,7 +88,7 @@ class ReactPropForShadowNodeSpecTest {
                   @ReactProp(name = "prop")
                   fun setterWithMap(value: Map<*, *>) = Unit
                 }
-                .javaClass
+                .javaClass,
         )
         .nativeProps
   }
@@ -101,7 +101,7 @@ class ReactPropForShadowNodeSpecTest {
                   @ReactPropGroup(names = ["prop1", "prop2"])
                   fun setterWithTooManyParams(index: Int, value: Float, boolean: Boolean) = Unit
                 }
-                .javaClass
+                .javaClass,
         )
         .nativeProps
   }
@@ -114,7 +114,7 @@ class ReactPropForShadowNodeSpecTest {
                   @ReactPropGroup(names = ["props1", "prop2"])
                   fun setterWithTooFewParams(index: Int) = Unit
                 }
-                .javaClass
+                .javaClass,
         )
         .nativeProps
   }
@@ -127,14 +127,14 @@ class ReactPropForShadowNodeSpecTest {
                   @ReactPropGroup(names = ["prop1", "prop2"])
                   fun setterWithNoIndexParam(value: Float, boolean: Boolean) = Unit
                 }
-                .javaClass
+                .javaClass,
         )
         .nativeProps
   }
 
   companion object {
     private class BaseViewManager(
-        private val shadowNodeClass: Class<out ReactShadowNode<ReactShadowNodeImpl>>
+        private val shadowNodeClass: Class<out ReactShadowNode<ReactShadowNodeImpl>>,
     ) : ViewManager<View, ReactShadowNode<*>>() {
       override fun getName(): String = "IgnoredName"
 

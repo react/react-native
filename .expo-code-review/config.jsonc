@@ -1,0 +1,125 @@
+// @ref LLP 0009#config-and-prompt-templates — root config: agent roster by filename, phase-1 defaults, auth
+{
+  // Default model for every reviewer and the coordinator. Keep roles unpinned so
+  // one setting controls the complete Muse review. REVIEWER_MODEL may override it.
+  "model": "meta/muse-spark-1.2",
+
+  // Agents: every markdown file in agents/ is one reviewer (id = filename).
+  // Add or remove files to change the roster — no list needed here.
+  // shared.md (prepended to every agent + coordinator) and coordinator.md are
+  // reserved filenames. Per-agent frontmatter declares role metadata only.
+
+  // @ref LLP 0009#config-and-prompt-templates [implements] — suggestions off by default, not a schema limit
+  "policy": {
+    // Phase 1: keep signal high by surfacing only critical/warning.
+    "includeSuggestions": false
+    // "maxFindings": 10
+  },
+
+  // Files to always skip, in addition to the built-in defaults (lockfiles,
+  // *.min.js, *.map, __snapshots__/*.snap, @generated markers).
+  "noise": { "additionalIgnores": [] },
+
+  // Bounded platform research (ROOT-ONLY). Reviewer and
+  // cross-file passes can call ECR's bundled MCP for exact API-symbol searches and
+  // supported documentation URLs. The MCP uses fixed provider allowlists and audits
+  // every call. It runs behind a wrapper that rebuilds its environment from an
+  // explicit allowlist, because both engines MERGE the configured env onto their own
+  // rather than replacing it — so the server sees the search key and these limits,
+  // and never the model credential. BRAVE_SEARCH_API_KEY enables fixed site-scoped
+  // discovery; Expo uses its public documentation search.
+  //
+  // Queries are shape-checked, not confidentiality-checked: the reviewing model
+  // chooses the outbound terms, so enable this only where repository-derived terms
+  // may be shared with Brave and the documentation providers.
+  //
+  // maxQueries bounds MCP CALLS, not requests — one search can issue a discovery
+  // request per provider plus a page fetch per candidate. timeoutMs is the MCP's own
+  // end-to-end deadline per call. Every passage is fetched live from the allowlist;
+  // there is no offline index.
+  "research": {
+    "enabled": true,
+    "maxQueries": 8,
+    "resultsPerQuery": 2,
+    "timeoutMs": 30000
+  },
+
+  // Large diffs are split into focused chunks by changed-line count, plus a
+  // cross-cutting pass for multi-file issues. Diffs under maxChangedLines are one
+  // full-context pass. Defaults shown; raise/lower per your model + PR sizes.
+  // Concurrency defaults by auth mode: 6 with an API key, 3 on a subscription
+  // (oauth) credential — one account handles many parallel streams poorly, and
+  // several PRs may review on the same credential at once. Set it to override.
+  // "chunk": { "maxChangedLines": 1000, "maxFiles": 20, "concurrency": 4 },
+
+  // Which PRs `ecr ci` reviews. This is the source of truth for trigger policy;
+  // the scaffolded workflow always calls `ecr ci` and lets this decide. (If you'd
+  // rather gate in the workflow instead, add an `if:` to the job — see the
+  // workflow template — and this still applies on top.)
+  //   "trigger": "all"   — review every PR, unless it has the `skipLabel`.
+  //   "trigger": "label" — review only PRs labeled `label` (or `label:<agent>`).
+  // The `skipLabel` is write-gated (only maintainers can add labels), so a PR
+  // author can't opt their own PR out.
+  "review": { "trigger": "label", "label": "ai-review", "skipLabel": "ai-review:skip" },
+
+  // A maintainer comment containing this marker skips the CI review.
+  "breakGlass": { "marker": "/skip-review" },
+
+  // HTML marker used to find + update the single PR comment. Keep it stable.
+  "commentTag": "expo-ai-code-reviewer",
+
+  // Muse Spark uses the public Meta Model API. ECR_EXPECTED_TOKEN_ENV and the
+  // workflow mapping must both remain META_API_KEY.
+  "auth": {
+    "providers": {
+      "meta": { "mode": "api-key", "tokenEnv": "META_API_KEY" }
+    }
+  },
+
+  // Stack-aware requalification (ROOT-ONLY; off by default). When on, `ecr ci` walks
+  // the OPEN PRs stacked on top of this one and lets the coordinator mark an
+  // absence-style finding (a missing test/migration/doc) as addressed when a later
+  // stacked PR already adds it. Such findings are never dropped — they render in a
+  // collapsed "Addressed in stacked PRs" section, are counted in a visible audit line,
+  // and are only excluded from the blocking decision. Critical/secrets/security
+  // findings are never requalifiable. Loaded only from the trusted base commit, so a
+  // PR cannot enable, widen, or disable its own requalification.
+  // "stack": {
+  //   "enabled": false,          // turn the feature on
+  //   "maxDepth": 4,             // how many levels up the stack to walk
+  //   "maxPrs": 8,               // children per level to follow
+  //   "maxFilesPerPr": 100,      // per-child file-list cap
+  //   "requireSameAuthor": true, // only children by this PR's author (anti-poisoning)
+  //   "confirmWithPatch": false, // v2: confirm each requalification against the addressing PR's patch
+  //   "maxConfirmations": 10     // v2: max patch confirmations per run (overflow is stripped)
+  // }
+
+  // Author feedback (ROOT-ONLY: the comment lifecycle is global). A PR author's
+  // reply is matched to the finding it answers (a quoted title and/or an
+  // `id:<fp>` token) and recorded in the comment's embedded state. This is ON
+  // by default even if you never touch this block, and deliberately ASYMMETRIC:
+  // `mode: "annotate"` marks a matched finding "author replied" with a link back
+  // to the comment — purely informational, no effect on the pass/fail decision.
+  // `dismiss: "never"` keeps it that way: no reply, and no model judgment, can
+  // remove a finding from the blocking set until you opt in below. This is
+  // deliberate — a repo that never edits this file still gets the useful,
+  // read-only behavior, never a surprise auto-dismissal.
+  //   "mode": "off" | "annotate" | "adjudicate" — "adjudicate" additionally runs
+  //     a model that re-checks the reply against the SOURCE (distrust by
+  //     default, like the verifier) and records a verdict.
+  //   "dismiss": "never" | "maintainers" | "adjudicated" — who/what may actually
+  //     clear a finding: nothing, a maintainer's reply, or (with `adjudicate`) a
+  //     maintainer reply OR an author reply the adjudicator confirmed.
+  // Clearing always needs the reply to cite the finding's `id:<fp>` token in the
+  // replier's OWN words: an id (or a title) inside a `>` quote only annotates,
+  // because "Quote reply" copies text the PR author wrote.
+  // Critical findings and `protectedCategories` can never be dismissed by a
+  // reply, whatever you set here — that floor is enforced in code, not here.
+  // "feedback": {
+  //   "mode": "annotate",
+  //   "match": "both",                              // "quote" | "id" | "both"
+  //   "dismiss": "never",
+  //   "protectedCategories": ["secrets", "security"],
+  //   "maxAdjudications": 10                        // cap on model calls per run
+  // }
+}

@@ -1,36 +1,33 @@
 [ignore]
 ; Ignore build cache folder
-<PROJECT_ROOT>/packages/react-native/sdks/.*
+packages/react-native/sdks/**
 
 ; Ignore fb_internal modules
-<PROJECT_ROOT>/packages/react-native/src/fb_internal/.*
+packages/react-native/src/fb_internal/**
 
 ; Ignore the codegen e2e tests
-<PROJECT_ROOT>/packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
+packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
 
 ; Ignore "BUCK" generated dirs
-<PROJECT_ROOT>/\.buckd/
+.buckd/**
 
 ; Ignore other platform suffixes
-.*\.macos\.js$
-.*\.windows\.js$
+**/*.macos.js
+**/*.windows.js
 
-.*/node_modules/resolve/test/resolver/malformed_package_json/package\.json$
+**/node_modules/resolve/test/resolver/malformed_package_json/package.json
 
 ; Checked-in build output
-<PROJECT_ROOT>/packages/debugger-frontend/dist/
+packages/debugger-frontend/dist/**
 
 ; Generated build output
-<PROJECT_ROOT>/packages/.*/dist
+packages/*/dist/**
 
 ; helloworld
-<PROJECT_ROOT>/private/helloworld/ios/Pods/
+private/helloworld/ios/Pods/**
 
 ; Ignore rn-tester Pods
-<PROJECT_ROOT>/packages/rn-tester/Pods/
-
-[untyped]
-.*/node_modules/@react-native-community/cli/.*/.*
+packages/rn-tester/Pods/**
 
 [include]
 
@@ -39,7 +36,6 @@
 
 [libs]
 flow-typed/
-packages/react-native/interface.js
 packages/react-native/flow/
 
 [options]
@@ -57,6 +53,8 @@ experimental.multi_platform.extensions=.android
 munge_underscores=true
 
 module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/packages/react-native/index.js'
+module.name_mapper='^react-native/react-private-interface$' -> '<PROJECT_ROOT>/packages/react-native/src/react-private-interface.js'
+module.name_mapper='^react-native/setup-env$' -> '<PROJECT_ROOT>/packages/react-native/src/setup-env.js'
 module.name_mapper='^react-native/\(.*\)$' -> '<PROJECT_ROOT>/packages/react-native/\1'
 module.name_mapper='^@react-native/dev-middleware$' -> '<PROJECT_ROOT>/packages/dev-middleware'
 module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
@@ -65,8 +63,6 @@ module.system.haste.module_ref_prefix=m#
 
 react.runtime=automatic
 
-experimental.deprecated_utilities.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeTypes.js
-experimental.deprecated_utilities.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeViewConfigRegistry.js
 ban_spread_key_props=true
 
 [lints]
@@ -90,4 +86,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.318.0
+^0.331.0

@@ -210,7 +210,7 @@ public object StackTraceHelper {
             frame.lineNumber?.let { putDouble(LINE_NUMBER_KEY, it.toDouble()) }
             putString(FILE_KEY, frame.file)
             putString(METHOD_NAME_KEY, frame.methodName)
-          }
+          },
       )
     }
 
@@ -256,7 +256,7 @@ public object StackTraceHelper {
                 LINE_NUMBER_KEY to line,
                 COLUMN_KEY to column,
                 COLLAPSE_KEY to isCollapsed,
-            )
+            ),
         )
   }
 }

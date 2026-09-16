@@ -15,7 +15,11 @@ void AnimatedPropsRegistry::update(
     const std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates) {
   auto lock = std::lock_guard(mutex_);
   for (const auto& [surfaceId, updates] : surfaceUpdates) {
-    auto& surfaceContext = surfaceContexts_[surfaceId];
+    auto contextIt = surfaceContexts_.find(surfaceId);
+    if (contextIt == surfaceContexts_.end()) {
+      continue;
+    }
+    auto& surfaceContext = contextIt->second;
     auto& pendingMap = surfaceContext.pendingMap;
     auto& pendingFamilies = surfaceContext.pendingFamilies;
 
@@ -53,6 +57,11 @@ void AnimatedPropsRegistry::update(
       }
     }
   }
+}
+
+void AnimatedPropsRegistry::initializeSurface(SurfaceId surfaceId) {
+  auto lock = std::lock_guard(mutex_);
+  surfaceContexts_.try_emplace(surfaceId);
 }
 
 std::pair<

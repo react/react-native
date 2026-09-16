@@ -10,8 +10,8 @@
 
 const {REPO_ROOT} = require('../../../shared/consts');
 const debug = require('debug')('build-types:resolution');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const TYPEDEF_MAPPING: Record<string, ReadonlyArray<string>> = {
   '.android.js': ['.js.flow', '.js'],

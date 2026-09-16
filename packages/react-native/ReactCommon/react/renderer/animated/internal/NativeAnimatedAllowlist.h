@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <string>
 #include <unordered_set>
 
@@ -48,6 +50,7 @@ inline const std::unordered_set<std::string> &getDirectManipulationAllowlist()
       "borderStartStartRadius",
       "elevation",
       "opacity",
+      "filter",
       "transform",
       "zIndex",
       /* ios styles */

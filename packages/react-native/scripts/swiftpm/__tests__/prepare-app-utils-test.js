@@ -22,10 +22,10 @@ const {
 } = require('../prepare-app-utils');
 
 // Mock child_process module
-jest.mock('child_process');
+jest.mock('node:child_process');
 
 // Mock fs module
-jest.mock('fs');
+jest.mock('node:fs');
 
 // Mock headers-utils module
 jest.mock('../headers-utils');
@@ -37,8 +37,8 @@ jest.mock('../prepare-app-dependencies-headers');
 jest.mock('../../codegen/generate-artifacts-executor');
 
 // Mock path module for absolute paths
-jest.mock('path', () => {
-  const actualPath = jest.requireActual('path');
+jest.mock('node:path', () => {
+  const actualPath = jest.requireActual('node:path');
   return {
     ...actualPath,
     join: jest.fn((...args) => args.join('/')),
@@ -62,7 +62,7 @@ describe('createHardlinks', () => {
     mockSymlinkThirdPartyDependenciesHeaders =
       headersUtils.symlinkThirdPartyDependenciesHeaders;
 
-    mockPath = require('path');
+    mockPath = require('node:path');
     mockConsoleLog = console.log;
 
     // Clear and reset all mocks completely
@@ -376,7 +376,7 @@ describe('prepareHeaders', () => {
     mockPrepareAppDependenciesHeaders =
       prepareAppDependenciesHeadersModule.prepareAppDependenciesHeaders;
 
-    mockPath = require('path');
+    mockPath = require('node:path');
     mockConsoleLog = console.log;
 
     // Clear and reset all mocks completely
@@ -702,7 +702,7 @@ describe('findXcodeProjectDirectory', () => {
 
   beforeEach(() => {
     // Setup mock
-    const childProcess = require('child_process');
+    const childProcess = require('node:child_process');
     mockExecSync = childProcess.execSync;
 
     // Reset all mocks
@@ -846,8 +846,8 @@ describe('setBuildFromSource', () => {
 
   beforeEach(() => {
     // Setup mocks
-    mockFs = require('fs');
-    mockPath = require('path');
+    mockFs = require('node:fs');
+    mockPath = require('node:path');
     mockConsoleLog = console.log;
     mockConsoleWarn = console.warn;
 
@@ -1076,7 +1076,7 @@ describe('runIosPrebuild', () => {
 
   beforeEach(() => {
     // Setup mocks
-    const childProcess = require('child_process');
+    const childProcess = require('node:child_process');
     mockExecSync = childProcess.execSync;
 
     mockConsoleLog = console.log;
@@ -1235,7 +1235,7 @@ describe('runPodDeintegrate', () => {
 
   beforeEach(() => {
     // Setup mocks
-    const childProcess = require('child_process');
+    const childProcess = require('node:child_process');
     mockExecSync = childProcess.execSync;
 
     mockConsoleLog = console.log;
@@ -1370,8 +1370,8 @@ describe('configureAppForSwift', () => {
 
   beforeEach(() => {
     // Setup mocks
-    mockFs = require('fs');
-    mockPath = require('path');
+    mockFs = require('node:fs');
+    mockPath = require('node:path');
     mockConsoleLog = console.log;
 
     // Clear and reset all mocks completely

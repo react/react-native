@@ -7,6 +7,8 @@
 
 #include "ReadableNativeMap.h"
 
+#include "ReadableNativeArray.h"
+
 using namespace facebook::jni;
 
 namespace facebook::react {
@@ -20,84 +22,86 @@ void ReadableNativeMap::mapException(std::exception_ptr ex) {
   }
 }
 
+void ReadableNativeMap::throwIfKeysNotImported() const {
+  if (!values_.has_value()) [[unlikely]] {
+    throwNewJavaException(
+        "java/lang/IllegalStateException",
+        "importKeys must be called before importing values or types");
+  }
+}
+
 void addDynamicToJArray(
-    local_ref<JArrayClass<jobject>> jarray,
+    alias_ref<JArrayClass<jobject>> jarray,
     jint index,
     const folly::dynamic& dyn) {
+  local_ref<jobject> value;
   switch (dyn.type()) {
-    case folly::dynamic::Type::NULLT: {
-      jarray->setElement(index, nullptr);
+    case folly::dynamic::Type::BOOL:
+      value = JBoolean::valueOf(static_cast<jboolean>(dyn.getBool()));
       break;
-    }
-    case folly::dynamic::Type::BOOL: {
-      (*jarray)[index] =
-          JBoolean::valueOf(static_cast<unsigned char>(dyn.getBool()));
+    case folly::dynamic::Type::INT64:
+      value = JDouble::valueOf(static_cast<double>(dyn.getInt()));
       break;
-    }
-    case folly::dynamic::Type::INT64: {
-      (*jarray)[index] = JDouble::valueOf(dyn.getInt());
+    case folly::dynamic::Type::DOUBLE:
+      value = JDouble::valueOf(dyn.getDouble());
       break;
-    }
-    case folly::dynamic::Type::DOUBLE: {
-      (*jarray)[index] = JDouble::valueOf(dyn.getDouble());
+    case folly::dynamic::Type::STRING:
+      value = make_jstring(dyn.getString());
       break;
-    }
-    case folly::dynamic::Type::STRING: {
-      (*jarray)[index] = make_jstring(dyn.getString());
+    case folly::dynamic::Type::OBJECT:
+      value = ReadableNativeMap::newObjectCxxArgs(dyn);
       break;
-    }
-    case folly::dynamic::Type::OBJECT: {
-      (*jarray)[index] = ReadableNativeMap::newObjectCxxArgs(dyn);
+    case folly::dynamic::Type::ARRAY:
+      value = ReadableNativeArray::newObjectCxxArgs(dyn);
       break;
-    }
-    case folly::dynamic::Type::ARRAY: {
-      (*jarray)[index] = ReadableNativeArray::newObjectCxxArgs(dyn);
-      break;
-    }
+    case folly::dynamic::Type::NULLT:
     default:
-      jarray->setElement(index, nullptr);
       break;
   }
+  jarray->setElement(index, value.get());
 }
 
 local_ref<JArrayClass<jstring>> ReadableNativeMap::importKeys() {
   throwIfConsumed();
 
-  keys_ = folly::dynamic::array();
-  if (map_ == nullptr) {
-    return JArrayClass<jstring>::newArray(0);
-  }
-  auto jarray = JArrayClass<jstring>::newArray(map_.size());
+  auto size = map_ == nullptr ? 0 : static_cast<jsize>(map_.size());
+  std::vector<const folly::dynamic*> values(size);
+
+  auto jarray = JArrayClass<jstring>::newArray(size);
   jint i = 0;
-  for (auto& pair : map_.items()) {
-    auto value = pair.first.asString();
-    (*keys_).push_back(value);
-    (*jarray)[i++] = make_jstring(value);
+  if (map_ != nullptr) {
+    for (auto& pair : map_.items()) {
+      values[i] = &pair.second;
+      jarray->setElement(i++, make_jstring(pair.first.getString()).get());
+    }
   }
+  values_ = std::move(values);
 
   return jarray;
 }
 
 local_ref<JArrayClass<jobject>> ReadableNativeMap::importValues() {
   throwIfConsumed();
+  throwIfKeysNotImported();
 
-  auto size = static_cast<jint>(keys_.value().size());
+  const auto& values = values_.value();
+  auto size = static_cast<jsize>(values.size());
   auto jarray = JArrayClass<jobject>::newArray(size);
   for (jint ii = 0; ii < size; ii++) {
-    const std::string& key = (*keys_)[ii].getString();
-    addDynamicToJArray(jarray, ii, map_.at(key));
+    addDynamicToJArray(jarray, ii, *values[ii]);
   }
   return jarray;
 }
 
 local_ref<JArrayClass<jobject>> ReadableNativeMap::importTypes() {
   throwIfConsumed();
+  throwIfKeysNotImported();
 
-  auto size = static_cast<jint>(keys_.value().size());
+  const auto& values = values_.value();
+  auto size = static_cast<jsize>(values.size());
   auto jarray = JArrayClass<jobject>::newArray(size);
   for (jint ii = 0; ii < size; ii++) {
-    const std::string& key = (*keys_)[ii].getString();
-    (*jarray)[ii] = ReadableType::getType(map_.at(key).type());
+    jarray->setElement(ii, ReadableType::getType(values[ii]->type()).get());
   }
   return jarray;
 }

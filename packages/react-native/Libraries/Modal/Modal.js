@@ -13,10 +13,7 @@ import type {ViewProps} from '../Components/View/ViewPropTypes';
 import type {RootTag} from '../ReactNative/RootTag';
 import type {DirectEventHandler} from '../Types/CodegenTypes';
 
-import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
 import {type ColorValue} from '../StyleSheet/StyleSheet';
-import {type EventSubscription} from '../vendor/emitter/EventEmitter';
-import NativeModalManager from './NativeModalManager';
 import RCTModalHostView from './RCTModalHostViewNativeComponent';
 import VirtualizedLists from '@react-native/virtualized-lists';
 import * as React from 'react';
@@ -32,26 +29,7 @@ const Platform = require('../Utilities/Platform').default;
 const VirtualizedListContextResetter =
   VirtualizedLists.VirtualizedListContextResetter;
 
-type ModalEventDefinitions = {
-  modalDismissed: [{modalID: number}],
-};
-
 export type ModalInstance = HostInstance;
-
-const ModalEventEmitter =
-  Platform.OS === 'ios' && NativeModalManager != null
-    ? new NativeEventEmitter<ModalEventDefinitions>(
-        // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
-        // If you want to use the native module on other platforms, please remove this condition and test its behavior
-        Platform.OS !== 'ios' ? null : NativeModalManager,
-      )
-    : null;
-
-/**
- * The Modal component is a simple way to present content above an enclosing view.
- *
- * See https://reactnative.dev/docs/modal
- */
 
 // In order to route onDismiss callbacks, we need to uniquely identifier each
 // <Modal> on screen. There can be different ones, either nested or as siblings.
@@ -66,42 +44,45 @@ type OrientationChangeEvent = Readonly<{
 /** @build-types emit-as-interface Uniwind compatibility */
 export type ModalBaseProps = {
   /**
-   * @deprecated Use animationType instead
-   */
-  animated?: boolean,
-  /**
-   * The `animationType` prop controls how the modal animates.
+   * Controls how the modal animates. `'slide'` slides in from the bottom,
+   * `'fade'` fades into view, `'none'` appears without animation.
    *
-   * - `slide` slides in from the bottom
-   * - `fade` fades into view
-   * - `none` appears without an animation
+   * @default `'none'`
    */
   animationType?: ?('none' | 'slide' | 'fade'),
+
   /**
-   * The `transparent` prop determines whether your modal will fill the entire view.
-   * Setting this to `true` will render the modal over a transparent background.
+   * Whether the modal fills the entire view. Setting to `true` renders the
+   * modal over a transparent background.
+   *
+   * @default `false`
    */
   transparent?: ?boolean,
+
   /**
-   * The `visible` prop determines whether your modal is visible.
+   * Whether the modal is visible.
+   *
+   * @default `true`
    */
   visible?: ?boolean,
+
   /**
-   * The `onRequestClose` callback is called when the user taps the hardware back button on Android, dismisses the sheet using a gesture on iOS (when `allowSwipeDismissal` is set to true) or the menu button on Apple TV.
-   *
-   * This is required on iOS and Android.
+   * Called when the user taps the hardware back button on Android, the menu
+   * button on Apple TV, or the modal is dismissed via drag gesture on iOS
+   * (when `allowSwipeDismissal` is `true`). Required on Android and TV.
    */
   // onRequestClose?: (event: NativeSyntheticEvent<any>) => void;
   onRequestClose?: ?DirectEventHandler<null>,
+
   /**
-   * The `onShow` prop allows passing a function that will be called once the modal has been shown.
+   * Called once the modal has been shown.
    */
   // onShow?: (event: NativeSyntheticEvent<any>) => void;
   onShow?: ?DirectEventHandler<null>,
 
   /**
-   * The `backdropColor` props sets the background color of the modal's container.
-   * Defaults to `white` if not provided and transparent is `false`. Ignored if `transparent` is `true`.
+   * The backdrop color of the modal's container. Defaults to `white` if
+   * `transparent` is `false`. Ignored if `transparent` is `true`.
    */
   backdropColor?: ColorValue,
 
@@ -113,18 +94,24 @@ export type ModalBaseProps = {
 
 export type ModalPropsIOS = {
   /**
-   * The `presentationStyle` determines the style of modal to show
+   * Controls how the modal appears.
+   *
+   * @default `'fullScreen'` if `transparent` is `false`, `'overFullScreen'` if `transparent` is `true`.
+   *
+   * @platform ios
    */
   presentationStyle?: ?(
-    | 'fullScreen'
-    | 'pageSheet'
-    | 'formSheet'
-    | 'overFullScreen'
+    'fullScreen' | 'pageSheet' | 'formSheet' | 'overFullScreen'
   ),
 
   /**
-   * The `supportedOrientations` prop allows the modal to be rotated to any of the specified orientations.
-   * On iOS, the modal is still restricted by what's specified in your app's Info.plist's UISupportedInterfaceOrientations field.
+   * Array of orientations the modal can be rotated to. On iOS, the modal is
+   * still restricted by what is specified in your app's Info.plist
+   * `UISupportedInterfaceOrientations` field.
+   *
+   * @default `['portrait']`
+   *
+   * @platform ios
    */
   supportedOrientations?: ?ReadonlyArray<
     | 'portrait'
@@ -135,14 +122,19 @@ export type ModalPropsIOS = {
   >,
 
   /**
-   * The `onDismiss` prop allows passing a function that will be called once the modal has been dismissed.
+   * Called once the modal has been dismissed.
+   *
+   * @platform ios
    */
   // onDismiss?: (() => void) | undefined;
   onDismiss?: ?() => void,
 
   /**
-   * The `onOrientationChange` callback is called when the orientation changes while the modal is being displayed.
-   * The orientation provided is only 'portrait' or 'landscape'. This callback is also called on initial render, regardless of the current orientation.
+   * Called when the orientation changes while the modal is displayed. The
+   * orientation provided is only `'portrait'` or `'landscape'`. This callback
+   * is also called on initial render, regardless of the current orientation.
+   *
+   * @platform ios
    */
   // onOrientationChange?:
   //   | ((event: NativeSyntheticEvent<any>) => void)
@@ -150,25 +142,42 @@ export type ModalPropsIOS = {
   onOrientationChange?: ?DirectEventHandler<OrientationChangeEvent>,
 
   /**
-   * Controls whether the modal can be dismissed by swiping down on iOS.
-   * This requires you to implement the `onRequestClose` prop to handle the dismissal.
+   * Controls whether the modal can be dismissed by swiping down. Requires
+   * `onRequestClose` to be set.
+   *
+   * @default `false`
+   *
+   * @platform ios
    */
   allowSwipeDismissal?: ?boolean,
 };
 
 export type ModalPropsAndroid = {
   /**
-   *  Controls whether to force hardware acceleration for the underlying window.
+   * Controls whether to force hardware acceleration for the underlying window.
+   *
+   * @default `false`
+   *
+   * @platform android
    */
   hardwareAccelerated?: ?boolean,
 
   /**
-   *  Determines whether your modal should go under the system statusbar.
+   * Whether the modal should go under the system statusbar.
+   *
+   * @default `false`
+   *
+   * @platform android
    */
   statusBarTranslucent?: ?boolean,
 
   /**
-   *  Determines whether your modal should go under the system navigationbar.
+   * Whether the modal should go under the system navigation bar.
+   * `statusBarTranslucent` also needs to be `true`.
+   *
+   * @default `false`
+   *
+   * @platform android
    */
   navigationBarTranslucent?: ?boolean,
 };
@@ -218,6 +227,11 @@ type ModalState = {
   isRendered: boolean,
 };
 
+/**
+ * A basic way to present content above an enclosing view.
+ *
+ * @see https://reactnative.dev/docs/modal
+ */
 class Modal extends React.Component<ModalProps, ModalState> {
   static defaultProps: {hardwareAccelerated: boolean, visible: boolean} = {
     visible: true,
@@ -227,7 +241,6 @@ class Modal extends React.Component<ModalProps, ModalState> {
   static contextType: React.Context<RootTag> = RootTagContext;
 
   _identifier: number;
-  _eventSubscription: ?EventSubscription;
 
   constructor(props: ModalProps) {
     super(props);
@@ -240,28 +253,9 @@ class Modal extends React.Component<ModalProps, ModalState> {
     };
   }
 
-  componentDidMount() {
-    // 'modalDismissed' is for the old renderer in iOS only
-    if (ModalEventEmitter) {
-      this._eventSubscription = ModalEventEmitter.addListener(
-        'modalDismissed',
-        event => {
-          this.setState({isRendered: false}, () => {
-            if (event.modalID === this._identifier && this.props.onDismiss) {
-              this.props.onDismiss();
-            }
-          });
-        },
-      );
-    }
-  }
-
   componentWillUnmount() {
     if (Platform.OS === 'ios') {
       this.setState({isRendered: false});
-    }
-    if (this._eventSubscription) {
-      this._eventSubscription.remove();
     }
   }
 
@@ -345,6 +339,8 @@ class Modal extends React.Component<ModalProps, ModalState> {
         identifier={this._identifier}
         style={styles.modal}
         // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+        /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+         * unsoundness in flow */
         onStartShouldSetResponder={this._shouldSetResponder}
         supportedOrientations={this.props.supportedOrientations}
         onOrientationChange={this.props.onOrientationChange}

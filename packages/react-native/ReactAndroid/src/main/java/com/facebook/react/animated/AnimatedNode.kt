@@ -36,7 +36,7 @@ public abstract class AnimatedNode {
     child.onAttachedToNode(this)
   }
 
-  internal fun removeChild(child: AnimatedNode): Unit {
+  internal fun removeChild(child: AnimatedNode) {
     val currentChildren = children ?: return
     child.onDetachedFromNode(this)
     currentChildren.remove(child)

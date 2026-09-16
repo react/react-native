@@ -33,9 +33,9 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
 
   private external fun getStateDataReferenceImpl(): Any?
 
-  public external fun updateStateImpl(map: NativeMap)
+  external fun updateStateImpl(map: NativeMap)
 
-  public override val stateDataMapBuffer: ReadableMapBuffer?
+  override val stateDataMapBuffer: ReadableMapBuffer?
     get() {
       if (!isValid) {
         FLog.e(TAG, "Race between StateWrapperImpl destruction and getState")
@@ -44,7 +44,7 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
       return getStateMapBufferDataImpl()
     }
 
-  public override val stateData: ReadableNativeMap?
+  override val stateData: ReadableNativeMap?
     get() {
       if (!isValid) {
         FLog.e(TAG, "Race between StateWrapperImpl destruction and getState")
@@ -53,7 +53,7 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
       return getStateDataImpl()
     }
 
-  public override val stateDataReference: Any?
+  override val stateDataReference: Any?
     get() {
       if (!isValid) {
         FLog.e(TAG, "Race between StateWrapperImpl destruction and getState")

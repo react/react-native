@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -19,6 +19,8 @@ import AnimatedInterpolation from './AnimatedInterpolation';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
 export default class AnimatedModulo extends AnimatedWithChildren {
+  __isNativeValueNode: boolean = true;
+
   _a: AnimatedNode;
   _modulus: number;
 
@@ -55,7 +57,12 @@ export default class AnimatedModulo extends AnimatedWithChildren {
     super.__detach();
   }
 
-  __getNativeConfig(): any {
+  __getNativeConfig(): {
+    type: string,
+    input: number,
+    modulus: number,
+    debugID: ?string,
+  } {
     return {
       type: 'modulus',
       input: this._a.__getNativeTag(),

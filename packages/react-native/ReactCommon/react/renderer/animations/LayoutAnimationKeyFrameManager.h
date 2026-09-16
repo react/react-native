@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <ReactCommon/RuntimeExecutor.h>
 #include <react/renderer/animations/LayoutAnimationCallbackWrapper.h>
 #include <react/renderer/animations/primitives.h>

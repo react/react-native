@@ -16,6 +16,7 @@
 
 /*::
 import type {BabelCoreOptions, Plugins, TransformResult} from '@babel/core';
+import type {File as BabelNodeFile} from '@babel/types';
 import type {
   BabelTransformer,
   MetroBabelFileMetadata,
@@ -25,10 +26,10 @@ import type {
 const {parseSync, transformFromAstSync} = require('@babel/core');
 const {getCacheKey: getPresetCacheKey} = require('@react-native/babel-preset');
 const makeHMRConfig = require('@react-native/babel-preset/src/configs/hmr');
-const crypto = require('crypto');
-const fs = require('fs');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 const nullthrows = require('nullthrows');
-const path = require('path');
 
 const cacheKeyParts = [getPresetCacheKey(), fs.readFileSync(__filename)];
 
@@ -196,6 +197,8 @@ const transform /*: BabelTransformer['transform'] */ = ({
       name: 'metro',
       bundler: 'metro',
       platform: options.platform,
+      // $FlowFixMe[prop-missing] Remove suppression after next Metro release
+      inlinePlatform: options.inlinePlatform,
       unstable_transformProfile: options.unstable_transformProfile,
     },
     ast: true,
@@ -212,7 +215,7 @@ const transform /*: BabelTransformer['transform'] */ = ({
     !options.hermesParser
       ? parseSync(src, babelConfig)
       : // $FlowFixMe[incompatible-exact]
-        require('hermes-parser').parse(src, {
+        require('flow-parser').parse(src, {
           babel: true,
           reactRuntimeTarget: '19',
           sourceType: babelConfig.sourceType,

@@ -1,6 +1,6 @@
 storage: /tmp/verdaccio
 listen:
-- 0.0.0.0:4873 # See https://github.com/actions/runner-images/issues/10061
+  - 0.0.0.0:4873 # See https://github.com/actions/runner-images/issues/10061
 auth:
   htpasswd:
     file: ./htpasswd

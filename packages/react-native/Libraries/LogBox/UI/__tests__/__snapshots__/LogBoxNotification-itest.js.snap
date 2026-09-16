@@ -1,0 +1,102 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxNotification should render log 1`] = `
+<rn-view
+  backgroundColor="rgba(255, 255, 255, 1)"
+  height="48"
+  justifyContent="center"
+  marginTop="0.5"
+  nativeID="logbox_notification"
+  width="100%"
+>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    backgroundColor="rgba(51, 51, 51, 1)"
+    height="48"
+    justifyContent="center"
+    marginTop="0.5"
+    nativeID="logbox_open_button_warn"
+    paddingHorizontal="12"
+    width="100%"
+  >
+    <rn-view
+      backgroundColor="rgba(255, 255, 255, 1)"
+      marginRight="8"
+      padding="2"
+    />
+    <rn-view
+      backgroundColor="rgba(250, 186, 48, 1)"
+      minWidth="18"
+      paddingLeft="4"
+      paddingRight="4"
+    />
+    <rn-paragraph
+      alignment="center"
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      fontWeight="600"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      lineHeight="18"
+      nativeID="logbox_notification_count_text"
+      overflow="hidden"
+      textShadowColor="rgba(51, 51, 51, 0.4)"
+      textShadowOffset="{0, 0}"
+      textShadowRadius="3"
+    >
+      !
+    </rn-paragraph>
+    <rn-view
+      alignSelf="stretch"
+      borderLeftWidth="1"
+      flexGrow="1"
+      flexShrink="1"
+      paddingLeft="8"
+    />
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      lineHeight="22"
+      maximumNumberOfLines="1"
+      nativeID="logbox_notification_message_text"
+      overflow="hidden"
+    >
+      <rn-text
+        allowFontScaling="true"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        layoutDirection="ltr"
+        lineHeight="22"
+      >
+        Some kind of message
+      </rn-text>
+    </rn-paragraph>
+    <rn-view
+      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      alignItems="center"
+      alignSelf="flex-end"
+      backgroundColor="rgba(255, 255, 255, 0.301961)"
+      height="20"
+      justifyContent="center"
+      nativeID="logbox_dismiss_button_warn"
+      width="20"
+    >
+      <rn-image
+        height="8"
+        overflow="hidden"
+        resizeMode="cover"
+        source-scale="1"
+        source-size="{28, 28}"
+        source-type="local"
+        source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_close.png"
+        tintColor="rgba(51, 51, 51, 1)"
+        width="8"
+      />
+    </rn-view>
+  </rn-view>
+</rn-view>
+`;

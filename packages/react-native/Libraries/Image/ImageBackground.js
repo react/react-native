@@ -20,28 +20,38 @@ import * as React from 'react';
 export type {ImageBackgroundProps} from './ImageProps';
 
 /**
- * Very simple drop-in replacement for <Image> which supports nesting views.
+ * A common way to set a background image, similar to `background-image` in
+ * CSS. Accepts the same props as `Image` and allows adding children that
+ * layer on top of the background image. You must specify `width` and `height`
+ * style attributes.
  *
- * ```ReactNativeWebPlayer
- * import React, { Component } from 'react';
- * import { AppRegistry, View, ImageBackground, Text } from 'react-native';
+ * Example:
  *
- * class DisplayAnImageBackground extends Component {
- *   render() {
- *     return (
- *       <ImageBackground
- *         style={{width: 50, height: 50}}
- *         source={{uri: 'https://reactnative.dev/img/opengraph.png'}}
- *       >
- *         <Text>React</Text>
- *       </ImageBackground>
- *     );
- *   }
- * }
+ * ```tsx
+ * import React from 'react';
+ * import {ImageBackground, StyleSheet, Text} from 'react-native';
  *
- * // App registration and rendering
- * AppRegistry.registerComponent('DisplayAnImageBackground', () => DisplayAnImageBackground);
+ * const App = () => (
+ *   <ImageBackground
+ *     style={styles.background}
+ *     source={{uri: 'https://reactnative.dev/img/opengraph.png'}}>
+ *     <Text>React</Text>
+ *   </ImageBackground>
+ * );
+ *
+ * const styles = StyleSheet.create({
+ *   background: {
+ *     width: 200,
+ *     height: 200,
+ *   },
+ * });
  * ```
+ *
+ * ImageBackground is deprecated and will be removed in a future release.
+ * Use a `View` with an absolutely positioned `Image` instead.
+ *
+ * @see https://reactnative.dev/docs/imagebackground
+ * @deprecated
  */
 class ImageBackground extends React.Component<ImageBackgroundProps> {
   setNativeProps(props: {...}) {

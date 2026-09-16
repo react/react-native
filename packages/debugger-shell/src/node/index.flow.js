@@ -12,7 +12,7 @@ import {prepareDebuggerShellFromDotSlashFile} from './private/LaunchUtils';
 
 const {spawn} = require('cross-spawn');
 const debug = require('debug')('Metro:DebuggerShell');
-const path = require('path');
+const path = require('node:path');
 
 // The 'prebuilt' flavor will use the prebuilt shell binary (and the JavaScript embedded in it).
 // The 'dev' flavor will use a stock Electron binary and run the shell code from the `electron/` directory.

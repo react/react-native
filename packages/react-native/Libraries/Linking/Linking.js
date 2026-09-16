@@ -27,10 +27,7 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
   }
 
   /**
-   * Add a handler to Linking changes by listening to the `url` event type
-   * and providing the handler
-   *
-   * See https://reactnative.dev/docs/linking#addeventlistener
+   * Listen for incoming URL changes.
    */
   addEventListener<K extends keyof LinkingEventDefinitions>(
     eventType: K,
@@ -40,9 +37,14 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
   }
 
   /**
-   * Try to open the given `url` with any of the installed apps.
+   * Open the given URL with any installed app that can handle it. This
+   * includes URLs such as locations (e.g. "geo:37.484847,-122.148386"),
+   * contacts, or any other URL that can be opened with installed apps.
    *
-   * See https://reactnative.dev/docs/linking#openurl
+   * This method will fail if the system doesn't know how to open the
+   * specified URL. If you're passing in a non-http(s) URL, it's best to
+   * check `canOpenURL` first. For web URLs, the protocol ("http://",
+   * "https://") must be set accordingly.
    */
   openURL(url: string): Promise<void> {
     this._validateURL(url);
@@ -54,9 +56,10 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
   }
 
   /**
-   * Determine whether or not an installed app can handle a given URL.
-   *
-   * See https://reactnative.dev/docs/linking#canopenurl
+   * Check whether an installed app can handle a given URL. For web URLs,
+   * the protocol ("http://", "https://") must be set accordingly. As of
+   * iOS 9, your app needs to provide the `LSApplicationQueriesSchemes`
+   * key inside Info.plist.
    */
   canOpenURL(url: string): Promise<boolean> {
     this._validateURL(url);
@@ -68,9 +71,8 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
   }
 
   /**
-   * Open app settings.
-   *
-   * See https://reactnative.dev/docs/linking#opensettings
+   * Open the device Settings app and display the app’s custom settings, if
+   * it has any.
    */
   openSettings(): Promise<void> {
     if (Platform.OS === 'android') {
@@ -81,10 +83,9 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
   }
 
   /**
-   * If the app launch was triggered by an app link,
-   * it will give the link url, otherwise it will give `null`
-   *
-   * See https://reactnative.dev/docs/linking#getinitialurl
+   * Get the URL that launched the app, or `null` if it was not launched from
+   * a link. To support deep linking on Android, see
+   * https://developer.android.com/training/app-indexing/deep-linking.html#handling-intents.
    */
   getInitialURL(): Promise<?string> {
     return Platform.OS === 'android'
@@ -92,12 +93,12 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
       : nullthrows(NativeLinkingManager).getInitialURL();
   }
 
-  /*
-   * Launch an Android intent with extras (optional)
+  /**
+   * Launch an Android intent with optional extras. Useful for deep-linking
+   * to settings pages, opening an SMS app with a message draft in place,
+   * and more. See https://developer.android.com/reference/kotlin/android/content/Intent.
    *
    * @platform android
-   *
-   * See https://reactnative.dev/docs/linking#sendintent
    */
   sendIntent(
     action: string,
@@ -126,9 +127,9 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
 const Linking: LinkingImpl = new LinkingImpl();
 
 /**
- * `Linking` gives you a general interface to interact with both incoming
- * and outgoing app links.
+ * General interface to interact with both incoming and outgoing app links,
+ * including deep links and universal links.
  *
- * See https://reactnative.dev/docs/linking
+ * @see https://reactnative.dev/docs/linking
  */
 export default Linking;

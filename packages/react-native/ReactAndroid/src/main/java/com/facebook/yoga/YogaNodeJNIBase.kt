@@ -38,9 +38,9 @@ public abstract class YogaNodeJNIBase : YogaNode, Cloneable {
   internal constructor() : this(YogaNative.jni_YGNodeNewJNI())
 
   internal constructor(
-      yogaConfig: YogaConfig
+      yogaConfig: YogaConfig,
   ) : this(
-      YogaNative.jni_YGNodeNewWithConfigJNI((yogaConfig as YogaConfigJNIBase).getNativePointer())
+      YogaNative.jni_YGNodeNewWithConfigJNI((yogaConfig as YogaConfigJNIBase).getNativePointer()),
   ) {
     config = yogaConfig
   }
@@ -134,7 +134,7 @@ public abstract class YogaNodeJNIBase : YogaNode, Cloneable {
     val childList =
         children
             ?: throw IllegalStateException(
-                "Trying to remove a child of a YogaNode that does not have children"
+                "Trying to remove a child of a YogaNode that does not have children",
             )
     val child = childList.removeAt(i)
     child.owner = null

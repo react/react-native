@@ -102,6 +102,7 @@ public class ReactShadowNodeImpl implements ReactShadowNode<ReactShadowNodeImpl>
   private Integer mWidthMeasureSpec;
   private Integer mHeightMeasureSpec;
 
+  @SuppressWarnings("this-escape")
   public ReactShadowNodeImpl() {
     mDefaultPadding = new Spacing(0f);
     if (!isVirtual()) {

@@ -25,7 +25,12 @@ jobs:
         with:
           script: |
             const validatePRBody = require('./.github/workflow-scripts/validatePRBody.js');
-            const {message, status} = validatePRBody(context.payload.pull_request.body);
+            const {data: pullRequest} = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const {message, status} = validatePRBody(pullRequest.body);
             core.setOutput('message', message);
             core.setOutput('status', status);
       - name: Check branch target
@@ -34,8 +39,14 @@ jobs:
         with:
           script: |
             const checkBranchTarget = require('./.github/workflow-scripts/checkBranchTarget.js');
-            const baseRef = context.payload.pull_request.base.ref;
-            const {message, status, shouldAddPickLabel} = checkBranchTarget(baseRef);
+            const {data: pullRequest} = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const {message, status, shouldAddPickLabel} = checkBranchTarget(
+              pullRequest.base.ref,
+            );
 
             if (shouldAddPickLabel) {
               await github.rest.issues.addLabels({

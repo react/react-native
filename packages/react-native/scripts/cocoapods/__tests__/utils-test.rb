@@ -35,6 +35,8 @@ class UtilsTests < Test::Unit::TestCase
         XcodebuildMock.reset()
         ENV['RCT_NEW_ARCH_ENABLED'] = '0'
         ENV['USE_FRAMEWORKS'] = nil
+        ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = nil
+        ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = nil
         system_reset_commands
         $RN_PLATFORMS = nil
     end
@@ -468,6 +470,113 @@ class UtilsTests < Test::Unit::TestCase
         assert_equal(1, user_project_mock.save_invocation_count)
     end
 
+    # ============================================ #
+    # Test - Set legacy interop removal flags      #
+    # ============================================ #
+
+    def legacy_interop_installer_mock(user_project_mock)
+        return InstallerMock.new(
+            PodsProjectMock.new([], {"hermes-engine" => {}}),
+            [AggregatedProjectMock.new(user_project_mock)]
+        )
+    end
+
+    def assert_legacy_interop_flags(user_project_mock, module_interop:, component_interop:)
+        user_project_mock.build_configurations.each do |config|
+            ["OTHER_CFLAGS", "OTHER_CPLUSPLUSFLAGS"].each do |key|
+                setting = config.build_settings[key]
+                assert_equal(module_interop, setting.include?("-DRCT_REMOVE_LEGACY_MODULE_INTEROP=1"))
+                assert_equal(component_interop, setting.include?("-DRCT_REMOVE_LEGACY_COMPONENT_INTEROP=1"))
+            end
+        end
+    end
+
+    def test_setLegacyInteropRemovalFlags_whenFlagsAreUnset_doesNotAddFlags
+        # Arrange
+        user_project_mock = prepare_empty_user_project_mock()
+        installer = legacy_interop_installer_mock(user_project_mock)
+
+        # Act
+        ReactNativePodsUtils.set_legacy_interop_removal_flags(installer, build_rncore_from_source: true)
+
+        # Assert
+        assert_legacy_interop_flags(user_project_mock, module_interop: false, component_interop: false)
+        assert_equal([], Pod::UI.collected_warns)
+    end
+
+    def test_setLegacyInteropRemovalFlags_whenModuleInteropIsEnabled_addsOnlyThatFlag
+        # Arrange
+        ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = '1'
+        user_project_mock = prepare_empty_user_project_mock()
+        installer = legacy_interop_installer_mock(user_project_mock)
+
+        # Act
+        ReactNativePodsUtils.set_legacy_interop_removal_flags(installer, build_rncore_from_source: true)
+
+        # Assert
+        assert_legacy_interop_flags(user_project_mock, module_interop: true, component_interop: false)
+    end
+
+    def test_setLegacyInteropRemovalFlags_whenComponentInteropIsEnabled_addsOnlyThatFlag
+        # Arrange
+        ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = '1'
+        user_project_mock = prepare_empty_user_project_mock()
+        installer = legacy_interop_installer_mock(user_project_mock)
+
+        # Act
+        ReactNativePodsUtils.set_legacy_interop_removal_flags(installer, build_rncore_from_source: true)
+
+        # Assert
+        assert_legacy_interop_flags(user_project_mock, module_interop: false, component_interop: true)
+    end
+
+    def test_setLegacyInteropRemovalFlags_whenBothAreEnabled_addsBothFlags
+        # Arrange
+        ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = '1'
+        ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = '1'
+        user_project_mock = prepare_empty_user_project_mock()
+        installer = legacy_interop_installer_mock(user_project_mock)
+
+        # Act
+        ReactNativePodsUtils.set_legacy_interop_removal_flags(installer, build_rncore_from_source: true)
+
+        # Assert
+        assert_legacy_interop_flags(user_project_mock, module_interop: true, component_interop: true)
+        assert_equal([], Pod::UI.collected_warns)
+    end
+
+    def test_setLegacyInteropRemovalFlags_whenDisabled_removesPreviouslyAddedFlags
+        # Arrange
+        ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = '1'
+        ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = '1'
+        user_project_mock = prepare_empty_user_project_mock()
+        installer = legacy_interop_installer_mock(user_project_mock)
+        ReactNativePodsUtils.set_legacy_interop_removal_flags(installer, build_rncore_from_source: true)
+
+        # Act
+        ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = '0'
+        ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = '0'
+        ReactNativePodsUtils.set_legacy_interop_removal_flags(installer, build_rncore_from_source: true)
+
+        # Assert
+        assert_legacy_interop_flags(user_project_mock, module_interop: false, component_interop: false)
+    end
+
+    def test_setLegacyInteropRemovalFlags_whenEnabledWithPrebuiltRNCore_warns
+        # Arrange
+        ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = '1'
+        user_project_mock = prepare_empty_user_project_mock()
+        installer = legacy_interop_installer_mock(user_project_mock)
+
+        # Act
+        ReactNativePodsUtils.set_legacy_interop_removal_flags(installer, build_rncore_from_source: false)
+
+        # Assert
+        assert_equal(1, Pod::UI.collected_warns.length)
+        assert(Pod::UI.collected_warns.first.include?("RCT_REMOVE_LEGACY_MODULE_INTEROP=1"))
+        assert(Pod::UI.collected_warns.first.include?("RCT_USE_PREBUILT_RNCORE=0"))
+    end
+
     # ==================================== #
     # Test - Set build setting             #
     # ==================================== #
@@ -632,7 +741,7 @@ class UtilsTests < Test::Unit::TestCase
         # Assert
         user_project_mock.build_configurations.each do |config|
             received_search_path = config.build_settings["HEADER_SEARCH_PATHS"]
-            expected_search_path = "$(inherited) ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-featureflags/React_featureflags.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-renderercss/React_renderercss.framework/Headers"
+            expected_search_path = "$(inherited) ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-featureflags/React_featureflags.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-renderercss/React_renderercss.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-cxxstableapi/React_cxxstableapi.framework/Headers"
             assert_equal(expected_search_path, received_search_path)
         end
 
@@ -810,6 +919,48 @@ class UtilsTests < Test::Unit::TestCase
             "${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric-macOS/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
             "${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric-macOS/React_Fabric.framework/Headers/react/renderer/components/view/platform/ios",
         ], result)
+    end
+
+    # ================================= #
+    # TEST - Add RN_BUILDING definition #
+    # ================================= #
+    def test_addRNBuildingDefinition_whenNoDefinitions_addsThem
+        spec = SpecMock.new
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({"GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) RN_BUILDING=1"}, spec.to_hash["pod_target_xcconfig"])
+    end
+
+    def test_addRNBuildingDefinition_whenOtherDefinitions_addsThemPreservingTheOthers
+        spec = SpecMock.new
+        spec.pod_target_xcconfig["GCC_PREPROCESSOR_DEFINITIONS"] = "$(inherited) SOME_FLAG=1"
+        spec.pod_target_xcconfig["CLANG_CXX_LANGUAGE_STANDARD"] = "c++20"
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({
+            "GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) SOME_FLAG=1 RN_BUILDING=1",
+            "CLANG_CXX_LANGUAGE_STANDARD" => "c++20"
+        }, spec.to_hash["pod_target_xcconfig"])
+    end
+
+    def test_addRNBuildingDefinition_whenDefinitionsAreAnArray_joinsThem
+        spec = SpecMock.new
+        spec.pod_target_xcconfig["GCC_PREPROCESSOR_DEFINITIONS"] = ["$(inherited)", "SOME_FLAG=1"]
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({"GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) SOME_FLAG=1 RN_BUILDING=1"}, spec.to_hash["pod_target_xcconfig"])
+    end
+
+    def test_addRNBuildingDefinition_whenCalledTwice_addsItOnce
+        spec = SpecMock.new
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({"GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) RN_BUILDING=1"}, spec.to_hash["pod_target_xcconfig"])
     end
 
     # ===================== #

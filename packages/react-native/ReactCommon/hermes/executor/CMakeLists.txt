@@ -22,6 +22,7 @@ target_link_libraries(hermes_executor_common
         hermes_inspector_modern
         jsi
         jsireact
+        react_cxxstableapi
         ${reactnative}
 )
 

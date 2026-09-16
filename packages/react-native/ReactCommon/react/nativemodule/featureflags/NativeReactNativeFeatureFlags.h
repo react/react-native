@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<92d22193e04fdbd6cfb119d69496c065>>
+ * @generated SignedSource<<edc2af47d247d4485972a712a1cc41b4>>
  */
 
 /**
@@ -18,6 +18,8 @@
  */
 
 #pragma once
+
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #if __has_include("FBReactNativeSpecJSI.h") // CocoaPod headers on Apple
 #include "FBReactNativeSpecJSI.h"
@@ -60,9 +62,13 @@ class NativeReactNativeFeatureFlags
 
   bool enableAccumulatedUpdatesInRawPropsAndroid(jsi::Runtime& runtime);
 
+  bool enableAndroidAutoOffscreenCompositingForElevation(jsi::Runtime& runtime);
+
   bool enableAndroidTextMeasurementOptimizations(jsi::Runtime& runtime);
 
   bool enableBridgelessArchitecture(jsi::Runtime& runtime);
+
+  bool enableBufferedCallInvoker(jsi::Runtime& runtime);
 
   bool enableCppPropsIteratorSetter(jsi::Runtime& runtime);
 
@@ -84,15 +90,19 @@ class NativeReactNativeFeatureFlags
 
   bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
 
+  bool enableIOSCompressedTextFrameAdjustment(jsi::Runtime& runtime);
+
   bool enableIOSTextBaselineOffsetPerLine(jsi::Runtime& runtime);
 
   bool enableIOSViewClipToPaddingBox(jsi::Runtime& runtime);
 
   bool enableImagePrefetchingAndroid(jsi::Runtime& runtime);
 
-  bool enableImageRequestDowngradingForNonVisibleImages(jsi::Runtime& runtime);
+  bool enableImageTransparentTintColor(jsi::Runtime& runtime);
 
   bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
+
+  bool enableImperativeEvents(jsi::Runtime& runtime);
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
 
@@ -108,19 +118,17 @@ class NativeReactNativeFeatureFlags
 
   bool enableModuleArgumentNSNullConversionIOS(jsi::Runtime& runtime);
 
+  bool enableMountingCoordinatorPullModelAndroid(jsi::Runtime& runtime);
+
   bool enableMutationObserverByDefault(jsi::Runtime& runtime);
 
   bool enableNativeCSSParsing(jsi::Runtime& runtime);
-
-  bool enableNetworkEventReporting(jsi::Runtime& runtime);
 
   bool enablePreparedTextLayout(jsi::Runtime& runtime);
 
   bool enablePropsUpdateReconciliationAndroid(jsi::Runtime& runtime);
 
-  bool enableRuntimeSchedulerQueueClearingOnError(jsi::Runtime& runtime);
-
-  bool enableSchedulerDelegateInvalidation(jsi::Runtime& runtime);
+  bool enableResizeObserverByDefault(jsi::Runtime& runtime);
 
   bool enableSwiftUIBasedFilters(jsi::Runtime& runtime);
 
@@ -150,9 +158,9 @@ class NativeReactNativeFeatureFlags
 
   bool fuseboxFrameRecordingEnabled(jsi::Runtime& runtime);
 
-  bool fuseboxNetworkInspectionEnabled(jsi::Runtime& runtime);
-
   bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
+
+  bool fuseboxWebSocketEventsEnabled(jsi::Runtime& runtime);
 
   bool optimizedAnimatedPropUpdates(jsi::Runtime& runtime);
 

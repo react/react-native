@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -163,7 +163,9 @@ function maximumDepthOfJSON(node: ?ReactTestRendererJSON): number {
   }
 }
 
-function renderAndEnforceStrictMode(element: React.Node): any {
+function renderAndEnforceStrictMode(
+  element: React.Node,
+): ReactTestRendererType {
   expectNoConsoleError();
   return renderWithStrictMode(element);
 }
@@ -217,7 +219,8 @@ function scrollToBottom(instance: ReactTestInstance) {
 // To make error messages a little bit better, we attach a custom toString
 // implementation to a predicate
 function withMessage(fn: Predicate, message: string): Predicate {
-  (fn as any).toString = () => message;
+  // $FlowFixMe[cannot-write] Deliberately overriding toString on the predicate.
+  fn.toString = () => message;
   return fn;
 }
 
