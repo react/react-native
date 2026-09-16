@@ -213,6 +213,28 @@ static UIColor *defaultPlaceholderColor(void)
   [super scrollRangeToVisible:range];
 }
 
+// When scrollEnabled is true, UIKit's caret reveal only scrolls UITextView and not enclosing ScrollViews, so a caret
+// can remain obscured by the keyboard. Therefore we forward the reveal upward to the nearest scrollable ancestor.
+- (void)scrollRectToVisible:(CGRect)rect animated:(BOOL)animated
+{
+  [super scrollRectToVisible:rect animated:animated];
+
+  if (!self.isFirstResponder) {
+    return;
+  }
+
+  UIScrollView *scrollableAncestor = [self nearestScrollableAncestor];
+  if (scrollableAncestor == nil) {
+    return;
+  }
+
+  // Expand the caret height by 4 on top and bottom so it has sufficient padding to avoid touching the keyboard border.
+  // This matches UIKit behavior for UITextView when scrollEnabled is false.
+  CGRect caretRect = [scrollableAncestor convertRect:CGRectInset(rect, 0, -4) fromView:self];
+
+  [scrollableAncestor scrollRectToVisible:caretRect animated:animated];
+}
+
 - (void)paste:(id)sender
 {
   _textWasPasted = YES;
@@ -378,5 +400,15 @@ static UIColor *defaultPlaceholderColor(void)
 }
 
 #pragma mark - Utility Methods
+
+- (nullable UIScrollView *)nearestScrollableAncestor
+{
+  for (UIView *superview = self.superview; superview != nil; superview = superview.superview) {
+    if ([superview isKindOfClass:[UIScrollView class]] && ((UIScrollView *)superview).isScrollEnabled) {
+      return (UIScrollView *)superview;
+    }
+  }
+  return nil;
+}
 
 @end
