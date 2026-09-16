@@ -147,6 +147,71 @@ function FullScreenExample(): React.Node {
   );
 }
 
+function FeedbackLoopModalContent({
+  onClose,
+}: {
+  onClose: () => void,
+}): React.Node {
+  const [insets, , onSafeAreaInsetsChange] = useSafeAreaInsets();
+  const [eventCount, setEventCount] = useState(0);
+  const [looping, setLooping] = useState(false);
+
+  const onLoopingInsetsChange = useCallback(
+    (event: SafeAreaInsetsChangeEvent) => {
+      setEventCount(count => count + 1);
+      onSafeAreaInsetsChange(event);
+    },
+    [onSafeAreaInsetsChange],
+  );
+
+  return (
+    <View style={styles.modal}>
+      {/*
+        The mistake this warns about: the view is *positioned* by the insets it
+        reports, instead of padded by them. Offsetting it moves it out from
+        under the system UI, which zeroes its insets, which moves it back.
+      */}
+      <View
+        experimental_onSafeAreaInsetsChange={
+          looping ? onLoopingInsetsChange : undefined
+        }
+        style={[styles.loopBox, {marginTop: looping ? (insets?.top ?? 0) : 0}]}>
+        <RNTesterText>{`inset events: ${eventCount}`}</RNTesterText>
+      </View>
+      <View style={styles.modalContent}>
+        <RNTesterText>
+          Starting the loop should log a development warning after ten events in
+          a second, once, while the counter keeps climbing.
+        </RNTesterText>
+        {!looping ? (
+          <Button onPress={() => setLooping(true)} title="Start the loop" />
+        ) : null}
+        <Button onPress={onClose} title="Close" />
+      </View>
+    </View>
+  );
+}
+
+function FeedbackLoopExample(): React.Node {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <View>
+      <Modal
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+        animationType="slide"
+        supportedOrientations={['portrait', 'landscape']}>
+        <FeedbackLoopModalContent onClose={() => setModalVisible(false)} />
+      </Modal>
+      <Button
+        onPress={() => setModalVisible(true)}
+        title="Present a view that loops"
+      />
+    </View>
+  );
+}
+
 let benchEventCount = 0;
 
 function BenchRow({
@@ -274,6 +339,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
+  loopBox: {
+    backgroundColor: '#ffd7d7',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
   benchScrollContainer: {
     height: 300,
     borderWidth: 1,
@@ -306,6 +376,12 @@ exports.examples = [
     description:
       'A full screen view that pads itself by its own safe area insets.',
     render: (): React.Node => <FullScreenExample />,
+  },
+  {
+    title: 'A view that reports its insets in a loop',
+    description:
+      'A view positioned by the insets it reports, which moves it out of the system UI and back. Development builds warn once when a view does this.',
+    render: (): React.Node => <FeedbackLoopExample />,
   },
   {
     title: 'Scroll benchmark',
