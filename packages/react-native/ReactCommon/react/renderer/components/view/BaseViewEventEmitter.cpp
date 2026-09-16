@@ -32,6 +32,42 @@ void BaseViewEventEmitter::onAccessibilityEscape() const {
   dispatchEvent("accessibilityEscape");
 }
 
+#pragma mark - Safe area
+
+void BaseViewEventEmitter::onSafeAreaInsetsChange(
+    const EdgeInsets& insets,
+    const Rect& frame) const {
+  // Dispatched synchronously and as a discrete event so that React processes it
+  // before the current frame is presented. Both the thread this is called from
+  // (the UI thread) and the JavaScript thread are blocked until React has
+  // finished rendering.
+  experimental_flushSync([this, insets, frame]() {
+    dispatchEvent(
+        "safeAreaInsetsChange",
+        [insets, frame](jsi::Runtime& runtime) {
+          auto payload = jsi::Object(runtime);
+          {
+            auto insetsPayload = jsi::Object(runtime);
+            insetsPayload.setProperty(runtime, "top", insets.top);
+            insetsPayload.setProperty(runtime, "right", insets.right);
+            insetsPayload.setProperty(runtime, "bottom", insets.bottom);
+            insetsPayload.setProperty(runtime, "left", insets.left);
+            payload.setProperty(runtime, "insets", insetsPayload);
+          }
+          {
+            auto framePayload = jsi::Object(runtime);
+            framePayload.setProperty(runtime, "x", frame.origin.x);
+            framePayload.setProperty(runtime, "y", frame.origin.y);
+            framePayload.setProperty(runtime, "width", frame.size.width);
+            framePayload.setProperty(runtime, "height", frame.size.height);
+            payload.setProperty(runtime, "frame", framePayload);
+          }
+          return payload;
+        },
+        RawEvent::Category::Discrete);
+  });
+}
+
 #pragma mark - Layout
 
 void BaseViewEventEmitter::onLayout(const LayoutMetrics& layoutMetrics) const {

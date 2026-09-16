@@ -1141,6 +1141,7 @@ class facebook::react::BaseViewEventEmitter : public facebook::react::TouchEvent
   public void onBlur() const;
   public void onFocus() const;
   public void onLayout(const facebook::react::LayoutMetrics& layoutMetrics) const;
+  public void onSafeAreaInsetsChange(const facebook::react::EdgeInsets& insets, const facebook::react::Rect& frame) const;
 }
 
 class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps, public facebook::react::AccessibilityProps {
@@ -1155,6 +1156,7 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;
   public bool onLayout;
+  public bool onSafeAreaInsetsChange;
   public bool removeClippedSubviews;
   public bool shouldRasterize;
   public facebook::react::BackfaceVisibility backfaceVisibility;
