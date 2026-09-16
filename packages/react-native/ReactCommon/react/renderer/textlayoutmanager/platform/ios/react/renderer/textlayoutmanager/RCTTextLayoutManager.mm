@@ -290,31 +290,34 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   if (block != nil) {
     __block UIBezierPath *highlightPath = nil;
     NSRange characterRange = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:NULL];
+    characterRange = NSIntersectionRange(characterRange, NSMakeRange(0, textStorage.length));
 
-    [textStorage
-        enumerateAttribute:RCTAttributedStringIsHighlightedAttributeName
-                   inRange:characterRange
-                   options:0
-                usingBlock:^(NSNumber *value, NSRange range, __unused BOOL *stop) {
-                  if (!value.boolValue) {
-                    return;
-                  }
+    if (characterRange.length > 0) {
+      [textStorage
+          enumerateAttribute:RCTAttributedStringIsHighlightedAttributeName
+                     inRange:characterRange
+                     options:0
+                  usingBlock:^(NSNumber *value, NSRange range, __unused BOOL *stop) {
+                    if (!value.boolValue) {
+                      return;
+                    }
 
-                  [layoutManager
-                      enumerateEnclosingRectsForGlyphRange:range
-                                  withinSelectedGlyphRange:range
-                                           inTextContainer:textContainer
-                                                usingBlock:^(CGRect enclosingRect, __unused BOOL *anotherStop) {
-                                                  UIBezierPath *path = [UIBezierPath
-                                                      bezierPathWithRoundedRect:CGRectInset(enclosingRect, -2, -2)
-                                                                   cornerRadius:2];
-                                                  if (highlightPath != nullptr) {
-                                                    [highlightPath appendPath:path];
-                                                  } else {
-                                                    highlightPath = path;
-                                                  }
-                                                }];
-                }];
+                    [layoutManager
+                        enumerateEnclosingRectsForGlyphRange:range
+                                    withinSelectedGlyphRange:range
+                                             inTextContainer:textContainer
+                                                  usingBlock:^(CGRect enclosingRect, __unused BOOL *anotherStop) {
+                                                    UIBezierPath *path = [UIBezierPath
+                                                        bezierPathWithRoundedRect:CGRectInset(enclosingRect, -2, -2)
+                                                                     cornerRadius:2];
+                                                    if (highlightPath != nullptr) {
+                                                      [highlightPath appendPath:path];
+                                                    } else {
+                                                      highlightPath = path;
+                                                    }
+                                                  }];
+                  }];
+    }
 
     block(highlightPath);
   }
@@ -328,6 +331,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
     [layoutManager ensureLayoutForTextContainer:textContainer];
     NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
     __block int line = 0;
+    __block NSRange truncatedCharacterRange = NSMakeRange(NSNotFound, 0);
     [layoutManager
         enumerateLineFragmentsForGlyphRange:glyphRange
                                  usingBlock:^(
@@ -340,26 +344,40 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                      NSRange truncatedRange = [layoutManager
                                          truncatedGlyphRangeInLineFragmentForGlyphAtIndex:lineGlyphRange.location];
                                      if (truncatedRange.location != NSNotFound) {
-                                       NSRange characterRange =
+                                       truncatedCharacterRange =
                                            [layoutManager characterRangeForGlyphRange:truncatedRange
                                                                      actualGlyphRange:nil];
-                                       if (characterRange.location > 0 && characterRange.length > 0) {
-                                         // Remove color attributes for truncated range
-                                         for (NSAttributedStringKey key in
-                                              @[ NSForegroundColorAttributeName, NSBackgroundColorAttributeName ]) {
-                                           [textStorage removeAttribute:key range:characterRange];
-                                           id attribute = [textStorage attribute:key
-                                                                         atIndex:characterRange.location - 1
-                                                                  effectiveRange:nil];
-                                           if (attribute != nullptr) {
-                                             [textStorage addAttribute:key value:attribute range:characterRange];
-                                           }
-                                         }
-                                       }
                                      }
                                    }
                                    line++;
                                  }];
+
+    if (truncatedCharacterRange.location == NSNotFound) {
+      return;
+    }
+
+    NSRange textStorageRange = NSMakeRange(0, textStorage.length);
+    truncatedCharacterRange = NSIntersectionRange(truncatedCharacterRange, textStorageRange);
+    if (truncatedCharacterRange.length == 0) {
+      return;
+    }
+
+    truncatedCharacterRange = [textStorage.string rangeOfComposedCharacterSequencesForRange:truncatedCharacterRange];
+    truncatedCharacterRange = NSIntersectionRange(truncatedCharacterRange, textStorageRange);
+    if (truncatedCharacterRange.location == 0 || truncatedCharacterRange.length == 0) {
+      return;
+    }
+
+    [textStorage beginEditing];
+    // Remove color attributes for truncated range
+    for (NSAttributedStringKey key in @[ NSForegroundColorAttributeName, NSBackgroundColorAttributeName ]) {
+      [textStorage removeAttribute:key range:truncatedCharacterRange];
+      id attribute = [textStorage attribute:key atIndex:truncatedCharacterRange.location - 1 effectiveRange:nil];
+      if (attribute != nullptr) {
+        [textStorage addAttribute:key value:attribute range:truncatedCharacterRange];
+      }
+    }
+    [textStorage endEditing];
   }
 }
 
