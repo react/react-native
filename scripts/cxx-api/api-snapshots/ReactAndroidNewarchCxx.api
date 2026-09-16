@@ -942,7 +942,6 @@ size_t facebook::react::attributedStringFragmentHashDisplayWise(const facebook::
 size_t facebook::react::attributedStringFragmentHashLayoutWise(const facebook::react::AttributedString::Fragment& fragment);
 size_t facebook::react::attributedStringHashDisplayWise(const facebook::react::AttributedString& attributedString);
 size_t facebook::react::attributedStringHashLayoutWise(const facebook::react::AttributedString& attributedString);
-size_t facebook::react::hashGetColourArguments(int32_t surfaceId, const std::vector<std::string>& resourcePaths);
 size_t facebook::react::textAttributesHashLayoutWise(const facebook::react::TextAttributes& textAttributes);
 std::optional<facebook::react::BlendMode> facebook::react::blendModeFromString(std::string_view blendModeName);
 std::optional<facebook::react::BoxShadow> facebook::react::fromCSSShadow(const facebook::react::CSSShadow& cssShadow);
@@ -1069,7 +1068,6 @@ void facebook::react::bindHasComponentProvider(facebook::jsi::Runtime& runtime, 
 void facebook::react::bindNativeLogger(facebook::jsi::Runtime& runtime, facebook::react::Logger logger);
 void facebook::react::bindNativePerformanceNow(facebook::jsi::Runtime& runtime);
 void facebook::react::cloneProp(facebook::react::BaseViewProps& viewProps, const facebook::react::AnimatedPropBase& animatedProp);
-void facebook::react::configurePlatformColorCacheInvalidationHook(std::function<void()>&& hook);
 void facebook::react::defineReadOnlyGlobal(facebook::jsi::Runtime& runtime, const std::string& propName, facebook::jsi::Value&& value);
 void facebook::react::ensureThreadDurationJNIEnvAttached();
 void facebook::react::fromRawValue(const facebook::react::ContextContainer& contextContainer, int32_t surfaceId, const facebook::react::RawValue& value, facebook::react::SharedColor& result);
