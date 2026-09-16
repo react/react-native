@@ -11,7 +11,7 @@
 
 #include <cassert>
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 
 namespace facebook::react::jsinspector_modern::tracing {
 
