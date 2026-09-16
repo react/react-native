@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags useSharedAnimatedBackend:*
+ * @fantom_flags useSharedAnimatedBackend:true
  * @flow strict-local
  * @format
  */
@@ -15,9 +15,6 @@ import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {useEffect} from 'react';
 import {Animated, View, useAnimatedValue} from 'react-native';
-import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
-
-allowStyleProp('height');
 
 function MyApp() {
   return (

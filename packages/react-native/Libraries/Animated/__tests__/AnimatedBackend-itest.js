@@ -18,12 +18,10 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {Component, createRef, memo, useEffect, useMemo, useState} from 'react';
 import {Animated, View, useAnimatedValue} from 'react-native';
-import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
 
 // marginLeft (and the other margin props) are only on the native animated
-// allowlist when the shared backend is enabled. This test deliberately does NOT
-// call allowStyleProp('marginLeft') — it verifies the prop is supported natively
-// out of the box under useSharedAnimatedBackend.
+// allowlist when the shared backend is enabled. This verifies the prop is
+// supported natively out of the box under useSharedAnimatedBackend.
 test('animate marginLeft layout prop', () => {
   const viewRef = createRef<HostInstance>();
 
@@ -252,7 +250,6 @@ test('animated opacity on a class composite wrapping a host', () => {
 
 test('animate layout props', () => {
   const viewRef = createRef<HostInstance>();
-  allowStyleProp('height');
 
   let _animatedHeight;
   let _heightAnimation;
@@ -309,7 +306,6 @@ test('animate layout props', () => {
 
 test('animate layout props and rerender', () => {
   const viewRef = createRef<HostInstance>();
-  allowStyleProp('height');
 
   let _animatedHeight;
   let _heightAnimation;
@@ -481,7 +477,6 @@ test('animate non-layout props and rerender', () => {
 
 test('animate layout props and rerender in many components', () => {
   const viewRef = createRef<HostInstance>();
-  allowStyleProp('height');
 
   let _animatedHeight;
   let _heightAnimation;
@@ -577,8 +572,6 @@ test('animate layout props and rerender in many components', () => {
 
 test('animate width, height and opacity at once', () => {
   const viewRef = createRef<HostInstance>();
-  allowStyleProp('width');
-  allowStyleProp('height');
 
   let _animatedWidth;
   let _animatedHeight;
@@ -646,7 +639,6 @@ test('animate width, height and opacity at once', () => {
 
 test('animate width with memo and rerender (js sync test)', () => {
   const viewRef = createRef<HostInstance>();
-  allowStyleProp('width');
 
   let _widthAnimation;
   let _setState;

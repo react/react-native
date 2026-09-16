@@ -24,9 +24,6 @@ import {
   View,
   useAnimatedValue,
 } from 'react-native';
-import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
-
-allowStyleProp('height');
 
 const windowDimensions = Dimensions.get('window');
 const BUTTON_WIDTH = 80;

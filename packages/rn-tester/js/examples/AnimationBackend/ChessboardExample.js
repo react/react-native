@@ -13,10 +13,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import * as React from 'react';
 import {useMemo} from 'react';
 import {Animated, StyleSheet, Text, View, useAnimatedValue} from 'react-native';
-import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
 
-allowStyleProp('width');
-allowStyleProp('height');
 const colors = ['lime', 'green'];
 
 function useLoop() {

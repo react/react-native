@@ -19,7 +19,6 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Animated, Easing, View, useAnimatedValue} from 'react-native';
-import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
 
 // Deferred start outputs the initial value on the first animation frame and
 // re-anchors timing on the second. This delays animation progress by one
@@ -711,8 +710,9 @@ describe('Value.extractOffset', () => {
 });
 
 test('animate layout props', () => {
-  const viewRef = createRef<HostInstance>();
-  allowStyleProp('height');
+  if (!ReactNativeFeatureFlags.useSharedAnimatedBackend()) {
+    return;
+  }
 
   let _animatedHeight;
   let _heightAnimation;
@@ -722,7 +722,6 @@ test('animate layout props', () => {
     _animatedHeight = animatedHeight;
     return (
       <Animated.View
-        ref={viewRef}
         style={[
           {
             width: 100,
@@ -739,8 +738,6 @@ test('animate layout props', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = nullthrows(viewRef.current);
-
   Fantom.runTask(() => {
     _heightAnimation = Animated.timing(_animatedHeight, {
       toValue: 100,
@@ -755,18 +752,6 @@ test('animate layout props', () => {
   Fantom.runTask(() => {
     _heightAnimation?.stop();
   });
-
-  // animation backend does not push layut updates through the direct manipulation path
-  // also it's changes are not currently reflected in the getFabricUpdateProps method, as
-  // it only captures props that are updated through UIManager::updateShadowTree
-  if (!ReactNativeFeatureFlags.useSharedAnimatedBackend()) {
-    // $FlowFixMe[incompatible-use]
-    expect(Fantom.unstable_getDirectManipulationProps(viewElement).height).toBe(
-      100,
-    );
-
-    expect(Fantom.unstable_getFabricUpdateProps(viewElement).height).toBe(100);
-  }
 
   expect(root.getRenderedOutput({props: ['height']}).toJSX()).toEqual(
     <rn-view height="100" />,

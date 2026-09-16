@@ -152,18 +152,6 @@ export default {
   style: SUPPORTED_STYLES,
 } as AnimatedPropsAllowlist;
 
-export function allowInterpolationParam(param: string): void {
-  SUPPORTED_INTERPOLATION_PARAMS[param] = true;
-}
-
-export function allowStyleProp(prop: string): void {
-  SUPPORTED_STYLES[prop] = true;
-}
-
-export function allowTransformProp(prop: string): void {
-  SUPPORTED_TRANSFORMS[prop] = true;
-}
-
 export function isSupportedColorStyleProp(prop: string): boolean {
   return SUPPORTED_COLOR_STYLES.hasOwnProperty(prop);
 }

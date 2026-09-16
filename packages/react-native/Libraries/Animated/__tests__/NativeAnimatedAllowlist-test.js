@@ -43,17 +43,6 @@ describe('NativeAnimatedAllowlist', () => {
     expect(isSupportedInterpolationParam('extrapolateLeft')).toBe(true);
   });
 
-  it('allows new interpolation params', () => {
-    const {
-      allowInterpolationParam,
-      isSupportedInterpolationParam,
-    } = require('../NativeAnimatedAllowlist');
-
-    expect(isSupportedInterpolationParam('other')).toBe(false);
-    allowInterpolationParam('other');
-    expect(isSupportedInterpolationParam('other')).toBe(true);
-  });
-
   it('checks supported transform props', () => {
     jest
       .spyOn(

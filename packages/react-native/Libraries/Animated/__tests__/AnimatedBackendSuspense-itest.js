@@ -14,7 +14,6 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import * as Fantom from '@react-native/fantom';
 import {Suspense, startTransition, use} from 'react';
 import {Animated, Easing, View, useAnimatedValue} from 'react-native';
-import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
 
 // --- Shared test utilities ---
 
@@ -102,10 +101,6 @@ function AnimatedChild({
 }
 
 // --- Tests ---
-
-beforeEach(() => {
-  allowStyleProp('width');
-});
 
 test('animation state is maintained after Suspense', () => {
   let _animatedWidth;
