@@ -162,22 +162,36 @@ async function setup(
     'ReactCommon/react/renderer/imagemanager',
     'react/renderer/imagemanager',
   );
+  link('ReactCommon/react/renderer/imagemanager/React', 'React');
   link('ReactCommon/yoga/Yoga', 'ReactCommon/yoga/Yoga');
   link('ReactCommon/callinvoker', 'ReactCommon');
+  link('ReactCommon/callinvoker/React', 'React');
   link('ReactCommon/react/renderer/componentregistry');
+  link('ReactCommon/react/renderer/componentregistry/React', 'React');
   link('ReactCommon/react/renderer/core');
+  link('ReactCommon/react/renderer/core/React', 'React');
+  link('ReactCommon/react/renderer/css/React', 'React');
+  link('ReactCommon/react/renderer/components/image/React', 'React');
+  link('ReactCommon/react/renderer/mapbuffer/React', 'React');
   link('ReactCommon/react/bridging');
+  link('ReactCommon/react/bridging/React', 'React');
   link('ReactCommon/react/timing');
+  link('ReactCommon/react/timing/React', 'React');
   link('ReactCommon/react/utils');
+  link('ReactCommon/react/utils/React', 'React');
   link('ReactCommon/react/debug');
+  link('ReactCommon/react/debug/React', 'React');
   link('ReactCommon/react/renderer/debug');
+  link('ReactCommon/react/renderer/debug/React', 'React');
   link('ReactCommon/react/featureflags');
+  link('ReactCommon/react/featureflags/React', 'React');
   link('ReactCommon/react/renderer/graphics');
   link(
     'ReactCommon/react/renderer/graphics/platform/ios',
     'ReactCommon/react/renderer/graphics',
   );
   link('ReactCommon/react/nativemodule/core', 'ReactCommon');
+  link('ReactCommon/react/nativemodule/core/React', 'React');
   link('ReactCommon/react/nativemodule/core/platform/ios', 'ReactCommon');
 
   link('ReactCommon/react/utils/platform/ios', 'ReactCommon/react/utils');
@@ -186,6 +200,7 @@ async function setup(
   link('ReactCommon/jsitooling/react/runtime', 'ReactCommon/react/runtime');
   link('ReactCommon/react/renderer/components/legacyviewmanagerinterop');
   link('ReactCommon/react/renderer/components/view');
+  link('ReactCommon/react/renderer/components/view/React', 'React');
   link(
     'ReactCommon/react/renderer/components/view/platform/cxx',
     'ReactCommon/react/renderer/components/view',
@@ -193,8 +208,10 @@ async function setup(
   link('ReactCommon/react/renderer/mounting');
   link('ReactCommon/react/renderer/attributedstring');
   link('ReactCommon/runtimeexecutor/ReactCommon', 'ReactCommon');
+  link('ReactCommon/runtimeexecutor/React', 'React');
   link('ReactCommon/jsinspector-modern');
   link('ReactCommon/cxxreact');
+  link('ReactCommon/cxxreact/React', 'React');
 
   link('.build/codegen/build/generated/ios', 'ReactCodegen');
 }
