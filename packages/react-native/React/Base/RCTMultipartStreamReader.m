@@ -7,6 +7,14 @@
 
 #import "RCTMultipartStreamReader.h"
 #import <QuartzCore/QuartzCore.h>
+#import <TargetConditionals.h>
+
+#if RCT_USE_KMP && TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#define RCT_MULTIPART_USE_KMP 1
+#import <ReactNativeShared/ReactNativeShared.h>
+#else
+#define RCT_MULTIPART_USE_KMP 0
+#endif
 
 #define CRLF @"\r\n"
 
@@ -30,6 +38,12 @@
 {
   NSMutableDictionary *headers = [NSMutableDictionary new];
   NSString *text = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+#if RCT_MULTIPART_USE_KMP
+  for (RNSMultipartHeader *header in [RNSMultipartHeaders.shared parseText:text ?: @""]) {
+    NSString *value = [header.value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    [headers setValue:value forKey:header.name];
+  }
+#else
   NSArray<NSString *> *lines = [text componentsSeparatedByString:CRLF];
   for (NSString *line in lines) {
     NSUInteger location = [line rangeOfString:@":"].location;
@@ -41,6 +55,7 @@
         stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     [headers setValue:value forKey:key];
   }
+#endif
   return headers;
 }
 
@@ -84,13 +99,17 @@
 - (BOOL)readAllPartsWithCompletionCallback:(RCTMultipartCallback)callback
                           progressCallback:(RCTMultipartProgressCallback)progressCallback
 {
-  NSInteger chunkStart = 0;
-  NSInteger bytesSeen = 0;
-
   NSData *delimiter =
       [[NSString stringWithFormat:@"%@--%@%@", CRLF, _boundary, CRLF] dataUsingEncoding:NSUTF8StringEncoding];
   NSData *closeDelimiter =
       [[NSString stringWithFormat:@"%@--%@--%@", CRLF, _boundary, CRLF] dataUsingEncoding:NSUTF8StringEncoding];
+#if RCT_MULTIPART_USE_KMP
+  RNSMultipartFraming *framing = [[RNSMultipartFraming alloc] initWithDelimiterLength:(int32_t)delimiter.length
+                                                                 closeDelimiterLength:(int32_t)closeDelimiter.length];
+#else
+  NSInteger chunkStart = 0;
+  NSInteger bytesSeen = 0;
+#endif
   NSMutableData *content = [[NSMutableData alloc] initWithCapacity:1];
   NSDictionary *currentHeaders = nil;
   NSUInteger currentHeadersLength = 0;
@@ -101,9 +120,13 @@
   [_stream open];
   while (true) {
     BOOL isCloseDelimiter = NO;
-    // Search only a subset of chunk that we haven't seen before + few bytes
-    // to allow for the edge case when the delimiter is cut by read call
+#if RCT_MULTIPART_USE_KMP
+    NSInteger searchStart = [framing searchStartBufferOffset:0];
+    NSInteger chunkStart = [framing partStartBufferOffset:0];
+#else
+    // Preserve overlap when a delimiter is split between reads.
     NSInteger searchStart = MAX(bytesSeen - (NSInteger)closeDelimiter.length, chunkStart);
+#endif
     NSRange remainingBufferRange = NSMakeRange(searchStart, content.length - searchStart);
 
     // Check for delimiters.
@@ -112,6 +135,14 @@
       isCloseDelimiter = YES;
       range = [content rangeOfData:closeDelimiter options:0 range:remainingBufferRange];
     }
+
+#if RCT_MULTIPART_USE_KMP
+    NSInteger index = range.location == NSNotFound ? -1 : (NSInteger)range.location;
+    RNSMultipartChunk *chunk = [framing nextChunkBufferLength:content.length
+                                                 bufferOffset:0
+                                               delimiterIndex:isCloseDelimiter ? -1 : index
+                                          closeDelimiterIndex:isCloseDelimiter ? index : -1];
+#endif
 
     if (range.location == NSNotFound) {
       if (currentHeaders == nil) {
@@ -131,7 +162,9 @@
                   callback:progressCallback];
       }
 
+#if !RCT_MULTIPART_USE_KMP
       bytesSeen = content.length;
+#endif
       NSInteger bytesRead = [_stream read:buffer maxLength:bufferLen];
       if (bytesRead <= 0 || _stream.streamError) {
         return NO;
@@ -140,12 +173,19 @@
       continue;
     }
 
+#if RCT_MULTIPART_USE_KMP
+    NSInteger chunkEnd = chunk.end;
+    BOOL isPart = chunk.isPart;
+    isCloseDelimiter = chunk.isLast;
+#else
     NSInteger chunkEnd = range.location;
-    NSInteger length = chunkEnd - chunkStart;
+    BOOL isPart = chunkStart > 0;
     bytesSeen = chunkEnd;
+#endif
+    NSInteger length = chunkEnd - chunkStart;
 
     // Ignore preamble
-    if (chunkStart > 0) {
+    if (isPart) {
       NSData *chunk = [content subdataWithRange:NSMakeRange(chunkStart, length)];
       [self emitProgress:currentHeaders
            contentLength:chunk.length - currentHeadersLength
@@ -160,7 +200,9 @@
       return YES;
     }
 
+#if !RCT_MULTIPART_USE_KMP
     chunkStart = chunkEnd + delimiter.length;
+#endif
   }
 }
 

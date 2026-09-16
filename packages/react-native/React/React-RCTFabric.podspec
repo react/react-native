@@ -17,6 +17,10 @@ else
 end
 
 new_arch_flags = ENV['RCT_NEW_ARCH_ENABLED'] == '1' ? ' -DRCT_NEW_ARCH_ENABLED=1' : ''
+kmp_enabled = ENV['RCT_USE_KMP'] == '1'
+if kmp_enabled && ENV['RCT_USE_PREBUILT_RNCORE'] != '0'
+  raise 'RCT_USE_KMP=1 requires React Native core source builds. Use use_react_native! or set RCT_USE_PREBUILT_RNCORE=0.'
+end
 
 header_search_paths = [
   "\"$(PODS_TARGET_SRCROOT)/ReactCommon\"",
@@ -50,13 +54,24 @@ Pod::Spec.new do |s|
   s.module_name            = module_name
   s.weak_framework         = "JavaScriptCore"
   s.framework              = "MobileCoreServices"
-  s.pod_target_xcconfig    = {
+  pod_target_xcconfig = {
     "HEADER_SEARCH_PATHS" => header_search_paths,
     "OTHER_CFLAGS" => "$(inherited) " + new_arch_flags,
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }.merge!(ENV['USE_FRAMEWORKS'] != nil ? {
     "PUBLIC_HEADERS_FOLDER_PATH" => "#{module_name}.framework/Headers/#{header_dir}"
   }: {})
+  if kmp_enabled
+    # Catalyst has no Kotlin/Native target. Its build keeps the existing implementation.
+    s.dependency 'React-KMP'
+    pod_target_xcconfig.merge!({
+      'GCC_PREPROCESSOR_DEFINITIONS[sdk=iphoneos*]' => '$(inherited) RCT_USE_KMP=1',
+      'GCC_PREPROCESSOR_DEFINITIONS[sdk=iphonesimulator*]' => '$(inherited) RCT_USE_KMP=1',
+      'FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "$(PODS_CONFIGURATION_BUILD_DIR)/ReactNativeSharedKMP"',
+      'FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "$(PODS_CONFIGURATION_BUILD_DIR)/ReactNativeSharedKMP"',
+    })
+  end
+  s.pod_target_xcconfig = pod_target_xcconfig
 
   s.dependency "React-Core"
   s.dependency "React-RCTImage"

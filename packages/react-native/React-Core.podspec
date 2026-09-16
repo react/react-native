@@ -7,6 +7,10 @@ require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 version = package['version']
+kmp_enabled = ENV['RCT_USE_KMP'] == '1'
+if kmp_enabled && ENV['RCT_USE_PREBUILT_RNCORE'] != '0'
+  raise 'RCT_USE_KMP=1 requires React Native core source builds. Use use_react_native! or set RCT_USE_PREBUILT_RNCORE=0.'
+end
 
 source = { :git => 'https://github.com/facebook/react-native.git' }
 if version == '1000.0.0'
@@ -54,13 +58,25 @@ Pod::Spec.new do |s|
   s.compiler_flags         = js_engine_flags()
   s.header_dir             = "React"
   s.weak_framework         = "JavaScriptCore"
-  s.pod_target_xcconfig    = {
+  pod_target_xcconfig     = {
                                "HEADER_SEARCH_PATHS" => header_search_paths,
                                "DEFINES_MODULE" => "YES",
                                "GCC_PREPROCESSOR_DEFINITIONS" => "RCT_METRO_PORT=${RCT_METRO_PORT}",
                                "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                "FRAMEWORK_SEARCH_PATHS" => frameworks_search_paths.join(" ")
                              }
+  if kmp_enabled
+    s.dependency 'React-KMP'
+    # React-Core is the common dependency of all Apple consumers. With dynamic
+    # pods it owns the Kotlin runtime once, even before Core calls a shared API.
+    # Static builds link the archive in the application via the post-install helper.
+    %w[iphoneos iphonesimulator].each do |sdk|
+      pod_target_xcconfig["GCC_PREPROCESSOR_DEFINITIONS[sdk=#{sdk}*]"] = '$(inherited) RCT_USE_KMP=1'
+      pod_target_xcconfig["FRAMEWORK_SEARCH_PATHS[sdk=#{sdk}*]"] = '$(inherited) "$(PODS_CONFIGURATION_BUILD_DIR)/ReactNativeSharedKMP"'
+      pod_target_xcconfig["OTHER_LDFLAGS[sdk=#{sdk}*]"] = '$(inherited) -ObjC -framework ReactNativeShared'
+    end
+  end
+  s.pod_target_xcconfig = pod_target_xcconfig
   s.user_target_xcconfig   = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/Headers/Private/React-Core\""}
   s.default_subspec        = "Default"
 
