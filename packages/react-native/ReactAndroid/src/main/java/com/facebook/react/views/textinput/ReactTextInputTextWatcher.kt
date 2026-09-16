@@ -22,6 +22,7 @@ internal class ReactTextInputTextWatcher(
   private val eventDispatcher: EventDispatcher? = UIManagerHelper.getEventDispatcher(reactContext)
   private val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
   private var previousText: String? = null
+  private var shouldDispatchChange: Boolean = false
 
   override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
     // Incoming charSequence gets mutated before onTextChanged() is invoked
@@ -46,6 +47,15 @@ internal class ReactTextInputTextWatcher(
       return
     }
 
+    shouldDispatchChange = true
+  }
+
+  override fun afterTextChanged(s: Editable) {
+    if (!shouldDispatchChange) {
+      return
+    }
+    shouldDispatchChange = false
+
     val stateWrapper = editText.stateWrapper
 
     if (stateWrapper != null) {
@@ -55,7 +65,10 @@ internal class ReactTextInputTextWatcher(
       stateWrapper.updateState(newStateData)
     }
 
-    // The event that contains the event counter and updates it must be sent first.
+    // Dispatch in afterTextChanged so that the selection reflects the final cursor
+    // position. During autofill, onTextChanged fires before Android updates the
+    // selection, causing {start: 0, end: 0} to be reported instead of the actual
+    // cursor position.
     eventDispatcher?.dispatchEvent(
         ReactTextChangedEvent(
             surfaceId,
@@ -67,6 +80,4 @@ internal class ReactTextInputTextWatcher(
         ),
     )
   }
-
-  override fun afterTextChanged(s: Editable) = Unit
 }
