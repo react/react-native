@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <functional>
 
-#include <react/utils/Telemetry.h>
+#include <React/Utils.h>
 
 namespace facebook::react {
 

@@ -11,14 +11,13 @@
 
 #include <memory>
 
-#include <ReactCommon/RuntimeExecutor.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
+#include <React/RuntimeExecutor.h>
+#include <React/Utils.h>
 #include <react/renderer/animationbackend/AnimationChoreographer.h>
-#include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
-#include <react/renderer/core/EventBeat.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
 #include <react/renderer/uimanager/primitives.h>
-#include <react/utils/ContextContainer.h>
-#include <react/utils/RunLoopObserver.h>
 
 namespace facebook::react {
 
