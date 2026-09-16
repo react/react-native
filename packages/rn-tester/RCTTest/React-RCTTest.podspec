@@ -38,8 +38,10 @@ Pod::Spec.new do |s|
   s.dependency "React-Core", version
   s.dependency "React-CoreModules", version
   s.dependency "ReactCommon/turbomodule/core", version
+  s.dependency "React-NativeModulesApple", version
   s.dependency "React-jsi", version
 
+  depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
 end
