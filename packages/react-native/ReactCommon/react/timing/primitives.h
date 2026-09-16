@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
-#include <react/debug/flags.h>
+#include <React/Debug.h>
 #include <chrono>
 #include <cmath>
 #include <functional>

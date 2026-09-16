@@ -15,12 +15,10 @@
 #include <shared_mutex>
 #include <vector>
 
-#include <ReactCommon/RuntimeExecutor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
-#include <react/renderer/core/ComponentDescriptor.h>
-#include <react/renderer/core/EventEmitter.h>
-#include <react/renderer/core/EventListener.h>
-#include <react/renderer/core/LayoutConstraints.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
+#include <React/RuntimeExecutor.h>
+#include <React/Utils.h>
 #include <react/renderer/mounting/MountingOverrideDelegate.h>
 #include <react/renderer/scheduler/InspectorData.h>
 #include <react/renderer/scheduler/SchedulerDelegate.h>
@@ -29,7 +27,6 @@
 #include <react/renderer/uimanager/UIManagerAnimationDelegate.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <react/renderer/uimanager/UIManagerDelegate.h>
-#include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 

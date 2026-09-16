@@ -9,9 +9,9 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/Timing.h>
 #include <jsi/JSIDynamic.h>
 #include <jsi/jsi.h>
-#include <react/timing/primitives.h>
 
 #include <cassert>
 #include <optional>
