@@ -9,9 +9,9 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/CallInvoker.h>
-#include <ReactCommon/RuntimeExecutor.h>
-#include <cxxreact/JSBigString.h>
+#include <React/CallInvoker.h>
+#include <React/JSBigString.h>
+#include <React/RuntimeExecutor.h>
 #include <cxxreact/MessageQueueThread.h>
 #include <jserrorhandler/JsErrorHandler.h>
 #include <jsi/jsi.h>
