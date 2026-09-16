@@ -35,12 +35,6 @@ public interface JSBundleLoaderDelegate {
   public fun loadScriptFromFile(fileName: String, sourceURL: String, loadSynchronously: Boolean)
 
   /**
-   * Load a split JS bundle from the filesystem. See
-   * [JSBundleLoader.createCachedSplitBundleFromNetworkLoader].
-   */
-  public fun loadSplitBundleFromFile(fileName: String, sourceURL: String)
-
-  /**
    * This API is used in situations where the JS bundle is being executed not on the device, but on
    * a host machine. In that case, we must provide two source URLs for the JS bundle: One to be used
    * on the device, and one to be used on the remote debugging machine.

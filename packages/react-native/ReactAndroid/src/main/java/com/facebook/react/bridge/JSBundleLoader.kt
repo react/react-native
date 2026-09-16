@@ -78,22 +78,5 @@ public abstract class JSBundleLoader {
             }
           }
         }
-
-    /** Same as [createCachedBundleFromNetworkLoader], but for split bundles in development. */
-    @JvmStatic
-    public fun createCachedSplitBundleFromNetworkLoader(
-        sourceURL: String,
-        cachedFileLocation: String,
-    ): JSBundleLoader =
-        object : JSBundleLoader() {
-          override fun loadScript(delegate: JSBundleLoaderDelegate): String {
-            return try {
-              delegate.loadSplitBundleFromFile(cachedFileLocation, sourceURL)
-              sourceURL
-            } catch (e: Exception) {
-              throw DebugServerException.makeGeneric(sourceURL, e.message.orEmpty(), e)
-            }
-          }
-        }
   }
 }

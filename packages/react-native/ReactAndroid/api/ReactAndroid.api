@@ -699,7 +699,6 @@ public abstract class com/facebook/react/bridge/JSBundleLoader {
 	public fun <init> ()V
 	public static final fun createAssetLoader (Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
 	public static final fun createCachedBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
-	public static final fun createCachedSplitBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public static final fun createFileLoader (Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public static final fun createFileLoader (Ljava/lang/String;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
 	public abstract fun loadScript (Lcom/facebook/react/bridge/JSBundleLoaderDelegate;)Ljava/lang/String;
@@ -708,7 +707,6 @@ public abstract class com/facebook/react/bridge/JSBundleLoader {
 public final class com/facebook/react/bridge/JSBundleLoader$Companion {
 	public final fun createAssetLoader (Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
 	public final fun createCachedBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
-	public final fun createCachedSplitBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public final fun createFileLoader (Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public final fun createFileLoader (Ljava/lang/String;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
 }
@@ -716,7 +714,6 @@ public final class com/facebook/react/bridge/JSBundleLoader$Companion {
 public abstract interface class com/facebook/react/bridge/JSBundleLoaderDelegate {
 	public abstract fun loadScriptFromAssets (Landroid/content/res/AssetManager;Ljava/lang/String;Z)V
 	public abstract fun loadScriptFromFile (Ljava/lang/String;Ljava/lang/String;Z)V
-	public abstract fun loadSplitBundleFromFile (Ljava/lang/String;Ljava/lang/String;)V
 	public abstract fun setSourceURLs (Ljava/lang/String;Ljava/lang/String;)V
 }
 
@@ -1865,7 +1862,6 @@ public class com/facebook/react/devsupport/DevServerHelper {
 	public static synthetic fun downloadBundleFromURL$default (Lcom/facebook/react/devsupport/DevServerHelper;Lcom/facebook/react/devsupport/interfaces/DevBundleDownloadListener;Ljava/io/File;Ljava/lang/String;Lcom/facebook/react/devsupport/BundleDownloader$BundleInfo;Lokhttp3/Request$Builder;ILjava/lang/Object;)V
 	public final fun downloadBundleResourceFromUrlSync (Ljava/lang/String;Ljava/io/File;)Ljava/io/File;
 	public fun getDevServerBundleURL (Ljava/lang/String;)Ljava/lang/String;
-	public fun getDevServerSplitBundleURL (Ljava/lang/String;)Ljava/lang/String;
 	public fun getSourceMapUrl (Ljava/lang/String;)Ljava/lang/String;
 	public fun getSourceUrl (Ljava/lang/String;)Ljava/lang/String;
 	public fun isPackagerRunning (Lcom/facebook/react/devsupport/interfaces/PackagerStatusCallback;)V
@@ -1890,7 +1886,6 @@ public abstract class com/facebook/react/devsupport/DevSupportManagerBase : com/
 	public fun createSurfaceDelegate (Ljava/lang/String;)Lcom/facebook/react/common/SurfaceDelegate;
 	public fun destroyRootView (Landroid/view/View;)V
 	public fun downloadBundleResourceFromUrlSync (Ljava/lang/String;Ljava/io/File;)Ljava/io/File;
-	public final fun fetchSplitBundleAndCreateBundleLoader (Ljava/lang/String;Lcom/facebook/react/devsupport/DevSupportManagerBase$CallbackWithBundleLoader;)V
 	protected final fun getApplicationContext ()Landroid/content/Context;
 	public fun getBundleFilePath ()Ljava/lang/String;
 	public fun getCurrentActivity ()Landroid/app/Activity;
@@ -1949,11 +1944,6 @@ public abstract class com/facebook/react/devsupport/DevSupportManagerBase : com/
 	public fun startInspector ()V
 	public fun stopInspector ()V
 	public fun toggleElementInspector ()V
-}
-
-public abstract interface class com/facebook/react/devsupport/DevSupportManagerBase$CallbackWithBundleLoader {
-	public abstract fun onError (Ljava/lang/String;Ljava/lang/Throwable;)V
-	public abstract fun onSuccess (Lcom/facebook/react/bridge/JSBundleLoader;)V
 }
 
 public final class com/facebook/react/devsupport/DevSupportManagerBase$Companion {

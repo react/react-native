@@ -56,10 +56,6 @@ internal class BridgelessCatalystInstance(private val reactHost: ReactHostImpl) 
     throw UnsupportedOperationException("Unimplemented method 'loadScriptFromFile'")
   }
 
-  override fun loadSplitBundleFromFile(fileName: String, sourceURL: String) {
-    throw UnsupportedOperationException("Unimplemented method 'loadSplitBundleFromFile'")
-  }
-
   override fun setSourceURLs(deviceURL: String, remoteURL: String) {
     throw UnsupportedOperationException("Unimplemented method 'setSourceURLs'")
   }

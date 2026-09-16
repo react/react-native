@@ -259,9 +259,6 @@ public open class DevServerHelper(
     )
   }
 
-  private fun createSplitBundleURL(mainModuleID: String, host: String): String =
-      createBundleURL(mainModuleID, BundleType.BUNDLE, host, true, false)
-
   private fun createBundleURL(
       mainModuleID: String,
       type: BundleType,
@@ -301,9 +298,6 @@ public open class DevServerHelper(
 
   public open fun getDevServerBundleURL(jsModulePath: String): String =
       createBundleURL(jsModulePath, BundleType.BUNDLE, packagerConnectionSettings.debugServerHost)
-
-  public open fun getDevServerSplitBundleURL(jsModulePath: String): String =
-      createSplitBundleURL(jsModulePath, packagerConnectionSettings.debugServerHost)
 
   public open fun isPackagerRunning(callback: PackagerStatusCallback) {
     packagerStatusCheck.run(packagerConnectionSettings.debugServerHost, callback)

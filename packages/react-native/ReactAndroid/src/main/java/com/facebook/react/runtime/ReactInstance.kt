@@ -319,10 +319,6 @@ internal class ReactInstance(
             loadJSBundleFromFile(fileName, sourceURL)
           }
 
-          override fun loadSplitBundleFromFile(fileName: String, sourceURL: String) {
-            loadJSBundleFromFile(fileName, sourceURL)
-          }
-
           override fun loadScriptFromAssets(
               assetManager: AssetManager,
               assetURL: String,
