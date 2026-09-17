@@ -10,18 +10,37 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins { alias(libs.plugins.kotlin.jvm) }
+plugins {
+  alias(libs.plugins.kotlin.jvm)
+  id("java-gradle-plugin")
+}
 
-repositories { mavenCentral() }
+repositories {
+  google()
+  mavenCentral()
+}
+
+gradlePlugin {
+  plugins {
+    create("reactlibrary") {
+      id = "com.facebook.react.library"
+      implementationClass = "com.facebook.react.ReactLibraryPlugin"
+    }
+  }
+}
 
 group = "com.facebook.react"
 
 dependencies {
+  implementation(project(":shared"))
+
   implementation(gradleApi())
-  implementation(libs.gson)
-  implementation(libs.guava)
+  implementation(libs.kotlin.gradle.plugin)
+  implementation(libs.android.gradle.plugin)
+
   testImplementation(libs.junit)
   testImplementation(libs.assertj)
+  testImplementation(project(":react-native-gradle-plugin"))
   testImplementation(project(":shared-testutil"))
 }
 
@@ -32,16 +51,14 @@ kotlin { jvmToolchain(17) }
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_2_0)
-    // See comment above on JDK 11 support
     jvmTarget.set(JvmTarget.JVM_11)
     allWarningsAsErrors.set(
-        project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false,
+        project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false
     )
   }
 }
 
 tasks.withType<Test>().configureEach {
-  jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
   testLogging {
     exceptionFormat = TestExceptionFormat.FULL
     showExceptions = true
