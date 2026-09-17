@@ -77,6 +77,7 @@ Pod::Spec.new do |s|
   end
 
   s.subspec "attributedstring" do |ss|
+    ss.dependency           "React-renderercss"
     ss.source_files         = podspec_sources("react/renderer/attributedstring/**/*.{m,mm,cpp,h}", "react/renderer/attributedstring/**/*.{h}")
     ss.exclude_files        = "react/renderer/attributedstring/tests"
     ss.header_dir           = "react/renderer/attributedstring"
@@ -215,6 +216,7 @@ Pod::Spec.new do |s|
     end
 
     ss.subspec "intersection" do |sss|
+      sss.dependency           "React-renderercss"
       sss.source_files         = podspec_sources("react/renderer/observers/intersection/**/*.{m,mm,cpp,h}", "react/renderer/observers/intersection/**/*.h")
       sss.exclude_files        = "react/renderer/observers/intersection/tests"
       sss.header_dir           = "react/renderer/observers/intersection"
