@@ -77,6 +77,7 @@ function PromiseTest(): React.Node {
       );
     }
 
+    // $FlowFixMe[incompatible-type]
     runTests().catch(console.error);
   }, []);
 

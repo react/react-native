@@ -29,46 +29,32 @@ declare interface ConsoleTask {
   run<T>(f: () => T): T;
 }
 
-// $FlowExpectedError[libdef-override] Flow core definitions are incomplete.
-declare var console: {
-  // Logging
-  log(...data: ReadonlyArray<unknown>): void,
-  trace(...data: ReadonlyArray<unknown>): void,
-  debug(...data: ReadonlyArray<unknown>): void,
-  info(...data: ReadonlyArray<unknown>): void,
-  warn(...data: ReadonlyArray<unknown>): void,
-  error(...data: ReadonlyArray<unknown>): void,
+interface Console {
+  assert(condition?: boolean, ...data: ReadonlyArray<unknown>): void;
+  clear(): void;
+  count(label?: string): void;
+  countReset(label?: string): void;
+  debug(...data: ReadonlyArray<unknown>): void;
+  dir(item?: unknown, options?: unknown): void;
+  dirxml(...data: ReadonlyArray<unknown>): void;
+  error(...data: ReadonlyArray<unknown>): void;
+  group(...data: ReadonlyArray<unknown>): void;
+  groupCollapsed(...data: ReadonlyArray<unknown>): void;
+  groupEnd(): void;
+  info(...data: ReadonlyArray<unknown>): void;
+  log(...data: ReadonlyArray<unknown>): void;
+  table(tabularData?: unknown, properties?: string[]): void;
+  time(label?: string): void;
+  timeEnd(label?: string): void;
+  timeLog(label?: string, ...data: ReadonlyArray<unknown>): void;
+  timeStamp(label?: string): void;
+  trace(...data: ReadonlyArray<unknown>): void;
+  warn(...data: ReadonlyArray<unknown>): void;
+}
 
-  // Grouping
-  group(...data: ReadonlyArray<unknown>): void,
-  groupCollapsed(...data: ReadonlyArray<unknown>): void,
-  groupEnd(): void,
-
-  // Printing
-  table(
-    tabularData:
-      | Readonly<{[key: string]: unknown, ...}>
-      | ReadonlyArray<Readonly<{[key: string]: unknown, ...}>>
-      | ReadonlyArray<ReadonlyArray<unknown>>,
-  ): void,
-  dir(...data: ReadonlyArray<unknown>): void,
-  dirxml(...data: ReadonlyArray<unknown>): void,
-  clear(): void,
-
-  // Utilities
-  assert(condition: unknown, ...data: ReadonlyArray<unknown>): void,
-
-  // Profiling
-  profile(name?: string): void,
-  profileEnd(name?: string): void,
-
-  // Counts
-  count(label?: string): void,
-  countReset(label?: string): void,
-
-  // Timing / tracing
-  time(label?: string): void,
-  timeEnd(label?: string): void,
+interface Console {
+  profile(name?: string): void;
+  profileEnd(name?: string): void;
   timeStamp(
     label?: string,
     start?: string | number,
@@ -77,12 +63,12 @@ declare var console: {
     trackGroup?: string,
     color?: DevToolsColor,
     detail?: {[string]: unknown},
-  ): void,
+  ): void;
+  createTask(label: string): ConsoleTask;
+}
 
-  // Stack tagging
-  createTask(label: string): ConsoleTask,
-  ...
-};
+// $FlowExpectedError[libdef-override] Flow core definitions are incomplete.
+declare var console: Console;
 
 declare class Navigator {
   product: 'ReactNative';
