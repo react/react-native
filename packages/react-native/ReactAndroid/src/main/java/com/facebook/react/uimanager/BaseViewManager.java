@@ -37,6 +37,8 @@ import com.facebook.react.uimanager.events.BlurEvent;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.FocusEvent;
 import com.facebook.react.uimanager.events.PointerEventHelper;
+import com.facebook.react.uimanager.events.SafeAreaInsetsChangeEvent;
+import com.facebook.react.uimanager.internal.SafeAreaInsetsObserver;
 import com.facebook.react.uimanager.style.OutlineStyle;
 import com.facebook.react.uimanager.util.ReactFindViewUtil;
 import java.util.ArrayList;
@@ -74,6 +76,10 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @Override
   protected @Nullable T prepareToRecycleView(@NonNull ThemedReactContext reactContext, T view) {
+    // Stops safe area observation and clears its tag; the next user of the
+    // view re-enables it through the prop if needed.
+    SafeAreaInsetsObserver.setEnabled(view, false);
+
     // Reset tags
     view.setTag(null);
     view.setTag(R.id.pointer_events, null);
@@ -295,6 +301,15 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.RENDER_TO_HARDWARE_TEXTURE)
   public void setRenderToHardwareTexture(@NonNull T view, boolean useHWTexture) {
     view.setTag(R.id.use_hardware_layer, useHWTexture);
+  }
+
+  /**
+   * Views only observe safe area insets while a JavaScript handler is attached, so views that do
+   * not use the prop are not affected.
+   */
+  @ReactProp(name = ViewProps.ON_SAFE_AREA_INSETS_CHANGE, defaultBoolean = false)
+  public void setOnSafeAreaInsetsChange(@NonNull T view, boolean onSafeAreaInsetsChange) {
+    SafeAreaInsetsObserver.setEnabled(view, onSafeAreaInsetsChange);
   }
 
   @ReactProp(name = ViewProps.TEST_ID)
@@ -823,6 +838,9 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
             .put(
                 "topAccessibilityAction",
                 MapBuilder.of("registrationName", "onAccessibilityAction"))
+            .put(
+                SafeAreaInsetsChangeEvent.EVENT_NAME,
+                MapBuilder.of("registrationName", ViewProps.ON_SAFE_AREA_INSETS_CHANGE))
             .build());
     return eventTypeConstants;
   }

@@ -77,7 +77,7 @@ class EventEmitter {
     }
 
     syncFunc();
-    eventDispatcher->experimental_flushSync();
+    eventDispatcher->experimental_flushSync(getTag());
   }
 
   /*
@@ -132,6 +132,12 @@ class EventEmitter {
 
  private:
   friend class UIManagerBinding;
+
+  /*
+   * The tag of the view this emitter belongs to, or `kNoTag` once its family
+   * is gone.
+   */
+  Tag getTag() const;
 
   SharedEventTarget eventTarget_;
   std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily_;
