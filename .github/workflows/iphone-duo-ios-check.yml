@@ -70,6 +70,10 @@ jobs:
       - name: Build RNTester Debug for iOS Simulator (compiles RCTDeviceInfo.mm)
         working-directory: ${{ env.APP_IOS_DIR }}
         run: |
+          # Use xcodebuild's own exit code, not log-text grepping — a "error:"
+          # substring can show up harmlessly in retry/warning noise even on a
+          # build that ultimately succeeds.
+          set -o pipefail
           xcodebuild \
             -workspace "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
@@ -77,10 +81,6 @@ jobs:
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             build 2>&1 | tee /tmp/xcodebuild.log
-          if grep -qE "^\*\* BUILD FAILED \*\*|error:" /tmp/xcodebuild.log; then
-            echo "::error::xcodebuild failed — see log above, especially any errors in RCTDeviceInfo.mm."
-            exit 1
-          fi
           echo "RNTester (Debug, iphonesimulator) built cleanly, including the modified RCTDeviceInfo.mm."
 
       - name: Upload build log
