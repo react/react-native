@@ -266,7 +266,7 @@ function doNotifyIntersectionObservers(): void {
     if (!registeredObserver) {
       // This could happen if the observer is disconnected between commit
       // and mount. In this case, we can just ignore the entries.
-      return;
+      continue;
     }
 
     const {observer, callback} = registeredObserver;
