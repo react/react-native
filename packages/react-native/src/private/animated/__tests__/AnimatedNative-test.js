@@ -465,6 +465,7 @@ describe('Native Animated', () => {
         if (message.includes('The above error occurred in the')) {
           return;
         }
+        // $FlowFixMe[incompatible-type]
         consoleError(...args);
       });
 
