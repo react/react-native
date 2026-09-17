@@ -26,8 +26,8 @@ object KotlinPluginUtils {
    * 9 and later, and can be disabled with `android.builtInKotlin=false`.
    */
   private fun Project.hasBuiltInKotlinSupport(): Boolean {
-    val androidComponents = extensions.findByType(AndroidComponentsExtension::class.java)
-        ?: return false
+    val androidComponents =
+        extensions.findByType(AndroidComponentsExtension::class.java) ?: return false
     if (androidComponents.pluginVersion.major < AGP_BUILT_IN_KOTLIN_MAJOR) {
       return false
     }

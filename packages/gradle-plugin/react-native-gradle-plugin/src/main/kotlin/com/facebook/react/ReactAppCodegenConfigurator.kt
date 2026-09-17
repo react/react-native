@@ -67,8 +67,7 @@ object ReactAppCodegenConfigurator {
               // package.json at configuration time as we need to feed the onlyIf condition of this
               // task. Therefore, needsCodegenFromPackageJson needs to be invoked inside this
               // lambda.
-              val needsCodegen =
-                  needsCodegenFromPackageJson(project, rootExtension)
+              val needsCodegen = needsCodegenFromPackageJson(project, rootExtension)
               val parsedPackageJson = packageJson?.let { JsonUtils.fromPackageJson(it) }
               val includesGeneratedCode =
                   parsedPackageJson?.codegenConfig?.includesGeneratedCode ?: false

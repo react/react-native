@@ -10,8 +10,8 @@ package com.facebook.react
 import com.facebook.react.model.ModelAutolinkingDependenciesJson
 import java.io.File
 import org.assertj.core.api.Assertions.assertThat
-import org.intellij.lang.annotations.Language
 import org.gradle.testfixtures.ProjectBuilder
+import org.intellij.lang.annotations.Language
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder

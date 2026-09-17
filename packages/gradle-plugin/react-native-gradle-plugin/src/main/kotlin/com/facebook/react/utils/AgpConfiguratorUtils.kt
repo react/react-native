@@ -93,7 +93,6 @@ internal object AgpConfiguratorUtils {
     project.pluginManager.withPlugin("com.android.application", action)
     project.pluginManager.withPlugin("com.android.library", action)
   }
-
 }
 
 const val DEFAULT_DEV_SERVER_PORT = "8081"

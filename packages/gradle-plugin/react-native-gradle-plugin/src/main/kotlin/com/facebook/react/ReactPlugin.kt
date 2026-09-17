@@ -10,6 +10,9 @@ package com.facebook.react
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.facebook.react.internal.PrivateReactExtension
+import com.facebook.react.internal.deprecated.DeprecatedKotlinPluginUtils.applyKotlinAndroidPluginIfNeeded
+import com.facebook.react.internal.deprecated.DeprecatedLibraryAgpConfiguratorUtils.configureNamespaceForLibraries
+import com.facebook.react.internal.deprecated.DeprecatedReactLibraryConfigurator
 import com.facebook.react.model.ModelAutolinkingDependenciesJson
 import com.facebook.react.tasks.GenerateAutolinkingNewArchitecturesFileTask
 import com.facebook.react.tasks.GenerateCodegenArtifactsTask
@@ -24,9 +27,6 @@ import com.facebook.react.utils.DependencyUtils.configureRepositories
 import com.facebook.react.utils.DependencyUtils.readVersionAndGroupStrings
 import com.facebook.react.utils.JdkConfiguratorUtils.configureJavaToolChains
 import com.facebook.react.utils.JsonUtils
-import com.facebook.react.internal.deprecated.DeprecatedKotlinPluginUtils.applyKotlinAndroidPluginIfNeeded
-import com.facebook.react.internal.deprecated.DeprecatedLibraryAgpConfiguratorUtils.configureNamespaceForLibraries
-import com.facebook.react.internal.deprecated.DeprecatedReactLibraryConfigurator
 import com.facebook.react.utils.NdkConfiguratorUtils.configureReactNativeNdk
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import com.facebook.react.utils.PropertyUtils

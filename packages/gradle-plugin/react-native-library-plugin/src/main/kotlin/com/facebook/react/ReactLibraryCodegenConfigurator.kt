@@ -73,8 +73,7 @@ object ReactLibraryCodegenConfigurator {
     // This is equivalent to this DSL:
     //
     // android { sourceSets { main { java { srcDirs += "$generatedSrcDir/java" } } } }
-    project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext
-      ->
+    project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext ->
       ext.sourceSets
           .getByName("main")
           .java
