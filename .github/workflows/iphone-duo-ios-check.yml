@@ -60,7 +60,12 @@ jobs:
 
       - name: pod install (traditional integration, builds React-Core/CoreModules from source)
         working-directory: ${{ env.APP_IOS_DIR }}
-        run: pod install --repo-update
+        run: |
+          # Podfile.lock in the tree pins an older hermes-engine than the one
+          # "Set Hermes prebuilt version" just wrote into the podspec — drop
+          # the stale lock so CocoaPods resolves fresh instead of erroring.
+          rm -f Podfile.lock
+          pod install --repo-update
 
       - name: Build RNTester Debug for iOS Simulator (compiles RCTDeviceInfo.mm)
         working-directory: ${{ env.APP_IOS_DIR }}
