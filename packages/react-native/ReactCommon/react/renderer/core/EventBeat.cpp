@@ -26,6 +26,10 @@ void EventBeat::request() const {
 }
 
 void EventBeat::requestSynchronous() const {
+  requestSynchronous(kNoTag);
+}
+
+void EventBeat::requestSynchronous(Tag /*tag*/) const {
   react_native_assert(
       beatCallback_ &&
       "Unexpected state: EventBeat::setBeatCallback was not called before EventBeat::requestSynchronous.");
@@ -53,7 +57,14 @@ void EventBeat::induce() const {
   isEventBeatRequested_ = false;
 
   if (isBeatCallbackScheduled_) {
-    return;
+    // An asynchronous beat is already scheduled but has not run yet. A
+    // synchronous request must not be stranded behind it (it would silently
+    // lose its this-frame guarantee, and the leftover flag would make an
+    // unrelated later beat blocking), so it proceeds and processes the queue
+    // now; the already scheduled beat will simply find an empty queue.
+    if (!isSynchronousRequested_) {
+      return;
+    }
   }
 
   isBeatCallbackScheduled_ = true;
