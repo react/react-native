@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <tuple>
 
 #include <react/renderer/graphics/Float.h>
