@@ -1,0 +1,86 @@
+name: iPhone Duo - iOS Native Check (Dimensions.getDisplayFeatures)
+
+# Standalone, manually-dispatched build that compiles the changed native file
+# (RCTDeviceInfo.mm) via the traditional CocoaPods RNTester integration —
+# self-contained, unlike the repo's normal iOS CI (test-ios-spm-rntester.yml /
+# e2e-ios-rntester.yml), which depend on prebuilt xcframework artifacts from
+# earlier jobs in test-all.yml and can't be dispatched on their own.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-15-large
+    timeout-minutes: 60
+    env:
+      APP_IOS_DIR: packages/rn-tester
+      XCODE_PROJECT: RNTesterPods.xcworkspace
+      XCODE_SCHEME: RNTester
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Select Xcode (prefer 27.1, else latest installed)
+        id: xcode
+        run: |
+          echo "Installed Xcode versions on this runner:"
+          ls /Applications | grep -i '^Xcode' || true
+          if [ -d "/Applications/Xcode_27.1.app" ]; then
+            SELECTED="/Applications/Xcode_27.1.app"
+          else
+            SELECTED=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          fi
+          if [ -z "$SELECTED" ]; then
+            echo "::error::No Xcode installation found on this runner image."
+            exit 1
+          fi
+          sudo xcode-select --switch "$SELECTED"
+          xcodebuild -version
+          echo "selected=$SELECTED" >> "$GITHUB_OUTPUT"
+          if [ "$SELECTED" != "/Applications/Xcode_27.1.app" ]; then
+            echo "::warning::Xcode 27.1 is not on this GitHub-hosted runner image yet; fell back to $SELECTED. This run does NOT confirm compatibility with Xcode 27.1 specifically."
+          fi
+
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+
+      - name: Run yarn install
+        uses: ./.github/actions/yarn-install
+
+      - name: Set Hermes prebuilt version
+        shell: bash
+        run: node ./scripts/releases/use-hermes-prebuilt.js
+
+      - name: Run yarn install again, with the correct hermes version
+        uses: ./.github/actions/yarn-install
+
+      - name: Install CocoaPods
+        run: pod --version || sudo gem install cocoapods --no-document
+
+      - name: pod install (traditional integration, builds React-Core/CoreModules from source)
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: pod install --repo-update
+
+      - name: Build RNTester Debug for iOS Simulator (compiles RCTDeviceInfo.mm)
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: |
+          xcodebuild \
+            -workspace "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            build 2>&1 | tee /tmp/xcodebuild.log
+          if grep -qE "^\*\* BUILD FAILED \*\*|error:" /tmp/xcodebuild.log; then
+            echo "::error::xcodebuild failed — see log above, especially any errors in RCTDeviceInfo.mm."
+            exit 1
+          fi
+          echo "RNTester (Debug, iphonesimulator) built cleanly, including the modified RCTDeviceInfo.mm."
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iphone-duo-rn-xcodebuild-log
+          path: /tmp/xcodebuild.log
