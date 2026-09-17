@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15-large
+    runs-on: macos-15
     timeout-minutes: 60
     env:
       APP_IOS_DIR: packages/rn-tester
