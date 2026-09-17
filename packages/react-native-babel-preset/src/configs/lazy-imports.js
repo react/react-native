@@ -29,7 +29,6 @@ module.exports = new Set([
   'Pressable',
   'ProgressBarAndroid',
   'ProgressViewIOS',
-  'SafeAreaView',
   'ScrollView',
   'SectionList',
   'Slider',

@@ -34,7 +34,6 @@ Class<RCTComponentViewProtocol> RCTDebuggingOverlayCls(void) __attribute__((used
 Class<RCTComponentViewProtocol> RCTInputAccessoryCls(void) __attribute__((used));
 Class<RCTComponentViewProtocol> RCTParagraphCls(void) __attribute__((used));
 Class<RCTComponentViewProtocol> RCTPullToRefreshViewCls(void) __attribute__((used));
-Class<RCTComponentViewProtocol> RCTSafeAreaViewCls(void) __attribute__((used));
 Class<RCTComponentViewProtocol> RCTScrollViewCls(void) __attribute__((used));
 Class<RCTComponentViewProtocol> RCTSwitchCls(void) __attribute__((used));
 Class<RCTComponentViewProtocol> RCTTextInputCls(void) __attribute__((used));

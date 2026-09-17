@@ -8,7 +8,7 @@
  * @format
  */
 
-import SafeAreaView from '../../Components/SafeAreaView/SafeAreaView';
+import SafeAreaView from '../../../src/private/components/safeareaview/SafeAreaView';
 import StyleSheet, {
   type ColorValue,
   type ViewStyleProp,

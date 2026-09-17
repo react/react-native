@@ -12,7 +12,8 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
-import {SafeAreaView, Text} from 'react-native';
+import {Text} from 'react-native';
+import SafeAreaView from 'react-native/src/private/components/safeareaview/SafeAreaView';
 
 describe('<SafeAreaView>', () => {
   it('renders with children', () => {
