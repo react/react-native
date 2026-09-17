@@ -242,7 +242,9 @@ internal class BorderDrawable(
       val left = bounds.left
       val top = bounds.top
 
-      // Check for fast path to border drawing.
+      val right = bounds.right
+      val bottom = bounds.bottom
+
       val fastBorderColor =
           fastBorderCompatibleColorOrZero(
               borderLeft,
@@ -254,17 +256,49 @@ internal class BorderDrawable(
               computedBorderColors.right,
               computedBorderColors.bottom,
           )
-      if (fastBorderColor != 0) {
-        if (Color.alpha(fastBorderColor) != 0) {
-          // Border color is not transparent.
-          val right = bounds.right
-          val bottom = bounds.bottom
+
+      val widths = listOf(borderLeft, borderTop, borderRight, borderBottom).filter { it > 0 }
+      val isUniformWidth = widths.isNotEmpty() && widths.all { it == widths[0] }
+
+      // We use STROKE if:
+      // - It's not a solid border (dashed/dotted MUST use stroke).
+      // - OR it's a solid uniform color that is either opaque OR has uniform width (no overlaps).
+      // In other cases (non-uniform translucent solid or multi-colored solid),
+      // we use quadrilaterals (FILL) to get perfect joints.
+      val useStrokeLogic =
+          borderStyle != BorderStyle.SOLID ||
+              (fastBorderColor != 0 && (Color.alpha(fastBorderColor) == 255 || isUniformWidth))
+
+      if (useStrokeLogic) {
+        if (fastBorderColor != 0 && Color.alpha(fastBorderColor) == 0) {
+          return
+        }
+
+        borderPaint.style = Paint.Style.STROKE
+        pathForSingleBorder = pathForSingleBorder ?: Path()
+
+        if (fastBorderColor != 0 && isUniformWidth && borderLeft > 0) {
+          // Optimized path: Use a single rect for uniform border width/color.
+          // This avoids overlapping corners for translucent borders and makes
+          // dashes/dots continuous around corners.
+          val width = borderLeft.toFloat()
           borderPaint.color = multiplyColorAlpha(fastBorderColor, borderAlpha)
-          borderPaint.style = Paint.Style.STROKE
-          pathForSingleBorder = Path()
+          updatePathEffect(width.toInt())
+          borderPaint.strokeWidth = width
+          pathForSingleBorder?.reset()
+          pathForSingleBorder?.addRect(
+              left + width / 2f, top + width / 2f,
+              right - width / 2f, bottom - width / 2f,
+              Path.Direction.CW,
+          )
+          pathForSingleBorder?.let { canvas.drawPath(it, borderPaint) }
+        } else {
+          // Side-by-side lines. This is used for multi-color dashed borders
+          // or non-uniform widths.
           if (borderLeft > 0) {
             pathForSingleBorder?.reset()
-            val width = borderWidth.left.roundToInt()
+            val width = borderLeft
+            borderPaint.color = multiplyColorAlpha(computedBorderColors.left, borderAlpha)
             updatePathEffect(width)
             borderPaint.strokeWidth = width.toFloat()
             pathForSingleBorder?.moveTo((left + width / 2).toFloat(), top.toFloat())
@@ -273,7 +307,8 @@ internal class BorderDrawable(
           }
           if (borderTop > 0) {
             pathForSingleBorder?.reset()
-            val width = borderWidth.top.roundToInt()
+            val width = borderTop
+            borderPaint.color = multiplyColorAlpha(computedBorderColors.top, borderAlpha)
             updatePathEffect(width)
             borderPaint.strokeWidth = width.toFloat()
             pathForSingleBorder?.moveTo(left.toFloat(), (top + width / 2).toFloat())
@@ -282,7 +317,8 @@ internal class BorderDrawable(
           }
           if (borderRight > 0) {
             pathForSingleBorder?.reset()
-            val width = borderWidth.right.roundToInt()
+            val width = borderRight
+            borderPaint.color = multiplyColorAlpha(computedBorderColors.right, borderAlpha)
             updatePathEffect(width)
             borderPaint.strokeWidth = width.toFloat()
             pathForSingleBorder?.moveTo((right - width / 2).toFloat(), top.toFloat())
@@ -291,7 +327,8 @@ internal class BorderDrawable(
           }
           if (borderBottom > 0) {
             pathForSingleBorder?.reset()
-            val width = borderWidth.bottom.roundToInt()
+            val width = borderBottom
+            borderPaint.color = multiplyColorAlpha(computedBorderColors.bottom, borderAlpha)
             updatePathEffect(width)
             borderPaint.strokeWidth = width.toFloat()
             pathForSingleBorder?.moveTo(left.toFloat(), (bottom - width / 2).toFloat())
@@ -306,6 +343,7 @@ internal class BorderDrawable(
          * after drawing is done, we will re-enable it.
          */
         borderPaint.isAntiAlias = false
+        borderPaint.style = Paint.Style.FILL
         val width = bounds.width()
         val height = bounds.height()
         if (borderLeft > 0) {
@@ -352,7 +390,6 @@ internal class BorderDrawable(
           val y4 = (top + height - borderBottom).toFloat()
           drawQuadrilateral(canvas, computedBorderColors.bottom, x1, y1, x2, y2, x3, y3, x4, y4)
         }
-
         // re-enable anti alias
         borderPaint.isAntiAlias = true
       }
@@ -366,119 +403,247 @@ internal class BorderDrawable(
     // Clip outer border
     canvas.clipPath(checkNotNull(outerClipPathForBorderRadius))
 
-    val borderWidth = computeBorderInsets()
-    if (
-        borderWidth.top > 0 ||
-            borderWidth.bottom > 0 ||
-            borderWidth.left > 0 ||
-            borderWidth.right > 0
-    ) {
+    val borderInsets = computeBorderInsets()
+    val fullBorderWidth = getFullBorderWidth()
+    val borderColor = getBorderColor(LogicalEdge.ALL)
 
-      // If it's a full and even border draw inner rect path with stroke
-      val fullBorderWidth: Float = getFullBorderWidth()
-      val borderColor = getBorderColor(LogicalEdge.ALL)
+    val isUniformColor =
+        computedBorderColors.left == borderColor &&
+            computedBorderColors.top == borderColor &&
+            computedBorderColors.right == borderColor &&
+            computedBorderColors.bottom == borderColor
 
-      if (
-          borderWidth.top == fullBorderWidth &&
-              borderWidth.bottom == fullBorderWidth &&
-              borderWidth.left == fullBorderWidth &&
-              borderWidth.right == fullBorderWidth &&
-              computedBorderColors.left == borderColor &&
-              computedBorderColors.top == borderColor &&
-              computedBorderColors.right == borderColor &&
-              computedBorderColors.bottom == borderColor
-      ) {
-        if (fullBorderWidth > 0) {
-          borderPaint.color = multiplyColorAlpha(borderColor, borderAlpha)
-          borderPaint.style = Paint.Style.STROKE
-          borderPaint.strokeWidth = fullBorderWidth
-          if (computedBorderRadius?.isUniform() == true) {
-            tempRectForCenterDrawPath?.let {
-              canvas.drawRoundRect(
-                  it,
-                  ((computedBorderRadius?.topLeft?.toPixelFromDIP()?.horizontal ?: 0f) -
-                      borderWidth.left * 0.5f),
-                  ((computedBorderRadius?.topLeft?.toPixelFromDIP()?.vertical ?: 0f) -
-                      borderWidth.top * 0.5f),
-                  borderPaint,
-              )
-            }
-          } else {
-            canvas.drawPath(checkNotNull(centerDrawPath), borderPaint)
+    val isUniformWidth =
+        borderInsets.top == fullBorderWidth &&
+            borderInsets.bottom == fullBorderWidth &&
+            borderInsets.left == fullBorderWidth &&
+            borderInsets.right == fullBorderWidth
+
+    val useStroke =
+        borderStyle != BorderStyle.SOLID ||
+            (isUniformColor && isUniformWidth && Color.alpha(borderColor) == 255)
+
+    if (useStroke && isUniformColor && isUniformWidth) {
+      if (fullBorderWidth > 0) {
+        borderPaint.color = multiplyColorAlpha(borderColor, borderAlpha)
+        borderPaint.style = Paint.Style.STROKE
+        borderPaint.strokeWidth = fullBorderWidth
+        if (computedBorderRadius?.isUniform() == true) {
+          tempRectForCenterDrawPath?.let {
+            canvas.drawRoundRect(
+                it,
+                ((computedBorderRadius?.topLeft?.toPixelFromDIP()?.horizontal ?: 0f) -
+                    borderInsets.left * 0.5f),
+                ((computedBorderRadius?.topLeft?.toPixelFromDIP()?.vertical ?: 0f) -
+                    borderInsets.top * 0.5f),
+                borderPaint,
+            )
           }
-        }
-      }
-      // In the case of uneven border widths/colors draw quadrilateral in each direction
-      else {
-        borderPaint.style = Paint.Style.FILL
-
-        // Clip inner border
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-          canvas.clipOutPath(checkNotNull(innerClipPathForBorderRadius))
         } else {
-          @Suppress("DEPRECATION")
-          canvas.clipPath(checkNotNull(innerClipPathForBorderRadius), Region.Op.DIFFERENCE)
-        }
-        val outerClipTempRect = checkNotNull(outerClipTempRectForBorderRadius)
-        val left = outerClipTempRect.left
-        val right = outerClipTempRect.right
-        val top = outerClipTempRect.top
-        val bottom = outerClipTempRect.bottom
-
-        val innerTopLeftCorner = checkNotNull(this.innerTopLeftCorner)
-        val innerTopRightCorner = checkNotNull(this.innerTopRightCorner)
-        val innerBottomLeftCorner = checkNotNull(this.innerBottomLeftCorner)
-        val innerBottomRightCorner = checkNotNull(this.innerBottomRightCorner)
-
-        /**
-         * gapBetweenPaths is used to close the gap between the diagonal edges of the quadrilaterals
-         * on adjacent sides of the rectangle
-         */
-        if (borderWidth.left > 0) {
-          val x1 = left
-          val y1: Float = top - gapBetweenPaths
-          val x2 = innerTopLeftCorner.x
-          val y2: Float = innerTopLeftCorner.y - gapBetweenPaths
-          val x3 = innerBottomLeftCorner.x
-          val y3: Float = innerBottomLeftCorner.y + gapBetweenPaths
-          val x4 = left
-          val y4: Float = bottom + gapBetweenPaths
-          drawQuadrilateral(canvas, computedBorderColors.left, x1, y1, x2, y2, x3, y3, x4, y4)
-        }
-        if (borderWidth.top > 0) {
-          val x1: Float = left - gapBetweenPaths
-          val y1 = top
-          val x2: Float = innerTopLeftCorner.x - gapBetweenPaths
-          val y2 = innerTopLeftCorner.y
-          val x3: Float = innerTopRightCorner.x + gapBetweenPaths
-          val y3 = innerTopRightCorner.y
-          val x4: Float = right + gapBetweenPaths
-          val y4 = top
-          drawQuadrilateral(canvas, computedBorderColors.top, x1, y1, x2, y2, x3, y3, x4, y4)
-        }
-        if (borderWidth.right > 0) {
-          val x1 = right
-          val y1: Float = top - gapBetweenPaths
-          val x2 = innerTopRightCorner.x
-          val y2: Float = innerTopRightCorner.y - gapBetweenPaths
-          val x3 = innerBottomRightCorner.x
-          val y3: Float = innerBottomRightCorner.y + gapBetweenPaths
-          val x4 = right
-          val y4: Float = bottom + gapBetweenPaths
-          drawQuadrilateral(canvas, computedBorderColors.right, x1, y1, x2, y2, x3, y3, x4, y4)
-        }
-        if (borderWidth.bottom > 0) {
-          val x1: Float = left - gapBetweenPaths
-          val y1 = bottom
-          val x2: Float = innerBottomLeftCorner.x - gapBetweenPaths
-          val y2 = innerBottomLeftCorner.y
-          val x3: Float = innerBottomRightCorner.x + gapBetweenPaths
-          val y3 = innerBottomRightCorner.y
-          val x4: Float = right + gapBetweenPaths
-          val y4 = bottom
-          drawQuadrilateral(canvas, computedBorderColors.bottom, x1, y1, x2, y2, x3, y3, x4, y4)
+          canvas.drawPath(checkNotNull(centerDrawPath), borderPaint)
         }
       }
+    } else if (useStroke) {
+      // In the case of uneven border widths/colors but dashed style,
+      // we draw the whole path multiple times and clip it to each quadrilateral.
+      borderPaint.style = Paint.Style.STROKE
+
+      val outerClipTempRect = checkNotNull(outerClipTempRectForBorderRadius)
+      val left = outerClipTempRect.left
+      val right = outerClipTempRect.right
+      val top = outerClipTempRect.top
+      val bottom = outerClipTempRect.bottom
+
+      val innerTopLeftCorner = checkNotNull(this.innerTopLeftCorner)
+      val innerTopRightCorner = checkNotNull(this.innerTopRightCorner)
+      val innerBottomLeftCorner = checkNotNull(this.innerBottomLeftCorner)
+      val innerBottomRightCorner = checkNotNull(this.innerBottomRightCorner)
+
+      if (borderInsets.left > 0) {
+        drawClippedSide(
+            canvas,
+            LogicalEdge.LEFT,
+            left,
+            top - gapBetweenPaths,
+            innerTopLeftCorner.x,
+            innerTopLeftCorner.y - gapBetweenPaths,
+            innerBottomLeftCorner.x,
+            innerBottomLeftCorner.y + gapBetweenPaths,
+            left,
+            bottom + gapBetweenPaths,
+        )
+      }
+      if (borderInsets.top > 0) {
+        drawClippedSide(
+            canvas,
+            LogicalEdge.TOP,
+            left - gapBetweenPaths,
+            top,
+            innerTopLeftCorner.x - gapBetweenPaths,
+            innerTopLeftCorner.y,
+            innerTopRightCorner.x + gapBetweenPaths,
+            innerTopRightCorner.y,
+            right + gapBetweenPaths,
+            top,
+        )
+      }
+      if (borderInsets.right > 0) {
+        drawClippedSide(
+            canvas,
+            LogicalEdge.RIGHT,
+            right,
+            top - gapBetweenPaths,
+            innerTopRightCorner.x,
+            innerTopRightCorner.y - gapBetweenPaths,
+            innerBottomRightCorner.x,
+            innerBottomRightCorner.y + gapBetweenPaths,
+            right,
+            bottom + gapBetweenPaths,
+        )
+      }
+      if (borderInsets.bottom > 0) {
+        drawClippedSide(
+            canvas,
+            LogicalEdge.BOTTOM,
+            left - gapBetweenPaths,
+            bottom,
+            innerBottomLeftCorner.x - gapBetweenPaths,
+            innerBottomLeftCorner.y,
+            innerBottomRightCorner.x + gapBetweenPaths,
+            innerBottomRightCorner.y,
+            right + gapBetweenPaths,
+            bottom,
+        )
+      }
+    } else {
+      // In the case of uneven border widths/colors draw quadrilateral in each direction
+      borderPaint.style = Paint.Style.FILL
+
+      // Clip inner border
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        canvas.clipOutPath(checkNotNull(innerClipPathForBorderRadius))
+      } else {
+        @Suppress("DEPRECATION")
+        canvas.clipPath(checkNotNull(innerClipPathForBorderRadius), Region.Op.DIFFERENCE)
+      }
+      val outerClipTempRect = checkNotNull(outerClipTempRectForBorderRadius)
+      val left = outerClipTempRect.left
+      val right = outerClipTempRect.right
+      val top = outerClipTempRect.top
+      val bottom = outerClipTempRect.bottom
+
+      val innerTopLeftCorner = checkNotNull(this.innerTopLeftCorner)
+      val innerTopRightCorner = checkNotNull(this.innerTopRightCorner)
+      val innerBottomLeftCorner = checkNotNull(this.innerBottomLeftCorner)
+      val innerBottomRightCorner = checkNotNull(this.innerBottomRightCorner)
+
+      if (borderInsets.left > 0) {
+        val x1 = left
+        val y1: Float = top - gapBetweenPaths
+        val x2 = innerTopLeftCorner.x
+        val y2: Float = innerTopLeftCorner.y - gapBetweenPaths
+        val x3 = innerBottomLeftCorner.x
+        val y3: Float = innerBottomLeftCorner.y + gapBetweenPaths
+        val x4 = left
+        val y4: Float = bottom + gapBetweenPaths
+        drawQuadrilateral(canvas, computedBorderColors.left, x1, y1, x2, y2, x3, y3, x4, y4)
+      }
+      if (borderInsets.top > 0) {
+        val x1: Float = left - gapBetweenPaths
+        val y1 = top
+        val x2: Float = innerTopLeftCorner.x - gapBetweenPaths
+        val y2 = innerTopLeftCorner.y
+        val x3: Float = innerTopRightCorner.x + gapBetweenPaths
+        val y3 = innerTopRightCorner.y
+        val x4: Float = right + gapBetweenPaths
+        val y4 = top
+        drawQuadrilateral(canvas, computedBorderColors.top, x1, y1, x2, y2, x3, y3, x4, y4)
+      }
+      if (borderInsets.right > 0) {
+        val x1 = right
+        val y1: Float = top - gapBetweenPaths
+        val x2 = innerTopRightCorner.x
+        val y2: Float = innerTopRightCorner.y - gapBetweenPaths
+        val x3 = innerBottomRightCorner.x
+        val y3: Float = innerBottomRightCorner.y + gapBetweenPaths
+        val x4 = right
+        val y4: Float = bottom + gapBetweenPaths
+        drawQuadrilateral(canvas, computedBorderColors.right, x1, y1, x2, y2, x3, y3, x4, y4)
+      }
+      if (borderInsets.bottom > 0) {
+        val x1: Float = left - gapBetweenPaths
+        val y1 = bottom
+        val x2: Float = innerBottomLeftCorner.x - gapBetweenPaths
+        val y2 = innerBottomLeftCorner.y
+        val x3: Float = innerBottomRightCorner.x + gapBetweenPaths
+        val y3 = innerBottomRightCorner.y
+        val x4: Float = right + gapBetweenPaths
+        val y4 = bottom
+        drawQuadrilateral(canvas, computedBorderColors.bottom, x1, y1, x2, y2, x3, y3, x4, y4)
+      }
+    }
+    canvas.restore()
+  }
+
+  private fun drawClippedSide(
+      canvas: Canvas,
+      edge: LogicalEdge,
+      x1: Float,
+      y1: Float,
+      x2: Float,
+      y2: Float,
+      x3: Float,
+      y3: Float,
+      x4: Float,
+      y4: Float,
+  ) {
+    canvas.save()
+    if (this.pathForBorder == null) {
+      this.pathForBorder = Path()
+    }
+    pathForBorder?.reset()
+    pathForBorder?.moveTo(x1, y1)
+    pathForBorder?.lineTo(x2, y2)
+    pathForBorder?.lineTo(x3, y3)
+    pathForBorder?.lineTo(x4, y4)
+    pathForBorder?.close()
+    canvas.clipPath(pathForBorder!!)
+
+    val sideColor =
+        when (edge) {
+          LogicalEdge.LEFT -> computedBorderColors.left
+          LogicalEdge.TOP -> computedBorderColors.top
+          LogicalEdge.RIGHT -> computedBorderColors.right
+          LogicalEdge.BOTTOM -> computedBorderColors.bottom
+          else -> computedBorderColors.left
+        }
+    borderPaint.color = multiplyColorAlpha(sideColor, borderAlpha)
+
+    val insets = computeBorderInsets()
+    val width =
+        when (edge) {
+          LogicalEdge.LEFT -> insets.left
+          LogicalEdge.TOP -> insets.top
+          LogicalEdge.RIGHT -> insets.right
+          LogicalEdge.BOTTOM -> insets.bottom
+          else -> 0f
+        }
+
+    updatePathEffect(width.toInt())
+    borderPaint.strokeWidth = width
+
+    if (computedBorderRadius?.isUniform() == true) {
+      tempRectForCenterDrawPath?.let {
+        canvas.drawRoundRect(
+            it,
+            ((computedBorderRadius?.topLeft?.toPixelFromDIP()?.horizontal ?: 0f) -
+                insets.left * 0.5f),
+            ((computedBorderRadius?.topLeft?.toPixelFromDIP()?.vertical ?: 0f) - insets.top * 0.5f),
+            borderPaint,
+        )
+      }
+    } else {
+      canvas.drawPath(checkNotNull(centerDrawPath), borderPaint)
     }
     canvas.restore()
   }
@@ -493,16 +658,6 @@ internal class BorderDrawable(
       colorRight: Int,
       colorBottom: Int,
   ): Int {
-    // If any of the border colors are translucent then we can't use the fast path.
-    if (
-        Color.alpha(colorLeft) < 255 ||
-            Color.alpha(colorTop) < 255 ||
-            Color.alpha(colorRight) < 255 ||
-            Color.alpha(colorBottom) < 255
-    ) {
-      return 0
-    }
-
     val andSmear =
         ((if (borderLeft > 0) colorLeft else ALL_BITS_SET) and
             (if (borderTop > 0) colorTop else ALL_BITS_SET) and
@@ -558,17 +713,41 @@ internal class BorderDrawable(
     return RectF(0f, 0f, 0f, 0f)
   }
 
-  /** For rounded borders we use default "borderWidth" property. */
+  /** For rounded borders we use the maximum of the resolved border widths as a representative width. */
+  private fun getDashWidth(): Float {
+    if (borderWidth == null) return 0f
+
+    // Check Spacing.ALL first
+    val allWidth = borderWidth.getRaw(Spacing.ALL)
+    if (!allWidth.isNaN()) return allWidth
+
+    // Use the max of all individual sides as a representative width
+    val top = borderWidth.getRaw(Spacing.TOP)
+    val left = borderWidth.getRaw(Spacing.LEFT)
+    val right = borderWidth.getRaw(Spacing.RIGHT)
+    val bottom = borderWidth.getRaw(Spacing.BOTTOM)
+
+    val maxSide =
+        maxOf(
+            if (top.isNaN()) 0f else top,
+            maxOf(
+                if (left.isNaN()) 0f else left,
+                maxOf(if (right.isNaN()) 0f else right, if (bottom.isNaN()) 0f else bottom),
+            ),
+        )
+    return maxSide
+  }
+
   private fun getFullBorderWidth(): Float {
-    val borderWidth = this.borderWidth?.getRaw(Spacing.ALL) ?: Float.NaN
-    return if (!borderWidth.isNaN()) borderWidth else 0f
+    val insets = computeBorderInsets()
+    return maxOf(maxOf(insets.left, insets.top), maxOf(insets.right, insets.bottom))
   }
 
   private fun updatePathEffect() {
     /** Used for rounded border and rounded background. */
     this.borderStyle?.let { style ->
       val pathEffectForBorderStyle =
-          if (this.borderStyle != null) getPathEffect(style, getFullBorderWidth()) else null
+          if (this.borderStyle != null) getPathEffect(style, getDashWidth()) else null
       borderPaint.setPathEffect(pathEffectForBorderStyle)
     }
   }
@@ -576,7 +755,7 @@ internal class BorderDrawable(
   private fun updatePathEffect(borderWidth: Int) {
     this.borderStyle?.let { style ->
       val pathEffectForBorderStyle =
-          if (this.borderStyle != null) getPathEffect(style, borderWidth.toFloat()) else null
+          if (this.borderStyle != null) getPathEffect(style, borderWidth.pxToDp()) else null
       borderPaint.setPathEffect(pathEffectForBorderStyle)
     }
   }
@@ -1094,7 +1273,7 @@ internal class BorderDrawable(
     }
     val alpha = rawAlpha + (rawAlpha shr 7) // make it 0..256
     val colorAlpha = color ushr 24
-    val multipliedAlpha = colorAlpha * (alpha shr 7) shr 8
+    val multipliedAlpha = colorAlpha * alpha shr 8
     return (multipliedAlpha shl 24) or (color and 0x00FFFFFF)
   }
 }
