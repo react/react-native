@@ -1823,6 +1823,7 @@ class facebook::react::BaseViewEventEmitter : public facebook::react::TouchEvent
   public void onBlur() const;
   public void onFocus() const;
   public void onLayout(const facebook::react::LayoutMetrics& layoutMetrics) const;
+  public void onSafeAreaInsetsChange(const facebook::react::EdgeInsets& insets) const;
 }
 
 class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps, public facebook::react::AccessibilityProps {
@@ -1832,6 +1833,7 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;
   public bool onLayout;
+  public bool onSafeAreaInsetsChange;
   public bool removeClippedSubviews;
   public bool shouldRasterize;
   public facebook::react::BackfaceVisibility backfaceVisibility;
@@ -2235,8 +2237,9 @@ class facebook::react::EventBeat {
   public using BeatCallback = std::function<void(facebook::jsi::Runtime& runtime)>;
   public using Factory = std::function<std::unique_ptr<facebook::react::EventBeat>(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox)>;
   public virtual void request() const;
-  public virtual void requestSynchronous() const;
+  public virtual void requestSynchronous(facebook::react::Tag tag) const;
   public virtual ~EventBeat() = default;
+  public void requestSynchronous() const;
   public void setBeatCallback(facebook::react::EventBeat::BeatCallback beatCallback);
 }
 
