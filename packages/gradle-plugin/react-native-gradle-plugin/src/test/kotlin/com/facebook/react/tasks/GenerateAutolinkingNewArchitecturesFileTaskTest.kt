@@ -208,6 +208,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
             set(REACTNATIVE_MERGED_SO true)
 
             set(AUTOLINKED_LIBRARIES)
+            set(AUTOLINKED_CODEGEN_LIBRARIES)
 
 
             """
@@ -233,16 +234,19 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
             set(REACTNATIVE_MERGED_SO true)
 
             set(AUTOLINKED_LIBRARIES)
+            set(AUTOLINKED_CODEGEN_LIBRARIES)
 
             if(EXISTS "./a/directory/")
               add_subdirectory("./a/directory/" aPackage_autolinked_build)
               list(APPEND AUTOLINKED_LIBRARIES react_codegen_aPackage)
+              list(APPEND AUTOLINKED_CODEGEN_LIBRARIES react_codegen_aPackage)
             else()
               message(WARNING "React Native: Skipping autolinked library 'react_codegen_aPackage' because the source directory does not exist: ./a/directory/")
             endif()
             if(EXISTS "./another/directory/with\ spaces/")
               add_subdirectory("./another/directory/with\ spaces/" anotherPackage_autolinked_build)
               list(APPEND AUTOLINKED_LIBRARIES react_codegen_anotherPackage)
+              list(APPEND AUTOLINKED_CODEGEN_LIBRARIES react_codegen_anotherPackage)
             else()
               message(WARNING "React Native: Skipping autolinked library 'react_codegen_anotherPackage' because the source directory does not exist: ./another/directory/with\ spaces/")
             endif()
@@ -289,6 +293,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
             if(EXISTS "$generatedNativeFolderPath")
               add_subdirectory("$generatedNativeFolderPath" aPackage_autolinked_build)
               list(APPEND AUTOLINKED_LIBRARIES react_codegen_aPackage)
+              list(APPEND AUTOLINKED_CODEGEN_LIBRARIES react_codegen_aPackage)
             else()
               message(WARNING "React Native: Skipping autolinked library 'react_codegen_aPackage' because the source directory does not exist: $generatedNativeFolderPath")
             endif()
@@ -327,6 +332,7 @@ class GenerateAutolinkingNewArchitecturesFileTaskTest {
             if(EXISTS "./a/directory/")
               add_subdirectory("./a/directory/" aPackage_autolinked_build)
               list(APPEND AUTOLINKED_LIBRARIES react_codegen_aPackage)
+              list(APPEND AUTOLINKED_CODEGEN_LIBRARIES react_codegen_aPackage)
             else()
               message(WARNING "React Native: Skipping autolinked library 'react_codegen_aPackage' because the source directory does not exist: ./a/directory/")
             endif()
