@@ -94,6 +94,7 @@ class WebSocketImage extends React.Component<
       if (event.data instanceof Blob) {
         const blob = event.data;
         if (this.state.blob) {
+          // $FlowFixMe[prop-missing]
           this.state.blob.close();
         }
         this.setState({blob});
@@ -106,6 +107,7 @@ class WebSocketImage extends React.Component<
 
   componentUnmount() {
     if (this.state.blob) {
+      // $FlowFixMe[prop-missing]
       this.state.blob.close();
     }
     this.ws && this.ws.close();
@@ -166,6 +168,7 @@ class WebSocketExample extends React.Component<
 
   _connect = () => {
     const socket = new WebSocket(this.state.url);
+    // $FlowFixMe[incompatible-type]
     WS_EVENTS.forEach(ev => socket.addEventListener(ev, this._onSocketEvent));
     this.setState({
       socket,
@@ -183,6 +186,7 @@ class WebSocketExample extends React.Component<
   _onSocketEvent = (event: MessageEvent) => {
     const state: Partial<WebSocketExampleState> = {
       // $FlowFixMe[prop-missing]
+      // $FlowFixMe[incompatible-use]
       socketState: event.target.readyState,
       lastSocketEvent: event.type,
     };

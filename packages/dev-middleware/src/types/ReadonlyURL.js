@@ -19,14 +19,10 @@ export interface ReadonlyURLSearchParams {
   entries(): Iterator<[string, string]>;
   keys(): Iterator<string>;
   values(): Iterator<string>;
-  forEach<This>(
-    callback: (
-      this: This,
-      value: string,
-      name: string,
-      params: URLSearchParams,
-    ) => unknown,
-    thisArg: This,
+  forEach(
+    callbackfn: (value: string, key: string, parent: URLSearchParams) => void,
+    // $FlowExpectedError[unclear-type]
+    thisArg?: any,
   ): void;
   toString(): string;
   @@iterator(): Iterator<[string, string]>;

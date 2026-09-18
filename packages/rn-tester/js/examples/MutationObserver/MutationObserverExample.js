@@ -168,7 +168,7 @@ function ExampleItem(props: {
   );
 }
 
-function nodeListToString(nodeList: NodeList<Node>): string {
+function nodeListToString(nodeList: NodeList): string {
   return [...nodeList]
     .map(node => (node instanceof Element && node.id) || '<unknown-node>')
     .join(', ');

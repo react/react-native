@@ -316,7 +316,7 @@ declare class MutationRecord {
   // Always an empty NodeList for `attributes` and `characterData` mutations.
   // React Native currently only supports `childList`, so this contains the
   // added nodes for that mutation type.
-  readonly addedNodes: NodeList<Node>;
+  readonly addedNodes: NodeListOf<Node>;
   // Always `null` in React Native (only `childList` mutations are supported).
   readonly attributeName: null;
   // Always `null` in React Native (only `childList` mutations are supported).
@@ -329,7 +329,7 @@ declare class MutationRecord {
   // Always an empty NodeList for `attributes` and `characterData` mutations.
   // React Native currently only supports `childList`, so this contains the
   // removed nodes for that mutation type.
-  readonly removedNodes: NodeList<Node>;
+  readonly removedNodes: NodeListOf<Node>;
   readonly target: Node;
   // React Native currently only supports `childList` mutations.
   readonly type: 'childList';

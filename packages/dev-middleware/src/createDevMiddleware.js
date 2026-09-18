@@ -93,6 +93,7 @@ export default function createDevMiddleware({
   unstable_customInspectorMessageHandler,
   unstable_trackInspectorProxyEventLoopPerf = false,
 }: Options): DevMiddlewareAPI {
+  // $FlowFixMe[incompatible-type]
   const normalizedServerBaseUrl: ReadonlyURL = new URL(serverBaseUrl);
 
   const experiments = getExperiments(experimentConfig);

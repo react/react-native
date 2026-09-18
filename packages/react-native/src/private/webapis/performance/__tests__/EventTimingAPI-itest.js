@@ -72,6 +72,7 @@ describe('Event Timing API', () => {
       entry.processingEnd - entry.startTime,
     );
 
+    // $FlowFixMe[prop-missing]
     expect(entry.interactionId).toBeGreaterThanOrEqual(0);
   });
 
@@ -125,6 +126,7 @@ describe('Event Timing API', () => {
       entry.processingEnd - entry.startTime,
     );
 
+    // $FlowFixMe[prop-missing]
     expect(entry.interactionId).toBeGreaterThanOrEqual(0);
   });
 
@@ -181,6 +183,7 @@ describe('Event Timing API', () => {
 
     // TODO: When Fantom provides structured data from mounting manager, add timestamp to operations and verify that the duration includes that.
 
+    // $FlowFixMe[prop-missing]
     expect(entry.interactionId).toBeGreaterThanOrEqual(0);
   });
 

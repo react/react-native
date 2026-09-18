@@ -79,6 +79,7 @@ export function withFetchSelfSignedCertsForAllTests(
     // For some reason, setting the `selfSignedCertDispatcher` with `setGlobalDispatcher` doesn't work.
     // Instead of using `setGlobalDispatcher`, we'll use a spy to intercept the fetch calls and add the dispatcher.
     fetchSpy.mockImplementation((url, options) =>
+      // $FlowFixMe[cannot-spread-interface]
       fetchOriginal(url, {
         ...options,
         // $FlowFixMe[prop-missing]: dispatcher

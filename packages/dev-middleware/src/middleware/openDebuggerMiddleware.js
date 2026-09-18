@@ -160,6 +160,7 @@ export default function openDebuggerMiddleware({
             const frontendUrl = getDevToolsFrontendUrl(
               experiments,
               target.webSocketDebuggerUrl,
+              // $FlowFixMe[incompatible-type]
               new URL(serverBaseUrl),
               {
                 launchId: query.launchId,
@@ -214,6 +215,7 @@ export default function openDebuggerMiddleware({
               Location: getDevToolsFrontendUrl(
                 experiments,
                 target.webSocketDebuggerUrl,
+                // $FlowFixMe[incompatible-type]
                 new URL(serverBaseUrl),
                 {
                   relative: true,

@@ -119,17 +119,13 @@ describe('User Timing', () => {
     });
 
     it('casts startTime to a number', () => {
-      const mark = performance.mark('some-mark', {
-        // $FlowExpectedError[incompatible-type]
-        startTime: '10',
-      });
+      // $FlowExpectedError[incompatible-type]
+      const mark = performance.mark('some-mark', {startTime: '10'});
 
       expect(mark.startTime).toBe(10);
 
-      const mark2 = performance.mark('some-mark', {
-        // $FlowExpectedError[incompatible-type]
-        startTime: null,
-      });
+      // $FlowExpectedError[incompatible-type]
+      const mark2 = performance.mark('some-mark', {startTime: null});
 
       expect(mark2.startTime).toBe(0);
     });

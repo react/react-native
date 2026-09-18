@@ -255,6 +255,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
     const devtoolsFrontendUrl = getDevToolsFrontendUrl(
       this.#experiments,
       webSocketDebuggerUrl,
+      // $FlowFixMe[incompatible-type]
       new URL(this.#serverBaseUrl),
       {
         relative: true,

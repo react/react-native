@@ -551,7 +551,7 @@ interface Animatable {
   getAnimations(options?: GetAnimationsOptions): Animation[];
 }
 
-type AnimationPlaybackEvent$Init = Event$Init & {
+type AnimationPlaybackEvent$Init = EventInit & {
   currentTime?: number | null,
   timelineTime?: number | null,
   ...

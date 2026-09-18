@@ -616,6 +616,8 @@ type Event$Init = {
   ...
 };
 
+type EventInit = Event$Init;
+
 // https://dom.spec.whatwg.org/#interface-event
 declare class Event {
   constructor(type: string, eventInitDict?: Event$Init): void;
@@ -1312,7 +1314,7 @@ declare class Node extends EventTarget {
   outerText?: string;
 }
 
-declare class NodeList<T> {
+declare class NodeList<T = Node> {
   @@iterator(): Iterator<T>;
   length: number;
   item(index: number): T;
@@ -1326,6 +1328,8 @@ declare class NodeList<T> {
   keys(): Iterator<number>;
   values(): Iterator<T>;
 }
+
+type NodeListOf<T extends Node> = NodeList<T>;
 
 declare class NamedNodeMap {
   @@iterator(): Iterator<Attr>;
