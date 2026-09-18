@@ -786,7 +786,7 @@ class VirtualizedList extends StateSafePureComponent<
   _pushCells(
     cells: Array<Object>,
     stickyHeaderIndices: Array<number>,
-    stickyIndicesFromProps: Set<number>,
+    stickyIndicesFromProps: null | Set<number>,
     first: number,
     last: number,
     inversionStyle: StyleProp<ViewStyle>,
@@ -814,7 +814,10 @@ class VirtualizedList extends StateSafePureComponent<
       const key = VirtualizedList._keyExtractor(item, ii, this.props);
 
       this._indicesToKeys.set(ii, key);
-      if (stickyIndicesFromProps.has(ii + stickyOffset)) {
+      if (
+        stickyIndicesFromProps != null &&
+        stickyIndicesFromProps.has(ii + stickyOffset)
+      ) {
         stickyHeaderIndices.push(cells.length);
       }
 
@@ -945,12 +948,16 @@ class VirtualizedList extends StateSafePureComponent<
         : styles.verticallyInverted
       : null;
     const cells: Array<any | React.Node> = [];
-    const stickyIndicesFromProps = new Set(this.props.stickyHeaderIndices);
+    // Avoid allocating a Set on every render when no sticky headers are
+    // configured (the common case).
+    const stickyHeaderIndicesProp = this.props.stickyHeaderIndices;
+    const stickyIndicesFromProps =
+      stickyHeaderIndicesProp != null ? new Set(stickyHeaderIndicesProp) : null;
     const stickyHeaderIndices = [];
 
     // 1. Add cell for ListHeaderComponent
     if (ListHeaderComponent) {
-      if (stickyIndicesFromProps.has(0)) {
+      if (stickyIndicesFromProps != null && stickyIndicesFromProps.has(0)) {
         stickyHeaderIndices.push(0);
       }
       const element = isValidElement(ListHeaderComponent) ? (
@@ -1232,6 +1239,8 @@ class VirtualizedList extends StateSafePureComponent<
     }
   }
 
+  _cachedOrientation: ?ListOrientation = null;
+  _cachedOrientationHorizontal: ?boolean = null;
   _cellRefs: {[string]: null | CellRenderer<any>} = {};
   _fillRateHelper: FillRateHelper;
   _listMetrics: ListMetricsAggregator = new ListMetricsAggregator();
@@ -1553,10 +1562,23 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _orientation(): ListOrientation {
-    return {
-      horizontal: horizontalOrDefault(this.props.horizontal),
-      rtl: I18nManager.isRTL,
-    };
+    // The orientation is stable for the lifetime of the list unless the
+    // `horizontal` prop changes (I18nManager.isRTL only changes on app
+    // reload). Cache the object to avoid allocating it on the scroll path.
+    const horizontal = horizontalOrDefault(this.props.horizontal);
+    let cachedOrientation = this._cachedOrientation;
+    if (
+      cachedOrientation == null ||
+      this._cachedOrientationHorizontal !== horizontal
+    ) {
+      cachedOrientation = {
+        horizontal,
+        rtl: I18nManager.isRTL,
+      };
+      this._cachedOrientation = cachedOrientation;
+      this._cachedOrientationHorizontal = horizontal;
+    }
+    return cachedOrientation;
   }
 
   _maybeCallOnEdgeReached() {
