@@ -689,8 +689,8 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
     } else {
       UIImage *image;
       if (cacheResult) {
-        image = RCTCachedImageForURL(
-            [strongSelf imageCache], request.URL.absoluteString, size, scale, clipped, resizeMode);
+        image =
+            RCTCachedImageForURL([strongSelf imageCache], request.URL.absoluteString, size, scale, clipped, resizeMode);
       }
 
       if (image) {
