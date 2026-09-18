@@ -1052,6 +1052,85 @@ describe('VirtualizedList', () => {
     expect(component).toMatchSnapshot();
   });
 
+  it('does not forward stickyHeaderIndices when the prop is absent', async () => {
+    let scrollProps;
+    await act(() => {
+      create(
+        <VirtualizedList
+          ListHeaderComponent={() => createElement('Header')}
+          data={[{key: 'i1'}, {key: 'i2'}]}
+          renderItem={({item}) => <item value={item.key} />}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          renderScrollComponent={props => {
+            scrollProps = props;
+            return createElement('MockScrollView', props);
+          }}
+        />,
+      );
+    });
+    expect(scrollProps).not.toBe(undefined);
+    expect(scrollProps.stickyHeaderIndices).toEqual([]);
+  });
+
+  it('forwards stickyHeaderIndices including the header index when provided', async () => {
+    let scrollProps;
+    await act(() => {
+      create(
+        <VirtualizedList
+          ListHeaderComponent={() => createElement('Header')}
+          data={[{key: 'i1'}, {key: 'i2'}]}
+          renderItem={({item}) => <item value={item.key} />}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          stickyHeaderIndices={[0]}
+          renderScrollComponent={props => {
+            scrollProps = props;
+            return createElement('MockScrollView', props);
+          }}
+        />,
+      );
+    });
+    expect(scrollProps).not.toBe(undefined);
+    expect(scrollProps.stickyHeaderIndices).toEqual([0]);
+  });
+
+  it('caches orientation and invalidates the cache when horizontal changes', async () => {
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={[{key: 'i1'}]}
+          renderItem={({item}) => <item value={item.key} />}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+        />,
+      );
+    });
+
+    const instance = component.getInstance();
+    const firstOrientation = instance._orientation();
+    expect(instance._orientation()).toBe(firstOrientation);
+    expect(firstOrientation.horizontal).toBe(false);
+
+    await act(() => {
+      component.update(
+        <VirtualizedList
+          horizontal={true}
+          data={[{key: 'i1'}]}
+          renderItem={({item}) => <item value={item.key} />}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+        />,
+      );
+    });
+
+    const secondOrientation = instance._orientation();
+    expect(secondOrientation).not.toBe(firstOrientation);
+    expect(secondOrientation.horizontal).toBe(true);
+    expect(instance._orientation()).toBe(secondOrientation);
+  });
+
   it('does not add a sticky header to the render mask when no sticky headers are configured', () => {
     const expectedRegions = [
       {first: 0, last: 9, isSpacer: true},

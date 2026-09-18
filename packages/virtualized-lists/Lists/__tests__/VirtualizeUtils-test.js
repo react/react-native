@@ -16,6 +16,7 @@ import ListMetricsAggregator from '../ListMetricsAggregator';
 import {
   computeWindowedRenderLimits,
   elementsThatOverlapOffsets,
+  keyExtractor,
   newRangeCount,
 } from '../VirtualizeUtils';
 import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
@@ -290,5 +291,37 @@ describe('computeWindowedRenderLimits', function () {
       scrollMetrics,
     );
     expect(result).toEqual({first: 0, last: 4});
+  });
+});
+
+describe('keyExtractor', function () {
+  it('prefers item.key', function () {
+    expect(keyExtractor({key: 'k', id: 1}, 0)).toBe('k');
+  });
+
+  it('falls back to item.id when key is missing', function () {
+    expect(keyExtractor({id: 42}, 0)).toBe(42);
+  });
+
+  it('treats explicit null key as missing', function () {
+    expect(keyExtractor({key: null, id: 9}, 0)).toBe(9);
+  });
+
+  it('returns explicitly set falsy key and id values', function () {
+    expect(keyExtractor({key: 0}, 0)).toBe(0);
+    expect(keyExtractor({key: false}, 0)).toBe(false);
+    expect(keyExtractor({key: null, id: 0}, 0)).toBe(0);
+  });
+
+  it('falls back to the index for items without key or id', function () {
+    expect(keyExtractor({}, 7)).toBe('7');
+  });
+
+  it('falls back to the index for null, undefined, primitives and arrays', function () {
+    expect(keyExtractor(null, 1)).toBe('1');
+    expect(keyExtractor(undefined, 2)).toBe('2');
+    expect(keyExtractor('str', 3)).toBe('3');
+    expect(keyExtractor(42, 4)).toBe('4');
+    expect(keyExtractor([], 5)).toBe('5');
   });
 });

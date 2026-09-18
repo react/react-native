@@ -244,11 +244,13 @@ export function computeWindowedRenderLimits(
 }
 
 export function keyExtractor(item: any, index: number): string {
-  if (typeof item === 'object' && item?.key != null) {
-    return item.key;
-  }
-  if (typeof item === 'object' && item?.id != null) {
-    return item.id;
+  if (item != null && typeof item === 'object') {
+    if (item.key != null) {
+      return item.key;
+    }
+    if (item.id != null) {
+      return item.id;
+    }
   }
   return String(index);
 }
