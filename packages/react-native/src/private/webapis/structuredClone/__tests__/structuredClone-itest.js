@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_flags enableResizeObserverByDefault:true
  * @flow strict-local
  * @format
  */
@@ -20,15 +21,21 @@ import {createRef} from 'react';
 import {View} from 'react-native';
 import setUpIntersectionObserver from 'react-native/src/private/setup/setUpIntersectionObserver';
 import setUpMutationObserver from 'react-native/src/private/setup/setUpMutationObserver';
+import setUpResizeObserver from 'react-native/src/private/setup/setUpResizeObserver';
 import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
+import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 import DOMException from 'react-native/src/private/webapis/errors/DOMException';
 import IntersectionObserver from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
 import IntersectionObserverEntry from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserverEntry';
 import MutationObserver from 'react-native/src/private/webapis/mutationobserver/MutationObserver';
+import ResizeObserver from 'react-native/src/private/webapis/resizeobserver/ResizeObserver';
+import ResizeObserverEntry from 'react-native/src/private/webapis/resizeobserver/ResizeObserverEntry';
+import ResizeObserverSize from 'react-native/src/private/webapis/resizeobserver/ResizeObserverSize';
 import structuredClone from 'react-native/src/private/webapis/structuredClone/structuredClone';
 
 setUpIntersectionObserver();
 setUpMutationObserver();
+setUpResizeObserver();
 
 function expectDataCloneError(fn: () => unknown) {
   try {
@@ -41,6 +48,26 @@ function expectDataCloneError(fn: () => unknown) {
   }
 
   throw new Error('Expected function to throw DataCloneError, but it did not');
+}
+
+function createResizeObserverEntryForTest(): ResizeObserverEntry {
+  const ref = createRef<HostInstance>();
+  const root = Fantom.createRoot();
+  Fantom.runTask(() => {
+    root.render(<View style={{height: 10, width: 10}} ref={ref} />);
+  });
+
+  const target = ensureInstance(ref.current, ReactNativeElement);
+  const entries: Array<ResizeObserverEntry> = [];
+  Fantom.runTask(() => {
+    const observer = new ResizeObserver((newEntries, self) => {
+      entries.push(...newEntries);
+      self.disconnect();
+    });
+    observer.observe(target);
+  });
+
+  return ensureInstance(entries[0], ResizeObserverEntry);
 }
 
 describe('structuredClone', () => {
@@ -438,6 +465,28 @@ describe('structuredClone', () => {
         });
 
         expectDataCloneError(() => structuredClone(records[0]));
+      });
+
+      it('does NOT clone ResizeObserver', () => {
+        expectDataCloneError(() =>
+          structuredClone(new ResizeObserver(() => {})),
+        );
+      });
+
+      it('does NOT clone ResizeObserverEntry', () => {
+        expectDataCloneError(() =>
+          structuredClone(createResizeObserverEntryForTest()),
+        );
+      });
+
+      it('does NOT clone ResizeObserverSize', () => {
+        const entry = createResizeObserverEntryForTest();
+        const size = ensureInstance(
+          entry.contentBoxSize[0],
+          ResizeObserverSize,
+        );
+
+        expectDataCloneError(() => structuredClone(size));
       });
     });
   });
