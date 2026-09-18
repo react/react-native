@@ -33,31 +33,18 @@ jobs:
         uses: ./.github/actions/setup-node
       - name: Run yarn
         uses: ./.github/actions/yarn-install
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          java-version: '17'
-          distribution: 'zulu'
-      - name: Download Maven Local
-        uses: actions/download-artifact@v7
-        with:
-          name: maven-local
-          path: /tmp/react-native-tmp/maven-local
+      # Debug APKs load JavaScript from Metro, so only that lane needs a
+      # generated project workspace.
       - name: Download React Native Package
+        if: matrix.flavor == 'debug'
         uses: actions/download-artifact@v7
         with:
           name: react-native-package
           path: /tmp/react-native-tmp
-      - name: Print /tmp folder
-        run: ls -lR /tmp/react-native-tmp
-      - name: Prepare artifacts
-        id: prepare-artifacts
+      - name: Prepare Metro workspace
+        if: matrix.flavor == 'debug'
         run: |
           REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
-          echo "React Native tgs is $REACT_NATIVE_PKG"
-
-          MAVEN_LOCAL=/tmp/react-native-tmp/maven-local
-          echo "Maven local path is $MAVEN_LOCAL"
 
           # For stable branches, we want to use the stable branch of the template
           # In all the other cases, we want to use "main"
@@ -65,20 +52,16 @@ jobs:
           if ! [[ $BRANCH == *-stable* ]]; then
             BRANCH=main
           fi
-          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH  --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
-
-          echo "Feed maven local to gradle.properties"
-          cd /tmp/RNTestProject
-          echo -e "\nreact.internal.mavenLocalRepo=$MAVEN_LOCAL" >> android/gradle.properties
-
-          # Build
-          cd android
-          CAPITALIZED_FLAVOR=$(echo "${{ matrix.flavor }}" | awk '{print toupper(substr($0, 1, 1)) substr($0, 2)}')
-          ./gradlew --no-daemon \
-            --init-script "$GITHUB_WORKSPACE/.github/workflow-scripts/legacy-jni-packaging.gradle" \
-            assemble$CAPITALIZED_FLAVOR \
-            -PreactNativeArchitectures=arm64-v8a
-
+          node ./scripts/e2e/init-project-e2e.js \
+            --projectName RNTestProject \
+            --currentBranch "$BRANCH" \
+            --directory /tmp/RNTestProject \
+            --pathToLocalReactNative "$REACT_NATIVE_PKG"
+      - name: Download template app APK
+        uses: actions/download-artifact@v7
+        with:
+          name: android-templateapp-${{ matrix.flavor }}
+          path: /tmp/android-templateapp
       - name: Download previous per-flow test state
         if: ${{ inputs.retry-attempt > 0 }}
         continue-on-error: true
@@ -103,12 +86,11 @@ jobs:
         uses: ./.github/actions/maestro-android
         timeout-minutes: 90
         with:
-          app-path: /tmp/RNTestProject/android/app/build/outputs/apk/${{ matrix.flavor }}/app-${{ matrix.flavor }}.apk
+          app-path: /tmp/android-templateapp/app-${{ matrix.flavor }}.apk
           app-id: com.rntestproject
           maestro-flow: ./scripts/e2e/.maestro/
-          install-java: 'false'
           flavor: ${{ matrix.flavor }}
-          working-directory: /tmp/RNTestProject
+          working-directory: ${{ matrix.flavor == 'debug' && '/tmp/RNTestProject' || '.' }}
           emulator-api-level: '35'
           emulator-target: google_apis
           emulator-arch: x86_64

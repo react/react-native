@@ -1,0 +1,74 @@
+name: Build Android Template App
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: 4-core-ubuntu
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [debug, release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup git safe folders
+        run: git config --global --add safe.directory '*'
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn
+        uses: ./.github/actions/yarn-install
+      - name: Download Maven Local
+        uses: actions/download-artifact@v7
+        with:
+          name: maven-local
+          path: /tmp/react-native-tmp/maven-local
+      - name: Download React Native Package
+        uses: actions/download-artifact@v7
+        with:
+          name: react-native-package
+          path: /tmp/react-native-tmp
+      - name: Build template app
+        shell: bash
+        run: |
+          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
+          MAVEN_LOCAL=/tmp/react-native-tmp/maven-local
+
+          # Stable branches use their matching template branch. All other
+          # builds use the template's main branch.
+          BRANCH=${{ github.ref_name }}
+          if ! [[ $BRANCH == *-stable* ]]; then
+            BRANCH=main
+          fi
+          node ./scripts/e2e/init-project-e2e.js \
+            --projectName RNTestProject \
+            --currentBranch "$BRANCH" \
+            --directory /tmp/RNTestProject \
+            --pathToLocalReactNative "$REACT_NATIVE_PKG"
+
+          echo -e "\nreact.internal.mavenLocalRepo=$MAVEN_LOCAL" >> /tmp/RNTestProject/android/gradle.properties
+
+          CAPITALIZED_FLAVOR=$(echo "${{ matrix.flavor }}" | awk '{print toupper(substr($0, 1, 1)) substr($0, 2)}')
+          cd /tmp/RNTestProject/android
+          ./gradlew --no-daemon \
+            --init-script "$GITHUB_WORKSPACE/.github/workflow-scripts/legacy-jni-packaging.gradle" \
+            assemble$CAPITALIZED_FLAVOR \
+            -PreactNativeArchitectures=arm64-v8a
+      - name: Upload template app APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-templateapp-${{ matrix.flavor }}
+          path: /tmp/RNTestProject/android/app/build/outputs/apk/${{ matrix.flavor }}/app-${{ matrix.flavor }}.apk
+          compression-level: 0
+          if-no-files-found: error

@@ -263,9 +263,15 @@ jobs:
     uses: ./.github/workflows/test-ios-spm-newapp.yml
     secrets: inherit
 
-  test_e2e_android_templateapp:
+  build_android_templateapp:
     needs: [build_npm_package, build_android]
     if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
+    uses: ./.github/workflows/build-android-templateapp.yml
+    secrets: inherit
+
+  test_e2e_android_templateapp:
+    needs: build_android_templateapp
+    if: ${{ needs.build_android_templateapp.result == 'success' }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
     secrets: inherit
 
