@@ -108,8 +108,34 @@ export type {
 } from './Libraries/Components/RefreshControl/RefreshControl';
 export {default as RefreshControl} from './Libraries/Components/RefreshControl/RefreshControl';
 
-export type {SafeAreaViewInstance} from './Libraries/Components/SafeAreaView/SafeAreaView';
+export type {
+  SafeAreaViewInstance,
+  SafeAreaViewProps,
+} from './Libraries/Components/SafeAreaView/SafeAreaView';
 export {default as SafeAreaView} from './Libraries/Components/SafeAreaView/SafeAreaView';
+export type {
+  Edge,
+  EdgeInsets,
+  EdgeMode,
+  Edges,
+  Metrics,
+  Rect,
+} from './Libraries/Components/SafeAreaView/SafeAreaViewTypes';
+export type {
+  SafeAreaListenerProps,
+  SafeAreaProviderProps,
+  WithSafeAreaInsetsProps,
+} from './Libraries/Components/SafeAreaView/SafeAreaContext';
+export {
+  SafeAreaFrameContext,
+  SafeAreaInsetsContext,
+  SafeAreaListener,
+  SafeAreaProvider,
+  useSafeAreaFrame,
+  useSafeAreaInsets,
+  withSafeAreaInsets,
+} from './Libraries/Components/SafeAreaView/SafeAreaContext';
+export {initialWindowMetrics} from './Libraries/Components/SafeAreaView/InitialWindow';
 
 export type {
   ScrollViewImperativeMethods,
