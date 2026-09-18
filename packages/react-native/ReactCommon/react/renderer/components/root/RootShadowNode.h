@@ -11,10 +11,9 @@
 
 #include <memory>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/root/RootProps.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/core/LayoutContext.h>
-#include <react/renderer/core/PropsParserContext.h>
 
 namespace facebook::react {
 

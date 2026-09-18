@@ -9,14 +9,11 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <limits>
-#include <memory>
 #include <optional>
 
+#include <React/RendererCore.h>
 #include <react/renderer/components/text/BaseParagraphProps.h>
 #include <react/renderer/components/text/primitives.h>
-#include <react/renderer/core/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/graphics/Color.h>
 
 namespace facebook::react {
