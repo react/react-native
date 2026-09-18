@@ -257,6 +257,15 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
 
       if (spanned != null) {
         Layout layout = getLayout();
+        if (layout == null && getWidth() > 0 && getHeight() > 0) {
+          // setText drops the Layout and Fabric re-measures only on a frame change, so a text
+          // update that kept the frame reaches onDraw without one and the effects below would be
+          // skipped. Rebuild it here; TextView.onDraw would build one for the text anyway.
+          measure(
+              MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY),
+              MeasureSpec.makeMeasureSpec(getHeight(), MeasureSpec.EXACTLY));
+          layout = getLayout();
+        }
         if (layout != null) {
           CanvasEffectSpan[] drawSpans =
               spanned.getSpans(0, spanned.length(), CanvasEffectSpan.class);
