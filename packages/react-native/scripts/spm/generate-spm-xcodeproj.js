@@ -767,7 +767,9 @@ if [ "$STALE" -eq 0 ] && [ -f "$WATCH_FILE" ]; then
   while IFS= read -r P; do
     [ -z "$P" ] && continue
     if [ -d "$P" ]; then
-      if [ -n "$(find "$P" -newer "$STAMP" -print -quit 2>/dev/null)" ]; then
+      # .swiftpm holds Xcode's own per-user scheme state, which it rewrites
+      # during a build — reading it as a change makes every IDE build re-sync.
+      if [ -n "$(find "$P" -name .swiftpm -prune -o -newer "$STAMP" -print -quit 2>/dev/null)" ]; then
         STALE=1
         break
       fi

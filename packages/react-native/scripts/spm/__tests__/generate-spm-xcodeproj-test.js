@@ -234,6 +234,70 @@ describe('sync scripts', () => {
     );
   });
 
+  // Xcode writes per-user scheme state into <watched dir>/.swiftpm/ on every
+  // IDE build. Counting that as a change made every IDE build re-sync.
+  describe('the watched-directory staleness probe', () => {
+    // Runs the generated `find` in isolation, with $P/$STAMP bound as the
+    // build phase binds them.
+    function probe(watchedDir, stampFile) {
+      const findCommand = /\$\((find "\$P"[^()]*)\)/.exec(script)?.[1];
+      expect(findCommand).toBeDefined();
+      return execFileSync(
+        '/bin/bash',
+        [
+          '-c',
+          `set -euo pipefail\nP="$1"\nSTAMP="$2"\n${String(findCommand)}\n`,
+          'probe',
+          watchedDir,
+          stampFile,
+        ],
+        {encoding: 'utf8'},
+      );
+    }
+
+    let root;
+    let watchedDir;
+    let stampFile;
+    let schemeState;
+    let source;
+
+    beforeEach(() => {
+      root = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-sync-stale-'));
+      watchedDir = path.join(root, 'node_modules', 'react-native-foo');
+      schemeState = path.join(
+        watchedDir,
+        '.swiftpm/xcode/xcuserdata/someone.xcuserdatad/xcschemes/xcschememanagement.plist',
+      );
+      source = path.join(watchedDir, 'Foo.swift');
+      fs.mkdirSync(path.dirname(schemeState), {recursive: true});
+      fs.writeFileSync(schemeState, '<plist/>\n');
+      fs.writeFileSync(source, '// src\n');
+      // The stamp is written after the tree, so nothing is newer until a test
+      // makes it so.
+      stampFile = path.join(root, '.spm-sync-stamp');
+      fs.writeFileSync(stampFile, '');
+    });
+
+    afterEach(() => {
+      fs.rmSync(root, {recursive: true, force: true});
+    });
+
+    const touch = file => {
+      const future = new Date(Date.now() + 10_000);
+      fs.utimesSync(file, future, future);
+    };
+
+    it('ignores Xcode-owned state under .swiftpm', () => {
+      touch(schemeState);
+      expect(probe(watchedDir, stampFile)).toBe('');
+    });
+
+    it('still reports a changed source file', () => {
+      touch(source);
+      expect(probe(watchedDir, stampFile).trim()).toBe(source);
+    });
+  });
+
   it('is deterministic, shared with the pre-action, and valid POSIX shell', () => {
     expect(buildSyncAutolinkingScript(baked)).toBe(script);
     expect(buildSchemePreActionScript(baked)).toBe(script);
