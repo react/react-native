@@ -217,6 +217,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/BoxShadow/BoxShadowExample'),
     },
     {
+      key: 'ClipPathExample',
+      category: 'UI',
+      module: require('../examples/ClipPath/ClipPathExample').default,
+    },
+    {
       key: 'CrashExample',
       module: require('../examples/Crash/CrashExample'),
     },

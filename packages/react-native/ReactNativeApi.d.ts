@@ -1728,6 +1728,71 @@ declare class CellRenderMask {
   numCells(): number
 }
 declare type Clipboard = typeof Clipboard
+declare type ClipPathBasicShape =
+  | ClipPathCircleShape
+  | ClipPathEllipseShape
+  | ClipPathInsetShape
+  | ClipPathPolygonShape
+  | ClipPathRectShape
+  | ClipPathXywhShape
+declare type ClipPathCircleShape = {
+  cx?: null | number | string
+  cy?: null | number | string
+  r?: null | number | string
+  type: "circle"
+}
+declare type ClipPathEllipseShape = {
+  cx?: null | number | string
+  cy?: null | number | string
+  rx?: null | number | string
+  ry?: null | number | string
+  type: "ellipse"
+}
+declare type ClipPathFillRule = "evenodd" | "nonzero"
+declare type ClipPathGeometryBox =
+  | "border-box"
+  | "content-box"
+  | "fill-box"
+  | "margin-box"
+  | "padding-box"
+  | "stroke-box"
+  | "view-box"
+declare type ClipPathInsetShape = {
+  borderRadius?: null | number | string
+  bottom?: null | number | string
+  left?: null | number | string
+  right?: null | number | string
+  top?: null | number | string
+  type: "inset"
+}
+declare type ClipPathPolygonShape = {
+  fillRule?: ClipPathFillRule | null
+  points: ReadonlyArray<{
+    x: number | string
+    y: number | string
+  }>
+  type: "polygon"
+}
+declare type ClipPathRectShape = {
+  borderRadius?: null | number | string
+  bottom: "auto" | number | string
+  left: "auto" | number | string
+  right: "auto" | number | string
+  top: "auto" | number | string
+  type: "rect"
+}
+declare type ClipPathValue = {
+  geometryBox?: ClipPathGeometryBox | null
+  shape?: ClipPathBasicShape | null
+}
+declare type ClipPathXywhShape = {
+  borderRadius?: null | number | string
+  height: number | string
+  type: "xywh"
+  width: number | string
+  x: number | string
+  y: number | string
+}
 declare type codegenNativeCommands = typeof codegenNativeCommands
 declare function codegenNativeCommands_default<T extends {}>(
   options: NativeCommandsOptions<keyof T & string>,
