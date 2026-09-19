@@ -55,7 +55,8 @@ ${componentConfig}
 
 // We use this to add to a set. Need to make sure we aren't importing
 // this multiple times.
-const UIMANAGER_IMPORT = 'const {UIManager} = require("react-native")';
+const UIMANAGER_IMPORT =
+  'const {findNodeHandle, UIManager} = require("react-native");';
 
 function expression(input: string) {
   return core.template.expression(input)();
@@ -77,21 +78,21 @@ function getReactDiffProcessValue(typeAnnotation: PropTypeAnnotation) {
       switch (typeAnnotation.name) {
         case 'ColorPrimitive':
           return expression(
-            "require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute",
+            "require('react-native/react-private-interface').ReactNativeFeatureFlags.enableNativeCSSParsing() ? true : {process: require('react-native').processColor}",
           );
         case 'ImageSourcePrimitive':
           return expression(
-            "{ process: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/Image/resolveAssetSource')) }",
+            "{ process: require('react-native').Image.resolveAssetSource }",
           );
         case 'ImageRequestPrimitive':
           throw new Error('ImageRequest should not be used in props');
         case 'PointPrimitive':
           return expression(
-            "{ diff: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/pointsDiffer')) }",
+            '{ diff: (one, two) => one !== two && ((one?.x ?? undefined) !== (two?.x ?? undefined) || (one?.y ?? undefined) !== (two?.y ?? undefined)) }',
           );
         case 'EdgeInsetsPrimitive':
           return expression(
-            "{ diff: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/insetsDiffer')) }",
+            '{ diff: (one, two) => one !== two && ((one?.top ?? undefined) !== (two?.top ?? undefined) || (one?.left ?? undefined) !== (two?.left ?? undefined) || (one?.right ?? undefined) !== (two?.right ?? undefined) || (one?.bottom ?? undefined) !== (two?.bottom ?? undefined)) }',
           );
         case 'DimensionPrimitive':
           return t.booleanLiteral(true);
@@ -106,7 +107,7 @@ function getReactDiffProcessValue(typeAnnotation: PropTypeAnnotation) {
         switch (typeAnnotation.elementType.name) {
           case 'ColorPrimitive':
             return expression(
-              "{ process: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/StyleSheet/processColorArray')) }",
+              "{ process: colors => colors == null ? null : colors.map(color => { const value = require('react-native').processColor(color); if (value == null) { console.error('Invalid value in color array:', color); return 0; } return value; }) }",
             );
           case 'ImageSourcePrimitive':
           case 'PointPrimitive':
@@ -192,8 +193,10 @@ function getValidAttributesForEvents(
   events: ReadonlyArray<EventTypeShape>,
   imports: Set<string>,
 ) {
+  // Generated files can live outside the React Native package, so they cannot
+  // use a relative import for this implementation detail.
   imports.add(
-    "const {ConditionallyIgnoredEventHandlers} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');",
+    "const {ConditionallyIgnoredEventHandlers} = require('react-native/unstable-internals-do-not-use');",
   );
 
   const validAttributes = t.objectExpression(
@@ -264,7 +267,7 @@ function buildViewConfig(
         switch (extendProps.knownTypeName) {
           case 'ReactNativeCoreViewProps':
             imports.add(
-              "const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');",
+              "const {NativeComponentRegistry} = require('react-native');",
             );
 
             return;
@@ -366,9 +369,7 @@ function buildCommands(
     return null;
   }
 
-  imports.add(
-    'const {dispatchCommand} = require("react-native/Libraries/ReactNative/RendererProxy");',
-  );
+  imports.add(UIMANAGER_IMPORT);
 
   const commandsObject = t.objectExpression(
     commands.map(command => {
@@ -376,9 +377,14 @@ function buildCommands(
       const params = command.typeAnnotation.params;
 
       const dispatchCommandCall = t.callExpression(
-        t.identifier('dispatchCommand'),
+        t.memberExpression(
+          t.identifier('UIManager'),
+          t.identifier('dispatchViewManagerCommand'),
+        ),
         [
-          t.identifier('ref'),
+          t.callExpression(t.identifier('findNodeHandle'), [
+            t.identifier('ref'),
+          ]),
           t.stringLiteral(commandName),
           t.arrayExpression(params.map(param => t.identifier(param.name))),
         ],

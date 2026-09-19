@@ -8,8 +8,8 @@
  * @format
  */
 
+import NativeFantom from '../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom';
 import {runWorkLoop} from './index';
-import NativeFantom from 'react-native/src/private/testing/fantom/specs/NativeFantom';
 
 /**
  * Controls the deterministic timer mock for `setTimeout`/`setInterval`.

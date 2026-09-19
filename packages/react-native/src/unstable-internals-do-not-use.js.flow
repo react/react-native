@@ -16,6 +16,7 @@
 
 export {default as AppContainer} from '../Libraries/ReactNative/AppContainer';
 export {default as AssetSourceResolver} from '../Libraries/Image/AssetSourceResolver';
+export {ConditionallyIgnoredEventHandlers} from '../Libraries/NativeComponent/ViewConfigIgnore';
 export {customDirectEventTypes} from '../Libraries/Renderer/shims/ReactNativeViewConfigRegistry';
 export {default as DevLoadingView} from '../Libraries/Utilities/DevLoadingView';
 export {default as getDevServer} from '../Libraries/Core/Devtools/getDevServer';

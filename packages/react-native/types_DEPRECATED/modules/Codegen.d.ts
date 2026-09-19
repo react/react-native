@@ -40,8 +40,7 @@ declare module 'react-native/Libraries/Utilities/codegenNativeComponent' {
 }
 
 declare module 'react-native/Libraries/Types/CodegenTypes' {
-  import type {NativeSyntheticEvent} from 'react-native';
-  import type {EventSubscription} from 'react-native/Libraries/vendor/emitter/EventEmitter';
+  import type {EventSubscription, NativeSyntheticEvent} from 'react-native';
 
   // Event types
   // We're not using the PaperName, it is only used to codegen view config settings

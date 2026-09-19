@@ -20,11 +20,10 @@ const eslintTester = new ESLintTester();
 const VALID_SPECS = [
   {
     code: `
-import {TurboModuleRegistry, type TurboModule} from 'react-native';
-import type {UnsafeObject} from 'react-native/Libraries/Types/CodegenTypes';
+import {TurboModuleRegistry, type CodegenTypes, type TurboModule} from 'react-native';
 
 export interface Spec extends TurboModule {
-  func1(a: string): UnsafeObject,
+  func1(a: string): CodegenTypes.UnsafeObject,
 }
 export default TurboModuleRegistry.get<Spec>('XYZ');
     `,

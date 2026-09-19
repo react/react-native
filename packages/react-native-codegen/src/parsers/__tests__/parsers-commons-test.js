@@ -801,8 +801,7 @@ describe('buildSchema', () => {
 
   describe('when there is a TurboModule', () => {
     const contents = `
-      import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-      import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+      import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
       export interface Spec extends TurboModule {
         +getArray: (a: Array<any>) => Array<string>;
@@ -1094,8 +1093,7 @@ describe('buildModuleSchema', () => {
   const [, tryParse] = createParserErrorCapturer();
   const language = flowParser.language();
   const NATIVE_MODULE = `
-  import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-    import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+  import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
     export interface Spec extends TurboModule {
       +getArray: (a: Array<any>) => Array<string>;
@@ -1144,8 +1142,7 @@ describe('buildModuleSchema', () => {
   describe('throwIfMoreThanOneModuleInterfaceParser', () => {
     it('should throw an error if mulitple module interfaces are found', () => {
       const contents = `
-      import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-        import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+      import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
         export interface Spec extends TurboModule {
           +getBool: (arg: boolean) => boolean;      }
@@ -1194,8 +1191,7 @@ describe('buildModuleSchema', () => {
   describe('throwIfModuleInterfaceIsMisnamed', () => {
     it('should throw an error if module interface is misnamed', () => {
       const contents = `
-      import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-        import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+      import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
         export interface MisnamedSpec extends TurboModule {
           +getArray: (a: Array<any>) => Array<string>;
