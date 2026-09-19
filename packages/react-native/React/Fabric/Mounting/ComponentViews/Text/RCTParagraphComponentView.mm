@@ -20,6 +20,8 @@
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
+#import <React/RCTSurfaceTouchHandler.h>
+
 #import "RCTConversions.h"
 #import "RCTFabricComponentsPlugins.h"
 
@@ -31,6 +33,10 @@ using namespace facebook::react;
                       paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                                     frame:(CGRect)frame
                            containerFrame:(CGRect *)containerFrame;
+
+- (NSTextStorage *)textStorageForNSAttributedString:(NSAttributedString *)attributedString
+                                paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                               size:(CGSize)size;
 
 @end
 
@@ -46,22 +52,252 @@ using namespace facebook::react;
 @end
 
 #if !TARGET_OS_TV
-@interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
+/*
+ * Strips every attribute that paints, and keeps every attribute that lays out.
+ *
+ * `RCTTextLayoutManager` draws the paragraph itself, and it draws effects UIKit
+ * knows nothing about: wavy, dotted and dashed decorations, and the pressed
+ * highlight of a nested pressable <Text>. The selection text view must lay the
+ * same glyphs out, because that is what places the selection rects, but it must
+ * not paint them. So the font, the kerning, the paragraph style and the
+ * attachments stay, and the colors, the decorations and the shadow go.
+ */
+static NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *attributedString)
+{
+  NSMutableAttributedString *unpainted = [attributedString mutableCopy];
+  NSRange range = NSMakeRange(0, unpainted.length);
 
-@property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
+  [unpainted beginEditing];
+  [unpainted addAttribute:NSForegroundColorAttributeName value:UIColor.clearColor range:range];
+  [unpainted addAttribute:NSBackgroundColorAttributeName value:UIColor.clearColor range:range];
+  [unpainted removeAttribute:NSUnderlineStyleAttributeName range:range];
+  [unpainted removeAttribute:NSStrikethroughStyleAttributeName range:range];
+  [unpainted removeAttribute:NSShadowAttributeName range:range];
+  [unpainted removeAttribute:RCTAttributedStringIsHighlightedAttributeName range:range];
+  [unpainted endEditing];
+
+  return unpainted;
+}
+
+/*
+ * A non-editable `UITextView` that provides selection for a paragraph, and
+ * nothing else.
+ *
+ * It is created with the very `NSTextContainer` that `RCTTextLayoutManager`
+ * measured the paragraph with, so its layout matches the measurement by
+ * construction rather than by coincidence. UIKit performs the selection; it
+ * never performs the layout, and it never paints the text.
+ */
+@interface RCTSelectableTextView : UITextView <UITextViewDelegate>
+
+/*
+ * The paragraph as it is painted, before `RCTUnpaintedAttributedString` strips
+ * it. The text view lays the stripped copy out, so `copy:` must read the range
+ * from this string instead, or the pasteboard receives clear text with no
+ * decorations. Both strings hold the same characters, so the range maps
+ * directly from one to the other.
+ */
+@property (nonatomic, copy, nullable) NSAttributedString *sourceAttributedText;
 
 @end
-#else
+
+@implementation RCTSelectableTextView {
+  UITapGestureRecognizer *_dismissSelectionRecognizer;
+  BOOL _didCancelTouchesForSelection;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame textContainer:(NSTextContainer *)textContainer
+{
+  if (self = [super initWithFrame:frame textContainer:textContainer]) {
+    self.backgroundColor = UIColor.clearColor;
+    self.editable = NO;
+    self.selectable = YES;
+    self.scrollEnabled = NO;
+    self.contentInset = UIEdgeInsetsZero;
+    self.textContainerInset = UIEdgeInsetsZero;
+    self.adjustsFontForContentSizeCategory = NO;
+    // `RCTTextLayoutManager` already applies the padding it wants.
+    self.textContainer.lineFragmentPadding = 0.0;
+    // The paragraph owns its layout; the text view must never reflow it.
+    self.textContainer.widthTracksTextView = NO;
+    self.textContainer.heightTracksTextView = NO;
+    // <Paragraph> publishes its own accessibility elements, one per link, through
+    // `RCTParagraphComponentAccessibilityProvider`. Keeping the text view out of
+    // the accessibility tree leaves that contract exactly as it was.
+    self.accessibilityElementsHidden = YES;
+    self.delegate = self;
+  }
+  return self;
+}
+
+#pragma mark - Giving the touch to the selection
+
+/*
+ * The selection gesture and `RCTSurfaceTouchHandler` track the same touch, and
+ * neither cancels the other. `RCTSurfaceTouchHandler` resolves its event
+ * emitter when the finger lands, before any selection exists, so lifting the
+ * finger after a long press presses the <Text> under it. Selecting a link
+ * follows the link.
+ *
+ * Once a selection exists the touch belongs to the selection, so the other
+ * recognizer has to let go. Disabling a recognizer cancels what it tracks,
+ * which reaches React Native as a cancelled touch and stops the press.
+ */
+- (void)textViewDidChangeSelection:(UITextView *)textView
+{
+  BOOL hasSelection = textView.selectedRange.length > 0;
+  if (hasSelection && !_didCancelTouchesForSelection) {
+    _didCancelTouchesForSelection = YES;
+    [self _cancelSurfaceTouches];
+  } else if (!hasSelection) {
+    _didCancelTouchesForSelection = NO;
+  }
+}
+
+- (void)_cancelSurfaceTouches
+{
+  for (UIView *ancestor = self.superview; ancestor != nil; ancestor = ancestor.superview) {
+    for (UIGestureRecognizer *recognizer in ancestor.gestureRecognizers) {
+      if ([recognizer isKindOfClass:[RCTSurfaceTouchHandler class]] && recognizer.isEnabled) {
+        recognizer.enabled = NO;
+        recognizer.enabled = YES;
+      }
+    }
+  }
+}
+
+#pragma mark - Dismissing the selection
+
+/*
+ * A tap outside the text clears the selection, which is what Android does and
+ * what a user expects. Nothing else in React Native takes first responder on a
+ * tap, so without this the selection stays on screen forever.
+ */
+- (BOOL)becomeFirstResponder
+{
+  BOOL didBecomeFirstResponder = [super becomeFirstResponder];
+  if (didBecomeFirstResponder) {
+    [self _addDismissSelectionRecognizer];
+  }
+  return didBecomeFirstResponder;
+}
+
+- (BOOL)resignFirstResponder
+{
+  BOOL didResignFirstResponder = [super resignFirstResponder];
+  if (didResignFirstResponder) {
+    [self _removeDismissSelectionRecognizer];
+    self.selectedRange = NSMakeRange(0, 0);
+  }
+  return didResignFirstResponder;
+}
+
+- (void)willMoveToWindow:(UIWindow *)newWindow
+{
+  [super willMoveToWindow:newWindow];
+  if (newWindow == nil) {
+    // The recognizer holds this view, so it has to go when the view does.
+    [self _removeDismissSelectionRecognizer];
+  }
+}
+
+- (void)_addDismissSelectionRecognizer
+{
+  if (_dismissSelectionRecognizer != nil) {
+    return;
+  }
+
+  // The recognizer belongs on the topmost React Native view, and not on the
+  // window: `RCTSurfaceTouchHandler` gives way to a recognizer that sits
+  // outside the surface, so a recognizer on the window would make every touch
+  // in the application wait for this one.
+  UIView *rootView = nil;
+  for (UIView *ancestor = self.superview; ancestor != nil; ancestor = ancestor.superview) {
+    if ([ancestor isKindOfClass:[RCTViewComponentView class]]) {
+      rootView = ancestor;
+    }
+  }
+  if (rootView == nil) {
+    return;
+  }
+
+  _dismissSelectionRecognizer =
+      [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTapToDismissSelection:)];
+  _dismissSelectionRecognizer.cancelsTouchesInView = NO;
+  _dismissSelectionRecognizer.delaysTouchesBegan = NO;
+  _dismissSelectionRecognizer.delaysTouchesEnded = NO;
+  [rootView addGestureRecognizer:_dismissSelectionRecognizer];
+}
+
+- (void)_removeDismissSelectionRecognizer
+{
+  [_dismissSelectionRecognizer.view removeGestureRecognizer:_dismissSelectionRecognizer];
+  _dismissSelectionRecognizer = nil;
+}
+
+- (void)_handleTapToDismissSelection:(UITapGestureRecognizer *)recognizer
+{
+  // A tap on the text itself belongs to the text view, which moves or clears
+  // the selection on its own.
+  if ([self pointInside:[recognizer locationInView:self] withEvent:nil]) {
+    return;
+  }
+
+  [self resignFirstResponder];
+}
+
+#pragma mark - Copying
+
+/*
+ * Writes the selected range to the pasteboard as rich text and as plain text,
+ * which is what `RCTParagraphComponentView` did for the whole paragraph before
+ * selection existed. `UITextView` would otherwise copy from its own storage,
+ * and that storage carries no colour and no decorations.
+ */
+- (void)copy:(id)sender
+{
+  NSRange selectedRange = self.selectedRange;
+  NSAttributedString *sourceAttributedText = _sourceAttributedText;
+
+  if (sourceAttributedText == nil || selectedRange.length == 0 ||
+      NSMaxRange(selectedRange) > sourceAttributedText.length) {
+    [super copy:sender];
+    return;
+  }
+
+  NSAttributedString *selectedText = [sourceAttributedText attributedSubstringFromRange:selectedRange];
+  NSMutableDictionary *item = [NSMutableDictionary new];
+
+  NSData *rtf = [selectedText dataFromRange:NSMakeRange(0, selectedText.length)
+                         documentAttributes:@{NSDocumentTypeDocumentAttribute : NSRTFDTextDocumentType}
+                                      error:nil];
+
+  if (rtf) {
+    [item setObject:rtf forKey:(id)kUTTypeFlatRTFD];
+  }
+
+  [item setObject:selectedText.string forKey:(id)kUTTypeUTF8PlainText];
+
+  UIPasteboard.generalPasteboard.items = @[ item ];
+}
+
+@end
+#endif // !TARGET_OS_TV
+
 @interface RCTParagraphComponentView ()
 @end
-#endif
 
 @implementation RCTParagraphComponentView {
   ParagraphAttributes _paragraphAttributes;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
-  UILongPressGestureRecognizer *_longPressGestureRecognizer;
   RCTParagraphTextView *_textView;
   CGRect _textLayoutFrame;
+#if !TARGET_OS_TV
+  RCTSelectableTextView *_selectableTextView;
+  RCTTextLayoutManager *_selectionLayoutManager;
+  NSAttributedString *_selectionRenderedText;
+  CGSize _selectionRenderedSize;
+#endif
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -168,6 +404,9 @@ using namespace facebook::react;
   [super prepareForRecycle];
   _textView.state = nullptr;
   _accessibilityProvider = nil;
+#if !TARGET_OS_TV
+  [self disableContextMenu];
+#endif
 }
 
 - (void)layoutSubviews
@@ -196,6 +435,16 @@ using namespace facebook::react;
   _textLayoutFrame = drawingFrame;
   _textView.frame = textViewFrame;
   _textView.drawingFrame = CGRectOffset(drawingFrame, -textViewFrame.origin.x, -textViewFrame.origin.y);
+
+#if !TARGET_OS_TV
+  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
+  if (paragraphProps.isSelectable) {
+    // `drawingFrame` is the frame `RCTParagraphTextView` draws the glyphs into,
+    // compression adjustment included. The selection must use the same frame,
+    // or the selection rects sit away from the glyphs they select.
+    [self updateSelectableTextViewWithDrawingFrame:drawingFrame];
+  }
+#endif
 }
 
 #pragma mark - Accessibility
@@ -300,6 +549,16 @@ using namespace facebook::react;
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
 {
+#if !TARGET_OS_TV
+  // A drag of a selection handle starts on the glyphs the handle sits on, and
+  // that is often a pressable <Text>. Adjusting a selection must not press it.
+  // `resignFirstResponder` empties the range, so an empty range means no
+  // selection is on screen and an ordinary press goes through.
+  if (_selectableTextView.selectedRange.length > 0) {
+    return nullptr;
+  }
+#endif
+
   const auto &state = _textView.state;
   if (!state) {
     return _eventEmitter;
@@ -332,83 +591,88 @@ using namespace facebook::react;
 #pragma mark - Context Menu
 
 #if !TARGET_OS_TV
+/*
+ * Selection is provided by a `UITextView` laid out with the paragraph's own
+ * TextKit stack, which gives the platform behaviour users expect: long press to
+ * select a word, drag handles to extend the range and an edit menu that copies
+ * only what is selected.
+ */
 - (void)enableContextMenu
 {
-  _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                                              action:@selector(handleLongPress:)];
-
-  if (@available(iOS 16.0, *)) {
-    _editMenuInteraction = [[UIEditMenuInteraction alloc] initWithDelegate:self];
-    [self addInteraction:_editMenuInteraction];
+  if (_selectionLayoutManager == nil) {
+    _selectionLayoutManager = [RCTTextLayoutManager new];
   }
-  [self addGestureRecognizer:_longPressGestureRecognizer];
+  _selectionRenderedText = nil;
+  [self setNeedsLayout];
 }
 
 - (void)disableContextMenu
 {
-  [self removeGestureRecognizer:_longPressGestureRecognizer];
-  if (@available(iOS 16.0, *)) {
-    [self removeInteraction:_editMenuInteraction];
-    _editMenuInteraction = nil;
-  }
-  _longPressGestureRecognizer = nil;
+  [self removeSelectableTextView];
+  _selectionLayoutManager = nil;
 }
 
-- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture
+- (void)removeSelectableTextView
 {
-  if (@available(iOS 16.0, macCatalyst 16.0, *)) {
-    CGPoint location = [gesture locationInView:self];
-    UIEditMenuConfiguration *config = [UIEditMenuConfiguration configurationWithIdentifier:nil sourcePoint:location];
-    if (_editMenuInteraction) {
-      [_editMenuInteraction presentEditMenuWithConfiguration:config];
-    }
-  } else {
-    UIMenuController *menuController = [UIMenuController sharedMenuController];
+  [_selectableTextView removeFromSuperview];
+  _selectableTextView = nil;
+  _selectionRenderedText = nil;
+  _selectionRenderedSize = CGSizeZero;
+}
 
-    if (menuController.isMenuVisible) {
-      return;
-    }
-
-    [menuController showMenuFromView:self rect:self.bounds];
+/*
+ * A `UITextView` binds its text container at initialisation, so the selectable
+ * text view is rebuilt only when the text or the available size changes.
+ */
+- (void)updateSelectableTextViewWithDrawingFrame:(CGRect)drawingFrame
+{
+  NSAttributedString *attributedText = self.attributedText;
+  if (attributedText.length == 0 || CGRectIsEmpty(drawingFrame)) {
+    [self removeSelectableTextView];
+    return;
   }
+
+  // The layout string decides the rebuild, and the painted string does not. A
+  // press on a nested pressable <Text> paints a highlight, which changes the
+  // painted string. A rebuild in the middle of that touch destroys the text
+  // view before its long press starts, so the paragraph never selects.
+  NSAttributedString *layoutText = RCTUnpaintedAttributedString(attributedText);
+
+  BOOL needsRebuild = _selectableTextView == nil || ![layoutText isEqualToAttributedString:_selectionRenderedText] ||
+      !CGSizeEqualToSize(drawingFrame.size, _selectionRenderedSize);
+
+  if (needsRebuild) {
+    NSTextStorage *textStorage = [_selectionLayoutManager textStorageForNSAttributedString:layoutText
+                                                                       paragraphAttributes:_paragraphAttributes
+                                                                                      size:drawingFrame.size];
+    NSTextContainer *textContainer = textStorage.layoutManagers.firstObject.textContainers.firstObject;
+
+    [_selectableTextView removeFromSuperview];
+    _selectableTextView = [[RCTSelectableTextView alloc] initWithFrame:drawingFrame textContainer:textContainer];
+    // Under the drawn paragraph, which is how a native text view stacks the two:
+    // UIKit paints the selection, and the glyphs go on top of it. The drawn
+    // paragraph passes touches through, so the text view still gets them.
+    UIView *container = _textView.superview;
+    if (container != nil) {
+      [container insertSubview:_selectableTextView belowSubview:_textView];
+    } else {
+      [self addSubview:_selectableTextView];
+    }
+
+    _selectionRenderedText = [layoutText copy];
+    _selectionRenderedSize = drawingFrame.size;
+  }
+
+  _selectableTextView.frame = drawingFrame;
+  _selectableTextView.sourceAttributedText = attributedText;
 }
 
 - (BOOL)canBecomeFirstResponder
 {
-  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
-  return paragraphProps.isSelectable;
+  // While selectable, `_selectableTextView` is the responder that owns the selection.
+  return NO;
 }
 
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
-{
-  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
-
-  if (paragraphProps.isSelectable && action == @selector(copy:)) {
-    return YES;
-  }
-
-  return [self.nextResponder canPerformAction:action withSender:sender];
-}
-
-- (void)copy:(id)sender
-{
-  NSAttributedString *attributedText = self.attributedText;
-
-  NSMutableDictionary *item = [NSMutableDictionary new];
-
-  NSData *rtf = [attributedText dataFromRange:NSMakeRange(0, attributedText.length)
-                           documentAttributes:@{NSDocumentTypeDocumentAttribute : NSRTFDTextDocumentType}
-                                        error:nil];
-
-  if (rtf) {
-    [item setObject:rtf forKey:(id)kUTTypeFlatRTFD];
-  }
-
-  [item setObject:attributedText.string forKey:(id)kUTTypeUTF8PlainText];
-
-  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-  pasteboard.items = @[ item ];
-}
 #else
 - (void)enableContextMenu
 {
