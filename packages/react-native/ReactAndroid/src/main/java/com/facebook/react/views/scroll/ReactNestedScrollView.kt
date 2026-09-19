@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2f9a2ea0c223b08d9d1ea4517fd9671b>>
+ * @generated SignedSource<<d6cc97a31d9a0fa0ca18d66cba6d5be9>>
  */
 
 /**
@@ -706,21 +706,6 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
     if (pagingEnabled) {
       flingAndSnap(correctedVelocityY)
-    } else if (scroller != null) {
-      val scrollWindowHeight = height - paddingBottom - paddingTop
-      scroller.fling(
-          scrollX, // startX
-          scrollY, // startY
-          0, // velocityX
-          correctedVelocityY, // velocityY
-          0, // minX
-          0, // maxX
-          0, // minY
-          Int.MAX_VALUE, // maxY
-          0, // overX
-          scrollWindowHeight / 2, // overY
-      )
-      postInvalidateOnAnimation()
     } else {
       super.fling(correctedVelocityY)
     }
