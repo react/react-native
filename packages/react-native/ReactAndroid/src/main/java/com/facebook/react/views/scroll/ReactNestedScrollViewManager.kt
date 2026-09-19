@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<cc2b79daa48993203e35cb663b733ccc>>
+ * @generated SignedSource<<3b339a7d81f8e32cf6b6ca93ae9a388b>>
  */
 
 /**
@@ -255,9 +255,20 @@ constructor(private val fpsListener: FpsListener? = null) :
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
+  )
+  fun setBorderRadius(view: ReactNestedScrollView?, index: Int, rawBorderRadius: Dynamic) {
+    if (view != null) {
+      val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+      setBorderRadius(view, BorderRadiusProp.entries[index], borderRadius)
+    }
+  }
+
+  @Deprecated(
+      "Don't use setBorderRadius(view, index, Float) as it was deprecated in React Native 0.88.0.",
   )
   fun setBorderRadius(view: ReactNestedScrollView?, index: Int, borderRadius: Float) {
+    // Direct body: DynamicFromObject(Float).asDouble() throws, and setFromDynamic
+    // would not map NaN back to null like the original Float path did.
     if (view != null) {
       val radius =
           if (borderRadius.isNaN()) null
