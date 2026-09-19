@@ -20,6 +20,7 @@
 #import <React/RCTBackgroundImageUtils.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
+#import <React/RCTClipPathUtils.h>
 #import <React/RCTConversions.h>
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
@@ -661,6 +662,11 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // `boxShadow`
   if (oldViewProps.boxShadow != newViewProps.boxShadow) {
+    needsInvalidateLayer = YES;
+  }
+
+  // `clipPath`
+  if (oldViewProps.clipPath != newViewProps.clipPath) {
     needsInvalidateLayer = YES;
   }
 
@@ -1367,7 +1373,27 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
   // clipping
   self.currentContainerView.layer.mask = nil;
-  if (self.currentContainerView.clipsToBounds) {
+
+  // Handle clip-path property
+  if (_props->clipPath != nullptr) {
+		if (auto yogaStylableProps = std::static_pointer_cast<const YogaStylableProps>(_props)) {
+			CALayer *maskLayer = [RCTClipPathUtils createClipPathLayer:*_props->clipPath
+																									 layoutMetrics:_layoutMetrics
+																							 yogaStylableProps:*yogaStylableProps.get()
+																													bounds:layer.bounds
+																										 cornerRadii:RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii)];
+			if (maskLayer != nil) {
+				self.currentContainerView.layer.mask = maskLayer;
+				
+				for (UIView *subview in self.currentContainerView.subviews) {
+					if ([subview isKindOfClass:[UIImageView class]]) {
+						subview.layer.mask = maskLayer;
+					}
+				}
+			}
+    }
+  } else if (self.currentContainerView.clipsToBounds) {
+    // Handle regular clipsToBounds clipping when no clip-path is specified
     BOOL clipToPaddingBox = ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox();
     if (!clipToPaddingBox) {
       if (areBorderRadiiCircular(borderMetrics.borderRadii)) {
