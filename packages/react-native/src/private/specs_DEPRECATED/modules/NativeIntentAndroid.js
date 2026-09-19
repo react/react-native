@@ -17,6 +17,7 @@ export interface Spec extends TurboModule {
   readonly canOpenURL: (url: string) => Promise<boolean>;
   readonly openURL: (url: string) => Promise<void>;
   readonly openSettings: () => Promise<void>;
+  readonly openNotificationSettings: () => Promise<void>;
   readonly sendIntent: (
     action: string,
     extras: ?Array<{

@@ -48,6 +48,12 @@ export interface LinkingImpl extends NativeEventEmitter {
   openSettings(): Promise<void>;
 
   /**
+   * Open the Settings app and displays the app’s notification settings.
+   * Falls back to the app’s general settings page on iOS < 15.4 and Android < 8.0 (API 26).
+   */
+  openNotificationSettings(): Promise<void>;
+
+  /**
    * Sends an Android Intent - a broad surface to express Android functions.  Useful for deep-linking to settings pages,
    * opening an SMS app with a message draft in place, and more.  See https://developer.android.com/reference/kotlin/android/content/Intent?hl=en
    */

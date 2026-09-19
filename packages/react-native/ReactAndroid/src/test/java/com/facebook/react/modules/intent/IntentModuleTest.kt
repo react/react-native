@@ -7,6 +7,9 @@
 
 package com.facebook.react.modules.intent
 
+import android.app.Activity
+import android.content.Intent
+import android.provider.Settings
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -19,10 +22,12 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class IntentModuleTest {
@@ -63,6 +68,80 @@ class IntentModuleTest {
     verify(context, times(2)).addLifecycleEventListener(any())
     assertThat(promise.resolved).isEqualTo(0)
     assertThat(promise.rejected).isEqualTo(0)
+  }
+
+  @Test
+  fun openNotificationSettings_startsAppNotificationSettingsIntent() {
+    val activity = mock<Activity>()
+    whenever(context.currentActivity).thenReturn(activity)
+    whenever(context.packageName).thenReturn(TEST_PACKAGE_NAME)
+
+    val promise = SimplePromise()
+    intentModule.openNotificationSettings(promise)
+
+    val intentCaptor = argumentCaptor<Intent>()
+    verify(activity).startActivity(intentCaptor.capture())
+    val intent = intentCaptor.firstValue
+    assertThat(intent.action).isEqualTo(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+    assertThat(intent.getStringExtra(Settings.EXTRA_APP_PACKAGE)).isEqualTo(TEST_PACKAGE_NAME)
+    assertThat(intent.flags and Intent.FLAG_ACTIVITY_NEW_TASK).isNotEqualTo(0)
+    assertThat(promise.resolved).isEqualTo(1)
+    assertThat(promise.rejected).isEqualTo(0)
+  }
+
+  @Test
+  @Config(sdk = [25])
+  fun openNotificationSettings_beforeApi26_fallsBackToAppDetailsSettings() {
+    val activity = mock<Activity>()
+    whenever(context.currentActivity).thenReturn(activity)
+    whenever(context.packageName).thenReturn(TEST_PACKAGE_NAME)
+
+    val promise = SimplePromise()
+    intentModule.openNotificationSettings(promise)
+
+    val intentCaptor = argumentCaptor<Intent>()
+    verify(activity).startActivity(intentCaptor.capture())
+    val intent = intentCaptor.firstValue
+    assertThat(intent.action).isEqualTo(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    assertThat(intent.data.toString()).isEqualTo("package:$TEST_PACKAGE_NAME")
+    assertThat(promise.resolved).isEqualTo(1)
+    assertThat(promise.rejected).isEqualTo(0)
+  }
+
+  @Test
+  fun openNotificationSettings_withoutActivity_rejects() {
+    whenever(context.currentActivity).thenReturn(null)
+    whenever(context.packageName).thenReturn(TEST_PACKAGE_NAME)
+
+    val promise = SimplePromise()
+    intentModule.openNotificationSettings(promise)
+
+    verify(context, never()).startActivity(any())
+    assertThat(promise.resolved).isEqualTo(0)
+    assertThat(promise.rejected).isEqualTo(1)
+  }
+
+  @Test
+  fun openSettings_startsAppDetailsSettingsIntent() {
+    val activity = mock<Activity>()
+    whenever(context.currentActivity).thenReturn(activity)
+    whenever(context.packageName).thenReturn(TEST_PACKAGE_NAME)
+
+    val promise = SimplePromise()
+    intentModule.openSettings(promise)
+
+    val intentCaptor = argumentCaptor<Intent>()
+    verify(activity).startActivity(intentCaptor.capture())
+    val intent = intentCaptor.firstValue
+    assertThat(intent.action).isEqualTo(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    assertThat(intent.data.toString()).isEqualTo("package:$TEST_PACKAGE_NAME")
+    assertThat(intent.flags and Intent.FLAG_ACTIVITY_NEW_TASK).isNotEqualTo(0)
+    assertThat(promise.resolved).isEqualTo(1)
+    assertThat(promise.rejected).isEqualTo(0)
+  }
+
+  private companion object {
+    const val TEST_PACKAGE_NAME = "com.facebook.react.uiapp"
   }
 
   internal class SimplePromise : Promise {
