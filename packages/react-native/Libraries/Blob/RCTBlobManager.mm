@@ -11,6 +11,7 @@
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTConvert.h>
+#import <React/RCTLog.h>
 #import <React/RCTMockDef.h>
 #import <React/RCTNetworking.h>
 #import <React/RCTUtils.h>
@@ -111,8 +112,30 @@ RCT_EXPORT_MODULE(BlobModule)
   if (!data) {
     return nil;
   }
-  if (offset != 0 || (size != -1 && size != data.length)) {
-    data = [data subdataWithRange:NSMakeRange(offset, size)];
+  // The offset and size come from the JS-side blob descriptor, which can disagree with the bytes that were
+  // actually stored. Clamp the range to what is really here: an NSRangeException raised from here is fatal,
+  // because this runs on a background queue with no JS frame on the stack to catch it.
+  const NSInteger length = (NSInteger)data.length;
+  if (offset < 0 || offset > length) {
+    RCTLogWarn(
+        @"[BlobManager] blob %@: offset %ld is out of bounds for %ld stored bytes", blobId, (long)offset, (long)length);
+    return nil;
+  }
+  const NSInteger available = length - offset;
+  // A negative size means "the rest of the blob", which is the existing contract for -1.
+  if (size < 0 || size > available) {
+    if (size > available) {
+      RCTLogWarn(
+          @"[BlobManager] blob %@: %ld bytes requested at offset %ld, but only %ld are stored; truncating",
+          blobId,
+          (long)size,
+          (long)offset,
+          (long)available);
+    }
+    size = available;
+  }
+  if (offset != 0 || size != length) {
+    data = [data subdataWithRange:NSMakeRange((NSUInteger)offset, (NSUInteger)size)];
   }
   return data;
 }
@@ -194,9 +217,22 @@ RCT_EXPORT_MODULE(BlobModule)
 
     if ([type isEqualToString:@"blob"]) {
       NSData *partData = [self resolve:part[@"data"]];
+      if (partData == nil) {
+        // A part that cannot be resolved contributes nothing, which is one way a blob ends up shorter than
+        // the size JS recorded for it. Say so rather than failing silently.
+        RCTLogWarn(
+            @"[BlobManager] blob %@: blob part %@ could not be resolved and contributes 0 bytes",
+            blobId,
+            [RCTConvert NSString:part[@"data"][@"blobId"]]);
+        continue;
+      }
       [data appendData:partData];
     } else if ([type isEqualToString:@"string"]) {
       NSData *partData = [[RCTConvert NSString:part[@"data"]] dataUsingEncoding:NSUTF8StringEncoding];
+      if (partData == nil) {
+        RCTLogWarn(@"[BlobManager] blob %@: a string part could not be encoded and contributes 0 bytes", blobId);
+        continue;
+      }
       [data appendData:partData];
     } else {
       [NSException raise:@"Invalid type for blob" format:@"%@ is invalid", type];
