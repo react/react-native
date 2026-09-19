@@ -11,7 +11,6 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type AnimatedValue from 'react-native/Libraries/Animated/nodes/AnimatedValue';
 
 import RNTesterSettingSwitchRow from '../../components/RNTesterSettingSwitchRow';
 import RNTesterText from '../../components/RNTesterText';
@@ -25,7 +24,7 @@ import {
 } from 'react-native';
 
 class Tester extends React.Component<$FlowFixMe, $FlowFixMe> {
-  state: any | {js: AnimatedValue, native: AnimatedValue} = {
+  state: any | {js: Animated.Value, native: Animated.Value} = {
     native: new Animated.Value(0),
     js: new Animated.Value(0),
   };
@@ -74,7 +73,7 @@ class Tester extends React.Component<$FlowFixMe, $FlowFixMe> {
 }
 
 class ValueListenerExample extends React.Component<{...}, $FlowFixMe> {
-  state: any | {anim: AnimatedValue, progress: number} = {
+  state: any | {anim: Animated.Value, progress: number} = {
     anim: new Animated.Value(0),
     progress: 0,
   };
@@ -123,7 +122,7 @@ class ValueListenerExample extends React.Component<{...}, $FlowFixMe> {
 }
 
 class LoopExample extends React.Component<{...}, $FlowFixMe> {
-  state: any | {value: AnimatedValue} = {
+  state: any | {value: Animated.Value} = {
     value: new Animated.Value(0),
   };
 
@@ -194,7 +193,7 @@ const InternalSettings = () => {
 };
 
 class EventExample extends React.Component<{...}, $FlowFixMe> {
-  state: any | {anim: AnimatedValue} = {
+  state: any | {anim: Animated.Value} = {
     anim: new Animated.Value(0),
   };
 
@@ -244,10 +243,10 @@ class TrackingExample extends React.Component<$FlowFixMe, $FlowFixMe> {
   state:
     | any
     | {
-        js: AnimatedValue,
-        native: AnimatedValue,
-        toJS: AnimatedValue,
-        toNative: AnimatedValue,
+        js: Animated.Value,
+        native: Animated.Value,
+        toJS: Animated.Value,
+        toNative: Animated.Value,
       } = {
     native: new Animated.Value(0),
     toNative: new Animated.Value(0),
@@ -282,8 +281,8 @@ class TrackingExample extends React.Component<$FlowFixMe, $FlowFixMe> {
   };
 
   renderBlock = (
-    anim: any | AnimatedValue,
-    dest: any | AnimatedValue,
+    anim: any | Animated.Value,
+    dest: any | Animated.Value,
   ): Array<React.Node> => [
     <Animated.View
       key="line"

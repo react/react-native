@@ -20,7 +20,7 @@ import {
   View,
   useAnimatedValue,
 } from 'react-native';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 const optimizedAnimatedPropUpdatesEnabled =
   ReactNativeFeatureFlags.optimizedAnimatedPropUpdates();

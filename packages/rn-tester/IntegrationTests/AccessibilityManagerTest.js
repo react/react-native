@@ -8,11 +8,11 @@
  * @format
  */
 
+import NativeAccessibilityManager from '../../react-native/Libraries/Components/AccessibilityInfo/NativeAccessibilityManager';
 import invariant from 'invariant';
 import * as React from 'react';
 import {useEffect} from 'react';
 import {DeviceEventEmitter, NativeModules, View} from 'react-native';
-import NativeAccessibilityManager from 'react-native/Libraries/Components/AccessibilityInfo/NativeAccessibilityManager';
 
 const {TestModule} = NativeModules;
 

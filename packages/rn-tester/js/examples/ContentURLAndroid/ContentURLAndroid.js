@@ -46,7 +46,7 @@ const ContentSelector = (): React.Node => {
   const imageSelector = useCallback(async () => {
     try {
       const NativeSampleTurboModule =
-        require('react-native/Libraries/TurboModule/samples/NativeSampleTurboModule').default;
+        require('../../../../react-native/Libraries/TurboModule/samples/NativeSampleTurboModule').default;
       const uri = await NativeSampleTurboModule.getImageUrl?.();
       if (uri != null) {
         console.log({uri});

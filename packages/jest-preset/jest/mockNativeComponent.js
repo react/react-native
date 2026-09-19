@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {HostInstance} from 'react-native/src/private/types/HostInstance';
+import type {HostInstance} from '../../react-native/src/private/types/HostInstance';
 
 import * as React from 'react';
 import {createElement} from 'react';

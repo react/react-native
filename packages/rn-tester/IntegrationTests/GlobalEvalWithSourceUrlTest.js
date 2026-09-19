@@ -10,12 +10,12 @@
 
 'use strict';
 
-import type {ExtendedError} from 'react-native/Libraries/Core/ExtendedError';
+import type {ExtendedError} from '../../react-native/Libraries/Core/ExtendedError';
 
+import parseErrorStack from '../../react-native/Libraries/Core/Devtools/parseErrorStack';
 import * as React from 'react';
 import {useEffect} from 'react';
 import {NativeModules, View} from 'react-native';
-import parseErrorStack from 'react-native/Libraries/Core/Devtools/parseErrorStack';
 
 const {TestModule} = NativeModules;
 

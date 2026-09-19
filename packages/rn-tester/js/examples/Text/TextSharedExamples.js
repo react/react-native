@@ -9,12 +9,14 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {TextLayoutLine} from 'react-native/Libraries/Types/CoreEventTypes';
+import type {TextLayoutEvent} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
 import {useTheme} from '../../components/RNTesterTheme';
 import {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+
+type TextLayoutLine = TextLayoutEvent['nativeEvent']['lines'][number];
 
 function InlineView(props: {
   textAlign: 'auto' | 'left' | 'right' | 'center' | 'justify',

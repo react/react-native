@@ -8,4 +8,4 @@
  * @format
  */
 
-export {default} from 'react-native/Libraries/Components/UnimplementedViews/UnimplementedView';
+export {default} from '../../../../react-native/Libraries/Components/UnimplementedViews/UnimplementedView';

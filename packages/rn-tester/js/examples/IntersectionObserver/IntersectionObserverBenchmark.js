@@ -8,8 +8,6 @@
  * @format
  */
 
-import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
-
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
 import * as React from 'react';
 import {
@@ -20,8 +18,6 @@ import {
   useState,
 } from 'react';
 import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
-
-declare var IntersectionObserver: Class<IntersectionObserverType>;
 
 export const name = 'IntersectionObserver Benchmark';
 export const title = name;
@@ -89,6 +85,7 @@ function Item({index, observe}: {index: number, observe: boolean}): React.Node {
       },
     );
 
+    // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
     observer.observe(element);
 
     return () => {

@@ -9,13 +9,13 @@
  */
 
 import typeof * as TmockComponent from '../mockComponent';
-import typeof TActivityIndicator from 'react-native/Libraries/Components/ActivityIndicator/ActivityIndicator';
+import typeof {ActivityIndicator as TActivityIndicator} from 'react-native';
 
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;
 
 const ActivityIndicator = mockComponent(
-  'react-native/Libraries/Components/ActivityIndicator/ActivityIndicator',
+  '../../react-native/Libraries/Components/ActivityIndicator/ActivityIndicator',
   null, // instanceMethods
   true, // isESModule
 ) as TActivityIndicator;

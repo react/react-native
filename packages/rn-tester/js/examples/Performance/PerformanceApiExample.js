@@ -9,7 +9,6 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type Performance from 'react-native/src/private/webapis/performance/Performance';
 
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
@@ -20,13 +19,18 @@ declare var performance: Performance;
 
 const {useState, useCallback} = React;
 
+// $FlowFixMe[prop-missing] React Native-specific Performance extension.
+type MemoryInfo = typeof performance.memory;
+// $FlowFixMe[prop-missing] React Native-specific Performance extension.
+type ReactNativeStartupTiming = typeof performance.rnStartupTiming;
+
 function MemoryExample(): React.Node {
   // Memory API testing
-  const [memoryInfo, setMemoryInfo] =
-    useState<?typeof performance.memory>(null);
+  const [memoryInfo, setMemoryInfo] = useState<?MemoryInfo>(null);
   const onGetMemoryInfo = useCallback(() => {
     // performance.memory is not included in bom.js yet.
     // Once we release the change in flow this can be removed.
+    // $FlowFixMe[prop-missing] React Native-specific Performance extension.
     setMemoryInfo(performance.memory);
   }, []);
   return (
@@ -50,10 +54,11 @@ function MemoryExample(): React.Node {
 function StartupTimingExample(): React.Node {
   // React Startup Timing API testing
   const [startUpTiming, setStartUpTiming] =
-    useState<?typeof performance.rnStartupTiming>(null);
+    useState<?ReactNativeStartupTiming>(null);
   const onGetStartupTiming = useCallback(() => {
     // performance.reactNativeStartupTiming is not included in bom.js yet.
     // Once we release the change in flow this can be removed.
+    // $FlowFixMe[prop-missing] React Native-specific Performance extension.
     setStartUpTiming(performance.rnStartupTiming);
   }, []);
   return (

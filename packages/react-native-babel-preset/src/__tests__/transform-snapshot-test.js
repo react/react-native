@@ -316,9 +316,11 @@ describe('react-native-babel-preset transform snapshots', () => {
     it('runs codegen when the type arguments are separated by trivia', () => {
       const code = `
         // @flow strict-local
-        import type {ViewProps} from 'react-native';
-        import type {HostComponent} from 'react-native';
-        import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+        import {
+          codegenNativeComponent,
+          type HostComponent,
+          type ViewProps,
+        } from 'react-native';
 
         type NativeProps = Readonly<{
           ...ViewProps,

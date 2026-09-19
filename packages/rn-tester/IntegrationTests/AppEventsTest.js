@@ -10,6 +10,7 @@
 
 'use strict';
 
+import deepDiffer from '../../react-native/Libraries/Utilities/differ/deepDiffer';
 import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {
@@ -19,7 +20,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import deepDiffer from 'react-native/Libraries/Utilities/differ/deepDiffer';
 
 const {TestModule} = NativeModules;
 

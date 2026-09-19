@@ -197,14 +197,13 @@ hi
 - Benchmark tests use the `-benchmark-itest.js` suffix.
 - Use `Fantom.runTask()` to render and run synchronous operations; it ensures
   the React work is flushed before assertions.
-- Access elements through refs and use the
-  [`ensureInstance`](../../../packages/react-native/src/private/__tests__/utilities/ensureInstance.js)
-  helper for type-safe access to the underlying instance:
+- Access elements through refs and use `nullthrows` for type-safe access to the
+  underlying instance:
 
   ```javascript
-  import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
+  import nullthrows from 'nullthrows';
 
-  const element = ensureInstance(elementRef.current, ReactNativeElement);
+  const element = nullthrows(elementRef.current);
   ```
 
 - Prefer component-specific instance types (`TextInputInstance`,
@@ -622,7 +621,7 @@ the test in the suite depending on the flag value for that run. E.g.:
  * @fantom_flags commonTestFlag:*
  */
 
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 // The entire suite will be run with commonTestFlag set to true and false.
 describe('MyTest', () => {

@@ -9,7 +9,6 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {Numeric} from 'react-native/Libraries/Animated/AnimatedImplementation';
 
 import RNTesterButton from '../../components/RNTesterButton';
 import * as React from 'react';
@@ -35,7 +34,7 @@ component CombineExample() {
   const divide =
     parseFloat(aValue) !== 0 ? Animated.divide(b, a) : new Animated.Value(1);
   const mod = Animated.modulo(a, parseFloat(bValue));
-  const [animation, setAnimation] = useState<Numeric>(add);
+  const [animation, setAnimation] = useState<Animated.Numeric>(add);
 
   return (
     <View>

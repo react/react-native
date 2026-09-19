@@ -8,10 +8,7 @@
  * @format
  */
 
-import type {
-  ViewabilityConfig,
-  ViewToken,
-} from 'react-native/Libraries/Lists/ViewabilityHelper';
+import type {ListViewToken, ViewabilityConfig} from 'react-native';
 
 import SectionListBaseExample from './SectionListBaseExample';
 import * as React from 'react';
@@ -37,8 +34,8 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
   };
   const exampleProps = {
     onViewableItemsChanged: (info: {
-      changed: Array<ViewToken>,
-      viewableItems: Array<ViewToken>,
+      changed: Array<ListViewToken>,
+      viewableItems: Array<ListViewToken>,
       ...
     }) =>
       setOutput(

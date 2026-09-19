@@ -15,6 +15,7 @@ import type {HostInstance} from 'react-native';
 
 import NativeFantom from '../../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {LogBox, Modal, ScrollView, Text, TextInput, View} from 'react-native';
@@ -37,7 +38,9 @@ function getActualViewportDimensions(root: Root): {
     root.render(<View />);
   });
 
-  const rect = root.document.documentElement.getBoundingClientRect();
+  const rect = nullthrows(
+    root.document.documentElement,
+  ).getBoundingClientRect();
   return {
     viewportWidth: rect.width,
     viewportHeight: rect.height,

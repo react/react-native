@@ -11,10 +11,7 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {
-  ViewLayout,
-  ViewLayoutEvent,
-} from 'react-native/Libraries/Components/View/ViewPropTypes';
+import type {LayoutChangeEvent, LayoutRectangle} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
@@ -24,9 +21,9 @@ type Props = Readonly<{}>;
 type State = {
   containerStyle?: {width: number},
   extraText?: string,
-  imageLayout?: ViewLayout,
-  textLayout?: ViewLayout,
-  viewLayout?: ViewLayout,
+  imageLayout?: LayoutRectangle,
+  textLayout?: LayoutRectangle,
+  viewLayout?: LayoutRectangle,
   viewStyle: {margin: number},
   ...
 };
@@ -61,17 +58,17 @@ class LayoutEventExample extends React.Component<Props, State> {
     this.setState({containerStyle: {width: 280}});
   };
 
-  onViewLayout = (e: ViewLayoutEvent) => {
+  onViewLayout = (e: LayoutChangeEvent) => {
     console.log('received view layout event\n', e.nativeEvent);
     this.setState({viewLayout: e.nativeEvent.layout});
   };
 
-  onTextLayout = (e: ViewLayoutEvent) => {
+  onTextLayout = (e: LayoutChangeEvent) => {
     console.log('received text layout event\n', e.nativeEvent);
     this.setState({textLayout: e.nativeEvent.layout});
   };
 
-  onImageLayout = (e: ViewLayoutEvent) => {
+  onImageLayout = (e: LayoutChangeEvent) => {
     console.log('received image layout event\n', e.nativeEvent);
     this.setState({imageLayout: e.nativeEvent.layout});
   };

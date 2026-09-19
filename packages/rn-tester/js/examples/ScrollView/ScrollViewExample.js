@@ -9,7 +9,6 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import RNTesterText from '../../components/RNTesterText';
 import ScrollViewPressableStickyHeaderExample from './ScrollViewPressableStickyHeaderExample';
@@ -26,6 +25,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 class EnableDisableList extends React.Component<{}, {scrollEnabled: boolean}> {
   state: {scrollEnabled: boolean} = {

@@ -14,7 +14,7 @@ import AllAnimatedPropsExample from './AllAnimatedPropsExample';
 import PlaygroundExample from './ChessboardExample';
 import PerformanceTestExample from './PerformanceTestExample';
 import SwipeableListExample from './SwipeableListExample';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 const canUseBackend =
   // eslint-disable-next-line

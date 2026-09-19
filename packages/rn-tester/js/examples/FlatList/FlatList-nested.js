@@ -11,8 +11,7 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {ListRenderItemInfo} from 'react-native';
-import type {ViewToken} from 'react-native/Libraries/Lists/ViewabilityHelper';
+import type {ListRenderItemInfo, ListViewToken} from 'react-native';
 
 import RNTesterPage from '../../components/RNTesterPage';
 import RNTesterText from '../../components/RNTesterText';
@@ -92,8 +91,8 @@ component NestedListExample() {
     ({
       changed,
     }: {
-      changed: Array<ViewToken>,
-      viewableItems: Array<ViewToken>,
+      changed: Array<ListViewToken>,
+      viewableItems: Array<ListViewToken>,
       ...
     }) => {
       for (const token of changed) {
@@ -176,8 +175,8 @@ component OuterItemRenderer(
     ({
       changed,
     }: {
-      changed: Array<ViewToken>,
-      viewableItems: Array<ViewToken>,
+      changed: Array<ListViewToken>,
+      viewableItems: Array<ListViewToken>,
       ...
     }) => {
       for (const token of changed) {

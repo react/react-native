@@ -43,6 +43,7 @@
 import typeof getDevServer from '../Libraries/Core/Devtools/getDevServer';
 import typeof NativeExceptionsManager from '../Libraries/Core/NativeExceptionsManager';
 import typeof AssetSourceResolver from '../Libraries/Image/AssetSourceResolver';
+import typeof {ConditionallyIgnoredEventHandlers} from '../Libraries/NativeComponent/ViewConfigIgnore';
 import typeof NativeRedBox from '../Libraries/NativeModules/specs/NativeRedBox';
 import typeof NativeSourceCode from '../Libraries/NativeModules/specs/NativeSourceCode';
 import typeof {PressabilityDebugView} from '../Libraries/Pressability/PressabilityDebug';
@@ -59,6 +60,12 @@ module.exports = {
   },
   get AssetSourceResolver(): AssetSourceResolver {
     return require('../Libraries/Image/AssetSourceResolver').default;
+  },
+  get ConditionallyIgnoredEventHandlers(): ConditionallyIgnoredEventHandlers<{
+    readonly [name: string]: true,
+  }> {
+    return require('../Libraries/NativeComponent/ViewConfigIgnore')
+      .ConditionallyIgnoredEventHandlers;
   },
   get customDirectEventTypes(): customDirectEventTypes {
     return require('../Libraries/Renderer/shims/ReactNativeViewConfigRegistry')

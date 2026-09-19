@@ -8,11 +8,11 @@
  * @format
  */
 
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-
 import RNTesterPlatformTestResultsText from './RNTesterPlatformTestResultsText';
 import * as React from 'react';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 type Props = Readonly<{
   numFail: number,

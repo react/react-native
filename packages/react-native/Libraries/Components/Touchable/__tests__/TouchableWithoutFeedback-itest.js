@@ -141,7 +141,9 @@ describe('<TouchableWithoutFeedback>', () => {
         });
 
         expect(
-          nullthrows(root.document.documentElement.firstElementChild).tagName,
+          nullthrows(
+            nullthrows(root.document.documentElement).firstElementChild,
+          ).tagName,
         ).toBe('RN:Paragraph');
 
         Fantom.runTask(() => {
@@ -155,7 +157,9 @@ describe('<TouchableWithoutFeedback>', () => {
         });
 
         expect(
-          nullthrows(root.document.documentElement.firstElementChild).tagName,
+          nullthrows(
+            nullthrows(root.document.documentElement).firstElementChild,
+          ).tagName,
         ).toBe('RN:View');
       });
     });
