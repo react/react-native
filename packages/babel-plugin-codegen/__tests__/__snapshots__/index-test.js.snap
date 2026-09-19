@@ -15,7 +15,9 @@ interface NativeCommands {
   +seek: (viewRef: React.ElementRef<NativeType>, position: number) => void,
   +stop: (viewRef: React.ElementRef<NativeType>) => void,
 }
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {
+  NativeComponentRegistry
+} = require('react-native');
 let nativeComponentName = 'Module';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"Module\\",
@@ -39,7 +41,9 @@ interface NativeCommands {
   +pause: (viewRef: React.ElementRef<NativeType>) => void,
   +play: (viewRef: React.ElementRef<NativeType>) => void,
 }
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {
+  NativeComponentRegistry
+} = require('react-native');
 let nativeComponentName = 'Module';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"Module\\",
@@ -63,7 +67,9 @@ interface NativeCommands {
   +mute: (viewRef: React.ElementRef<NativeType>) => void,
   +unmute: (viewRef: React.ElementRef<NativeType>) => void,
 }
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {
+  NativeComponentRegistry
+} = require('react-native');
 let nativeComponentName = 'Module';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"Module\\",
@@ -93,13 +99,16 @@ interface NativeCommands {
   +hotspotUpdate: (viewRef: React.ElementRef<NativeType>, x: Int32, y: Int32) => void,
   +scrollTo: (viewRef: React.ElementRef<NativeType>, y: Int32, animated: boolean) => void,
 }
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
 const {
   ConditionallyIgnoredEventHandlers
-} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');
+} = require('react-native/unstable-internals-do-not-use');
 const {
-  dispatchCommand
-} = require(\\"react-native/Libraries/ReactNative/RendererProxy\\");
+  NativeComponentRegistry
+} = require('react-native');
+const {
+  findNodeHandle,
+  UIManager
+} = require(\\"react-native\\");
 let nativeComponentName = 'RCTModule';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"RCTModule\\",
@@ -127,10 +136,10 @@ export const __INTERNAL_VIEW_CONFIG = {
 export default NativeComponentRegistry.get(nativeComponentName, () => __INTERNAL_VIEW_CONFIG);
 export const Commands = {
   hotspotUpdate(ref, x, y) {
-    dispatchCommand(ref, \\"hotspotUpdate\\", [x, y]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"hotspotUpdate\\", [x, y]);
   },
   scrollTo(ref, y, animated) {
-    dispatchCommand(ref, \\"scrollTo\\", [y, animated]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"scrollTo\\", [y, animated]);
   }
 };"
 `;
@@ -156,13 +165,16 @@ interface NativeCommands {
   +hotspotUpdate: (viewRef: React.ElementRef<NativeType>, x: Int32, y: Int32) => void,
   +scrollTo: (viewRef: React.ElementRef<NativeType>, y: Int32, animated: boolean) => void,
 }
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
 const {
   ConditionallyIgnoredEventHandlers
-} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');
+} = require('react-native/unstable-internals-do-not-use');
 const {
-  dispatchCommand
-} = require(\\"react-native/Libraries/ReactNative/RendererProxy\\");
+  NativeComponentRegistry
+} = require('react-native');
+const {
+  findNodeHandle,
+  UIManager
+} = require(\\"react-native\\");
 let nativeComponentName = 'RCTModule';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"RCTModule\\",
@@ -190,10 +202,10 @@ export const __INTERNAL_VIEW_CONFIG = {
 export default NativeComponentRegistry.get(nativeComponentName, () => __INTERNAL_VIEW_CONFIG);
 export const Commands = {
   hotspotUpdate(ref, x, y) {
-    dispatchCommand(ref, \\"hotspotUpdate\\", [x, y]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"hotspotUpdate\\", [x, y]);
   },
   scrollTo(ref, y, animated) {
-    dispatchCommand(ref, \\"scrollTo\\", [y, animated]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"scrollTo\\", [y, animated]);
   }
 };"
 `;

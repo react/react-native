@@ -13,8 +13,7 @@ import {TypeScriptParser} from '@react-native/codegen/lib/parsers/typescript/par
 
 test(`@rn/codegen should parse an empty TypeScript module`, () => {
   const tsInput = `
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
 export interface Spec extends TurboModule {}
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');

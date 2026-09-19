@@ -16,7 +16,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'AllProp';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -62,7 +62,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'AllPropWithOptionalGen';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -108,7 +108,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'AllPropWithOptionalObjectGen';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -154,7 +154,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ArrayPropsNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -165,7 +165,14 @@ export const __INTERNAL_VIEW_CONFIG = {
     progress: true,
     radii: true,
     colors: {
-      process: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/StyleSheet/processColorArray'))
+      process: colors => colors == null ? null : colors.map(color => {
+        const value = require('react-native').processColor(color);
+        if (value == null) {
+          console.error('Invalid value in color array:', color);
+          return 0;
+        }
+        return value;
+      })
     },
     srcs: true,
     points: true,
@@ -198,7 +205,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ArrayPropsNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -228,7 +235,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ArrayPropsOptionalGenNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -258,7 +265,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ArrayPropsOptionalObjectGenNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -288,7 +295,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ArrayPropsWithOptionalGenNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -299,7 +306,14 @@ export const __INTERNAL_VIEW_CONFIG = {
     progress: true,
     radii: true,
     colors: {
-      process: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/StyleSheet/processColorArray'))
+      process: colors => colors == null ? null : colors.map(color => {
+        const value = require('react-native').processColor(color);
+        if (value == null) {
+          console.error('Invalid value in color array:', color);
+          return 0;
+        }
+        return value;
+      })
     },
     srcs: true,
     points: true,
@@ -332,7 +346,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ArrayPropsWithOptionalObjectGenNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -343,7 +357,14 @@ export const __INTERNAL_VIEW_CONFIG = {
     progress: true,
     radii: true,
     colors: {
-      process: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/StyleSheet/processColorArray'))
+      process: colors => colors == null ? null : colors.map(color => {
+        const value = require('react-native').processColor(color);
+        if (value == null) {
+          console.error('Invalid value in color array:', color);
+          return 0;
+        }
+        return value;
+      })
     },
     srcs: true,
     points: true,
@@ -376,7 +397,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'BooleanPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -406,13 +427,15 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ColorPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"ColorPropNativeComponent\\",
   validAttributes: {
-    tintColor: require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute
+    tintColor: require('react-native/react-private-interface').ReactNativeFeatureFlags.enableNativeCSSParsing() ? true : {
+      process: require('react-native').processColor
+    }
   }
 };
 export default NativeComponentRegistry.get(nativeComponentName, () => __INTERNAL_VIEW_CONFIG);
@@ -436,8 +459,8 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
-const {dispatchCommand} = require(\\"react-native/Libraries/ReactNative/RendererProxy\\");
+const {NativeComponentRegistry} = require('react-native');
+const {findNodeHandle, UIManager} = require(\\"react-native\\");
 
 let nativeComponentName = 'CommandNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -447,10 +470,10 @@ export const __INTERNAL_VIEW_CONFIG = {
 export default NativeComponentRegistry.get(nativeComponentName, () => __INTERNAL_VIEW_CONFIG);
 export const Commands = {
   flashScrollIndicators(ref) {
-    dispatchCommand(ref, \\"flashScrollIndicators\\", []);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"flashScrollIndicators\\", []);
   },
   allTypes(ref, x, y, z, message, animated, locations) {
-    dispatchCommand(ref, \\"allTypes\\", [x, y, z, message, animated, locations]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"allTypes\\", [x, y, z, message, animated, locations]);
   }
 };
 ",
@@ -473,8 +496,8 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
-const {dispatchCommand} = require(\\"react-native/Libraries/ReactNative/RendererProxy\\");
+const {NativeComponentRegistry} = require('react-native');
+const {findNodeHandle, UIManager} = require(\\"react-native\\");
 
 let nativeComponentName = 'CommandNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -486,13 +509,13 @@ export const __INTERNAL_VIEW_CONFIG = {
 export default NativeComponentRegistry.get(nativeComponentName, () => __INTERNAL_VIEW_CONFIG);
 export const Commands = {
   handleRootTag(ref, rootTag) {
-    dispatchCommand(ref, \\"handleRootTag\\", [rootTag]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"handleRootTag\\", [rootTag]);
   },
   hotspotUpdate(ref, x, y) {
-    dispatchCommand(ref, \\"hotspotUpdate\\", [x, y]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"hotspotUpdate\\", [x, y]);
   },
   addItems(ref, items) {
-    dispatchCommand(ref, \\"addItems\\", [items]);
+    UIManager.dispatchViewManagerCommand(findNodeHandle(ref), \\"addItems\\", [items]);
   }
 };
 ",
@@ -515,7 +538,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'DimensionPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -545,7 +568,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'DoublePropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -580,8 +603,8 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
-const {ConditionallyIgnoredEventHandlers} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');
+const {ConditionallyIgnoredEventHandlers} = require('react-native/unstable-internals-do-not-use');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'EventsNestedObjectNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -622,8 +645,8 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
-const {ConditionallyIgnoredEventHandlers} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');
+const {ConditionallyIgnoredEventHandlers} = require('react-native/unstable-internals-do-not-use');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'EventsNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -692,8 +715,8 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
-const {ConditionallyIgnoredEventHandlers} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');
+const {ConditionallyIgnoredEventHandlers} = require('react-native/unstable-internals-do-not-use');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'RCTInterfaceOnlyComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -739,7 +762,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ExcludedAndroidComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -767,7 +790,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ExcludedAndroidIosComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -795,7 +818,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ExcludedIosComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -832,7 +855,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'FloatPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -867,14 +890,14 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ImagePropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"ImagePropNativeComponent\\",
   validAttributes: {
     thumbImage: {
-      process: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/Image/resolveAssetSource'))
+      process: require('react-native').Image.resolveAssetSource
     }
   }
 };
@@ -899,14 +922,14 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'InsetsPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"InsetsPropNativeComponent\\",
   validAttributes: {
     contentInset: {
-      diff: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/insetsDiffer'))
+      diff: (one, two) => one !== two && ((one?.top ?? undefined) !== (two?.top ?? undefined) || (one?.left ?? undefined) !== (two?.left ?? undefined) || (one?.right ?? undefined) !== (two?.right ?? undefined) || (one?.bottom ?? undefined) !== (two?.bottom ?? undefined))
     }
   }
 };
@@ -931,7 +954,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'Int32EnumPropsNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -961,7 +984,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'IntegerPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -993,8 +1016,8 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
-const {ConditionallyIgnoredEventHandlers} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');
+const {ConditionallyIgnoredEventHandlers} = require('react-native/unstable-internals-do-not-use');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'RCTInterfaceOnlyComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1035,7 +1058,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'MixedPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1065,19 +1088,23 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ImageColorPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"ImageColorPropNativeComponent\\",
   validAttributes: {
     thumbImage: {
-      process: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/Image/resolveAssetSource'))
+      process: require('react-native').Image.resolveAssetSource
     },
-    color: require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute,
-    thumbTintColor: require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute,
+    color: require('react-native/react-private-interface').ReactNativeFeatureFlags.enableNativeCSSParsing() ? true : {
+      process: require('react-native').processColor
+    },
+    thumbTintColor: require('react-native/react-private-interface').ReactNativeFeatureFlags.enableNativeCSSParsing() ? true : {
+      process: require('react-native').processColor
+    },
     point: {
-      diff: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/pointsDiffer'))
+      diff: (one, two) => one !== two && ((one?.x ?? undefined) !== (two?.x ?? undefined) || (one?.y ?? undefined) !== (two?.y ?? undefined))
     }
   }
 };
@@ -1102,7 +1129,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'NoPropsNoEventsComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1130,7 +1157,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ObjectProps';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1160,7 +1187,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ObjectPropsWithOptionalGen';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1190,7 +1217,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'ObjectPropsWithOptionalObjectGen';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1220,14 +1247,14 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'PointPropNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"PointPropNativeComponent\\",
   validAttributes: {
     startPoint: {
-      diff: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/pointsDiffer'))
+      diff: (one, two) => one !== two && ((one?.x ?? undefined) !== (two?.x ?? undefined) || (one?.y ?? undefined) !== (two?.y ?? undefined))
     }
   }
 };
@@ -1252,7 +1279,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'StringEnumPropsNativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1282,7 +1309,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'StringPropComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1313,7 +1340,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'MultiFile1NativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1352,7 +1379,7 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
+const {NativeComponentRegistry} = require('react-native');
 
 let nativeComponentName = 'MultiComponent1NativeComponent';
 export const __INTERNAL_VIEW_CONFIG = {
@@ -1391,8 +1418,8 @@ Map {
 
 'use strict';
 
-const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');
-const {UIManager} = require(\\"react-native\\")
+const {NativeComponentRegistry} = require('react-native');
+const {findNodeHandle, UIManager} = require(\\"react-native\\");
 
 let nativeComponentName = 'NativeComponentName';
 if (UIManager.hasViewManagerConfig('NativeComponentName')) {

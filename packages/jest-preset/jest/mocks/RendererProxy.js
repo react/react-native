@@ -10,7 +10,7 @@
 
 // In tests, we can use the default version without dependency injection.
 
-import typeof * as TRendererImplementation from 'react-native/Libraries/ReactNative/RendererImplementation';
+import typeof * as TRendererImplementation from '../../../react-native/Libraries/ReactNative/RendererImplementation';
 
 const {
   dispatchCommand,
@@ -24,7 +24,7 @@ const {
   renderElement,
   sendAccessibilityEvent,
 } = jest.requireActual<TRendererImplementation>(
-  'react-native/Libraries/ReactNative/RendererImplementation',
+  '../../../react-native/Libraries/ReactNative/RendererImplementation',
 ) as TRendererImplementation;
 
 export {

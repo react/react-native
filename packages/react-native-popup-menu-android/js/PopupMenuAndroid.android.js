@@ -9,8 +9,7 @@
  */
 
 import type {RefObject} from 'react';
-import type {HostInstance} from 'react-native';
-import type {NativeSyntheticEvent} from 'react-native/Libraries/Types/CoreEventTypes';
+import type {HostInstance, NativeSyntheticEvent} from 'react-native';
 
 import PopupMenuAndroidNativeComponent, {
   Commands,

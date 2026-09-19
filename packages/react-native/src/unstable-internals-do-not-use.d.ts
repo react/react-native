@@ -65,6 +65,17 @@ export class AssetSourceResolver {
 }
 
 // #endregion
+// #region ConditionallyIgnoredEventHandlers
+
+/**
+ * Marks generated event-handler view-config attributes as conditionally
+ * ignored on platforms that do not synthesize them from native view managers.
+ */
+export function ConditionallyIgnoredEventHandlers<
+  T extends Readonly<Record<string, true>>,
+>(value: T): T | undefined;
+
+// #endregion
 // #region customDirectEventTypes
 
 /** Registry mapping custom direct (non-bubbling) event names to their registration names. */
