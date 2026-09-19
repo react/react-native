@@ -9,9 +9,9 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/text/TextEffectProps.h>
-#include <react/renderer/components/view/ViewEventEmitter.h>
-#include <react/renderer/core/ConcreteShadowNode.h>
 
 namespace facebook::react {
 
