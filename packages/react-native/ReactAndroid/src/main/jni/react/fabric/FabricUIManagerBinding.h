@@ -28,6 +28,7 @@
 namespace facebook::react {
 
 class ComponentFactory;
+class ComputedBoxModelRegistry;
 class EventBeatManager;
 class FabricMountingManager;
 class Instance;
@@ -141,10 +142,15 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void uninstallFabricUIManager();
 
+  jfloatArray getComputedMarginInsets(jint surfaceId, jint viewTag);
+  
+  jfloatArray getComputedPaddingInsets(jint surfaceId, jint viewTag);
+
   // Private member variables
   std::shared_mutex installMutex_;
   std::shared_ptr<FabricMountingManager> mountingManager_;
   std::shared_ptr<Scheduler> scheduler_;
+  std::shared_ptr<ComputedBoxModelRegistry> computedBoxModelRegistry_;
 
   std::shared_ptr<FabricMountingManager> getMountingManager(const char *locationHint);
 

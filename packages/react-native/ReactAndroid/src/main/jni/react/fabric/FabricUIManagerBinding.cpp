@@ -10,6 +10,7 @@
 #include "AndroidAnimationChoreographer.h"
 #include "AndroidEventBeat.h"
 #include "ComponentFactory.h"
+#include "ComputedBoxModelRegistry.h"
 #include "EventBeatManager.h"
 #include "FabricMountingManager.h"
 #include "FocusOrderingHelper.h"
@@ -34,6 +35,28 @@
 #include <string_view>
 
 namespace facebook::react {
+
+namespace {
+
+jfloatArray edgeInsetsToFloatArray(const std::optional<EdgeInsets>& insets) {
+  static constexpr auto SIZE = 4;
+  if (!insets) {
+    return nullptr;
+  }
+
+  auto env = jni::Environment::current();
+  auto result = env->NewFloatArray(SIZE);
+  env->SetFloatArrayRegion(
+      result,
+      0,
+      SIZE,
+      std::array<float, SIZE>{
+          insets->left, insets->top, insets->right, insets->bottom}
+          .data());
+  return result;
+}
+
+} // namespace
 
 void FabricUIManagerBinding::initHybrid(jni::alias_ref<jhybridobject> jobj) {
   setCxxInstance(jobj);
@@ -596,8 +619,10 @@ void FabricUIManagerBinding::installFabricUIManager(
   std::unique_lock lock(installMutex_);
 
   auto globalJavaUiManager = make_global(javaUIManager);
+  computedBoxModelRegistry_ = std::make_shared<ComputedBoxModelRegistry>();
   mountingManager_ =
       std::make_shared<FabricMountingManager>(globalJavaUiManager);
+  mountingManager_->setComputedBoxModelRegistry(computedBoxModelRegistry_);
 
   std::shared_ptr<const ContextContainer> contextContainer =
       std::make_shared<ContextContainer>();
@@ -900,6 +925,24 @@ void FabricUIManagerBinding::onAllAnimationsComplete() {
   mountingManager->onAllAnimationsComplete();
 }
 
+jfloatArray FabricUIManagerBinding::getComputedMarginInsets(
+    jint surfaceId,
+    jint viewTag) {
+  return computedBoxModelRegistry_
+      ? edgeInsetsToFloatArray(
+            computedBoxModelRegistry_->getMarginInsets(surfaceId, viewTag))
+      : nullptr;
+}
+
+jfloatArray FabricUIManagerBinding::getComputedPaddingInsets(
+    jint surfaceId,
+    jint viewTag) {
+  return computedBoxModelRegistry_
+      ? edgeInsetsToFloatArray(
+            computedBoxModelRegistry_->getPaddingInsets(surfaceId, viewTag))
+      : nullptr;
+}
+
 void FabricUIManagerBinding::registerNatives() {
   registerHybrid({
       makeNativeMethod("initHybrid", FabricUIManagerBinding::initHybrid),
@@ -944,6 +987,12 @@ void FabricUIManagerBinding::registerNatives() {
           FabricUIManagerBinding::getRelativeAncestorList),
       makeNativeMethod(
           "mergeReactRevision", FabricUIManagerBinding::mergeReactRevision),
+      makeNativeMethod(
+          "getComputedMarginInsets",
+          FabricUIManagerBinding::getComputedMarginInsets),
+      makeNativeMethod(
+          "getComputedPaddingInsets",
+          FabricUIManagerBinding::getComputedPaddingInsets),
   });
 }
 

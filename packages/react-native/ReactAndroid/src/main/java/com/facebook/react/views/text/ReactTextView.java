@@ -225,6 +225,15 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     // correctly in Fabric.
   }
 
+
+  @Override
+  public void draw(Canvas canvas) {
+    BackgroundStyleApplicator.applyClipPathIfPresent(this, canvas, () -> {
+      super.draw(canvas);
+      return null;
+    });
+  }
+
   @Override
   @SuppressWarnings("try")
   protected void onDraw(Canvas canvas) {
