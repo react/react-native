@@ -8,8 +8,8 @@
  * @format
  */
 
+import type {HostComponent} from '../../../react-native/src/private/types/HostComponent';
 import typeof * as TmockNativeComponent from '../mockNativeComponent';
-import type {HostComponent} from 'react-native/src/private/types/HostComponent';
 
 const mockNativeComponent = jest.requireActual<TmockNativeComponent>(
   '../mockNativeComponent',

@@ -8,7 +8,7 @@
  * @format
  */
 
-import NativeExceptionsManager from 'react-native/Libraries/Core/NativeExceptionsManager';
+import NativeExceptionsManager from '../../../react-native/Libraries/Core/NativeExceptionsManager';
 
 test('NativeExceptionsManager is a mock', () => {
   expect(jest.isMockFunction(NativeExceptionsManager.reportException)).toBe(

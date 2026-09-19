@@ -9,13 +9,13 @@
  */
 
 import typeof * as TmockComponent from '../mockComponent';
-import typeof TImage from 'react-native/Libraries/Image/Image';
+import typeof {Image as TImage} from 'react-native';
 
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;
 
 const Image = mockComponent(
-  'react-native/Libraries/Image/Image',
+  '../../react-native/Libraries/Image/Image',
   null, // instanceMethods
   true, // isESModule
 ) as TImage;

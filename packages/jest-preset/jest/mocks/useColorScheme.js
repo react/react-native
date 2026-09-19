@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {ColorSchemeName} from 'react-native/Libraries/Utilities/NativeAppearance';
+import type {ColorSchemeName} from '../../../react-native/Libraries/Utilities/NativeAppearance';
 
 const useColorScheme = jest.fn(() => 'light') as JestMockFn<
   [],
