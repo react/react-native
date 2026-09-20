@@ -1260,7 +1260,7 @@ declare class SecurityPolicyViolationEvent extends Event {
 
 // https://developer.mozilla.org/en-US/docs/Web/API/USBConnectionEvent
 declare class USBConnectionEvent extends Event {
-  device: USBDevice;
+  device: unknown;
 }
 
 // TODO: *Event
@@ -4965,6 +4965,12 @@ declare class WebGLContextEvent extends Event {
 // http://www.w3.org/TR/html5/scripting-1.html#renderingcontext
 type RenderingContext = CanvasRenderingContext2D | WebGLRenderingContext;
 
+type CanvasCaptureMediaStream = MediaStream & {
+  canvas: HTMLCanvasElement,
+  requestFrame(): void,
+  ...
+};
+
 // https://www.w3.org/TR/html5/scripting-1.html#htmlcanvaselement
 declare class HTMLCanvasElement extends HTMLElement {
   tagName: 'CANVAS';
@@ -6100,12 +6106,10 @@ declare function getComputedStyle(
   elt: Element,
   pseudoElt?: string,
 ): CSSStyleDeclaration;
-declare opaque type AnimationFrameID;
 declare function requestAnimationFrame(
   callback: (timestamp: number) => void,
-): AnimationFrameID;
-declare function cancelAnimationFrame(requestId: AnimationFrameID): void;
-declare opaque type IdleCallbackID;
+): number;
+declare function cancelAnimationFrame(requestId: number): void;
 declare function requestIdleCallback(
   cb: (deadline: {
     didTimeout: boolean,
@@ -6113,8 +6117,8 @@ declare function requestIdleCallback(
     ...
   }) => void,
   opts?: {timeout: number, ...},
-): IdleCallbackID;
-declare function cancelIdleCallback(id: IdleCallbackID): void;
+): number;
+declare function cancelIdleCallback(id: number): void;
 declare var localStorage: Storage;
 declare var devicePixelRatio: number;
 declare function focus(): void;

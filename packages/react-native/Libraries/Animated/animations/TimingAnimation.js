@@ -68,7 +68,7 @@ export default class TimingAnimation extends Animation {
   _delay: number;
   _easing: (value: number) => number;
   _onUpdate: (value: number) => void;
-  _animationFrame: ?AnimationFrameID;
+  _animationFrame: ?number;
   _timeout: ?TimeoutID;
   _platformConfig: ?PlatformConfig;
   _deferredStart: boolean;

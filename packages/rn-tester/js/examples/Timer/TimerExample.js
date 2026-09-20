@@ -33,7 +33,7 @@ class RequestIdleCallbackTester extends React.Component<
     message: '-',
   };
 
-  _idleTimer: ?IdleCallbackID = null;
+  _idleTimer: ?number = null;
   _iters = 0;
 
   componentWillUnmount() {
@@ -156,7 +156,7 @@ class TimerTester extends React.Component<TimerTesterProps> {
   _iters = 0;
   _start = 0;
   _timerId: ?TimeoutID = null;
-  _rafId: ?AnimationFrameID = null;
+  _rafId: ?number = null;
   _intervalId: ?IntervalID = null;
   _immediateId: ?Object = null;
   _timerFn: ?() => any = null;

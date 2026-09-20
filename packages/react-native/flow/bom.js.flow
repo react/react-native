@@ -479,14 +479,14 @@ declare class XMLHttpRequest extends EventTarget {
   LOADING: number;
   msCaching: string;
   msCachingEnabled(): boolean;
-  onabort: ProgressEventHandler;
-  onerror: ProgressEventHandler;
-  onload: ProgressEventHandler;
-  onloadend: ProgressEventHandler;
-  onloadstart: ProgressEventHandler;
-  onprogress: ProgressEventHandler;
+  onabort: (event: ProgressEvent) => unknown;
+  onerror: (event: ProgressEvent) => unknown;
+  onload: (event: ProgressEvent) => unknown;
+  onloadend: (event: ProgressEvent) => unknown;
+  onloadstart: (event: ProgressEvent) => unknown;
+  onprogress: (event: ProgressEvent) => unknown;
   onreadystatechange: (ev: $FlowFixMe) => unknown;
-  ontimeout: ProgressEventHandler;
+  ontimeout: (event: ProgressEvent) => unknown;
   open(
     method: string,
     url: string,
@@ -518,13 +518,13 @@ declare class XMLHttpRequest extends EventTarget {
 }
 
 declare class XMLHttpRequestEventTarget extends EventTarget {
-  onabort: ProgressEventHandler;
-  onerror: ProgressEventHandler;
-  onload: ProgressEventHandler;
-  onloadend: ProgressEventHandler;
-  onloadstart: ProgressEventHandler;
-  onprogress: ProgressEventHandler;
-  ontimeout: ProgressEventHandler;
+  onabort: (event: ProgressEvent) => unknown;
+  onerror: (event: ProgressEvent) => unknown;
+  onload: (event: ProgressEvent) => unknown;
+  onloadend: (event: ProgressEvent) => unknown;
+  onloadstart: (event: ProgressEvent) => unknown;
+  onprogress: (event: ProgressEvent) => unknown;
+  ontimeout: (event: ProgressEvent) => unknown;
 }
 
 // this part of spec is not finished yet, apparently
@@ -625,7 +625,7 @@ type BodyInit =
 
 type RequestInfo = Request | URL | string;
 
-type RequestOptions = {
+type RequestInit = {
   body?: ?BodyInit,
   cache?: CacheType,
   credentials?: CredentialsType,
@@ -684,7 +684,7 @@ declare class Request {
 
   cache: CacheType;
   clone(): Request;
-  constructor(input: RequestInfo, init?: RequestOptions): void;
+  constructor(input: RequestInfo, init?: RequestInit): void;
   credentials: CredentialsType;
   formData(): Promise<FormData>;
   headers: Headers;
@@ -720,7 +720,7 @@ declare class AbortSignal extends EventTarget {
 
 declare function fetch(
   input: RequestInfo,
-  init?: RequestOptions,
+  init?: RequestInit,
 ): Promise<Response>;
 
 declare class Location {
@@ -738,11 +738,6 @@ declare class Location {
   replace(url: string): void;
   search: string;
   toString(): string;
-}
-
-declare class CanvasCaptureMediaStream extends MediaStream {
-  canvas: HTMLCanvasElement;
-  requestFrame(): void;
 }
 
 declare type FileSystemHandleKind = 'file' | 'directory';

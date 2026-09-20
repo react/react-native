@@ -32,7 +32,7 @@ class TimersTest extends React.Component<Props, State> {
   _timeoutIDs: Set<TimeoutID> = new Set();
   _intervalIDs: Set<IntervalID> = new Set();
   _immediateIDs: Set<ImmediateID> = new Set();
-  _animationFrameIDs: Set<AnimationFrameID> = new Set();
+  _animationFrameIDs: Set<number> = new Set();
 
   state: State = {
     count: 0,
@@ -81,8 +81,8 @@ class TimersTest extends React.Component<Props, State> {
     return id;
   }
 
-  requestAnimationFrame(fn: () => void): AnimationFrameID {
-    const id: AnimationFrameID = requestAnimationFrame(() => {
+  requestAnimationFrame(fn: () => void): number {
+    const id: number = requestAnimationFrame(() => {
       this._animationFrameIDs.delete(id);
       fn();
     });
@@ -92,7 +92,7 @@ class TimersTest extends React.Component<Props, State> {
     return id;
   }
 
-  cancelAnimationFrame(id: AnimationFrameID): void {
+  cancelAnimationFrame(id: number): void {
     this._animationFrameIDs.delete(id);
     cancelAnimationFrame(id);
   }

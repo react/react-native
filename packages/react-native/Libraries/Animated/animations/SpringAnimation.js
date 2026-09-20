@@ -104,7 +104,7 @@ export default class SpringAnimation extends Animation {
   _lastTime: number;
   _frameTime: number;
   _onUpdate: (value: number) => void;
-  _animationFrame: ?AnimationFrameID;
+  _animationFrame: ?number;
   _platformConfig: ?PlatformConfig;
 
   constructor(config: SpringAnimationConfigSingle) {
