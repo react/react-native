@@ -58,6 +58,7 @@ namespace facebook::react {
         methodName: serializedMethodParts.methodName,
         returnJSType: serializedMethodParts.returnJSType,
         selector: serializedMethodParts.selector,
+        rctArrayBufferSelector: serializedMethodParts.rctArrayBufferSelector,
       }),
     )
     .join('\n')}
@@ -118,14 +119,20 @@ const InlineHostFunctionTemplate = ({
   methodName,
   returnJSType,
   selector,
+  rctArrayBufferSelector,
 }: Readonly<{
   hasteModuleName: string,
   methodName: string,
   returnJSType: string,
   selector: string,
+  rctArrayBufferSelector: ?string,
 }>) => `
     static facebook::jsi::Value __hostFunction_${hasteModuleName}SpecJSI_${methodName}(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-      return static_cast<ObjCTurboModule&>(turboModule).invokeObjCMethod(rt, ${returnJSType}, "${methodName}", ${selector}, args, count);
+      return static_cast<ObjCTurboModule&>(turboModule).invokeObjCMethod(rt, ${returnJSType}, "${methodName}", ${
+        rctArrayBufferSelector == null
+          ? selector
+          : `${rctArrayBufferSelector}, ${selector}`
+      }, args, count);
     }`;
 
 const MethodMapEntryTemplate = ({

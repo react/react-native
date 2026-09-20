@@ -59,6 +59,7 @@ export type MethodSerializationOutput = Readonly<{
   methodName: string,
   protocolMethod: string,
   selector: string,
+  rctArrayBufferSelector: ?string,
   structParamRecords: ReadonlyArray<StructParameterRecord>,
   returnJSType: ReturnJSType,
   argCount: number,
@@ -122,6 +123,10 @@ function serializeMethod(
     );
   }
 
+  const hasDirectArrayBuffer =
+    params.some(param => isArrayBufferType(param.typeAnnotation)) ||
+    isArrayBufferType(propertyTypeAnnotation.returnTypeAnnotation);
+
   /**
    * Build Protocol Method
    **/
@@ -129,34 +134,91 @@ function serializeMethod(
     methodName,
     propertyTypeAnnotation.returnTypeAnnotation,
   );
-  const paddingMax = `- (${returnObjCType})${methodName}`.length;
-
-  const objCParams = methodParams.reduce(
-    ($objCParams, {objCType, paramName}, i) => {
+  const buildObjCParams = (
+    paramsToSerialize: ReadonlyArray<{paramName: string, objCType: string}>,
+    returnType: string,
+    selectorMethodName: string,
+  ) => {
+    const paddingMax = `- (${returnType})${selectorMethodName}`.length;
+    return paramsToSerialize.reduce(($objCParams, {objCType, paramName}, i) => {
       const rhs = `(${objCType})${paramName}`;
       const padding = ' '.repeat(Math.max(0, paddingMax - paramName.length));
       return i === 0
         ? `:${rhs}`
         : `${$objCParams}\n${padding}${paramName}:${rhs}`;
-    },
-    '',
+    }, '');
+  };
+
+  const buildProtocolMethod = (
+    returnType: string,
+    selectorMethodName: string,
+    paramsToSerialize: ReadonlyArray<{paramName: string, objCType: string}>,
+  ) =>
+    ProtocolMethodTemplate({
+      methodName: selectorMethodName,
+      returnObjCType: returnType,
+      params: buildObjCParams(
+        paramsToSerialize,
+        returnType,
+        selectorMethodName,
+      ),
+    });
+
+  const rctArrayBufferMethodName = `${methodName}WithRCTArrayBuffer`;
+
+  let protocolMethod = buildProtocolMethod(
+    returnObjCType,
+    methodName,
+    methodParams,
   );
 
-  const protocolMethod = ProtocolMethodTemplate({
-    methodName,
-    returnObjCType,
-    params: objCParams,
-  });
+  if (hasDirectArrayBuffer) {
+    const legacyMethodParams = methodParams.map((methodParam, index) => {
+      if (
+        index >= params.length ||
+        !isArrayBufferType(params[index].typeAnnotation)
+      ) {
+        return methodParam;
+      }
+
+      const [, nullable] = unwrapNullable(params[index].typeAnnotation);
+      return {
+        ...methodParam,
+        objCType: wrapOptional('NSData *', !nullable),
+      };
+    });
+    const legacyReturnObjCType = isArrayBufferType(
+      propertyTypeAnnotation.returnTypeAnnotation,
+    )
+      ? wrapOptional(
+          'NSMutableData *',
+          !unwrapNullable(propertyTypeAnnotation.returnTypeAnnotation)[1],
+        )
+      : returnObjCType;
+
+    protocolMethod = `${buildProtocolMethod(
+      legacyReturnObjCType,
+      methodName,
+      legacyMethodParams,
+    )}\n@optional\n${buildProtocolMethod(
+      returnObjCType,
+      rctArrayBufferMethodName,
+      methodParams,
+    )}\n@required`;
+  }
 
   /**
    * Build ObjC Selector
    */
   // $FlowFixMe[missing-type-arg]
-  const selector = methodParams
-    .map<string>(({paramName}) => paramName)
-    .reduce(($selector, paramName, i) => {
-      return i === 0 ? `${$selector}:` : `${$selector}${paramName}:`;
-    }, methodName);
+  const buildSelector = (selectorMethodName: string) =>
+    methodParams
+      .map<string>(({paramName}) => paramName)
+      .reduce(($selector, paramName, i) => {
+        return i === 0 ? `${$selector}:` : `${$selector}${paramName}:`;
+      }, selectorMethodName);
+
+  const selector = buildSelector(methodName);
 
   /**
    * Build JS Return type
@@ -168,6 +230,9 @@ function serializeMethod(
       methodName,
       protocolMethod,
       selector: `@selector(${selector})`,
+      rctArrayBufferSelector: hasDirectArrayBuffer
+        ? `@selector(${buildSelector(rctArrayBufferMethodName)})`
+        : null,
       structParamRecords,
       returnJSType,
       argCount: params.length,
@@ -407,6 +472,15 @@ function getReturnObjCType(
   }
 }
 
+function isArrayBufferType(
+  nullableTypeAnnotation: Nullable<
+    NativeModuleParamTypeAnnotation | NativeModuleReturnTypeAnnotation,
+  >,
+): boolean {
+  const [typeAnnotation] = unwrapNullable(nullableTypeAnnotation);
+  return typeAnnotation.type === 'ArrayBufferTypeAnnotation';
+}
+
 function getReturnJSType(
   methodName: string,
   nullableTypeAnnotation: Nullable<NativeModuleReturnTypeAnnotation>,
@@ -543,6 +617,7 @@ function serializeConstantsProtocolMethods(
         protocolMethod,
         returnJSType: 'ObjectKind',
         selector: `@selector(${methodName})`,
+        rctArrayBufferSelector: null,
         structParamRecords: [],
         argCount: 0,
       };
