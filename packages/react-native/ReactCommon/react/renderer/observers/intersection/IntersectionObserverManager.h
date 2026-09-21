@@ -33,6 +33,7 @@ class IntersectionObserverManager final : public UIManagerMountHook,
       std::vector<Float> thresholds,
       std::optional<std::vector<Float>> rootThresholds,
       std::optional<std::string> rootMargin,
+      std::optional<std::string> scrollMargin,
       const UIManager &uiManager);
 
   void unobserve(IntersectionObserverObserverId intersectionObserverId, const ShadowNodeFamily::Shared &shadowNode);

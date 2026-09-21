@@ -25,6 +25,7 @@ export type IntersectionObserverCallback = (
 export interface IntersectionObserverInit {
   root?: ?ReactNativeElement;
   rootMargin?: string;
+  scrollMargin?: string;
   threshold?: number | ReadonlyArray<number>;
 
   /**
@@ -56,8 +57,9 @@ export interface IntersectionObserverInit {
  * changes in degree of visibility; however, you can watch multiple target
  * elements with the same observer.
  *
- * This implementation supports `threshold`, `root`, and `rootMargin` options and
- * provides a React Native specific option `rnRootThreshold`.
+ * This implementation supports `threshold`, `root`, `rootMargin` and
+ * `scrollMargin` options and provides a React Native specific option
+ * `rnRootThreshold`.
  *
  */
 export default class IntersectionObserver {
@@ -68,6 +70,7 @@ export default class IntersectionObserver {
   _rootThresholds: ReadonlyArray<number> | null;
   _root: ReactNativeElement | null;
   _rootMargin: string;
+  _scrollMargin: string;
 
   constructor(
     callback: IntersectionObserverCallback,
@@ -100,12 +103,6 @@ export default class IntersectionObserver {
       );
     }
 
-    if (options != null && 'scrollMargin' in options) {
-      throw new Error(
-        "Failed to construct 'IntersectionObserver': The 'scrollMargin' option is not supported.",
-      );
-    }
-
     if (options != null && 'trackVisibility' in options) {
       throw new Error(
         "Failed to construct 'IntersectionObserver': The 'trackVisibility' option is not supported.",
@@ -120,7 +117,8 @@ export default class IntersectionObserver {
       this._rootThresholds != null, // only provide default if no rootThreshold
     );
     this._root = options?.root ?? null;
-    this._rootMargin = normalizeRootMargin(options?.rootMargin);
+    this._rootMargin = normalizeMargin(options?.rootMargin, 'rootMargin');
+    this._scrollMargin = normalizeMargin(options?.scrollMargin, 'scrollMargin');
   }
 
   /**
@@ -181,13 +179,16 @@ export default class IntersectionObserver {
   }
 
   /**
-   * The `scrollMargin` option is not supported.
-   * @throws {Error} Always throws an error indicating this property is not supported.
+   * String with syntax similar to that of the CSS `margin` property.
+   * Each side of the rectangle represented by `scrollMargin` is added to the
+   * corresponding side of the clipping box of every scroll container between
+   * the root and the target, before the intersection test is performed.
+   *
+   * Unlike `rootMargin`, this does not affect the root itself, and so it does
+   * not affect the reported `rootBounds`.
    */
   get scrollMargin(): string {
-    throw new Error(
-      "Failed to read the 'scrollMargin' property from 'IntersectionObserver': This property is not supported.",
-    );
+    return this._scrollMargin;
   }
 
   /**
@@ -392,25 +393,25 @@ function normalizeThresholdValue(
 }
 
 /**
- * Validates and normalizes the rootMargin value.
+ * Validates and normalizes a margin value (`rootMargin` or `scrollMargin`).
  * Accepts CSS margin syntax (e.g., "10px", "10px 20px", "10px 20px 30px 40px").
  * Returns the normalized string or throws an error if invalid.
  *
- * Per W3C spec, rootMargin must be specified in pixels or percent.
+ * Per W3C spec, margins must be specified in pixels or percent.
  * This implementation validates the basic format.
  */
-function normalizeRootMargin(rootMargin: unknown): string {
-  if (rootMargin == null || rootMargin === '') {
+function normalizeMargin(margin: unknown, propertyName: string): string {
+  if (margin == null || margin === '') {
     return '0px 0px 0px 0px';
   }
 
-  if (typeof rootMargin !== 'string') {
+  if (typeof margin !== 'string') {
     throw new TypeError(
-      "Failed to construct 'IntersectionObserver': Failed to read the 'rootMargin' property from 'IntersectionObserverInit': The provided value is not of type 'string'.",
+      `Failed to construct 'IntersectionObserver': Failed to read the '${propertyName}' property from 'IntersectionObserverInit': The provided value is not of type 'string'.`,
     );
   }
 
-  const marginStr = rootMargin.trim();
+  const marginStr = margin.trim();
   if (marginStr === '') {
     return '0px 0px 0px 0px';
   }
@@ -419,7 +420,7 @@ function normalizeRootMargin(rootMargin: unknown): string {
   const parts = marginStr.split(/\s+/);
   if (parts.length > 4) {
     throw new SyntaxError(
-      "Failed to construct 'IntersectionObserver': Failed to parse rootMargin: Too many values (expected 1-4).",
+      `Failed to construct 'IntersectionObserver': Failed to parse ${propertyName}: Too many values (expected 1-4).`,
     );
   }
 
@@ -428,7 +429,7 @@ function normalizeRootMargin(rootMargin: unknown): string {
   for (const part of parts) {
     if (!validPattern.test(part)) {
       throw new SyntaxError(
-        `Failed to construct 'IntersectionObserver': Failed to parse rootMargin: '${part}' is not a valid length. Only 'px' and '%' units are allowed.`,
+        `Failed to construct 'IntersectionObserver': Failed to parse ${propertyName}: '${part}' is not a valid length. Only 'px' and '%' units are allowed.`,
       );
     }
   }
@@ -454,7 +455,7 @@ function normalizeRootMargin(rootMargin: unknown): string {
       break;
     default:
       throw new SyntaxError(
-        "Failed to construct 'IntersectionObserver': Failed to parse rootMargin.",
+        `Failed to construct 'IntersectionObserver': Failed to parse ${propertyName}.`,
       );
   }
 

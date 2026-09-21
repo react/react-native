@@ -181,11 +181,21 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
       resultFrame.origin += currentShadowNode->getContentOriginOffset(true);
     }
 
+    // Only nodes with a content clip clip their content. Clipping
+    // `overflow: visible` nodes to their content bounds would cut off content
+    // that a dilated (clipMargin) scroll container below them has revealed.
     if (policy.enableOverflowClipping &&
-        (i != size - 1 || policy.clipSpecifiedAncestor)) {
-      auto overflowInset = currentShadowNode->getLayoutMetrics().overflowInset;
-      auto overflowRect = insetBy(
-          currentFrame * currentShadowNode->getTransform(), overflowInset);
+        (i != size - 1 || policy.clipSpecifiedAncestor) &&
+        currentShadowNode->hasContentClip()) {
+      auto overflowRect = currentFrame * currentShadowNode->getTransform();
+      // Only scroll containers are dilated, and the measured node is not its
+      // own container, so its clip is never dilated.
+      if (policy.clipMargin.has_value() && i != 0 &&
+          currentShadowNode->isScrollContainer()) {
+        overflowRect = outsetBy(
+            overflowRect,
+            resolveEdgeMargins(*policy.clipMargin, overflowRect.size));
+      }
       resultFrame = Rect::intersect(resultFrame, overflowRect);
       if (resultFrame.size.width == 0 && resultFrame.size.height == 0) {
         return EmptyLayoutMetrics;
@@ -222,6 +232,14 @@ Transform LayoutableShadowNode::getTransform() const {
 Point LayoutableShadowNode::getContentOriginOffset(
     bool /*includeTransform*/) const {
   return {.x = 0, .y = 0};
+}
+
+bool LayoutableShadowNode::hasContentClip() const {
+  return false;
+}
+
+bool LayoutableShadowNode::isScrollContainer() const {
+  return false;
 }
 
 bool LayoutableShadowNode::canBeTouchTarget() const {

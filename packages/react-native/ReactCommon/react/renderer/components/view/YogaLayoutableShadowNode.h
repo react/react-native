@@ -79,6 +79,10 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
   void dirtyLayout() override;
   bool getIsLayoutClean() const override;
 
+  bool hasContentClip() const override;
+
+  bool isScrollContainer() const override;
+
   /*
    * Computes layout using Yoga layout engine.
    * See `LayoutableShadowNode` for more details.

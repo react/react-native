@@ -413,6 +413,7 @@ using facebook::react::DebuggingOverlayComponentDescriptor = facebook::react::Co
 using facebook::react::DebuggingOverlayShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::DebuggingOverlayComponentName, facebook::react::DebuggingOverlayProps, facebook::react::DebuggingOverlayEventEmitter, facebook::react::DebuggingOverlayState>;
 using facebook::react::DebuggingOverlayState = facebook::react::StateData;
 using facebook::react::EdgeInsets = facebook::react::RectangleEdges<facebook::react::Float>;
+using facebook::react::EdgeMargins = facebook::react::RectangleEdges<facebook::react::MarginValue>;
 using facebook::react::EventListener = std::function<bool(const facebook::react::RawEvent& event)>;
 using facebook::react::EventPipe = std::function<void(facebook::jsi::Runtime& runtime, facebook::react::EventTarget* eventTarget, const std::string& type, facebook::react::ReactEventPriority priority, const facebook::react::EventPayload& payload, facebook::react::HighResTimeStamp eventTimestamp)>;
 using facebook::react::EventPipeConclusion = std::function<void(facebook::jsi::Runtime& runtime)>;
@@ -502,6 +503,7 @@ facebook::react::ColorComponents facebook::react::colorComponentsFromColor(faceb
 facebook::react::ColorComponents facebook::react::colorComponentsFromHostPlatformColor(facebook::react::Color color);
 facebook::react::ColorSpace facebook::react::getDefaultColorSpace();
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
+facebook::react::EdgeInsets facebook::react::resolveEdgeMargins(const facebook::react::EdgeMargins& margins, const facebook::react::Size& size) noexcept;
 facebook::react::Float facebook::react::floatFromYogaFloat(float value);
 facebook::react::Float facebook::react::floatFromYogaOptionalFloat(facebook::yoga::FloatOptional value);
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
@@ -1720,6 +1722,8 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public virtual bool canBeTouchTarget() const;
   public virtual bool canChildrenBeTouchTarget() const;
   public virtual bool getIsLayoutClean() const = 0;
+  public virtual bool hasContentClip() const;
+  public virtual bool isScrollContainer() const;
   public virtual const facebook::react::LayoutableShadowNode* asLayoutable() const override;
   public virtual facebook::react::Float baseline(const facebook::react::LayoutContext& layoutContext, facebook::react::Size size) const;
   public virtual facebook::react::Point getContentOriginOffset(bool includeTransform) const;
@@ -1737,6 +1741,7 @@ struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public std::optional<facebook::react::EdgeMargins> clipMargin;
 }
 
 class facebook::react::LongLivedObject {
@@ -2569,6 +2574,8 @@ class facebook::react::YogaLayoutableShadowNode : public facebook::react::Layout
   public using ListOfShared = std::vector<facebook::react::YogaLayoutableShadowNode::Shared>;
   public using Shared = std::shared_ptr<const facebook::react::YogaLayoutableShadowNode>;
   public virtual bool getIsLayoutClean() const override;
+  public virtual bool hasContentClip() const override;
+  public virtual bool isScrollContainer() const override;
   public virtual void appendChild(const std::shared_ptr<const facebook::react::ShadowNode>& child) override;
   public virtual void completeClone(const facebook::react::ShadowNode&, const facebook::react::ShadowNodeFragment&) override;
   public virtual void dirtyLayout() override;
@@ -3400,6 +3407,12 @@ struct facebook::react::LinearGradient {
   public std::vector<facebook::react::ColorStop> colorStops;
 }
 
+struct facebook::react::MarginValue {
+  public bool isPercentage;
+  public bool operator==(const facebook::react::MarginValue& rhs) const noexcept = default;
+  public facebook::react::Float value;
+}
+
 struct facebook::react::ModalHostViewSupportedOrientationsMaskWrapped {
   public facebook::react::ModalHostViewSupportedOrientationsMask value;
 }
@@ -3940,7 +3953,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntr
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntry& other) const;
 }
 
-template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
+template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
 struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions {
   public P0 intersectionObserverId;
   public P1 rootShadowNode;
@@ -3948,6 +3961,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObse
   public P3 thresholds;
   public P4 rootThresholds;
   public P5 rootMargin;
+  public P6 scrollMargin;
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions& other) const;
 }
 
@@ -4847,6 +4861,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObse
   public static facebook::jsi::Value targetShadowNodeToJs(facebook::jsi::Runtime& rt, decltype(types.targetShadowNode) value);
   public static std::optional<facebook::jsi::Array> rootThresholdsToJs(facebook::jsi::Runtime& rt, decltype(types.rootThresholds) value);
   public static std::optional<facebook::jsi::String> rootMarginToJs(facebook::jsi::Runtime& rt, decltype(types.rootMargin) value);
+  public static std::optional<facebook::jsi::String> scrollMarginToJs(facebook::jsi::Runtime& rt, decltype(types.scrollMargin) value);
   public static std::optional<facebook::jsi::Value> rootShadowNodeToJs(facebook::jsi::Runtime& rt, decltype(types.rootShadowNode) value);
 }
 

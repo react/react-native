@@ -45,6 +45,7 @@ void IntersectionObserverManager::observe(
     std::vector<Float> thresholds,
     std::optional<std::vector<Float>> rootThresholds,
     std::optional<std::string> rootMargin,
+    std::optional<std::string> scrollMargin,
     const UIManager& /*uiManager*/) {
   TraceSection s("IntersectionObserverManager::observe");
 
@@ -55,10 +56,12 @@ void IntersectionObserverManager::observe(
 
   auto& observers = observersBySurfaceId_[surfaceId];
 
-  // Parse rootMargin string into MarginValue structures
+  // Parse the margin strings into EdgeMargins
   // Default to "0px 0px 0px 0px" if not provided
   auto parsedRootMargin =
-      parseNormalizedRootMargin(rootMargin.value_or("0px 0px 0px 0px"));
+      parseNormalizedMargin(rootMargin.value_or("0px 0px 0px 0px"));
+  auto parsedScrollMargin =
+      parseNormalizedMargin(scrollMargin.value_or("0px 0px 0px 0px"));
 
   observers.emplace_back(
       std::make_unique<IntersectionObserver>(
@@ -67,7 +70,8 @@ void IntersectionObserverManager::observe(
           shadowNodeFamily,
           std::move(thresholds),
           std::move(rootThresholds),
-          std::move(parsedRootMargin)));
+          parsedRootMargin,
+          parsedScrollMargin));
 
   observersPendingInitialization_.emplace_back(observers.back().get());
 }
