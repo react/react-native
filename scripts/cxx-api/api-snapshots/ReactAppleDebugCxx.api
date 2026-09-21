@@ -654,16 +654,6 @@ interface RCTAppearance : public RCTEventEmitter <RCTBridgeModule> {
   public virtual instancetype init();
 }
 
-interface RCTArrayBuffer : public NSObject {
-  public @property (assign, readonly) BOOL owningBytes;
-  public @property (assign, readonly) NSUInteger length;
-  public @property (assign, readonly) void* mutableBytes NS_RETURNS_INNER_POINTER;
-  public virtual static instancetype arrayBufferWithCopiedBytes:length:(const void* _Nullable bytes, NSUInteger length);
-  public virtual static instancetype arrayBufferWithLength:(NSUInteger length);
-  public virtual static instancetype arrayBufferWithOwnedBytes:length:cleanup:(_Nullable void* bytes, NSUInteger length, _Nullable void(^)(void) cleanup);
-  public virtual static instancetype arrayBufferWithUnownedBytes:length:(_Nullable void* bytes, NSUInteger length);
-}
-
 interface RCTBackedTextFieldDelegateAdapter : public NSObject {
   public virtual instancetype initWithTextField:(UITextField<RCTBackedTextInputViewProtocol>* backedTextInputView);
   public virtual void selectedTextRangeWasSet();
@@ -2512,19 +2502,19 @@ protocol NativeSampleTurboModuleSpec : public NSObjectRCTBridgeModule, public RC
   public virtual NSDictionary* getObjectThrows:(NSDictionary* arg);
   public virtual NSDictionary* getUnsafeObject:(NSDictionary* arg);
   public virtual NSDictionary* getValue:y:z:(double x, NSString* y, NSDictionary* z);
+  public virtual NSMutableData* createNativeBuffer:(double size);
+  public virtual NSMutableData* getArrayBuffer:(NSData* buffer);
   public virtual NSNumber* getBool:(BOOL arg);
   public virtual NSNumber* getEnum:(double arg);
   public virtual NSNumber* getNumber:(double arg);
   public virtual NSNumber* getRootTag:(double arg);
   public virtual NSString* getString:(NSString* arg);
-  public virtual RCTArrayBuffer* createNativeBuffer:(double size);
-  public virtual RCTArrayBuffer* getArrayBuffer:(RCTArrayBuffer* buffer);
   public virtual facebook::react::ModuleConstants<JS::NativeSampleTurboModule::Constants> constantsToExport();
   public virtual facebook::react::ModuleConstants<JS::NativeSampleTurboModule::Constants> getConstants();
   public virtual void getImageUrl:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void getValueWithCallback:(RCTResponseSenderBlock callback);
   public virtual void getValueWithPromise:resolve:reject:(BOOL error, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
-  public virtual void processAsyncBuffer:resolve:reject:(RCTArrayBuffer* payload, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
+  public virtual void processAsyncBuffer:resolve:reject:(NSData* payload, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void promiseAssert:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void promiseThrows:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void voidFunc();
@@ -6169,7 +6159,7 @@ class facebook::react::ObjCInteropTurboModule : public facebook::react::ObjCTurb
   protected virtual NSString* getArgumentTypeName(facebook::jsi::Runtime& runtime, NSString* methodName, int argIndex) override;
   protected virtual facebook::jsi::Value convertReturnIdToJSIValue(facebook::jsi::Runtime& runtime, const char* methodName, facebook::react::TurboModuleMethodValueKind returnType, id result) override;
   protected virtual facebook::jsi::Value create(facebook::jsi::Runtime& runtime, const facebook::jsi::PropNameID& propName) override;
-  protected virtual void setInvocationArg(facebook::jsi::Runtime& runtime, const char* methodName, const std::string& objCArgType, const facebook::jsi::Value& arg, size_t i, NSInvocation* inv, NSMutableArray* retainedObjectsForInvocation, bool mustCopyBytes) override;
+  protected virtual void setInvocationArg(facebook::jsi::Runtime& runtime, const char* methodName, const std::string& objCArgType, const facebook::jsi::Value& arg, size_t i, NSInvocation* inv, NSMutableArray* retainedObjectsForInvocation) override;
   public ObjCInteropTurboModule(const facebook::react::ObjCTurboModule::InitParams& params);
   public virtual std::vector<facebook::jsi::PropNameID> getPropertyNames(facebook::jsi::Runtime& runtime) override;
 }
@@ -6184,7 +6174,7 @@ struct facebook::react::ObjCInteropTurboModule::MethodDescriptor {
 class facebook::react::ObjCTurboModule : public facebook::react::TurboModule {
   protected virtual NSString* getArgumentTypeName(facebook::jsi::Runtime& runtime, NSString* methodName, int argIndex);
   protected virtual facebook::jsi::Value convertReturnIdToJSIValue(facebook::jsi::Runtime& runtime, const char* methodName, facebook::react::TurboModuleMethodValueKind returnType, id result);
-  protected virtual void setInvocationArg(facebook::jsi::Runtime& runtime, const char* methodName, const std::string& objCArgType, const facebook::jsi::Value& arg, size_t i, NSInvocation* inv, NSMutableArray* retainedObjectsForInvocation, bool mustCopyBytes);
+  protected virtual void setInvocationArg(facebook::jsi::Runtime& runtime, const char* methodName, const std::string& objCArgType, const facebook::jsi::Value& arg, size_t i, NSInvocation* inv, NSMutableArray* retainedObjectsForInvocation);
   protected void setEventEmitterCallback(facebook::react::EventEmitterCallback eventEmitterCallback);
   protected void setMethodArgConversionSelector(NSString* methodName, size_t argIndex, NSString* fnName);
   public ObjCTurboModule(const facebook::react::ObjCTurboModule::InitParams& params);
@@ -13661,7 +13651,7 @@ struct facebook::react::dom::RNMeasureRect {
 
 
 facebook::jsi::Value facebook::react::TurboModuleConvertUtils::convertObjCObjectToJSIValue(facebook::jsi::Runtime& runtime, id value);
-id facebook::react::TurboModuleConvertUtils::convertJSIValueToObjCObject(facebook::jsi::Runtime& runtime, const facebook::jsi::Value& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker, BOOL useNSNull = NO, BOOL mustCopyBytes = YES);
+id facebook::react::TurboModuleConvertUtils::convertJSIValueToObjCObject(facebook::jsi::Runtime& runtime, const facebook::jsi::Value& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker, BOOL useNSNull = NO);
 
 
 static const facebook::react::Color facebook::react::HostPlatformColor::UndefinedColor;

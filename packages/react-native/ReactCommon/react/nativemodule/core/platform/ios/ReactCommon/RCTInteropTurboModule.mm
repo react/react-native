@@ -363,8 +363,7 @@ void ObjCInteropTurboModule::setInvocationArg(
     const jsi::Value &jsiArg,
     size_t index,
     NSInvocation *inv,
-    NSMutableArray *retainedObjectsForInvocation,
-    [[maybe_unused]] bool mustCopyBytes)
+    NSMutableArray *retainedObjectsForInvocation)
 {
   NSString *methodName = @(methodNameCStr);
   std::string methodJsSignature = name_ + "." + methodNameCStr + "()";

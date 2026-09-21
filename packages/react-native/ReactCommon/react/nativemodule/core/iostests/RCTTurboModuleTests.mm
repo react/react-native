@@ -7,10 +7,8 @@
 
 #import <XCTest/XCTest.h>
 
-#import <React/RCTArrayBuffer.h>
 #import <ReactCommon/RCTTurboModule.h>
 #import <hermes/hermes.h>
-#import <jsi/decorator.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 
@@ -92,39 +90,6 @@ class TestMutableBuffer : public facebook::jsi::MutableBuffer {
 
  private:
   std::vector<uint8_t> bytes_;
-};
-
-// `jsi::Runtime::tryGetMutableBuffer` is optional — the Hermes branch linked into apps returns
-// nullptr for every ArrayBuffer — so decorate the runtime to answer it for the buffers created
-// through it. That keeps the coverage of the native-backed path independent of the engine.
-// The registry is weak, so the only owners of a backing store remain the JS ArrayBuffer and
-// whatever the conversion retains.
-class MutableBufferAwareRuntime final : public facebook::jsi::RuntimeDecorator<facebook::jsi::Runtime> {
- public:
-  explicit MutableBufferAwareRuntime(facebook::jsi::Runtime &plain) : RuntimeDecorator(plain) {}
-
-  facebook::jsi::ArrayBuffer createArrayBuffer(std::shared_ptr<facebook::jsi::MutableBuffer> buffer) override
-  {
-    auto arrayBuffer = RuntimeDecorator::createArrayBuffer(buffer);
-    buffers_.push_back(buffer);
-    return arrayBuffer;
-  }
-
-  std::shared_ptr<facebook::jsi::MutableBuffer> tryGetMutableBuffer(
-      const facebook::jsi::ArrayBuffer &arrayBuffer) override
-  {
-    uint8_t *data = arrayBuffer.data(*this);
-    for (const auto &weakBuffer : buffers_) {
-      auto buffer = weakBuffer.lock();
-      if (buffer != nullptr && buffer->data() == data) {
-        return buffer;
-      }
-    }
-    return nullptr;
-  }
-
- private:
-  std::vector<std::weak_ptr<facebook::jsi::MutableBuffer>> buffers_;
 };
 
 class StubNativeMethodCallInvoker : public NativeMethodCallInvoker {
@@ -354,46 +319,33 @@ class ExceptionCapturingNativeMethodCallInvoker : public NativeMethodCallInvoker
   XCTAssertNotNil(original.callStackSymbols);
 }
 
-// A native-backed ArrayBuffer is aliased rather than copied, and the RCTArrayBuffer retains
-// the backing MutableBuffer, so the alias outlives the JS object.
-- (void)testNativeBackedArrayBufferIsAliasedAndKeepsBackingStoreAlive
+// A JS ArrayBuffer converts (on the argument path) to an immutable NSData that
+// owns an independent copy of the bytes, so the result stays valid after the
+// source buffer is gone. This covers the ArrayBuffer-backed-by-native-MutableBuffer
+// case, which is the one that could in principle have been aliased zero-copy.
+- (void)testArrayBufferConvertsToIndependentNSData
 {
   constexpr size_t kBufferSize = 64 * 1024;
 
   auto hermesRuntime = facebook::hermes::makeHermesRuntime();
-  MutableBufferAwareRuntime runtime(*hermesRuntime);
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
 
   auto buffer = std::make_shared<TestMutableBuffer>(kBufferSize);
   *buffer->data() = 0xAB;
-  const uint8_t *sourceBytes = buffer->data();
 
-  RCTArrayBuffer *converted = nil;
-  {
-    facebook::jsi::ArrayBuffer arrayBuffer(runtime, buffer);
-    const long ownersBeforeConversion = buffer.use_count();
+  facebook::jsi::ArrayBuffer arrayBuffer(*rt, buffer);
+  id converted =
+      TurboModuleConvertUtils::convertJSIValueToObjCObject(*rt, facebook::jsi::Value(*rt, arrayBuffer), nullptr);
 
-    id result = TurboModuleConvertUtils::convertJSIValueToObjCObject(
-        runtime, facebook::jsi::Value(runtime, arrayBuffer), nullptr, NO, NO);
-    XCTAssertTrue([result isKindOfClass:[RCTArrayBuffer class]]);
-    converted = (RCTArrayBuffer *)result;
+  XCTAssertTrue([converted isKindOfClass:[NSData class]]);
+  NSData *data = (NSData *)converted;
+  XCTAssertEqual(data.length, (NSUInteger)kBufferSize);
+  XCTAssertEqual(*static_cast<const uint8_t *>(data.bytes), 0xAB);
 
-    XCTAssertEqual(
-        buffer.use_count(), ownersBeforeConversion + 1, @"The RCTArrayBuffer must retain the backing MutableBuffer");
-  }
-
-  XCTAssertTrue(converted.isOwningBytes, @"A native-backed buffer must be safe to retain");
-  XCTAssertEqual(converted.length, (NSUInteger)kBufferSize);
-  XCTAssertEqual(converted.mutableBytes, (void *)sourceBytes, @"Bytes must be aliased, not copied");
-
-  // Writes through the source are visible, and vice versa: one shared allocation.
+  // Independent copy: mutating the source MutableBuffer must not write through to
+  // the NSData.
   *buffer->data() = 0xCD;
-  XCTAssertEqual(*static_cast<const uint8_t *>(converted.mutableBytes), 0xCD);
-  *static_cast<uint8_t *>(converted.mutableBytes) = 0xEF;
-  XCTAssertEqual(*buffer->data(), 0xEF);
-
-  // Dropping the caller's reference leaves the bytes valid.
-  buffer.reset();
-  XCTAssertEqual(*static_cast<const uint8_t *>(converted.mutableBytes), 0xEF);
+  XCTAssertEqual(*static_cast<const uint8_t *>(data.bytes), 0xAB, @"NSData must not alias the source buffer");
 }
 
 @end

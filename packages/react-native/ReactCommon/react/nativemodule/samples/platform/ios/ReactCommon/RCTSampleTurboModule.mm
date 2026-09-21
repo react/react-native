@@ -6,8 +6,6 @@
  */
 
 #import "RCTSampleTurboModule.h"
-
-#import <React/RCTArrayBuffer.h>
 #import "RCTSampleTurboModulePlugin.h"
 
 #import <React/RCTAssert.h>
@@ -15,8 +13,6 @@
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
 #import <UIKit/UIKit.h>
-
-#include <span>
 
 using namespace facebook::react;
 
@@ -149,27 +145,20 @@ RCT_EXPORT_MODULE()
   };
 }
 
-// The argument aliases the JS ArrayBuffer's bytes, so mutating in place is visible to JS.
-- (RCTArrayBuffer *)getArrayBuffer:(RCTArrayBuffer *)buffer
+// Arguments arrive as an immutable NSData, but an ArrayBuffer return must be
+// NSMutableData: it is handed to JS as a jsi::MutableBuffer, whose data() is
+// non-const. Echoing the argument back therefore needs a mutable copy.
+- (NSMutableData *)getArrayBuffer:(NSData *)buffer
 {
-  auto *bytes = static_cast<uint8_t *>(buffer.mutableBytes);
-  if (bytes == nullptr) {
-    return buffer;
-  }
-
-  std::span<uint8_t> byteSpan(bytes, static_cast<size_t>(buffer.length));
-  for (auto &byte : byteSpan) {
-    byte = static_cast<uint8_t>(byte * 2);
-  }
-  return buffer;
+  return [buffer mutableCopy];
 }
 
-- (RCTArrayBuffer *)createNativeBuffer:(double)size
+- (NSMutableData *)createNativeBuffer:(double)size
 {
-  return [RCTArrayBuffer arrayBufferWithLength:(NSUInteger)size];
+  return [NSMutableData dataWithLength:(NSUInteger)size];
 }
 
-- (void)processAsyncBuffer:(RCTArrayBuffer *)payload
+- (void)processAsyncBuffer:(NSData *)payload
                    resolve:(RCTPromiseResolveBlock)resolve
                     reject:(RCTPromiseRejectBlock)reject
 {

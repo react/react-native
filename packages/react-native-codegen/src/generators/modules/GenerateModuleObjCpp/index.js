@@ -97,7 +97,6 @@ const HeaderFileTemplate = ({
 #import <RCTRequired/RCTRequired.h>
 #import <RCTTypeSafety/RCTConvertHelpers.h>
 #import <RCTTypeSafety/RCTTypedModuleConstants.h>
-#import <React/RCTArrayBuffer.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTCxxConvert.h>
 #import <React/RCTManagedPointer.h>
