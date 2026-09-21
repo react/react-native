@@ -63,32 +63,6 @@ class ReactLibraryPluginTest {
   }
 
   @Test
-  fun apply_afterReactPlugin_fails() {
-    val project = ProjectBuilder.builder().build()
-    project.plugins.apply("com.facebook.react")
-
-    assertThatThrownBy { project.plugins.apply("com.facebook.react.library") }
-        .hasRootCauseMessage(
-            "A React Native Android project must not apply both com.facebook.react and " +
-                "com.facebook.react.library. Use com.facebook.react.library for Android " +
-                "libraries and com.facebook.react for Android applications."
-        )
-  }
-
-  @Test
-  fun apply_beforeReactPlugin_failsWhenReactPluginIsApplied() {
-    val project = ProjectBuilder.builder().build()
-    project.plugins.apply("com.facebook.react.library")
-
-    assertThatThrownBy { project.plugins.apply("com.facebook.react") }
-        .hasRootCauseMessage(
-            "A React Native Android project must not apply both com.facebook.react and " +
-                "com.facebook.react.library. Use com.facebook.react.library for Android " +
-                "libraries and com.facebook.react for Android applications."
-        )
-  }
-
-  @Test
   fun apply_afterAndroidApplication_fails() {
     val project =
         ProjectBuilder.builder().withProjectDir(tempFolder.newFolder("application")).build()

@@ -40,7 +40,6 @@ dependencies {
 
   testImplementation(libs.junit)
   testImplementation(libs.assertj)
-  testImplementation(project(":react-native-gradle-plugin"))
   testImplementation(project(":shared-testutil"))
 }
 
