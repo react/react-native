@@ -143,7 +143,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
   NSArray<id<RCTVirtualViewProtocol>> *virtualViewsIt =
       (virtualView != nullptr) ? @[ virtualView ] : [_virtualViews allObjects];
 
-  for (id<RCTVirtualViewProtocol> vv = nullptr in virtualViewsIt) {
+  for (id<RCTVirtualViewProtocol> vv in virtualViewsIt) {
     CGRect rect = [vv containerRelativeRect:scrollView];
 
     RCTVirtualViewMode mode = RCTVirtualViewModeHidden;

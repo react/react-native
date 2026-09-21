@@ -84,11 +84,8 @@ AppleEventBeat::~AppleEventBeat()
   // before it executes is made safe by the owner check above.
   NSMapTable<CALayer *, RCTEventBeatFlusherLayer *> *layers = layers_;
   RCTExecuteOnMainQueue(^{
-    NSEnumerator<RCTEventBeatFlusherLayer *> *enumerator = layers.objectEnumerator;
-    RCTEventBeatFlusherLayer *layer = enumerator.nextObject;
-    while (layer != nil) {
+    for (RCTEventBeatFlusherLayer *layer in layers.objectEnumerator) {
       [layer removeFromSuperlayer];
-      layer = enumerator.nextObject;
     }
   });
 }
