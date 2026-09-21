@@ -385,7 +385,8 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
     }
     pendingPickMultipleMediaPromise = promise
     pickMultipleMediaLauncher.launch(
-        PickUpToMedia.Request(limit, PickVisualMediaRequest(visualMediaType(mimeType))))
+        PickUpToMedia.Request(limit, PickVisualMediaRequest(visualMediaType(mimeType)))
+    )
   }
 
   /**
@@ -429,15 +430,21 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
     // Reject anything still in flight: the JS context that made these calls is going away.
     // Clearing the fields also lets the still-registered callbacks tolerate a late result.
     pendingPermissionPromise?.reject(
-        "E_MODULE_INVALIDATED", "Permission request cancelled: SampleTurboModule was invalidated")
+        "E_MODULE_INVALIDATED",
+        "Permission request cancelled: SampleTurboModule was invalidated",
+    )
     pendingPermissionPromise = null
 
     pendingPickMediaPromise?.reject(
-        "E_MODULE_INVALIDATED", "Media pick cancelled: SampleTurboModule was invalidated")
+        "E_MODULE_INVALIDATED",
+        "Media pick cancelled: SampleTurboModule was invalidated",
+    )
     pendingPickMediaPromise = null
 
     pendingPickMultipleMediaPromise?.reject(
-        "E_MODULE_INVALIDATED", "Multiple media pick cancelled: SampleTurboModule was invalidated")
+        "E_MODULE_INVALIDATED",
+        "Multiple media pick cancelled: SampleTurboModule was invalidated",
+    )
     pendingPickMultipleMediaPromise = null
     super.invalidate()
   }

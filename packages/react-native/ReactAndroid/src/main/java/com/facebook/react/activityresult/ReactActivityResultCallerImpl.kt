@@ -35,15 +35,15 @@ internal fun onUiThread(block: () -> Unit) {
  * [ActivityResultRegistry] immediately or on the next `onHostResume`. They outlive any single
  * Activity: keys stay stable so AndroidX can re-associate a result after Activity recreation.
  *
- * Every `onHostResume` checks each launcher against the *current* registry, not just "already
- * bound to something": with multi-Activity navigation the new Activity resumes before the old one
- * is destroyed (whose onHostDestroy is dropped once `currentActivity` moves on), so a bound-only
- * check would leave launchers attached to the previous Activity's dead registry.
+ * Every `onHostResume` checks each launcher against the *current* registry, not just "already bound
+ * to something": with multi-Activity navigation the new Activity resumes before the old one is
+ * destroyed (whose onHostDestroy is dropped once `currentActivity` moves on), so a bound-only check
+ * would leave launchers attached to the previous Activity's dead registry.
  *
  * Threading: [entries] is concurrent and reachable from any thread; everything touching the
  * registry goes through [onUiThread]. Registration stays on the caller's thread so the launcher
- * returns immediately and a duplicate key throws at the causing frame. Only the registry call
- * moves to the UI thread.
+ * returns immediately and a duplicate key throws at the causing frame. Only the registry call moves
+ * to the UI thread.
  */
 internal class ReactActivityResultCallerImpl(private val reactContext: ReactContext) :
     ReactActivityResultCaller, LifecycleEventListener {
@@ -78,10 +78,10 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
-    if(owner::class.java.isAnonymousClass) {
+    if (owner::class.java.isAnonymousClass) {
       throw IllegalArgumentException(
-        "ActivityResult owner must be a named class, but got an anonymous class. " +
-          "Pass an instance of a named class instead."
+          "ActivityResult owner must be a named class, but got an anonymous class. " +
+              "Pass an instance of a named class instead."
       )
     }
 
@@ -91,7 +91,8 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
             "Register once and reuse the launcher, or pass a distinct key per launcher: " +
                 "registerForActivityResult(owner, \"someName\", contract, callback).",
         contract = contract,
-        callback = callback)
+        callback = callback,
+    )
   }
 
   override fun <I, O> registerForActivityResult(
@@ -100,10 +101,10 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
-    if(owner::class.java.isAnonymousClass) {
+    if (owner::class.java.isAnonymousClass) {
       throw IllegalArgumentException(
-        "ActivityResult owner must be a named class, but got an anonymous class. " +
-          "Pass an instance of a named class instead."
+          "ActivityResult owner must be a named class, but got an anonymous class. " +
+              "Pass an instance of a named class instead."
       )
     }
 
@@ -111,7 +112,8 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
         key = "${owner.javaClass.name}:${contract.javaClass.name}:$key",
         collisionHint = "Pass a key that is unique among this owner's launchers of this contract.",
         contract = contract,
-        callback = callback)
+        callback = callback,
+    )
   }
 
   private fun <I, O> register(
@@ -123,8 +125,7 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
     val launcher = DeferredActivityResultLauncher(key, contract) { entries.remove(key) }
     val entry = Entry(key, contract, callback, launcher)
     if (entries.putIfAbsent(key, entry) != null) {
-      throw IllegalStateException(
-          "A launcher is already registered for key '$key'. $collisionHint")
+      throw IllegalStateException("A launcher is already registered for key '$key'. $collisionHint")
     }
     onUiThread { currentRegistry()?.let { registry -> entry.bindTo(registry) } }
     return launcher
@@ -145,11 +146,12 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
 
   private fun currentRegistry(): ActivityResultRegistry? {
     val activity = reactContext.currentActivity ?: return null
-    val owner = activity as? ActivityResultRegistryOwner
-      ?: throw IllegalStateException(
-        "Current Activity ${activity.javaClass.name} is not an ActivityResultRegistryOwner; " +
-          "ActivityResultContract launchers cannot be registered."
-      )
+    val owner =
+        activity as? ActivityResultRegistryOwner
+            ?: throw IllegalStateException(
+                "Current Activity ${activity.javaClass.name} is not an ActivityResultRegistryOwner; " +
+                    "ActivityResultContract launchers cannot be registered."
+            )
     return owner.activityResultRegistry
   }
 }

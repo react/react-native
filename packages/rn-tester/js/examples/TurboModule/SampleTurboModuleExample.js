@@ -12,8 +12,15 @@ import type {EventSubscription, RootTag} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
 import styles from './TurboModuleExampleCommon';
+
 import * as React from 'react';
-import {FlatList, RootTagContext, TouchableOpacity, View} from 'react-native';
+import {
+  FlatList,
+  Platform,
+  RootTagContext,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import NativeSampleTurboModule, {
   EnumInt,
 } from 'react-native/Libraries/TurboModule/samples/NativeSampleTurboModule';
@@ -178,15 +185,16 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
     installJSIBindings: () => global.__SampleTurboModuleJSIBindings,
   };
 
-  // Kept out of `_tests` so that "Run all tests" does not raise a system permission dialog.
   // $FlowFixMe[missing-local-annot]
   _androidTests = {
     requestSamplePermission: () => {
-      NativeSampleTurboModule.requestSamplePermission?.()
-        .then(isGranted =>
-          this._setResult('requestSamplePermission', isGranted),
-        )
-        .catch(e => this._setResult('requestSamplePermission', e.message));
+      try {
+        const isGranted = NativeSampleTurboModule.requestSamplePermission?.();
+        this._setResult('requestSamplePermission', isGranted);
+      } catch (e) {
+        this._setResult('requestSamplePermission', e.message);
+        return e.message;
+      }
     },
   };
 
@@ -326,6 +334,7 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
                     </RNTesterText>
                   </TouchableOpacity>
                   <View style={[styles.column]}>
+                    {/* $FlowFixMe[incompatible-type] */}
                     {this._renderResult(item)}
                   </View>
                 </View>

@@ -16,13 +16,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Window;
-
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
@@ -35,7 +33,6 @@ import com.facebook.react.common.LifecycleState;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.interfaces.ExtraWindowEventListener;
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
-
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -553,12 +550,11 @@ public abstract class ReactContext extends ContextWrapper {
    * consumer's {@code MainActivity}. Registration is legal at any time; the launcher binds lazily
    * once an Activity is available, queueing a {@code launch} issued while unbound.
    *
-   * <p>The registration key is {@code "<owner class>:<contract class>"}, so {@code owner} should
-   * be a stable, long-lived object (typically the native module itself): the key must be
-   * reproducible after the process is killed and restored. Registering the same contract class
-   * twice from one owner
-   * throws {@link IllegalStateException}; use {@link #registerForActivityResult(Object, String,
-   * ActivityResultContract, ActivityResultCallback)} in that case.
+   * <p>The registration key is {@code "<owner class>:<contract class>"}, so {@code owner} should be
+   * a stable, long-lived object (typically the native module itself): the key must be reproducible
+   * after the process is killed and restored. Registering the same contract class twice from one
+   * owner throws {@link IllegalStateException}; use {@link #registerForActivityResult(Object,
+   * String, ActivityResultContract, ActivityResultCallback)} in that case.
    */
   public <I, O> ActivityResultLauncher<I> registerForActivityResult(
       Object owner, ActivityResultContract<I, O> contract, ActivityResultCallback<O> callback) {

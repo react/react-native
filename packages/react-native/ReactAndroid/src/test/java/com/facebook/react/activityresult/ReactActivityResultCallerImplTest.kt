@@ -28,8 +28,8 @@ import org.robolectric.RobolectricTestRunner
 
 /**
  * Covers the registration keying scheme: owner-scoped by default so two independent modules can use
- * the same stock contract, with an extra-key overload -- appended to that scope, not replacing it --
- * for one owner needing several launchers of the same contract class.
+ * the same stock contract, with an extra-key overload -- appended to that scope, not replacing it
+ * -- for one owner needing several launchers of the same contract class.
  */
 @RunWith(RobolectricTestRunner::class)
 class ReactActivityResultCallerImplTest {
@@ -87,8 +87,7 @@ class ReactActivityResultCallerImplTest {
     caller.registerForActivityResult(moduleB, GetContent()) {}
 
     assertThat(registry.registeredKeys)
-        .containsExactlyInAnyOrder(
-            "$moduleAName:$getContentName", "$moduleBName:$getContentName")
+        .containsExactlyInAnyOrder("$moduleAName:$getContentName", "$moduleBName:$getContentName")
   }
 
   @Test
@@ -107,7 +106,9 @@ class ReactActivityResultCallerImplTest {
 
     assertThat(registry.registeredKeys)
         .containsExactlyInAnyOrder(
-            "$moduleAName:$getContentName", "$moduleAName:${RequestPermission::class.java.name}")
+            "$moduleAName:$getContentName",
+            "$moduleAName:${RequestPermission::class.java.name}",
+        )
   }
 
   @Test
@@ -117,7 +118,9 @@ class ReactActivityResultCallerImplTest {
 
     assertThat(registry.registeredKeys)
         .containsExactlyInAnyOrder(
-            "$moduleAName:$getContentName:avatar", "$moduleAName:$getContentName:banner")
+            "$moduleAName:$getContentName:avatar",
+            "$moduleAName:$getContentName:banner",
+        )
   }
 
   /** The owner-and-contract scope is still applied, so a shared key across owners is safe. */
@@ -128,7 +131,9 @@ class ReactActivityResultCallerImplTest {
 
     assertThat(registry.registeredKeys)
         .containsExactlyInAnyOrder(
-            "$moduleAName:$getContentName:pick", "$moduleBName:$getContentName:pick")
+            "$moduleAName:$getContentName:pick",
+            "$moduleBName:$getContentName:pick",
+        )
   }
 
   @Test

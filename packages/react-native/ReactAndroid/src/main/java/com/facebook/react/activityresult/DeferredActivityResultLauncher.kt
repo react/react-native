@@ -21,8 +21,8 @@ import com.facebook.react.common.ReactConstants
  * unbound (fired on bind), and can be [unbind]-ed and rebound against a new host's registry.
  *
  * [delegate] and [pendingLaunch] are only touched on the UI thread; [launch] and [unregister] get
- * there via [onUiThread]. [launch] decides between delegating and queueing *on* the UI thread, so
- * a concurrent [unbind] cannot leave it pointed at a dead registry.
+ * there via [onUiThread]. [launch] decides between delegating and queueing *on* the UI thread, so a
+ * concurrent [unbind] cannot leave it pointed at a dead registry.
  */
 internal class DeferredActivityResultLauncher<I>(
     private val key: String,
@@ -48,7 +48,8 @@ internal class DeferredActivityResultLauncher<I>(
           FLog.w(
               ReactConstants.TAG,
               "Launcher for '$key' was launched again before an Activity was available; " +
-                  "replacing the previously queued launch.")
+                  "replacing the previously queued launch.",
+          )
         }
         pendingLaunch = PendingLaunch(input, options)
       }

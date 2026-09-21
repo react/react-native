@@ -127,7 +127,9 @@ class ReactActivityResultCallerThreadingTest {
 
     var thrown: Throwable? = null
     onBackgroundThread {
-      thrown = runCatching { caller.registerForActivityResult(moduleA, GetContent()) {} }.exceptionOrNull()
+      thrown =
+          runCatching { caller.registerForActivityResult(moduleA, GetContent()) {} }
+              .exceptionOrNull()
     }
 
     // Not surfaced later on the UI thread, where it would be unattributable.
@@ -151,9 +153,9 @@ class ReactActivityResultCallerThreadingTest {
   }
 
   /**
-   * Multi-Activity navigation: B resumes while A is still alive, and `ReactHostImpl` then drops
-   * A's `onHostDestroy` because `currentActivity` has already moved to B. So no unbind ever runs
-   * for A -- `onHostResume` alone has to move the launcher across.
+   * Multi-Activity navigation: B resumes while A is still alive, and `ReactHostImpl` then drops A's
+   * `onHostDestroy` because `currentActivity` has already moved to B. So no unbind ever runs for A
+   * -- `onHostResume` alone has to move the launcher across.
    */
   @Test
   fun `resuming a second activity rebinds to its registry without any onHostDestroy`() {
