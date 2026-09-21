@@ -1,5 +1,110 @@
 # Changelog
 
+## v0.88.0-rc.2
+
+### Breaking
+
+- Restore .js fallback for legacy deep imports of untyped modules ([579212e15c](https://github.com/react/react-native/commit/579212e15c9197d6c614cfeb4561e4a85956ee3b) by [@fabriziocucci](https://github.com/fabriziocucci))
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Added
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Changed
+
+- Bump Metro minimum to 0.87.1 ([f2439a83cf](https://github.com/react/react-native/commit/f2439a83cffc8f2bf8355a984a055ae7174bb4d9) by [@robhogan](https://github.com/robhogan))
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Deprecated
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Removed
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Fixed
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Security
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Unknown
+
+- Release 0.88.0-rc.2 ([215169c51b](https://github.com/react/react-native/commit/215169c51bfe7b395a73454d65d5ff20e60113d6) by [@react-native-bot](https://github.com/react-native-bot))
+- Bump Podfile.lock ([74760de04c](https://github.com/react/react-native/commit/74760de04c1f466230e14a00b522149c90c0445c) by [@react-native-bot](https://github.com/react-native-bot))
+- Release 0.88.0-rc.1 ([05a41cdc67](https://github.com/react/react-native/commit/05a41cdc674b1a51a67bfce9be4b79ae3395f795) by [@react-native-bot](https://github.com/react-native-bot))
+
+#### Android Unknown
+
+
+
+#### iOS Unknown
+
+
+
+#### Failed to parse
+
+
+
+
 ## v0.88.0-rc.1
 
 ### Added
