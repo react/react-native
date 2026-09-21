@@ -29,8 +29,7 @@
 
 - (instancetype)initWithOnDisplay:(void (^)(void))onDisplay
 {
-  self = [super init];
-  if (self != nil) {
+  if (self = [super init]) {
     _onDisplay = [onDisplay copy];
     self.frame = CGRectZero;
   }

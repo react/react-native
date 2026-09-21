@@ -78,8 +78,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
 
 - (instancetype)initWithScrollView:(RCTScrollViewComponentView *)scrollView
 {
-  self = [super init];
-  if (self != nil) {
+  if (self = [super init]) {
     _virtualViews = [NSMutableSet set];
     _emptyRect = CGRectZero;
     _prerenderRect = CGRectZero;

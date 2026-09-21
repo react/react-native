@@ -72,8 +72,7 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
 - (instancetype)initWithCustomButtonTitles:(NSArray<NSString *> *)customButtonTitles
                       customButtonHandlers:(NSArray<RCTRedBox2ButtonPressHandler> *)customButtonHandlers
 {
-  self = [super init];
-  if (self != nullptr) {
+  if (self = [super init]) {
     _lastErrorCookie = -1;
     _customButtonTitles = customButtonTitles;
     _customButtonHandlers = customButtonHandlers;
