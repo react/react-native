@@ -1,6 +1,6 @@
 {
   "name": "react-native",
-  "version": "0.88.0-rc.1",
+  "version": "0.88.0-rc.2",
   "description": "A framework for building native apps using React",
   "license": "MIT",
   "repository": {
@@ -154,12 +154,12 @@
     }
   },
   "dependencies": {
-    "@react-native/asset-utils": "0.88.0-rc.1",
-    "@react-native/codegen": "0.88.0-rc.1",
-    "@react-native/community-cli-plugin": "0.88.0-rc.1",
-    "@react-native/gradle-plugin": "0.88.0-rc.1",
-    "@react-native/normalize-colors": "0.88.0-rc.1",
-    "@react-native/virtualized-lists": "0.88.0-rc.1",
+    "@react-native/asset-utils": "0.88.0-rc.2",
+    "@react-native/codegen": "0.88.0-rc.2",
+    "@react-native/community-cli-plugin": "0.88.0-rc.2",
+    "@react-native/gradle-plugin": "0.88.0-rc.2",
+    "@react-native/normalize-colors": "0.88.0-rc.2",
+    "@react-native/virtualized-lists": "0.88.0-rc.2",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
     "flow-parser": "0.327.0",

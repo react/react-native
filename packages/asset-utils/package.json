@@ -1,6 +1,6 @@
 {
   "name": "@react-native/asset-utils",
-  "version": "0.88.0-rc.1",
+  "version": "0.88.0-rc.2",
   "description": "Asset path utilities for React Native.",
   "license": "MIT",
   "repository": {

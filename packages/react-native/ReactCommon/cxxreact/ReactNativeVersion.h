@@ -22,7 +22,7 @@ struct ReactNativeVersionType {
   int32_t Major = 0;
   int32_t Minor = 88;
   int32_t Patch = 0;
-  std::string_view Prerelease = "rc.1";
+  std::string_view Prerelease = "rc.2";
 };
 
 constexpr ReactNativeVersionType ReactNativeVersion;

@@ -1,6 +1,6 @@
 {
   "name": "@react-native/tester",
-  "version": "0.88.0-rc.1",
+  "version": "0.88.0-rc.2",
   "private": true,
   "description": "React Native tester app.",
   "license": "MIT",
@@ -26,8 +26,8 @@
     "e2e-test-ios": "./scripts/maestro-test-ios.sh"
   },
   "dependencies": {
-    "@react-native/new-app-screen": "0.88.0-rc.1",
-    "@react-native/popup-menu-android": "0.88.0-rc.1",
+    "@react-native/new-app-screen": "0.88.0-rc.2",
+    "@react-native/popup-menu-android": "0.88.0-rc.2",
     "flow-enums-runtime": "^0.0.6",
     "invariant": "^2.2.4",
     "nullthrows": "^1.1.1",
@@ -36,7 +36,7 @@
   },
   "peerDependencies": {
     "react": "19.3.0",
-    "react-native": "0.88.0-rc.1"
+    "react-native": "0.88.0-rc.2"
   },
   "codegenConfig": {
     "name": "AppSpecs",
