@@ -12,7 +12,6 @@ import type {EventSubscription, RootTag} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
 import styles from './TurboModuleExampleCommon';
-
 import * as React from 'react';
 import {
   FlatList,
