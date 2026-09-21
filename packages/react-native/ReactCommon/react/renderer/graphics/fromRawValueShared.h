@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#pragma once
+
+#include <react/cxxstableapi/UmbrellaGuard.h>
 #include <react/debug/react_native_expect.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/core/RawValue.h>
@@ -12,8 +15,6 @@
 #include <react/renderer/css/CSSValueParser.h>
 #include <react/renderer/graphics/Color.h>
 #include <react/utils/ContextContainer.h>
-
-#pragma once
 
 namespace facebook::react {
 using parsePlatformColorFn = SharedColor (*)(const ContextContainer &, int32_t, const RawValue &);
