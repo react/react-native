@@ -77,7 +77,7 @@ runs:
       shell: bash
       run: cp packages/react-native/ReactAndroid/hermes-engine/build/hermes/lib/libhermesvm.so private/react-native-fantom/build/tester/
     - name: Upload Fantom Runner binary
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: fantom-runner-binary
         compression-level: 1

@@ -91,7 +91,7 @@ jobs:
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "/tmp/RNTestProject"
       - name: Upload app
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: RNTestProject-${{ matrix.flavor }}
           overwrite: true

@@ -502,7 +502,7 @@ jobs:
           fi
           yarn build android "${args[@]}" -P reactNativeArchitectures="$TARGET_ARCHITECTURE" -P react.internal.mavenLocalRepo="/tmp/maven-local"
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: helloworld-apk-${{ matrix.flavor }}-NewArch-hermes
           path: ./private/helloworld/android/app/build/outputs/apk/

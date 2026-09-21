@@ -134,20 +134,20 @@ runs:
         cd /Users/runner/Library/Developer/Xcode
         tar -zcvf xcresults.tar.gz "/tmp/RNTesterTestResults"
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       if: ${{ inputs.run-unit-tests == 'true' }}
       with:
         name: xcresults-${{ inputs.flavor }}-${{ inputs.use-frameworks == 'true' && 'dynamic-frameworks' || 'static-libraries' }}-Ruby${{ inputs.ruby-version }}
         path: /Users/runner/Library/Developer/Xcode/xcresults.tar.gz
     - name: Upload RNTester App
       if: ${{ inputs.use-frameworks == 'false' && inputs.ruby-version == '2.6.10' }} # This is needed to avoid conflicts with the artifacts
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: RNTesterApp-NewArch-${{ inputs.flavor }}
         path: ${{ env.app-path }}
     - name: Store test results
       if: ${{ inputs.run-unit-tests == 'true' }}
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: test-results-${{ inputs.flavor }}-${{ inputs.use-frameworks == 'true' && 'dynamic-frameworks' || 'static-libraries' }}-Ruby${{ inputs.ruby-version }}
         path: ./reports/junit

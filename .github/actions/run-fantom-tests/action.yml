@@ -46,7 +46,7 @@ runs:
         LD_LIBRARY_PATH: ${{ github.workspace }}/private/react-native-fantom/build/tester
     - name: Upload test results
       if: ${{ always() }}
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: run-fantom-tests-results
         compression-level: 1

@@ -77,7 +77,7 @@ jobs:
           exclude-tags: ${{ matrix.flavor == 'debug' && 'android-release-only' || '' }}
       - name: Store per-flow test state
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: e2e_android_rntester_state_${{ matrix.flavor }}_arm64-v8a_NewArch
           overwrite: true

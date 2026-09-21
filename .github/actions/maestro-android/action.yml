@@ -90,7 +90,7 @@ runs:
         NORM_APP_ID=$(echo "${{ inputs.app-id }}" | tr '.' '-')
         echo "app-id=$NORM_APP_ID" >> $GITHUB_OUTPUT
     - name: Store tests result
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       if: always()
       with:
         name: e2e_android_${{ steps.normalize-app-id.outputs.app-id }}_report_${{ inputs.flavor }}_${{ inputs.emulator-arch }}_NewArch
@@ -100,7 +100,7 @@ runs:
           screen.mp4
     - name: Store Logs
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: maestro-logs-android-${{ steps.normalize-app-id.outputs.app-id }}-${{ inputs.flavor }}-${{ inputs.emulator-arch }}-NewArch
         overwrite: true

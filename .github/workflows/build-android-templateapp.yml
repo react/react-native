@@ -66,7 +66,7 @@ jobs:
             assemble$CAPITALIZED_FLAVOR \
             -PreactNativeArchitectures=arm64-v8a
       - name: Upload template app APK
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: android-templateapp-${{ matrix.flavor }}
           path: /tmp/RNTestProject/android/app/build/outputs/apk/${{ matrix.flavor }}/app-${{ matrix.flavor }}.apk

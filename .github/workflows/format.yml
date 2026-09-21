@@ -69,7 +69,7 @@ jobs:
           fi
       - name: Upload formatting report
         if: always() && github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: format-results
           path: .format-results/

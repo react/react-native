@@ -31,7 +31,7 @@ jobs:
         run: |
           node scripts/releases/prepare-ios-prebuilds.js -w
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ios-prebuilds-workspace
           path: packages/react-native/third-party/
@@ -92,7 +92,7 @@ jobs:
         if: steps.restore-slice-folder.outputs.cache-hit != 'true'
         run: node scripts/releases/prepare-ios-prebuilds.js -b -p ${{ matrix.slice }} -r ${{ matrix.flavor }}
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-slice-${{ matrix.flavor }}-${{ matrix.slice }}
           path: |
@@ -181,17 +181,17 @@ jobs:
           tar -cz -f ../ReactNativeDependencies${{ matrix.flavor }}.framework.dSYM.tar.gz .
           mv ../ReactNativeDependencies${{ matrix.flavor }}.framework.dSYM.tar.gz ./ReactNativeDependencies${{ matrix.flavor }}.framework.dSYM.tar.gz
       - name: Upload XCFramework Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
       - name: Upload Headers Sidecar XCFramework Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
       - name: Upload dSYM Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.framework.dSYM.tar.gz
           path: |
