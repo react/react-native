@@ -234,7 +234,6 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                                    CGFloat baseline =
                                                        lineRect.origin.y + font.ascender + frame.origin.y;
 
-                                                   // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
                                                    for (NSString *line in lines) {
                                                      CGFloat y = 0.0f;
                                                      if ([line isEqualToString:@"underline"]) {
