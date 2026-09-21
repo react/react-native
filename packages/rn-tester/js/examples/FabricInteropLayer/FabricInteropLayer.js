@@ -47,10 +47,10 @@ const InteropTestView = (props: InteropTestViewProps) => {
 
 // =============================================================================
 
-function Section({children, title}: SectionProps): React.Node {
+function Section({children, testID, title}: SectionProps): React.Node {
   const isDarkMode = useColorScheme() === 'dark';
   return (
-    <View style={styles.sectionContainer}>
+    <View style={styles.sectionContainer} testID={testID}>
       <Text
         style={[
           styles.sectionTitle,
@@ -60,15 +60,7 @@ function Section({children, title}: SectionProps): React.Node {
         ]}>
         {title}
       </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? WHITE : BLACK,
-          },
-        ]}>
-        {children}
-      </Text>
+      <View style={styles.sectionContent}>{children}</View>
     </View>
   );
 }
@@ -90,7 +82,13 @@ function AddChildrenForInteropLayer() {
           onPress={addMarker}
           testID="add-marker-btn"
         />
-        <Text>{`Number of squares: ${squares.length}`}</Text>
+        <Text
+          style={[
+            styles.sectionDescription,
+            {
+              color: isDarkMode ? WHITE : BLACK,
+            },
+          ]}>{`Number of squares: ${squares.length}`}</Text>
       </Section>
       <Section title="Custom native view" testID="interop-view-content">
         <InteropTestView style={styles.customView}>
@@ -124,9 +122,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   sectionDescription: {
-    marginTop: 8,
     fontSize: 18,
     fontWeight: '400',
+  },
+  sectionContent: {
+    marginTop: 8,
   },
   highlight: {
     fontWeight: '700',
