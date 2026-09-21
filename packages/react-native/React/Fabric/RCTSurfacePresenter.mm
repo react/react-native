@@ -294,7 +294,7 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
 
   __weak RCTMountingManager *weakMountingManager = _mountingManager;
   toolbox.eventBeatFactory = [runtimeScheduler, weakMountingManager](
-                                  std::shared_ptr<EventBeat::OwnerBox> ownerBox) -> std::unique_ptr<EventBeat> {
+                                 std::shared_ptr<EventBeat::OwnerBox> ownerBox) -> std::unique_ptr<EventBeat> {
     auto runLoopObserver =
         std::make_unique<const MainRunLoopObserver>(RunLoopObserver::Activity::BeforeWaiting, ownerBox->owner);
     auto windowLayerResolver = [weakMountingManager](Tag tag) -> CALayer * {
