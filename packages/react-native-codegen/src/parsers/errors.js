@@ -111,21 +111,6 @@ class UnsupportedModuleEventEmitterPropertyParserError extends ParserError {
   }
 }
 
-class UnsupportedModuleEventEmitterPayloadTypeParserError extends ParserError {
-  constructor(
-    nativeModuleName: string,
-    propertyValue: $FlowFixMe,
-    propertyName: string,
-    payloadType: string,
-  ) {
-    super(
-      nativeModuleName,
-      propertyValue,
-      `EventEmitter '${propertyName}' cannot have payload type '${payloadType}'.`,
-    );
-  }
-}
-
 class UnsupportedModulePropertyParserError extends ParserError {
   constructor(
     nativeModuleName: string,
@@ -471,7 +456,6 @@ module.exports = {
   UnsupportedEnumDeclarationParserError,
   UnsupportedModuleEventEmitterTypePropertyParserError,
   UnsupportedModuleEventEmitterPropertyParserError,
-  UnsupportedModuleEventEmitterPayloadTypeParserError,
   UnsupportedModulePropertyParserError,
   UnsupportedObjectPropertyTypeAnnotationParserError,
   UnsupportedObjectPropertyWithIndexerTypeAnnotationParserError,

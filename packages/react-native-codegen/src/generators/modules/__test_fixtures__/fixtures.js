@@ -130,36 +130,6 @@ const EVENT_EMITTER_MODULES: SchemaType = {
               },
             },
           },
-          {
-            name: 'onEvent7',
-            optional: false,
-            typeAnnotation: {
-              type: 'EventEmitterTypeAnnotation',
-              typeAnnotation: {
-                type: 'DoubleTypeAnnotation',
-              },
-            },
-          },
-          {
-            name: 'onEvent8',
-            optional: false,
-            typeAnnotation: {
-              type: 'EventEmitterTypeAnnotation',
-              typeAnnotation: {
-                type: 'FloatTypeAnnotation',
-              },
-            },
-          },
-          {
-            name: 'onEvent9',
-            optional: false,
-            typeAnnotation: {
-              type: 'EventEmitterTypeAnnotation',
-              typeAnnotation: {
-                type: 'Int32TypeAnnotation',
-              },
-            },
-          },
         ],
         methods: [
           {

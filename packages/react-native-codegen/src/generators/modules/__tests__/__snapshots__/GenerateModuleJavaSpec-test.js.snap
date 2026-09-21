@@ -292,27 +292,6 @@ public abstract class NativeSampleTurboModuleSpec extends ReactContextBaseJavaMo
     }
   }
 
-  protected final void emitOnEvent7(double value) {
-    CxxCallbackImpl eventEmitterCallback = mEventEmitterCallback;
-    if (eventEmitterCallback != null) {
-      eventEmitterCallback.invoke(\\"onEvent7\\", value);
-    }
-  }
-
-  protected final void emitOnEvent8(double value) {
-    CxxCallbackImpl eventEmitterCallback = mEventEmitterCallback;
-    if (eventEmitterCallback != null) {
-      eventEmitterCallback.invoke(\\"onEvent8\\", value);
-    }
-  }
-
-  protected final void emitOnEvent9(double value) {
-    CxxCallbackImpl eventEmitterCallback = mEventEmitterCallback;
-    if (eventEmitterCallback != null) {
-      eventEmitterCallback.invoke(\\"onEvent9\\", value);
-    }
-  }
-
   @ReactMethod
   @DoNotStrip
   public abstract void voidFunc();

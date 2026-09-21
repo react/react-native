@@ -42,7 +42,6 @@ import type {
 const {
   throwIfConfigNotfound,
   throwIfEventEmitterEventTypeIsUnsupported,
-  throwIfEventEmitterPayloadTypeIsUnsupported,
   throwIfEventEmitterTypeIsUnsupported,
   throwIfIncorrectModuleRegistryCallArgument,
   throwIfIncorrectModuleRegistryCallTypeParameterParserError,
@@ -550,13 +549,6 @@ function buildEventEmitterSchema(
     tryParse,
     cxxOnly,
     parser,
-  );
-
-  throwIfEventEmitterPayloadTypeIsUnsupported(
-    hasteModuleName,
-    typeAnnotation.typeParameters.params[0],
-    key.name,
-    eventTypeAnnotation,
   );
 
   return {

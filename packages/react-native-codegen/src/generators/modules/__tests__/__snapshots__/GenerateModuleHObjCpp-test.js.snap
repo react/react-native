@@ -607,9 +607,6 @@ facebook::react::EventEmitterCallback _eventEmitterCallback;
 - (void)emitOnEvent4:(BOOL)value;
 - (void)emitOnEvent5:(NSDictionary *)value;
 - (void)emitOnEvent6:(NSArray<id<NSObject>> *)value;
-- (void)emitOnEvent7:(NSNumber *_Nonnull)value;
-- (void)emitOnEvent8:(NSNumber *_Nonnull)value;
-- (void)emitOnEvent9:(NSNumber *_Nonnull)value;
 @end
 
 namespace facebook::react {

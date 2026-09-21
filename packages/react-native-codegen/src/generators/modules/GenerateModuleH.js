@@ -40,7 +40,6 @@ const {
   getModules,
   isArrayRecursiveMember,
   isDirectRecursiveMember,
-  throwIfUnsupportedEventEmitterPayload,
 } = require('./Utils');
 
 type FilesOutput = Map<string, string>;
@@ -639,11 +638,6 @@ function translateEventEmitterToCpp(
   resolveAlias: AliasResolver,
   enumMap: NativeModuleEnumMap,
 ): EventEmitterCpp {
-  throwIfUnsupportedEventEmitterPayload(
-    eventEmitter.name,
-    eventEmitter.typeAnnotation.typeAnnotation,
-  );
-
   const isVoidTypeAnnotation =
     eventEmitter.typeAnnotation.typeAnnotation.type === 'VoidTypeAnnotation';
   const templateName = `${toPascalCase(eventEmitter.name)}Type`;

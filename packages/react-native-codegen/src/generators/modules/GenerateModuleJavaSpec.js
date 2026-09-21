@@ -28,7 +28,6 @@ const {parseValidUnionType, toPascalCase} = require('../Utils');
 const {
   createAliasResolver,
   getModules,
-  throwIfUnsupportedEventEmitterPayload,
   throwIfUnsupportedPromiseArrayBuffer,
 } = require('./Utils');
 
@@ -142,9 +141,6 @@ function translateEventEmitterTypeToJavaType(
   imports: Set<string>,
 ): string {
   const typeAnnotation = eventEmitter.typeAnnotation.typeAnnotation;
-
-  throwIfUnsupportedEventEmitterPayload(eventEmitter.name, typeAnnotation);
-
   switch (typeAnnotation.type) {
     case 'StringTypeAnnotation':
       return 'String';
@@ -183,8 +179,12 @@ function translateEventEmitterTypeToJavaType(
     case 'ArrayTypeAnnotation':
       imports.add('com.facebook.react.bridge.ReadableArray');
       return 'ReadableArray';
+    case 'DoubleTypeAnnotation':
+    case 'FloatTypeAnnotation':
+    case 'Int32TypeAnnotation':
     case 'VoidTypeAnnotation':
-      // Void emitters take no argument, so the caller never asks for a type.
+    case 'ArrayBufferTypeAnnotation':
+      // TODO: Add support for these types
       throw new Error(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
       );

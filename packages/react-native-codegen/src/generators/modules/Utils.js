@@ -118,29 +118,10 @@ function throwIfUnsupportedPromiseArrayBuffer(
   }
 }
 
-// ArrayBuffer is not emittable on any platform: Android emitters always carry a
-// folly::dynamic payload, which cannot hold raw bytes, and neither the ObjC nor
-// the C++ emitter contract can hand out a buffer that outlives the emit call.
-// The parser rejects this too; the guard here also covers schemas built without
-// going through the parser.
-function throwIfUnsupportedEventEmitterPayload(
-  eventEmitterName: string,
-  typeAnnotation: NativeModuleTypeAnnotation,
-): void {
-  if (typeAnnotation.type === 'ArrayBufferTypeAnnotation') {
-    throw new Error(
-      `Unsupported eventType for ${eventEmitterName}. Found: ${typeAnnotation.type}. ` +
-        'ArrayBuffer is not supported as an EventEmitter payload on any platform. ' +
-        'Pass the ArrayBuffer through a method instead.',
-    );
-  }
-}
-
 module.exports = {
   createAliasResolver,
   getModules,
   isDirectRecursiveMember,
   isArrayRecursiveMember,
-  throwIfUnsupportedEventEmitterPayload,
   throwIfUnsupportedPromiseArrayBuffer,
 };

@@ -11,14 +11,11 @@
 import type {NativeModuleEventEmitterShape} from '../../../CodegenSchema';
 
 const {parseValidUnionType, toPascalCase} = require('../../Utils');
-const {throwIfUnsupportedEventEmitterPayload} = require('../Utils');
 
 function getEventEmitterTypeObjCType(
   eventEmitter: NativeModuleEventEmitterShape,
 ): string {
   const typeAnnotation = eventEmitter.typeAnnotation.typeAnnotation;
-
-  throwIfUnsupportedEventEmitterPayload(eventEmitter.name, typeAnnotation);
 
   switch (typeAnnotation.type) {
     case 'StringTypeAnnotation':
@@ -42,9 +39,6 @@ function getEventEmitterTypeObjCType(
       }
     case 'NumberTypeAnnotation':
     case 'NumberLiteralTypeAnnotation':
-    case 'DoubleTypeAnnotation':
-    case 'FloatTypeAnnotation':
-    case 'Int32TypeAnnotation':
       return 'NSNumber *_Nonnull';
     case 'BooleanTypeAnnotation':
     case 'BooleanLiteralTypeAnnotation':
@@ -55,8 +49,11 @@ function getEventEmitterTypeObjCType(
       return 'NSDictionary *';
     case 'ArrayTypeAnnotation':
       return 'NSArray<id<NSObject>> *';
+    case 'DoubleTypeAnnotation':
+    case 'FloatTypeAnnotation':
+    case 'Int32TypeAnnotation':
     case 'VoidTypeAnnotation':
-      // Void emitters take no argument, so both callers skip this function.
+      // TODO: Add support for these types
       throw new Error(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
       );

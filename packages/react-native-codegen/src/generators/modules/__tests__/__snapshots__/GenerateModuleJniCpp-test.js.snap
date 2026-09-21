@@ -280,9 +280,6 @@ NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboMo
   eventEmitterMap_[\\"onEvent4\\"] = std::make_shared<AsyncEventEmitter<folly::dynamic>>();
   eventEmitterMap_[\\"onEvent5\\"] = std::make_shared<AsyncEventEmitter<folly::dynamic>>();
   eventEmitterMap_[\\"onEvent6\\"] = std::make_shared<AsyncEventEmitter<folly::dynamic>>();
-  eventEmitterMap_[\\"onEvent7\\"] = std::make_shared<AsyncEventEmitter<folly::dynamic>>();
-  eventEmitterMap_[\\"onEvent8\\"] = std::make_shared<AsyncEventEmitter<folly::dynamic>>();
-  eventEmitterMap_[\\"onEvent9\\"] = std::make_shared<AsyncEventEmitter<folly::dynamic>>();
   configureEventEmitterCallback();
 }
 

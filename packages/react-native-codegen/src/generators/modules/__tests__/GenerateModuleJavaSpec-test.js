@@ -64,35 +64,4 @@ describe('GenerateModuleJavaSpec', () => {
       generator.generate('array_buffer_promise_throws', schema),
     ).toThrow(/Promise<ArrayBuffer> is not supported/);
   });
-
-  it('throws for an EventEmitter with an ArrayBuffer payload', () => {
-    const schema: SchemaType = {
-      modules: {
-        NativeSampleTurboModule: {
-          type: 'NativeModule',
-          aliasMap: {},
-          enumMap: {},
-          spec: {
-            eventEmitters: [
-              {
-                name: 'onBuffer',
-                optional: false,
-                typeAnnotation: {
-                  type: 'EventEmitterTypeAnnotation',
-                  typeAnnotation: {
-                    type: 'ArrayBufferTypeAnnotation',
-                  },
-                },
-              },
-            ],
-            methods: [],
-          },
-          moduleName: 'SampleTurboModule',
-        },
-      },
-    };
-    expect(() =>
-      generator.generate('array_buffer_event_emitter_throws', schema),
-    ).toThrow(/ArrayBuffer is not supported as an EventEmitter payload/);
-  });
 });

@@ -366,27 +366,6 @@ Map {
     eventEmitterCallback(\\"onEvent6\\", value);
   }
 }
-- (void)emitOnEvent7:(NSNumber *_Nonnull)value
-{
-  auto eventEmitterCallback = _eventEmitterCallback;
-  if (eventEmitterCallback) {
-    eventEmitterCallback(\\"onEvent7\\", value);
-  }
-}
-- (void)emitOnEvent8:(NSNumber *_Nonnull)value
-{
-  auto eventEmitterCallback = _eventEmitterCallback;
-  if (eventEmitterCallback) {
-    eventEmitterCallback(\\"onEvent8\\", value);
-  }
-}
-- (void)emitOnEvent9:(NSNumber *_Nonnull)value
-{
-  auto eventEmitterCallback = _eventEmitterCallback;
-  if (eventEmitterCallback) {
-    eventEmitterCallback(\\"onEvent9\\", value);
-  }
-}
 
 - (void)setEventEmitterCallback:(EventEmitterCallbackWrapper *)eventEmitterCallbackWrapper
 {
@@ -412,9 +391,6 @@ namespace facebook::react {
         eventEmitterMap_[\\"onEvent4\\"] = std::make_shared<AsyncEventEmitter<id>>();
         eventEmitterMap_[\\"onEvent5\\"] = std::make_shared<AsyncEventEmitter<id>>();
         eventEmitterMap_[\\"onEvent6\\"] = std::make_shared<AsyncEventEmitter<id>>();
-        eventEmitterMap_[\\"onEvent7\\"] = std::make_shared<AsyncEventEmitter<id>>();
-        eventEmitterMap_[\\"onEvent8\\"] = std::make_shared<AsyncEventEmitter<id>>();
-        eventEmitterMap_[\\"onEvent9\\"] = std::make_shared<AsyncEventEmitter<id>>();
         setEventEmitterCallback([eventEmitterMap = eventEmitterMap_](const std::string &name, id value) {
           auto it = eventEmitterMap.find(name);
           if (it != eventEmitterMap.end() && it->second) {

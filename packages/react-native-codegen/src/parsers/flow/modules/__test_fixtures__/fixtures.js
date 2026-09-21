@@ -667,7 +667,7 @@ const NATIVE_MODULE_WITH_EVENT_EMITTERS = `
 'use strict';
 
 import type {TurboModule} from '../RCTExport';
-import type {Double, EventEmitter, Float, Int32} from '../CodegenTypes';
+import type {EventEmitter} from '../CodegenTypes';
 import * as TurboModuleRegistry from '../TurboModuleRegistry';
 
 export type ObjectStruct = {
@@ -686,9 +686,6 @@ export interface Spec extends TurboModule {
   +onEvent5: EventEmitter<ObjectStruct>;
   +onEvent6: EventEmitter<ObjectStruct[]>;
   +onEvent7: EventEmitter<MappedObject>;
-  +onEvent8: EventEmitter<Double>;
-  +onEvent9: EventEmitter<Float>;
-  +onEvent10: EventEmitter<Int32>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
