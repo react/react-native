@@ -13,13 +13,17 @@ permissions:
 
 jobs:
   format:
-    runs-on: macos-15
+    runs-on: macos-26
     if: github.repository == 'react/react-native'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Setup Xcode
+        uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: 26.6.0
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
       - name: Initialize report
