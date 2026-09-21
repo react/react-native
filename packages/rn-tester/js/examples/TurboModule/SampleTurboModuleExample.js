@@ -47,6 +47,8 @@ type Examples =
   | 'getRootTag'
   | 'getSet'
   | 'getString'
+  | 'getStringRoundTrip'
+  | 'getStringControlChars'
   | 'getUnion'
   | 'getUnsafeObject'
   | 'getValue'
@@ -68,6 +70,49 @@ type ErrorExamples =
   | 'getObjectAssert'
   | 'promiseAssert'
   | 'installJSIBindings';
+
+const STRING_ROUND_TRIP_ROUNDS = 200;
+const STRING_ROUND_TRIP_INPUTS = [
+  '',
+  'a',
+  'hello',
+  'h\u00e9llo \u00e7\u00e3\u00f5',
+  '\u65e5\u672c\u8a9e\u30c6\u30ad\u30b9\u30c8',
+  '\u041f\u0440\u0438\u0432\u0435\u0442',
+  '\u0645\u0631\u062d\u0628\u0627',
+  '\ud83d\ude00',
+  '\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66',
+  '\ud83c\uddee\ud83c\uddf3',
+  'e\u0301',
+  'x'.repeat(255),
+  'x'.repeat(256),
+  'x'.repeat(257),
+  '\ud83d\ude00'.repeat(200),
+  'x'.repeat(5000),
+  '\u65e5'.repeat(100000),
+];
+
+// Kept out of the Maestro-driven test: the demo Toast shows the input and
+// uiautomator cannot serialize NUL or lone surrogates.
+const CONTROL_CHAR_INPUTS = ['\ud800', '\udc00x', 'a\u0000b'];
+
+function randomUnicodeString(): string {
+  let out = '';
+  const length = Math.floor(Math.random() * 3000);
+  for (let i = 0; i < length; i++) {
+    const kind = Math.random();
+    const codePoint =
+      kind < 0.4
+        ? 32 + Math.floor(Math.random() * 95)
+        : kind < 0.6
+          ? 0x80 + Math.floor(Math.random() * 0x780)
+          : kind < 0.8
+            ? 0x1000 + Math.floor(Math.random() * 0xc000)
+            : 0x1f300 + Math.floor(Math.random() * 0x300);
+    out += String.fromCodePoint(codePoint);
+  }
+  return out;
+}
 
 class SampleTurboModuleExample extends React.Component<{}, State> {
   static contextType: React.Context<RootTag> = RootTagContext;
@@ -120,6 +165,36 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       NativeSampleTurboModule.getObject({a: 1, b: 'foo', c: null}),
     getRootTag: () => NativeSampleTurboModule.getRootTag(this.context),
     getString: () => NativeSampleTurboModule.getString('Hello'),
+    getStringRoundTrip: () => {
+      const expected =
+        STRING_ROUND_TRIP_ROUNDS * (STRING_ROUND_TRIP_INPUTS.length + 2);
+      let pass = 0;
+      let failure = '';
+      for (let round = 0; round < STRING_ROUND_TRIP_ROUNDS; round++) {
+        const inputs = [
+          ...STRING_ROUND_TRIP_INPUTS,
+          randomUnicodeString(),
+          randomUnicodeString(),
+        ];
+        for (const input of inputs) {
+          const output = NativeSampleTurboModule.getString(input);
+          if (output === input) {
+            pass++;
+          } else if (failure === '') {
+            failure = ` FAIL len ${input.length} -> ${
+              output == null ? 'null' : output.length
+            }`;
+          }
+        }
+      }
+      // $FlowFixMe[incompatible-call] null must round-trip as null
+      const nullOk = NativeSampleTurboModule.getString(null) === null;
+      return `${pass}/${expected} ok${nullOk ? '' : ' null FAIL'}${failure}`;
+    },
+    getStringControlChars: () =>
+      CONTROL_CHAR_INPUTS.map(
+        input => NativeSampleTurboModule.getString(input) === input,
+      ).join(','),
     getUnsafeObject: () =>
       NativeSampleTurboModule.getUnsafeObject({a: 1, b: 'foo', c: null}),
     getValue: () =>
