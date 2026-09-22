@@ -20,7 +20,9 @@ describe('ChildListCollection', function () {
     collection.add('c', 'cell2');
 
     const visited = [];
-    collection.forEach(list => visited.push(list));
+    collection.forEach(list => {
+      visited.push(list);
+    });
     expect(visited.sort()).toEqual(['a', 'b', 'c']);
     expect(collection.size()).toBe(3);
   });
@@ -39,7 +41,9 @@ describe('ChildListCollection', function () {
     collection.remove('a');
 
     const visited = [];
-    collection.forEach(list => visited.push(list));
+    collection.forEach(list => {
+      visited.push(list);
+    });
     expect(visited).toEqual([]);
     expect(collection.size()).toBe(0);
   });
@@ -50,7 +54,9 @@ describe('ChildListCollection', function () {
     collection.add('b', 'cell2');
 
     const visited = [];
-    collection.forEachInCell('cell1', list => visited.push(list));
+    collection.forEachInCell('cell1', list => {
+      visited.push(list);
+    });
     expect(visited).toEqual(['a']);
 
     expect(collection.anyInCell('cell2', list => list === 'b')).toBe(true);

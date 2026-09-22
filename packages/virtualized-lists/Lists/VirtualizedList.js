@@ -1237,7 +1237,6 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _cachedOrientation: ?ListOrientation = null;
-  _cachedOrientationHorizontal: ?boolean = null;
   _cellRefs: {[string]: null | CellRenderer<any>} = {};
   _fillRateHelper: FillRateHelper;
   _listMetrics: ListMetricsAggregator = new ListMetricsAggregator();
@@ -1566,14 +1565,13 @@ class VirtualizedList extends StateSafePureComponent<
     let cachedOrientation = this._cachedOrientation;
     if (
       cachedOrientation == null ||
-      this._cachedOrientationHorizontal !== horizontal
+      cachedOrientation.horizontal !== horizontal
     ) {
       cachedOrientation = {
         horizontal,
         rtl: I18nManager.isRTL,
       };
       this._cachedOrientation = cachedOrientation;
-      this._cachedOrientationHorizontal = horizontal;
     }
     return cachedOrientation;
   }
