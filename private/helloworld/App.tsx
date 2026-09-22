@@ -9,7 +9,6 @@
 
 import * as React from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -17,6 +16,7 @@ import {
   View,
   useColorScheme,
 } from 'react-native';
+import SafeAreaView from 'react-native/src/private/components/safeareaview/SafeAreaView';
 
 function App(): React.ReactNode {
   const isDarkMode = useColorScheme() === 'dark';

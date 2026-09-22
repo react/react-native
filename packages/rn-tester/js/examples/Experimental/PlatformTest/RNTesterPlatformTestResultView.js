@@ -24,7 +24,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Switch,
   Text,
@@ -32,6 +31,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import SafeAreaView from 'react-native/src/private/components/safeareaview/SafeAreaView';
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
