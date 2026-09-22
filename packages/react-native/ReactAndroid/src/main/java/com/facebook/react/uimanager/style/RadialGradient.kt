@@ -128,7 +128,11 @@ internal class RadialGradient(
                         else -> colorStop.getInt("color")
                       }
                   val colorStopPosition =
-                      LengthPercentage.setFromDynamic(colorStop.getDynamic("position"))
+                      if (colorStop.hasKey("position") && !colorStop.isNull("position")) {
+                        LengthPercentage.setFromDynamic(colorStop.getDynamic("position"))
+                      } else {
+                        null
+                      }
                   stops.add(ColorStop(color, colorStopPosition))
                 }
                 stops
