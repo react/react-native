@@ -814,10 +814,7 @@ class VirtualizedList extends StateSafePureComponent<
       const key = VirtualizedList._keyExtractor(item, ii, this.props);
 
       this._indicesToKeys.set(ii, key);
-      if (
-        stickyIndicesFromProps != null &&
-        stickyIndicesFromProps.has(ii + stickyOffset)
-      ) {
+      if (stickyIndicesFromProps?.has(ii + stickyOffset)) {
         stickyHeaderIndices.push(cells.length);
       }
 
