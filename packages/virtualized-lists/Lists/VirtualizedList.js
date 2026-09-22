@@ -1272,7 +1272,7 @@ class VirtualizedList extends StateSafePureComponent<
   _scrollRef: ?React.ElementRef<typeof ScrollView> = null;
   _sentStartForContentLength = 0;
   _sentEndForContentLength = 0;
-  _updateCellsToRenderTimeoutID: ?TimeoutID = null;
+  _updateCellsToRenderTimeoutID: ?ReturnType<typeof setTimeout> = null;
   _viewabilityTuples: Array<ViewabilityHelperCallbackTuple> = [];
 
   _captureScrollRef = (ref: ?React.ElementRef<typeof ScrollView>) => {

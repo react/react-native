@@ -69,7 +69,7 @@ export default class TimingAnimation extends Animation {
   _easing: (value: number) => number;
   _onUpdate: (value: number) => void;
   _animationFrame: ?number;
-  _timeout: ?TimeoutID;
+  _timeout: ?ReturnType<typeof setTimeout>;
   _platformConfig: ?PlatformConfig;
   _deferredStart: boolean;
 

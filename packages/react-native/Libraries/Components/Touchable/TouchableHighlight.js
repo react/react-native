@@ -93,7 +93,7 @@ class TouchableHighlightImpl extends React.Component<
   TouchableHighlightProps,
   TouchableHighlightState,
 > {
-  _hideTimeout: ?TimeoutID;
+  _hideTimeout: ?ReturnType<typeof setTimeout>;
   _isMounted: boolean = false;
 
   state: TouchableHighlightState = {

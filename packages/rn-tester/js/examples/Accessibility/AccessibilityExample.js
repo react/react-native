@@ -1251,13 +1251,13 @@ class FakeSliderExampleForAccessibilityValue extends React.Component<
 }
 
 class AnnounceForAccessibility extends React.Component<{}> {
-  _handleOnPress = (): TimeoutID =>
+  _handleOnPress = (): ReturnType<typeof setTimeout> =>
     setTimeout(
       () => AccessibilityInfo.announceForAccessibility('Announcement Test'),
       1000,
     );
 
-  _handleOnPressQueued = (): TimeoutID =>
+  _handleOnPressQueued = (): ReturnType<typeof setTimeout> =>
     setTimeout(
       () =>
         AccessibilityInfo.announceForAccessibilityWithOptions(

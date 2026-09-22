@@ -99,7 +99,7 @@ export default class SpringAnimation extends Animation {
   _mass: number;
   _initialVelocity: number;
   _delay: number;
-  _timeout: ?TimeoutID;
+  _timeout: ?ReturnType<typeof setTimeout>;
   _startTime: number;
   _lastTime: number;
   _frameTime: number;
