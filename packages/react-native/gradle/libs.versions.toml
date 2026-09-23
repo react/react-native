@@ -4,7 +4,7 @@ minSdk = "24"
 targetSdk = "36"
 compileSdk = "37"
 buildTools = "37.0.0"
-ndkVersion = "27.1.12297006"
+ndkVersion = "28.2.13676358"
 # Dependencies versions
 agp = "9.2.1"
 androidx-annotation = "1.6.0"

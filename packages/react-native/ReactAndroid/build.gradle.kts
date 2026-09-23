@@ -615,7 +615,6 @@ android {
             "-DREACT_BUILD_DIR=$buildDir",
             "-DANDROID_STL=c++_shared",
             "-DANDROID_TOOLCHAIN=clang",
-            "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
             "-DCMAKE_POLICY_DEFAULT_CMP0069=NEW",
         )
 
