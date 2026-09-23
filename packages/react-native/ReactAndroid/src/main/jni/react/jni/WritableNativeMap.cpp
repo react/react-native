@@ -55,7 +55,7 @@ void WritableNativeMap::putString(std::string key, alias_ref<jstring> val) {
     return;
   }
   throwIfConsumed();
-  map_.insert(std::move(key), val->toString());
+  map_.insert(std::move(key), val->toStdString());
 }
 
 void WritableNativeMap::putNativeArray(
