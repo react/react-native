@@ -53,11 +53,10 @@ class ParagraphEventEmitterTest : public ::testing::Test {
         [](const StateUpdate&) {},
         std::weak_ptr<EventLogger>{});
 
-    listener_ = std::make_shared<EventListener>(
-        [this](const RawEvent& event) {
-          events_.push_back({event.type, event.eventPayload});
-          return true;
-        });
+    listener_ = std::make_shared<EventListener>([this](const RawEvent& event) {
+      events_.push_back({event.type, event.eventPayload});
+      return true;
+    });
     eventDispatcher_->addListener(listener_);
   }
 
@@ -67,9 +66,7 @@ class ParagraphEventEmitterTest : public ::testing::Test {
       const LineMeasurement& expected) {
     auto line = lines.getValueAtIndex(*runtime_, index).asObject(*runtime_);
     EXPECT_EQ(
-        line.getProperty(*runtime_, "text")
-            .asString(*runtime_)
-            .utf8(*runtime_),
+        line.getProperty(*runtime_, "text").asString(*runtime_).utf8(*runtime_),
         expected.text);
     EXPECT_EQ(
         line.getProperty(*runtime_, "x").asNumber(), expected.frame.origin.x);
@@ -88,8 +85,7 @@ class ParagraphEventEmitterTest : public ::testing::Test {
         line.getProperty(*runtime_, "capHeight").asNumber(),
         expected.capHeight);
     EXPECT_EQ(
-        line.getProperty(*runtime_, "ascender").asNumber(),
-        expected.ascender);
+        line.getProperty(*runtime_, "ascender").asNumber(), expected.ascender);
     EXPECT_EQ(
         line.getProperty(*runtime_, "xHeight").asNumber(), expected.xHeight);
   }
