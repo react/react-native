@@ -18,14 +18,14 @@ declare export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
   readonly length: number;
   item(index: number): T | null;
   // $FlowFixMe[incompatible-variance]
-  entries(): Iterator<[number, T]>;
+  entries(): IteratorObject<[number, T]>;
   forEach<ThisType>(
     callbackFn: (value: T, index: number, array: NodeList<T>) => unknown,
     thisArg?: ThisType,
   ): void;
-  keys(): Iterator<number>;
-  values(): Iterator<T>;
-  @@iterator(): Iterator<T>;
+  keys(): IteratorObject<number>;
+  values(): IteratorObject<T>;
+  @@iterator(): IteratorObject<T>;
 }
 
 declare export function createNodeList<T>(
