@@ -65,6 +65,21 @@ class OpenSettingsExample extends React.Component<Readonly<{}>> {
   }
 }
 
+class OpenNotificationSettingsExample extends React.Component<Readonly<{}>> {
+  openNotificationSettings = () => {
+    void Linking.openNotificationSettings();
+  };
+
+  render(): React.Node {
+    return (
+      <Button
+        onPress={this.openNotificationSettings}
+        title={'Open Notification Settings'}
+      />
+    );
+  }
+}
+
 const SendIntentButton = ({
   action,
   extras,
@@ -168,6 +183,14 @@ exports.examples = [
     title: 'Open settings app',
     render(): React.MixedElement {
       return <OpenSettingsExample />;
+    },
+  },
+  {
+    title: 'Open notification settings',
+    description:
+      'Opens the app’s notification settings. Falls back to the app settings page on iOS < 15.4 and Android < 8.0.',
+    render(): React.MixedElement {
+      return <OpenNotificationSettingsExample />;
     },
   },
 ] as Array<RNTesterModuleExample>;

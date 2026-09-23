@@ -11,6 +11,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.nfc.NfcAdapter
+import android.os.Build
 import android.provider.Settings
 import com.facebook.fbreact.specs.NativeIntentAndroidSpec
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException
@@ -168,24 +169,52 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
    */
   override fun openSettings(promise: Promise) {
     try {
-      val intent = Intent()
-      val currentActivity: Activity = checkNotNull(reactApplicationContext.getCurrentActivity())
-      val selfPackageName = reactApplicationContext.packageName
-
-      intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-      intent.addCategory(Intent.CATEGORY_DEFAULT)
-      intent.setData(Uri.parse("package:$selfPackageName"))
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-      intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-      currentActivity.startActivity(intent)
-
+      startSettingsActivity(appDetailsSettingsIntent())
       promise.resolve(true)
     } catch (e: Exception) {
       promise.reject(
           JSApplicationIllegalArgumentException("Could not open the Settings: ${e.message}"),
       )
     }
+  }
+
+  /**
+   * Starts an external activity to open the app's notification settings into Android Settings.
+   * On Android versions before 8.0 (API 26) this falls back to the app's details settings screen.
+   *
+   * @param promise a promise which is resolved when the Settings is opened
+   */
+  override fun openNotificationSettings(promise: Promise) {
+    try {
+      val intent =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, reactApplicationContext.packageName)
+          } else {
+            appDetailsSettingsIntent()
+          }
+      startSettingsActivity(intent)
+      promise.resolve(null)
+    } catch (e: Exception) {
+      promise.reject(
+          JSApplicationIllegalArgumentException(
+              "Could not open the notification Settings: ${e.message}",
+          ),
+      )
+    }
+  }
+
+  private fun appDetailsSettingsIntent(): Intent =
+      Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+          .addCategory(Intent.CATEGORY_DEFAULT)
+          .setData(Uri.parse("package:${reactApplicationContext.packageName}"))
+
+  private fun startSettingsActivity(intent: Intent) {
+    val currentActivity: Activity = checkNotNull(reactApplicationContext.getCurrentActivity())
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+    currentActivity.startActivity(intent)
   }
 
   /**
