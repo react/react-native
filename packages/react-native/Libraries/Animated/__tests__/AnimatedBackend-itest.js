@@ -77,6 +77,72 @@ test('animate marginLeft layout prop', () => {
   );
 });
 
+// A layout animation on one view must not push the other views of the
+// surface through a shadow tree commit: their non-layout props keep taking
+// the direct path to the mounted views.
+test('non-layout props stay on the direct path while another view animates layout', () => {
+  const movingRef = createRef<HostInstance>();
+
+  let _translateX;
+  let _translateXAnimation;
+  let _siblingHeight;
+  let _siblingHeightAnimation;
+
+  function MyApp() {
+    const translateX = useAnimatedValue(0);
+    const siblingHeight = useAnimatedValue(10);
+    _translateX = translateX;
+    _siblingHeight = siblingHeight;
+    return (
+      <View collapsable={false}>
+        <Animated.View
+          ref={movingRef}
+          style={{width: 100, height: 100, transform: [{translateX}]}}
+        />
+        <Animated.View style={{width: 100, height: siblingHeight}} />
+      </View>
+    );
+  }
+
+  const root = Fantom.createRoot();
+
+  Fantom.runTask(() => {
+    root.render(<MyApp />);
+  });
+
+  Fantom.runTask(() => {
+    _translateXAnimation = Animated.timing(_translateX, {
+      toValue: 100,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+    _siblingHeightAnimation = Animated.timing(_siblingHeight, {
+      toValue: 110,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  Fantom.unstable_produceFramesForDuration(100);
+
+  // The sibling's height went through a commit; the transform did not.
+  expect(root.getRenderedOutput({props: ['height']}).toJSX()).toEqual(
+    <rn-view>
+      <rn-view key={0} height="100" />
+      <rn-view key={1} height="60" />
+    </rn-view>,
+  );
+  expect(
+    Fantom.unstable_getDirectManipulationProps(nullthrows(movingRef.current))
+      .transform,
+  ).toEqual([{translateX: 50}]);
+
+  Fantom.runTask(() => {
+    _translateXAnimation?.stop();
+    _siblingHeightAnimation?.stop();
+  });
+});
+
 test('animated opacity', () => {
   let _opacity;
   let _opacityAnimation;

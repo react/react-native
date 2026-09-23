@@ -710,6 +710,7 @@ using facebook::react::SizeAsTuple = std::tuple<facebook::react::Float, facebook
 using facebook::react::SnapshotMap = std::unordered_map<facebook::react::Tag, std::unique_ptr<facebook::react::PropsSnapshot>>;
 using facebook::react::StatePipe = std::function<void(const facebook::react::StateUpdate& stateUpdate)>;
 using facebook::react::SurfaceId = int32_t;
+using facebook::react::SurfaceUpdates = std::unordered_map<facebook::react::Tag, facebook::react::AnimationMutation>;
 using facebook::react::Tag = int32_t;
 using facebook::react::TelemetryClock = std::chrono::steady_clock;
 using facebook::react::TelemetryDuration = std::chrono::nanoseconds;
@@ -1579,7 +1580,7 @@ class facebook::react::AnimatedPropsRegistry {
   public void clear(facebook::react::SurfaceId surfaceId);
   public void clearOnSurfaceStop(facebook::react::SurfaceId surfaceId);
   public void initializeSurface(facebook::react::SurfaceId surfaceId);
-  public void update(const std::unordered_map<facebook::react::SurfaceId, facebook::react::SurfaceUpdates>& surfaceUpdates);
+  public void update(const std::vector<facebook::react::AnimationMutations>& batches);
 }
 
 class facebook::react::AnimationBackend : public facebook::react::UIManagerAnimationBackend {
@@ -8101,12 +8102,6 @@ struct facebook::react::SurfaceContext {
   public std::unordered_map<facebook::react::Tag, std::unique_ptr<facebook::react::PropsSnapshot>> pendingMap;
   public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> families;
   public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> pendingFamilies;
-}
-
-struct facebook::react::SurfaceUpdates {
-  public bool hasLayoutUpdates;
-  public std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps> propsMap;
-  public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> families;
 }
 
 struct facebook::react::SystraceSection : public facebook::react::DummyTraceSection {
