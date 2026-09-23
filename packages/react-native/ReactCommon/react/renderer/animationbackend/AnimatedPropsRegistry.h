@@ -15,6 +15,7 @@
 #include <react/renderer/uimanager/UIManager.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
 #include "AnimatedProps.h"
+#include "AnimationMutation.h"
 
 namespace facebook::react {
 
@@ -29,17 +30,11 @@ struct SurfaceContext {
   std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> pendingFamilies, families;
 };
 
-struct SurfaceUpdates {
-  std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> families;
-  std::unordered_map<Tag, AnimatedProps> propsMap;
-  bool hasLayoutUpdates{false};
-};
-
 using SnapshotMap = std::unordered_map<Tag, std::unique_ptr<PropsSnapshot>>;
 
 class AnimatedPropsRegistry {
  public:
-  void update(const std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates);
+  void update(const std::vector<AnimationMutations> &batches);
   void initializeSurface(SurfaceId surfaceId);
   void clear(SurfaceId surfaceId);
   void clearOnSurfaceStop(SurfaceId surfaceId);

@@ -21,22 +21,16 @@
 #include "AnimatedPropsRegistry.h"
 #include "AnimationBackendCommitHook.h"
 #include "AnimationChoreographer.h"
+#include "AnimationMutation.h"
 
 namespace facebook::react {
 
 class AnimationBackend;
 
-struct AnimationMutation {
-  Tag tag;
-  std::shared_ptr<const ShadowNodeFamily> family;
-  AnimatedProps props;
-  bool hasLayoutUpdates{false};
-};
-
-struct AnimationMutations {
-  std::vector<AnimationMutation> batch;
-  std::set<SurfaceId> asyncFlushSurfaces;
-};
+// A frame's mutations on one surface, by view. Views with layout updates go
+// through a shadow tree commit, the rest is applied directly to the mounted
+// views.
+using SurfaceUpdates = std::unordered_map<Tag, AnimationMutation>;
 
 using Callback = std::function<AnimationMutations(AnimationTimestamp)>;
 
@@ -74,7 +68,7 @@ class AnimationBackend : public UIManagerAnimationBackend {
   void applySurfaceUpdates(
       std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
       const std::set<SurfaceId> &asyncFlushSurfaces);
-  void applyMutations(AnimationMutations mutations);
+  void applyMutations(std::vector<AnimationMutations> batches);
   std::vector<CallbackWithId> callbacks;
   std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry_;
   std::shared_ptr<AnimationChoreographer> animationChoreographer_;

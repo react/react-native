@@ -12,25 +12,20 @@
 namespace facebook::react {
 
 void AnimatedPropsRegistry::update(
-    const std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates) {
+    const std::vector<AnimationMutations>& batches) {
   auto lock = std::lock_guard(mutex_);
-  for (const auto& [surfaceId, updates] : surfaceUpdates) {
-    auto contextIt = surfaceContexts_.find(surfaceId);
-    if (contextIt == surfaceContexts_.end()) {
-      continue;
-    }
-    auto& surfaceContext = contextIt->second;
-    auto& pendingMap = surfaceContext.pendingMap;
-    auto& pendingFamilies = surfaceContext.pendingFamilies;
-
-    auto& updatesMap = updates.propsMap;
-    auto& updatesFamilies = updates.families;
-
-    for (auto& family : updatesFamilies) {
-      pendingFamilies.insert(family);
-    }
-
-    for (auto& [tag, animatedProps] : updatesMap) {
+  for (const auto& mutations : batches) {
+    for (const auto& mutation : mutations.batch) {
+      const auto& family = mutation.family;
+      auto contextIt = surfaceContexts_.find(family->getSurfaceId());
+      if (contextIt == surfaceContexts_.end()) {
+        continue;
+      }
+      auto& surfaceContext = contextIt->second;
+      auto& pendingMap = surfaceContext.pendingMap;
+      surfaceContext.pendingFamilies.insert(family);
+      const auto tag = mutation.tag;
+      const auto& animatedProps = mutation.props;
       auto it = pendingMap.find(tag);
       if (it == pendingMap.end()) {
         it = pendingMap.insert_or_assign(tag, std::make_unique<PropsSnapshot>())

@@ -80,14 +80,10 @@ void AnimationBackend::unpackMutations(
     std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates,
     std::set<SurfaceId>& asyncFlushSurfaces) {
   for (auto& mutation : mutations.batch) {
-    const auto family = mutation.family;
-    react_native_assert(family != nullptr);
-
-    auto& [families, updates, hasLayoutUpdates] =
-        surfaceUpdates[family->getSurfaceId()];
-    hasLayoutUpdates |= mutation.hasLayoutUpdates;
-    families.insert(family);
-    updates[mutation.tag] = std::move(mutation.props);
+    react_native_assert(mutation.family != nullptr);
+    auto& updates = surfaceUpdates[mutation.family->getSurfaceId()];
+    const auto tag = mutation.tag;
+    updates.insert_or_assign(tag, std::move(mutation));
   }
 
   asyncFlushSurfaces.merge(mutations.asyncFlushSurfaces);
@@ -96,23 +92,34 @@ void AnimationBackend::unpackMutations(
 void AnimationBackend::applySurfaceUpdates(
     std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates,
     const std::set<SurfaceId>& asyncFlushSurfaces) {
-  animatedPropsRegistry_->update(surfaceUpdates);
-
   for (auto& [surfaceId, updates] : surfaceUpdates) {
-    if (updates.hasLayoutUpdates) {
-      commitUpdates(surfaceId, updates);
-    } else {
-      synchronouslyUpdateProps(updates.propsMap);
+    SurfaceUpdates layoutUpdates;
+    std::unordered_map<Tag, AnimatedProps> directProps;
+    for (auto& [tag, mutation] : updates) {
+      if (mutation.hasLayoutUpdates) {
+        layoutUpdates.emplace(tag, std::move(mutation));
+      } else {
+        directProps.emplace(tag, std::move(mutation.props));
+      }
+    }
+    if (!layoutUpdates.empty()) {
+      commitUpdates(surfaceId, layoutUpdates);
+    }
+    if (!directProps.empty()) {
+      synchronouslyUpdateProps(directProps);
     }
   }
 
   requestAsyncFlushForSurfaces(asyncFlushSurfaces);
 }
 
-void AnimationBackend::applyMutations(AnimationMutations mutations) {
+void AnimationBackend::applyMutations(std::vector<AnimationMutations> batches) {
+  animatedPropsRegistry_->update(batches);
   std::unordered_map<SurfaceId, SurfaceUpdates> surfaceUpdates;
   std::set<SurfaceId> asyncFlushSurfaces;
-  unpackMutations(mutations, surfaceUpdates, asyncFlushSurfaces);
+  for (auto& mutations : batches) {
+    unpackMutations(mutations, surfaceUpdates, asyncFlushSurfaces);
+  }
   applySurfaceUpdates(surfaceUpdates, asyncFlushSurfaces);
 }
 
@@ -124,13 +131,11 @@ void AnimationBackend::onAnimationFrame(AnimationTimestamp timestamp) {
     callbacksCopy = callbacks;
   }
 
-  std::unordered_map<SurfaceId, SurfaceUpdates> surfaceUpdates;
-  std::set<SurfaceId> asyncFlushSurfaces;
+  std::vector<AnimationMutations> batches;
   for (auto& callbackWithId : callbacksCopy) {
-    auto mutations = callbackWithId.callback(timestamp);
-    unpackMutations(mutations, surfaceUpdates, asyncFlushSurfaces);
+    batches.push_back(callbackWithId.callback(timestamp));
   }
-  applySurfaceUpdates(surfaceUpdates, asyncFlushSurfaces);
+  applyMutations(std::move(batches));
 }
 
 CallbackId AnimationBackend::start(const Callback& callback) {
@@ -169,20 +174,23 @@ void AnimationBackend::trigger() {
 
 void AnimationBackend::pushAnimationMutations(const Callback& callback) {
   auto timestamp = animationChoreographer_->now();
-  auto mutations = callback(timestamp);
-  applyMutations(std::move(mutations));
+  std::vector<AnimationMutations> batches;
+  batches.push_back(callback(timestamp));
+  applyMutations(std::move(batches));
 }
 
 void AnimationBackend::commitUpdates(
     SurfaceId surfaceId,
-    SurfaceUpdates& surfaceUpdates) {
+    SurfaceUpdates& updates) {
   auto uiManager = uiManager_.lock();
   if (!uiManager) {
     return;
   }
 
-  auto& surfaceFamilies = surfaceUpdates.families;
-  auto& updates = surfaceUpdates.propsMap;
+  std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> surfaceFamilies;
+  for (const auto& [tag, mutation] : updates) {
+    surfaceFamilies.insert(mutation.family);
+  }
 
   uiManager->getShadowTreeRegistry().visit(
       surfaceId, [&surfaceFamilies, &updates](const ShadowTree& shadowTree) {
@@ -198,7 +206,8 @@ void AnimationBackend::commitUpdates(
                         auto newProps = ShadowNodeFragment::propsPlaceholder();
                         if (surfaceFamilies.contains(
                                 shadowNode.getFamilyShared())) {
-                          auto& animatedProps = updates.at(shadowNode.getTag());
+                          auto& animatedProps =
+                              updates.at(shadowNode.getTag()).props;
                           newProps = cloneProps(animatedProps, shadowNode);
                         }
                         return shadowNode.clone(
