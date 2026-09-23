@@ -708,9 +708,9 @@ static void calculateShadowViewMutationsFlattener(
             auto unvisitedOtherNodesIt =
                 unvisitedOtherNodes.find(newChild.shadowView.tag);
             if (unvisitedOtherNodesIt != unvisitedOtherNodes.end()) {
-              auto unvisitedItPair = *unvisitedOtherNodesIt->second;
+              auto* unvisitedItPair = unvisitedOtherNodesIt->second;
               unvisitedRecursiveChildPairs.insert(
-                  {unvisitedItPair.shadowView.tag, &unvisitedItPair});
+                  {unvisitedItPair->shadowView.tag, unvisitedItPair});
             } else {
               unvisitedRecursiveChildPairs.insert(
                   {newChild.shadowView.tag, &newChild});
@@ -820,6 +820,9 @@ static void calculateShadowViewMutationsFlattener(
   // Final step: go through creation/deletion candidates and delete/create
   // subtrees if they were never visited during the execution of the above
   // loop and recursions.
+  const auto& subVisitedMap = reparentMode == ReparentMode::Flatten
+      ? *subVisitedOldMap
+      : *subVisitedNewMap;
   for (auto& deletionCreationCandidatePair : deletionCreationCandidatePairs) {
     auto& treeChildPair = *deletionCreationCandidatePair.second;
 
@@ -828,7 +831,10 @@ static void calculateShadowViewMutationsFlattener(
     // already created/deleted and we don't need to do that here.
     // It is always the responsibility of the matcher to update subtrees when
     // nodes are matched.
-    if (treeChildPair.inOtherTree()) {
+    // The recursion can match the node through a different pair instance
+    // (e.g. when zIndex orders it before its parent), so check its tag too.
+    if (treeChildPair.inOtherTree() ||
+        subVisitedMap.contains(treeChildPair.shadowView.tag)) {
       continue;
     }
 
