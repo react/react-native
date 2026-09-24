@@ -1,7 +1,7 @@
 [versions]
 # Android versions
 minSdk = "24"
-targetSdk = "36"
+targetSdk = "37"
 compileSdk = "37"
 buildTools = "37.0.0"
 ndkVersion = "27.1.12297006"
