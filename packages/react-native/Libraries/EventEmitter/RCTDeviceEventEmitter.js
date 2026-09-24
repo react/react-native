@@ -39,9 +39,9 @@ class RCTDeviceEventEmitterImpl extends EventEmitter<RCTDeviceEventDefinitions> 
       } finally {
         endEvent();
       }
-      return;
+    } else {
+      super.emit(eventType, ...args);
     }
-    super.emit(eventType, ...args);
   }
 }
 const RCTDeviceEventEmitter: IEventEmitter<RCTDeviceEventDefinitions> =
