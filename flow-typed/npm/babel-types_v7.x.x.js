@@ -434,11 +434,10 @@ declare module "@babel/types" {
     end: ?number;
     loc: ?BabelNodeSourceLocation,
     type: "NewExpression";
-    callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier;
+    callee: BabelNodeExpression;
     arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
-    optional?: boolean;
-    typeArguments?: BabelNodeTypeParameterInstantiation;
-    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+    typeArguments?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
+    typeParameters: any;
   };
 
   declare type BabelNodeProgram = {
@@ -3284,7 +3283,7 @@ declare module "@babel/types" {
   declare export function regExpLiteral(pattern: string, flags?: string): BabelNodeRegExpLiteral;
   declare export function logicalExpression(operator: "||" | "&&" | "??", left: BabelNodeExpression, right: BabelNodeExpression): BabelNodeLogicalExpression;
   declare export function memberExpression(object: BabelNodeExpression | BabelNodeSuper, property: BabelNodeExpression | BabelNodeIdentifier | BabelNodePrivateName, computed?: boolean, optional?: boolean): BabelNodeMemberExpression;
-  declare export function newExpression(callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier, _arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>): BabelNodeNewExpression;
+  declare export function newExpression(callee: BabelNodeExpression, _arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>): BabelNodeNewExpression;
   declare export function program(body: Array<BabelNodeStatement>, directives?: Array<BabelNodeDirective>, sourceType?: "script" | "module", interpreter?: BabelNodeInterpreterDirective): BabelNodeProgram;
   declare export function objectExpression(properties: Array<BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeSpreadElement>): BabelNodeObjectExpression;
   declare export function objectMethod(kind?: "method" | "get" | "set", key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral, params: Array<BabelNodeFunctionParameter>, body: BabelNodeBlockStatement, computed?: boolean, generator?: boolean, async?: boolean): BabelNodeObjectMethod;

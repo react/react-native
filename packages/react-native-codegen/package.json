@@ -30,7 +30,7 @@
   ],
   "dependencies": {
     "@babel/core": "^7.25.2",
-    "@babel/parser": "^7.29.0",
+    "@babel/parser": "^7.29.9",
     "flow-parser": "0.331.0",
     "invariant": "^2.2.4",
     "nullthrows": "^1.1.1",
