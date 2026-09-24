@@ -2503,7 +2503,7 @@ protocol NativeSampleTurboModuleSpec : public NSObjectRCTBridgeModule, public RC
   public virtual NSDictionary* getUnsafeObject:(NSDictionary* arg);
   public virtual NSDictionary* getValue:y:z:(double x, NSString* y, NSDictionary* z);
   public virtual NSMutableData* createNativeBuffer:(double size);
-  public virtual NSMutableData* getArrayBuffer:(NSData* buffer);
+  public virtual NSMutableData* getArrayBuffer:(NSMutableData* buffer);
   public virtual NSNumber* getBool:(BOOL arg);
   public virtual NSNumber* getEnum:(double arg);
   public virtual NSNumber* getNumber:(double arg);
@@ -2514,7 +2514,7 @@ protocol NativeSampleTurboModuleSpec : public NSObjectRCTBridgeModule, public RC
   public virtual void getImageUrl:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void getValueWithCallback:(RCTResponseSenderBlock callback);
   public virtual void getValueWithPromise:resolve:reject:(BOOL error, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
-  public virtual void processAsyncBuffer:resolve:reject:(NSData* payload, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
+  public virtual void processAsyncBuffer:resolve:reject:(NSMutableData* payload, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void promiseAssert:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void promiseThrows:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void voidFunc();
