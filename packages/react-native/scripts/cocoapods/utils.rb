@@ -451,11 +451,14 @@ class ReactNativePodsUtils
     def self.updateOSDeploymentTarget(installer)
         installer.target_installation_results.pod_target_installation_results
             .each do |pod_name, target_installation_result|
-                target_installation_result.native_target.build_configurations.each do |config|
-                    old_iphone_deploy_target = config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] ?
-                        config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] :
-                        Helpers::Constants.min_ios_version_supported
-                    config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = [Helpers::Constants.min_ios_version_supported.to_f, old_iphone_deploy_target.to_f].max.to_s
+                targets = [target_installation_result.native_target] + target_installation_result.resource_bundle_targets
+                targets.each do |target|
+                    target.build_configurations.each do |config|
+                        old_iphone_deploy_target = config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] ?
+                            config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] :
+                            Helpers::Constants.min_ios_version_supported
+                        config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = [Helpers::Constants.min_ios_version_supported.to_f, old_iphone_deploy_target.to_f].max.to_s
+                    end
                 end
             end
     end
