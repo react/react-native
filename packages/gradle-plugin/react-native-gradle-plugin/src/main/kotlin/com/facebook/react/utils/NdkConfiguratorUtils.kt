@@ -51,9 +51,6 @@ internal object NdkConfiguratorUtils {
         if (cmakeArgs.none { it.startsWith("-DANDROID_STL") }) {
           cmakeArgs.add("-DANDROID_STL=c++_shared")
         }
-        if (cmakeArgs.none { it.startsWith("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES") }) {
-          cmakeArgs.add("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
-        }
 
         val architectures = project.getReactNativeArchitectures()
         // abiFilters are split ABI are not compatible each other, so we set the abiFilters
