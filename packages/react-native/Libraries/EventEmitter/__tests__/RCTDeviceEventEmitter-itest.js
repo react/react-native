@@ -8,7 +8,9 @@
  * @format
  */
 
-import RCTDeviceEventEmitter from '../RCTDeviceEventEmitter';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
+
+import {DeviceEventEmitter} from 'react-native';
 
 const TRACE_TAG_REACT = 1 << 13; // eslint-disable-line no-bitwise
 
@@ -25,17 +27,17 @@ function disableTracing() {
   delete global.__RCTProfileIsProfiling;
 }
 
-describe('RCTDeviceEventEmitter', () => {
+describe('DeviceEventEmitter', () => {
   afterEach(() => {
-    RCTDeviceEventEmitter.removeAllListeners();
+    DeviceEventEmitter.removeAllListeners();
     disableTracing();
   });
 
   it('forwards events and arguments to listeners', () => {
     const listener = jest.fn();
-    RCTDeviceEventEmitter.addListener('event', listener);
+    DeviceEventEmitter.addListener('event', listener);
 
-    RCTDeviceEventEmitter.emit('event', 'one', 2);
+    DeviceEventEmitter.emit('event', 'one', 2);
 
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveBeenCalledWith('one', 2);
@@ -43,9 +45,9 @@ describe('RCTDeviceEventEmitter', () => {
 
   it('does not call trace sections when tracing is disabled', () => {
     const listener = jest.fn();
-    RCTDeviceEventEmitter.addListener('event', listener);
+    DeviceEventEmitter.addListener('event', listener);
 
-    RCTDeviceEventEmitter.emit('event');
+    DeviceEventEmitter.emit('event');
 
     expect(listener).toHaveBeenCalledTimes(1);
     expect(global.nativeTraceBeginSection).toBeUndefined();
@@ -54,9 +56,9 @@ describe('RCTDeviceEventEmitter', () => {
   it('wraps emit in a trace section when tracing is enabled', () => {
     enableTracing();
     const listener = jest.fn();
-    RCTDeviceEventEmitter.addListener('event', listener);
+    DeviceEventEmitter.addListener('event', listener);
 
-    RCTDeviceEventEmitter.emit('event');
+    DeviceEventEmitter.emit('event');
 
     expect(global.nativeTraceBeginSection).toHaveBeenCalledTimes(1);
     expect(global.nativeTraceBeginSection).toHaveBeenCalledWith(
@@ -74,11 +76,11 @@ describe('RCTDeviceEventEmitter', () => {
 
   it('ends the trace section even when a listener throws', () => {
     enableTracing();
-    RCTDeviceEventEmitter.addListener('event', () => {
+    DeviceEventEmitter.addListener('event', () => {
       throw new Error('boom');
     });
 
-    expect(() => RCTDeviceEventEmitter.emit('event')).toThrow('boom');
+    expect(() => DeviceEventEmitter.emit('event')).toThrow('boom');
 
     expect(global.nativeTraceBeginSection).toHaveBeenCalledTimes(1);
     expect(global.nativeTraceEndSection).toHaveBeenCalledTimes(1);
@@ -89,7 +91,7 @@ describe('RCTDeviceEventEmitter', () => {
     global.nativeTraceBeginSection = jest.fn();
     global.nativeTraceEndSection = jest.fn();
 
-    RCTDeviceEventEmitter.emit('event');
+    DeviceEventEmitter.emit('event');
 
     expect(global.nativeTraceBeginSection).toHaveBeenCalledTimes(1);
     expect(global.nativeTraceEndSection).toHaveBeenCalledTimes(1);
