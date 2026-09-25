@@ -115,6 +115,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
+  // Fabric children in mounting order. UIKit may insert additional subviews for hover effects.
   NSMutableArray<UIView *> *_reactSubviews;
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   UIView *_containerView;
@@ -230,18 +231,21 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
       @(index),
       @([childComponentView.superview tag]));
 
-  if (_removeClippedSubviews) {
-    [_reactSubviews insertObject:childComponentView atIndex:index];
-  } else {
-    [self.currentContainerView insertSubview:childComponentView atIndex:index];
+  [_reactSubviews insertObject:childComponentView atIndex:index];
+  if (!_removeClippedSubviews) {
+    // A Fabric index is not necessarily a UIKit subview index. Position new children
+    // relative to the preceding Fabric child to preserve their mounting order.
+    if (index == 0) {
+      [self.currentContainerView insertSubview:childComponentView atIndex:0];
+    } else {
+      [self.currentContainerView insertSubview:childComponentView aboveSubview:_reactSubviews[index - 1]];
+    }
   }
 }
 
 - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
 {
-  if (_removeClippedSubviews) {
-    [_reactSubviews removeObjectAtIndex:index];
-  } else {
+  if (!_removeClippedSubviews) {
     RCTAssert(
         childComponentView.superview != nil,
         @"Attempt to unmount a view which is not mounted. (parent: %@, child: %@, index: %@)",
@@ -255,44 +259,32 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         childComponentView,
         @(index),
         @([childComponentView.superview tag]));
-#ifndef NS_BLOCK_ASSERTIONS
-    NSArray<UIView *> *containerSubviews = self.currentContainerView.subviews;
-    BOOL isIndexInBounds = index >= 0 && (NSUInteger)index < containerSubviews.count;
-    RCTAssert(
-        isIndexInBounds && [containerSubviews objectAtIndex:index] == childComponentView,
-        @"Attempt to unmount a view which has a different index. (parent: %@, child: %@, index: %@, actual index: %@, tag at index: %@)",
-        self,
-        childComponentView,
-        @(index),
-        @([containerSubviews indexOfObject:childComponentView]),
-        isIndexInBounds ? @([[containerSubviews objectAtIndex:index] tag]) : @"out of bounds");
-#endif
   }
+#ifndef NS_BLOCK_ASSERTIONS
+  BOOL isIndexInBounds = index >= 0 && (NSUInteger)index < _reactSubviews.count;
+  RCTAssert(
+      isIndexInBounds && [_reactSubviews objectAtIndex:index] == childComponentView,
+      @"Attempt to unmount a view which has a different index. (parent: %@, child: %@, index: %@, actual index: %@, tag at index: %@)",
+      self,
+      childComponentView,
+      @(index),
+      @([_reactSubviews indexOfObject:childComponentView]),
+      isIndexInBounds ? @([[_reactSubviews objectAtIndex:index] tag]) : @"out of bounds");
+#endif
 
+  [_reactSubviews removeObjectAtIndex:index];
   [childComponentView removeFromSuperview];
 }
 
 - (void)_updateRemoveClippedSubviewsState
 {
-  if (_removeClippedSubviews) {
-    // Toggled ON: populate _reactSubviews from the current view hierarchy.
-    // Actual clipping will happen on the next scroll event.
-    RCTAssert(
-        _reactSubviews.count == 0,
-        @"_reactSubviews should be empty when toggling removeClippedSubviews on. (view: %@, count: %@)",
-        self,
-        @(_reactSubviews.count));
-    if (self.currentContainerView.subviews.count > 0) {
-      _reactSubviews = [NSMutableArray arrayWithArray:self.currentContainerView.subviews];
-    }
-  } else {
-    // Toggled OFF: re-mount all children in the correct order, then clear the tracking array.
+  if (!_removeClippedSubviews) {
+    // Toggled OFF: re-mount all Fabric children in the correct order.
     // addSubview: on an already-present child moves it to the front, so iterating in order
     // produces the correct subview ordering.
     for (UIView *view in _reactSubviews) {
       [self.currentContainerView addSubview:view];
     }
-    [_reactSubviews removeAllObjects];
   }
 }
 

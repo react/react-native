@@ -44,11 +44,9 @@ static NSString *RCTUnmountAndReportAssert(
   return thrownName;
 }
 
-// The index is read only inside RCTAssert here, so a mismatch is harmless once
-// assertions are compiled out. While they are compiled in, the arguments that
-// build the failure message are evaluated at the call site, and an out-of-range
-// index used to reach objectAtIndex: there. The assert that exists to report the
-// mismatch raised NSRangeException instead of reporting it.
+// The arguments that build the assertion's failure message are evaluated at
+// the call site. An out-of-range index used to reach objectAtIndex: there, so
+// the assertion raised NSRangeException instead of reporting the mismatch.
 - (void)testUnmountWithOutOfBoundsIndexReportsRatherThanRaisingRangeException
 {
   RCTViewComponentView *parent = [[RCTViewComponentView alloc] initWithFrame:CGRectZero];
