@@ -13,6 +13,7 @@
 #include <react/renderer/attributedstring/TextAttributes.h>
 #include <react/renderer/components/text/BaseTextProps.h>
 #include <react/renderer/graphics/Color.h>
+#include <react/renderer/graphics/Transform.h>
 
 namespace facebook::react {
 
@@ -23,6 +24,10 @@ class TextProps : public Props, public BaseTextProps {
 
   void
   setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+
+  // View-level props that affect whether this text node needs a backing view
+  Transform transform{};
+  TransformOrigin transformOrigin{};
 
 #pragma mark - DebugStringConvertible
 
