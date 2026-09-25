@@ -29,6 +29,7 @@ def list_native_modules!(config_command)
 
   if not status.success?
     Pod::UI.warn "The command: '#{config_command.join(" ").bold.yellow}' returned a status code of #{status.exitstatus.to_s.bold.red}", [
+        json,
         "In order to autolink using Cocoapods, this framework uses @react-native-community/cli to discover React Native native modules",
         "Please either add it: yarn add -D @react-native-community/cli or consult your framework's documentation."
     ]
