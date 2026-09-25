@@ -729,6 +729,7 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 dependencies {
+  api(libs.androidx.activity)
   api(libs.androidx.appcompat)
   api(libs.androidx.appcompat.resources)
   api(libs.androidx.autofill)

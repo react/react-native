@@ -7,6 +7,7 @@ buildTools = "37.0.0"
 ndkVersion = "27.1.12297006"
 # Dependencies versions
 agp = "9.2.1"
+androidx-activity = "1.10.1"
 androidx-annotation = "1.6.0"
 androidx-appcompat = "1.7.0"
 androidx-autofill = "1.3.0"
@@ -52,6 +53,7 @@ gflags="2.2.0"
 nlohmannjson="3.11.2"
 
 [libraries]
+androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-appcompat-resources = { module = "androidx.appcompat:appcompat-resources", version.ref = "androidx-appcompat" }
