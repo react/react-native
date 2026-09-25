@@ -116,8 +116,8 @@ internal object TextLayoutManager {
 
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
-  // Lazily cached methods for showing glyph ink that overhangs the start of a line (API 35+).
-  // Reflection is needed because some internal targets compile against an SDK older than 35.
+  // These wrappers mirror Android 15 APIs but use reflection because some internal targets still
+  // compile against Android 14. They return null when the API is unavailable or cannot be invoked.
   private val setUseBoundsForWidthMethod: java.lang.reflect.Method? by lazy {
     try {
       StaticLayout.Builder::class
@@ -127,6 +127,16 @@ internal object TextLayoutManager {
       null
     }
   }
+
+  private fun setUseBoundsForWidth(
+      builder: StaticLayout.Builder,
+      useBoundsForWidth: Boolean,
+  ): StaticLayout.Builder? =
+      try {
+        setUseBoundsForWidthMethod?.invoke(builder, useBoundsForWidth) as? StaticLayout.Builder
+      } catch (_: ReflectiveOperationException) {
+        null
+      }
 
   private val setShiftDrawingOffsetForStartOverhangMethod: java.lang.reflect.Method? by lazy {
     try {
@@ -141,6 +151,19 @@ internal object TextLayoutManager {
     }
   }
 
+  private fun setShiftDrawingOffsetForStartOverhang(
+      builder: StaticLayout.Builder,
+      shiftDrawingOffsetForStartOverhang: Boolean,
+  ): StaticLayout.Builder? =
+      try {
+        setShiftDrawingOffsetForStartOverhangMethod?.invoke(
+            builder,
+            shiftDrawingOffsetForStartOverhang,
+        ) as? StaticLayout.Builder
+      } catch (_: ReflectiveOperationException) {
+        null
+      }
+
   private val computeDrawingBoundingBoxMethod: java.lang.reflect.Method? by lazy {
     try {
       Layout::class.java.getMethod("computeDrawingBoundingBox")
@@ -148,6 +171,13 @@ internal object TextLayoutManager {
       null
     }
   }
+
+  private fun computeDrawingBoundingBox(layout: Layout): RectF? =
+      try {
+        computeDrawingBoundingBoxMethod?.invoke(layout) as? RectF
+      } catch (_: ReflectiveOperationException) {
+        null
+      }
 
   fun setCachedSpannableForTag(reactTag: Int, sp: Spannable) {
     tagToSpannableCache[reactTag] = sp
@@ -919,12 +949,7 @@ internal object TextLayoutManager {
       return 0
     }
 
-    val drawingBounds =
-        try {
-          computeDrawingBoundingBoxMethod?.invoke(layout) as? RectF
-        } catch (_: ReflectiveOperationException) {
-          null
-        } ?: return 0
+    val drawingBounds = computeDrawingBoundingBox(layout) ?: return 0
 
     return ceil(drawingBounds.right - layout.width).toInt().coerceAtLeast(0)
   }
@@ -966,8 +991,8 @@ internal object TextLayoutManager {
     // right, so createLayout reserves that space in a second pass while preserving the EXACT Yoga
     // measurement returned to the caller.
     if (Build.VERSION.SDK_INT >= VERSION_CODE_VANILLA_ICE_CREAM) {
-      setUseBoundsForWidthMethod?.invoke(builder, enableStartOverhang)
-      setShiftDrawingOffsetForStartOverhangMethod?.invoke(builder, enableStartOverhang)
+      setUseBoundsForWidth(builder, enableStartOverhang)
+      setShiftDrawingOffsetForStartOverhang(builder, enableStartOverhang)
     }
 
     return builder.build()
