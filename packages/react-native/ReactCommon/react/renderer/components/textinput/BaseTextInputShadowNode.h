@@ -11,19 +11,17 @@
 
 #include <glog/logging.h>
 
+#include <React/RendererCore.h>
+#include <React/Utils.h>
+#include <React/View.h>
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/attributedstring/AttributedStringBox.h>
 #include <react/renderer/components/text/BaseTextShadowNode.h>
 #include <react/renderer/components/textinput/BaseTextInputProps.h>
 #include <react/renderer/components/textinput/TextInputState.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/components/view/YogaLayoutableShadowNode.h>
-#include <react/renderer/core/LayoutConstraints.h>
-#include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/textlayoutmanager/TextLayoutContext.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManagerExtended.h>
-#include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 
