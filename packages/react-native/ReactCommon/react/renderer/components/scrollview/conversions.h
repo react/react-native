@@ -9,9 +9,12 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
 #include <react/renderer/components/scrollview/primitives.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+
+#include <cstdlib>
+#include <optional>
+#include <string>
 #include <unordered_map>
 
 namespace facebook::react {
