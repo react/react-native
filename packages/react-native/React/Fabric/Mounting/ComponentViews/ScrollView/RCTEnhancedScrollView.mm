@@ -51,6 +51,26 @@
   return self;
 }
 
+- (void)setInverted:(BOOL)inverted
+{
+  if (_inverted == inverted) {
+    return;
+  }
+  _inverted = inverted;
+
+  if (@available(iOS 26.0, *)) {
+    // UIKit positions the scroll edge effects in this scroll view's own coordinate space, and the
+    // `scaleY(-1)` mirror turns that space upside down, so neither effect lands where it belongs.
+    // Against a navigation bar, `topEdgeEffect` darkens the lower half of the screen rather than
+    // the content passing under the bar; against a bottom bar, `bottomEdgeEffect` dims the whole
+    // screen. Neither produces anything useful at any scroll position while mirrored, so both are
+    // hidden. The bars cannot be given correct effects from here, because UIKit has no notion of
+    // the transform.
+    self.topEdgeEffect.hidden = inverted;
+    self.bottomEdgeEffect.hidden = inverted;
+  }
+}
+
 - (void)preserveContentOffsetWithBlock:(void (^)())block
 {
   if (!block) {

@@ -1035,6 +1035,7 @@ interface RCTDivisionAnimatedNode : public RCTValueAnimatedNode {
 interface RCTEnhancedScrollView : public UIScrollView {
   public @property (assign) BOOL centerContent;
   public @property (assign) BOOL disableIntervalMomentum;
+  public @property (assign) BOOL inverted;
   public @property (assign) BOOL pinchGestureEnabled;
   public @property (assign) BOOL snapToEnd;
   public @property (assign) BOOL snapToStart;
