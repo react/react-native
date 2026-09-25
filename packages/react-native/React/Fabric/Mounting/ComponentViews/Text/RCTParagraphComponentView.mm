@@ -599,9 +599,6 @@ static NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *attr
  */
 - (void)enableContextMenu
 {
-  if (_selectionLayoutManager == nil) {
-    _selectionLayoutManager = [RCTTextLayoutManager new];
-  }
   _selectionRenderedText = nil;
   [self setNeedsLayout];
 }
@@ -642,6 +639,9 @@ static NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *attr
       !CGSizeEqualToSize(drawingFrame.size, _selectionRenderedSize);
 
   if (needsRebuild) {
+    if (_selectionLayoutManager == nil) {
+      _selectionLayoutManager = [RCTTextLayoutManager new];
+    }
     NSTextStorage *textStorage = [_selectionLayoutManager textStorageForNSAttributedString:layoutText
                                                                        paragraphAttributes:_paragraphAttributes
                                                                                       size:drawingFrame.size];

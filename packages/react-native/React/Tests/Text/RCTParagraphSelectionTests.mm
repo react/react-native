@@ -352,6 +352,29 @@ using namespace facebook::react;
   XCTAssertNil([self selectionTextViewIn:view], @"A recycled paragraph must not keep a selection text view.");
 }
 
+/*
+ * A recycled view keeps the props of its last paragraph. When the next
+ * paragraph is selectable too, `updateProps:` sees no change and re-enables
+ * nothing, so the selection text view must be able to build itself from
+ * scratch after `prepareForRecycle`.
+ */
+- (void)testRecycledParagraphBuildsAWorkingSelectionTextView
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  [view prepareForRecycle];
+
+  [view updateProps:[self propsWithSelectable:YES] oldProps:[self propsWithSelectable:YES]];
+  [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"The next paragraph"]] oldState:nil];
+  [view layoutIfNeeded];
+
+  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  XCTAssertNotNil(selectionTextView, @"A recycled selectable paragraph must get a selection text view again.");
+  XCTAssertEqual(
+      selectionTextView.textStorage.length,
+      [@"The next paragraph" length],
+      @"The selection text view of a recycled paragraph must hold the new text.");
+}
+
 #pragma mark - A press must not rebuild the selection
 
 /*
