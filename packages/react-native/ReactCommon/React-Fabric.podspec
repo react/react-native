@@ -141,6 +141,8 @@ Pod::Spec.new do |s|
 
   s.subspec "components" do |ss|
     ss.subspec "root" do |sss|
+      sss.dependency             "React-Fabric/coreUmbrella"
+      sss.dependency             "React-Fabric/components/viewUmbrella"
       sss.source_files         = podspec_sources("react/renderer/components/root/**/*.{m,mm,cpp,h}", "react/renderer/components/root/**/*.{h}")
       sss.exclude_files        = "react/renderer/components/root/tests"
       sss.header_dir           = "react/renderer/components/root"
