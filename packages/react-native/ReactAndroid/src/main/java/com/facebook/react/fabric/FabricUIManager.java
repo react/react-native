@@ -1127,8 +1127,6 @@ public class FabricUIManager
 
   @Override
   public @Nullable View resolveView(int reactTag) {
-    UiThreadUtil.assertOnUiThread();
-
     SurfaceMountingManager surfaceManager = mMountingManager.getSurfaceManagerForView(reactTag);
     if (surfaceManager == null || surfaceManager.isStopped()) {
       return null;
