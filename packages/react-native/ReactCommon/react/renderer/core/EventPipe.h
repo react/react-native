@@ -12,12 +12,12 @@
 #include <functional>
 #include <string>
 
+#include <React/Timing.h>
 #include <jsi/jsi.h>
 #include <react/renderer/core/EventPayload.h>
 #include <react/renderer/core/EventTarget.h>
 #include <react/renderer/core/ReactEventPriority.h>
 #include <react/renderer/core/ValueFactory.h>
-#include <react/timing/primitives.h>
 
 namespace facebook::react {
 

@@ -18,7 +18,7 @@
 
 #include <react/renderer/core/RawPropsPrimitives.h>
 
-#include <react/debug/react_native_assert.h>
+#include <React/Debug.h>
 
 namespace facebook::react {
 

@@ -12,13 +12,13 @@
 #include <memory>
 #include <mutex>
 
+#include <React/Timing.h>
 #include <folly/dynamic.h>
 #include <react/renderer/core/EventDispatcher.h>
 #include <react/renderer/core/EventPayload.h>
 #include <react/renderer/core/EventTarget.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ValueFactoryEventPayload.h>
-#include <react/timing/primitives.h>
 
 namespace facebook::react {
 

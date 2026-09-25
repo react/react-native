@@ -12,8 +12,9 @@
 #include <memory>
 #include <vector>
 
-#include <react/debug/react_native_assert.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <React/Debug.h>
+#include <React/FeatureFlags.h>
+#include <React/Graphics.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/core/EventDispatcher.h>
 #include <react/renderer/core/Props.h>
@@ -21,7 +22,6 @@
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/core/ShadowNodeFragment.h>
 #include <react/renderer/core/State.h>
-#include <react/renderer/graphics/Float.h>
 
 namespace facebook::react {
 

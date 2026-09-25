@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <React/RendererDebug.h>
 #include <react/renderer/core/EventEmitter.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/ReactPrimitives.h>
@@ -22,7 +23,6 @@
 #include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/core/ShadowNodeTraits.h>
 #include <react/renderer/core/State.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
 
 namespace facebook::react {
 

@@ -12,7 +12,8 @@
 //
 //   #include <React/RendererCore.h>
 //
-// Re-exports the module's public interface headers. React Native's own code
+// Re-exports the module's public interface headers, including those of the
+// `rawValue` target via <React/RawValue.h>. React Native's own code
 // should keep using the fine-grained `<react/renderer/core/...>` includes,
 // except in headers it exports to consumers: those are preprocessed in the
 // consumer's translation unit, where the fine-grained include hits this
@@ -24,12 +25,15 @@
 // Marks that the following headers are pulled in through the umbrella, so their
 // shared guard (<react/cxxstableapi/UmbrellaGuard.h>) accepts them. The marker
 // is saved and restored rather than defined and undefined: the scope ends at
-// this block, so later *direct* includes in the same TU are still caught, and
-// it nests inside an enclosing umbrella rather than disarming it.
+// this block, so a later *direct* include of a guarded header the umbrella did
+// not already pull in is still caught, and it nests inside an enclosing
+// umbrella rather than disarming it. The headers below are `#pragma once`, so
+// re-including one of them directly is a silent no-op, not a guard hit.
 #pragma push_macro("RN_UMBRELLA_CONTEXT")
 #undef RN_UMBRELLA_CONTEXT
 #define RN_UMBRELLA_CONTEXT 1
 
+#include <React/RawValue.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 #include <react/renderer/core/ConcreteShadowNode.h>
@@ -61,8 +65,6 @@
 #include <react/renderer/core/RawProps.h>
 #include <react/renderer/core/RawPropsKeyMap.h>
 #include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/RawPropsPrimitives.h>
-#include <react/renderer/core/RawValue.h>
 #include <react/renderer/core/ReactEventPriority.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ReactRootViewTagGenerator.h>
