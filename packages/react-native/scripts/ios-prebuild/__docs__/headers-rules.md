@@ -8,7 +8,7 @@ scripts under `scripts/ios-prebuild/`:
 | Script                 | Role                                                                                                                                                          |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `headers-inventory.js` | **Discover + classify** every shipped header (the facts)                                                                                                      |
-| `headers-spec.js`      | **The rules** (R1–R11) — turns the inventory into a layout plan + module maps                                                                                 |
+| `headers-spec.js`      | **The rules** (R1–R12) — turns the inventory into a layout plan + module maps                                                                                 |
 | `headers-compose.js`   | **Emit** — projects the plan into `React.xcframework` and `ReactNativeHeaders.xcframework`                                                                    |
 | `headers-verify.js`    | **Gate** — generator-time verification: include-health ratchet, structural byte-compare, consumer-shaped compile smokes (runs in the prebuild CI compose job) |
 
@@ -35,7 +35,7 @@ everything else. No overlay, no include rewriting, no consumer flags.
 podspecs ──► headers-inventory.js ──► inventory (facts per header)
                                           │
                                           ▼
-                              headers-spec.js  (rules R1–R10)
+                              headers-spec.js  (rules R1–R12)
                                           │  plan: what goes where + module maps
                                           ▼
                               headers-compose.js (emission)
@@ -232,6 +232,28 @@ textual home; else the R5-module namespaced form), and every other spelling is
 emitted as a one-line redirect shim (`#import <owner>`). Shims that are
 namespace-module members are fine: they import the owning module, so
 declarations stay single-owned.
+
+**R12 — a namespace module's own umbrella stays in ReactNativeHeaders.** The C++
+stable API ships one umbrella per module, physically nested inside it
+(`ReactCommon/react/debug/React/Debug.h`), so its natural path is
+`React/Debug.h` and R1 would hoist it into the framework. It must not be:
+**ReactNativeHeaders is the lower layer** — `React.framework` imports it
+(`RCTCallInvoker.h` → `<ReactCommon/CallInvoker.h>`). A framework-owned umbrella
+makes every `#include <React/X.h>` inside a lowercase-namespace header an import
+of module `React`, closing a cycle:
+
+```text
+React -> ReactNativeHeaders_react -> React
+```
+
+Found empirically: `react/timing/primitives.h` -> `<React/Debug.h>`. This is
+the same two-module-ownership failure as `UMBRELLA_CXX_GUARDED_EXCLUSIONS`
+(`RCTFrameTimingsObserver.h`, which reaches the same `primitives.h`), in the
+opposite direction. They are `objc-blocked` by construction (they re-export
+their module's C++ surface), so they were never R4 umbrella or R5 module
+members; `planFromInventory` fails closed if one ever becomes a modular
+candidate, since its R5 module would be named `React` and alias the framework
+module.
 
 ## Stage 3 — Emission (headers-compose.js)
 
