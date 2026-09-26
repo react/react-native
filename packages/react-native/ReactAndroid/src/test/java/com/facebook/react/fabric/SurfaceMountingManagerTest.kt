@@ -192,4 +192,38 @@ class SurfaceMountingManagerTest {
     smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, true)
     assertThat(smm.getViewExists(42)).isTrue()
   }
+
+  /**
+   * Verifies that addViewAt gracefully handles an index that exceeds the parent's child count by
+   * clamping to the end rather than crashing with IndexOutOfBoundsException.
+   *
+   * This reproduces the crash from T275193220 where a stale mount instruction specified index=7 but
+   * the parent only had 6 children due to a timing race.
+   */
+  @Test
+  fun addViewAt_clampsIndexWhenExceedingChildCount() {
+    val smm = startSurface()
+
+    // Create a parent view (tag 10) and add it to the root
+    smm.createView("RCTView", 10, JavaOnlyMap.of(), null, null, true)
+    smm.addViewAt(surfaceId, 10, 0)
+
+    // Create child views
+    smm.createView("RCTView", 20, JavaOnlyMap.of(), null, null, true)
+    smm.createView("RCTView", 21, JavaOnlyMap.of(), null, null, true)
+    smm.createView("RCTView", 22, JavaOnlyMap.of(), null, null, true)
+
+    // Add two children to parent (indices 0, 1) — parent now has childCount = 2
+    smm.addViewAt(10, 20, 0)
+    smm.addViewAt(10, 21, 1)
+
+    // Attempt to add a view at index 7 when parent only has 2 children.
+    // Before the fix this would throw IllegalStateException wrapping IndexOutOfBoundsException.
+    // After the fix it should clamp to childCount (2) and succeed.
+    smm.addViewAt(10, 22, 7)
+
+    // Verify the view was successfully added (clamped to end)
+    assertThat(smm.getView(22)).isNotNull()
+    assertThat(smm.getView(22)!!.parent).isNotNull()
+  }
 }
