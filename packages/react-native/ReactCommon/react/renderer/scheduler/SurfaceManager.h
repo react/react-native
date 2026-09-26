@@ -14,7 +14,7 @@
 #include <shared_mutex>
 #include <unordered_map>
 
-#include <react/renderer/core/LayoutConstraints.h>
+#include <React/RendererCore.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/scheduler/SurfaceHandler.h>
 

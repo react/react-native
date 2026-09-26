@@ -13,7 +13,7 @@
 #include "TraceEvent.h"
 #include "TraceEventProfile.h"
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 
 #include <folly/dynamic.h>
 #include <atomic>

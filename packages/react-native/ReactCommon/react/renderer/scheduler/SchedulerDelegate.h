@@ -11,7 +11,7 @@
 
 #include <memory>
 
-#include <react/renderer/core/ReactPrimitives.h>
+#include <React/RendererCore.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/mounting/ShadowView.h>
 
