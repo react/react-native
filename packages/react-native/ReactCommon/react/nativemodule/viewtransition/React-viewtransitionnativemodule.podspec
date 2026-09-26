@@ -51,7 +51,7 @@ Pod::Spec.new do |s|
 
   s.dependency "Yoga"
   s.dependency "ReactCommon/turbomodule/core"
-  s.dependency "React-Fabric"
+  add_dependency(s, "React-Fabric")
   s.dependency "React-Fabric/bridging"
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-RCTFBReactNativeSpec")
