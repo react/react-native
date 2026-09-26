@@ -44,6 +44,7 @@ Pod::Spec.new do |s|
   s.dependency "React-debug"
   s.dependency "React-cxxstableapi"
   s.dependency "React-featureflags"
+  s.dependency "React-timing"
   s.dependency "React-runtimescheduler"
   s.dependency "React-cxxreact"
   s.dependency "React-bridging"

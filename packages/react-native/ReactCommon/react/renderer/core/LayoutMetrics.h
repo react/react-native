@@ -9,12 +9,10 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <React/Graphics.h>
+#include <React/RendererDebug.h>
+#include <React/Utils.h>
 #include <react/renderer/core/LayoutPrimitives.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/debug/flags.h>
-#include <react/renderer/graphics/Rect.h>
-#include <react/renderer/graphics/RectangleEdges.h>
-#include <react/utils/hash_combine.h>
 #include <algorithm>
 
 namespace facebook::react {

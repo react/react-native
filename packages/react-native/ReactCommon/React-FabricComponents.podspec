@@ -41,6 +41,7 @@ if ENV['USE_FRAMEWORKS']
       "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view\"",
       "\"$(PODS_TARGET_SRCROOT)/react/renderer/core\"",
       "\"$(PODS_TARGET_SRCROOT)/react/renderer/debug\"",
+      "\"$(PODS_TARGET_SRCROOT)/react/renderer/graphics\"",
       "\"$(PODS_TARGET_SRCROOT)/react/utils\"",
     ]
   end

@@ -9,12 +9,10 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/Utils.h>
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
-#include <react/renderer/core/LayoutConstraints.h>
-#include <react/utils/FloatComparison.h>
-#include <react/utils/SimpleThreadSafeCache.h>
-#include <react/utils/hash_combine.h>
 
 namespace facebook::react {
 

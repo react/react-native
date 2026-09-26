@@ -12,19 +12,12 @@
 #include <array>
 #include <unordered_map>
 
+#include <React/Debug.h>
+#include <React/Graphics.h>
+#include <React/RendererDebug.h>
 #include <glog/logging.h>
-#include <react/debug/react_native_expect.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Float.h>
-#include <react/renderer/graphics/PlatformColorParser.h>
-#include <react/renderer/graphics/Point.h>
-#include <react/renderer/graphics/Rect.h>
-#include <react/renderer/graphics/RectangleCorners.h>
-#include <react/renderer/graphics/RectangleEdges.h>
-#include <react/renderer/graphics/Size.h>
 
 #ifdef RN_SERIALIZABLE_STATE
 #include <yoga/Yoga.h>

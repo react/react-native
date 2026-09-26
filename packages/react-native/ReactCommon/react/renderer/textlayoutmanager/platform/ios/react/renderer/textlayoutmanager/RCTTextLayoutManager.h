@@ -9,9 +9,9 @@
 
 #import <UIKit/UIKit.h>
 
+#import <React/RendererCore.h>
 #import <react/renderer/attributedstring/AttributedString.h>
 #import <react/renderer/attributedstring/ParagraphAttributes.h>
-#import <react/renderer/core/LayoutConstraints.h>
 #import <react/renderer/textlayoutmanager/TextLayoutContext.h>
 #import <react/renderer/textlayoutmanager/TextMeasureCache.h>
 

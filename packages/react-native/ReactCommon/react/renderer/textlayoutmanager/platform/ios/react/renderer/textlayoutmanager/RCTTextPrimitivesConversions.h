@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include <react/renderer/graphics/RCTPlatformColorUtils.h>
+#include <React/Graphics.h>
 #include <react/renderer/textlayoutmanager/RCTFontProperties.h>
 #include <react/renderer/textlayoutmanager/RCTFontUtils.h>
 

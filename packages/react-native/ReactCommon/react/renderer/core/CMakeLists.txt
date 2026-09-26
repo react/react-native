@@ -25,6 +25,7 @@ target_link_libraries(react_renderer_core
         react_renderer_graphics
         react_renderer_mapbuffer
         react_renderer_runtimescheduler
+        react_timing
         react_utils
         runtimeexecutor
         yoga)
