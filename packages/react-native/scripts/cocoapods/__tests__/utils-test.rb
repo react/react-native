@@ -423,6 +423,40 @@ class UtilsTests < Test::Unit::TestCase
         assert_equal("YES", assets_release_config.build_settings["CODE_SIGNING_ALLOWED"])
     end
 
+    def test_updateOSDeploymentTarget_updatesNativeAndResourceBundleTargets
+        minimum = Helpers::Constants.min_ios_version_supported
+        higher_version = (minimum.to_f + 1).to_s
+        native_target = TargetMock.new('ExamplePod', [
+            BuildConfigurationMock.new('Debug', {'IPHONEOS_DEPLOYMENT_TARGET' => '9.0'}),
+            BuildConfigurationMock.new('Release', {'IPHONEOS_DEPLOYMENT_TARGET' => higher_version}),
+        ])
+        resource_bundle = TargetMock.new('ExampleResources', [
+            BuildConfigurationMock.new('Debug', {'IPHONEOS_DEPLOYMENT_TARGET' => '9.0'}),
+            BuildConfigurationMock.new('Release', {'IPHONEOS_DEPLOYMENT_TARGET' => '12.4'}),
+        ])
+        other_resource_bundle = TargetMock.new('OtherResources', [
+            BuildConfigurationMock.new('Debug'),
+            BuildConfigurationMock.new('Release', {'IPHONEOS_DEPLOYMENT_TARGET' => higher_version}),
+        ])
+        installer = InstallerMock.new(pod_target_installation_results: {
+            'ExamplePod' => TargetInstallationResultMock.new(
+                native_target, native_target, [resource_bundle, other_resource_bundle]
+            ),
+        })
+
+        ReactNativePodsUtils.updateOSDeploymentTarget(installer)
+
+        [
+            [native_target, [minimum, higher_version]],
+            [resource_bundle, [minimum, minimum]],
+            [other_resource_bundle, [minimum, higher_version]],
+        ].each do |target, expected_versions|
+            assert_equal(expected_versions, target.build_configurations.map do |config|
+                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+            end, target.name)
+        end
+    end
+
     # ================================= #
     # Test - Apply Mac Catalyst Patches #
     # ================================= #
