@@ -13,9 +13,9 @@
 #include "AndroidTextInputProps.h"
 #include "AndroidTextInputState.h"
 
+#include <React/Utils.h>
+#include <React/View.h>
 #include <react/renderer/attributedstring/AttributedString.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 
