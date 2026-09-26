@@ -9,11 +9,12 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/scrollview/primitives.h>
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
 
 #include <optional>
+#include <vector>
 
 namespace facebook::react {
 
