@@ -953,6 +953,12 @@ export default class Device {
       case 'Debugger.setBreakpointByUrl':
         return this.#processDebuggerSetBreakpointByUrl(req, debuggerInfo);
       case 'Debugger.getScriptSource':
+        if (!this.#hasFetchableScriptSource(req.params.scriptId)) {
+          // Forward to the target, which is the only one that can still have
+          // the source - for instance for code the user typed into the
+          // DevTools console, which the target compiled without a URL.
+          return req;
+        }
         // Sends response to debugger via side-effect
         void this.#processDebuggerGetScriptSource(req, socket, debuggerInfo);
         return null;
@@ -1036,6 +1042,15 @@ export default class Device {
       );
     }
     return processedReq;
+  }
+
+  /**
+   * Whether the proxy recorded an HTTP(S) source URL for a script, and can
+   * therefore serve its source itself by fetching that URL.
+   */
+  #hasFetchableScriptSource(scriptId: string): boolean {
+    const pathToSource = this.#scriptIdToSourcePathMapping.get(scriptId);
+    return pathToSource != null && this.#tryParseHTTPURL(pathToSource) != null;
   }
 
   async #processDebuggerGetScriptSource(
