@@ -21,6 +21,7 @@ import static com.facebook.react.uimanager.UIManagerHelper.PADDING_TOP_INDEX;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
@@ -1482,6 +1483,26 @@ public class FabricUIManager
     performanceCounters.put("FinishFabricTransactionTime", mFinishTransactionTime);
     performanceCounters.put("FinishFabricTransactionCPPTime", mFinishTransactionCPPTime);
     return performanceCounters;
+  }
+
+  @Nullable
+  private RectF computeInsetsToRectF(@Nullable float[] insets, int surfaceId, int viewTag) {
+    if (insets == null || surfaceId == View.NO_ID || viewTag == View.NO_ID) {
+      return null;
+    }
+    return new RectF(insets[0], insets[1], insets[2], insets[3]);
+  }
+
+  @Nullable
+  public RectF getComputedMarginInsets(int surfaceId, int viewTag) {
+    float[] insets = mBinding != null ? mBinding.getComputedMarginInsets(surfaceId, viewTag) : null;
+    return computeInsetsToRectF(insets, surfaceId, viewTag);
+  }
+
+  @Nullable
+  public RectF getComputedPaddingInsets(int surfaceId, int viewTag) {
+    float[] insets = mBinding != null ? mBinding.getComputedPaddingInsets(surfaceId, viewTag) : null;
+    return computeInsetsToRectF(insets, surfaceId, viewTag);
   }
 
   private class MountItemDispatchListener implements MountItemDispatcher.ItemDispatchListener {

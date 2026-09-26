@@ -126,6 +126,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     view.setTag(R.id.use_hardware_layer, null);
     view.setTag(R.id.filter, null);
     view.setTag(R.id.mix_blend_mode, null);
+    view.setTag(R.id.clip_path, null);
     LayerEffectsHelper.apply(view, null, null);
 
     // setShadowColor
@@ -875,6 +876,11 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.BOX_SHADOW, customType = "BoxShadow")
   public void setBoxShadow(T view, @Nullable ReadableArray shadows) {
     BackgroundStyleApplicator.setBoxShadow(view, shadows);
+  }
+
+  @ReactProp(name = ViewProps.CLIP_PATH, customType = "ClipPath")
+  public void setClipPath(T view, @Nullable ReadableMap clipPath) {
+    BackgroundStyleApplicator.setClipPath(view, clipPath);
   }
 
   private void logUnsupportedPropertyWarning(String propName) {

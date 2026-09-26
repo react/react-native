@@ -93,6 +93,11 @@ class ShadowNodeTraits {
     // **Deprecated**: This trait is deprecated and will be removed in a future
     // version of React Native.
     DirtyYogaNode = 1 << 14,
+
+    // Indicates that the `ShadowNode` needs to store computed box model
+    // information (margin and padding) for proper calculation of the clipPath
+    // geometry box.
+    NeedsComputedBoxModel = 1 << 15,
   };
 
   /*

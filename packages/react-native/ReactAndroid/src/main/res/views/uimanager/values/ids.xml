@@ -82,4 +82,7 @@
 
   <!-- tag is used to store important_for_interaction state -->
   <item type="id" name="important_for_interaction"/>
+
+  <!-- tag is used to store clipPath to apply to the view -->
+  <item type="id" name="clip_path"/>
 </resources>

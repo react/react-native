@@ -245,6 +245,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
     setBackgroundRepeat(view, backgroundRepeat)
   }
 
+
   @ReactProp(name = "nextFocusDown", defaultInt = View.NO_ID)
   public open fun nextFocusDown(view: ReactViewGroup, viewId: Int) {
     view.nextFocusDownId = viewId

@@ -82,6 +82,8 @@ public abstract class BaseViewManagerDelegate<
 
       ViewProps.BOX_SHADOW -> mViewManager.setBoxShadow(view, value as ReadableArray?)
 
+      ViewProps.CLIP_PATH -> mViewManager.setClipPath(view, value as ReadableMap?)
+
       ViewProps.ELEVATION -> mViewManager.setElevation(view, (value as Double?)?.toFloat() ?: 0.0f)
 
       ViewProps.FILTER -> mViewManager.setFilter(view, value as ReadableArray?)

@@ -7,6 +7,7 @@
 
 #include "FabricMountingManager.h"
 
+#include "ComputedBoxModelRegistry.h"
 #include "EventEmitterWrapper.h"
 #include "MountItem.h"
 #include "StateWrapperImpl.h"
@@ -16,6 +17,7 @@
 #include <react/jni/ReadableNativeArray.h>
 #include <react/jni/ReadableNativeMap.h>
 #include <react/renderer/components/scrollview/ScrollViewProps.h>
+#include <react/renderer/components/view/conversions.h>
 #include <react/renderer/core/DynamicPropsUtilities.h>
 #include <react/renderer/core/conversions.h>
 #include <react/renderer/mounting/MountingTransaction.h>
@@ -51,6 +53,14 @@ void FabricMountingManager::onSurfaceStart(SurfaceId surfaceId) {
 void FabricMountingManager::onSurfaceStop(SurfaceId surfaceId) {
   std::lock_guard lock(allocatedViewsMutex_);
   allocatedViewRegistry_.erase(surfaceId);
+  if (computedBoxModelRegistry_) {
+    computedBoxModelRegistry_->clearSurface(surfaceId);
+  }
+}
+
+void FabricMountingManager::setComputedBoxModelRegistry(
+    const std::shared_ptr<ComputedBoxModelRegistry>& registry) {
+  computedBoxModelRegistry_ = registry;
 }
 
 void FabricMountingManager::onTransactionAvailable(SurfaceId surfaceId) {
@@ -70,6 +80,16 @@ bool FabricMountingManager::isViewAllocated(SurfaceId surfaceId, Tag tag) {
 }
 
 namespace {
+
+inline bool needsComputedBoxModel(const ShadowView& shadowView) {
+  return shadowView.traits.check(
+      ShadowNodeTraits::Trait::NeedsComputedBoxModel);
+}
+
+inline std::shared_ptr<const YogaStylableProps> getYogaStylableProps(
+    const ShadowView& shadowView) {
+  return std::static_pointer_cast<const YogaStylableProps>(shadowView.props);
+}
 
 #ifdef REACT_NATIVE_DEBUG
 // List of layout-only props extracted from ViewProps.kt used to filter out
@@ -657,6 +677,11 @@ void FabricMountingManager::executeMount(
             LOG(ERROR) << "Emitting delete for unallocated view "
                        << oldChildShadowView.tag;
           }
+
+          if (computedBoxModelRegistry_) {
+            computedBoxModelRegistry_->remove(
+                surfaceId, oldChildShadowView.tag);
+          }
           break;
         }
         case ShadowViewMutation::Update: {
@@ -712,6 +737,44 @@ void FabricMountingManager::executeMount(
                   .push_back(
                       CppMountItem::UpdateOverflowInsetMountItem(
                           newChildShadowView));
+            }
+
+            // Store BoxModel data (margin and padding) only if layout
+            // information has changed and NeedsComputedBoxModel trait is set.
+            // This information is needed for proper calculation of the clipPath
+            // geometry box.
+            auto oldNeedsComputedBoxModel =
+                needsComputedBoxModel(oldChildShadowView);
+            auto newNeedsComputedBoxModel =
+                needsComputedBoxModel(newChildShadowView);
+
+            if (computedBoxModelRegistry_) {
+              if (newNeedsComputedBoxModel) {
+                auto oldProps = getYogaStylableProps(oldChildShadowView);
+                auto newProps = getYogaStylableProps(newChildShadowView);
+                if (oldProps && newProps) {
+                  auto newMarginInsets =
+                      marginInsetsFromYogaStylableProps(*newProps.get());
+                  auto oldMarginInsets =
+                      marginInsetsFromYogaStylableProps(*oldProps.get());
+                  auto newPaddingInsets =
+                      paddingInsetsFromYogaStylableProps(*newProps.get());
+                  auto oldPaddingInsets =
+                      paddingInsetsFromYogaStylableProps(*oldProps.get());
+                  if (oldMarginInsets != newMarginInsets ||
+                      oldPaddingInsets != newPaddingInsets) {
+                    computedBoxModelRegistry_->store(
+                        surfaceId,
+                        newChildShadowView.tag,
+                        newMarginInsets,
+                        newPaddingInsets);
+                  }
+                }
+              } else if (
+                  oldNeedsComputedBoxModel && !newNeedsComputedBoxModel) {
+                computedBoxModelRegistry_->remove(
+                    surfaceId, newChildShadowView.tag);
+              }
             }
           }
 
@@ -795,6 +858,22 @@ void FabricMountingManager::executeMount(
                   .push_back(
                       CppMountItem::UpdateOverflowInsetMountItem(
                           newChildShadowView));
+            }
+
+            // Store BoxModel data (margin and padding) only if layout
+            // information has changed and clipPath prop is present. This
+            // information is needed for proper calculation of the clipPath
+            // geometry box.
+            if (needsComputedBoxModel(newChildShadowView)) {
+              if (computedBoxModelRegistry_) {
+                if (auto newProps = getYogaStylableProps(newChildShadowView)) {
+                  computedBoxModelRegistry_->store(
+                      surfaceId,
+                      newChildShadowView.tag,
+                      marginInsetsFromYogaStylableProps(*newProps.get()),
+                      paddingInsetsFromYogaStylableProps(*newProps.get()));
+                }
+              }
             }
           }
 
