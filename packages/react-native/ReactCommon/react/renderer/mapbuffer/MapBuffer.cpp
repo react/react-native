@@ -6,10 +6,13 @@
  */
 
 #include "MapBuffer.h"
+#include <react/debug/react_native_assert.h>
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
+#include <utility>
 
 namespace facebook::react {
 

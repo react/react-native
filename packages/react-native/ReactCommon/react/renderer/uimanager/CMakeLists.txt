@@ -14,6 +14,7 @@ add_library(react_renderer_uimanager OBJECT ${react_renderer_uimanager_SRC})
 target_include_directories(react_renderer_uimanager PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(react_renderer_uimanager
+        callinvoker
         glog
         folly_runtime
         jsi
@@ -32,6 +33,8 @@ target_link_libraries(react_renderer_uimanager
         react_renderer_leakchecker
         react_renderer_runtimescheduler
         react_renderer_mounting
+        react_timing
+        react_utils
         rrc_root
         rrc_view
         runtimeexecutor

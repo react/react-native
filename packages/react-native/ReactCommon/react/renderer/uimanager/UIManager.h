@@ -9,17 +9,14 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
+#include <React/RuntimeExecutor.h>
+#include <React/Utils.h>
+
 #include <folly/dynamic.h>
 #include <jsi/jsi.h>
 
-#include <ReactCommon/RuntimeExecutor.h>
-#include <shared_mutex>
-
-#include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
-#include <react/renderer/core/InstanceHandle.h>
-#include <react/renderer/core/RawValue.h>
-#include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/core/StateData.h>
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 #include <react/renderer/mounting/ShadowTreeRegistry.h>
@@ -29,7 +26,12 @@
 #include <react/renderer/uimanager/UIManagerNativeAnimatedDelegate.h>
 #include <react/renderer/uimanager/UIManagerViewTransitionDelegate.h>
 #include <react/renderer/uimanager/primitives.h>
-#include <react/utils/ContextContainer.h>
+#include <functional>
+#include <memory>
+#include <shared_mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace facebook::react {
 

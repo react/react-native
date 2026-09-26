@@ -19,7 +19,7 @@
 
 #include <unordered_map>
 
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 

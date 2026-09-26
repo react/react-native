@@ -9,11 +9,11 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/components/text/BaseTextProps.h>
 #include <react/renderer/components/textinput/basePrimitives.h>
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/graphics/Color.h>
 #include <limits>
 #include <string>

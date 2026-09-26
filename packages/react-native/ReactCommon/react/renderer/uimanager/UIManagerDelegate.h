@@ -9,8 +9,13 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/core/ReactPrimitives.h>
-#include <react/renderer/core/ShadowNode.h>
+#include <React/RendererCore.h>
+
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/mounting/ShadowTree.h>
 

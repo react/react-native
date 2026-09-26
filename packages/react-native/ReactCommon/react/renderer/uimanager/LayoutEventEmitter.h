@@ -11,6 +11,8 @@
 
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
 
+#include <vector>
+
 namespace facebook::react {
 
 /*

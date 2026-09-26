@@ -11,6 +11,8 @@
 
 #include <react/renderer/components/scrollview/HostPlatformScrollViewProps.h>
 
+#include <memory>
+
 namespace facebook::react {
 using ScrollViewProps = HostPlatformScrollViewProps;
 using SharedScrollViewProps = std::shared_ptr<const ScrollViewProps>;
