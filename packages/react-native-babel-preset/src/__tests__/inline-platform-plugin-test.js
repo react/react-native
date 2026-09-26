@@ -308,6 +308,36 @@ describe('unsafe positions', () => {
     expect(output).toContain('delete Platform.OS');
   });
 
+  test('does not replace a target nested in an assignment pattern', () => {
+    expectUnchanged(`
+      import {Platform} from 'react-native';
+      [Platform.OS] = values;
+      ({os: Platform.OS} = value);
+    `);
+  });
+
+  test('replaces reads nested inside an assignment target', () => {
+    const output = transform(`
+      import {Platform} from 'react-native';
+      target[Platform.OS] = value;
+      [target[Platform.OS]] = values;
+      ({[Platform.OS]: target} = value);
+    `);
+
+    expect(output).not.toContain('Platform.OS');
+    expect(output.match(/"ios"/g)).toHaveLength(3);
+  });
+
+  test('does not replace for-in or for-of assignment targets', () => {
+    expectUnchanged(`
+      import {Platform} from 'react-native';
+      for (Platform.OS in object) {}
+      for ([Platform.OS] in nestedObject) {}
+      for (Platform.OS of values) {}
+      for ([Platform.OS] of nestedValues) {}
+    `);
+  });
+
   test('does not inline computed access', () => {
     const output = transform(`
       import {Platform} from 'react-native';
