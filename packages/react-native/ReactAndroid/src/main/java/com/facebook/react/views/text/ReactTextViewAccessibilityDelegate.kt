@@ -10,6 +10,7 @@ package com.facebook.react.views.text
 import android.graphics.Rect
 import android.os.Bundle
 import android.text.Layout
+import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ClickableSpan
 import android.view.View
@@ -188,9 +189,8 @@ internal class ReactTextViewAccessibilityDelegate(
     super.onInitializeAccessibilityNodeInfo(host, info)
     // PreparedLayoutTextView isn't actually a TextView, so we need to teach it about its text that
     // it is holding so TalkBack knows what to announce when focusing it.
-    if (host is PreparedLayoutTextView) {
-      info.text = host.text
-    }
+    val accessibilityText = if (host is PreparedLayoutTextView) host.text else info.text
+    info.text = accessibilityText.toAccessibilityTextWithClickableSpans()
   }
 
   @Suppress("DEPRECATION")
@@ -363,4 +363,54 @@ private fun isWholeTextSingleLink(text: Spanned, spans: Array<ClickableSpan>): B
   val start = text.getSpanStart(span)
   val end = text.getSpanEnd(span)
   return start == 0 && end == text.length
+}
+
+private const val PARCEL_SAFE_TEXT_LENGTH = 100_000
+
+private fun CharSequence?.toAccessibilityTextWithClickableSpans(): CharSequence? {
+  if (this == null) {
+    return null
+  }
+
+  val trimmedText = toString().trimToParcelableSize()
+  if (this !is Spanned) {
+    return trimmedText
+  }
+
+  val retainedLength = trimmedText.length
+  val clickableSpans =
+      getSpans(0, length, ClickableSpan::class.java).filter { span ->
+        val start = getSpanStart(span)
+        val end = getSpanEnd(span)
+        start >= 0 && end >= 0 && start != end && start < retainedLength && end > 0
+      }
+
+  if (clickableSpans.isEmpty()) {
+    return trimmedText
+  }
+
+  val sourceText = this
+  return SpannableString(trimmedText).apply {
+    for (span in clickableSpans) {
+      val start = sourceText.getSpanStart(span).coerceAtLeast(0)
+      val end = sourceText.getSpanEnd(span).coerceAtMost(retainedLength)
+      if (start < end) {
+        setSpan(span, start, end, sourceText.getSpanFlags(span))
+      }
+    }
+  }
+}
+
+private fun String.trimToParcelableSize(): String {
+  if (length <= PARCEL_SAFE_TEXT_LENGTH) {
+    return this
+  }
+
+  val end =
+      if (Character.isHighSurrogate(this[PARCEL_SAFE_TEXT_LENGTH - 1])) {
+        PARCEL_SAFE_TEXT_LENGTH - 1
+      } else {
+        PARCEL_SAFE_TEXT_LENGTH
+      }
+  return substring(0, end)
 }
