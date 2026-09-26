@@ -79,7 +79,7 @@ GEM
     netrc (0.11.0)
     nkf (0.2.0)
     public_suffix (4.0.7)
-    rexml (3.4.1)
+    rexml (3.4.2)
     ruby-macho (2.5.1)
     typhoeus (1.4.1)
       ethon (>= 0.9.0)
