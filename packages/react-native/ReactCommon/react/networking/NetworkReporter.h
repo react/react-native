@@ -202,8 +202,8 @@ class NetworkReporter {
   NetworkReporter &operator=(const NetworkReporter &) = delete;
   ~NetworkReporter() = default;
 
-  std::unordered_map<std::string, ResourceTimingData> perfTimingsBuffer_{};
-  std::mutex perfTimingsMutex_;
+  mutable std::unordered_map<std::string, ResourceTimingData> perfTimingsBuffer_{};
+  mutable std::mutex perfTimingsMutex_;
 };
 
 } // namespace facebook::react
