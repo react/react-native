@@ -466,9 +466,8 @@ TEST_F(ShadowNodeTest, cloneTree) {
 
 TEST_F(ShadowNodeTest, cloneTreeReturnsNullptrWhenFamilyHasNoPathToRoot) {
   auto result = nodeA_->cloneTree(
-      nodeZ_->getFamily(), [&](const ShadowNode& oldShadowNode) {
-        return oldShadowNode.clone({});
-      });
+      nodeZ_->getFamily(),
+      [&](const ShadowNode& oldShadowNode) { return oldShadowNode.clone({}); });
 
   EXPECT_EQ(result, nullptr);
 }
