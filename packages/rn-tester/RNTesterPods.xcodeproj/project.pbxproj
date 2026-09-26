@@ -10,6 +10,7 @@
 		0EA618032BE537D3001875EF /* RNTesterBundle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0EA618022BE537D3001875EF /* RNTesterBundle.bundle */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DDEF0101F84BF7B00DBDF73 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */; };
+		381050A32103CEBAB7922F8C /* RNTesterTabBarController.mm in Sources */ = {isa = PBXBuildFile; fileRef = BF63BFE8602F7E7F36F33FB1 /* RNTesterTabBarController.mm */; };
 		383889DA23A7398900D06C3E /* RCTConvert_UIColorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 383889D923A7398900D06C3E /* RCTConvert_UIColorTests.m */; };
 		3D2AFAF51D646CF80089D1A3 /* legacy_image@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D2AFAF41D646CF80089D1A3 /* legacy_image@2x.png */; };
 		3F4D148C63BBF774A25488A6 /* libPods-RNTesterIntegrationTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 93A243F0D4D5C54911E811C4 /* libPods-RNTesterIntegrationTests.a */; };
@@ -20,6 +21,7 @@
 		832F45BB2A8A6E1F0097B4E6 /* SwiftTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */; };
 		A975CA6C2C05EADF0043F72A /* RCTNetworkTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */; };
 		C175B6D9ED9336FB66637943 /* libPods-RNTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */; };
+		C77A476FE6A05D2B813E99EC /* RNTesterNavigator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4F6FBEB975D93B422CC3FB00 /* RNTesterNavigator.mm */; };
 		CD10C7A5290BD4EB0033E1ED /* RCTEventEmitterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD10C7A4290BD4EB0033E1ED /* RCTEventEmitterTests.m */; };
 		E62F11832A5C6580000BF1C8 /* FlexibleSizeExampleView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27F441E81BEBE5030039B79C /* FlexibleSizeExampleView.mm */; };
 		E62F11842A5C6584000BF1C8 /* UpdatePropertiesExampleView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 272E6B3C1BEA849E001FCF37 /* UpdatePropertiesExampleView.mm */; };
@@ -91,6 +93,7 @@
 		3D2AFAF41D646CF80089D1A3 /* legacy_image@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "legacy_image@2x.png"; path = "RNTester/legacy_image@2x.png"; sourceTree = "<group>"; };
 		3FF60722627F93D8F62FA1E3 /* Pods-RNTesterUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterUnitTests.release.xcconfig"; path = "Target Support Files/Pods-RNTesterUnitTests/Pods-RNTesterUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F6FBEB975D93B422CC3FB00 /* RNTesterNavigator.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = RNTesterNavigator.mm; path = RNTester/RNTesterNavigator.mm; sourceTree = "<group>"; };
 		51BC9297B6C3163C14532020 /* Pods-RNTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.release.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.release.xcconfig"; sourceTree = "<group>"; };
 		5C60EB1B226440DB0018C04F /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = RNTester/AppDelegate.mm; sourceTree = "<group>"; };
 		79B29C2C2E607A99007612A5 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = RNTester/SceneDelegate.h; sourceTree = "<group>"; };
@@ -98,9 +101,11 @@
 		8145AE05241172D900A3F8DA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = RNTester/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftTest.swift; path = RNTester/SwiftTest.swift; sourceTree = "<group>"; };
 		93A243F0D4D5C54911E811C4 /* libPods-RNTesterIntegrationTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTesterIntegrationTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A66247115FF189C6CBAFC68C /* RNTesterTabBarController.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RNTesterTabBarController.h; path = RNTester/RNTesterTabBarController.h; sourceTree = "<group>"; };
 		A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTNetworkTaskTests.m; sourceTree = "<group>"; };
 		AC474BFB29BBD4A1002BDAED /* RNTester.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RNTester.xctestplan; path = RNTester/RNTester.xctestplan; sourceTree = "<group>"; };
 		B0E70A8A05E03E868F8703FE /* Pods-RNTesterIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterIntegrationTests.release.xcconfig"; path = "Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
+		BF63BFE8602F7E7F36F33FB1 /* RNTesterTabBarController.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = RNTesterTabBarController.mm; path = RNTester/RNTesterTabBarController.mm; sourceTree = "<group>"; };
 		CA59C9994B1822826D8983F0 /* Pods-RNTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.debug.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.debug.xcconfig"; sourceTree = "<group>"; };
 		CD10C7A4290BD4EB0033E1ED /* RCTEventEmitterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTEventEmitterTests.m; sourceTree = "<group>"; };
 		D134EB89DD98253FCF879A47 /* Pods-RNTesterUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-RNTesterUnitTests/Pods-RNTesterUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -220,6 +225,9 @@
 				680759612239798500290469 /* Fabric */,
 				272E6B3A1BEA846C001FCF37 /* NativeExampleViews */,
 				1323F18D1C04ABAC0091BED0 /* Supporting Files */,
+				A66247115FF189C6CBAFC68C /* RNTesterTabBarController.h */,
+				BF63BFE8602F7E7F36F33FB1 /* RNTesterTabBarController.mm */,
+				4F6FBEB975D93B422CC3FB00 /* RNTesterNavigator.mm */,
 			);
 			name = RNTester;
 			sourceTree = "<group>";
@@ -739,6 +747,8 @@
 				832F45BB2A8A6E1F0097B4E6 /* SwiftTest.swift in Sources */,
 				5C60EB1C226440DB0018C04F /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				381050A32103CEBAB7922F8C /* RNTesterTabBarController.mm in Sources */,
+				C77A476FE6A05D2B813E99EC /* RNTesterNavigator.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -17,6 +17,7 @@ import RNTesterNavBar, {navBarHeight} from './components/RNTesterNavbar';
 import {RNTesterThemeContext, themes} from './components/RNTesterTheme';
 import RNTTitleBar from './components/RNTTitleBar';
 import {title as PlaygroundTitle} from './examples/Playground/PlaygroundExample';
+import resolveExampleURL from './utils/resolveExampleURL';
 import RNTesterList from './utils/RNTesterList';
 import {
   RNTesterNavigationActionsType,
@@ -155,78 +156,13 @@ const RNTesterApp = ({
   // Setup Linking event subscription
   const handleOpenUrlRequest = useCallback(
     ({url}: {url: string, ...}) => {
-      // Supported URL pattern(s):
-      // *  rntester://example/<moduleKey>
-      // *  rntester://example/<moduleKey>/<exampleKey>
-      const match =
-        /^rntester(-legacy)?:\/\/example\/([a-zA-Z0-9_-]+)(?:\/([a-zA-Z0-9_-]+))?$/.exec(
-          url,
-        );
-      if (!match) {
-        console.warn(
-          `handleOpenUrlRequest: Received unsupported URL: '${url}'`,
-        );
+      const target = resolveExampleURL(url);
+      if (target == null) {
         return;
       }
-
-      const rawModuleKey = match[2];
-      const exampleKey = match[3];
-
-      // For tooling compatibility, allow all these variants for each module key:
-      const validModuleKeys = [
-        rawModuleKey,
-        `${rawModuleKey}Index`,
-        `${rawModuleKey}Example`,
-        // $FlowFixMe[invalid-computed-prop]
-      ].filter(k => RNTesterList.Modules[k] != null);
-      if (validModuleKeys.length !== 1) {
-        if (validModuleKeys.length === 0) {
-          console.error(
-            `handleOpenUrlRequest: Unable to find requested module with key: '${rawModuleKey}'`,
-          );
-        } else {
-          console.error(
-            `handleOpenUrlRequest: Found multiple matching module with key: '${rawModuleKey}', unable to resolve`,
-          );
-        }
-        return;
-      }
-
-      const resolvedModuleKey = validModuleKeys[0];
-      // $FlowFixMe[invalid-computed-prop]
-      const exampleModule = RNTesterList.Modules[resolvedModuleKey];
-
-      if (exampleKey != null) {
-        const validExampleKeys = exampleModule.examples.filter(
-          e => e.name === exampleKey,
-        );
-        if (validExampleKeys.length !== 1) {
-          if (validExampleKeys.length === 0) {
-            console.error(
-              `handleOpenUrlRequest: Unable to find requested example with key: '${exampleKey}' within module: '${resolvedModuleKey}'`,
-            );
-          } else {
-            console.error(
-              `handleOpenUrlRequest: Found multiple matching example with key: '${exampleKey}' within module: '${resolvedModuleKey}', unable to resolve`,
-            );
-          }
-          return;
-        }
-      }
-
-      console.log(
-        `handleOpenUrlRequest: Opening module: '${resolvedModuleKey}', example: '${
-          exampleKey || 'null'
-        }'`,
-      );
-
       dispatch({
         type: RNTesterNavigationActionsType.EXAMPLE_OPEN_URL_REQUEST,
-        data: {
-          key: resolvedModuleKey,
-          title: exampleModule.title || resolvedModuleKey,
-          exampleKey,
-        },
+        data: target,
       });
     },
     [dispatch],

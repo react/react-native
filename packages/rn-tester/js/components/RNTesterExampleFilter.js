@@ -10,6 +10,7 @@
 
 import type {SectionData} from '../types/RNTesterTypes';
 
+import {maxContentWidthStyle} from './RNTesterLayout';
 import {RNTesterThemeContext} from './RNTesterTheme';
 
 const RNTesterListFilters = require('./RNTesterListFilters');
@@ -118,7 +119,7 @@ class RNTesterExampleFilter<T> extends React.Component<Props<T>, State> {
                       : theme.BackgroundColor,
                 },
               ]}>
-              <View style={styles.textInputStyle}>
+              <View style={[styles.textInputStyle, maxContentWidthStyle]}>
                 <Image
                   source={require('../assets/search-icon.png')}
                   style={styles.searchIcon}

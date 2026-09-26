@@ -9,6 +9,7 @@
 
 #import "NativeExampleViews/FlexibleSizeExampleView.h"
 #import "NativeExampleViews/UpdatePropertiesExampleView.h"
+#import "RNTesterTabBarController.h"
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTDefines.h>
@@ -30,6 +31,27 @@
 #endif
 
 static NSString *const kBundlePath = @"js/RNTesterApp.ios";
+
+// Mirrors the conversion RCTReactNativeFactory applies when it creates the root view itself.
+static NSDictionary *launchOptionsFromConnectionOptions(UISceneConnectionOptions *connectionOptions)
+{
+  NSMutableDictionary *launchOptions = [NSMutableDictionary dictionary];
+
+  NSURL *url = connectionOptions.URLContexts.anyObject.URL;
+  if (url != nil) {
+    launchOptions[UIApplicationLaunchOptionsURLKey] = url;
+  }
+
+  NSUserActivity *activity = connectionOptions.userActivities.anyObject;
+  if (activity != nil) {
+    launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey] = @{
+      UIApplicationLaunchOptionsUserActivityTypeKey : activity.activityType,
+      @"UIApplicationLaunchOptionsUserActivityKey" : activity,
+    };
+  }
+
+  return launchOptions;
+}
 
 @implementation SceneDelegate
 
@@ -58,20 +80,20 @@ static NSString *const kBundlePath = @"js/RNTesterApp.ios";
 
   self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:self releaseLevel:[self releaseLevel]];
 
-  auto *windowScene = (UIWindowScene *)scene;
-  self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
-
-  [self.reactNativeFactory startReactNativeWithModuleName:@"RNTesterApp"
-                                                 inWindow:self.window
-                                        initialProperties:[self prepareInitialProps]
-                                        connectionOptions:connectionOptions];
-
 #if RCT_DEV_MENU
   RCTDevMenuConfiguration *devMenuConfiguration = [[RCTDevMenuConfiguration alloc] initWithDevMenuEnabled:true
                                                                                       shakeGestureEnabled:true
                                                                                  keyboardShortcutsEnabled:true];
   [self.reactNativeFactory setDevMenuConfiguration:devMenuConfiguration];
 #endif
+
+  auto *windowScene = (UIWindowScene *)scene;
+  self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
+  self.window.rootViewController = [[RNTesterTabBarController alloc]
+      initWithReactNativeFactory:self.reactNativeFactory
+               initialProperties:[self prepareInitialProps]
+                   launchOptions:launchOptionsFromConnectionOptions(connectionOptions)];
+  [self.window makeKeyAndVisible];
 }
 
 - (RCTReleaseLevel)releaseLevel

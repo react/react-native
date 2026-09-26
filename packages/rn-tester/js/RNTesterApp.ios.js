@@ -14,6 +14,7 @@ import type {Node} from 'react';
 import RNTesterModuleContainer from './components/RNTesterModuleContainer';
 import SnapshotViewIOS from './examples/Snapshot/SnapshotViewIOS.ios';
 import RNTesterApp from './RNTesterAppShared';
+import RNTesterScreen from './RNTesterScreen';
 import RNTesterList from './utils/RNTesterList';
 import * as React from 'react';
 import {AppRegistry} from 'react-native';
@@ -25,6 +26,7 @@ AppRegistry.registerComponent('RootViewSizeFlexibilityExampleApp', () =>
   require('./examples/RootViewSizeFlexibilityExample/RootViewSizeFlexibilityExampleApp'),
 );
 AppRegistry.registerComponent('RNTesterApp', () => RNTesterApp);
+AppRegistry.registerComponent('RNTesterScreen', () => RNTesterScreen);
 
 // Register suitable examples for snapshot tests
 RNTesterList.Components.concat(RNTesterList.APIs).forEach(
