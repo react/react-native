@@ -24,9 +24,15 @@ const VALID_ERROR_NAMES = new Set([
   'URIError',
 ]);
 
-const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
-
 const ObjectPrototype = Object.prototype;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const numberValueOf = Number.prototype.valueOf;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const stringValueOf = String.prototype.valueOf;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const booleanValueOf = Boolean.prototype.valueOf;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const dateValueOf = Date.prototype.valueOf;
 
 // Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
@@ -95,13 +101,35 @@ function structuredCloneInternal<T>(value: T): T {
 
   // Handles complex types (typeof === 'object').
 
-  for (const Cls of BASIC_CONSTRUCTORS) {
-    if (value instanceof Cls) {
-      const result = new Cls(value);
-      memory.set(value, result);
-      // $FlowExpectedError[incompatible-type] we know result is T
-      return result;
-    }
+  if (value instanceof Number) {
+    // eslint-disable-next-line no-new-wrappers
+    const result = new Number(numberValueOf.call(value));
+    memory.set(value, result);
+    // $FlowExpectedError[incompatible-type] we know result is T
+    return result;
+  }
+
+  if (value instanceof String) {
+    // eslint-disable-next-line no-new-wrappers
+    const result = new String(stringValueOf.call(value));
+    memory.set(value, result);
+    // $FlowExpectedError[incompatible-type] we know result is T
+    return result;
+  }
+
+  if (value instanceof Boolean) {
+    // eslint-disable-next-line no-new-wrappers
+    const result = new Boolean(booleanValueOf.call(value));
+    memory.set(value, result);
+    // $FlowExpectedError[incompatible-type] we know result is T
+    return result;
+  }
+
+  if (value instanceof Date) {
+    const result = new Date(dateValueOf.call(value));
+    memory.set(value, result);
+    // $FlowExpectedError[incompatible-type] we know result is T
+    return result;
   }
 
   if (value instanceof Map) {
