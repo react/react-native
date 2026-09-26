@@ -732,7 +732,12 @@ class UtilsTests < Test::Unit::TestCase
                 second_target
             ]
         )
-        pods_projects_mock = PodsProjectMock.new([third_target], {"hermes-engine" => {}})
+        pods_projects_mock = PodsProjectMock.new(
+            [third_target],
+            {"hermes-engine" => {}},
+            "test/path-pod.xcodeproj",
+            [prepare_config("Debug"), prepare_config("Release")]
+        )
         installer = InstallerMock.new(pods_projects_mock, [
             AggregatedProjectMock.new(user_project_mock)
         ])
@@ -743,8 +748,13 @@ class UtilsTests < Test::Unit::TestCase
         # Assert
         user_project_mock.build_configurations.each do |config|
             received_search_path = config.build_settings["HEADER_SEARCH_PATHS"]
-            expected_search_path = "$(inherited) ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-rendererdebug/React_rendererdebug.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-timing/React_timing.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-utils/React_utils.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-featureflags/React_featureflags.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-renderercss/React_renderercss.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-cxxstableapi/React_cxxstableapi.framework/Headers"
+            expected_search_path = "$(inherited) ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/scrollview/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/scrollview/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-rendererdebug/React_rendererdebug.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-timing/React_timing.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-utils/React_utils.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-FabricComponents/React_FabricComponents.framework/Headers/react/renderer/textlayoutmanager/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-FabricComponents/React_FabricComponents.framework/Headers/react/renderer/components/text/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-FabricComponents/React_FabricComponents.framework/Headers/react/renderer/components/textinput/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-FabricComponents/React_FabricComponents.framework/Headers/react/renderer/components/switch/iosswitch ${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-bridging/React_bridging.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-featureflags/React_featureflags.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-renderercss/React_renderercss.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-cxxstableapi/React_cxxstableapi.framework/Headers"
             assert_equal(expected_search_path, received_search_path)
+        end
+
+        pods_projects_mock.build_configurations.each do |config|
+            received_search_paths = Shellwords.shellsplit(config.build_settings["HEADER_SEARCH_PATHS"])
+            assert_false(received_search_paths.include?("${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers"))
         end
 
         installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
@@ -806,6 +816,20 @@ class UtilsTests < Test::Unit::TestCase
         new_path = "/another/path"
         result = ReactNativePodsUtils.add_search_path_if_not_included(current_paths, new_path)
         assert_equal("/path/to/headers /another/path", result)
+    end
+
+    def test_add_search_path_if_not_included_adds_path_that_is_prefix_of_existing_path
+        current_paths = "/path/to/headers/platform/ios"
+        new_path = "/path/to/headers"
+        result = ReactNativePodsUtils.add_search_path_if_not_included(current_paths, new_path)
+        assert_equal("/path/to/headers/platform/ios /path/to/headers", result)
+    end
+
+    def test_add_search_path_if_not_included_does_not_duplicate_quoted_path_with_spaces
+        current_paths = '"/path/with spaces/headers" /another/path'
+        new_path = '"/path/with spaces/headers"'
+        result = ReactNativePodsUtils.add_search_path_if_not_included(current_paths, new_path)
+        assert_equal(current_paths, result)
     end
 
     def test_add_search_path_if_not_included_does_not_add_existing_path_with_leading_space_to_string
@@ -941,6 +965,68 @@ class UtilsTests < Test::Unit::TestCase
         result = ReactNativePodsUtils.create_header_search_paths_for_stable_umbrellas("PODS_CONFIGURATION_BUILD_DIR")
 
         assert_equal([], result)
+    end
+
+    def test_setStableUmbrellaSearchPaths_addsOwningFrameworkPathToDependentTarget
+        target = prepare_target("Consumer", nil, [DependencyMock.new("React-Fabric")])
+        target_installation_result = TargetInstallationResultMock.new(target, target)
+
+        ReactNativePodsUtils.set_stable_umbrella_search_paths(target_installation_result)
+
+        target.build_configurations.each do |config|
+            assert_equal(
+                '$(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers"',
+                config.build_settings["HEADER_SEARCH_PATHS"]
+            )
+        end
+    end
+
+    def test_setStableUmbrellaSearchPaths_addsOwningFrameworkPathToTransitivelyDependentTarget
+        dependency = Struct.new(:name, :target)
+        fabric_target = prepare_target("React-Fabric")
+        intermediate_target = prepare_target(
+            "Intermediate",
+            nil,
+            [dependency.new("React-Fabric", fabric_target)]
+        )
+        consumer_target = prepare_target(
+            "Consumer",
+            nil,
+            [dependency.new("Intermediate", intermediate_target)]
+        )
+        target_installation_result = TargetInstallationResultMock.new(consumer_target, consumer_target)
+
+        ReactNativePodsUtils.set_stable_umbrella_search_paths(target_installation_result)
+
+        consumer_target.build_configurations.each do |config|
+            assert_equal(
+                '$(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers"',
+                config.build_settings["HEADER_SEARCH_PATHS"]
+            )
+        end
+    end
+
+    def test_setStableUmbrellaSearchPaths_doesNotAddOwningFrameworkPathToUnrelatedTarget
+        target = prepare_target("React-Fabric")
+        target_installation_result = TargetInstallationResultMock.new(target, target)
+
+        ReactNativePodsUtils.set_stable_umbrella_search_paths(target_installation_result)
+
+        target.build_configurations.each do |config|
+            assert_nil(config.build_settings["HEADER_SEARCH_PATHS"])
+        end
+    end
+
+    def test_setStableUmbrellaSearchPaths_whenUsingPrebuiltCore_addsNothing
+        ReactNativeCoreUtils.class_variable_set(:@@build_from_source, false)
+        target = prepare_target("Consumer", nil, [DependencyMock.new("React-Fabric")])
+        target_installation_result = TargetInstallationResultMock.new(target, target)
+
+        ReactNativePodsUtils.set_stable_umbrella_search_paths(target_installation_result)
+
+        target.build_configurations.each do |config|
+            assert_nil(config.build_settings["HEADER_SEARCH_PATHS"])
+        end
     end
 
     # ================================= #
