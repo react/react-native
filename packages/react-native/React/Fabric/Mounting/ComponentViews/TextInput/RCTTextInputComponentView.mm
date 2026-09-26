@@ -198,6 +198,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     [self _setMultiline:newTextInputProps.multiline];
   }
 
+  if (newTextInputProps.multiline &&
+      newTextInputProps.paragraphAttributes.textAlignVertical !=
+          oldTextInputProps.paragraphAttributes.textAlignVertical) {
+    [self _applyTextAlignVerticalToMultilineView:newTextInputProps.paragraphAttributes.textAlignVertical];
+  }
+
   if (newTextInputProps.traits.autocapitalizationType != oldTextInputProps.traits.autocapitalizationType) {
     _backedTextInputView.autocapitalizationType =
         RCTUITextAutocapitalizationTypeFromAutocapitalizationType(newTextInputProps.traits.autocapitalizationType);
@@ -851,6 +857,40 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
   _backedTextInputView = backedTextInputView;
   [self addSubview:_backedTextInputView];
+
+  if (multiline) {
+    const auto &textInputProps = static_cast<const TextInputProps &>(*_props);
+    [self _applyTextAlignVerticalToMultilineView:textInputProps.paragraphAttributes.textAlignVertical];
+  }
+}
+
+// Single-line `UITextField` centers its content vertically inside the field
+// frame natively, so this routing is only meaningful when the backed view is
+// the multiline `RCTUITextView`. UITextField callers no-op.
+- (void)_applyTextAlignVerticalToMultilineView:
+    (const std::optional<facebook::react::TextAlignmentVertical> &)textAlignVertical
+{
+  if (![_backedTextInputView isKindOfClass:[RCTUITextView class]]) {
+    return;
+  }
+  RCTUITextViewTextAlignmentVertical mapped = RCTUITextViewTextAlignmentVerticalAuto;
+  if (textAlignVertical.has_value()) {
+    switch (*textAlignVertical) {
+      case facebook::react::TextAlignmentVertical::Auto:
+        mapped = RCTUITextViewTextAlignmentVerticalAuto;
+        break;
+      case facebook::react::TextAlignmentVertical::Top:
+        mapped = RCTUITextViewTextAlignmentVerticalTop;
+        break;
+      case facebook::react::TextAlignmentVertical::Bottom:
+        mapped = RCTUITextViewTextAlignmentVerticalBottom;
+        break;
+      case facebook::react::TextAlignmentVertical::Center:
+        mapped = RCTUITextViewTextAlignmentVerticalCenter;
+        break;
+    }
+  }
+  ((RCTUITextView *)_backedTextInputView).textAlignVertical = mapped;
 }
 
 - (void)_setShowSoftInputOnFocus:(BOOL)showSoftInputOnFocus
