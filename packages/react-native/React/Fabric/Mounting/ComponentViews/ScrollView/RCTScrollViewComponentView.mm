@@ -1119,6 +1119,14 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // TODO: detect and handle/ignore re-ordering
   if (horizontal) {
     CGFloat deltaX = _firstVisibleView.frame.origin.x - _prevFirstVisibleFrame.origin.x;
+    // If the first visible view didn't move but grew in width,
+    // content after it still shifted. Use width change as delta.
+    if (ABS(deltaX) <= 0.5) {
+      CGFloat widthDelta = _firstVisibleView.frame.size.width - _prevFirstVisibleFrame.size.width;
+      if (widthDelta > 0.5) {
+        deltaX = widthDelta;
+      }
+    }
     if (ABS(deltaX) > 0.5) {
       CGFloat x = _scrollView.contentOffset.x;
       [self _forceDispatchNextScrollEvent];
@@ -1133,6 +1141,14 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   } else {
     CGRect newFrame = _firstVisibleView.frame;
     CGFloat deltaY = newFrame.origin.y - _prevFirstVisibleFrame.origin.y;
+    // If the first visible view didn't move but grew in height,
+    // content below it still shifted. Use height change as delta.
+    if (ABS(deltaY) <= 0.5) {
+      CGFloat heightDelta = newFrame.size.height - _prevFirstVisibleFrame.size.height;
+      if (heightDelta > 0.5) {
+        deltaY = heightDelta;
+      }
+    }
     if (ABS(deltaY) > 0.5) {
       CGFloat y = _scrollView.contentOffset.y;
       [self _forceDispatchNextScrollEvent];
