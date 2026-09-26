@@ -44,7 +44,7 @@ void addAncestorsToUpdateList(
   while (!currentShadowNode->getChildren().empty() &&
          currentShadowNode->getTag() != shadowNode->getTag()) {
     ancestorShadowNodesShared[ancestorIndex] = currentShadowNode;
-    auto children = currentShadowNode->getChildren();
+    const auto& children = currentShadowNode->getChildren();
     auto childIndex = ancestors[ancestorIndex].second;
     currentShadowNode = children[childIndex];
     ancestorIndex++;
@@ -201,7 +201,7 @@ void UIManager::updateShadowTree(
         auto cloned = oldShadowNode->clone(
             {.props = newProps,
              .children = std::make_shared<
-                 std::vector<std::shared_ptr<const ShadowNode>>>(children)});
+                 std::vector<std::shared_ptr<const ShadowNode>>>(std::move(children))});
         clonedShadowNodes.insert({oldShadowNode->getTag(), std::move(cloned)});
       } else {
         LOG(ERROR) << "oldShadowNode is null";
