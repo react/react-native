@@ -52,7 +52,7 @@ Pod::Spec.new do |s|
   s.dependency "Yoga"
   s.dependency "ReactCommon/turbomodule/core"
   s.dependency "React-bridging"
-  s.dependency "React-Fabric"
+  add_dependency(s, "React-Fabric")
   s.dependency "React-Fabric/bridging"
   s.dependency "React-FabricComponents"
   s.dependency "React-cxxstableapi"

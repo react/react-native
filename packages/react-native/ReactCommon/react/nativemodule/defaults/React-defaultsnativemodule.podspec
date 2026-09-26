@@ -59,6 +59,7 @@ Pod::Spec.new do |s|
   s.dependency "React-webperformancenativemodule"
   s.dependency "React-Fabric/animated"
   s.dependency "React-cxxstableapi"
+  add_dependency(s, "React-Fabric")
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-featureflags")
   add_dependency(s, "React-featureflagsnativemodule")
