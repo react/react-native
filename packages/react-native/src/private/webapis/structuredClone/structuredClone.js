@@ -35,6 +35,25 @@ const ObjectPrototype = Object.prototype;
 // any given point we only have one memory object alive anyway.
 const memory: Map<unknown, unknown> = new Map();
 
+function setClonedProperty(
+  target: interface {},
+  key: string,
+  value: unknown,
+): void {
+  if (key === '__proto__') {
+    // $FlowExpectedError[cannot-write] the property is defined, not the prototype.
+    Object.defineProperty(target, key, {
+      configurable: true,
+      enumerable: true,
+      value,
+      writable: true,
+    });
+  } else {
+    // $FlowExpectedError[prop-missing]
+    target[key] = value;
+  }
+}
+
 function structuredCloneInternal<T>(value: T): T {
   // Handles `null` and `undefined`.
   if (value == null) {
@@ -67,11 +86,11 @@ function structuredCloneInternal<T>(value: T): T {
 
   // Handles arrays.
   if (Array.isArray(value)) {
-    const result = [];
+    const result: Array<unknown> = [];
     memory.set(value, result);
 
     for (const key of Object.keys(value)) {
-      result[key] = structuredCloneInternal(value[key]);
+      setClonedProperty(result, key, structuredCloneInternal(value[key]));
     }
 
     // $FlowExpectedError[incompatible-type] we know result is T
@@ -85,8 +104,7 @@ function structuredCloneInternal<T>(value: T): T {
     memory.set(value, result);
 
     for (const key of Object.keys(value)) {
-      // $FlowExpectedError[prop-missing]
-      result[key] = structuredCloneInternal(value[key]);
+      setClonedProperty(result, key, structuredCloneInternal(value[key]));
     }
 
     // $FlowExpectedError[incompatible-type] we know result is T
@@ -181,8 +199,7 @@ function structuredCloneInternal<T>(value: T): T {
   // We need to use Object.keys instead of iterating by indices because we
   // also need to copy arbitrary fields set in the array.
   for (const key of Object.keys(value)) {
-    // $FlowExpectedError[prop-missing]
-    result[key] = structuredCloneInternal(value[key]);
+    setClonedProperty(result, key, structuredCloneInternal(value[key]));
   }
 
   // $FlowExpectedError[incompatible-type] we know result is T
