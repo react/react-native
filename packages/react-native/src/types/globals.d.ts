@@ -694,7 +694,7 @@ declare global {
     onprogress:
       ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     readonly readyState: number;
-    readonly result: string | ArrayBuffer;
+    readonly result: string | ArrayBuffer | null;
     abort(): void;
     readAsArrayBuffer(blob: Blob): void;
     readAsDataURL(blob: Blob): void;
