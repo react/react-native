@@ -76,6 +76,23 @@ export type LayoutChangeEvent = NativeSyntheticEvent<
   }>,
 >;
 
+export type SafeAreaInsets = Readonly<{
+  top: number,
+  right: number,
+  bottom: number,
+  left: number,
+}>;
+
+export type SafeAreaInsetsChangeEvent = NativeSyntheticEvent<
+  Readonly<{
+    /**
+     * The part of the view that is covered by the system UI, in the view's own
+     * coordinate space.
+     */
+    insets: SafeAreaInsets,
+  }>,
+>;
+
 /**
  * @deprecated Use `TextLayoutEvent` instead.
  */
