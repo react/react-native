@@ -201,6 +201,7 @@ module.exports = {
 
       return (
         source.value === 'react-native/asset-registry' ||
+        source.value === 'react-native/async-require' ||
         source.value === 'react-native/react-private-interface' ||
         source.value === 'react-native/setup-env' ||
         source.value === 'react-native/unstable-internals-do-not-use'
