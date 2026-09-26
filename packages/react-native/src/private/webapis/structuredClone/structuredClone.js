@@ -67,7 +67,7 @@ function structuredCloneInternal<T>(value: T): T {
 
   // Handles arrays.
   if (Array.isArray(value)) {
-    const result = [];
+    const result = new Array<unknown>(value.length);
     memory.set(value, result);
 
     for (const key of Object.keys(value)) {
