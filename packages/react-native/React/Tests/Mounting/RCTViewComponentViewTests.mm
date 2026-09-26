@@ -96,7 +96,7 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   XCTAssertEqual(parent.subviews[2], child3);
 }
 
-- (void)testToggleRemoveClippedSubviewsOffClearsReactSubviews
+- (void)testRepeatedRemoveClippedSubviewsTogglesPreserveChildren
 {
   RCTViewComponentView *parent = [RCTViewComponentView new];
   UIView *child1 = [UIView new];
@@ -112,9 +112,11 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   auto propsOff = makeViewProps(false);
   [parent updateProps:propsOff oldProps:propsOn];
 
-  // _reactSubviews should be cleared
-  NSMutableArray *reactSubviews = [parent valueForKey:@"_reactSubviews"];
-  XCTAssertEqual(reactSubviews.count, 0u);
+  // A subsequent toggle should still track and restore the same children.
+  [parent updateProps:propsOn oldProps:propsOff];
+  [child1 removeFromSuperview];
+  [parent updateProps:propsOff oldProps:propsOn];
+  XCTAssertEqualObjects(parent.subviews, (@[ child1 ]));
 }
 
 - (void)testUnmountAfterToggleOffCleansUpReactSubviews
