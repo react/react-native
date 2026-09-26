@@ -887,7 +887,9 @@ static void RCTAddContourEffectToLayer(
     UIEdgeInsets imageCapInsets = image.capInsets;
     CGRect contentsCenter = CGRect{
         CGPoint{imageCapInsets.left / imageSize.width, imageCapInsets.top / imageSize.height},
-        CGSize{(CGFloat)1.0 / imageSize.width, (CGFloat)1.0 / imageSize.height}};
+        CGSize{
+            MAX(0, (imageSize.width - imageCapInsets.left - imageCapInsets.right) / imageSize.width),
+            MAX(0, (imageSize.height - imageCapInsets.top - imageCapInsets.bottom) / imageSize.height)}};
     layer.contents = (id)image.CGImage;
     layer.contentsScale = image.scale;
 
