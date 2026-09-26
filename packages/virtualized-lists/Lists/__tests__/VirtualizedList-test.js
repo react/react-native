@@ -799,6 +799,113 @@ describe('VirtualizedList', () => {
     expect(onEndReached).toHaveBeenCalled();
   });
 
+  it('calls onEndReached once after a programmatic scroll and re-arms for appended data', async () => {
+    const ITEM_HEIGHT = 40;
+    const layout = {width: 300, height: 600};
+    let data = Array(40)
+      .fill()
+      .map((_, index) => ({key: `key-${index}`}));
+    const onEndReached = jest.fn();
+    const props = {
+      data,
+      initialNumToRender: 10,
+      onEndReachedThreshold: 1,
+      windowSize: 2,
+      renderItem: ({item}) => <item value={item.key} />,
+      getItem: (items, index) => items[index],
+      getItemCount: items => items.length,
+      onEndReached,
+    };
+
+    let component;
+    await act(() => {
+      component = create(<VirtualizedList {...props} />);
+    });
+    const instance = component.getInstance();
+
+    await act(() => {
+      instance._onLayout({nativeEvent: {layout, zoomScale: 1}});
+      instance._onContentSizeChange(300, data.length * ITEM_HEIGHT);
+      for (let i = 0; i < props.initialNumToRender; i++) {
+        simulateCellLayout(component, data, i, {
+          width: layout.width,
+          height: ITEM_HEIGHT,
+          x: 0,
+          y: i * ITEM_HEIGHT,
+        });
+      }
+      performAllBatches();
+    });
+    expect(onEndReached).not.toHaveBeenCalled();
+
+    const scrollToEnd = async (timeStamp: number) => {
+      await act(() => {
+        instance._onScroll({
+          timeStamp,
+          nativeEvent: {
+            contentOffset: {
+              y: data.length * ITEM_HEIGHT - layout.height,
+              x: 0,
+            },
+            layoutMeasurement: layout,
+            contentSize: {...layout, height: data.length * ITEM_HEIGHT},
+            zoomScale: 1,
+            contentInset: {right: 0, top: 0, left: 0, bottom: 0},
+          },
+        });
+        performAllBatches();
+      });
+    };
+
+    await scrollToEnd(1000);
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+    expect(onEndReached).toHaveBeenLastCalledWith({distanceFromEnd: 0});
+
+    await act(() => {
+      instance._onContentSizeChange(300, data.length * ITEM_HEIGHT + 1);
+      performAllBatches();
+    });
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+
+    await act(() => {
+      instance._onContentSizeChange(300, data.length * ITEM_HEIGHT);
+      performAllBatches();
+    });
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+
+    data = [...data, {key: `key-${data.length}`}];
+    await act(() => {
+      component.update(<VirtualizedList {...props} data={data} />);
+      performAllBatches();
+    });
+    expect(onEndReached).toHaveBeenCalledTimes(2);
+
+    await act(() => {
+      instance._onContentSizeChange(300, data.length * ITEM_HEIGHT);
+      performAllBatches();
+    });
+    expect(onEndReached).toHaveBeenCalledTimes(2);
+
+    await scrollToEnd(2000);
+    expect(onEndReached).toHaveBeenCalledTimes(2);
+
+    await act(() => {
+      instance._onScroll({
+        timeStamp: 3000,
+        nativeEvent: {
+          contentOffset: {y: 0, x: 0},
+          layoutMeasurement: layout,
+          contentSize: {...layout, height: data.length * ITEM_HEIGHT},
+          zoomScale: 1,
+          contentInset: {right: 0, top: 0, left: 0, bottom: 0},
+        },
+      });
+      performAllBatches();
+    });
+    await scrollToEnd(4000);
+    expect(onEndReached).toHaveBeenCalledTimes(3);
+  });
+
   it('does not call onEndReached when onContentSizeChange happens after onLayout', async () => {
     const ITEM_HEIGHT = 40;
     const layout = {width: 300, height: 600};

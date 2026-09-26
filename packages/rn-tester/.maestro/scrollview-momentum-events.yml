@@ -1,0 +1,56 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- launchApp
+- stopApp
+- openLink: rntester://example/ScrollViewExample/onMomentumScroll
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'momentum-scroll-view'
+    timeout: 120000
+- assertVisible:
+    id: 'momentum-scroll-begin-count'
+    text: 'onMomentumScrollBegin called 0 times'
+- assertVisible:
+    id: 'momentum-scroll-end-count'
+    text: 'onMomentumScrollEnd called 0 times'
+# Removing an idle ScrollView must not synthesize a momentum-end event.
+- tapOn:
+    id: 'toggle-momentum-scroll-view'
+- assertNotVisible:
+    id: 'momentum-scroll-view'
+- waitForAnimationToEnd:
+    timeout: 1000
+- assertVisible:
+    id: 'momentum-scroll-end-count'
+    text: 'onMomentumScrollEnd called 0 times'
+- tapOn:
+    id: 'toggle-momentum-scroll-view'
+- assertVisible:
+    id: 'momentum-scroll-view'
+# One momentum scroll must produce exactly one begin and one end event.
+- swipe:
+    from:
+      id: 'momentum-scroll-view'
+      point: 50%, 80%
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible:
+    id: 'momentum-scroll-begin-count'
+    text: 'onMomentumScrollBegin called 1 times'
+- assertVisible:
+    id: 'momentum-scroll-end-count'
+    text: 'onMomentumScrollEnd called 1 times'
+# Unmounting after momentum has ended must not increment the count again.
+- tapOn:
+    id: 'toggle-momentum-scroll-view'
+- waitForAnimationToEnd:
+    timeout: 1000
+- assertVisible:
+    id: 'momentum-scroll-begin-count'
+    text: 'onMomentumScrollBegin called 1 times'
+- assertVisible:
+    id: 'momentum-scroll-end-count'
+    text: 'onMomentumScrollEnd called 1 times'
