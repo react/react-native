@@ -15,6 +15,7 @@ import {TouchableOpacityProps} from './Touchable/TouchableOpacity';
 export interface ButtonProps extends Pick<
   TouchableNativeFeedbackProps & TouchableOpacityProps,
   | 'accessibilityLabel'
+  | 'accessibilityLabelledBy'
   | 'accessibilityState'
   | 'hasTVPreferredFocus'
   | 'nextFocusDown'
@@ -27,6 +28,8 @@ export interface ButtonProps extends Pick<
   | 'onPress'
   | 'touchSoundDisabled'
 > {
+  'aria-labelledby'?: string | undefined;
+
   /**
    * Text to display inside the button. On Android the given title will be converted to the uppercased form.
    */

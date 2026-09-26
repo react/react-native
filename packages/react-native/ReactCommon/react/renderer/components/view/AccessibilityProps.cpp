@@ -286,6 +286,10 @@ SharedDebugStringConvertibleList AccessibilityProps::getDebugProps() const {
           accessibilityLabel,
           defaultProps.accessibilityLabel),
       debugStringConvertibleItem(
+          "accessibilityLabelledBy",
+          accessibilityLabelledBy.value,
+          defaultProps.accessibilityLabelledBy.value),
+      debugStringConvertibleItem(
           "accessibilityLiveRegion",
           accessibilityLiveRegion,
           defaultProps.accessibilityLiveRegion),
