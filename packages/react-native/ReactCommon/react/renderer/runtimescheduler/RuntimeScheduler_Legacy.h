@@ -11,7 +11,7 @@
 
 #ifndef RCT_REMOVE_LEGACY_ARCH
 
-#include <ReactCommon/RuntimeExecutor.h>
+#include <React/RuntimeExecutor.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <react/renderer/runtimescheduler/Task.h>
 #include <atomic>

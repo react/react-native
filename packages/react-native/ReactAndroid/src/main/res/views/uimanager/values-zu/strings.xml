@@ -7,6 +7,7 @@
     <string name="imagebutton_description" gender="unknown">Inkinobho, Isithombe</string>
     <string name="alert_description" gender="unknown">Isexwayiso</string>
     <string name="menu_description" gender="unknown">Imenyu</string>
+    <string name="menubar_description" gender="unknown">Ibha Yemenyu</string>
     <string name="menuitem_description" gender="unknown">Into Yemenyu</string>
     <string name="scrollbar_description" gender="unknown">Ibha Lokuskrola</string>
     <string name="spinbutton_description" gender="unknown">Inkinobho Yokujikisa</string>

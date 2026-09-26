@@ -1016,6 +1016,10 @@ public abstract class com/facebook/react/bridge/ReactContext : android/content/C
 	public fun onNewIntent (Landroid/app/Activity;Landroid/content/Intent;)V
 	public fun onUserLeaveHint (Landroid/app/Activity;)V
 	public fun onWindowFocusChange (Z)V
+	public fun registerForActivityResult (Ljava/lang/Object;Landroidx/activity/result/contract/ActivityResultContract;Landroidx/activity/result/ActivityResultCallback;)Landroidx/activity/result/ActivityResultLauncher;
+	public fun registerForActivityResult (Ljava/lang/Object;Landroidx/activity/result/contract/ActivityResultContract;Landroidx/activity/result/ActivityResultCallback;Landroidx/activity/result/ActivityResultCallback;)Landroidx/activity/result/ActivityResultLauncher;
+	public fun registerForActivityResult (Ljava/lang/Object;Ljava/lang/String;Landroidx/activity/result/contract/ActivityResultContract;Landroidx/activity/result/ActivityResultCallback;)Landroidx/activity/result/ActivityResultLauncher;
+	public fun registerForActivityResult (Ljava/lang/Object;Ljava/lang/String;Landroidx/activity/result/contract/ActivityResultContract;Landroidx/activity/result/ActivityResultCallback;Landroidx/activity/result/ActivityResultCallback;)Landroidx/activity/result/ActivityResultLauncher;
 	public abstract fun registerSegment (ILjava/lang/String;Lcom/facebook/react/bridge/Callback;)V
 	public fun removeActivityEventListener (Lcom/facebook/react/bridge/ActivityEventListener;)V
 	public fun removeExtraWindowEventListener (Lcom/facebook/react/interfaces/ExtraWindowEventListener;)V

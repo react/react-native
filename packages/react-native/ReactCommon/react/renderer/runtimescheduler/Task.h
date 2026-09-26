@@ -9,9 +9,9 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/SchedulerPriority.h>
+#include <React/CallInvoker.h>
+#include <React/Timing.h>
 #include <jsi/jsi.h>
-#include <react/timing/primitives.h>
 
 #include <cstdint>
 #include <optional>
