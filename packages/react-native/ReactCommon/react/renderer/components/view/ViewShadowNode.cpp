@@ -55,7 +55,7 @@ void ViewShadowNode::initialize() noexcept {
       viewProps.accessibilityViewIsModal ||
       viewProps.importantForAccessibility != ImportantForAccessibility::Auto ||
       viewProps.removeClippedSubviews || viewProps.cursor != Cursor::Auto ||
-      !viewProps.filter.empty() ||
+      viewProps.onSafeAreaInsetsChange || !viewProps.filter.empty() ||
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
       HostPlatformViewTraitsInitializer::formsStackingContext(viewProps) ||
