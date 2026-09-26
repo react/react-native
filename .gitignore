@@ -170,9 +170,11 @@ fix_*.patch
 .metro-health-check*
 
 # Jest Integration
+/.wpt/
 /private/react-native-fantom/build/
 /private/react-native-fantom/.out/
 /private/react-native-fantom/tester/build/
+/packages/react-native/src/private/webapis/__tests__/wpt/generated/
 
 # [Experimental] Generated TS type definitions
 /packages/**/types_generated/

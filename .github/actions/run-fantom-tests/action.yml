@@ -14,6 +14,28 @@ runs:
       uses: ./.github/actions/setup-node
     - name: Install node dependencies
       uses: ./.github/actions/yarn-install
+    - name: Read WPT revision
+      id: wpt-revision
+      shell: bash
+      run: |
+        echo "revision=$(node -e 'process.stdout.write(require("./scripts/web-platform-tests/sync").WPT_REVISION)')" >> "$GITHUB_OUTPUT"
+    - name: Checkout WPT
+      uses: actions/checkout@v6
+      with:
+        repository: web-platform-tests/wpt
+        ref: ${{ steps.wpt-revision.outputs.revision }}
+        path: .wpt
+        sparse-checkout: |
+          fetch
+          resources
+          streams
+          tools
+          wpt
+    - name: Generate WPT fixtures
+      shell: bash
+      run: |
+        ./.wpt/wpt manifest --no-download --rebuild fetch streams
+        yarn sync-wpt --wpt-root="$GITHUB_WORKSPACE/.wpt"
     - name: Download Fantom Runner binary
       uses: actions/download-artifact@v7
       with:
