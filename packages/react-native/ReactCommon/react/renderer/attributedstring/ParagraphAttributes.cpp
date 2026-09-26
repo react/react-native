@@ -60,6 +60,10 @@ SharedDebugStringConvertibleList ParagraphAttributes::getDebugProps() const {
           adjustsFontSizeToFit,
           paragraphAttributes.adjustsFontSizeToFit),
       debugStringConvertibleItem(
+          "minimumFontScale",
+          minimumFontScale,
+          paragraphAttributes.minimumFontScale),
+      debugStringConvertibleItem(
           "minimumFontSize",
           minimumFontSize,
           paragraphAttributes.minimumFontSize),
