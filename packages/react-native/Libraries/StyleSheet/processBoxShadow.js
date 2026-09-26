@@ -17,6 +17,8 @@ const COMMA_SPLIT_REGEX = /,(?![^()]*\))/;
 const WHITESPACE_SPLIT_REGEX = /\s+(?![^(]*\))/;
 const LENGTH_PARSE_REGEX = /^([+-]?\d*\.?\d+)(px)?$/;
 const NEWLINE_REGEX = /\n/g;
+const MAX_CACHE_SIZE = 1024;
+const CACHE_CANDIDATE: false = false;
 
 export type ParsedBoxShadow = {
   offsetX: number,
@@ -27,18 +29,55 @@ export type ParsedBoxShadow = {
   inset?: boolean,
 };
 
+const boxShadowCache: Map<string, false | Array<ParsedBoxShadow>> = new Map();
+
 export default function processBoxShadow(
   rawBoxShadows: ?(ReadonlyArray<BoxShadowValue> | string),
 ): Array<ParsedBoxShadow> {
-  const result: Array<ParsedBoxShadow> = [];
   if (rawBoxShadows == null) {
-    return result;
+    return [];
   }
 
-  const boxShadowList =
-    typeof rawBoxShadows === 'string'
-      ? parseBoxShadowString(rawBoxShadows.replace(NEWLINE_REGEX, ' '))
-      : rawBoxShadows;
+  if (typeof rawBoxShadows !== 'string') {
+    return processBoxShadowList(rawBoxShadows);
+  }
+
+  const cachedResult = boxShadowCache.get(rawBoxShadows);
+  if (cachedResult != null && cachedResult !== CACHE_CANDIDATE) {
+    // Map iteration order follows insertion order. Re-inserting on a hit keeps
+    // the least-recently-used entry first.
+    boxShadowCache.delete(rawBoxShadows);
+    boxShadowCache.set(rawBoxShadows, cachedResult);
+    return cloneBoxShadows(cachedResult);
+  }
+
+  // Wait for a repeat before copying a parsed value into the cache. This keeps
+  // one-off strings from paying the cost of cloning the result.
+  const wasSeen = cachedResult === CACHE_CANDIDATE;
+  const result = processBoxShadowList(
+    parseBoxShadowString(rawBoxShadows.replace(NEWLINE_REGEX, ' ')),
+  );
+
+  if (wasSeen) {
+    boxShadowCache.delete(rawBoxShadows);
+    boxShadowCache.set(rawBoxShadows, cloneBoxShadows(result));
+  } else {
+    if (boxShadowCache.size >= MAX_CACHE_SIZE) {
+      const oldestKey = boxShadowCache.keys().next().value;
+      if (oldestKey != null) {
+        boxShadowCache.delete(oldestKey);
+      }
+    }
+    boxShadowCache.set(rawBoxShadows, CACHE_CANDIDATE);
+  }
+
+  return result;
+}
+
+function processBoxShadowList(
+  boxShadowList: ReadonlyArray<BoxShadowValue>,
+): Array<ParsedBoxShadow> {
+  const result: Array<ParsedBoxShadow> = [];
 
   for (const rawBoxShadow of boxShadowList) {
     const parsedBoxShadow: ParsedBoxShadow = {
@@ -108,6 +147,13 @@ export default function processBoxShadow(
     result.push(parsedBoxShadow);
   }
   return result;
+}
+
+function cloneBoxShadows(
+  boxShadows: ReadonlyArray<ParsedBoxShadow>,
+): Array<ParsedBoxShadow> {
+  // Style processing callers can mutate the returned array and its entries.
+  return boxShadows.map(boxShadow => ({...boxShadow}));
 }
 
 function parseBoxShadowString(rawBoxShadows: string): Array<BoxShadowValue> {
