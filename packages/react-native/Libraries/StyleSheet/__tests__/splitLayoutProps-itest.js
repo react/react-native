@@ -47,6 +47,18 @@ test('does not copy values to both returned objects', () => {
   `);
 });
 
+test('splits zIndex into the outer style', () => {
+  // On Android a ScrollView with a RefreshControl is wrapped in an
+  // AndroidSwipeRefreshLayout, and the outer style is applied to that wrapper.
+  // `zIndex` has to travel outwards along with the other positioning props,
+  // because the wrapper is the node that participates in the parent's
+  // stacking context.
+  const style = {zIndex: 1, top: 0, backgroundColor: 'red', padding: 8};
+  const {outer, inner} = splitLayoutProps(style);
+  expect(outer).toEqual({zIndex: 1, top: 0});
+  expect(inner).toEqual({backgroundColor: 'red', padding: 8});
+});
+
 test('returns null values if argument is null', () => {
   const {outer, inner} = splitLayoutProps(null);
   expect(outer).toBe(null);
