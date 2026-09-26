@@ -44,6 +44,7 @@ internal class ReactTextViewAccessibilityDelegate(
                   view.getTag(R.id.accessibility_state) != null ||
                   view.getTag(R.id.accessibility_actions) != null ||
                   view.getTag(R.id.react_test_id) != null ||
+                  view.getTag(R.id.accessibility_collection) != null ||
                   view.getTag(R.id.accessibility_collection_item) != null ||
                   view.getTag(R.id.accessibility_links) != null ||
                   view.getTag(R.id.role) != null)
