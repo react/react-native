@@ -82,6 +82,14 @@ class ReactActivityResultCallerImplTest {
   }
 
   @Test
+  fun launcherExposesRegisteredContract() {
+    val contract = GetContent()
+    val launcher = caller.registerForActivityResult(moduleA, contract) {}
+
+    assertThat(launcher.contract).isSameAs(contract)
+  }
+
+  @Test
   fun twoOwnersMayRegisterTheSameStockContract() {
     caller.registerForActivityResult(moduleA, GetContent()) {}
     caller.registerForActivityResult(moduleB, GetContent()) {}

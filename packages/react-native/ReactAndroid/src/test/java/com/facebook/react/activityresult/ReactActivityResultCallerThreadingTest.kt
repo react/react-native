@@ -11,7 +11,6 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.os.Bundle
 import android.os.Looper
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContract
@@ -65,8 +64,7 @@ class ReactActivityResultCallerThreadingTest {
               .orEmpty()
   }
 
-  private class ThrowingLauncher : ActivityResultLauncher<String>() {
-    override val contract: ActivityResultContract<String, *> = GetContent()
+  private class ThrowingLauncher : ActivityResultLauncherCompat<String>(GetContent()) {
     var launchCount = 0
 
     override fun launch(input: String, options: ActivityOptionsCompat?) {
