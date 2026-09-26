@@ -1709,6 +1709,13 @@ const examples = [
     },
   },
   {
+    title: 'Inline view with a reduced font scale',
+    name: 'inlineViewFontScale',
+    render(): React.Node {
+      return <TextInlineView.FontScale />;
+    },
+  },
+  {
     title: 'Inline views with multiple nested texts',
     name: 'inlineViewsMultiple',
     render(): React.Node {
