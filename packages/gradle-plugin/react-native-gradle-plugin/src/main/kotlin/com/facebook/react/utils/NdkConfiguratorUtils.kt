@@ -10,11 +10,15 @@ package com.facebook.react.utils
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Variant
 import com.facebook.react.ReactExtension
+import com.facebook.react.internal.StubPchBuildService
 import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
 import java.io.File
 import org.gradle.api.Project
 
 internal object NdkConfiguratorUtils {
+  /** Set by Android Studio only on every Gradle */
+  private const val BUILD_MODEL_ONLY_PROPERTY = "android.injected.build.model.only"
+
   @Suppress("UnstableApiUsage")
   fun configureReactNativeNdk(project: Project, extension: ReactExtension) {
     project.pluginManager.withPlugin("com.android.application") {
@@ -63,6 +67,29 @@ internal object NdkConfiguratorUtils {
         }
       }
     }
+  }
+
+  /**
+   * The codegen targets share a precompiled header, which only a real build produces. Android
+   * Studio's C++ engine needs one at sync time, so during a sync we write stubs for the variant
+   * Studio is indexing.
+   */
+  fun configureStubPchGeneration(project: Project) {
+    val isIdeSync =
+        project.providers
+            .gradleProperty(BUILD_MODEL_ONLY_PROPERTY)
+            .map { it.toBoolean() }
+            .getOrElse(false)
+    if (!isIdeSync) {
+      return
+    }
+
+    project.gradle.sharedServices
+        .registerIfAbsent("StubPchBuildService", StubPchBuildService::class.java) { spec ->
+          spec.parameters.cxxDirectory.set(project.layout.projectDirectory.dir(".cxx"))
+        }
+        // Gradle only closes services that were instantiated, so resolve it right away.
+        .get()
   }
 
   /**
