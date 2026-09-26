@@ -12,6 +12,7 @@
 #include "StateWrapperImpl.h"
 
 #include <cxxreact/TraceSection.h>
+#include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/jni/ReadableNativeArray.h>
 #include <react/jni/ReadableNativeMap.h>
@@ -359,22 +360,18 @@ jni::local_ref<jobject> getProps(
 }
 
 struct InstructionBuffer {
-  JNIEnv* env;
-  jintArray ints;
+  std::vector<jint> ints;
   jni::local_ref<jni::JArrayClass<jobject>> objects;
 
-  int intsPosition = 0;
   int objectsPosition = 0;
 
   inline void writeInt(int value) {
-    env->SetIntArrayRegion(ints, intsPosition, 1, &value);
-    intsPosition += 1;
+    ints.push_back(value);
   }
 
   template <size_t N>
   inline void writeIntArray(const std::array<int, N>& buffer) {
-    env->SetIntArrayRegion(ints, intsPosition, N, buffer.data());
-    intsPosition += N;
+    ints.insert(ints.end(), buffer.begin(), buffer.end());
   }
 
   inline void writeObject(jobject obj) {
@@ -863,10 +860,9 @@ void FabricMountingManager::executeMount(
   // Allocate the intBuffer and object array, now that we know exact sizes
   // necessary
   InstructionBuffer buffer = {
-      .env = env,
-      .ints = env->NewIntArray(batchMountItemIntsSize),
       .objects = jni::JArrayClass<jobject>::newArray(batchMountItemObjectsSize),
   };
+  buffer.ints.reserve(batchMountItemIntsSize);
 
   // Fill in arrays
   int prevMountItemType = -1;
@@ -996,6 +992,13 @@ void FabricMountingManager::executeMount(
     }
   }
 
+  // Copy the ints to Java in a single JNI call, rather than one per write
+  react_native_assert(
+      static_cast<int>(buffer.ints.size()) == batchMountItemIntsSize);
+  jintArray ints = env->NewIntArray(static_cast<jsize>(buffer.ints.size()));
+  env->SetIntArrayRegion(
+      ints, 0, static_cast<jsize>(buffer.ints.size()), buffer.ints.data());
+
   static auto createMountItemsIntBufferBatchContainer =
       JFabricUIManager::javaClassStatic()
           ->getMethod<jni::alias_ref<JMountItem>(
@@ -1006,7 +1009,7 @@ void FabricMountingManager::executeMount(
       surfaceId,
       // If there are no items, we pass a nullptr instead of passing the
       // object through the JNI
-      batchMountItemIntsSize > 0 ? buffer.ints : nullptr,
+      batchMountItemIntsSize > 0 ? ints : nullptr,
       batchMountItemObjectsSize > 0 ? buffer.objects.get() : nullptr,
       revisionNumber);
 
@@ -1026,7 +1029,7 @@ void FabricMountingManager::executeMount(
       telemetry.getAffectedLayoutNodesCount(),
       static_cast<jboolean>(synchronous));
 
-  env->DeleteLocalRef(buffer.ints);
+  env->DeleteLocalRef(ints);
 }
 
 void FabricMountingManager::drainPreallocateViewsQueue() {
