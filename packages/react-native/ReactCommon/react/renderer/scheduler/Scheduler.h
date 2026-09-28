@@ -33,6 +33,7 @@
 
 namespace facebook::react {
 
+class SchedulerDelegateRegistration;
 class CdpMetricsReporter;
 class CdpPerfIssuesReporter;
 class EventPerformanceLogger;
@@ -48,6 +49,10 @@ class Scheduler final : public UIManagerDelegate {
       const SchedulerToolbox &schedulerToolbox,
       UIManagerAnimationDelegate *animationDelegate,
       SchedulerDelegate *delegate);
+  Scheduler(
+      const SchedulerToolbox &schedulerToolbox,
+      UIManagerAnimationDelegate *animationDelegate,
+      std::shared_ptr<SchedulerDelegate> delegate);
   ~Scheduler() override;
 
 #pragma mark - Surface Management
@@ -68,11 +73,19 @@ class Scheduler final : public UIManagerDelegate {
 #pragma mark - Delegate
 
   /*
-   * Sets and gets the Scheduler's delegate.
-   * If you requesting a ComponentDescriptor and unsure that it's there, you are
-   * doing something wrong.
+   * Each assignment starts a new delegate generation and cancels queued work
+   * for the previous generation. Already active callbacks may finish.
+   * Lifecycle mutations (replacement and destruction) must be serialized by
+   * the caller. Already acquired delegate invocations may overlap retirement.
+   * Calls into Scheduler itself still require the caller to keep it alive;
+   * only deferred rendering callbacks are independent of Scheduler's lifetime.
+   * A borrowed delegate must outlive its active callbacks. The owned form
+   * keeps it alive until those callbacks return.
+   * getDelegate() is a non-owning snapshot; callers must synchronize its use
+   * with replacement and destruction.
    */
   void setDelegate(SchedulerDelegate *delegate);
+  void setOwnedDelegate(std::shared_ptr<SchedulerDelegate> delegate);
   SchedulerDelegate *getDelegate() const;
 
 #pragma mark - UIManagerAnimationDelegate
@@ -127,7 +140,13 @@ class Scheduler final : public UIManagerDelegate {
  private:
   friend class SurfaceHandler;
 
-  SchedulerDelegate *delegate_;
+  Scheduler(
+      const SchedulerToolbox &schedulerToolbox,
+      UIManagerAnimationDelegate *animationDelegate,
+      std::shared_ptr<SchedulerDelegateRegistration> delegateRegistration);
+  void replaceDelegate(std::shared_ptr<SchedulerDelegateRegistration> delegateRegistration);
+
+  std::shared_ptr<SchedulerDelegateRegistration> delegateRegistration_;
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   RuntimeExecutor runtimeExecutor_;
   std::shared_ptr<UIManager> uiManager_;

@@ -7,6 +7,8 @@
 
 #include "Scheduler.h"
 
+#include "SchedulerDelegateRegistration.h"
+
 #include <glog/logging.h>
 #include <jsi/jsi.h>
 
@@ -36,7 +38,27 @@ Scheduler::Scheduler(
     const SchedulerToolbox& schedulerToolbox,
     UIManagerAnimationDelegate* animationDelegate,
     SchedulerDelegate* delegate)
-    : runtimeExecutor_(schedulerToolbox.runtimeExecutor),
+    : Scheduler(
+          schedulerToolbox,
+          animationDelegate,
+          std::make_shared<SchedulerDelegateRegistration>(delegate)) {}
+
+Scheduler::Scheduler(
+    const SchedulerToolbox& schedulerToolbox,
+    UIManagerAnimationDelegate* animationDelegate,
+    std::shared_ptr<SchedulerDelegate> delegate)
+    : Scheduler(
+          schedulerToolbox,
+          animationDelegate,
+          std::make_shared<SchedulerDelegateRegistration>(
+              std::move(delegate))) {}
+
+Scheduler::Scheduler(
+    const SchedulerToolbox& schedulerToolbox,
+    UIManagerAnimationDelegate* animationDelegate,
+    std::shared_ptr<SchedulerDelegateRegistration> delegateRegistration)
+    : delegateRegistration_(std::move(delegateRegistration)),
+      runtimeExecutor_(schedulerToolbox.runtimeExecutor),
       contextContainer_(schedulerToolbox.contextContainer) {
   // Creating a container for future `EventDispatcher` instance.
   eventDispatcher_ = std::make_shared<std::optional<const EventDispatcher>>();
@@ -156,7 +178,6 @@ Scheduler::Scheduler(
       std::weak_ptr<const ComponentDescriptorRegistry>(
           componentDescriptorRegistry_));
 
-  delegate_ = delegate;
   commitHooks_ = schedulerToolbox.commitHooks;
 
   // Layout events (`onLayout`) are emitted as a standalone consumer of the
@@ -185,6 +206,8 @@ Scheduler::Scheduler(
 }
 
 Scheduler::~Scheduler() {
+  std::atomic_load(&delegateRegistration_)->retire();
+
   LOG(WARNING) << "Scheduler::~Scheduler() was called (address: " << this
                << ").";
 
@@ -278,11 +301,23 @@ Scheduler::findComponentDescriptorByHandle_DO_NOT_USE_THIS_IS_BROKEN(
 #pragma mark - Delegate
 
 void Scheduler::setDelegate(SchedulerDelegate* delegate) {
-  delegate_ = delegate;
+  replaceDelegate(std::make_shared<SchedulerDelegateRegistration>(delegate));
+}
+
+void Scheduler::setOwnedDelegate(std::shared_ptr<SchedulerDelegate> delegate) {
+  replaceDelegate(
+      std::make_shared<SchedulerDelegateRegistration>(std::move(delegate)));
+}
+
+void Scheduler::replaceDelegate(
+    std::shared_ptr<SchedulerDelegateRegistration> delegateRegistration) {
+  auto previous = std::atomic_exchange(
+      &delegateRegistration_, std::move(delegateRegistration));
+  previous->retire();
 }
 
 SchedulerDelegate* Scheduler::getDelegate() const {
-  return delegate_;
+  return std::atomic_load(&delegateRegistration_)->acquire().get();
 }
 
 #pragma mark - UIManagerAnimationDelegate
@@ -301,29 +336,32 @@ void Scheduler::uiManagerDidFinishTransaction(
     bool mountSynchronously) {
   TraceSection s("Scheduler::uiManagerDidFinishTransaction");
 
-  if (delegate_ != nullptr) {
+  auto registration = std::atomic_load(&delegateRegistration_);
+  if (auto delegate = registration->acquire()) {
     // This is no-op on all platforms except for Android where we need to
     // observe each transaction to be able to mount correctly.
-    delegate_->schedulerDidFinishTransaction(mountingCoordinator);
+    delegate->schedulerDidFinishTransaction(mountingCoordinator);
 
     if (!mountSynchronously) {
       auto surfaceId = mountingCoordinator->getSurfaceId();
 
       runtimeScheduler_->scheduleRenderingUpdate(
           surfaceId,
-          [delegate = delegate_,
+          [registration = std::move(registration),
            mountingCoordinator = std::move(mountingCoordinator)]() {
-            delegate->schedulerShouldRenderTransactions(mountingCoordinator);
+            if (auto delegate = registration->acquire()) {
+              delegate->schedulerShouldRenderTransactions(mountingCoordinator);
+            }
           });
     } else {
-      delegate_->schedulerShouldRenderTransactions(mountingCoordinator);
+      delegate->schedulerShouldRenderTransactions(mountingCoordinator);
     }
   }
 }
 
 void Scheduler::uiManagerDidCreateShadowNode(const ShadowNode& shadowNode) {
-  if (delegate_ != nullptr) {
-    delegate_->schedulerDidRequestPreliminaryViewAllocation(shadowNode);
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
+    delegate->schedulerDidRequestPreliminaryViewAllocation(shadowNode);
   }
 }
 
@@ -333,15 +371,19 @@ void Scheduler::uiManagerDidDispatchCommand(
     const folly::dynamic& args) {
   TraceSection s(
       "Scheduler::uiManagerDispatchCommand", "commandName", commandName);
-  if (delegate_ != nullptr) {
+  auto registration = std::atomic_load(&delegateRegistration_);
+  if (registration->acquire()) {
     auto shadowView = ShadowView(*shadowNode);
     runtimeScheduler_->scheduleRenderingUpdate(
         shadowNode->getSurfaceId(),
-        [delegate = delegate_,
+        [registration = std::move(registration),
          shadowView = std::move(shadowView),
          commandName,
          args]() {
-          delegate->schedulerDidDispatchCommand(shadowView, commandName, args);
+          if (auto delegate = registration->acquire()) {
+            delegate->schedulerDidDispatchCommand(
+                shadowView, commandName, args);
+          }
         });
   }
 }
@@ -351,9 +393,9 @@ void Scheduler::uiManagerDidSendAccessibilityEvent(
     const std::string& eventType) {
   TraceSection s("Scheduler::uiManagerDidSendAccessibilityEvent");
 
-  if (delegate_ != nullptr) {
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
     auto shadowView = ShadowView(*shadowNode);
-    delegate_->schedulerDidSendAccessibilityEvent(shadowView, eventType);
+    delegate->schedulerDidSendAccessibilityEvent(shadowView, eventType);
   }
 }
 
@@ -364,8 +406,8 @@ void Scheduler::uiManagerDidSetIsJSResponder(
     const std::shared_ptr<const ShadowNode>& shadowNode,
     bool isJSResponder,
     bool blockNativeResponder) {
-  if (delegate_ != nullptr) {
-    delegate_->schedulerDidSetIsJSResponder(
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
+    delegate->schedulerDidSetIsJSResponder(
         ShadowView(*shadowNode), isJSResponder, blockNativeResponder);
   }
 }
@@ -373,21 +415,21 @@ void Scheduler::uiManagerDidSetIsJSResponder(
 void Scheduler::uiManagerShouldSynchronouslyUpdateViewOnUIThread(
     Tag tag,
     const folly::dynamic& props) {
-  if (delegate_ != nullptr) {
-    delegate_->schedulerShouldSynchronouslyUpdateViewOnUIThread(tag, props);
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
+    delegate->schedulerShouldSynchronouslyUpdateViewOnUIThread(tag, props);
   }
 }
 
 void Scheduler::uiManagerDidUpdateShadowTree(
     const std::unordered_map<Tag, folly::dynamic>& tagToProps) {
-  if (delegate_ != nullptr) {
-    delegate_->schedulerDidUpdateShadowTree(tagToProps);
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
+    delegate->schedulerDidUpdateShadowTree(tagToProps);
   }
 }
 
 void Scheduler::uiManagerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) {
-  if (delegate_ != nullptr) {
-    delegate_->schedulerDidCaptureViewSnapshot(tag, surfaceId);
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
+    delegate->schedulerDidCaptureViewSnapshot(tag, surfaceId);
   }
 }
 
@@ -395,14 +437,14 @@ void Scheduler::uiManagerDidSetViewSnapshot(
     Tag sourceTag,
     Tag targetTag,
     SurfaceId surfaceId) {
-  if (delegate_ != nullptr) {
-    delegate_->schedulerDidSetViewSnapshot(sourceTag, targetTag, surfaceId);
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
+    delegate->schedulerDidSetViewSnapshot(sourceTag, targetTag, surfaceId);
   }
 }
 
 void Scheduler::uiManagerDidClearPendingSnapshots() {
-  if (delegate_ != nullptr) {
-    delegate_->schedulerDidClearPendingSnapshots();
+  if (auto delegate = std::atomic_load(&delegateRegistration_)->acquire()) {
+    delegate->schedulerDidClearPendingSnapshots();
   }
 }
 
@@ -417,13 +459,21 @@ void Scheduler::uiManagerShouldRemoveEventListener(
 }
 
 void Scheduler::uiManagerDidFinishReactCommit(const ShadowTree& shadowTree) {
-  if (delegate_ == nullptr) {
+  auto registration = std::atomic_load(&delegateRegistration_);
+  if (!registration->acquire()) {
     return;
   }
 
   auto surfaceId = shadowTree.getSurfaceId();
   runtimeScheduler_->scheduleRenderingUpdate(
-      surfaceId, [surfaceId, uiManager = uiManager_, delegate = delegate_]() {
+      surfaceId,
+      [surfaceId,
+       uiManager = uiManager_,
+       registration = std::move(registration)]() {
+        auto delegate = registration->acquire();
+        if (!delegate) {
+          return;
+        }
         bool promoted = false;
 
         uiManager->getShadowTreeRegistry().visit(

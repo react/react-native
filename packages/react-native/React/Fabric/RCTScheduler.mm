@@ -23,23 +23,23 @@ using namespace facebook::react;
 
 class SchedulerDelegateProxy : public SchedulerDelegate {
  public:
-  SchedulerDelegateProxy(void *scheduler) : scheduler_(scheduler) {}
+  SchedulerDelegateProxy(RCTScheduler *scheduler) : scheduler_(scheduler) {}
 
   void schedulerDidFinishTransaction(const std::shared_ptr<const MountingCoordinator> &mountingCoordinator) override
   {
-    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    RCTScheduler *scheduler = scheduler_;
     [scheduler.delegate schedulerDidFinishTransaction:mountingCoordinator];
   }
 
   void schedulerShouldRenderTransactions(const std::shared_ptr<const MountingCoordinator> &mountingCoordinator) override
   {
-    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    RCTScheduler *scheduler = scheduler_;
     [scheduler.delegate schedulerShouldRenderTransactions:mountingCoordinator];
   }
 
   void schedulerShouldMergeReactRevision(SurfaceId surfaceId) override
   {
-    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    RCTScheduler *scheduler = scheduler_;
     [scheduler.delegate schedulerShouldMergeReactRevision:surfaceId];
   }
 
@@ -54,14 +54,14 @@ class SchedulerDelegateProxy : public SchedulerDelegate {
       const std::string &commandName,
       const folly::dynamic &args) override
   {
-    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    RCTScheduler *scheduler = scheduler_;
     [scheduler.delegate schedulerDidDispatchCommand:shadowView commandName:commandName args:args];
   }
 
   void schedulerDidSetIsJSResponder(const ShadowView &shadowView, bool isJSResponder, bool blockNativeResponder)
       override
   {
-    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    RCTScheduler *scheduler = scheduler_;
     [scheduler.delegate schedulerDidSetIsJSResponder:isJSResponder
                                 blockNativeResponder:blockNativeResponder
                                        forShadowView:shadowView];
@@ -69,13 +69,13 @@ class SchedulerDelegateProxy : public SchedulerDelegate {
 
   void schedulerDidSendAccessibilityEvent(const ShadowView &shadowView, const std::string &eventType) override
   {
-    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    RCTScheduler *scheduler = scheduler_;
     [scheduler.delegate schedulerDidSendAccessibilityEvent:shadowView eventType:eventType];
   }
 
   void schedulerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic &props) override
   {
-    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    RCTScheduler *scheduler = scheduler_;
     [scheduler.delegate schedulerDidSynchronouslyUpdateViewOnUIThread:tag props:props];
   }
 
@@ -104,7 +104,7 @@ class SchedulerDelegateProxy : public SchedulerDelegate {
   }
 
  private:
-  void *scheduler_;
+  __weak RCTScheduler *scheduler_;
 };
 
 class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, public RunLoopObserver::Delegate {
@@ -187,7 +187,7 @@ class RCTAnimationChoreographer : public AnimationChoreographer {
 @implementation RCTScheduler {
   std::unique_ptr<Scheduler> _scheduler;
   std::shared_ptr<LayoutAnimationDriver> _animationDriver;
-  std::unique_ptr<SchedulerDelegateProxy> _delegateProxy;
+  std::shared_ptr<SchedulerDelegateProxy> _delegateProxy;
   std::shared_ptr<LayoutAnimationDelegateProxy> _layoutAnimationDelegateProxy;
   std::unique_ptr<const PlatformRunLoopObserver> _uiRunLoopObserver;
 }
@@ -195,7 +195,7 @@ class RCTAnimationChoreographer : public AnimationChoreographer {
 - (instancetype)initWithToolbox:(SchedulerToolbox)toolbox
 {
   if (self = [super init]) {
-    _delegateProxy = std::make_unique<SchedulerDelegateProxy>((__bridge void *)self);
+    _delegateProxy = std::make_shared<SchedulerDelegateProxy>(self);
 
     if (ReactNativeFeatureFlags::enableLayoutAnimationsOnIOS()) {
       _layoutAnimationDelegateProxy = std::make_shared<LayoutAnimationDelegateProxy>((__bridge void *)self);
@@ -212,8 +212,8 @@ class RCTAnimationChoreographer : public AnimationChoreographer {
       toolbox.animationChoreographer = std::make_shared<RCTAnimationChoreographer>();
     }
 
-    _scheduler = std::make_unique<Scheduler>(
-        toolbox, (_animationDriver ? _animationDriver.get() : nullptr), _delegateProxy.get());
+    _scheduler =
+        std::make_unique<Scheduler>(toolbox, (_animationDriver ? _animationDriver.get() : nullptr), _delegateProxy);
   }
 
   return self;

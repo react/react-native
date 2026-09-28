@@ -4601,6 +4601,7 @@ class facebook::react::SafeAreaViewState {
 
 class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public Scheduler(const facebook::react::SchedulerToolbox& schedulerToolbox, facebook::react::UIManagerAnimationDelegate* animationDelegate, facebook::react::SchedulerDelegate* delegate);
+  public Scheduler(const facebook::react::SchedulerToolbox& schedulerToolbox, facebook::react::UIManagerAnimationDelegate* animationDelegate, std::shared_ptr<facebook::react::SchedulerDelegate> delegate);
   public facebook::react::SchedulerDelegate* getDelegate() const;
   public std::shared_ptr<const facebook::react::ContextContainer> getContextContainer() const;
   public std::shared_ptr<facebook::react::UIManager> getUIManager() const;
@@ -4625,6 +4626,7 @@ class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public void removeEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener);
   public void reportMount(facebook::react::SurfaceId surfaceId) const;
   public void setDelegate(facebook::react::SchedulerDelegate* delegate);
+  public void setOwnedDelegate(std::shared_ptr<facebook::react::SchedulerDelegate> delegate);
   public void unregisterSurface(const facebook::react::SurfaceHandler& surfaceHandler) const noexcept;
   public ~Scheduler() override;
 }
@@ -4643,6 +4645,19 @@ class facebook::react::SchedulerDelegate {
   public virtual void schedulerShouldRenderTransactions(const std::shared_ptr<const facebook::react::MountingCoordinator>& mountingCoordinator) = 0;
   public virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
   public virtual ~SchedulerDelegate() noexcept = default;
+}
+
+class facebook::react::SchedulerDelegateRegistration {
+  public SchedulerDelegateRegistration(facebook::react::SchedulerDelegate* delegate);
+  public SchedulerDelegateRegistration(std::shared_ptr<facebook::react::SchedulerDelegate> delegate);
+  public facebook::react::SchedulerDelegateRegistration::Lease acquire() const;
+  public void retire();
+}
+
+class facebook::react::SchedulerDelegateRegistration::Lease {
+  public facebook::react::SchedulerDelegate* get() const;
+  public facebook::react::SchedulerDelegate* operator->() const;
+  public operator bool() const;
 }
 
 class facebook::react::ScopedShadowTreeRevisionLock {

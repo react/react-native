@@ -5,23 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// Standalone reproduction of the use-after-free race between Scheduler
-// teardown and pending rendering-update lambdas previously enqueued via
-// runtimeScheduler_->scheduleRenderingUpdate inside
-// Scheduler::uiManagerDidFinishTransaction (and its sibling
-// uiManagerDidDispatchCommand). The lambda captures the delegate by raw
-// pointer; if the delegate is destroyed (as part of an instance teardown
-// triggered by an uncaught fatal error) before the lambda runs, the
-// dereference is a use-after-free. What closes the race is
-// RuntimeScheduler_Modern::handleTaskError, which clears the pending
-// rendering updates before the host error handler drops the delegate.
-//
-// The test drives the *real* Scheduler::uiManagerDidFinishTransaction so the
-// rendering-update lambda is enqueued via the regular code path into a real
-// RuntimeScheduler's pending-rendering-updates queue. The teardown is
-// initiated by an uncaught JSI host-function throw routed through
-// RuntimeScheduler's onTaskError callback (the test's analog of the host
-// fatal handler), then we trigger an event loop tick to drain the queue.
+// Exercise real Scheduler callbacks and the RuntimeScheduler rendering queue.
+// Delegate retirement must cover both fatal-error teardown and ordinary host
+// replacement/destruction, while preserving work for other generations.
 //
 // Fantom is intentionally not used here: it shares the global runtime VM
 // across tests, which would interfere with this test's contract that no
@@ -42,8 +28,8 @@
 #include <react/renderer/core/EventDispatcher.h>
 #include <react/renderer/element/ComponentBuilder.h>
 #include <react/renderer/element/Element.h>
-#include <react/renderer/element/testUtils.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
+#include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeRevision.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <react/renderer/scheduler/Scheduler.h>
@@ -51,6 +37,7 @@
 #include <react/renderer/scheduler/SchedulerToolbox.h>
 #include <react/renderer/scheduler/SurfaceHandler.h>
 #include <react/renderer/telemetry/TransactionTelemetry.h>
+#include <react/renderer/uimanager/UIManager.h>
 #include <react/renderer/uimanager/primitives.h>
 #include <react/utils/ContextContainer.h>
 
@@ -84,8 +71,15 @@ class RecordingDelegate : public SchedulerDelegate {
  public:
   RecordingDelegate() = default;
 
+  std::function<void()> onRenderTransactions;
+  std::function<void()> onDispatchCommand;
+  std::function<void()> onDestroy;
+
   ~RecordingDelegate() noexcept override {
     aliveMagic_ = kDestroyed;
+    if (onDestroy) {
+      onDestroy();
+    }
   }
 
   void schedulerDidFinishTransaction(
@@ -105,9 +99,14 @@ class RecordingDelegate : public SchedulerDelegate {
         << "schedulerShouldRenderTransactions invoked after delegate "
         << "destruction (use-after-free)";
     ++shouldRenderTransactionsCount_;
+    if (onRenderTransactions) {
+      onRenderTransactions();
+    }
   }
 
-  void schedulerShouldMergeReactRevision(SurfaceId /*unused*/) override {}
+  void schedulerShouldMergeReactRevision(SurfaceId /*unused*/) override {
+    ++shouldMergeReactRevisionCount_;
+  }
   void schedulerDidRequestPreliminaryViewAllocation(
       const ShadowNode& /*unused*/) override {}
   void schedulerDidDispatchCommand(
@@ -121,6 +120,9 @@ class RecordingDelegate : public SchedulerDelegate {
         << "schedulerDidDispatchCommand invoked after delegate destruction "
         << "(commandName=" << commandName << ")";
     ++didDispatchCommandCount_;
+    if (onDispatchCommand) {
+      onDispatchCommand();
+    }
   }
   void schedulerDidSendAccessibilityEvent(
       const ShadowView& /*unused*/,
@@ -151,12 +153,16 @@ class RecordingDelegate : public SchedulerDelegate {
   int didDispatchCommandCount() const {
     return didDispatchCommandCount_;
   }
+  int shouldMergeReactRevisionCount() const {
+    return shouldMergeReactRevisionCount_;
+  }
 
  private:
   uint64_t aliveMagic_{kAlive};
   int didFinishTransactionCount_{0};
   int shouldRenderTransactionsCount_{0};
   int didDispatchCommandCount_{0};
+  int shouldMergeReactRevisionCount_{0};
 };
 
 // EventBeat stub. Scheduler instantiates one through the toolbox factory but
@@ -207,6 +213,9 @@ class TestFeatureFlags : public ReactNativeFeatureFlagsDefaults {
   bool enableBridgelessArchitecture() override {
     return true;
   }
+  bool enableFabricCommitBranching() override {
+    return true;
+  }
 };
 
 // Builds a ComponentRegistryFactory with just the descriptors needed for the
@@ -233,7 +242,7 @@ ComponentRegistryFactory makeComponentRegistryFactory() {
 // a real Scheduler and drive uiManagerDidFinishTransaction end-to-end.
 class SchedulerDelegateInvalidationTest : public ::testing::Test {
  protected:
-  void setUp() {
+  void setUp(bool ownedDelegate = true) {
     ReactNativeFeatureFlags::override(std::make_unique<TestFeatureFlags>());
 
     runtime_ = facebook::hermes::makeHermesRuntime(
@@ -264,8 +273,8 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
     // Note: step 1 does NOT drain RuntimeScheduler_Modern's
     // pendingRenderingUpdates_. That's exactly the point of the test —
     // surface-level shutdown can't reach the lambda race; the race lives in
-    // the runtime scheduler's queue and is only closed by the invalidation
-    // token guard added in Scheduler::setDelegate or by runtime-scheduler-level
+    // the runtime scheduler's queue and is closed by delegate registration
+    // retirement in Scheduler::setDelegate or by runtime-scheduler-level
     // queue clearing on error.
     auto onTaskError = [this](
                            jsi::Runtime& /*runtime*/, jsi::JSError& /*error*/) {
@@ -301,9 +310,16 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
               std::move(ownerBox), *runtimeScheduler_);
         };
 
-    delegate_ = std::make_unique<RecordingDelegate>();
-    scheduler_ = std::make_unique<Scheduler>(
-        toolbox, /*animationDelegate=*/nullptr, delegate_.get());
+    delegate_ = std::make_shared<RecordingDelegate>();
+    if (ownedDelegate) {
+      scheduler_ = std::make_unique<Scheduler>(
+          toolbox,
+          /*animationDelegate=*/nullptr,
+          std::static_pointer_cast<SchedulerDelegate>(delegate_));
+    } else {
+      scheduler_ = std::make_unique<Scheduler>(
+          toolbox, /*animationDelegate=*/nullptr, delegate_.get());
+    }
 
     // Register a surface with the scheduler so the teardown path mirrors
     // production cascade ordering (per-surface unregister BEFORE delegate
@@ -320,6 +336,9 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
   }
 
   void TearDown() override {
+    if (scheduler_) {
+      scheduler_->getUIManager()->getShadowTreeRegistry().remove(11);
+    }
     if (surfaceHandler_ && scheduler_ &&
         surfaceHandler_->getStatus() != SurfaceHandler::Status::Unregistered) {
       scheduler_->unregisterSurface(*surfaceHandler_);
@@ -329,6 +348,7 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
     delegate_.reset();
     coordinator_.reset();
     rootShadowNode_.reset();
+    componentDescriptorRegistry_.reset();
     runtimeScheduler_.reset();
     contextContainer_.reset();
     executorQueue_.reset();
@@ -342,7 +362,9 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
   // queue time. Saves the rootShadowNode in the fixture so dispatch-command
   // tests can pass it to Scheduler::uiManagerDidDispatchCommand.
   std::shared_ptr<MountingCoordinator> makeCoordinator(SurfaceId surfaceId) {
-    auto builder = simpleComponentBuilder(contextContainer_);
+    componentDescriptorRegistry_ = makeComponentRegistryFactory()(
+        EventDispatcher::Weak{}, contextContainer_);
+    auto builder = ComponentBuilder{componentDescriptorRegistry_};
     std::shared_ptr<RootShadowNode> rootShadowNode;
     auto element = Element<RootShadowNode>()
                        .reference(rootShadowNode)
@@ -368,6 +390,27 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
     runtimeScheduler_->scheduleWork(
         [](jsi::Runtime& /*unused*/) { /* no-op */ });
     executorQueue_->flush();
+  }
+
+  void queueReactCommit() {
+    auto uiManager = scheduler_->getUIManager();
+    auto tree = std::make_unique<ShadowTree>(
+        11,
+        LayoutConstraints{},
+        LayoutContext{},
+        *uiManager,
+        *contextContainer_);
+    auto& shadowTree = *tree;
+    uiManager->getShadowTreeRegistry().add(std::move(tree));
+    shadowTree.commit(
+        [this](const RootShadowNode&) {
+          return std::static_pointer_cast<RootShadowNode>(
+              rootShadowNode_->ShadowNode::clone({}));
+        },
+        {.enableStateReconciliation = false,
+         .mountSynchronously = false,
+         .source = ShadowTreeCommitSource::React});
+    ASSERT_TRUE(shadowTree.getCurrentReactRevision().has_value());
   }
 
   // Schedules a JS task whose host function throws an uncaught Error. When
@@ -403,11 +446,12 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
   std::unique_ptr<TestExecutorQueue> executorQueue_;
   std::shared_ptr<RuntimeScheduler> runtimeScheduler_;
   std::shared_ptr<ContextContainer> contextContainer_;
-  std::unique_ptr<RecordingDelegate> delegate_;
+  std::shared_ptr<RecordingDelegate> delegate_;
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<SurfaceHandler> surfaceHandler_;
   std::shared_ptr<MountingCoordinator> coordinator_;
   std::shared_ptr<RootShadowNode> rootShadowNode_;
+  SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   bool jsThrowObserved_{false};
   bool postErrorTaskRan_{false};
 };
@@ -481,30 +525,16 @@ TEST_F(SchedulerDelegateInvalidationTest, JSThrowInitiatedTeardownIsSafe) {
 }
 
 // ---------------------------------------------------------------------------
-// Test 3 — The window that remains open: a delegate detached with no error
-// involved.
-//
-// handleTaskError clears pendingRenderingUpdates_ before the host error
-// handler runs, so an error-driven teardown is safe (Test 2). A plain
-// setDelegate swap never reaches handleTaskError, so the lambda enqueued in
-// (a) still calls through the raw pointer it captured when the queue drains
-// in (c). Had the host also destroyed the delegate — as an instance teardown
-// does — that call would be a use-after-free.
-//
-// The delegate is deliberately kept alive here rather than destroyed under an
-// EXPECT_DEATH. Asserting on the crash asks undefined behaviour to reliably
-// terminate the process, which it does not: the death-test form of this test
-// (and its two predecessors) passed on the fbcode host but flaked above 88%
-// on the Android instrumentation runner, reporting "failed to die" until
-// trunk auto-disabled them. Observing the stale call directly pins the same
-// open window deterministically.
+// Plain delegate detachment has no JS error to clear the rendering queue.
+// Keep the borrowed delegate alive and observe that its stale callback is
+// cancelled deterministically, without relying on undefined behaviour to crash.
 // ---------------------------------------------------------------------------
 TEST_F(
     SchedulerDelegateInvalidationTest,
-    DelegateDetachedWithoutError_PendingRenderingUpdateCallsStaleDelegate) {
-  setUp();
+    DelegateDetachedWithoutError_CancelsPendingRenderingUpdate) {
+  setUp(/*ownedDelegate=*/false);
 
-  // (a) Enqueue a rendering-update lambda capturing delegate_ raw.
+  // (a) Enqueue work for the current delegate registration.
   scheduler_->uiManagerDidFinishTransaction(
       coordinator_, /*mountSynchronously=*/false);
   EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 0);
@@ -514,10 +544,9 @@ TEST_F(
   scheduler_->setDelegate(nullptr);
   EXPECT_EQ(scheduler_->getDelegate(), nullptr);
 
-  // (c) Drain — the lambda calls through its captured pointer even though the
-  // scheduler itself no longer has a delegate.
+  // (c) Drain — retirement prevents a call through the old registration.
   runOneEventLoopTick();
-  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 1);
+  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -560,8 +589,8 @@ TEST_F(
 // race wouldn't be reachable." It would not — surface-shutdown clears the
 // per-surface UIManager pointer but doesn't touch the runtime scheduler's
 // pending-rendering-updates queue. The lambda still runs and still calls
-// the delegate. Only an error-driven queue clear, or a longer-term
-// runtime-scheduler-level shutdown signal, closes this race.
+// the delegate. Delegate registration retirement cancels that queued work
+// when the host detaches the delegate.
 // ---------------------------------------------------------------------------
 TEST_F(
     SchedulerDelegateInvalidationTest,
@@ -586,6 +615,124 @@ TEST_F(
   // (still-alive) delegate.
   runOneEventLoopTick();
   EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 1);
+}
+
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    DetachmentDropsQueuedCommandAndReleasesOwnedDelegate) {
+  setUp();
+  std::weak_ptr<RecordingDelegate> weakDelegate = delegate_;
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "scrollTo", folly::dynamic::array());
+  scheduler_->setOwnedDelegate(nullptr);
+  delegate_.reset();
+
+  EXPECT_TRUE(weakDelegate.expired());
+  runOneEventLoopTick();
+}
+
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    ReplacementPreservesOnlyNewGenerationWork) {
+  setUp();
+  scheduler_->uiManagerDidFinishTransaction(coordinator_, false);
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "old", folly::dynamic::array());
+  auto replacement = std::make_shared<RecordingDelegate>();
+  scheduler_->setOwnedDelegate(replacement);
+  scheduler_->uiManagerDidFinishTransaction(coordinator_, false);
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "new", folly::dynamic::array());
+  int unrelatedCalls = 0;
+  runtimeScheduler_->scheduleRenderingUpdate(22, [&] { ++unrelatedCalls; });
+
+  runOneEventLoopTick();
+
+  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 0);
+  EXPECT_EQ(delegate_->didDispatchCommandCount(), 0);
+  EXPECT_EQ(replacement->shouldRenderTransactionsCount(), 1);
+  EXPECT_EQ(replacement->didDispatchCommandCount(), 1);
+  EXPECT_EQ(unrelatedCalls, 1);
+}
+
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    ReassigningSameDelegateDoesNotReviveOldWork) {
+  setUp();
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "old", folly::dynamic::array());
+  scheduler_->setOwnedDelegate(delegate_);
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "new", folly::dynamic::array());
+
+  runOneEventLoopTick();
+
+  EXPECT_EQ(delegate_->didDispatchCommandCount(), 1);
+}
+
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    CallbackRetirementCancelsLaterWorkInSameFlush) {
+  setUp();
+  delegate_->onRenderTransactions = [this] {
+    scheduler_->setOwnedDelegate(nullptr);
+  };
+  scheduler_->uiManagerDidFinishTransaction(coordinator_, false);
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "scrollTo", folly::dynamic::array());
+  int unrelatedCalls = 0;
+  runtimeScheduler_->scheduleRenderingUpdate(22, [&] { ++unrelatedCalls; });
+
+  runOneEventLoopTick();
+
+  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 1);
+  EXPECT_EQ(delegate_->didDispatchCommandCount(), 0);
+  EXPECT_EQ(unrelatedCalls, 1);
+}
+
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    SchedulerDestructionRetiresQueuedWork) {
+  setUp();
+  // RuntimeScheduler's revision-manager pointer has an independent lifetime.
+  // Keep that owner alive while testing cancellation of the delegate work.
+  auto uiManager = scheduler_->getUIManager();
+  std::weak_ptr<RecordingDelegate> weakDelegate = delegate_;
+  scheduler_->uiManagerDidFinishTransaction(coordinator_, false);
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "scrollTo", folly::dynamic::array());
+  scheduler_->unregisterSurface(*surfaceHandler_);
+  scheduler_.reset();
+  delegate_.reset();
+
+  EXPECT_TRUE(weakDelegate.expired());
+  runOneEventLoopTick();
+}
+
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    LiveDelegateReceivesReactRevisionPromotion) {
+  setUp();
+  queueReactCommit();
+  EXPECT_EQ(delegate_->shouldMergeReactRevisionCount(), 0);
+
+  runOneEventLoopTick();
+
+  EXPECT_EQ(delegate_->shouldMergeReactRevisionCount(), 1);
+}
+
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    RetiredReactRevisionWorkDoesNotReachReplacement) {
+  setUp();
+  queueReactCommit();
+  auto replacement = std::make_shared<RecordingDelegate>();
+  scheduler_->setOwnedDelegate(replacement);
+
+  runOneEventLoopTick();
+
+  EXPECT_EQ(delegate_->shouldMergeReactRevisionCount(), 0);
+  EXPECT_EQ(replacement->shouldMergeReactRevisionCount(), 0);
 }
 
 } // namespace facebook::react
