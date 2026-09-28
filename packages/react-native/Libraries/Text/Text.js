@@ -466,6 +466,24 @@ function useTextPressability({
   );
 }
 
+function usePressabilityDebugStyleDev(
+  style: ?TextStyleProp,
+  onPress: ?(event: GestureResponderEvent) => unknown,
+): ?TextStyleProp {
+  const isDebugEnabled = PressabilityDebug.useIsEnabled();
+  return isDebugEnabled && onPress != null
+    ? [style, {color: 'magenta'}]
+    : style;
+}
+
+/**
+ * Colors pressable text when press targets are shown by the Inspector.
+ * Outside of `__DEV__` it returns the style unchanged and uses no hooks.
+ */
+const usePressabilityDebugStyle: typeof usePressabilityDebugStyleDev = __DEV__
+  ? usePressabilityDebugStyleDev
+  : style => style;
+
 /**
  * Wrap the NativeVirtualText component and initialize pressability.
  *
@@ -531,19 +549,6 @@ component PressableText(
       ref={ref}
     />
   );
-}
-
-/**
- * Colors pressable text when press targets are shown by the Inspector.
- */
-function usePressabilityDebugStyle(
-  style: NativeTextProps['style'],
-  onPress: TextPressabilityProps['onPress'],
-): NativeTextProps['style'] {
-  const isDebugEnabled = PressabilityDebug.useIsEnabled();
-  return isDebugEnabled && onPress != null
-    ? [style, {color: 'magenta'}]
-    : style;
 }
 
 const userSelectToSelectableMap = {
