@@ -1263,9 +1263,9 @@ static float distributeFreeSpaceSecondPass(
   return deltaFreeSpace;
 }
 
-// It distributes the free space to the flexible items.For those flexible items
-// whose min and max constraints are triggered, those flex item's clamped size
-// is removed from the remaingfreespace.
+// It distributes the free space to the flexible items. For those flexible items
+// whose min and max constraints are triggered, that flex item's clamped size
+// is removed from the remainingFreeSpace.
 static void distributeFreeSpaceFirstPass(
     yoga::Node* const node,
     FlexLine& flexLine,

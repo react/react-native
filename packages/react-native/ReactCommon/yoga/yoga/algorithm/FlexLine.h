@@ -57,10 +57,10 @@ struct FlexLine {
 };
 
 // Calculates where a line starting at a given index should break, returning
-// information about the collective children on the liune.
+// information about the collective children on the line.
 //
 // This function assumes that all the children of node have their
-// computedFlexBasis properly computed(To do this use
+// computedFlexBasis properly computed (to do this, use the
 // computeFlexBasisForChildren function).
 FlexLine calculateFlexLine(
     yoga::Node* node,

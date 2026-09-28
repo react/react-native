@@ -61,7 +61,7 @@ YG_EXPORT bool YGConfigGetUseWebDefaults(YGConfigConstRef config);
 
 /**
  * Yoga will by default round final layout positions and dimensions to the
- * nearst point. `pointScaleFactor` controls the density of the grid used for
+ * nearest point. `pointScaleFactor` controls the density of the grid used for
  * layout rounding (e.g. to round to the closest display pixel).
  *
  * May be set to 0.0f to avoid rounding the layout results.

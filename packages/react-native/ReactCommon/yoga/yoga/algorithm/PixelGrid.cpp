@@ -18,10 +18,11 @@ float roundValueToPixelGrid(
     const bool forceCeil,
     const bool forceFloor) {
   double scaledValue = value * pointScaleFactor;
-  // We want to calculate `fractial` such that `floor(scaledValue) = scaledValue
-  // - fractial`.
-  double fractial = fmod(scaledValue, 1.0);
-  if (fractial < 0) {
+  // We want to calculate `fractional` such that `floor(scaledValue) =
+  // scaledValue
+  // - fractional`.
+  double fractional = fmod(scaledValue, 1.0);
+  if (fractional < 0) {
     // This branch is for handling negative numbers for `value`.
     //
     // Regarding `floor` and `ceil`. Note that for a number x, `floor(x) <= x <=
@@ -31,29 +32,29 @@ float roundValueToPixelGrid(
     //
     // Regarding `fmodf`. For fractional negative numbers, `fmodf` returns a
     // negative number. For example, `fmodf(-2.2) = -0.2`. However, we want
-    // `fractial` to be the number such that subtracting it from `value` will
+    // `fractional` to be the number such that subtracting it from `value` will
     // give us `floor(value)`. In the case of negative numbers, adding 1 to
     // `fmodf(value)` gives us this. Let's continue the example from above:
-    //   - fractial = fmodf(-2.2) = -0.2
-    //   - Add 1 to the fraction: fractial2 = fractial + 1 = -0.2 + 1 = 0.8
-    //   - Finding the `floor`: -2.2 - fractial2 = -2.2 - 0.8 = -3
-    ++fractial;
+    //   - fractional = fmodf(-2.2) = -0.2
+    //   - Add 1 to the fraction: fractional2 = fractional + 1 = -0.2 + 1 = 0.8
+    //   - Finding the `floor`: -2.2 - fractional2 = -2.2 - 0.8 = -3
+    ++fractional;
   }
-  if (yoga::inexactEquals(fractial, 0)) {
+  if (yoga::inexactEquals(fractional, 0)) {
     // First we check if the value is already rounded
-    scaledValue = scaledValue - fractial;
-  } else if (yoga::inexactEquals(fractial, 1.0)) {
-    scaledValue = scaledValue - fractial + 1.0;
+    scaledValue = scaledValue - fractional;
+  } else if (yoga::inexactEquals(fractional, 1.0)) {
+    scaledValue = scaledValue - fractional + 1.0;
   } else if (forceCeil) {
     // Next we check if we need to use forced rounding
-    scaledValue = scaledValue - fractial + 1.0;
+    scaledValue = scaledValue - fractional + 1.0;
   } else if (forceFloor) {
-    scaledValue = scaledValue - fractial;
+    scaledValue = scaledValue - fractional;
   } else {
     // Finally we just round the value
-    scaledValue = scaledValue - fractial +
-        (!std::isnan(fractial) &&
-                 (fractial > 0.5 || yoga::inexactEquals(fractial, 0.5))
+    scaledValue = scaledValue - fractional +
+        (!std::isnan(fractional) &&
+                 (fractional > 0.5 || yoga::inexactEquals(fractional, 0.5))
              ? 1.0
              : 0.0);
   }
