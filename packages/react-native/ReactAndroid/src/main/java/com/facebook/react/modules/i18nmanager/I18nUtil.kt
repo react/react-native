@@ -10,7 +10,9 @@ package com.facebook.react.modules.i18nmanager
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.view.View
+import androidx.core.os.ConfigurationCompat
 import androidx.core.text.TextUtilsCompat
+import java.util.Locale
 
 public class I18nUtil private constructor() {
   /**
@@ -61,8 +63,9 @@ public class I18nUtil private constructor() {
 
   // Check if the current device language is RTL
   private fun isDevicePreferredLanguageRTL(context: Context): Boolean {
-    val directionality =
-        TextUtilsCompat.getLayoutDirectionFromLocale(context.resources.configuration.locales[0])
+    val locale =
+        ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
+    val directionality = TextUtilsCompat.getLayoutDirectionFromLocale(locale)
     return directionality == View.LAYOUT_DIRECTION_RTL
   }
 
