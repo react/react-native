@@ -185,7 +185,10 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
 
       {
         name: 'imagemanager',
-        headerPatterns: ['react/renderer/imagemanager/*.h'],
+        headerPatterns: [
+          'react/renderer/imagemanager/*.h',
+          'react/renderer/imagemanager/platform/ios/react/renderer/imagemanager/ImageRequestParams.h',
+        ],
         headerDir: 'react/renderer/imagemanager',
       },
 

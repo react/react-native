@@ -18,6 +18,27 @@ end
 
 react_native_path = ".."
 
+header_search_path = [
+  "\"$(PODS_TARGET_SRCROOT)/ReactCommon\"",
+  "\"$(PODS_ROOT)/Headers/Private/Yoga\"",
+  "\"$(PODS_TARGET_SRCROOT)\""
+]
+
+if ENV['USE_FRAMEWORKS']
+  header_search_path = header_search_path + [
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/textlayoutmanager/platform/ios\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/cxx\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/ios\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/legacyviewmanagerinterop/platform/ios\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/text/platform/cxx\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/textinput/platform/ios\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view/platform/cxx\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/core\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/debug\"",
+  ]
+end
+
 Pod::Spec.new do |s|
   s.name                   = "React-Fabric"
   s.version                = version
@@ -30,7 +51,8 @@ Pod::Spec.new do |s|
   s.source_files           = podspec_sources("dummyFile.cpp", "")
   s.pod_target_xcconfig = { "USE_HEADERMAP" => "YES",
                             "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
-                            "DEFINES_MODULE" => "YES" }
+                            "DEFINES_MODULE" => "YES",
+                            "HEADER_SEARCH_PATHS" => header_search_path.join(" ") }
 
   resolve_use_frameworks(s, header_mappings_dir: "./", module_name: "React_Fabric")
 
@@ -89,32 +111,9 @@ Pod::Spec.new do |s|
   end
 
   s.subspec "core" do |ss|
-    header_search_path = [
-      "\"$(PODS_TARGET_SRCROOT)/ReactCommon\"",
-      "\"$(PODS_ROOT)/Headers/Private/Yoga\"",
-      "\"$(PODS_TARGET_SRCROOT)\""
-    ]
-
-    if ENV['USE_FRAMEWORKS']
-      header_search_path = header_search_path + [
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/textlayoutmanager/platform/ios\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/cxx\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/ios\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/legacyviewmanagerinterop/platform/ios\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/text/platform/cxx\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/textinput/platform/ios\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view/platform/cxx\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/core\"",
-        "\"$(PODS_TARGET_SRCROOT)/react/renderer/debug\"",
-      ]
-    end
-
     ss.source_files         = podspec_sources("react/renderer/core/**/*.{m,mm,cpp,h}", "react/renderer/core/**/*.{h}")
     ss.exclude_files        = ["react/renderer/core/tests", "react/renderer/core/React"]
     ss.header_dir           = "react/renderer/core"
-    ss.pod_target_xcconfig  = {
-      "HEADER_SEARCH_PATHS" => header_search_path.join(" ")
-    }
   end
 
   s.subspec "coreUmbrella" do |ss|
@@ -141,6 +140,8 @@ Pod::Spec.new do |s|
 
   s.subspec "components" do |ss|
     ss.subspec "root" do |sss|
+      sss.dependency             "React-Fabric/coreUmbrella"
+      sss.dependency             "React-Fabric/components/viewUmbrella"
       sss.source_files         = podspec_sources("react/renderer/components/root/**/*.{m,mm,cpp,h}", "react/renderer/components/root/**/*.{h}")
       sss.exclude_files        = "react/renderer/components/root/tests"
       sss.header_dir           = "react/renderer/components/root"
