@@ -104,8 +104,8 @@ function useIsEnabledDev(): boolean {
 /**
  * Like `isEnabled`, but re-renders the calling component when the value
  * changes, so toggling it does not require remounting the app. Outside of
- * `__DEV__` it is `isEnabled` and uses no hooks.
+ * `__DEV__` it always returns `false` and uses no hooks.
  */
 export const useIsEnabled: () => boolean = __DEV__
   ? useIsEnabledDev
-  : isEnabled;
+  : () => false;
