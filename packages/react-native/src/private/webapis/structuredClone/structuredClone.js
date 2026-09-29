@@ -27,6 +27,8 @@ const VALID_ERROR_NAMES = new Set([
 const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
 
 const ObjectPrototype = Object.prototype;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const bigintValueOf = BigInt.prototype.valueOf;
 
 // Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
@@ -102,6 +104,13 @@ function structuredCloneInternal<T>(value: T): T {
       // $FlowExpectedError[incompatible-type] we know result is T
       return result;
     }
+  }
+
+  if (value instanceof BigInt) {
+    const result = Object(bigintValueOf.call(value));
+    memory.set(value, result);
+    // $FlowExpectedError[incompatible-type] we know result is T
+    return result;
   }
 
   if (value instanceof Map) {
