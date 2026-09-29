@@ -14,14 +14,14 @@ import {
   isPlatformObject,
 } from '../webidl/PlatformObjects';
 
-const VALID_ERROR_NAMES = new Set([
-  'Error',
-  'EvalError',
-  'RangeError',
-  'ReferenceError',
-  'SyntaxError',
-  'TypeError',
-  'URIError',
+const ERROR_CONSTRUCTORS: Map<string, Class<Error>> = new Map([
+  ['Error', Error],
+  ['EvalError', EvalError],
+  ['RangeError', RangeError],
+  ['ReferenceError', ReferenceError],
+  ['SyntaxError', SyntaxError],
+  ['TypeError', TypeError],
+  ['URIError', URIError],
 ]);
 
 const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
@@ -149,16 +149,11 @@ function structuredCloneInternal<T>(value: T): T {
   }
 
   if (value instanceof Error) {
+    const ErrorConstructor = ERROR_CONSTRUCTORS.get(value.name) ?? Error;
     const result = value.cause
-      ? new Error(value.message, {cause: value.cause})
-      : new Error(value.message);
+      ? new ErrorConstructor(value.message, {cause: value.cause})
+      : new ErrorConstructor(value.message);
     memory.set(value, result);
-
-    if (VALID_ERROR_NAMES.has(value.name)) {
-      result.name = value.name;
-    } else {
-      result.name = 'Error';
-    }
 
     result.stack = value.stack;
 
