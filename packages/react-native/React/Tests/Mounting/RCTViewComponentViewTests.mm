@@ -238,6 +238,39 @@ static RCTViewComponentView *makeViewWithRole(bool accessible, const std::string
   XCTAssertFalse(view.canBecomeFocused);
 }
 
+#pragma mark - accessibilityValue for expanded state
+
+static RCTViewComponentView *makeViewWithExpandedState(std::optional<bool> expanded)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto props = std::make_shared<ViewProps>();
+  props->accessible = true;
+  props->accessibilityRole = "button";
+  AccessibilityState accessibilityState;
+  accessibilityState.expanded = expanded;
+  props->accessibilityState = accessibilityState;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  return view;
+}
+
+- (void)testAccessibilityValueAnnouncesExpanded
+{
+  RCTViewComponentView *view = makeViewWithExpandedState(true);
+  XCTAssertEqualObjects(view.accessibilityValue, @"expanded");
+}
+
+- (void)testAccessibilityValueAnnouncesCollapsed
+{
+  RCTViewComponentView *view = makeViewWithExpandedState(false);
+  XCTAssertEqualObjects(view.accessibilityValue, @"collapsed");
+}
+
+- (void)testAccessibilityValueIsNilWithoutExpandedState
+{
+  RCTViewComponentView *view = makeViewWithExpandedState(std::nullopt);
+  XCTAssertNil(view.accessibilityValue);
+}
+
 #pragma mark - outline style on square corners (#57841)
 
 static RCTViewComponentView *makeViewWithOutlineStyle(OutlineStyle outlineStyle)

@@ -1618,6 +1618,10 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
     [valueComponents
         addObject:RCTLocalizedString("expanded", "a menu, dialog, accordian panel, or other widget which is expanded")];
   }
+  if (!accessibilityState.expanded.value_or(true)) {
+    [valueComponents addObject:RCTLocalizedString(
+                                   "collapsed", "a menu, dialog, accordian panel, or other widget which is collapsed")];
+  }
 
   if (accessibilityState.busy) {
     [valueComponents addObject:RCTLocalizedString("busy", "an element currently being updated or modified")];
