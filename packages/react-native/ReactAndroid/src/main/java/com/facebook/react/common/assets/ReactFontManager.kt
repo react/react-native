@@ -186,7 +186,10 @@ public class ReactFontManager {
         }
       }
 
-      Log.i(ReactConstants.TAG, "Unrecognized font family '$fontFamilyName'")
+      Log.i(
+          ReactConstants.TAG,
+          "Font family '$fontFamilyName' not found in assets, falling back to system font",
+      )
       return Typeface.create(fontFamilyName, style)
     }
   }
