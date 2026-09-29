@@ -27,6 +27,8 @@ const VALID_ERROR_NAMES = new Set([
 const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
 
 const ObjectPrototype = Object.prototype;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 // Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
@@ -149,10 +151,17 @@ function structuredCloneInternal<T>(value: T): T {
   }
 
   if (value instanceof Error) {
-    const result = value.cause
-      ? new Error(value.message, {cause: value.cause})
-      : new Error(value.message);
+    const result = new Error(value.message);
     memory.set(value, result);
+
+    if (hasOwnProperty.call(value, 'cause')) {
+      Object.defineProperty(result, 'cause', {
+        configurable: true,
+        enumerable: false,
+        value: structuredCloneInternal(value.cause),
+        writable: true,
+      });
+    }
 
     if (VALID_ERROR_NAMES.has(value.name)) {
       result.name = value.name;
