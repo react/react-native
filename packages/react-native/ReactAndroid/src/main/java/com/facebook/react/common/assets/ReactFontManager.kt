@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Typeface
 import android.os.Build
+import android.util.Log
 import android.util.SparseArray
 import androidx.core.content.res.ResourcesCompat
 import com.facebook.react.common.ReactConstants
@@ -184,6 +185,8 @@ public class ReactFontManager {
           }
         }
       }
+
+      Log.i(ReactConstants.TAG, "Unrecognized font family '$fontFamilyName'")
       return Typeface.create(fontFamilyName, style)
     }
   }
