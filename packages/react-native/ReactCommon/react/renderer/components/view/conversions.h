@@ -12,6 +12,7 @@
 #include <glog/logging.h>
 #include <react/debug/react_native_expect.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/components/view/YogaStylableProps.h>
 #include <react/renderer/components/view/primitives.h>
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/PropsParserContext.h>
@@ -40,6 +41,7 @@
 #include <cmath>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 
 namespace facebook::react {
@@ -182,6 +184,65 @@ inline LayoutMetrics layoutMetricsFromYogaNode(yoga::Node &yogaNode)
                                                                                         : LayoutDirection::LeftToRight;
 
   return layoutMetrics;
+}
+
+template <auto LayoutMember, typename... Args>
+float getLayoutEdgeValue(const YogaStylableProps &props, Args &&...args)
+{
+  std::optional<float> result;
+  auto tryResolve = [&](const auto &arg) -> bool {
+    if (result.has_value()) {
+      return false;
+    }
+    using T = std::decay_t<decltype(arg)>;
+    if constexpr (std::is_same_v<T, yoga::Style::Length YogaStylableProps::*>) {
+      if (const auto &length = props.*arg; length.isDefined()) {
+        result = length.value().unwrap();
+      }
+    } else if constexpr (std::is_same_v<T, facebook::yoga::Edge>) {
+      if (auto edgeValue = (props.yogaStyle.*LayoutMember)(arg); edgeValue.isDefined()) {
+        result = edgeValue.value().unwrap();
+      }
+    }
+    return result.has_value();
+  };
+  (tryResolve(std::forward<decltype(args)>(args)) || ...);
+  return result.value_or(0.0f);
+}
+
+inline EdgeInsets marginInsetsFromYogaStylableProps(const YogaStylableProps &props)
+{
+  return {
+      .left = getLayoutEdgeValue<&yoga::Style::margin>(
+          props,
+          &YogaStylableProps::marginInlineStart,
+          facebook::yoga::Edge::Start,
+          facebook::yoga::Edge::Left,
+          &YogaStylableProps::marginInline,
+          facebook::yoga::Edge::Horizontal,
+          facebook::yoga::Edge::All),
+      .top = getLayoutEdgeValue<&yoga::Style::margin>(
+          props,
+          facebook::yoga::Edge::Top,
+          &YogaStylableProps::marginBlockStart,
+          &YogaStylableProps::marginBlock,
+          facebook::yoga::Edge::Vertical,
+          facebook::yoga::Edge::All),
+      .right = getLayoutEdgeValue<&yoga::Style::margin>(
+          props,
+          &YogaStylableProps::marginInlineEnd,
+          facebook::yoga::Edge::End,
+          facebook::yoga::Edge::Right,
+          &YogaStylableProps::marginInline,
+          facebook::yoga::Edge::Horizontal,
+          facebook::yoga::Edge::All),
+      .bottom = getLayoutEdgeValue<&yoga::Style::margin>(
+          props,
+          facebook::yoga::Edge::Bottom,
+          &YogaStylableProps::marginBlockEnd,
+          &YogaStylableProps::marginBlock,
+          facebook::yoga::Edge::Vertical,
+          facebook::yoga::Edge::All)};
 }
 
 inline YGDirection yogaDirectionFromLayoutDirection(LayoutDirection direction)
