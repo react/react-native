@@ -198,6 +198,48 @@ describe('conic gradient native props', () => {
     });
   }
 
+  for (const colorStops of [
+    [{color: 'red', positions: ['0deg', '45deg', '90deg']}, {color: 'blue'}],
+    [{positions: ['20%']}, {color: 'red'}, {color: 'blue'}],
+    [{color: 'red'}, {color: 'blue'}, {positions: ['20%']}],
+    [
+      {color: 'red'},
+      {positions: ['20%']},
+      {positions: ['30%']},
+      {color: 'blue'},
+    ],
+    [{color: 'red'}, {positions: ['20%', '30%']}, {color: 'blue'}],
+    [
+      {color: 'red'},
+      {color: 'not-a-color', positions: ['25%']},
+      {color: 'blue'},
+    ],
+  ]) {
+    it(`rejects malformed object stops through native props: ${JSON.stringify(colorStops)}`, () => {
+      const input = [{type: 'conic-gradient', colorStops}];
+      // $FlowFixMe[incompatible-type] - exercise malformed stops from untyped callers.
+      expect(mountedBackgroundImage(input)).toBeUndefined();
+    });
+  }
+
+  for (const hint of [
+    {positions: ['90deg']},
+    {color: null, positions: ['90deg']},
+  ]) {
+    it(`preserves a valid object hint ${JSON.stringify(hint)}`, () => {
+      const input = [
+        {
+          type: 'conic-gradient',
+          colorStops: [{color: 'red'}, hint, {color: 'blue'}],
+        },
+      ];
+      // $FlowFixMe[incompatible-type] - gradient hint types currently require a color.
+      expect(mountedBackgroundImage(input)).toBe(
+        '[conic-gradient(from 0deg at 50% 50% , rgba(255, 0, 0, 1), rgba(0, 0, 0, 0) 25%, rgba(0, 0, 255, 1))]',
+      );
+    });
+  }
+
   it('preserves layer order when conic, linear, and radial gradients are mixed', () => {
     expect(
       mountedBackgroundImage(
