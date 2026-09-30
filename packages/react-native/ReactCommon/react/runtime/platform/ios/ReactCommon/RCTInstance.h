@@ -11,6 +11,7 @@
 
 #import <React/RCTDefines.h>
 #import <React/RCTJavaScriptLoader.h>
+#import <ReactCommon/CallInvoker.h>
 #import <jsinspector-modern/ReactCdp.h>
 #import <react/runtime/JSRuntimeFactory.h>
 
@@ -84,6 +85,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)invalidate;
 
 @property (nonatomic, readonly, strong) RCTSurfacePresenter *surfacePresenter;
+
+/**
+ * The CallInvoker this instance hands to TurboModules. Schedules work on the JS thread with a priority, and can be
+ * called from any thread. Set during init; null once the instance is invalidated.
+ */
+@property (nonatomic, readonly) std::shared_ptr<facebook::react::CallInvoker> jsCallInvoker;
 
 @end
 

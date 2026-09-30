@@ -74,6 +74,7 @@ using namespace facebook::react;
   RCTDisplayLink *_displayLink;
   RCTTurboModuleManager *_turboModuleManager;
   RCTBridgeProxy *_bridgeProxy;
+  std::shared_ptr<CallInvoker> _jsCallInvoker;
   std::mutex _invalidationMutex;
   std::atomic<bool> _valid;
   RCTJSThreadManager *_jsThreadManager;
@@ -207,6 +208,11 @@ using namespace facebook::react;
   }];
 }
 
+- (std::shared_ptr<CallInvoker>)jsCallInvoker
+{
+  return _valid ? _jsCallInvoker : nullptr;
+}
+
 - (void)registerSegmentWithId:(NSNumber *)segmentId path:(NSString *)path
 {
   if (_valid) {
@@ -290,6 +296,7 @@ using namespace facebook::react;
   timerManager->setRuntimeExecutor(bufferedRuntimeExecutor);
 
   auto jsCallInvoker = _reactInstance->createJSCallInvoker();
+  _jsCallInvoker = jsCallInvoker;
   RCTBridgeProxy *bridgeProxy =
       [[RCTBridgeProxy alloc] initWithViewRegistry:_bridgeModuleDecorator.viewRegistry_DEPRECATED
           moduleRegistry:_bridgeModuleDecorator.moduleRegistry

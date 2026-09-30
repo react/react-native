@@ -1159,6 +1159,7 @@ interface RCTHost : public NSObject {
   public virtual instancetype initWithBundleURL:hostDelegate:turboModuleManagerDelegate:jsEngineProvider:launchOptions:(NSURL* bundleURL, id<RCTHostDelegate> hostDelegate, id<RCTTurboModuleManagerDelegate> turboModuleManagerDelegate, RCTHostJSEngineProvider jsEngineProvider, _Nullable NSDictionary* launchOptions);
   public virtual instancetype initWithBundleURLProvider:hostDelegate:turboModuleManagerDelegate:jsEngineProvider:launchOptions:(RCTHostBundleURLProvider provider, id<RCTHostDelegate> hostDelegate, id<RCTTurboModuleManagerDelegate> turboModuleManagerDelegate, RCTHostJSEngineProvider jsEngineProvider, _Nullable NSDictionary* launchOptions);
   public virtual instancetype initWithBundleURLProvider:hostDelegate:turboModuleManagerDelegate:jsEngineProvider:launchOptions:bundleConfiguration:devMenuConfiguration:(RCTHostBundleURLProvider provider, id<RCTHostDelegate> hostDelegate, id<RCTTurboModuleManagerDelegate> turboModuleManagerDelegate, RCTHostJSEngineProvider jsEngineProvider, _Nullable NSDictionary* launchOptions, RCTBundleConfiguration* bundleConfiguration, RCTDevMenuConfiguration* devMenuConfiguration);
+  public virtual std::shared_ptr<facebook::react::CallInvoker> jsCallInvoker();
   public virtual void callFunctionOnJSModule:method:args:(NSString* moduleName, NSString* method, NSArray* args);
   public virtual void start();
 }
@@ -1258,6 +1259,7 @@ interface RCTInspectorWebSocketReporter : public NSObject {
 }
 
 interface RCTInstance : public NSObject {
+  public @property (assign, readonly) std::shared_ptr<facebook::react::CallInvoker> jsCallInvoker;
   public @property (strong, readonly) RCTSurfacePresenter* surfacePresenter;
   public virtual instancetype initWithDelegate:jsRuntimeFactory:bundleManager:turboModuleManagerDelegate:moduleRegistry:parentInspectorTarget:launchOptions:(id<RCTInstanceDelegate> delegate, std::shared_ptr<facebook::react::JSRuntimeFactory> jsRuntimeFactory, RCTBundleManager* bundleManager, id<RCTTurboModuleManagerDelegate> turboModuleManagerDelegate, RCTModuleRegistry* moduleRegistry, facebook::react::jsinspector_modern::HostTarget* parentInspectorTarget, _Nullable NSDictionary* launchOptions);
   public virtual instancetype initWithDelegate:jsRuntimeFactory:bundleManager:turboModuleManagerDelegate:moduleRegistry:parentInspectorTarget:launchOptions:devMenuConfiguration:(id<RCTInstanceDelegate> delegate, std::shared_ptr<facebook::react::JSRuntimeFactory> jsRuntimeFactory, RCTBundleManager* bundleManager, id<RCTTurboModuleManagerDelegate> turboModuleManagerDelegate, RCTModuleRegistry* moduleRegistry, facebook::react::jsinspector_modern::HostTarget* parentInspectorTarget, _Nullable NSDictionary* launchOptions, RCTDevMenuConfiguration* _Nullable devMenuConfiguration);
