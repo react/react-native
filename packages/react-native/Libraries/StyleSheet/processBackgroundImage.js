@@ -265,6 +265,16 @@ function processColorStops(
   for (let index = 0; index < bgImage.colorStops.length; index++) {
     const colorStop = bgImage.colorStops[index];
     const positions = colorStop.positions;
+    if (
+      bgImage.type === 'conic-gradient' &&
+      ((positions != null && positions.length > 2) ||
+        (colorStop.color == null &&
+          (index === 0 ||
+            index === bgImage.colorStops.length - 1 ||
+            bgImage.colorStops[index - 1].color == null)))
+    ) {
+      return null;
+    }
     // Color transition hint syntax (red, 20%, blue)
     if (
       colorStop.color == null &&
