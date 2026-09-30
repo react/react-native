@@ -938,7 +938,11 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
       gradient.position = *position;
     }
 
-    parser.syntaxParser().consumeDelimiter(CSSDelimiter::Comma);
+    const bool hasPrelude = std::holds_alternative<CSSGradientFromKeyword>(fromKeyword) ||
+        std::holds_alternative<CSSGradientAtKeyword>(atKeyword);
+    if (hasPrelude && !parser.syntaxParser().consumeDelimiter(CSSDelimiter::Comma)) {
+      return {};
+    }
     int colorStopCount = 0;
     std::optional<CSSConicColorStop> previousColorStop;
     do {
@@ -951,7 +955,7 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
       } else {
         auto colorHint = parser.parseNextValue<CSSConicColorHint>();
         if (!std::holds_alternative<CSSConicColorHint>(colorHint) || !previousColorStop.has_value()) {
-          break;
+          return {};
         }
         auto nextColorStop = parser.peekNextValue<CSSConicColorStop>(CSSDelimiter::Comma);
         if (!std::holds_alternative<CSSConicColorStop>(nextColorStop)) {
