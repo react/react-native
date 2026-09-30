@@ -9,6 +9,7 @@
 
 #import "RCTGradientUtils.h"
 
+#import <algorithm>
 #import <cmath>
 
 using namespace facebook::react;
@@ -17,6 +18,13 @@ using namespace facebook::react;
 
 + (CALayer *)gradientLayerWithSize:(CGSize)size gradient:(const ConicGradient &)gradient
 {
+  CALayer *container = [CALayer layer];
+  container.frame = CGRectMake(0.0f, 0.0f, size.width, size.height);
+  container.masksToBounds = YES;
+  if (size.width <= 0 || size.height <= 0) {
+    return container;
+  }
+
   CAGradientLayer *gradientLayer = [CAGradientLayer layer];
   gradientLayer.type = kCAGradientLayerConic;
 
@@ -32,7 +40,9 @@ using namespace facebook::react;
     centerPoint.x = size.width - gradient.position.right->resolve(static_cast<float>(size.width));
   }
 
-  CGPoint normalizedCenter = CGPointMake(centerPoint.x / size.width, centerPoint.y / size.height);
+  // A square layer keeps the conic sweep's angles independent of the view's aspect ratio.
+  CGFloat side = std::max(size.width, size.height);
+  CGPoint normalizedCenter = CGPointMake(centerPoint.x / side, centerPoint.y / side);
   CGFloat radians = gradient.from * M_PI / 180.0;
   gradientLayer.startPoint = normalizedCenter;
   gradientLayer.endPoint = CGPointMake(normalizedCenter.x + std::sin(radians), normalizedCenter.y - std::cos(radians));
@@ -42,10 +52,12 @@ using namespace facebook::react;
   NSMutableArray<NSNumber *> *locations = [NSMutableArray array];
   [RCTGradientUtils getColors:colors andLocations:locations fromColorStops:colorStops];
 
-  gradientLayer.frame = CGRectMake(0.0f, 0.0f, size.width, size.height);
+  gradientLayer.frame = CGRectMake(0.0f, 0.0f, side, side);
   gradientLayer.colors = colors;
   gradientLayer.locations = locations;
-  return gradientLayer;
+  // Preserve the requested tile size for background repetition and clip the oversized square.
+  [container addSublayer:gradientLayer];
+  return container;
 }
 
 @end

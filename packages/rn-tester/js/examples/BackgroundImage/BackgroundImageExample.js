@@ -12,6 +12,7 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import ConicGradientCornerCases from './ConicGradientCornerCases';
 import {StyleSheet, Text, View} from 'react-native';
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
@@ -60,6 +61,13 @@ exports.title = 'BackgroundImage';
 exports.category = 'UI';
 exports.description = 'Examples of background gradients applied to views.';
 exports.examples = [
+  {
+    title: 'Conic Gradient Corner Cases',
+    name: 'conic-corner-cases',
+    description:
+      'Compare geometry, positions, stops, tiling, and updates in string and object syntax.',
+    render: () => <ConicGradientCornerCases />,
+  },
   {
     title: 'Basic Linear Gradient',
     description: 'A simple linear gradient from top to bottom.',
