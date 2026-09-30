@@ -163,6 +163,8 @@ public class ReactFontManager {
     private val EXTENSIONS = arrayOf("", "_bold", "_italic", "_bold_italic")
     private val FILE_EXTENSIONS = arrayOf(".ttf", ".otf")
     private const val FONTS_ASSET_PATH = "fonts/"
+    // Android's default font family.
+    private const val DEFAULT_FAMILY = "sans-serif"
 
     private val _instance = ReactFontManager()
 
@@ -186,11 +188,12 @@ public class ReactFontManager {
         }
       }
 
-      Log.i(
-          ReactConstants.TAG,
-          "Font family '$fontFamilyName' not found in assets, falling back to system font",
-      )
-      return Typeface.create(fontFamilyName, style)
+      val typeface = Typeface.create(fontFamilyName, style)
+      // Typeface.create returns the default typeface for unknown family names.
+      if (fontFamilyName != DEFAULT_FAMILY && typeface == Typeface.defaultFromStyle(style)) {
+        Log.i(ReactConstants.TAG, "Unrecognized font family '$fontFamilyName'")
+      }
+      return typeface
     }
   }
 
