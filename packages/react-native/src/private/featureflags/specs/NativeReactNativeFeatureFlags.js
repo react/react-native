@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ed20a4b386fd750fb9ff9bfb631a7181>>
+ * @generated SignedSource<<c30f34da4641b09335a8f881c062e51a>>
  * @flow strict
  * @noformat
  */
@@ -52,6 +52,7 @@ export interface Spec extends TurboModule {
   readonly enableFabricCommitBranchingMergeOnMainThread?: () => boolean;
   readonly enableFabricLogs?: () => boolean;
   readonly enableFlexboxAutoMinSizeInStrictMode?: () => boolean;
+  readonly enableFollowUpMountItemDispatchAndroid?: () => boolean;
   readonly enableFontScaleChangesUpdatingLayout?: () => boolean;
   readonly enableIOSCompressedTextFrameAdjustment?: () => boolean;
   readonly enableIOSTextBaselineOffsetPerLine?: () => boolean;

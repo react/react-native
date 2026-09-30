@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6e73a99aafb36218e1d679637bb80c82>>
+ * @generated SignedSource<<479d6b0198a9ce1c587b7bcb1ff8ec7d>>
  * @flow strict
  * @noformat
  */
@@ -76,6 +76,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFabricCommitBranchingMergeOnMainThread: Getter<boolean>,
   enableFabricLogs: Getter<boolean>,
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
+  enableFollowUpMountItemDispatchAndroid: Getter<boolean>,
   enableFontScaleChangesUpdatingLayout: Getter<boolean>,
   enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
@@ -322,6 +323,10 @@ export const enableFabricLogs: Getter<boolean> = createNativeFlagGetter('enableF
  * Enables CSS Flexbox §4.5 automatic minimum sizing under strict layout conformance. When enabled, a flex item with an undefined main-axis `min-width`/`min-height` under strict conformance receives a content-derived minimum size (per spec) instead of an undefined (0) minimum. Defaults off so the behaviour can be ramped independently of strict conformance.
  */
 export const enableFlexboxAutoMinSizeInStrictMode: Getter<boolean> = createNativeFlagGetter('enableFlexboxAutoMinSizeInStrictMode', false);
+/**
+ * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
+ */
+export const enableFollowUpMountItemDispatchAndroid: Getter<boolean> = createNativeFlagGetter('enableFollowUpMountItemDispatchAndroid', false);
 /**
  * Enables font scale changes updating layout for measurable nodes.
  */

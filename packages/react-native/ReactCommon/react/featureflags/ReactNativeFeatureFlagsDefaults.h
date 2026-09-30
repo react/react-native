@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f09ab21f8e13dddf1b548cb8e156837e>>
+ * @generated SignedSource<<7cd9353350b5e0d8b563f04e8ad17e7d>>
  */
 
 /**
@@ -134,6 +134,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableFlexboxAutoMinSizeInStrictMode() override {
+    return false;
+  }
+
+  bool enableFollowUpMountItemDispatchAndroid() override {
     return false;
   }
 
