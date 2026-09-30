@@ -70,12 +70,14 @@ inline void parseGradientPosition(
   if (topIt != positionMap.end()) {
     position.top = toValueUnit(topIt->second);
   } else if (bottomIt != positionMap.end()) {
+    position.top.reset();
     position.bottom = toValueUnit(bottomIt->second);
   }
 
   if (leftIt != positionMap.end()) {
     position.left = toValueUnit(leftIt->second);
   } else if (rightIt != positionMap.end()) {
+    position.left.reset();
     position.right = toValueUnit(rightIt->second);
   }
 }
