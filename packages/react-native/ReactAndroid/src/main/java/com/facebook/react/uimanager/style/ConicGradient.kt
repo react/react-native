@@ -36,14 +36,14 @@ internal class ConicGradient(
       var bottom: LengthPercentage? = null
 
       if (positionMap.hasKey("top")) {
-        top = LengthPercentage.setFromDynamic(positionMap.getDynamic("top"))
+        top = LengthPercentage.setFromDynamic(positionMap.getDynamic("top"), allowNegative = true)
       } else if (positionMap.hasKey("bottom")) {
-        bottom = LengthPercentage.setFromDynamic(positionMap.getDynamic("bottom"))
+        bottom = LengthPercentage.setFromDynamic(positionMap.getDynamic("bottom"), allowNegative = true)
       }
       if (positionMap.hasKey("left")) {
-        left = LengthPercentage.setFromDynamic(positionMap.getDynamic("left"))
+        left = LengthPercentage.setFromDynamic(positionMap.getDynamic("left"), allowNegative = true)
       } else if (positionMap.hasKey("right")) {
-        right = LengthPercentage.setFromDynamic(positionMap.getDynamic("right"))
+        right = LengthPercentage.setFromDynamic(positionMap.getDynamic("right"), allowNegative = true)
       }
 
       val colorStopsArray = gradientMap.getArray("colorStops") ?: return null
