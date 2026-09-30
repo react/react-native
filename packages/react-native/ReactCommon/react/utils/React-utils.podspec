@@ -58,6 +58,7 @@ Pod::Spec.new do |s|
 
   s.subspec "platformios" do |ss|
     ss.source_files        = podspec_sources("platform/ios/**/*.{m,mm,cpp,h}", "platform/ios/**/*.h")
+    ss.header_dir          = ""
     ss.header_mappings_dir = "platform/ios"
   end
 
