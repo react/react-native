@@ -310,6 +310,22 @@ void parseUnprocessedBackgroundImageList(
           auto stopMap = static_cast<RawValueMap>(stop);
           auto positionsIt = stopMap.find("positions");
           auto colorIt = stopMap.find("color");
+          if (type == "conic-gradient") {
+            const bool isHint =
+                colorIt == stopMap.end() || !colorIt->second.hasValue();
+            const auto positionCount =
+                positionsIt != stopMap.end() &&
+                    positionsIt->second.hasType<RawValueList>()
+                ? static_cast<RawValueList>(positionsIt->second).size()
+                : 0;
+            if ((isHint &&
+                 (positionCount != 1 || colorStops.empty() ||
+                  !colorStops.back().color)) ||
+                (!isHint && positionCount > 2)) {
+              result = {};
+              return;
+            }
+          }
           // has only color. e.g. (red, green)
           if (positionsIt == stopMap.end() ||
               (positionsIt->second.hasType<RawValueList>() &&
@@ -346,6 +362,10 @@ void parseUnprocessedBackgroundImageList(
                 auto color = coerceColor(colorIt->second, context);
                 if (color) {
                   colorStop.color = color;
+                } else if (type == "conic-gradient" &&
+                           colorIt->second.hasValue()) {
+                  result = {};
+                  return;
                 }
               }
               colorStops.emplace_back(colorStop);
@@ -353,6 +373,12 @@ void parseUnprocessedBackgroundImageList(
           }
         }
       }
+    }
+
+    if (type == "conic-gradient" &&
+        (colorStops.size() < 2 || !colorStops.back().color)) {
+      result = {};
+      return;
     }
 
     if (type == "linear-gradient") {
