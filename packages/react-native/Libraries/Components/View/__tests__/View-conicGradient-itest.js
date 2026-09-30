@@ -187,6 +187,7 @@ describe('conic gradient native props', () => {
     'conic-gradient(red, blue, 20%)',
     'conic-gradient(red, 20%, 30%, blue)',
     'conic-gradient(red,, blue)',
+    'conic-gradient(, red, blue)',
     'conic-gradient(red, blue,)',
     'conic-gradient(red, not-a-color)',
     'conic-gradient(from 90deg red, blue)',
