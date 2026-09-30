@@ -139,14 +139,13 @@ class ConicGradientTest {
     assertSectors(render(value, 120, 240), 30, 180)
   }
 
-  @Test
-  fun parsesEdgeOffsetsFromNativeProps() {
+  private fun parsePosition(position: JavaOnlyMap): Gradient {
     val map =
         JavaOnlyMap.of(
             "from",
             0.0,
             "position",
-            JavaOnlyMap.of("right", 10.0, "bottom", 20.0),
+            position,
             "colorStops",
             JavaOnlyArray.of(
                 JavaOnlyMap.of("color", Color.RED, "position", "0%"),
@@ -159,7 +158,49 @@ class ConicGradientTest {
         )
     val parsed = ConicGradient.parse(map, RuntimeEnvironment.getApplication())
     assertThat(parsed).isInstanceOf(ConicGradient::class.java)
-    assertSectors(render(requireNotNull(parsed), 240, 120), 230, 100)
+    return requireNotNull(parsed)
+  }
+
+  @Test
+  fun parsesEdgeOffsetsFromNativeProps() {
+    val parsed = parsePosition(JavaOnlyMap.of("right", 10.0, "bottom", 20.0))
+    assertSectors(render(parsed, 240, 120), 230, 100)
+  }
+
+  @Test
+  fun parsesNegativePointOffsetsOnEveryEdge() {
+    setDensity(2f)
+    val left = render(parsePosition(JavaOnlyMap.of("left", -20.0)), 240, 120)
+    val top = render(parsePosition(JavaOnlyMap.of("top", -20.0)), 240, 120)
+    val right = render(parsePosition(JavaOnlyMap.of("right", -20.0)), 240, 120)
+    val bottom = render(parsePosition(JavaOnlyMap.of("bottom", -20.0)), 240, 120)
+    assertColor(left, 10, 20, Color.BLUE)
+    assertColor(top, 150, 10, Color.BLUE)
+    assertColor(right, 230, 20, Color.GREEN)
+    assertColor(bottom, 160, 115, Color.RED)
+  }
+
+  @Test
+  fun parsesNegativePercentagesWithoutApplyingDensity() {
+    setDensity(3f)
+    val left = render(parsePosition(JavaOnlyMap.of("left", "-10%")), 240, 120)
+    val top = render(parsePosition(JavaOnlyMap.of("top", "-10%")), 240, 120)
+    val right = render(parsePosition(JavaOnlyMap.of("right", "-10%")), 240, 120)
+    val bottom = render(parsePosition(JavaOnlyMap.of("bottom", "-20%")), 240, 120)
+    assertColor(left, 10, 20, Color.RED)
+    assertColor(top, 150, 10, Color.BLUE)
+    assertColor(right, 230, 20, Color.GREEN)
+    assertColor(bottom, 140, 110, Color.RED)
+    assertColor(bottom, 160, 110, Color.BLUE)
+  }
+
+  @Test
+  fun rendersCenterAboveAndLeftOfTheViewFromNativeProps() {
+    val parsed = parsePosition(JavaOnlyMap.of("left", -20.0, "top", -20.0))
+    val bitmap = render(parsed, 240, 120)
+    for ((x, y) in listOf(0 to 0, 239 to 0, 0 to 119, 239 to 119, 120 to 60)) {
+      assertColor(bitmap, x, y, Color.BLUE)
+    }
   }
 
   @Test
