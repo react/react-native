@@ -281,13 +281,13 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   @Suppress("unused")
   override fun getValueWithPromise(error: Boolean, promise: Promise) {
     if (error) {
-      promise?.reject(
+      promise.reject(
           "code 1",
           "intentional promise rejection",
           Throwable("promise intentionally rejected"),
       )
     } else {
-      promise?.resolve("result")
+      promise.resolve("result")
     }
   }
 
