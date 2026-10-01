@@ -72,6 +72,38 @@ class BaseViewManagerTest {
   }
 
   @Test
+  fun testAccessibilityStateDisabledRemovedReenablesView() {
+    viewManager.setViewState(view, JavaOnlyMap.of("disabled", true))
+    Assertions.assertThat(view.isEnabled).isFalse()
+
+    viewManager.setViewState(view, JavaOnlyMap())
+    Assertions.assertThat(view.isEnabled).isTrue()
+  }
+
+  @Test
+  fun testAccessibilityStateNullReenablesView() {
+    viewManager.setViewState(view, JavaOnlyMap.of("disabled", true))
+    viewManager.setViewState(view, null)
+    Assertions.assertThat(view.isEnabled).isTrue()
+  }
+
+  @Test
+  fun testAccessibilityStateDisabledNullDoesNotCrash() {
+    viewManager.setViewState(view, JavaOnlyMap.of("disabled", true))
+    viewManager.setViewState(view, JavaOnlyMap.of("disabled", null))
+    Assertions.assertThat(view.isEnabled).isTrue()
+  }
+
+  @Test
+  fun testAccessibilityStateWithoutDisabledKeepsViewDisabledByOtherProps() {
+    view.isEnabled = false
+    viewManager.setViewState(view, JavaOnlyMap())
+    Assertions.assertThat(view.isEnabled).isFalse()
+    viewManager.setViewState(view, null)
+    Assertions.assertThat(view.isEnabled).isFalse()
+  }
+
+  @Test
   fun testRoleList() {
     viewManager.setRole(view, "list")
     Assertions.assertThat(view.getTag(R.id.role)).isEqualTo(ReactAccessibilityDelegate.Role.LIST)

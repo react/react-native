@@ -36,6 +36,9 @@
   <!--tag is used to store accessibilityStateExpanded -->
   <item type="id" name="accessibility_state_expanded"/>
 
+  <!--tag is used to store whether accessibilityState.disabled disabled the view -->
+  <item type="id" name="accessibility_state_disabled"/>
+
   <!--tag is used to store accessibilityLabel tag-->
   <item type="id" name="accessibility_label"/>
 

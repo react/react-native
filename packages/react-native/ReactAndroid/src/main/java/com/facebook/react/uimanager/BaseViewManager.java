@@ -88,6 +88,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     view.setTag(R.id.accessibility_actions, null);
     view.setTag(R.id.accessibility_value, null);
     view.setTag(R.id.accessibility_state_expanded, null);
+    view.setTag(R.id.accessibility_state_disabled, null);
+    view.setEnabled(true);
     view.setTag(R.id.view_clipped, null);
 
     // This indirectly calls (and resets):
@@ -364,6 +366,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.ACCESSIBILITY_STATE)
   public void setViewState(@NonNull T view, @Nullable ReadableMap accessibilityState) {
     if (accessibilityState == null) {
+      resetDisabledFromAccessibilityState(view);
       return;
     }
     if (accessibilityState.hasKey("expanded")) {
@@ -385,8 +388,12 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       view.setSelected(false);
     }
     view.setTag(R.id.accessibility_state, accessibilityState);
-    if (accessibilityState.hasKey("disabled")) {
-      view.setEnabled(!accessibilityState.getBoolean("disabled"));
+    if (accessibilityState.hasKey("disabled") && !accessibilityState.isNull("disabled")) {
+      boolean disabled = accessibilityState.getBoolean("disabled");
+      view.setEnabled(!disabled);
+      view.setTag(R.id.accessibility_state_disabled, disabled);
+    } else {
+      resetDisabledFromAccessibilityState(view);
     }
 
     // For states which don't have corresponding methods in
@@ -411,6 +418,13 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
         view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
       }
     }
+  }
+
+  private static void resetDisabledFromAccessibilityState(@NonNull View view) {
+    if (Boolean.TRUE.equals(view.getTag(R.id.accessibility_state_disabled))) {
+      view.setEnabled(true);
+    }
+    view.setTag(R.id.accessibility_state_disabled, null);
   }
 
   private void updateViewContentDescription(@NonNull T view) {
