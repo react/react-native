@@ -13,18 +13,18 @@
 const base64 = require('base64-js');
 
 function binaryToBase64(data: ArrayBuffer | $ArrayBufferView): string {
-  if (data instanceof ArrayBuffer) {
-    // $FlowFixMe[reassign-const]
-    data = new Uint8Array(data);
+  let dataView = data;
+  if (dataView instanceof ArrayBuffer) {
+    dataView = new Uint8Array(dataView);
   }
-  if (data instanceof Uint8Array) {
-    return base64.fromByteArray(data);
+  if (dataView instanceof Uint8Array) {
+    return base64.fromByteArray(dataView);
   }
-  if (!ArrayBuffer.isView(data)) {
+  if (!ArrayBuffer.isView(dataView)) {
     throw new Error('data must be ArrayBuffer or typed array');
   }
-  // Already checked that `data` is `DataView` in `ArrayBuffer.isView(data)`
-  const {buffer, byteOffset, byteLength}: DataView = data as $FlowFixMe;
+  // Already checked that `dataView` is `DataView` in `ArrayBuffer.isView(dataView)`
+  const {buffer, byteOffset, byteLength}: DataView = dataView as $FlowFixMe;
   return base64.fromByteArray(new Uint8Array(buffer, byteOffset, byteLength));
 }
 
