@@ -14,6 +14,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.TextUtils
 import android.text.style.ReplacementSpan
 import android.util.TypedValue
 import android.view.Gravity
@@ -107,6 +108,37 @@ class ReactTextViewTest {
     view.recycleView()
 
     assertThat(view.useBoundsForWidth).isFalse()
+  }
+
+  @Test
+  fun adjustsFontSizeToFitEllipsizesOnlyWhileTextExceedsNumberOfLines() {
+    val text = SpannableString("Hello\nworld")
+    text.setSpan(ReactAbsoluteSizeSpan(40), 0, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.layoutParams =
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+    view.setTextColor(Color.BLACK)
+    view.setMinimumFontSize(20f)
+    view.setNumberOfLines(1)
+    view.setEllipsizeLocation(TextUtils.TruncateAt.END)
+    view.setAdjustFontSizeToFit(true)
+    view.setSpanned(text)
+    view.text = text
+    view.updateView()
+
+    // Two lines can never fit in one, so the ellipsize applies.
+    layoutAndDraw(view, 200, 60)
+    assertThat(view.ellipsize).isEqualTo(TextUtils.TruncateAt.END)
+
+    // Once two lines are allowed the text fits, so the ellipsize is dropped again.
+    view.setNumberOfLines(2)
+    view.updateView()
+    layoutAndDraw(view, 200, 60)
+    assertThat(view.ellipsize).isNull()
   }
 
   private fun layoutAndDraw(view: TestReactTextView, width: Int, height: Int) {

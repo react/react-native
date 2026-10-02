@@ -76,6 +76,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   private int mLinkifyMaskType;
   private boolean mTextIsSelectable;
   private boolean mShouldAdjustSpannableFontSize;
+  private boolean mAdjustedTextExceedsLineLimit;
   private Overflow mOverflow = Overflow.VISIBLE;
 
   private @Nullable Spannable mSpanned;
@@ -130,6 +131,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     mLinkifyMaskType = 0;
     mTextIsSelectable = false;
     mShouldAdjustSpannableFontSize = false;
+    mAdjustedTextExceedsLineLimit = false;
     mEllipsizeLocation = TextUtils.TruncateAt.END;
     mFontSize = Float.NaN;
     mMinimumFontSize = Float.NaN;
@@ -232,22 +234,27 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
       Spannable spanned = getSpanned();
       if (mAdjustsFontSizeToFit && spanned != null && mShouldAdjustSpannableFontSize) {
         mShouldAdjustSpannableFontSize = false;
-        TextLayoutManager.adjustSpannableFontToFit(
-            spanned,
-            getWidth(),
-            YogaMeasureMode.EXACTLY,
-            getHeight(),
-            YogaMeasureMode.EXACTLY,
-            mMinimumFontSize,
-            mNumberOfLines,
-            getIncludeFontPadding(),
-            getBreakStrategy(),
-            getHyphenationFrequency(),
-            // always passing ALIGN_NORMAL here should be fine, since this method doesn't depend on
-            // how exactly lines are aligned, just their width
-            Layout.Alignment.ALIGN_NORMAL,
-            (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) ? -1 : getJustificationMode(),
-            getPaint());
+        boolean exceedsLineLimit =
+            TextLayoutManager.adjustSpannableFontToFit(
+                spanned,
+                getWidth(),
+                YogaMeasureMode.EXACTLY,
+                getHeight(),
+                YogaMeasureMode.EXACTLY,
+                mMinimumFontSize,
+                mNumberOfLines,
+                getIncludeFontPadding(),
+                getBreakStrategy(),
+                getHyphenationFrequency(),
+                // always passing ALIGN_NORMAL here should be fine, since this method doesn't
+                // depend on how exactly lines are aligned, just their width
+                Layout.Alignment.ALIGN_NORMAL,
+                (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) ? -1 : getJustificationMode(),
+                getPaint());
+        if (exceedsLineLimit != mAdjustedTextExceedsLineLimit) {
+          mAdjustedTextExceedsLineLimit = exceedsLineLimit;
+          updateView();
+        }
         setText(spanned);
       }
 
@@ -585,7 +592,8 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   public void updateView() {
     @Nullable
     TextUtils.TruncateAt ellipsizeLocation =
-        mNumberOfLines == ViewDefaults.NUMBER_OF_LINES || mAdjustsFontSizeToFit
+        mNumberOfLines == ViewDefaults.NUMBER_OF_LINES
+                || (mAdjustsFontSizeToFit && !mAdjustedTextExceedsLineLimit)
             ? null
             : mEllipsizeLocation;
     setEllipsize(ellipsizeLocation);

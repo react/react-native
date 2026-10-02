@@ -1345,7 +1345,7 @@ internal object TextLayoutManager {
       alignment: Layout.Alignment,
       justificationMode: Int,
       paint: TextPaint,
-  ) {
+  ): Boolean {
     var boring = isBoring(text, paint)
     var layout: Layout
 
@@ -1405,11 +1405,6 @@ internal object TextLayoutManager {
               paint,
           )
 
-      if (intervalStart == intervalEnd) {
-        // everything is updated at this point
-        break
-      }
-
       val singleLineTextExceedsWidth = text.length == 1 && layout.getLineWidth(0) > width
       val exceedsHeight =
           heightYogaMeasureMode != YogaMeasureMode.UNDEFINED && layout.height > height
@@ -1417,6 +1412,11 @@ internal object TextLayoutManager {
           maximumNumberOfLines != ReactConstants.UNSET &&
               maximumNumberOfLines != 0 &&
               layout.lineCount > maximumNumberOfLines
+
+      if (intervalStart == intervalEnd) {
+        // everything is updated at this point
+        return exceedsMaximumNumberOfLines || singleLineTextExceedsWidth
+      }
 
       if (
           currentFontSize > minimumFontSize &&
