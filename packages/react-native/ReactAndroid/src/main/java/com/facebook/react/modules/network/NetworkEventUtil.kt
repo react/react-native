@@ -248,16 +248,17 @@ internal object NetworkEventUtil {
     // Unwrap ProgressRequestBody
     val body = (requestBody as? ProgressRequestBody)?.innerBody() ?: requestBody
 
-    if (body.isOneShot()) {
-      // Reading would drain the underlying stream and break the real upload,
-      // so fall back to a placeholder that includes the byte count when known
+    if (isBinaryBody(body)) {
+      // Reading a file would be costly for large uploads, and reading a one-shot body would
+      // drain it and break the real upload, so fall back to a placeholder that includes the
+      // byte count when known
       return binaryPartLabel(body)
     }
 
     // MultipartBody does not propagate isOneShot() from its parts, so check each
     // part explicitly. Reading a one-shot part here would drain the underlying
     // stream and cause the real request to fail.
-    if (body is MultipartBody && body.parts().any { it.body().isOneShot() }) {
+    if (body is MultipartBody && body.parts().any { isBinaryBody(it.body()) }) {
       return previewMultipartWithBinaryParts(body)
     }
 
@@ -292,7 +293,7 @@ internal object NetworkEventUtil {
       partBody.contentType()?.let { out.append("Content-Type: ").append(it).append("\r\n") }
       out.append("\r\n")
 
-      if (partBody.isOneShot()) {
+      if (isBinaryBody(partBody)) {
         out.append(binaryPartLabel(partBody))
       } else {
         try {
@@ -314,7 +315,10 @@ internal object NetworkEventUtil {
     }
   }
 
-  /** Placeholder for a one-shot body, including the byte count when known. */
+  /** Whether the preview should show a placeholder instead of reading [body]. */
+  private fun isBinaryBody(body: RequestBody): Boolean = body is UriRequestBody || body.isOneShot()
+
+  /** Placeholder for a file or one-shot body, including the byte count when known. */
   private fun binaryPartLabel(body: RequestBody): String {
     val length =
         try {
