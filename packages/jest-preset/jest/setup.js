@@ -44,6 +44,7 @@ Object.defineProperties(global, {
     enumerable: true,
     value: {
       // $FlowFixMe[method-unbinding]
+      // $FlowFixMe[incompatible-type]
       now: jest.fn(Date.now),
     },
     writable: true,
