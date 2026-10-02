@@ -458,6 +458,36 @@ void ReactInstance::initializeRuntime(
 
     defineReactInstanceFlags(runtime, options);
 
+    // Bridge JSIExecutor installs this so debug bundle loaders can evaluate
+    // fetched Metro source through Runtime::evaluateJavaScript, with a source
+    // URL for stack traces. Unlike JS eval(), that path is not disabled by
+    // Hermes' RuntimeConfig::EnableEval or by lean engine builds.
+    defineReadOnlyGlobal(
+        runtime,
+        "globalEvalWithSourceUrl",
+        jsi::Function::createFromHostFunction(
+            runtime,
+            jsi::PropNameID::forAscii(runtime, "globalEvalWithSourceUrl"),
+            2,
+            [](jsi::Runtime& rt,
+               const jsi::Value& /*thisValue*/,
+               const jsi::Value* args,
+               size_t count) {
+              if (count != 1 && count != 2) {
+                throw jsi::JSError(
+                    rt, "globalEvalWithSourceUrl arg count must be 1 or 2");
+              }
+
+              auto code = args[0].asString(rt).utf8(rt);
+              std::string url;
+              if (count > 1 && args[1].isString()) {
+                url = args[1].asString(rt).utf8(rt);
+              }
+
+              return rt.evaluateJavaScript(
+                  std::make_unique<jsi::StringBuffer>(std::move(code)), url);
+            }));
+
     defineReadOnlyGlobal(
         runtime,
         "RN$useAlwaysAvailableJSErrorHandling",
