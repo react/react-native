@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6e73a99aafb36218e1d679637bb80c82>>
+ * @generated SignedSource<<0c6ae0cc911ae8ee487183dca0b0015c>>
  * @flow strict
  * @noformat
  */
@@ -37,6 +37,7 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   enableImperativeEvents_DEPRECATED: Getter<boolean>,
   enableNativeEventTargetEventDispatching: Getter<boolean>,
   externalElementInspectionEnabled: Getter<boolean>,
+  fixCrossOrientationNestedListViewability: Getter<boolean>,
   fixVirtualizeListCollapseWindowSize: Getter<boolean>,
   isLayoutAnimationEnabled: Getter<boolean>,
   shouldUseAnimatedObjectForTransform: Getter<boolean>,
@@ -184,6 +185,11 @@ export const enableNativeEventTargetEventDispatching: Getter<boolean> = createJa
  * Enable the external inspection API for DevTools to communicate with the Inspector overlay.
  */
 export const externalElementInspectionEnabled: Getter<boolean> = createJavaScriptFlagGetter('externalElementInspectionEnabled', true);
+
+/**
+ * When enabled, a VirtualizedList nested inside a list of the opposite orientation does not report viewable items while its containing cell is outside the parent viewport.
+ */
+export const fixCrossOrientationNestedListViewability: Getter<boolean> = createJavaScriptFlagGetter('fixCrossOrientationNestedListViewability', false);
 
 /**
  * Fixing an edge case where the current window size is not properly calculated with fast scrolling. Window size collapsed to 1 element even if windowSize more than the current amount of elements

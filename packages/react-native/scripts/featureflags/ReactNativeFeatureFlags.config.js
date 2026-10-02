@@ -1091,6 +1091,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    fixCrossOrientationNestedListViewability: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-29',
+        description:
+          'When enabled, a VirtualizedList nested inside a list of the opposite orientation does not report viewable items while its containing cell is outside the parent viewport.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     fixVirtualizeListCollapseWindowSize: {
       defaultValue: false,
       metadata: {
