@@ -13,7 +13,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const REACT_NATIVE_REPOSITORY_ROOT = path.join(
+const REACT_NATIVE_REPOSITORY_ROOT /*: string */ = path.join(
   __dirname,
   '..',
   '..',
