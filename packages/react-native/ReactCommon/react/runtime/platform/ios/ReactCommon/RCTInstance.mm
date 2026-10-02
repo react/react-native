@@ -171,10 +171,14 @@ using namespace facebook::react;
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args
 {
-  if (_valid) {
-    _reactInstance->callFunctionOnModule(
-        [moduleName UTF8String], [method UTF8String], convertIdToFollyDynamic(args ? args : @[]));
+  // This is called from arbitrary threads, while -invalidate destroys _reactInstance on
+  // the JS thread, so checking _valid and dereferencing have to happen as one step.
+  std::lock_guard<std::mutex> lock(_invalidationMutex);
+  if (!_valid || !_reactInstance) {
+    return;
   }
+  _reactInstance->callFunctionOnModule(
+      [moduleName UTF8String] ?: "", [method UTF8String] ?: "", convertIdToFollyDynamic(args ? args : @[]));
 }
 
 - (void)invalidate
