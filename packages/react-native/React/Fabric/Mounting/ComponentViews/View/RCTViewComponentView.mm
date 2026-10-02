@@ -1614,11 +1614,15 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
         addObject:RCTLocalizedString(
                       "mixed", "a checkbox, radio button, or other widget which is both checked and unchecked")];
   }
-  if (accessibilityState.expanded.value_or(false)) {
-    [valueComponents
-        addObject:RCTLocalizedString("expanded", "a menu, dialog, accordian panel, or other widget which is expanded")];
+  if (accessibilityState.expanded.has_value()) {
+    if (accessibilityState.expanded.value()) {
+      [valueComponents
+          addObject:RCTLocalizedString("expanded", "a menu, dialog, accordian panel, or other widget which is expanded")];
+    } else {
+      [valueComponents
+          addObject:RCTLocalizedString("collapsed", "a menu, dialog, accordian panel, or other widget which is collapsed")];
+    }
   }
-
   if (accessibilityState.busy) {
     [valueComponents addObject:RCTLocalizedString("busy", "an element currently being updated or modified")];
   }
