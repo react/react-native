@@ -21,22 +21,11 @@
 #include "AnimatedPropsRegistry.h"
 #include "AnimationBackendCommitHook.h"
 #include "AnimationChoreographer.h"
+#include "AnimationMutation.h"
 
 namespace facebook::react {
 
 class AnimationBackend;
-
-struct AnimationMutation {
-  Tag tag;
-  std::shared_ptr<const ShadowNodeFamily> family;
-  AnimatedProps props;
-  bool hasLayoutUpdates{false};
-};
-
-struct AnimationMutations {
-  std::vector<AnimationMutation> batch;
-  std::set<SurfaceId> asyncFlushSurfaces;
-};
 
 using Callback = std::function<AnimationMutations(AnimationTimestamp)>;
 
@@ -53,7 +42,6 @@ class AnimationBackend : public UIManagerAnimationBackend {
   AnimationBackend(
       std::shared_ptr<AnimationChoreographer> animationChoreographer,
       std::shared_ptr<UIManager> uiManager);
-  void commitUpdates(SurfaceId surfaceId, SurfaceUpdates &surfaceUpdates);
   void synchronouslyUpdateProps(const std::unordered_map<Tag, AnimatedProps> &updates);
   void requestAsyncFlushForSurfaces(const std::set<SurfaceId> &surfaces);
   void clearRegistry(SurfaceId surfaceId) override;
@@ -67,6 +55,9 @@ class AnimationBackend : public UIManagerAnimationBackend {
   void stop(CallbackId callbackId) override;
 
  private:
+  using SurfaceUpdates = std::unordered_map<Tag, AnimationMutation>;
+
+  void commitUpdates(SurfaceId surfaceId, SurfaceUpdates &surfaceUpdates);
   void unpackMutations(
       AnimationMutations &mutations,
       std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
@@ -74,7 +65,7 @@ class AnimationBackend : public UIManagerAnimationBackend {
   void applySurfaceUpdates(
       std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
       const std::set<SurfaceId> &asyncFlushSurfaces);
-  void applyMutations(AnimationMutations mutations);
+  void applyMutations(std::vector<AnimationMutations> batches);
   std::vector<CallbackWithId> callbacks;
   std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry_;
   std::shared_ptr<AnimationChoreographer> animationChoreographer_;

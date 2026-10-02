@@ -769,6 +769,13 @@ void UIManager::synchronouslyUpdateViewOnUIThread(
   }
 }
 
+void UIManager::synchronouslyUpdateAnimatedProps(
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  if (delegate_ != nullptr) {
+    delegate_->uiManagerShouldSynchronouslyUpdateAnimatedProps(updates);
+  }
+}
+
 #pragma mark ContextContainer
 
 std::shared_ptr<const ContextContainer> UIManager::getContextContainer() const {

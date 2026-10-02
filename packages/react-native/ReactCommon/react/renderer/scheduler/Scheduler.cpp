@@ -378,6 +378,13 @@ void Scheduler::uiManagerShouldSynchronouslyUpdateViewOnUIThread(
   }
 }
 
+void Scheduler::uiManagerShouldSynchronouslyUpdateAnimatedProps(
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerShouldSynchronouslyUpdateAnimatedProps(updates);
+  }
+}
+
 void Scheduler::uiManagerDidUpdateShadowTree(
     const std::unordered_map<Tag, folly::dynamic>& tagToProps) {
   if (delegate_ != nullptr) {

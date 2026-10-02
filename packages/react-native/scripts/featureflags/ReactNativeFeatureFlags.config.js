@@ -730,7 +730,7 @@ const definitions: FeatureFlagDefinitions = {
       metadata: {
         dateAdded: '2026-04-07',
         description:
-          'When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.',
+          'When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
