@@ -141,6 +141,7 @@ public object TransformHelper {
             val scale = transform.getDouble(transformType)
             MatrixMathHelper.applyScaleX(helperMatrix, scale)
             MatrixMathHelper.applyScaleY(helperMatrix, scale)
+            MatrixMathHelper.applyScaleZ(helperMatrix, scale)
           }
           "scaleX" -> MatrixMathHelper.applyScaleX(helperMatrix, transform.getDouble(transformType))
           "scaleY" -> MatrixMathHelper.applyScaleY(helperMatrix, transform.getDouble(transformType))

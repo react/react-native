@@ -864,6 +864,7 @@ double facebook::react::getCPUTimeNanos();
 double facebook::react::interpolate(double inputValue, double inputMin, double inputMax, double outputMin, double outputMax, std::string_view extrapolateLeft, std::string_view extrapolateRight);
 double facebook::react::round(double value) noexcept;
 facebook::jsi::Value facebook::react::createPromiseAsJSIValue(facebook::jsi::Runtime& rt, facebook::react::PromiseSetupFunctionType&& func);
+facebook::react::AnimatedPropsBuffer facebook::react::encodeAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
 facebook::react::Color facebook::react::hostPlatformColorFromComponents(facebook::react::ColorComponents components);
 facebook::react::Color facebook::react::hostPlatformColorFromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 facebook::react::ColorComponents facebook::react::colorComponentsFromColor(facebook::react::SharedColor color);
@@ -2382,6 +2383,7 @@ class facebook::react::FabricMountingManager {
   public void sendAccessibilityEvent(const facebook::react::ShadowView& shadowView, const std::string& eventType);
   public void setIsJSResponder(const facebook::react::ShadowView& shadowView, bool isJSResponder, bool blockNativeResponder);
   public void setViewSnapshot(facebook::react::Tag sourceTag, facebook::react::Tag targetTag, facebook::react::SurfaceId surfaceId);
+  public void synchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public void synchronouslyUpdateViewOnUIThread(facebook::react::Tag viewTag, const folly::dynamic& props);
   public ~FabricMountingManager();
 }
@@ -6591,6 +6593,12 @@ struct facebook::react::AnimatedPropBase {
 struct facebook::react::AnimatedProps {
   public std::unique_ptr<facebook::react::RawProps> rawProps;
   public std::vector<std::unique_ptr<facebook::react::AnimatedPropBase>> props;
+}
+
+struct facebook::react::AnimatedPropsBuffer {
+  public std::vector<double> doubles;
+  public std::vector<folly::dynamic> rawProps;
+  public std::vector<int> ints;
 }
 
 struct facebook::react::AnimatedPropsBuilder {
