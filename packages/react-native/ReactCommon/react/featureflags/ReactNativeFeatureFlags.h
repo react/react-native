@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4c93a39dd2a8ee5ba24f3f8bc99ac1ae>>
+ * @generated SignedSource<<467f462832f58b37ed97105595fbc843>>
  */
 
 /**
@@ -357,7 +357,7 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fuseboxWebSocketEventsEnabled();
 
   /**
-   * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
+   * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
    */
   RN_EXPORT static bool optimizedAnimatedPropUpdates();
 
