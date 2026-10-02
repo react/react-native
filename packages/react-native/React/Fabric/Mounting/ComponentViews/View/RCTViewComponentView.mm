@@ -1614,9 +1614,11 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
         addObject:RCTLocalizedString(
                       "mixed", "a checkbox, radio button, or other widget which is both checked and unchecked")];
   }
-  if (accessibilityState.expanded.value_or(false)) {
+  if (accessibilityState.expanded.has_value()) {
     [valueComponents
-        addObject:RCTLocalizedString("expanded", "a menu, dialog, accordian panel, or other widget which is expanded")];
+        addObject:accessibilityState.expanded.value()
+            ? RCTLocalizedString("expanded", "a menu, dialog, accordian panel, or other widget which is expanded")
+            : RCTLocalizedString("collapsed", "a menu, dialog, accordian panel, or other widget which is collapsed")];
   }
 
   if (accessibilityState.busy) {
