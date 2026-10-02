@@ -15,6 +15,7 @@ import android.util.Log
 import android.util.SparseArray
 import androidx.core.content.res.ResourcesCompat
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.common.build.ReactBuildConfig
 
 /**
  * Responsible for loading and caching Typeface objects.
@@ -189,9 +190,12 @@ public class ReactFontManager {
       }
 
       val typeface = Typeface.create(fontFamilyName, style)
-      // Typeface.create returns the default typeface for unknown family names.
-      if (fontFamilyName != DEFAULT_FAMILY && typeface == Typeface.defaultFromStyle(style)) {
-        Log.i(ReactConstants.TAG, "Unrecognized font family '$fontFamilyName'")
+      // Like RCTLogInfo on iOS, only log in debug builds.
+      if (ReactBuildConfig.DEBUG) {
+        // Typeface.create returns the default typeface for unknown family names.
+        if (fontFamilyName != DEFAULT_FAMILY && typeface == Typeface.defaultFromStyle(style)) {
+          Log.i(ReactConstants.TAG, "Unrecognized font family '$fontFamilyName'")
+        }
       }
       return typeface
     }
