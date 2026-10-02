@@ -4558,7 +4558,7 @@ enum facebook::react::DisplayType {
   None,
 }
 
-enum facebook::react::DynamicTypeRamp {
+enum facebook::react::DynamicTypeRamp : uint8_t {
   Body,
   Callout,
   Caption1,
@@ -4598,7 +4598,7 @@ enum facebook::react::FilterType {
   Sepia,
 }
 
-enum facebook::react::FontStyle {
+enum facebook::react::FontStyle : uint8_t {
   Italic,
   Normal,
   Oblique,
@@ -4633,7 +4633,7 @@ enum facebook::react::FontVariant : int {
   TabularNums,
 }
 
-enum facebook::react::FontWeight : int {
+enum facebook::react::FontWeight : uint16_t {
   Black,
   Bold,
   Demibold,
@@ -4705,7 +4705,7 @@ enum facebook::react::LayoutDirection {
   Undefined,
 }
 
-enum facebook::react::LineBreakMode {
+enum facebook::react::LineBreakMode : uint8_t {
   Char,
   Clip,
   Head,
@@ -4714,7 +4714,7 @@ enum facebook::react::LineBreakMode {
   Word,
 }
 
-enum facebook::react::LineBreakStrategy {
+enum facebook::react::LineBreakStrategy : uint8_t {
   HangulWordPriority,
   None,
   PushOut,
@@ -4951,7 +4951,7 @@ enum facebook::react::SubmitBehavior {
   Submit,
 }
 
-enum facebook::react::TextAlignment {
+enum facebook::react::TextAlignment : uint8_t {
   Center,
   End,
   Justified,
@@ -4974,14 +4974,14 @@ enum facebook::react::TextBreakStrategy {
   Simple,
 }
 
-enum facebook::react::TextDecorationLineType {
+enum facebook::react::TextDecorationLineType : uint8_t {
   None,
   Strikethrough,
   Underline,
   UnderlineStrikethrough,
 }
 
-enum facebook::react::TextDecorationStyle {
+enum facebook::react::TextDecorationStyle : uint8_t {
   Dashed,
   Dotted,
   Double,
@@ -4989,7 +4989,7 @@ enum facebook::react::TextDecorationStyle {
   Wavy,
 }
 
-enum facebook::react::TextTransform {
+enum facebook::react::TextTransform : uint8_t {
   Capitalize,
   Lowercase,
   None,
@@ -5037,7 +5037,7 @@ enum facebook::react::UnitType {
   Undefined,
 }
 
-enum facebook::react::WritingDirection {
+enum facebook::react::WritingDirection : uint8_t {
   LeftToRight,
   Natural,
   RightToLeft,
