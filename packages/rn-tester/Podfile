@@ -51,6 +51,7 @@ def pods(target_name, options = {})
   # RNTester native modules and components
   pod 'ScreenshotManager', :path => "NativeModuleExample"
   pod 'MyNativeView', :path => "NativeComponentExample"
+  pod 'RNTesterTabsIOS', :path => "RNTesterTabsIOS"
   pod 'NativeCxxModuleExample', :path => "NativeCxxModuleExample"
 end
 

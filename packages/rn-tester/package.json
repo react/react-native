@@ -54,6 +54,9 @@
       "components": {
         "RNTMyNativeView": {
           "className": "RNTMyNativeViewComponentView"
+        },
+        "RNTesterTabsIOS": {
+          "className": "RNTesterTabsIOSComponentView"
         }
       }
     }
@@ -86,6 +89,10 @@
       {
         "name": "MyNativeView",
         "path": "NativeComponentExample/ios"
+      },
+      {
+        "name": "RNTesterTabsIOS",
+        "path": "RNTesterTabsIOS/ios"
       },
       {
         "name": "NativeCxxModuleExample",

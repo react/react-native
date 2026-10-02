@@ -13,6 +13,7 @@ import type {
   RNTesterModuleExample,
 } from '../types/RNTesterTypes';
 
+import {maxContentWidthStyle} from './RNTesterLayout';
 import {type RNTesterTheme, RNTesterThemeContext} from './RNTesterTheme';
 import RNTPressableRow from './RNTPressableRow';
 import * as React from 'react';
@@ -102,9 +103,11 @@ export default function RNTesterModuleContainer(props: Props): React.Node {
           filter={filter}
           render={({filteredSections}) =>
             module.showIndividualExamples === true ? (
-              filteredSections[0].data.map(renderExample)
+              <View style={maxContentWidthStyle}>
+                {filteredSections[0].data.map(renderExample)}
+              </View>
             ) : (
-              <View style={styles.sectionContainer}>
+              <View style={[styles.sectionContainer, maxContentWidthStyle]}>
                 {filteredSections[0].data.map(renderExample)}
               </View>
             )
