@@ -62,6 +62,7 @@ import com.facebook.react.fabric.mounting.MountItemDispatcher;
 import com.facebook.react.fabric.mounting.MountingManager;
 import com.facebook.react.fabric.mounting.SurfaceMountingManager;
 import com.facebook.react.fabric.mounting.mountitems.BatchMountItem;
+import com.facebook.react.fabric.mounting.mountitems.BatchedAnimatedPropsMountItem;
 import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItemFactory;
@@ -832,6 +833,35 @@ public class FabricUIManager
     }
 
     synchronousMountItem.execute(mMountingManager);
+
+    ReactMarker.logFabricMarker(
+        ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END, null, commitNumber);
+  }
+
+  /** Called from C++ via JNI with a batch encoded by AnimatedPropBufferEncoder.cpp. */
+  @SuppressLint("NotInvokedPrivateMethod")
+  @SuppressWarnings("unused")
+  @UiThread
+  @ThreadConfined(UI)
+  private void synchronouslyUpdateViewBatch(
+      int[] intBuffer, double[] doubleBuffer, Object[] rawPropsBuffer) {
+    UiThreadUtil.assertOnUiThread();
+
+    int commitNumber = mCurrentSynchronousCommitNumber++;
+    ReactMarker.logFabricMarker(
+        ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_START, null, commitNumber);
+
+    if (ReactNativeFeatureFlags.enableFabricLogs()) {
+      FLog.d(
+          TAG,
+          "SynchronouslyUpdateViewBatch: %d ints, %d doubles, %d raw props",
+          intBuffer.length,
+          doubleBuffer.length,
+          rawPropsBuffer.length);
+    }
+
+    new BatchedAnimatedPropsMountItem(intBuffer, doubleBuffer, rawPropsBuffer, mMountItemDispatcher)
+        .execute(mMountingManager);
 
     ReactMarker.logFabricMarker(
         ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END, null, commitNumber);

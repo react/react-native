@@ -78,6 +78,7 @@ Pod::Spec.new do |s|
     ss.dependency             "React-callinvoker"
     ss.dependency             "React-timing"
     ss.source_files         = podspec_sources("react/renderer/animationbackend/**/*.{m,mm,cpp,h}", "react/renderer/animationbackend/**/*.{h}")
+    ss.exclude_files        = "react/renderer/animationbackend/tests"
     ss.header_dir           = "react/renderer/animationbackend"
   end
 

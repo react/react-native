@@ -6,10 +6,11 @@ Shared Animation Backend is a part of the React Native renderer that enables
 animation frameworks to update props of React components without going through
 React's JavaScript rendering pipeline.
 
-Animation Backend allows for updates of both layout and non-layout props. If
-there are no layout updates, the animations will go through the
-`synchronouslyUpdateProps` path, otherwise a Fabric commit will be performed. To
-synchronize the changes with React, we use the `AnimationBackendCommitHook`.
+Animation Backend allows for updates of both layout and non-layout props. The
+decision is made per view: views whose updates include layout props go through a
+Fabric commit, and the remaining views go through the `synchronouslyUpdateProps`
+path. To synchronize the changes with React, we use the
+`AnimationBackendCommitHook`.
 
 ## 🚀 Usage
 
@@ -42,10 +43,10 @@ components that make up the Shared Animation Backend.
 ### AnimationBackend
 
 This is the heart of the backend. This component is responsible for managing
-user-provided callbacks, segregating props, and applying them either through the
-`synchronouslyUpdateProps` path (when there are no layout updates), or through a
-Fabric commit performed on the main thread. This component is exposed through
-`UIManager` with the `UIManagerAnimationBackend` interface.
+user-provided callbacks, segregating props, and applying them per view: through
+a Fabric commit performed on the main thread for views with layout updates, and
+through the `synchronouslyUpdateProps` path for the rest. This component is
+exposed through `UIManager` with the `UIManagerAnimationBackend` interface.
 
 ### AnimatedProps
 

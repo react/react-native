@@ -30,6 +30,7 @@ target_link_libraries(
         react_codegen_rncore
         react_debug
         react_featureflags
+        react_renderer_animationbackend
         react_renderer_animations
         react_renderer_attributedstring
         react_renderer_componentregistry
