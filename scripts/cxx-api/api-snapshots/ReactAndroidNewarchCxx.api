@@ -864,6 +864,7 @@ double facebook::react::getCPUTimeNanos();
 double facebook::react::interpolate(double inputValue, double inputMin, double inputMax, double outputMin, double outputMax, std::string_view extrapolateLeft, std::string_view extrapolateRight);
 double facebook::react::round(double value) noexcept;
 facebook::jsi::Value facebook::react::createPromiseAsJSIValue(facebook::jsi::Runtime& rt, facebook::react::PromiseSetupFunctionType&& func);
+facebook::react::AnimatedPropsBuffer facebook::react::encodeAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
 facebook::react::Color facebook::react::hostPlatformColorFromComponents(facebook::react::ColorComponents components);
 facebook::react::Color facebook::react::hostPlatformColorFromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 facebook::react::ColorComponents facebook::react::colorComponentsFromColor(facebook::react::SharedColor color);
@@ -1147,6 +1148,7 @@ void facebook::react::fromRawValueShared(const facebook::react::ContextContainer
 void facebook::react::fromString(const std::string& string, facebook::react::AccessibilityTraits& result);
 void facebook::react::g_setNativeAnimatedNowTimestampFunction(facebook::react::TimePointFunction nowFunction);
 void facebook::react::handleJSError(facebook::jsi::Runtime& runtime, const facebook::jsi::JSError& error, bool isFatal);
+void facebook::react::mergeAnimatedRawProps(folly::dynamic& target, const folly::dynamic& source);
 void facebook::react::parseProcessedBackgroundImage(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundImage>& result);
 void facebook::react::parseProcessedBoxShadow(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::BoxShadow>& result);
 void facebook::react::parseProcessedFilter(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::FilterFunction>& result);
@@ -1574,7 +1576,7 @@ class facebook::react::AnimatedPropsRegistry {
   public void clear(facebook::react::SurfaceId surfaceId);
   public void clearOnSurfaceStop(facebook::react::SurfaceId surfaceId);
   public void initializeSurface(facebook::react::SurfaceId surfaceId);
-  public void update(const std::unordered_map<facebook::react::SurfaceId, facebook::react::SurfaceUpdates>& surfaceUpdates);
+  public void update(const std::vector<facebook::react::AnimationMutations>& batches);
 }
 
 class facebook::react::AnimationBackend : public facebook::react::UIManagerAnimationBackend {
@@ -1589,7 +1591,6 @@ class facebook::react::AnimationBackend : public facebook::react::UIManagerAnima
   public virtual void registerJSInvoker(std::shared_ptr<facebook::react::CallInvoker> jsInvoker) override;
   public virtual void stop(facebook::react::CallbackId callbackId) override;
   public virtual void trigger() override;
-  public void commitUpdates(facebook::react::SurfaceId surfaceId, facebook::react::SurfaceUpdates& surfaceUpdates);
   public void requestAsyncFlushForSurfaces(const std::set<facebook::react::SurfaceId>& surfaces);
   public void synchronouslyUpdateProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
 }
@@ -2382,6 +2383,7 @@ class facebook::react::FabricMountingManager {
   public void sendAccessibilityEvent(const facebook::react::ShadowView& shadowView, const std::string& eventType);
   public void setIsJSResponder(const facebook::react::ShadowView& shadowView, bool isJSResponder, bool blockNativeResponder);
   public void setViewSnapshot(facebook::react::Tag sourceTag, facebook::react::Tag targetTag, facebook::react::SurfaceId surfaceId);
+  public void synchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public void synchronouslyUpdateViewOnUIThread(facebook::react::Tag viewTag, const folly::dynamic& props);
   public ~FabricMountingManager();
 }
@@ -4102,6 +4104,7 @@ class facebook::react::RawProps {
   public bool isEmpty() const noexcept;
   public const facebook::react::RawValue* at(const char* name) const noexcept;
   public const facebook::react::RawValue* at(const char* name, const char* prefix, const char* suffix) const noexcept;
+  public const folly::dynamic* getDynamic() const noexcept;
   public facebook::react::RawProps& operator=(const facebook::react::RawProps& other) noexcept = delete;
   public facebook::react::RawProps& operator=(facebook::react::RawProps&& other) noexcept = delete;
   public folly::dynamic toDynamic(const std::function<bool(const std::string&)>& filterObjectKeys = nullptr) const;
@@ -4432,6 +4435,7 @@ class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) final;
   public virtual void uiManagerShouldAddOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) override;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) final;
+  public virtual void uiManagerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates) override;
   public virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) override;
   public void addEventListener(std::shared_ptr<const facebook::react::EventListener> listener);
   public void animationTick() const;
@@ -4455,6 +4459,7 @@ class facebook::react::SchedulerDelegate {
   public virtual void schedulerDidUpdateShadowTree(const std::unordered_map<facebook::react::Tag, folly::dynamic>& tagToProps) = 0;
   public virtual void schedulerShouldMergeReactRevision(facebook::react::SurfaceId surfaceId) = 0;
   public virtual void schedulerShouldRenderTransactions(const std::shared_ptr<const facebook::react::MountingCoordinator>& mountingCoordinator) = 0;
+  public virtual void schedulerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
   public virtual ~SchedulerDelegate() noexcept = default;
 }
@@ -5180,6 +5185,7 @@ class facebook::react::UIManager : public facebook::react::ShadowTreeDelegate {
   public void startEmptySurface(facebook::react::ShadowTree::Unique&& shadowTree) const noexcept;
   public void startSurface(facebook::react::ShadowTree::Unique&& shadowTree, std::string moduleName, folly::dynamic props, facebook::react::DisplayMode displayMode) const noexcept;
   public void stopSurfaceForAnimationDelegate(facebook::react::SurfaceId surfaceId) const;
+  public void synchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public void synchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props);
   public void unregisterCommitHook(facebook::react::UIManagerCommitHook& commitHook);
   public void unregisterMountHook(facebook::react::UIManagerMountHook& mountHook);
@@ -5247,6 +5253,7 @@ class facebook::react::UIManagerDelegate {
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) = 0;
   public virtual void uiManagerShouldAddOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) = 0;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) = 0;
+  public virtual void uiManagerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates) = 0;
   public virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
   public virtual ~UIManagerDelegate() noexcept = default;
 }
@@ -6588,6 +6595,12 @@ struct facebook::react::AnimatedProps {
   public std::vector<std::unique_ptr<facebook::react::AnimatedPropBase>> props;
 }
 
+struct facebook::react::AnimatedPropsBuffer {
+  public std::vector<double> doubles;
+  public std::vector<folly::dynamic> rawProps;
+  public std::vector<int> ints;
+}
+
 struct facebook::react::AnimatedPropsBuilder {
   public facebook::react::AnimatedProps get();
   public std::unique_ptr<facebook::react::RawProps> rawProps;
@@ -7869,12 +7882,6 @@ struct facebook::react::SurfaceContext {
   public std::unordered_map<facebook::react::Tag, std::unique_ptr<facebook::react::PropsSnapshot>> pendingMap;
   public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> families;
   public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> pendingFamilies;
-}
-
-struct facebook::react::SurfaceUpdates {
-  public bool hasLayoutUpdates;
-  public std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps> propsMap;
-  public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> families;
 }
 
 struct facebook::react::SystraceSection : public facebook::react::DummyTraceSection {

@@ -21,6 +21,8 @@
 
 namespace facebook::react {
 
+struct AnimatedProps;
+
 /*
  * Abstract class for UIManager's delegate.
  */
@@ -70,6 +72,12 @@ class UIManagerDelegate {
    * Synchronous view update.
    */
   virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) = 0;
+
+  /*
+   * Synchronous update of animated props for many views at once.
+   */
+  virtual void uiManagerShouldSynchronouslyUpdateAnimatedProps(
+      const std::unordered_map<Tag, AnimatedProps> &updates) = 0;
 
   /*
    * Called after updateShadowTree is invoked.
