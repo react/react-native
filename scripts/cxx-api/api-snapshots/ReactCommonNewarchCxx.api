@@ -5780,7 +5780,7 @@ struct facebook::react::PropsParserContext {
 }
 
 struct facebook::react::PropsSnapshot {
-  public facebook::react::BaseViewProps props;
+  public std::unique_ptr<facebook::react::BaseViewProps> props;
   public std::unique_ptr<folly::dynamic> rawProps;
   public std::unordered_set<facebook::react::PropName> propNames;
 }
