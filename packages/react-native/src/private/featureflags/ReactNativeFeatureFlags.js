@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6e73a99aafb36218e1d679637bb80c82>>
+ * @generated SignedSource<<6c4bab0fafa6367cebfd4f00797e88a9>>
  * @flow strict
  * @noformat
  */
@@ -467,7 +467,7 @@ export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlag
  */
 export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
 /**
- * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
+ * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
  */
 export const optimizedAnimatedPropUpdates: Getter<boolean> = createNativeFlagGetter('optimizedAnimatedPropUpdates', false);
 /**

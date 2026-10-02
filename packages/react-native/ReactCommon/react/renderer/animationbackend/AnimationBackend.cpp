@@ -261,6 +261,12 @@ void AnimationBackend::commitUpdates(
 
 void AnimationBackend::synchronouslyUpdateProps(
     const std::unordered_map<Tag, AnimatedProps>& updates) {
+  if (ReactNativeFeatureFlags::optimizedAnimatedPropUpdates()) {
+    if (auto uiManager = uiManager_.lock()) {
+      uiManager->synchronouslyUpdateAnimatedProps(updates);
+    }
+    return;
+  }
   for (auto& [tag, animatedProps] : updates) {
     // TODO: We shouldn't repack it into dynamic, but for that a rewrite
     // of synchronouslyUpdateViewOnUIThread is needed
