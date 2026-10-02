@@ -29,7 +29,8 @@ fun windowsAwareBashCommandLine(
     }
 
 /**
- * Returns the `bash.exe` of the Git for Windows installation found on the PATH, or null.
+ * Returns `<root>\bin\bash.exe` for the first `<root>\<folder>\git.exe` on the PATH that has one,
+ * or null. This is where Git for Windows keeps its bash.
  *
  * A bare `bash` is not reliable on Windows: the Git installer adds only `<git>\cmd` to the PATH by
  * default, and when WSL is installed `bash` resolves to the WSL launcher in `System32`, which
