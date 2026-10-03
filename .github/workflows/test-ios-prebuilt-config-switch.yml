@@ -1,0 +1,123 @@
+name: Test iOS Prebuilt Config Switch
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: macos-15-large
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup xcode
+        uses: ./.github/actions/setup-xcode
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn
+        uses: ./.github/actions/yarn-install
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6.10
+      - name: Download React Native Package
+        uses: actions/download-artifact@v7
+        with:
+          name: react-native-package
+          path: /tmp/react-native-tmp
+      - name: Download ReactNativeDependencies
+        uses: actions/download-artifact@v7
+        with:
+          name: ReactNativeDependenciesRelease.xcframework.tar.gz
+          path: /tmp/third-party
+      - name: Download React Native Prebuilds
+        uses: actions/download-artifact@v7
+        with:
+          pattern: ReactCore*.xcframework.tar.gz
+          path: /tmp/ReactCore
+          merge-multiple: true
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global user.email "react-native-bot@meta.com"
+          git config --global user.name "React Native Bot"
+      - name: Create the template app
+        shell: bash
+        run: |
+          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
+
+          # For stable branches, we want to use the stable branch of the template
+          # In all the other cases, we want to use "main"
+          BRANCH=${{ github.ref_name }}
+          if ! [[ $BRANCH == *-stable* ]]; then
+            BRANCH=main
+          fi
+
+          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
+
+          # A pod that does not depend on React-Core-prebuilt has no target
+          # dependency ordering it behind the [RNCore] script phase, so its
+          # compilation can overlap with what that phase does to
+          # Pods/React-Core-prebuilt. Without such a pod, this lane proves nothing.
+          cp -R ./scripts/e2e/fixtures/RNCoreConfigSwitchProbe /tmp/RNTestProject/ios/
+          cd /tmp/RNTestProject/ios
+          awk "/^target /{print; print \"  pod 'RNCoreConfigSwitchProbe', :path => './RNCoreConfigSwitchProbe'\"; next} {print}" Podfile > Podfile.probe
+          mv Podfile.probe Podfile
+          cat Podfile
+      - name: Install pods with prebuilt React Native Core
+        shell: bash
+        run: |
+          # RCT_TESTONLY_RNCORE_TARBALL_PATH is deliberately not set here: it
+          # takes the [RNCore] script phase out of React-Core-prebuilt.podspec,
+          # and that phase is what this lane exercises. So RNCore resolves the
+          # regular way, which needs both flavor tarballs reachable over HTTP
+          # under this commit's version — a version that is never published.
+          RN_VERSION=$(node -p "require('/tmp/RNTestProject/node_modules/react-native/package.json').version")
+          ARTIFACTS="/tmp/maven-mirror/com/facebook/react/react-native-artifacts/$RN_VERSION"
+          mkdir -p "$ARTIFACTS"
+          cp /tmp/ReactCore/ReactCoreDebug.xcframework.tar.gz "$ARTIFACTS/react-native-artifacts-$RN_VERSION-reactnative-core-debug.tar.gz"
+          cp /tmp/ReactCore/ReactCoreRelease.xcframework.tar.gz "$ARTIFACTS/react-native-artifacts-$RN_VERSION-reactnative-core-release.tar.gz"
+
+          python3 ./scripts/e2e/local-maven-mirror.py /tmp/maven-mirror 8765 &
+          MIRROR_PID=$!
+          trap 'kill $MIRROR_PID || true' EXIT
+          for _ in $(seq 20); do
+            curl -sfI -o /dev/null "http://127.0.0.1:8765/com/facebook/react/react-native-artifacts/$RN_VERSION/react-native-artifacts-$RN_VERSION-reactnative-core-debug.tar.gz" && break
+            sleep 1
+          done
+
+          cd /tmp/RNTestProject/ios
+          bundle install
+
+          export ENTERPRISE_REPOSITORY="http://127.0.0.1:8765"
+          export RCT_USE_PREBUILT_RNCORE=1
+          export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependenciesRelease.xcframework.tar.gz"
+          RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
+
+          # Falling back to a source build, or losing the script phase, would
+          # make this lane pass without testing anything — which is how #57803
+          # got through CI in the first place.
+          test -f Pods/React-Core-prebuilt/Headers/module.modulemap ||
+            { echo "::error::React-Core-prebuilt was not installed from the prebuilt artifacts"; exit 1; }
+          grep -q replace-rncore-version.js Pods/Pods.xcodeproj/project.pbxproj ||
+            { echo "::error::the [RNCore] configuration switch script phase is missing"; exit 1; }
+      - name: Build Release on top of a Debug install
+        shell: bash
+        run: |
+          cd /tmp/RNTestProject/ios
+
+          # Claim the last build was Debug, so the [RNCore] script phase swaps
+          # React.xcframework while the rest of the project compiles. Empty
+          # DerivedData makes sure the React module is precompiled during this
+          # build instead of being reused from an earlier one.
+          printf Debug > Pods/React-Core-prebuilt/.last_build_configuration
+
+          xcodebuild \
+            -scheme "RNTestProject" \
+            -workspace RNTestProject.xcworkspace \
+            -configuration "Release" \
+            -sdk "iphonesimulator" \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "/tmp/RNTestProject-config-switch"
