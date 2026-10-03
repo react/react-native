@@ -559,6 +559,7 @@ public class FabricUIManager
         TextLayoutManager.measureLines(
             mReactApplicationContext.getAssets(),
             ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
+            mReactApplicationContext,
             attributedString,
             paragraphAttributes,
             PixelUtil.toPixelFromDIP(width),
@@ -648,6 +649,7 @@ public class FabricUIManager
     return TextLayoutManager.measureText(
         mReactApplicationContext.getAssets(),
         ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
+        mReactApplicationContext,
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
@@ -676,6 +678,7 @@ public class FabricUIManager
     return TextLayoutManager.createPreparedLayout(
         mReactApplicationContext.getAssets(),
         ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
+        mReactApplicationContext,
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
