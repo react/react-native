@@ -168,6 +168,7 @@ public class ReactActivityDelegate {
                   }
                 };
           }
+          mReactDelegate.setFullyDrawnReportingEnabled(isFullyDrawnReportingEnabled());
           if (mainComponentName != null) {
             LocalNetworkPermissionUtil.requestLocalNetworkAccessIfNeeded(
                 getPlainActivity(), () -> loadApp(mainComponentName));
@@ -321,5 +322,22 @@ public class ReactActivityDelegate {
    */
   protected boolean isWideColorGamutEnabled() {
     return false;
+  }
+
+  /**
+   * Controls whether {@link Activity#reportFullyDrawn()} is automatically triggered once the
+   * initial content of the React surface has appeared, via the activity's {@code
+   * androidx.activity.FullyDrawnReporter}. Android uses this signal to bound the startup window for
+   * profile guided compilation (Android 12+) and to report time-to-fully-drawn in Android vitals.
+   *
+   * <p>Apps that consider themselves fully drawn only later (e.g. once their initial data has been
+   * rendered) can keep this enabled and additionally register their own reporter on the activity's
+   * {@code FullyDrawnReporter} before the content appears, or override this method to return false
+   * to opt out entirely.
+   *
+   * @return true if fully drawn reporting is enabled for this Activity, false otherwise.
+   */
+  protected boolean isFullyDrawnReportingEnabled() {
+    return true;
   }
 }
