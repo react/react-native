@@ -10,6 +10,7 @@ package com.facebook.react.model
 data class ModelAutolinkingDependenciesPlatformAndroidJson(
     val sourceDir: String,
     val packageImportPath: String,
+    val packageImportPaths: List<String>? = null,
     val packageInstance: String,
     val buildTypes: List<String>,
     val libraryName: String? = null,
