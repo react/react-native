@@ -81,6 +81,61 @@ class DisplayMetricsHolderTest {
   }
 
   @Test
+  fun updateDisplayMetricsIfChanged_returnsTrueAndUpdatesMetricsWhenMetricsChange() {
+    val originalMetrics = DisplayMetrics().apply {
+      density = 2.0f
+      scaledDensity = 2.0f
+      widthPixels = 1000
+      heightPixels = 2000
+      densityDpi = DisplayMetrics.DENSITY_XHIGH
+    }
+    val updatedMetrics = DisplayMetrics().apply {
+      density = 1.5f
+      scaledDensity = 1.5f
+      widthPixels = 1200
+      heightPixels = 1800
+      densityDpi = DisplayMetrics.DENSITY_HIGH
+    }
+    val mockContext: Context = mock()
+    val mockResources: android.content.res.Resources = mock()
+
+    DisplayMetricsHolder.setScreenDisplayMetrics(originalMetrics)
+    whenever(mockContext.resources).thenReturn(mockResources)
+    whenever(mockResources.displayMetrics).thenReturn(updatedMetrics)
+    whenever(mockContext.getSystemService(Context.WINDOW_SERVICE))
+        .thenThrow(IllegalStateException("non-visual context"))
+
+    val didChange = DisplayMetricsHolder.updateDisplayMetricsIfChanged(mockContext)
+
+    assertThat(didChange).isTrue()
+    assertThat(DisplayMetricsHolder.getScreenDisplayMetrics().density).isEqualTo(1.5f)
+    assertThat(DisplayMetricsHolder.getScreenDisplayMetrics().scaledDensity).isEqualTo(1.5f)
+  }
+
+  @Test
+  fun updateDisplayMetricsIfChanged_returnsFalseWhenMetricsMatch() {
+    val metrics = DisplayMetrics().apply {
+      density = 2.0f
+      scaledDensity = 2.0f
+      widthPixels = 1000
+      heightPixels = 2000
+      densityDpi = DisplayMetrics.DENSITY_XHIGH
+    }
+    val mockContext: Context = mock()
+    val mockResources: android.content.res.Resources = mock()
+
+    DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics().apply { setTo(metrics) })
+    whenever(mockContext.resources).thenReturn(mockResources)
+    whenever(mockResources.displayMetrics).thenReturn(metrics)
+    whenever(mockContext.getSystemService(Context.WINDOW_SERVICE))
+        .thenThrow(IllegalStateException("non-visual context"))
+
+    val didChange = DisplayMetricsHolder.updateDisplayMetricsIfChanged(mockContext)
+
+    assertThat(didChange).isFalse()
+  }
+
+  @Test
   fun initDisplayMetricsIfNotInitialized_onlyInitializesOnce() {
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(context)
     val firstScreen = DisplayMetricsHolder.getScreenDisplayMetrics()
