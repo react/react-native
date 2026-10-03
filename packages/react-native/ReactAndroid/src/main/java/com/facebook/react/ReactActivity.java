@@ -123,11 +123,12 @@ public abstract class ReactActivity extends AppCompatActivity
   public void invokeDefaultOnBackPressed() {
     // Disabling callback so the fallback logic (finish activity) can run
     // as super.onBackPressed() will call all enabled callbacks in the dispatcher.
+    boolean enabled = mBackPressedCallback.isEnabled();
     mBackPressedCallback.setEnabled(false);
     super.onBackPressed();
     // Re-enable callback to ensure custom back handling works after activity resume
     // Without this, the callback remains disabled when the app returns from background
-    mBackPressedCallback.setEnabled(true);
+    mBackPressedCallback.setEnabled(enabled);
   }
 
   @Override
@@ -182,5 +183,9 @@ public abstract class ReactActivity extends AppCompatActivity
 
   protected final void loadApp(String appKey) {
     mDelegate.loadApp(appKey);
+  }
+
+  protected OnBackPressedCallback getBackPressedCallback() {
+    return mBackPressedCallback;
   }
 }
