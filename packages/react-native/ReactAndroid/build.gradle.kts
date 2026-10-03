@@ -583,11 +583,9 @@ android {
     minSdk = libs.versions.minSdk.get().toInt()
 
     aarMetadata {
-      // RN's public ABI exposes no android API newer than 34, and the source is written to
-      // compile against SDK 34 (see util/AndroidVersion.kt). compileSdk is 36 only to build
-      // against the latest platform — it is not an API requirement. Without this, AGP 9
-      // defaults minCompileSdk to compileSdk (36), needlessly forcing every consuming
-      // library/app to compileSdk 36.
+      // RN's public ABI exposes no Android API newer than 34, so consumers do not need to
+      // match ReactAndroid's compile SDK. Without this, AGP 9 defaults minCompileSdk to
+      // compileSdk, needlessly forcing every consuming library/app to use the same SDK.
       minCompileSdk = 34
     }
 

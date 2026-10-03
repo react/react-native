@@ -45,12 +45,15 @@ public fun setEdgeToEdgeFeatureFlagOn() {
 internal fun updateEdgeToEdgeFeatureFlag(activity: Activity) {
   // When the app targets SDK 35+, edge-to-edge may be enforced by the OS even if the
   // feature flag wasn't explicitly set. In that case, turn the flag on to match.
-  if (AndroidVersion.isAtLeastTargetSdk35(activity)) {
-    if (Build.VERSION.SDK_INT >= AndroidVersion.VERSION_CODE_BAKLAVA) {
+  if (
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM &&
+          activity.applicationInfo.targetSdkVersion >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+  ) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
       // The device is running Android 16+ (where edge-to-edge is always enforced)
       isEdgeToEdgeFeatureFlagOn = true
     } else {
-      val attributes = intArrayOf(AndroidVersion.ATTR_WINDOW_OPT_OUT_EDGE_TO_EDGE_ENFORCEMENT)
+      val attributes = intArrayOf(android.R.attr.windowOptOutEdgeToEdgeEnforcement)
       val typedArray = activity.theme.obtainStyledAttributes(attributes)
 
       // The device is running Android 15 with / without opting out
