@@ -10,11 +10,13 @@
 package com.facebook.react.uimanager
 
 import android.view.View.OnFocusChangeListener
+import android.widget.FrameLayout
 import com.facebook.react.R
 import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.DynamicFromObject
 import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.react.views.view.ReactViewManager
@@ -69,6 +71,51 @@ class BaseViewManagerTest {
     viewManager.setViewState(view, accessibilityState)
     Assertions.assertThat(view.getTag(R.id.accessibility_state)).isEqualTo(accessibilityState)
     Assertions.assertThat(view.isSelected).isEqualTo(true)
+  }
+
+  @Test
+  fun testClearingAccessibilityDisabledRestoresTapTarget() {
+    val root = FrameLayout(themedReactContext)
+    root.id = 1
+    root.layout(0, 0, 300, 300)
+    view.id = 3
+    root.addView(view)
+    view.layout(0, 0, 200, 100)
+
+    for (state in listOf(JavaOnlyMap(), JavaOnlyMap.of("disabled", null), null)) {
+      viewManager.setViewState(view, JavaOnlyMap.of("disabled", true))
+      Assertions.assertThat(TouchTargetHelper.findTargetTagForTouch(20f, 50f, root)).isEqualTo(1)
+
+      viewManager.setViewState(view, state)
+
+      Assertions.assertThat(view.isEnabled).isTrue()
+      Assertions.assertThat(TouchTargetHelper.findTargetTagForTouch(20f, 50f, root)).isEqualTo(3)
+      Assertions.assertThat(view.getTag(R.id.accessibility_state_disabled)).isNull()
+    }
+  }
+
+  @Test
+  fun testClearingAccessibilityDisabledPreservesOtherState() {
+    val state = JavaOnlyMap.of("busy", true, "checked", "mixed")
+    viewManager.setViewState(view, JavaOnlyMap.of("disabled", true))
+
+    viewManager.setViewState(view, state)
+
+    val nativeState = view.getTag(R.id.accessibility_state) as ReadableMap
+    Assertions.assertThat(view.isEnabled).isTrue()
+    Assertions.assertThat(nativeState.getBoolean("busy")).isTrue()
+    Assertions.assertThat(nativeState.getString("checked")).isEqualTo("mixed")
+    Assertions.assertThat(state.hasKey("disabled")).isFalse()
+  }
+
+  @Test
+  fun testViewManagerSubclassPreservesDisabledDuringPartialUpdates() {
+    val subclassManager = object : ReactViewManager() {}
+    subclassManager.setViewState(view, JavaOnlyMap.of("disabled", true))
+
+    subclassManager.setViewState(view, JavaOnlyMap.of("busy", true))
+
+    Assertions.assertThat(view.isEnabled).isFalse()
   }
 
   @Test
