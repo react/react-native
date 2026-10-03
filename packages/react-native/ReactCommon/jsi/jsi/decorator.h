@@ -210,6 +210,9 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
   BigInt createBigIntFromUint64(uint64_t value) override {
     return plain_.createBigIntFromUint64(value);
   }
+  BigInt createBigIntFromBytes(const uint8_t* bytes, size_t length) override {
+    return plain_.createBigIntFromBytes(bytes, length);
+  }
   bool bigintIsInt64(const BigInt& b) override {
     return plain_.bigintIsInt64(b);
   }
@@ -221,6 +224,9 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
   }
   String bigintToString(const BigInt& bigint, int radix) override {
     return plain_.bigintToString(bigint, radix);
+  }
+  std::vector<uint8_t> bytes(const BigInt& b) override {
+    return plain_.bytes(b);
   }
 
   String createStringFromAscii(const char* str, size_t length) override {
@@ -779,6 +785,10 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
     Around around{with_};
     return RD::createBigIntFromUint64(i);
   }
+  BigInt createBigIntFromBytes(const uint8_t* bytes, size_t length) override {
+    Around around{with_};
+    return RD::createBigIntFromBytes(bytes, length);
+  }
   bool bigintIsInt64(const BigInt& bi) override {
     Around around{with_};
     return RD::bigintIsInt64(bi);
@@ -794,6 +804,10 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
   String bigintToString(const BigInt& bi, int i) override {
     Around around{with_};
     return RD::bigintToString(bi, i);
+  }
+  std::vector<uint8_t> bytes(const BigInt& bi) override {
+    Around around{with_};
+    return RD::bytes(bi);
   }
 
   String createStringFromAscii(const char* str, size_t length) override {
