@@ -781,6 +781,57 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _removeClippedSubviews = NO;
   _reactSubviews = [NSMutableArray new];
   _layoutMetrics = EmptyLayoutMetrics;
+
+  // Reset accessibility state so it does not leak across recycled views.
+  // updateProps writes most accessibility properties only when
+  // (oldProps != newProps); after recycle _props is reset to the
+  // AccessibilityProps default-constructed values, so any UIKit-side
+  // state previously set stays stale unless cleared here.
+  //
+  // The most visible failure this guards against is
+  // `accessibilityViewIsModal` / `accessibilityElementsHidden` trapping
+  // VoiceOver against a now-unrelated subtree (empty accessibility
+  // tree).
+  //
+  // Skipped on purpose:
+  //   * `isAccessibilityElement` and `accessibilityTraits` — their
+  //     UIKit defaults depend on the underlying view subclass
+  //     (UIControl / UILabel / UIImageView start with different
+  //     defaults than UIView). For RCTText/Image ComponentView
+  //     `accessibilityElement` resolves to an inner UILabel /
+  //     UIImageView whose natural a11y behavior would be clobbered
+  //     by forcing NO / None here. Per-subclass reset is a separate
+  //     follow-up.
+  //   * `accessibilityRespondsToUserInteraction` — its UIKit default is
+  //     not a fixed value but "derived from other accessibility
+  //     properties" (per the UIAccessibility.h header; e.g. an element
+  //     with UIAccessibilityTraitNotEnabled returns NO). Writing any
+  //     explicit value here would replace the derived behavior with a
+  //     constant, which is worse than the staleness it would fix.
+  self.accessibilityElement.accessibilityLabel = nil;
+  self.accessibilityElement.accessibilityLanguage = nil;
+  self.accessibilityElement.accessibilityHint = nil;
+  self.accessibilityElement.accessibilityValue = nil;
+  self.accessibilityElement.accessibilityViewIsModal = NO;
+  self.accessibilityElement.accessibilityElementsHidden = NO;
+  self.accessibilityIgnoresInvertColors = NO;
+  // Clear only the `accessibilityState` bits the setter writes via
+  // self.accessibilityTraits (.NotEnabled / .Selected). Subclass
+  // default traits are preserved.
+  self.accessibilityTraits &= ~(UIAccessibilityTraitNotEnabled | UIAccessibilityTraitSelected);
+  if ([self.accessibilityElement respondsToSelector:@selector(setAccessibilityIdentifier:)]) {
+    ((UIView *)self.accessibilityElement).accessibilityIdentifier = nil;
+  } else {
+    self.accessibilityIdentifier = nil;
+  }
+#if !TARGET_OS_TV
+  if (@available(iOS 13.0, *)) {
+    self.showsLargeContentViewer = NO;
+    self.largeContentTitle = nil;
+  }
+#endif
+  _accessibilityOrderNativeIDs = nil;
+  self.accessibilityElements = nil;
 }
 
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
