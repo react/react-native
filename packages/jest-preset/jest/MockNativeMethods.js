@@ -15,6 +15,18 @@ const MockNativeMethods = {
   setNativeProps: jest.fn(),
   focus: jest.fn(),
   blur: jest.fn(),
+  getBoundingClientRect: jest.fn(function () {
+    return {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    };
+  }),
 } as {
   measure: () => void,
   measureInWindow: () => void,
@@ -22,6 +34,16 @@ const MockNativeMethods = {
   setNativeProps: () => void,
   focus: () => void,
   blur: () => void,
+  getBoundingClientRect: () => {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    top: number,
+    left: number,
+    right: number,
+    bottom: number,
+  },
 };
 
 export default MockNativeMethods;
