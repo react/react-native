@@ -45,6 +45,15 @@ function withLocation(node, loc) {
   return node;
 }
 
+function recordDeepExport(path, state) {
+  const source = path.node.source;
+
+  if (source && isDeepReactNativeImport(source.value)) {
+    const loc = path.node.loc;
+    state.export.push({source: source.value, loc});
+  }
+}
+
 module.exports = ({types: t}) => ({
   name: 'warn-on-deep-imports',
   visitor: {
@@ -61,7 +70,9 @@ module.exports = ({types: t}) => ({
       const args = path.get('arguments');
 
       if (
-        callee.isIdentifier({name: 'require'}) &&
+        ((callee.isIdentifier({name: 'require'}) &&
+          path.scope.getBinding('require') == null) ||
+          callee.node.type === 'Import') &&
         args.length === 1 &&
         args[0].isStringLiteral()
       ) {
@@ -73,14 +84,8 @@ module.exports = ({types: t}) => ({
         }
       }
     },
-    ExportNamedDeclaration(path, state) {
-      const source = path.node.source;
-
-      if (source && isDeepReactNativeImport(source.value)) {
-        const loc = path.node.loc;
-        state.export.push({source: source.value, loc});
-      }
-    },
+    ExportNamedDeclaration: recordDeepExport,
+    ExportAllDeclaration: recordDeepExport,
     Program: {
       enter(path, state) {
         state.require = [];
