@@ -69,6 +69,10 @@ AppleEventBeat::AppleEventBeat(
     if (!owner) {
       return;
     }
+    if (this->didInduceInCurrentTurn_) {
+      return;
+    }
+    this->didInduceInCurrentTurn_ = true;
     this->induce();
   };
 
@@ -117,6 +121,9 @@ void AppleEventBeat::activityDidChange(
     RunLoopObserver::Activity /*activity*/) const noexcept
 {
   react_native_assert(delegate == this);
+  // This observer runs before Core Animation's commit observer, so it is the
+  // start of the turn whose display phase `didInduceInCurrentTurn_` bounds.
+  didInduceInCurrentTurn_ = false;
   induce();
 }
 

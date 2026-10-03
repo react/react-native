@@ -70,6 +70,20 @@ class AppleEventBeat : public EventBeat, public RunLoopObserver::Delegate {
   WindowLayerResolver windowLayerResolver_;
   NSMapTable<CALayer *, RCTEventBeatFlusherLayer *> *layers_;
   void (^onDisplay_)(void);
+
+  /*
+   * Whether a display phase has already induced in the current run loop turn.
+   *
+   * The beat a display phase induces runs the whole event loop tick on the
+   * main thread, mounting included, so a `VirtualView` whose layout metrics
+   * change during that mount emits another synchronous request from inside the
+   * display it is servicing. Core Animation honours `setNeedsDisplay` made
+   * during a display by running the commit's layout and display phases again,
+   * with no bound, so without this flag one commit can perform an unbounded
+   * number of blocking JavaScript round trips. Requests that arrive after the
+   * first induce keep the ordinary run loop observer timing.
+   */
+  mutable bool didInduceInCurrentTurn_{false};
 };
 
 } // namespace facebook::react
