@@ -395,15 +395,42 @@ module.exports = function inlinePlatformPlugin(
   function isWriteTarget(
     path /*: NodePath<MemberExpression> */,
   ) /*: boolean */ {
-    const {parent, node} = path;
-    if (parent.type === 'AssignmentExpression' && parent.left === node) {
-      return true;
-    }
-    if (parent.type === 'UpdateExpression' && parent.argument === node) {
-      return true;
-    }
-    if (parent.type === 'UnaryExpression' && parent.operator === 'delete') {
-      return true;
+    let child /*: Node */ = path.node;
+    let parentPath = path.parentPath;
+
+    while (parentPath != null) {
+      const parent = parentPath.node;
+      if (
+        (parent.type === 'AssignmentExpression' ||
+          parent.type === 'ForInStatement' ||
+          parent.type === 'ForOfStatement') &&
+        parent.left === child
+      ) {
+        return true;
+      }
+      if (parent.type === 'UpdateExpression' && parent.argument === child) {
+        return true;
+      }
+      if (
+        parent.type === 'UnaryExpression' &&
+        parent.operator === 'delete' &&
+        parent.argument === child
+      ) {
+        return true;
+      }
+
+      const nestedWriteTarget =
+        parent.type === 'ArrayPattern' ||
+        parent.type === 'ObjectPattern' ||
+        (parent.type === 'ObjectProperty' && parent.value === child) ||
+        (parent.type === 'RestElement' && parent.argument === child) ||
+        (parent.type === 'AssignmentPattern' && parent.left === child);
+      if (!nestedWriteTarget) {
+        return false;
+      }
+
+      child = parent;
+      parentPath = parentPath.parentPath;
     }
     return false;
   }
