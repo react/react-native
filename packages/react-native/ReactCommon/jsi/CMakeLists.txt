@@ -23,4 +23,4 @@ target_link_libraries(jsi
         glog)
 
 target_compile_reactnative_options(jsi PRIVATE)
-target_compile_options(jsi PRIVATE -O3 -Wno-unused-lambda-capture)
+target_compile_options(jsi PRIVATE -O3 -flto -Wno-unused-lambda-capture)
