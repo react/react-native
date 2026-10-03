@@ -15,7 +15,7 @@
 
 #include "AnimatedNode.h"
 
-#include <react/renderer/graphics/Color.h>
+#include <React/Graphics.h>
 
 namespace facebook::react {
 class ColorAnimatedNode final : public AnimatedNode {

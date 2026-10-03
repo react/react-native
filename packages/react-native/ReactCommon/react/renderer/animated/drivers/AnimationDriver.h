@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <react/debug/flags.h>
+#include <React/Debug.h>
 #include <react/renderer/animated/NativeAnimatedNodesManager.h>
 
 namespace facebook::react {
