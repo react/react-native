@@ -15,6 +15,21 @@ import {
 } from './NativeDeviceInfo';
 import {useEffect, useState} from 'react';
 
+function safeAreaInsetsAreEqual(
+  a: DisplayMetrics['experimental_safeAreaInsets'],
+  b: DisplayMetrics['experimental_safeAreaInsets'],
+): boolean {
+  if (a == null || b == null) {
+    return a == null && b == null;
+  }
+  return (
+    a.top === b.top &&
+    a.right === b.right &&
+    a.bottom === b.bottom &&
+    a.left === b.left
+  );
+}
+
 /**
  * React hook that provides the application window's width, height, scale, and
  * font scale. Automatically updates when screen size or font scale changes.
@@ -35,7 +50,11 @@ export default function useWindowDimensions():
         dimensions.width !== window.width ||
         dimensions.height !== window.height ||
         dimensions.scale !== window.scale ||
-        dimensions.fontScale !== window.fontScale
+        dimensions.fontScale !== window.fontScale ||
+        !safeAreaInsetsAreEqual(
+          dimensions.experimental_safeAreaInsets,
+          window.experimental_safeAreaInsets,
+        )
       ) {
         setDimensions(window);
       }

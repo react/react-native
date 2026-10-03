@@ -30,6 +30,26 @@ describe('Dimensions', () => {
     expect(Dimensions.get('window').fontScale).toEqual(3);
   });
 
+  it('should scale window safe area insets from physical pixels', () => {
+    Dimensions.set({
+      windowPhysicalPixels: {
+        width: 400,
+        height: 800,
+        scale: 2,
+        densityDpi: 2,
+        fontScale: 3,
+        experimental_safeAreaInsets: {top: 96, right: 0, bottom: 48, left: 0},
+      },
+    });
+
+    expect(Dimensions.get('window').experimental_safeAreaInsets).toEqual({
+      top: 48,
+      right: 0,
+      bottom: 24,
+      left: 0,
+    });
+  });
+
   it('should set screen dimensions on Android', () => {
     // $FlowFixMe[incompatible-type] - `Platform.OS` needs to be read-only.
     Platform.OS = 'android';
