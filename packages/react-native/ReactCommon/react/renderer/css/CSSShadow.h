@@ -7,18 +7,18 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <optional>
 #include <tuple>
 
+#include <React/Utils.h>
 #include <react/renderer/css/CSSColor.h>
 #include <react/renderer/css/CSSDataType.h>
 #include <react/renderer/css/CSSKeyword.h>
 #include <react/renderer/css/CSSLength.h>
 #include <react/renderer/css/CSSList.h>
 #include <react/renderer/css/CSSValueParser.h>
-#include <react/utils/to_underlying.h>
 
 namespace facebook::react {
 

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <algorithm>
 #include <cmath>
@@ -16,12 +16,11 @@
 #include <string_view>
 #include <tuple>
 
+#include <React/Utils.h>
 #include <react/renderer/css/CSSAngle.h>
 #include <react/renderer/css/CSSNumber.h>
 #include <react/renderer/css/CSSPercentage.h>
 #include <react/renderer/css/CSSValueParser.h>
-#include <react/utils/PackTraits.h>
-#include <react/utils/fnv1a.h>
 
 namespace facebook::react {
 

@@ -45,11 +45,5 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-utils")
   s.dependency "React-cxxstableapi"
 
-  s.subspec "cssUmbrella" do |ss|
-    ss.source_files        = "React/*.h"
-    ss.header_dir          = ""
-    ss.header_mappings_dir = "."
-  end
-
   mark_as_react_native_build(s)
 end

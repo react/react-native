@@ -9,7 +9,6 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <React/CSS.h>
 #include <React/Debug.h>
 #include <React/RendererCore.h>
 #include <React/View.h>
@@ -18,6 +17,8 @@
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/attributedstring/TextAttributes.h>
 #include <react/renderer/attributedstring/primitives.h>
+#include <react/renderer/css/CSSFontVariant.h>
+#include <react/renderer/css/CSSValueParser.h>
 #include <unordered_map>
 
 #ifdef RN_SERIALIZABLE_STATE
