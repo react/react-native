@@ -26,6 +26,15 @@ function Basic(): React.Node {
   );
 }
 
+function FontScale(): React.Node {
+  return (
+    <RNTesterText testID="inline-view-font-scale">
+      This text contains an inline view{' '}
+      <View style={{width: 80, height: 40, backgroundColor: 'steelblue'}} />
+    </RNTesterText>
+  );
+}
+
 function NestedTexts(): React.Node {
   return (
     <View>
@@ -201,6 +210,7 @@ function ChangeInnerViewSize(): React.Node {
 
 module.exports = {
   Basic,
+  FontScale,
   NestedTexts,
   ClippedByText,
   ChangeImageSize,
