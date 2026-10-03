@@ -60,6 +60,7 @@ const Item = ({item, separators}: ListRenderItemInfo<string>) => {
 };
 
 type Props = Readonly<{
+  data?: ReadonlyArray<string>,
   exampleProps: Partial<React.ElementConfig<typeof FlatList>>,
   exampleTestID?: ?string,
   onTest?: ?() => void,
@@ -95,7 +96,7 @@ const BaseFlatListExample: component(
         ref={ref}
         testID="flat_list"
         // $FlowFixMe[incompatible-type]
-        data={DATA}
+        data={props.data ?? DATA}
         keyExtractor={(item, index) => item + index}
         style={styles.list}
         // $FlowFixMe[incompatible-type]

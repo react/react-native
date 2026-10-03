@@ -799,6 +799,233 @@ describe('VirtualizedList', () => {
     expect(onEndReached).toHaveBeenCalled();
   });
 
+  describe('edge callback deduplication', () => {
+    const ITEM_HEIGHT = 40;
+    const layout = {width: 300, height: 600};
+    let component;
+    let data;
+    let instance;
+    let onEndReached;
+    let onStartReached;
+    let props;
+
+    beforeEach(async () => {
+      data = Array(40)
+        .fill()
+        .map((_, index) => ({key: `key-${index}`}));
+      onEndReached = jest.fn();
+      onStartReached = jest.fn();
+      props = {
+        data,
+        initialNumToRender: 10,
+        onEndReachedThreshold: 1,
+        onStartReachedThreshold: 1,
+        windowSize: 2,
+        renderItem: ({item}) => <item value={item.key} />,
+        getItem: (items, index) => items[index],
+        getItemCount: items => items.length,
+        onEndReached,
+        onStartReached,
+      };
+
+      await act(() => {
+        component = create(<VirtualizedList {...props} />);
+      });
+      instance = component.getInstance();
+
+      await act(() => {
+        instance._onLayout({nativeEvent: {layout, zoomScale: 1}});
+        instance._onContentSizeChange(300, getContentHeight());
+        for (let i = 0; i < props.initialNumToRender; i++) {
+          simulateCellLayout(component, data, i, {
+            width: layout.width,
+            height: ITEM_HEIGHT,
+            x: 0,
+            y: i * ITEM_HEIGHT,
+          });
+        }
+        performAllBatches();
+      });
+    });
+
+    function getContentHeight() {
+      return data.length * ITEM_HEIGHT;
+    }
+
+    async function beginProgrammaticScroll() {
+      await act(() => {
+        instance.setState({pendingScrollUpdateCount: 1});
+      });
+    }
+
+    async function scrollToOffset(
+      offset,
+      timeStamp,
+      contentHeight = getContentHeight(),
+      sendSettledEvent = false,
+    ) {
+      await act(() => {
+        const nativeEvent = {
+          contentOffset: {y: offset, x: 0},
+          layoutMeasurement: layout,
+          contentSize: {...layout, height: contentHeight},
+          zoomScale: 1,
+          contentInset: {right: 0, top: 0, left: 0, bottom: 0},
+        };
+        instance._onScroll({timeStamp, nativeEvent});
+        if (sendSettledEvent) {
+          instance._onScroll({timeStamp: timeStamp + 1, nativeEvent});
+        }
+        performAllBatches();
+      });
+    }
+
+    async function scrollToEnd(timeStamp, sendSettledEvent = false) {
+      await scrollToOffset(
+        getContentHeight() - layout.height,
+        timeStamp,
+        getContentHeight(),
+        sendSettledEvent,
+      );
+    }
+
+    async function scrollToStart(timeStamp, sendSettledEvent = false) {
+      await scrollToOffset(0, timeStamp, getContentHeight(), sendSettledEvent);
+    }
+
+    async function updateContentHeight(contentHeight) {
+      await act(() => {
+        instance._onContentSizeChange(300, contentHeight);
+        performAllBatches();
+      });
+    }
+
+    async function updateData(nextData) {
+      data = nextData;
+      await act(() => {
+        component.update(<VirtualizedList {...props} data={data} />);
+        performAllBatches();
+      });
+    }
+
+    it('fires once when each edge is first reached', async () => {
+      expect(onEndReached).not.toHaveBeenCalled();
+      expect(onStartReached).toHaveBeenCalledTimes(1);
+
+      await scrollToEnd(1000);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      expect(onEndReached).toHaveBeenLastCalledWith({distanceFromEnd: 0});
+
+      await beginProgrammaticScroll();
+      await scrollToStart(2000);
+      expect(onStartReached).toHaveBeenCalledTimes(2);
+
+      await beginProgrammaticScroll();
+      await scrollToEnd(3000);
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not re-fire for settled events at the same edge', async () => {
+      await scrollToEnd(1000, true);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      await beginProgrammaticScroll();
+      await scrollToStart(2000, true);
+      expect(onStartReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('re-arms only after real movement away from the end', async () => {
+      await scrollToEnd(1000);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      const endOffset = getContentHeight() - layout.height;
+      const deepestEndOffset = endOffset + 100;
+      const expandedContentHeight = getContentHeight() + layout.height * 2 + 1;
+
+      await scrollToOffset(deepestEndOffset, 2000);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      await updateContentHeight(expandedContentHeight);
+      await scrollToOffset(deepestEndOffset, 3000, expandedContentHeight);
+      await updateContentHeight(getContentHeight());
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      await updateContentHeight(expandedContentHeight);
+      await scrollToOffset(deepestEndOffset - 50, 4000, expandedContentHeight);
+      await updateContentHeight(getContentHeight());
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('starts a new end generation for appended data', async () => {
+      await scrollToEnd(1000);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      const endOffset = getContentHeight() - layout.height;
+      const deepestEndOffset = endOffset + 100;
+      const expandedContentHeight = getContentHeight() + layout.height * 2 + 1;
+      await scrollToOffset(deepestEndOffset, 2000);
+      await updateContentHeight(expandedContentHeight);
+      await scrollToOffset(deepestEndOffset - 50, 3000, expandedContentHeight);
+      await updateContentHeight(getContentHeight());
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+
+      await updateData([...data, {key: `key-${data.length}`}]);
+      expect(onEndReached).toHaveBeenCalledTimes(3);
+
+      await updateContentHeight(getContentHeight());
+      await scrollToEnd(4000);
+      expect(onEndReached).toHaveBeenCalledTimes(3);
+    });
+
+    it('starts a new end generation after content growth', async () => {
+      await scrollToEnd(1000);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      const expandedContentHeight = getContentHeight() + layout.height * 2 + 1;
+      await updateContentHeight(expandedContentHeight);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      await scrollToOffset(
+        expandedContentHeight - layout.height,
+        2000,
+        expandedContentHeight,
+      );
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+
+      await updateContentHeight(getContentHeight());
+      await scrollToEnd(3000);
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('uses edge item identity instead of data reference identity', async () => {
+      await scrollToEnd(1000);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      await updateData([...data]);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+
+      await updateData(
+        data.map((item, index) =>
+          index === data.length - 1 ? {key: `replacement-${index}`} : item,
+        ),
+      );
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+
+      await scrollToStart(2000);
+      expect(onStartReached).toHaveBeenCalledTimes(2);
+
+      await updateData([...data]);
+      expect(onStartReached).toHaveBeenCalledTimes(2);
+
+      await updateData(
+        data.map((item, index) =>
+          index === 0 ? {key: `replacement-${index}`} : item,
+        ),
+      );
+      expect(onStartReached).toHaveBeenCalledTimes(3);
+    });
+  });
+
   it('does not call onEndReached when onContentSizeChange happens after onLayout', async () => {
     const ITEM_HEIGHT = 40;
     const layout = {width: 300, height: 600};
