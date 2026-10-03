@@ -10,6 +10,7 @@
 #include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <React/RendererCore.h>
+#include <React/RendererDebug.h>
 #include <React/Utils.h>
 #include <react/renderer/attributedstring/TextAttributes.h>
 #include <react/renderer/mounting/ShadowView.h>

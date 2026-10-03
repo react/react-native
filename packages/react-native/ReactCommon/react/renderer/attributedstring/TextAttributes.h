@@ -16,6 +16,7 @@
 
 #include <React/Graphics.h>
 #include <React/RendererCore.h>
+#include <React/RendererDebug.h>
 #include <React/Utils.h>
 #include <React/View.h>
 #include <folly/dynamic.h>

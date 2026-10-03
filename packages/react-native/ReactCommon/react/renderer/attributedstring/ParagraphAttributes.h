@@ -13,6 +13,7 @@
 
 #include <React/Graphics.h>
 #include <React/RendererCore.h>
+#include <React/RendererDebug.h>
 #include <React/Utils.h>
 #include <react/renderer/attributedstring/primitives.h>
 
