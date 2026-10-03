@@ -9,8 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/CallInvoker.h>
-#include <ReactCommon/SchedulerPriority.h>
+#include <React/CallInvoker.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <react/runtime/BufferedRuntimeExecutor.h>
 
