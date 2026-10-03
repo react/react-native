@@ -1,0 +1,86 @@
+name: Run C++ Tests
+description: Builds and runs the ReactCommon C++ (gtest) unit-test harness on Linux
+inputs:
+  gradle-cache-encryption-key:
+    description: 'The encryption key needed to store the Gradle Configuration cache'
+runs:
+  using: composite
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        set -e
+        sudo apt update
+        # ccache: enabled via CMAKE_CXX_COMPILER_LAUNCHER in cxx/CMakeLists.txt.
+        # CMake itself is the Android SDK's (3.30.5), driven by Gradle — the
+        # distro package is intentionally not installed.
+        sudo apt install -y ccache clang git libssl-dev openssl
+    - name: Setup git safe folders
+      shell: bash
+      run: git config --global --add safe.directory '*'
+    - name: Setup node.js
+      uses: ./.github/actions/setup-node
+    - name: Install node dependencies
+      uses: ./.github/actions/yarn-install
+    - name: Setup gradle
+      uses: ./.github/actions/setup-gradle
+      with:
+        cache-read-only: 'false'
+        cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
+    - name: Restore C++ tests ccache
+      uses: actions/cache/restore@v5
+      with:
+        path: /github/home/.cache/ccache
+        key:
+          v1-ccache-cxx-tests-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
+          'packages/react-native/ReactCommon/**/*.cpp',
+          'packages/react-native/ReactCommon/**/*.h',
+          'packages/react-native/ReactCommon/**/CMakeLists.txt'
+          ) }}
+        restore-keys: |
+          v1-ccache-cxx-tests-${{ github.job }}-${{ github.ref }}-
+          v1-ccache-cxx-tests-${{ github.job }}-
+          v1-ccache-cxx-tests-
+    - name: Show ccache stats (before)
+      shell: bash
+      run: ccache -s -v
+    - name: Build and run C++ tests
+      shell: bash
+      run: yarn workspace @react-native/tests-cxx test
+      env:
+        CC: clang
+        CXX: clang++
+        # libhermesvm.so is a shared library; gtest_discover_tests runs the
+        # binaries at build time and CTest runs them again, so it must be
+        # loadable in both phases.
+        LD_LIBRARY_PATH: ${{ github.workspace }}/packages/react-native/ReactAndroid/hermes-engine/build/hermes/lib
+    - name: Save C++ tests ccache
+      if: ${{ github.ref == 'refs/heads/main' || contains(github.ref, '-stable') }}
+      uses: actions/cache/save@v5
+      with:
+        path: /github/home/.cache/ccache
+        key:
+          v1-ccache-cxx-tests-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
+          'packages/react-native/ReactCommon/**/*.cpp',
+          'packages/react-native/ReactCommon/**/*.h',
+          'packages/react-native/ReactCommon/**/CMakeLists.txt'
+          ) }}
+    - name: Show ccache stats (after) and assert compiles were cacheable
+      shell: bash
+      run: |
+        ccache -s -v
+        # Zero cacheable calls means the CMake compiler launcher isn't wired to
+        # ccache and the restored cache is dead weight. The job is advisory during
+        # rollout, so this surfaces the defect without blocking merges.
+        calls=$(ccache --print-stats | awk -F'\t' \
+          '/^(direct_cache_hit|preprocessed_cache_hit|cache_miss)$/ {s+=$2} END {print s+0}')
+        echo "ccache cacheable calls this run: $calls"
+        test "$calls" -ge 1
+    - name: Upload test results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v6
+      with:
+        name: run-cxx-tests-results
+        compression-level: 1
+        path: |
+          private/react-native-tests/build/reports
