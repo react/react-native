@@ -110,6 +110,7 @@ describe('structuredClone', () => {
 
   it('throws with symbols, functions, WeakMap, WeakSet, Promise', () => {
     expectDataCloneError(() => structuredClone(Symbol()));
+    expectDataCloneError(() => structuredClone(Object(Symbol())));
     expectDataCloneError(() => structuredClone(() => {}));
     expectDataCloneError(() => structuredClone(new WeakMap()));
     expectDataCloneError(() => structuredClone(new WeakSet()));
