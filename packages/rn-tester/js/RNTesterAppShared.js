@@ -8,12 +8,14 @@
  * @format
  */
 
+import type {ContentInsets} from './components/RNTesterTabsIOSNativeComponent';
 import type {RNTesterModuleInfo, ScreenTypes} from './types/RNTesterTypes';
 
 import ReportFullyDrawnView from '../ReportFullyDrawnView/ReportFullyDrawnView';
 import RNTesterModuleContainer from './components/RNTesterModuleContainer';
 import RNTesterModuleList from './components/RNTesterModuleList';
 import RNTesterNavBar, {navBarHeight} from './components/RNTesterNavbar';
+import RNTesterTabsIOS from './components/RNTesterTabsIOSNativeComponent';
 import {RNTesterThemeContext, themes} from './components/RNTesterTheme';
 import RNTTitleBar from './components/RNTTitleBar';
 import {title as PlaygroundTitle} from './examples/Playground/PlaygroundExample';
@@ -28,7 +30,7 @@ import {
   initialNavigationState,
 } from './utils/testerStateUtils';
 import * as React from 'react';
-import {useCallback, useEffect, useMemo, useReducer} from 'react';
+import {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {
   BackHandler,
   Button,
@@ -54,6 +56,30 @@ if (global.RN$Bridgeless === true && __DEV__) {
 
 // RNTester App currently uses in memory storage for storing navigation state
 
+// On iOS, the tabs are native, see RNTesterTabsIOS/ios/RNTesterTabsIOSComponentView.mm
+const IOS_TABS = [
+  {
+    key: Screens.COMPONENTS,
+    title: 'Components',
+    systemImage: 'square.stack.3d.up',
+    testID: 'components-tab',
+  },
+  {
+    key: Screens.APIS,
+    title: 'APIs',
+    systemImage: 'curlybraces',
+    testID: 'apis-tab',
+  },
+  {
+    key: Screens.PLAYGROUNDS,
+    title: 'Playground',
+    systemImage: 'play.rectangle',
+    testID: 'playground-tab',
+  },
+];
+
+const NO_INSETS: ContentInsets = {top: 0, left: 0, bottom: 0, right: 0};
+
 type BackButton = ({onBack: () => void}) => React.Node;
 
 const RNTesterApp = ({
@@ -71,6 +97,7 @@ const RNTesterApp = ({
     initialNavigationState,
   );
   const colorScheme = useColorScheme();
+  const [contentInsets, setContentInsets] = useState<ContentInsets>(NO_INSETS);
 
   const {
     activeModuleKey,
@@ -274,36 +301,88 @@ const RNTesterApp = ({
   // Hide chrome if we don't have much screen space and are showing UI for tests
   const shouldHideChrome = isScreenTiny && hadDeepLink;
 
+  const titleBar = shouldHideChrome ? null : (
+    <RNTTitleBar
+      title={title}
+      theme={theme}
+      documentationURL={activeModule?.documentationURL}>
+      {activeModule && BackButtonComponent ? (
+        <BackButtonComponent onBack={handleBackPress} />
+      ) : undefined}
+    </RNTTitleBar>
+  );
+
+  const content = (
+    <View
+      style={StyleSheet.compose(styles.container, {
+        backgroundColor: theme.GroupedBackgroundColor,
+      })}>
+      {activeModule != null ? (
+        <RNTesterModuleContainer
+          module={activeModule}
+          example={activeModuleExample}
+          onExampleCardPress={handleModuleExampleCardPress}
+        />
+      ) : (
+        <RNTesterModuleList
+          sections={activeExampleList}
+          handleModuleCardPress={handleModuleCardPress}
+        />
+      )}
+    </View>
+  );
+
+  if (Platform.OS === 'ios') {
+    return (
+      <RNTesterThemeContext.Provider value={theme}>
+        <RNTesterTabsIOS
+          style={styles.container}
+          tabs={IOS_TABS}
+          selectedTab={screen ?? Screens.COMPONENTS}
+          tabBarHidden={shouldHideChrome}
+          onTabPress={event => {
+            const tab = IOS_TABS.find(t => t.key === event.nativeEvent.key);
+            if (tab != null) {
+              handleNavBarPress({screen: tab.key});
+            }
+          }}
+          onContentInsetsChange={event => setContentInsets(event.nativeEvent)}>
+          <View
+            style={StyleSheet.compose(styles.container, {
+              backgroundColor: theme.GroupedBackgroundColor,
+            })}>
+            <View
+              style={{
+                backgroundColor: theme.SystemBackgroundColor,
+                paddingTop: contentInsets.top,
+                marginLeft: contentInsets.left,
+                marginRight: contentInsets.right,
+              }}>
+              {titleBar}
+            </View>
+            <View
+              style={[
+                styles.container,
+                {
+                  marginLeft: contentInsets.left,
+                  marginRight: contentInsets.right,
+                  marginBottom: contentInsets.bottom,
+                },
+              ]}>
+              {content}
+            </View>
+          </View>
+        </RNTesterTabsIOS>
+        <ReportFullyDrawnView />
+      </RNTesterThemeContext.Provider>
+    );
+  }
+
   return (
     <RNTesterThemeContext.Provider value={theme}>
       {Platform.OS === 'android' ? <StatusBar barStyle="dark-content" /> : null}
-      {!shouldHideChrome && (
-        <RNTTitleBar
-          title={title}
-          theme={theme}
-          documentationURL={activeModule?.documentationURL}>
-          {activeModule && BackButtonComponent ? (
-            <BackButtonComponent onBack={handleBackPress} />
-          ) : undefined}
-        </RNTTitleBar>
-      )}
-      <View
-        style={StyleSheet.compose(styles.container, {
-          backgroundColor: theme.GroupedBackgroundColor,
-        })}>
-        {activeModule != null ? (
-          <RNTesterModuleContainer
-            module={activeModule}
-            example={activeModuleExample}
-            onExampleCardPress={handleModuleExampleCardPress}
-          />
-        ) : (
-          <RNTesterModuleList
-            sections={activeExampleList}
-            handleModuleCardPress={handleModuleCardPress}
-          />
-        )}
-      </View>
+      {titleBar}
+      {content}
       {!shouldHideChrome && (
         <View style={styles.bottomNavbar}>
           <RNTesterNavBar

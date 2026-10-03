@@ -2645,6 +2645,35 @@ PODS:
     - React-perflogger (= 1000.0.0)
     - React-utils (= 1000.0.0)
     - SocketRocket
+  - RNTesterTabsIOS (0.87.0-main):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - ScreenshotManager (0.87.0-main):
     - boost
     - DoubleConversion
@@ -2765,6 +2794,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon-Samples (from `../react-native/ReactCommon/react/nativemodule/samples`)
   - ReactCommon/turbomodule/core (from `../react-native/ReactCommon`)
+  - RNTesterTabsIOS (from `RNTesterTabsIOS`)
   - ScreenshotManager (from `NativeModuleExample`)
   - SocketRocket (~> 0.7.1)
   - Yoga (from `../react-native/ReactCommon/yoga`)
@@ -2948,6 +2978,8 @@ EXTERNAL SOURCES:
     :path: "../react-native/ReactCommon"
   ReactCommon-Samples:
     :path: "../react-native/ReactCommon/react/nativemodule/samples"
+  RNTesterTabsIOS:
+    :path: RNTesterTabsIOS
   ScreenshotManager:
     :path: NativeModuleExample
   Yoga:
@@ -3041,10 +3073,11 @@ SPEC CHECKSUMS:
   ReactCodegen: 19447115b4e0b8eec131ae256e7000a9a0910dc4
   ReactCommon: 1376b66d6ef10d128c76c2d59fef49e706832ca6
   ReactCommon-Samples: b74ec150a8210d62be6cc899d28a24e7b795edd3
+  RNTesterTabsIOS: a0e709192adb16ce7cd9a2485d958ee5d5b12fab
   ScreenshotManager: c005d764f11c09fb4a5640a3157024dddce859e9
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: a9afa834491f5b80bc3b10d2d91e8bfb15ab1100
 
-PODFILE CHECKSUM: 59f1e7d58cffbfafbeb3df31151743dd4c9a52e8
+PODFILE CHECKSUM: abfcf138a255569f3324d5118cecdcbc64bdb8c6
 
 COCOAPODS: 1.16.2

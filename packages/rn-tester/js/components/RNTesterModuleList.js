@@ -8,6 +8,7 @@
  * @format
  */
 
+import {maxContentWidthStyle} from './RNTesterLayout';
 import {RNTesterThemeContext} from './RNTesterTheme';
 import RNTPressableRow from './RNTPressableRow';
 import {memo} from 'react';
@@ -95,6 +96,7 @@ const RNTesterModuleList: React.ComponentType<any> = memo(
               sections={filteredSections}
               extraData={filteredSections}
               renderItem={renderListItem}
+              contentContainerStyle={maxContentWidthStyle}
               keyboardShouldPersistTaps="handled"
               automaticallyAdjustContentInsets={false}
               keyboardDismissMode="on-drag"

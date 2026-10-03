@@ -124,6 +124,9 @@ static NSString *const kBundlePath = @"js/RNTesterApp.ios";
   if (!dict[@"RNTMyNativeView"]) {
     dict[@"RNTMyNativeView"] = NSClassFromString(@"RNTMyNativeViewComponentView");
   }
+  if (!dict[@"RNTesterTabsIOS"]) {
+    dict[@"RNTesterTabsIOS"] = NSClassFromString(@"RNTesterTabsIOSComponentView");
+  }
   if (!dict[@"SampleNativeComponent"]) {
     dict[@"SampleNativeComponent"] = NSClassFromString(@"RCTSampleNativeComponentComponentView");
   }
