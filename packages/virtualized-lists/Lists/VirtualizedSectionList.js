@@ -431,8 +431,7 @@ class VirtualizedSectionList<
     if (updateHighlightFn != null) {
       this._updateHighlightMap[cellKey] = updateHighlightFn;
     } else {
-      // $FlowFixMe[prop-missing]
-      delete this._updateHighlightFor[cellKey];
+      delete this._updateHighlightMap[cellKey];
     }
   };
 
