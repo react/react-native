@@ -204,6 +204,9 @@ const directEventTypes = {
   topLayout: {
     registrationName: 'onLayout',
   },
+  topSafeAreaInsetsChange: {
+    registrationName: 'experimental_onSafeAreaInsetsChange',
+  },
 };
 
 const validAttributesForNonEventProps = {
@@ -404,6 +407,7 @@ const validAttributesForNonEventProps = {
 // Props for bubbling and direct events
 const validAttributesForEventProps = {
   onLayout: true,
+  experimental_onSafeAreaInsetsChange: true,
 
   // PanResponder handlers
   onMoveShouldSetResponder: true,
