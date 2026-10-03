@@ -234,6 +234,12 @@ void NetworkReporter::reportResponseEnd(
 void NetworkReporter::reportRequestFailed(
     const std::string& requestId,
     bool cancelled) const {
+  // All builds: Discard incomplete PerformanceResourceTiming metadata
+  {
+    std::lock_guard<std::mutex> lock(perfTimingsMutex_);
+    perfTimingsBuffer_.erase(requestId);
+  }
+
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
   // Debugger enabled: CDP event handling
   jsinspector_modern::NetworkHandler::getInstance().onLoadingFailed(
