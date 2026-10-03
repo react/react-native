@@ -20,6 +20,7 @@
 #import <React/RCTBackgroundImageUtils.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
+#import <React/RCTConicGradient.h>
 #import <React/RCTConversions.h>
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
@@ -1315,9 +1316,12 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
                                                                           backgroundSize:backgroundSize
                                                                         backgroundRepeat:backgroundRepeat];
 
-      CALayer *gradientLayer;
+      CALayer *gradientLayer = nil;
 
-      if (std::holds_alternative<LinearGradient>(backgroundImage)) {
+      if (std::holds_alternative<ConicGradient>(backgroundImage)) {
+        const auto &conicGradient = std::get<ConicGradient>(backgroundImage);
+        gradientLayer = [RCTConicGradient gradientLayerWithSize:backgroundImageSize gradient:conicGradient];
+      } else if (std::holds_alternative<LinearGradient>(backgroundImage)) {
         const auto &linearGradient = std::get<LinearGradient>(backgroundImage);
         gradientLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
       } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {

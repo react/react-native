@@ -352,24 +352,55 @@ describe('<View>', () => {
                     ],
                   }}
                 />
+                <View
+                  style={{
+                    backgroundImage:
+                      'conic-gradient(from 45deg, #e66465, #9198e5)',
+                  }}
+                />
+                <View
+                  style={{
+                    backgroundImage: [
+                      {
+                        type: 'conic-gradient',
+                        from: '45deg',
+                        colorStops: [{color: '#e66465'}, {color: '#9198e5'}],
+                      },
+                    ],
+                  }}
+                />
               </>,
             );
           });
 
-          const expectedProps = {
+          const expectedRadialProps = {
             backgroundImage:
               '[radial-gradient(ellipse farthest-corner at 50% 50% , rgba(230, 100, 101, 1), rgba(145, 152, 229, 1))]',
+          };
+          const expectedConicProps = {
+            backgroundImage:
+              '[conic-gradient(from 45deg at 50% 50% , rgba(230, 100, 101, 1), rgba(145, 152, 229, 1))]',
           };
 
           expect(root.getRenderedOutput().toJSON()).toEqual([
             {
               children: [],
-              props: expectedProps,
+              props: expectedRadialProps,
               type: 'View',
             },
             {
               children: [],
-              props: expectedProps,
+              props: expectedRadialProps,
+              type: 'View',
+            },
+            {
+              children: [],
+              props: expectedConicProps,
+              type: 'View',
+            },
+            {
+              children: [],
+              props: expectedConicProps,
               type: 'View',
             },
           ]);

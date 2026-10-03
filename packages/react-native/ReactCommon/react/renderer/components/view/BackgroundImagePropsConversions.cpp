@@ -16,6 +16,7 @@
 #include <react/renderer/css/CSSPercentage.h>
 #include <react/renderer/css/CSSValueParser.h>
 #include <react/renderer/graphics/ColorStop.h>
+#include <react/renderer/graphics/ConicGradient.h>
 #include <react/renderer/graphics/LinearGradient.h>
 #include <react/renderer/graphics/RadialGradient.h>
 #include <react/renderer/graphics/ValueUnit.h>
@@ -36,6 +37,48 @@ inline GradientKeyword parseGradientKeyword(const std::string& keyword) {
     return GradientKeyword::ToBottomLeft;
   } else {
     throw std::invalid_argument("Invalid gradient keyword: " + keyword);
+  }
+}
+
+inline ValueUnit toConicColorStopValueUnit(const RawValue& value) {
+  if (!value.hasType<std::string>()) {
+    return {};
+  }
+
+  auto position = (std::string)value;
+  if (position == "0") {
+    return {0.0f, UnitType::Percent};
+  }
+
+  auto angle = parseCSSProperty<CSSAngle>(position);
+  if (std::holds_alternative<CSSAngle>(angle)) {
+    return {std::get<CSSAngle>(angle).degrees / 3.6f, UnitType::Percent};
+  }
+
+  auto percentage = toValueUnit(value);
+  return percentage.unit == UnitType::Percent ? percentage : ValueUnit{};
+}
+
+inline void parseGradientPosition(
+    const RawValueMap& positionMap,
+    RadialGradientPosition& position) {
+  auto topIt = positionMap.find("top");
+  auto bottomIt = positionMap.find("bottom");
+  auto leftIt = positionMap.find("left");
+  auto rightIt = positionMap.find("right");
+
+  if (topIt != positionMap.end()) {
+    position.top = toValueUnit(topIt->second);
+  } else if (bottomIt != positionMap.end()) {
+    position.top.reset();
+    position.bottom = toValueUnit(bottomIt->second);
+  }
+
+  if (leftIt != positionMap.end()) {
+    position.left = toValueUnit(leftIt->second);
+  } else if (rightIt != positionMap.end()) {
+    position.left.reset();
+    position.right = toValueUnit(rightIt->second);
   }
 }
 
@@ -208,6 +251,25 @@ void parseProcessedBackgroundImage(
       }
 
       backgroundImage.emplace_back(std::move(radialGradient));
+    } else if (type == "conic-gradient") {
+      ConicGradient conicGradient;
+      conicGradient.position.top = {50.0f, UnitType::Percent};
+      conicGradient.position.left = {50.0f, UnitType::Percent};
+      auto fromIt = rawBackgroundImageMap.find("from");
+      if (fromIt != rawBackgroundImageMap.end() &&
+          fromIt->second.hasType<Float>()) {
+        conicGradient.from = (Float)fromIt->second;
+      }
+
+      auto positionIt = rawBackgroundImageMap.find("position");
+      if (positionIt != rawBackgroundImageMap.end() &&
+          positionIt->second.hasType<RawValueMap>()) {
+        parseGradientPosition(
+            static_cast<RawValueMap>(positionIt->second),
+            conicGradient.position);
+      }
+      conicGradient.colorStops = colorStops;
+      backgroundImage.emplace_back(std::move(conicGradient));
     }
   }
 
@@ -248,6 +310,22 @@ void parseUnprocessedBackgroundImageList(
           auto stopMap = static_cast<RawValueMap>(stop);
           auto positionsIt = stopMap.find("positions");
           auto colorIt = stopMap.find("color");
+          if (type == "conic-gradient") {
+            const bool isHint =
+                colorIt == stopMap.end() || !colorIt->second.hasValue();
+            const auto positionCount =
+                positionsIt != stopMap.end() &&
+                    positionsIt->second.hasType<RawValueList>()
+                ? static_cast<RawValueList>(positionsIt->second).size()
+                : 0;
+            if ((isHint &&
+                 (positionCount != 1 || colorStops.empty() ||
+                  !colorStops.back().color)) ||
+                (!isHint && positionCount > 2)) {
+              result = {};
+              return;
+            }
+          }
           // has only color. e.g. (red, green)
           if (positionsIt == stopMap.end() ||
               (positionsIt->second.hasType<RawValueList>() &&
@@ -269,7 +347,9 @@ void parseUnprocessedBackgroundImageList(
               positionsIt->second.hasType<RawValueList>()) {
             auto positions = static_cast<RawValueList>(positionsIt->second);
             for (const auto& position : positions) {
-              auto positionValue = toValueUnit(position);
+              auto positionValue = type == "conic-gradient"
+                  ? toConicColorStopValueUnit(position)
+                  : toValueUnit(position);
               if (!positionValue) {
                 // invalid position
                 result = {};
@@ -282,6 +362,10 @@ void parseUnprocessedBackgroundImageList(
                 auto color = coerceColor(colorIt->second, context);
                 if (color) {
                   colorStop.color = color;
+                } else if (type == "conic-gradient" &&
+                           colorIt->second.hasValue()) {
+                  result = {};
+                  return;
                 }
               }
               colorStops.emplace_back(colorStop);
@@ -289,6 +373,12 @@ void parseUnprocessedBackgroundImageList(
           }
         }
       }
+    }
+
+    if (type == "conic-gradient" &&
+        (colorStops.size() < 2 || !colorStops.back().color)) {
+      result = {};
+      return;
     }
 
     if (type == "linear-gradient") {
@@ -409,6 +499,35 @@ void parseUnprocessedBackgroundImageList(
       }
 
       backgroundImage.emplace_back(std::move(radialGradient));
+    } else if (type == "conic-gradient") {
+      ConicGradient conicGradient;
+      conicGradient.position.top = {50.0f, UnitType::Percent};
+      conicGradient.position.left = {50.0f, UnitType::Percent};
+      auto fromIt = rawBackgroundImageMap.find("from");
+      if (fromIt != rawBackgroundImageMap.end() &&
+          fromIt->second.hasType<std::string>()) {
+        auto from = (std::string)fromIt->second;
+        if (from == "0") {
+          conicGradient.from = 0.0f;
+        } else {
+          auto angle = parseCSSProperty<CSSAngle>(from);
+          if (!std::holds_alternative<CSSAngle>(angle)) {
+            result = {};
+            return;
+          }
+          conicGradient.from = std::get<CSSAngle>(angle).degrees;
+        }
+      }
+
+      auto positionIt = rawBackgroundImageMap.find("position");
+      if (positionIt != rawBackgroundImageMap.end() &&
+          positionIt->second.hasType<RawValueMap>()) {
+        parseGradientPosition(
+            static_cast<RawValueMap>(positionIt->second),
+            conicGradient.position);
+      }
+      conicGradient.colorStops = colorStops;
+      backgroundImage.emplace_back(std::move(conicGradient));
     }
   }
 
@@ -482,9 +601,72 @@ void fromCSSColorStop(
   }
 }
 
+ValueUnit convertAngularPositionToValueUnit(const CSSAngularPosition& value) {
+  if (std::holds_alternative<CSSAngle>(value)) {
+    return {std::get<CSSAngle>(value).degrees / 3.6f, UnitType::Percent};
+  }
+  return {std::get<CSSPercentage>(value).value, UnitType::Percent};
+}
+
+void fromCSSConicColorStop(
+    const std::variant<CSSConicColorStop, CSSConicColorHint>& item,
+    std::vector<ColorStop>& colorStops) {
+  if (std::holds_alternative<CSSConicColorHint>(item)) {
+    ColorStop hint;
+    hint.position = convertAngularPositionToValueUnit(
+        std::get<CSSConicColorHint>(item).position);
+    colorStops.push_back(hint);
+    return;
+  }
+
+  const auto& colorStop = std::get<CSSConicColorStop>(item);
+  ColorStop start;
+  start.color = fromCSSColor(colorStop.color);
+  if (colorStop.startPosition.has_value()) {
+    start.position =
+        convertAngularPositionToValueUnit(*colorStop.startPosition);
+  }
+  colorStops.push_back(start);
+
+  if (colorStop.endPosition.has_value()) {
+    ColorStop end;
+    end.color = fromCSSColor(colorStop.color);
+    end.position = convertAngularPositionToValueUnit(*colorStop.endPosition);
+    colorStops.push_back(end);
+  }
+}
+
 std::optional<BackgroundImage> fromCSSBackgroundImage(
     const CSSBackgroundImage& cssBackgroundImage) {
-  if (std::holds_alternative<CSSLinearGradientFunction>(cssBackgroundImage)) {
+  if (std::holds_alternative<CSSConicGradientFunction>(cssBackgroundImage)) {
+    const auto& gradient =
+        std::get<CSSConicGradientFunction>(cssBackgroundImage);
+    ConicGradient conicGradient;
+    conicGradient.from = gradient.from.degrees;
+
+    const auto& position = gradient.position;
+    if (position.top.has_value()) {
+      conicGradient.position.top =
+          convertLengthPercentageToValueUnit(*position.top);
+    }
+    if (position.bottom.has_value()) {
+      conicGradient.position.bottom =
+          convertLengthPercentageToValueUnit(*position.bottom);
+    }
+    if (position.left.has_value()) {
+      conicGradient.position.left =
+          convertLengthPercentageToValueUnit(*position.left);
+    }
+    if (position.right.has_value()) {
+      conicGradient.position.right =
+          convertLengthPercentageToValueUnit(*position.right);
+    }
+    for (const auto& item : gradient.items) {
+      fromCSSConicColorStop(item, conicGradient.colorStops);
+    }
+    return BackgroundImage{conicGradient};
+  } else if (std::holds_alternative<CSSLinearGradientFunction>(
+                 cssBackgroundImage)) {
     const auto& gradient =
         std::get<CSSLinearGradientFunction>(cssBackgroundImage);
     LinearGradient linearGradient;
