@@ -321,13 +321,24 @@ class VirtualizedSectionList<
     if (!info) {
       return null;
     }
-    const keyExtractorWithNullableIndex = info.section.keyExtractor;
-    const keyExtractorWithNonNullableIndex =
-      this.props.keyExtractor || defaultKeyExtractor;
-    const key =
-      keyExtractorWithNullableIndex != null
-        ? keyExtractorWithNullableIndex(viewable.item, info.index)
-        : keyExtractorWithNonNullableIndex(viewable.item, info.index ?? 0);
+    // Section headers and footers are not items: `_getItem` returns the
+    // section itself for those rows, and `_subExtractor` reports a null index
+    // for them. Passing a section to a key extractor written for items is
+    // unsafe, so reuse the key `_subExtractor` already derived from the
+    // section, which is also what `_keyExtractor` uses for those rows.
+    let key;
+    if (info.index == null) {
+      key = info.key;
+    } else {
+      const sectionKeyExtractor = info.section.keyExtractor;
+      key =
+        sectionKeyExtractor != null
+          ? sectionKeyExtractor(viewable.item, info.index)
+          : (this.props.keyExtractor || defaultKeyExtractor)(
+              viewable.item,
+              info.index,
+            );
+    }
 
     return {
       ...viewable,
