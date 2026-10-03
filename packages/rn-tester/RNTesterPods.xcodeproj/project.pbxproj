@@ -18,6 +18,7 @@
 		79B29C2E2E607A99007612A5 /* SceneDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 79B29C2D2E607A99007612A5 /* SceneDelegate.mm */; };
 		8145AE06241172D900A3F8DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8145AE05241172D900A3F8DA /* LaunchScreen.storyboard */; };
 		832F45BB2A8A6E1F0097B4E6 /* SwiftTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */; };
+		86178A1D4F95F48D0DC933E2 /* RCTScrollViewComponentViewTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6250ED894CD7F3B5A761FE63 /* RCTScrollViewComponentViewTests.mm */; };
 		A975CA6C2C05EADF0043F72A /* RCTNetworkTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */; };
 		C175B6D9ED9336FB66637943 /* libPods-RNTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */; };
 		CD10C7A5290BD4EB0033E1ED /* RCTEventEmitterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD10C7A4290BD4EB0033E1ED /* RCTEventEmitterTests.m */; };
@@ -93,6 +94,7 @@
 		4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51BC9297B6C3163C14532020 /* Pods-RNTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.release.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.release.xcconfig"; sourceTree = "<group>"; };
 		5C60EB1B226440DB0018C04F /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = RNTester/AppDelegate.mm; sourceTree = "<group>"; };
+		6250ED894CD7F3B5A761FE63 /* RCTScrollViewComponentViewTests.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = RCTScrollViewComponentViewTests.mm; path = "../react-native/React/Tests/Mounting/RCTScrollViewComponentViewTests.mm"; sourceTree = "<group>"; };
 		79B29C2C2E607A99007612A5 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = RNTester/SceneDelegate.h; sourceTree = "<group>"; };
 		79B29C2D2E607A99007612A5 /* SceneDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SceneDelegate.mm; path = RNTester/SceneDelegate.mm; sourceTree = "<group>"; };
 		8145AE05241172D900A3F8DA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = RNTester/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -267,6 +269,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		46F51AC598EF6515ADF3A7D9 /* LocalScrollViewTests */ = {
+			isa = PBXGroup;
+			children = (
+				6250ED894CD7F3B5A761FE63 /* RCTScrollViewComponentViewTests.mm */,
+			);
+			name = LocalScrollViewTests;
+			sourceTree = "<group>";
+		};
 		680759612239798500290469 /* Fabric */ = {
 			isa = PBXGroup;
 			children = (
@@ -284,6 +294,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2DE7E7D81FB2A4F3009E225D /* Frameworks */,
 				E23BD6487B06BD71F1A86914 /* Pods */,
+				46F51AC598EF6515ADF3A7D9 /* LocalScrollViewTests */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -774,6 +785,7 @@
 				E7DB20EB22B2BAA6005AC45F /* RCTConvert_YGValueTests.m in Sources */,
 				E7DB20E922B2BAA6005AC45F /* RCTComponentPropsTests.m in Sources */,
 				E7DB20D822B2BAA6005AC45F /* RCTJSONTests.m in Sources */,
+				86178A1D4F95F48D0DC933E2 /* RCTScrollViewComponentViewTests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

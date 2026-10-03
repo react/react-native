@@ -25,12 +25,116 @@ static Props::Shared makeScrollViewProps(bool automaticallyAdjustKeyboardInsets)
 
 @interface RCTScrollViewComponentView (Tests)
 - (void)_keyboardWillChangeFrame:(NSNotification *)notification;
+- (void)_prepareForMaintainVisibleScrollPosition;
+- (void)_adjustForMaintainVisibleContentPosition;
 @end
 
 @interface RCTScrollViewComponentViewTests : XCTestCase
 @end
 
 @implementation RCTScrollViewComponentViewTests
+
+- (void)testMaintainVisibleContentPositionAfterVerticalShrink
+{
+  RCTScrollViewComponentView *view = [[RCTScrollViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  auto props = std::make_shared<ScrollViewProps>();
+  props->maintainVisibleContentPosition = facebook::react::ScrollViewMaintainVisibleContentPosition{};
+  [view updateProps:props oldProps:ScrollViewShadowNode::defaultSharedProps()];
+
+  RCTViewComponentView *contentView = [[RCTViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 1000)];
+  [view mountChildComponentView:contentView index:0];
+  UIView *anchor = [[UIView alloc] initWithFrame:CGRectMake(0, 800, 100, 40)];
+  anchor.tag = 42;
+  [contentView addSubview:anchor];
+
+  view.scrollView.contentSize = CGSizeMake(100, 1000);
+  view.scrollView.contentOffset = CGPointMake(0, 800);
+  [view _prepareForMaintainVisibleScrollPosition];
+
+  anchor.frame = CGRectMake(0, 300, 100, 40);
+  view.scrollView.contentSize = CGSizeMake(100, 400);
+  view.scrollView.contentOffset = CGPointZero;
+  [view _adjustForMaintainVisibleContentPosition];
+
+  XCTAssertEqualWithAccuracy(view.scrollView.contentOffset.y, 300, 0.5);
+}
+
+- (void)testMaintainVisibleContentPositionAfterHorizontalShrink
+{
+  RCTScrollViewComponentView *view = [[RCTScrollViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  auto props = std::make_shared<ScrollViewProps>();
+  props->maintainVisibleContentPosition = facebook::react::ScrollViewMaintainVisibleContentPosition{};
+  [view updateProps:props oldProps:ScrollViewShadowNode::defaultSharedProps()];
+
+  RCTViewComponentView *contentView = [[RCTViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 1000, 100)];
+  [view mountChildComponentView:contentView index:0];
+  UIView *anchor = [[UIView alloc] initWithFrame:CGRectMake(800, 0, 40, 100)];
+  anchor.tag = 42;
+  [contentView addSubview:anchor];
+
+  view.scrollView.contentSize = CGSizeMake(1000, 100);
+  view.scrollView.contentOffset = CGPointMake(800, 0);
+  [view _prepareForMaintainVisibleScrollPosition];
+
+  anchor.frame = CGRectMake(300, 0, 40, 100);
+  view.scrollView.contentSize = CGSizeMake(400, 100);
+  view.scrollView.contentOffset = CGPointZero;
+  [view _adjustForMaintainVisibleContentPosition];
+
+  XCTAssertEqualWithAccuracy(view.scrollView.contentOffset.x, 300, 0.5);
+}
+
+- (void)testMaintainVisibleContentPositionClampsVerticalOffsetAfterShrink
+{
+  RCTScrollViewComponentView *view = [[RCTScrollViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  auto props = std::make_shared<ScrollViewProps>();
+  props->maintainVisibleContentPosition = facebook::react::ScrollViewMaintainVisibleContentPosition{};
+  [view updateProps:props oldProps:ScrollViewShadowNode::defaultSharedProps()];
+
+  RCTViewComponentView *contentView = [[RCTViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 1000)];
+  [view mountChildComponentView:contentView index:0];
+  UIView *anchor = [[UIView alloc] initWithFrame:CGRectMake(0, 800, 100, 40)];
+  anchor.tag = 42;
+  [contentView addSubview:anchor];
+
+  view.scrollView.contentSize = CGSizeMake(100, 1000);
+  view.scrollView.contentOffset = CGPointMake(0, 800);
+  [view _prepareForMaintainVisibleScrollPosition];
+
+  // The unclamped target (350) is past the max offset of 400 - 100 = 300.
+  anchor.frame = CGRectMake(0, 350, 100, 40);
+  view.scrollView.contentSize = CGSizeMake(100, 400);
+  view.scrollView.contentOffset = CGPointZero;
+  [view _adjustForMaintainVisibleContentPosition];
+
+  XCTAssertEqualWithAccuracy(view.scrollView.contentOffset.y, 300, 0.5);
+}
+
+- (void)testMaintainVisibleContentPositionClampsHorizontalOffsetAfterShrink
+{
+  RCTScrollViewComponentView *view = [[RCTScrollViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  auto props = std::make_shared<ScrollViewProps>();
+  props->maintainVisibleContentPosition = facebook::react::ScrollViewMaintainVisibleContentPosition{};
+  [view updateProps:props oldProps:ScrollViewShadowNode::defaultSharedProps()];
+
+  RCTViewComponentView *contentView = [[RCTViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 1000, 100)];
+  [view mountChildComponentView:contentView index:0];
+  UIView *anchor = [[UIView alloc] initWithFrame:CGRectMake(800, 0, 40, 100)];
+  anchor.tag = 42;
+  [contentView addSubview:anchor];
+
+  view.scrollView.contentSize = CGSizeMake(1000, 100);
+  view.scrollView.contentOffset = CGPointMake(800, 0);
+  [view _prepareForMaintainVisibleScrollPosition];
+
+  // The unclamped target (350) is past the max offset of 400 - 100 = 300.
+  anchor.frame = CGRectMake(350, 0, 40, 100);
+  view.scrollView.contentSize = CGSizeMake(400, 100);
+  view.scrollView.contentOffset = CGPointZero;
+  [view _adjustForMaintainVisibleContentPosition];
+
+  XCTAssertEqualWithAccuracy(view.scrollView.contentOffset.x, 300, 0.5);
+}
 
 - (void)testAutomaticallyAdjustKeyboardInsetsAcrossRecycling
 {
