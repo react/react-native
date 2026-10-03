@@ -732,7 +732,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (TextInputEventEmitter::Metrics)_textInputMetrics
 {
   return {
-      .text = RCTStringFromNSString(_backedTextInputView.attributedText.string),
+      .text = RCTStringFromNSString([self _getCommitedText]),
       .selectionRange = [self _selectionRange],
       .contentSize = RCTSizeFromCGSize(_backedTextInputView.contentSize),
       .contentOffset = RCTPointFromCGPoint(_backedTextInputView.contentOffset),
@@ -790,7 +790,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)_setAttributedString:(NSAttributedString *)attributedString
 {
-  if ([self _textOf:attributedString equals:_backedTextInputView.attributedText]) {
+  if ([self _sameAsOldText:attributedString]) {
     return;
   }
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
@@ -870,7 +870,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-- (BOOL)_textOf:(NSAttributedString *)newText equals:(NSAttributedString *)oldText
+- (BOOL)_sameAsOldText:(NSAttributedString *)newText
 {
   // When the dictation is running we can't update the attributed text on the backed up text view
   // because setting the attributed string will kill the dictation. This means that we can't impose
@@ -883,14 +883,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // NSOriginalFont. Lastly, when entering a password, etc., there will be additional styling on the field as the native
   // text view handles showing the last character for a split second.
   __block BOOL fontHasBeenUpdatedBySystem = false;
-  [oldText enumerateAttribute:@"NSOriginalFont"
-                      inRange:NSMakeRange(0, oldText.length)
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if (value) {
-                       fontHasBeenUpdatedBySystem = true;
-                     }
-                   }];
+  [_backedTextInputView.attributedText enumerateAttribute:@"NSOriginalFont"
+                                                  inRange:NSMakeRange(0, _backedTextInputView.attributedText.length)
+                                                  options:0
+                                               usingBlock:^(id value, NSRange range, BOOL *stop) {
+                                                 if (value) {
+                                                   fontHasBeenUpdatedBySystem = true;
+                                                 }
+                                               }];
 
   BOOL shouldFallbackToBareTextComparison =
       [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"dictation"] ||
@@ -898,10 +898,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       _backedTextInputView.markedTextRange || _backedTextInputView.isSecureTextEntry || fontHasBeenUpdatedBySystem;
 
   if (shouldFallbackToBareTextComparison) {
-    return [newText.string isEqualToString:oldText.string];
+    return [newText.string isEqualToString:[self _getCommitedText]];
   } else {
     return RCTIsAttributedStringEffectivelySame(
-        newText, oldText, _originalTypingAttributes, static_cast<const TextInputProps &>(*_props).textAttributes);
+        newText, _backedTextInputView.attributedText, _originalTypingAttributes, static_cast<const TextInputProps &>(*_props).textAttributes);
   }
 }
 
@@ -909,6 +909,47 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   const auto &props = static_cast<const TextInputProps &>(*_props);
   return props.getNonDefaultSubmitBehavior();
+}
+
+/*
+ * Get the text of the TextInput without the suggestions.
+ * Whenever we need to get the string representation of TextInput, we need to avoid using the marked text of the input.
+ * markedText is text which is provisionally displayed, not commited by the user yet.
+ */
+- (NSString*)_getCommitedText {
+    NSString *textString = _backedTextInputView.attributedText.string;
+    UITextRange *markedRange = _backedTextInputView.markedTextRange;
+    
+    // If there's no marked text, return the full string
+    if (!markedRange) {
+        return textString;
+    }
+    
+    // Get the start of marked range
+    NSInteger markedStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
+                                                          toPosition:markedRange.start];
+  
+    // Get the length of marked range
+    NSInteger markedLength = [_backedTextInputView offsetFromPosition:markedRange.start
+                                                           toPosition:markedRange.end];
+    
+    // Create mutable string to build the committed text
+    NSMutableString *committedText = [NSMutableString string];
+    
+    // Add text before marked range
+    if (markedStart > 0) {
+        NSString *beforeMarked = [textString substringToIndex:markedStart];
+        [committedText appendString:beforeMarked];
+    }
+    
+    // Add text after marked range
+    NSInteger afterMarkedStart = markedStart + markedLength;
+    if (afterMarkedStart < textString.length) {
+        NSString *afterMarked = [textString substringFromIndex:afterMarkedStart];
+        [committedText appendString:afterMarked];
+    }
+    
+    return [committedText copy];
 }
 
 @end
