@@ -12,6 +12,7 @@
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/animationbackend/AnimatedPropsSerializer.h>
 #include <react/renderer/graphics/Color.h>
+#include <algorithm>
 #include <chrono>
 #include <utility>
 
@@ -48,6 +49,26 @@ static inline Props::Shared cloneProps(
   return newProps;
 }
 
+// Combines two mutations of the same view from one frame.
+static void mergeMutation(
+    AnimationMutation& existing,
+    AnimationMutation&& incoming) {
+  auto& props = existing.props;
+  for (auto& animatedProp : incoming.props.props) {
+    props.props.push_back(std::move(animatedProp));
+  }
+  if (incoming.props.rawProps) {
+    if (props.rawProps) {
+      auto merged = props.rawProps->toDynamic();
+      mergeAnimatedRawProps(merged, incoming.props.rawProps->toDynamic());
+      props.rawProps = std::make_unique<RawProps>(std::move(merged));
+    } else {
+      props.rawProps = std::move(incoming.props.rawProps);
+    }
+  }
+  existing.hasLayoutUpdates |= incoming.hasLayoutUpdates;
+}
+
 AnimationBackend::AnimationBackend(
     std::shared_ptr<AnimationChoreographer> animationChoreographer,
     std::shared_ptr<UIManager> uiManager)
@@ -80,14 +101,13 @@ void AnimationBackend::unpackMutations(
     std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates,
     std::set<SurfaceId>& asyncFlushSurfaces) {
   for (auto& mutation : mutations.batch) {
-    const auto family = mutation.family;
-    react_native_assert(family != nullptr);
-
-    auto& [families, updates, hasLayoutUpdates] =
-        surfaceUpdates[family->getSurfaceId()];
-    hasLayoutUpdates |= mutation.hasLayoutUpdates;
-    families.insert(family);
-    updates[mutation.tag] = std::move(mutation.props);
+    auto& updates = surfaceUpdates[mutation.family->getSurfaceId()];
+    const auto tag = mutation.tag;
+    if (auto it = updates.find(tag); it != updates.end()) {
+      mergeMutation(it->second, std::move(mutation));
+    } else {
+      updates.emplace(tag, std::move(mutation));
+    }
   }
 
   asyncFlushSurfaces.merge(mutations.asyncFlushSurfaces);
@@ -96,23 +116,42 @@ void AnimationBackend::unpackMutations(
 void AnimationBackend::applySurfaceUpdates(
     std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates,
     const std::set<SurfaceId>& asyncFlushSurfaces) {
-  animatedPropsRegistry_->update(surfaceUpdates);
-
   for (auto& [surfaceId, updates] : surfaceUpdates) {
-    if (updates.hasLayoutUpdates) {
-      commitUpdates(surfaceId, updates);
-    } else {
-      synchronouslyUpdateProps(updates.propsMap);
+    SurfaceUpdates layoutUpdates;
+    std::unordered_map<Tag, AnimatedProps> directProps;
+    for (auto& [tag, mutation] : updates) {
+      if (mutation.hasLayoutUpdates) {
+        layoutUpdates.emplace(tag, std::move(mutation));
+      } else {
+        directProps.emplace(tag, std::move(mutation.props));
+      }
+    }
+    if (!layoutUpdates.empty()) {
+      // A platform may re-apply a view's earlier direct writes when mounting
+      // it, so committed views are written directly too.
+      if (auto uiManager = uiManager_.lock()) {
+        for (const auto& [tag, mutation] : layoutUpdates) {
+          uiManager->synchronouslyUpdateViewOnUIThread(
+              tag, animationbackend::packAnimatedProps(mutation.props));
+        }
+      }
+      commitUpdates(surfaceId, layoutUpdates);
+    }
+    if (!directProps.empty()) {
+      synchronouslyUpdateProps(directProps);
     }
   }
 
   requestAsyncFlushForSurfaces(asyncFlushSurfaces);
 }
 
-void AnimationBackend::applyMutations(AnimationMutations mutations) {
+void AnimationBackend::applyMutations(std::vector<AnimationMutations> batches) {
+  animatedPropsRegistry_->update(batches);
   std::unordered_map<SurfaceId, SurfaceUpdates> surfaceUpdates;
   std::set<SurfaceId> asyncFlushSurfaces;
-  unpackMutations(mutations, surfaceUpdates, asyncFlushSurfaces);
+  for (auto& mutations : batches) {
+    unpackMutations(mutations, surfaceUpdates, asyncFlushSurfaces);
+  }
   applySurfaceUpdates(surfaceUpdates, asyncFlushSurfaces);
 }
 
@@ -124,13 +163,17 @@ void AnimationBackend::onAnimationFrame(AnimationTimestamp timestamp) {
     callbacksCopy = callbacks;
   }
 
-  std::unordered_map<SurfaceId, SurfaceUpdates> surfaceUpdates;
-  std::set<SurfaceId> asyncFlushSurfaces;
-  for (auto& callbackWithId : callbacksCopy) {
-    auto mutations = callbackWithId.callback(timestamp);
-    unpackMutations(mutations, surfaceUpdates, asyncFlushSurfaces);
-  }
-  applySurfaceUpdates(surfaceUpdates, asyncFlushSurfaces);
+  // Sized up front rather than grown: MSVC's std::set move isn't noexcept, so
+  // growing a vector of AnimationMutations would try to copy move-only props.
+  std::vector<AnimationMutations> batches(callbacksCopy.size());
+  std::transform(
+      callbacksCopy.begin(),
+      callbacksCopy.end(),
+      batches.begin(),
+      [timestamp](const CallbackWithId& callbackWithId) {
+        return callbackWithId.callback(timestamp);
+      });
+  applyMutations(std::move(batches));
 }
 
 CallbackId AnimationBackend::start(const Callback& callback) {
@@ -169,8 +212,9 @@ void AnimationBackend::trigger() {
 
 void AnimationBackend::pushAnimationMutations(const Callback& callback) {
   auto timestamp = animationChoreographer_->now();
-  auto mutations = callback(timestamp);
-  applyMutations(std::move(mutations));
+  std::vector<AnimationMutations> batches(1);
+  batches[0] = callback(timestamp);
+  applyMutations(std::move(batches));
 }
 
 void AnimationBackend::commitUpdates(
@@ -181,24 +225,28 @@ void AnimationBackend::commitUpdates(
     return;
   }
 
-  auto& surfaceFamilies = surfaceUpdates.families;
-  auto& updates = surfaceUpdates.propsMap;
+  std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> surfaceFamilies;
+  for (const auto& [tag, mutation] : surfaceUpdates) {
+    surfaceFamilies.insert(mutation.family);
+  }
 
   uiManager->getShadowTreeRegistry().visit(
-      surfaceId, [&surfaceFamilies, &updates](const ShadowTree& shadowTree) {
+      surfaceId,
+      [&surfaceFamilies, &surfaceUpdates](const ShadowTree& shadowTree) {
         shadowTree.commit(
             [&surfaceFamilies,
-             &updates](const RootShadowNode& oldRootShadowNode) {
+             &surfaceUpdates](const RootShadowNode& oldRootShadowNode) {
               return std::static_pointer_cast<RootShadowNode>(
                   oldRootShadowNode.cloneMultiple(
                       surfaceFamilies,
-                      [&surfaceFamilies, &updates](
+                      [&surfaceFamilies, &surfaceUpdates](
                           const ShadowNode& shadowNode,
                           const ShadowNodeFragment& fragment) {
                         auto newProps = ShadowNodeFragment::propsPlaceholder();
                         if (surfaceFamilies.contains(
                                 shadowNode.getFamilyShared())) {
-                          auto& animatedProps = updates.at(shadowNode.getTag());
+                          auto& animatedProps =
+                              surfaceUpdates.at(shadowNode.getTag()).props;
                           newProps = cloneProps(animatedProps, shadowNode);
                         }
                         return shadowNode.clone(
