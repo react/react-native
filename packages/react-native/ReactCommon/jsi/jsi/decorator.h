@@ -996,6 +996,7 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
   }
   ArrayBuffer createArrayBuffer(
       std::shared_ptr<MutableBuffer> buffer) override {
+    Around around{with_};
     return RD::createArrayBuffer(std::move(buffer));
   }
   size_t size(const Array& a) override {
