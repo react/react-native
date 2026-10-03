@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3e939eebe846d12cab15905db8efba18>>
+ * @generated SignedSource<<62f32d29de0188f7fc4fb8610c0f7243>>
  */
 
 /**
@@ -35,6 +35,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableAccumulatedUpdatesInRawPropsAndroidCache: Boolean? = null
   private var enableAndroidAutoOffscreenCompositingForElevationCache: Boolean? = null
   private var enableAndroidTextMeasurementOptimizationsCache: Boolean? = null
+  private var enableAsyncDiskCacheCheckInMultiSourceImageAndroidCache: Boolean? = null
   private var enableBridgelessArchitectureCache: Boolean? = null
   private var enableBufferedCallInvokerCache: Boolean? = null
   private var enableCppPropsIteratorSetterCache: Boolean? = null
@@ -242,6 +243,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableAndroidTextMeasurementOptimizations()
       enableAndroidTextMeasurementOptimizationsCache = cached
+    }
+    return cached
+  }
+
+  override fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean {
+    var cached = enableAsyncDiskCacheCheckInMultiSourceImageAndroidCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableAsyncDiskCacheCheckInMultiSourceImageAndroid()
+      enableAsyncDiskCacheCheckInMultiSourceImageAndroidCache = cached
     }
     return cached
   }

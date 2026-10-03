@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<625c7c4f1d55e7ca5c226793fe982c7b>>
+ * @generated SignedSource<<faf8383aabc13403bd671f62f7935de1>>
  */
 
 /**
@@ -180,6 +180,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableAndroidTextMeasurementOptimizations();
+  }
+
+  bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
+    auto value = values_["enableAsyncDiskCacheCheckInMultiSourceImageAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableAsyncDiskCacheCheckInMultiSourceImageAndroid();
   }
 
   bool enableBridgelessArchitecture() override {

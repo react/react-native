@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8075ab58916ce356d5acac15888aff7a>>
+ * @generated SignedSource<<83a8b52132f765dabba73cf05be0e9e2>>
  * @flow strict
  * @noformat
  */
@@ -64,6 +64,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
   enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
+  enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
   enableBufferedCallInvoker: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
@@ -275,6 +276,10 @@ export const enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean> 
  * Enables various optimizations throughout the path of measuring text on Android.
  */
 export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = createNativeFlagGetter('enableAndroidTextMeasurementOptimizations', false);
+/**
+ * Runs multi-source image disk-cache checks asynchronously on Android.
+ */
+export const enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean> = createNativeFlagGetter('enableAsyncDiskCacheCheckInMultiSourceImageAndroid', false);
 /**
  * Feature flag to enable the new bridgeless architecture.
  */

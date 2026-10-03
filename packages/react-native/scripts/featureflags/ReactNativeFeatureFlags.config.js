@@ -214,6 +214,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableAsyncDiskCacheCheckInMultiSourceImageAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-27',
+        description:
+          'Runs multi-source image disk-cache checks asynchronously on Android.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableBridgelessArchitecture: {
       defaultValue: true,
       metadata: {

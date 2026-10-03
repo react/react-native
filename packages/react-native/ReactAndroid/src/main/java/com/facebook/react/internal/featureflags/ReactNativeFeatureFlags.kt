@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<86390dbd6b2c57cb4f8cdd7cb73cc1f7>>
+ * @generated SignedSource<<5903d783a8d1544f64c0b6b0497ce3c9>>
  */
 
 /**
@@ -119,6 +119,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableAndroidTextMeasurementOptimizations(): Boolean = accessor.enableAndroidTextMeasurementOptimizations()
+
+  /**
+   * Runs multi-source image disk-cache checks asynchronously on Android.
+   */
+  @JvmStatic
+  public fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean = accessor.enableAsyncDiskCacheCheckInMultiSourceImageAndroid()
 
   /**
    * Feature flag to enable the new bridgeless architecture.

@@ -22,9 +22,13 @@ import android.graphics.Shader.TileMode
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import com.facebook.common.internal.Supplier
 import com.facebook.common.references.CloseableReference
 import com.facebook.common.util.UriUtil
+import com.facebook.datasource.FirstAvailableDataSourceSupplier
+import com.facebook.datasource.IncreasingQualityDataSourceSupplier
 import com.facebook.drawee.backends.pipeline.Fresco
+import com.facebook.drawee.backends.pipeline.PipelineDraweeController
 import com.facebook.drawee.controller.AbstractDraweeControllerBuilder
 import com.facebook.drawee.controller.ControllerListener
 import com.facebook.drawee.controller.ForwardingControllerListener
@@ -35,6 +39,7 @@ import com.facebook.drawee.generic.RoundingParams
 import com.facebook.drawee.view.GenericDraweeView
 import com.facebook.imagepipeline.bitmaps.PlatformBitmapFactory
 import com.facebook.imagepipeline.common.ResizeOptions
+import com.facebook.imagepipeline.common.RotationOptions
 import com.facebook.imagepipeline.core.DownsampleMode
 import com.facebook.imagepipeline.image.CloseableImage
 import com.facebook.imagepipeline.image.ImageInfo
@@ -50,6 +55,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.annotations.VisibleForTesting
 import com.facebook.react.common.build.ReactBuildConfig
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.modules.fresco.ImageCacheControl
 import com.facebook.react.modules.fresco.ReactNetworkImageRequest
@@ -91,6 +97,7 @@ public class ReactImageView(
   private val sources: MutableList<ImageSource> = mutableListOf()
   internal var imageSource: ImageSource? = null
   private var cachedImageSource: ImageSource? = null
+  private var diskCacheCandidates: List<ImageSource> = emptyList()
   private var defaultImageDrawable: Drawable? = null
   private var loadingImageDrawable: Drawable? = null
   private var overlayColor = 0
@@ -396,6 +403,10 @@ public class ReactImageView(
     }
 
     setSourceImage()
+    updateViewForSelectedSource()
+  }
+
+  private fun updateViewForSelectedSource() {
     val imageSourceSafe = this.imageSource ?: return
     val doResize = shouldResize(imageSourceSafe)
 
@@ -458,8 +469,8 @@ public class ReactImageView(
 
     val resizeOptions = if (doResize) resizeOptions else null
 
+    val imagePipeline = Fresco.getImagePipeline()
     if (cacheControl == ImageCacheControl.RELOAD) {
-      val imagePipeline = Fresco.getImagePipeline()
       imagePipeline.evictFromCache(uri)
     }
 
@@ -467,7 +478,7 @@ public class ReactImageView(
         ImageRequestBuilder.newBuilderWithSource(uri)
             .setPostprocessor(postprocessor)
             .setResizeOptions(resizeOptions)
-            .setAutoRotateEnabled(true)
+            .setRotationOptions(RotationOptions.autoRotate())
             .setProgressiveRenderingEnabled(progressiveRenderingEnabled)
             .setLowestPermittedRequestLevel(requestLevel)
 
@@ -493,23 +504,93 @@ public class ReactImageView(
 
     // This builder is reused
     builder.reset()
+    builder.setDataSourceSupplier(null)
 
-    builder.setImageRequest(imageRequest).setAutoPlayAnimations(true).setOldController(controller)
+    builder.setAutoPlayAnimations(true).setOldController(controller)
+
+    val cachedImageRequest =
+        cachedImageSource?.let { cachedSource ->
+          val cachedImageRequestBuilder =
+              ImageRequestBuilder.newBuilderWithSource(cachedSource.uri)
+                  .setPostprocessor(postprocessor)
+                  .setResizeOptions(resizeOptions)
+                  .setRotationOptions(RotationOptions.autoRotate())
+                  .setProgressiveRenderingEnabled(progressiveRenderingEnabled)
+          if (resizeMethod == ImageResizeMethod.NONE) {
+            cachedImageRequestBuilder.setDownsampleOverride(DownsampleMode.NEVER)
+          }
+          cachedImageRequestBuilder.build()
+        }
+
+    if (diskCacheCandidates.isEmpty()) {
+      builder.setImageRequest(imageRequest).setLowResImageRequest(cachedImageRequest)
+    } else {
+      val diskCacheRequests =
+          diskCacheCandidates.map { source ->
+            val diskCacheRequestBuilder =
+                ImageRequestBuilder.newBuilderWithSource(source.uri)
+                    .setPostprocessor(postprocessor)
+                    .setResizeOptions(resizeOptions)
+                    .setRotationOptions(RotationOptions.autoRotate())
+                    .setProgressiveRenderingEnabled(progressiveRenderingEnabled)
+                    .setLowestPermittedRequestLevel(RequestLevel.DISK_CACHE)
+            if (resizeMethod == ImageResizeMethod.NONE) {
+              diskCacheRequestBuilder.setDownsampleOverride(DownsampleMode.NEVER)
+            }
+            val diskCacheRequest =
+                ReactNetworkImageRequest.fromBuilderWithHeaders(
+                    diskCacheRequestBuilder,
+                    headers,
+                    source.cacheControl,
+                )
+            diskCacheRequest
+          }
+      val requestCallerContext = callerContext
+      builder.setDataSourceSupplier(
+          Supplier {
+            val pipelineController = controller as? PipelineDraweeController
+            val requestListener = pipelineController?.requestListener
+            val controllerId = pipelineController?.id
+            fun dataSourceSupplierFor(request: ImageRequest, level: RequestLevel) =
+                imagePipeline.getDataSourceSupplier(
+                    request,
+                    requestCallerContext,
+                    level,
+                    requestListener,
+                    controllerId,
+                )
+
+            val diskCacheDataSourceSupplier =
+                FirstAvailableDataSourceSupplier.create(
+                    diskCacheRequests.map { request ->
+                      dataSourceSupplierFor(request, RequestLevel.FULL_FETCH)
+                    },
+                )
+            val lowerResDataSourceSupplier =
+                cachedImageRequest?.let { memoryCacheRequest ->
+                  IncreasingQualityDataSourceSupplier.create(
+                      arrayListOf(
+                          diskCacheDataSourceSupplier,
+                          dataSourceSupplierFor(
+                              memoryCacheRequest,
+                              RequestLevel.BITMAP_MEMORY_CACHE,
+                          ),
+                      ),
+                      imagePipeline.isLazyDataSource.get(),
+                  )
+                } ?: diskCacheDataSourceSupplier
+            val highResDataSourceSupplier =
+                dataSourceSupplierFor(imageRequest, RequestLevel.FULL_FETCH)
+            IncreasingQualityDataSourceSupplier.create(
+                    arrayListOf(highResDataSourceSupplier, lowerResDataSourceSupplier),
+                    imagePipeline.isLazyDataSource.get(),
+                )
+                .get()
+          },
+      )
+    }
 
     callerContext?.let { builder.setCallerContext(it) }
-
-    cachedImageSource?.let { cachedSource ->
-      val cachedImageRequestBuilder =
-          ImageRequestBuilder.newBuilderWithSource(cachedSource.uri)
-              .setPostprocessor(postprocessor)
-              .setResizeOptions(resizeOptions)
-              .setAutoRotateEnabled(true)
-              .setProgressiveRenderingEnabled(progressiveRenderingEnabled)
-      if (resizeMethod == ImageResizeMethod.NONE) {
-        cachedImageRequestBuilder.setDownsampleOverride(DownsampleMode.NEVER)
-      }
-      builder.setLowResImageRequest(cachedImageRequestBuilder.build())
-    }
 
     if (downloadListener != null && controllerForTesting != null) {
       val combinedListener: ForwardingControllerListener<ImageInfo> =
@@ -531,6 +612,7 @@ public class ReactImageView(
 
     // Reset again so the DraweeControllerBuilder clears all it's references. Otherwise, this causes
     // a memory leak.
+    builder.setDataSourceSupplier(null)
     builder.reset()
   }
 
@@ -556,12 +638,24 @@ public class ReactImageView(
 
   private fun setSourceImage() {
     imageSource = null
+    cachedImageSource = null
+    diskCacheCandidates = emptyList()
     if (sources.isEmpty()) {
       sources.add(getTransparentBitmapImageSource(context))
     } else if (hasMultipleSources()) {
-      val multiSource = getBestSourceForSize(width, height, sources)
+      val asyncDiskCacheCheckEnabled =
+          ReactNativeFeatureFlags.enableAsyncDiskCacheCheckInMultiSourceImageAndroid()
+      val multiSource =
+          getBestSourceForSize(
+              width,
+              height,
+              sources,
+              1.0,
+              checkDiskCache = !asyncDiskCacheCheckEnabled,
+          )
       imageSource = multiSource.bestResult
       cachedImageSource = multiSource.bestResultInCache
+      diskCacheCandidates = multiSource.diskCacheCandidates
       return
     }
     imageSource = sources[0]
