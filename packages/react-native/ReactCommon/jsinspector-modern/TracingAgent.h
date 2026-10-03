@@ -15,7 +15,6 @@
 #include <React/Timing.h>
 #include <jsinspector-modern/cdp/CdpJson.h>
 #include <jsinspector-modern/tracing/HostTracingProfile.h>
-#include <jsinspector-modern/tracing/Timing.h>
 
 namespace facebook::react::jsinspector_modern {
 
