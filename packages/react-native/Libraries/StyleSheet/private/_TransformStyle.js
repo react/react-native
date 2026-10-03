@@ -21,7 +21,7 @@ type ValueOfUnion<T, K> = T extends any
     : empty
   : empty;
 type MergeUnion<T> = {
-  [K in KeysOfUnion<T>]?: ValueOfUnion<T, K>,
+  [K in KeysOfUnion<T>]: ValueOfUnion<T, K>,
 };
 type MaximumOneOf<T extends {...}> = Values<{
   [K in keyof T]: $Exact<{
