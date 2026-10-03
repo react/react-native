@@ -108,7 +108,6 @@ async function setup(
   link('ReactCommon/react/renderer/componentregistry/React', 'React');
   link('ReactCommon/react/renderer/core');
   link('ReactCommon/react/renderer/core/React', 'React');
-  link('ReactCommon/react/renderer/css/React', 'React');
   link('ReactCommon/react/renderer/components/image/React', 'React');
   link('ReactCommon/react/renderer/mapbuffer/React', 'React');
   link('ReactCommon/react/bridging');

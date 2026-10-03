@@ -655,11 +655,6 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerPatterns: ['*.h'],
         headerDir: 'react/renderer/css',
       },
-      {
-        name: 'cssUmbrella',
-        headerPatterns: ['React/*.h'],
-        headerDir: 'React',
-      },
     ],
   },
   'ReactCommon/react/utils/React-utils.podspec': {
