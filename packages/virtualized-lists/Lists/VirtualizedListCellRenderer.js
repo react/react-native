@@ -19,7 +19,7 @@ import type {
 import {VirtualizedListCellContextProvider} from './VirtualizedListContext.js';
 import invariant from 'invariant';
 import * as React from 'react';
-import {isValidElement} from 'react';
+import {Children, Fragment, isValidElement} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 export type Props<ItemT> = {
@@ -204,13 +204,19 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
           // $FlowFixMe[not-a-component]
           <ItemSeparatorComponent {...this.state.separatorProps} />
         );
-    const cellStyle = inversionStyle
+    const baseCellStyle = inversionStyle
       ? horizontal
         ? [styles.rowReverse, inversionStyle]
         : [styles.columnReverse, inversionStyle]
       : horizontal
         ? [styles.row, inversionStyle]
         : inversionStyle;
+    // zIndex on the item subtree does not reorder sibling cells; hoist it to this wrapper.
+    const childZIndex = extractZIndexFromListItemElement(element);
+    const cellStyle =
+      childZIndex != null
+        ? StyleSheet.compose(baseCellStyle, {zIndex: childZIndex})
+        : baseCellStyle;
     const result = !CellRendererComponent ? (
       <View
         style={cellStyle}
@@ -238,6 +244,40 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       </VirtualizedListCellContextProvider>
     );
   }
+}
+
+// Returns zIndex from the outermost element returned by renderItem, if any. We only look at
+// that element's style prop (not deeper descendants inside a custom component).
+function extractZIndexFromListItemElement(element: React.Node): ?number {
+  if (!isValidElement(element)) {
+    return null;
+  }
+
+  // $FlowFixMe[prop-missing] React.Element internal inspection
+  if (element.type === Fragment) {
+    let maxZIndex: ?number = null;
+    Children.forEach(
+      // $FlowFixMe[prop-missing] React.Element internal inspection
+      element.props.children,
+      child => {
+        const zIndex = extractZIndexFromListItemElement(child);
+        if (zIndex != null && (maxZIndex == null || zIndex > maxZIndex)) {
+          maxZIndex = zIndex;
+        }
+      },
+    );
+    return maxZIndex;
+  }
+
+  // $FlowFixMe[prop-missing] React.Element internal inspection
+  const style = element.props.style;
+  if (style == null) {
+    return null;
+  }
+
+  const flatStyle = StyleSheet.flatten(style);
+  const zIndex = flatStyle?.zIndex;
+  return typeof zIndex === 'number' ? zIndex : null;
 }
 
 const styles = StyleSheet.create({
