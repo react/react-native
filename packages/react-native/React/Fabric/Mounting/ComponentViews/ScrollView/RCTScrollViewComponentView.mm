@@ -847,11 +847,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _handleFinishedScrolling:scrollView];
 }
 
-- (void)didMoveToWindow
+- (void)willMoveToWindow:(UIWindow *)newWindow
 {
-  [super didMoveToWindow];
+  [super willMoveToWindow:newWindow];
 
-  if (!self.window) {
+  if (!newWindow) {
     // The view is being removed, ensure that the scroll end event is dispatched
     [self _handleScrollEndIfNeeded];
   }
@@ -859,7 +859,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)_handleScrollEndIfNeeded
 {
-  if (_scrollView.isDecelerating || !_scrollView.isTracking) {
+  if (_scrollView.isDecelerating) {
     if (!_eventEmitter) {
       return;
     }

@@ -7,10 +7,13 @@
 
 #import <React/RCTScrollViewComponentView.h>
 #import <XCTest/XCTest.h>
+#import <react/renderer/components/scrollview/ScrollViewEventEmitter.h>
 #import <react/renderer/components/scrollview/ScrollViewProps.h>
 #import <react/renderer/components/scrollview/ScrollViewShadowNode.h>
 
+using facebook::react::EventDispatcher;
 using facebook::react::Props;
+using facebook::react::ScrollViewEventEmitter;
 using facebook::react::ScrollViewProps;
 using facebook::react::ScrollViewShadowNode;
 
@@ -59,6 +62,21 @@ static Props::Shared makeScrollViewProps(bool automaticallyAdjustKeyboardInsets)
   [view updateProps:props oldProps:nullptr];
   [view _keyboardWillChangeFrame:notification];
   XCTAssertEqual(view.scrollView.contentInset.bottom, 50);
+}
+
+- (void)testUnmountingIdleScrollViewDoesNotEndMomentum
+{
+  UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  RCTScrollViewComponentView *view = [[RCTScrollViewComponentView alloc] initWithFrame:window.bounds];
+  [window addSubview:view];
+
+  auto eventEmitter = std::make_shared<ScrollViewEventEmitter>(nullptr, EventDispatcher::Weak{});
+  [view updateEventEmitter:eventEmitter];
+  [view setValue:@YES forKey:@"isUserTriggeredScrolling"];
+
+  [view removeFromSuperview];
+
+  XCTAssertTrue([[view valueForKey:@"isUserTriggeredScrolling"] boolValue]);
 }
 
 @end

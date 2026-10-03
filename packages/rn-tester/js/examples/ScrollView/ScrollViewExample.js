@@ -382,9 +382,10 @@ const examples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    name: 'onMomentumScroll',
     title: '<ScrollView> OnMomentumScroll\n',
     description:
-      'An alert will be called when the momentum scroll starts or ends.',
+      'Counts momentum scroll events and supports unmounting the ScrollView.',
     render(): React.Node {
       return <OnMomentumScroll />;
     },
@@ -920,17 +921,37 @@ const OnScrollOptions = () => {
 };
 
 const OnMomentumScroll = () => {
-  const [scroll, setScroll] = useState('none');
+  const [scrollViewMounted, setScrollViewMounted] = useState(true);
+  const [momentumScrollBeginCount, setMomentumScrollBeginCount] = useState(0);
+  const [momentumScrollEndCount, setMomentumScrollEndCount] = useState(0);
+
   return (
     <View>
-      <RNTesterText>Scroll State: {scroll}</RNTesterText>
-      <ScrollView
-        style={[styles.scrollView, {height: 200}]}
-        onMomentumScrollBegin={() => setScroll('onMomentumScrollBegin')}
-        onMomentumScrollEnd={() => setScroll('onMomentumScrollEnd')}
-        nestedScrollEnabled>
-        {ITEMS.map(createItemRow)}
-      </ScrollView>
+      <RNTesterText testID="momentum-scroll-begin-count">
+        onMomentumScrollBegin called {momentumScrollBeginCount} times
+      </RNTesterText>
+      <RNTesterText testID="momentum-scroll-end-count">
+        onMomentumScrollEnd called {momentumScrollEndCount} times
+      </RNTesterText>
+      <Button
+        label={scrollViewMounted ? 'Unmount ScrollView' : 'Mount ScrollView'}
+        onPress={() => setScrollViewMounted(mounted => !mounted)}
+        testID="toggle-momentum-scroll-view"
+      />
+      {scrollViewMounted ? (
+        <ScrollView
+          style={styles.scrollView}
+          onMomentumScrollBegin={() =>
+            setMomentumScrollBeginCount(count => count + 1)
+          }
+          onMomentumScrollEnd={() =>
+            setMomentumScrollEndCount(count => count + 1)
+          }
+          testID="momentum-scroll-view"
+          nestedScrollEnabled>
+          {ITEMS.map(createItemRow)}
+        </ScrollView>
+      ) : null}
     </View>
   );
 };
