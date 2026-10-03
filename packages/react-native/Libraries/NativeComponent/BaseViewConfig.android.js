@@ -382,6 +382,7 @@ const validAttributesForNonEventProps = {
   borderStyle: true,
   hitSlop: true,
   pointerEvents: true,
+  clipPath: true,
   nativeBackgroundAndroid: true,
   nativeForegroundAndroid: true,
   needsOffscreenAlphaCompositing: true,

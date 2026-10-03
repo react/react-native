@@ -17,6 +17,7 @@ import processBackgroundPosition from '../../StyleSheet/processBackgroundPositio
 import processBackgroundRepeat from '../../StyleSheet/processBackgroundRepeat';
 import processBackgroundSize from '../../StyleSheet/processBackgroundSize';
 import processBoxShadow from '../../StyleSheet/processBoxShadow';
+import processClipPath from '../../StyleSheet/processClipPath';
 import processColor from '../../StyleSheet/processColor';
 import processFilter from '../../StyleSheet/processFilter';
 import processFontVariant from '../../StyleSheet/processFontVariant';
@@ -260,7 +261,9 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   outlineStyle: true,
   outlineWidth: true,
   pointerEvents: true,
-
+  clipPath: ReactNativeFeatureFlags.enableNativeCSSParsing()
+    ? true
+    : {process: processClipPath},
   /**
    * Text
    */
