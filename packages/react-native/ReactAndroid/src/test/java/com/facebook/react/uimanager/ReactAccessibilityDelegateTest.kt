@@ -382,4 +382,27 @@ class ReactAccessibilityDelegateTest {
     assertThat(result).isTrue()
     assertThat(view.getTag(R.id.accessibility_state_expanded)).isEqualTo(false)
   }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_uncheckedState_setsStateDescription() {
+    view.setTag(R.id.accessibility_state, JavaOnlyMap.of("checked", false))
+    val info = AccessibilityNodeInfoCompat.obtain()
+
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, info)
+
+    assertThat(info.isCheckable).isTrue()
+    assertThat(info.isChecked).isFalse()
+    assertThat(info.stateDescription.toString()).isEqualTo("not checked")
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_checkedState_keepsStateDescriptionEmpty() {
+    view.setTag(R.id.accessibility_state, JavaOnlyMap.of("checked", true))
+    val info = AccessibilityNodeInfoCompat.obtain()
+
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, info)
+
+    assertThat(info.isChecked).isTrue()
+    assertThat(info.stateDescription).isNull()
+  }
 }

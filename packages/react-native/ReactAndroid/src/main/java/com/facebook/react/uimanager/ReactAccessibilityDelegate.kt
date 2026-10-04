@@ -99,7 +99,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
     // state is changeable.
     val accessibilityState = host.getTag(R.id.accessibility_state) as ReadableMap?
     if (accessibilityState != null) {
-      setState(info, accessibilityState)
+      setState(info, accessibilityState, host.context)
     }
     val accessibilityActions = host.getTag(R.id.accessibility_actions) as ReadableArray?
 
@@ -626,6 +626,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
     private fun setState(
         info: AccessibilityNodeInfoCompat,
         accessibilityState: ReadableMap,
+        context: Context,
     ) {
       val i = accessibilityState.keySetIterator()
       while (i.hasNextKey()) {
@@ -639,6 +640,11 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
           val boolValue = value.asBoolean()
           info.isCheckable = true
           info.isChecked = boolValue
+          // TalkBack reads the unchecked state from stateDescription, which native compound
+          // buttons set themselves. Fill it in when the view has not.
+          if (!boolValue && info.stateDescription.isNullOrEmpty()) {
+            info.stateDescription = context.getString(R.string.state_unchecked_description)
+          }
         }
       }
     }
