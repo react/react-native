@@ -17,7 +17,7 @@ declare module 'commander' {
   declare type LiteralUnion<LiteralType, BaseType: string | number> =
     LiteralType | {...BaseType, ...{[key: empty]: empty, ...}};
 
-  declare export class CommanderError mixins Error {
+  declare export class CommanderError extends Error {
     code: string;
     exitCode: number;
     message: string;
