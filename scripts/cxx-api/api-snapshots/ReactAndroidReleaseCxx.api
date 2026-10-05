@@ -5829,6 +5829,10 @@ enum facebook::react::CSSAngleUnit : uint8_t {
   Turn,
 }
 
+enum facebook::react::CSSColorNoneKeyword : std::underlying_type_t<facebook::react::CSSKeyword> {
+  None,
+}
+
 enum facebook::react::CSSDelimiter {
   Comma,
   CommaOrWhitespace,
@@ -9883,19 +9887,26 @@ bool facebook::react::HostPlatformViewTraitsInitializer::formsView(const faceboo
 bool facebook::react::HostPlatformViewTraitsInitializer::isKeyboardFocusable(const facebook::react::ViewProps& viewProps);
 
 
-const char* facebook::react::exceptions::gUnexpectedNativeTypeExceptionClass;
-template <typename T>
-void facebook::react::exceptions::throwIfObjectAlreadyConsumed(const T& t, const char* msg);
-
-
+bool facebook::react::detail::isInSrgbGamut(const std::array<double, 3>& srgb);
 constexpr bool facebook::react::detail::isHexDigit(char c);
 constexpr bool facebook::react::detail::isValidHexColor(std::string_view hex);
 constexpr float facebook::react::detail::hueToRgb(float p, float q, float t);
+constexpr float facebook::react::detail::labLightnessReference(facebook::react::detail::CSSLabColorSpace colorSpace);
+constexpr std::array<double, 3> facebook::react::detail::multiplyMatrix3(const std::array<std::array<double, 3>, 3>& matrix, const std::array<double, 3>& vector);
 constexpr std::optional<float> facebook::react::detail::normalizeNumberComponent(const std::variant<std::monostate, facebook::react::CSSNumber>& component);
 constexpr uint8_t facebook::react::detail::clamp255Component(float f);
 constexpr uint8_t facebook::react::detail::clampAlpha(std::optional<float> alpha);
 constexpr uint8_t facebook::react::detail::hexToNumeric(std::string_view hex, facebook::react::detail::HexColorType hexType);
+double facebook::react::detail::deltaEOK(const std::array<double, 3>& reference, const std::array<double, 3>& sample);
 float facebook::react::detail::normalizeHue(float hue);
+std::array<double, 3> facebook::react::detail::clipToSrgbGamut(const std::array<double, 3>& srgb);
+std::array<double, 3> facebook::react::detail::gamutMapOklabToSrgb(const std::array<double, 3>& oklab);
+std::array<double, 3> facebook::react::detail::labColorSpaceToOklab(facebook::react::detail::CSSLabColorSpace colorSpace, double lightness, double a, double b);
+std::array<double, 3> facebook::react::detail::labToOklab(double l, double a, double b);
+std::array<double, 3> facebook::react::detail::oklabToSrgb(const std::array<double, 3>& oklab);
+std::array<double, 3> facebook::react::detail::oklabToXyzD65(const std::array<double, 3>& oklab);
+std::array<double, 3> facebook::react::detail::srgbToOklab(const std::array<double, 3>& srgb);
+std::array<double, 3> facebook::react::detail::xyzD65ToOklab(const std::array<double, 3>& xyz);
 std::optional<float> facebook::react::detail::normalizeHueComponent(const std::variant<std::monostate, facebook::react::CSSNumber, facebook::react::CSSAngle>& component);
 std::tuple<uint8_t, uint8_t, uint8_t> facebook::react::detail::hslToRgb(float h, float s, float l);
 std::tuple<uint8_t, uint8_t, uint8_t> facebook::react::detail::hwbToRgb(float h, float w, float b);
@@ -9908,22 +9919,38 @@ constexpr std::optional<facebook::react::CSSColor> facebook::react::detail::pars
 template <typename CSSColor>
 constexpr std::optional<facebook::react::CSSColor> facebook::react::detail::parseRgbFunction(facebook::react::CSSValueParser& parser);
 template <typename CSSColor>
+facebook::react::CSSColor facebook::react::detail::oklabToCSSColor(const std::array<double, 3>& oklab, uint8_t alpha);
+template <typename CSSColor>
 std::optional<facebook::react::CSSColor> facebook::react::detail::parseHslFunction(facebook::react::CSSValueParser& parser);
 template <typename CSSColor>
 std::optional<facebook::react::CSSColor> facebook::react::detail::parseHwbFunction(facebook::react::CSSValueParser& parser);
 template <typename CSSColor>
+std::optional<facebook::react::CSSColor> facebook::react::detail::parseLabFunction(facebook::react::CSSValueParser& parser, facebook::react::detail::CSSLabColorSpace colorSpace);
+template <typename CSSColor>
+std::optional<facebook::react::CSSColor> facebook::react::detail::parseLchFunction(facebook::react::CSSValueParser& parser, facebook::react::detail::CSSLabColorSpace colorSpace);
+template <typename CSSColor>
 std::optional<facebook::react::CSSColor> facebook::react::detail::parseLegacyHslFunction(facebook::react::CSSValueParser& parser);
 template <typename CSSColor>
 std::optional<facebook::react::CSSColor> facebook::react::detail::parseModernHslFunction(facebook::react::CSSValueParser& parser);
+template <typename ComponentVariantT>
+constexpr std::optional<float> facebook::react::detail::normalizeComponentOrNone(const ComponentVariantT& component, float percentReference);
+template <typename ComponentVariantT>
+constexpr std::optional<float> facebook::react::detail::normalizeHueDegreesOrNone(const ComponentVariantT& component);
 template <typename T, typename C>
 C facebook::react::detail::memberFunctionClass(T C::*);
 template <typename... ComponentT>
 constexpr std::optional<float> facebook::react::detail::normalizeComponent(const std::variant<std::monostate, ComponentT...>& component, float baseValue);
+uint8_t facebook::react::detail::parseSolidusAlphaComponent(facebook::react::CSSValueParser& parser);
 
 class facebook::react::detail::OwnedBytesBuffer : public facebook::jsi::MutableBuffer {
   public OwnedBytesBuffer(std::vector<uint8_t> bytes) noexcept;
   public virtual size_t size() const override;
   public virtual uint8_t* data() override;
+}
+
+enum facebook::react::detail::CSSLabColorSpace {
+  CIELab,
+  OKLab,
 }
 
 enum facebook::react::detail::HexColorType {
@@ -10309,6 +10336,11 @@ template <typename T>
 concept facebook::react::detail::css::keywords::hasWrap = (CSSKeywordSet<T> && requires() { T::Wrap; });
 template <typename T>
 concept facebook::react::detail::css::keywords::hasWrapReverse = (CSSKeywordSet<T> && requires() { T::WrapReverse; });
+
+
+const char* facebook::react::exceptions::gUnexpectedNativeTypeExceptionClass;
+template <typename T>
+void facebook::react::exceptions::throwIfObjectAlreadyConsumed(const T& t, const char* msg);
 
 
 constexpr facebook::react::Color facebook::react::HostPlatformColor::UndefinedColor;
