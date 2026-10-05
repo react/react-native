@@ -100,6 +100,7 @@ public class ReactImageView(
   private var tilePostprocessor: TilePostprocessor? = null
   private var iterativeBoxBlurPostProcessor: IterativeBoxBlurPostProcessor? = null
   private var downloadListener: ReactImageDownloadListener<ImageInfo>? = null
+  private var progressBarListener: ReactImageDownloadListener<ImageInfo>? = null
   private var controllerForTesting: ControllerListener<ImageInfo>? = null
   private var fadeDurationMs = -1
   private var progressiveRenderingEnabled = false
@@ -523,8 +524,11 @@ public class ReactImageView(
       builder.setControllerListener(downloadListener)
     }
 
-    if (downloadListener != null) {
+    // Install the progress bar once per listener: setting it again would make Fresco try to round
+    // the already rounded leaf drawable and log a warning on every update.
+    if (downloadListener != null && downloadListener !== progressBarListener) {
       hierarchy.setProgressBarImage(downloadListener)
+      progressBarListener = downloadListener
     }
 
     controller = builder.build()
