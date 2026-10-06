@@ -368,6 +368,9 @@ module.exports = {
   get UIManager() {
     return require('./Libraries/ReactNative/UIManager').default;
   },
+  /**
+   * @deprecated Since 0.86, `unstable_batchedUpdates` is a no-op that synchronously invokes the callback. React batches updates automatically, so call the callback directly instead.
+   */
   unstable_batchedUpdates<T>(fn: (bookkeeping: T) => void, bookkeeping: T) {
     fn(bookkeeping);
   },

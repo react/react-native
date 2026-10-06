@@ -442,6 +442,9 @@ export * as Systrace from './Libraries/Performance/Systrace';
 export {default as ToastAndroid} from './Libraries/Components/ToastAndroid/ToastAndroid';
 export * as TurboModuleRegistry from './Libraries/TurboModule/TurboModuleRegistry';
 export {default as UIManager} from './Libraries/ReactNative/UIManager';
+/**
+ * @deprecated Since 0.86, `unstable_batchedUpdates` is a no-op that synchronously invokes the callback. React batches updates automatically, so call the callback directly instead.
+ */
 export function unstable_batchedUpdates<T>(
   fn: (bookkeeping: T) => void,
   bookkeeping: T,
