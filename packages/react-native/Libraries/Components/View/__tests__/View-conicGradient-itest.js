@@ -253,18 +253,18 @@ describe('conic gradient native props', () => {
     });
   }
 
-  for (const hint of [
-    {positions: ['90deg']},
-    {color: null, positions: ['90deg']},
-  ]) {
-    it(`preserves a valid object hint ${JSON.stringify(hint)}`, () => {
-      const input = [
+  for (const color of [undefined, null]) {
+    it(`preserves a valid object hint with color ${String(color)}`, () => {
+      const input: BackgroundImage = [
         {
           type: 'conic-gradient',
-          colorStops: [{color: 'red'}, hint, {color: 'blue'}],
+          colorStops: [
+            {color: 'red'},
+            {color, positions: ['90deg']},
+            {color: 'blue'},
+          ],
         },
       ];
-      // $FlowFixMe[incompatible-type] - gradient hint types currently require a color.
       expect(mountedBackgroundImage(input)).toBe(
         '[conic-gradient(from 0deg at 50% 50% , rgba(255, 0, 0, 1), rgba(0, 0, 0, 0) 25%, rgba(0, 0, 255, 1))]',
       );
