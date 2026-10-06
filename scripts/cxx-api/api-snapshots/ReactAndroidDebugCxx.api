@@ -584,14 +584,15 @@ using facebook::react::AndroidSwipeRefreshLayoutState = facebook::react::StateDa
 using facebook::react::AnimationEndCallback = facebook::react::AsyncCallback<facebook::react::EndResult>;
 using facebook::react::AnimationTimestamp = std::chrono::duration<double, std::milli>;
 using facebook::react::BackgroundExecutor = std::function<void(std::function<void()>&& callback)>;
-using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
+using facebook::react::BackgroundImage = std::variant<facebook::react::ConicGradient, facebook::react::LinearGradient, facebook::react::RadialGradient>;
 using facebook::react::BackgroundSize = std::variant<facebook::react::BackgroundSizeKeyword, facebook::react::BackgroundSizeLengthPercentage>;
 using facebook::react::BorderColors = facebook::react::RectangleEdges<facebook::react::SharedColor>;
 using facebook::react::BorderCurves = facebook::react::RectangleCorners<facebook::react::BorderCurve>;
 using facebook::react::BorderRadii = facebook::react::RectangleCorners<facebook::react::CornerRadii>;
 using facebook::react::BorderStyles = facebook::react::RectangleEdges<facebook::react::BorderStyle>;
 using facebook::react::BorderWidths = facebook::react::RectangleEdges<facebook::react::Float>;
-using facebook::react::CSSBackgroundImage = facebook::react::CSSCompoundDataType<facebook::react::CSSLinearGradientFunction, facebook::react::CSSRadialGradientFunction>;
+using facebook::react::CSSAngularPosition = std::variant<facebook::react::CSSAngle, facebook::react::CSSPercentage>;
+using facebook::react::CSSBackgroundImage = facebook::react::CSSCompoundDataType<facebook::react::CSSConicGradientFunction, facebook::react::CSSLinearGradientFunction, facebook::react::CSSRadialGradientFunction>;
 using facebook::react::CSSBackgroundImageList = facebook::react::CSSCommaSeparatedList<facebook::react::CSSBackgroundImage>;
 using facebook::react::CSSFilterFunction = facebook::react::CSSCompoundDataType<facebook::react::CSSBlurFilter, facebook::react::CSSBrightnessFilter, facebook::react::CSSContrastFilter, facebook::react::CSSDropShadowFilter, facebook::react::CSSGrayscaleFilter, facebook::react::CSSHueRotateFilter, facebook::react::CSSInvertFilter, facebook::react::CSSOpacityFilter, facebook::react::CSSSaturateFilter, facebook::react::CSSSepiaFilter>;
 using facebook::react::CSSFilterList = facebook::react::CSSWhitespaceSeparatedList<facebook::react::CSSFilterFunction>;
@@ -5895,6 +5896,10 @@ enum facebook::react::CSSGradientDirectionKeyword : std::underlying_type_t<faceb
   Top,
 }
 
+enum facebook::react::CSSGradientFromKeyword : std::underlying_type_t<facebook::react::CSSKeyword> {
+  From,
+}
+
 enum facebook::react::CSSGradientPositionKeyword : std::underlying_type_t<facebook::react::CSSKeyword> {
   Bottom,
   Center,
@@ -5935,6 +5940,7 @@ enum facebook::react::CSSKeyword : uint8_t {
   Flex,
   FlexEnd,
   FlexStart,
+  From,
   Grid,
   Groove,
   Hidden,
@@ -6992,6 +6998,25 @@ struct facebook::react::CSSColorStop {
   public std::optional<std::variant<facebook::react::CSSLength, facebook::react::CSSPercentage>> startPosition;
 }
 
+struct facebook::react::CSSConicColorHint {
+  public bool operator==(const facebook::react::CSSConicColorHint& rhs) const = default;
+  public facebook::react::CSSAngularPosition position;
+}
+
+struct facebook::react::CSSConicColorStop {
+  public bool operator==(const facebook::react::CSSConicColorStop& rhs) const = default;
+  public facebook::react::CSSColor color;
+  public std::optional<facebook::react::CSSAngularPosition> endPosition;
+  public std::optional<facebook::react::CSSAngularPosition> startPosition;
+}
+
+struct facebook::react::CSSConicGradientFunction {
+  public bool operator==(const facebook::react::CSSConicGradientFunction& rhs) const = default;
+  public facebook::react::CSSAngle from;
+  public facebook::react::CSSRadialGradientPosition position;
+  public std::vector<std::variant<facebook::react::CSSConicColorStop, facebook::react::CSSConicColorHint>> items;
+}
+
 struct facebook::react::CSSContrastFilter {
   public constexpr bool operator==(const facebook::react::CSSContrastFilter& rhs) const = default;
   public float amount;
@@ -7260,6 +7285,14 @@ struct facebook::react::ColorStop {
   public facebook::react::SharedColor color;
   public facebook::react::ValueUnit position;
   public folly::dynamic toDynamic() const;
+}
+
+struct facebook::react::ConicGradient {
+  public bool operator==(const facebook::react::ConicGradient& other) const = default;
+  public facebook::react::Float from;
+  public facebook::react::RadialGradientPosition position;
+  public folly::dynamic toDynamic() const;
+  public std::vector<facebook::react::ColorStop> colorStops;
 }
 
 struct facebook::react::CornerRadii {
@@ -9847,6 +9880,18 @@ struct facebook::react::CSSDataTypeParser<facebook::react::CSSColorStop> {
   public static constexpr std::optional<facebook::react::CSSColorStop> consume(facebook::react::CSSValueParser& parser);
 }
 
+struct facebook::react::CSSDataTypeParser<facebook::react::CSSConicColorHint> {
+  public static constexpr std::optional<facebook::react::CSSConicColorHint> consume(facebook::react::CSSValueParser& parser);
+}
+
+struct facebook::react::CSSDataTypeParser<facebook::react::CSSConicColorStop> {
+  public static constexpr std::optional<facebook::react::CSSConicColorStop> consume(facebook::react::CSSValueParser& parser);
+}
+
+struct facebook::react::CSSDataTypeParser<facebook::react::CSSConicGradientFunction> {
+  public static std::optional<facebook::react::CSSConicGradientFunction> consumeFunctionBlock(const facebook::react::CSSFunctionBlock& func, facebook::react::CSSValueParser& parser);
+}
+
 struct facebook::react::CSSDataTypeParser<facebook::react::CSSContrastFilter> : public facebook::react::detail::CSSFilterSimpleAmountParser<facebook::react::CSSContrastFilter, "contrast"> {
 }
 
@@ -10200,6 +10245,7 @@ constexpr std::string_view facebook::react::detail::css::keywords::Fixed;
 constexpr std::string_view facebook::react::detail::css::keywords::Flex;
 constexpr std::string_view facebook::react::detail::css::keywords::FlexEnd;
 constexpr std::string_view facebook::react::detail::css::keywords::FlexStart;
+constexpr std::string_view facebook::react::detail::css::keywords::From;
 constexpr std::string_view facebook::react::detail::css::keywords::Grid;
 constexpr std::string_view facebook::react::detail::css::keywords::Groove;
 constexpr std::string_view facebook::react::detail::css::keywords::Hidden;
@@ -10318,6 +10364,8 @@ template <typename T>
 concept facebook::react::detail::css::keywords::hasFlexEnd = (CSSKeywordSet<T> && requires() { T::FlexEnd; });
 template <typename T>
 concept facebook::react::detail::css::keywords::hasFlexStart = (CSSKeywordSet<T> && requires() { T::FlexStart; });
+template <typename T>
+concept facebook::react::detail::css::keywords::hasFrom = (CSSKeywordSet<T> && requires() { T::From; });
 template <typename T>
 concept facebook::react::detail::css::keywords::hasGrid = (CSSKeywordSet<T> && requires() { T::Grid; });
 template <typename T>

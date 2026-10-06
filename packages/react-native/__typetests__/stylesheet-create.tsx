@@ -53,3 +53,20 @@ const styles3 = StyleSheet.create({
     shadowOffset: shadowOffsetConst,
   },
 });
+
+const styles4 = StyleSheet.create({
+  conicGradient: {
+    backgroundImage: [
+      {
+        type: 'conic-gradient',
+        colorStops: [
+          {color: 'red'},
+          {positions: ['90deg']},
+          {color: 'green'},
+          {color: null, positions: ['180deg']},
+          {color: 'blue'},
+        ],
+      },
+    ],
+  },
+});
