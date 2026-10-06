@@ -1195,7 +1195,10 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   componentDidUpdate(prevProps: VirtualizedListProps) {
-    const {data, extraData, getItemLayout} = this.props;
+    const {data, extraData} = this.props;
+    if (data !== prevProps.data) {
+      this._dataChangeCount++;
+    }
     if (data !== prevProps.data || extraData !== prevProps.extraData) {
       // clear the viewableIndices cache to also trigger
       // the onViewableItemsChanged callback with the new data
@@ -1217,11 +1220,14 @@ class VirtualizedList extends StateSafePureComponent<
       this._hiPriInProgress = false;
     }
 
-    // We only call `onEndReached` after we render the last cell, but when
-    // getItemLayout is present, we can scroll past the last rendered cell, and
-    // never trigger a new layout or bounds change, so we need to check again
-    // after rendering more cells.
-    if (getItemLayout != null) {
+    // We only call `onEndReached` after we render the last cell, but
+    // programmatic scrolling (e.g. scrollToItem, scrollToIndex) or using
+    // getItemLayout can scroll past the last rendered cell, and never
+    // trigger a new layout or bounds change, so we need to check again
+    // after rendering more cells. We gate on having received at least one
+    // scroll event (timestamp > 0) to avoid false onEndReached calls
+    // during initial render.
+    if (this.props.getItemLayout != null || this._scrollMetrics.timestamp > 0) {
       this._maybeCallOnEdgeReached();
     }
   }
@@ -1264,8 +1270,16 @@ class VirtualizedList extends StateSafePureComponent<
     zoomScale: 1,
   };
   _scrollRef: ?React.ElementRef<typeof ScrollView> = null;
-  _sentStartForContentLength = 0;
-  _sentEndForContentLength = 0;
+  _contentLengthDataChangeCount: number = 0;
+  _dataChangeCount: number = 0;
+  _sentStartForFirstItemKey: ?string = null;
+  _sentStartForItemCount: ?number = null;
+  _sentStartForOffset: ?number = null;
+  _sentEndForContentLength: ?number = null;
+  _sentEndForDataChangeCount: ?number = null;
+  _sentEndForItemCount: ?number = null;
+  _sentEndForLastItemKey: ?string = null;
+  _sentEndForOffset: ?number = null;
   _updateCellsToRenderTimeoutID: ?ReturnType<typeof setTimeout> = null;
   _viewabilityTuples: Array<ViewabilityHelperCallbackTuple> = [];
 
@@ -1557,9 +1571,10 @@ class VirtualizedList extends StateSafePureComponent<
     };
   }
 
-  _maybeCallOnEdgeReached() {
+  _maybeCallOnEdgeReached(isScrollEvent: boolean = false) {
     const {
       data,
+      getItem,
       getItemCount,
       onStartReached,
       onStartReachedThreshold,
@@ -1581,9 +1596,9 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     const {visibleLength, offset} = this._scrollMetrics;
+    const contentLength = this._listMetrics.getContentLength();
     let distanceFromStart = offset;
-    let distanceFromEnd =
-      this._listMetrics.getContentLength() - visibleLength - offset;
+    let distanceFromEnd = contentLength - visibleLength - offset;
 
     // Especially when oERT is zero it's necessary to 'floor' very small distance values to be 0
     // since debouncing causes us to not fire this event for every single "pixel" we scroll and can thus
@@ -1610,39 +1625,102 @@ class VirtualizedList extends StateSafePureComponent<
     const isWithinStartThreshold = distanceFromStart <= startThreshold;
     const isWithinEndThreshold = distanceFromEnd <= endThreshold;
 
-    // First check if the user just scrolled within the end threshold
-    // and call onEndReached only once for a given content length,
-    // and only if onStartReached is not being executed
+    const itemCount = getItemCount(data);
+
     if (
       onEndReached &&
-      this.state.cellsAroundViewport.last === getItemCount(data) - 1 &&
-      isWithinEndThreshold &&
-      this._listMetrics.getContentLength() !== this._sentEndForContentLength
+      this.state.cellsAroundViewport.last === itemCount - 1 &&
+      isWithinEndThreshold
     ) {
-      this._sentEndForContentLength = this._listMetrics.getContentLength();
-      onEndReached({distanceFromEnd});
+      const lastItemKey =
+        itemCount > 0
+          ? VirtualizedList._keyExtractor(
+              getItem(data, itemCount - 1),
+              itemCount - 1,
+              this.props,
+            )
+          : null;
+      // A changed edge may represent a new callback generation even if the
+      // item count is unchanged.
+      if (
+        itemCount !== this._sentEndForItemCount ||
+        lastItemKey !== this._sentEndForLastItemKey ||
+        (this._dataChangeCount !== this._sentEndForDataChangeCount &&
+          this._contentLengthDataChangeCount === this._dataChangeCount &&
+          contentLength !== this._sentEndForContentLength) ||
+        (isScrollEvent &&
+          this._sentEndForContentLength != null &&
+          this._sentEndForOffset != null &&
+          contentLength > this._sentEndForContentLength &&
+          offset > this._sentEndForOffset)
+      ) {
+        this._sentEndForContentLength = contentLength;
+        this._sentEndForDataChangeCount = this._dataChangeCount;
+        this._sentEndForItemCount = itemCount;
+        this._sentEndForLastItemKey = lastItemKey;
+        this._sentEndForOffset = offset;
+        onEndReached({distanceFromEnd});
+      }
     }
 
-    // Next check if the user just scrolled within the start threshold
-    // and call onStartReached only once for a given content length,
-    // and only if onEndReached is not being executed
     if (
       onStartReached != null &&
       this.state.cellsAroundViewport.first === 0 &&
-      isWithinStartThreshold &&
-      this._listMetrics.getContentLength() !== this._sentStartForContentLength
+      isWithinStartThreshold
     ) {
-      this._sentStartForContentLength = this._listMetrics.getContentLength();
-      onStartReached({distanceFromStart});
+      const firstItemKey =
+        itemCount > 0
+          ? VirtualizedList._keyExtractor(getItem(data, 0), 0, this.props)
+          : null;
+      // The start edge changes only when its item identity or count changes.
+      if (
+        itemCount !== this._sentStartForItemCount ||
+        firstItemKey !== this._sentStartForFirstItemKey
+      ) {
+        this._sentStartForFirstItemKey = firstItemKey;
+        this._sentStartForItemCount = itemCount;
+        this._sentStartForOffset = offset;
+        onStartReached({distanceFromStart});
+      }
     }
 
     // If the user scrolls away from the start or end and back again,
     // cause onStartReached or onEndReached to be triggered again
-    if (!isWithinStartThreshold) {
-      this._sentStartForContentLength = 0;
+    if (isScrollEvent && this._sentStartForOffset != null) {
+      if (offset < this._sentStartForOffset) {
+        this._sentStartForOffset = offset;
+      } else if (!isWithinStartThreshold && offset > this._sentStartForOffset) {
+        this._sentStartForFirstItemKey = null;
+        this._sentStartForItemCount = null;
+        this._sentStartForOffset = null;
+      }
     }
-    if (!isWithinEndThreshold) {
-      this._sentEndForContentLength = 0;
+    if (this._sentEndForOffset != null) {
+      if (
+        !isScrollEvent &&
+        this._dataChangeCount !== this._sentEndForDataChangeCount &&
+        this._contentLengthDataChangeCount === this._dataChangeCount &&
+        contentLength !== this._sentEndForContentLength &&
+        !isWithinEndThreshold
+      ) {
+        this._sentEndForContentLength = null;
+        this._sentEndForDataChangeCount = null;
+        this._sentEndForItemCount = null;
+        this._sentEndForLastItemKey = null;
+        this._sentEndForOffset = null;
+      } else if (isScrollEvent && offset > this._sentEndForOffset) {
+        this._sentEndForOffset = offset;
+      } else if (
+        isScrollEvent &&
+        !isWithinEndThreshold &&
+        offset < this._sentEndForOffset
+      ) {
+        this._sentEndForContentLength = null;
+        this._sentEndForDataChangeCount = null;
+        this._sentEndForItemCount = null;
+        this._sentEndForLastItemKey = null;
+        this._sentEndForOffset = null;
+      }
     }
   }
 
@@ -1651,6 +1729,7 @@ class VirtualizedList extends StateSafePureComponent<
       layout: {width, height},
       orientation: this._orientation(),
     });
+    this._contentLengthDataChangeCount = this._dataChangeCount;
 
     this._maybeScrollToInitialScrollIndex(width, height);
 
@@ -1784,13 +1863,21 @@ class VirtualizedList extends StateSafePureComponent<
       zoomScale,
     };
     if (this.state.pendingScrollUpdateCount > 0) {
-      this.setState<'pendingScrollUpdateCount'>({pendingScrollUpdateCount: 0});
+      this.setState<'pendingScrollUpdateCount'>(
+        {pendingScrollUpdateCount: 0},
+        () => {
+          if (!this.props) {
+            return;
+          }
+          this._maybeCallOnEdgeReached(true);
+        },
+      );
     }
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     if (!this.props) {
       return;
     }
-    this._maybeCallOnEdgeReached();
+    this._maybeCallOnEdgeReached(true);
     if (velocity !== 0) {
       this._fillRateHelper.activate();
     }
