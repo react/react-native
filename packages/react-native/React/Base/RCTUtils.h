@@ -86,6 +86,10 @@ RCT_EXTERN BOOL RCTRunningInTestEnvironment(void);
 // Returns YES if React is running in an iOS App Extension
 RCT_EXTERN BOOL RCTRunningInAppExtension(void);
 
+// Returns the value passed for a user defaults key as a launch argument (-key value),
+// leaving out any value the app saved for it
+RCT_EXTERN id __nullable RCTLaunchArgumentForKey(NSString *key);
+
 // Returns the shared UIApplication instance, or nil if running in an App Extension
 RCT_EXTERN UIApplication *__nullable RCTSharedApplication(void);
 

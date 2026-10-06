@@ -12,6 +12,7 @@
 #import "RCTDefines.h"
 #import "RCTDevSupportHttpHeaders.h"
 #import "RCTLog.h"
+#import "RCTUtils.h"
 
 #import <jsinspector-modern/InspectorFlags.h>
 
@@ -269,7 +270,7 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
   NSString *scheme = [self packagerScheme];
   // A location saved in the defaults can be stale, so one whose packager does not answer gives way to a guessed host.
   // A location passed as a launch argument is this launch's instruction, so it is used however late /status answers.
-  if ([location length] && ![self _isJsLocationLaunchArgument] &&
+  if ([location length] && RCTLaunchArgumentForKey(kRCTJsLocationKey) == nil &&
       ![RCTBundleURLProvider isPackagerRunning:location scheme:scheme]) {
     location = nil;
   }
@@ -606,11 +607,6 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
 - (void)_setDefaults
 {
   [[NSUserDefaults standardUserDefaults] registerDefaults:[self defaults]];
-}
-
-- (BOOL)_isJsLocationLaunchArgument
-{
-  return [[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][kRCTJsLocationKey] != nil;
 }
 
 @end
