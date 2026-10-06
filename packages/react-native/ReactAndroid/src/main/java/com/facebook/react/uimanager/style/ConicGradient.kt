@@ -57,7 +57,11 @@ internal class ConicGradient(
                   ColorPropConverter.getColor(colorStop.getMap("color"), context)
               else -> colorStop.getInt("color")
             }
-        val stopPosition = LengthPercentage.setFromDynamic(colorStop.getDynamic("position"))
+        val stopPosition =
+            LengthPercentage.setFromDynamic(
+                colorStop.getDynamic("position"),
+                allowNegative = true,
+            )
         colorStops.add(ColorStop(color, stopPosition))
       }
 
