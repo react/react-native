@@ -160,13 +160,12 @@ describe('conic gradient processing', () => {
   });
 
   it('preserves an object transition hint between two colors', () => {
-    const input = [
+    const input: ReadonlyArray<BackgroundImageValue> = [
       {
         type: 'conic-gradient',
         colorStops: [{color: 'red'}, {positions: ['90deg']}, {color: 'blue'}],
       },
     ];
-    // $FlowFixMe[incompatible-type] - gradient hint types currently require a color.
     const result = processBackgroundImage(input);
     expect(result).toEqual([
       {
