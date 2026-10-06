@@ -43,7 +43,6 @@ TODO: Explain the different components of React Native at a high level.
     - [Feature Flags](../packages/react-native/src/private/featureflags/__docs__/README.md)
     - Host / Instance / Bridgeless
     - UI / Fabric
-      - [Background images](../packages/react-native/Libraries/StyleSheet/__docs__/README.md)
       - Events
       - Shadow Tree Lifecycle
         - [Runtime Shadow Node Reference Update](../packages/react-native/ReactCommon/react/renderer/core/__docs__/RSNRU.md)
