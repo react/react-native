@@ -9,6 +9,7 @@ package com.facebook.react.views.textinput
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
@@ -46,6 +47,7 @@ import androidx.core.graphics.withTranslation
 import androidx.core.util.Predicate
 import androidx.core.view.ViewCompat
 import com.facebook.common.logging.FLog
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.assets.ReactFontManager
@@ -292,7 +294,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     if (DEBUG_MODE) {
       FLog.e(TAG, "finalize[$id] delete cached spannable")
     }
-    TextLayoutManager.deleteCachedSpannableForTag(id)
+    spannableCacheOwner()?.let { TextLayoutManager.deleteCachedSpannableForTag(it, id) }
+  }
+
+  // Same lookup as UIManagerHelper.getReactContext, but returns null instead of throwing
+  // ClassCastException, so finalize() cannot throw on the finalizer thread.
+  private fun spannableCacheOwner(): ReactContext? {
+    val context = context
+    return context as? ReactContext ?: (context as? ContextWrapper)?.baseContext as? ReactContext
   }
 
   // After the text changes inside an EditText, TextView checks if a layout() has been requested.
@@ -1220,7 +1229,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         sb.length,
         Spannable.SPAN_INCLUSIVE_INCLUSIVE,
     )
-    TextLayoutManager.setCachedSpannableForTag(id, sb)
+    spannableCacheOwner()?.let { TextLayoutManager.setCachedSpannableForTag(it, id, sb) }
   }
 
   public fun setEventDispatcher(eventDispatcher: EventDispatcher?) {

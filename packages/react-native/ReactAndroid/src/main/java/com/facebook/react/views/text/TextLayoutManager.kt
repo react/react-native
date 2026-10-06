@@ -30,6 +30,7 @@ import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.Assertions
 import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.common.ReactConstants
@@ -42,6 +43,7 @@ import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
+import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.util.AndroidVersion.VERSION_CODE_VANILLA_ICE_CREAM
 import com.facebook.react.views.text.internal.span.CustomLetterSpacingSpan
 import com.facebook.react.views.text.internal.span.CustomLineHeightSpan
@@ -115,7 +117,11 @@ internal object TextLayoutManager {
 
   private const val TEXT_WIDTH_MODE_LONGEST_LINE = "longest-line"
 
-  private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
+  // TextInput spannables keyed by react tag, one map per React instance. Tags restart from the same
+  // value in every instance, so entries must not be shared across instances. FabricUIManager
+  // creates and destroys the map for its ReactApplicationContext.
+  private val tagToSpannableCaches =
+      ConcurrentHashMap<ReactContext, ConcurrentHashMap<Int, Spannable>>()
 
   // These wrappers mirror Android 15 APIs but use reflection because some internal targets still
   // compile against Android 14. They return null when the API is unavailable or cannot be invoked.
@@ -180,12 +186,35 @@ internal object TextLayoutManager {
         null
       }
 
-  fun setCachedSpannableForTag(reactTag: Int, sp: Spannable) {
-    tagToSpannableCache[reactTag] = sp
+  // Views hold a ThemedReactContext while FabricUIManager holds the ReactApplicationContext it
+  // wraps. Every cache access goes through this so both resolve to the same key.
+  private fun spannableCacheKey(reactContext: ReactContext): ReactContext =
+      if (reactContext is ThemedReactContext) reactContext.reactApplicationContext else reactContext
+
+  @JvmStatic
+  fun createSpannableCache(reactContext: ReactContext) {
+    tagToSpannableCaches[spannableCacheKey(reactContext)] = ConcurrentHashMap()
   }
 
-  fun deleteCachedSpannableForTag(reactTag: Int) {
-    tagToSpannableCache.remove(reactTag)
+  @JvmStatic
+  fun destroySpannableCache(reactContext: ReactContext) {
+    tagToSpannableCaches.remove(spannableCacheKey(reactContext))
+  }
+
+  private fun getSpannableCache(reactContext: ReactContext): ConcurrentHashMap<Int, Spannable>? =
+      tagToSpannableCaches[spannableCacheKey(reactContext)]
+
+  // Returns null once FabricUIManager.invalidate() has removed the instance's map, or once
+  // ReactEditText.finalize() has evicted the tag while a background layout still measures it.
+  internal fun getCachedSpannable(reactContext: ReactContext, reactTag: Int): Spannable? =
+      getSpannableCache(reactContext)?.get(reactTag)
+
+  fun setCachedSpannableForTag(reactContext: ReactContext, reactTag: Int, sp: Spannable) {
+    getSpannableCache(reactContext)?.put(reactTag, sp)
+  }
+
+  fun deleteCachedSpannableForTag(reactContext: ReactContext, reactTag: Int) {
+    getSpannableCache(reactContext)?.remove(reactTag)
   }
 
   fun isRTL(attributedString: MapBuffer): Boolean {
@@ -765,25 +794,15 @@ internal object TextLayoutManager {
       attributedString: MapBuffer,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry?,
-  ): Spannable {
-    val text: Spannable?
-    if (attributedString.contains(AS_KEY_CACHE_ID)) {
-      val cacheId = attributedString.getInt(AS_KEY_CACHE_ID)
-      text = checkNotNull(tagToSpannableCache[cacheId])
-    } else {
-      text =
-          createSpannableFromAttributedString(
-              assets,
-              fontWeightAdjustment,
-              attributedString.getMapBuffer(AS_KEY_FRAGMENTS),
-              reactTextViewManagerCallback,
-              null,
-              textEffectRegistry,
-          )
-    }
-
-    return text
-  }
+  ): Spannable =
+      createSpannableFromAttributedString(
+          assets,
+          fontWeightAdjustment,
+          attributedString.getMapBuffer(AS_KEY_FRAGMENTS),
+          reactTextViewManagerCallback,
+          null,
+          textEffectRegistry,
+      )
 
   @OptIn(UnstableReactNativeAPI::class)
   private fun createSpannableFromAttributedString(
@@ -1091,20 +1110,28 @@ internal object TextLayoutManager {
       heightYogaMeasureMode: YogaMeasureMode,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry? = null,
-  ): Layout {
-    val text =
-        getOrCreateSpannableForText(
-            assets,
-            fontWeightAdjustment,
-            attributedString,
-            reactTextViewManagerCallback,
-            textEffectRegistry,
-        )
-
+      spannableCacheOwner: ReactContext? = null,
+  ): Layout? {
+    val text: Spannable
     val paint: TextPaint
     if (attributedString.contains(AS_KEY_CACHE_ID)) {
+      // A layout that started before FabricUIManager.invalidate() or ReactEditText.finalize() can
+      // still measure here after the cached spannable is gone. There is nothing to measure, and the
+      // result is discarded. Without an owner there is no cache to read either.
+      text =
+          spannableCacheOwner?.let {
+            getCachedSpannable(it, attributedString.getInt(AS_KEY_CACHE_ID))
+          } ?: return null
       paint = text.getSpans(0, 0, ReactTextPaintHolderSpan::class.java)[0].textPaint
     } else {
+      text =
+          getOrCreateSpannableForText(
+              assets,
+              fontWeightAdjustment,
+              attributedString,
+              reactTextViewManagerCallback,
+              textEffectRegistry,
+          )
       val baseTextAttributes =
           TextAttributeProps.fromMapBuffer(attributedString.getMapBuffer(AS_KEY_BASE_ATTRIBUTES))
       paint = scratchPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment)
@@ -1463,6 +1490,7 @@ internal object TextLayoutManager {
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       attachmentsPositions: FloatArray?,
       textEffectRegistry: TextEffectRegistry? = null,
+      spannableCacheOwner: ReactContext? = null,
   ): Long =
       measureText(
           assets,
@@ -1476,6 +1504,7 @@ internal object TextLayoutManager {
           reactTextViewManagerCallback,
           attachmentsPositions,
           textEffectRegistry,
+          spannableCacheOwner,
       )
 
   @JvmStatic
@@ -1492,6 +1521,7 @@ internal object TextLayoutManager {
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       attachmentsPositions: FloatArray?,
       textEffectRegistry: TextEffectRegistry? = null,
+      spannableCacheOwner: ReactContext? = null,
   ): Long {
     // TODO(5578671): Handle text direction (see View#getTextDirectionHeuristic)
     val layout =
@@ -1506,7 +1536,8 @@ internal object TextLayoutManager {
             heightYogaMeasureMode,
             reactTextViewManagerCallback,
             textEffectRegistry,
-        )
+            spannableCacheOwner,
+        ) ?: return YogaMeasureOutput.make(0f, 0f)
 
     val maximumNumberOfLines =
         if (paragraphAttributes.contains(PA_KEY_MAX_NUMBER_OF_LINES))
@@ -1800,17 +1831,19 @@ internal object TextLayoutManager {
       textEffectRegistry: TextEffectRegistry? = null,
   ): WritableArray {
     val layout =
-        createLayoutForMeasurement(
-            assetManager,
-            fontWeightAdjustment,
-            attributedString,
-            paragraphAttributes,
-            width,
-            YogaMeasureMode.EXACTLY,
-            height,
-            YogaMeasureMode.EXACTLY,
-            reactTextViewManagerCallback,
-            textEffectRegistry,
+        checkNotNull(
+            createLayoutForMeasurement(
+                assetManager,
+                fontWeightAdjustment,
+                attributedString,
+                paragraphAttributes,
+                width,
+                YogaMeasureMode.EXACTLY,
+                height,
+                YogaMeasureMode.EXACTLY,
+                reactTextViewManagerCallback,
+                textEffectRegistry,
+            )
         )
     return FontMetricsUtil.getFontMetrics(
         layout.text,
