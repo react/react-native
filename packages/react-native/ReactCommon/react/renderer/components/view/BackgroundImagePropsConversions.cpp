@@ -313,8 +313,7 @@ void parseUnprocessedBackgroundImageList(
           if (type == "conic-gradient") {
             const bool isHint =
                 colorIt == stopMap.end() || !colorIt->second.hasValue();
-            const auto positionCount =
-                positionsIt != stopMap.end() &&
+            const auto positionCount = positionsIt != stopMap.end() &&
                     positionsIt->second.hasType<RawValueList>()
                 ? static_cast<RawValueList>(positionsIt->second).size()
                 : 0;
@@ -362,8 +361,8 @@ void parseUnprocessedBackgroundImageList(
                 auto color = coerceColor(colorIt->second, context);
                 if (color) {
                   colorStop.color = color;
-                } else if (type == "conic-gradient" &&
-                           colorIt->second.hasValue()) {
+                } else if (
+                    type == "conic-gradient" && colorIt->second.hasValue()) {
                   result = {};
                   return;
                 }
@@ -621,7 +620,11 @@ void fromCSSConicColorStop(
 
   const auto& colorStop = std::get<CSSConicColorStop>(item);
   ColorStop start;
-  start.color = fromCSSColor(colorStop.color);
+  start.color = colorFromRGBA(
+      colorStop.color.r,
+      colorStop.color.g,
+      colorStop.color.b,
+      colorStop.color.a);
   if (colorStop.startPosition.has_value()) {
     start.position =
         convertAngularPositionToValueUnit(*colorStop.startPosition);
@@ -630,7 +633,7 @@ void fromCSSConicColorStop(
 
   if (colorStop.endPosition.has_value()) {
     ColorStop end;
-    end.color = fromCSSColor(colorStop.color);
+    end.color = start.color;
     end.position = convertAngularPositionToValueUnit(*colorStop.endPosition);
     colorStops.push_back(end);
   }
