@@ -82,7 +82,19 @@ const parseBackgroundPositionCSSString = (
       if (t1 == null || t2 == null) {
         return [];
       }
-      const token1 = t1.toLowerCase().trim();
+      let token1 = t1.toLowerCase().trim();
+      let token2 = t2.toLowerCase().trim();
+      // `center` can represent either axis. Normalize the valid vertical-first
+      // and horizontal-second forms to the existing horizontal-first grammar.
+      if (
+        ((token1 === 'top' || token1 === 'bottom') && token2 === 'center') ||
+        (token1 === 'center' && (token2 === 'left' || token2 === 'right'))
+      ) {
+        const firstToken = token1;
+        token1 = token2;
+        token2 = firstToken;
+      }
+
       if (token1 === 'left') {
         left = '0%';
       } else if (token1 === 'center') {
@@ -101,7 +113,6 @@ const parseBackgroundPositionCSSString = (
         left = value;
       }
 
-      const token2 = t2.toLowerCase().trim();
       if (token2 === 'top') {
         top = '0%';
       } else if (token2 === 'center') {

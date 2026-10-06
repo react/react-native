@@ -670,7 +670,10 @@ function parseConicGradientCSSString(
   gradientContent: string,
 ): ConicGradientBackgroundImage | null {
   const parts = gradientContent.split(COMMA_SPLIT_REGEX);
-  const firstPart = parts[0]?.trim() ?? '';
+  const firstPart = (parts[0]?.trim() ?? '').replace(
+    WHITESPACE_NORMALIZE_REGEX,
+    ' ',
+  );
   let from = DEFAULT_CONIC_FROM;
   let position: RadialGradientPosition = {...DEFAULT_CONIC_POSITION};
   let hasPrelude = false;

@@ -48,6 +48,26 @@ describe('conic gradient native props', () => {
     expected: string,
   }> = [
     {css: 'center', object: {left: '50%', top: '50%'}, expected: '50% 50%'},
+    {
+      css: 'top center',
+      object: {left: '50%', top: '0%'},
+      expected: '50% 0%',
+    },
+    {
+      css: 'bottom center',
+      object: {left: '50%', top: '100%'},
+      expected: '50% 100%',
+    },
+    {
+      css: 'center left',
+      object: {left: '0%', top: '50%'},
+      expected: '0% 50%',
+    },
+    {
+      css: 'center right',
+      object: {left: '100%', top: '50%'},
+      expected: '100% 50%',
+    },
     {css: '25% 75%', object: {left: '25%', top: '75%'}, expected: '25% 75%'},
     {
       css: 'left 10px top 20px',
@@ -171,6 +191,12 @@ describe('conic gradient native props', () => {
     );
   });
 
+  it('accepts a single two-position hard stop', () => {
+    expect(mountedBackgroundImage('conic-gradient(red 0deg 360deg)')).toBe(
+      '[conic-gradient(from 0deg at 50% 50% , rgba(255, 0, 0, 1) 0%, rgba(255, 0, 0, 1) 100%)]',
+    );
+  });
+
   for (const invalid of [
     'conic-gradient()',
     'conic-gradient(red)',
@@ -180,7 +206,12 @@ describe('conic gradient native props', () => {
     'conic-gradient(from, red, blue)',
     'conic-gradient(at, red, blue)',
     'conic-gradient(at right left, red, blue)',
+    'conic-gradient(at left right, red, blue)',
     'conic-gradient(at right 10px left 20px, red, blue)',
+    'conic-gradient(at 20px left, red, blue)',
+    'conic-gradient(at 20px right, red, blue)',
+    'conic-gradient(at top 20px, red, blue)',
+    'conic-gradient(at bottom 20px, red, blue)',
     'conic-gradient(red 10px, blue)',
     'conic-gradient(red 20, blue)',
     'conic-gradient(20%, red, blue)',
