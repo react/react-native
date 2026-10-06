@@ -267,7 +267,10 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
   NSString *location = [self jsLocation];
 #if RCT_DEV_MENU
   NSString *scheme = [self packagerScheme];
-  if ([location length] && ![RCTBundleURLProvider isPackagerRunning:location scheme:scheme]) {
+  // A location saved in the defaults can be stale, so one whose packager does not answer gives way to a guessed host.
+  // A location passed as a launch argument is this launch's instruction, so it is used however late /status answers.
+  if ([location length] && ![self _isJsLocationLaunchArgument] &&
+      ![RCTBundleURLProvider isPackagerRunning:location scheme:scheme]) {
     location = nil;
   }
 #endif
@@ -603,6 +606,11 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
 - (void)_setDefaults
 {
   [[NSUserDefaults standardUserDefaults] registerDefaults:[self defaults]];
+}
+
+- (BOOL)_isJsLocationLaunchArgument
+{
+  return [[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][kRCTJsLocationKey] != nil;
 }
 
 @end

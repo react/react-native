@@ -43,6 +43,17 @@ static NSURL *ipBundleURL(void)
                   RCTPlatformName]];
 }
 
+static NSURL *ipPortBundleURL(void)
+{
+  return [NSURL
+      URLWithString:
+          [NSString
+              stringWithFormat:
+                  @"http://192.168.1.1:8099/%@.bundle?platform=%@&dev=true&lazy=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&excludeSource=true&sourcePaths=url-server&app=com.apple.dt.xctest.tool",
+                  testFile,
+                  RCTPlatformName]];
+}
+
 @implementation NSBundle (RCTBundleURLProviderTests)
 
 - (NSURL *)RCT_URLForResource:(NSString *)name withExtension:(NSString *)ext
@@ -59,7 +70,9 @@ static NSURL *ipBundleURL(void)
 @interface RCTBundleURLProviderTests : XCTestCase
 @end
 
-@implementation RCTBundleURLProviderTests
+@implementation RCTBundleURLProviderTests {
+  NSDictionary<NSString *, id> *_launchArguments;
+}
 
 - (void)setUp
 {
@@ -67,14 +80,23 @@ static NSURL *ipBundleURL(void)
 
   RCTSwapInstanceMethods(
       [NSBundle class], @selector(URLForResource:withExtension:), @selector(RCT_URLForResource:withExtension:));
+  _launchArguments = [[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain];
 }
 
 - (void)tearDown
 {
+  [self replaceLaunchArguments:_launchArguments];
   RCTSwapInstanceMethods(
       [NSBundle class], @selector(URLForResource:withExtension:), @selector(RCT_URLForResource:withExtension:));
 
   [super tearDown];
+}
+
+- (void)replaceLaunchArguments:(NSDictionary<NSString *, id> *)launchArguments
+{
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  [defaults removeVolatileDomainForName:NSArgumentDomain];
+  [defaults setVolatileDomain:launchArguments forName:NSArgumentDomain];
 }
 
 - (void)testBundleURL
@@ -107,6 +129,29 @@ static NSURL *ipBundleURL(void)
   settings.jsLocation = @"192.168.1.1";
   NSURL *URL = [settings jsBundleURLForBundleRoot:testFile];
   XCTAssertEqualObjects(URL, ipBundleURL());
+}
+
+- (void)testLaunchArgumentLocationIsKeptWhenPackagerDoesNotAnswer
+{
+  id classMock = OCMClassMock([RCTBundleURLProvider class]);
+  [[[classMock stub] andReturnValue:@NO] isPackagerRunning:[OCMArg any] scheme:[OCMArg any]];
+  NSMutableDictionary<NSString *, id> *launchArguments = [_launchArguments mutableCopy];
+  launchArguments[@"RCT_jsLocation"] = @"192.168.1.1:8099";
+  [self replaceLaunchArguments:launchArguments];
+  RCTBundleURLProvider *settings = [RCTBundleURLProvider sharedSettings];
+  settings.jsLocation = nil;
+  NSURL *URL = [settings jsBundleURLForBundleRoot:testFile];
+  XCTAssertEqualObjects(URL, ipPortBundleURL());
+}
+
+- (void)testSavedLocationGivesWayWhenPackagerDoesNotAnswer
+{
+  id classMock = OCMClassMock([RCTBundleURLProvider class]);
+  [[[classMock stub] andReturnValue:@NO] isPackagerRunning:[OCMArg any] scheme:[OCMArg any]];
+  RCTBundleURLProvider *settings = [RCTBundleURLProvider sharedSettings];
+  settings.jsLocation = @"192.168.1.1:8099";
+  NSURL *URL = [settings jsBundleURLForBundleRoot:testFile];
+  XCTAssertEqualObjects(URL, mainBundleURL());
 }
 
 @end
