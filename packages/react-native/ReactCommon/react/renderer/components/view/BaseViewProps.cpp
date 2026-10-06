@@ -11,6 +11,7 @@
 
 #include <react/renderer/components/view/BackgroundImagePropsConversions.h>
 #include <react/renderer/components/view/BoxShadowPropsConversions.h>
+#include <react/renderer/components/view/ClipPathPropsConversions.h>
 #include <react/renderer/components/view/FilterPropsConversions.h>
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/components/view/primitives.h>
@@ -321,7 +322,20 @@ BaseViewProps::BaseViewProps(
           rawProps,
           "removeClippedSubviews",
           sourceProps.removeClippedSubviews,
-          false)) {}
+          false)),
+      clipPath([&]() -> std::unique_ptr<ClipPath> {
+        auto optionalClipPath = convertRawProp(
+            context,
+            rawProps,
+            "clipPath",
+            sourceProps.clipPath
+                ? std::make_optional(*sourceProps.clipPath)
+                : std::nullopt,
+            std::nullopt);
+        return optionalClipPath
+            ? std::make_unique<ClipPath>(std::move(*optionalClipPath))
+            : nullptr;
+      }()) {}
 
 #define VIEW_EVENT_CASE(eventType)                      \
   case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): { \
@@ -384,6 +398,14 @@ void BaseViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(filter);
     RAW_SET_PROP_SWITCH_CASE_BASIC(boxShadow);
     RAW_SET_PROP_SWITCH_CASE_BASIC(mixBlendMode);
+    case CONSTEXPR_RAW_PROPS_KEY_HASH("clipPath"): {
+      std::optional<ClipPath> parsedClipPath;
+      fromRawValue(context, value, parsedClipPath);
+      clipPath = parsedClipPath
+          ? std::make_unique<ClipPath>(std::move(*parsedClipPath))
+          : nullptr;
+      return;
+    }
     // events field
     VIEW_EVENT_CASE(PointerEnter);
     VIEW_EVENT_CASE(PointerEnterCapture);
