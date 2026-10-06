@@ -952,6 +952,9 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
         gradient.items.emplace_back(parsedColorStop);
         previousColorStop = parsedColorStop;
         colorStopCount++;
+        if (parsedColorStop.endPosition.has_value()) {
+          colorStopCount++;
+        }
       } else {
         auto colorHint = parser.parseNextValue<CSSConicColorHint>();
         if (!std::holds_alternative<CSSConicColorHint>(colorHint) || !previousColorStop.has_value()) {
@@ -1077,7 +1080,7 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
         if (keyword == CSSGradientPositionKeyword::Left) {
           position.left = CSSPercentage{0.0f};
         } else if (keyword == CSSGradientPositionKeyword::Right) {
-          position.right = CSSPercentage{0.0f};
+          position.left = CSSPercentage{100.0f};
         } else if (keyword == CSSGradientPositionKeyword::Center) {
           position.left = CSSPercentage{50.0f};
         } else {
@@ -1094,7 +1097,7 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
         if (keyword == CSSGradientPositionKeyword::Top) {
           position.top = CSSPercentage{0.0f};
         } else if (keyword == CSSGradientPositionKeyword::Bottom) {
-          position.bottom = CSSPercentage{0.0f};
+          position.top = CSSPercentage{100.0f};
         } else if (keyword == CSSGradientPositionKeyword::Center) {
           position.top = CSSPercentage{50.0f};
         } else {
@@ -1109,7 +1112,12 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
     bool firstIsVertical = std::holds_alternative<CSSGradientPositionKeyword>(first) &&
         (std::get<CSSGradientPositionKeyword>(first) == CSSGradientPositionKeyword::Top ||
          std::get<CSSGradientPositionKeyword>(first) == CSSGradientPositionKeyword::Bottom);
-    if (firstIsVertical) {
+    bool secondIsHorizontal = std::holds_alternative<CSSGradientPositionKeyword>(*second) &&
+        (std::get<CSSGradientPositionKeyword>(*second) == CSSGradientPositionKeyword::Left ||
+         std::get<CSSGradientPositionKeyword>(*second) == CSSGradientPositionKeyword::Right);
+    bool reverseOrder = std::holds_alternative<CSSGradientPositionKeyword>(first) &&
+        std::holds_alternative<CSSGradientPositionKeyword>(*second) && (firstIsVertical || secondIsHorizontal);
+    if (reverseOrder) {
       if (!setVertical(first) || !setHorizontal(*second)) {
         return {};
       }
