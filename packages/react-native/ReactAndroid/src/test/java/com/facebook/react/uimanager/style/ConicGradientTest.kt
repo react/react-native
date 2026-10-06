@@ -195,6 +195,28 @@ class ConicGradientTest {
   }
 
   @Test
+  fun preservesNegativeAndOutOfRangeColorStopPositions() {
+    val map =
+        JavaOnlyMap.of(
+            "from",
+            0.0,
+            "position",
+            JavaOnlyMap.of(),
+            "colorStops",
+            JavaOnlyArray.of(
+                JavaOnlyMap.of("color", Color.RED, "position", "-25%"),
+                JavaOnlyMap.of("color", Color.BLUE, "position", "125%"),
+            ),
+        )
+
+    val parsed = requireNotNull(ConicGradient.parse(map, RuntimeEnvironment.getApplication()))
+    assertThat(parsed).isInstanceOf(ConicGradient::class.java)
+    val gradient = parsed as ConicGradient
+    assertThat(gradient.colorStops[0].position).isEqualTo(percent(-25f))
+    assertThat(gradient.colorStops[1].position).isEqualTo(percent(125f))
+  }
+
+  @Test
   fun rendersCenterAboveAndLeftOfTheViewFromNativeProps() {
     val parsed = parsePosition(JavaOnlyMap.of("left", -20.0, "top", -20.0))
     val bitmap = render(parsed, 240, 120)
