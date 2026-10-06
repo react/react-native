@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3e939eebe846d12cab15905db8efba18>>
+ * @generated SignedSource<<3bf38507557250b7939d79afbf9a4cc1>>
  */
 
 /**
@@ -47,6 +47,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableFabricCommitBranchingMergeOnMainThreadCache: Boolean? = null
   private var enableFabricLogsCache: Boolean? = null
   private var enableFlexboxAutoMinSizeInStrictModeCache: Boolean? = null
+  private var enableFollowUpMountItemDispatchAndroidCache: Boolean? = null
   private var enableFontScaleChangesUpdatingLayoutCache: Boolean? = null
   private var enableIOSCompressedTextFrameAdjustmentCache: Boolean? = null
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
@@ -350,6 +351,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableFlexboxAutoMinSizeInStrictMode()
       enableFlexboxAutoMinSizeInStrictModeCache = cached
+    }
+    return cached
+  }
+
+  override fun enableFollowUpMountItemDispatchAndroid(): Boolean {
+    var cached = enableFollowUpMountItemDispatchAndroidCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableFollowUpMountItemDispatchAndroid()
+      enableFollowUpMountItemDispatchAndroidCache = cached
     }
     return cached
   }

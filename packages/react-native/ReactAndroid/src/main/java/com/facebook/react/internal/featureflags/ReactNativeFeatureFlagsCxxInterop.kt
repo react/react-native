@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<da34d40665437b2901de2ca5f0bee7c1>>
+ * @generated SignedSource<<5515e20b3b7a01395df8b74a4bcdec85>>
  */
 
 /**
@@ -81,6 +81,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableFabricLogs(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableFontScaleChangesUpdatingLayout(): Boolean
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<aef7d6ac25fdeb2423ebf4a2a9ac6f2e>>
+ * @generated SignedSource<<36e9fb622c0e8f6cabbe335c85547f2e>>
  */
 
 /**
@@ -175,6 +175,11 @@ class ReactNativeFeatureFlags {
    * Enables CSS Flexbox §4.5 automatic minimum sizing under strict layout conformance. When enabled, a flex item with an undefined main-axis `min-width`/`min-height` under strict conformance receives a content-derived minimum size (per spec) instead of an undefined (0) minimum. Defaults off so the behaviour can be ramped independently of strict conformance.
    */
   RN_EXPORT static bool enableFlexboxAutoMinSizeInStrictMode();
+
+  /**
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
+   */
+  RN_EXPORT static bool enableFollowUpMountItemDispatchAndroid();
 
   /**
    * Enables font scale changes updating layout for measurable nodes.

@@ -340,6 +340,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'experimental',
     },
+    enableFollowUpMountItemDispatchAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-29',
+        description:
+          'When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableFontScaleChangesUpdatingLayout: {
       defaultValue: true,
       metadata: {

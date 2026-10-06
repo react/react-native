@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<013790bd2c3fa8b9ff03e8c5e924bf91>>
+ * @generated SignedSource<<d0b11301acbebd51fd1a9840012d656e>>
  */
 
 /**
@@ -51,6 +51,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableFabricCommitBranchingMergeOnMainThreadCache: Boolean? = null
   private var enableFabricLogsCache: Boolean? = null
   private var enableFlexboxAutoMinSizeInStrictModeCache: Boolean? = null
+  private var enableFollowUpMountItemDispatchAndroidCache: Boolean? = null
   private var enableFontScaleChangesUpdatingLayoutCache: Boolean? = null
   private var enableIOSCompressedTextFrameAdjustmentCache: Boolean? = null
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
@@ -381,6 +382,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableFlexboxAutoMinSizeInStrictMode()
       accessedFeatureFlags.add("enableFlexboxAutoMinSizeInStrictMode")
       enableFlexboxAutoMinSizeInStrictModeCache = cached
+    }
+    return cached
+  }
+
+  override fun enableFollowUpMountItemDispatchAndroid(): Boolean {
+    var cached = enableFollowUpMountItemDispatchAndroidCache
+    if (cached == null) {
+      cached = currentProvider.enableFollowUpMountItemDispatchAndroid()
+      accessedFeatureFlags.add("enableFollowUpMountItemDispatchAndroid")
+      enableFollowUpMountItemDispatchAndroidCache = cached
     }
     return cached
   }

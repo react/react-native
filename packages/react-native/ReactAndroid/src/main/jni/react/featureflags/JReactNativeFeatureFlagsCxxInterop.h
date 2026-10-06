@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7a9a9c1938c3e01f589e05fffe349ad3>>
+ * @generated SignedSource<<06b9b77875119ad958e7dc91392461f7>>
  */
 
 /**
@@ -109,6 +109,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableFlexboxAutoMinSizeInStrictMode(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableFollowUpMountItemDispatchAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableFontScaleChangesUpdatingLayout(

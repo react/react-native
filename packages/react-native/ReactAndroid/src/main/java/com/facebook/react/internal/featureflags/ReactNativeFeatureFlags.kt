@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<86390dbd6b2c57cb4f8cdd7cb73cc1f7>>
+ * @generated SignedSource<<3746bbcd61737864cc58a6a5997f258b>>
  */
 
 /**
@@ -191,6 +191,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = accessor.enableFlexboxAutoMinSizeInStrictMode()
+
+  /**
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
+   */
+  @JvmStatic
+  public fun enableFollowUpMountItemDispatchAndroid(): Boolean = accessor.enableFollowUpMountItemDispatchAndroid()
 
   /**
    * Enables font scale changes updating layout for measurable nodes.

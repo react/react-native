@@ -13,6 +13,7 @@
 #include <React/MapBuffer.h>
 #include <fbjni/fbjni.h>
 #include <folly/dynamic.h>
+#include <react/renderer/core/EventQueue.h>
 #endif
 
 #include <react/renderer/core/ShadowNodeFamily.h>
@@ -68,7 +69,9 @@ class State {
   virtual folly::dynamic getDynamic() const = 0;
   virtual MapBuffer getMapBuffer() const = 0;
   virtual jni::local_ref<jobject> getJNIReference() const = 0;
-  virtual void updateState(folly::dynamic &&data) const = 0;
+  virtual void updateState(
+      folly::dynamic &&data,
+      EventQueue::UpdateMode updateMode = EventQueue::UpdateMode::Asynchronous) const = 0;
 #endif
 
  protected:

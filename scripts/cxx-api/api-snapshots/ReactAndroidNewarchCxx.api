@@ -4688,7 +4688,7 @@ class facebook::react::State {
   public virtual facebook::react::MapBuffer getMapBuffer() const = 0;
   public virtual folly::dynamic getDynamic() const = 0;
   public virtual jni::local_ref<jobject> getJNIReference() const = 0;
-  public virtual void updateState(folly::dynamic&& data) const = 0;
+  public virtual void updateState(folly::dynamic&& data, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const = 0;
   public virtual ~State() = default;
 }
 
@@ -4712,7 +4712,7 @@ class facebook::react::StateWrapperImpl : public jni::HybridClass<facebook::reac
   public static void registerNatives();
   public std::shared_ptr<const facebook::react::State> getState() const;
   public void setState(std::shared_ptr<const facebook::react::State> state);
-  public void updateStateImpl(facebook::react::NativeMap* map);
+  public void updateStateImpl(facebook::react::NativeMap* map, jint updateMode);
 }
 
 class facebook::react::StyleAnimatedNode : public facebook::react::AnimatedNode {
@@ -8178,7 +8178,7 @@ class facebook::react::ConcreteState : public facebook::react::State {
   public virtual facebook::react::MapBuffer getMapBuffer() const override;
   public virtual folly::dynamic getDynamic() const override;
   public virtual jni::local_ref<jobject> getJNIReference() const override;
-  public virtual void updateState(folly::dynamic&& data) const override;
+  public virtual void updateState(folly::dynamic&& data, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const override;
   public void updateState(facebook::react::ConcreteState::Data&& newData, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const;
   public void updateState(std::function<facebook::react::StateData::Shared(const facebook::react::ConcreteState::Data& oldData)> callback, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const;
   public ~ConcreteState() override = default;

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fb5339dabaffd95bde6e794c90d0aa28>>
+ * @generated SignedSource<<99bf44416bc7b40ab8914e57f27aa380>>
  */
 
 /**
@@ -61,6 +61,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableFabricCommitBranchingMergeOnMainThread();
   bool enableFabricLogs();
   bool enableFlexboxAutoMinSizeInStrictMode();
+  bool enableFollowUpMountItemDispatchAndroid();
   bool enableFontScaleChangesUpdatingLayout();
   bool enableIOSCompressedTextFrameAdjustment();
   bool enableIOSTextBaselineOffsetPerLine();
@@ -135,7 +136,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 90> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 91> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -164,6 +165,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableFabricCommitBranchingMergeOnMainThread_;
   std::atomic<std::optional<bool>> enableFabricLogs_;
   std::atomic<std::optional<bool>> enableFlexboxAutoMinSizeInStrictMode_;
+  std::atomic<std::optional<bool>> enableFollowUpMountItemDispatchAndroid_;
   std::atomic<std::optional<bool>> enableFontScaleChangesUpdatingLayout_;
   std::atomic<std::optional<bool>> enableIOSCompressedTextFrameAdjustment_;
   std::atomic<std::optional<bool>> enableIOSTextBaselineOffsetPerLine_;

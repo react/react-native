@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d032dbd4f066b7a8cf742b7f91f66c3b>>
+ * @generated SignedSource<<bf8aa5a97be924b185704152dc420241>>
  */
 
 /**
@@ -177,6 +177,11 @@ bool NativeReactNativeFeatureFlags::enableFabricLogs(
 bool NativeReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode();
+}
+
+bool NativeReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
