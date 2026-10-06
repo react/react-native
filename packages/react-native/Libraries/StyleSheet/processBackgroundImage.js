@@ -669,7 +669,7 @@ function parseRadialGradientCSSString(
 function parseConicGradientCSSString(
   gradientContent: string,
 ): ConicGradientBackgroundImage | null {
-  const parts = gradientContent.split(COMMA_SPLIT_REGEX);
+  const parts = gradientContent.split(',');
   const firstPart = (parts[0]?.trim() ?? '').replace(
     WHITESPACE_NORMALIZE_REGEX,
     ' ',
