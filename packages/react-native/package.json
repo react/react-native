@@ -163,7 +163,7 @@
     "flow-enums-runtime": "^0.0.6",
     "hermes-compiler": "0.0.0",
     "invariant": "^2.2.4",
-    "memoize-one": "^5.0.0",
+    "memoize-one": "^6.0.0",
     "metro-runtime": "^0.87.0",
     "metro-source-map": "^0.87.0",
     "nullthrows": "^1.1.1",
