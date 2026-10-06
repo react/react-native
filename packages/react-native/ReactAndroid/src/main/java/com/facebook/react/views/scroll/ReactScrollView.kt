@@ -1207,6 +1207,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       val currentScrollY = scrollY
       val maxScrollY = getMaxScrollY()
       if (currentScrollY > maxScrollY) {
+        maintainVisibleContentPositionHelper?.onWillClampScrollY(currentScrollY)
         scrollTo(scrollX, maxScrollY)
       }
     }
