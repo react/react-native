@@ -561,6 +561,67 @@ TEST_F(CSSBackgroundImageTest, ConicGradientWithAngleAndPosition) {
   ASSERT_EQ(result, expected);
 }
 
+TEST_F(CSSBackgroundImageTest, ConicGradientWithTwoPositionColorStop) {
+  auto result =
+      parseCSSProperty<CSSBackgroundImage>("conic-gradient(red 0deg 360deg)");
+  decltype(result) expected = CSSConicGradientFunction{
+      .from = CSSAngle{.degrees = 0.0f},
+      .position =
+          CSSRadialGradientPosition{
+              .top = CSSPercentage{.value = 50.0f},
+              .left = CSSPercentage{.value = 50.0f}},
+      .items = {CSSConicColorStop{
+          .color = CSSColor{.r = 255, .g = 0, .b = 0, .a = 255},
+          .startPosition = CSSAngle{.degrees = 0.0f},
+          .endPosition = CSSAngle{.degrees = 360.0f}}}};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, ConicGradientPositionKeywordCombinations) {
+  const std::vector<std::pair<std::string, CSSRadialGradientPosition>>
+      testCases = {
+          {"conic-gradient(at top center, red, blue)",
+           {.top = CSSPercentage{.value = 0.0f},
+            .left = CSSPercentage{.value = 50.0f}}},
+          {"conic-gradient(at bottom center, red, blue)",
+           {.top = CSSPercentage{.value = 100.0f},
+            .left = CSSPercentage{.value = 50.0f}}},
+          {"conic-gradient(at center left, red, blue)",
+           {.top = CSSPercentage{.value = 50.0f},
+            .left = CSSPercentage{.value = 0.0f}}},
+          {"conic-gradient(at center right, red, blue)",
+           {.top = CSSPercentage{.value = 50.0f},
+            .left = CSSPercentage{.value = 100.0f}}}};
+
+  for (const auto& [input, expectedPosition] : testCases) {
+    const auto result = parseCSSProperty<CSSBackgroundImage>(input);
+    decltype(result) expected = CSSConicGradientFunction{
+        .from = CSSAngle{.degrees = 0.0f},
+        .position = expectedPosition,
+        .items = {
+            CSSConicColorStop{
+                .color = CSSColor{.r = 255, .g = 0, .b = 0, .a = 255}},
+            CSSConicColorStop{
+                .color = CSSColor{.r = 0, .g = 0, .b = 255, .a = 255}}}};
+    ASSERT_EQ(result, expected) << "Failed for input: " << input;
+  }
+}
+
+TEST_F(
+    CSSBackgroundImageTest,
+    ConicGradientRejectsInvalidNumericPositionOrdering) {
+  for (const auto& input : {
+           "conic-gradient(at 20px left, red, blue)",
+           "conic-gradient(at 20px right, red, blue)",
+           "conic-gradient(at top 20px, red, blue)",
+           "conic-gradient(at bottom 20px, red, blue)",
+       }) {
+    const auto result = parseCSSProperty<CSSBackgroundImage>(input);
+    ASSERT_TRUE(std::holds_alternative<std::monostate>(result))
+        << "Unexpectedly accepted: " << input;
+  }
+}
+
 TEST_F(CSSBackgroundImageTest, ConicGradientWithFourValuePosition) {
   auto result = parseCSSProperty<CSSBackgroundImage>(
       "conic-gradient(at top 20px left 10px, red, blue)");

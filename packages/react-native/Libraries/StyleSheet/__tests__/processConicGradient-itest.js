@@ -19,6 +19,25 @@ const red = processColor('red');
 const blue = processColor('blue');
 
 describe('conic gradient processing', () => {
+  for (const [input, from, position] of [
+    ['conic-gradient(from\t90deg, red, blue)', 90, {left: '50%', top: '50%'}],
+    ['conic-gradient(at\tcenter, red, blue)', 0, {left: '50%', top: '50%'}],
+  ]) {
+    it(`accepts whitespace in ${input}`, () => {
+      expect(processBackgroundImage(input)).toEqual([
+        {
+          type: 'conic-gradient',
+          from,
+          position,
+          colorStops: [
+            {color: red, position: null},
+            {color: blue, position: null},
+          ],
+        },
+      ]);
+    });
+  }
+
   for (const [angle, degrees] of [
     ['0', 0],
     ['-0deg', 0],
