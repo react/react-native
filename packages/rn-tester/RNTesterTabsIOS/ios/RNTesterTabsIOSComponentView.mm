@@ -22,10 +22,6 @@
 
 using namespace facebook::react;
 
-// Preserve RNTester's existing example bounds on compact bottom-tab layouts.
-static constexpr CGFloat LegacyTopInset = 50;
-static constexpr CGFloat LegacyBottomInset = 65;
-
 /**
  * A tab's view controller, which reports when the tab bar or window changes
  * the area its content needs to clear.
@@ -215,20 +211,17 @@ static constexpr CGFloat LegacyBottomInset = 65;
 
 - (void)tabSafeAreaInsetsDidChange:(UIEdgeInsets)insets
 {
+  // The home indicator's inset only applies beneath a tab bar along the bottom edge, which already
+  // clears it. With the tab bar at the side, content runs to the bottom edge.
   CGRect tabBarFrame = _tabBarController.tabBar.frame;
   CGRect bounds = _tabBarController.view.bounds;
-  BOOL hasBottomTabBar = !_tabBarController.tabBar.hidden && CGRectGetWidth(tabBarFrame) >= CGRectGetWidth(bounds) &&
-      CGRectGetMaxY(tabBarFrame) >= CGRectGetMaxY(bounds);
-  if (hasBottomTabBar) {
-    insets.top = MAX(insets.top, LegacyTopInset);
-    insets.bottom = MIN(insets.bottom, LegacyBottomInset);
-  } else {
+  if (CGRectGetWidth(tabBarFrame) < CGRectGetWidth(bounds) || CGRectGetMaxY(tabBarFrame) < CGRectGetMaxY(bounds)) {
     insets.bottom = 0;
-    // A window with no status bar along the top, such as the iPhone Duo's, reports no top inset. Keep
-    // content a small distance from the display's rounded top edge.
-    if (insets.top == 0) {
-      insets.top = 16;
-    }
+  }
+  // A window with no status bar along the top, such as the iPhone Duo's, reports no top inset. Keep
+  // content a small distance from the display's rounded top edge.
+  if (insets.top == 0) {
+    insets.top = 16;
   }
   if (UIEdgeInsetsEqualToEdgeInsets(insets, _contentInsets) || _eventEmitter == nullptr) {
     return;
