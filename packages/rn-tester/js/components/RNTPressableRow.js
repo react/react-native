@@ -14,7 +14,7 @@ import * as React from 'react';
 import {useContext} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 
-type ViewStyleProp = React.ElementConfig<typeof View>['style'];
+type ViewStyleProp = React.ComponentProps<typeof View>['style'];
 type Props = {
   accessibilityLabel?: ?string,
   testID?: ?string,

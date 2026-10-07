@@ -804,7 +804,7 @@ function DynamicContentWidth() {
 function AutogrowingTextInputExample({
   style,
   ...props
-}: React.ElementConfig<typeof TextInput>) {
+}: React.ComponentProps<typeof TextInput>) {
   const [multiline, setMultiline] = useState(true);
   const [fullWidth, setFullWidth] = useState(true);
   const [text, setText] = useState('');
