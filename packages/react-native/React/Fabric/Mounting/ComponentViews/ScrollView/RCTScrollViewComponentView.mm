@@ -692,9 +692,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _state.reset();
 
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
-  _scrollView.contentOffset = RCTCGPointFromPoint(props.contentOffset);
-  // Reset zoom scale to default
+  // Reset zoom scale to default. This must happen before resetting contentOffset:
+  // in RTL the mirroring transform makes UIKit report zoomScale == -1, and changing
+  // it to 1 makes UIKit move contentOffset.
   _scrollView.zoomScale = 1.0;
+  _scrollView.contentOffset = RCTCGPointFromPoint(props.contentOffset);
   // Invalidate cached content size so that updateState: recalculates the
   // container frame after zoomScale reset (which may have mutated it in RTL).
   _contentSize = CGSizeZero;
