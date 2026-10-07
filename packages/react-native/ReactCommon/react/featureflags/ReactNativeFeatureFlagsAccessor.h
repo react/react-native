@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fb5339dabaffd95bde6e794c90d0aa28>>
+ * @generated SignedSource<<3b96341a223f635e1b0227a274435da8>>
  */
 
 /**
@@ -50,7 +50,6 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableAndroidAutoOffscreenCompositingForElevation();
   bool enableAndroidTextMeasurementOptimizations();
   bool enableBridgelessArchitecture();
-  bool enableBufferedCallInvoker();
   bool enableCppPropsIteratorSetter();
   bool enableCustomFocusSearchOnClippedElementsAndroid();
   bool enableDestroyShadowTreeRevisionAsync();
@@ -135,7 +134,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 90> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 89> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -153,7 +152,6 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableAndroidAutoOffscreenCompositingForElevation_;
   std::atomic<std::optional<bool>> enableAndroidTextMeasurementOptimizations_;
   std::atomic<std::optional<bool>> enableBridgelessArchitecture_;
-  std::atomic<std::optional<bool>> enableBufferedCallInvoker_;
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
   std::atomic<std::optional<bool>> enableCustomFocusSearchOnClippedElementsAndroid_;
   std::atomic<std::optional<bool>> enableDestroyShadowTreeRevisionAsync_;

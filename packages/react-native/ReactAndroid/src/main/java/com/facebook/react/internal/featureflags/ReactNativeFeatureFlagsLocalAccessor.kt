@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<013790bd2c3fa8b9ff03e8c5e924bf91>>
+ * @generated SignedSource<<5f805273ebd792ecec1c284ca074e190>>
  */
 
 /**
@@ -40,7 +40,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableAndroidAutoOffscreenCompositingForElevationCache: Boolean? = null
   private var enableAndroidTextMeasurementOptimizationsCache: Boolean? = null
   private var enableBridgelessArchitectureCache: Boolean? = null
-  private var enableBufferedCallInvokerCache: Boolean? = null
   private var enableCppPropsIteratorSetterCache: Boolean? = null
   private var enableCustomFocusSearchOnClippedElementsAndroidCache: Boolean? = null
   private var enableDestroyShadowTreeRevisionAsyncCache: Boolean? = null
@@ -271,16 +270,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableBridgelessArchitecture()
       accessedFeatureFlags.add("enableBridgelessArchitecture")
       enableBridgelessArchitectureCache = cached
-    }
-    return cached
-  }
-
-  override fun enableBufferedCallInvoker(): Boolean {
-    var cached = enableBufferedCallInvokerCache
-    if (cached == null) {
-      cached = currentProvider.enableBufferedCallInvoker()
-      accessedFeatureFlags.add("enableBufferedCallInvoker")
-      enableBufferedCallInvokerCache = cached
     }
     return cached
   }

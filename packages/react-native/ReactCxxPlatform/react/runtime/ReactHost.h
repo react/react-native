@@ -41,6 +41,9 @@ struct ReactInstanceData;
 
 class ReactHost {
  public:
+  using CallInvokerBindingsInstallFunc =
+      std::function<void(jsi::Runtime &runtime, std::shared_ptr<CallInvoker> callInvoker)>;
+
   ReactHost(
       ReactInstanceConfig reactInstanceConfig,
       std::shared_ptr<IMountingManager> mountingManager,
@@ -53,7 +56,8 @@ class ReactHost {
       std::shared_ptr<SurfaceDelegate> logBoxSurfaceDelegate = nullptr,
       std::shared_ptr<NativeAnimatedNodesManagerProvider> animatedNodesManagerProvider = nullptr,
       ReactInstance::BindingsInstallFunc bindingsInstallFunc = nullptr,
-      std::shared_ptr<AnimationChoreographer> animationChoreographer = nullptr);
+      std::shared_ptr<AnimationChoreographer> animationChoreographer = nullptr,
+      CallInvokerBindingsInstallFunc callInvokerBindingsInstallFunc = nullptr);
   ReactHost(const ReactHost &) = delete;
   ReactHost &operator=(const ReactHost &) = delete;
   ReactHost(ReactHost &&) noexcept = delete;

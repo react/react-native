@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<625c7c4f1d55e7ca5c226793fe982c7b>>
+ * @generated SignedSource<<c416fd390274bff5dcb94ac57101dc94>>
  */
 
 /**
@@ -189,15 +189,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableBridgelessArchitecture();
-  }
-
-  bool enableBufferedCallInvoker() override {
-    auto value = values_["enableBufferedCallInvoker"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableBufferedCallInvoker();
   }
 
   bool enableCppPropsIteratorSetter() override {

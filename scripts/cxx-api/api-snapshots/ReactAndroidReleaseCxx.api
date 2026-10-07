@@ -4467,13 +4467,6 @@ class facebook::react::RuntimeSchedulerBinding : public facebook::jsi::HostObjec
   public virtual facebook::jsi::Value get(facebook::jsi::Runtime& runtime, const facebook::jsi::PropNameID& name) override;
 }
 
-class facebook::react::RuntimeSchedulerCallInvoker : public facebook::react::CallInvoker {
-  public RuntimeSchedulerCallInvoker(std::weak_ptr<facebook::react::RuntimeScheduler> runtimeScheduler);
-  public virtual void invokeAsync(facebook::react::CallFunc&& func) noexcept override;
-  public virtual void invokeAsync(facebook::react::SchedulerPriority priority, facebook::react::CallFunc&& func) noexcept override;
-  public virtual void invokeSync(facebook::react::CallFunc&& func) override;
-}
-
 class facebook::react::RuntimeSchedulerEventTimingDelegate {
   public virtual void dispatchPendingEventTimingEntries(facebook::react::HighResTimeStamp taskEndTime, const std::unordered_set<facebook::react::SurfaceId>& surfaceIdsWithPendingRenderingUpdates) = 0;
   public virtual ~RuntimeSchedulerEventTimingDelegate() = default;

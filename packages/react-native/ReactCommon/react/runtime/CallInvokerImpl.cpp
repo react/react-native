@@ -21,12 +21,10 @@ void CallInvokerImpl::invokeAsync(CallFunc&& func) noexcept {
   // Held for the duration of the call: `BufferedRuntimeExecutor` reaches the
   // scheduler through a raw pointer, which is only safe while the instance that
   // owns it is alive. A CallInvoker outlives its instance routinely — a caller
-  // can hold one across a reload — so the weak reference is what keeps this
-  // from dispatching into a destroyed scheduler. Dropping the work matches what
-  // `RuntimeSchedulerCallInvoker` does once its scheduler is gone.
+  // can hold one across a reload — so guard dispatch with the weak scheduler.
+  // If it has expired, there is no runtime left to receive the work.
   if (auto runtimeScheduler = runtimeScheduler_.lock()) {
-    // No priority given, so this takes the executor's default — matching what
-    // `RuntimeSchedulerCallInvoker` did via `scheduleWork`.
+    // No priority was given, so use the executor's default.
     bufferedRuntimeExecutor_->execute(std::move(func));
   }
 }

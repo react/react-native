@@ -18,7 +18,6 @@
 #include <react/devsupport/IDevUIDelegate.h>
 #include <react/devsupport/PackagerConnection.h>
 #include <react/devsupport/inspector/Inspector.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/http/IHttpClient.h>
 #include <react/http/IWebSocketClient.h>
 #include <react/io/ResourceLoader.h>
@@ -52,6 +51,7 @@ struct ReactInstanceData {
   std::shared_ptr<NativeAnimatedNodesManagerProvider>
       animatedNodesManagerProvider;
   ReactInstance::BindingsInstallFunc bindingsInstallFunc;
+  ReactHost::CallInvokerBindingsInstallFunc callInvokerBindingsInstallFunc;
   std::shared_ptr<AnimationChoreographer> animationChoreographer;
 };
 
@@ -68,7 +68,8 @@ ReactHost::ReactHost(
     std::shared_ptr<NativeAnimatedNodesManagerProvider>
         animatedNodesManagerProvider,
     ReactInstance::BindingsInstallFunc bindingsInstallFunc,
-    std::shared_ptr<AnimationChoreographer> animationChoreographer)
+    std::shared_ptr<AnimationChoreographer> animationChoreographer,
+    CallInvokerBindingsInstallFunc callInvokerBindingsInstallFunc)
     : reactInstanceConfig_(std::move(reactInstanceConfig)) {
   auto componentRegistryFactory =
       mountingManager->getComponentRegistryFactory();
@@ -85,6 +86,8 @@ ReactHost::ReactHost(
       .logBoxSurfaceDelegate = logBoxSurfaceDelegate,
       .animatedNodesManagerProvider = animatedNodesManagerProvider,
       .bindingsInstallFunc = std::move(bindingsInstallFunc),
+      .callInvokerBindingsInstallFunc =
+          std::move(callInvokerBindingsInstallFunc),
       .animationChoreographer = std::move(animationChoreographer)});
   if (!reactInstanceData_->contextContainer
            ->find<MessageQueueThreadFactory>(MessageQueueThreadFactoryKey)
@@ -247,9 +250,6 @@ void ReactHost::createReactInstance() {
 
   reactInstanceData_->mountingManager->setUIManager(scheduler_->getUIManager());
 
-  // Behind `enableBufferedCallInvoker` this shares the instance's buffered
-  // runtime executor, so async calls are ordered against callable module calls
-  // and cannot run before the bundle has evaluated.
   auto jsInvoker = reactInstance_->createJSCallInvoker();
 
   if (inspector_ != nullptr) {
@@ -282,6 +282,9 @@ void ReactHost::createReactInstance() {
            std::weak_ptr<IMountingManager>(reactInstanceData_->mountingManager),
        logger = reactInstanceData_->logger,
        bindingsInstallFunc = reactInstanceData_->bindingsInstallFunc,
+       callInvokerBindingsInstallFunc =
+           reactInstanceData_->callInvokerBindingsInstallFunc,
+       jsInvoker,
        turboModuleManager =
            std::move(turboModuleManager)](jsi::Runtime& runtime) mutable {
         if (logger) {
@@ -302,6 +305,9 @@ void ReactHost::createReactInstance() {
 
         if (bindingsInstallFunc) {
           bindingsInstallFunc(runtime);
+        }
+        if (callInvokerBindingsInstallFunc) {
+          callInvokerBindingsInstallFunc(runtime, jsInvoker);
         }
       });
 }

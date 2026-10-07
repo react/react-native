@@ -20,7 +20,6 @@
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
-#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
 #include <react/utils/jsi-utils.h>
@@ -221,16 +220,8 @@ ReactInstance::getRuntimeScheduler() noexcept {
 }
 
 std::shared_ptr<CallInvoker> ReactInstance::createJSCallInvoker() noexcept {
-  if (ReactNativeFeatureFlags::enableBufferedCallInvoker()) {
-    return std::make_shared<CallInvokerImpl>(
-        bufferedRuntimeExecutor_, runtimeScheduler_);
-  }
-  // The flag-off path, and the last use of the deprecated invoker. It goes when
-  // `enableBufferedCallInvoker` is cleaned up.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  return std::make_shared<RuntimeSchedulerCallInvoker>(runtimeScheduler_);
-#pragma clang diagnostic pop
+  return std::make_shared<CallInvokerImpl>(
+      bufferedRuntimeExecutor_, runtimeScheduler_);
 }
 
 namespace {

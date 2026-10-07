@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<aef7d6ac25fdeb2423ebf4a2a9ac6f2e>>
+ * @generated SignedSource<<d3b754504fd7d6d0c978faec52d14c5d>>
  */
 
 /**
@@ -120,11 +120,6 @@ class ReactNativeFeatureFlags {
    * Feature flag to enable the new bridgeless architecture.
    */
   RN_EXPORT static bool enableBridgelessArchitecture();
-
-  /**
-   * Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.
-   */
-  RN_EXPORT static bool enableBufferedCallInvoker();
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).

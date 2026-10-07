@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8075ab58916ce356d5acac15888aff7a>>
+ * @generated SignedSource<<9ca90b2f13eb13267801cf167c847153>>
  * @flow strict
  * @noformat
  */
@@ -65,7 +65,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
-  enableBufferedCallInvoker: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
@@ -279,10 +278,6 @@ export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = create
  * Feature flag to enable the new bridgeless architecture.
  */
 export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', true);
-/**
- * Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.
- */
-export const enableBufferedCallInvoker: Getter<boolean> = createNativeFlagGetter('enableBufferedCallInvoker', true);
 /**
  * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
  */
