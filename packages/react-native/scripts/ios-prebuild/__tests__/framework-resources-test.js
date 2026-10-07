@@ -352,6 +352,7 @@ describe('emitReactFrameworkHeaders resource landing (integration)', () => {
         react: [],
         umbrella: [],
         privateReactHeaders: {modular: [], textual: []},
+        excludedReactHeaders: [],
       },
       rnRoot,
     );
