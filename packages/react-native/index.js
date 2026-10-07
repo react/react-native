@@ -386,6 +386,9 @@ module.exports = {
   get usePressability() {
     return require('./Libraries/Pressability/usePressability').default;
   },
+  get useScreenDimensions() {
+    return require('./Libraries/Utilities/useScreenDimensions').default;
+  },
   get useWindowDimensions() {
     return require('./Libraries/Utilities/useWindowDimensions').default;
   },
