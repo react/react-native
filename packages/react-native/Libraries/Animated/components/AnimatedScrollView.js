@@ -80,7 +80,7 @@ const AnimatedScrollViewWithInvertedRefreshControl =
     ...props
   }: {
     ref?: React.RefSetter<AnimatedScrollViewInstance>,
-    ...React.ElementConfig<typeof ScrollView>,
+    ...React.ComponentProps<typeof ScrollView>,
     // $FlowFixMe[unclear-type] Same Flow type as `refreshControl` in ScrollView
     refreshControl: React.MixedElement,
   }) {

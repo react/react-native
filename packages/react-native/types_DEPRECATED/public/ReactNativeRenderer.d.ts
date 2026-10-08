@@ -133,7 +133,10 @@ export interface GestureResponderHandlers {
 }
 
 /**
- * React Native also implements unstable_batchedUpdates
+ * @deprecated Since 0.86, `unstable_batchedUpdates` is a no-op that synchronously invokes the callback. React batches updates automatically, so call the callback directly instead.
  */
 export function unstable_batchedUpdates<A, R>(callback: (a: A) => R, a: A): R;
+/**
+ * @deprecated Since 0.86, `unstable_batchedUpdates` is a no-op that synchronously invokes the callback. React batches updates automatically, so call the callback directly instead.
+ */
 export function unstable_batchedUpdates<R>(callback: () => R): R;

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.88.0-rc.4
+
+### Changed
+
+- **TypeScript**: Allow module augmentation to extend generated props and style types ([447ccd1ddb](https://github.com/react/react-native/commit/447ccd1ddbf3b9d95ce5e54410d7a5a54ce9bade) by [@zoontek](https://github.com/zoontek))
+
+### Fixed
+
+#### Android specific
+
+- **Accessibility**: Properly re-enable a view after `accessibilityState.disabled` resets from `true`, which left `Pressable` partly untappable ([357b6998c4](https://github.com/react/react-native/commit/357b6998c4df940f2450448a20478b11deaf741b) by [@bigcupcoffee](https://github.com/bigcupcoffee))
+
+
 ## v0.88.0-rc.3
 
 ### Changed

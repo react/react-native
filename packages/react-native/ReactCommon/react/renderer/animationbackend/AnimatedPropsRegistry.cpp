@@ -6,54 +6,67 @@
  */
 
 #include "AnimatedPropsRegistry.h"
+#include <react/debug/react_native_assert.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include "AnimatedProps.h"
 
 namespace facebook::react {
 
+void mergeAnimatedRawProps(
+    folly::dynamic& target,
+    const folly::dynamic& source) {
+  if (!target.isObject() || !source.isObject()) {
+    target = source;
+    return;
+  }
+  for (const auto& [key, value] : source.items()) {
+    target[key] = value;
+  }
+}
+
 void AnimatedPropsRegistry::update(
-    const std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates) {
+    const std::vector<AnimationMutations>& batches) {
   auto lock = std::lock_guard(mutex_);
-  for (const auto& [surfaceId, updates] : surfaceUpdates) {
-    auto contextIt = surfaceContexts_.find(surfaceId);
-    if (contextIt == surfaceContexts_.end()) {
-      continue;
-    }
-    auto& surfaceContext = contextIt->second;
-    auto& pendingMap = surfaceContext.pendingMap;
-    auto& pendingFamilies = surfaceContext.pendingFamilies;
-
-    auto& updatesMap = updates.propsMap;
-    auto& updatesFamilies = updates.families;
-
-    for (auto& family : updatesFamilies) {
-      pendingFamilies.insert(family);
-    }
-
-    for (auto& [tag, animatedProps] : updatesMap) {
+  for (const auto& mutations : batches) {
+    for (const auto& mutation : mutations.batch) {
+      const auto& family = mutation.family;
+      react_native_assert(family != nullptr);
+      auto contextIt = surfaceContexts_.find(family->getSurfaceId());
+      if (contextIt == surfaceContexts_.end()) {
+        continue;
+      }
+      auto& surfaceContext = contextIt->second;
+      auto& pendingMap = surfaceContext.pendingMap;
+      surfaceContext.pendingFamilies.insert(family);
+      const auto tag = mutation.tag;
+      const auto& animatedProps = mutation.props;
       auto it = pendingMap.find(tag);
       if (it == pendingMap.end()) {
         it = pendingMap.insert_or_assign(tag, std::make_unique<PropsSnapshot>())
                  .first;
       }
       auto& snapshot = it->second;
-      auto& viewProps = snapshot->props;
-
       if (animatedProps.rawProps) {
         const auto& newRawProps = *animatedProps.rawProps;
         auto& currentRawProps = snapshot->rawProps;
 
         if (currentRawProps) {
-          auto newRawPropsDynamic = newRawProps.toDynamic();
-          currentRawProps->merge_patch(newRawPropsDynamic);
+          if (const auto* dynamic = newRawProps.getDynamic()) {
+            mergeAnimatedRawProps(*currentRawProps, *dynamic);
+          } else {
+            mergeAnimatedRawProps(*currentRawProps, newRawProps.toDynamic());
+          }
         } else {
           currentRawProps =
               std::make_unique<folly::dynamic>(newRawProps.toDynamic());
         }
       }
+      if (!animatedProps.props.empty() && !snapshot->props) {
+        snapshot->props = std::make_unique<BaseViewProps>();
+      }
       for (const auto& animatedProp : animatedProps.props) {
         snapshot->propNames.insert(animatedProp->propName);
-        cloneProp(viewProps, *animatedProp);
+        cloneProp(*snapshot->props, *animatedProp);
       }
     }
   }
@@ -83,14 +96,20 @@ AnimatedPropsRegistry::getMap(SurfaceId surfaceId) {
       auto& currentSnapshot = currentIt->second;
       if (propsSnapshot->rawProps) {
         if (currentSnapshot->rawProps) {
-          currentSnapshot->rawProps->merge_patch(*propsSnapshot->rawProps);
+          mergeAnimatedRawProps(
+              *currentSnapshot->rawProps, *propsSnapshot->rawProps);
         } else {
           currentSnapshot->rawProps = std::move(propsSnapshot->rawProps);
         }
       }
-      for (auto& propName : propsSnapshot->propNames) {
-        currentSnapshot->propNames.insert(propName);
-        updateProp(propName, currentSnapshot->props, *propsSnapshot);
+      if (!currentSnapshot->props) {
+        currentSnapshot->props = std::move(propsSnapshot->props);
+        currentSnapshot->propNames = std::move(propsSnapshot->propNames);
+      } else {
+        for (auto& propName : propsSnapshot->propNames) {
+          currentSnapshot->propNames.insert(propName);
+          updateProp(propName, *currentSnapshot->props, *propsSnapshot);
+        }
       }
     }
   }

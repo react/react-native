@@ -115,6 +115,8 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void schedulerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) override;
 
+  void schedulerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<Tag, AnimatedProps> &updates) override;
+
   void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) override;
 
   void schedulerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) override;

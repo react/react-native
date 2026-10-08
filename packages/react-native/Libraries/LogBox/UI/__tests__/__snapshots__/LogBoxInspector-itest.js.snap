@@ -24,7 +24,6 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -63,7 +62,6 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -215,7 +213,6 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -254,7 +251,6 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"

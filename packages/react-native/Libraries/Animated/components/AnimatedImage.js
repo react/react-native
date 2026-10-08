@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {ImageProps} from '../../Image/ImageProps';
 import type {AnimatedComponentType} from '../createAnimatedComponent';
 
 import Image from '../../Image/Image';
@@ -18,6 +19,6 @@ export default createAnimatedComponent<
   $FlowFixMe,
   React.ElementRef<typeof Image>,
 >(Image as $FlowFixMe) as AnimatedComponentType<
-  React.ElementConfig<typeof Image>,
+  ImageProps,
   React.ElementRef<typeof Image>,
 >;

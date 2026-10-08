@@ -301,6 +301,9 @@ export default class Device {
       );
     }
 
+    // Stop polling the previous connection before its state is replaced.
+    clearInterval(this.#pagesPollingIntervalId);
+
     this.#dangerouslyConstruct(deviceOptions);
 
     // Restore all debugger connections, not just the first one

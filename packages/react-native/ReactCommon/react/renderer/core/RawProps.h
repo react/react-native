@@ -83,6 +83,12 @@ class RawProps final {
    */
   folly::dynamic toDynamic(const std::function<bool(const std::string &)> &filterObjectKeys = nullptr) const;
 
+  // The pointer is valid while this RawProps owns its dynamic source.
+  const folly::dynamic *getDynamic() const noexcept
+  {
+    return mode_ == Mode::Dynamic ? &dynamic_ : nullptr;
+  }
+
   /*
    * Returns `true` if the object is empty.
    * Empty `RawProps` does not have any stored data.

@@ -7,6 +7,7 @@
 
 #include "FabricMountingManagerTestHelper.h"
 
+#include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/ComponentDescriptor.h>
@@ -64,6 +65,22 @@ bool FabricMountingManagerTestHelper::isTagAllocated(jint surfaceId, jint tag) {
   return mountingManager_->isViewAllocated(surfaceId, tag);
 }
 
+void FabricMountingManagerTestHelper::synchronouslyUpdateAnimatedProps(
+    jni::alias_ref<jni::JArrayInt> tags,
+    jni::alias_ref<jni::JArrayClass<NativeMap::javaobject>> props) {
+  auto tagValues = tags->getRegion(0, static_cast<jsize>(tags->size()));
+  std::unordered_map<Tag, AnimatedProps> updates;
+  for (size_t i = 0; i < tags->size(); i++) {
+    updates.emplace(
+        tagValues[i],
+        AnimatedProps{
+            .props = {},
+            .rawProps = std::make_unique<RawProps>(
+                props->getElement(i)->cthis()->consume())});
+  }
+  mountingManager_->synchronouslyUpdateAnimatedProps(updates);
+}
+
 void FabricMountingManagerTestHelper::registerNatives() {
   registerHybrid({
       makeNativeMethod(
@@ -79,6 +96,9 @@ void FabricMountingManagerTestHelper::registerNatives() {
           FabricMountingManagerTestHelper::destroyUnmountedView),
       makeNativeMethod(
           "isTagAllocated", FabricMountingManagerTestHelper::isTagAllocated),
+      makeNativeMethod(
+          "synchronouslyUpdateAnimatedProps",
+          FabricMountingManagerTestHelper::synchronouslyUpdateAnimatedProps),
   });
 }
 

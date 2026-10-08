@@ -721,6 +721,8 @@ void parseProcessedTransformOrigin(
   result = transformOrigin;
 }
 
+} // namespace
+
 void parseUnprocessedTransformOriginString(
     const std::string& value,
     TransformOrigin& result) {
@@ -751,6 +753,8 @@ void parseUnprocessedTransformOriginString(
 
   result = transformOrigin;
 }
+
+namespace {
 
 void parseUnprocessedTransformOrigin(
     const PropsParserContext& context,

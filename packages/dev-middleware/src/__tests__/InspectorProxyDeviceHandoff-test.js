@@ -34,6 +34,9 @@ const PAGE_DEFAULTS = {
   vm: 'bar-vm',
 };
 
+// Must match PAGES_POLLING_INTERVAL in `Device.js`.
+const PAGES_POLLING_INTERVAL_MS = 1000;
+
 describe('inspector-proxy device socket handoff', () => {
   const serverRef = withServerForEachTest({
     logger: undefined,
@@ -251,6 +254,50 @@ describe('inspector-proxy device socket handoff', () => {
       device2?.close();
       debugger1?.close();
       debugger2?.close();
+    }
+  });
+
+  test('device ID collision clears the previous pages polling interval', async () => {
+    const setIntervalSpy = jest.spyOn(globalThis, 'setInterval');
+    const clearIntervalSpy = jest.spyOn(globalThis, 'clearInterval');
+    let device1, device2;
+    try {
+      ({device: device1} = await connectDevice(
+        '/inspector/device?device=device&name=foo&app=bar',
+        [
+          {
+            ...PAGE_DEFAULTS,
+            vm: 'bar-vm',
+          },
+        ],
+      ));
+
+      const pollingIntervals = setIntervalSpy.mock.calls.flatMap(
+        (call, index) =>
+          call[1] === PAGES_POLLING_INTERVAL_MS
+            ? [setIntervalSpy.mock.results[index].value]
+            : [],
+      );
+      expect(pollingIntervals).toHaveLength(1);
+
+      ({device: device2} = await connectDevice(
+        '/inspector/device?device=device&name=foo&app=bar',
+        [
+          {
+            ...PAGE_DEFAULTS,
+            vm: 'bar-vm-updated',
+          },
+        ],
+      ));
+
+      for (const intervalId of pollingIntervals) {
+        expect(clearIntervalSpy).toBeCalledWith(intervalId);
+      }
+    } finally {
+      device1?.close();
+      device2?.close();
+      setIntervalSpy.mockRestore();
+      clearIntervalSpy.mockRestore();
     }
   });
 

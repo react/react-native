@@ -20,7 +20,6 @@ exports[`LogBoxInspectorHeader should render both buttons for two total 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -59,7 +58,6 @@ exports[`LogBoxInspectorHeader should render both buttons for two total 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
