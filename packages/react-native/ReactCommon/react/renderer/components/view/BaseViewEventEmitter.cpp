@@ -32,6 +32,29 @@ void BaseViewEventEmitter::onAccessibilityEscape() const {
   dispatchEvent("accessibilityEscape");
 }
 
+#pragma mark - Safe area
+
+void BaseViewEventEmitter::onSafeAreaInsetsChange(
+    const EdgeInsets& insets) const {
+  experimental_flushSync([this, insets]() {
+    dispatchEvent(
+        "safeAreaInsetsChange",
+        [insets](jsi::Runtime& runtime) {
+          auto payload = jsi::Object(runtime);
+          {
+            auto insetsPayload = jsi::Object(runtime);
+            insetsPayload.setProperty(runtime, "top", insets.top);
+            insetsPayload.setProperty(runtime, "right", insets.right);
+            insetsPayload.setProperty(runtime, "bottom", insets.bottom);
+            insetsPayload.setProperty(runtime, "left", insets.left);
+            payload.setProperty(runtime, "insets", insetsPayload);
+          }
+          return payload;
+        },
+        RawEvent::Category::Discrete);
+  });
+}
+
 #pragma mark - Layout
 
 void BaseViewEventEmitter::onLayout(const LayoutMetrics& layoutMetrics) const {
