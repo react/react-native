@@ -10,7 +10,7 @@
 #import <React/RCTComponentViewDescriptor.h>
 #import <React/RCTComponentViewFactory.h>
 #import <React/RCTComponentViewProtocol.h>
-#import <react/renderer/core/ReactPrimitives.h>
+#import <React/RendererCore.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

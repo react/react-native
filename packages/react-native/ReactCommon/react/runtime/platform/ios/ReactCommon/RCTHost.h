@@ -10,7 +10,7 @@
 #import <Foundation/Foundation.h>
 
 #import <React/RCTDefines.h>
-#import <react/renderer/core/ReactPrimitives.h>
+#import <React/RendererCore.h>
 #import <react/runtime/JSRuntimeFactory.h>
 
 #import "RCTInstance.h"

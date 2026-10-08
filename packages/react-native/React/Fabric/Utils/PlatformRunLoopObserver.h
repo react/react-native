@@ -10,7 +10,7 @@
 #include <CoreFoundation/CFRunLoop.h>
 #include <CoreFoundation/CoreFoundation.h>
 
-#include <react/utils/RunLoopObserver.h>
+#include <React/Utils.h>
 
 namespace facebook::react {
 

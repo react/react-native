@@ -10,9 +10,9 @@
 #import <React/RCTPrimitives.h>
 #import <React/RCTSurfacePresenterStub.h>
 #import <React/RCTSurfaceStage.h>
+#import <React/Utils.h>
 #import <ReactCommon/RuntimeExecutor.h>
 #import <react/renderer/scheduler/SurfaceHandler.h>
-#import <react/utils/ContextContainer.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
