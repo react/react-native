@@ -24,7 +24,7 @@ import com.facebook.react.uimanager.style.BorderRadiusStyle
 import com.facebook.react.uimanager.style.ComputedBorderRadius
 import kotlin.math.roundToInt
 
-internal class BackgroundDrawable(
+internal open class BackgroundDrawable(
     private val context: Context,
     /*
      * We assume borderRadius & borderInsets to be shared across multiple drawables

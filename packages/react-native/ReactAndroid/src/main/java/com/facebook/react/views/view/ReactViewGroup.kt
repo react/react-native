@@ -45,6 +45,7 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderRadius
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderStyle
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderWidth
+import com.facebook.react.uimanager.BackgroundStyleApplicator.setFeedbackOverlay
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setFeedbackUnderlay
 import com.facebook.react.uimanager.BlendModeHelper.needsIsolatedLayer
 import com.facebook.react.uimanager.HasElevatedDescendantCache
@@ -696,7 +697,10 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
   internal fun applyNativeForeground(map: ReadableMap?) {
     nativeForegroundMap = map
-    foreground = map?.let { ReactDrawableHelper.createDrawableFromJSDescription(context, it) }
+    setFeedbackOverlay(
+        this,
+        map?.let { ReactDrawableHelper.createDrawableFromJSDescription(context, it) },
+    )
   }
 
   override fun onViewAdded(child: View) {

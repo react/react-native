@@ -11,7 +11,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.graphics.PixelFormat
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.RippleDrawable
 import android.util.TypedValue
@@ -24,6 +24,7 @@ import com.facebook.react.bridge.ReadableType
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ViewProps
+import com.facebook.react.uimanager.drawable.BackgroundDrawable
 import kotlin.math.roundToInt
 
 /**
@@ -92,7 +93,7 @@ public object ReactDrawableHelper {
       color = Color.argb(newAlpha, Color.red(color), Color.green(color), Color.blue(color))
     }
 
-    val mask = getMask(drawableDescriptionDict)
+    val mask = getMask(context, drawableDescriptionDict)
     return RippleDrawable(ColorStateList(arrayOf(intArrayOf()), intArrayOf(color)), null, mask)
   }
 
@@ -149,14 +150,26 @@ public object ReactDrawableHelper {
         )
       }
 
-  private fun getMask(drawableDescriptionDict: ReadableMap): Drawable? {
+  private fun getMask(context: Context, drawableDescriptionDict: ReadableMap): Drawable? {
     if (
         !drawableDescriptionDict.hasKey("borderless") ||
             drawableDescriptionDict.isNull("borderless") ||
             !drawableDescriptionDict.getBoolean("borderless")
     ) {
-      return ColorDrawable(Color.WHITE)
+      return RippleMaskDrawable(context)
     }
     return null
   }
+}
+
+private class RippleMaskDrawable(context: Context) : BackgroundDrawable(context) {
+  init {
+    backgroundColor = Color.WHITE
+  }
+
+  @Deprecated("Deprecated in Java")
+  override fun getOpacity(): Int =
+      // RippleDrawable clips to an opaque mask's bounds, but renders a translucent mask into a
+      // bitmap to clip to its shape. Only pay for the bitmap when there are corners to round.
+      if (borderRadius?.hasRoundedBorders() == true) PixelFormat.TRANSLUCENT else PixelFormat.OPAQUE
 }
