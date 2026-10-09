@@ -307,23 +307,34 @@ public class ReactModalHostView(context: ThemedReactContext) :
     newDialog.setOnKeyListener(
         object : DialogInterface.OnKeyListener {
           override fun onKey(dialog: DialogInterface, keyCode: Int, event: KeyEvent): Boolean {
-            if (event.action == KeyEvent.ACTION_UP) {
+            if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ESCAPE) {
               // We need to stop the BACK button and ESCAPE key from closing the dialog by default
-              // so we capture that event and instead inform JS so that it can make the decision as
-              // to whether or not to allow the back/escape key to close the dialog. If it chooses
-              // to, it can just set visible to false on the Modal and the Modal will go away
-              if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ESCAPE) {
+              // so we capture those events and instead inform JS so that it can make the decision
+              // as to whether or not to allow the back/escape key to close the dialog. If it
+              // chooses to, it can just set visible to false on the Modal and the Modal will go
+              // away.
+              // We must intercept both ACTION_DOWN and ACTION_UP for ESCAPE because
+              // Dialog.onKeyDown() will directly call cancel() on ACTION_DOWN for
+              // KEYCODE_ESCAPE (unlike KEYCODE_BACK which only starts tracking on ACTION_DOWN
+              // and defers to onBackPressed() on ACTION_UP). If we don't intercept
+              // ACTION_DOWN, the dialog is dismissed before our ACTION_UP handler runs.
+              if (event.action == KeyEvent.ACTION_DOWN) {
+                // Consume ACTION_DOWN to prevent Dialog.onKeyDown() from closing the dialog.
+                // For BACK this prevents the default key tracking; for ESCAPE this prevents
+                // Dialog.cancel() from being called directly.
+                return true
+              } else if (event.action == KeyEvent.ACTION_UP) {
                 handleCloseAction()
                 return true
-              } else {
-                // We redirect the rest of the key events to the current activity, since the
-                // activity expects to receive those events and react to them, ie. in the case of
-                // the dev menu
-                val innerCurrentActivity =
-                    (this@ReactModalHostView.context as ReactContext).currentActivity
-                if (innerCurrentActivity != null) {
-                  return innerCurrentActivity.onKeyUp(keyCode, event)
-                }
+              }
+            } else if (event.action == KeyEvent.ACTION_UP) {
+              // We redirect the rest of the key events to the current activity, since the
+              // activity expects to receive those events and react to them, ie. in the case of
+              // the dev menu
+              val innerCurrentActivity =
+                  (this@ReactModalHostView.context as ReactContext).currentActivity
+              if (innerCurrentActivity != null) {
+                return innerCurrentActivity.onKeyUp(keyCode, event)
               }
             }
             return false
