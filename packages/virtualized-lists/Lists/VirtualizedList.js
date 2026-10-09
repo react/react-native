@@ -367,8 +367,7 @@ class VirtualizedList extends StateSafePureComponent<
     return this._hasMore;
   }
 
-  // $FlowFixMe[missing-local-annot]
-  _getOutermostParentListRef = () => {
+  _getOutermostParentListRef = (): VirtualizedList => {
     if (this._isNestedWithSameOrientation()) {
       return this.context.getOutermostParentListRef();
     } else {
