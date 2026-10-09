@@ -994,13 +994,21 @@ static void RCTAddContourEffectToLayer(
   [layer removeAllAnimations];
 }
 
-static RCTBorderColors RCTCreateRCTBorderColorsFromBorderColors(BorderColors borderColors)
+// CALayer colors are plain CGColors: converting a dynamic (PlatformColor /
+// DynamicColorIOS) UIColor without an explicit trait collection resolves against
+// UITraitCollection.currentTraitCollection, which tracks the system appearance
+// and ignores any overrideUserInterfaceStyle inherited by the view. Resolve
+// against the view's own trait collection instead, matching the backgroundColor
+// handling in invalidateLayer.
+static RCTBorderColors RCTCreateRCTBorderColorsFromBorderColors(
+    BorderColors borderColors,
+    UITraitCollection *traitCollection)
 {
   return RCTBorderColors{
-      .top = RCTUIColorFromSharedColor(borderColors.top),
-      .left = RCTUIColorFromSharedColor(borderColors.left),
-      .bottom = RCTUIColorFromSharedColor(borderColors.bottom),
-      .right = RCTUIColorFromSharedColor(borderColors.right)};
+      .top = [RCTUIColorFromSharedColor(borderColors.top) resolvedColorWithTraitCollection:traitCollection],
+      .left = [RCTUIColorFromSharedColor(borderColors.left) resolvedColorWithTraitCollection:traitCollection],
+      .bottom = [RCTUIColorFromSharedColor(borderColors.bottom) resolvedColorWithTraitCollection:traitCollection],
+      .right = [RCTUIColorFromSharedColor(borderColors.right) resolvedColorWithTraitCollection:traitCollection]};
 }
 
 static CALayerCornerCurve CornerCurveFromBorderCurve(BorderCurve borderCurve)
@@ -1238,7 +1246,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _borderLayer = nil;
 
     layer.borderWidth = (CGFloat)borderMetrics.borderWidths.left;
-    UIColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left);
+    UIColor *borderColor = [RCTUIColorFromSharedColor(borderMetrics.borderColors.left)
+        resolvedColorWithTraitCollection:self.traitCollection];
     layer.borderColor = borderColor.CGColor;
     layer.cornerRadius = (CGFloat)borderMetrics.borderRadii.topLeft.horizontal;
     layer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);
@@ -1256,7 +1265,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     layer.borderColor = nil;
     layer.cornerRadius = 0;
 
-    RCTBorderColors borderColors = RCTCreateRCTBorderColorsFromBorderColors(borderMetrics.borderColors);
+    RCTBorderColors borderColors =
+        RCTCreateRCTBorderColorsFromBorderColors(borderMetrics.borderColors, self.traitCollection);
 
     RCTAddContourEffectToLayer(
         _borderLayer,
@@ -1285,11 +1295,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     // have to be drawn with Core Graphics, the same way non-solid borders are.
     if (_props->outlineStyle == OutlineStyle::Solid && areBorderRadiiCircular(borderMetrics.borderRadii) &&
         borderMetrics.borderRadii.topLeft.horizontal == 0) {
-      UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
+      UIColor *outlineColor =
+          [RCTUIColorFromSharedColor(_props->outlineColor) resolvedColorWithTraitCollection:self.traitCollection];
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
     } else {
-      UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
+      UIColor *outlineColor =
+          [RCTUIColorFromSharedColor(_props->outlineColor) resolvedColorWithTraitCollection:self.traitCollection];
 
       RCTAddContourEffectToLayer(
           _outlineLayer,
