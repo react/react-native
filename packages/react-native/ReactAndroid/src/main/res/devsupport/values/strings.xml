@@ -37,4 +37,5 @@
   <string name="catalyst_dev_menu_header" project="catalyst" translatable="false">React Native Dev Menu</string>
   <string name="catalyst_dev_menu_sub_header" project="catalyst" translatable="false">Running %1$s</string>
   <string name="catalyst_loading_dismiss" project="catalyst" translatable="false">Dismiss ✕</string>
+  <string name="catalyst_paused_tap_to_resume" project="catalyst" translatable="false">Tap to resume</string>
 </resources>
