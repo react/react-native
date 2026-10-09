@@ -15,6 +15,10 @@
 
 RCTFontWeight RCTGetFontWeight(UIFont *font)
 {
+  if (!font) {
+    return UIFontWeightRegular;
+  }
+
   static NSArray<NSString *> *weightSuffixes;
   static NSArray<NSNumber *> *fontWeights;
   static dispatch_once_t onceToken;
@@ -56,14 +60,16 @@ RCTFontWeight RCTGetFontWeight(UIFont *font)
   });
 
   NSString *fontName = font.fontName;
-  NSInteger i = 0;
-  for (NSString *suffix in weightSuffixes) {
-    // CFStringFind is much faster than any variant of rangeOfString: because it does not use a locale.
-    auto options = kCFCompareCaseInsensitive | kCFCompareAnchored | kCFCompareBackwards;
-    if (CFStringFind((CFStringRef)fontName, (CFStringRef)suffix, options).location != kCFNotFound) {
-      return (RCTFontWeight)fontWeights[i].doubleValue;
+  if (fontName) {
+    NSInteger i = 0;
+    for (NSString *suffix in weightSuffixes) {
+      // CFStringFind is much faster than any variant of rangeOfString: because it does not use a locale.
+      auto options = kCFCompareCaseInsensitive | kCFCompareAnchored | kCFCompareBackwards;
+      if (CFStringFind((CFStringRef)fontName, (CFStringRef)suffix, options).location != kCFNotFound) {
+        return (RCTFontWeight)fontWeights[i].doubleValue;
+      }
+      i++;
     }
-    i++;
   }
 
   auto traits = (__bridge_transfer NSDictionary *)CTFontCopyTraits((CTFontRef)font);
