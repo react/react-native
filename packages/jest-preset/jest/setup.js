@@ -55,6 +55,21 @@ Object.defineProperties(global, {
     value: jest.requireActual<unknown>('regenerator-runtime/runtime'),
     writable: true,
   },
+  // `window` is aliased to `global` below, so React's `reportGlobalError`
+  // treats this environment as a DOM as soon as Node exposes an `ErrorEvent`
+  // global (Node >= 26 does), and then calls `window.dispatchEvent`, which
+  // does not exist here. The resulting `TypeError` replaces whatever error
+  // React was trying to report. Defining `reportError` keeps React on a code
+  // path that works: like `window.reportError` on the web, it reports the
+  // error as if it were uncaught, which in Node means `uncaughtException`.
+  reportError: {
+    configurable: true,
+    enumerable: true,
+    value(error: unknown): void {
+      process.emit('uncaughtException', error);
+    },
+    writable: true,
+  },
   requestAnimationFrame: {
     configurable: true,
     enumerable: true,
