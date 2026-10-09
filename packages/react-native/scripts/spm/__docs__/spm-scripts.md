@@ -397,7 +397,8 @@ package.json there, or the Xcode project directory for a config kept there:
       {
         "name": "MyNativeModule",
         "path": "ios/MyNativeModule",
-        "exclude": ["*.podspec"]
+        "exclude": ["*.podspec"],
+        "sources": ["**/*.{h,m,mm}"]
       }
     ]
   }
@@ -418,6 +419,20 @@ single-language modules, or ship a hand-written `Package.swift`. Module names
 get the same checks as [library names](#library-names): a name React Native
 reserves, or one that collides with another module or an autolinked library, is
 a hard error.
+
+`sources` is optional. It is a glob allowlist relative to `path`, like a
+podspec's `source_files`. Without it, or when it matches no file, the target
+gets every `.h`, `.hpp`, `.m`, `.mm`, `.c`, `.cpp` and `.swift` file under
+`path`, minus `exclude`. Directories named `android`, `test`, `tests`,
+`__tests__`, `__mocks__`, `jest` or `node_modules` are skipped at any depth,
+also when `sources` is set.
+
+Modules reach one app target only: the one `spm add` links the `Autolinked`
+aggregate to. Other targets in the project do not see them. Choose the target
+with `--productName`.
+
+Add third-party Swift packages to the app target in Xcode (File > Add Package
+Dependencies). Local modules cannot import them.
 
 ## Where SwiftPM settings live
 
