@@ -11,6 +11,7 @@
 
 package com.facebook.react.views.image
 
+import android.content.Context
 import android.graphics.Color
 import android.util.DisplayMetrics
 import com.facebook.common.logging.FLog
@@ -29,6 +30,9 @@ import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.events.BlackHoleEventDispatcher
+import com.facebook.react.uimanager.events.EventDispatcher
+import com.facebook.react.uimanager.events.EventDispatcherProvider
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.util.RNLog
 import com.facebook.react.views.imagehelper.ImageSource
@@ -43,6 +47,7 @@ import org.mockito.MockedStatic
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
@@ -144,6 +149,33 @@ class ReactImagePropertyTest {
     view.maybeUpdateView()
     assertThat(ImageSource.getTransparentBitmapImageSource(view.context))
         .isEqualTo(view.imageSource)
+  }
+
+  @Test
+  fun testProgressBarImageDoesNotWarnAboutRounding() {
+    val reactContext =
+        ReactContextWithEventDispatcher(RuntimeEnvironment.getApplication()).apply {
+          initializeWithInstance(createMockCatalystInstance())
+        }
+    val viewManager = ReactImageManager()
+    val themedContext = ThemedReactContext(reactContext, reactContext, null, -1)
+    val view = viewManager.createViewInstance(themedContext)
+    view.setShouldNotifyLoadEvents(true)
+
+    // Every update installs the progress bar image again unless it is already in place.
+    for (uri in listOf("https://example.com/a.png", "https://example.com/b.png")) {
+      val sources = Arguments.createArray()
+      val source = Arguments.createMap()
+      source.putString("uri", uri)
+      sources.pushMap(source)
+      viewManager.setSource(view, sources)
+      view.maybeUpdateView()
+    }
+
+    flogMock.verify(
+        { FLog.w(any<String>(), eq("Don't know how to round that drawable: %s"), any<Any>()) },
+        never(),
+    )
   }
 
   @Test
@@ -280,5 +312,11 @@ class ReactImagePropertyTest {
     headers.putString("key", "value")
     viewManager.setHeaders(mockView, headers)
     verify(mockView).setHeaders(headers)
+  }
+
+  /** A [BridgeReactContext] that can also hand out an [EventDispatcher], as the real ones do. */
+  private class ReactContextWithEventDispatcher(context: Context) :
+      BridgeReactContext(context), EventDispatcherProvider {
+    override fun getEventDispatcher(): EventDispatcher = BlackHoleEventDispatcher
   }
 }
