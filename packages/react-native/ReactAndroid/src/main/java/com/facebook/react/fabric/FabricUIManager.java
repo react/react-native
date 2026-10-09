@@ -260,6 +260,7 @@ public class FabricUIManager
 
     mViewManagerRegistry = viewManagerRegistry;
     mReactApplicationContext.registerComponentCallbacks(viewManagerRegistry);
+    TextLayoutManager.createSpannableCache(mReactApplicationContext);
   }
 
   @Override
@@ -497,6 +498,7 @@ public class FabricUIManager
     }
     mBinding = null;
 
+    TextLayoutManager.destroySpannableCache(mReactApplicationContext);
     ViewManagerPropertyUpdater.clear();
   }
 
@@ -659,7 +661,8 @@ public class FabricUIManager
             ? (ReactTextViewManagerCallback) textViewManager
             : null,
         attachmentsPositions,
-        mTextEffectRegistry);
+        mTextEffectRegistry,
+        mReactApplicationContext);
   }
 
   @AnyThread
