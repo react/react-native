@@ -5560,9 +5560,9 @@ type repl$DefineCommandOptions = (...args: Array<any>) => void | {
   ...
 };
 
-declare class $SymbolReplModeMagic mixins Symbol {}
-declare class $SymbolReplModeSloppy mixins Symbol {}
-declare class $SymbolReplModeStrict mixins Symbol {}
+declare opaque type $SymbolReplModeMagic: symbol;
+declare opaque type $SymbolReplModeSloppy: symbol;
+declare opaque type $SymbolReplModeStrict: symbol;
 
 declare module 'repl' {
   declare var REPL_MODE_MAGIC: $SymbolReplModeMagic;

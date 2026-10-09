@@ -85,7 +85,7 @@ declare module 'react-test-renderer/shallow' {
   declare export default class ShallowRenderer {
     static createRenderer(): ShallowRenderer;
     getMountedInstance(): ReactTestInstance;
-    getRenderOutput<E: React.MixedElement>(): E;
+    getRenderOutput<E extends React.MixedElement>(): E;
     getRenderOutput(): React.MixedElement;
     render(element: React.MixedElement, context?: any): void;
     unmount(): void;

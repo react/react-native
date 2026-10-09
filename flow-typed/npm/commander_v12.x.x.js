@@ -14,7 +14,7 @@
 // Flowgen v1.21.0
 
 declare module 'commander' {
-  declare type LiteralUnion<LiteralType, BaseType: string | number> =
+  declare type LiteralUnion<LiteralType, BaseType extends string | number> =
     LiteralType | {...BaseType, ...{[key: empty]: empty, ...}};
 
   declare export class CommanderError extends Error {
@@ -77,7 +77,7 @@ declare module 'commander' {
     /**
      * Set the default value, and optionally supply the description to be displayed in the help.
      */
-    default(value: mixed, description?: string): this;
+    default(value: unknown, description?: string): this;
 
     /**
      * Set the custom handler for processing CLI command arguments into argument values.
@@ -87,7 +87,7 @@ declare module 'commander' {
     /**
      * Only allow argument value to be one of choices.
      */
-    choices(values: $ReadOnlyArray<string>): this;
+    choices(values: ReadonlyArray<string>): this;
 
     /**
      * Make argument required.
@@ -111,7 +111,7 @@ declare module 'commander' {
     negate: boolean;
     defaultValue?: any;
     defaultValueDescription?: string;
-    presetArg?: mixed;
+    presetArg?: unknown;
     envVar?: string;
     parseArg?: <T>(value: string, previous: T) => T;
     hidden: boolean;
@@ -121,7 +121,7 @@ declare module 'commander' {
     /**
      * Set the default value, and optionally supply the description to be displayed in the help.
      */
-    default(value: mixed, description?: string): this;
+    default(value: unknown, description?: string): this;
 
     /**
      * Preset to use when option used without option-argument, especially optional but also boolean and negated.
@@ -131,7 +131,7 @@ declare module 'commander' {
      * new Option('--donate [amount]').preset('20').argParser(parseFloat);
      * ```
      */
-    preset(arg: mixed): this;
+    preset(arg: unknown): this;
 
     /**
      * Add option name(s) that conflict with this option.
@@ -184,7 +184,7 @@ declare module 'commander' {
     /**
      * Only allow option value to be one of choices.
      */
-    choices(values: $ReadOnlyArray<string>): this;
+    choices(values: ReadonlyArray<string>): this;
 
     /**
      * Return option name.
@@ -344,9 +344,9 @@ declare module 'commander' {
   declare export class Command {
     args: string[];
     processedArgs: any[];
-    readonly commands: $ReadOnlyArray<Command>;
-    readonly options: $ReadOnlyArray<Option>;
-    readonly registeredArguments: $ReadOnlyArray<Argument>;
+    readonly commands: ReadonlyArray<Command>;
+    readonly options: ReadonlyArray<Option>;
+    readonly registeredArguments: ReadonlyArray<Argument>;
     parent: Command | null;
     constructor(name?: string): this;
 
@@ -442,7 +442,7 @@ declare module 'commander' {
       fn: (value: string, previous: T) => T,
       defaultValue?: T,
     ): this;
-    argument(name: string, description?: string, defaultValue?: mixed): this;
+    argument(name: string, description?: string, defaultValue?: unknown): this;
 
     /**
      * Define argument syntax for command, adding a prepared argument.
@@ -666,8 +666,8 @@ declare module 'commander' {
      * or store separately (specify false). In both cases the option values can be accessed using .opts().
      * @returns `this` command for chaining
      */
-    storeOptionsAsProperties<T: OptionValues>(): this & T;
-    storeOptionsAsProperties<T: OptionValues>(
+    storeOptionsAsProperties<T extends OptionValues>(): this & T;
+    storeOptionsAsProperties<T extends OptionValues>(
       storeAsProperties: true,
     ): this & T;
     storeOptionsAsProperties(storeAsProperties?: boolean): this;
@@ -680,14 +680,14 @@ declare module 'commander' {
     /**
      * Store option value.
      */
-    setOptionValue(key: string, value: mixed): this;
+    setOptionValue(key: string, value: unknown): this;
 
     /**
      * Store option value and where the value came from.
      */
     setOptionValueWithSource(
       key: string,
-      value: mixed,
+      value: unknown,
       source: OptionValueSource,
     ): this;
 
@@ -755,7 +755,7 @@ declare module 'commander' {
      * ```
      * @returns `this` command for chaining
      */
-    parse(argv?: $ReadOnlyArray<string>, options?: ParseOptions): this;
+    parse(argv?: ReadonlyArray<string>, options?: ParseOptions): this;
 
     /**
      * Parse `argv`, setting options and invoking commands when defined.
@@ -772,7 +772,7 @@ declare module 'commander' {
      * @returns Promise
      */
     parseAsync(
-      argv?: $ReadOnlyArray<string>,
+      argv?: ReadonlyArray<string>,
       options?: ParseOptions,
     ): Promise<this>;
 
@@ -791,12 +791,12 @@ declare module 'commander' {
     /**
      * Return an object containing local option values as key-value pairs
      */
-    opts<T: OptionValues>(): T;
+    opts<T extends OptionValues>(): T;
 
     /**
      * Return an object containing merged local and global option values as key-value pairs.
      */
-    optsWithGlobals<T: OptionValues>(): T;
+    optsWithGlobals<T extends OptionValues>(): T;
 
     /**
      * Set the description.
@@ -847,7 +847,7 @@ declare module 'commander' {
      * Only the first alias is shown in the auto-generated help.
      * @returns `this` command for chaining
      */
-    aliases(aliases: $ReadOnlyArray<string>): this;
+    aliases(aliases: ReadonlyArray<string>): this;
 
     /**
      * Get aliases for the command.
