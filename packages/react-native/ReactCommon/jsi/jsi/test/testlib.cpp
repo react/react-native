@@ -2520,6 +2520,72 @@ TEST_P(JSITest, ArrayBufferDetachedTest) {
   EXPECT_TRUE(ab.detached(rd));
 }
 
+struct ArrayBufferGuardState {
+  void before() { ++entries; ++depth; }
+  void after() { ++exits; --depth; }
+  int entries = 0;
+  int exits = 0;
+  int depth = 0;
+  int allocationDepth = 0;
+};
+
+class GuardTestBuffer final : public MutableBuffer {
+ public:
+  size_t size() const override { return bytes_.size(); }
+  uint8_t* data() override { return bytes_.data(); }
+ private:
+  std::vector<uint8_t> bytes_{7, 8, 9};
+};
+
+class GuardTestAllocator final : public RuntimeDecorator<Runtime, Runtime> {
+ public:
+  GuardTestAllocator(ArrayBufferGuardState& state, bool throws)
+      : RuntimeDecorator(*this), state_(state), throws_(throws) {}
+  ArrayBuffer createArrayBuffer(std::shared_ptr<MutableBuffer> buffer) override {
+    state_.allocationDepth = state_.depth;
+    if (throws_) { throw std::runtime_error("allocation failed"); }
+    return make<ArrayBuffer>(new BufferValue(std::move(buffer)));
+  }
+  size_t size(const ArrayBuffer& buffer) override {
+    return static_cast<const BufferValue*>(getPointerValue(buffer))->buffer->size();
+  }
+  uint8_t* data(const ArrayBuffer& buffer) override {
+    return static_cast<const BufferValue*>(getPointerValue(buffer))->buffer->data();
+  }
+ private:
+  struct BufferValue final : PointerValue {
+    explicit BufferValue(std::shared_ptr<MutableBuffer> value) : buffer(std::move(value)) {}
+    void invalidate() noexcept override { delete this; }
+    std::shared_ptr<MutableBuffer> buffer;
+  };
+  ArrayBufferGuardState& state_;
+  bool throws_;
+};
+
+TEST(RuntimeDecoratorTest, ArrayBufferEntersGuardDuringAllocation) {
+  ArrayBufferGuardState state;
+  GuardTestAllocator allocator(state, false);
+  WithRuntimeDecorator<ArrayBufferGuardState> runtime(allocator, state);
+  ArrayBuffer buffer(runtime, std::make_shared<GuardTestBuffer>());
+  EXPECT_EQ(state.allocationDepth, 1);
+  EXPECT_EQ(state.entries, 1);
+  EXPECT_EQ(state.exits, 1);
+  EXPECT_EQ(state.depth, 0);
+  EXPECT_EQ(buffer.size(runtime), 3);
+  EXPECT_EQ(buffer.data(runtime)[0], 7);
+}
+
+TEST(RuntimeDecoratorTest, ArrayBufferExitsGuardWhenAllocationThrows) {
+  ArrayBufferGuardState state;
+  GuardTestAllocator allocator(state, true);
+  WithRuntimeDecorator<ArrayBufferGuardState> runtime(allocator, state);
+  EXPECT_THROW(ArrayBuffer(runtime, std::make_shared<GuardTestBuffer>()), std::runtime_error);
+  EXPECT_EQ(state.allocationDepth, 1);
+  EXPECT_EQ(state.entries, 1);
+  EXPECT_EQ(state.exits, 1);
+  EXPECT_EQ(state.depth, 0);
+}
+
 INSTANTIATE_TEST_CASE_P(
     Runtimes,
     JSITest,
