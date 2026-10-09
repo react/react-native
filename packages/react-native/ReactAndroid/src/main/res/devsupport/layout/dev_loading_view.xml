@@ -1,43 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:id="@+id/loading_pill"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:minHeight="40dp"
     android:orientation="horizontal"
-    android:background="#404040"
+    android:gravity="center_vertical"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
     >
 
     <TextView
         android:id="@+id/loading_text"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_gravity="center_vertical"
         android:gravity="center"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:textSize="12sp"
-        android:fontFamily="sans-serif"
+        android:lineSpacingExtra="2dp"
+        android:textSize="12.5sp"
+        android:fontFamily="sans-serif-medium"
         />
 
-    <Button
+    <ImageView
         android:id="@+id/dismiss_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginEnd="10dp"
-        android:minWidth="0dp"
-        android:minHeight="0dp"
-        android:text="@string/catalyst_loading_dismiss"
-        android:textAllCaps="false"
-        android:textSize="11sp"
-        android:fontFamily="sans-serif"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="8dp"
+        android:padding="5dp"
+        android:src="@drawable/ic_dev_loading_dismiss"
+        android:contentDescription="@string/catalyst_loading_dismiss"
         />
 
 </LinearLayout>
