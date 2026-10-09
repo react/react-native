@@ -13,7 +13,30 @@ import {
   type DisplayMetrics,
   type DisplayMetricsAndroid,
 } from './NativeDeviceInfo';
-import {useEffect, useState} from 'react';
+import {useSyncExternalStore} from 'react';
+
+const subscribe = (onStoreChange: () => void) => {
+  const subscription = Dimensions.addEventListener('change', onStoreChange);
+  return () => subscription.remove();
+};
+
+let cachedScreen: DisplayMetrics | DisplayMetricsAndroid | void;
+
+function getSnapshot(): DisplayMetrics | DisplayMetricsAndroid {
+  const screen = Dimensions.get('screen');
+  // Dimensions can emit a new screen object without changing its metrics.
+  // Preserve snapshot identity so those events do not trigger a render.
+  if (
+    cachedScreen == null ||
+    cachedScreen.width !== screen.width ||
+    cachedScreen.height !== screen.height ||
+    cachedScreen.scale !== screen.scale ||
+    cachedScreen.fontScale !== screen.fontScale
+  ) {
+    cachedScreen = screen;
+  }
+  return cachedScreen;
+}
 
 /**
  * React hook that provides the screen's width, height, scale, and
@@ -23,31 +46,5 @@ import {useEffect, useState} from 'react';
  */
 export default function useScreenDimensions():
   DisplayMetrics | DisplayMetricsAndroid {
-  const [dimensions, setDimensions] = useState(() => Dimensions.get('screen'));
-  useEffect(() => {
-    function handleChange({
-      screen,
-    }: Readonly<{
-      screen: DisplayMetrics | DisplayMetricsAndroid,
-      ...
-    }>) {
-      if (
-        dimensions.width !== screen.width ||
-        dimensions.height !== screen.height ||
-        dimensions.scale !== screen.scale ||
-        dimensions.fontScale !== screen.fontScale
-      ) {
-        setDimensions(screen);
-      }
-    }
-    const subscription = Dimensions.addEventListener('change', handleChange);
-    // We might have missed an update between calling `get` in render and
-    // `addEventListener` in this handler, so we set it here. If there was
-    // no change, React will filter out this update as a no-op.
-    handleChange({screen: Dimensions.get('screen')});
-    return () => {
-      subscription.remove();
-    };
-  }, [dimensions]);
-  return dimensions;
+  return useSyncExternalStore(subscribe, getSnapshot);
 }

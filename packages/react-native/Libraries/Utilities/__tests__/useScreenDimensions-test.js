@@ -100,4 +100,32 @@ describe('useScreenDimensions', () => {
     renderer = null;
     expect(remove).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps its subscription across screen updates', async () => {
+    const addEventListener = jest.spyOn(Dimensions, 'addEventListener');
+    renderer = await create(<TestComponent />);
+    const subscription = addEventListener.mock.results[0].value;
+    const remove = jest.spyOn(subscription, 'remove');
+    for (const width of [600, 800]) {
+      await act(() => {
+        Dimensions.set({window, screen: {...screen, width}});
+      });
+      expect(observed).toEqual({...screen, width});
+    }
+    expect(addEventListener).toHaveBeenCalledTimes(1);
+    expect(remove).not.toHaveBeenCalled();
+    await unmount(renderer);
+    renderer = null;
+    expect(remove).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads current metrics after changes while unmounted', async () => {
+    renderer = await create(<TestComponent />);
+    await unmount(renderer);
+    renderer = null;
+    const nextScreen = {...screen, width: 800};
+    Dimensions.set({window, screen: nextScreen});
+    renderer = await create(<TestComponent />);
+    expect(observed).toEqual(nextScreen);
+  });
 });
