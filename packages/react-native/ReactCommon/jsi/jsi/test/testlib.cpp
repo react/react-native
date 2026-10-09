@@ -1981,6 +1981,54 @@ TEST_P(JSITest, CreateFromUtf16Test) {
   EXPECT_EQ(cp, 55357); // 0xD83D in decimal
 }
 
+TEST_P(JSITest, CreateValueFromJsonUtf8Test) {
+  uint8_t jsonText[] = "{\"a\": 1}";
+
+  // This Runtime Decorator is used to test the default createValueFromJsonUtf8
+  // implementation for VMs that do not provide their own implementation
+  class DefaultRD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit DefaultRD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    Value createValueFromJsonUtf8(const uint8_t* json, size_t length) override {
+      return Runtime::createValueFromJsonUtf8(json, length);
+    }
+  };
+
+  DefaultRD defaultRd(rt);
+  Object obj =
+      Value::createFromJsonUtf8(defaultRd, jsonText, sizeof(jsonText) - 1)
+          .getObject(defaultRd);
+  EXPECT_EQ(obj.getProperty(defaultRd, "a").getNumber(), 1);
+
+  // A RuntimeDecorator must forward createValueFromJsonUtf8 to the runtime it
+  // decorates, like every other method.
+  class CountingRD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit CountingRD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    Value createValueFromJsonUtf8(const uint8_t* json, size_t length) override {
+      ++count;
+      return plain().createValueFromJsonUtf8(json, length);
+    }
+
+    int count = 0;
+  };
+
+  // Overrides nothing, so it should forward everything to CountingRD.
+  class OuterRD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit OuterRD(Runtime& rt) : RuntimeDecorator(rt) {}
+  };
+
+  CountingRD counting(rt);
+  OuterRD outer(counting);
+  obj = outer.createValueFromJsonUtf8(jsonText, sizeof(jsonText) - 1)
+            .getObject(outer);
+  EXPECT_EQ(counting.count, 1);
+  EXPECT_EQ(obj.getProperty(outer, "a").getNumber(), 1);
+}
+
 TEST_P(JSITest, GetStringDataTest) {
   // This Runtime Decorator is used to test the default getStringData
   // implementation for VMs that do not provide their own implementation
