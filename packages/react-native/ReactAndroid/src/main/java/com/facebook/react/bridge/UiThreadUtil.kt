@@ -15,7 +15,7 @@ import com.facebook.react.common.build.ReactBuildConfig
 public object UiThreadUtil {
 
   private val mainHandler: Handler by
-      lazy(LazyThreadSafetyMode.NONE) { Handler(Looper.getMainLooper()) }
+      lazy(LazyThreadSafetyMode.SYNCHRONIZED) { Handler(Looper.getMainLooper()) }
 
   /**
    * Returns the handler associated with the main (UI) thread.
