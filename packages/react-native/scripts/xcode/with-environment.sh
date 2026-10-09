@@ -49,5 +49,5 @@ fi
 
 # Execute argument, if present
 if [ -n "$1" ]; then
-  "$1"
+  "$@"
 fi
