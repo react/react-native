@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/TurboModule.h>
+#include <React/NativeModuleCore.h>
 
 namespace facebook::react {
 

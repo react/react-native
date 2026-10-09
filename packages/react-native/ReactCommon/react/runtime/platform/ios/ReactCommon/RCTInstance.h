@@ -9,9 +9,9 @@
 
 #import <UIKit/UIKit.h>
 
+#import <React/CallInvoker.h>
 #import <React/RCTDefines.h>
 #import <React/RCTJavaScriptLoader.h>
-#import <ReactCommon/CallInvoker.h>
 #import <jsinspector-modern/ReactCdp.h>
 #import <react/runtime/JSRuntimeFactory.h>
 

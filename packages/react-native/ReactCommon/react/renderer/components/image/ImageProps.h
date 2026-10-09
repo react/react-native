@@ -12,10 +12,10 @@
 #include <optional>
 #include <string>
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/graphics/Color.h>
-#include <react/renderer/imagemanager/primitives.h>
+#include <React/Graphics.h>
+#include <React/ImageManager.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
