@@ -385,6 +385,8 @@ export default class Pressability {
     top: number,
   }> = null;
   _touchActivatePosition: ?Readonly<{
+    locationX: number,
+    locationY: number,
     pageX: number,
     pageY: number,
   }>;
@@ -721,6 +723,7 @@ export default class Pressability {
       !isActivationSignal(prevState) && isActivationSignal(nextState);
 
     if (isInitialTransition || isActivationTransition) {
+      this._recordTouchActivatePosition(event);
       this._measureResponderRegion();
     }
 
@@ -764,12 +767,16 @@ export default class Pressability {
 
   _activate(event: GestureResponderEvent): void {
     const {onPressIn} = this._config;
-    const {pageX, pageY} = getTouchFromPressEvent(event);
-    this._touchActivatePosition = {pageX, pageY};
+    this._recordTouchActivatePosition(event);
     this._touchActivateTime = Date.now();
     if (onPressIn != null) {
       onPressIn(event);
     }
+  }
+
+  _recordTouchActivatePosition(event: GestureResponderEvent): void {
+    const {locationX, locationY, pageX, pageY} = getTouchFromPressEvent(event);
+    this._touchActivatePosition = {locationX, locationY, pageX, pageY};
   }
 
   _deactivate(event: GestureResponderEvent): void {
@@ -820,16 +827,42 @@ export default class Pressability {
     if (!left && !top && !width && !height && !pageX && !pageY) {
       return;
     }
-    this._responderRegion = {
+    const responderRegion = {
       bottom: pageY + height,
       left: pageX,
       right: pageX + width,
       top: pageY,
     };
+
+    const touch = this._touchActivatePosition;
+    if (
+      touch != null &&
+      !this._isTouchWithinResponderRegion(touch, responderRegion)
+    ) {
+      const correctedLeft = touch.pageX - touch.locationX;
+      const correctedTop = touch.pageY - touch.locationY;
+      const correctedRegion = {
+        bottom: correctedTop + height,
+        left: correctedLeft,
+        right: correctedLeft + width,
+        top: correctedTop,
+      };
+
+      if (this._isTouchWithinResponderRegion(touch, correctedRegion)) {
+        this._responderRegion = correctedRegion;
+        return;
+      }
+    }
+
+    this._responderRegion = responderRegion;
   };
 
   _isTouchWithinResponderRegion(
-    touch: GestureResponderEvent['nativeEvent'],
+    touch: Readonly<{
+      pageX: number,
+      pageY: number,
+      ...
+    }>,
     responderRegion: Readonly<{
       bottom: number,
       left: number,
