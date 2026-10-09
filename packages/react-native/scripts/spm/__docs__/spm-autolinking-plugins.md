@@ -131,7 +131,9 @@ The declarations are recorded to
 immutable app-local slots as React Native, and added to Xcode's exact linker and
 embed settings. They are not emitted as SwiftPM product dependencies. Adding or
 removing one requires `spm update`; the build-time `spm sync` intentionally does
-not mutate runtime framework settings.
+not mutate runtime framework settings. When the frameworks that plugins provide
+and the frameworks that the project links disagree, sync fails the build. An
+`error:` line names each framework and the command to run.
 
 ### `watchPaths` — plugin staleness inputs
 

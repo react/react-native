@@ -34,9 +34,10 @@
  *                              .spm-injected.json) and drop the marker.
  *   scaffold                   Generate Package.swift for community deps that
  *                              lack SPM support.
- *   sync / codegen / download  Advanced/internal: `sync` is invoked by the
- *                              generated Xcode build phase; `codegen` and
- *                              `download` run a single pipeline step.
+ *   sync                       Re-run the build-time autolinking sync and its
+ *                              checks. The generated Xcode build phase runs
+ *                              it; run it by hand after precompiling a module.
+ *   codegen / download         Advanced/internal: run a single pipeline step.
  *
  * Zero-arg `npx react-native spm` auto-detects: a freshly-scaffolded CocoaPods
  * project (clean tree, stock Podfile) → `add --deintegrate`; an injected
@@ -93,6 +94,7 @@ const {
 const {main: generatePackage} = require('./spm/generate-spm-package');
 const {findSourcePath} = require('./spm/generate-spm-package');
 const {
+  PluginFrameworkMismatchError,
   SPM_INJECTED_MARKER,
   cleanupDanglingJavaScriptCoreRef,
   cleanupLeftoverPodsGroup,
@@ -1200,8 +1202,11 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
         iosDeploymentTarget,
       ]);
     } catch (e) {
-      if (e instanceof MissingManifestError) {
-        // The per-dep `error:` lines were already printed by the autolinker.
+      if (
+        e instanceof MissingManifestError ||
+        e instanceof PluginFrameworkMismatchError
+      ) {
+        // The `error:` lines were already printed.
         // Exit 2 (distinct from generic failure) so the Xcode build phase can
         // turn this into a hard build error while staying lenient on transient
         // sync failures.

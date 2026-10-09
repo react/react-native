@@ -1002,6 +1002,7 @@ module.exports = {
   finalizeArtifactPublication,
   prepareFlavoredFrameworks,
   readFlavoredFrameworksManifest,
+  readPluginFrameworks,
   sdkConditionForSlice,
   transformReactModuleMap,
   validatePair,

@@ -21,7 +21,7 @@ const {
   readScriptPhasesManifest,
 } = require('../generate-spm-xcodeproj');
 const {DOMParser} = require('@xmldom/xmldom');
-const {execFileSync} = require('node:child_process');
+const {execFileSync, spawnSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -330,6 +330,181 @@ describe('sync scripts', () => {
     it('still reports a changed source file', () => {
       touch(source);
       expect(probe(watchedDir, stampFile).trim()).toBe(source);
+    });
+  });
+
+  describe('stale inputs and a recorded plugin framework mismatch', () => {
+    const MISMATCH =
+      'error: The Xcode project links ExpoCore.framework, but no autolinking plugin provides it on this machine.';
+
+    let root;
+    let srcRoot;
+    let xcodeprojPath;
+    let generatedDir;
+    let fakeNode;
+    let rnDir;
+    let syncLog;
+
+    // Does to the generated dir what a real sync does: on a mismatch it prints
+    // the errors, records them, refreshes the stamp, and exits 2.
+    const FAKE_NODE = `#!/bin/bash
+if [ "$1" = "--print" ]; then
+  echo "$FAKE_RN_DIR"
+  exit 0
+fi
+echo sync >> "$FAKE_SYNC_LOG"
+DIR="$SRCROOT/build/generated/autolinking"
+date > "$DIR/.spm-sync-stamp"
+if [ -n "$FAKE_MISMATCH" ]; then
+  echo "$FAKE_MISMATCH" >&2
+  echo "$FAKE_MISMATCH" > "$DIR/.spm-plugin-mismatch"
+  exit 2
+fi
+rm -f "$DIR/.spm-plugin-mismatch"
+`;
+
+    const setTime = (file, secondsFromNow) => {
+      const time = Date.now() / 1000 + secondsFromNow;
+      fs.utimesSync(file, time, time);
+    };
+
+    beforeEach(() => {
+      root = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-sync-mismatch-'));
+      srcRoot = path.join(root, 'app');
+      xcodeprojPath = path.join(srcRoot, 'MyApp.xcodeproj');
+      generatedDir = path.join(srcRoot, 'build', 'generated', 'autolinking');
+      rnDir = path.join(root, 'react-native');
+      fs.mkdirSync(xcodeprojPath, {recursive: true});
+      fs.mkdirSync(generatedDir, {recursive: true});
+      fs.mkdirSync(path.join(rnDir, 'scripts'), {recursive: true});
+      fs.writeFileSync(path.join(rnDir, 'scripts', 'setup-apple-spm.js'), '');
+      fs.writeFileSync(path.join(srcRoot, 'package.json'), '{}\n');
+      fs.writeFileSync(path.join(xcodeprojPath, '.spm-injected.json'), '{}\n');
+      fs.writeFileSync(
+        path.join(generatedDir, '.spm-plugin-flavored-frameworks.json'),
+        '[]\n',
+      );
+      for (const file of [
+        path.join(srcRoot, 'package.json'),
+        path.join(xcodeprojPath, '.spm-injected.json'),
+        path.join(generatedDir, '.spm-plugin-flavored-frameworks.json'),
+      ]) {
+        setTime(file, -100);
+      }
+      fakeNode = path.join(root, 'node');
+      fs.writeFileSync(fakeNode, FAKE_NODE, {mode: 0o755});
+      syncLog = path.join(root, 'syncs.log');
+    });
+
+    afterEach(() => {
+      fs.rmSync(root, {recursive: true, force: true});
+    });
+
+    function build({mismatch}) {
+      fs.writeFileSync(syncLog, '');
+      const result = spawnSync('/bin/bash', ['-c', script], {
+        encoding: 'utf8',
+        env: {
+          PATH: process.env.PATH,
+          SRCROOT: srcRoot,
+          PROJECT_FILE_PATH: xcodeprojPath,
+          NODE_BINARY: fakeNode,
+          FAKE_RN_DIR: rnDir,
+          FAKE_SYNC_LOG: syncLog,
+          FAKE_MISMATCH: mismatch ? MISMATCH : '',
+        },
+      });
+      const output = result.stdout + result.stderr;
+      return {
+        status: result.status,
+        errors: output.split(MISMATCH).length - 1,
+        syncs: fs.readFileSync(syncLog, 'utf8').split('sync').length - 1,
+      };
+    }
+
+    function writeStamp(secondsFromNow) {
+      const stamp = path.join(generatedDir, '.spm-sync-stamp');
+      fs.writeFileSync(stamp, 'earlier sync\n');
+      setTime(stamp, secondsFromNow);
+    }
+
+    it('syncs when the marker is newer than the stamp', () => {
+      writeStamp(-50);
+      setTime(path.join(xcodeprojPath, '.spm-injected.json'), -10);
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 1,
+      });
+    });
+
+    it('does not sync when only project.pbxproj is newer than the stamp', () => {
+      writeStamp(-50);
+      const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
+      fs.writeFileSync(pbxprojPath, '// !$*UTF8*$!\n');
+      setTime(pbxprojPath, -10);
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 0,
+      });
+    });
+
+    it('passes the next build after the recovery sync clears the mismatch', () => {
+      build({mismatch: true});
+      // `npx react-native spm sync`, run after precompiling the framework.
+      spawnSync(fakeNode, ['setup-apple-spm.js', 'sync'], {
+        env: {SRCROOT: srcRoot, FAKE_SYNC_LOG: syncLog, FAKE_MISMATCH: ''},
+      });
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 0,
+      });
+    });
+
+    it('fails the first build and prints the errors once', () => {
+      expect(build({mismatch: true})).toEqual({
+        status: 1,
+        errors: 1,
+        syncs: 1,
+      });
+    });
+
+    it('fails later builds with the recorded errors without re-running sync', () => {
+      build({mismatch: true});
+      expect(build({mismatch: true})).toEqual({
+        status: 1,
+        errors: 1,
+        syncs: 0,
+      });
+    });
+
+    it.each([
+      [
+        'the marker changes',
+        () => path.join(xcodeprojPath, '.spm-injected.json'),
+      ],
+      [
+        'spm update rewrites the plugin manifest',
+        () => path.join(generatedDir, '.spm-plugin-flavored-frameworks.json'),
+      ],
+      ['a dependency input changes', () => path.join(srcRoot, 'package.json')],
+    ])('re-runs sync when %s', (_, changedFile) => {
+      build({mismatch: true});
+      setTime(path.join(generatedDir, '.spm-sync-stamp'), -50);
+      setTime(path.join(generatedDir, '.spm-plugin-mismatch'), -50);
+      setTime(changedFile(), -10);
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 1,
+      });
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 0,
+      });
     });
   });
 
