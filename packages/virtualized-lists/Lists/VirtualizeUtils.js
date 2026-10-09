@@ -59,6 +59,50 @@ export function elementsThatOverlapOffsets(
 }
 
 /**
+ * The mounted cells in `range` that cover the viewport, found from their
+ * measured frames, if the viewport starts in one of them.
+ */
+function mountedCellsInViewport(
+  visibleBegin: number,
+  visibleEnd: number,
+  range: {first: number, last: number, ...},
+  props: CellMetricProps,
+  listMetrics: ListMetricsAggregator,
+  zoomScale: number,
+): ?{first: number, last: number} {
+  const lastIndex = Math.min(range.last, props.getItemCount(props.data) - 1);
+  let left = Math.max(0, range.first);
+  let right = lastIndex;
+  while (left <= right) {
+    const mid = left + Math.floor((right - left) / 2);
+    const frame = listMetrics.getCellMetricsApprox(mid, props);
+    if (visibleBegin < frame.offset * zoomScale) {
+      right = mid - 1;
+    } else if (visibleBegin >= (frame.offset + frame.length) * zoomScale) {
+      left = mid + 1;
+    } else {
+      if (!frame.isMounted) {
+        return null;
+      }
+      let last = mid;
+      while (last < lastIndex) {
+        const next = listMetrics.getCellMetrics(last + 1, props);
+        if (
+          next == null ||
+          !next.isMounted ||
+          next.offset * zoomScale >= visibleEnd
+        ) {
+          break;
+        }
+        last++;
+      }
+      return {first: mid, last};
+    }
+  }
+  return null;
+}
+
+/**
  * Computes the number of elements in the `next` range that are new compared to the `prev` range.
  * Handy for calculating how many new items will be rendered when the render window changes so we
  * can restrict the number of new items render at once so that content can appear on the screen
@@ -156,6 +200,36 @@ export function computeWindowedRenderLimits(
     listMetrics,
     zoomScale,
   );
+  // An unmeasured cell is estimated from the current average cell length, but
+  // a spacer keeps the size it was rendered with. Once the average changes,
+  // the estimates for the cells in a spacer can overlap the rendered cells
+  // after it, and the search can land on them instead: after a large prepend
+  // under maintainVisibleContentPosition, that unmounts the cells on screen.
+  // When the search disagrees with a mounted cell's measured frame about
+  // where the viewport starts, use the mounted cells that cover it.
+  const mounted = mountedCellsInViewport(
+    visibleBegin,
+    visibleEnd,
+    prev,
+    props,
+    listMetrics,
+    zoomScale,
+  );
+  if (
+    mounted != null &&
+    first !== mounted.first &&
+    // At a boundary the search picks the earlier cell.
+    first !== mounted.first - 1
+  ) {
+    first = mounted.first;
+    last = Math.max(last ?? mounted.last, mounted.last);
+    if (overscanFirst != null) {
+      overscanFirst = Math.min(overscanFirst, first);
+    }
+    if (overscanLast != null) {
+      overscanLast = Math.max(overscanLast, last);
+    }
+  }
   overscanFirst = overscanFirst == null ? 0 : overscanFirst;
   first = first == null ? Math.max(0, overscanFirst) : first;
   overscanLast = overscanLast == null ? itemCount - 1 : overscanLast;

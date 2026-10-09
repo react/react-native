@@ -3048,6 +3048,98 @@ it('handles rapid prepends with coalesced scroll event (regression for #53542)',
   ).toBeGreaterThanOrEqual(0);
 });
 
+// Trigger: A large prepend at the top of the list. The prepended cells rendered above the spacer for the others
+// are taller than average, and their layouts change the average cell length before maintainVisibleContentPosition's
+// correction arrives. The spacer keeps its rendered size, but the estimates for its cells now overlap the window.
+// Expected: The window computed from the corrected offset keeps the cells on screen rendered.
+it('keeps the cells on screen when estimates for a spacer above them overlap them', async () => {
+  const items = generateItems(100);
+  const ITEM_HEIGHT = 10;
+  const PREPENDED_ITEM_HEIGHT = 100;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={2}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(items)}
+      />,
+    );
+  });
+  const instance = component.getInstance();
+  const layoutCells = (data, indices, offsetOf, height) => {
+    for (const i of indices) {
+      simulateCellLayout(component, data, i, {
+        width: 10,
+        height,
+        x: 0,
+        y: offsetOf(i),
+      });
+    }
+  };
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: items.length * ITEM_HEIGHT},
+    });
+    layoutCells(items, [0, 1, 2, 3, 4], i => i * ITEM_HEIGHT, ITEM_HEIGHT);
+    performAllBatches();
+  });
+  await act(() => {
+    layoutCells(items, [0, 1, 2, 3, 4], i => i * ITEM_HEIGHT, ITEM_HEIGHT);
+    performAllBatches();
+  });
+  expect(instance.state.cellsAroundViewport).toEqual({first: 0, last: 4});
+
+  // Prepend 20 items. Cells 0 and 1 render for the initial region, then a
+  // spacer for cells 2-19 at the average, 18 * 10 = 180, then the window.
+  const newItems = [...generateItems(20, items.length), ...items];
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={2}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(newItems)}
+      />,
+    );
+  });
+  expect(instance.state.cellsAroundViewport).toEqual({first: 20, last: 24});
+
+  // Cells 0 and 1 are 100 tall, so cell 20 (the old cell 0) is laid out at
+  // 2 * 100 + 180 = 380. Their layouts raise the average to 250 / 7, which
+  // puts the estimate for cell 10 at 357-393. Then the scroll event with the
+  // correction.
+  const offset = 2 * PREPENDED_ITEM_HEIGHT + 18 * ITEM_HEIGHT;
+  await act(() => {
+    simulateContentLayout(component, {
+      width: 10,
+      height: offset + items.length * ITEM_HEIGHT,
+    });
+    layoutCells(
+      newItems,
+      [0, 1],
+      i => i * PREPENDED_ITEM_HEIGHT,
+      PREPENDED_ITEM_HEIGHT,
+    );
+    layoutCells(
+      newItems,
+      [20, 21, 22, 23, 24],
+      i => offset + (i - 20) * ITEM_HEIGHT,
+      ITEM_HEIGHT,
+    );
+    simulateScroll(component, {x: 0, y: offset});
+    performAllBatches();
+  });
+
+  const {first, last} = instance.state.cellsAroundViewport;
+  expect(first).toBeLessThanOrEqual(20);
+  expect(last).toBeGreaterThanOrEqual(24);
+});
+
 function generateItems(count, startKey = 0) {
   return Array(count)
     .fill()
