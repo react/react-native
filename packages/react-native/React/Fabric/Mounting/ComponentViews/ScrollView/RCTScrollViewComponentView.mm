@@ -112,6 +112,11 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
   CGRect _prevFirstVisibleFrame;
   __weak UIView *_firstVisibleView;
   NSInteger _firstVisibleViewTag;
+  // The view after _firstVisibleView, recorded only when _firstVisibleView straddles the leading
+  // edge of the viewport and this one starts inside it.
+  CGRect _prevNextVisibleFrame;
+  __weak UIView *_nextVisibleView;
+  NSInteger _nextVisibleViewTag;
 
   CGFloat _endDraggingSensitivityMultiplier;
 
@@ -713,6 +718,9 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _prevFirstVisibleFrame = CGRectZero;
   _firstVisibleView = nil;
   _firstVisibleViewTag = 0;
+  _prevNextVisibleFrame = CGRectZero;
+  _nextVisibleView = nil;
+  _nextVisibleViewTag = 0;
   _virtualViewContainerState = nil;
 }
 
@@ -1069,6 +1077,9 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
   int minIdx = props.maintainVisibleContentPosition.value().minIndexForVisible;
+  _prevNextVisibleFrame = CGRectZero;
+  _nextVisibleView = nil;
+  _nextVisibleViewTag = 0;
   for (NSUInteger ii = minIdx; ii < _contentView.subviews.count; ++ii) {
     // Find the first view that is partially or fully visible.
     UIView *subview = _contentView.subviews[ii];
@@ -1082,6 +1093,22 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
       _prevFirstVisibleFrame = subview.frame;
       _firstVisibleView = subview;
       _firstVisibleViewTag = subview.tag;
+      // If the anchor straddles the leading edge, also record the view after it, as long as that
+      // one starts inside the viewport. See _adjustForMaintainVisibleContentPosition.
+      if (ii + 1 < _contentView.subviews.count) {
+        UIView *nextView = _contentView.subviews[ii + 1];
+        CGFloat offset = horizontal ? _scrollView.contentOffset.x : _scrollView.contentOffset.y;
+        CGFloat length = horizontal ? _scrollView.bounds.size.width : _scrollView.bounds.size.height;
+        CGFloat start = horizontal ? CGRectGetMinX(subview.frame) : CGRectGetMinY(subview.frame);
+        CGFloat nextStart = horizontal ? CGRectGetMinX(nextView.frame) : CGRectGetMinY(nextView.frame);
+        // Half a point of slack, as for the delta below: after a correction, the next view's origin
+        // and the offset can differ by a rounding error in either direction.
+        if (start < offset && nextStart > offset - 0.5 && nextStart < offset + length) {
+          _prevNextVisibleFrame = nextView.frame;
+          _nextVisibleView = nextView;
+          _nextVisibleViewTag = nextView.tag;
+        }
+      }
       break;
     }
   }
@@ -1092,6 +1119,20 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
   if (!props.maintainVisibleContentPosition || _avoidAdjustmentForMaintainVisibleContentPosition) {
     return;
+  }
+
+  // The anchor is the first view that is partially or fully visible. If it straddles the leading
+  // edge and changed size in this transaction, its origin cannot say how far the content after it
+  // moved: a VirtualizedList spacer standing in for unmounted cells keeps its origin when it is
+  // re-estimated, while every cell after it moves. The same goes for a straddling anchor that was
+  // unmounted or recycled. In those cases anchor on the view after it instead. An anchor that only
+  // moved, or did not change at all, is still measured itself.
+  if (_nextVisibleView != nil && _nextVisibleView.tag == _nextVisibleViewTag &&
+      (_firstVisibleView == nil || _firstVisibleView.tag != _firstVisibleViewTag ||
+       !CGSizeEqualToSize(_firstVisibleView.frame.size, _prevFirstVisibleFrame.size))) {
+    _prevFirstVisibleFrame = _prevNextVisibleFrame;
+    _firstVisibleView = _nextVisibleView;
+    _firstVisibleViewTag = _nextVisibleViewTag;
   }
 
   // Abort if no first visible view (e.g., list was empty during mount)
