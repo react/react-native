@@ -9,8 +9,8 @@
  */
 #pragma once
 
+#include <React/RendererCore.h>
 #include <React/View.h>
-#include <react/renderer/core/PropsParserContext.h>
 #include <vector>
 
 namespace facebook::react {

@@ -10,8 +10,7 @@
 
 #ifdef RN_SERIALIZABLE_STATE
 #include <folly/dynamic.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
-#include <react/renderer/mapbuffer/MapBufferBuilder.h>
+#include <React/MapBuffer.h>
 #endif
 
 namespace facebook::react {
