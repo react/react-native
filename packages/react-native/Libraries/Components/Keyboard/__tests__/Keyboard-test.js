@@ -8,6 +8,8 @@
  * @format
  */
 
+const RCTDeviceEventEmitter =
+  require('../../../EventEmitter/RCTDeviceEventEmitter').default;
 const LayoutAnimation =
   require('../../../LayoutAnimation/LayoutAnimation').default;
 const dismissKeyboard = require('../../../Utilities/dismissKeyboard').default;
@@ -24,6 +26,25 @@ describe('Keyboard', () => {
   it('uses dismissKeyboard utility', () => {
     Keyboard.dismiss();
     expect(dismissKeyboard).toHaveBeenCalled();
+  });
+
+  it('invokes listeners with the specified context', () => {
+    const context = {};
+    let that;
+    const listener = jest.fn(function (this: unknown, _event: unknown) {
+      that = this;
+    });
+    const subscription = Keyboard.addListener(
+      'keyboardDidShow',
+      listener,
+      context,
+    );
+
+    RCTDeviceEventEmitter.emit('keyboardDidShow', {});
+
+    expect(listener).toHaveBeenCalled();
+    expect(that).toBe(context);
+    subscription.remove();
   });
 
   describe('scheduling layout animation', () => {
