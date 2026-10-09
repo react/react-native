@@ -898,7 +898,7 @@ const autoCompleteWebToTextContentTypeMap = {
  */
 const TextInput: component(
   ref?: React.RefSetter<TextInputInstance>,
-  ...props: React.ElementConfig<typeof InternalTextInput>
+  ...props: React.ComponentProps<typeof InternalTextInput>
 ) = function TextInput({
   ref: forwardedRef,
   allowFontScaling = true,
@@ -916,7 +916,7 @@ const TextInput: component(
   ...restProps
 }: {
   ref?: React.RefSetter<TextInputInstance>,
-  ...React.ElementConfig<typeof InternalTextInput>,
+  ...React.ComponentProps<typeof InternalTextInput>,
 }) {
   return (
     <InternalTextInput

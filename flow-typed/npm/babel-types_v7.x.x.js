@@ -3825,13 +3825,13 @@ declare module "@babel/types" {
   declare export function cloneNode<T>(n: T, deep?: boolean, withoutLoc?: boolean): T;
   declare export function cloneWithoutLoc<T>(n: T): T;
   declare type CommentTypeShorthand = 'leading' | 'inner' | 'trailing'
-  declare export function addComment<T: Node>(node: T, type: CommentTypeShorthand, content: string, line?: boolean): T
-  declare export function addComments<T: Node>(node: T, type: CommentTypeShorthand, comments: Array<Comment>): T
+  declare export function addComment<T extends Node>(node: T, type: CommentTypeShorthand, content: string, line?: boolean): T
+  declare export function addComments<T extends Node>(node: T, type: CommentTypeShorthand, comments: Array<Comment>): T
   declare export function inheritInnerComments(node: Node, parent: Node): void
   declare export function inheritLeadingComments(node: Node, parent: Node): void
-  declare export function inheritsComments<T: Node>(node: T, parent: Node): void
+  declare export function inheritsComments<T extends Node>(node: T, parent: Node): void
   declare export function inheritTrailingComments(node: Node, parent: Node): void
-  declare export function removeComments<T: Node>(node: T): T
+  declare export function removeComments<T extends Node>(node: T): T
   declare export function ensureBlock(node: BabelNode, key: string): BabelNodeBlockStatement
   declare export function toBindingIdentifierName(name?: ?string): string
   declare export function toBlock(node: BabelNodeStatement | BabelNodeExpression, parent?: BabelNodeFunction | null): BabelNodeBlockStatement
@@ -3843,7 +3843,7 @@ declare module "@babel/types" {
   declare export function valueToNode(value: any): BabelNodeExpression
   declare export function removeTypeDuplicates(types: Array<BabelNodeFlowType>): Array<BabelNodeFlowType>
   declare export function appendToMemberExpression(member: BabelNodeMemberExpression, append: BabelNode, computed?: boolean): BabelNodeMemberExpression
-  declare export function inherits<T: Node>(child: T, parent: BabelNode | null | void): T
+  declare export function inherits<T extends Node>(child: T, parent: BabelNode | null | void): T
   declare export function prependToMemberExpression(member: BabelNodeMemberExpression, prepend: BabelNodeExpression): BabelNodeMemberExpression
   declare export function removeProperties<T>(n: T, opts: ?{}): void;
   declare export function removePropertiesDeep<T>(n: T, opts: ?{}): T;
@@ -3879,7 +3879,7 @@ declare module "@babel/types" {
   declare export function isValidIdentifier(name: string): boolean
   declare export function isVar(node: BabelNode): node is VariableDeclaration
   declare export function matchesPattern(node: ?BabelNode, match: string | Array<string>, allowPartial?: boolean): boolean
-  declare export function validate(n: BabelNode, key: string, value: mixed): void;
+  declare export function validate(n: BabelNode, key: string, value: unknown): void;
   declare export type Node = BabelNode;
   declare export type CommentBlock = BabelNodeCommentBlock;
   declare export type CommentLine = BabelNodeCommentLine;

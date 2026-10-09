@@ -166,6 +166,18 @@ describe('NodeList', () => {
         i++;
       }, explicitThis);
     });
+
+    it('preserves an explicit null `this` argument', () => {
+      const collection = createNodeList(['a']);
+      let that;
+
+      collection.forEach(function (this: unknown) {
+        'use strict';
+        that = this;
+      }, null);
+
+      expect(that).toBe(null);
+    });
   });
 
   describe('global constructor', () => {

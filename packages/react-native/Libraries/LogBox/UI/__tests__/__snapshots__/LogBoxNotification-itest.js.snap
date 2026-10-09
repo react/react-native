@@ -91,7 +91,6 @@ exports[`LogBoxNotification should render log 1`] = `
       <rn-image
         height="8"
         overflow="hidden"
-        resizeMode="cover"
         source-scale="1"
         source-size="{28, 28}"
         source-type="local"

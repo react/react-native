@@ -143,6 +143,26 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   XCTAssertNil(child2.superview);
 }
 
+- (void)testRemoveClippedSubviewsIsKeptOnRecycledView
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  [view updateProps:makeViewProps(true) oldProps:ViewShadowNode::defaultSharedProps()];
+  [view prepareForRecycle];
+
+  // Reused for another view with removeClippedSubviews. Like the mounting layer
+  // does for an Insert, pass no old props: the view diffs against its own.
+  [view updateProps:makeViewProps(true) oldProps:nullptr];
+
+  UIView *child = [UIView new];
+  child.frame = CGRectMake(0, 400, 50, 50);
+  [view mountChildComponentView:(id)child index:0];
+
+  // Clipping is on, so the child is tracked and left for the clipping pass to attach.
+  XCTAssertNil(child.superview);
+  NSMutableArray *reactSubviews = [view valueForKey:@"_reactSubviews"];
+  XCTAssertEqual(reactSubviews.count, 1u);
+}
+
 #pragma mark - hitTest against non-invertible transforms (#50797)
 
 - (void)testHitTestReturnsNilForZeroScaleYView

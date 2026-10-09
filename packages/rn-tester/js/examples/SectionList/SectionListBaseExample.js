@@ -66,7 +66,7 @@ const Item = ({item, section, separators}) => {
 
 type Props = Readonly<{
   // $FlowFixMe[unclear-type]
-  exampleProps: Partial<React.ElementConfig<typeof SectionList<any>>>,
+  exampleProps: Partial<React.ComponentProps<typeof SectionList<any>>>,
   exampleTestID?: ?string,
   onTest?: ?() => void,
   testLabel?: ?string,

@@ -221,7 +221,8 @@ static constexpr CGFloat LegacyBottomInset = 65;
       CGRectGetMaxY(tabBarFrame) >= CGRectGetMaxY(bounds);
   if (hasBottomTabBar) {
     insets.top = MAX(insets.top, LegacyTopInset);
-    insets.bottom = MIN(insets.bottom, LegacyBottomInset);
+    // Never go below the system inset: anything less leaves content under the tab bar, where taps switch tabs.
+    insets.bottom = MAX(insets.bottom, LegacyBottomInset);
   } else {
     insets.bottom = 0;
     // A window with no status bar along the top, such as the iPhone Duo's, reports no top inset. Keep

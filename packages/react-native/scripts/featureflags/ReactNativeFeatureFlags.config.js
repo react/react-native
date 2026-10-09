@@ -741,7 +741,7 @@ const definitions: FeatureFlagDefinitions = {
       metadata: {
         dateAdded: '2026-04-07',
         description:
-          'When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.',
+          'When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -1097,6 +1097,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2026-02-04',
         description:
           'Enable the external inspection API for DevTools to communicate with the Inspector overlay.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    fixCrossOrientationNestedListViewability: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-29',
+        description:
+          'When enabled, a VirtualizedList nested inside a list of the opposite orientation does not report viewable items while its containing cell is outside the parent viewport.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

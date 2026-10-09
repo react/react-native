@@ -14,6 +14,32 @@ import {PerformanceObserverEntryList_public} from '../PerformanceObserver';
 import * as Fantom from '@react-native/fantom';
 
 describe('PerformanceObserver', () => {
+  describe('constructor', () => {
+    it('requires a callback', () => {
+      expect(() => {
+        // $FlowExpectedError[incompatible-type]
+        return new PerformanceObserver();
+      }).toThrow(
+        "Failed to construct 'PerformanceObserver': 1 argument required, but only 0 present.",
+      );
+    });
+
+    it('requires the callback to be a function', () => {
+      expect(() => {
+        // $FlowExpectedError[incompatible-type]
+        return new PerformanceObserver(null);
+      }).toThrow(
+        "Failed to construct 'PerformanceObserver': parameter 1 is not of type 'Function'.",
+      );
+      expect(() => {
+        // $FlowExpectedError[incompatible-type]
+        return new PerformanceObserver('not a function');
+      }).toThrow(
+        "Failed to construct 'PerformanceObserver': parameter 1 is not of type 'Function'.",
+      );
+    });
+  });
+
   it('receives notifications for marks and measures', () => {
     const callback = jest.fn();
     const observer = new PerformanceObserver(callback);

@@ -458,6 +458,8 @@ void fromRawValue(const PropsParserContext &context, const RawValue &value, Tran
 
 void fromRawValue(const PropsParserContext &context, const RawValue &value, TransformOrigin &result);
 
+void parseUnprocessedTransformOriginString(const std::string &value, TransformOrigin &result);
+
 inline void fromRawValue(const PropsParserContext &context, const RawValue &value, PointerEventsMode &result)
 {
   result = PointerEventsMode::Auto;

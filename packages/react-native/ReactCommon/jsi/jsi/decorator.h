@@ -243,6 +243,10 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
     return plain_.utf16(sym);
   }
 
+  size_t length(const String& str) override {
+    return plain_.length(str);
+  }
+
   void getStringData(
       const jsi::String& str,
       void* ctx,
@@ -820,6 +824,11 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
   std::u16string utf16(const PropNameID& sym) override {
     Around around{with_};
     return RD::utf16(sym);
+  }
+
+  size_t length(const String& str) override {
+    Around around{with_};
+    return RD::length(str);
   }
 
   void getStringData(

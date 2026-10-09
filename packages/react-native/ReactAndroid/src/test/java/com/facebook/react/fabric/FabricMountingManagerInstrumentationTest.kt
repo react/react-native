@@ -14,12 +14,14 @@ import com.facebook.react.bridge.JSExceptionHandler
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableType
+import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.fabric.mounting.MountingManager
 import com.facebook.react.fabric.mounting.MountingManager.MountItemExecutor
 import com.facebook.react.fabric.mounting.mountitems.IntBufferBatchMountItem
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.uimanager.ViewManagerRegistry
@@ -27,6 +29,7 @@ import com.facebook.react.uimanager.events.BatchEventDispatchedListener
 import com.facebook.react.views.view.ReactViewManager
 import com.facebook.soloader.SoLoader
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
@@ -219,16 +222,17 @@ class FabricMountingManagerInstrumentationTest {
 
   // ---- Native code tests via FabricMountingManagerTestHelper ----
 
-  private fun createTestHelper(): FabricMountingManagerTestHelper {
+  private fun createFabricUIManager(): FabricUIManager {
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     val reactAppContext = mock(ReactApplicationContext::class.java)
     `when`(reactAppContext.applicationContext).thenReturn(context)
     `when`(reactAppContext.exceptionHandler).thenReturn(JSExceptionHandler {})
     val viewManagerRegistry = ViewManagerRegistry(listOf<ViewManager<*, *>>(ReactViewManager()))
-    val fabricUIManager =
-        FabricUIManager(reactAppContext, viewManagerRegistry, BatchEventDispatchedListener {})
-    return FabricMountingManagerTestHelper.create(fabricUIManager)
+    return FabricUIManager(reactAppContext, viewManagerRegistry, BatchEventDispatchedListener {})
   }
+
+  private fun createTestHelper(): FabricMountingManagerTestHelper =
+      FabricMountingManagerTestHelper.create(createFabricUIManager())
 
   /**
    * Exercises the real C++ FabricMountingManager::onSurfaceStart and verifies the surfaceId tag is
@@ -275,5 +279,60 @@ class FabricMountingManagerInstrumentationTest {
     assertThat(helper.isTagAllocated(surfaceId, 42)).isTrue()
     helper.destroyUnmountedView(surfaceId, 42)
     assertThat(helper.isTagAllocated(surfaceId, 42)).isFalse()
+  }
+
+  /**
+   * Runs a batch through the real C++ encoder, the JNI call and the Kotlin decoder, and checks the
+   * props that reach the mounted views. The C++ and Kotlin command tables must stay in sync.
+   */
+  @Test
+  fun native_synchronouslyUpdateAnimatedProps_appliesEncodedBatchToViews() {
+    val fabricUIManager = createFabricUIManager()
+    val helper = FabricMountingManagerTestHelper.create(fabricUIManager)
+    val uiMountingManager =
+        FabricUIManager::class
+            .java
+            .getDeclaredField("mMountingManager")
+            .apply { isAccessible = true }
+            .get(fabricUIManager) as MountingManager
+    uiMountingManager.startSurface(surfaceId, themedReactContext, ReactRootView(themedReactContext))
+    for ((index, tag) in intArrayOf(42, 43, 44).withIndex()) {
+      createAndInsertMountItem(tag, surfaceId, index).execute(uiMountingManager)
+    }
+
+    val opacity = WritableNativeMap().apply { putDouble("opacity", 0.25) }
+    val transform =
+        WritableNativeMap().apply {
+          putArray(
+              "transform",
+              WritableNativeArray().apply {
+                pushMap(WritableNativeMap().apply { putDouble("translateX", 10.0) })
+                pushMap(WritableNativeMap().apply { putString("rotate", "90deg") })
+                pushMap(WritableNativeMap().apply { putDouble("scale", 2.0) })
+              },
+          )
+        }
+    val rawFallback =
+        WritableNativeMap().apply {
+          putDouble("opacity", 0.5)
+          putString("testID", "animated-view")
+        }
+    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+      helper.synchronouslyUpdateAnimatedProps(
+          intArrayOf(42, 43, 44),
+          arrayOf(opacity, transform, rawFallback),
+      )
+    }
+
+    val smm = uiMountingManager.getSurfaceManagerEnforced(surfaceId, "test")
+    assertThat(smm.getView(42).alpha).isEqualTo(0.25f)
+    val transformed = smm.getView(43)
+    assertThat(transformed.translationX).isCloseTo(PixelUtil.toPixelFromDIP(10.0), within(0.01f))
+    assertThat(transformed.rotation).isCloseTo(90f, within(0.01f))
+    assertThat(transformed.scaleX).isCloseTo(2f, within(0.001f))
+    assertThat(transformed.scaleY).isCloseTo(2f, within(0.001f))
+    val fallbackView = smm.getView(44)
+    assertThat(fallbackView.alpha).isEqualTo(0.5f)
+    assertThat(fallbackView.tag).isEqualTo("animated-view")
   }
 }

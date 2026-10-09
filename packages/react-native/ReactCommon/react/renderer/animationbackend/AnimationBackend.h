@@ -21,25 +21,13 @@
 #include <vector>
 #include "AnimatedProps.h"
 #include "AnimationChoreographer.h"
+#include "AnimationMutation.h"
 
 namespace facebook::react {
 
 class AnimationBackend;
 class AnimationBackendCommitHook;
 class AnimatedPropsRegistry;
-struct SurfaceUpdates;
-
-struct AnimationMutation {
-  Tag tag;
-  std::shared_ptr<const ShadowNodeFamily> family;
-  AnimatedProps props;
-  bool hasLayoutUpdates{false};
-};
-
-struct AnimationMutations {
-  std::vector<AnimationMutation> batch;
-  std::set<SurfaceId> asyncFlushSurfaces;
-};
 
 using Callback = std::function<AnimationMutations(AnimationTimestamp)>;
 
@@ -70,6 +58,8 @@ class AnimationBackend : public UIManagerAnimationBackend {
   void stop(CallbackId callbackId) override;
 
  private:
+  using SurfaceUpdates = std::unordered_map<Tag, AnimationMutation>;
+
   void commitUpdates(SurfaceId surfaceId, SurfaceUpdates &surfaceUpdates);
   void unpackMutations(
       AnimationMutations &mutations,
@@ -78,7 +68,7 @@ class AnimationBackend : public UIManagerAnimationBackend {
   void applySurfaceUpdates(
       std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
       const std::set<SurfaceId> &asyncFlushSurfaces);
-  void applyMutations(AnimationMutations mutations);
+  void applyMutations(std::vector<AnimationMutations> batches);
   std::vector<CallbackWithId> callbacks;
   std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry_;
   std::shared_ptr<AnimationChoreographer> animationChoreographer_;

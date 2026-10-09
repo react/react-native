@@ -60,7 +60,7 @@ const Item = ({item, separators}: ListRenderItemInfo<string>) => {
 };
 
 type Props = Readonly<{
-  exampleProps: Partial<React.ElementConfig<typeof FlatList>>,
+  exampleProps: Partial<React.ComponentProps<typeof FlatList>>,
   exampleTestID?: ?string,
   onTest?: ?() => void,
   testLabel?: ?string,

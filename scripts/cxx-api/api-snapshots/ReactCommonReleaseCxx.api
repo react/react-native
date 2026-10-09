@@ -699,12 +699,14 @@ void facebook::react::fromRawValueShared(const facebook::react::ContextContainer
 void facebook::react::fromString(const std::string& string, facebook::react::AccessibilityTraits& result);
 void facebook::react::g_setNativeAnimatedNowTimestampFunction(facebook::react::TimePointFunction nowFunction);
 void facebook::react::handleJSError(facebook::jsi::Runtime& runtime, const facebook::jsi::JSError& error, bool isFatal);
+void facebook::react::mergeAnimatedRawProps(folly::dynamic& target, const folly::dynamic& source);
 void facebook::react::parseProcessedBackgroundImage(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundImage>& result);
 void facebook::react::parseProcessedFontVariant(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::FontVariant& result);
 void facebook::react::parseUnprocessedBackgroundImageList(const facebook::react::PropsParserContext& context, const std::vector<facebook::react::RawValue>& value, std::vector<facebook::react::BackgroundImage>& result);
 void facebook::react::parseUnprocessedBackgroundImageString(const std::string& value, std::vector<facebook::react::BackgroundImage>& result);
 void facebook::react::parseUnprocessedFontVariant(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::FontVariant& result);
 void facebook::react::parseUnprocessedFontVariantString(const std::string& value, facebook::react::FontVariant& result);
+void facebook::react::parseUnprocessedTransformOriginString(const std::string& value, facebook::react::TransformOrigin& result);
 void facebook::react::registerCxxModuleToGlobalModuleMap(std::string name, std::function<std::shared_ptr<facebook::react::TurboModule>(std::shared_ptr<facebook::react::CallInvoker> jsInvoker)> moduleProviderFunc);
 void facebook::react::serializeTransformAxis(const facebook::react::TransformOperation& operation, const std::string& operationName, float defaultValue, folly::dynamic& resultTranslateArray);
 void facebook::react::serializeTransformOperationValue(const std::string& operationName, const facebook::react::ValueUnit& valueUnit, folly::dynamic& resultArray);
@@ -877,7 +879,7 @@ class facebook::react::AnimatedPropsRegistry {
   public void clear(facebook::react::SurfaceId surfaceId);
   public void clearOnSurfaceStop(facebook::react::SurfaceId surfaceId);
   public void initializeSurface(facebook::react::SurfaceId surfaceId);
-  public void update(const std::unordered_map<facebook::react::SurfaceId, facebook::react::SurfaceUpdates>& surfaceUpdates);
+  public void update(const std::vector<facebook::react::AnimationMutations>& batches);
 }
 
 class facebook::react::AnimationBackend : public facebook::react::UIManagerAnimationBackend {
@@ -2801,6 +2803,7 @@ class facebook::react::RawProps {
   public bool isEmpty() const noexcept;
   public const facebook::react::RawValue* at(const char* name) const noexcept;
   public const facebook::react::RawValue* at(const char* name, const char* prefix, const char* suffix) const noexcept;
+  public const folly::dynamic* getDynamic() const noexcept;
   public facebook::react::RawProps& operator=(const facebook::react::RawProps& other) noexcept = delete;
   public facebook::react::RawProps& operator=(facebook::react::RawProps&& other) noexcept = delete;
   public folly::dynamic toDynamic(const std::function<bool(const std::string&)>& filterObjectKeys = nullptr) const;
@@ -3132,6 +3135,7 @@ class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) final;
   public virtual void uiManagerShouldAddOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) override;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) final;
+  public virtual void uiManagerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates) override;
   public virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) override;
   public void addEventListener(std::shared_ptr<const facebook::react::EventListener> listener);
   public void animationTick() const;
@@ -3155,6 +3159,7 @@ class facebook::react::SchedulerDelegate {
   public virtual void schedulerDidUpdateShadowTree(const std::unordered_map<facebook::react::Tag, folly::dynamic>& tagToProps) = 0;
   public virtual void schedulerShouldMergeReactRevision(facebook::react::SurfaceId surfaceId) = 0;
   public virtual void schedulerShouldRenderTransactions(const std::shared_ptr<const facebook::react::MountingCoordinator>& mountingCoordinator) = 0;
+  public virtual void schedulerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
   public virtual ~SchedulerDelegate() noexcept = default;
 }
@@ -3777,6 +3782,7 @@ class facebook::react::UIManager : public facebook::react::ShadowTreeDelegate {
   public void startEmptySurface(facebook::react::ShadowTree::Unique&& shadowTree) const noexcept;
   public void startSurface(facebook::react::ShadowTree::Unique&& shadowTree, std::string moduleName, folly::dynamic props, facebook::react::DisplayMode displayMode) const noexcept;
   public void stopSurfaceForAnimationDelegate(facebook::react::SurfaceId surfaceId) const;
+  public void synchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public void synchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props);
   public void unregisterCommitHook(facebook::react::UIManagerCommitHook& commitHook);
   public void unregisterMountHook(facebook::react::UIManagerMountHook& mountHook);
@@ -3844,6 +3850,7 @@ class facebook::react::UIManagerDelegate {
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) = 0;
   public virtual void uiManagerShouldAddOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) = 0;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) = 0;
+  public virtual void uiManagerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates) = 0;
   public virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
   public virtual ~UIManagerDelegate() noexcept = default;
 }
@@ -5916,7 +5923,7 @@ struct facebook::react::PropsParserContext {
 }
 
 struct facebook::react::PropsSnapshot {
-  public facebook::react::BaseViewProps props;
+  public std::unique_ptr<facebook::react::BaseViewProps> props;
   public std::unique_ptr<folly::dynamic> rawProps;
   public std::unordered_set<facebook::react::PropName> propNames;
 }
@@ -6191,12 +6198,6 @@ struct facebook::react::SurfaceContext {
   public std::unordered_map<facebook::react::Tag, std::unique_ptr<facebook::react::PropsSnapshot>> pendingMap;
   public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> families;
   public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> pendingFamilies;
-}
-
-struct facebook::react::SurfaceUpdates {
-  public bool hasLayoutUpdates;
-  public std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps> propsMap;
-  public std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>> families;
 }
 
 struct facebook::react::SystraceSection : public facebook::react::DummyTraceSection {
@@ -9721,6 +9722,7 @@ class facebook::jsi::RuntimeDecorator : public facebook::jsi::Runtime {
   protected virtual facebook::jsi::WeakObject createWeakObject(const facebook::jsi::Object& o) override;
   protected virtual size_t byteLength(const facebook::jsi::TypedArray& typedArray) override;
   protected virtual size_t byteOffset(const facebook::jsi::TypedArray& typedArray) override;
+  protected virtual size_t length(const facebook::jsi::String& str) override;
   protected virtual size_t length(const facebook::jsi::TypedArray& typedArray) override;
   protected virtual size_t push(const facebook::jsi::Array& a, const facebook::jsi::Value* elements, size_t count) override;
   protected virtual size_t size(const facebook::jsi::Array& a) override;
@@ -9839,6 +9841,7 @@ class facebook::jsi::WithRuntimeDecorator : public facebook::jsi::RuntimeDecorat
   protected virtual facebook::jsi::WeakObject createWeakObject(const facebook::jsi::Object& o) override;
   protected virtual size_t byteLength(const facebook::jsi::TypedArray& typedArray) override;
   protected virtual size_t byteOffset(const facebook::jsi::TypedArray& typedArray) override;
+  protected virtual size_t length(const facebook::jsi::String& str) override;
   protected virtual size_t length(const facebook::jsi::TypedArray& typedArray) override;
   protected virtual size_t push(const facebook::jsi::Array& a, const facebook::jsi::Value* elements, size_t count) override;
   protected virtual size_t size(const facebook::jsi::Array& a) override;

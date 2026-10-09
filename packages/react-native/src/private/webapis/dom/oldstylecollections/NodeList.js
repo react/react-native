@@ -75,7 +75,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
     const arrayLike: ArrayLike<T> = this;
 
     for (let index = 0; index < this._length; index++) {
-      if (thisArg == null) {
+      if (thisArg === undefined) {
         callbackFn(arrayLike[index], index, this);
       } else {
         callbackFn.call(thisArg, arrayLike[index], index, this);

@@ -359,7 +359,9 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // Disable `removeClippedSubviews` when Fabric View Culling is enabled.
   if (!ReactNativeFeatureFlags::enableViewCulling()) {
-    if (oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
+    // Compare against the current state, not `_props`: `prepareForRecycle` resets
+    // `_removeClippedSubviews` but keeps `_props`.
+    if (_removeClippedSubviews != newViewProps.removeClippedSubviews) {
       _removeClippedSubviews = newViewProps.removeClippedSubviews;
       [self _updateRemoveClippedSubviewsState];
     }

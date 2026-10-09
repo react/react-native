@@ -8,6 +8,7 @@
 #pragma once
 
 #include <fbjni/fbjni.h>
+#include <react/jni/NativeMap.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 
 #include <react/fabric/FabricMountingManager.h>
@@ -26,6 +27,9 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   void preallocateView(jint surfaceId, jint tag);
   void destroyUnmountedView(jint surfaceId, jint tag);
   bool isTagAllocated(jint surfaceId, jint tag);
+  void synchronouslyUpdateAnimatedProps(
+      jni::alias_ref<jni::JArrayInt> tags,
+      jni::alias_ref<jni::JArrayClass<NativeMap::javaobject>> props);
 
   static void registerNatives();
 
