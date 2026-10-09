@@ -89,6 +89,11 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 add_library(common_flags INTERFACE)
 target_compile_options(common_flags INTERFACE ${folly_FLAGS})
 
+if(RN_STRICT_API)
+        target_compile_definitions(common_flags INTERFACE RN_STRICT_API)
+        target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE RN_STRICT_API)
+endif()
+
 # Defines the `reactnative_pch` target and `target_reuse_reactnative_pch()`, so
 # the codegen targets below share a single precompiled header. Has to come after
 # `common_flags`, as the precompiled header is built with the same flags as its

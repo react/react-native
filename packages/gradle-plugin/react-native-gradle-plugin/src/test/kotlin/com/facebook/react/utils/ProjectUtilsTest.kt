@@ -15,6 +15,7 @@ import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
 import com.facebook.react.utils.ProjectUtils.isNewArchEnabled
+import com.facebook.react.utils.ProjectUtils.isStrictCxxApiEnabled
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import java.io.File
 import org.assertj.core.api.Assertions.assertThat
@@ -113,6 +114,39 @@ class ProjectUtilsTest {
     val project = createProject()
     project.extensions.extraProperties.set("edgeToEdgeEnabled", "¯\\_(ツ)_/¯")
     assertThat(project.isEdgeToEdgeEnabled).isFalse()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_returnsFalseByDefault() {
+    assertThat(createProject().isStrictCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withEnabledViaProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("strictCxxApiEnabled", "true")
+    assertThat(project.isStrictCxxApiEnabled).isTrue()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withEnabledViaScopedProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.strictCxxApiEnabled", "true")
+    assertThat(project.isStrictCxxApiEnabled).isTrue()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withDisabledViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("strictCxxApiEnabled", "false")
+    assertThat(project.isStrictCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withInvalidViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("strictCxxApiEnabled", "¯\\_(ツ)_/¯")
+    assertThat(project.isStrictCxxApiEnabled).isFalse()
   }
 
   @Test

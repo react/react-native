@@ -29,6 +29,13 @@ object PropertyUtils {
   const val EDGE_TO_EDGE_ENABLED = "edgeToEdgeEnabled"
   const val SCOPED_EDGE_TO_EDGE_ENABLED = "react.edgeToEdgeEnabled"
 
+  /**
+   * Public property that enforces the C++ stable API for the app's own native code by defining
+   * RN_STRICT_API
+   */
+  const val STRICT_CXX_API_ENABLED = "strictCxxApiEnabled"
+  const val SCOPED_STRICT_CXX_API_ENABLED = "react.strictCxxApiEnabled"
+
   /** Public property that excludes jsctooling from core */
   const val USE_THIRD_PARTY_JSC = "useThirdPartyJSC"
   const val SCOPED_USE_THIRD_PARTY_JSC = "react.useThirdPartyJSC"

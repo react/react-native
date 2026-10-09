@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <ReactCommon/CallInvoker.h>
-#include <ReactCommon/TurboModule.h>
+#include <React/CallInvoker.h>
+#include <React/NativeModuleCore.h>
 #include <fbjni/fbjni.h>
 
 namespace facebook::react {

@@ -13,7 +13,6 @@
 #include <React/RendererCore.h>
 #include <fbjni/fbjni.h>
 #include <react/fabric/JFabricUIManager.h>
-#include <react/renderer/uimanager/primitives.h>
 
 namespace facebook::react {
 

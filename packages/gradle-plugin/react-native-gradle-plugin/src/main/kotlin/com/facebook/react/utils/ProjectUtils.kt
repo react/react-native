@@ -15,7 +15,9 @@ import com.facebook.react.utils.PropertyUtils.REACT_NATIVE_ARCHITECTURES
 import com.facebook.react.utils.PropertyUtils.SCOPED_EDGE_TO_EDGE_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_HERMES_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_REACT_NATIVE_ARCHITECTURES
+import com.facebook.react.utils.PropertyUtils.SCOPED_STRICT_CXX_API_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_USE_THIRD_PARTY_JSC
+import com.facebook.react.utils.PropertyUtils.STRICT_CXX_API_ENABLED
 import com.facebook.react.utils.PropertyUtils.USE_THIRD_PARTY_JSC
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
@@ -55,6 +57,13 @@ internal object ProjectUtils {
             project.property(EDGE_TO_EDGE_ENABLED).toString().toBoolean()) ||
             (project.hasProperty(SCOPED_EDGE_TO_EDGE_ENABLED) &&
                 project.property(SCOPED_EDGE_TO_EDGE_ENABLED).toString().toBoolean())
+
+  internal val Project.isStrictCxxApiEnabled: Boolean
+    get() =
+        (project.hasProperty(STRICT_CXX_API_ENABLED) &&
+            project.property(STRICT_CXX_API_ENABLED).toString().toBoolean()) ||
+            (project.hasProperty(SCOPED_STRICT_CXX_API_ENABLED) &&
+                project.property(SCOPED_STRICT_CXX_API_ENABLED).toString().toBoolean())
 
   internal val Project.useThirdPartyJSC: Boolean
     get() =

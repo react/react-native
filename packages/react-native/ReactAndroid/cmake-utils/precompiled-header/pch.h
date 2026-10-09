@@ -7,15 +7,10 @@
 
 #pragma once
 
-#include <ReactCommon/JavaTurboModule.h>
-#include <ReactCommon/TurboModule.h>
+#include <React/Bridging.h>
+#include <React/ComponentRegistry.h>
+#include <React/NativeModuleCore.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <folly/dynamic.h>
 #include <jsi/jsi.h>
-#include <react/bridging/Bridging.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/components/view/ViewEventEmitter.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/StateData.h>
-#include <react/renderer/core/propsConversions.h>

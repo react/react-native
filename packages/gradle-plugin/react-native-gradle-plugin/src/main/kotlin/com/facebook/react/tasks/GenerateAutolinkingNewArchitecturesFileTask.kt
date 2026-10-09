@@ -266,11 +266,10 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
 
         #pragma once
 
-        #include <ReactCommon/CallInvoker.h>
-        #include <ReactCommon/JavaTurboModule.h>
-        #include <ReactCommon/TurboModule.h>
+        #include <React/CallInvoker.h>
+        #include <React/ComponentRegistry.h>
+        #include <React/NativeModuleCore.h>
         #include <jsi/jsi.h>
-        #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 
         namespace facebook {
         namespace react {

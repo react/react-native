@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <ReactCommon/CallInvoker.h>
-#include <ReactCommon/JavaTurboModule.h>
+#include <React/CallInvoker.h>
+#include <React/NativeModuleCore.h>
 #include <fbjni/fbjni.h>
 #include <memory>
 #include <string>
