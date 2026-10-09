@@ -1939,12 +1939,6 @@ interface RCTTransformAnimatedNode : public RCTAnimatedNode {
   public virtual NSDictionary<NSString*, NSObject*>* propsDictionary();
 }
 
-interface RCTTurboModuleManager : public NSObject <RCTTurboModuleRegistry> {
-  public virtual instancetype initWithBridgeProxy:bridgeModuleDecorator:delegate:jsInvoker:devMenuConfigurationDecorator:(RCTBridgeProxy* bridgeProxy, RCTBridgeModuleDecorator* bridgeModuleDecorator, id<RCTTurboModuleManagerDelegate> delegate, std::shared_ptr<facebook::react::CallInvoker> jsInvoker, RCTDevMenuConfigurationDecorator* devMenuConfigurationDecorator);
-  public virtual void installJSBindings:(facebook::jsi::Runtime& runtime);
-  public virtual void invalidate();
-}
-
 interface RCTUIImageViewAnimated : public UIImageView {
 }
 
@@ -2965,14 +2959,6 @@ protocol RCTTouchableComponentViewProtocol : public NSObject {
 
 protocol RCTTurboModule : public RCTModuleProvider {
   public virtual void setEventEmitterCallback:(EventEmitterCallbackWrapper* eventEmitterCallbackWrapper);
-}
-
-protocol RCTTurboModuleManagerDelegate : public NSObject {
-  public virtual Class getModuleClassFromName:(const char* name);
-  public virtual NSArray<id<RCTBridgeModule>>* extraModulesForBridge:((deprecated("Please make all native modules returned from this method TurboModule-compatible.")) __attribute);
-  public virtual id<RCTModuleProvider> getModuleProvider:(const char* name);
-  public virtual id<RCTTurboModule> getModuleInstanceFromClass:(Class moduleClass);
-  public virtual std::shared_ptr<facebook::react::TurboModule> getTurboModule:jsInvoker:(const std::string& name, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
 }
 
 protocol RCTTurboModuleRegistry : public NSObject {

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <memory>
 
 #import <React/NativeModuleCore.h>
