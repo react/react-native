@@ -21,13 +21,20 @@ class RCTIdentifierPool {
 
   int dequeue()
   {
-    while (true) {
+    for (size_t attempt = 0; attempt < size; attempt++) {
       if (!usage[lastIndex]) {
         usage[lastIndex] = true;
         return lastIndex;
       }
       lastIndex = (lastIndex + 1) % size;
     }
+
+    // Every identifier is taken, which only happens when identifiers were leaked.
+    // Reclaim them all instead of scanning forever: a reused identifier is a
+    // transient glitch, while an endless loop here hangs the main thread.
+    usage.reset();
+    usage[lastIndex] = true;
+    return lastIndex;
   }
 
   void reset()
@@ -39,7 +46,7 @@ class RCTIdentifierPool {
 
  private:
   std::bitset<size> usage;
-  int lastIndex;
+  int lastIndex{0};
 };
 
 } // namespace facebook::react
