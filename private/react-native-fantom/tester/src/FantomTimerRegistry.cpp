@@ -13,12 +13,6 @@
 
 namespace facebook::react {
 
-namespace {
-// Safety bound to avoid spinning forever on self-rescheduling or zero-interval
-// recurring timers (mirrors jest fake-timer safeguards).
-constexpr uint32_t kMaxTimerFires = 100000;
-} // namespace
-
 void FantomTimerRegistry::createTimer(uint32_t timerId, double delayMs) {
   scheduleTimer(timerId, delayMs, /* isRecurring */ false);
 }
@@ -82,74 +76,59 @@ void FantomTimerRegistry::fireTimer(uint32_t timerId) {
   }
 }
 
-void FantomTimerRegistry::advanceTimersByTime(double deltaMs) {
-  double targetMs = nowMs_ + std::max(deltaMs, 0.0);
-
-  for (uint32_t fires = 0; fires < kMaxTimerFires; ++fires) {
-    // Find the earliest timer due at or before the target time, breaking ties
-    // by timer id (insertion order / FIFO per the timer index).
-    std::optional<uint32_t> nextId;
-    double nextDueMs = 0.0;
-    for (const auto& [id, timer] : timers_) {
-      if (timer.dueTimeMs <= targetMs) {
-        if (!nextId.has_value() || timer.dueTimeMs < nextDueMs ||
-            (timer.dueTimeMs == nextDueMs && id < *nextId)) {
-          nextId = id;
-          nextDueMs = timer.dueTimeMs;
-        }
-      }
+std::optional<uint32_t> FantomTimerRegistry::findNextTimer(
+    double maxDueTimeMs) const {
+  // The earliest timer due at or before `maxDueTimeMs`, breaking ties by timer
+  // id (insertion order / FIFO per the timer index).
+  std::optional<uint32_t> nextId;
+  double nextDueMs = 0.0;
+  for (const auto& [id, timer] : timers_) {
+    if (timer.dueTimeMs <= maxDueTimeMs &&
+        (!nextId.has_value() || timer.dueTimeMs < nextDueMs ||
+         (timer.dueTimeMs == nextDueMs && id < *nextId))) {
+      nextId = id;
+      nextDueMs = timer.dueTimeMs;
     }
-
-    if (!nextId.has_value()) {
-      break;
-    }
-
-    auto it = timers_.find(*nextId);
-    Timer timer = it->second;
-
-    // Advance virtual time to this timer's due time before firing.
-    nowMs_ = timer.dueTimeMs;
-
-    if (timer.isRecurring) {
-      it->second.dueTimeMs = timer.dueTimeMs + timer.intervalMs;
-    } else {
-      timers_.erase(it);
-    }
-
-    fireTimer(timer.timerId);
   }
-
-  nowMs_ = targetMs;
+  return nextId;
 }
 
-void FantomTimerRegistry::runAllTimers() {
-  for (uint32_t fires = 0; fires < kMaxTimerFires && !timers_.empty();
-       ++fires) {
-    // Fire the earliest pending timer (by due time, then id).
-    uint32_t nextId = 0;
-    double nextDueMs = 0.0;
-    bool found = false;
-    for (const auto& [id, timer] : timers_) {
-      if (!found || timer.dueTimeMs < nextDueMs ||
-          (timer.dueTimeMs == nextDueMs && id < nextId)) {
-        nextId = id;
-        nextDueMs = timer.dueTimeMs;
-        found = true;
-      }
-    }
+void FantomTimerRegistry::fireAndAdvanceTo(uint32_t timerId) {
+  auto it = timers_.find(timerId);
+  Timer timer = it->second;
 
-    auto it = timers_.find(nextId);
-    Timer timer = it->second;
-    nowMs_ = timer.dueTimeMs;
+  nowMs_ = timer.dueTimeMs;
 
-    if (timer.isRecurring) {
-      it->second.dueTimeMs = timer.dueTimeMs + timer.intervalMs;
-    } else {
-      timers_.erase(it);
-    }
-
-    fireTimer(timer.timerId);
+  if (timer.isRecurring) {
+    it->second.dueTimeMs = timer.dueTimeMs + timer.intervalMs;
+  } else {
+    timers_.erase(it);
   }
+
+  fireTimer(timer.timerId);
+}
+
+double FantomTimerRegistry::advanceTimersToNextDue(double deltaMs) {
+  double targetMs = nowMs_ + std::max(deltaMs, 0.0);
+
+  auto nextId = findNextTimer(targetMs);
+  if (!nextId.has_value()) {
+    nowMs_ = targetMs;
+    return -1;
+  }
+
+  fireAndAdvanceTo(*nextId);
+  return targetMs - nowMs_;
+}
+
+bool FantomTimerRegistry::runNextTimer() {
+  auto nextId = findNextTimer(std::numeric_limits<double>::infinity());
+  if (!nextId.has_value()) {
+    return false;
+  }
+
+  fireAndAdvanceTo(*nextId);
+  return true;
 }
 
 } // namespace facebook::react

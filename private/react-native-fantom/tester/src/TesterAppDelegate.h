@@ -77,8 +77,8 @@ class TesterAppDelegate {
 
   // Deterministic timer control (driven from JS via NativeFantom).
   void setTimerMockEnabled(bool enabled);
-  void advanceTimers(double deltaMs);
-  void runAllTimers();
+  double advanceTimersToNextDue(double deltaMs);
+  bool runNextTimer();
   uint32_t getPendingTimerCount();
 
   void flushMessageQueue();
