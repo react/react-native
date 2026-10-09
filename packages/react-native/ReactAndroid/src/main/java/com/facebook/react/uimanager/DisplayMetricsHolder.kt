@@ -50,6 +50,29 @@ public object DisplayMetricsHolder {
   @SuppressLint("DeprecatedMethod") // for Android Lint
   @Suppress("DEPRECATION") // for Kotlin compiler
   public fun initDisplayMetrics(context: Context) {
+    screenDisplayMetrics = getDisplayMetrics(context)
+  }
+
+  @JvmStatic
+  @SuppressLint("DeprecatedMethod") // for Android Lint
+  @Suppress("DEPRECATION") // for Kotlin compiler
+  public fun updateDisplayMetricsIfChanged(context: Context): Boolean {
+    val oldMetrics = screenDisplayMetrics
+    val newMetrics = getDisplayMetrics(context)
+    val didChange =
+        oldMetrics == null ||
+            oldMetrics.widthPixels != newMetrics.widthPixels ||
+            oldMetrics.heightPixels != newMetrics.heightPixels ||
+            oldMetrics.density != newMetrics.density ||
+            oldMetrics.scaledDensity != newMetrics.scaledDensity ||
+            oldMetrics.densityDpi != newMetrics.densityDpi
+    screenDisplayMetrics = newMetrics
+    return didChange
+  }
+
+  @SuppressLint("DeprecatedMethod") // for Android Lint
+  @Suppress("DEPRECATION") // for Kotlin compiler
+  private fun getDisplayMetrics(context: Context): DisplayMetrics {
     val displayMetrics = context.resources.displayMetrics
     val screenDisplayMetrics = DisplayMetrics()
     screenDisplayMetrics.setTo(displayMetrics)
@@ -65,7 +88,7 @@ public object DisplayMetricsHolder {
     // physical display metrics without the system font scale setting.
     // This is needed for proper text scaling when fontScale < 1.0
     screenDisplayMetrics.scaledDensity = displayMetrics.scaledDensity
-    DisplayMetricsHolder.screenDisplayMetrics = screenDisplayMetrics
+    return screenDisplayMetrics
   }
 
   internal fun getStatusBarHeightPx(activity: Activity?): Int {

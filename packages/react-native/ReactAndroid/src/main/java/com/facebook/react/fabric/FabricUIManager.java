@@ -367,6 +367,7 @@ public class FabricUIManager
         UiThreadUtil.isOnUiThread() ? RootViewUtil.getViewportOffset(rootView) : new Point(0, 0);
 
     Assertions.assertNotNull(mBinding, "Binding in FabricUIManager is null");
+    mBinding.setPixelDensity(context.getResources().getDisplayMetrics().density);
     mBinding.startSurfaceWithConstraints(
         rootTag,
         moduleName,
@@ -1105,6 +1106,12 @@ public class FabricUIManager
 
   void setBinding(FabricUIManagerBinding binding) {
     mBinding = binding;
+  }
+
+  public void updateDisplayMetricDensity() {
+    if (mBinding != null) {
+      mBinding.setPixelDensity(PixelUtil.getDisplayMetricDensity());
+    }
   }
 
   /**
