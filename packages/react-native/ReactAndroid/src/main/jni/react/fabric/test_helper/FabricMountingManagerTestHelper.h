@@ -13,6 +13,8 @@
 
 #include <react/fabric/FabricMountingManager.h>
 
+#include <unordered_map>
+
 namespace facebook::react {
 
 /**
@@ -25,7 +27,12 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   void startSurface(jint surfaceId);
   void stopSurface(jint surfaceId);
   void preallocateView(jint surfaceId, jint tag);
+  void queuePreallocation(jint surfaceId, jint tag);
+  void drainPreallocationQueue();
+  void mountCreate(jint surfaceId, jint tag);
+  void dropFamily(jint tag);
   void destroyUnmountedView(jint surfaceId, jint tag);
+  void destroyCommittedView(jint surfaceId, jint tag);
   bool isTagAllocated(jint surfaceId, jint tag);
   void synchronouslyUpdateAnimatedProps(
       jni::alias_ref<jni::JArrayInt> tags,
@@ -45,6 +52,7 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   jni::global_ref<JFabricUIManager::javaobject> javaUIManager_;
   std::shared_ptr<FabricMountingManager> mountingManager_;
   std::unique_ptr<ViewComponentDescriptor> viewComponentDescriptor_;
+  std::unordered_map<Tag, std::shared_ptr<const ShadowNode>> queuedShadowNodes_;
 };
 
 } // namespace facebook::react

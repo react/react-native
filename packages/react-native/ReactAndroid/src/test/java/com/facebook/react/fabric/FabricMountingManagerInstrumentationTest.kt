@@ -20,6 +20,8 @@ import com.facebook.react.fabric.mounting.MountingManager
 import com.facebook.react.fabric.mounting.MountingManager.MountItemExecutor
 import com.facebook.react.fabric.mounting.mountitems.IntBufferBatchMountItem
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ThemedReactContext
@@ -76,6 +78,7 @@ class FabricMountingManagerInstrumentationTest {
   @After
   fun tearDown() {
     ReactNativeFeatureFlags.dangerouslyReset()
+    ReactNativeFeatureFlagsCxxInterop.dangerouslyReset()
   }
 
   private fun startSurface() {
@@ -134,7 +137,7 @@ class FabricMountingManagerInstrumentationTest {
 
   /**
    * Simulates the scenario fixed by D98729251 via IntBufferBatchMountItem:
-   * 1. Preallocate a view (simulates C++ preallocateShadowView calling Java preallocateView)
+   * 1. Preallocate a view (simulates the C++ preallocation drain calling Java preallocateView)
    * 2. Delete it (simulates C++ destroyUnmountedShadowNode calling Java destroyUnmountedView)
    * 3. CREATE + INSERT via batch mount item (simulates C++ executeMount after the fix erases from
    *    allocatedViewRegistry_, so CREATE is included in the batch)
@@ -234,6 +237,15 @@ class FabricMountingManagerInstrumentationTest {
   private fun createTestHelper(): FabricMountingManagerTestHelper =
       FabricMountingManagerTestHelper.create(createFabricUIManager())
 
+  /** Enables the pull model in the C++ feature flags that the helper's native code reads. */
+  private fun enablePullModel() {
+    ReactNativeFeatureFlagsCxxInterop.dangerouslyForceOverride(
+        object : ReactNativeFeatureFlagsDefaults() {
+          override fun enableMountingCoordinatorPullModelAndroid(): Boolean = true
+        }
+    )
+  }
+
   /**
    * Exercises the real C++ FabricMountingManager::onSurfaceStart and verifies the surfaceId tag is
    * registered in allocatedViewRegistry_.
@@ -246,7 +258,8 @@ class FabricMountingManagerInstrumentationTest {
   }
 
   /**
-   * Exercises real C++ preallocateShadowView — verifies the tag is added to allocatedViewRegistry_.
+   * Exercises the real C++ preallocation queue — verifies the tag is added to
+   * allocatedViewRegistry_.
    */
   @Test
   fun native_preallocateView_addsToRegistry() {
@@ -334,5 +347,67 @@ class FabricMountingManagerInstrumentationTest {
     val fallbackView = smm.getView(44)
     assertThat(fallbackView.alpha).isEqualTo(0.5f)
     assertThat(fallbackView.tag).isEqualTo("animated-view")
+  }
+
+  /**
+   * In the pull model, a view whose family is destroyed before the queue drains must not be
+   * preallocated: no family callback is left to destroy it.
+   */
+  @Test
+  fun native_drainPreallocationQueue_pullModel_skipsViewWhoseFamilyWasDestroyed() {
+    enablePullModel()
+    val helper = createTestHelper()
+    helper.startSurface(surfaceId)
+    helper.queuePreallocation(surfaceId, 42)
+    helper.dropFamily(42)
+
+    helper.drainPreallocationQueue()
+
+    assertThat(helper.isTagAllocated(surfaceId, 42)).isFalse()
+  }
+
+  /** Without the pull model, a committed family does not destroy its view. */
+  @Test
+  fun native_destroyCommittedView_keepsPreallocatedView() {
+    val helper = createTestHelper()
+    helper.startSurface(surfaceId)
+    helper.preallocateView(surfaceId, 42)
+
+    helper.destroyCommittedView(surfaceId, 42)
+
+    assertThat(helper.isTagAllocated(surfaceId, 42)).isTrue()
+  }
+
+  /**
+   * A pull can skip the commits that created and deleted the view of a committed family. Its
+   * preallocated view is destroyed with the family.
+   */
+  @Test
+  fun native_destroyCommittedView_pullModel_destroysPreallocatedView() {
+    enablePullModel()
+    val helper = createTestHelper()
+    helper.startSurface(surfaceId)
+    helper.preallocateView(surfaceId, 42)
+
+    helper.destroyCommittedView(surfaceId, 42)
+
+    assertThat(helper.isTagAllocated(surfaceId, 42)).isFalse()
+  }
+
+  /**
+   * In the pull model, a family can be destroyed before the pending Delete of its mounted view
+   * executes. A view that a mount created stays registered until that Delete.
+   */
+  @Test
+  fun native_destroyCommittedView_pullModel_keepsViewCreatedByMount() {
+    enablePullModel()
+    val helper = createTestHelper()
+    helper.startSurface(surfaceId)
+    helper.preallocateView(surfaceId, 42)
+    helper.mountCreate(surfaceId, 42)
+
+    helper.destroyCommittedView(surfaceId, 42)
+
+    assertThat(helper.isTagAllocated(surfaceId, 42)).isTrue()
   }
 }
