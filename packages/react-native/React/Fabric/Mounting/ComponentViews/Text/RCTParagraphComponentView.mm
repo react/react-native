@@ -20,10 +20,33 @@
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
+#import <React/RCTUtils.h>
 #import "RCTConversions.h"
 #import "RCTFabricComponentsPlugins.h"
 
 using namespace facebook::react;
+
+/*
+ * The content frame with its height snapped back onto the pixel grid. Yoga
+ * rounds the frame to the grid but subtracts the two rounded edges as floats,
+ * so far from the origin the height can come out a float step under the grid
+ * value the paragraph was measured at: 43.9998 instead of 44 for two lines of
+ * lineHeight 22 at y = 2048 on a 3x screen. TextKit treats a container that
+ * short as too small for the last line and lays it out clipped. Anything else
+ * is rounded up, so the container is never made smaller.
+ * See https://github.com/facebook/react-native/issues/58970.
+ */
+static CGRect RCTParagraphTextFrame(const LayoutMetrics &layoutMetrics)
+{
+  CGRect frame = RCTCGRectFromRect(layoutMetrics.getContentFrame());
+  CGFloat scale = RCTScreenScale();
+  if (scale > 0 && !isnan(frame.size.height)) {
+    CGFloat scaled = frame.size.height * scale;
+    CGFloat nearest = round(scaled);
+    frame.size.height = (fabs(scaled - nearest) < 0.01 ? nearest : ceil(scaled)) / scale;
+  }
+  return frame;
+}
 
 @interface RCTTextLayoutManager (RCTParagraphComponentViewPrivate)
 
@@ -178,7 +201,7 @@ using namespace facebook::react;
 - (void)_updateTextViewFrame
 {
   CGRect textViewFrame = self.bounds;
-  CGRect drawingFrame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+  CGRect drawingFrame = RCTParagraphTextFrame(_layoutMetrics);
 
   if (ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() && _textView.state &&
       drawingFrame.size.height > 0) {
