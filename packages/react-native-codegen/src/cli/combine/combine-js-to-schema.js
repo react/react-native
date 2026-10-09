@@ -63,7 +63,7 @@ function expandDirectoriesIntoFiles(
 ): Array<string> {
   return fileList
     .flatMap(file => {
-      if (!fs.lstatSync(file).isDirectory()) {
+      if (!fs.statSync(file).isDirectory()) {
         return [file];
       }
       return globSync('**/*{,.fb}.{js,ts,tsx}', {
