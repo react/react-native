@@ -135,7 +135,9 @@ public object ViewManagerPropertyUpdater {
       @Suppress("DEPRECATION", "UNCHECKED_CAST")
       return setterClass.newInstance() as T
     } catch (e: ClassNotFoundException) {
-      FLog.w(TAG, "Could not find generated setter for $cls")
+      // A generated setter is optional: the annotation processor that produced them was removed,
+      // so reaching the reflection-based fallback is the expected path, not a problem.
+      FLog.d(TAG, "Could not find generated setter for $cls")
       return null
     } catch (e: InstantiationException) {
       throw RuntimeException("Unable to instantiate methods getter for $clsName", e)
