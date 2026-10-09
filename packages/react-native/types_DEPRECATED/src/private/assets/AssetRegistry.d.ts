@@ -29,7 +29,7 @@ export interface PackagerAsset {
  *
  * Most apps do not use this directly — assets are handled through `<Image>`.
  */
-export declare const AssetRegistry: {
+export interface AssetRegistry {
   /**
    * Register an asset. Returns the asset ID.
    */
@@ -39,4 +39,6 @@ export declare const AssetRegistry: {
    * Retrieve a registered asset by ID.
    */
   getAssetByID(assetId: number): PackagerAsset;
-};
+}
+
+export declare const AssetRegistry: AssetRegistry;
