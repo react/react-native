@@ -3500,16 +3500,6 @@ class facebook::react::RuntimeSchedulerResizeObserverDelegate {
   public virtual ~RuntimeSchedulerResizeObserverDelegate() = default;
 }
 
-class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseViewEventEmitter {
-}
-
-class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
-  public SafeAreaViewProps() = default;
-  public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public virtual facebook::react::ComponentName getDiffPropsImplementationTarget() const override;
-  public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
-}
-
 class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public Scheduler(const facebook::react::SchedulerToolbox& schedulerToolbox, facebook::react::UIManagerAnimationDelegate* animationDelegate, facebook::react::SchedulerDelegate* delegate);
   public facebook::react::SchedulerDelegate* getDelegate() const;

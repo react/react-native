@@ -5120,14 +5120,6 @@ public abstract interface class com/facebook/react/viewmanagers/ModalHostViewMan
 	public abstract fun setVisible (Landroid/view/View;Z)V
 }
 
-public class com/facebook/react/viewmanagers/SafeAreaViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
-	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
-	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
-}
-
-public abstract interface class com/facebook/react/viewmanagers/SafeAreaViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
-}
-
 public class com/facebook/react/viewmanagers/UnimplementedNativeViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
 	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
 	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V

@@ -12,7 +12,7 @@
 
 import type {ElementsHierarchy, InspectedElement} from './Inspector';
 
-import SafeAreaView from '../../../../../Libraries/Components/SafeAreaView/SafeAreaView';
+import SafeAreaView from '../../../components/safeareaview/SafeAreaView_INTERNAL_DO_NOT_USE';
 import * as React from 'react';
 
 const ScrollView =

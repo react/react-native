@@ -2220,16 +2220,6 @@ class facebook::react::ReadableNativeArray : public jni::HybridClass<facebook::r
   protected ReadableNativeArray(Dyn&& array);
 }
 
-class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseViewEventEmitter {
-}
-
-class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
-  public SafeAreaViewProps() = default;
-  public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public virtual facebook::react::ComponentName getDiffPropsImplementationTarget() const override;
-  public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
-}
-
 class facebook::react::Sealable {
   public bool getSealed() const;
   public void ensureUnsealed() const;

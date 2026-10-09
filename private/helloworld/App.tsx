@@ -8,8 +8,9 @@
  */
 
 import * as React from 'react';
+import {useState} from 'react';
 import {
-  SafeAreaView,
+  type SafeAreaInsets,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -20,9 +21,21 @@ import {
 
 function App(): React.ReactNode {
   const isDarkMode = useColorScheme() === 'dark';
+  const [insets, setInsets] = useState<SafeAreaInsets | null>(null);
 
   return (
-    <SafeAreaView>
+    <View
+      style={
+        insets && {
+          paddingTop: insets.top,
+          paddingRight: insets.right,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+        }
+      }
+      experimental_onSafeAreaInsetsChange={event =>
+        setInsets(event.nativeEvent.insets)
+      }>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <View>
@@ -31,7 +44,7 @@ function App(): React.ReactNode {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

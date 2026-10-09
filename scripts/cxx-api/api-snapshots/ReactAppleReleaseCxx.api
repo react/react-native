@@ -1644,9 +1644,6 @@ interface RCTRootViewFactoryConfiguration : public NSObject {
   public virtual instancetype initWithBundleURLBlock:newArchEnabled:(RCTBundleURLBlock bundleURLBlock, BOOL newArchEnabled);
 }
 
-interface RCTSafeAreaViewComponentView : public RCTViewComponentView {
-}
-
 interface RCTScheduler : public NSObject {
   public @property (assign, readonly) const std::shared_ptr<facebook::react::UIManager> uiManager;
   public @property (weak) id<RCTSchedulerDelegate> delegate;
@@ -2865,9 +2862,6 @@ protocol RCTRendererInteropLayerAdapting {
 
 protocol RCTRootViewDelegate : public NSObject {
   public virtual void rootViewDidChangeIntrinsicSize:(RCTRootView* rootView);
-}
-
-protocol RCTSafeAreaViewViewProtocol : public NSObject {
 }
 
 protocol RCTSchedulerDelegate {
@@ -4507,14 +4501,6 @@ class facebook::react::RawValue {
   public bool hasType() const;
   template <typename T>
   public operator T() const;
-}
-
-class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseViewEventEmitter {
-}
-
-class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
-  public SafeAreaViewProps() = default;
-  public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
 }
 
 class facebook::react::Sealable {
