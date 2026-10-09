@@ -20,6 +20,13 @@ const {globSync} = require('tinyglobby');
 
 const flowParser = new FlowParser();
 const typescriptParser = new TypeScriptParser();
+const trivia = String.raw`(?:\s|/\*(?:[^*]|\*(?!/))*\*/|//[^\r\n\u2028\u2029]*[\r\n\u2028\u2029])`;
+const componentDeclaration = new RegExp(
+  String.raw`\bexport${trivia}+default\b${trivia}*(?:\(${trivia}*)*codegenNativeComponent${trivia}*<`,
+);
+const moduleDeclaration = new RegExp(
+  String.raw`\bextends${trivia}+TurboModule\b`,
+);
 
 function combineSchemas(
   files: Array<string>,
@@ -31,8 +38,8 @@ function combineSchemas(
 
       if (
         contents &&
-        (/export\s+default\s+\(?codegenNativeComponent</.test(contents) ||
-          /extends TurboModule/.test(contents))
+        (componentDeclaration.test(contents) ||
+          moduleDeclaration.test(contents))
       ) {
         const isTypeScript =
           path.extname(filename) === '.ts' || path.extname(filename) === '.tsx';
