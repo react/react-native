@@ -112,6 +112,26 @@ private fun drawDecorationLine(
 }
 
 /**
+ * The last offset [layout] can resolve a horizontal position for. Truncation (via `numberOfLines`)
+ * can leave the last line shorter than [Layout.getLineEnd] reports, since [layout] keeps the full
+ * untruncated text and only clips how much of it is laid out. When the last line ends in a tail
+ * ellipsis, anything from the ellipsis onward is unresolvable too; a leading/middle ellipsis
+ * doesn't shorten what's resolvable on that line, so it's left to [Layout.getLineEnd].
+ */
+private fun visibleTextEnd(layout: Layout): Int {
+  val lastLine = layout.lineCount - 1
+  val lineStart = layout.getLineStart(lastLine)
+  val lineEnd = layout.getLineEnd(lastLine)
+  val ellipsisStart = layout.getEllipsisStart(lastLine)
+  val ellipsisCount = layout.getEllipsisCount(lastLine)
+  return if (ellipsisCount > 0 && ellipsisStart + ellipsisCount == lineEnd - lineStart) {
+    lineStart + ellipsisStart
+  } else {
+    lineEnd
+  }
+}
+
+/**
  * Shared decoration drawing entry point used by [ReactUnderlineSpan] and [ReactStrikethroughSpan].
  * Computes a density-aware stroke thickness, sets up a dedicated paint (to avoid mutating the
  * shared [Layout.getPaint]), iterates the visible lines of the run, and delegates each line to
@@ -174,13 +194,19 @@ internal fun drawSpannedDecoration(
         }
   }
 
-  val startLine = layout.getLineForOffset(start)
-  val endLine = layout.getLineForOffset(end)
+  val visibleEnd = visibleTextEnd(layout)
+  val clampedStart = min(start, visibleEnd)
+  val clampedEnd = min(end, visibleEnd)
+
+  val startLine = layout.getLineForOffset(clampedStart)
+  val endLine = layout.getLineForOffset(clampedEnd)
   for (line in startLine..endLine) {
     val baseline = layout.getLineBaseline(line).toFloat()
     val rawX1 =
-        if (line == startLine) layout.getPrimaryHorizontal(start) else layout.getLineLeft(line)
-    val rawX2 = if (line == endLine) layout.getPrimaryHorizontal(end) else layout.getLineRight(line)
+        if (line == startLine) layout.getPrimaryHorizontal(clampedStart)
+        else layout.getLineLeft(line)
+    val rawX2 =
+        if (line == endLine) layout.getPrimaryHorizontal(clampedEnd) else layout.getLineRight(line)
     // Normalize for RTL text where start may be to the right of end.
     val x1 = min(rawX1, rawX2)
     val x2 = max(rawX1, rawX2)
