@@ -2,8 +2,8 @@ name: test-ios-helloworld
 description: Test iOS Hello World
 inputs:
   use-frameworks:
-    description: The dependency building and linking strategy to use. Must be one of "StaticLibraries", "DynamicFrameworks"
-    default: StaticLibraries
+    description: Whether to build with dynamic frameworks.
+    default: false
   ruby-version:
     description: The version of ruby that must be used
     default: 2.6.10
@@ -51,7 +51,7 @@ runs:
         cd private/helloworld
         args=()
 
-        if [[ ${{ inputs.use-frameworks }} == "DynamicFrameworks" ]]; then
+        if [[ "${{ inputs.use-frameworks }}" == "true" ]]; then
           args+=(--frameworks dynamic)
         fi
 
