@@ -7088,6 +7088,9 @@ struct facebook::yoga::LayoutResults {
   public float rawDimension(facebook::yoga::Dimension axis) const;
   public static constexpr int32_t MaxCachedMeasurements;
   public std::array<facebook::yoga::CachedMeasurement, facebook::yoga::LayoutResults::MaxCachedMeasurements> cachedMeasurements;
+  public std::array<float, 2> minContent;
+  public std::array<float, 2> minContentOwnerWidth;
+  public std::array<uint32_t, 2> minContentGeneration;
   public uint32_t computedFlexBasisGeneration;
   public uint32_t configVersion;
   public uint32_t generationCount;
