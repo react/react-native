@@ -424,6 +424,43 @@ describe('ensureScalarField', () => {
       out,
     );
   });
+
+  // Xcode writes an object's fields `isa` first, then alphabetically — landing
+  // anywhere else plants a diff the next time Xcode saves the project.
+  it('adds the field directly after `after` when that field exists', () => {
+    const config = findObjectByUuid(PLAIN_PBXPROJ, 'AA0000000000000000000901');
+    const out = ensureScalarField(
+      PLAIN_PBXPROJ,
+      config,
+      'baseConfigurationReference',
+      'DD0000000000000000000101 /* App.xcconfig */',
+      {after: 'isa'},
+    );
+    expect(out).toContain(
+      'AA0000000000000000000901 /* Debug */ = {\n' +
+        '\t\t\tisa = XCBuildConfiguration;\n' +
+        '\t\t\tbaseConfigurationReference = DD0000000000000000000101 /* App.xcconfig */;\n' +
+        '\t\t\tbuildSettings = {',
+    );
+    expect(
+      removeField(
+        out,
+        findObjectByUuid(out, 'AA0000000000000000000901'),
+        'baseConfigurationReference',
+      ),
+    ).toBe(PLAIN_PBXPROJ);
+  });
+
+  it('falls back to the top of the body when `after` is absent', () => {
+    const project = findProjectObject(PLAIN_PBXPROJ);
+    expect(
+      ensureScalarField(PLAIN_PBXPROJ, project, 'ORGANIZATIONNAME', 'Acme', {
+        after: 'NO_SUCH_FIELD',
+      }),
+    ).toBe(
+      ensureScalarField(PLAIN_PBXPROJ, project, 'ORGANIZATIONNAME', 'Acme'),
+    );
+  });
 });
 
 describe('setScalarField', () => {
