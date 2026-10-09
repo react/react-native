@@ -175,7 +175,12 @@ Debugger            Proxy                        Device
 **Connection Rejection:**
 
 If a device cannot accept a `connect` (e.g., page doesn't exist), it should send
-a `disconnect` back to the proxy for that `pageId`.
+a `disconnect` back to the proxy for that `pageId`. Devices also send a
+`disconnect` for each session when a page is removed.
+
+For targets with `nativePageReloads`, the proxy closes the debugger connection
+with `[PAGE_REMOVED]` when it receives a `disconnect` for its session (or for
+its page, if `sessionId` is omitted).
 
 ### Connection Semantics
 
@@ -215,6 +220,7 @@ The proxy uses specific close reasons that DevTools frontends may recognize:
 | Reason                  | Context                                 |
 | ----------------------- | --------------------------------------- |
 | `[PAGE_NOT_FOUND]`      | Debugger connected to non-existent page |
+| `[PAGE_REMOVED]`        | Device ended or rejected the session    |
 | `[CONNECTION_LOST]`     | Device disconnected                     |
 | `[RECREATING_DEVICE]`   | Device is reconnecting                  |
 | `[NEW_DEBUGGER_OPENED]` | Another debugger took over this page    |
