@@ -8,7 +8,11 @@
  * @format
  */
 
-import type {CellMetricProps, ListOrientation} from './ListMetricsAggregator';
+import type {
+  CellMetricProps,
+  CellMetrics,
+  ListOrientation,
+} from './ListMetricsAggregator';
 import type {ViewToken} from './ViewabilityHelper';
 import type {
   Item,
@@ -793,7 +797,7 @@ class VirtualizedList extends StateSafePureComponent<
     } else {
       // If we have a pending scroll update, we should not adjust the render window as it
       // might override the correct window.
-      if (pendingScrollUpdateCount > 0) {
+      if (pendingScrollUpdateCount > 0 || this._pendingAnchorCorrection) {
         return cellsAroundViewport.last >= getItemCount(data)
           ? VirtualizedList._constrainToItemCount(cellsAroundViewport, props)
           : cellsAroundViewport;
@@ -1457,6 +1461,10 @@ class VirtualizedList extends StateSafePureComponent<
   > = null;
   _parentRegistration: ?ParentRegistration = null;
   _offsetFromParentVirtualizedList: number = 0;
+  // Set when the cell maintainVisibleContentPosition is anchored on moves, until
+  // the scroll event with native's correction for it. Not state, so that cells
+  // updates queued by earlier layout events in the same batch see it too.
+  _pendingAnchorCorrection: boolean = false;
   _pendingViewabilityUpdate: boolean = false;
   _prevParentOffset: number = 0;
   _scrollMetrics: {
@@ -1543,6 +1551,8 @@ class VirtualizedList extends StateSafePureComponent<
     cellKey: string,
     cellIndex: number,
   ): void => {
+    const anchorMetrics =
+      this._getMaintainVisibleContentPositionAnchor(cellIndex);
     const layoutHasChanged = this._listMetrics.notifyCellLayout({
       cellIndex,
       cellKey,
@@ -1551,6 +1561,18 @@ class VirtualizedList extends StateSafePureComponent<
     });
 
     if (layoutHasChanged) {
+      if (
+        anchorMetrics != null &&
+        this._listMetrics.getCellMetrics(cellIndex, this.props)?.offset !==
+          anchorMetrics.offset
+      ) {
+        // Native maintainVisibleContentPosition shifts the scroll offset by as
+        // much as this cell moved, but the scroll event reporting that arrives
+        // after this layout event. Until then the scroll offset is stale
+        // relative to the cell metrics, and a window computed from the two is
+        // off by the shift.
+        this._pendingAnchorCorrection = true;
+      }
       this._scheduleCellsToRenderUpdate();
     }
 
@@ -1559,6 +1581,34 @@ class VirtualizedList extends StateSafePureComponent<
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     this._notifyCrossOrientationChildren();
   };
+
+  /**
+   * The metrics of the cell at `cellIndex` if native
+   * `maintainVisibleContentPosition` is anchored on it: a mounted cell laid out
+   * across the start of the viewport.
+   */
+  _getMaintainVisibleContentPositionAnchor(cellIndex: number): ?CellMetrics {
+    const {data, getItemCount, getItemLayout, maintainVisibleContentPosition} =
+      this.props;
+    if (
+      maintainVisibleContentPosition == null ||
+      getItemLayout != null ||
+      // Native picks its anchor by physical position, not flow-relative, so in
+      // a horizontal RTL list it isn't this cell.
+      this._isHorizontalRTL() ||
+      cellIndex >= getItemCount(data)
+    ) {
+      return null;
+    }
+    const metrics = this._listMetrics.getCellMetrics(cellIndex, this.props);
+    const {offset} = this._scrollMetrics;
+    return metrics != null &&
+      metrics.isMounted &&
+      metrics.offset <= offset &&
+      offset < metrics.offset + metrics.length
+      ? metrics
+      : null;
+  }
 
   _onCellFocusCapture = (cellKey: string) => {
     this._lastFocusedCellKey = cellKey;
@@ -2001,6 +2051,7 @@ class VirtualizedList extends StateSafePureComponent<
       visibleLength,
       zoomScale,
     };
+    this._pendingAnchorCorrection = false;
     if (this.state.pendingScrollUpdateCount > 0) {
       this.setState<'pendingScrollUpdateCount'>({pendingScrollUpdateCount: 0});
     }
