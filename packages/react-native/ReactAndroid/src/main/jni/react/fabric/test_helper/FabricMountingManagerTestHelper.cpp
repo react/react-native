@@ -11,9 +11,25 @@
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/ComponentDescriptor.h>
+#include <react/renderer/mounting/MountingTransaction.h>
 #include <react/renderer/mounting/ShadowView.h>
+#include <react/renderer/telemetry/TransactionTelemetry.h>
 
 namespace facebook::react {
+
+namespace {
+
+ShadowView makeShadowView(jint surfaceId, jint tag) {
+  ShadowView sv{};
+  sv.componentName = "View";
+  sv.surfaceId = surfaceId;
+  sv.tag = tag;
+  sv.props = std::make_shared<const ViewProps>();
+  sv.layoutMetrics.frame.size = {.width = 100, .height = 100};
+  return sv;
+}
+
+} // namespace
 
 FabricMountingManagerTestHelper::FabricMountingManagerTestHelper(
     jni::alias_ref<JFabricUIManager::javaobject> jFabricUIManager)
@@ -44,13 +60,45 @@ void FabricMountingManagerTestHelper::stopSurface(jint surfaceId) {
 void FabricMountingManagerTestHelper::preallocateView(
     jint surfaceId,
     jint tag) {
-  ShadowView sv{};
-  sv.componentName = "View";
-  sv.surfaceId = surfaceId;
-  sv.tag = tag;
-  sv.props = std::make_shared<const ViewProps>();
-  sv.layoutMetrics.frame.size = {.width = 100, .height = 100};
-  mountingManager_->preallocateShadowView(sv);
+  queuePreallocation(surfaceId, tag);
+  drainPreallocationQueue();
+}
+
+void FabricMountingManagerTestHelper::queuePreallocation(
+    jint surfaceId,
+    jint tag) {
+  auto props = std::make_shared<ViewProps>();
+  props->collapsable = false;
+  auto shadowNode = viewComponentDescriptor_->createShadowNode(
+      {.props = props},
+      viewComponentDescriptor_->createFamily(
+          {.tag = tag, .surfaceId = surfaceId, .instanceHandle = nullptr}));
+  mountingManager_->maybePreallocateShadowNode(*shadowNode);
+  queuedShadowNodes_[tag] = std::move(shadowNode);
+}
+
+void FabricMountingManagerTestHelper::drainPreallocationQueue() {
+  mountingManager_->drainPreallocateViewsQueue();
+}
+
+void FabricMountingManagerTestHelper::mountCreate(jint surfaceId, jint tag) {
+  auto telemetry = TransactionTelemetry{};
+  telemetry.willCommit();
+  telemetry.willDiff();
+  telemetry.didDiff();
+  telemetry.willLayout();
+  telemetry.didLayout();
+  telemetry.didCommit();
+  mountingManager_->executeMount(
+      MountingTransaction{
+          surfaceId,
+          0,
+          {ShadowViewMutation::CreateMutation(makeShadowView(surfaceId, tag))},
+          telemetry});
+}
+
+void FabricMountingManagerTestHelper::dropFamily(jint tag) {
+  queuedShadowNodes_.erase(tag);
 }
 
 void FabricMountingManagerTestHelper::destroyUnmountedView(
@@ -59,6 +107,18 @@ void FabricMountingManagerTestHelper::destroyUnmountedView(
   auto family = viewComponentDescriptor_->createFamily(
       {.tag = tag, .surfaceId = surfaceId, .instanceHandle = nullptr});
   mountingManager_->destroyUnmountedShadowNode(*family);
+}
+
+void FabricMountingManagerTestHelper::destroyCommittedView(
+    jint surfaceId,
+    jint tag) {
+  auto family = viewComponentDescriptor_->createFamily(
+      {.tag = tag, .surfaceId = surfaceId, .instanceHandle = nullptr});
+  family->onFamilyDestroyed([mountingManager = mountingManager_](
+                                const ShadowNodeFamily& destroyedFamily) {
+    mountingManager->destroyUnmountedShadowNode(destroyedFamily);
+  });
+  family->setMounted();
 }
 
 bool FabricMountingManagerTestHelper::isTagAllocated(jint surfaceId, jint tag) {
@@ -92,8 +152,21 @@ void FabricMountingManagerTestHelper::registerNatives() {
       makeNativeMethod(
           "preallocateView", FabricMountingManagerTestHelper::preallocateView),
       makeNativeMethod(
+          "queuePreallocation",
+          FabricMountingManagerTestHelper::queuePreallocation),
+      makeNativeMethod(
+          "drainPreallocationQueue",
+          FabricMountingManagerTestHelper::drainPreallocationQueue),
+      makeNativeMethod(
+          "mountCreate", FabricMountingManagerTestHelper::mountCreate),
+      makeNativeMethod(
+          "dropFamily", FabricMountingManagerTestHelper::dropFamily),
+      makeNativeMethod(
           "destroyUnmountedView",
           FabricMountingManagerTestHelper::destroyUnmountedView),
+      makeNativeMethod(
+          "destroyCommittedView",
+          FabricMountingManagerTestHelper::destroyCommittedView),
       makeNativeMethod(
           "isTagAllocated", FabricMountingManagerTestHelper::isTagAllocated),
       makeNativeMethod(

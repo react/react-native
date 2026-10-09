@@ -807,11 +807,11 @@ void FabricUIManagerBinding::schedulerDidRequestPreliminaryViewAllocation(
     return;
   }
   mountingManager->maybePreallocateShadowNode(shadowNode);
-  // Only the Views of ShadowNode that were pre-allocated (forms views) needs
-  // to be destroyed if the ShadowNode is destroyed but it was never mounted
-  // on the screen.
+  // Only the Views of ShadowNode that were pre-allocated (forms views) need
+  // to be destroyed if the ShadowNode is destroyed and no mount created its
+  // View.
   if (shadowNode.getTraits().check(ShadowNodeTraits::Trait::FormsView)) {
-    shadowNode.getFamilyShared()->onUnmountedFamilyDestroyed(
+    shadowNode.getFamilyShared()->onFamilyDestroyed(
         [weakMountingManager =
              std::weak_ptr(mountingManager)](const ShadowNodeFamily& family) {
           if (auto mountingManager = weakMountingManager.lock()) {

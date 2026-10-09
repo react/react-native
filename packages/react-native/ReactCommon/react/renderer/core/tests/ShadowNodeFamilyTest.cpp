@@ -6,6 +6,8 @@
  */
 
 #include <exception>
+#include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -79,4 +81,68 @@ TEST(ShadowNodeFamilyTest, sealObjectCorrectly) {
   EXPECT_EQ(ancestors2.size(), 2);
   EXPECT_EQ(&ancestors2[0].first.get(), shadowNodeA.get());
   EXPECT_EQ(&ancestors2[1].first.get(), shadowNodeAA.get());
+}
+
+TEST(ShadowNodeFamilyTest, callsDestroyedCallbackWhetherOrNotMounted) {
+  ComponentDescriptorProviderRegistry componentDescriptorProviderRegistry{};
+  auto componentDescriptorRegistry =
+      componentDescriptorProviderRegistry.createComponentDescriptorRegistry(
+          ComponentDescriptorParameters{
+              .eventDispatcher = EventDispatcher::Shared{},
+              .contextContainer = nullptr,
+              .flavor = nullptr});
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<ViewComponentDescriptor>());
+  auto builder = ComponentBuilder{componentDescriptorRegistry};
+
+  auto mountedShadowNode = builder.build(Element<ViewShadowNode>().tag(1));
+  auto unmountedShadowNode = builder.build(Element<ViewShadowNode>().tag(2));
+  auto destroyedFamilies = std::vector<std::pair<Tag, bool>>{};
+  for (const auto& shadowNode : {mountedShadowNode, unmountedShadowNode}) {
+    shadowNode->getFamilyShared()->onFamilyDestroyed(
+        [&](const ShadowNodeFamily& family) {
+          destroyedFamilies.emplace_back(
+              family.getTag(), family.hasBeenMounted());
+        });
+  }
+  mountedShadowNode->setMounted(true);
+
+  mountedShadowNode.reset();
+  unmountedShadowNode.reset();
+
+  EXPECT_EQ(
+      destroyedFamilies,
+      (std::vector<std::pair<Tag, bool>>{{1, true}, {2, false}}));
+}
+
+TEST(ShadowNodeFamilyTest, deprecatedUnmountedCallbackSkipsMountedFamilies) {
+  ComponentDescriptorProviderRegistry componentDescriptorProviderRegistry{};
+  auto componentDescriptorRegistry =
+      componentDescriptorProviderRegistry.createComponentDescriptorRegistry(
+          ComponentDescriptorParameters{
+              .eventDispatcher = EventDispatcher::Shared{},
+              .contextContainer = nullptr,
+              .flavor = nullptr});
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<ViewComponentDescriptor>());
+  auto builder = ComponentBuilder{componentDescriptorRegistry};
+
+  auto mountedShadowNode = builder.build(Element<ViewShadowNode>().tag(1));
+  auto unmountedShadowNode = builder.build(Element<ViewShadowNode>().tag(2));
+  auto destroyedTags = std::vector<Tag>{};
+  for (const auto& shadowNode : {mountedShadowNode, unmountedShadowNode}) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    shadowNode->getFamilyShared()->onUnmountedFamilyDestroyed(
+        [&](const ShadowNodeFamily& family) {
+          destroyedTags.push_back(family.getTag());
+        });
+#pragma clang diagnostic pop
+  }
+  mountedShadowNode->setMounted(true);
+
+  mountedShadowNode.reset();
+  unmountedShadowNode.reset();
+
+  EXPECT_EQ(destroyedTags, std::vector<Tag>{2});
 }

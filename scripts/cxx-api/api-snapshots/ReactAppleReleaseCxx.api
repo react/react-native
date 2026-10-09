@@ -4573,6 +4573,7 @@ class facebook::react::ShadowNode : public facebook::react::Sealable, public fac
 
 class facebook::react::ShadowNodeFamily : public facebook::jsi::NativeState {
   public ShadowNodeFamily(const facebook::react::ShadowNodeFamilyFragment& fragment, facebook::react::SharedEventEmitter eventEmitter, facebook::react::EventDispatcher::Weak eventDispatcher, const facebook::react::ComponentDescriptor& componentDescriptor);
+  public bool hasBeenMounted() const;
   public const facebook::react::ComponentDescriptor& getComponentDescriptor() const;
   public facebook::jsi::Value getInstanceHandle(facebook::jsi::Runtime& runtime) const;
   public facebook::react::ComponentHandle getComponentHandle() const;
@@ -4588,6 +4589,7 @@ class facebook::react::ShadowNodeFamily : public facebook::jsi::NativeState {
   public using Shared = std::shared_ptr<facebook::react::ShadowNodeFamily>;
   public using Weak = std::weak_ptr<facebook::react::ShadowNodeFamily>;
   public void dispatchRawState(facebook::react::StateUpdate&& stateUpdate, facebook::react::EventQueue::UpdateMode updateMode);
+  public void onFamilyDestroyed(std::function<void(const facebook::react::ShadowNodeFamily& family)> callback);
   public void onUnmountedFamilyDestroyed(std::function<void(const facebook::react::ShadowNodeFamily& family)> callback);
   public void setInstanceHandle(facebook::react::InstanceHandle::Shared& instanceHandle);
   public void setMostRecentState(const std::shared_ptr<const facebook::react::State>& state);

@@ -89,9 +89,15 @@ class ShadowNodeFamily final : public jsi::NativeState {
   SharedEventEmitter getEventEmitter() const;
 
   /**
+   * @param callback will be executed when this ShadowNodeFamily is destroyed.
+   */
+  void onFamilyDestroyed(std::function<void(const ShadowNodeFamily &family)> callback);
+
+  /**
    * @param callback will be executed when an unmounted instance of
    * ShadowNodeFamily is destroyed.
    */
+  [[deprecated("Use onFamilyDestroyed and check hasBeenMounted() instead")]]
   void onUnmountedFamilyDestroyed(std::function<void(const ShadowNodeFamily &family)> callback);
 
   /*
@@ -104,6 +110,11 @@ class ShadowNodeFamily final : public jsi::NativeState {
    * Mark this ShadowNodeFamily as mounted.
    */
   void setMounted();
+
+  /**
+   * Whether this ShadowNodeFamily was ever mounted.
+   */
+  bool hasBeenMounted() const;
 
   /*
    * Dispatches a state update with given priority.
@@ -128,8 +139,7 @@ class ShadowNodeFamily final : public jsi::NativeState {
   void setInstanceHandle(InstanceHandle::Shared &instanceHandle);
 
   /**
-   * Override destructor to call onUnmountedFamilyDestroyedCallback() for
-   * ShadowViews that were preallocated but never mounted on the screen.
+   * Calls the callback set by onFamilyDestroyed.
    */
   ~ShadowNodeFamily();
 
@@ -148,7 +158,7 @@ class ShadowNodeFamily final : public jsi::NativeState {
   std::shared_ptr<const State> mostRecentState_;
   mutable std::mutex mutex_;
 
-  std::function<void(ShadowNodeFamily &family)> onUnmountedFamilyDestroyedCallback_ = nullptr;
+  std::function<void(ShadowNodeFamily &family)> onFamilyDestroyedCallback_ = nullptr;
 
   /*
    * Deprecated.
