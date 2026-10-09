@@ -7,11 +7,10 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/components/view/YogaStylableProps.h>
-#include <react/renderer/components/view/conversions.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 

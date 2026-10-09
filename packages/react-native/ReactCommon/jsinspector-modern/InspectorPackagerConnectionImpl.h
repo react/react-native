@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include "InspectorInterfaces.h"
 #include "InspectorPackagerConnection.h"

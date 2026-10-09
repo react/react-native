@@ -73,7 +73,6 @@ struct facebook::hermes::ISetEventLoopControl : public facebook::jsi::ICast {
 
 const char facebook::react::ViewComponentName[];
 const facebook::react::EventTag facebook::react::EMPTY_EVENT_TAG;
-constexpr char facebook::react::LayoutConformanceShadowNodeComponentName[];
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
 constexpr facebook::react::Tag facebook::react::kNoTag;
 constexpr uint32_t facebook::react::INITIAL_BUCKETS_SIZE;
@@ -108,7 +107,6 @@ using facebook::react::GradientDirection = std::variant<Float, facebook::react::
 using facebook::react::HostPlatformTouch = facebook::react::BaseTouch;
 using facebook::react::HostPlatformViewEventEmitter = facebook::react::BaseViewEventEmitter;
 using facebook::react::ImageSources = std::vector<facebook::react::ImageSource>;
-using facebook::react::LayoutConformanceComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::LayoutConformanceShadowNode>;
 using facebook::react::NativeMethodCallFunc = std::function<void()>;
 using facebook::react::PromiseSetupFunctionType = std::function<void(facebook::jsi::Runtime& rt, std::shared_ptr<facebook::react::Promise>)>;
 using facebook::react::RawPropsPropNameHash = uint32_t;
@@ -839,9 +837,6 @@ class facebook::react::JSBigString : public facebook::jsi::Buffer {
   public ~JSBigString() override = default;
 }
 
-class facebook::react::LayoutConformanceShadowNode : public facebook::react::ConcreteShadowNode<facebook::react::LayoutConformanceShadowNodeComponentName, facebook::react::YogaLayoutableShadowNode, facebook::react::LayoutConformanceProps> {
-}
-
 class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode {
   public LayoutableShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public LayoutableShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
@@ -1211,12 +1206,6 @@ class facebook::react::TurboModule : public facebook::jsi::HostObject {
 struct facebook::react::TurboModule::MethodMetadata {
   public facebook::jsi::Value(*invoker)(facebook::jsi::Runtime &rt, facebook::react::TurboModule &turboModule, const facebook::jsi::Value *args, size_t count);
   public size_t argCount;
-}
-
-class facebook::react::TurboModuleBinding {
-  public static void install(facebook::jsi::Runtime& runtime, TurboModuleProviderFunctionType&& moduleProvider, TurboModuleProviderFunctionType&& legacyModuleProvider = nullptr, std::shared_ptr<facebook::react::LongLivedObjectCollection> longLivedObjectCollection = nullptr);
-  public static void install(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleProviderFunctionTypeWithRuntime&& moduleProvider, facebook::react::TurboModuleProviderFunctionTypeWithRuntime&& legacyModuleProvider = nullptr, std::shared_ptr<facebook::react::LongLivedObjectCollection> longLivedObjectCollection = nullptr);
-  public ~TurboModuleBinding();
 }
 
 class facebook::react::TurboModuleWithJSIBindings {
@@ -1865,12 +1854,6 @@ struct facebook::react::FilterFunction {
   public bool operator==(const facebook::react::FilterFunction& other) const = default;
   public facebook::react::FilterType type;
   public std::variant<Float, facebook::react::DropShadowParams> parameters;
-}
-
-struct facebook::react::LayoutConformanceProps : public facebook::react::YogaStylableProps {
-  public LayoutConformanceProps() = default;
-  public LayoutConformanceProps(const facebook::react::PropsParserContext& context, const facebook::react::LayoutConformanceProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public facebook::react::LayoutConformance mode;
 }
 
 struct facebook::react::LayoutConstraints {

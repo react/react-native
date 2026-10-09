@@ -9,7 +9,6 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include "ExecutionContextManager.h"
 #include "HostCommand.h"
 #include "InspectorInterfaces.h"
 #include "InstanceTarget.h"
@@ -44,6 +43,7 @@
 
 namespace facebook::react::jsinspector_modern {
 
+class ExecutionContextManager;
 class HostTargetSession;
 class HostAgent;
 class HostTracingAgent;

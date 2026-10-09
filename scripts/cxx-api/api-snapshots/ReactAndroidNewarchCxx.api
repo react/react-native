@@ -376,7 +376,6 @@ struct facebook::hermes::ISetEventLoopControl : public facebook::jsi::ICast {
 const char facebook::react::ViewComponentName[];
 const facebook::react::EventTag facebook::react::EMPTY_EVENT_TAG;
 constexpr auto facebook::react::rncore_ModuleProvider;
-constexpr char facebook::react::LayoutConformanceShadowNodeComponentName[];
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
 constexpr facebook::react::Tag facebook::react::kNoTag;
 constexpr uint32_t facebook::react::INITIAL_BUCKETS_SIZE;
@@ -424,7 +423,6 @@ using facebook::react::GradientDirection = std::variant<facebook::react::Float, 
 using facebook::react::HostPlatformTouch = facebook::react::BaseTouch;
 using facebook::react::HostPlatformViewEventEmitter = facebook::react::BaseViewEventEmitter;
 using facebook::react::ImageSources = std::vector<facebook::react::ImageSource>;
-using facebook::react::LayoutConformanceComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::LayoutConformanceShadowNode>;
 using facebook::react::ModalHostViewSupportedOrientationsMask = uint32_t;
 using facebook::react::NativeMethodCallFunc = std::function<void()>;
 using facebook::react::PromiseSetupFunctionType = std::function<void(facebook::jsi::Runtime& rt, std::shared_ptr<facebook::react::Promise>)>;
@@ -1690,19 +1688,6 @@ class facebook::react::JWritableMapBuffer : public facebook::jni::JavaClass<face
   public static constexpr auto kJavaDescriptor;
 }
 
-class facebook::react::JavaInteropTurboModule : public facebook::react::JavaTurboModule {
-  protected virtual facebook::jsi::Value create(facebook::jsi::Runtime& runtime, const facebook::jsi::PropNameID& propName) override;
-  public JavaInteropTurboModule(const facebook::react::JavaTurboModule::InitParams& params, const std::vector<facebook::react::JavaInteropTurboModule::MethodDescriptor>& methodDescriptors);
-  public virtual std::vector<facebook::jsi::PropNameID> getPropertyNames(facebook::jsi::Runtime& runtime) override;
-}
-
-struct facebook::react::JavaInteropTurboModule::MethodDescriptor {
-  public facebook::react::TurboModuleMethodValueKind jsiReturnKind;
-  public int jsArgCount;
-  public std::string jniSignature;
-  public std::string methodName;
-}
-
 class facebook::react::JavaMessageQueueThread : public facebook::jni::JavaClass<facebook::react::JavaMessageQueueThread> {
   public static constexpr auto kJavaDescriptor;
 }
@@ -1727,9 +1712,6 @@ struct facebook::react::JavaTurboModule::InitParams {
   public std::shared_ptr<facebook::react::CallInvoker> jsInvoker;
   public std::shared_ptr<facebook::react::NativeMethodCallInvoker> nativeMethodCallInvoker;
   public std::string moduleName;
-}
-
-class facebook::react::LayoutConformanceShadowNode : public facebook::react::ConcreteShadowNode<facebook::react::LayoutConformanceShadowNodeComponentName, facebook::react::YogaLayoutableShadowNode, facebook::react::LayoutConformanceProps> {
 }
 
 class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode {
@@ -2486,12 +2468,6 @@ class facebook::react::TurboModule : public facebook::jsi::HostObject {
 struct facebook::react::TurboModule::MethodMetadata {
   public facebook::jsi::Value(*invoker)(facebook::jsi::Runtime &rt, facebook::react::TurboModule &turboModule, const facebook::jsi::Value *args, size_t count);
   public size_t argCount;
-}
-
-class facebook::react::TurboModuleBinding {
-  public static void install(facebook::jsi::Runtime& runtime, TurboModuleProviderFunctionType&& moduleProvider, TurboModuleProviderFunctionType&& legacyModuleProvider = nullptr, std::shared_ptr<facebook::react::LongLivedObjectCollection> longLivedObjectCollection = nullptr);
-  public static void install(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleProviderFunctionTypeWithRuntime&& moduleProvider, facebook::react::TurboModuleProviderFunctionTypeWithRuntime&& legacyModuleProvider = nullptr, std::shared_ptr<facebook::react::LongLivedObjectCollection> longLivedObjectCollection = nullptr);
-  public ~TurboModuleBinding();
 }
 
 class facebook::react::TurboModuleManager : public jni::HybridClass<facebook::react::TurboModuleManager> {
@@ -3391,12 +3367,6 @@ struct facebook::react::JTurboModule : public facebook::jni::JavaClass<facebook:
 
 struct facebook::react::JTurboModuleWithJSIBindings : public facebook::jni::JavaClass<facebook::react::JTurboModuleWithJSIBindings> {
   public static constexpr auto kJavaDescriptor;
-}
-
-struct facebook::react::LayoutConformanceProps : public facebook::react::YogaStylableProps {
-  public LayoutConformanceProps() = default;
-  public LayoutConformanceProps(const facebook::react::PropsParserContext& context, const facebook::react::LayoutConformanceProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public facebook::react::LayoutConformance mode;
 }
 
 struct facebook::react::LayoutConstraints {
