@@ -12,11 +12,11 @@ import type {
   GetPagesResponse,
   JsonPagesListResponse,
 } from '../inspector-proxy/types';
-import type {DeviceMock} from './InspectorDeviceUtils';
 
+import {WS_CLOSE_REASON} from '../inspector-proxy/Device';
 import {fetchJson} from './FetchUtils';
 import {createDebuggerMock} from './InspectorDebuggerUtils';
-import {createDeviceMock} from './InspectorDeviceUtils';
+import {DeviceMock, createDeviceMock} from './InspectorDeviceUtils';
 import {sendFromDebuggerToTarget} from './InspectorProtocolUtils';
 import {withAbortSignalForEachTest} from './ResourceUtils';
 import {withServerForEachTest} from './ServerUtils';
@@ -298,6 +298,64 @@ describe('inspector-proxy device socket handoff', () => {
       device2?.close();
       setIntervalSpy.mockRestore();
       clearIntervalSpy.mockRestore();
+    }
+  });
+
+  test("debugger handed off to a device that rejects the page with 'nativePageReloads' is disconnected", async () => {
+    let device1, device2, debugger_, webSocketDebuggerUrl;
+    try {
+      ({
+        device: device1,
+        pageList: [{webSocketDebuggerUrl}],
+      } = await connectDevice(
+        '/inspector/device?device=device&name=foo&app=bar',
+        [
+          {
+            ...PAGE_DEFAULTS,
+            capabilities: {
+              nativePageReloads: true,
+            },
+          },
+        ],
+      ));
+
+      const connectedDebugger = await createDebuggerMock(
+        webSocketDebuggerUrl,
+        autoCleanup.signal,
+      );
+      debugger_ = connectedDebugger;
+      await until(() => expect(device1.connect).toBeCalled());
+      const debuggerClosed = new Promise<{code: number, reason: string}>(
+        resolve =>
+          connectedDebugger.socket.once(
+            'close',
+            (code: number, reason: Buffer) =>
+              resolve({code, reason: reason.toString()}),
+          ),
+      );
+
+      // The reconnecting device no longer has page1, so it rejects the
+      // handed-off session.
+      const rejectingDevice = new DeviceMock(
+        serverRef.serverBaseWsUrl +
+          '/inspector/device?device=device&name=foo&app=bar',
+        autoCleanup.signal,
+      );
+      device2 = rejectingDevice;
+      rejectingDevice.connect.mockImplementation(({payload}) =>
+        rejectingDevice.send({event: 'disconnect', payload}),
+      );
+      await rejectingDevice.ready();
+
+      await until(() => expect(rejectingDevice.connect).toBeCalled());
+      expect(await debuggerClosed).toEqual({
+        code: 1000,
+        reason: WS_CLOSE_REASON.PAGE_REMOVED,
+      });
+    } finally {
+      device1?.close();
+      device2?.close();
+      debugger_?.close();
     }
   });
 
