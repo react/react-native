@@ -119,6 +119,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
   BOOL _shouldAnimatePresentation;
   BOOL _shouldPresent;
   BOOL _isPresented;
+  BOOL _isTransitioning;
   BOOL _modalInPresentation;
 }
 
@@ -169,43 +170,69 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
 
 - (void)ensurePresentedOnlyIfNeeded
 {
+  // UIKit presentation and dismissal are asynchronous. Reconcile the latest
+  // visibility only after the current transition has completed.
+  if (_isTransitioning) {
+    return;
+  }
+
   BOOL shouldBePresented = !_isPresented && _shouldPresent && self.window;
   if (shouldBePresented) {
     [self saveAccessibilityFocusedView];
     self.viewController.presentationController.delegate = self;
     self.viewController.modalInPresentation = _modalInPresentation;
 
+    RCTFabricModalHostViewController *viewController = self.viewController;
     _isPresented = YES;
-    [self presentViewController:self.viewController
+    _isTransitioning = YES;
+    [self presentViewController:viewController
                        animated:_shouldAnimatePresentation
                      completion:^{
+                       if (self->_viewController != viewController) {
+                         // The host was recycled while UIKit was presenting it.
+                         [self dismissViewController:viewController animated:NO completion:nil];
+                         return;
+                       }
+                       self->_isTransitioning = NO;
                        auto eventEmitter = [self modalEventEmitter];
                        if (eventEmitter) {
                          eventEmitter->onShow(ModalHostViewEventEmitter::OnShow{});
                        }
+                       [self ensurePresentedOnlyIfNeeded];
                      }];
+    return;
   }
 
   BOOL shouldBeHidden = _isPresented && (!_shouldPresent || !self.superview);
   if (shouldBeHidden) {
-    _isPresented = NO;
+    _isTransitioning = YES;
+    RCTFabricModalHostViewController *viewController = self.viewController;
     // To animate dismissal of view controller, snapshot of
     // view hierarchy needs to be added to the UIViewController.
-    UIView *snapshot = [self.viewController.view snapshotViewAfterScreenUpdates:NO];
+    UIView *snapshot = [viewController.view snapshotViewAfterScreenUpdates:NO];
     if (_shouldPresent) {
-      [self.viewController.view addSubview:snapshot];
+      [viewController.view addSubview:snapshot];
     }
 
-    [self dismissViewController:self.viewController
+    [self dismissViewController:viewController
                        animated:_shouldAnimatePresentation
                      completion:^{
                        [snapshot removeFromSuperview];
-                       auto eventEmitter = [self modalEventEmitter];
-                       if (eventEmitter) {
-                         eventEmitter->onDismiss(ModalHostViewEventEmitter::OnDismiss{});
+                       if (self->_viewController != viewController) {
+                         return;
                        }
-
-                       [self restoreAccessibilityFocusedView];
+                       self->_isPresented = NO;
+                       self->_isTransitioning = NO;
+                       // A dismissal for an earlier visibility request must not
+                       // unmount the contents of a modal that is reopening.
+                       if (!self->_shouldPresent || !self.superview) {
+                         auto eventEmitter = [self modalEventEmitter];
+                         if (eventEmitter) {
+                           eventEmitter->onDismiss(ModalHostViewEventEmitter::OnDismiss{});
+                         }
+                         [self restoreAccessibilityFocusedView];
+                       }
+                       [self ensurePresentedOnlyIfNeeded];
                      }];
   }
 }
@@ -277,7 +304,15 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
 {
   [super prepareForRecycle];
   _state.reset();
+  _viewController.delegate = nil;
+  _viewController.presentationController.delegate = nil;
+  if (_isPresented && !_isTransitioning) {
+    [self dismissViewController:_viewController animated:NO completion:nil];
+  }
+  // In-flight completions retain the old controller and clean it up without
+  // mutating a subsequently reused host.
   _viewController = nil;
+  _isTransitioning = NO;
   _isPresented = NO;
   _shouldPresent = NO;
 }
