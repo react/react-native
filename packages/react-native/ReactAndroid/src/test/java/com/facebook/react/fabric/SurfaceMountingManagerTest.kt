@@ -192,4 +192,22 @@ class SurfaceMountingManagerTest {
     smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, true)
     assertThat(smm.getViewExists(42)).isTrue()
   }
+
+  /**
+   * A ViewState can exist without an Android View: createViewUnsafe only creates one when the node
+   * is layoutable, and updateEventEmitter registers a bare placeholder for a tag it has never seen.
+   * An inconsistent mount instruction stream can then ask addViewAt to insert such a tag, which
+   * used to throw and tear down the whole surface. It should log a soft exception and skip the
+   * insert, as the neighbouring missing-viewState branch already does.
+   */
+  @Test
+  fun addViewAt_doesNotThrowWhenViewStateHasNoView() {
+    val smm = startSurface()
+
+    // isLayoutable = false: a ViewState is registered, but no Android View is created for it.
+    smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, false)
+    assertThat(smm.getViewExists(42)).isTrue()
+
+    smm.addViewAt(surfaceId, 42, 0)
+  }
 }
