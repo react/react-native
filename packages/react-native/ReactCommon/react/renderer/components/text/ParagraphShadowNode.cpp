@@ -33,6 +33,31 @@
           (layoutConstraints).maximumSize.height)
 
 namespace facebook::react {
+
+namespace {
+
+/*
+ * Yoga rounds a node's frame to the pixel grid, but it subtracts the two
+ * rounded edges as floats, so far from the origin the height can come out a
+ * float step under the grid value the paragraph was measured at: 43.9998
+ * instead of 44 for two lines of lineHeight 22 at y = 2048 on a 3x screen.
+ * Laid out in a container that short, the last line does not fit and is
+ * drawn clipped. Snap such a height back onto the grid; anything else is
+ * rounded up, so a container is never made smaller.
+ * See https://github.com/facebook/react-native/issues/58970.
+ */
+Float snapHeightToPixelGrid(Float height, Float pointScaleFactor) {
+  if (pointScaleFactor <= 0 || std::isnan(height)) {
+    return height;
+  }
+  const auto scaled = height * pointScaleFactor;
+  const auto nearest = std::round(scaled);
+  const auto snapped =
+      std::abs(scaled - nearest) < 0.01f ? nearest : std::ceil(scaled);
+  return snapped / pointScaleFactor;
+}
+
+} // namespace
 using Content = ParagraphShadowNode::Content;
 
 // NOLINTNEXTLINE(facebook-hte-CArray, modernize-avoid-c-arrays)
@@ -305,6 +330,10 @@ void ParagraphShadowNode::layout(LayoutContext layoutContext) {
   auto size = ReactNativeFeatureFlags::enablePreparedTextLayout()
       ? rawContentSize()
       : layoutMetrics.getContentFrame().size;
+  if (!ReactNativeFeatureFlags::enablePreparedTextLayout()) {
+    size.height =
+        snapHeightToPixelGrid(size.height, layoutContext.pointScaleFactor);
+  }
 
   LayoutConstraints layoutConstraints{
       .minimumSize = size,
