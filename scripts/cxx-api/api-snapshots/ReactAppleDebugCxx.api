@@ -3163,7 +3163,6 @@ struct facebook::hermes::ISetEventLoopControl : public facebook::jsi::ICast {
 
 const char facebook::react::ViewComponentName[];
 const facebook::react::EventTag facebook::react::EMPTY_EVENT_TAG;
-constexpr char facebook::react::LayoutConformanceShadowNodeComponentName[];
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
 constexpr facebook::react::Tag facebook::react::kNoTag;
 constexpr uint32_t facebook::react::INITIAL_BUCKETS_SIZE;
@@ -3210,7 +3209,6 @@ using facebook::react::GradientDirection = std::variant<facebook::react::Float, 
 using facebook::react::HostPlatformTouch = facebook::react::BaseTouch;
 using facebook::react::HostPlatformViewEventEmitter = facebook::react::BaseViewEventEmitter;
 using facebook::react::ImageSources = std::vector<facebook::react::ImageSource>;
-using facebook::react::LayoutConformanceComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::LayoutConformanceShadowNode>;
 using facebook::react::ModalHostViewSupportedOrientationsMask = uint32_t;
 using facebook::react::NativeMethodCallFunc = std::function<void()>;
 using facebook::react::PromiseSetupFunctionType = std::function<void(facebook::jsi::Runtime& rt, std::shared_ptr<facebook::react::Promise>)>;
@@ -4024,9 +4022,6 @@ class facebook::react::JSBigString : public facebook::jsi::Buffer {
   public virtual const uint8_t* data() const final;
   public virtual size_t size() const override = 0;
   public ~JSBigString() override = default;
-}
-
-class facebook::react::LayoutConformanceShadowNode : public facebook::react::ConcreteShadowNode<facebook::react::LayoutConformanceShadowNodeComponentName, facebook::react::YogaLayoutableShadowNode, facebook::react::LayoutConformanceProps> {
 }
 
 class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode {
@@ -5484,12 +5479,6 @@ struct facebook::react::ImageURLLoaderAttribution {
   public int32_t nativeViewTag;
   public int32_t surfaceId;
   public std::string queryRootName;
-}
-
-struct facebook::react::LayoutConformanceProps : public facebook::react::YogaStylableProps {
-  public LayoutConformanceProps() = default;
-  public LayoutConformanceProps(const facebook::react::PropsParserContext& context, const facebook::react::LayoutConformanceProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public facebook::react::LayoutConformance mode;
 }
 
 struct facebook::react::LayoutConstraints {

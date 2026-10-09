@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #if defined(REACT_NATIVE_DEBUGGER_ENABLED)
 #include <React/Timing.h>
