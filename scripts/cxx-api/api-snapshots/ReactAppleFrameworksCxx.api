@@ -8325,15 +8325,6 @@ struct facebook::react::ImageURLLoaderAttribution {
   public std::string queryRootName;
 }
 
-struct facebook::react::InspectorData {
-  public folly::dynamic props;
-  public int columnNumber;
-  public int lineNumber;
-  public int selectedIndex;
-  public std::string fileName;
-  public std::vector<std::string> hierarchy;
-}
-
 struct facebook::react::LayoutAnimation {
   public bool completed;
   public facebook::react::LayoutAnimationCallbackWrapper failureCallback;

@@ -6149,15 +6149,6 @@ struct facebook::react::ImageRequestItem {
   public facebook::react::Tag tag;
 }
 
-struct facebook::react::InspectorData {
-  public folly::dynamic props;
-  public int columnNumber;
-  public int lineNumber;
-  public int selectedIndex;
-  public std::string fileName;
-  public std::vector<std::string> hierarchy;
-}
-
 struct facebook::react::JAssetManager : public facebook::jni::JavaClass<facebook::react::JAssetManager> {
   public static constexpr auto kJavaDescriptor;
 }

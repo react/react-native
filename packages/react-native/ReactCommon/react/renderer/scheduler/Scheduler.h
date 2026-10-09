@@ -20,7 +20,6 @@
 #include <React/RuntimeExecutor.h>
 #include <React/Utils.h>
 #include <react/renderer/mounting/MountingOverrideDelegate.h>
-#include <react/renderer/scheduler/InspectorData.h>
 #include <react/renderer/scheduler/SchedulerDelegate.h>
 #include <react/renderer/scheduler/SchedulerToolbox.h>
 #include <react/renderer/scheduler/SurfaceHandler.h>
