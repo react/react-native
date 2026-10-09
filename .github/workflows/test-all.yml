@@ -534,7 +534,7 @@ jobs:
         exclude:
           # This config is tested with Ruby 3.2.0. Let's not double test it.
           - flavor: Debug
-            use_frameworks: StaticLibraries
+            use_frameworks: false
     env:
       PROJECT_NAME: iOSTemplateProject
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
