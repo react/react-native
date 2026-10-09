@@ -967,9 +967,7 @@ JSError::JSError(IRuntime& rt, Value&& value) {
 
 JSError::JSError(IRuntime& rt, std::string msg) : message_(std::move(msg)) {
   try {
-    setValue(
-        rt,
-        callGlobalFunction(rt, "Error", String::createFromUtf8(rt, message_)));
+    setValue(rt, rt.createError(String::createFromUtf8(rt, message_)));
   } catch (const JSIException& ex) {
     message_ = std::string(ex.what()) + " (while raising " + message_ + ")";
     setValue(rt, String::createFromUtf8(rt, message_));
