@@ -1111,12 +1111,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     return;
   }
 
-  // Abort if the first visible view was deleted during mount (not recycled)
-  // This prevents MVCP from applying a delta after scrollToOffset(0) during reset/clear
-  if (_firstVisibleView.superview != _contentView) {
-    return;
-  }
-
   std::optional<int> autoscrollThreshold = props.maintainVisibleContentPosition.value().autoscrollToTopThreshold;
   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
   // TODO: detect and handle/ignore re-ordering
