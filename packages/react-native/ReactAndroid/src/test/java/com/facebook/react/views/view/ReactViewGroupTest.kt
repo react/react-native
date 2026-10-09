@@ -35,6 +35,16 @@ class ReactViewGroupTest {
   }
 
   @Test
+  fun `recycling restores enabled state`() {
+    val view = ReactViewGroup(context)
+    view.isEnabled = false
+
+    view.recycleView()
+
+    assertThat(view.isEnabled).isTrue()
+  }
+
+  @Test
   fun `View clipping - ensure allChildren properly resizes when adding views in sequence`() {
     val rvg = ReactViewGroup(context)
     rvg.left = 0

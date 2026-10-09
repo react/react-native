@@ -8,6 +8,7 @@
 #include "HostPlatformViewProps.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include <react/renderer/components/view/accessibilityPropsConversions.h>
 #include <react/renderer/components/view/conversions.h>
@@ -846,6 +847,10 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   if (accessibilityState != oldProps->accessibilityState) {
     updateAccessibilityStateProp(
         result, accessibilityState, oldProps->accessibilityState);
+    if (std::strcmp(getDiffPropsImplementationTarget(), "View") == 0) {
+      result["accessibilityState"]["disabled"] =
+          accessibilityState.has_value() && accessibilityState->disabled;
+    }
   }
 
   if (accessibilityLabel != oldProps->accessibilityLabel) {

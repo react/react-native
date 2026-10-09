@@ -3201,6 +3201,7 @@ public abstract class com/facebook/react/uimanager/BaseViewManager : com/faceboo
 	public fun onDropViewInstance (Landroid/view/View;)V
 	public fun onLayoutChange (Landroid/view/View;IIIIIIII)V
 	protected fun prepareToRecycleView (Lcom/facebook/react/uimanager/ThemedReactContext;Landroid/view/View;)Landroid/view/View;
+	protected fun resetDisabledFromAccessibilityState (Landroid/view/View;)V
 	public fun setAccessibilityActions (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun setAccessibilityCollection (Landroid/view/View;Lcom/facebook/react/bridge/ReadableMap;)V
 	public fun setAccessibilityCollectionItem (Landroid/view/View;Lcom/facebook/react/bridge/ReadableMap;)V
@@ -6514,6 +6515,8 @@ public class com/facebook/react/views/view/ReactViewManager : com/facebook/react
 	public synthetic fun receiveCommand (Landroid/view/View;Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun receiveCommand (Lcom/facebook/react/views/view/ReactViewGroup;ILcom/facebook/react/bridge/ReadableArray;)V
 	public fun receiveCommand (Lcom/facebook/react/views/view/ReactViewGroup;Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
+	public synthetic fun resetDisabledFromAccessibilityState (Landroid/view/View;)V
+	protected fun resetDisabledFromAccessibilityState (Lcom/facebook/react/views/view/ReactViewGroup;)V
 	public fun setAccessibilityOrder (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun setAccessible (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
 	public fun setBackfaceVisibility (Lcom/facebook/react/views/view/ReactViewGroup;Ljava/lang/String;)V

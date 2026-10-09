@@ -430,10 +430,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     }
   }
 
-  private static void resetDisabledFromAccessibilityState(@NonNull View view) {
-    if (Boolean.TRUE.equals(view.getTag(R.id.accessibility_state_disabled))) {
-      view.setEnabled(true);
-    }
+  protected void resetDisabledFromAccessibilityState(@NonNull T view) {
+    // Other managers may receive partial state updates or use enabled for properties like editable.
     view.setTag(R.id.accessibility_state_disabled, null);
   }
 
