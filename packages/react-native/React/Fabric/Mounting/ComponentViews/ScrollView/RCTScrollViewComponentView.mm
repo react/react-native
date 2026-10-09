@@ -1123,13 +1123,14 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (horizontal) {
     CGFloat deltaX = _firstVisibleView.frame.origin.x - _prevFirstVisibleFrame.origin.x;
     if (ABS(deltaX) > 0.5) {
-      CGFloat x = _scrollView.contentOffset.x;
+      CGFloat leftInset = [self isInverted] ? _scrollView.contentInset.right : _scrollView.contentInset.left;
+      CGFloat x = _scrollView.contentOffset.x + leftInset;
       [self _forceDispatchNextScrollEvent];
       _scrollView.contentOffset = CGPointMake(_scrollView.contentOffset.x + deltaX, _scrollView.contentOffset.y);
       if (autoscrollThreshold) {
         // If the offset WAS within the threshold of the start, animate to the start.
         if (x <= autoscrollThreshold.value()) {
-          [self scrollToOffset:CGPointMake(0, _scrollView.contentOffset.y) animated:YES];
+          [self scrollToOffset:CGPointMake(-leftInset, _scrollView.contentOffset.y) animated:YES];
         }
       }
     }
@@ -1137,13 +1138,14 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     CGRect newFrame = _firstVisibleView.frame;
     CGFloat deltaY = newFrame.origin.y - _prevFirstVisibleFrame.origin.y;
     if (ABS(deltaY) > 0.5) {
-      CGFloat y = _scrollView.contentOffset.y;
+      CGFloat bottomInset = [self isInverted] ? _scrollView.contentInset.top : _scrollView.contentInset.bottom;
+      CGFloat y = _scrollView.contentOffset.y + bottomInset;
       [self _forceDispatchNextScrollEvent];
       _scrollView.contentOffset = CGPointMake(_scrollView.contentOffset.x, _scrollView.contentOffset.y + deltaY);
       if (autoscrollThreshold) {
         // If the offset WAS within the threshold of the start, animate to the start.
         if (y <= autoscrollThreshold.value()) {
-          [self scrollToOffset:CGPointMake(_scrollView.contentOffset.x, 0) animated:YES];
+          [self scrollToOffset:CGPointMake(_scrollView.contentOffset.x, -bottomInset) animated:YES];
         }
       }
     }
