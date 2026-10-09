@@ -828,12 +828,19 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
       jsi::Value returnValue = jsi::Value::null();
       if (returnString != nullptr) {
         jsize length = env->GetStringLength(returnString);
-        const jchar* chars = env->GetStringChars(returnString, nullptr);
+        // GetStringRegion: no GetStringChars/ReleaseStringChars pair needed.
+        constexpr size_t kStackChars = 256;
+        char16_t stackChars[kStackChars];
+        std::u16string heapChars;
+        char16_t* chars = stackChars;
+        if (static_cast<size_t>(length) > kStackChars) {
+          heapChars.resize(static_cast<size_t>(length));
+          chars = heapChars.data();
+        }
+        env->GetStringRegion(
+            returnString, 0, length, reinterpret_cast<jchar*>(chars));
         auto jsiString = jsi::String::createFromUtf16(
-            runtime,
-            reinterpret_cast<const char16_t*>(chars),
-            static_cast<size_t>(length));
-        env->ReleaseStringChars(returnString, chars);
+            runtime, chars, static_cast<size_t>(length));
         returnValue = jsi::Value(runtime, jsiString);
       }
 
