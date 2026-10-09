@@ -2640,6 +2640,59 @@ it('handles maintainVisibleContentPosition', async () => {
   expect(component).toMatchSnapshot();
 });
 
+// Trigger: Items prepended in the same render as a queued cells update, e.g. when a scroll event takes
+// the high-priority path of `_scheduleCellsToRenderUpdate` and the app updates its data from that event.
+// Expected: The prepend is handled as if it rendered on its own.
+it('handles a maintainVisibleContentPosition prepend batched with a cells update', async () => {
+  const items = generateItems(20);
+  const ITEM_HEIGHT = 10;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: items.length * ITEM_HEIGHT},
+    });
+
+    performAllBatches();
+  });
+
+  const instance = component.getInstance();
+  expect(instance.state.cellsAroundViewport).toEqual({first: 0, last: 4});
+
+  const newItems = [...generateItems(10, items.length), ...items];
+  await act(() => {
+    instance._updateCellsToRender();
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(newItems)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  // The render window moves with the previously rendered cells, and the
+  // adjustment is pending until native reports the new offset.
+  expect(instance.state.cellsAroundViewport).toEqual({first: 10, last: 14});
+  expect(instance.state.pendingScrollUpdateCount).toBe(1);
+  expect(instance.state.firstVisibleItemKey).toBe(20);
+});
+
 // Trigger: Item at anchor position removed from data array.
 // Expected: Anchor shifts to next visible item. MVCP captures new anchor's frame, computes delta, adjusts scroll.
 it('handles maintainVisibleContentPosition when anchor moves before minIndexForVisible', async () => {
