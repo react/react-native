@@ -30,8 +30,8 @@ import invariant from 'invariant';
 type TaskCanceller = () => void;
 type TaskCancelProvider = () => TaskCanceller;
 
-const runnables: Runnables = {};
-const sections: Runnables = {};
+const runnables = Object.create(null) as any as Runnables;
+const sections = Object.create(null) as any as Runnables;
 const taskProviders: Map<string, TaskProvider> = new Map();
 const taskCancelProviders: Map<string, TaskCancelProvider> = new Map();
 let componentProviderInstrumentationHook: ComponentProviderInstrumentationHook =
