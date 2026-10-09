@@ -21,7 +21,6 @@ internal object FabricNameComponentMapping {
           "SelectableParagraph" to "RCTSelectableText",
           "Text" to "RCTText",
           "RawText" to "RCTRawText",
-          "ActivityIndicatorView" to "AndroidProgressBar",
           "ShimmeringView" to "RKShimmeringView",
           "TemplateView" to "RCTTemplateView",
           "AxialGradientView" to "RCTAxialGradientView",

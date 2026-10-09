@@ -95,12 +95,6 @@ export type {
 export {default as Pressable} from './Libraries/Components/Pressable/Pressable';
 
 export type {
-  ProgressBarAndroidInstance,
-  ProgressBarAndroidProps,
-} from './Libraries/Components/ProgressBarAndroid/ProgressBarAndroid';
-export {default as ProgressBarAndroid} from './Libraries/Components/ProgressBarAndroid/ProgressBarAndroid';
-
-export type {
   RefreshControlInstance,
   RefreshControlProps,
   RefreshControlPropsAndroid,

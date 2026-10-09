@@ -5040,21 +5040,6 @@ public abstract interface class com/facebook/react/viewmanagers/AndroidHorizonta
 	public abstract fun setRemoveClippedSubviews (Landroid/view/View;Z)V
 }
 
-public class com/facebook/react/viewmanagers/AndroidProgressBarManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
-	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
-	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
-}
-
-public abstract interface class com/facebook/react/viewmanagers/AndroidProgressBarManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
-	public abstract fun setAnimating (Landroid/view/View;Z)V
-	public abstract fun setColor (Landroid/view/View;Ljava/lang/Integer;)V
-	public abstract fun setIndeterminate (Landroid/view/View;Z)V
-	public abstract fun setProgress (Landroid/view/View;D)V
-	public abstract fun setStyleAttr (Landroid/view/View;Ljava/lang/String;)V
-	public abstract fun setTestID (Landroid/view/View;Ljava/lang/String;)V
-	public abstract fun setTypeAttr (Landroid/view/View;Ljava/lang/String;)V
-}
-
 public class com/facebook/react/viewmanagers/AndroidSwipeRefreshLayoutManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
 	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
 	public fun receiveCommand (Landroid/view/View;Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V

@@ -16,14 +16,10 @@ import type {ViewProps} from '../View/ViewPropTypes';
 import StyleSheet, {type ColorValue} from '../../StyleSheet/StyleSheet';
 import Platform from '../../Utilities/Platform';
 import View from '../View/View';
+import ActivityIndicatorViewNativeComponent from './ActivityIndicatorViewNativeComponent';
 import * as React from 'react';
 
 export type ActivityIndicatorInstance = HostInstance;
-
-const PlatformActivityIndicator =
-  Platform.OS === 'android'
-    ? require('../ProgressBarAndroid/ProgressBarAndroid').default
-    : require('./ActivityIndicatorViewNativeComponent').default;
 
 const GRAY = '#999999';
 
@@ -122,7 +118,7 @@ const ActivityIndicator: component(
   ...ActivityIndicatorProps,
 }) => {
   let sizeStyle;
-  let sizeProp;
+  let sizeProp: ?('small' | 'large');
 
   switch (size) {
     case 'small':
@@ -138,35 +134,19 @@ const ActivityIndicator: component(
       break;
   }
 
-  const nativeProps = {
-    animating,
-    color,
-    hidesWhenStopped,
-    ...restProps,
-    ref: forwardedRef,
-    style: sizeStyle,
-    size: sizeProp,
-  };
-
-  const androidProps = {
-    styleAttr: 'Normal',
-    indeterminate: true,
-  };
-
   return (
     <View
       onLayout={onLayout}
       style={StyleSheet.compose(styles.container, style)}>
-      {Platform.OS === 'android' ? (
-        // $FlowFixMe[prop-missing] Flow doesn't know when this is the android component
-        // $FlowFixMe[incompatible-type]
-        <PlatformActivityIndicator {...nativeProps} {...androidProps} />
-      ) : (
-        /* $FlowFixMe[incompatible-type] (>=0.106.0 site=react_native_android_fb) This comment
-         * suppresses an error found when Flow v0.106 was deployed. To see the
-         * error, delete this comment and run Flow. */
-        <PlatformActivityIndicator {...nativeProps} />
-      )}
+      <ActivityIndicatorViewNativeComponent
+        animating={animating}
+        color={color}
+        hidesWhenStopped={hidesWhenStopped}
+        {...restProps}
+        ref={forwardedRef}
+        style={sizeStyle}
+        size={sizeProp}
+      />
     </View>
   );
 };
