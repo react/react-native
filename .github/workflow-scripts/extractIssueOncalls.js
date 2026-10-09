@@ -20,8 +20,23 @@ function extractUsersFromScheduleAndDate(schedule, userMap, date) {
   const month = date.getMonth() + 1; // 0 is January, 1 is February
   const day = date.getDate();
   const dateStr = `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`;
-  const user1 = userMap[schedule[dateStr][0]];
-  const user2 = userMap[schedule[dateStr][1]];
+  const scheduledDate = Object.keys(schedule)
+    .filter(candidateDate => candidateDate <= dateStr)
+    .sort()
+    .at(-1);
+
+  if (scheduledDate == null) {
+    throw new Error(`No issue oncall schedule found on or before ${dateStr}`);
+  }
+
+  if (scheduledDate !== dateStr) {
+    console.warn(
+      `No issue oncall schedule found for ${dateStr}; continuing the rotation from ${scheduledDate}`,
+    );
+  }
+
+  const user1 = userMap[schedule[scheduledDate][0]];
+  const user2 = userMap[schedule[scheduledDate][1]];
   return [user1, user2];
 }
 
@@ -46,6 +61,8 @@ function extractUsersFromScheduleAndDate(schedule, userMap, date) {
  *   ...
  * }
  * ```
+ *
+ * Each dated entry stays active until a newer entry takes effect.
  *
  * When uploading the secret, make sure that the JSON strings are escaped!
  * The script will fail otherwise, because GitHub will remove the `"` characters.

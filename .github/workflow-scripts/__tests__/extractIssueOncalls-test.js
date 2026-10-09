@@ -31,6 +31,7 @@ describe('extractIssueOncalls', () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.useRealTimers();
   });
   it('extracts m and f on 6 of April', () => {
@@ -79,5 +80,17 @@ describe('extractIssueOncalls', () => {
     jest.setSystemTime(new Date(2025, 3, 13));
     const oncalls = extractIssueOncalls(schedule, userMap);
     expect(oncalls).toEqual([userMap['@g'], userMap['@d']]);
+  });
+
+  it('continues the latest rotation after the schedule ends', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.setSystemTime(new Date(2025, 3, 15));
+
+    const oncalls = extractIssueOncalls(schedule, userMap);
+
+    expect(oncalls).toEqual([userMap['@g'], userMap['@d']]);
+    expect(warn).toHaveBeenCalledWith(
+      'No issue oncall schedule found for 2025-04-15; continuing the rotation from 2025-04-08',
+    );
   });
 });
