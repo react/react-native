@@ -1,0 +1,21 @@
+[
+  "/react-native/Libraries/BatchedBridge/MessageQueue\\.js$",
+  "/react-native/Libraries/Core/.+\\.js$",
+  "/react-native/Libraries/LogBox/.+\\.js$",
+  "/react-native/Libraries/Network/.+\\.js$",
+  "/react-native/Libraries/Pressability/.+\\.js$",
+  "/react-native/Libraries/Renderer/implementations/.+\\.js$",
+  "/react-native/Libraries/Utilities/.+\\.js$",
+  "/react-native/Libraries/vendor/.+\\.js$",
+  "/react-native/Libraries/WebSocket/.+\\.js$",
+  "/react-native/src/private/renderer/errorhandling/.+\\.js$",
+  "/metro-runtime/.+\\.js$",
+  "/node_modules/@babel/runtime/.+\\.js$",
+  "/node_modules/@react-native/js-polyfills/.+\\.js$",
+  "/node_modules/invariant/.+\\.js$",
+  "/node_modules/react-devtools-core/.+\\.js$",
+  "/node_modules/react-native/index.js$",
+  "/node_modules/react-refresh/.+\\.js$",
+  "/node_modules/scheduler/.+\\.js$",
+  "^\\[native code\\]$"
+]
