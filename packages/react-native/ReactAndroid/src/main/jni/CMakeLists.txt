@@ -112,7 +112,6 @@ add_react_common_subdir(react/renderer/imagemanager)
 add_react_common_subdir(react/renderer/components/view)
 add_react_common_subdir(react/renderer/components/switch)
 add_react_common_subdir(react/renderer/components/textinput)
-add_react_common_subdir(react/renderer/components/progressbar)
 add_react_common_subdir(react/renderer/components/root)
 add_react_common_subdir(react/renderer/components/image)
 add_react_common_subdir(react/renderer/components/legacyviewmanagerinterop)
@@ -256,7 +255,6 @@ add_library(reactnative
           $<TARGET_OBJECTS:rrc_legacyviewmanagerinterop>
           $<TARGET_OBJECTS:rrc_modal>
           $<TARGET_OBJECTS:rrc_native>
-          $<TARGET_OBJECTS:rrc_progressbar>
           $<TARGET_OBJECTS:rrc_root>
           $<TARGET_OBJECTS:rrc_safeareaview>
           $<TARGET_OBJECTS:rrc_scrollview>
@@ -360,7 +358,6 @@ target_include_directories(reactnative
         $<TARGET_PROPERTY:rrc_legacyviewmanagerinterop,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_modal,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_native,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:rrc_progressbar,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_root,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_safeareaview,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_scrollview,INTERFACE_INCLUDE_DIRECTORIES>

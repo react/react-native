@@ -75,7 +75,6 @@ import {
   Platform,
   PlatformColor,
   Pressable,
-  ProgressBarAndroid,
   PushNotificationIOS,
   RefreshControl,
   // @ts-ignore
@@ -1995,17 +1994,6 @@ const OpaqueTest3 = () => (
     }}
   />
 );
-
-// ProgressBarAndroid
-const ProgressBarAndroidTest = () => {
-  <ProgressBarAndroid
-    animating
-    color="white"
-    styleAttr="Horizontal"
-    progress={0.42}
-    indeterminate={false}
-  />;
-};
 
 // Push notification
 const PushNotificationTest = () => {
