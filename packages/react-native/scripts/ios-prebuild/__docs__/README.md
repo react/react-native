@@ -126,11 +126,14 @@ overlay**. The layout contract is defined and validated in code:
   the `React/` and bare-aliased headers into every slice's
   `React.framework/Headers`, and `buildReactNativeHeadersXcframework()`
   assembles the headers-only `ReactNativeHeaders.xcframework` carrying every
-  other namespace (incl. `react/`) plus the third-party dependency namespaces
-  (`folly`, `glog`, `boost`, `fmt`, `double-conversion`, `fast_float`). The
-  Hermes public headers (`<hermes/...>`) are folded in only on the SwiftPM
-  consumer side (`ensureHeadersLayout`); the published prebuild artifact does
-  not yet carry them (TODO in `xcframework.js`).
+  other React Native namespace (incl. `react/`). The third-party dependency
+  namespaces (`folly`, `glog`, `boost`, `fmt`, `double-conversion`,
+  `fast_float`, `SocketRocket`) ship in the separate headers-only
+  `ReactNativeDependenciesHeaders.xcframework` sidecar, built by the
+  dependencies prebuild. The Hermes public headers (`<hermes/...>`) are folded
+  into the published `ReactNativeHeaders` when the hermes-ios headers are
+  staged; without them the compose ships no `hermes/`, unless `--require-hermes`
+  is set, which makes it fail closed.
 
 ### Artifacts
 
@@ -145,9 +148,9 @@ The prebuild (`xcframework.js`) always produces:
   `ReactHeadersTarget/include/React` and rewrites `framework module React` to a
   plain `module React`, vended as the `ReactHeaders` target (see
   `spm-header-paths-contract.md` in the SwiftPM docs).
-- `ReactNativeHeaders.xcframework` — headers-only; carries every other
-  namespace. Consumed by SwiftPM as a `binaryTarget` and by CocoaPods via the
-  `React-Core-prebuilt` pod (headers flattened onto the header search path).
+- `ReactNativeHeaders.xcframework` — headers-only; carries every other React
+  Native namespace. Consumed by SwiftPM as a `binaryTarget` and by CocoaPods via
+  the `React-Core-prebuilt` pod (headers flattened onto the header search path).
 
 ### CocoaPods consumption
 

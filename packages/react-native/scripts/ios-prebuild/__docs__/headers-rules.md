@@ -120,13 +120,14 @@ resolving `<react/...>` through `React.framework` requires case-folding
 `react.framework` → `React.framework`, which only works on case-insensitive
 filesystems. The header-search-path route (R2) is exact everywhere.
 
-**R2 — every other namespace ships in ONE headers-only xcframework,
+**R2 — every other React Native namespace ships in ONE headers-only xcframework,
 `ReactNativeHeaders`.** Namespace dirs at its `Headers/` root: `react/`,
-`yoga/`, `jsi/`, `cxxreact/`, `React_RCTAppDelegate/`, … **including the
-third-party deps namespaces** (folly/glog/boost/fmt/double-conversion/
-fast_float, copied out of the ReactNativeDependencies artifact — which thereby
-becomes binary-only). SPM/Xcode auto-serve a binaryTarget's `Headers/` on the
-consumer's search path, so everything resolves with zero flags.
+`yoga/`, `jsi/`, `cxxreact/`, `React_RCTAppDelegate/`, … The third-party deps
+namespaces (folly, glog, boost, fmt, double-conversion, fast_float,
+SocketRocket) are **not** here: they ship in the headers-only
+`ReactNativeDependenciesHeaders` sidecar built by the deps prebuild. SPM/Xcode
+auto-serve a binaryTarget's `Headers/` on the consumer's search path, so
+everything resolves with zero flags.
 
 **R3 — NO include rewriting, anywhere.** Shipped headers are byte-identical to
 the repo. If a header's includes don't work in the packaged layout, the fix is
@@ -271,11 +272,11 @@ module.
 
 ### `buildReactNativeHeadersXcframework`
 
-1. Stage all R2 entries, then copy the six deps namespaces from
-   `third-party/ReactNativeDependencies.xcframework/Headers`. A declared deps
-   namespace that is missing is a **hard error** — previously a warn-and-ship,
-   which once produced a silently deps-less artifact (1.6 MB instead of 11 MB).
-2. Optionally fold in the `hermes/` public headers (consumer-side compose path).
+1. Stage all R2 entries. The deps namespaces are not copied here; they ship in
+   the `ReactNativeDependenciesHeaders` sidecar, whose namespace guards live in
+   `buildDepsHeadersXcframework` (`headers-xcframework.js`).
+2. Fold in the `hermes/` public headers when they are staged (both the prebuild
+   compose and the consumer-side compose path).
 3. Write the R10 umbrella files, then the R5 module map.
 4. Compile a stub static archive per slice (headers-only artifacts still need a
    library for `xcodebuild -create-xcframework`) and compose the xcframework.
@@ -296,13 +297,16 @@ mtime + hermes presence).
 | `#import <React/RCTMountingManager.h>`                                   | same, **textual** via the R9 entry                                                                                                  | R9     |
 | `#import <react/renderer/...>` (C++)                                     | `ReactNativeHeaders/Headers` search path, textual                                                                                   | R2     |
 | `#import <yoga/Yoga.h>`                                                  | same, **modular** via the yoga R5 module                                                                                            | R2, R5 |
-| `#import <folly/dynamic.h>`                                              | same (deps namespaces relocated here)                                                                                               | R2     |
+| `#import <folly/dynamic.h>`                                              | SwiftPM: the `ReactNativeDependenciesHeaders` sidecar's `Headers/` (deps namespaces are not in `ReactNativeHeaders`)                | R2     |
 | `<React_RCTAppDelegate/React_RCTAppDelegate-umbrella.h>`                 | same, modular                                                                                                                       | R10    |
 | `#import "RCTFabricComponentsPlugins.h"` (quoted, community Fabric pods) | CocoaPods only: re-vended by the `React-RCTFabric` facade into the pod header map (`rncore_facades.rb`, `FACADE_REEXPOSED_HEADERS`) | —      |
 
-- **SwiftPM**: both xcframeworks are plain `.binaryTarget`s; Xcode auto-serves
-  `React.framework`'s `Headers/`+`Modules/` and `ReactNativeHeaders`' `Headers/`
-  (incl. its `module.modulemap`) to dependents. Zero flags.
+- **SwiftPM**: `React.xcframework` is not in the package graph. Its headers are
+  copied into `ReactHeadersTarget/include/React` with the module map rewritten
+  to a plain `module React`, vended as the `ReactHeaders` target. The only
+  `.binaryTarget`s are `ReactNativeHeaders` and
+  `ReactNativeDependenciesHeaders`; Xcode auto-serves their `Headers/` (incl.
+  `module.modulemap`) to dependents. Zero flags.
 - **CocoaPods**: `React-Core-prebuilt`'s `prepare_command` flattens
   `ReactNativeHeaders`' Headers (incl. the module map) into the pod, and the
   React-core pods are installed as dependency-only **facades**
@@ -316,8 +320,8 @@ mtime + hermes presence).
 | R9 allowlist validation           | private header removed/renamed, or bucket drifted                                                                                                      | `validatePrivateReactHeaders`                  |
 | R10 umbrella check                | a probed namespace loses all modular headers                                                                                                           | `planFromInventory`                            |
 | R5 exemption assert               | an invalid-module-identifier namespace gains a modular-candidate header                                                                                | `planFromInventory`                            |
-| Deps namespace guard (missing)    | folly/glog/… not staged at compose time                                                                                                                | `buildReactNativeHeadersXcframework`           |
-| Deps namespace guard (undeclared) | the deps artifact ships a namespace not in `DEPS_NAMESPACES` (new third-party dep)                                                                     | `buildReactNativeHeadersXcframework`           |
+| Deps namespace guard (missing)    | folly/glog/… not staged at compose time                                                                                                                | `buildDepsHeadersXcframework`                  |
+| Deps namespace guard (undeclared) | the deps artifact ships a namespace not in `DEPS_NAMESPACES` (new third-party dep)                                                                     | `buildDepsHeadersXcframework`                  |
 | Include-health ratchet            | a shipped header gains a `notShipped`/`unresolved`/quoted-unresolvable include not in the committed baseline                                           | `headers-verify.js`                            |
 | Structural gate                   | composed module maps/umbrellas differ from the spec render; R9 headers or deps dirs absent                                                             | `headers-verify.js`                            |
 | Compile gates                     | the React module, any R5 namespace module, the R10 umbrella, the R9 textual (Expo-shape) surface, or Swift `RCTBridge.moduleRegistry` fails to compile | `headers-verify.js` (CI: prebuild compose job) |

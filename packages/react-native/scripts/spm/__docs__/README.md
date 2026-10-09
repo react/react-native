@@ -52,7 +52,7 @@ Three documents cover the design, each owning one area:
 | Document                                                       | Covers                                                                                                                                                                                                                          |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [spm-scripts.md](./spm-scripts.md)                             | The tool itself: CLI surface, the six-step pipeline, [every file it creates or modifies](./spm-scripts.md#files-the-tool-touches), the two auto-sync hooks, and how Debug/Release flavor selection works.                       |
-| [spm-header-paths-contract.md](./spm-header-paths-contract.md) | How headers and package references resolve. The contract is **zero-`-I`**: no header search paths and no `unsafeFlags` in any generated manifest. Also covers remote mode.                                                      |
+| [spm-header-paths-contract.md](./spm-header-paths-contract.md) | How headers and package references resolve. The contract is **zero-`-I`**: no generated manifest carries a search path into React Native's own headers. Also covers remote mode.                                                |
 | [spm-autolinking-plugins.md](./spm-autolinking-plugins.md)     | The extension seam for frameworks with their own module system (Expo is the first consumer): discovery, the full context/return contract including `flavoredFrameworks`, `watchPaths` and `scriptPhases`, and failure behavior. |
 
 Two ideas explain most of the architecture:
@@ -83,7 +83,8 @@ Two ideas explain most of the architecture:
   local `React-GeneratedCode` package rather than a Pod.
 - **`@react-native-community/cli config`** — supplies the autolinking metadata
   (`autolinking.json`) that the SwiftPM autolinker turns into a `Package.swift`.
-  Overridable via `--configCommand`.
+  Overridable via the `RCT_SPM_AUTOLINKING_CONFIG_COMMAND` environment variable,
+  or `--config-command` when running `setup-apple-spm.js` directly.
 
 ### Uses this
 

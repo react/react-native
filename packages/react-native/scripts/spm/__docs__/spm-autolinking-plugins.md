@@ -48,6 +48,10 @@ allowlist is required. The deprecated `spm.autolinkingPlugin` in
 `react-native.config.js` is still read — see
 [Migrating from react-native.config.js](spm-scripts.md#where-swiftpm-settings-live).
 
+A dependency that declares a plugin owns its native contribution. React Native
+does not build it as an autolinked target, so it needs no `Package.swift` of its
+own.
+
 **Opt-out escape hatch.** An app can exclude a plugin from its own package.json:
 
 ```json
@@ -149,6 +153,9 @@ with a warning (never fatal), and each non-string / empty / **relative** entry
 is dropped with a warning. Absolute-only, because the generated phase tests
 these paths with no cwd context. The kept paths are folded into
 `<outputDir>/.spm-sync-watch-paths` alongside RN's own, then deduped and sorted.
+Only paths that exist when the sync runs are written; a missing path is dropped
+silently. So the **vanished** check above applies only to paths that existed at
+the last sync.
 
 ### `scriptPhases` — build-time shell phases on the app target
 
@@ -185,9 +192,8 @@ agree nothing is rewritten, which is what keeps an unchanged declaration
 re-syncing to a byte-identical project. The consequence worth knowing: a phase
 you **drag somewhere else in Xcode is moved back** to its declared position on
 the next sync, because the plugin's declaration is the source of truth. Only the
-`id` behaves differently — it is a key, not a label, so renaming it is a remove
-
-- add.
+`id` behaves differently — it is a key, not a label, so renaming it is a
+remove + add.
 
 Phases are injected by `spm add` / `spm update` **only**. The build-time `sync`
 rewrites the sidecar but never touches the `.xcodeproj`, so a newly declared
@@ -292,8 +298,9 @@ wiring, it stays correct across repackaging.
 
 The plugin returns **data** — it never writes into React Native's generated
 tree. RN owns the merge, so a re-sync reproduces the same `Package.swift`
-byte-for-byte (idempotent). Package and product contributions are **deduped by
-name** across plugins.
+byte-for-byte (idempotent). Across plugins, package contributions are **deduped
+by name** and product contributions by **package and name** — the first
+contribution wins.
 
 ## Lifecycle
 
@@ -316,6 +323,12 @@ Fail-closed and **named**: a plugin that fails to load, doesn't export a
 function, throws, or returns a malformed contribution aborts the run with a
 message identifying the framework. A framework silently dropping its modules (a
 green build missing native code) is worse than a loud stop.
+
+A plugin's host dependency is also a hard error when another library lists it in
+`swiftpmConfig.dependencies` and that library has no `Package.swift` of its own
+(shipped or scaffolded). React Native builds no target for the host, so there is
+nothing to depend on; remove the entry — the plugin already links its products
+into the app.
 
 ## Status & open items (Preview)
 

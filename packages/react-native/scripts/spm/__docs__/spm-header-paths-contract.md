@@ -1,11 +1,14 @@
 # SPM headers & package references — how they resolve
 
-React Native's SPM consumption is **zero-I**: no `-I` / `-F` header search paths
-and no `unsafeFlags` in any generated manifest. Headers are served by SPM
-products/binary targets, and every generated `Package.swift` references the
-React Native + codegen packages with plain, fixed-relative paths computed at
-generation time (no runtime discovery). This document is the single source of
-truth for how that resolves.
+React Native's SPM consumption is **zero-I**: no generated manifest carries a
+`-I` / `-F` header search path into React Native's own headers. (Generated
+manifests may still use `.headerSearchPath` into their own tree — scaffolded
+manifests, local-module wrappers, and the codegen package do — and scaffolded
+manifests may use `.unsafeFlags` for podspec compiler flags and a prefix
+header.) React Native's headers are served by SPM products/binary targets, and
+every generated `Package.swift` references the React Native + codegen packages
+with plain, fixed-relative paths computed at generation time (no runtime
+discovery). This document is the single source of truth for how that resolves.
 
 > History: earlier iterations materialized two header trees and fed them to
 > consumers as `-I` flags read from `spm-paths.json` /
@@ -38,21 +41,21 @@ Every generated manifest sits at a known depth inside the app and is regenerated
 on every `react-native spm` run, so package references are plain fixed-relative
 paths — no walk-up, no JSON, no `import Foundation`.
 
-| Manifest                 | Location                                       | How it references the React + codegen packages                                                                       |
-| ------------------------ | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Autolinked aggregator    | `build/generated/autolinking/Package.swift`    | `.package(path: "../../xcframeworks")` + `"../ios"` (only when it has inline `spmModule` targets)                    |
-| Per-dep synth wrapper    | `build/generated/autolinking/packages/<Name>/` | `.package(path: "../../../../xcframeworks")` + `"../../../ios"`                                                      |
-| Codegen template         | `build/generated/ios/Package.swift`            | `.package(path: "../../xcframeworks")` (or the remote url)                                                           |
-| App target (pbxproj)     | `<App>.xcodeproj`                              | local `XCLocalSwiftPackageReference` (or `XCRemoteSwiftPackageReference` in remote mode)                             |
-| Scaffolded community lib | `node_modules/<dep>/Package.swift`             | scaffold-time relative paths to the app's xcframeworks + codegen packages (or `.package(url:exact:)` in remote mode) |
+| Manifest                 | Location                                       | How it references the React + codegen packages                                                                                        |
+| ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Autolinked aggregator    | `build/generated/autolinking/Package.swift`    | Neither: it has no inline targets, and references only its dependencies' packages (`packages/<Name>`, `libs/<Name>`, plugin packages) |
+| Local-module wrapper     | `build/generated/autolinking/packages/<Name>/` | `.package(path: "../../../../xcframeworks")` + `"../../../ios"` (only for `swiftpmConfig.modules` entries)                            |
+| Codegen template         | `build/generated/ios/Package.swift`            | `.package(path: "../../xcframeworks")` (or the remote url)                                                                            |
+| App target (pbxproj)     | `<App>.xcodeproj`                              | local `XCLocalSwiftPackageReference` (or `XCRemoteSwiftPackageReference` in remote mode)                                              |
+| Scaffolded community lib | `node_modules/<dep>/Package.swift`             | scaffold-time relative paths to the app's xcframeworks + codegen packages (or `.package(url:exact:)` in remote mode)                  |
 
 ## Remote-package mode
 
 Remote mode is gated by a **URL alone** — `RN_SPM_REMOTE_URL` (or the persisted
 `url`). When set, the whole app graph flips to a single remote React Native
 package identity: `.package(path: build/xcframeworks)` becomes
-`.package(url:exact:)` everywhere (aggregator/synth/codegen template/pbxproj),
-and the local artifact download + compose is skipped. SPM's
+`.package(url:exact:)` everywhere it appears (synth/codegen template/pbxproj).
+The local artifact download and compose of `build/xcframeworks` still run. SPM's
 one-version-per-package rule then unifies app + every library on one resolved
 React Native. The package identity is derived from the URL tail (swift-tools 6
 dropped `.package(name:url:)`) — nothing hardcodes a repo name.
@@ -68,13 +71,16 @@ tag). A _derived_ version is never persisted, so an `npm install` that upgrades
 RN auto-re-pins the SPM graph on the next `spm` run; an _override_ is persisted
 as `versionOverride` so it survives Xcode-phase re-syncs without the env.
 
-Persisted schema is `{url, versionOverride?}`. Legacy `{url, version}` is still
-read, with `version` honored as an override (back-compat). If remote mode is on
-but no usable version can be resolved — react-native isn't installed, or it's a
-non-publishable dev placeholder and no override is set — the tooling errors
-(exit 2, a hard Xcode build error) directing you to set `RN_SPM_REMOTE_VERSION`
-or install a released react-native, rather than silently pinning an unpublished
-tag.
+The settings persist in `build/generated/autolinking/spm-remote.json`, written
+only when they come from the environment variables. The file lives under
+`build/`, so deleting `build/` turns remote mode off until the variables are set
+again. Persisted schema is `{url, versionOverride?}`. Legacy `{url, version}` is
+still read, with `version` honored as an override (back-compat). If remote mode
+is on but no usable version can be resolved — react-native isn't installed, or
+it's a non-publishable dev placeholder and no override is set — the tooling
+errors (exit 2, a hard Xcode build error) directing you to set
+`RN_SPM_REMOTE_VERSION` or install a released react-native, rather than silently
+pinning an unpublished tag.
 
 ## Hand-authored community library contract
 
@@ -84,9 +90,12 @@ code**:
 
 1. Depend on the React Native SPM package and its products — in remote mode
    `.package(url: "<repo>", exact: "<version>")` +
-   `.product(name: "ReactNative", …)` and
-   `.product(name: "ReactNativeHeaders", …)`. (Libraries should declare a
-   version RANGE in production; the consuming app pins EXACT.)
+   `.product(name: "ReactHeaders", package: "<identity>")`,
+   `.product(name: "ReactNativeHeaders", package: "<identity>")`, and
+   `.product(name: "ReactNativeDependenciesHeaders", package: "<identity>")`,
+   where `<identity>` is the URL tail, lowercased, without `.git`. These are the
+   React Native products a scaffolded manifest depends on. (Libraries should
+   declare a version RANGE in production; the consuming app pins EXACT.)
 2. Ship its own generated code: set `codegenConfig.includesGeneratedCode: true`
    and generate with
    `generate-codegen-artifacts.js --path . --targetPlatform ios --source library`.
