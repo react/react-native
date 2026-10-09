@@ -49,6 +49,10 @@
       "types": null,
       "default": "./src/asset-registry.js"
     },
+    "./async-require": {
+      "types": null,
+      "default": "./src/async-require.js"
+    },
     "./react-private-interface": {
       "types": null,
       "default": "./src/react-private-interface.js"

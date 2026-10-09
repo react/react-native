@@ -85,8 +85,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     transformer: {
       allowOptionalDependencies: true,
       assetRegistryPath: 'react-native/asset-registry',
-      asyncRequireModulePath:
-        require.resolve('metro-runtime/src/modules/asyncRequire'),
+      asyncRequireModulePath: 'react-native/async-require',
       babelTransformerPath:
         require.resolve('@react-native/metro-babel-transformer'),
       getTransformOptions: async () => ({
