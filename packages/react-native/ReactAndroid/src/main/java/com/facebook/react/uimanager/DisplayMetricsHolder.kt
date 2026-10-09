@@ -10,7 +10,9 @@ package com.facebook.react.uimanager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.util.DisplayMetrics
+import android.view.Display
 import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -54,9 +56,19 @@ public object DisplayMetricsHolder {
     val screenDisplayMetrics = DisplayMetrics()
     screenDisplayMetrics.setTo(displayMetrics)
     try {
-      val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+      // Use the display the context is associated with, not the device's
+      // default display. They differ when the activity is running on a
+      // secondary display (Samsung DeX, desktop mode, external monitor,
+      // freeform window) — using the default display there reports the
+      // primary display's density/dimensions and breaks layout scaling.
+      val display: Display? =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            context.display
+          } else {
+            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+          }
       // getRealMetrics includes system decor (e.g. nav bar) excluded from resource metrics.
-      wm.defaultDisplay.getRealMetrics(screenDisplayMetrics)
+      display?.getRealMetrics(screenDisplayMetrics)
     } catch (_: Exception) {
       // Non-visual contexts (e.g. Application) may throw on API 30+.
       // Falls back to resource display metrics copied via setTo() above.
