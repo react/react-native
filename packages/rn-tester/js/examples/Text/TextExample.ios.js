@@ -278,6 +278,39 @@ class AdjustingFontSize extends React.Component<
   }
 }
 
+function FontSizeToFitWithLineHeightRow({index}: {index: number}) {
+  const [height, setHeight] = React.useState<?number>(null);
+  return (
+    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit={true}
+        minimumFontScale={0.8}
+        onLayout={e => setHeight(e.nativeEvent.layout.height)}
+        style={{fontSize: 12, lineHeight: 20, width: 200}}>
+        {'Should not shrink ' + (index + 1)}
+      </Text>
+      <Text style={{fontSize: 9, color: '#888'}}>
+        {height == null ? '' : String(height)}
+      </Text>
+    </View>
+  );
+}
+
+// Rows after a 0.5pt separator: on a 3x screen some get a frame a float ULP short of lineHeight (#52642).
+function FontSizeToFitWithLineHeightExample(): React.Node {
+  const rows = [];
+  for (let i = 0; i < 10; i++) {
+    rows.push(<FontSizeToFitWithLineHeightRow key={i} index={i} />);
+  }
+  return (
+    <View style={{alignItems: 'center'}}>
+      <View style={{height: 0.5, width: 200, backgroundColor: 'green'}} />
+      {rows}
+    </View>
+  );
+}
+
 class TextBaseLineLayoutExample extends React.Component<{}, unknown> {
   render(): React.Node {
     const texts = [];
@@ -1422,6 +1455,13 @@ const examples = [
     title: 'Dynamic Font Size Adjustment',
     render: function (): React.MixedElement {
       return <AdjustingFontSize />;
+    },
+  },
+  {
+    title: 'Font Size Adjustment with lineHeight',
+    name: 'adjustsFontSizeToFitLineHeight',
+    render: function (): React.Node {
+      return <FontSizeToFitWithLineHeightExample />;
     },
   },
   {

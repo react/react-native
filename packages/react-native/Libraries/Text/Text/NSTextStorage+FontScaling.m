@@ -7,6 +7,8 @@
 
 #import "NSTextStorage+FontScaling.h"
 
+#import <React/RCTUtils.h>
+
 typedef NS_OPTIONS(NSInteger, RCTTextSizeComparisonOptions) {
   RCTTextSizeComparisonSmaller = 1 << 0,
   RCTTextSizeComparisonLarger = 1 << 1,
@@ -87,8 +89,10 @@ typedef NS_OPTIONS(NSInteger, RCTTextSizeComparisonOptions) {
 
   CGSize measuredSize = [layoutManager usedRectForTextContainer:textContainer].size;
 
-  // Does it fit the size?
-  BOOL fitsSize = size.width >= measuredSize.width && size.height >= measuredSize.height;
+  // Does it fit the size? Yoga's pixel-grid rounding can leave the height a float ULP short of
+  // the line height (#52642), so a shortfall smaller than one physical pixel still counts as fitting.
+  CGFloat heightTolerance = 1.0 / RCTScreenScale();
+  BOOL fitsSize = size.width >= measuredSize.width && size.height + heightTolerance > measuredSize.height;
 
   CGSize thresholdSize = (CGSize){
       size.width * thresholdRatio,
