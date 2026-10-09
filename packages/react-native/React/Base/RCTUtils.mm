@@ -601,6 +601,11 @@ BOOL RCTRunningInAppExtension(void)
   return [[[[NSBundle mainBundle] bundlePath] pathExtension] isEqualToString:@"appex"];
 }
 
+id __nullable RCTLaunchArgumentForKey(NSString *key)
+{
+  return [[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][key];
+}
+
 UIApplication *__nullable RCTSharedApplication(void)
 {
   if (RCTRunningInAppExtension()) {
