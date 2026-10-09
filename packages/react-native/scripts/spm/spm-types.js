@@ -324,7 +324,8 @@ export type PluginResult = {
   flavoredFrameworks: Array<PluginFlavoredFramework>,
   // Absolute paths (dirs or files) the Xcode auto-sync build phase should watch
   // for staleness, e.g. the plugin dep's own `Package.swift` and per-module
-  // manifests. Folded into `.spm-sync-watch-paths` by main().
+  // manifests. Folded into `.spm-sync-watch-paths` (or `.spm-sync-watch-absent`
+  // while missing) by main().
   watchPaths: Array<string>,
   // Build-time shell phases for the app target, recorded to
   // `.spm-plugin-script-phases.json` by main() and injected by `spm add`/

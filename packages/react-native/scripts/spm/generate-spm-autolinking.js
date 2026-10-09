@@ -1920,12 +1920,15 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   //      stale until an unrelated install triggers a sync. The dep ROOT is
   //      threaded through the entry (entry.root, from the autolinking model),
   //      not derived by walking up from the (possibly nested) source dir.
+  //      Both are listed even when absent: one that appears later (e.g. after
+  //      `spm scaffold`) changes self-managed detection and needs a re-sync.
   //   3. Plugin-contributed paths (e.g. Expo's own Package.swift / per-module
   //      manifests) — already validated absolute in invokePlugins.
   // The phase distinguishes dir vs file with `-d`/`-f` at build time (no
-  // markers). The existsSync filter here is safe: these paths come from a
-  // successful sync so they exist now; a path that later VANISHES is caught at
-  // phase time against this file and forces a re-sync.
+  // markers). A listed path that later VANISHES forces a re-sync. Paths that do
+  // not exist yet go to .spm-sync-watch-absent, where one that APPEARS forces a
+  // re-sync; they stay out of this file because phases from older versions
+  // treat a missing listed path as stale.
   const watchCandidates /*: Array<string> */ = [...entryAbsDirs.values()];
   for (const entry of entries) {
     const root = entry.root;
@@ -1936,12 +1939,21 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
     watchCandidates.push(path.join(root, '.react-native'));
   }
   watchCandidates.push(...pluginWatchPaths);
-  const watchPaths = Array.from(new Set(watchCandidates))
-    .filter(p => p.length > 0 && fs.existsSync(p))
-    .sort();
+  const watchPaths /*: Array<string> */ = [];
+  const absentWatchPaths /*: Array<string> */ = [];
+  for (const p of Array.from(new Set(watchCandidates)).sort()) {
+    if (p.length > 0) {
+      (fs.existsSync(p) ? watchPaths : absentWatchPaths).push(p);
+    }
+  }
   fs.writeFileSync(
     path.join(outputDir, '.spm-sync-watch-paths'),
     watchPaths.join('\n') + (watchPaths.length > 0 ? '\n' : ''),
+    'utf8',
+  );
+  fs.writeFileSync(
+    path.join(outputDir, '.spm-sync-watch-absent'),
+    absentWatchPaths.join('\n') + (absentWatchPaths.length > 0 ? '\n' : ''),
     'utf8',
   );
 

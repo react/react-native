@@ -65,7 +65,8 @@
  *         // Absolute paths (dirs OR files) the Xcode auto-sync build phase
  *         // should watch for staleness — e.g. the plugin dep's own
  *         // `Package.swift`, `expo-module.config.json`, and per-module
- *         // manifests. Folded into `.spm-sync-watch-paths`; a file edit or a
+ *         // manifests. Folded into `.spm-sync-watch-paths` (or
+ *         // `.spm-sync-watch-absent` while missing); a file edit or a
  *         // dir add/remove there re-triggers the sync. Relative/empty/non-string
  *         // entries are dropped with a warning; a non-array is ignored.
  *         watchPaths: ['/abs/path/Package.swift', '/abs/dir'],

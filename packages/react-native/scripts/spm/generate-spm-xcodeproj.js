@@ -785,6 +785,19 @@ if [ "$STALE" -eq 0 ] && [ -f "$WATCH_FILE" ]; then
   done < "$WATCH_FILE"
 fi
 
+# Watched paths that did not exist at the last sync. One that APPEARS (e.g. a
+# plugin's precompiled output folder) forces a re-sync.
+ABSENT_FILE="$SRCROOT/build/generated/autolinking/.spm-sync-watch-absent"
+if [ "$STALE" -eq 0 ] && [ -f "$ABSENT_FILE" ]; then
+  while IFS= read -r P; do
+    [ -z "$P" ] && continue
+    if [ -e "$P" ]; then
+      STALE=1
+      break
+    fi
+  done < "$ABSENT_FILE"
+fi
+
 # Check 2: codegen spec files changed via git (covers monorepo after git pull)
 if [ "$STALE" -eq 0 ] && [ -f "$STAMP" ]; then
   STAMP_TIME=$(stat -f %m "$STAMP" 2>/dev/null || stat -c %Y "$STAMP" 2>/dev/null || echo 0)

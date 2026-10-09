@@ -333,6 +333,42 @@ describe('sync scripts', () => {
     });
   });
 
+  it('re-syncs when a path listed as absent appears', () => {
+    const loop = /^ABSENT_FILE=[\s\S]*?^fi$/m.exec(script)?.[0];
+    expect(loop).toBeDefined();
+    const probe = srcRoot =>
+      execFileSync(
+        '/bin/bash',
+        [
+          '-c',
+          `set -euo pipefail\nSRCROOT="$1"\nSTALE=0\n${String(loop)}\necho "$STALE"\n`,
+          'probe',
+          srcRoot,
+        ],
+        {encoding: 'utf8'},
+      ).trim();
+
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-sync-absent-'));
+    try {
+      const autolinkDir = path.join(root, 'build/generated/autolinking');
+      fs.mkdirSync(autolinkDir, {recursive: true});
+      const watched = path.join(root, 'precompiled');
+      fs.mkdirSync(watched);
+      expect(probe(root)).toBe('0');
+
+      fs.writeFileSync(
+        path.join(autolinkDir, '.spm-sync-watch-absent'),
+        `${watched}\n`,
+      );
+      expect(probe(root)).toBe('1');
+
+      fs.rmdirSync(watched);
+      expect(probe(root)).toBe('0');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
   it('is deterministic, shared with the pre-action, and valid POSIX shell', () => {
     expect(buildSyncAutolinkingScript(baked)).toBe(script);
     expect(buildSchemePreActionScript(baked)).toBe(script);
