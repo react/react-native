@@ -492,7 +492,6 @@ let reactFabric = RNTarget(
     "components/inputaccessory",
     "components/modal",
     "components/rncore",
-    "components/safeareaview",
     "components/switch",
     "components/text",
     "components/textinput",
@@ -527,12 +526,6 @@ let reactFabricSwitch = RNTarget(
   name: .reactFabricSwitch,
   path: "ReactCommon/react/renderer/components/switch/iosswitch",
   excludedPaths: ["react/renderer/components/switch/MacOSSwitchShadowNode.mm"],
-  dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging]
-)
-
-let reactFabricSafeAreaView = RNTarget(
-  name: .reactFabricSafeAreaView,
-  path: "ReactCommon/react/renderer/components/safeareaview",
   dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging]
 )
 
@@ -588,7 +581,7 @@ let reactRCTFabric = RNTarget(
   name: .reactRCTFabric,
   path: "React/Fabric",
   searchPaths: [virtualViewPath],
-  dependencies: [.reactNativeDependencies, .reactCore, .reactRCTImage, .yoga, .reactRCTText, .jsi, .reactFabricInputAccessory, .reactFabricModal, .reactFabricSafeAreaView, .reactFabricSwitch, .reactFabricText, .reactFabricTextInput, .reactFabricUnimplementedView, .reactFabricTextLayoutManager, .reactGraphics, .reactImageManager, .reactDebug, .reactUtils, .reactPerformanceTimeline, .reactRendererDebug, .reactRendererConsistency, .reactRuntimeScheduler, .reactRCTAnimation, .reactJsInspector, .reactJsInspectorNetwork, .reactJsInspectorTracing, .reactFabric, .reactFabricImage, .rctSwiftUIWrapper]
+  dependencies: [.reactNativeDependencies, .reactCore, .reactRCTImage, .yoga, .reactRCTText, .jsi, .reactFabricInputAccessory, .reactFabricModal, .reactFabricSwitch, .reactFabricText, .reactFabricTextInput, .reactFabricUnimplementedView, .reactFabricTextLayoutManager, .reactGraphics, .reactImageManager, .reactDebug, .reactUtils, .reactPerformanceTimeline, .reactRendererDebug, .reactRendererConsistency, .reactRuntimeScheduler, .reactRCTAnimation, .reactJsInspector, .reactJsInspectorNetwork, .reactJsInspectorTracing, .reactFabric, .reactFabricImage, .rctSwiftUIWrapper]
 )
 
 /// React-ImageManagerApple.podspec
@@ -711,7 +704,6 @@ let targets = [
   reactFabricImage,
   reactFabricInputAccessory,
   reactFabricModal,
-  reactFabricSafeAreaView,
   reactFabricSwitch,
   reactFabricTextLayoutManager,
   reactFabricText,
@@ -898,7 +890,6 @@ extension String {
   static let reactFabricImage = "React-FabricImage"
   static let reactFabricInputAccessory = "React-FabricInputAccessory"
   static let reactFabricModal = "React-FabricModal"
-  static let reactFabricSafeAreaView = "React-FabricSafeAreaView"
   static let reactFabricSwitch = "React-FabricSwitch"
   static let reactFabricTextLayoutManager = "React-FabricTextLayoutManager"
   static let reactFabricText = "React-FabricText"

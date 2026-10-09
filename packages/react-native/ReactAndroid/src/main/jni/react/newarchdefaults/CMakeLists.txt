@@ -35,7 +35,6 @@ target_link_libraries(react_newarchdefaults
         rrc_image
         rrc_modal
         rrc_progressbar
-        rrc_safeareaview
         rrc_scrollview
         rrc_switch
         rrc_text

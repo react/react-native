@@ -108,9 +108,6 @@ export type {
 } from './Libraries/Components/RefreshControl/RefreshControl';
 export {default as RefreshControl} from './Libraries/Components/RefreshControl/RefreshControl';
 
-export type {SafeAreaViewInstance} from './Libraries/Components/SafeAreaView/SafeAreaView';
-export {default as SafeAreaView} from './Libraries/Components/SafeAreaView/SafeAreaView';
-
 export type {
   ScrollViewImperativeMethods,
   ScrollViewInstance,
