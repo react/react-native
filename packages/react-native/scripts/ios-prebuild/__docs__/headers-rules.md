@@ -306,7 +306,8 @@ mtime + hermes presence).
   to a plain `module React`, vended as the `ReactHeaders` target. The only
   `.binaryTarget`s are `ReactNativeHeaders` and
   `ReactNativeDependenciesHeaders`; Xcode auto-serves their `Headers/` (incl.
-  `module.modulemap`) to dependents. Zero flags.
+  `module.modulemap`) to dependents. Zero flags. See
+  [spm-header-paths-contract.md](../../spm/__docs__/spm-header-paths-contract.md).
 - **CocoaPods**: `React-Core-prebuilt`'s `prepare_command` flattens
   `ReactNativeHeaders`' Headers (incl. the module map) into the pod, and the
   React-core pods are installed as dependency-only **facades**

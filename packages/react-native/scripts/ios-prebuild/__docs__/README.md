@@ -142,12 +142,12 @@ The prebuild (`xcframework.js`) always produces:
 - `React.xcframework` — the compiled React core. Each slice's `React.framework`
   carries the headers-spec layout (every `<React/...>` header + the framework
   module map). CocoaPods consumes that layout directly, through
-  `FRAMEWORK_SEARCH_PATHS`. SwiftPM consumes the same headers indirectly: the
-  XCFramework is not a member of the Swift package graph, so the consumer side
-  stages a copy of `React.framework/Headers` into
-  `ReactHeadersTarget/include/React` and rewrites `framework module React` to a
-  plain `module React`, vended as the `ReactHeaders` target (see
-  `spm-header-paths-contract.md` in the SwiftPM docs).
+  `FRAMEWORK_SEARCH_PATHS`. SwiftPM consumes the same headers indirectly,
+  because the XCFramework is not a member of the Swift package graph. The
+  consumer side stages a copy of `React.framework/Headers` into
+  `ReactHeadersTarget/include/React`, rewrites `framework module React` to a
+  plain `module React`, and vends it as the `ReactHeaders` target (see
+  [spm-header-paths-contract.md](../../spm/__docs__/spm-header-paths-contract.md)).
 - `ReactNativeHeaders.xcframework` — headers-only; carries every other React
   Native namespace. Consumed by SwiftPM as a `binaryTarget` and by CocoaPods via
   the `React-Core-prebuilt` pod (headers flattened onto the header search path).
