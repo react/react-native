@@ -37,11 +37,8 @@ using namespace facebook::react;
   // hence we wrap a value into `optional` to workaround it.
   std::optional<SurfaceHandler> _surfaceHandler;
 
-  // Protects Surface's start and stop processes.
-  // Even though SurfaceHandler is tread-safe, it will crash if we try to stop a surface that is not running.
-  // To make the API easy to use, we check the status of the surface before calling `start` or `stop`,
-  // and we need this mutex to prevent races.
   std::mutex _surfaceMutex;
+  BOOL _startPending;
 
   // Can be accessed from the main thread only.
   RCTSurfaceView *_Nullable _view;
@@ -93,35 +90,44 @@ using namespace facebook::react;
 
 - (void)start
 {
-  std::lock_guard<std::mutex> lock(_surfaceMutex);
+  {
+    std::lock_guard<std::mutex> lock(_surfaceMutex);
 
-  if (_surfaceHandler->getStatus() != SurfaceHandler::Status::Registered) {
-    return;
+    if (_startPending || _surfaceHandler->getStatus() != SurfaceHandler::Status::Registered) {
+      return;
+    }
+
+    _startPending = YES;
   }
 
-  // We need to register a root view component here synchronously because right after
-  // we start a surface, it can initiate an update that can query the root component.
   RCTExecuteOnMainQueue(^{
-    [self->_surfacePresenter.mountingManager attachSurfaceToView:self.view
-                                                       surfaceId:self->_surfaceHandler->getSurfaceId()];
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
-      // This runs two async hops later; a concurrent instance teardown/reload may have unregistered
-      // the surface since the check in -start. Without this re-check SurfaceHandler::start()
-      // dereferences a now-null uiManager.
-      if (self->_surfaceHandler->getStatus() != SurfaceHandler::Status::Registered) {
+    {
+      std::lock_guard<std::mutex> lock(self->_surfaceMutex);
+
+      if (!self->_startPending || self->_surfaceHandler->getStatus() != SurfaceHandler::Status::Registered) {
+        self->_startPending = NO;
         return;
       }
+
+      // We need to register a root view component here synchronously because right after
+      // we start a surface, it can initiate an update that can query the root component.
+      [self->_surfacePresenter.mountingManager attachSurfaceToView:self.view
+                                                         surfaceId:self->_surfaceHandler->getSurfaceId()];
       self->_surfaceHandler->start();
-      [self _propagateStageChange];
+      self->_startPending = NO;
 
       [self->_surfacePresenter setupAnimationDriverWithSurfaceHandler:*self->_surfaceHandler];
-    });
+    }
+
+    [self _propagateStageChange];
   });
 }
 
 - (void)stop
 {
   std::lock_guard<std::mutex> lock(_surfaceMutex);
+
+  _startPending = NO;
 
   if (_surfaceHandler->getStatus() != SurfaceHandler::Status::Running) {
     return;
