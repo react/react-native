@@ -253,8 +253,7 @@ class VirtualizedSectionList<
     return null;
   }
 
-  // $FlowFixMe[missing-local-annot]
-  _keyExtractor = (item: ItemT, index: number) => {
+  _keyExtractor = (item: ItemT, index: number): string => {
     const info = this._subExtractor(index);
     return (info && info.key) || String(index);
   };
