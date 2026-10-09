@@ -498,10 +498,17 @@ class JSI_EXPORT IRuntime : public ICast {
 
   virtual BigInt createBigIntFromInt64(int64_t) = 0;
   virtual BigInt createBigIntFromUint64(uint64_t) = 0;
+  /// Create a BigInt from a raw byte sequence \p bytes of \p length, which
+  /// provides the BigInt data in little-endian, two's complement
+  /// representation. The data is copied.
+  virtual BigInt createBigIntFromBytes(const uint8_t* bytes, size_t length) = 0;
   virtual bool bigintIsInt64(const BigInt&) = 0;
   virtual bool bigintIsUint64(const BigInt&) = 0;
   virtual uint64_t truncate(const BigInt&) = 0;
   virtual String bigintToString(const BigInt&, int) = 0;
+  /// Returns the raw byte representation of a BigInt in little-endian, two's
+  /// complement representation.
+  virtual std::vector<uint8_t> bytes(const BigInt&) = 0;
 
   virtual String createStringFromAscii(const char* str, size_t length) = 0;
   virtual String createStringFromUtf8(const uint8_t* utf8, size_t length) = 0;
@@ -793,6 +800,9 @@ class JSI_EXPORT Runtime : public IRuntime {
 
   size_t length(const String& str) override;
 
+  BigInt createBigIntFromBytes(const uint8_t* bytes, size_t length) override;
+  std::vector<uint8_t> bytes(const BigInt&) override;
+
  protected:
   friend class Pointer;
   friend class PropNameID;
@@ -1002,6 +1012,20 @@ class JSI_EXPORT BigInt : public Pointer {
   /// Create a BigInt representing the unsigned 64-bit \p value.
   static BigInt fromUint64(IRuntime& runtime, uint64_t value) {
     return runtime.createBigIntFromUint64(value);
+  }
+
+  /// Create a BigInt from a raw byte sequence \p bytes of \p length, which
+  /// provides the BigInt data in little-endian, two's complement
+  /// representation. The data is copied.
+  static BigInt
+  fromBytes(IRuntime& runtime, const uint8_t* bytes, size_t length) {
+    return runtime.createBigIntFromBytes(bytes, length);
+  }
+
+  /// Returns the raw byte representation of a BigInt in little-endian, two's
+  /// complement representation.
+  std::vector<uint8_t> bytes(IRuntime& runtime) const {
+    return runtime.bytes(*this);
   }
 
   /// \return whether a === b.
