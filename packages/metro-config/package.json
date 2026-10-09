@@ -20,7 +20,8 @@
   },
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./src/internalCallsites.json": "./src/internalCallsites.json"
   },
   "publishConfig": {
     "exports": {
