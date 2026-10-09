@@ -114,8 +114,8 @@ a freshly-scaffolded CocoaPods project (clean git tree, stock Podfile) the
 zero-arg path additionally implies `--deintegrate` (the safe-gate), so
 `npx react-native spm` converts a brand-new app to SwiftPM in one command.
 
-When invoked from the JS root of a standard RN app (with a child `ios/`
-directory), the command auto-redirects into `ios/` with a banner.
+When invoked from the JS root of a standard RN app (sibling `ios/` subdir), the
+command auto-redirects into `ios/` with a banner.
 
 | Action                | Description                                                                                                                                                                                                                                   |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
