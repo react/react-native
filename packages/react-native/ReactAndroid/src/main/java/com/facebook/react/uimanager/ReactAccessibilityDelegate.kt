@@ -499,6 +499,10 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
         }
       }
 
+      /**
+       * Returns the matching role, or [NONE] when [value] is null. Logs a soft exception and
+       * returns [NONE] when [value] is unrecognized.
+       */
       @JvmStatic
       public fun fromValue(value: String?): AccessibilityRole {
         if (value == null) {
@@ -510,7 +514,11 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
             return role
           }
         }
-        throw IllegalArgumentException("Invalid accessibility role value: $value")
+        logSoftException(
+            ReactAccessibilityDelegate.TAG,
+            ReactNoCrashSoftException("Invalid accessibility role value: $value"),
+        )
+        return NONE
       }
 
       @JvmStatic

@@ -357,6 +357,13 @@ class ReactAccessibilityDelegateTest {
   }
 
   @Test
+  fun testAccessibilityRole_fromValue_invalidRole_returnsNone() {
+    val role = ReactAccessibilityDelegate.AccessibilityRole.fromValue("invalid-role")
+
+    assertThat(role).isEqualTo(ReactAccessibilityDelegate.AccessibilityRole.NONE)
+  }
+
+  @Test
   fun testPerformAccessibilityAction_collapseAction_fromAccessibilityActions() {
     val accessibilityActions = JavaOnlyArray()
     val action =
