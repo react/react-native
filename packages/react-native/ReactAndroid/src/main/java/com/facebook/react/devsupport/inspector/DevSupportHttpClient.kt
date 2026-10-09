@@ -13,6 +13,7 @@ import com.facebook.react.modules.network.OkHttpClientProvider
 import java.util.concurrent.TimeUnit
 import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 
 /**
@@ -68,4 +69,10 @@ internal object DevSupportHttpClient {
    * the host specifies port 443 explicitly (e.g. "example.com:443").
    */
   internal fun wsScheme(host: String): String = if (host.endsWith(":443")) "wss" else "ws"
+
+  /**
+   * Returns whether OkHttp can build a request for the given host, for example "localhost:8081".
+   */
+  internal fun isValidHost(host: String): Boolean =
+      "${httpScheme(host)}://$host/".toHttpUrlOrNull() != null
 }
