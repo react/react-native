@@ -104,16 +104,6 @@ module.exports = {
   get Pressable() {
     return require('./Libraries/Components/Pressable/Pressable').default;
   },
-  get ProgressBarAndroid() {
-    warnOnce(
-      'progress-bar-android-moved',
-      'ProgressBarAndroid has been extracted from react-native core and will be removed in a future release. ' +
-        "It can now be installed and imported from '@react-native-community/progress-bar-android' instead of 'react-native'. " +
-        'See https://github.com/react-native-progress-view/progress-bar-android',
-    );
-    return require('./Libraries/Components/ProgressBarAndroid/ProgressBarAndroid')
-      .default;
-  },
   get RefreshControl() {
     return require('./Libraries/Components/RefreshControl/RefreshControl')
       .default;
@@ -440,6 +430,22 @@ if (__DEV__) {
         'InteractionManager has been removed from react-native core. ' +
           'Please refactor long tasks into smaller ones, and use ' +
           "'requestIdleCallback' instead.",
+      );
+    },
+  });
+
+  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
+   * attempting to access ProgressBarAndroid. */
+  /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
+   * attempting to access ProgressBarAndroid. */
+  Object.defineProperty(module.exports, 'ProgressBarAndroid', {
+    configurable: true,
+    get() {
+      invariant(
+        false,
+        'ProgressBarAndroid has been removed from react-native core. ' +
+          "Please use '@react-native-community/progress-bar-android' instead. " +
+          'See https://github.com/react-native-progress-view/progress-bar-android',
       );
     },
   });

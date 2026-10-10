@@ -130,10 +130,6 @@ const publicAPIMapping = {
       'PressableStateCallbackType',
     ],
   },
-  'Libraries/Components/ProgressBarAndroid/ProgressBarAndroid': {
-    default: 'ProgressBarAndroid',
-    types: ['ProgressBarAndroidInstance', 'ProgressBarAndroidProps'],
-  },
   'Libraries/Components/RefreshControl/RefreshControl': {
     default: 'RefreshControl',
     types: [

@@ -1091,23 +1091,6 @@ class facebook::react::AndroidHorizontalScrollContentViewProps : public facebook
   public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
 }
 
-class facebook::react::AndroidProgressBarEventEmitter : public facebook::react::BaseViewEventEmitter {
-}
-
-class facebook::react::AndroidProgressBarProps : public facebook::react::HostPlatformViewProps {
-  public AndroidProgressBarProps() = default;
-  public AndroidProgressBarProps(const facebook::react::PropsParserContext& context, const facebook::react::AndroidProgressBarProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public bool animating;
-  public bool indeterminate;
-  public double progress;
-  public facebook::react::SharedColor color;
-  public std::string styleAttr;
-  public std::string testID;
-  public std::string typeAttr;
-  public virtual facebook::react::ComponentName getDiffPropsImplementationTarget() const override;
-  public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
-}
-
 class facebook::react::AndroidSwipeRefreshLayoutEventEmitter : public facebook::react::BaseViewEventEmitter {
   public void onRefresh(facebook::react::AndroidSwipeRefreshLayoutEventEmitter::OnRefresh value) const;
 }

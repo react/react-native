@@ -53,7 +53,6 @@ target_link_libraries(
         reactnativejni
         rrc_image
         rrc_modal
-        rrc_progressbar
         rrc_root
         rrc_safeareaview
         rrc_scrollview

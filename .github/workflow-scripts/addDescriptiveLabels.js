@@ -66,7 +66,6 @@ const components = [
   'NavigatorIOS',
   'Picker',
   'PickerIOS',
-  'ProgressBarAndroid',
   'ProgressViewIOS',
   'RefreshControl',
   'SafeAreaView',

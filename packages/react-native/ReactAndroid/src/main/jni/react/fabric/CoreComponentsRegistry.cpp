@@ -13,7 +13,6 @@
 #include <react/renderer/components/androidtextinput/AndroidTextInputComponentDescriptor.h>
 #include <react/renderer/components/image/ImageComponentDescriptor.h>
 #include <react/renderer/components/modal/ModalHostViewComponentDescriptor.h>
-#include <react/renderer/components/progressbar/AndroidProgressBarComponentDescriptor.h>
 #include <react/renderer/components/safeareaview/SafeAreaViewComponentDescriptor.h>
 #include <react/renderer/components/scrollview/AndroidHorizontalScrollContentViewComponentDescriptor.h>
 #include <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
@@ -38,9 +37,6 @@ sharedProviderRegistry() {
 void addCoreComponents(
     std::shared_ptr<const ComponentDescriptorProviderRegistry>
         providerRegistry) {
-  providerRegistry->add(
-      concreteComponentDescriptorProvider<
-          AndroidProgressBarComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<
           AndroidSwipeRefreshLayoutComponentDescriptor>());

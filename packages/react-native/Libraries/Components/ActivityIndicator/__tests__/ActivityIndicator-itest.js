@@ -26,19 +26,19 @@ function renderSizeOutput(element: React.MixedElement): React.Node {
 describe('ActivityIndicator', () => {
   it('renders the default (small) size', () => {
     expect(renderSizeOutput(<ActivityIndicator />)).toEqual(
-      <rn-androidProgressBar width="20" height="20" />,
+      <rn-activityIndicatorView width="20" height="20" />,
     );
   });
 
   it('renders the large size', () => {
     expect(renderSizeOutput(<ActivityIndicator size="large" />)).toEqual(
-      <rn-androidProgressBar width="36" height="36" />,
+      <rn-activityIndicatorView width="36" height="36" />,
     );
   });
 
   it('renders a numeric size as an explicit width/height', () => {
     expect(renderSizeOutput(<ActivityIndicator size={42} />)).toEqual(
-      <rn-androidProgressBar width="42" height="42" />,
+      <rn-activityIndicatorView width="42" height="42" />,
     );
   });
 
@@ -53,6 +53,6 @@ describe('ActivityIndicator', () => {
           hidesWhenStopped={false}
         />,
       ),
-    ).toEqual(<rn-androidProgressBar width="20" height="20" />);
+    ).toEqual(<rn-activityIndicatorView width="20" height="20" />);
   });
 });
