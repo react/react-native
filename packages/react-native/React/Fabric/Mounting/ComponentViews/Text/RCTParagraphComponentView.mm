@@ -63,6 +63,7 @@ using namespace facebook::react;
   RCTTextLayoutManager *_selectionLayoutManager;
   NSAttributedString *_selectionRenderedText;
   CGSize _selectionRenderedSize;
+  BOOL _selectableTextViewNeedsUpdate;
 #endif
 }
 
@@ -168,6 +169,15 @@ using namespace facebook::react;
   if ((updateMask & (RNComponentViewUpdateMaskState | RNComponentViewUpdateMaskLayoutMetrics)) != 0) {
     [self _updateTextViewFrame];
   }
+#if !TARGET_OS_TV
+  // `updateProps:` runs before the state and the layout of the same mutation,
+  // and a change of `selectable` alone computes no frames. So the text view is
+  // built here, after all of the mutation, from the drawing frame computed last.
+  if (_selectableTextViewNeedsUpdate) {
+    _selectableTextViewNeedsUpdate = NO;
+    [self updateSelectableTextViewWithDrawingFrame:_textLayoutFrame];
+  }
+#endif
 }
 
 - (void)prepareForRecycle
@@ -368,12 +378,12 @@ using namespace facebook::react;
  */
 - (void)enableContextMenu
 {
-  _selectionRenderedText = nil;
-  [self setNeedsLayout];
+  _selectableTextViewNeedsUpdate = YES;
 }
 
 - (void)disableContextMenu
 {
+  _selectableTextViewNeedsUpdate = NO;
   [self removeSelectableTextView];
   _selectionLayoutManager = nil;
 }

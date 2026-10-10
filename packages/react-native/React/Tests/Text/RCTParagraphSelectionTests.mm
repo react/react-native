@@ -108,7 +108,7 @@ using namespace facebook::react;
   layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
   [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:{}];
 
-  [view layoutIfNeeded];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
   return view;
 }
 
@@ -142,8 +142,9 @@ using namespace facebook::react;
 }
 
 /*
- * Builds a laid-out paragraph view. `layoutIfNeeded` is what creates or removes
- * the selection text view, so every test needs it.
+ * Builds a paragraph view with the update calls that `RCTMountingManager` makes
+ * for an insert. The view gets no event emitter and no parent.
+ * `finalizeUpdates:` creates the selection text view, so every test needs it.
  */
 - (RCTParagraphComponentView *)paragraphViewSelectable:(BOOL)selectable
 {
@@ -157,7 +158,7 @@ using namespace facebook::react;
   layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
   [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:{}];
 
-  [view layoutIfNeeded];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
   return view;
 }
 
@@ -316,24 +317,52 @@ using namespace facebook::react;
   XCTAssertNotNil([self selectionTextViewIn:view]);
 
   [view updateProps:[self propsWithSelectable:NO] oldProps:[self propsWithSelectable:YES]];
-  [view layoutIfNeeded];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
 
   XCTAssertNil([self selectionTextViewIn:view], @"Turning selection off must remove the text view.");
   XCTAssertFalse(view.contentView.hidden, @"The paragraph must still draw itself.");
 }
 
+/*
+ * A change of `selectable` alone is a props update, and `finalizeUpdates:`
+ * computes no frames for it. The text view must still come back without a
+ * later change of the text or the layout.
+ */
 - (void)testTurningSelectableBackOnRestoresTheSelectionTextView
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
 
   [view updateProps:[self propsWithSelectable:NO] oldProps:[self propsWithSelectable:YES]];
-  [view layoutIfNeeded];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
   XCTAssertNil([self selectionTextViewIn:view]);
 
   [view updateProps:[self propsWithSelectable:YES] oldProps:[self propsWithSelectable:NO]];
-  [view layoutIfNeeded];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
 
   XCTAssertNotNil([self selectionTextViewIn:view], @"Turning selection on again must rebuild the text view.");
+}
+
+/*
+ * One mutation can turn `selectable` on and change the text. `updateProps:`
+ * runs before `updateState:`, so a text view built there holds the old text
+ * and is built again a moment later.
+ */
+- (void)testTurningSelectableOnWithNewTextBuildsOnceFromTheNewText
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:NO];
+
+  [view updateProps:[self propsWithSelectable:YES] oldProps:[self propsWithSelectable:NO]];
+  XCTAssertNil([self selectionTextViewIn:view], @"The text view must wait for the rest of the mutation.");
+
+  [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"The new paragraph"]] oldState:nil];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps | RNComponentViewUpdateMaskState];
+
+  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  XCTAssertNotNil(selectionTextView);
+  XCTAssertEqual(
+      selectionTextView.textStorage.length,
+      [@"The new paragraph" length],
+      @"The text view must hold the text of the same mutation.");
 }
 
 #pragma mark - Recycling
@@ -365,7 +394,12 @@ using namespace facebook::react;
 
   [view updateProps:[self propsWithSelectable:YES] oldProps:[self propsWithSelectable:YES]];
   [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"The next paragraph"]] oldState:nil];
-  [view layoutIfNeeded];
+
+  // `prepareForRecycle` empties the layout metrics, and the next insert sets them again.
+  auto layoutMetrics = LayoutMetrics{};
+  layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
+  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
 
   UITextView *selectionTextView = [self selectionTextViewIn:view];
   XCTAssertNotNil(selectionTextView, @"A recycled selectable paragraph must get a selection text view again.");
@@ -390,7 +424,7 @@ using namespace facebook::react;
   XCTAssertNotNil(before);
 
   [view updateState:[self stateWithAttributedString:[self decoratedAttributedStringHighlighted:YES]] oldState:nil];
-  [view layoutIfNeeded];
+  [view finalizeUpdates:RNComponentViewUpdateMaskState];
 
   XCTAssertEqual(
       [self selectionTextViewIn:view], before, @"A pressed highlight must not rebuild the selection text view.");
@@ -408,7 +442,7 @@ using namespace facebook::react;
 
   [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"A different paragraph"]]
            oldState:nil];
-  [view layoutIfNeeded];
+  [view finalizeUpdates:RNComponentViewUpdateMaskState];
 
   XCTAssertNotEqual([self selectionTextViewIn:view], before, @"New text must rebuild the selection text view.");
 }
