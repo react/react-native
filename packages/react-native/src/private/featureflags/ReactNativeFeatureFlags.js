@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<af6139096ee6674041dc18f92a7d1f91>>
+ * @generated SignedSource<<ee44359d2e5a00833a6764106aeb088b>>
  * @flow strict
  * @noformat
  */
@@ -79,6 +79,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
   enableFontScaleChangesUpdatingLayout: Getter<boolean>,
   enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
+  enableIOSPartialTextSelection: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
   enableImagePrefetchingAndroid: Getter<boolean>,
@@ -338,6 +339,10 @@ export const enableFontScaleChangesUpdatingLayout: Getter<boolean> = createNativ
  * Adjusts iOS Text drawing frames for compressed explicit line heights.
  */
 export const enableIOSCompressedTextFrameAdjustment: Getter<boolean> = createNativeFlagGetter('enableIOSCompressedTextFrameAdjustment', false);
+/**
+ * Enables partial text selection for selectable Text on iOS. When disabled, a long press shows a menu that copies the whole paragraph.
+ */
+export const enableIOSPartialTextSelection: Getter<boolean> = createNativeFlagGetter('enableIOSPartialTextSelection', false);
 /**
  * Applies base offset for each line of text separately on iOS.
  */

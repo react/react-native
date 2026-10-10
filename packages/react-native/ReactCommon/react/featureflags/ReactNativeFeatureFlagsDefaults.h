@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9218c0c441b0b937737d2fae33fd1e35>>
+ * @generated SignedSource<<9b10ad868b2158e959632ca2193654b0>>
  */
 
 /**
@@ -142,6 +142,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
+    return false;
+  }
+
+  bool enableIOSPartialTextSelection() override {
     return false;
   }
 

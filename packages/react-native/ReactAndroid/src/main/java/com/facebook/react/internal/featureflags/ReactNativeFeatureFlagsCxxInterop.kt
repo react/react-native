@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9ed55c4c14d640c0fb2bd6c8fb7ef557>>
+ * @generated SignedSource<<60ced4c5136d47b2929752516b6ae2ea>>
  */
 
 /**
@@ -85,6 +85,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableFontScaleChangesUpdatingLayout(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSCompressedTextFrameAdjustment(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableIOSPartialTextSelection(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSTextBaselineOffsetPerLine(): Boolean
 
