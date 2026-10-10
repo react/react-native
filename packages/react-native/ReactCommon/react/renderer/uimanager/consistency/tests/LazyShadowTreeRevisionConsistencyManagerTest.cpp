@@ -30,9 +30,6 @@ class FakeShadowTreeDelegate : public ShadowTreeDelegate {
 
   void shadowTreeDidFinishReactCommit(
       const ShadowTree& /*shadowTree*/) const override {}
-
-  void shadowTreeDidPromoteReactRevision(
-      const ShadowTree& /*shadowTree*/) const override {}
 };
 
 class LazyShadowTreeRevisionConsistencyManagerTest : public ::testing::Test {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a4a8fa0d7080a4706e396b69a8495d41>>
+ * @generated SignedSource<<9218c0c441b0b937737d2fae33fd1e35>>
  */
 
 /**
@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <react/featureflags/ReactNativeFeatureFlagsProvider.h>
 
@@ -46,6 +46,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool disableEarlyViewCommandExecution() override {
+    return false;
+  }
+
+  bool disableIdleMountItemFrameCallbackRearmAndroid() override {
     return false;
   }
 
@@ -85,11 +89,11 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableBridgelessArchitecture() override {
-    return true;
+  bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
+    return false;
   }
 
-  bool enableBufferedCallInvoker() override {
+  bool enableBridgelessArchitecture() override {
     return true;
   }
 
@@ -118,6 +122,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableFabricCommitBranching() override {
+    return false;
+  }
+
+  bool enableFabricCommitBranchingMergeOnMainThread() override {
     return false;
   }
 
@@ -201,6 +209,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enablePreallocatedPropsDiffOnInsertAndroid() override {
+    return false;
+  }
+
   bool enablePreparedTextLayout() override {
     return false;
   }
@@ -245,8 +257,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool fixDifferentiatorParentTagForUnflattenCase() override {
-    return true;
+  bool fixBorderlessRippleAndroid() override {
+    return false;
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {

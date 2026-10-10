@@ -17,7 +17,6 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef, startTransition, useDeferredValue, useState} from 'react';
 import {View} from 'react-native';
-import {NativeEventCategory} from 'react-native/src/private/testing/fantom/specs/NativeFantom';
 
 describe('stale event handlers from interrupted render', () => {
   // This test demonstrates a bug where canonical.currentProps (which stores
@@ -80,7 +79,7 @@ describe('stale event handlers from interrupted render', () => {
           'onPointerUp',
           {x: 0, y: 0},
           {
-            category: NativeEventCategory.Discrete,
+            category: Fantom.NativeEventCategory.Discrete,
           },
         );
       }

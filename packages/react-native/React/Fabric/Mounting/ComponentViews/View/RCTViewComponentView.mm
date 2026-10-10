@@ -25,6 +25,7 @@
 #import <React/RCTLocalizedString.h>
 #import <React/RCTLog.h>
 #import <React/RCTRadialGradient.h>
+#import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
@@ -104,6 +105,9 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 }
 #endif
 
+// Sentinel for insets that have not been set yet.
+static const UIEdgeInsets RCTNoSafeAreaInsetsSent = {-1, -1, -1, -1};
+
 @implementation RCTViewComponentView {
   UIColor *_backgroundColor;
   CALayer *_backgroundColorLayer;
@@ -122,6 +126,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   NSMutableSet<NSString *> *_accessibilityOrderNativeIDs;
   RCTSwiftUIContainerViewWrapper *_swiftUIWrapper;
   BOOL _focusable;
+  UIEdgeInsets _lastSentSafeAreaInsets;
 }
 
 #ifdef RCT_DYNAMIC_FRAMEWORKS
@@ -141,6 +146,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 #endif
     _useCustomContainerView = NO;
     _removeClippedSubviews = NO;
+    _lastSentSafeAreaInsets = RCTNoSafeAreaInsetsSent;
   }
   return self;
 }
@@ -359,7 +365,9 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // Disable `removeClippedSubviews` when Fabric View Culling is enabled.
   if (!ReactNativeFeatureFlags::enableViewCulling()) {
-    if (oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
+    // Compare against the current state, not `_props`: `prepareForRecycle` resets
+    // `_removeClippedSubviews` but keeps `_props`.
+    if (_removeClippedSubviews != newViewProps.removeClippedSubviews) {
       _removeClippedSubviews = newViewProps.removeClippedSubviews;
       [self _updateRemoveClippedSubviewsState];
     }
@@ -436,6 +444,15 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         -newViewProps.hitSlop.left,
         -newViewProps.hitSlop.bottom,
         -newViewProps.hitSlop.right};
+  }
+
+  // `onSafeAreaInsetsChange`. Re-armed whenever the prop is set rather than on
+  // its transition: `oldViewProps` comes from `_props`, which a recycled view
+  // keeps from its previous occupant, so `!old && new` would miss a reuse.
+  if (newViewProps.onSafeAreaInsetsChange) {
+    [self setNeedsLayout];
+  } else if (oldViewProps.onSafeAreaInsetsChange) {
+    _lastSentSafeAreaInsets = RCTNoSafeAreaInsetsSent;
   }
 
   // `overflow`
@@ -720,6 +737,78 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   }
 }
 
+#pragma mark - Safe area insets
+
+static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, CGFloat threshold)
+{
+  return ABS(lhs.left - rhs.left) <= threshold && ABS(lhs.top - rhs.top) <= threshold &&
+      ABS(lhs.right - rhs.right) <= threshold && ABS(lhs.bottom - rhs.bottom) <= threshold;
+}
+
+// The event is only ever emitted from `layoutSubviews`; everything that might
+// have changed the insets merely marks the view as needing layout. This defers
+// the emit out of arbitrary call contexts — in particular out of
+// `updateProps`, which runs inside the mounting transaction where
+// synchronously re-entering React is not safe — while keeping it in the same
+// frame: the layout pass runs before the frame is displayed.
+- (void)_safeAreaInsetsMayHaveChanged
+{
+  if (!_eventEmitter) {
+    return;
+  }
+
+  if (self.window == nil || CGSizeEqualToSize(self.bounds.size, CGSizeZero)) {
+    return;
+  }
+
+  UIEdgeInsets insets = self.safeAreaInsets;
+  if (_lastSentSafeAreaInsets.top >= 0 &&
+      RCTEdgeInsetsEqualWithThreshold(insets, _lastSentSafeAreaInsets, 1.0 / RCTScreenScale())) {
+    return;
+  }
+
+  _lastSentSafeAreaInsets = insets;
+
+  static_cast<const ViewEventEmitter &>(*_eventEmitter)
+      .onSafeAreaInsetsChange(
+          EdgeInsets{
+              .left = (Float)insets.left,
+              .top = (Float)insets.top,
+              .right = (Float)insets.right,
+              .bottom = (Float)insets.bottom});
+}
+
+- (BOOL)_observesSafeAreaInsets
+{
+  return static_cast<const ViewProps &>(*_props).onSafeAreaInsetsChange;
+}
+
+- (void)safeAreaInsetsDidChange
+{
+  [super safeAreaInsetsDidChange];
+  if ([self _observesSafeAreaInsets]) {
+    [self setNeedsLayout];
+  }
+}
+
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+  if ([self _observesSafeAreaInsets]) {
+    [self setNeedsLayout];
+  }
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  // Moving or resizing the view changes its insets without
+  // `safeAreaInsetsDidChange` firing; that only reports window-level changes.
+  if ([self _observesSafeAreaInsets]) {
+    [self _safeAreaInsetsMayHaveChanged];
+  }
+}
+
 - (BOOL)isJSResponder
 {
   return _isJSResponder;
@@ -757,7 +846,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // Clean up box shadow layers to prevent cross-component contamination
   if (_boxShadowLayers != nullptr) {
-    for (CALayer *boxShadowLayer = nullptr in _boxShadowLayers) {
+    for (CALayer *boxShadowLayer in _boxShadowLayers) {
       [boxShadowLayer removeFromSuperlayer];
     }
     [_boxShadowLayers removeAllObjects];
@@ -775,6 +864,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _filterLayer = nil;
   [self clearExistingBackgroundImageLayers];
 
+  _lastSentSafeAreaInsets = RCTNoSafeAreaInsetsSent;
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
   _eventEmitter.reset();
   _isJSResponder = NO;
@@ -817,7 +907,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     return nil;
   }
 
-  for (UIView *subview = nullptr in [currentContainerView.subviews reverseObjectEnumerator]) {
+  for (UIView *subview in [currentContainerView.subviews reverseObjectEnumerator]) {
     UIView *hitView = [subview hitTest:[subview convertPoint:point fromView:currentContainerView] withEvent:event];
     if (hitView) {
       return hitView;
@@ -975,7 +1065,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     if (_swiftUIWrapper == nullptr) {
       _swiftUIWrapper = [RCTSwiftUIContainerViewWrapper new];
       UIView *swiftUIContentView = [[UIView alloc] init];
-      for (UIView *subview = nullptr in self.subviews) {
+      for (UIView *subview in self.subviews) {
         [swiftUIContentView addSubview:subview];
       }
       swiftUIContentView.clipsToBounds = self.clipsToBounds;
@@ -993,7 +1083,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   } else {
     if (_swiftUIWrapper != nullptr) {
       UIView *swiftUIContentView = _swiftUIWrapper.contentView;
-      for (UIView *subview = nullptr in swiftUIContentView.subviews) {
+      for (UIView *subview in swiftUIContentView.subviews) {
         [self addSubview:subview];
       }
       self.clipsToBounds = swiftUIContentView.clipsToBounds;
@@ -1019,7 +1109,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (_useCustomContainerView) {
     if (!_containerView) {
       _containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height)];
-      for (UIView *subview = nullptr in effectiveContentView.subviews) {
+      for (UIView *subview in effectiveContentView.subviews) {
         [_containerView addSubview:subview];
       }
       _containerView.clipsToBounds = effectiveContentView.clipsToBounds;
@@ -1614,9 +1704,15 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
         addObject:RCTLocalizedString(
                       "mixed", "a checkbox, radio button, or other widget which is both checked and unchecked")];
   }
-  if (accessibilityState.expanded.value_or(false)) {
-    [valueComponents
-        addObject:RCTLocalizedString("expanded", "a menu, dialog, accordian panel, or other widget which is expanded")];
+  if (const auto expanded = accessibilityState.expanded; expanded.has_value()) {
+    if (expanded.value()) {
+      [valueComponents addObject:RCTLocalizedString(
+                                     "expanded", "a menu, dialog, accordian panel, or other widget which is expanded")];
+    } else {
+      [valueComponents
+          addObject:RCTLocalizedString(
+                        "collapsed", "a menu, dialog, accordian panel, or other widget which is collapsed")];
+    }
   }
 
   if (accessibilityState.busy) {
@@ -1805,10 +1901,10 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
   if (_filterLayer != nullptr) {
     [destinationView.layer addSublayer:_filterLayer];
   }
-  for (CALayer *layer = nullptr in _backgroundImageLayers) {
+  for (CALayer *layer in _backgroundImageLayers) {
     [destinationView.layer addSublayer:layer];
   }
-  for (CALayer *layer = nullptr in _boxShadowLayers) {
+  for (CALayer *layer in _boxShadowLayers) {
     [destinationView.layer addSublayer:layer];
   }
 }

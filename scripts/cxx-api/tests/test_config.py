@@ -8,6 +8,7 @@
 import unittest
 
 from ..parser.config import parse_config
+from ..parser.tiers import Tier
 
 
 class TestParseConfig(unittest.TestCase):
@@ -624,6 +625,76 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual(len(result), 2)
         for r in result:
             self.assertEqual(r.exclude_symbols, ["Fantom", "Android"])
+
+    # =========================================================================
+    # Visibility
+    # =========================================================================
+
+    def test_visibility_defaults_to_public(self):
+        """Missing visibility defaults to public only"""
+        result = parse_config({"platforms": {"TestView": {}}}, "/base/dir")
+
+        self.assertEqual(result[0].visibility, frozenset({Tier.PUBLIC}))
+
+    def test_per_platform_visibility_overrides_global(self):
+        """Per-platform visibility replaces the global one"""
+        config = {
+            "visibility": ["public", "frameworks"],
+            "platforms": {
+                "ViewA": {"visibility": ["private"]},
+                "ViewB": {},
+            },
+        }
+        result = parse_config(config, "/base/dir")
+
+        view_a = next(r for r in result if r.snapshot_name == "ViewA")
+        self.assertEqual(view_a.visibility, frozenset({Tier.PRIVATE}))
+
+        view_b = next(r for r in result if r.snapshot_name == "ViewB")
+        self.assertEqual(view_b.visibility, frozenset({Tier.PUBLIC, Tier.FRAMEWORKS}))
+
+    def test_visibility_propagated_to_variants(self):
+        """Visibility applies to every variant of a view"""
+        config = {
+            "platforms": {
+                "TestView": {
+                    "visibility": ["public", "private"],
+                    "variants": {"debug": {}, "release": {}},
+                }
+            }
+        }
+        result = parse_config(config, "/base/dir")
+
+        for r in result:
+            self.assertEqual(r.visibility, frozenset({Tier.PUBLIC, Tier.PRIVATE}))
+
+    def test_variant_visibility_overrides_view(self):
+        """A variant's visibility replaces the view's for that variant only"""
+        config = {
+            "platforms": {
+                "TestView": {
+                    "variants": {
+                        "debug": {},
+                        "frameworks": {"visibility": ["public", "frameworks"]},
+                    },
+                }
+            }
+        }
+        result = parse_config(config, "/base/dir")
+
+        debug = next(r for r in result if r.snapshot_name == "TestViewDebug")
+        self.assertEqual(debug.visibility, frozenset({Tier.PUBLIC}))
+
+        frameworks = next(r for r in result if r.snapshot_name == "TestViewFrameworks")
+        self.assertEqual(
+            frameworks.visibility, frozenset({Tier.PUBLIC, Tier.FRAMEWORKS})
+        )
+
+    def test_unknown_visibility_rejected(self):
+        """An unknown tier name in visibility raises"""
+        config = {"platforms": {"TestView": {"visibility": ["internal"]}}}
+        with self.assertRaises(ValueError):
+            parse_config(config, "/base/dir")
 
     # =========================================================================
     # Variant naming

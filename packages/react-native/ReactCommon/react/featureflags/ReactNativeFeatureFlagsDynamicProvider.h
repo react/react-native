@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e0a3634ebf5db2e89bb5ab26d59a54c1>>
+ * @generated SignedSource<<419516aab11d7e44485bb29e696a75dd>>
  */
 
 /**
@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <folly/dynamic.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
@@ -90,6 +90,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::disableEarlyViewCommandExecution();
+  }
+
+  bool disableIdleMountItemFrameCallbackRearmAndroid() override {
+    auto value = values_["disableIdleMountItemFrameCallbackRearmAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::disableIdleMountItemFrameCallbackRearmAndroid();
   }
 
   bool disableImageViewPreallocationAndroid() override {
@@ -173,6 +182,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableAndroidTextMeasurementOptimizations();
   }
 
+  bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
+    auto value = values_["enableAsyncDiskCacheCheckInMultiSourceImageAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableAsyncDiskCacheCheckInMultiSourceImageAndroid();
+  }
+
   bool enableBridgelessArchitecture() override {
     auto value = values_["enableBridgelessArchitecture"];
     if (!value.isNull()) {
@@ -180,15 +198,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableBridgelessArchitecture();
-  }
-
-  bool enableBufferedCallInvoker() override {
-    auto value = values_["enableBufferedCallInvoker"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableBufferedCallInvoker();
   }
 
   bool enableCppPropsIteratorSetter() override {
@@ -252,6 +261,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableFabricCommitBranching();
+  }
+
+  bool enableFabricCommitBranchingMergeOnMainThread() override {
+    auto value = values_["enableFabricCommitBranchingMergeOnMainThread"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableFabricCommitBranchingMergeOnMainThread();
   }
 
   bool enableFabricLogs() override {
@@ -434,6 +452,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableNativeCSSParsing();
   }
 
+  bool enablePreallocatedPropsDiffOnInsertAndroid() override {
+    auto value = values_["enablePreallocatedPropsDiffOnInsertAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enablePreallocatedPropsDiffOnInsertAndroid();
+  }
+
   bool enablePreparedTextLayout() override {
     auto value = values_["enablePreparedTextLayout"];
     if (!value.isNull()) {
@@ -533,13 +560,13 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableVirtualViewContainerStateExperimental();
   }
 
-  bool fixDifferentiatorParentTagForUnflattenCase() override {
-    auto value = values_["fixDifferentiatorParentTagForUnflattenCase"];
+  bool fixBorderlessRippleAndroid() override {
+    auto value = values_["fixBorderlessRippleAndroid"];
     if (!value.isNull()) {
       return value.getBool();
     }
 
-    return ReactNativeFeatureFlagsDefaults::fixDifferentiatorParentTagForUnflattenCase();
+    return ReactNativeFeatureFlagsDefaults::fixBorderlessRippleAndroid();
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {

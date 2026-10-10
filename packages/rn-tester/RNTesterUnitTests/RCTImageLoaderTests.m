@@ -19,7 +19,7 @@ unsigned char blackGIF[] = {0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01
 RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader2)
     RCTDefineImageDecoder(RCTImageLoaderTestsDecoder1) RCTDefineImageDecoder(RCTImageLoaderTestsDecoder2)
 
-        @interface RCTImageLoaderTestsImageCache : NSObject <RCTImageCache>
+        @interface RCTImageLoaderTestsImageCache : NSObject<RCTImageCache>
 
 @property (nonatomic, strong) UIImage *image;
 @property (nonatomic, copy) NSString *URLString;
@@ -31,10 +31,7 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
 
 @implementation RCTImageLoaderTestsImageCache
 
-- (UIImage *)imageForUrl:(NSString *)url
-                    size:(CGSize)size
-                   scale:(CGFloat)scale
-              resizeMode:(RCTResizeMode)resizeMode
+- (UIImage *)imageForUrl:(NSString *)url size:(CGSize)size scale:(CGFloat)scale resizeMode:(RCTResizeMode)resizeMode
 {
   if (![url isEqualToString:self.URLString] || scale != 1 || resizeMode != RCTResizeModeStretch) {
     return nil;
@@ -79,14 +76,13 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
   imageCache.URLString = @"https://reactnative.dev/img/opengraph.png";
   imageCache.requestedSize = CGSizeMake(100, 100);
 
-  NS_VALID_UNTIL_END_OF_SCOPE RCTImageLoader *imageLoader = [[RCTImageLoader alloc]
-      initWithRedirectDelegate:nil
-               loadersProvider:^NSArray<id<RCTImageURLLoader>> *(__unused RCTModuleRegistry *moduleRegistry) {
-                 return @[];
-               }
-              decodersProvider:^NSArray<id<RCTImageDataDecoder>> *(__unused RCTModuleRegistry *moduleRegistry) {
-                return @[];
-              }];
+  NS_VALID_UNTIL_END_OF_SCOPE RCTImageLoader *imageLoader = [[RCTImageLoader alloc] initWithRedirectDelegate:nil
+      loadersProvider:^NSArray<id<RCTImageURLLoader>> *(__unused RCTModuleRegistry *moduleRegistry) {
+        return @[];
+      }
+      decodersProvider:^NSArray<id<RCTImageDataDecoder>> *(__unused RCTModuleRegistry *moduleRegistry) {
+        return @[];
+      }];
   [imageLoader setImageCache:imageCache];
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Image loaded from cache"];

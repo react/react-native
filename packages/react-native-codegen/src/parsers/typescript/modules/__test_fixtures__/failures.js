@@ -20,8 +20,8 @@ const NATIVE_MODULES_WITH_ARRAY_WITH_NO_TYPE_FOR_CONTENT = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   getString: (arg: string) => Array;
@@ -40,8 +40,8 @@ const NATIVE_MODULES_WITH_ARRAY_WITH_NO_TYPE_FOR_CONTENT_AS_PARAM = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   getString: (arg: Array) => string;
@@ -85,8 +85,8 @@ const NATIVE_MODULES_WITH_UNNAMED_PARAMS = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getBool: (boolean) => boolean;
@@ -166,8 +166,8 @@ const EMPTY_ENUM_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export enum SomeEnum {
 }
@@ -191,8 +191,8 @@ const MIXED_VALUES_ENUM_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export enum SomeEnum {
   NUM = 1,
@@ -218,8 +218,8 @@ const NUMERIC_VALUES_ENUM_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export enum SomeEnum {
   NUM = 1,
@@ -246,8 +246,8 @@ const MAP_WITH_EXTRA_KEYS_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 type MapWithKey = {
   [a: string]: string | null,
@@ -271,8 +271,8 @@ const NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 type Row = {
   buf: ArrayBuffer;
@@ -296,8 +296,8 @@ const NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_EVENT_EMITTER = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly onBuffer: EventEmitter<ArrayBuffer>;

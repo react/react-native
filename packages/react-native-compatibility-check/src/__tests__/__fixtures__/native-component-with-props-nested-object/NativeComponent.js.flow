@@ -8,24 +8,18 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  Float,
-  Int32,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 export type Props = Readonly<{
   ...ViewProps,
   text: string,
-  backgroundColor?: WithDefault<string, 'transparent'>,
-  height?: WithDefault<Int32, 100>,
+  backgroundColor?: CodegenTypes.WithDefault<string, 'transparent'>,
+  height?: CodegenTypes.WithDefault<CodegenTypes.Int32, 100>,
   pins: Readonly<{
-    x: Float,
-    y: Float,
+    x: CodegenTypes.Float,
+    y: CodegenTypes.Float,
   }>,
 }>;
 

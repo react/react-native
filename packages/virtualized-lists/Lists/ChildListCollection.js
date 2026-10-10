@@ -42,6 +42,11 @@ export default class ChildListCollection<TList> {
   }
 
   forEach(fn: TList => void): void {
+    // Fast-path for the common case of a list without nested child lists,
+    // which avoids allocating a Map iterator on every scroll event.
+    if (this._cellKeyToChildren.size === 0) {
+      return;
+    }
     for (const listSet of this._cellKeyToChildren.values()) {
       for (const list of listSet) {
         fn(list);

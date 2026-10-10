@@ -8,23 +8,15 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  BubblingEventHandler,
-  DirectEventHandler,
-  Float,
-  Int32,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 type OnChangeEvent = Readonly<{
   value: boolean,
   source?: string,
-  progress: ?Int32,
-  scale?: ?Float,
+  progress: ?CodegenTypes.Int32,
+  scale?: ?CodegenTypes.Float,
 }>;
 
 type OnEventDirect = Readonly<{
@@ -39,21 +31,24 @@ type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
-  disabled?: WithDefault<boolean, false>,
+  disabled?: CodegenTypes.WithDefault<boolean, false>,
 
   // Events
-  onChange?: ?BubblingEventHandler<OnChangeEvent, 'paperDirectName'>,
-  onEventDirect?: ?DirectEventHandler<OnEventDirect>,
-  onEventDirectWithPaperName?: ?DirectEventHandler<
+  onChange?: ?CodegenTypes.BubblingEventHandler<
+    OnChangeEvent,
+    'paperDirectName',
+  >,
+  onEventDirect?: ?CodegenTypes.DirectEventHandler<OnEventDirect>,
+  onEventDirectWithPaperName?: ?CodegenTypes.DirectEventHandler<
     OnEventDirect,
     'paperDirectName',
   >,
-  onOrientationChange?: ?DirectEventHandler<
+  onOrientationChange?: ?CodegenTypes.DirectEventHandler<
     OnOrientationChangeEvent,
     'paperBubblingName',
   >,
-  onEnd?: ?BubblingEventHandler<null>,
-  onEventBubblingWithPaperName?: ?BubblingEventHandler<
+  onEnd?: ?CodegenTypes.BubblingEventHandler<null>,
+  onEventBubblingWithPaperName?: ?CodegenTypes.BubblingEventHandler<
     null,
     'paperBubblingName',
   >,

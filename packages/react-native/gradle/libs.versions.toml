@@ -1,12 +1,13 @@
 [versions]
 # Android versions
 minSdk = "24"
-targetSdk = "36"
+targetSdk = "37"
 compileSdk = "37"
 buildTools = "37.0.0"
-ndkVersion = "27.1.12297006"
+ndkVersion = "28.2.13676358"
 # Dependencies versions
 agp = "9.2.1"
+androidx-activity = "1.10.1"
 androidx-annotation = "1.6.0"
 androidx-appcompat = "1.7.0"
 androidx-autofill = "1.3.0"
@@ -22,15 +23,15 @@ assertj = "3.21.0"
 binary-compatibility-validator = "0.13.2"
 download = "5.4.0"
 espresso-core = "3.6.1"
-fbjni = "0.7.0"
-fresco = "3.7.0"
+fbjni = "0.8.1"
+fresco = "3.9.0"
 infer-annotation = "0.18.0"
 javax-annotation-api = "1.3.2"
 javax-inject = "1"
 jsc-android = "2026004.0.1"
 jsr305 = "3.0.2"
 junit = "4.13.2"
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 mockito = "3.12.4"
 mockito-kotlin = "3.2.0"
 nexus-publish = "2.0.0"
@@ -52,6 +53,7 @@ gflags="2.2.0"
 nlohmannjson="3.11.2"
 
 [libraries]
+androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-appcompat-resources = { module = "androidx.appcompat:appcompat-resources", version.ref = "androidx-appcompat" }

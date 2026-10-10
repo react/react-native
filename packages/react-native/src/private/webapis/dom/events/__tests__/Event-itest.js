@@ -10,11 +10,14 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import Event from 'react-native/src/private/webapis/dom/events/Event';
 import {
   setEventInitTimeStamp,
   setInPassiveListenerFlag,
-} from 'react-native/src/private/webapis/dom/events/internals/EventInternals';
+} from '../internals/EventInternals';
+
+type EventOptions = EventInit & {
+  rnIsDirect?: boolean,
+};
 
 describe('Event', () => {
   it('provides read-only constants for event phases', () => {
@@ -109,6 +112,7 @@ describe('Event', () => {
     );
 
     expect(() => {
+      // $FlowFixMe[incompatible-type] The React Native implementation accepts null.
       return new Event('custom', null);
     }).not.toThrow();
 
@@ -121,13 +125,12 @@ describe('Event', () => {
     }).not.toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-exact]
-      // $FlowExpectedError[prop-missing]
+      // $FlowExpectedError[incompatible-type]
       return new Event('custom', class {});
     }).not.toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-exact]
+      // $FlowExpectedError[incompatible-type]
       return new Event('custom', () => {});
     }).not.toThrow();
   });
@@ -238,7 +241,7 @@ describe('Event', () => {
 
   it('should use a custom timestamp when set via setEventInitTimeStamp', () => {
     const customTimestamp = 12345.678;
-    const options = {};
+    const options: EventOptions = {};
     setEventInitTimeStamp(options, customTimestamp);
     const event = new Event('custom', options);
 
@@ -246,7 +249,7 @@ describe('Event', () => {
   });
 
   it('should accept zero as a valid custom timestamp', () => {
-    const options = {};
+    const options: EventOptions = {};
     setEventInitTimeStamp(options, 0);
     const event = new Event('custom', options);
 
@@ -300,6 +303,7 @@ describe('Event', () => {
 
       expect(event.defaultPrevented).toBe(false);
 
+      // $FlowFixMe[incompatible-type] The global is backed by this implementation.
       setInPassiveListenerFlag(event, true);
 
       event.preventDefault();

@@ -9,12 +9,15 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/Timing.h>
+
 #include <jsi/jsi.h>
-#include <react/renderer/core/RawValue.h>
+
+#include <memory>
+#include <string>
+
 #include <react/renderer/uimanager/PointerEventsProcessor.h>
 #include <react/renderer/uimanager/UIManager.h>
-#include <react/renderer/uimanager/primitives.h>
-#include <react/timing/primitives.h>
 
 namespace facebook::react {
 

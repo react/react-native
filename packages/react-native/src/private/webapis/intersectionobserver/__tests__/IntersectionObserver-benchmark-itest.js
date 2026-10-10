@@ -4,35 +4,31 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_flags enableIntersectionObserverByDefault:true
  * @flow strict-local
  * @format
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import type IntersectionObserverType from '../IntersectionObserver';
 import type {Root} from '@react-native/fantom';
 import type {HostInstance} from 'react-native';
-import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
 
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import ScrollView from 'react-native/Libraries/Components/ScrollView/ScrollView';
-import View from 'react-native/Libraries/Components/View/View';
-import setUpIntersectionObserver from 'react-native/src/private/setup/setUpIntersectionObserver';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
+import {ScrollView, View} from 'react-native';
 
 declare const IntersectionObserver: Class<IntersectionObserverType>;
 
-setUpIntersectionObserver();
-
 const nodeRef = createRef<HostInstance>();
-let node: ReactNativeElement;
+let node: HostInstance;
 const rootRef = createRef<HostInstance>();
-let rootNode: ReactNativeElement;
+let rootNode: HostInstance;
 const scrollViewRef = createRef<HostInstance>();
-let scrollViewNode: ReactNativeElement;
+let scrollViewNode: HostInstance;
 let observer: IntersectionObserverType;
 const VIEWPORT_HEIGHT = 100;
 const VIEWPORT_WIDTH = 100;
@@ -52,7 +48,7 @@ function cleanup(renderedRoot: Root, testObserver: ?IntersectionObserverType) {
 }
 
 // Scroll yOffset 1px at a time
-function scrollBy1(scrollNode: ReactNativeElement, yOffset: number) {
+function scrollBy1(scrollNode: HostInstance, yOffset: number) {
   for (let i = 1; i <= yOffset; i++) {
     Fantom.scrollTo(scrollNode, {
       x: 0,

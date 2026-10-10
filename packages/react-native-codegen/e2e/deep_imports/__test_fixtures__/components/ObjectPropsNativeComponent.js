@@ -8,18 +8,16 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {ImageSource} from 'react-native/Libraries/Image/ImageSource';
-import type {ColorValue} from 'react-native/Libraries/StyleSheet/StyleSheet';
-import type {PointValue} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
 import type {
-  Float,
-  Int32,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+  CodegenTypes,
+  ColorValue,
+  HostComponent,
+  ImageSource,
+  PointValue,
+  ViewProps,
+} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 type ObjectArrayPropType = Readonly<{
   array: ReadonlyArray<string>,
@@ -30,12 +28,12 @@ type NativeProps = Readonly<{
 
   // Props
   objectProp?: Readonly<{
-    stringProp?: WithDefault<string, ''>,
+    stringProp?: CodegenTypes.WithDefault<string, ''>,
     booleanProp: boolean,
-    floatProp: Float,
-    intProp: Int32,
-    stringEnumProp?: WithDefault<'small' | 'large', 'small'>,
-    intEnumProp?: WithDefault<0 | 1, 0>,
+    floatProp: CodegenTypes.Float,
+    intProp: CodegenTypes.Int32,
+    stringEnumProp?: CodegenTypes.WithDefault<'small' | 'large', 'small'>,
+    intEnumProp?: CodegenTypes.WithDefault<0 | 1, 0>,
   }>,
   objectArrayProp: ObjectArrayPropType,
   objectPrimitiveRequiredProp: Readonly<{

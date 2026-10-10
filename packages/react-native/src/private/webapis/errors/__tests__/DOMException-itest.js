@@ -10,7 +10,7 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import DOMException from 'react-native/src/private/webapis/errors/DOMException';
+import DOMException from '../DOMException';
 
 describe('DOMException', () => {
   it('provides error codes as static fields and instance fields', () => {

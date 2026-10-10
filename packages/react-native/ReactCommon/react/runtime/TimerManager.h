@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/RuntimeExecutor.h>
+#include <React/RuntimeExecutor.h>
 #include <unordered_map>
 #include <vector>
 

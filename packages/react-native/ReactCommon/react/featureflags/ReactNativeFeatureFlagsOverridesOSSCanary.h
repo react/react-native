@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c26b8f81fcc99469d0535a89bac18280>>
+ * @generated SignedSource<<4b66991416806affd46aab79e36c4a45>>
  */
 
 /**
@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <react/featureflags/ReactNativeFeatureFlagsOverridesOSSStable.h>
 
@@ -46,6 +46,10 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
   }
 
   bool enableSwiftUIBasedFilters() override {
+    return true;
+  }
+
+  bool fixBorderlessRippleAndroid() override {
     return true;
   }
 

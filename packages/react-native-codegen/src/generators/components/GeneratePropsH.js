@@ -561,17 +561,14 @@ function getExtendsImports(
 ): Set<string> {
   const imports: Set<string> = new Set();
 
-  imports.add('#include <react/renderer/core/PropsParserContext.h>');
-  imports.add('#include <react/renderer/debug/DebugStringConvertible.h>');
+  imports.add('#include <React/RendererCore.h>');
 
   extendsProps.forEach(extendProps => {
     switch (extendProps.type) {
       case 'ReactNativeBuiltInType':
         switch (extendProps.knownTypeName) {
           case 'ReactNativeCoreViewProps':
-            imports.add(
-              '#include <react/renderer/components/view/ViewProps.h>',
-            );
+            imports.add('#include <React/View.h>');
             return;
           default:
             extendProps.knownTypeName as empty;

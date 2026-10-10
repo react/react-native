@@ -51,7 +51,6 @@ module.exports = {
       files: [
         './packages/react-native/Libraries/**/*.{js,flow}',
         './packages/react-native/src/**/*.{js,flow}',
-        './packages/assets-registry/registry.js',
       ],
       parser: 'flow-eslint',
       rules: {

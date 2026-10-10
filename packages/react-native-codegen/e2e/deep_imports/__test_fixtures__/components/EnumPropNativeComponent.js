@@ -8,18 +8,19 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {WithDefault} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
-  alignment?: WithDefault<'top' | 'center' | 'bottom-right', 'center'>,
-  intervals?: WithDefault<0 | 15 | 30 | 60, 0>,
+  alignment?: CodegenTypes.WithDefault<
+    'top' | 'center' | 'bottom-right',
+    'center',
+  >,
+  intervals?: CodegenTypes.WithDefault<0 | 15 | 30 | 60, 0>,
 }>;
 
 export default codegenNativeComponent<NativeProps>(

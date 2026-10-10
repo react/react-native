@@ -32,51 +32,107 @@ internal object MultiSourceHelper {
       height: Int,
       sources: List<ImageSource>,
       multiplier: Double,
+  ): MultiSourceResult =
+      getBestSourceForSize(width, height, sources, multiplier, checkDiskCache = true)
+
+  @JvmStatic
+  fun getBestSourceForSize(
+      width: Int,
+      height: Int,
+      sources: List<ImageSource>,
+      multiplier: Double,
+      checkDiskCache: Boolean,
   ): MultiSourceResult {
-    // no sources
     if (sources.isEmpty()) {
       return MultiSourceResult(null, null)
     }
-
-    // single source
     if (sources.size == 1) {
       return MultiSourceResult(sources[0], null)
     }
-
-    // For multiple sources, we first need the view's size in order to determine the best source to
-    // load. If we haven't been measured yet, return null and wait for onSizeChanged.
     if (width <= 0 || height <= 0) {
       return MultiSourceResult(null, null)
     }
+
     val imagePipeline = ImagePipelineFactory.getInstance().imagePipeline
-    var best: ImageSource? = null
-    var bestCached: ImageSource? = null
+    val best = findBestSourceForSize(width, height, sources, multiplier)
+    val bestCached =
+        findBestCachedSourceForSize(width, height, sources, multiplier) { source ->
+          imagePipeline.isInBitmapMemoryCache(source.uri) ||
+              (checkDiskCache && imagePipeline.isInDiskCacheSync(source.uri))
+        }
+    // The best source is already the primary request, so do not submit it again as a cache preview.
+    val bestResultInCache = bestCached.takeUnless { it?.source == best?.source }
+    if (checkDiskCache) {
+      return MultiSourceResult(best, bestResultInCache)
+    }
+
+    return MultiSourceResult(
+        best,
+        bestResultInCache,
+        diskCacheProbeCandidates =
+            findDiskCacheProbeSources(width, height, sources, multiplier, best, bestCached),
+    )
+  }
+
+  internal fun findDiskCacheProbeSources(
+      width: Int,
+      height: Int,
+      sources: List<ImageSource>,
+      multiplier: Double,
+      best: ImageSource?,
+      bestCached: ImageSource?,
+  ): List<ImageSource> {
     val viewArea = width * height * multiplier
-    var bestPrecision = Double.MAX_VALUE
+    val bestCachedPrecision = bestCached?.let { source -> abs(1.0 - source.size / viewArea) }
+    val diskCacheProbeSources = ArrayList<ImageSource>(sources.size)
+    for (source in sources) {
+      val precision = abs(1.0 - source.size / viewArea)
+      if (
+          source.cacheControl != ImageCacheControl.RELOAD &&
+              source.source != best?.source &&
+              (source.source == bestCached?.source ||
+                  bestCachedPrecision == null ||
+                  precision < bestCachedPrecision)
+      ) {
+        diskCacheProbeSources.add(source)
+      }
+    }
+    diskCacheProbeSources.sortBy { source -> abs(1.0 - source.size / viewArea) }
+    return diskCacheProbeSources
+  }
+
+  private fun findBestSourceForSize(
+      width: Int,
+      height: Int,
+      sources: List<ImageSource>,
+      multiplier: Double,
+  ): ImageSource? {
+    val viewArea = width * height * multiplier
+    return sources.minByOrNull { source -> abs(1.0 - source.size / viewArea) }
+  }
+
+  private fun findBestCachedSourceForSize(
+      width: Int,
+      height: Int,
+      sources: List<ImageSource>,
+      multiplier: Double,
+      isCached: (ImageSource) -> Boolean,
+  ): ImageSource? {
+    val viewArea = width * height * multiplier
+    var bestCached: ImageSource? = null
     var bestCachePrecision = Double.MAX_VALUE
     for (source in sources) {
       val precision = abs(1.0 - source.size / viewArea)
-      if (precision < bestPrecision) {
-        bestPrecision = precision
-        best = source
-      }
       if (
           precision < bestCachePrecision &&
               source.cacheControl != ImageCacheControl.RELOAD &&
-              (imagePipeline.isInBitmapMemoryCache(source.uri) ||
-                  // TODO: T206445115 isInDiskCacheSync is a blocking operation, we should move this
-                  // to
-                  // a separate thread
-                  imagePipeline.isInDiskCacheSync(source.uri))
+              isCached(source)
       ) {
         bestCachePrecision = precision
         bestCached = source
       }
     }
-    if (bestCached != null && best != null && bestCached.source == best.source) {
-      bestCached = null
-    }
-    return MultiSourceResult(best, bestCached)
+    return bestCached
   }
 
   class MultiSourceResult(
@@ -90,5 +146,10 @@ internal object MultiSourceHelper {
        * would be the same as the source from [getBestResult], this will return `null` instead.
        */
       @JvmField val bestResultInCache: ImageSource?,
+      /**
+       * Sources to probe using disk-cache-only requests, ordered from closest to least precise for
+       * the view size. A source in this list is not known to be cached until its probe succeeds.
+       */
+      @JvmField val diskCacheProbeCandidates: List<ImageSource> = emptyList(),
   )
 }

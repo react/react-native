@@ -13,11 +13,11 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
+import NativeFantomTestSpecificMethods from '../../../testing/fantom/specs/NativeFantomTestSpecificMethods';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {View} from 'react-native';
-import NativeFantomTestSpecificMethods from 'react-native/src/private/testing/fantom/specs/NativeFantomTestSpecificMethods';
 
 describe('ShadowTreeBranching', () => {
   function LayoutEffectObserver({onCommit}: {onCommit: () => void}) {

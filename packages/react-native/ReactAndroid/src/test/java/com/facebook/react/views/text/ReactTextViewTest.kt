@@ -21,8 +21,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
+import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -31,6 +34,16 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class ReactTextViewTest {
+
+  @Before
+  fun setUp() {
+    DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(RuntimeEnvironment.getApplication())
+  }
+
+  @After
+  fun tearDown() {
+    DisplayMetricsHolder.setScreenDisplayMetrics(null)
+  }
 
   @Test
   fun drawsGlyphInkOutsideLineHeightWhenOverflowIsVisible() {
@@ -70,7 +83,7 @@ class ReactTextViewTest {
             ViewGroup.LayoutParams.WRAP_CONTENT,
         )
     view.setTextColor(Color.BLACK)
-    view.setMinimumFontSize(4f)
+    view.setMinimumFontScale(0.1f)
     view.setNumberOfLines(0)
     view.setAdjustFontSizeToFit(true)
     view.setSpanned(text)

@@ -266,6 +266,55 @@ describe('R11 redirect shims for dual-identity headers', () => {
   });
 });
 
+describe('R12 namespace module umbrellas stay in ReactNativeHeaders', () => {
+  test('a module-nested React/ umbrella is not hoisted into the framework', () => {
+    const m = validManifest();
+    m.headers.push(
+      entry(
+        'React/Debug.h',
+        'objc-blocked',
+        'ReactCommon/react/debug/React/Debug.h',
+      ),
+    );
+    const plan = planFromInventoryForTest(m);
+    // Lower layer: including it from a react/-namespace header cannot create a
+    // React module edge (React -> ReactNativeHeaders_react -> React).
+    expect(
+      plan.reactNativeHeaders.find(e => e.naturalPath === 'React/Debug.h')
+        ?.relPath,
+    ).toBe('React/Debug.h');
+    expect(
+      plan.react.find(e => e.naturalPath === 'React/Debug.h'),
+    ).toBeUndefined();
+    expect(plan.umbrella).not.toContain('React/Debug.h');
+    expect(Object.keys(plan.namespaceModules)).not.toContain('React');
+  });
+
+  test('genuine React.framework headers are still hoisted (R1)', () => {
+    const m = validManifest();
+    m.headers.push(
+      entry('React/RCTMessageThread.h', 'cxx', 'React/Base/RCTMessageThread.h'),
+    );
+    const plan = planFromInventoryForTest(m);
+    expect(
+      plan.react.find(e => e.naturalPath === 'React/RCTMessageThread.h')
+        ?.relPath,
+    ).toBe('RCTMessageThread.h');
+  });
+
+  test('fails closed if an R12 umbrella becomes a modular candidate', () => {
+    const m = validManifest();
+    m.headers.push(
+      entry(
+        'React/Debug.h',
+        'objc-modular-candidate',
+        'ReactCommon/react/debug/React/Debug.h',
+      ),
+    );
+    expect(() => planFromInventoryForTest(m)).toThrow(/R12/);
+  });
+});
+
 describe('DEPS_NAMESPACES (R2 — the deps sidecar namespace set)', () => {
   test('includes SocketRocket: one physical home, in the sidecar', () => {
     // Pre-sidecar, SocketRocket was excluded from relocation because a REAL

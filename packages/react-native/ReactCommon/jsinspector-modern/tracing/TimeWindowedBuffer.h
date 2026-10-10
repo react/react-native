@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <algorithm>
 #include <functional>
 #include <optional>
 #include <vector>
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 
 namespace facebook::react::jsinspector_modern::tracing {
 

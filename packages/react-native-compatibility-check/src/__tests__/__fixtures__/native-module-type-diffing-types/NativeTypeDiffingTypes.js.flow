@@ -9,10 +9,12 @@
 
 /* eslint-disable no-unused-vars */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import type {UnsafeObject} from 'react-native/Libraries/Types/CodegenTypes';
+import type {
+  CodegenTypes,
+  TurboModule,
+} from 'react-native';
 
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {TurboModuleRegistry} from 'react-native';
 
 type StringLiteral0 = 'foo';
 type StringLiteral1 = 'bar';
@@ -108,7 +110,7 @@ type NonNullableType = Object;
 type NullableType = ?Object;
 
 type GenericObjectType = Object;
-type UnsafeObjectType = UnsafeObject;
+type UnsafeObjectType = CodegenTypes.UnsafeObject;
 
 type OptionalTypeLessProps = ?{
   prop1: string,

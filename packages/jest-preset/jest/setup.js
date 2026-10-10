@@ -28,7 +28,7 @@ Object.defineProperties(global, {
   cancelAnimationFrame: {
     configurable: true,
     enumerable: true,
-    value(id: TimeoutID): void {
+    value(id: ReturnType<typeof setTimeout>): void {
       return clearTimeout(id);
     },
     writable: true,
@@ -44,6 +44,7 @@ Object.defineProperties(global, {
     enumerable: true,
     value: {
       // $FlowFixMe[method-unbinding]
+      // $FlowFixMe[incompatible-type]
       now: jest.fn(Date.now),
     },
     writable: true,
@@ -57,7 +58,7 @@ Object.defineProperties(global, {
   requestAnimationFrame: {
     configurable: true,
     enumerable: true,
-    value(callback: number => void): TimeoutID {
+    value(callback: number => void): ReturnType<typeof setTimeout> {
       return setTimeout(() => callback(jest.now()), 0);
     },
     writable: true,
@@ -87,92 +88,119 @@ try {
 } catch {}
 
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/AppState/AppState',
   // $FlowFixMe[incompatible-type] - `./mocks/AppState` is incomplete.
   'm#./mocks/AppState',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/BatchedBridge/NativeModules',
   'm#./mocks/NativeModules',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo',
   'm#./mocks/AccessibilityInfo',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/ActivityIndicator/ActivityIndicator',
   'm#./mocks/ActivityIndicator',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/Clipboard/Clipboard',
   'm#./mocks/Clipboard',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/RefreshControl/RefreshControl',
   // $FlowFixMe[incompatible-type] - `react-native/Libraries/Components/RefreshControl/RefreshControl` should export a component type.
   'm#./mocks/RefreshControl',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/ScrollView/ScrollView',
   // $FlowFixMe[incompatible-exact] - `react-native/Libraries/Components/ScrollView/ScrollView` is... I don't even.
   // $FlowFixMe[incompatible-type]
   'm#./mocks/ScrollView',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/TextInput/TextInput',
   'm#./mocks/TextInput',
 );
+// $FlowFixMe[cannot-resolve-module]
 mock('m#react-native/Libraries/Components/View/View', 'm#./mocks/View');
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/View/ViewNativeComponent',
   // $FlowFixMe[incompatible-type] - `./mocks/ViewNativeComponent` is incomplete.
   // $FlowFixMe[prop-missing]
   'm#./mocks/ViewNativeComponent',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Core/InitializeCore',
   'm#./mocks/InitializeCore',
 );
 mock('m#react-native/setup-env', 'm#./mocks/InitializeCore');
+// $FlowFixMe[cannot-resolve-module]
 mock('m#react-native/Libraries/Core/NativeExceptionsManager');
+// $FlowFixMe[cannot-resolve-module]
 mock('m#react-native/Libraries/Image/Image', 'm#./mocks/Image');
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Linking/Linking',
   // $FlowFixMe[incompatible-type] - `./mocks/Linking` is incomplete.
   'm#./mocks/Linking',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Modal/Modal',
   // $FlowFixMe[incompatible-type] - `react-native/Libraries/Modal/Modal` should export a component type.
   'm#./mocks/Modal',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/NativeComponent/NativeComponentRegistry',
   // $FlowFixMe[incompatible-type] - `./mocks/NativeComponentRegistry` should export named functions.
   'm#./mocks/NativeComponentRegistry',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/ReactNative/RendererProxy',
   // $FlowFixMe[incompatible-type] - `./mocks/RendererProxy` is incomplete.
   'm#./mocks/RendererProxy',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/ReactNative/requireNativeComponent',
   'm#./mocks/requireNativeComponent',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/ReactNative/UIManager',
   // $FlowFixMe[incompatible-type] - `./mocks/UIManager` is incomplete.
   'm#./mocks/UIManager',
 );
+// $FlowFixMe[cannot-resolve-module]
 mock('m#react-native/Libraries/Text/Text', 'm#./mocks/Text');
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Utilities/useColorScheme',
   // $FlowFixMe[react-rule-hook-incompatible]
   'm#./mocks/useColorScheme',
 );
 mock(
+  // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Vibration/Vibration',
   // $FlowFixMe[incompatible-type]
   'm#./mocks/Vibration',
+);
+mock(
+  // $FlowFixMe[cannot-resolve-module]
+  'm#react-native/src/private/animated/NativeAnimatedHelper',
+  'm#./mocks/NativeAnimatedHelper',
 );

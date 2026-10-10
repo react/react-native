@@ -7,9 +7,9 @@
 
 #pragma once
 
+#include <React/ComponentRegistry.h>
 #include <fbjni/fbjni.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
-#include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 
 namespace facebook::react {
 

@@ -12,10 +12,15 @@
 
 const React = require('react');
 const ReactNative = require('react-native');
-const nativeImageSource =
-  require('react-native/Libraries/Image/nativeImageSource').default;
 
 const {Image, StyleSheet, Text, View} = ReactNative;
+
+const storyBackgroundSource = {
+  deprecated: true,
+  uri: 'story-background',
+  width: 60,
+  height: 60,
+};
 
 type Props = Readonly<{}>;
 class ImageCapInsetsExample extends React.Component<Props> {
@@ -25,11 +30,7 @@ class ImageCapInsetsExample extends React.Component<Props> {
         <View style={styles.background}>
           <Text>capInsets: none</Text>
           <Image
-            source={nativeImageSource({
-              ios: 'story-background',
-              width: 60,
-              height: 60,
-            })}
+            source={storyBackgroundSource}
             style={styles.storyBackground}
             resizeMode="stretch"
             capInsets={{left: 0, right: 0, bottom: 0, top: 0}}
@@ -38,11 +39,7 @@ class ImageCapInsetsExample extends React.Component<Props> {
         <View style={[styles.background, {paddingTop: 10}]}>
           <Text>capInsets: 15</Text>
           <Image
-            source={nativeImageSource({
-              ios: 'story-background',
-              width: 60,
-              height: 60,
-            })}
+            source={storyBackgroundSource}
             style={styles.storyBackground}
             resizeMode="stretch"
             capInsets={{left: 15, right: 15, bottom: 15, top: 15}}

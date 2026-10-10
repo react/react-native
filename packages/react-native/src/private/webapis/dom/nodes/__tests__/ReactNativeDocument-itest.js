@@ -19,9 +19,6 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {View} from 'react-native';
-import ReactNativeDocument from 'react-native/src/private/webapis/dom/nodes/ReactNativeDocument';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
-import ReadOnlyNode from 'react-native/src/private/webapis/dom/nodes/ReadOnlyNode';
 
 describe('ReactNativeDocument', () => {
   it('is connected until the surface is destroyed', () => {
@@ -33,7 +30,7 @@ describe('ReactNativeDocument', () => {
     });
 
     const element = nullthrows(nodeRef.current);
-    const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
+    const document = ensureInstance(element.ownerDocument, Document);
 
     expect(document.isConnected).toBe(true);
 
@@ -59,14 +56,15 @@ describe('ReactNativeDocument', () => {
     });
 
     const element = nullthrows(nodeRef.current);
-    const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
+    const document = ensureInstance(element.ownerDocument, Document);
+    const documentElement = nullthrows(document.documentElement);
 
     expect(document.childNodes.length).toBe(1);
-    expect(document.childNodes[0]).toBe(document.documentElement);
-    expect(document.documentElement.parentNode).toBe(document);
-    expect(document.documentElement.childNodes.length).toBe(1);
-    expect(document.documentElement.childNodes[0]).toBe(element);
-    expect(element.parentNode).toBe(document.documentElement);
+    expect(document.childNodes[0]).toBe(documentElement);
+    expect(documentElement.parentNode).toBe(document);
+    expect(documentElement.childNodes.length).toBe(1);
+    expect(documentElement.childNodes[0]).toBe(element);
+    expect(element.parentNode).toBe(documentElement);
   });
 
   it('allows traversal through document-specific methods', () => {
@@ -78,7 +76,7 @@ describe('ReactNativeDocument', () => {
     });
 
     const element = nullthrows(nodeRef.current);
-    const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
+    const document = ensureInstance(element.ownerDocument, Document);
 
     expect(document.childElementCount).toBe(1);
     expect(document.firstElementChild).toBe(document.documentElement);
@@ -96,10 +94,10 @@ describe('ReactNativeDocument', () => {
     });
 
     const element = nullthrows(nodeRef.current);
-    const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
+    const document = ensureInstance(element.ownerDocument, Document);
 
     expect(document.nodeName).toBe('#document');
-    expect(document.nodeType).toBe(ReadOnlyNode.DOCUMENT_NODE);
+    expect(document.nodeType).toBe(Node.DOCUMENT_NODE);
     expect(document.nodeValue).toBe(null);
     expect(document.textContent).toBe(null);
   });
@@ -118,19 +116,19 @@ describe('ReactNativeDocument', () => {
     });
 
     const element = nullthrows(nodeRef.current);
-    const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
+    const document = ensureInstance(element.ownerDocument, Document);
+    const documentElement = nullthrows(document.documentElement);
 
-    const {x, y, width, height} =
-      document.documentElement.getBoundingClientRect();
+    const {x, y, width, height} = documentElement.getBoundingClientRect();
 
     expect(x).toBe(111);
     expect(y).toBe(222);
     expect(width).toBe(200);
     expect(height).toBe(100);
 
-    expect(document.documentElement.offsetParent).toBe(null);
-    expect(document.documentElement.offsetTop).toBe(0);
-    expect(document.documentElement.offsetLeft).toBe(0);
+    expect(documentElement.offsetParent).toBe(null);
+    expect(documentElement.offsetTop).toBe(0);
+    expect(documentElement.offsetLeft).toBe(0);
   });
 
   it('implements compareDocumentPosition correctly', () => {
@@ -141,42 +139,32 @@ describe('ReactNativeDocument', () => {
       root.render(<View ref={nodeRef} />);
     });
 
-    const element = nullthrows(nodeRef.current);
-    const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
-    const documentElement = document.documentElement;
+    const element = ensureInstance(nodeRef.current, Element);
+    const document = ensureInstance(element.ownerDocument, Document);
+    const documentElement = nullthrows(document.documentElement);
 
     /* eslint-disable no-bitwise */
 
     expect(document.compareDocumentPosition(document)).toBe(0);
-    expect(
-      document.documentElement.compareDocumentPosition(
-        document.documentElement,
-      ),
-    ).toBe(0);
+    expect(documentElement.compareDocumentPosition(documentElement)).toBe(0);
 
     expect(document.compareDocumentPosition(documentElement)).toBe(
-      ReadOnlyNode.DOCUMENT_POSITION_CONTAINED_BY |
-        ReadOnlyNode.DOCUMENT_POSITION_FOLLOWING,
+      Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(document.compareDocumentPosition(element)).toBe(
-      ReadOnlyNode.DOCUMENT_POSITION_CONTAINED_BY |
-        ReadOnlyNode.DOCUMENT_POSITION_FOLLOWING,
+      Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(documentElement.compareDocumentPosition(document)).toBe(
-      ReadOnlyNode.DOCUMENT_POSITION_CONTAINS |
-        ReadOnlyNode.DOCUMENT_POSITION_PRECEDING,
+      Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING,
     );
     expect(documentElement.compareDocumentPosition(element)).toBe(
-      ReadOnlyNode.DOCUMENT_POSITION_CONTAINED_BY |
-        ReadOnlyNode.DOCUMENT_POSITION_FOLLOWING,
+      Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(element.compareDocumentPosition(document)).toBe(
-      ReadOnlyNode.DOCUMENT_POSITION_CONTAINS |
-        ReadOnlyNode.DOCUMENT_POSITION_PRECEDING,
+      Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING,
     );
     expect(element.compareDocumentPosition(documentElement)).toBe(
-      ReadOnlyNode.DOCUMENT_POSITION_CONTAINS |
-        ReadOnlyNode.DOCUMENT_POSITION_PRECEDING,
+      Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING,
     );
   });
 
@@ -192,10 +180,7 @@ describe('ReactNativeDocument', () => {
     let maybeWeakDocument;
     Fantom.runTask(() => {
       maybeWeakDocument = new WeakRef(
-        ensureInstance(
-          nullthrows(nodeRef.current).ownerDocument,
-          ReactNativeDocument,
-        ),
+        ensureInstance(nullthrows(nodeRef.current).ownerDocument, Document),
       );
       maybeWeakNode = new WeakRef(nullthrows(nodeRef.current));
     });
@@ -257,11 +242,8 @@ describe('ReactNativeDocument', () => {
         );
       });
 
-      const element = ensureInstance(lastNode, ReactNativeElement);
-      const document = ensureInstance(
-        element.ownerDocument,
-        ReactNativeDocument,
-      );
+      const element = ensureInstance(lastNode, Element);
+      const document = ensureInstance(element.ownerDocument, Document);
 
       expect(document.getElementById('foo')).toBe(fooNode);
       expect(document.getElementById('bar')).toBe(barFirstNode);

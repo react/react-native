@@ -397,8 +397,11 @@ end
 # - url: The URL of the Swift Package Manager dependency
 # - requirement: The version requirement of the Swift Package Manager dependency (eg. ` {kind: 'upToNextMajorVersion', minimumVersion: '5.9.1'},`)
 # - products: The product/target of the Swift Package Manager dependency (eg. AlamofireDynamic)
-def spm_dependency(spec, url:, requirement:, products:)
-  SPM.dependency(spec, url: url, requirement: requirement, products: products)
+# - embed_frameworks: The names of the dynamic frameworks the products load, including those of the packages they depend
+#   on, embedded in the app (eg. Sentry for the Sentry-Dynamic product; MapboxCommon, MapboxCoreMaps and Turf for
+#   MapboxMaps). Defaults to the product names. A name that matches no framework is not reported
+def spm_dependency(spec, url:, requirement:, products:, embed_frameworks: products)
+  SPM.dependency(spec, url: url, requirement: requirement, products: products, embed_frameworks: embed_frameworks)
 end
 
 # It returns the default flags.

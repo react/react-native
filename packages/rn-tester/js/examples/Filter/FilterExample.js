@@ -11,7 +11,7 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
+import type {StyleProp, ViewStyle} from 'react-native';
 
 import * as React from 'react';
 import {useState} from 'react';
@@ -29,7 +29,7 @@ const alphaHotdog = require('../../assets/alpha-hotdog.png');
 const hotdog = require('../../assets/hotdog.jpg');
 
 type Props = Readonly<{
-  style?: ViewStyleProp,
+  style?: StyleProp<ViewStyle>,
   testID?: string,
   imageSource?: number,
 }>;

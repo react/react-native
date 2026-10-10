@@ -9,19 +9,14 @@
  */
 
 import type {HostInstance} from 'react-native';
-import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
-import type IntersectionObserverEntry from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserverEntry';
 
 import * as React from 'react';
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import {Button, StyleSheet, Text, TextInput, View} from 'react-native';
-import DOMRectReadOnly from 'react-native/src/private/webapis/geometry/DOMRectReadOnly';
 
 export const name = 'IntersectionObserver Parent Clipping Example';
 export const title = name;
 export const description = 'A clipping parent clips both the root and target';
-
-declare var IntersectionObserver: Class<IntersectionObserverType>;
 
 export function render(options?: {e2eTest?: boolean}): React.Node {
   return (
@@ -80,8 +75,9 @@ component IntersectionObserverCustomClippingRootExample(
       return;
     }
 
+    // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
     observer.current = new IntersectionObserver(onObserve, {
-      // $FlowFixMe[incompatible-type]
+      // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
       root: rootNode,
       rootMargin: rootMarginValue,
     });

@@ -13,8 +13,8 @@ Map {
  */
 
 #include <react/renderer/components/ALL_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -41,8 +41,8 @@ Map {
  */
 
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -69,8 +69,8 @@ Map {
  */
 
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_OBJECT_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -97,8 +97,8 @@ Map {
  */
 
 #include <react/renderer/components/ARRAY_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -125,8 +125,8 @@ Map {
  */
 
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -153,8 +153,8 @@ Map {
  */
 
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -181,8 +181,8 @@ Map {
  */
 
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_OBJECT_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -209,8 +209,8 @@ Map {
  */
 
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -237,8 +237,8 @@ Map {
  */
 
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_OBJECT_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -265,8 +265,8 @@ Map {
  */
 
 #include <react/renderer/components/BOOLEAN_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -293,8 +293,8 @@ Map {
  */
 
 #include <react/renderer/components/COLOR_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -321,8 +321,8 @@ Map {
  */
 
 #include <react/renderer/components/COMMANDS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -349,8 +349,8 @@ Map {
  */
 
 #include <react/renderer/components/COMMANDS_AND_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -377,8 +377,8 @@ Map {
  */
 
 #include <react/renderer/components/DIMENSION_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -405,8 +405,8 @@ Map {
  */
 
 #include <react/renderer/components/DOUBLE_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -433,8 +433,8 @@ Map {
  */
 
 #include <react/renderer/components/EVENT_NESTED_OBJECT_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -461,8 +461,8 @@ Map {
  */
 
 #include <react/renderer/components/EVENT_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -489,8 +489,8 @@ Map {
  */
 
 #include <react/renderer/components/EVENTS_WITH_PAPER_NAME/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -517,8 +517,8 @@ Map {
  */
 
 #include <react/renderer/components/EXCLUDE_ANDROID/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -545,8 +545,8 @@ Map {
  */
 
 #include <react/renderer/components/EXCLUDE_ANDROID_IOS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -573,8 +573,8 @@ Map {
  */
 
 #include <react/renderer/components/EXCLUDE_IOS_TWO_COMPONENTS_DIFFERENT_FILES/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -602,8 +602,8 @@ Map {
  */
 
 #include <react/renderer/components/FLOAT_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -630,8 +630,8 @@ Map {
  */
 
 #include <react/renderer/components/IMAGE_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -658,8 +658,8 @@ Map {
  */
 
 #include <react/renderer/components/INSETS_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -686,8 +686,8 @@ Map {
  */
 
 #include <react/renderer/components/INT32_ENUM_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -714,8 +714,8 @@ Map {
  */
 
 #include <react/renderer/components/INTEGER_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -742,8 +742,8 @@ Map {
  */
 
 #include <react/renderer/components/INTERFACE_ONLY/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -770,8 +770,8 @@ Map {
  */
 
 #include <react/renderer/components/MIXED_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -798,8 +798,8 @@ Map {
  */
 
 #include <react/renderer/components/MULTI_NATIVE_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -826,8 +826,8 @@ Map {
  */
 
 #include <react/renderer/components/NO_PROPS_NO_EVENTS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -854,8 +854,8 @@ Map {
  */
 
 #include <react/renderer/components/OBJECT_PROPS/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -882,8 +882,8 @@ Map {
  */
 
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -910,8 +910,8 @@ Map {
  */
 
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_OBJECT_GEN/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -938,8 +938,8 @@ Map {
  */
 
 #include <react/renderer/components/POINT_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -966,8 +966,8 @@ Map {
  */
 
 #include <react/renderer/components/STRING_ENUM_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -994,8 +994,8 @@ Map {
  */
 
 #include <react/renderer/components/STRING_PROP/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -1022,8 +1022,8 @@ Map {
  */
 
 #include <react/renderer/components/TWO_COMPONENTS_DIFFERENT_FILES/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -1051,8 +1051,8 @@ Map {
  */
 
 #include <react/renderer/components/TWO_COMPONENTS_SAME_FILE/ComponentDescriptors.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 

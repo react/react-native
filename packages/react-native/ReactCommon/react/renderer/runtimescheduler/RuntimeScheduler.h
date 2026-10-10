@@ -9,11 +9,11 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/RuntimeExecutor.h>
+#include <React/RuntimeExecutor.h>
+#include <React/Timing.h>
 #include <jsi/hermes-interfaces.h>
 #include <react/renderer/runtimescheduler/SchedulerPriorityUtils.h>
 #include <react/renderer/runtimescheduler/Task.h>
-#include <react/timing/primitives.h>
 #include <cstdint>
 #include "RuntimeSchedulerEventTimingDelegate.h"
 #include "RuntimeSchedulerIntersectionObserverDelegate.h"

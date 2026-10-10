@@ -14,16 +14,13 @@
 #include <optional>
 #include <vector>
 
+#include <React/Graphics.h>
+#include <React/RendererCore.h>
+#include <React/RendererDebug.h>
+#include <React/Utils.h>
+#include <React/View.h>
 #include <folly/dynamic.h>
 #include <react/renderer/attributedstring/primitives.h>
-#include <react/renderer/components/view/AccessibilityPrimitives.h>
-#include <react/renderer/core/LayoutPrimitives.h>
-#include <react/renderer/core/ReactPrimitives.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Float.h>
-#include <react/renderer/graphics/Size.h>
-#include <react/utils/hash_combine.h>
 
 namespace facebook::react {
 
@@ -54,17 +51,20 @@ class TextAttributes : public DebugStringConvertible {
   Float opacity{std::numeric_limits<Float>::quiet_NaN()};
 
   // Font
+  // We list 4-byte fields first to mitigate alignment gaps created by smaller
+  // values. Keep these fields in sync with TextAttributesLayoutTest, which
+  // checks alignment.
   std::string fontFamily{""};
   Float fontSize{std::numeric_limits<Float>::quiet_NaN()};
   Float fontSizeMultiplier{std::numeric_limits<Float>::quiet_NaN()};
-  std::optional<FontWeight> fontWeight{};
-  std::optional<FontStyle> fontStyle{};
+  Float maxFontSizeMultiplier{std::numeric_limits<Float>::quiet_NaN()};
+  Float letterSpacing{std::numeric_limits<Float>::quiet_NaN()};
   std::optional<FontVariant> fontVariant{};
   std::optional<std::string> fontVariationSettings{};
+  std::optional<FontWeight> fontWeight{};
+  std::optional<FontStyle> fontStyle{};
   std::optional<bool> allowFontScaling{};
-  Float maxFontSizeMultiplier{std::numeric_limits<Float>::quiet_NaN()};
   std::optional<DynamicTypeRamp> dynamicTypeRamp{};
-  Float letterSpacing{std::numeric_limits<Float>::quiet_NaN()};
   std::optional<TextTransform> textTransform{};
 
   // Paragraph Styles

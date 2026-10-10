@@ -10,7 +10,8 @@
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <react/renderer/components/view/YogaStylableProps.h>
-#include <react/renderer/components/view/propsConversions.h>
+#include <react/renderer/components/view/conversions.h>
+#include <react/renderer/core/propsConversions.h>
 
 namespace facebook::react {
 

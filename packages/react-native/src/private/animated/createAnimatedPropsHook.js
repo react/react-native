@@ -56,7 +56,7 @@ export default function createAnimatedPropsHook(
   ): [ReducedProps<TProps>, React.RefCallback<TInstance>] {
     const [, scheduleUpdate] = useReducer<number, void>(count => count + 1, 0);
     const onUpdateRef = useRef<UpdateCallback | null>(null);
-    const timerRef = useRef<TimeoutID | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const rootTag = useContext(RootTagContext);
 

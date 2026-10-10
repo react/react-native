@@ -400,7 +400,7 @@ function runSuite(suite: Suite): TestCaseResult[] {
 function reportTestSuiteResult(testSuiteResult: TestSuiteResult): void {
   // Force the import of the native module to be lazy
   const NativeFantom =
-    require('react-native/src/private/testing/fantom/specs/NativeFantom').default;
+    require('../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom').default;
 
   NativeFantom.reportTestSuiteResultsJSON(
     JSON.stringify({
@@ -413,14 +413,14 @@ function reportTestSuiteResult(testSuiteResult: TestSuiteResult): void {
 export function reportBenchmarkResult(result: BenchmarkResult): void {
   // Force the import of the native module to be lazy
   const NativeFantom =
-    require('react-native/src/private/testing/fantom/specs/NativeFantom').default;
+    require('../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom').default;
   NativeFantom.reportTestSuiteResultsJSON(JSON.stringify(result));
 }
 
 function validateEmptyMessageQueue(): void {
   // Force the import of the native module to be lazy
   const NativeFantom =
-    require('react-native/src/private/testing/fantom/specs/NativeFantom').default;
+    require('../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom').default;
 
   NativeFantom.validateEmptyMessageQueue();
 }
@@ -444,7 +444,7 @@ function runTest(): Array<TestCaseResult> {
 
   // Force the import of the native module to be lazy
   const NativeFantom =
-    require('react-native/src/private/testing/fantom/specs/NativeFantom').default;
+    require('../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom').default;
 
   try {
     NativeFantom.startJSSamplingProfiler();

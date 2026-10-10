@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <UIKit/UIKit.h>
 #import <vector>
 

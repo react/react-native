@@ -20,7 +20,6 @@
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
-#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
 #include <react/utils/jsi-utils.h>
@@ -221,16 +220,8 @@ ReactInstance::getRuntimeScheduler() noexcept {
 }
 
 std::shared_ptr<CallInvoker> ReactInstance::createJSCallInvoker() noexcept {
-  if (ReactNativeFeatureFlags::enableBufferedCallInvoker()) {
-    return std::make_shared<CallInvokerImpl>(
-        bufferedRuntimeExecutor_, runtimeScheduler_);
-  }
-  // The flag-off path, and the last use of the deprecated invoker. It goes when
-  // `enableBufferedCallInvoker` is cleaned up.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  return std::make_shared<RuntimeSchedulerCallInvoker>(runtimeScheduler_);
-#pragma clang diagnostic pop
+  return std::make_shared<CallInvokerImpl>(
+      bufferedRuntimeExecutor_, runtimeScheduler_);
 }
 
 namespace {
@@ -457,6 +448,39 @@ void ReactInstance::initializeRuntime(
     runtime_->unstable_initializeOnJsThread();
 
     defineReactInstanceFlags(runtime, options);
+
+    // Bridge JSIExecutor installs this so debug bundle loaders can evaluate
+    // fetched Metro source through Runtime::evaluateJavaScript, with a source
+    // URL for stack traces. Unlike JS eval(), that path is not disabled by
+    // Hermes' RuntimeConfig::EnableEval or by lean engine builds. Left
+    // writable, like in JSIExecutor, so hosts can override or wrap it.
+    runtime.global().setProperty(
+        runtime,
+        "globalEvalWithSourceUrl",
+        jsi::Function::createFromHostFunction(
+            runtime,
+            jsi::PropNameID::forAscii(runtime, "globalEvalWithSourceUrl"),
+            2,
+            [](jsi::Runtime& rt,
+               const jsi::Value& /*thisValue*/,
+               const jsi::Value* args,
+               size_t count) {
+              if (count != 1 && count != 2) {
+                throw jsi::JSError(
+                    rt, "globalEvalWithSourceUrl arg count must be 1 or 2");
+              }
+
+              // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+              auto code = args[0].asString(rt).utf8(rt);
+              std::string url;
+              if (count > 1 && args[1].isString()) {
+                url = args[1].asString(rt).utf8(rt);
+              }
+              // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+              return rt.evaluateJavaScript(
+                  std::make_unique<jsi::StringBuffer>(std::move(code)), url);
+            }));
 
     defineReadOnlyGlobal(
         runtime,

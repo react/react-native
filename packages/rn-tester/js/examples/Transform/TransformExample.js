@@ -13,8 +13,6 @@ import type {
   PressableAndroidRippleConfig,
   PressableStateCallbackType,
 } from 'react-native';
-import type {AnimatedNode} from 'react-native/Libraries/Animated/AnimatedExports';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import * as React from 'react';
 import {useEffect, useState} from 'react';
@@ -28,6 +26,8 @@ import {
   View,
   useAnimatedValue,
 } from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 function AnimateTransformSingleProp() {
   const [theta] = useState(new Animated.Value(45));
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
     transform: [
       {
         translate: [200, 350] as [
-          number | string | AnimatedNode,
-          number | string | AnimatedNode,
+          number | string | Animated.Node,
+          number | string | Animated.Node,
         ],
       },
       {scale: 2.5},
@@ -419,8 +419,8 @@ const styles = StyleSheet.create({
     transform: [
       {
         translate: [-50, 35] as [
-          number | string | AnimatedNode,
-          number | string | AnimatedNode,
+          number | string | Animated.Node,
+          number | string | Animated.Node,
         ],
       },
       {rotate: '50deg'},

@@ -53,7 +53,6 @@ function createViewsWithLargeAmountOfPropsAndStyles(count: number): React.Node {
         aria-live={'polite'}
         collapsable={false}
         focusable={i % 2 === 0}
-        hasTVPreferredFocus={i % 2 === 0}
         id={String(i)}
         importantForAccessibility={'no-hide-descendants'}
         nativeID={String(i)}

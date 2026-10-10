@@ -12,20 +12,15 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {
-  NativePointerEvent,
-  PointerEvent,
-} from 'react-native/Libraries/Types/CoreEventTypes';
-import type {ReadOnlyNodeWithEventTarget} from 'react-native/src/private/webapis/dom/nodes/ReadOnlyNode';
+import type {NativePointerEvent, PointerEvent} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {View} from 'react-native';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
-import Event from 'react-native/src/private/webapis/dom/events/Event';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 // Temporary cast until ReadOnlyNode extends EventTarget ungated.
-function asEventTarget(node: ?interface {}): ReadOnlyNodeWithEventTarget {
+function asEventTarget(node: ?interface {}): EventTarget {
   if (node == null) {
     throw new Error('Expected non-null node');
   }
@@ -1644,12 +1639,14 @@ describe('EventTarget-based Event Dispatching', () => {
   describe('direct events (rnIsDirect) — Event construction validation', () => {
     it('allows constructing a direct event that does not bubble', () => {
       const event = new Event('layout', {rnIsDirect: true});
+      // $FlowFixMe[prop-missing] React Native-specific Event field.
       expect(event.rnIsDirect).toBe(true);
       expect(event.bubbles).toBe(false);
     });
 
     it('defaults rnIsDirect to false', () => {
       const event = new Event('layout');
+      // $FlowFixMe[prop-missing] React Native-specific Event field.
       expect(event.rnIsDirect).toBe(false);
     });
 
@@ -1756,6 +1753,7 @@ describe('EventTarget-based Event Dispatching', () => {
       );
 
       expect(handler).toHaveBeenCalled();
+      // $FlowFixMe[prop-missing] Flow's global Event type omits static constants.
       expect(observedPhase).toBe(Event.AT_TARGET);
       // Event path is just the target node.
       expect(observedPathLength).toBe(1);

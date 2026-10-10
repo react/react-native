@@ -13,6 +13,7 @@
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
+#include <react/utils/FloatComparison.h>
 
 #include <glog/logging.h>
 

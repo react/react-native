@@ -411,7 +411,7 @@ std::shared_ptr<ShadowNode> ShadowNode::cloneTree(
     childNode = parentNode.clone(
         {.children =
              std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>(
-                 children)});
+                 std::move(children))});
   }
 
   return std::const_pointer_cast<ShadowNode>(childNode);

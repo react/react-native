@@ -7,6 +7,14 @@
 
 const noop = () => { };
 
+const domException = new DOMException('message', 'DataCloneError');
+const domExceptionCode: number = domException.code;
+const dataCloneErrorCode: 25 = DOMException.DATA_CLONE_ERR;
+const clonedValue: {nested: {value: number}} = structuredClone({
+    nested: {value: 1},
+});
+console.log(domExceptionCode, dataCloneErrorCode, clonedValue.nested.value);
+
 function testInterval() {
     clearInterval(null);
     clearInterval(undefined);

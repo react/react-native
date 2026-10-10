@@ -8,19 +8,13 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  DirectEventHandler,
-  Int32,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
 import * as React from 'react';
-import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeCommands, codegenNativeComponent} from 'react-native';
 
 type PopupMenuSelectionEvent = Readonly<{
-  item: Int32,
+  item: CodegenTypes.Int32,
 }>;
 
 type PopupMenuDismissEvent = Readonly<{}>;
@@ -31,8 +25,8 @@ type NativeProps = Readonly<{
   //Props
   menuItems?: ?ReadonlyArray<string>,
 
-  onPopupMenuSelectionChange?: DirectEventHandler<PopupMenuSelectionEvent>,
-  onPopupMenuDismiss?: DirectEventHandler<PopupMenuDismissEvent>,
+  onPopupMenuSelectionChange?: CodegenTypes.DirectEventHandler<PopupMenuSelectionEvent>,
+  onPopupMenuDismiss?: CodegenTypes.DirectEventHandler<PopupMenuDismissEvent>,
 }>;
 
 type ComponentType = HostComponent<NativeProps>;

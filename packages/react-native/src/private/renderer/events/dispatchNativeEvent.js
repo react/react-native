@@ -8,7 +8,7 @@
  * @format
  */
 
-import type EventTarget from '../../webapis/dom/events/EventTarget';
+import type InternalEventTarget from '../../webapis/dom/events/EventTarget';
 
 import {
   customBubblingEventTypes,
@@ -41,8 +41,11 @@ export default function dispatchNativeEvent(
   type: string,
   payload: {[string]: unknown},
 ): void {
+  // $FlowFixMe[incompatible-type] The global is backed by this implementation.
+  const internalTarget = target as InternalEventTarget;
+
   // Process responder events before normal event dispatch.
-  processResponderEvent(type, target, payload);
+  processResponderEvent(type, internalTarget, payload);
 
   try {
     // Normal EventTarget dispatch
@@ -117,7 +120,7 @@ export default function dispatchNativeEvent(
       // rethrown synchronously (matching the legacy plugin path) rather than
       // deferred to a new task, keeping it catchable by React error boundaries
       // and the native event call.
-      dispatchTrustedEvent(target, syntheticEvent, true);
+      dispatchTrustedEvent(internalTarget, syntheticEvent, true);
     }
   } finally {
     // Rethrow the first error caught during responder lifecycle dispatch,

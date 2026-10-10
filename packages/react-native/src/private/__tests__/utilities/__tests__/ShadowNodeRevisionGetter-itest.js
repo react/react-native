@@ -15,7 +15,7 @@ import {createShadowNodeReferenceGetterRef} from '../ShadowNodeRevisionGetter';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {ScrollView, View} from 'react-native';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 test('base case when cloning results in revision +1', () => {
   const root = Fantom.createRoot();

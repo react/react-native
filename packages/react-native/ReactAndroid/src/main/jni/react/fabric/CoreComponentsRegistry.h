@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <React/ComponentRegistry.h>
 
 namespace facebook::react::CoreComponentsRegistry {
 

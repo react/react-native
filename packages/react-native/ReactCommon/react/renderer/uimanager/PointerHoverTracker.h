@@ -9,13 +9,15 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
+
 #include <functional>
 #include <initializer_list>
 #include <memory>
+#include <tuple>
+#include <vector>
 
-#include <react/renderer/components/view/primitives.h>
-#include <react/renderer/core/ReactPrimitives.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/uimanager/UIManager.h>
 
 namespace facebook::react {

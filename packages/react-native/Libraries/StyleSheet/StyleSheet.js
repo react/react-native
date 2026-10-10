@@ -16,12 +16,9 @@ import type {
   ____DangerouslyImpreciseStyle_Internal,
   ____DangerouslyImpreciseStyleProp_Internal,
   ____FontVariant_Internal,
-  ____ImageStyle_Internal,
   ____ImageStyleProp_Internal,
-  ____TextStyle_Internal,
   ____TextStyleProp_Internal,
   ____TransformStyle_Internal,
-  ____ViewStyle_Internal,
   ____ViewStyleProp_Internal,
   NativeColorValue,
 } from './StyleSheetTypes';
@@ -136,8 +133,7 @@ export type TypeForStyleKey<
  * object of styles to pass to a View that can't be precomputed with
  * StyleSheet.create.
  */
-/** @build-types emit-as-interface react-native-web compatibility */
-export type ViewStyle = ____ViewStyle_Internal;
+export type {ViewStyle} from './StyleSheetTypes';
 
 /**
  * This type is an object of the different possible style
@@ -154,8 +150,7 @@ export type ViewStyle = ____ViewStyle_Internal;
  * object of styles to pass to a Text that can't be precomputed with
  * StyleSheet.create.
  */
-/** @build-types emit-as-interface react-native-web compatibility */
-export type TextStyle = ____TextStyle_Internal;
+export type {TextStyle} from './StyleSheetTypes';
 
 /**
  * This type is an object of the different possible style
@@ -172,8 +167,7 @@ export type TextStyle = ____TextStyle_Internal;
  * object of styles to pass to an Image that can't be precomputed with
  * StyleSheet.create.
  */
-/** @build-types emit-as-interface react-native-web compatibility */
-export type ImageStyle = ____ImageStyle_Internal;
+export type {ImageStyle} from './StyleSheetTypes';
 
 /**
  * WARNING: You probably shouldn't be using this type. This type is an object

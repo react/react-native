@@ -10,7 +10,7 @@ exports[`LogBoxNotification should render log 1`] = `
   width="100%"
 >
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     backgroundColor="rgba(51, 51, 51, 1)"
     height="48"
@@ -39,6 +39,7 @@ exports[`LogBoxNotification should render log 1`] = `
       fontWeight="600"
       foregroundColor="rgba(255, 255, 255, 1)"
       lineHeight="18"
+      maxFontSizeMultiplier="1"
       nativeID="logbox_notification_count_text"
       overflow="hidden"
       textShadowColor="rgba(51, 51, 51, 0.4)"
@@ -61,6 +62,7 @@ exports[`LogBoxNotification should render log 1`] = `
       fontSizeMultiplier="NaN"
       foregroundColor="rgba(255, 255, 255, 1)"
       lineHeight="22"
+      maxFontSizeMultiplier="1"
       maximumNumberOfLines="1"
       nativeID="logbox_notification_message_text"
       overflow="hidden"
@@ -70,12 +72,13 @@ exports[`LogBoxNotification should render log 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         layoutDirection="ltr"
         lineHeight="22"
+        maxFontSizeMultiplier="1"
       >
         Some kind of message
       </rn-text>
     </rn-paragraph>
     <rn-view
-      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
       accessible="true"
       alignItems="center"
       alignSelf="flex-end"
@@ -88,7 +91,6 @@ exports[`LogBoxNotification should render log 1`] = `
       <rn-image
         height="8"
         overflow="hidden"
-        resizeMode="cover"
         source-scale="1"
         source-size="{28, 28}"
         source-type="local"

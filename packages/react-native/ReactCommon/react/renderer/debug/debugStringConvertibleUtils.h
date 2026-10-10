@@ -7,12 +7,13 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <memory>
 #include <optional>
 #include <string>
 
+#include <React/Utils.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/debug/DebugStringConvertibleItem.h>
 #include <react/utils/FloatComparison.h>

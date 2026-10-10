@@ -155,7 +155,7 @@ describe('<TouchableOpacity>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
         );
       });
 
@@ -171,7 +171,7 @@ describe('<TouchableOpacity>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
         );
       });
     });
@@ -189,7 +189,7 @@ describe('<TouchableOpacity>', () => {
         });
 
         const element = nullthrows(
-          root.document.documentElement.firstElementChild,
+          nullthrows(root.document.documentElement).firstElementChild,
         );
         expect(element.childNodes.length).toBe(1);
 

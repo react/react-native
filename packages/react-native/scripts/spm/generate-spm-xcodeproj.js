@@ -767,7 +767,9 @@ if [ "$STALE" -eq 0 ] && [ -f "$WATCH_FILE" ]; then
   while IFS= read -r P; do
     [ -z "$P" ] && continue
     if [ -d "$P" ]; then
-      if [ -n "$(find "$P" -newer "$STAMP" -print -quit 2>/dev/null)" ]; then
+      # .swiftpm holds Xcode's own per-user scheme state, which it rewrites
+      # during a build — reading it as a change makes every IDE build re-sync.
+      if [ -n "$(find "$P" -name .swiftpm -prune -o -newer "$STAMP" -print -quit 2>/dev/null)" ]; then
         STALE=1
         break
       fi
@@ -860,28 +862,21 @@ function buildSyncAutolinkingScript(
 ${syncStaleCheckAndDispatch()}
 `;
 }
-// XML-attribute escape (the five named entities). The sync script uses `>`
-// and `&` for redirection and bg/and chains, plus `<` for heredocs and
-// comparisons — all of which break Xcode's scheme parser if left raw.
+// XML-attribute escape. The sync script uses `>` and `&` for redirection and
+// bg/and chains, plus `<` for heredocs and comparisons — all of which break
+// Xcode's scheme parser if left raw. Raw line breaks and tabs are legal but an
+// XML parser turns them into spaces (XML 1.0 §3.3.3), collapsing the script
+// onto one line, so they are written as character references, as Xcode does.
 function escapeXmlAttribute(s /*: string */) /*: string */ {
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-// The inverse of escapeXmlAttribute. `&amp;` is expanded LAST so an entity that
-// was itself escaped (`&lt;` → `&amp;lt;`) round-trips back to its own text
-// rather than to `<`.
-function unescapeXmlAttribute(s /*: string */) /*: string */ {
-  return s
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, '&');
+    .replace(/'/g, '&apos;')
+    .replace(/\r/g, '&#13;')
+    .replace(/\n/g, '&#10;')
+    .replace(/\t/g, '&#9;');
 }
 
 function generateXcscheme(
@@ -2523,8 +2518,9 @@ function injectSpmIntoExistingXcodeproj(
   return {status: 'injected', target: plan.target.name};
 }
 
-/** The sync pre-action's script, unescaped, or null when the scheme has none. */
-function schemePreActionScript(xml /*: string */) /*: ?string */ {
+// The scheme with the sync pre-action's scriptText emptied, so the compare
+// ignores how the script was encoded; null when there is no pre-action.
+function withoutPreActionScript(xml /*: string */) /*: ?string */ {
   const titleIdx = xml.indexOf('title = "Sync SPM Autolinking"');
   if (titleIdx < 0) {
     return null;
@@ -2538,9 +2534,7 @@ function schemePreActionScript(xml /*: string */) /*: ?string */ {
   // escapeXmlAttribute maps a literal `"` to `&quot;`, so the next `"` is always
   // the closing delimiter.
   const valueEnd = xml.indexOf('"', valueStart);
-  return valueEnd < 0
-    ? null
-    : unescapeXmlAttribute(xml.slice(valueStart, valueEnd));
+  return valueEnd < 0 ? null : xml.slice(0, valueStart) + xml.slice(valueEnd);
 }
 
 /**
@@ -2562,10 +2556,9 @@ function isGeneratedScheme(
   targetUuid /*: string */,
   projName /*: string */,
 ) /*: boolean */ {
-  const script = schemePreActionScript(xml);
   return (
-    script != null &&
-    xml === generateXcscheme(appName, targetUuid, projName, script)
+    withoutPreActionScript(xml) ===
+    generateXcscheme(appName, targetUuid, projName, '')
   );
 }
 

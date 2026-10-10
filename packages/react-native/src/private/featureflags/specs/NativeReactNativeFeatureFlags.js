@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<66e59b3ca65fca86249a6d81d7a6ae7b>>
+ * @generated SignedSource<<26f30821669e81ddb8c654ea71bbaca6>>
  * @flow strict
  * @noformat
  */
@@ -30,6 +30,7 @@ export interface Spec extends TurboModule {
   readonly cxxNativeAnimatedEnabled?: () => boolean;
   readonly defaultTextToOverflowHidden?: () => boolean;
   readonly disableEarlyViewCommandExecution?: () => boolean;
+  readonly disableIdleMountItemFrameCallbackRearmAndroid?: () => boolean;
   readonly disableImageViewPreallocationAndroid?: () => boolean;
   readonly disableMountItemReorderingAndroid?: () => boolean;
   readonly disableSubviewClippingAndroid?: () => boolean;
@@ -39,8 +40,8 @@ export interface Spec extends TurboModule {
   readonly enableAccumulatedUpdatesInRawPropsAndroid?: () => boolean;
   readonly enableAndroidAutoOffscreenCompositingForElevation?: () => boolean;
   readonly enableAndroidTextMeasurementOptimizations?: () => boolean;
+  readonly enableAsyncDiskCacheCheckInMultiSourceImageAndroid?: () => boolean;
   readonly enableBridgelessArchitecture?: () => boolean;
-  readonly enableBufferedCallInvoker?: () => boolean;
   readonly enableCppPropsIteratorSetter?: () => boolean;
   readonly enableCustomFocusSearchOnClippedElementsAndroid?: () => boolean;
   readonly enableDestroyShadowTreeRevisionAsync?: () => boolean;
@@ -48,6 +49,7 @@ export interface Spec extends TurboModule {
   readonly enableEagerRootViewAttachment?: () => boolean;
   readonly enableExclusivePropsUpdateAndroid?: () => boolean;
   readonly enableFabricCommitBranching?: () => boolean;
+  readonly enableFabricCommitBranchingMergeOnMainThread?: () => boolean;
   readonly enableFabricLogs?: () => boolean;
   readonly enableFlexboxAutoMinSizeInStrictMode?: () => boolean;
   readonly enableFontScaleChangesUpdatingLayout?: () => boolean;
@@ -68,6 +70,7 @@ export interface Spec extends TurboModule {
   readonly enableMountingCoordinatorPullModelAndroid?: () => boolean;
   readonly enableMutationObserverByDefault?: () => boolean;
   readonly enableNativeCSSParsing?: () => boolean;
+  readonly enablePreallocatedPropsDiffOnInsertAndroid?: () => boolean;
   readonly enablePreparedTextLayout?: () => boolean;
   readonly enablePropsUpdateReconciliationAndroid?: () => boolean;
   readonly enableResizeObserverByDefault?: () => boolean;
@@ -79,7 +82,7 @@ export interface Spec extends TurboModule {
   readonly enableViewRecyclingForText?: () => boolean;
   readonly enableViewRecyclingForView?: () => boolean;
   readonly enableVirtualViewContainerStateExperimental?: () => boolean;
-  readonly fixDifferentiatorParentTagForUnflattenCase?: () => boolean;
+  readonly fixBorderlessRippleAndroid?: () => boolean;
   readonly fixMappingOfEventPrioritiesBetweenFabricAndReact?: () => boolean;
   readonly fixYogaFlexBasisFitContentInMainAxis?: () => boolean;
   readonly fuseboxAssertSingleHostState?: () => boolean;

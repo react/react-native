@@ -8,6 +8,7 @@
 package com.facebook.react.fabric
 
 import com.facebook.jni.HybridClassBase
+import com.facebook.react.bridge.NativeMap
 import com.facebook.soloader.SoLoader
 
 /**
@@ -33,6 +34,8 @@ class FabricMountingManagerTestHelper private constructor(fabricUIManager: Fabri
   external fun destroyUnmountedView(surfaceId: Int, tag: Int)
 
   external fun isTagAllocated(surfaceId: Int, tag: Int): Boolean
+
+  external fun synchronouslyUpdateAnimatedProps(tags: IntArray, props: Array<NativeMap>)
 
   companion object {
     init {

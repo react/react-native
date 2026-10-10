@@ -48,7 +48,7 @@ const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
     ColorPrimitive: {
       cpp: {
         typeName: 'SharedColor',
-        localIncludes: ['#include <react/renderer/graphics/Color.h>'],
+        localIncludes: ['#include <React/Graphics.h>'],
         conversionIncludes: [],
       },
       java: {
@@ -61,10 +61,8 @@ const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
     ImageSourcePrimitive: {
       cpp: {
         typeName: 'ImageSource',
-        localIncludes: ['#include <react/renderer/imagemanager/primitives.h>'],
-        conversionIncludes: [
-          '#include <react/renderer/components/image/conversions.h>',
-        ],
+        localIncludes: ['#include <React/ImageManager.h>'],
+        conversionIncludes: ['#include <React/Image.h>'],
       },
       java: {
         interfaceImports: ['import com.facebook.react.bridge.ReadableMap;'],
@@ -74,9 +72,7 @@ const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
     ImageRequestPrimitive: {
       cpp: {
         typeName: 'ImageRequest',
-        localIncludes: [
-          '#include <react/renderer/imagemanager/ImageRequest.h>',
-        ],
+        localIncludes: ['#include <React/ImageManager.h>'],
         conversionIncludes: [],
       },
       java: {
@@ -88,7 +84,7 @@ const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
     PointPrimitive: {
       cpp: {
         typeName: 'Point',
-        localIncludes: ['#include <react/renderer/graphics/Point.h>'],
+        localIncludes: ['#include <React/Graphics.h>'],
         conversionIncludes: [],
       },
       java: {
@@ -99,7 +95,7 @@ const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
     EdgeInsetsPrimitive: {
       cpp: {
         typeName: 'EdgeInsets',
-        localIncludes: ['#include <react/renderer/graphics/RectangleEdges.h>'],
+        localIncludes: ['#include <React/Graphics.h>'],
         conversionIncludes: [],
       },
       java: {
@@ -112,11 +108,9 @@ const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
         typeName: 'YGValue',
         localIncludes: [
           '#include <yoga/Yoga.h>',
-          '#include <react/renderer/core/graphicsConversions.h>',
+          '#include <React/RendererCore.h>',
         ],
-        conversionIncludes: [
-          '#include <react/renderer/components/view/conversions.h>',
-        ],
+        conversionIncludes: ['#include <React/View.h>'],
       },
       java: {
         interfaceImports: ['import com.facebook.yoga.YogaValue;'],

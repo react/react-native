@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
-#include <react/renderer/core/ReactPrimitives.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react::animated {
 // Indicates that the animated node identifier is not defined.

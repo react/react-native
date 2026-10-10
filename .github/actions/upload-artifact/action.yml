@@ -1,0 +1,100 @@
+name: Upload artifact with retries
+description: Uploads an artifact, retrying transient failures up to two times
+
+inputs:
+  name:
+    description: Artifact name
+    default: artifact
+  path:
+    description: A file, directory, or wildcard pattern to upload
+    required: true
+  if-no-files-found:
+    description: Behavior when no files are found (warn, error, or ignore)
+    default: warn
+  retention-days:
+    description: Number of days to retain the artifact
+  compression-level:
+    description: Zlib compression level (0-9)
+    default: '6'
+  overwrite:
+    description: Whether to replace an artifact with the same name
+    default: 'false'
+  include-hidden-files:
+    description: Whether to include hidden files
+    default: 'false'
+  archive:
+    description: Whether to archive the artifact before uploading
+    default: 'true'
+
+outputs:
+  artifact-id:
+    description: The uploaded artifact's ID
+    value: ${{ steps.upload-3.outputs.artifact-id || steps.upload-2.outputs.artifact-id || steps.upload-1.outputs.artifact-id }}
+  artifact-url:
+    description: The uploaded artifact's URL
+    value: ${{ steps.upload-3.outputs.artifact-url || steps.upload-2.outputs.artifact-url || steps.upload-1.outputs.artifact-url }}
+  artifact-digest:
+    description: The uploaded artifact's SHA-256 digest
+    value: ${{ steps.upload-3.outputs.artifact-digest || steps.upload-2.outputs.artifact-digest || steps.upload-1.outputs.artifact-digest }}
+
+runs:
+  using: composite
+  steps:
+    - name: Upload artifact (attempt 1 of 3)
+      id: upload-1
+      if: ${{ always() }}
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        if-no-files-found: ${{ inputs.if-no-files-found }}
+        retention-days: ${{ inputs.retention-days }}
+        compression-level: ${{ inputs.compression-level }}
+        overwrite: ${{ inputs.overwrite }}
+        include-hidden-files: ${{ inputs.include-hidden-files }}
+        archive: ${{ inputs.archive }}
+
+    - name: Wait before attempt 2
+      if: ${{ always() && steps.upload-1.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo "::warning::Artifact upload failed; retrying in 10 seconds"
+        sleep 10
+
+    - name: Upload artifact (attempt 2 of 3)
+      id: upload-2
+      if: ${{ always() && steps.upload-1.outcome == 'failure' }}
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        if-no-files-found: ${{ inputs.if-no-files-found }}
+        retention-days: ${{ inputs.retention-days }}
+        compression-level: ${{ inputs.compression-level }}
+        overwrite: ${{ inputs.overwrite }}
+        include-hidden-files: ${{ inputs.include-hidden-files }}
+        archive: ${{ inputs.archive }}
+
+    - name: Wait before attempt 3
+      if: ${{ always() && steps.upload-2.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo "::warning::Artifact upload failed again; retrying in 20 seconds"
+        sleep 20
+
+    - name: Upload artifact (attempt 3 of 3)
+      id: upload-3
+      if: ${{ always() && steps.upload-2.outcome == 'failure' }}
+      # Deliberately do not continue on error: the last failure must fail the caller.
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        if-no-files-found: ${{ inputs.if-no-files-found }}
+        retention-days: ${{ inputs.retention-days }}
+        compression-level: ${{ inputs.compression-level }}
+        overwrite: ${{ inputs.overwrite }}
+        include-hidden-files: ${{ inputs.include-hidden-files }}
+        archive: ${{ inputs.archive }}

@@ -54,7 +54,7 @@ describe('<TouchableNativeFeedback>', () => {
       expect(root.getRenderedOutput().toJSX()).toEqual(
         <rn-view
           accessible="true"
-          accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+          accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
         />,
       );
     });
@@ -75,7 +75,7 @@ describe('<TouchableNativeFeedback>', () => {
       expect(
         root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
       ).toEqual(
-        <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
       );
     });
 
@@ -93,7 +93,7 @@ describe('<TouchableNativeFeedback>', () => {
       expect(
         root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
       ).toEqual(
-        <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
       );
     });
 
@@ -113,7 +113,7 @@ describe('<TouchableNativeFeedback>', () => {
       expect(
         root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
       ).toEqual(
-        <rn-view accessibilityState="{disabled:true,selected:false,checked:Checked,busy:false,expanded:null}" />,
+        <rn-view accessibilityState="{disabled:true,selected:null,checked:Checked,busy:false,expanded:null}" />,
       );
     });
 
@@ -133,7 +133,7 @@ describe('<TouchableNativeFeedback>', () => {
       expect(
         root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
       ).toEqual(
-        <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
       );
     });
 
@@ -153,7 +153,7 @@ describe('<TouchableNativeFeedback>', () => {
       expect(
         root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
       ).toEqual(
-        <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}" />,
+        <rn-view accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}" />,
       );
     });
   });

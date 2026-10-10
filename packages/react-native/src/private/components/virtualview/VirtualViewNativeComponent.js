@@ -13,6 +13,7 @@ import type {
   DirectEventHandler,
   Double,
   Int32,
+  WithDefault,
 } from '../../../../Libraries/Types/CodegenTypes';
 import type {HostComponent} from '../../types/HostComponent';
 
@@ -65,7 +66,7 @@ type VirtualViewNativeProps = Readonly<{
   /**
    * Whether the initial mode should be `Hidden`.
    */
-  initialHidden?: boolean,
+  initialHidden?: WithDefault<boolean, null>,
 
   /**
    * This was needed to get VirtualViewManagerDelegate to set this property.
@@ -93,4 +94,5 @@ type VirtualViewNativeProps = Readonly<{
 
 export default codegenNativeComponent<VirtualViewNativeProps>('VirtualView', {
   interfaceOnly: true,
+  generateOptionalProperties: true,
 }) as HostComponent<VirtualViewNativeProps>;

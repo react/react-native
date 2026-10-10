@@ -10,7 +10,7 @@
 
 import typeof * as TmockComponent from '../mockComponent';
 import typeof * as TMockNativeMethods from '../MockNativeMethods';
-import typeof TTextInput from 'react-native/Libraries/Components/TextInput/TextInput';
+import typeof {TextInput as TTextInput} from 'react-native';
 
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;

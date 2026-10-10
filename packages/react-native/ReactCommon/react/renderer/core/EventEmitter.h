@@ -12,13 +12,13 @@
 #include <memory>
 #include <mutex>
 
+#include <React/Timing.h>
 #include <folly/dynamic.h>
 #include <react/renderer/core/EventDispatcher.h>
 #include <react/renderer/core/EventPayload.h>
 #include <react/renderer/core/EventTarget.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ValueFactoryEventPayload.h>
-#include <react/timing/primitives.h>
 
 namespace facebook::react {
 
@@ -77,7 +77,7 @@ class EventEmitter {
     }
 
     syncFunc();
-    eventDispatcher->experimental_flushSync();
+    eventDispatcher->experimental_flushSync(getTag());
   }
 
   /*
@@ -132,6 +132,12 @@ class EventEmitter {
 
  private:
   friend class UIManagerBinding;
+
+  /*
+   * The tag of the view this emitter belongs to, or `kNoTag` once its family
+   * is gone.
+   */
+  Tag getTag() const;
 
   SharedEventTarget eventTarget_;
   std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily_;

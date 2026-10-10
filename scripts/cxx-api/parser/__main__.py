@@ -22,9 +22,19 @@ import traceback
 
 from .config import ApiViewSnapshotConfig, parse_config_file
 from .doxygen import get_doxygen_bin, run_doxygen
-from .main import build_snapshot
+from .main import build_snapshot, make_location_filter
 from .path_utils import get_react_native_dir
 from .snapshot_diff import validate_snapshots
+from .tiers import (
+    classify_headers,
+    find_boundary_breaks,
+    HeaderGraph,
+    skipped_headers,
+    Tier,
+)
+
+# Mirrors the fixed EXCLUDE_PATTERNS in .doxygen.config.template.
+_TEMPLATE_EXCLUDE_PATTERNS = ["*/tests/*", "*/samples/*"]
 
 
 def run_command(
@@ -96,6 +106,7 @@ def build_snapshot_for_view(
     input_filter: str = None,
     work_dir: str | None = None,
     exclude_symbols: list[str] | None = None,
+    skipped_files: set[str] | None = None,
 ) -> str:
     if verbose:
         print(f"[{api_view}] Generating API view")
@@ -128,7 +139,9 @@ def build_snapshot_for_view(
         print(f"[{api_view}] Building snapshot")
 
     snapshot = build_snapshot(
-        os.path.join(work_dir, "xml"), exclude_symbols=exclude_symbols
+        os.path.join(work_dir, "xml"),
+        exclude_symbols=exclude_symbols,
+        location_filter=make_location_filter(skipped_files, react_native_dir),
     )
     snapshot_string = snapshot.to_string()
 
@@ -142,6 +155,106 @@ def build_snapshot_for_view(
     return snapshot_string
 
 
+def _display_path(path: str, react_native_dir: str) -> str:
+    relative = os.path.relpath(path, react_native_dir)
+    return path if relative.startswith("..") else relative
+
+
+def classify_views(
+    configs: list[ApiViewSnapshotConfig],
+    codegen_dirs: dict[str, str],
+) -> list[tuple[list[ApiViewSnapshotConfig], HeaderGraph]]:
+    # Variants of a view differ only in preprocessor definitions, which the
+    # textual include scan ignores, so classify each distinct input set once.
+    groups: dict[tuple, list[ApiViewSnapshotConfig]] = {}
+    for config in configs:
+        codegen_dir = codegen_dirs.get(config.codegen_platform)
+        key = (
+            tuple(config.inputs + ([codegen_dir] if codegen_dir else [])),
+            tuple(config.exclude_patterns),
+        )
+        groups.setdefault(key, []).append(config)
+
+    return [
+        (
+            view_configs,
+            classify_headers(
+                list(inputs), _TEMPLATE_EXCLUDE_PATTERNS + list(exclude_patterns)
+            ),
+        )
+        for (inputs, exclude_patterns), view_configs in groups.items()
+    ]
+
+
+def get_skipped_files_by_view(
+    view_graphs: list[tuple[list[ApiViewSnapshotConfig], HeaderGraph]],
+    react_native_dir: str,
+    verbose: bool,
+) -> dict[str, set[str]]:
+    skipped_by_view: dict[str, set[str]] = {}
+    for view_configs, graph in view_graphs:
+        names_by_visibility: dict[frozenset[Tier], list[str]] = {}
+        for config in view_configs:
+            names_by_visibility.setdefault(config.visibility, []).append(
+                config.snapshot_name
+            )
+
+        for visibility, view_names in names_by_visibility.items():
+            skipped = skipped_headers(graph, visibility)
+            if verbose:
+                _log_kept_headers(
+                    view_names, graph, visibility, skipped, react_native_dir
+                )
+            for view_name in view_names:
+                skipped_by_view[view_name] = skipped
+    return skipped_by_view
+
+
+def _log_kept_headers(
+    view_names: list[str],
+    graph: HeaderGraph,
+    included_tiers: frozenset[Tier],
+    skipped: set[str],
+    react_native_dir: str,
+) -> None:
+    kept = sorted(
+        path
+        for path, tier in graph.tiers.items()
+        if tier is not None and tier not in included_tiers and path not in skipped
+    )
+    included = ", ".join(tier.name.lower() for tier in sorted(included_tiers))
+    print(
+        f"[{', '.join(view_names)}] {len(kept)} header(s) outside the included "
+        f"tiers ({included}) kept because an included header reaches them"
+    )
+    for path in kept:
+        print(
+            f"  {graph.tiers[path].name.lower()} "
+            f"{_display_path(path, react_native_dir)}"
+        )
+
+
+def log_boundary_breaks(
+    view_graphs: list[tuple[list[ApiViewSnapshotConfig], HeaderGraph]],
+    react_native_dir: str,
+    enabled: bool,
+) -> None:
+    if not enabled:
+        return
+
+    for view_configs, graph in view_graphs:
+        label = ", ".join(config.snapshot_name for config in view_configs)
+        breaks = find_boundary_breaks(graph)
+        print(f"[{label}] {len(breaks)} tier boundary break(s)")
+        for boundary_break in breaks:
+            chain = [_display_path(p, react_native_dir) for p in boundary_break.chain]
+            print(
+                f"  {boundary_break.source_tier.name.lower()} {chain[0]}"
+                + "".join(f"\n    -> {p}" for p in chain[1:-1])
+                + f"\n    -> {boundary_break.target_tier.name.lower()} {chain[-1]}"
+            )
+
+
 def build_snapshots(
     snapshot_configs: list[ApiViewSnapshotConfig],
     react_native_dir: str,
@@ -151,6 +264,7 @@ def build_snapshots(
     view_filter: str | None = None,
     is_test: bool = False,
     keep_xml: bool = False,
+    log_breaks: bool = False,
 ) -> None:
     if not is_test:
         configs_to_build = [
@@ -177,6 +291,12 @@ def build_snapshots(
                         label=platform,
                     )
 
+            view_graphs = classify_views(configs_to_build, codegen_dirs)
+            log_boundary_breaks(view_graphs, react_native_dir, log_breaks)
+            skipped_by_view = get_skipped_files_by_view(
+                view_graphs, react_native_dir, verbose
+            )
+
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 futures = {}
                 for config in configs_to_build:
@@ -195,6 +315,7 @@ def build_snapshots(
                         input_filter=input_filter if config.input_filter else None,
                         work_dir=work_dir,
                         exclude_symbols=config.exclude_symbols,
+                        skipped_files=skipped_by_view[config.snapshot_name],
                     )
                     futures[future] = config.snapshot_name
 
@@ -285,6 +406,11 @@ def main():
         action="store_true",
         help="Keep the generated Doxygen XML files next to the .api output in a xml/ directory",
     )
+    parser.add_argument(
+        "--log-boundary-breaks",
+        action="store_true",
+        help="Log headers whose includes cross the C++ stable API tier boundaries",
+    )
     args = parser.parse_args()
 
     verbose = not args.validate
@@ -343,6 +469,7 @@ def main():
             view_filter=args.view,
             is_test=args.test,
             keep_xml=args.xml,
+            log_breaks=args.log_boundary_breaks,
         )
 
         if args.validate:

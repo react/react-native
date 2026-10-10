@@ -87,7 +87,7 @@ class SampleLegacyModuleExample extends React.Component<{}, State> {
           getBool: () => getSampleLegacyModule()?.getBool(true),
           getEnum: () => getSampleLegacyModule()?.getEnum(1.0),
           getNumber: () => getSampleLegacyModule()?.getNumber(99.95),
-          getFloat: () => getSampleLegacyModule()?.getNumber(99.95),
+          getFloat: () => getSampleLegacyModule()?.getFloat(99.95),
           getInt: () => getSampleLegacyModule()?.getInt(99),
           getLongLong: () => getSampleLegacyModule()?.getLongLong(99),
           getUnsignedLongLong: () =>
@@ -106,7 +106,7 @@ class SampleLegacyModuleExample extends React.Component<{}, State> {
           getNullString: () => getSampleLegacyModule()?.getString(null),
           getNSNumber: () => getSampleLegacyModule()?.getNSNumber(20.0),
           getUnsafeObject: () =>
-            getSampleLegacyModule()?.getObject({a: 1, b: 'foo', c: null}),
+            getSampleLegacyModule()?.getUnsafeObject({a: 1, b: 'foo', c: null}),
           getRootTag: () => getSampleLegacyModule()?.getRootTag(11),
           getValue: () =>
             getSampleLegacyModule()?.getValue(5, 'test', {a: 1, b: 'foo'}),
@@ -144,7 +144,7 @@ class SampleLegacyModuleExample extends React.Component<{}, State> {
           getObject: () =>
             getSampleLegacyModule()?.getObject({a: 1, b: 'foo', c: null}),
           getUnsafeObject: () =>
-            getSampleLegacyModule()?.getObject({a: 1, b: 'foo', c: null}),
+            getSampleLegacyModule()?.getUnsafeObject({a: 1, b: 'foo', c: null}),
           getValue: () =>
             getSampleLegacyModule()?.getValue(5, 'test', {a: 1, b: 'foo'}),
           getDynamicWithNull: () => getSampleLegacyModule()?.getDynamic(null),

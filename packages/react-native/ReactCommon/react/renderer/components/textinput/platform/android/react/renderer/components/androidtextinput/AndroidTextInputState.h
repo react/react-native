@@ -13,8 +13,8 @@
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 
+#include <React/MapBuffer.h>
 #include <folly/dynamic.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
 
 namespace facebook::react {
 

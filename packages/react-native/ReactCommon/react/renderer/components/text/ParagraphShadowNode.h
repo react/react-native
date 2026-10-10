@@ -9,13 +9,12 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/text/BaseTextShadowNode.h>
 #include <react/renderer/components/text/ParagraphEventEmitter.h>
 #include <react/renderer/components/text/ParagraphProps.h>
 #include <react/renderer/components/text/ParagraphState.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/core/LayoutContext.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManagerExtended.h>
 

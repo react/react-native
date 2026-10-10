@@ -103,6 +103,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    disableIdleMountItemFrameCallbackRearmAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-07',
+        description:
+          'Stop re-arming the DISPATCH_UI Choreographer frame callback at vsync rate while no mount items are pending on Android; queueing new items re-arms it',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     disableImageViewPreallocationAndroid: {
       defaultValue: false,
       metadata: {
@@ -170,6 +181,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'canary',
     },
     enableAccumulatedUpdatesInRawPropsAndroid: {
+      dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,
       metadata: {
         dateAdded: '2024-12-10',
@@ -202,6 +214,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableAsyncDiskCacheCheckInMultiSourceImageAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-27',
+        description:
+          'Runs multi-source image disk-cache checks asynchronously on Android.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableBridgelessArchitecture: {
       defaultValue: true,
       metadata: {
@@ -211,17 +234,8 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'stable',
     },
-    enableBufferedCallInvoker: {
-      defaultValue: true,
-      metadata: {
-        description:
-          'Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.',
-        expectedReleaseValue: true,
-        purpose: 'release',
-      },
-      ossReleaseStage: 'none',
-    },
     enableCppPropsIteratorSetter: {
+      dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,
       metadata: {
         dateAdded: '2024-09-13',
@@ -276,6 +290,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableExclusivePropsUpdateAndroid: {
+      dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,
       metadata: {
         dateAdded: '2025-11-11',
@@ -290,7 +305,17 @@ const definitions: FeatureFlagDefinitions = {
       defaultValue: false,
       metadata: {
         description:
-          'Enables Fabric commit branching to fix starvation problems and atomic JS updates.',
+          'Enables Fabric commit branching to fix atomic JS updates.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableFabricCommitBranchingMergeOnMainThread: {
+      defaultValue: false,
+      metadata: {
+        description:
+          'Enables Fabric commit branching merge to happen on the main thread to fix starvation problems.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
@@ -496,11 +521,23 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableNativeCSSParsing: {
+      dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,
       metadata: {
         dateAdded: '2025-02-07',
         description:
           'Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enablePreallocatedPropsDiffOnInsertAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-30',
+        description:
+          'When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -517,6 +554,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enablePropsUpdateReconciliationAndroid: {
+      dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,
       metadata: {
         dateAdded: '2024-07-12',
@@ -624,16 +662,16 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    fixDifferentiatorParentTagForUnflattenCase: {
-      defaultValue: true,
+    fixBorderlessRippleAndroid: {
+      defaultValue: false,
       metadata: {
-        dateAdded: '2026-04-18',
+        dateAdded: '2026-10-06',
         description:
-          'Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.',
+          'Prevents a borderless ripple feedback underlay from projecting the entire view background on Android, which could hide the background and ripple.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'canary',
     },
     fixMappingOfEventPrioritiesBetweenFabricAndReact: {
       defaultValue: false,
@@ -715,7 +753,7 @@ const definitions: FeatureFlagDefinitions = {
       metadata: {
         dateAdded: '2026-04-07',
         description:
-          'When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.',
+          'When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -913,6 +951,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     useSharedAnimatedBackend: {
+      dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,
       metadata: {
         dateAdded: '2025-08-02',
@@ -1070,6 +1109,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2026-02-04',
         description:
           'Enable the external inspection API for DevTools to communicate with the Inspector overlay.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    fixCrossOrientationNestedListViewability: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-29',
+        description:
+          'When enabled, a VirtualizedList nested inside a list of the opposite orientation does not report viewable items while its containing cell is outside the parent viewport.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

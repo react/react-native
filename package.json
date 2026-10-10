@@ -66,6 +66,7 @@
     "@electron/packager": "^20.0.0",
     "@expo/spawn-async": "^1.7.2",
     "@jest/create-cache-key-function": "^29.7.0",
+    "@jest/test-sequencer": "^29.7.0",
     "@microsoft/api-extractor": "^7.52.2",
     "@octokit/rest": "^22.0.0",
     "@react-native/metro-babel-transformer": "0.87.0-main",
@@ -94,11 +95,11 @@
     "eslint-plugin-redundant-undefined": "^0.4.0",
     "eslint-plugin-relay": "^1.8.3",
     "fb-dotslash": "0.5.8",
-    "flow-api-translator": "0.331.0",
-    "flow-bin": "^0.331.0",
-    "flow-eslint": "0.331.0",
-    "flow-parser": "0.331.0",
-    "flow-transform": "0.331.0",
+    "flow-api-translator": "0.333.0",
+    "flow-bin": "^0.335.0",
+    "flow-eslint": "0.333.0",
+    "flow-parser": "0.333.0",
+    "flow-transform": "0.333.0",
     "google-java-format": "1.4.0",
     "ini": "^5.0.0",
     "inquirer": "^7.1.0",
@@ -139,7 +140,7 @@
     "@xmldom/xmldom": "^0.8.13",
     "fast-xml-parser": "^4.5.6",
     "yaml": "^2.8.3",
-    "fast-uri": "^3.1.2",
+    "fast-uri": "^3.1.6",
     "shell-quote": "1.9.0"
   }
 }

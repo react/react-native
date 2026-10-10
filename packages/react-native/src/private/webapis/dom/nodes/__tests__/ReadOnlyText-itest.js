@@ -15,26 +15,21 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {HostInstance} from 'react-native';
 
 import ensureInstance from '../../../../__tests__/utilities/ensureInstance';
+import ReadOnlyText from '../ReadOnlyText';
 import * as Fantom from '@react-native/fantom';
 import invariant from 'invariant';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import {NativeText} from 'react-native/Libraries/Text/TextNativeComponent';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
-import ReadOnlyNode from 'react-native/src/private/webapis/dom/nodes/ReadOnlyNode';
-import ReadOnlyText from 'react-native/src/private/webapis/dom/nodes/ReadOnlyText';
+import {unstable_NativeText as NativeText} from 'react-native';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 function ensureReadOnlyText(value: unknown): ReadOnlyText {
   return ensureInstance(value, ReadOnlyText);
 }
 
-function ensureReadOnlyNode(value: unknown): ReadOnlyNode {
-  return ensureInstance(value, ReadOnlyNode);
-}
-
-function ensureReactNativeElement(value: unknown): ReactNativeElement {
-  return ensureInstance(value, ReactNativeElement);
+function ensureReadOnlyNode(value: unknown): Node {
+  return ensureInstance(value, Node);
 }
 
 // The public imperative EventTarget API is not part of the static type of this
@@ -95,7 +90,7 @@ describe('ReadOnlyText', () => {
         const parentNode = ensureReadOnlyNode(parentNodeRef.current);
         const textNode = parentNode.childNodes[0];
 
-        expect(textNode.nodeType).toBe(ReadOnlyNode.TEXT_NODE);
+        expect(textNode.nodeType).toBe(Node.TEXT_NODE);
       });
     });
 
@@ -134,10 +129,10 @@ describe('ReadOnlyText', () => {
           );
         });
 
-        const parentElement: ReactNativeElement = ensureReactNativeElement(
+        const parentElement: HostInstance = nullthrows(
           parentElementRef.current,
         );
-        const childElementA: ReactNativeElement = ensureReactNativeElement(
+        const childElementA: HostInstance = nullthrows(
           childElementARef.current,
         );
 
@@ -196,9 +191,7 @@ describe('ReadOnlyText', () => {
           root.render(<NativeText ref={parentNodeRef}>Some text</NativeText>);
         });
 
-        const parentNode: ReadOnlyNode = ensureReadOnlyNode(
-          parentNodeRef.current,
-        );
+        const parentNode: Node = ensureReadOnlyNode(parentNodeRef.current);
         const textNode = ensureReadOnlyText(parentNode.childNodes[0]);
 
         expect(textNode.data).toBe('Some text');
@@ -229,18 +222,10 @@ describe('ReadOnlyText', () => {
           );
         });
 
-        const parentElement = ensureReactNativeElement(
-          parentElementRef.current,
-        );
-        const childElementA = ensureReactNativeElement(
-          childElementARef.current,
-        );
-        const childElementB = ensureReactNativeElement(
-          childElementBRef.current,
-        );
-        const childElementC = ensureReactNativeElement(
-          childElementCRef.current,
-        );
+        const parentElement = nullthrows(parentElementRef.current);
+        const childElementA = nullthrows(childElementARef.current);
+        const childElementB = nullthrows(childElementBRef.current);
+        const childElementC = nullthrows(childElementCRef.current);
 
         // Get text nodes and refine them as text nodes for Flow
         const childTextA = parentElement.childNodes[0];
@@ -302,9 +287,7 @@ describe('ReadOnlyText', () => {
           );
         });
 
-        const parentElement = ensureReactNativeElement(
-          parentElementRef.current,
-        );
+        const parentElement = nullthrows(parentElementRef.current);
 
         // Get text nodes and refine them as text nodes for Flow
         const childTextA = parentElement.childNodes[0];

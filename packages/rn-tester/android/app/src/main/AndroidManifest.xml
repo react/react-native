@@ -89,6 +89,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Second ReactActivity used by the PhotoPickerAndroid example to exercise
+             multi-Activity navigation with ActivityResultContract launchers: starting it on top
+             of RNTesterActivity forces the launchers to rebind to this Activity's registry. -->
+        <activity
+            android:name=".RNTesterSecondActivity"
+            android:configChanges="orientation|screenSize|uiMode|fontScale"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:screenOrientation="fullSensor" />
+
         <provider
             android:name="com.facebook.react.modules.blob.BlobProvider"
             android:authorities="@string/blob_provider_authority"

@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/CallInvoker.h>
+#include <React/CallInvoker.h>
 #include <memory>
 
 namespace facebook::react {

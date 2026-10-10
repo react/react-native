@@ -7,10 +7,10 @@
 
 #import <vector>
 
+#import <React/Graphics.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTDefines.h>
 #import <UIKit/UIKit.h>
-#import <react/renderer/graphics/BoxShadow.h>
 
 RCT_EXTERN CALayer *RCTGetBoxShadowLayer(
     const facebook::react::BoxShadow &shadow,

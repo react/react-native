@@ -32,7 +32,7 @@
     "@typescript-eslint/parser": "^8.59.2",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-ft-flow": "^2.0.1",
+    "eslint-plugin-ft-flow": "^3.0.11",
     "eslint-plugin-jest": "^29.0.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",

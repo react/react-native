@@ -4,13 +4,36 @@
 # LICENSE file in the root directory of this source tree.
 
 class SPMManager
+  EMBED_FUNCTION = 'install_spm_framework'
+  SIGNATURE_PHASE_NAME = '[RN] Remove duplicate Swift package xcframework signatures'
+
+  # Embeds framework $1 from where Xcode builds binary targets (the shared products dir) and source packages
+  # (PackageFrameworks, or UninstalledProducts when archiving); static frameworks are linked into their
+  # consumer and a framework that is not found is skipped, so a misspelled name fails only at launch.
+  EMBED_FUNCTION_SOURCE = <<~'SH'
+    install_spm_framework()
+    {
+      local dir
+      for dir in "${PODS_CONFIGURATION_BUILD_DIR}" "${PODS_CONFIGURATION_BUILD_DIR}/PackageFrameworks" "${OBJROOT}/UninstalledProducts/${PLATFORM_NAME}"; do
+        if [ -d "$dir/$1.framework" ]; then
+          if file -b "$dir/$1.framework/$1" | grep -q "dynamically linked"; then
+            install_framework "$dir/$1.framework"
+          fi
+          return
+        fi
+      done
+    }
+  SH
+
   def initialize()
      @dependencies_by_pod = {}
   end
 
-  def dependency(pod_spec, url:, requirement:,  products:)
+  def dependency(pod_spec, url:, requirement:,  products:, embed_frameworks: products)
     @dependencies_by_pod[pod_spec.name] ||= []
-    @dependencies_by_pod[pod_spec.name] << { url: url, requirement: requirement, products: products}
+    dependency = { url: url, requirement: requirement, products: products, embed_frameworks: embed_frameworks }
+    # CocoaPods can evaluate a podspec several times during one install.
+    @dependencies_by_pod[pod_spec.name] << dependency unless @dependencies_by_pod[pod_spec.name].include?(dependency)
   end
 
   def apply_on_post_install(installer)
@@ -60,6 +83,10 @@ class SPMManager
     rewrite_aggregate_modulemap_references(installer, flattened_pod_names) unless flattened_pod_names.empty?
 
     unless @dependencies_by_pod.empty?
+      log 'Embedding dynamic frameworks of Swift packages'
+      add_embed_frameworks(installer)
+      add_signature_cleanup(project, @dependencies_by_pod.keys - flattened_pod_names)
+
       log_warning "If you're using Xcode 15 or earlier you might need to close and reopen the Xcode workspace"
       unless ENV["USE_FRAMEWORKS"] == "dynamic"
         @dependencies_by_pod.each do |pod_name, dependencies|
@@ -70,6 +97,49 @@ class SPMManager
   end
 
   private
+
+  # CocoaPods' "[CP] Embed Pods Frameworks" script only embeds the frameworks of pods, so without these
+  # calls the app fails at launch with dyld "Library not loaded" for a Swift package framework.
+  def add_embed_frameworks(installer)
+    installer.aggregate_targets.each do |aggregate_target|
+      pod_names = aggregate_target.pod_targets.map(&:name) & @dependencies_by_pod.keys
+      script_path = aggregate_target.embed_frameworks_script_path
+      next if pod_names.empty? || !File.exist?(script_path)
+
+      script = File.read(script_path)
+      next if script.include?("#{EMBED_FUNCTION}()")
+      anchor = /^if \[ "\$\{COCOAPODS_PARALLEL_CODE_SIGN\}" == "true" \]; then$/
+      unless script.match?(anchor)
+        log_warning "Could not embed Swift package frameworks in #{script_path}, the app might fail to launch"
+        next
+      end
+
+      dependencies = pod_names.flat_map { |pod_name| @dependencies_by_pod[pod_name] }
+      frameworks = dependencies.flat_map { |d| d[:embed_frameworks] }.uniq
+      # Listing the requirements makes a version change rewrite this script, an input of the embed phase,
+      # so the phase runs again and copies the new frameworks.
+      requirements = dependencies.map { |d| "# #{d[:url]} #{d[:requirement]}\n" }.uniq.join
+      calls = frameworks.map { |framework| "#{EMBED_FUNCTION} \"#{framework}\"\n" }.join
+      File.write(script_path, script.sub(anchor) { "#{EMBED_FUNCTION_SOURCE}#{requirements}#{calls}#{$&}" })
+      log " Embedding #{frameworks.join(', ')} in #{aggregate_target.name}"
+    end
+  end
+
+  # Xcode writes a binary target's xcframework signature both to the shared products dir and to the build dir
+  # of the pod using it, and Xcode 26 archives fail on the duplicate ("couldn't be copied to Signatures because
+  # an item with the same name already exists"), so the pod's copy is removed.
+  def add_signature_cleanup(project, pod_names)
+    pod_names.each do |pod_name|
+      target = project.targets.find { |t| t.name == pod_name }
+      next if target.nil? || target.shell_script_build_phases.any? { |phase| phase.name == SIGNATURE_PHASE_NAME }
+
+      phase = new_object(project, Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
+      phase.name = SIGNATURE_PHASE_NAME
+      phase.shell_script = 'rm -f "${CONFIGURATION_BUILD_DIR}"/*.xcframework-*.signature'
+      phase.always_out_of_date = '1'
+      target.build_phases << phase
+    end
+  end
 
   # Flattening a pod's build dir moves its generated modulemap from
   # "<Pod>/<Pod>.modulemap" to "<Pod>.modulemap"; the aggregate xcconfigs

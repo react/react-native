@@ -27,17 +27,11 @@ runs:
       run: |
         for attempt in 1 2 3; do
           echo "Attempt $attempt of 3"
-          if [ "$attempt" -eq 1 ]; then
-            if yarn fantom; then
-              exit 0
-            fi
-          else
-            if yarn fantom --onlyFailures; then
-              exit 0
-            fi
+          if yarn fantom; then
+            exit 0
           fi
           if [ "$attempt" -lt 3 ]; then
-            echo "Attempt $attempt failed. Retrying only failed tests..."
+            echo "Attempt $attempt failed. Retrying..."
           fi
         done
         echo "All 3 attempts failed."
@@ -46,7 +40,7 @@ runs:
         LD_LIBRARY_PATH: ${{ github.workspace }}/private/react-native-fantom/build/tester
     - name: Upload test results
       if: ${{ always() }}
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: run-fantom-tests-results
         compression-level: 1

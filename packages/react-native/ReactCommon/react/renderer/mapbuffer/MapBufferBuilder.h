@@ -8,8 +8,11 @@
 #pragma once
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
-#include <react/debug/react_native_assert.h>
+
+#include <cstdint>
+#include <string>
 #include <vector>
+
 #include "MapBuffer.h"
 
 namespace facebook::react {

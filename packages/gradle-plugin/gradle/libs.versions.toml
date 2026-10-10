@@ -4,7 +4,7 @@ gson = "2.8.9"
 guava = "31.0.1-jre"
 javapoet = "1.13.0"
 junit = "4.13.2"
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 assertj = "3.25.1"
 
 [libraries]

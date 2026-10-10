@@ -10,9 +10,8 @@
 
 import type {HostComponent, ViewProps} from 'react-native';
 
-import ReactFabric from '../../../react-native/Libraries/Renderer/shims/ReactFabric';
 import * as React from 'react';
-import {UIManager, requireNativeComponent} from 'react-native';
+import {UIManager, findNodeHandle, requireNativeComponent} from 'react-native';
 
 type ColorChangedEvent = {
   nativeEvent: {
@@ -42,7 +41,7 @@ export function callNativeMethodToChangeBackgroundColor(
     console.log('viewRef is null');
     return;
   }
-  const reactTag = ReactFabric.findNodeHandle<$FlowFixMe>(viewRef);
+  const reactTag = findNodeHandle<MyLegacyViewType>(viewRef);
   if (reactTag == null) {
     console.log('reactTag is null');
     return;
@@ -63,7 +62,7 @@ export function callNativeMethodToAddOverlays(
     console.log('viewRef is null');
     return;
   }
-  const reactTag = ReactFabric.findNodeHandle<$FlowFixMe>(viewRef);
+  const reactTag = findNodeHandle<MyLegacyViewType>(viewRef);
   if (reactTag == null) {
     console.log('reactTag is null');
     return;
@@ -84,7 +83,7 @@ export function callNativeMethodToRemoveOverlays(
     console.log('viewRef is null');
     return;
   }
-  const reactTag = ReactFabric.findNodeHandle<$FlowFixMe>(viewRef);
+  const reactTag = findNodeHandle<MyLegacyViewType>(viewRef);
   if (reactTag == null) {
     console.log('reactTag is null');
     return;

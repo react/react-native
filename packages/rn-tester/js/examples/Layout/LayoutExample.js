@@ -11,13 +11,14 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import RNTesterBlock from '../../components/RNTesterBlock';
 import RNTesterPage from '../../components/RNTesterPage';
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {StyleSheet, View} from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 type CicleProps = Readonly<{
   backgroundColor?: string,

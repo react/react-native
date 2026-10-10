@@ -11,15 +11,14 @@
 'use strict';
 
 import type {LayoutChangeEvent, LayoutRectangle} from 'react-native';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
+const deepEquals = require('./RNTesterDeepEquals').default;
 const React = require('react');
 const ReactNative = require('react-native');
-const deepDiffer =
-  require('react-native/Libraries/Utilities/differ/deepDiffer').default;
 
 const {Image, LayoutAnimation, StyleSheet, Text, View} = ReactNative;
 const {TestModule} = ReactNative.NativeModules;
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 function debug(...args: Array<void | LayoutRectangle | string>) {
   // console.log.apply(null, arguments);
 }
@@ -108,7 +107,7 @@ class LayoutEventsTest extends React.Component<Props, State> {
     measured: LayoutRectangle,
     onLayout?: ?LayoutRectangle,
   ): void {
-    if (deepDiffer(measured, onLayout)) {
+    if (!deepEquals(measured, onLayout)) {
       const data = {measured, onLayout};
       throw new Error(
         node +

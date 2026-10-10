@@ -60,7 +60,8 @@ jobs:
     steps:
       - id: check
         run: |
-          if [[ "${{ needs.test.outputs.status }}" == "failure" ]]; then
+          if [[ "${{ needs.test.result }}" != "success" ||
+                "${{ needs.test.outputs.status }}" == "failure" ]]; then
             echo "status=failure" >> $GITHUB_OUTPUT
           else
             echo "status=success" >> $GITHUB_OUTPUT

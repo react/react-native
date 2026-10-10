@@ -63,7 +63,7 @@ using namespace facebook::react;
   const auto &newViewProps = static_cast<const VirtualViewProps &>(*props);
 
   if (!_mode.has_value()) {
-    _mode = newViewProps.initialHidden ? RCTVirtualViewModeHidden : RCTVirtualViewModeVisible;
+    _mode = newViewProps.initialHidden.value_or(false) ? RCTVirtualViewModeHidden : RCTVirtualViewModeVisible;
   }
 
   switch (newViewProps.renderState) {

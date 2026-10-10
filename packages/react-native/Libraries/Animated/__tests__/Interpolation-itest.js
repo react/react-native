@@ -311,6 +311,28 @@ describe('Interpolation', () => {
     expect(interpolation(1)).toBe('100deg');
   });
 
+  it('should work with multiple numeric components in string ranges', () => {
+    const interpolation = createInterpolation({
+      inputRange: [0, 1],
+      outputRange: ['0px -4.5px 10%', '10px 5.5px 0%'],
+    });
+
+    expect(interpolation(0)).toBe('0px -4.5px 10%');
+    expect(interpolation(0.5)).toBe('5px 0.5px 5%');
+    expect(interpolation(1)).toBe('10px 5.5px 0%');
+  });
+
+  it('should keep the non-numeric prefix and suffix of string ranges', () => {
+    const interpolation = createInterpolation({
+      inputRange: [0, 1],
+      outputRange: ['translate(0px, -10.5px)', 'translate(20px, 10px)'],
+    });
+
+    expect(interpolation(0)).toBe('translate(0px, -10.5px)');
+    expect(interpolation(0.5)).toBe('translate(10px, -0.25px)');
+    expect(interpolation(1)).toBe('translate(20px, 10px)');
+  });
+
   it('should crash when chaining an interpolation that returns a string', () => {
     const interpolation = createInterpolation({
       inputRange: [0, 1],

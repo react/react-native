@@ -9,9 +9,9 @@
  * @oncall react_native
  */
 
+import {setAnimationTimeProvider} from '../AnimationTimingUtils';
 import * as Fantom from '@react-native/fantom';
 import {Animated} from 'react-native';
-import {setAnimationTimeProvider} from 'react-native/Libraries/Animated/AnimationTimingUtils';
 
 export type Driver = {readonly name: string, readonly useNativeDriver: boolean};
 

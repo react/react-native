@@ -12,7 +12,7 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 declare var IntersectionObserverEntry: unknown;
 

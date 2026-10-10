@@ -8,20 +8,15 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  Int32,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 export type Props = Readonly<{
   ...ViewProps,
-  text: Int32,
-  backgroundColor?: WithDefault<string, 'transparent'>,
-  height?: WithDefault<Int32, 100>,
+  text: CodegenTypes.Int32,
+  backgroundColor?: CodegenTypes.WithDefault<string, 'transparent'>,
+  height?: CodegenTypes.WithDefault<CodegenTypes.Int32, 100>,
 }>;
 
 export default codegenNativeComponent<Props>(

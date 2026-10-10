@@ -11,20 +11,17 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import type ResizeObserverType from '../ResizeObserver';
+import type ResizeObserverEntryType from '../ResizeObserverEntry';
+import type ResizeObserverSizeType from '../ResizeObserverSize';
 import type {HostInstance} from 'react-native';
-import type ResizeObserverType from 'react-native/src/private/webapis/resizeobserver/ResizeObserver';
-import type ResizeObserverEntryType from 'react-native/src/private/webapis/resizeobserver/ResizeObserverEntry';
-import type ResizeObserverSizeType from 'react-native/src/private/webapis/resizeobserver/ResizeObserverSize';
 
-import ensureInstance from '../../../__tests__/utilities/ensureInstance';
 import {createShadowNodeReferenceCountingRef} from '../../../__tests__/utilities/ShadowNodeReferenceCounter';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {View} from 'react-native';
-import setUpResizeObserver from 'react-native/src/private/setup/setUpResizeObserver';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
-import DOMRectReadOnly from 'react-native/src/private/webapis/geometry/DOMRectReadOnly';
 
 declare const ResizeObserver: Class<ResizeObserverType>;
 declare const ResizeObserverEntry: Class<ResizeObserverEntryType>;
@@ -34,12 +31,6 @@ type ResizeObserverMockCallback = JestMockFn<
   [ReadonlyArray<ResizeObserverEntry>, ResizeObserver],
   unknown,
 >;
-
-setUpResizeObserver();
-
-function ensureReactNativeElement(value: unknown): ReactNativeElement {
-  return ensureInstance(value, ReactNativeElement);
-}
 
 function expectEntrySizes(
   entry: ResizeObserverEntry,
@@ -145,7 +136,7 @@ describe('ResizeObserver', () => {
       Fantom.runTask(() => {
         root.render(<View style={{width: 10, height: 10}} ref={nodeRef} />);
       });
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       observer = new ResizeObserver(() => {});
       expect(() => {
@@ -162,7 +153,7 @@ describe('ResizeObserver', () => {
       Fantom.runTask(() => {
         root.render(<View style={{width: 10, height: 10}} ref={nodeRef} />);
       });
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       expect(() => {
         observer = new ResizeObserver(() => {});
@@ -181,7 +172,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 10, height: 10}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       Fantom.runTask(() => {
         root.render(<></>);
@@ -207,7 +198,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -239,7 +230,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 0, height: 0}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -275,7 +266,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -306,7 +297,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 10.4, height: 10.6}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -332,7 +323,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -361,7 +352,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -392,7 +383,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -431,7 +422,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -484,7 +475,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -548,7 +539,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -587,7 +578,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -634,7 +625,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -672,7 +663,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -706,7 +697,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -761,7 +752,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const child = ensureReactNativeElement(childRef.current);
+      const child = nullthrows(childRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -808,7 +799,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const child = ensureReactNativeElement(childRef.current);
+      const child = nullthrows(childRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -873,7 +864,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback1 = jest.fn();
       const callback2 = jest.fn();
 
@@ -914,7 +905,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -958,7 +949,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -990,7 +981,7 @@ describe('ResizeObserver', () => {
       // shown again. Web-style reinsertion of the *same* Element is not
       // expressible via React remount.
       expect(callback).toHaveBeenCalledTimes(2);
-      const remountedNode = ensureReactNativeElement(nodeRef.current);
+      const remountedNode = nullthrows(nodeRef.current);
       expect(remountedNode).not.toBe(node);
 
       Fantom.runTask(() => {
@@ -1020,7 +1011,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const child = ensureReactNativeElement(childRef.current);
+      const child = nullthrows(childRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -1053,8 +1044,8 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const nodeA = ensureReactNativeElement(nodeARef.current);
-      const nodeB = ensureReactNativeElement(nodeBRef.current);
+      const nodeA = nullthrows(nodeARef.current);
+      const nodeB = nullthrows(nodeBRef.current);
       const callbackB = jest.fn();
       let observerB: ResizeObserver;
 
@@ -1104,8 +1095,8 @@ describe('ResizeObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
 
         Fantom.runTask(() => {
           observer1 = new ResizeObserver(callback1);
@@ -1159,7 +1150,7 @@ describe('ResizeObserver', () => {
           root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
         });
 
-        const node = ensureReactNativeElement(nodeRef.current);
+        const node = nullthrows(nodeRef.current);
         const callback = jest.fn();
 
         Fantom.runTask(() => {
@@ -1208,8 +1199,8 @@ describe('ResizeObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
         const callback = jest.fn();
 
         Fantom.runTask(() => {
@@ -1283,8 +1274,8 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node1 = ensureReactNativeElement(node1Ref.current);
-      const node2 = ensureReactNativeElement(node2Ref.current);
+      const node1 = nullthrows(node1Ref.current);
+      const node2 = nullthrows(node2Ref.current);
       const callback1 = jest.fn();
       const callback2 = jest.fn();
 
@@ -1360,8 +1351,8 @@ describe('ResizeObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
         const callback = jest.fn();
 
         Fantom.runTask(() => {
@@ -1422,8 +1413,8 @@ describe('ResizeObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
 
         const callOrder: Array<string> = [];
         const callbackA: ResizeObserverMockCallback = jest.fn(() =>
@@ -1492,8 +1483,8 @@ describe('ResizeObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
 
         const callOrder: Array<string> = [];
         const callbackA: ResizeObserverMockCallback = jest.fn(() =>
@@ -1536,7 +1527,7 @@ describe('ResizeObserver', () => {
         const observeRef: React.RefSetter<
           React.ElementRef<typeof View>,
         > = instance => {
-          const element = ensureReactNativeElement(instance);
+          const element = nullthrows(instance);
           observer.observe(element);
           return () => {
             observer.unobserve(element);
@@ -1579,7 +1570,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const events: Array<string> = [];
       const callback: ResizeObserverMockCallback = jest.fn(() => {
         events.push('callback');
@@ -1609,7 +1600,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const observed: Array<string> = [];
       const callback: ResizeObserverMockCallback = jest.fn(entries => {
         observed.push(
@@ -1643,7 +1634,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback1: ResizeObserverMockCallback = jest.fn(() => {
         throw new Error('observer 1 failed');
       });
@@ -1687,7 +1678,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback: ResizeObserverMockCallback = jest.fn(() => {
         throw new Error('observer failed');
       });
@@ -1745,7 +1736,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       let selfObserver: ResizeObserver;
       const callback: ResizeObserverMockCallback = jest.fn(() => {
         selfObserver.disconnect();
@@ -1782,8 +1773,8 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node1 = ensureReactNativeElement(node1Ref.current);
-      const node2 = ensureReactNativeElement(node2Ref.current);
+      const node1 = nullthrows(node1Ref.current);
+      const node2 = nullthrows(node2Ref.current);
 
       let observerA: ResizeObserver;
       let observerB: ResizeObserver;
@@ -1830,9 +1821,9 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node1 = ensureReactNativeElement(node1Ref.current);
-      const node2 = ensureReactNativeElement(node2Ref.current);
-      const node3 = ensureReactNativeElement(node3Ref.current);
+      const node1 = nullthrows(node1Ref.current);
+      const node2 = nullthrows(node2Ref.current);
+      const node3 = nullthrows(node3Ref.current);
 
       let observerA: ResizeObserver;
       let observerB: ResizeObserver;
@@ -1893,7 +1884,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       let firstObserver: ResizeObserver;
       // Disconnecting the only observer tears down the whole native
       // connection (commit hook, event-loop delegate, notification callback)
@@ -1948,8 +1939,8 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const nodeA = ensureReactNativeElement(nodeARef.current);
-      const nodeB = ensureReactNativeElement(nodeBRef.current);
+      const nodeA = nullthrows(nodeARef.current);
+      const nodeB = nullthrows(nodeBRef.current);
 
       // Re-enters `observe()` on the very observer being notified. Re-observing
       // an already-observed target with the same box is a no-op, so this
@@ -2016,8 +2007,8 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const nodeA = ensureReactNativeElement(nodeARef.current);
-      const nodeB = ensureReactNativeElement(nodeBRef.current);
+      const nodeA = nullthrows(nodeARef.current);
+      const nodeB = nullthrows(nodeBRef.current);
       const callback: ResizeObserverMockCallback = jest.fn(() => {
         observer.observe(nodeA);
       });
@@ -2074,7 +2065,7 @@ describe('ResizeObserver', () => {
         root.render(<Box />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       const callback: ResizeObserverMockCallback = jest.fn(entries => {
         events.push(`callback:${entries[0].contentRect.width}`);
@@ -2125,7 +2116,7 @@ describe('ResizeObserver', () => {
         root.render(<Box />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback: ResizeObserverMockCallback = jest.fn(() => {
         const setWidth = setWidthRef.current;
         if (setWidth != null && widthMeasuredAfterSetState === -1) {
@@ -2164,7 +2155,7 @@ describe('ResizeObserver', () => {
         root.render(<Box />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback: ResizeObserverMockCallback = jest.fn(() => {
         const setSize = setSizeRef.current;
         if (setSize != null && renderCount < 2) {
@@ -2220,8 +2211,8 @@ describe('ResizeObserver', () => {
         root.render(<Boxes />);
       });
 
-      const nodeA = ensureReactNativeElement(nodeARef.current);
-      const nodeB = ensureReactNativeElement(nodeBRef.current);
+      const nodeA = nullthrows(nodeARef.current);
+      const nodeB = nullthrows(nodeBRef.current);
       let scheduled = false;
       const callbackA: ResizeObserverMockCallback = jest.fn(() => {
         if (!scheduled) {
@@ -2281,8 +2272,8 @@ describe('ResizeObserver', () => {
         root.render(<Boxes />);
       });
 
-      const nodeA = ensureReactNativeElement(nodeARef.current);
-      const nodeB = ensureReactNativeElement(nodeBRef.current);
+      const nodeA = nullthrows(nodeARef.current);
+      const nodeB = nullthrows(nodeBRef.current);
       let resizedBInCallback = false;
       const callbackA: ResizeObserverMockCallback = jest.fn(() => {
         if (!resizedBInCallback) {
@@ -2343,8 +2334,8 @@ describe('ResizeObserver', () => {
         root.render(<Boxes />);
       });
 
-      const nodeA = ensureReactNativeElement(nodeARef.current);
-      const nodeB = ensureReactNativeElement(nodeBRef.current);
+      const nodeA = nullthrows(nodeARef.current);
+      const nodeB = nullthrows(nodeBRef.current);
 
       const callbackA: ResizeObserverMockCallback = jest.fn(() => {
         deliveryOrder.push('A');
@@ -2401,8 +2392,8 @@ describe('ResizeObserver', () => {
         root.render(<Boxes />);
       });
 
-      const nodeA = ensureReactNativeElement(nodeARef.current);
-      const nodeB = ensureReactNativeElement(nodeBRef.current);
+      const nodeA = nullthrows(nodeARef.current);
+      const nodeB = nullthrows(nodeBRef.current);
 
       // Each callback grows the other target every time it is notified, with no
       // guard to stop the cycle. It settles only because the sizes converge on
@@ -2473,7 +2464,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 10, height: 10}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -2494,7 +2485,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -2524,7 +2515,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -2557,7 +2548,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -2579,7 +2570,7 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -2615,7 +2606,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       Fantom.runTask(() => {
         observer1 = new ResizeObserver(callback1);
@@ -2681,8 +2672,8 @@ describe('ResizeObserver', () => {
         );
       });
 
-      const node1 = ensureReactNativeElement(node1Ref.current);
-      const node2 = ensureReactNativeElement(node2Ref.current);
+      const node1 = nullthrows(node1Ref.current);
+      const node2 = nullthrows(node2Ref.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -2721,7 +2712,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       Fantom.runTask(() => {
         observer = new ResizeObserver(callback);
@@ -2744,7 +2735,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {
@@ -2781,7 +2772,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       Fantom.runTask(() => {
         observer = new ResizeObserver(() => {});
@@ -2809,7 +2800,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       Fantom.runTask(() => {
         observer = new ResizeObserver(callback);
@@ -2844,7 +2835,7 @@ describe('ResizeObserver', () => {
         root.render(<View style={{width: 100, height: 50}} ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
       const callback = jest.fn();
 
       Fantom.runTask(() => {

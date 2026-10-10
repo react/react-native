@@ -12,21 +12,21 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {EventCallback} from 'react-native/src/private/webapis/dom/events/EventTarget';
-
-import Event from 'react-native/src/private/webapis/dom/events/Event';
 import {
   getEventHandlerAttribute,
   setEventHandlerAttribute,
-} from 'react-native/src/private/webapis/dom/events/EventHandlerAttributes';
-import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
+} from '../EventHandlerAttributes';
+
+type EventCallback = (event: Event) => void;
 
 class EventTargetSubclass extends EventTarget {
   get oncustomevent(): EventCallback | null {
+    // $FlowFixMe[incompatible-type] The globals are backed by these implementations.
     return getEventHandlerAttribute(this, 'customEvent');
   }
 
   set oncustomevent(listener: ?EventCallback) {
+    // $FlowFixMe[incompatible-type] The globals are backed by these implementations.
     setEventHandlerAttribute(this, 'customEvent', listener);
   }
 }

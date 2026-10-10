@@ -143,6 +143,26 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   XCTAssertNil(child2.superview);
 }
 
+- (void)testRemoveClippedSubviewsIsKeptOnRecycledView
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  [view updateProps:makeViewProps(true) oldProps:ViewShadowNode::defaultSharedProps()];
+  [view prepareForRecycle];
+
+  // Reused for another view with removeClippedSubviews. Like the mounting layer
+  // does for an Insert, pass no old props: the view diffs against its own.
+  [view updateProps:makeViewProps(true) oldProps:nullptr];
+
+  UIView *child = [UIView new];
+  child.frame = CGRectMake(0, 400, 50, 50);
+  [view mountChildComponentView:(id)child index:0];
+
+  // Clipping is on, so the child is tracked and left for the clipping pass to attach.
+  XCTAssertNil(child.superview);
+  NSMutableArray *reactSubviews = [view valueForKey:@"_reactSubviews"];
+  XCTAssertEqual(reactSubviews.count, 1u);
+}
+
 #pragma mark - hitTest against non-invertible transforms (#50797)
 
 - (void)testHitTestReturnsNilForZeroScaleYView
@@ -236,6 +256,39 @@ static RCTViewComponentView *makeViewWithRole(bool accessible, const std::string
 {
   RCTViewComponentView *view = makeViewWithRole(true, "");
   XCTAssertFalse(view.canBecomeFocused);
+}
+
+#pragma mark - accessibilityValue for expanded state
+
+static RCTViewComponentView *makeViewWithExpandedState(std::optional<bool> expanded)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto props = std::make_shared<ViewProps>();
+  props->accessible = true;
+  props->accessibilityRole = "button";
+  AccessibilityState accessibilityState;
+  accessibilityState.expanded = expanded;
+  props->accessibilityState = accessibilityState;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  return view;
+}
+
+- (void)testAccessibilityValueAnnouncesExpanded
+{
+  RCTViewComponentView *view = makeViewWithExpandedState(true);
+  XCTAssertEqualObjects(view.accessibilityValue, @"expanded");
+}
+
+- (void)testAccessibilityValueAnnouncesCollapsed
+{
+  RCTViewComponentView *view = makeViewWithExpandedState(false);
+  XCTAssertEqualObjects(view.accessibilityValue, @"collapsed");
+}
+
+- (void)testAccessibilityValueIsNilWithoutExpandedState
+{
+  RCTViewComponentView *view = makeViewWithExpandedState(std::nullopt);
+  XCTAssertNil(view.accessibilityValue);
 }
 
 #pragma mark - outline style on square corners (#57841)

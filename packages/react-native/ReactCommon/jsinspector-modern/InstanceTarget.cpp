@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include "ExecutionContextManager.h"
 #include "InstanceAgent.h"
 #include "SessionState.h"
 

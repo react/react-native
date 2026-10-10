@@ -13,11 +13,7 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {TimerMock} from '@react-native/fantom';
 
 import DOMException from '../../../errors/DOMException';
-import {AbortController} from '../AbortController';
-import {AbortSignal_public as AbortSignal} from '../AbortSignal';
 import * as Fantom from '@react-native/fantom';
-import Event from 'react-native/src/private/webapis/dom/events/Event';
-import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
 
 let listenerCallOrder = 0;
 

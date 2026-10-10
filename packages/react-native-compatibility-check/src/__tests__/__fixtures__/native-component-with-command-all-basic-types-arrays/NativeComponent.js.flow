@@ -8,16 +8,9 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  Double,
-  Float,
-  Int32,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeCommands, codegenNativeComponent} from 'react-native';
 
 type NativeProps = Readonly<{
   ...ViewProps,
@@ -28,7 +21,7 @@ type NativeType = HostComponent<NativeProps>;
 interface NativeCommands {
   readonly methodInt: (
     viewRef: React.ElementRef<NativeType>,
-    a: Array<Int32>,
+    a: Array<CodegenTypes.Int32>,
   ) => void;
   readonly methodString: (
     viewRef: React.ElementRef<NativeType>,
@@ -40,11 +33,11 @@ interface NativeCommands {
   ) => void;
   readonly methodFloat: (
     viewRef: React.ElementRef<NativeType>,
-    a: Array<Float>,
+    a: Array<CodegenTypes.Float>,
   ) => void;
   readonly methodDouble: (
     viewRef: React.ElementRef<NativeType>,
-    a: Array<Double>,
+    a: Array<CodegenTypes.Double>,
   ) => void;
 }
 

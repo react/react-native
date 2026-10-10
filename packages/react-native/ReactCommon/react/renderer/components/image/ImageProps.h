@@ -7,7 +7,10 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
+
+#include <optional>
+#include <string>
 
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
@@ -30,7 +33,7 @@ class ImageProps final : public ViewProps {
   ImageSources sources{};
   ImageSource defaultSource{};
   ImageSource loadingIndicatorSource{};
-  ImageResizeMode resizeMode{ImageResizeMode::Stretch};
+  ImageResizeMode resizeMode{ImageResizeMode::Cover};
   Float blurRadius{};
   EdgeInsets capInsets{};
   std::optional<SharedColor> tintColor{};
@@ -39,8 +42,8 @@ class ImageProps final : public ViewProps {
   Float resizeMultiplier{1.f};
   bool shouldNotifyLoadEvents{};
   SharedColor overlayColor{};
-  Float fadeDuration{300.f};
-  bool progressiveRenderingEnabled{};
+  std::optional<Float> fadeDuration{};
+  std::optional<bool> progressiveRenderingEnabled{};
 
 #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;

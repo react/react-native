@@ -11,11 +11,11 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {View} from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 // These tests render <View> with string-valued CSS properties. With
 // `enableNativeCSSParsing` forced on, the strings are parsed by the C++ CSS

@@ -110,6 +110,14 @@ typedef std::shared_ptr<facebook::react::JSRuntimeFactory> (^RCTHostJSEngineProv
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args;
 
+/**
+ * The CallInvoker of the current React instance, the same one its TurboModules receive. It schedules work on the JS
+ * thread with a priority. The returned invoker can be used from any thread. Null before `start` and while a reload
+ * replaces the instance; every reload creates a new invoker, so read it again after `hostDidStart:`. Holding it past a
+ * reload or past the host's lifetime is safe: work sent to an invoker whose instance is gone is dropped.
+ */
+- (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
+
 // Renderer API
 
 - (RCTFabricSurface *)createSurfaceWithModuleName:(NSString *)moduleName

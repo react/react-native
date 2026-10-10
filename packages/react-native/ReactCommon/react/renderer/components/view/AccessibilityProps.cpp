@@ -29,7 +29,10 @@ static AccessibilityTraits deriveAccessibilityTraits(
   }
 
   const auto state = accessibilityState.value_or(AccessibilityState{});
-  if (state.selected) {
+  // `selected` is optional: an unset value means the component is not
+  // selectable at all, which is distinct from an explicit `false`. Neither
+  // contributes the Selected trait, so both coalesce to `false` here.
+  if (state.selected.value_or(false)) {
     traits = traits | AccessibilityTraits::Selected;
   }
   if (state.disabled) {

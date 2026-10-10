@@ -31,10 +31,6 @@ static std::string moduleNameFromComponentNameNoRCTPrefix(const std::string &com
     return "FBStickerInputViewManager";
   }
 
-  if (componentName == "FDSTooltipView") {
-    return "FBReactFDSTooltipViewManager";
-  }
-
   std::string fbPrefix("FB");
   if (std::mismatch(fbPrefix.begin(), fbPrefix.end(), componentName.begin()).first == fbPrefix.end()) {
     // If `moduleName` has "FB" prefix.

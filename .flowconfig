@@ -39,6 +39,8 @@ flow-typed/
 packages/react-native/flow/
 
 [options]
+builtin_lib=core-only
+
 emoji=true
 
 format.bracket_spacing=false
@@ -53,9 +55,17 @@ experimental.multi_platform.extensions=.android
 munge_underscores=true
 
 module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/packages/react-native/index.js'
+module.name_mapper='^react-native/asset-registry$' -> '<PROJECT_ROOT>/packages/react-native/src/asset-registry.js'
+module.name_mapper='^react-native/package.json$' -> '<PROJECT_ROOT>/packages/react-native/package.json'
 module.name_mapper='^react-native/react-private-interface$' -> '<PROJECT_ROOT>/packages/react-native/src/react-private-interface.js'
 module.name_mapper='^react-native/setup-env$' -> '<PROJECT_ROOT>/packages/react-native/src/setup-env.js'
-module.name_mapper='^react-native/\(.*\)$' -> '<PROJECT_ROOT>/packages/react-native/\1'
+module.name_mapper='^react-native/unstable-internals-do-not-use$' -> '<PROJECT_ROOT>/packages/react-native/src/unstable-internals-do-not-use.js'
+module.name_mapper='^react-native/scripts/\(.*\)$' -> '<PROJECT_ROOT>/packages/react-native/scripts/\1'
+module.name_mapper='^react-native/src/fb_internal/\(.*\)$' -> '<PROJECT_ROOT>/packages/react-native/src/fb_internal/\1'
+# Deep imports under React Native's implementation directories are redirected
+# to a module that does not exist. Package roots, secondary entry points, and
+# `src/fb_internal/*` stay importable.
+module.name_mapper='^react-native/\(Libraries\|src/private\|src/types\)/.*$' -> 'react-native-deep-import-is-not-part-of-the-public-api'
 module.name_mapper='^@react-native/dev-middleware$' -> '<PROJECT_ROOT>/packages/dev-middleware'
 module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
 
@@ -86,4 +96,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.331.0
+^0.335.0

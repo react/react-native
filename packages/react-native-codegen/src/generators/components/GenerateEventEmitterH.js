@@ -53,7 +53,7 @@ const FileTemplate = ({
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewEventEmitter.h>
+#include <React/View.h>
 ${[...extraIncludes].join('\n')}
 
 namespace facebook::react {

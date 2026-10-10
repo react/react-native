@@ -96,12 +96,12 @@ jobs:
           cd packages/react-native
           node scripts/ios-prebuild -b -f "${{ matrix.flavor }}" -p "${{ matrix.slice }}"
       - name: Upload headers
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-ios-core-headers-${{ matrix.flavor }}-${{ matrix.slice }}
           path: packages/react-native/.build/headers
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}
           path: |
@@ -245,17 +245,17 @@ jobs:
           cp packages/react-native/.build/output/xcframeworks/${{matrix.flavor}}/ReactNativeHeaders.xcframework.tar.gz \
             packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
       - name: Upload XCFramework Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.xcframework.tar.gz
       - name: Upload dSYM Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactCore${{ matrix.flavor }}.framework.dSYM.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
       - name: Upload ReactNativeHeaders XCFramework Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactNativeHeaders${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz

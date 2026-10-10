@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/graphics/Size.h>
+#include <React/Graphics.h>
 
 namespace facebook::react {
 

@@ -12,9 +12,9 @@
 #include <glog/logging.h>
 #include <cstddef>
 
+#include <React/Graphics.h>
 #include <react/renderer/attributedstring/AttributedStringBox.h>
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
-#include <react/renderer/graphics/Size.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #include <react/renderer/textlayoutmanager/TextMeasureCache.h>
 

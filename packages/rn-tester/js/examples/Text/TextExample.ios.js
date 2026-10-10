@@ -213,6 +213,14 @@ class AdjustingFontSize extends React.Component<
         </Text>
 
         <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit={true}
+          minimumFontScale={0.5}
+          style={{fontSize: 40, marginVertical: 6}}>
+          Can limit how small the text becomes with minimumFontScale
+        </Text>
+
+        <Text
           adjustsFontSizeToFit={true}
           numberOfLines={1}
           style={{fontSize: 30, marginVertical: 6}}>

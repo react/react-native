@@ -13,7 +13,7 @@
 #include "RuntimeSamplingProfile.h"
 #include "TracingMode.h"
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 
 #include <vector>
 

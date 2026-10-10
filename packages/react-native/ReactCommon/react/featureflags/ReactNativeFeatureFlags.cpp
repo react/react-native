@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<37ceecaa4ef7ce8b076a46652b6cf0f0>>
+ * @generated SignedSource<<2c4c3259015438d07cc137e9288db04a>>
  */
 
 /**
@@ -46,6 +46,10 @@ bool ReactNativeFeatureFlags::disableEarlyViewCommandExecution() {
   return getAccessor().disableEarlyViewCommandExecution();
 }
 
+bool ReactNativeFeatureFlags::disableIdleMountItemFrameCallbackRearmAndroid() {
+  return getAccessor().disableIdleMountItemFrameCallbackRearmAndroid();
+}
+
 bool ReactNativeFeatureFlags::disableImageViewPreallocationAndroid() {
   return getAccessor().disableImageViewPreallocationAndroid();
 }
@@ -82,12 +86,12 @@ bool ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations() {
   return getAccessor().enableAndroidTextMeasurementOptimizations();
 }
 
-bool ReactNativeFeatureFlags::enableBridgelessArchitecture() {
-  return getAccessor().enableBridgelessArchitecture();
+bool ReactNativeFeatureFlags::enableAsyncDiskCacheCheckInMultiSourceImageAndroid() {
+  return getAccessor().enableAsyncDiskCacheCheckInMultiSourceImageAndroid();
 }
 
-bool ReactNativeFeatureFlags::enableBufferedCallInvoker() {
-  return getAccessor().enableBufferedCallInvoker();
+bool ReactNativeFeatureFlags::enableBridgelessArchitecture() {
+  return getAccessor().enableBridgelessArchitecture();
 }
 
 bool ReactNativeFeatureFlags::enableCppPropsIteratorSetter() {
@@ -116,6 +120,10 @@ bool ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid() {
 
 bool ReactNativeFeatureFlags::enableFabricCommitBranching() {
   return getAccessor().enableFabricCommitBranching();
+}
+
+bool ReactNativeFeatureFlags::enableFabricCommitBranchingMergeOnMainThread() {
+  return getAccessor().enableFabricCommitBranchingMergeOnMainThread();
 }
 
 bool ReactNativeFeatureFlags::enableFabricLogs() {
@@ -198,6 +206,10 @@ bool ReactNativeFeatureFlags::enableNativeCSSParsing() {
   return getAccessor().enableNativeCSSParsing();
 }
 
+bool ReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid() {
+  return getAccessor().enablePreallocatedPropsDiffOnInsertAndroid();
+}
+
 bool ReactNativeFeatureFlags::enablePreparedTextLayout() {
   return getAccessor().enablePreparedTextLayout();
 }
@@ -242,8 +254,8 @@ bool ReactNativeFeatureFlags::enableVirtualViewContainerStateExperimental() {
   return getAccessor().enableVirtualViewContainerStateExperimental();
 }
 
-bool ReactNativeFeatureFlags::fixDifferentiatorParentTagForUnflattenCase() {
-  return getAccessor().fixDifferentiatorParentTagForUnflattenCase();
+bool ReactNativeFeatureFlags::fixBorderlessRippleAndroid() {
+  return getAccessor().fixBorderlessRippleAndroid();
 }
 
 bool ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact() {

@@ -8,22 +8,17 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  Int32,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
-  progress1?: WithDefault<Int32, 0>,
-  progress2?: WithDefault<Int32, -1>,
-  progress3?: WithDefault<Int32, 10>,
+  progress1?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>,
+  progress2?: CodegenTypes.WithDefault<CodegenTypes.Int32, -1>,
+  progress3?: CodegenTypes.WithDefault<CodegenTypes.Int32, 10>,
 }>;
 
 export default codegenNativeComponent<NativeProps>(

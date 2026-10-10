@@ -119,7 +119,7 @@ jobs:
       # that failed before writing the log (or a no-op skip) legitimately has no file.
       - name: Upload review run log
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/upload-artifact
         with:
           name: review-run-log-pr${{ github.event.pull_request.number }}
           path: .expo-code-review/.runs/reviews.jsonl

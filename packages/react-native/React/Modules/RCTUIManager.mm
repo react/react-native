@@ -246,8 +246,7 @@ UIView *RCTPaperViewOrCurrentView(UIView *view)
 
 - (instancetype)initWithUIManager:(RCTUIManager *)uiManager andRegistry:(NSDictionary<NSNumber *, UIView *> *)registry
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _uiManager = uiManager;
     _registry = registry;
   }

@@ -12,12 +12,12 @@
 #include <string>
 #include <vector>
 
-#include <react/debug/react_native_assert.h>
-#include <react/renderer/core/graphicsConversions.h>
-#include <react/renderer/core/propsConversions.h>
-#include <react/renderer/debug/debugStringConvertibleUtils.h>
-#include <react/renderer/graphics/Float.h>
-#include <react/renderer/graphics/Size.h>
+#include <React/Debug.h>
+#include <React/Graphics.h>
+#include <React/RendererCore.h>
+#include <React/RendererDebug.h>
+#include <react/renderer/debug/DebugStringConvertible.h>
+#include <react/renderer/debug/flags.h>
 
 namespace facebook::react {
 
@@ -97,27 +97,7 @@ class ImageSource {
 #endif
 
 #if RN_DEBUG_STRING_CONVERTIBLE
-  SharedDebugStringConvertibleList getDebugProps(const std::string &prefix) const
-  {
-    ImageSource imageSource{};
-
-    SharedDebugStringConvertibleList headersList;
-    for (const auto &header : headers) {
-      headersList.push_back(debugStringConvertibleItem(prefix + "-header-" + header.first, header.second));
-    }
-
-    return headersList +
-        SharedDebugStringConvertibleList{
-            debugStringConvertibleItem(prefix + "-type", toString(type), toString(imageSource.type)),
-            debugStringConvertibleItem(prefix + "-uri", uri, imageSource.uri),
-            debugStringConvertibleItem(prefix + "-bundle", bundle, imageSource.bundle),
-            debugStringConvertibleItem(prefix + "-scale", scale, imageSource.scale),
-            debugStringConvertibleItem(prefix + "-size", react::toString(size), react::toString(imageSource.size)),
-            debugStringConvertibleItem(prefix + "-body", body, imageSource.body),
-            debugStringConvertibleItem(prefix + "-method", method, imageSource.method),
-            debugStringConvertibleItem(prefix + "-cache", toString(cache), toString(imageSource.cache)),
-        };
-  }
+  SharedDebugStringConvertibleList getDebugProps(const std::string &prefix) const;
 
   std::string toString(const Type &typeValue) const
   {

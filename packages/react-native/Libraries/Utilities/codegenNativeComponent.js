@@ -21,6 +21,8 @@ type NativeComponentOptions = Readonly<{
   paperComponentName?: string,
   paperComponentNameDeprecated?: string,
   excludedPlatforms?: ReadonlyArray<'iOS' | 'android'>,
+  generateOptionalProperties?: boolean,
+  generateOptionalObjectProperties?: boolean,
 }>;
 
 // Note that this alias is not re-exported from the `react-native` root,

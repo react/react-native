@@ -254,7 +254,7 @@ public constructor(
     view.setProgressiveRenderingEnabled(enabled)
   }
 
-  @ReactProp(name = "fadeDuration")
+  @ReactProp(name = "fadeDuration", defaultInt = -1)
   public fun setFadeDuration(view: ReactImageView, durationMs: Int) {
     view.setFadeDuration(durationMs)
   }

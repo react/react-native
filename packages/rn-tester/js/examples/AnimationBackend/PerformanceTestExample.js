@@ -12,7 +12,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import * as React from 'react';
 import {Animated, StyleSheet, Text, View} from 'react-native';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 const optimizedAnimatedPropUpdatesEnabled =
   ReactNativeFeatureFlags.optimizedAnimatedPropUpdates();

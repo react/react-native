@@ -10,15 +10,13 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import CustomEvent from 'react-native/src/private/webapis/dom/events/CustomEvent';
-import Event from 'react-native/src/private/webapis/dom/events/Event';
-
 describe('CustomEvent', () => {
   it('extends Event', () => {
     const event = new CustomEvent('foo', {
       bubbles: true,
       cancelable: true,
       composed: true,
+      detail: null,
     });
 
     expect(event.type).toBe('foo');

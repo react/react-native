@@ -207,8 +207,7 @@ void FocusOrderingHelper::traverseAndUpdateNextFocusableElement(
   // We only care about focusable elements since only they can be both
   // focused and present in the hierarchy
   if (currNode->getTraits().check(ShadowNodeTraits::Trait::KeyboardFocusable) ||
-      (props != nullptr &&
-       (props->focusable || props->accessible || props->hasTVPreferredFocus))) {
+      (props != nullptr && (props->focusable || props->accessible))) {
     LayoutMetrics nodeLayoutMetrics = uimanager.getRelativeLayoutMetrics(
         *currNode, parentShadowNode.get(), {.includeTransform = true});
 

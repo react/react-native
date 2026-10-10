@@ -64,10 +64,12 @@ component AnimatedView(properties: Array<string>, useNativeDriver: boolean) {
         }}>
         Apply Selected Transforms
       </RNTesterButton>
-      <Animated.View
-        // $FlowFixMe[incompatible-type] - properties are not exact
-        style={[styles.animatedView, {transform: transformStyles}]}
-      />
+      <View style={styles.transformIsolation}>
+        <Animated.View
+          // $FlowFixMe[incompatible-type] - properties are not exact
+          style={[styles.animatedView, {transform: transformStyles}]}
+        />
+      </View>
     </>
   );
 }
@@ -152,6 +154,11 @@ const styles = StyleSheet.create({
     height: 100,
     width: 100,
     backgroundColor: 'blue',
+  },
+  transformIsolation: {
+    // Isolate the 3D-transformed view so iOS does not composite it with sibling
+    // controls, which causes rendering artifacts with rotateX and rotateY.
+    isolation: 'isolate',
   },
   bottomSeparation: {
     paddingBottom: 6,

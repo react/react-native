@@ -8,7 +8,6 @@
  * @format
  */
 
-import EventTarget from '../EventTarget';
 import {EVENT_TARGET_GET_THE_PARENT_KEY} from '../internals/EventTargetInternals';
 
 /**

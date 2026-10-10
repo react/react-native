@@ -7,9 +7,11 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
+
+#include <vector>
 
 namespace facebook::react {
 

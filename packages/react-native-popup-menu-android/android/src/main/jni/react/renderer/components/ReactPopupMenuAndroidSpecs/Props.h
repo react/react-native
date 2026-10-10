@@ -9,7 +9,7 @@
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <vector>
 

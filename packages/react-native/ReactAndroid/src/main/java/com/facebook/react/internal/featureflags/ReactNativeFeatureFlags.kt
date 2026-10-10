@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7d7547b5f25dbe0d0e6722d2f2bf5baf>>
+ * @generated SignedSource<<72ad53973a7de132705b9ec1a72aac08>>
  */
 
 /**
@@ -61,6 +61,12 @@ public object ReactNativeFeatureFlags {
   public fun disableEarlyViewCommandExecution(): Boolean = accessor.disableEarlyViewCommandExecution()
 
   /**
+   * Stop re-arming the DISPATCH_UI Choreographer frame callback at vsync rate while no mount items are pending on Android; queueing new items re-arms it
+   */
+  @JvmStatic
+  public fun disableIdleMountItemFrameCallbackRearmAndroid(): Boolean = accessor.disableIdleMountItemFrameCallbackRearmAndroid()
+
+  /**
    * Force disable view preallocation for images triggered from createNode off the main thread on Android
    */
   @JvmStatic
@@ -115,16 +121,16 @@ public object ReactNativeFeatureFlags {
   public fun enableAndroidTextMeasurementOptimizations(): Boolean = accessor.enableAndroidTextMeasurementOptimizations()
 
   /**
+   * Runs multi-source image disk-cache checks asynchronously on Android.
+   */
+  @JvmStatic
+  public fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean = accessor.enableAsyncDiskCacheCheckInMultiSourceImageAndroid()
+
+  /**
    * Feature flag to enable the new bridgeless architecture.
    */
   @JvmStatic
   public fun enableBridgelessArchitecture(): Boolean = accessor.enableBridgelessArchitecture()
-
-  /**
-   * Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.
-   */
-  @JvmStatic
-  public fun enableBufferedCallInvoker(): Boolean = accessor.enableBufferedCallInvoker()
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
@@ -163,10 +169,16 @@ public object ReactNativeFeatureFlags {
   public fun enableExclusivePropsUpdateAndroid(): Boolean = accessor.enableExclusivePropsUpdateAndroid()
 
   /**
-   * Enables Fabric commit branching to fix starvation problems and atomic JS updates.
+   * Enables Fabric commit branching to fix atomic JS updates.
    */
   @JvmStatic
   public fun enableFabricCommitBranching(): Boolean = accessor.enableFabricCommitBranching()
+
+  /**
+   * Enables Fabric commit branching merge to happen on the main thread to fix starvation problems.
+   */
+  @JvmStatic
+  public fun enableFabricCommitBranchingMergeOnMainThread(): Boolean = accessor.enableFabricCommitBranchingMergeOnMainThread()
 
   /**
    * This feature flag enables logs for Fabric.
@@ -289,6 +301,12 @@ public object ReactNativeFeatureFlags {
   public fun enableNativeCSSParsing(): Boolean = accessor.enableNativeCSSParsing()
 
   /**
+   * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
+   */
+  @JvmStatic
+  public fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = accessor.enablePreallocatedPropsDiffOnInsertAndroid()
+
+  /**
    * Enables caching text layout artifacts for later reuse
    */
   @JvmStatic
@@ -355,10 +373,10 @@ public object ReactNativeFeatureFlags {
   public fun enableVirtualViewContainerStateExperimental(): Boolean = accessor.enableVirtualViewContainerStateExperimental()
 
   /**
-   * Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.
+   * Prevents a borderless ripple feedback underlay from projecting the entire view background on Android, which could hide the background and ripple.
    */
   @JvmStatic
-  public fun fixDifferentiatorParentTagForUnflattenCase(): Boolean = accessor.fixDifferentiatorParentTagForUnflattenCase()
+  public fun fixBorderlessRippleAndroid(): Boolean = accessor.fixBorderlessRippleAndroid()
 
   /**
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
@@ -403,7 +421,7 @@ public object ReactNativeFeatureFlags {
   public fun fuseboxWebSocketEventsEnabled(): Boolean = accessor.fuseboxWebSocketEventsEnabled()
 
   /**
-   * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
+   * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
    */
   @JvmStatic
   public fun optimizedAnimatedPropUpdates(): Boolean = accessor.optimizedAnimatedPropUpdates()

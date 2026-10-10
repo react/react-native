@@ -48,12 +48,6 @@ HostPlatformViewProps::HostPlatformViewProps(
           "focusable",
           sourceProps.focusable,
           {})),
-      hasTVPreferredFocus(convertRawProp(
-          context,
-          rawProps,
-          "hasTVPreferredFocus",
-          sourceProps.hasTVPreferredFocus,
-          {})),
       needsOffscreenAlphaCompositing(convertRawProp(
           context,
           rawProps,
@@ -120,7 +114,6 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE(nativeBackground, "nativeBackgroundAndroid");
     RAW_SET_PROP_SWITCH_CASE(nativeForeground, "nativeForegroundAndroid");
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(hasTVPreferredFocus);
     RAW_SET_PROP_SWITCH_CASE_BASIC(needsOffscreenAlphaCompositing);
     RAW_SET_PROP_SWITCH_CASE_BASIC(renderToHardwareTextureAndroid);
     RAW_SET_PROP_SWITCH_CASE_BASIC(screenReaderFocusable);
@@ -418,7 +411,13 @@ inline static void updateAccessibilityStateProp(
   }
 
   if (!oldState.has_value() || newState->selected != oldState->selected) {
-    resultState["selected"] = newState->selected;
+    // Omitting the key when `selected` is unset is what tells the platform the
+    // component is not selectable. BaseViewManager#setViewState falls back to
+    // `setSelected(false)` for an absent key, so the rendered result is
+    // unchanged from when this was a plain `bool`.
+    if (newState->selected.has_value()) {
+      resultState["selected"] = newState->selected.value();
+    }
   }
 
   if (!oldState.has_value() || newState->busy != oldState->busy) {
@@ -474,10 +473,6 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
 
   if (focusable != oldProps->focusable) {
     result["focusable"] = focusable;
-  }
-
-  if (hasTVPreferredFocus != oldProps->hasTVPreferredFocus) {
-    result["hasTVPreferredFocus"] = hasTVPreferredFocus;
   }
 
   if (needsOffscreenAlphaCompositing !=
@@ -562,6 +557,10 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
 
   if (onLayout != oldProps->onLayout) {
     result["onLayout"] = onLayout;
+  }
+
+  if (onSafeAreaInsetsChange != oldProps->onSafeAreaInsetsChange) {
+    result["experimental_onSafeAreaInsetsChange"] = onSafeAreaInsetsChange;
   }
 
   if (zIndex != oldProps->zIndex) {

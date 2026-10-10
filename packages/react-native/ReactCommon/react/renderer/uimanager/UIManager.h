@@ -9,17 +9,14 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
+#include <React/RuntimeExecutor.h>
+#include <React/Utils.h>
+
 #include <folly/dynamic.h>
 #include <jsi/jsi.h>
 
-#include <ReactCommon/RuntimeExecutor.h>
-#include <shared_mutex>
-
-#include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
-#include <react/renderer/core/InstanceHandle.h>
-#include <react/renderer/core/RawValue.h>
-#include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/core/StateData.h>
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 #include <react/renderer/mounting/ShadowTreeRegistry.h>
@@ -29,7 +26,12 @@
 #include <react/renderer/uimanager/UIManagerNativeAnimatedDelegate.h>
 #include <react/renderer/uimanager/UIManagerViewTransitionDelegate.h>
 #include <react/renderer/uimanager/primitives.h>
-#include <react/utils/ContextContainer.h>
+#include <functional>
+#include <memory>
+#include <shared_mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace facebook::react {
 
@@ -87,6 +89,8 @@ class UIManager final : public ShadowTreeDelegate {
 
   void synchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props);
 
+  void synchronouslyUpdateAnimatedProps(const std::unordered_map<Tag, AnimatedProps> &updates);
+
   /*
    * Provides access to a UIManagerBinding.
    * The `callback` methods will not be called if the internal pointer to
@@ -142,8 +146,6 @@ class UIManager final : public ShadowTreeDelegate {
       const ShadowTree::CommitOptions &commitOptions) const override;
 
   void shadowTreeDidFinishReactCommit(const ShadowTree &shadowTree) const override;
-
-  void shadowTreeDidPromoteReactRevision(const ShadowTree &shadowTree) const override;
 
   void shadowTreeDidCommit(
       const ShadowTree &shadowTree,

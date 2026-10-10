@@ -76,7 +76,7 @@ runs:
           "${{ inputs.device-os }}"
     - name: Store video record
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: e2e_ios_${{ inputs.app-id }}_report_${{ inputs.flavor }}_NewArch
         overwrite: true
@@ -89,7 +89,7 @@ runs:
           report.xml
     - name: Store Logs
       if: failure() && steps.run-tests.outcome == 'failure'
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: maestro-logs-${{ inputs.app-id }}-${{ inputs.flavor }}-NewArch
         overwrite: true

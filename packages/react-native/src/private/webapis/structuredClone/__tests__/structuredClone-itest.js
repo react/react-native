@@ -4,6 +4,9 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_flags enableIntersectionObserverByDefault:true
+ * @fantom_flags enableMutationObserverByDefault:true
+ * @fantom_flags enableResizeObserverByDefault:true
  * @flow strict-local
  * @format
  */
@@ -13,22 +16,16 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {HostInstance} from 'react-native';
 
 import ensureInstance from '../../../__tests__/utilities/ensureInstance';
+import DOMException from '../../errors/DOMException';
+import IntersectionObserver from '../../intersectionobserver/IntersectionObserver';
+import IntersectionObserverEntry from '../../intersectionobserver/IntersectionObserverEntry';
+import MutationObserver from '../../mutationobserver/MutationObserver';
+import structuredClone from '../structuredClone';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {View} from 'react-native';
-import setUpIntersectionObserver from 'react-native/src/private/setup/setUpIntersectionObserver';
-import setUpMutationObserver from 'react-native/src/private/setup/setUpMutationObserver';
-import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
-import DOMException from 'react-native/src/private/webapis/errors/DOMException';
-import IntersectionObserver from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
-import IntersectionObserverEntry from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserverEntry';
-import MutationObserver from 'react-native/src/private/webapis/mutationobserver/MutationObserver';
-import structuredClone from 'react-native/src/private/webapis/structuredClone/structuredClone';
-
-setUpIntersectionObserver();
-setUpMutationObserver();
 
 function expectDataCloneError(fn: () => unknown) {
   try {
@@ -43,6 +40,26 @@ function expectDataCloneError(fn: () => unknown) {
   throw new Error('Expected function to throw DataCloneError, but it did not');
 }
 
+function createResizeObserverEntryForTest(): ResizeObserverEntry {
+  const ref = createRef<HostInstance>();
+  const root = Fantom.createRoot();
+  Fantom.runTask(() => {
+    root.render(<View style={{height: 10, width: 10}} ref={ref} />);
+  });
+
+  const target = ensureInstance(ref.current, HTMLElement);
+  const entries: Array<unknown> = [];
+  Fantom.runTask(() => {
+    const observer = new ResizeObserver((newEntries, self) => {
+      entries.push(...newEntries);
+      self.disconnect();
+    });
+    observer.observe(target);
+  });
+
+  return ensureInstance(entries[0], ResizeObserverEntry);
+}
+
 describe('structuredClone', () => {
   it('clones primitive types', () => {
     expect(structuredClone(undefined)).toBe(undefined);
@@ -50,6 +67,7 @@ describe('structuredClone', () => {
 
     expect(structuredClone(0)).toBe(0);
     expect(structuredClone(1)).toBe(1);
+    expect(Object.is(structuredClone(-0), -0)).toBe(true);
 
     expect(structuredClone(0n)).toBe(0n);
     expect(structuredClone(1n)).toBe(1n);
@@ -82,6 +100,12 @@ describe('structuredClone', () => {
     expect(booleanClone).not.toBe(booleanValue);
     expect(booleanClone).toBeInstanceOf(Boolean);
     expect(booleanClone.valueOf()).toBe(true);
+
+    const bigintValue = Object(1n);
+    const bigintClone = structuredClone(bigintValue);
+    expect(bigintClone).not.toBe(bigintValue);
+    expect(bigintClone).toBeInstanceOf(BigInt);
+    expect(bigintClone.valueOf()).toBe(1n);
   });
 
   it('throws with symbols, functions, WeakMap, WeakSet, Promise', () => {
@@ -206,6 +230,58 @@ describe('structuredClone', () => {
     expect(clone).toEqual(value);
   });
 
+  it('clones invalid dates', () => {
+    const value = new Date(NaN);
+    const clone = structuredClone(value);
+    expect(clone).not.toBe(value);
+    expect(clone).toBeInstanceOf(Date);
+    expect(Number.isNaN(clone.getTime())).toBe(true);
+  });
+
+  it('clones ArrayBuffer', () => {
+    const value = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]).buffer;
+    const clone = structuredClone(value);
+    expect(clone).not.toBe(value);
+    expect(clone).toBeInstanceOf(ArrayBuffer);
+    expect([...new Uint8Array(clone)]).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it('clones DataView', () => {
+    const buffer = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]).buffer;
+    const value = new DataView(buffer);
+    const clone = structuredClone(value);
+    expect(clone).not.toBe(value);
+    expect(clone).toBeInstanceOf(DataView);
+    expect([...new Uint8Array(clone.buffer)]).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it('clones typed arrays', () => {
+    const value = new Uint32Array([1, 2, 3]);
+    const clone = structuredClone(value);
+    expect(clone).not.toBe(value);
+    expect(clone).toBeInstanceOf(Uint32Array);
+    expect([...clone]).toEqual([1, 2, 3]);
+  });
+
+  it('preserves shared buffers between views', () => {
+    const buffer = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]).buffer;
+    const value = {
+      typedArray: new Uint16Array(buffer, 2, 2),
+      dataView: new DataView(buffer, 1, 6),
+      buffer,
+    };
+
+    const clone = structuredClone(value);
+    expect(clone.buffer).not.toBe(buffer);
+    expect(clone.dataView.buffer).toBe(clone.buffer);
+    expect(clone.typedArray.buffer).toBe(clone.buffer);
+    expect(clone.dataView.byteOffset).toBe(value.dataView.byteOffset);
+    expect(clone.dataView.byteLength).toBe(value.dataView.byteLength);
+    expect(clone.typedArray.byteOffset).toBe(value.typedArray.byteOffset);
+    expect(clone.typedArray.length).toBe(value.typedArray.length);
+    expect([...clone.typedArray]).toEqual([...value.typedArray]);
+  });
+
   it('clones errors', () => {
     const cause = new Error('cause message');
     const value = new Error('error message', {cause});
@@ -242,6 +318,53 @@ describe('structuredClone', () => {
     // Invalid error names
     value.name = 'FooError';
     expect(structuredClone(value).name).toBe('Error');
+  });
+
+  it('preserves error subclasses', () => {
+    expect(structuredClone(new Error('boom'))).toBeInstanceOf(Error);
+    expect(structuredClone(new EvalError('boom'))).toBeInstanceOf(EvalError);
+    expect(structuredClone(new RangeError('boom'))).toBeInstanceOf(RangeError);
+    expect(structuredClone(new ReferenceError('boom'))).toBeInstanceOf(
+      ReferenceError,
+    );
+    expect(structuredClone(new SyntaxError('boom'))).toBeInstanceOf(
+      SyntaxError,
+    );
+    expect(structuredClone(new TypeError('boom'))).toBeInstanceOf(TypeError);
+    expect(structuredClone(new URIError('boom'))).toBeInstanceOf(URIError);
+  });
+
+  it('clones aggregate errors', () => {
+    const innerError = new TypeError('inner');
+    const value = new AggregateError([innerError, {foo: 'bar'}], 'outer');
+    const clone = structuredClone(value);
+    const clonedErrors = Array.from(clone.errors);
+    const clonedInnerError = ensureInstance(clonedErrors[0], TypeError);
+
+    expect(clone).not.toBe(value);
+    expect(clone).toBeInstanceOf(AggregateError);
+    expect(clone.message).toBe(value.message);
+    expect(clone.stack).toBe(value.stack);
+    expect(clone.errors).not.toBe(value.errors);
+    expect(clonedInnerError).not.toBe(innerError);
+    expect(clonedInnerError.message).toBe(innerError.message);
+    expect(clonedErrors[1]).toEqual({foo: 'bar'});
+  });
+
+  it('clones __proto__ as an own property', () => {
+    const value = JSON.parse('{"__proto__":{"foo":"bar"}}');
+    const clone = structuredClone(value);
+    const clonedValue = nullthrows(
+      Object.getOwnPropertyDescriptor(clone, '__proto__'),
+    ).value;
+    const originalValue = nullthrows(
+      Object.getOwnPropertyDescriptor(value, '__proto__'),
+    ).value;
+
+    expect(clone.foo).toBeUndefined();
+    expect(Object.hasOwn(clone, '__proto__')).toBe(true);
+    expect(clonedValue).not.toBe(originalValue);
+    expect(clonedValue).toEqual({foo: 'bar'});
   });
 
   it('clones values deeply', () => {
@@ -438,6 +561,28 @@ describe('structuredClone', () => {
         });
 
         expectDataCloneError(() => structuredClone(records[0]));
+      });
+
+      it('does NOT clone ResizeObserver', () => {
+        expectDataCloneError(() =>
+          structuredClone(new ResizeObserver(() => {})),
+        );
+      });
+
+      it('does NOT clone ResizeObserverEntry', () => {
+        expectDataCloneError(() =>
+          structuredClone(createResizeObserverEntryForTest()),
+        );
+      });
+
+      it('does NOT clone ResizeObserverSize', () => {
+        const entry = createResizeObserverEntryForTest();
+        const size = ensureInstance(
+          entry.contentBoxSize[0],
+          ResizeObserverSize,
+        );
+
+        expectDataCloneError(() => structuredClone(size));
       });
     });
   });

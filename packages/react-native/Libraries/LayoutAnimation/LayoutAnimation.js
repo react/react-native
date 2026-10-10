@@ -46,7 +46,7 @@ let isLayoutAnimationEnabled: boolean =
   ReactNativeFeatureFlags.isLayoutAnimationEnabled();
 
 function setLayoutAnimationEnabled(value: boolean) {
-  isLayoutAnimationEnabled = isLayoutAnimationEnabled;
+  isLayoutAnimationEnabled = value;
 }
 
 /**

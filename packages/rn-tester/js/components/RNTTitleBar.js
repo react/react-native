@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
   header: {
     height: 40,
     flexDirection: 'row',
-    marginTop: Platform.OS === 'ios' && !Platform.isTV ? 50 : 0,
   },
   headerCenter: {
     flex: 1,

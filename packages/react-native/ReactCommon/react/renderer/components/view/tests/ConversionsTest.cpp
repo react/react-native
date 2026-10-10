@@ -6,9 +6,12 @@
  */
 
 #include <array>
+#include <memory>
 
 #include <gtest/gtest.h>
 
+#include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/view/BoxShadowPropsConversions.h>
 #include <react/renderer/components/view/FilterPropsConversions.h>
@@ -16,6 +19,30 @@
 #include <react/renderer/components/view/conversions.h>
 
 namespace facebook::react {
+
+namespace {
+
+class NativeCSSParsingEnabledFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  bool enableNativeCSSParsing() override {
+    return true;
+  }
+};
+
+class NativeCSSConversionsTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    ReactNativeFeatureFlags::override(
+        std::make_unique<NativeCSSParsingEnabledFlags>());
+  }
+
+  void TearDown() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
+  }
+};
+
+} // namespace
 
 TEST(ConversionsTest, accessibility_roles_round_trip) {
   struct AccessibilityRoleTestCase {
@@ -122,13 +149,12 @@ TEST(ConversionsTest, accessibility_roles_round_trip) {
   }
 }
 
-TEST(ConversionsTest, unprocessed_box_shadow_string) {
+TEST_F(NativeCSSConversionsTest, unprocessed_box_shadow_string) {
   RawValue value{
       folly::dynamic("10px 2px 0 5px #fff, inset 20px 10px 5px 0 #000")};
 
   std::vector<BoxShadow> boxShadows;
-  parseUnprocessedBoxShadow(
-      PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
 
   EXPECT_EQ(boxShadows.size(), 2);
   EXPECT_EQ(boxShadows[0].offsetX, 10);
@@ -146,7 +172,7 @@ TEST(ConversionsTest, unprocessed_box_shadow_string) {
   EXPECT_TRUE(boxShadows[1].inset);
 }
 
-TEST(ConversionsTest, unprocessed_box_shadow_objects) {
+TEST_F(NativeCSSConversionsTest, unprocessed_box_shadow_objects) {
   RawValue value{folly::dynamic::array(
       folly::dynamic::object("offsetX", 10)("offsetY", 2)("blurRadius", 3)(
           "spreadDistance", 5),
@@ -154,8 +180,7 @@ TEST(ConversionsTest, unprocessed_box_shadow_objects) {
           "color", "#fff")("inset", true))};
 
   std::vector<BoxShadow> boxShadows;
-  parseUnprocessedBoxShadow(
-      PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
 
   EXPECT_EQ(boxShadows.size(), 2);
   EXPECT_EQ(boxShadows[0].offsetX, 10);
@@ -173,37 +198,34 @@ TEST(ConversionsTest, unprocessed_box_shadow_objects) {
   EXPECT_TRUE(boxShadows[1].inset);
 }
 
-TEST(ConversionsTest, unprocessed_box_object_invalid_color) {
+TEST_F(NativeCSSConversionsTest, unprocessed_box_object_invalid_color) {
   RawValue value{folly::dynamic::array(
       folly::dynamic::object("offsetX", 10)("offsetY", 2)("blurRadius", 3)(
           "spreadDistance", 5)("color", "hello"))};
 
   std::vector<BoxShadow> boxShadows;
-  parseUnprocessedBoxShadow(
-      PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
 
   EXPECT_TRUE(boxShadows.empty());
 }
 
-TEST(ConversionsTest, unprocessed_box_object_negative_blur) {
+TEST_F(NativeCSSConversionsTest, unprocessed_box_object_negative_blur) {
   RawValue value{folly::dynamic::array(
       folly::dynamic::object("offsetX", 10)("offsetY", 2)("blurRadius", -3)(
           "spreadDistance", 5))};
 
   std::vector<BoxShadow> boxShadows;
-  parseUnprocessedBoxShadow(
-      PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, boxShadows);
 
   EXPECT_TRUE(boxShadows.empty());
 }
 
-TEST(ConversionsTest, unprocessed_filter_string) {
+TEST_F(NativeCSSConversionsTest, unprocessed_filter_string) {
   RawValue value{folly::dynamic(
       "drop-shadow(10px -2px 0.5px #fff) blur(5px) hue-rotate(90deg) saturate(2) brightness(50%)")};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_EQ(filters.size(), 5);
 
@@ -234,7 +256,7 @@ TEST(ConversionsTest, unprocessed_filter_string) {
   EXPECT_EQ(std::get<Float>(filters[4].parameters), 0.5f);
 }
 
-TEST(ConversionsTest, unprocessed_filter_objects) {
+TEST_F(NativeCSSConversionsTest, unprocessed_filter_objects) {
   RawValue value{folly::dynamic::array(
       folly::dynamic::object(
           "drop-shadow",
@@ -247,8 +269,7 @@ TEST(ConversionsTest, unprocessed_filter_objects) {
       folly::dynamic::object("brightness", "50%"))};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_EQ(filters.size(), 6);
 
@@ -288,7 +309,9 @@ TEST(ConversionsTest, unprocessed_filter_objects) {
   EXPECT_EQ(std::get<Float>(filters[5].parameters), 0.5f);
 }
 
-TEST(ConversionsTest, unprocessed_filter_objects_negative_shadow_blur) {
+TEST_F(
+    NativeCSSConversionsTest,
+    unprocessed_filter_objects_negative_shadow_blur) {
   RawValue value{folly::dynamic::array(
       folly::dynamic::object(
           "drop-shadow",
@@ -296,40 +319,38 @@ TEST(ConversionsTest, unprocessed_filter_objects_negative_shadow_blur) {
               "standardDeviation", -0.5)))};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_TRUE(filters.empty());
 }
 
-TEST(ConversionsTest, unprocessed_filter_objects_negative_blur) {
+TEST_F(NativeCSSConversionsTest, unprocessed_filter_objects_negative_blur) {
   RawValue value{folly::dynamic::array(folly::dynamic::object("blur", -5))};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_TRUE(filters.empty());
 }
 
-TEST(ConversionsTest, unprocessed_filter_objects_negative_contrast) {
+TEST_F(NativeCSSConversionsTest, unprocessed_filter_objects_negative_contrast) {
   RawValue value{
       folly::dynamic::array(folly::dynamic::object("constrast", -5))};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_TRUE(filters.empty());
 }
 
-TEST(ConversionsTest, unprocessed_filter_objects_negative_hue_rotate) {
+TEST_F(
+    NativeCSSConversionsTest,
+    unprocessed_filter_objects_negative_hue_rotate) {
   RawValue value{
       folly::dynamic::array(folly::dynamic::object("hue-rotate", -5))};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_EQ(filters.size(), 1);
 
@@ -338,32 +359,30 @@ TEST(ConversionsTest, unprocessed_filter_objects_negative_hue_rotate) {
   EXPECT_EQ(std::get<Float>(filters[0].parameters), -5.0f);
 }
 
-TEST(ConversionsTest, unprocessed_filter_objects_multiple_objects) {
+TEST_F(NativeCSSConversionsTest, unprocessed_filter_objects_multiple_objects) {
   RawValue value{folly::dynamic::array(
       folly::dynamic::object("blur", 5)("hue-rotate", "90deg"))};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_TRUE(filters.empty());
 }
 
-TEST(ConversionsTest, unprocessed_filter_objects_unknown_type) {
+TEST_F(NativeCSSConversionsTest, unprocessed_filter_objects_unknown_type) {
   RawValue value{
       folly::dynamic::array(folly::dynamic::object("unknown-filter", 5))};
 
   std::vector<FilterFunction> filters;
-  parseUnprocessedFilter(
-      PropsParserContext{-1, ContextContainer{}}, value, filters);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_TRUE(filters.empty());
 }
 
-TEST(ConversionsTest, unprocessed_transform_css_string) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_css_string) {
+  RawValue value{folly::dynamic("rotate(45deg) scale(2) translateX(10px)")};
   Transform result;
-  parseUnprocessedTransformString(
-      "rotate(45deg) scale(2) translateX(10px)", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.operations.size(), 3);
 
@@ -386,9 +405,10 @@ TEST(ConversionsTest, unprocessed_transform_css_string) {
   EXPECT_EQ(result.operations[2].y.value, 0.0f);
 }
 
-TEST(ConversionsTest, unprocessed_transform_css_translate_percent) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_css_translate_percent) {
+  RawValue value{folly::dynamic("translate(10px, 50%)")};
   Transform result;
-  parseUnprocessedTransformString("translate(10px, 50%)", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.operations.size(), 1);
   EXPECT_EQ(result.operations[0].type, TransformOperationType::Translate);
@@ -398,27 +418,28 @@ TEST(ConversionsTest, unprocessed_transform_css_translate_percent) {
   EXPECT_EQ(result.operations[0].y.unit, UnitType::Percent);
 }
 
-TEST(ConversionsTest, unprocessed_transform_css_perspective) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_css_perspective) {
+  RawValue value{folly::dynamic("perspective(500px)")};
   Transform result;
-  parseUnprocessedTransformString("perspective(500px)", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.operations.size(), 1);
   EXPECT_EQ(result.operations[0].type, TransformOperationType::Perspective);
   EXPECT_EQ(result.operations[0].x.value, 500.0f);
 }
 
-TEST(ConversionsTest, unprocessed_transform_css_invalid_string) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_css_invalid_string) {
+  RawValue value{folly::dynamic("not-a-transform")};
   Transform result;
-  parseUnprocessedTransformString("not-a-transform", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_TRUE(result.operations.empty());
 }
 
-TEST(ConversionsTest, unprocessed_transform_rawvalue_string) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_rawvalue_string) {
   RawValue value{folly::dynamic("rotate(45deg) scale(2)")};
   Transform result;
-  parseUnprocessedTransform(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.operations.size(), 2);
   EXPECT_EQ(result.operations[0].type, TransformOperationType::Rotate);
@@ -430,8 +451,7 @@ TEST(ConversionsTest, unprocessed_transform_rawvalue_array) {
       folly::dynamic::object("rotate", "45deg"),
       folly::dynamic::object("scale", 2))};
   Transform result;
-  parseUnprocessedTransform(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.operations.size(), 2);
   EXPECT_EQ(result.operations[0].type, TransformOperationType::Rotate);
@@ -446,8 +466,7 @@ TEST(ConversionsTest, unprocessed_transform_rawvalue_matrix) {
           folly::dynamic::array(
               1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)))};
   Transform result;
-  parseUnprocessedTransform(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.operations.size(), 1);
   EXPECT_EQ(result.operations[0].type, TransformOperationType::Arbitrary);
@@ -457,8 +476,7 @@ TEST(ConversionsTest, unprocessed_transform_rawvalue_translate_percent) {
   RawValue value{
       folly::dynamic::array(folly::dynamic::object("translateX", "50%"))};
   Transform result;
-  parseUnprocessedTransform(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.operations.size(), 1);
   EXPECT_EQ(result.operations[0].type, TransformOperationType::Translate);
@@ -466,9 +484,10 @@ TEST(ConversionsTest, unprocessed_transform_rawvalue_translate_percent) {
   EXPECT_EQ(result.operations[0].x.unit, UnitType::Percent);
 }
 
-TEST(ConversionsTest, unprocessed_transform_origin_css_top_left) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_origin_css_top_left) {
+  RawValue value{folly::dynamic("top left")};
   TransformOrigin result;
-  parseUnprocessedTransformOriginString("top left", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 0.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
@@ -477,9 +496,10 @@ TEST(ConversionsTest, unprocessed_transform_origin_css_top_left) {
   EXPECT_EQ(result.z, 0.0f);
 }
 
-TEST(ConversionsTest, unprocessed_transform_origin_css_center) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_origin_css_center) {
+  RawValue value{folly::dynamic("center")};
   TransformOrigin result;
-  parseUnprocessedTransformOriginString("center", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 50.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
@@ -488,9 +508,12 @@ TEST(ConversionsTest, unprocessed_transform_origin_css_center) {
   EXPECT_EQ(result.z, 0.0f);
 }
 
-TEST(ConversionsTest, unprocessed_transform_origin_css_right_bottom) {
+TEST_F(
+    NativeCSSConversionsTest,
+    unprocessed_transform_origin_css_right_bottom) {
+  RawValue value{folly::dynamic("right bottom")};
   TransformOrigin result;
-  parseUnprocessedTransformOriginString("right bottom", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 100.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
@@ -499,9 +522,12 @@ TEST(ConversionsTest, unprocessed_transform_origin_css_right_bottom) {
   EXPECT_EQ(result.z, 0.0f);
 }
 
-TEST(ConversionsTest, unprocessed_transform_origin_css_length_percent) {
+TEST_F(
+    NativeCSSConversionsTest,
+    unprocessed_transform_origin_css_length_percent) {
+  RawValue value{folly::dynamic("10px 50%")};
   TransformOrigin result;
-  parseUnprocessedTransformOriginString("10px 50%", result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 10.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Point);
@@ -514,8 +540,7 @@ TEST(ConversionsTest, unprocessed_transform_origin_processed_array) {
   RawValue value{folly::dynamic::array("50%", "50%", 0)};
 
   TransformOrigin result;
-  parseProcessedTransformOrigin(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 50.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
@@ -524,11 +549,10 @@ TEST(ConversionsTest, unprocessed_transform_origin_processed_array) {
   EXPECT_EQ(result.z, 0.0f);
 }
 
-TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_string) {
+TEST_F(NativeCSSConversionsTest, unprocessed_transform_origin_rawvalue_string) {
   RawValue value{folly::dynamic("top left")};
   TransformOrigin result;
-  parseUnprocessedTransformOrigin(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 0.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
@@ -540,8 +564,7 @@ TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_string) {
 TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_array) {
   RawValue value{folly::dynamic::array(10, "50%", 5)};
   TransformOrigin result;
-  parseUnprocessedTransformOrigin(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 10.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Point);
@@ -550,11 +573,12 @@ TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_array) {
   EXPECT_EQ(result.z, 5.0f);
 }
 
-TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_string_with_z) {
+TEST_F(
+    NativeCSSConversionsTest,
+    unprocessed_transform_origin_rawvalue_string_with_z) {
   RawValue value{folly::dynamic("center center 15px")};
   TransformOrigin result;
-  parseUnprocessedTransformOrigin(
-      PropsParserContext{-1, ContextContainer{}}, value, result);
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_EQ(result.xy[0].value, 50.0f);
   EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
@@ -597,28 +621,30 @@ TEST(ConversionsTest, convert_aspect_ratio_float) {
   EXPECT_EQ(result.unwrap(), 1.5f);
 }
 
-TEST(ConversionsTest, convert_aspect_ratio_ratio_string) {
-  // CSSRatio parses "16/9" as {numerator: 16, denominator: 9}
-  auto ratio = parseCSSProperty<CSSRatio>("16/9");
-  ASSERT_TRUE(std::holds_alternative<CSSRatio>(ratio));
-  auto r = std::get<CSSRatio>(ratio);
-  EXPECT_FALSE(r.isDegenerate());
-  EXPECT_NEAR(r.numerator / r.denominator, 16.0f / 9.0f, 0.001f);
+TEST_F(NativeCSSConversionsTest, convert_aspect_ratio_ratio_string) {
+  RawValue value{folly::dynamic("16/9")};
+  auto result =
+      convertAspectRatio(PropsParserContext{-1, ContextContainer{}}, value);
+
+  ASSERT_FALSE(result.isUndefined());
+  EXPECT_NEAR(result.unwrap(), 16.0f / 9.0f, 0.001f);
 }
 
-TEST(ConversionsTest, convert_aspect_ratio_number_string) {
-  // CSSRatio parses "1.5" as {numerator: 1.5, denominator: 1.0}
-  auto ratio = parseCSSProperty<CSSRatio>("1.5");
-  ASSERT_TRUE(std::holds_alternative<CSSRatio>(ratio));
-  auto r = std::get<CSSRatio>(ratio);
-  EXPECT_FALSE(r.isDegenerate());
-  EXPECT_EQ(r.numerator / r.denominator, 1.5f);
+TEST_F(NativeCSSConversionsTest, convert_aspect_ratio_number_string) {
+  RawValue value{folly::dynamic("1.5")};
+  auto result =
+      convertAspectRatio(PropsParserContext{-1, ContextContainer{}}, value);
+
+  ASSERT_FALSE(result.isUndefined());
+  EXPECT_EQ(result.unwrap(), 1.5f);
 }
 
-TEST(ConversionsTest, convert_aspect_ratio_degenerate) {
-  auto ratio = parseCSSProperty<CSSRatio>("0/0");
-  ASSERT_TRUE(std::holds_alternative<CSSRatio>(ratio));
-  EXPECT_TRUE(std::get<CSSRatio>(ratio).isDegenerate());
+TEST_F(NativeCSSConversionsTest, convert_aspect_ratio_degenerate) {
+  RawValue value{folly::dynamic("0/0")};
+  auto result =
+      convertAspectRatio(PropsParserContext{-1, ContextContainer{}}, value);
+
+  EXPECT_TRUE(result.isUndefined());
 }
 
 TEST(ConversionsTest, float_optional_from_rawvalue_float) {

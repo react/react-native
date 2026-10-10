@@ -34,6 +34,18 @@ internal class MountItemDispatcher(
   private val mountItems: Queue<MountItem> = ConcurrentLinkedQueue()
   private val preMountItems: Queue<MountItem> = ConcurrentLinkedQueue()
 
+  /** @return true if any mount items, pre-mount items or view commands are still pending */
+  fun hasPendingItems(): Boolean =
+      !viewCommandMountItems.isEmpty() || !mountItems.isEmpty() || !preMountItems.isEmpty()
+
+  // Items can be queued from any thread while the DISPATCH_UI frame callback is disarmed at
+  // idle (see FabricUIManager's doFrameGuarded); the listener re-arms it.
+  private fun notifyItemsQueued() {
+    if (ReactNativeFeatureFlags.disableIdleMountItemFrameCallbackRearmAndroid()) {
+      itemDispatchListener.onItemsQueued()
+    }
+  }
+
   private var inDispatch: Boolean = false
   var batchedExecutionTime: Long = 0L
     private set
@@ -49,19 +61,22 @@ internal class MountItemDispatcher(
     } else {
       mountItems.add(mountItem)
     }
+    notifyItemsQueued()
   }
 
   fun addMountItem(mountItem: MountItem) {
     mountItems.add(mountItem)
+    notifyItemsQueued()
   }
 
   fun addPreAllocateMountItem(mountItem: MountItem) {
     // We do this check only for PreAllocateViewMountItem - and not DispatchMountItem or regular
-    // MountItem - because PreAllocateViewMountItems are not batched, and is relatively more
+    // MountItem - because PreAllocateViewMountItem are not batched, and is relatively more
     // expensive
     // both to queue, to drain, and to execute.
     if (!mountingManager.surfaceIsStopped(mountItem.getSurfaceId())) {
       preMountItems.add(mountItem)
+      notifyItemsQueued()
     } else if (FabricUIManager.IS_DEVELOPMENT_ENVIRONMENT) {
       FLog.e(
           TAG,
@@ -399,6 +414,9 @@ internal class MountItemDispatcher(
     fun didMountItems(mountItems: List<MountItem>?)
 
     fun didDispatchMountItems()
+
+    /** Called (from any thread) whenever new items are queued into the dispatcher. */
+    fun onItemsQueued()
   }
 
   private companion object {

@@ -1983,6 +1983,103 @@ describe('main() — .spm-sync-watch-paths emission', () => {
 });
 
 // ---------------------------------------------------------------------------
+// main() — libs/ symlinks for self-managed deps
+//
+// Xcode loads each libs/<SwiftName> symlink as a local package root. Replacing
+// one that did not change invalidates the package graph Xcode already holds,
+// and the build then fails with "Missing package product". So a sync that
+// changes nothing must leave every inode under libs/ — and libs/ itself —
+// untouched, while a dep that is gone must lose its symlink.
+// ---------------------------------------------------------------------------
+
+describe('main() — libs/ symlinks for self-managed deps', () => {
+  const {created} = useTempApps();
+
+  function buildApp(depNames) {
+    const appRoot = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'spm-libs-sync-')),
+    );
+    created.push(appRoot);
+    const rnRoot = path.join(appRoot, 'rn');
+    fs.mkdirSync(rnRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(appRoot, 'package.json'),
+      JSON.stringify({name: 'app'}),
+    );
+
+    const dependencies = {};
+    for (const npmName of depNames) {
+      // A hand-authored root Package.swift (no AUTOGEN marker) is what makes a
+      // dep self-managed.
+      const depDir = path.join(appRoot, 'node_modules', npmName);
+      fs.mkdirSync(depDir, {recursive: true});
+      fs.writeFileSync(
+        path.join(depDir, 'Package.swift'),
+        '// swift-tools-version:5.9\n// hand-authored\n',
+      );
+      fs.writeFileSync(path.join(depDir, 'Source.swift'), '// src\n');
+      dependencies[npmName] = {root: depDir, platforms: {ios: {}}};
+    }
+
+    const autolinkDir = path.join(appRoot, 'build', 'generated', 'autolinking');
+    fs.mkdirSync(autolinkDir, {recursive: true});
+    const writeAutolinkingJson = names =>
+      fs.writeFileSync(
+        path.join(autolinkDir, 'autolinking.json'),
+        JSON.stringify({
+          dependencies: Object.fromEntries(
+            names.map(n => [n, dependencies[n]]),
+          ),
+        }),
+      );
+    writeAutolinkingJson(depNames);
+
+    return {
+      libsDir: path.join(autolinkDir, 'libs'),
+      writeAutolinkingJson,
+      sync: () => main(['--app-root', appRoot, '--react-native-root', rnRoot]),
+    };
+  }
+
+  const inodesOf = libsDir =>
+    Object.fromEntries(
+      ['.', ...fs.readdirSync(libsDir)].map(entry => [
+        entry,
+        fs.lstatSync(path.join(libsDir, entry)).ino,
+      ]),
+    );
+
+  it('keeps every inode when nothing changed', () => {
+    const app = buildApp(['react-native-foo', 'react-native-bar']);
+
+    app.sync();
+    const before = inodesOf(app.libsDir);
+    expect(Object.keys(before).sort()).toEqual([
+      '.',
+      'ReactNativeBar',
+      'ReactNativeFoo',
+    ]);
+
+    app.sync();
+    expect(inodesOf(app.libsDir)).toEqual(before);
+  });
+
+  it('drops the symlink of a dep that is no longer autolinked', () => {
+    const app = buildApp(['react-native-foo', 'react-native-bar']);
+
+    app.sync();
+    expect(fs.readdirSync(app.libsDir).sort()).toEqual([
+      'ReactNativeBar',
+      'ReactNativeFoo',
+    ]);
+
+    app.writeAutolinkingJson(['react-native-foo']);
+    app.sync();
+    expect(fs.readdirSync(app.libsDir)).toEqual(['ReactNativeFoo']);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // main() — the name a dep's podspec declares reaching a real manifest.
 // ---------------------------------------------------------------------------
 

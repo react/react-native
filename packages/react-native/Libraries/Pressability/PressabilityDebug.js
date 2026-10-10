@@ -36,8 +36,9 @@ type Props = Readonly<{
  *
  */
 export function PressabilityDebugView(props: Props): React.Node {
+  const enabled = useIsEnabled();
   if (__DEV__) {
-    if (isEnabled()) {
+    if (enabled) {
       const normalizedColor = normalizeColor(props.color);
       if (typeof normalizedColor !== 'number') {
         return null;
@@ -70,6 +71,7 @@ export function PressabilityDebugView(props: Props): React.Node {
 }
 
 let isDebugEnabled = false;
+const listeners: Set<() => void> = new Set();
 
 export function isEnabled(): boolean {
   if (__DEV__) {
@@ -80,6 +82,30 @@ export function isEnabled(): boolean {
 
 export function setEnabled(value: boolean): void {
   if (__DEV__) {
+    if (isDebugEnabled === value) {
+      return;
+    }
     isDebugEnabled = value;
+    listeners.forEach(listener => listener());
   }
 }
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function useIsEnabledDev(): boolean {
+  return React.useSyncExternalStore(subscribe, isEnabled);
+}
+
+/**
+ * Like `isEnabled`, but re-renders the calling component when the value
+ * changes, so toggling it does not require remounting the app. Outside of
+ * `__DEV__` it always returns `false` and uses no hooks.
+ */
+export const useIsEnabled: () => boolean = __DEV__
+  ? useIsEnabledDev
+  : () => false;

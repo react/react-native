@@ -641,10 +641,6 @@ const publicAPIMapping = {
     default: null,
     types: null,
   },
-  'src/private/components/virtualcollection/dom/getScrollParent': {
-    default: null,
-    types: null,
-  },
   'src/private/components/virtualcollection/row/VirtualRow': {
     default: null,
     types: null,

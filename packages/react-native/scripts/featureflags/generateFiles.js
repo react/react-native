@@ -34,7 +34,18 @@ export default function generateFiles(
       ...generatorConfig.featureFlagDefinitions,
       common: Object.fromEntries(
         Object.entries(generatorConfig.featureFlagDefinitions.common).filter(
-          ([_, definition]) => !definition.skipNativeAPI,
+          ([name, definition]) => {
+            if (
+              definition.skipNativeAPI &&
+              definition.dangerouslyExposeInPublicCppHeaders
+            ) {
+              throw new Error(
+                `${name} cannot have both skipNativeAPI and dangerouslyExposeInPublicCppHeaders enabled at the same time.`,
+              );
+            }
+
+            return !definition.skipNativeAPI;
+          },
         ),
       ),
     },

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/renderer/core/EventBeat.h>
+#include <React/RendererCore.h>
 
 #include "EventBeatManager.h"
 

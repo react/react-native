@@ -8,26 +8,21 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  Float,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
-  blurRadius: Float,
-  blurRadius2?: WithDefault<Float, 0.001>,
-  blurRadius3?: WithDefault<Float, 2.1>,
-  blurRadius4?: WithDefault<Float, 0>,
-  blurRadius5?: WithDefault<Float, 1>,
-  blurRadius6?: WithDefault<Float, -0.0>,
-  blurRadiusNullable?: WithDefault<Float, null>,
+  blurRadius: CodegenTypes.Float,
+  blurRadius2?: CodegenTypes.WithDefault<CodegenTypes.Float, 0.001>,
+  blurRadius3?: CodegenTypes.WithDefault<CodegenTypes.Float, 2.1>,
+  blurRadius4?: CodegenTypes.WithDefault<CodegenTypes.Float, 0>,
+  blurRadius5?: CodegenTypes.WithDefault<CodegenTypes.Float, 1>,
+  blurRadius6?: CodegenTypes.WithDefault<CodegenTypes.Float, -0.0>,
+  blurRadiusNullable?: CodegenTypes.WithDefault<CodegenTypes.Float, null>,
 }>;
 
 export default codegenNativeComponent<NativeProps>(

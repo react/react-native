@@ -9,8 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/core/ReactPrimitives.h>
-#include <react/renderer/graphics/Float.h>
+#include <React/Graphics.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 

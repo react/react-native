@@ -7,18 +7,18 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include "HostAgent.h"
 #include "HostTarget.h"
 #include "InstanceTarget.h"
 
+#include <React/Timing.h>
 #include <jsinspector-modern/tracing/FrameTimingSequence.h>
 #include <jsinspector-modern/tracing/HostTracingProfile.h>
 #include <jsinspector-modern/tracing/TimeWindowedBuffer.h>
 #include <jsinspector-modern/tracing/TraceRecordingState.h>
 #include <jsinspector-modern/tracing/TracingCategory.h>
-#include <react/timing/primitives.h>
 
 #include <optional>
 #include <set>

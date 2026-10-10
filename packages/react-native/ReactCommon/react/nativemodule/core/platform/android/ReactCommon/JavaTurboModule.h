@@ -11,10 +11,10 @@
 
 #include <string>
 
-#include <ReactCommon/CallInvoker.h>
+#include <React/Bridging.h>
+#include <React/CallInvoker.h>
 #include <ReactCommon/TurboModule.h>
 #include <jsi/jsi.h>
-#include <react/bridging/CallbackWrapper.h>
 #include <react/jni/JCallback.h>
 
 namespace facebook::react {

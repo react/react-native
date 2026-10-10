@@ -33,8 +33,7 @@ using namespace facebook::react;
 
 - (instancetype)init
 {
-  self = [super init];
-  if (self != nullptr) {
+  if (self = [super init]) {
     _alertControllers = [NSMutableArray new];
   }
   return self;

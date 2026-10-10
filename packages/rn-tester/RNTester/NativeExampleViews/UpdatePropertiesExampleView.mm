@@ -54,8 +54,7 @@ RCT_EXPORT_MODULE();
 
 - (instancetype)initWithFrame:(CGRect)frame rootViewFactory:(RCTRootViewFactory *)rootViewFactory
 {
-  self = [super initWithFrame:frame];
-  if (self) {
+  if (self = [super initWithFrame:frame]) {
     _beige = YES;
 
     _rootView = (RCTRootView *)[rootViewFactory viewWithModuleName:@"SetPropertiesExampleApp"

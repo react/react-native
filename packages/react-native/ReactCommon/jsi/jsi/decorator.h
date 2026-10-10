@@ -243,6 +243,10 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
     return plain_.utf16(sym);
   }
 
+  size_t length(const String& str) override {
+    return plain_.length(str);
+  }
+
   void getStringData(
       const jsi::String& str,
       void* ctx,
@@ -822,6 +826,11 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
     return RD::utf16(sym);
   }
 
+  size_t length(const String& str) override {
+    Around around{with_};
+    return RD::length(str);
+  }
+
   void getStringData(
       const jsi::String& str,
       void* ctx,
@@ -996,6 +1005,7 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
   }
   ArrayBuffer createArrayBuffer(
       std::shared_ptr<MutableBuffer> buffer) override {
+    Around around{with_};
     return RD::createArrayBuffer(std::move(buffer));
   }
   size_t size(const Array& a) override {

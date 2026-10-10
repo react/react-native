@@ -12,6 +12,7 @@ exports[`LogBoxInspectorSection should render with action on the right 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     Test Section
@@ -51,6 +52,7 @@ exports[`LogBoxInspectorSection should render with only heading 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     Test Section

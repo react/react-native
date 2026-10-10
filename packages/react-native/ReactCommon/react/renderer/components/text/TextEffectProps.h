@@ -7,11 +7,10 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
+#include <React/RendererCore.h>
 #include <folly/dynamic.h>
-#include <react/renderer/core/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
 
 namespace facebook::react {
 

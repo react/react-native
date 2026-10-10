@@ -8,10 +8,9 @@
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import type {EventEmitter} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, TurboModule} from 'react-native';
 
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {TurboModuleRegistry} from 'react-native';
 
 export type ObjectStruct = {
   a: number,
@@ -20,10 +19,10 @@ export type ObjectStruct = {
 };
 
 export interface Spec extends TurboModule {
-  onPress: EventEmitter<void>;
-  onClick: EventEmitter<string>;
-  onChange: EventEmitter<ObjectStruct>;
-  onSubmit: EventEmitter<ObjectStruct[]>;
+  onPress: CodegenTypes.EventEmitter<void>;
+  onClick: CodegenTypes.EventEmitter<string>;
+  onChange: CodegenTypes.EventEmitter<ObjectStruct>;
+  onSubmit: CodegenTypes.EventEmitter<ObjectStruct[]>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>(

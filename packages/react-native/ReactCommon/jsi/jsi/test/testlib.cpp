@@ -138,6 +138,61 @@ TEST_P(JSITest, StringLengthTest) {
   EXPECT_EQ(invalid.length(rt), 2);
 }
 
+TEST_P(JSITest, DecoratorForwardsStringLength) {
+  // Decorators should forward length(const String&) to the decorated runtime
+  // instead of falling back to the default Runtime::length, which copies the
+  // string via utf16() and bypasses the runtime's own implementation.
+  class Inner : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit Inner(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    size_t length(const String&) override {
+      ++lengthCalls;
+      return 42;
+    }
+
+    std::u16string utf16(const String& str) override {
+      ++utf16Calls;
+      return RuntimeDecorator::utf16(str);
+    }
+
+    int lengthCalls = 0;
+    int utf16Calls = 0;
+  };
+
+  class Outer : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit Outer(Runtime& rt) : RuntimeDecorator(rt) {}
+  };
+
+  struct Count {
+    void before() {
+      ++beforeCalls;
+    }
+    void after() {
+      ++afterCalls;
+    }
+    int beforeCalls = 0;
+    int afterCalls = 0;
+  };
+
+  Inner inner(rt);
+  String str = String::createFromAscii(inner, "hello");
+
+  Outer outer(inner);
+  EXPECT_EQ(str.length(outer), 42);
+  EXPECT_EQ(inner.lengthCalls, 1);
+  EXPECT_EQ(inner.utf16Calls, 0);
+
+  Count count;
+  WithRuntimeDecorator<Count> with(inner, count);
+  EXPECT_EQ(str.length(with), 42);
+  EXPECT_EQ(inner.lengthCalls, 2);
+  EXPECT_EQ(inner.utf16Calls, 0);
+  EXPECT_EQ(count.beforeCalls, 1);
+  EXPECT_EQ(count.afterCalls, 1);
+}
+
 TEST_P(JSITest, ObjectTest) {
   eval("x = {1:2, '3':4, 5:'six', 'seven':['eight', 'nine']}");
   Object x = rt.global().getPropertyAsObject(rt, "x");

@@ -9,13 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/core/EventEmitter.h>
-#include <react/renderer/core/LayoutMetrics.h>
-#include <react/renderer/core/Props.h>
-#include <react/renderer/core/ReactPrimitives.h>
-#include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/debug/flags.h>
-#include <react/utils/hash_combine.h>
+#include <React/RendererCore.h>
+#include <React/Utils.h>
 
 namespace facebook::react {
 

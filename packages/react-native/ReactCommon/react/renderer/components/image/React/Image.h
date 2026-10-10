@@ -31,11 +31,6 @@
 #undef RN_UMBRELLA_CONTEXT
 #define RN_UMBRELLA_CONTEXT 1
 
-#include <react/renderer/components/image/ImageComponentDescriptor.h>
-#include <react/renderer/components/image/ImageEventEmitter.h>
-#include <react/renderer/components/image/ImageProps.h>
-#include <react/renderer/components/image/ImageShadowNode.h>
-#include <react/renderer/components/image/ImageState.h>
 #include <react/renderer/components/image/conversions.h>
 
 #undef RN_UMBRELLA_CONTEXT

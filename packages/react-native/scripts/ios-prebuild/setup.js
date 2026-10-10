@@ -38,69 +38,7 @@ async function setup(
   const linksFolder = path.resolve(buildFolder, 'headers');
   createFolderIfNotExists(linksFolder);
 
-  /**
-   * Creates a hard link from one path to another. For each subfolder
-   * in the source path, it creates a link in the target path with an
-   * underscore prefix.
-   */
-  const link = (fromPath /*:string*/, includePath /*:?string*/) => {
-    const source = path.resolve(root, fromPath);
-    const target = path.resolve(linksFolder, includePath ?? fromPath);
-
-    createFolderIfNotExists(target);
-
-    let linkedFiles = 0;
-
-    // get subfolders in source - make sure we only copy folders with header files
-    const entries = fs.readdirSync(source, {withFileTypes: true});
-    if (
-      entries.some(
-        dirent =>
-          dirent.isFile() &&
-          (String(dirent.name).endsWith('.h') ||
-            String(dirent.name).endsWith('.hpp')),
-      )
-    ) {
-      // Create link for all header files (*.h, *.hpp) in the source directory
-      entries.forEach(entry => {
-        const entryName = String(entry.name);
-        if (entry.isFile() && /\.(h|hpp)$/.test(entryName)) {
-          const sourceFile = path.join(source, entryName);
-          const targetFile = path.join(target, entryName);
-          // Skip if the file already exists
-          if (fs.existsSync(targetFile)) {
-            return;
-          }
-          try {
-            fs.linkSync(sourceFile, targetFile);
-            linkedFiles++;
-          } catch (e) {
-            console.error(
-              `Failed to create link for ${sourceFile} to ${targetFile}: ${e}`,
-            );
-          }
-        }
-      });
-    }
-
-    if (linkedFiles > 0) {
-      prebuildLog(
-        `Linked ${path.relative(root, source)} → ${path.relative(root, target)}`,
-      );
-    }
-
-    const subfolders = entries
-      .filter(dirent => dirent.isDirectory())
-      .filter(dirent => dirent.name !== '__tests__')
-      .filter(dirent => dirent.name !== 'tests')
-      .filter(dirent => dirent.name !== 'platform')
-      .map(dirent => dirent.name);
-
-    // Create links for subfolders
-    subfolders.forEach(folder => {
-      link(path.join(fromPath, String(folder)), includePath);
-    });
-  };
+  const link = createHeaderLinker(root, linksFolder, prebuildLog);
 
   // HERMES ARTIFACTS
   await prepareHermesArtifactsAsync(currentVersion, buildType);
@@ -162,15 +100,26 @@ async function setup(
     'ReactCommon/react/renderer/imagemanager',
     'react/renderer/imagemanager',
   );
+  link('ReactCommon/react/renderer/imagemanager/React', 'React');
   link('ReactCommon/yoga/Yoga', 'ReactCommon/yoga/Yoga');
   link('ReactCommon/callinvoker', 'ReactCommon');
+  link('ReactCommon/callinvoker/React', 'React');
   link('ReactCommon/react/renderer/componentregistry');
+  link('ReactCommon/react/renderer/componentregistry/React', 'React');
   link('ReactCommon/react/renderer/core');
+  link('ReactCommon/react/renderer/core/React', 'React');
+  link('ReactCommon/react/renderer/components/image/React', 'React');
+  link('ReactCommon/react/renderer/mapbuffer/React', 'React');
   link('ReactCommon/react/bridging');
+  link('ReactCommon/react/bridging/React', 'React');
   link('ReactCommon/react/timing');
+  link('ReactCommon/react/timing/React', 'React');
   link('ReactCommon/react/utils');
+  link('ReactCommon/react/utils/React', 'React');
   link('ReactCommon/react/debug');
+  link('ReactCommon/react/debug/React', 'React');
   link('ReactCommon/react/renderer/debug');
+  link('ReactCommon/react/renderer/debug/React', 'React');
   link('ReactCommon/react/featureflags');
   link('ReactCommon/react/renderer/graphics');
   link(
@@ -178,6 +127,7 @@ async function setup(
     'ReactCommon/react/renderer/graphics',
   );
   link('ReactCommon/react/nativemodule/core', 'ReactCommon');
+  link('ReactCommon/react/nativemodule/core/React', 'React');
   link('ReactCommon/react/nativemodule/core/platform/ios', 'ReactCommon');
 
   link('ReactCommon/react/utils/platform/ios', 'ReactCommon/react/utils');
@@ -186,6 +136,7 @@ async function setup(
   link('ReactCommon/jsitooling/react/runtime', 'ReactCommon/react/runtime');
   link('ReactCommon/react/renderer/components/legacyviewmanagerinterop');
   link('ReactCommon/react/renderer/components/view');
+  link('ReactCommon/react/renderer/components/view/React', 'React');
   link(
     'ReactCommon/react/renderer/components/view/platform/cxx',
     'ReactCommon/react/renderer/components/view',
@@ -193,12 +144,115 @@ async function setup(
   link('ReactCommon/react/renderer/mounting');
   link('ReactCommon/react/renderer/attributedstring');
   link('ReactCommon/runtimeexecutor/ReactCommon', 'ReactCommon');
+  link('ReactCommon/runtimeexecutor/React', 'React');
   link('ReactCommon/jsinspector-modern');
   link('ReactCommon/cxxreact');
+  link('ReactCommon/cxxreact/React', 'React');
 
   link('.build/codegen/build/generated/ios', 'ReactCodegen');
 }
 
+function lstatSyncIfExists(filePath /*: string */) /*: ?fs.Stats */ {
+  try {
+    return fs.lstatSync(filePath);
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      return null;
+    }
+    throw e;
+  }
+}
+
+/**
+ * Builds the staging function for one prebuild pass: it hard links the header
+ * files of a source folder into the prebuild's flat include tree, recursing
+ * into subfolders. A folder without any header file directly in it contributes
+ * nothing but is still traversed.
+ */
+function createHeaderLinker(
+  root /*: string */,
+  linksFolder /*: string */,
+  log /*: (message: string) => void */,
+) /*: (fromPath: string, includePath?: ?string) => void */ {
+  // Several call sites flatten distinct source folders onto one target folder,
+  // and a few of those collide on a basename. The first source staged in a pass
+  // owns the target; the compiler has been seeing that header all along.
+  const claimed /*: Set<string> */ = new Set();
+
+  const linkFolder = (
+    fromPath /*: string */,
+    includePath /*: ?string */,
+  ) /*: void */ => {
+    const source = path.resolve(root, fromPath);
+    const target = path.resolve(linksFolder, includePath ?? fromPath);
+
+    createFolderIfNotExists(target);
+
+    let linkedFiles = 0;
+
+    const entries = fs.readdirSync(source, {withFileTypes: true});
+    if (
+      entries.some(
+        dirent => dirent.isFile() && /\.(h|hpp)$/.test(String(dirent.name)),
+      )
+    ) {
+      entries.forEach(entry => {
+        const entryName = String(entry.name);
+        if (entry.isFile() && /\.(h|hpp)$/.test(entryName)) {
+          const sourceFile = path.join(source, entryName);
+          const targetFile = path.join(target, entryName);
+          if (claimed.has(targetFile)) {
+            return;
+          }
+          try {
+            // `git checkout` replaces a header by renaming a new file over it,
+            // so the source gets a new inode and a link staged earlier keeps
+            // serving the old contents. Anything that is not the source inode
+            // is stale.
+            const staged = lstatSyncIfExists(targetFile);
+            if (staged != null) {
+              const sourceStat = fs.statSync(sourceFile);
+              if (
+                staged.dev === sourceStat.dev &&
+                staged.ino === sourceStat.ino
+              ) {
+                claimed.add(targetFile);
+                return;
+              }
+              fs.unlinkSync(targetFile);
+            }
+            fs.linkSync(sourceFile, targetFile);
+            claimed.add(targetFile);
+            linkedFiles++;
+          } catch (e) {
+            console.error(
+              `Failed to create link for ${sourceFile} to ${targetFile}: ${e}`,
+            );
+          }
+        }
+      });
+    }
+
+    if (linkedFiles > 0) {
+      log(
+        `Linked ${path.relative(root, source)} → ${path.relative(root, target)}`,
+      );
+    }
+
+    entries
+      .filter(dirent => dirent.isDirectory())
+      .filter(dirent => dirent.name !== '__tests__')
+      .filter(dirent => dirent.name !== 'tests')
+      .filter(dirent => dirent.name !== 'platform')
+      .forEach(dirent => {
+        linkFolder(path.join(fromPath, String(dirent.name)), includePath);
+      });
+  };
+
+  return linkFolder;
+}
+
 module.exports = {
+  createHeaderLinker,
   setup,
 };

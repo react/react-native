@@ -10,8 +10,8 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import structuredClone from '../structuredClone';
 import * as Fantom from '@react-native/fantom';
-import structuredClone from 'react-native/src/private/webapis/structuredClone/structuredClone';
 
 const basicArray = [1, 2, 3];
 const basicObject = {a: 1, b: 2, c: 3};

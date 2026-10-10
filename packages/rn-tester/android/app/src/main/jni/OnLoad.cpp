@@ -9,9 +9,9 @@
 #include <DefaultTurboModuleManagerDelegate.h>
 #include <FBReactNativeSpec.h>
 #include <NativeCxxModuleExample.h>
+#include <React/ComponentRegistry.h>
 #include <ReactCommon/SampleTurboModuleJSIBindings.h>
 #include <fbjni/fbjni.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 
 #ifdef REACT_NATIVE_APP_CODEGEN_HEADER
 #include REACT_NATIVE_APP_CODEGEN_HEADER

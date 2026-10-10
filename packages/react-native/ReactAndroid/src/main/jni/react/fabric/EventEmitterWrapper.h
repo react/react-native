@@ -7,9 +7,9 @@
 
 #pragma once
 
+#include <React/RendererCore.h>
 #include <fbjni/fbjni.h>
 #include <react/jni/ReadableNativeMap.h>
-#include <react/renderer/core/EventEmitter.h>
 
 namespace facebook::react {
 

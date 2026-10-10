@@ -7,7 +7,9 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
+
+#include <cstdint>
 
 #include <react/renderer/components/view/ViewEventEmitter.h>
 #include <react/renderer/imagemanager/primitives.h>

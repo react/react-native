@@ -294,7 +294,7 @@ struct FrameData {
     if (scene.activationState == UISceneActivationStateForegroundActive &&
         [scene isKindOfClass:[UIWindowScene class]]) {
       auto windowScene = (UIWindowScene *)scene;
-      for (UIWindow *window = nullptr in windowScene.windows) {
+      for (UIWindow *window in windowScene.windows) {
         if (window.isKeyWindow) {
           return window;
         }

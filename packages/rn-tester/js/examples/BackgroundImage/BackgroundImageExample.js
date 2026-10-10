@@ -11,9 +11,10 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import {StyleSheet, Text, View} from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 function BackgroundImageBox({
   style,

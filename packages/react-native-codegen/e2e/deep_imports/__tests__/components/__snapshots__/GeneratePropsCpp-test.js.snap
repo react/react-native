@@ -13,10 +13,9 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/conversions.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -128,8 +127,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -186,8 +184,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -239,9 +236,8 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/components/view/conversions.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -293,8 +289,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -343,8 +338,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -401,8 +395,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -454,8 +447,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -507,8 +499,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -590,9 +581,8 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -644,8 +634,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -707,8 +696,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -760,9 +748,8 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
+#include <React/RendererCore.h>
 #include <folly/dynamic.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
 
 namespace facebook::react {
 
@@ -814,9 +801,8 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -883,8 +869,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -933,9 +918,8 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -997,8 +981,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 
@@ -1050,8 +1033,7 @@ Object {
  */
 
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 

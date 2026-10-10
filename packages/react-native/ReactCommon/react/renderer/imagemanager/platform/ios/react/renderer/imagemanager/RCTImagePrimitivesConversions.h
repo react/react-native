@@ -5,11 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <UIKit/UIKit.h>
 
+#import <React/ImageManager.h>
 #import <React/RCTConvert.h>
 #import <React/RCTImageLoader.h>
-#import <react/renderer/imagemanager/primitives.h>
 
 inline static UIViewContentMode RCTContentModeFromImageResizeMode(facebook::react::ImageResizeMode imageResizeMode)
 {

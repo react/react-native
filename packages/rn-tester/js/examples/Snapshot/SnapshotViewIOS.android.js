@@ -8,4 +8,35 @@
  * @format
  */
 
-export {default} from 'react-native/Libraries/Components/UnimplementedViews/UnimplementedView';
+'use strict';
+
+import * as React from 'react';
+import {StyleSheet, View} from 'react-native';
+
+type Props = Readonly<{
+  children?: React.Node,
+  style?: React.PropOf<View, 'style'>,
+  ...
+}>;
+
+class SnapshotViewIOS extends React.Component<Props> {
+  render(): React.Node {
+    return (
+      <View style={[styles.unimplementedView, this.props.style]}>
+        {this.props.children}
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  unimplementedView: __DEV__
+    ? {
+        alignSelf: 'flex-start',
+        borderColor: 'red',
+        borderWidth: 1,
+      }
+    : {},
+});
+
+export default SnapshotViewIOS;

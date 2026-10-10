@@ -13,7 +13,7 @@
 #include "EventEmitters.h"
 #include "Props.h"
 #include "States.h"
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {

@@ -21,6 +21,7 @@ import {
   withServerForEachTest,
 } from './ServerUtils';
 import {createHash} from 'node:crypto';
+import until from 'wait-for-expect';
 
 // WebSocket is unreliable when using fake timers.
 jest.useRealTimers();
@@ -470,8 +471,8 @@ describe.each(['HTTP', 'HTTPS'])(
         }
       });
 
-      test('throws when attempting to pass a filesystem url', async () => {
-        const {device, debugger_} = await createAndConnectTarget(
+      test('forwards to the target for a url the proxy cannot fetch', async () => {
+        const {device, debugger_, sessionId} = await createAndConnectTarget(
           serverRef,
           autoCleanup.signal,
           {
@@ -495,31 +496,76 @@ describe.each(['HTTP', 'HTTPS'])(
               hash: createHash('sha256').update('').digest('hex'),
             },
           });
-          const response = await debugger_.sendAndGetResponse({
+          const message = {
             id: 1,
             method: 'Debugger.getScriptSource',
             params: {
               scriptId: 'script1',
             },
+          };
+          await sendFromDebuggerToTarget(debugger_, device, 'page1', message, {
+            sessionId,
           });
-          expect(response.result).toEqual(
-            expect.objectContaining({
-              error: {
-                message: expect.stringContaining(
-                  'Can\'t parse requested URL "__fixtures__/mock-source-file.txt"',
-                ),
-              },
-            }),
-          );
 
-          // The device does not receive the getScriptSource request, since it
-          // is handled by the proxy.
-          expect(device.wrappedEventParsed).not.toBeCalledWith({
+          // The proxy only fetches HTTP(S) urls itself, so rather than failing
+          // it hands the request to the target.
+          expect(device.wrappedEventParsed).toBeCalledWith({
             pageId: 'page1',
-            wrappedEvent: expect.objectContaining({
-              method: 'Debugger.getScriptSource',
-            }),
+            sessionId,
+            wrappedEvent: message,
           });
+        } finally {
+          device.close();
+          debugger_.close();
+        }
+      });
+
+      test('forwards to the target for a script with no url', async () => {
+        const {device, debugger_, sessionId} = await createAndConnectTarget(
+          serverRef,
+          autoCleanup.signal,
+          {
+            app: 'bar-app',
+            id: 'page1',
+            title: 'bar-title',
+            vm: 'bar-vm',
+          },
+        );
+
+        try {
+          // Targets report an empty url for code they compiled from a debugger
+          // expression, such as code typed into the DevTools console.
+          await sendFromTargetToDebugger(device, debugger_, 'page1', {
+            method: 'Debugger.scriptParsed',
+            params: {
+              scriptId: 'script1',
+              url: '',
+            },
+          });
+          const message = {
+            id: 1,
+            method: 'Debugger.getScriptSource',
+            params: {
+              scriptId: 'script1',
+            },
+          };
+          await sendFromDebuggerToTarget(debugger_, device, 'page1', message, {
+            sessionId,
+          });
+          expect(device.wrappedEventParsed).toBeCalledWith({
+            pageId: 'page1',
+            sessionId,
+            wrappedEvent: message,
+          });
+
+          // The target answers, and the proxy relays that back to the debugger.
+          const response = {id: 1, result: {scriptSource: 'debugger;'}};
+          device.sendWrappedEvent('page1', response);
+          await until(() =>
+            expect(debugger_.handle).toBeCalledWith(
+              expect.objectContaining(response),
+            ),
+          );
         } finally {
           device.close();
           debugger_.close();

@@ -5,8 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #import <Foundation/Foundation.h>
-#import <react/renderer/core/ReactPrimitives.h>
+#import <React/RendererCore.h>
 #import <react/renderer/imagemanager/ImageRequest.h>
 
 @protocol RCTImageManagerProtocol <NSObject>

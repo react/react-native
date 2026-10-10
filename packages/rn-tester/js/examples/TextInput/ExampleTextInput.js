@@ -15,13 +15,13 @@ import {StyleSheet, TextInput} from 'react-native';
 
 const ExampleTextInput: component(
   ref?: React.RefSetter<null | React.ElementRef<typeof TextInput>>,
-  ...props: Omit<React.ElementConfig<typeof TextInput>, 'ref'>
+  ...props: Omit<React.ComponentProps<typeof TextInput>, 'ref'>
 ) = ({
   ref,
   ...props
 }: {
   ref?: React.RefSetter<null | React.ElementRef<typeof TextInput>>,
-  ...React.ElementConfig<typeof TextInput>,
+  ...React.ComponentProps<typeof TextInput>,
 }) => {
   const theme = useContext(RNTesterThemeContext);
 

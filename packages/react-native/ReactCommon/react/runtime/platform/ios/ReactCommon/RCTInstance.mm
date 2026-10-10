@@ -74,6 +74,7 @@ using namespace facebook::react;
   RCTDisplayLink *_displayLink;
   RCTTurboModuleManager *_turboModuleManager;
   RCTBridgeProxy *_bridgeProxy;
+  std::shared_ptr<CallInvoker> _jsCallInvoker;
   std::mutex _invalidationMutex;
   std::atomic<bool> _valid;
   RCTJSThreadManager *_jsThreadManager;
@@ -170,10 +171,14 @@ using namespace facebook::react;
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args
 {
-  if (_valid) {
-    _reactInstance->callFunctionOnModule(
-        [moduleName UTF8String], [method UTF8String], convertIdToFollyDynamic(args ? args : @[]));
+  // This is called from arbitrary threads, while -invalidate destroys _reactInstance on
+  // the JS thread, so checking _valid and dereferencing have to happen as one step.
+  std::lock_guard<std::mutex> lock(_invalidationMutex);
+  if (!_valid || !_reactInstance) {
+    return;
   }
+  _reactInstance->callFunctionOnModule(
+      [moduleName UTF8String] ?: "", [method UTF8String] ?: "", convertIdToFollyDynamic(args ? args : @[]));
 }
 
 - (void)invalidate
@@ -205,6 +210,11 @@ using namespace facebook::react;
     // Terminate the JavaScript thread, so that no other work executes after this block.
     self->_jsThreadManager = nil;
   }];
+}
+
+- (std::shared_ptr<CallInvoker>)jsCallInvoker
+{
+  return _valid ? _jsCallInvoker : nullptr;
 }
 
 - (void)registerSegmentWithId:(NSNumber *)segmentId path:(NSString *)path
@@ -290,6 +300,7 @@ using namespace facebook::react;
   timerManager->setRuntimeExecutor(bufferedRuntimeExecutor);
 
   auto jsCallInvoker = _reactInstance->createJSCallInvoker();
+  _jsCallInvoker = jsCallInvoker;
   RCTBridgeProxy *bridgeProxy =
       [[RCTBridgeProxy alloc] initWithViewRegistry:_bridgeModuleDecorator.viewRegistry_DEPRECATED
           moduleRegistry:_bridgeModuleDecorator.moduleRegistry

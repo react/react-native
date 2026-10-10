@@ -42,7 +42,7 @@ export default class DecayAnimation extends Animation {
   _deceleration: number;
   _velocity: number;
   _onUpdate: (value: number) => void;
-  _animationFrame: ?AnimationFrameID;
+  _animationFrame: ?number;
   _platformConfig: ?PlatformConfig;
 
   constructor(config: DecayAnimationConfigSingle) {

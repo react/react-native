@@ -355,6 +355,24 @@ class ReactNativePodsUtils
         return search_paths
     end
 
+    def self.create_header_search_paths_for_stable_umbrellas(base_folder)
+        return [] unless ReactNativeCoreUtils.build_rncore_from_source()
+
+        self.stable_umbrella_frameworks.flat_map { |pod_name, framework_name|
+            self.create_header_search_path_for_frameworks(base_folder, pod_name, framework_name, [])
+        }
+    end
+
+    def self.stable_umbrella_frameworks
+        [
+            ["React-Fabric", "React_Fabric"],
+            ["React-debug", "React_debug"],
+            ["React-rendererdebug", "React_rendererdebug"],
+            ["React-timing", "React_timing"],
+            ["React-utils", "React_utils"],
+        ]
+    end
+
     # Add a new dependency to an existing spec, configuring also the headers search paths
     def self.add_dependency(spec, dependency_name, base_folder_for_frameworks, framework_name, additional_paths: [], version: nil, subspec_dependency: nil)
         # Update Search Path
@@ -385,6 +403,9 @@ class ReactNativePodsUtils
         projects = self.extract_projects(installer)
 
         projects.each do |project|
+            stable_umbrella_search_paths = project == installer.pods_project ?
+                [] : ReactNativePodsUtils.create_header_search_paths_for_stable_umbrellas("PODS_CONFIGURATION_BUILD_DIR")
+
             project.build_configurations.each do |config|
 
                 header_search_paths = config.build_settings["HEADER_SEARCH_PATHS"] ||= "$(inherited)"
@@ -397,6 +418,7 @@ class ReactNativePodsUtils
                         "react/renderer/components/scrollview/platform/cxx",
                         "react/renderer/components/scrollview/platform/ios",
                     ], false))
+                    .concat(stable_umbrella_search_paths)
                     .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-FabricComponents", "React_FabricComponents", [
                         "react/renderer/textlayoutmanager/platform/ios",
                         "react/renderer/components/text/platform/cxx",
@@ -409,6 +431,7 @@ class ReactNativePodsUtils
                     .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-featureflags", "React_featureflags", []))
                     .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-renderercss", "React_renderercss", []))
                     .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-cxxstableapi", "React_cxxstableapi", []))
+                    .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-debug", "React_debug", []))
                     .each{ |search_path|
                         header_search_paths = self.add_search_path_if_not_included(header_search_paths, search_path)
                     }
@@ -420,6 +443,8 @@ class ReactNativePodsUtils
         end
 
         installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
+            self.set_stable_umbrella_search_paths(target_installation_result)
+
             if self.react_native_pods.include?(pod_name) || pod_name.include?("Pod") || pod_name.include?("Tests")
                 next
             end
@@ -435,11 +460,14 @@ class ReactNativePodsUtils
     def self.updateOSDeploymentTarget(installer)
         installer.target_installation_results.pod_target_installation_results
             .each do |pod_name, target_installation_result|
-                target_installation_result.native_target.build_configurations.each do |config|
-                    old_iphone_deploy_target = config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] ?
-                        config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] :
-                        Helpers::Constants.min_ios_version_supported
-                    config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = [Helpers::Constants.min_ios_version_supported.to_f, old_iphone_deploy_target.to_f].max.to_s
+                targets = [target_installation_result.native_target] + target_installation_result.resource_bundle_targets
+                targets.each do |target|
+                    target.build_configurations.each do |config|
+                        old_iphone_deploy_target = config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] ?
+                            config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] :
+                            Helpers::Constants.min_ios_version_supported
+                        config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = [Helpers::Constants.min_ios_version_supported.to_f, old_iphone_deploy_target.to_f].max.to_s
+                    end
                 end
             end
     end
@@ -633,7 +661,9 @@ class ReactNativePodsUtils
 
         if current_search_paths.is_a?(String)
           current_search_paths = current_search_paths.strip
-          return "#{current_search_paths} #{new_search_path}" unless current_search_paths.include?(new_search_path)
+          current_paths = Shellwords.shellsplit(current_search_paths)
+          normalized_new_path = Shellwords.shellsplit(new_search_path).first
+          return "#{current_search_paths} #{new_search_path}" unless current_paths.include?(normalized_new_path)
         end
 
         if current_search_paths.is_a?(Array)
@@ -644,14 +674,52 @@ class ReactNativePodsUtils
         current_search_paths
     end
 
-    def self.update_header_paths_if_depends_on(target_installation_result, dependency_name, header_paths)
-        depends_on_framework = target_installation_result.native_target.dependencies.any? { |d| d.name == dependency_name }
+    def self.target_depends_on?(target, dependency_name, visited_targets = {})
+        return false if target == nil
+
+        target_identifier = target.respond_to?(:uuid) ? target.uuid : target.object_id
+        target_identifier ||= target.object_id
+        return false if visited_targets[target_identifier]
+
+        visited_targets[target_identifier] = true
+        target.dependencies.any? do |dependency|
+            dependency.name == dependency_name ||
+                (dependency.respond_to?(:target) && self.target_depends_on?(dependency.target, dependency_name, visited_targets))
+        end
+    end
+
+    def self.update_header_paths_if_depends_on(target_installation_result, dependency_name, header_paths, include_transitive_dependencies: false)
+        native_target = target_installation_result.native_target
+        depends_on_framework = if include_transitive_dependencies
+            self.target_depends_on?(native_target, dependency_name)
+        else
+            native_target.dependencies.any? { |d| d.name == dependency_name }
+        end
         if depends_on_framework
-            target_installation_result.native_target.build_configurations.each do |config|
+            native_target.build_configurations.each do |config|
                 header_search_path = config.build_settings["HEADER_SEARCH_PATHS"] != nil ? config.build_settings["HEADER_SEARCH_PATHS"] : "$(inherited)"
                 header_paths.each { |header| header_search_path = ReactNativePodsUtils.add_search_path_if_not_included(header_search_path, header) }
                 config.build_settings["HEADER_SEARCH_PATHS"] = header_search_path
             end
+        end
+    end
+
+    def self.set_stable_umbrella_search_paths(target_installation_result)
+        return unless ReactNativeCoreUtils.build_rncore_from_source()
+
+        ReactNativePodsUtils.stable_umbrella_frameworks.each do |pod_name, framework_name|
+            header_search_paths = ReactNativePodsUtils.create_header_search_path_for_frameworks(
+                "PODS_CONFIGURATION_BUILD_DIR",
+                pod_name,
+                framework_name,
+                []
+            ).map { |search_path| "\"#{search_path}\"" }
+            ReactNativePodsUtils.update_header_paths_if_depends_on(
+                target_installation_result,
+                pod_name,
+                header_search_paths,
+                include_transitive_dependencies: true
+            )
         end
     end
 

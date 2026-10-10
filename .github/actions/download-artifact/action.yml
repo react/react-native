@@ -1,0 +1,59 @@
+name: Download artifact with retries
+description: Downloads an artifact, retrying transient failures up to two times
+
+inputs:
+  name:
+    description: Artifact name
+    required: true
+  path:
+    description: Destination path
+    required: true
+
+outputs:
+  download-path:
+    description: Absolute path where the artifact was downloaded
+    value: ${{ steps.download-3.outputs.download-path || steps.download-2.outputs.download-path || steps.download-1.outputs.download-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download artifact (attempt 1 of 3)
+      id: download-1
+      if: ${{ always() }}
+      continue-on-error: true
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+
+    - name: Wait before attempt 2
+      if: ${{ always() && steps.download-1.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo "::warning::Artifact download failed; retrying in 10 seconds"
+        sleep 10
+
+    - name: Download artifact (attempt 2 of 3)
+      id: download-2
+      if: ${{ always() && steps.download-1.outcome == 'failure' }}
+      continue-on-error: true
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+
+    - name: Wait before attempt 3
+      if: ${{ always() && steps.download-2.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo "::warning::Artifact download failed again; retrying in 20 seconds"
+        sleep 20
+
+    - name: Download artifact (attempt 3 of 3)
+      id: download-3
+      if: ${{ always() && steps.download-2.outcome == 'failure' }}
+      # Deliberately do not continue on error: the last failure must fail the caller.
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}

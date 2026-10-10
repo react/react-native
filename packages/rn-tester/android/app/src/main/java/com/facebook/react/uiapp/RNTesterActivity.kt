@@ -22,7 +22,7 @@ import com.facebook.react.devsupport.DevMenuConfiguration
 import java.io.FileDescriptor
 import java.io.PrintWriter
 
-internal class RNTesterActivity : ReactActivity() {
+internal open class RNTesterActivity : ReactActivity() {
   class RNTesterActivityDelegate(val activity: ReactActivity, mainComponentName: String) :
       DefaultReactActivityDelegate(activity, mainComponentName) {
     private val PARAM_ROUTE = "route"

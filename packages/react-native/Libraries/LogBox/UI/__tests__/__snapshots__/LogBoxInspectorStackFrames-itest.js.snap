@@ -14,6 +14,7 @@ exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame coll
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     Call Stack
@@ -35,12 +36,13 @@ exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame coll
     includeFontPadding="false"
     lineHeight="18"
     marginHorizontal="10"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     This call stack is not symbolicated. Some features are unavailable such as viewing the function name or tapping to open files.
   </rn-paragraph>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     flex="1"
     paddingHorizontal="10"
@@ -55,6 +57,7 @@ exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame coll
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="18"
+      maxFontSizeMultiplier="1.5"
       nativeID="logbox_stack_frame_text"
       overflow="hidden"
     >
@@ -69,6 +72,7 @@ exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame coll
       foregroundColor="rgba(255, 255, 255, 0.8)"
       includeFontPadding="false"
       lineHeight="16"
+      maxFontSizeMultiplier="1.5"
       maximumNumberOfLines="1"
       overflow="hidden"
       paddingLeft="10"
@@ -77,7 +81,7 @@ exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame coll
     </rn-paragraph>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
   >
     <rn-paragraph
@@ -89,6 +93,7 @@ exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame coll
       foregroundColor="rgba(255, 255, 255, 0.701961)"
       lineHeight="20"
       marginTop="0"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
       paddingHorizontal="10"
       paddingVertical="5"

@@ -685,7 +685,7 @@ void packAnimatedProp(
     case POSITION_TYPE:
     case Z_INDEX:
     case DIRECTION:
-      throw std::runtime_error("Tried to synchronously update layout props");
+      break;
     default:
       throw std::runtime_error("Unknown animated prop");
   }

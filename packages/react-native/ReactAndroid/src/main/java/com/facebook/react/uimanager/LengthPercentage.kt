@@ -51,6 +51,7 @@ public data class LengthPercentage(
             null
           }
         }
+        ReadableType.Null -> null
         else -> {
           FLog.w(ReactConstants.TAG, "Unsupported type for radius property: ${dynamic.type}")
           null

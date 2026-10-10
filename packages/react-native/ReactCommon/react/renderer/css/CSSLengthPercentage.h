@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 #include <react/renderer/css/CSSCompoundDataType.h>
 #include <react/renderer/css/CSSLength.h>
 #include <react/renderer/css/CSSPercentage.h>

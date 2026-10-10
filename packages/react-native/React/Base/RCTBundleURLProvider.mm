@@ -39,8 +39,7 @@ static const NSTimeInterval kRCTPackagerStatusRequestTimeoutGraceTime = 2;
 
 - (instancetype)init
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     [self _setDefaults];
   }
   return self;

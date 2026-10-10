@@ -8,46 +8,39 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {ColorValue} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type {
+  CodegenTypes,
+  ColorValue,
   EdgeInsetsValue,
+  HostComponent,
   PointValue,
-} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
-import type {RootTag} from 'react-native/Libraries/TurboModule/RCTExport';
-import type {
-  Double,
-  Float,
-  Int32,
-  UnsafeMixed,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+  RootTag,
+  ViewProps,
+} from 'react-native';
 
-import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeCommands, codegenNativeComponent} from 'react-native';
 
 type NativeProps = Readonly<{
   ...ViewProps,
   bool: boolean,
   string: string,
-  double: Double,
-  float: Float,
-  int: Int32,
-  mixed: UnsafeMixed,
+  double: CodegenTypes.Double,
+  float: CodegenTypes.Float,
+  int: CodegenTypes.Int32,
+  mixed: CodegenTypes.UnsafeMixed,
 
-  optionalBool?: WithDefault<boolean, false>,
-  optionalString?: WithDefault<string, ''>,
-  optionalStringDiffDefault?: WithDefault<string, 'default'>,
-  optionalDouble?: WithDefault<Double, 0.0>,
-  optionalFloat?: WithDefault<Float, 0.0>,
-  optionalInt?: WithDefault<Int32, 0>,
+  optionalBool?: CodegenTypes.WithDefault<boolean, false>,
+  optionalString?: CodegenTypes.WithDefault<string, ''>,
+  optionalStringDiffDefault?: CodegenTypes.WithDefault<string, 'default'>,
+  optionalDouble?: CodegenTypes.WithDefault<CodegenTypes.Double, 0.0>,
+  optionalFloat?: CodegenTypes.WithDefault<CodegenTypes.Float, 0.0>,
+  optionalInt?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>,
 
   reserverdEdgeInsets: EdgeInsetsValue,
   reservedPointValue: PointValue,
 
-  stringUnion?: WithDefault<'foo' | 'bar', 'bar'>,
-  intUnion?: WithDefault<1 | 2, 1>,
+  stringUnion?: CodegenTypes.WithDefault<'foo' | 'bar', 'bar'>,
+  intUnion?: CodegenTypes.WithDefault<1 | 2, 1>,
 
   nestedObject: Readonly<{
     string: string,
@@ -59,8 +52,11 @@ type NativeProps = Readonly<{
     color: ColorValue,
   }>,
 
-  arrayStringUnion?: WithDefault<ReadonlyArray<'foo' | 'bar'>, 'foo'>,
-  arrayStringUnionExtra?: WithDefault<
+  arrayStringUnion?: CodegenTypes.WithDefault<
+    ReadonlyArray<'foo' | 'bar'>,
+    'foo',
+  >,
+  arrayStringUnionExtra?: CodegenTypes.WithDefault<
     ReadonlyArray<'foo' | 'bar' | 'baz'>,
     'bar',
   >,
@@ -82,19 +78,22 @@ type NativeProps = Readonly<{
 
 type NativeType = HostComponent<NativeProps>;
 
-type Int = Int32;
+type Int = CodegenTypes.Int32;
 type Str = string;
 type Bool = boolean;
-type Fl = Float;
-type Dbl = Double;
+type Fl = CodegenTypes.Float;
+type Dbl = CodegenTypes.Double;
 type CustomObj = {foo: string, bar: number};
-type CustomObj2 = {a: Int32, b: string};
+type CustomObj2 = {a: CodegenTypes.Int32, b: string};
 
 interface NativeCommands {
-  readonly methodInt: (viewRef: React.ElementRef<NativeType>, a: Int32) => void;
+  readonly methodInt: (
+    viewRef: React.ElementRef<NativeType>,
+    a: CodegenTypes.Int32,
+  ) => void;
   readonly methodIntString: (
     viewRef: React.ElementRef<NativeType>,
-    a: Int32,
+    a: CodegenTypes.Int32,
     b: string,
   ) => void;
   readonly methodString: (
@@ -107,11 +106,11 @@ interface NativeCommands {
   ) => void;
   readonly methodFloat: (
     viewRef: React.ElementRef<NativeType>,
-    a: Float,
+    a: CodegenTypes.Float,
   ) => void;
   readonly methodDouble: (
     viewRef: React.ElementRef<NativeType>,
-    a: Double,
+    a: CodegenTypes.Double,
   ) => void;
 
   readonly methodIntAlias: (
@@ -137,7 +136,7 @@ interface NativeCommands {
 
   readonly methodIntArray: (
     viewRef: React.ElementRef<NativeType>,
-    a: Array<Int32>,
+    a: Array<CodegenTypes.Int32>,
   ) => void;
   readonly methodStringArray: (
     viewRef: React.ElementRef<NativeType>,
@@ -149,11 +148,11 @@ interface NativeCommands {
   ) => void;
   readonly methodFloatArray: (
     viewRef: React.ElementRef<NativeType>,
-    a: Array<Float>,
+    a: Array<CodegenTypes.Float>,
   ) => void;
   readonly methodDoubleArray: (
     viewRef: React.ElementRef<NativeType>,
-    a: Array<Double>,
+    a: Array<CodegenTypes.Double>,
   ) => void;
   readonly methodCustomObjArray: (
     viewRef: React.ElementRef<NativeType>,

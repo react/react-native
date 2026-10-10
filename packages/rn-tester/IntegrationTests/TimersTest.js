@@ -27,20 +27,20 @@ type ImmediateID = Object;
 
 class TimersTest extends React.Component<Props, State> {
   _nextTest = () => {};
-  _interval: ?IntervalID = null;
+  _interval: ?ReturnType<typeof setInterval> = null;
 
-  _timeoutIDs: Set<TimeoutID> = new Set();
-  _intervalIDs: Set<IntervalID> = new Set();
+  _timeoutIDs: Set<ReturnType<typeof setTimeout>> = new Set();
+  _intervalIDs: Set<ReturnType<typeof setInterval>> = new Set();
   _immediateIDs: Set<ImmediateID> = new Set();
-  _animationFrameIDs: Set<AnimationFrameID> = new Set();
+  _animationFrameIDs: Set<number> = new Set();
 
   state: State = {
     count: 0,
     done: false,
   };
 
-  setTimeout(fn: () => void, time: number): TimeoutID {
-    const id: TimeoutID = setTimeout(() => {
+  setTimeout(fn: () => void, time: number): ReturnType<typeof setTimeout> {
+    const id: ReturnType<typeof setTimeout> = setTimeout(() => {
       this._timeoutIDs.delete(id);
       fn();
     }, time);
@@ -50,12 +50,12 @@ class TimersTest extends React.Component<Props, State> {
     return id;
   }
 
-  clearTimeout(id: TimeoutID) {
+  clearTimeout(id: ReturnType<typeof setTimeout>) {
     this._timeoutIDs.delete(id);
     clearTimeout(id);
   }
 
-  setInterval(fn: () => void, time: number): IntervalID {
+  setInterval(fn: () => void, time: number): ReturnType<typeof setInterval> {
     const id = setInterval(() => {
       fn();
     }, time);
@@ -65,7 +65,7 @@ class TimersTest extends React.Component<Props, State> {
     return id;
   }
 
-  clearInterval(id: IntervalID) {
+  clearInterval(id: ReturnType<typeof setInterval>) {
     this._intervalIDs.delete(id);
     clearInterval(id);
   }
@@ -81,8 +81,8 @@ class TimersTest extends React.Component<Props, State> {
     return id;
   }
 
-  requestAnimationFrame(fn: () => void): AnimationFrameID {
-    const id: AnimationFrameID = requestAnimationFrame(() => {
+  requestAnimationFrame(fn: () => void): number {
+    const id: number = requestAnimationFrame(() => {
       this._animationFrameIDs.delete(id);
       fn();
     });
@@ -92,7 +92,7 @@ class TimersTest extends React.Component<Props, State> {
     return id;
   }
 
-  cancelAnimationFrame(id: AnimationFrameID): void {
+  cancelAnimationFrame(id: number): void {
     this._animationFrameIDs.delete(id);
     cancelAnimationFrame(id);
   }

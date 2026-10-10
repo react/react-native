@@ -9,11 +9,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import <React/CallInvoker.h>
+#import <React/NativeModuleCore.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTModuleMethod.h>
-#import <ReactCommon/CallInvoker.h>
-#import <ReactCommon/TurboModule.h>
 #import <functional>
 #import <memory>
 #import <string>

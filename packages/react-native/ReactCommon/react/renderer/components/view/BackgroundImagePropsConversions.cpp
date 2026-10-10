@@ -438,20 +438,32 @@ void fromCSSColorStop(
       // first stop with start position
       colorStops.push_back(
           ColorStop{
-              .color = fromCSSColor(colorStop.color),
+              .color = colorFromRGBA(
+                  colorStop.color.r,
+                  colorStop.color.g,
+                  colorStop.color.b,
+                  colorStop.color.a),
               .position = convertLengthPercentageToValueUnit(
                   *colorStop.startPosition)});
 
       // second stop with end position (same color)
       colorStops.push_back(
           ColorStop{
-              .color = fromCSSColor(colorStop.color),
+              .color = colorFromRGBA(
+                  colorStop.color.r,
+                  colorStop.color.g,
+                  colorStop.color.b,
+                  colorStop.color.a),
               .position =
                   convertLengthPercentageToValueUnit(*colorStop.endPosition)});
     } else {
       // single color stop
       ColorStop stop;
-      stop.color = fromCSSColor(colorStop.color);
+      stop.color = colorFromRGBA(
+          colorStop.color.r,
+          colorStop.color.g,
+          colorStop.color.b,
+          colorStop.color.a);
 
       // handle start position if present
       if (colorStop.startPosition.has_value()) {

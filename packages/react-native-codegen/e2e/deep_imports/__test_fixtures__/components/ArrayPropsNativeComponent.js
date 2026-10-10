@@ -8,23 +8,18 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {ImageSource} from 'react-native/Libraries/Image/ImageSource';
-import type {ColorValue} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type {
+  CodegenTypes,
+  ColorValue,
   DimensionValue,
   EdgeInsetsValue,
+  HostComponent,
+  ImageSource,
   PointValue,
-} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
-import type {
-  Float,
-  Int32,
-  UnsafeMixed,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+  ViewProps,
+} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 type NativeProps = Readonly<{
   ...ViewProps,
@@ -32,17 +27,19 @@ type NativeProps = Readonly<{
   // Props
   names?: ReadonlyArray<string>,
   disableds?: ReadonlyArray<boolean>,
-  progress?: ReadonlyArray<Int32>,
-  radii?: ReadonlyArray<Float>,
+  progress?: ReadonlyArray<CodegenTypes.Int32>,
+  radii?: ReadonlyArray<CodegenTypes.Float>,
   colors?: ReadonlyArray<ColorValue>,
   srcs?: ReadonlyArray<ImageSource>,
   points?: ReadonlyArray<PointValue>,
   edgeInsets?: ReadonlyArray<EdgeInsetsValue>,
   dimensions?: ReadonlyArray<DimensionValue>,
-  sizes?: WithDefault<ReadonlyArray<'small' | 'large'>, 'small'>,
+  sizes?: CodegenTypes.WithDefault<ReadonlyArray<'small' | 'large'>, 'small'>,
   object?: ReadonlyArray<Readonly<{prop: string}>>,
-  arrayOfObjects?: ReadonlyArray<Readonly<{prop1: Float, prop2: Int32}>>,
-  arrayOfMixed?: ReadonlyArray<UnsafeMixed>,
+  arrayOfObjects?: ReadonlyArray<
+    Readonly<{prop1: CodegenTypes.Float, prop2: CodegenTypes.Int32}>,
+  >,
+  arrayOfMixed?: ReadonlyArray<CodegenTypes.UnsafeMixed>,
 }>;
 
 export default codegenNativeComponent<NativeProps>(

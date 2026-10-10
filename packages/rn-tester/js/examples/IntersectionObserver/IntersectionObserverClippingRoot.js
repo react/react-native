@@ -9,8 +9,6 @@
  */
 
 import type {HostInstance} from 'react-native';
-import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
-import type IntersectionObserverEntry from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserverEntry';
 
 import * as React from 'react';
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
@@ -19,8 +17,6 @@ import {Button, StyleSheet, Text, TextInput, View} from 'react-native';
 export const name = 'IntersectionObserver Root Clipping Example';
 export const title = name;
 export const description = 'A root that clips its target';
-
-declare var IntersectionObserver: Class<IntersectionObserverType>;
 
 export function render(): React.Node {
   return <IntersectionObserverClippingRootExample />;
@@ -94,8 +90,9 @@ component IntersectionObserverClippingRootExample() {
       return;
     }
 
+    // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
     observer.current = new IntersectionObserver(onObserve, {
-      // $FlowFixMe[incompatible-type]
+      // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
       root: rootNode,
       // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
       rootMargin: rootMarginValue,

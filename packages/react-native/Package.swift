@@ -136,7 +136,8 @@ let reactFeatureFlags = RNTarget(
 let reactPerfLogger = RNTarget(
   name: .reactPerfLogger,
   path: "ReactCommon/reactperflogger",
-  excludedPaths: ["fusebox"]
+  excludedPaths: ["fusebox"],
+  dependencies: [.reactDebug, .reactNativeDependencies]
 )
 
 /// React-logger.podspec
@@ -193,7 +194,7 @@ let reactJsInspector = RNTarget(
   name: .reactJsInspector,
   path: "ReactCommon/jsinspector-modern",
   excludedPaths: ["tracing", "network", "tests"],
-  dependencies: [.reactNativeDependencies, .reactFeatureFlags, .jsi, .reactJsInspectorTracing, .reactJsInspectorNetwork, .reactRuntimeExecutor, .reactPerfLogger],
+  dependencies: [.reactNativeDependencies, .reactFeatureFlags, .jsi, .reactJsInspectorTracing, .reactJsInspectorNetwork, .reactRuntimeExecutor, .reactPerfLogger, .reactUtils],
   defines: [
     CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED", to: "1", .when(configuration: BuildConfiguration.debug)),
     CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY", to: "1", .when(configuration: BuildConfiguration.debug)),
@@ -287,13 +288,21 @@ let reactJsErrorHandler = RNTarget(
   dependencies: [.reactNativeDependencies, .jsi, .reactFeatureFlags, .reactDebug, .reactTurboModuleBridging]
 )
 
+/// React-renderercss.podspec
+let reactRendererCss = RNTarget(
+  name: .reactRendererCss,
+  path: "ReactCommon/react/renderer/css",
+  excludedPaths: ["tests"],
+  dependencies: [.reactNativeDependencies, .reactDebug, .reactUtils]
+)
+
 /// React-graphicsApple
 /// This represents the React-graphicsApple BUCK module
 let reactGraphicsApple = RNTarget(
   name: .reactGraphicsApple,
   path: "ReactCommon/react/renderer/graphics/platform/ios",
   linkedFrameworks: ["UIKit", "CoreGraphics"],
-  dependencies: [.reactDebug, .jsi, .reactUtils, .reactNativeDependencies]
+  dependencies: [.reactDebug, .jsi, .reactUtils, .reactNativeDependencies, .reactRendererCss]
 )
 
 /// React-graphics.podspec
@@ -301,7 +310,7 @@ let reactGraphics = RNTarget(
   name: .reactGraphics,
   path: "ReactCommon/react/renderer/graphics",
   excludedPaths: ["platform", "tests"],
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactRendererDebug, .reactUtils, .reactGraphicsApple]
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactRendererDebug, .reactUtils, .reactGraphicsApple, .reactRendererCss]
 )
 
 /// ReactCommon.podspec
@@ -458,6 +467,7 @@ let reactFabric = RNTarget(
   path: "ReactCommon/react/renderer",
   excludedPaths: [
     "animated/tests",
+    "animationbackend/tests",
     "animations/tests",
     "attributedstring/tests",
     "core/tests",
@@ -491,7 +501,7 @@ let reactFabric = RNTarget(
     "observers/resize/tests",
     "scheduler/tests",
   ],
-  dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga, .reactJsInspectorTracing],
+  dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .reactRendererCss, .yoga, .reactJsInspectorTracing],
   sources: ["animated", "animationbackend", "animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/view/platform/cxx", "components/scrollview", "components/scrollview/platform/cxx", "components/scrollview/platform/ios", "components/legacyviewmanagerinterop", "components/legacyviewmanagerinterop/platform/ios", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "observers/mutation", "observers/resize", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency", "viewtransition"]
 )
 
@@ -553,7 +563,7 @@ let reactFabricTextInput = RNTarget(
   name: .reactFabricTextInput,
   path: "ReactCommon/react/renderer/components/textinput",
   excludedPaths: ["platform/android", "platform/macos"],
-  dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging, .reactFabricTextLayoutManager],
+  dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging, .reactFabricTextLayoutManager, .reactImageManagerApple],
   sources: [".", "platform/ios"]
 )
 
@@ -713,6 +723,7 @@ let targets = [
   reactPerformanceTimeline,
   reactRuntimeScheduler,
   rctTypesafety,
+  reactRendererCss,
   reactGraphics,
   reactGraphicsApple,
   reactImageManager,

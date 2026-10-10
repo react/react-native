@@ -9,7 +9,11 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <cstdint>
 #include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 #include <jsi/jsi.h>
 #include <react/renderer/uimanager/PointerHoverTracker.h>

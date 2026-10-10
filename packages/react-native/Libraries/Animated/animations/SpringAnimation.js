@@ -99,12 +99,12 @@ export default class SpringAnimation extends Animation {
   _mass: number;
   _initialVelocity: number;
   _delay: number;
-  _timeout: ?TimeoutID;
+  _timeout: ?ReturnType<typeof setTimeout>;
   _startTime: number;
   _lastTime: number;
   _frameTime: number;
   _onUpdate: (value: number) => void;
-  _animationFrame: ?AnimationFrameID;
+  _animationFrame: ?number;
   _platformConfig: ?PlatformConfig;
 
   constructor(config: SpringAnimationConfigSingle) {
@@ -366,6 +366,7 @@ export default class SpringAnimation extends Animation {
 
   stop(): void {
     super.stop();
+    // $FlowFixMe[incompatible-type]
     clearTimeout(this._timeout);
     if (this._animationFrame != null) {
       global.cancelAnimationFrame(this._animationFrame);

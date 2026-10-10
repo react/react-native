@@ -119,7 +119,7 @@ export class EventCounts {
     return getCachedEventCounts().size;
   }
 
-  entries(): Iterator<[string, number]> {
+  entries(): IteratorObject<[string, number]> {
     return getCachedEventCounts().entries();
   }
 

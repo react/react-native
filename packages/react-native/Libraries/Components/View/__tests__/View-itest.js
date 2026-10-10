@@ -854,7 +854,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:true,expanded:null}" />,
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:None,busy:true,expanded:null}" />,
           );
         });
 
@@ -866,7 +866,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:true,expanded:null}" />,
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:None,busy:true,expanded:null}" />,
           );
           Fantom.runTask(() => {
             root.render(<View accessible={true} />);
@@ -888,7 +888,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+            <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
           );
         });
 
@@ -900,7 +900,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+            <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
           );
           Fantom.runTask(() => {
             root.render(<View accessible={true} />);
@@ -922,7 +922,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:true}" />,
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:true}" />,
           );
         });
 
@@ -934,7 +934,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:true}" />,
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:true}" />,
           );
           Fantom.runTask(() => {
             root.render(<View accessible={true} />);
@@ -990,7 +990,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:false,selected:false,checked:Checked,busy:false,expanded:null}" />,
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:Checked,busy:false,expanded:null}" />,
           );
         });
 
@@ -1002,7 +1002,7 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(
-            <rn-view accessibilityState="{disabled:false,selected:false,checked:Checked,busy:false,expanded:null}" />,
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:Checked,busy:false,expanded:null}" />,
           );
           Fantom.runTask(() => {
             root.render(<View accessible={true} />);

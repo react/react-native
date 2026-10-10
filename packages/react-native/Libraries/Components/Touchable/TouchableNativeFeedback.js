@@ -27,14 +27,6 @@ import {cloneElement} from 'react';
 
 type TouchableNativeFeedbackTVProps = {
   /**
-   * *(Apple TV only)* TV preferred focus (see documentation for the View component).
-   *
-   * @platform ios
-   * @deprecated Use `focusable` instead
-   */
-  hasTVPreferredFocus?: ?boolean,
-
-  /**
    * Designates the next view to receive focus when the user navigates down. See the Android documentation.
    *
    * @platform android
@@ -345,7 +337,6 @@ class TouchableNativeFeedback extends React.Component<
         accessibilityLiveRegion: accessibilityLiveRegion,
         accessibilityElementsHidden:
           this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden,
-        hasTVPreferredFocus: this.props.hasTVPreferredFocus,
         hitSlop: this.props.hitSlop,
         focusable:
           this.props.focusable !== false &&

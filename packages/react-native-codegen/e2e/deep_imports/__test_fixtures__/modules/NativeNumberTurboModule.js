@@ -8,9 +8,9 @@
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
+import type {TurboModule} from 'react-native';
 
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {TurboModuleRegistry} from 'react-native';
 
 export type Number = number;
 type AnotherNumber = Number;

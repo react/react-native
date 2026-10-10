@@ -442,6 +442,9 @@ export * as Systrace from './Libraries/Performance/Systrace';
 export {default as ToastAndroid} from './Libraries/Components/ToastAndroid/ToastAndroid';
 export * as TurboModuleRegistry from './Libraries/TurboModule/TurboModuleRegistry';
 export {default as UIManager} from './Libraries/ReactNative/UIManager';
+/**
+ * @deprecated Since 0.86, `unstable_batchedUpdates` is a no-op that synchronously invokes the callback. React batches updates automatically, so call the callback directly instead.
+ */
 export function unstable_batchedUpdates<T>(
   fn: (bookkeeping: T) => void,
   bookkeeping: T,
@@ -482,6 +485,7 @@ export type {
   NativeTouchEvent,
   NativeUIEvent,
   ResponderSyntheticEvent,
+  SafeAreaInsetsChangeEvent,
   ScrollEvent,
   TargetedEvent,
   TextLayoutEvent,
@@ -530,7 +534,6 @@ export type {
 export {default as unstable_VirtualColumn} from './src/private/components/virtualcollection/column/VirtualColumn';
 export {default as unstable_VirtualColumnGenerator} from './src/private/components/virtualcollection/column/VirtualColumnGenerator';
 export {default as unstable_VirtualRow} from './src/private/components/virtualcollection/row/VirtualRow';
-export {default as unstable_getScrollParent} from './src/private/components/virtualcollection/dom/getScrollParent';
 export {DEFAULT_INITIAL_NUM_TO_RENDER as unstable_DEFAULT_INITIAL_NUM_TO_RENDER} from './src/private/components/virtualcollection/FlingConstants';
 
 // #endregion

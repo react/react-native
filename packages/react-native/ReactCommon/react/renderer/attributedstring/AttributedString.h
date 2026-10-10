@@ -9,11 +9,11 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/RendererDebug.h>
+#include <React/Utils.h>
 #include <react/renderer/attributedstring/TextAttributes.h>
-#include <react/renderer/core/Sealable.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/mounting/ShadowView.h>
-#include <react/utils/hash_combine.h>
 
 namespace facebook::react {
 

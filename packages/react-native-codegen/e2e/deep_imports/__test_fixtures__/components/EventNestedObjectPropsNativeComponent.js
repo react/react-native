@@ -8,21 +8,15 @@
  * @format
  */
 
-import type {HostComponent} from 'react-native';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import type {
-  BubblingEventHandler,
-  Int32,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import {codegenNativeComponent} from 'react-native';
 
 type OnChangeEvent = Readonly<{
   location: {
     source: {url: string, ...},
-    x: Int32,
-    y: Int32,
+    x: CodegenTypes.Int32,
+    y: CodegenTypes.Int32,
     arrayOfObjects: ReadonlyArray<{value: Readonly<{str: string}>}>,
     ...
   },
@@ -32,10 +26,10 @@ type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
-  disabled?: WithDefault<boolean, false>,
+  disabled?: CodegenTypes.WithDefault<boolean, false>,
 
   // Events
-  onChange?: ?BubblingEventHandler<OnChangeEvent>,
+  onChange?: ?CodegenTypes.BubblingEventHandler<OnChangeEvent>,
 }>;
 
 export default codegenNativeComponent<NativeProps>(

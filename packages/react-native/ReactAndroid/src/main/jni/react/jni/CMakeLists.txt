@@ -80,6 +80,7 @@ target_link_libraries(reactnativejni
         glog_init
         logger
         react_cxxreact
+        react_cxxstableapi
         react_renderer_runtimescheduler
         reactnativejni_common
         runtimeexecutor

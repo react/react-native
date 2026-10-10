@@ -85,6 +85,7 @@ class NewArchitectureHelper
         if ENV['USE_FRAMEWORKS']
             ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-graphics", "React_graphics", ["react/renderer/graphics/platform/ios"])
                 .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-Fabric", "React_Fabric", ["react/renderer/components/view/platform/cxx"]))
+                .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-bridging", "React_bridging", []))
                 .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-FabricImage", "React_FabricImage", []))
                 .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-FabricComponents", "React_FabricComponents", []))
                 .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-Mapbuffer", "React_Mapbuffer", []))
@@ -106,7 +107,10 @@ class NewArchitectureHelper
                 }
         end
         header_search_paths_string = header_search_paths.join(" ")
-        spec.compiler_flags = compiler_flags.empty? ? self.computeFlags(new_arch_enabled).strip! : "#{compiler_flags} #{self.computeFlags(new_arch_enabled)}"
+        # Libraries may pass their own folly flags, so always disable folly coroutines:
+        # ReactNativeDependencies does not ship the folly/coro headers.
+        module_compiler_flags = "#{self.computeFlags(new_arch_enabled).strip} -DFOLLY_CFG_NO_COROUTINES=1".strip
+        spec.compiler_flags = compiler_flags.empty? ? module_compiler_flags : "#{compiler_flags} #{module_compiler_flags}"
         current_config["HEADER_SEARCH_PATHS"] = current_headers.empty? ?
             header_search_paths_string :
             "#{current_headers} #{header_search_paths_string}"

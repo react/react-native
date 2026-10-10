@@ -27,8 +27,7 @@ import View from './View/View';
 import invariant from 'invariant';
 import * as React from 'react';
 
-/** @build-types emit-as-interface Uniwind compatibility */
-export type ButtonProps = Readonly<{
+type ButtonPropsCore = Readonly<{
   /**
    * Text to display inside the button. On Android the given title will be
    * converted to the uppercased form.
@@ -56,16 +55,6 @@ export type ButtonProps = Readonly<{
    * @default {@platform ios} `'#007AFF'`
    */
   color?: ?ColorValue,
-
-  /**
-   * TV preferred focus.
-   *
-   * @platform tv
-   *
-   * @default `false`
-   * @deprecated Use `focusable` instead
-   */
-  hasTVPreferredFocus?: ?boolean,
 
   /**
    * Designates the next view to receive focus when the user navigates down. See
@@ -167,6 +156,9 @@ export type ButtonProps = Readonly<{
   accessibilityLanguage?: ?Stringish,
 }>;
 
+/** @build-types emit-as-interface Uniwind compatibility */
+export type ButtonProps = ButtonPropsCore;
+
 const NativeTouchable:
   typeof TouchableNativeFeedback | typeof TouchableOpacity =
   Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
@@ -217,7 +209,6 @@ const Button: component(
     onPress,
     touchSoundDisabled,
     title,
-    hasTVPreferredFocus,
     nextFocusDown,
     nextFocusForward,
     nextFocusLeft,
@@ -288,7 +279,6 @@ const Button: component(
       accessibilityRole="button"
       accessibilityState={_accessibilityState}
       importantForAccessibility={_importantForAccessibility}
-      hasTVPreferredFocus={hasTVPreferredFocus}
       nextFocusDown={nextFocusDown}
       nextFocusForward={nextFocusForward}
       nextFocusLeft={nextFocusLeft}

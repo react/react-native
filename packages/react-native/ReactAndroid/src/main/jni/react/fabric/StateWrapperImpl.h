@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include <React/RendererCore.h>
 #include <fbjni/fbjni.h>
 #include <react/common/mapbuffer/JReadableMapBuffer.h>
 #include <react/jni/ReadableNativeMap.h>
-#include <react/renderer/core/State.h>
 #include <react/uimanager/StateWrapper.h>
 
 namespace facebook::react {

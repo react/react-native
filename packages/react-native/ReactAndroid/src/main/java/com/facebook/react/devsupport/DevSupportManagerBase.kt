@@ -23,6 +23,7 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.util.Pair
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -587,6 +588,15 @@ public abstract class DevSupportManagerBase(
               devOptionsDialog = null
             }
             .setOnCancelListener { devOptionsDialog = null }
+            .setOnKeyListener { dialog: DialogInterface, keyCode: Int, event: KeyEvent ->
+              if (keyCode != KeyEvent.KEYCODE_MENU) {
+                return@setOnKeyListener false
+              }
+              if (event.action == KeyEvent.ACTION_UP) {
+                dialog.cancel()
+              }
+              true
+            }
             .create()
 
     devOptionsDialog?.show()

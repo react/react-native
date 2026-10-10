@@ -47,12 +47,6 @@ class ShadowTreeDelegate {
   virtual void shadowTreeDidFinishReactCommit(const ShadowTree &shadowTree) const = 0;
 
   /*
-   * Called right after Shadow Tree promotes a React revision of the tree to
-   * be merged.
-   */
-  virtual void shadowTreeDidPromoteReactRevision(const ShadowTree &shadowTree) const = 0;
-
-  /*
    * Called right after a Shadow Tree commits a new tree, reporting the nodes
    * whose layout changed in this commit.
    */

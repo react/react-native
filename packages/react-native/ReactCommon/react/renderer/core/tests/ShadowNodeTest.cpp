@@ -429,3 +429,37 @@ TEST_F(ShadowNodeTest, cloneMultipleWithEmptyFamilySet) {
 
   EXPECT_EQ(result, nullptr);
 }
+
+TEST_F(ShadowNodeTest, cloneTree) {
+  auto newProps = std::make_shared<const TestProps>();
+  auto newRoot = nodeA_->cloneTree(
+      nodeABB_->getFamily(), [&](const ShadowNode& oldShadowNode) {
+        return oldShadowNode.clone({.props = newProps});
+      });
+
+  EXPECT_EQ(newRoot->getTag(), nodeA_->getTag());
+  EXPECT_NE(newRoot.get(), nodeA_.get());
+  EXPECT_EQ(newRoot->getChildren().size(), 3);
+  EXPECT_EQ(newRoot->getChildren()[0]->getTag(), nodeAA_->getTag());
+  EXPECT_EQ(newRoot->getChildren()[0]->getProps(), nodeAA_->getProps());
+  EXPECT_EQ(newRoot->getChildren()[2]->getTag(), nodeAC_->getTag());
+  EXPECT_EQ(newRoot->getChildren()[2]->getProps(), nodeAC_->getProps());
+
+  auto newNodeAB = newRoot->getChildren()[1];
+  EXPECT_EQ(newNodeAB->getTag(), nodeAB_->getTag());
+  EXPECT_NE(newNodeAB.get(), nodeAB_.get());
+  EXPECT_EQ(newNodeAB->getChildren().size(), 2);
+  EXPECT_EQ(newNodeAB->getChildren()[0]->getTag(), nodeABA_->getTag());
+  EXPECT_EQ(newNodeAB->getChildren()[0]->getProps(), nodeABA_->getProps());
+
+  auto newNodeABB = newNodeAB->getChildren()[1];
+  EXPECT_EQ(newNodeABB->getTag(), nodeABB_->getTag());
+  EXPECT_NE(newNodeABB.get(), nodeABB_.get());
+  EXPECT_EQ(newNodeABB->getProps(), newProps);
+
+  // The original tree is left untouched.
+  EXPECT_EQ(nodeA_->getChildren().size(), 3);
+  EXPECT_EQ(nodeA_->getChildren()[1].get(), nodeAB_.get());
+  EXPECT_EQ(nodeAB_->getChildren().size(), 2);
+  EXPECT_EQ(nodeAB_->getChildren()[1].get(), nodeABB_.get());
+}

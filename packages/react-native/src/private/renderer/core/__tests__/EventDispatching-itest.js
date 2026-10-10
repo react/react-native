@@ -11,11 +11,11 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import * as FabricUIManager from '../../../../../Libraries/ReactNative/FabricUIManager';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {type PointerEvent, View} from 'react-native';
-import * as FabricUIManager from 'react-native/Libraries/ReactNative/FabricUIManager';
 
 const UIManager = nullthrows(FabricUIManager.getFabricUIManager());
 

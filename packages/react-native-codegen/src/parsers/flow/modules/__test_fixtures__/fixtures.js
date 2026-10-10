@@ -234,11 +234,11 @@ const NATIVE_MODULE_WITH_FLOAT_AND_INT32 = `
 
 import type {TurboModule} from '../RCTExport';
 import * as TurboModuleRegistry from '../TurboModuleRegistry';
-import type {Int32, Float} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes} from 'react-native';
 
 export interface Spec extends TurboModule {
-  +getInt: (arg: Int32) => Int32;
-  +getFloat: (arg: Float) => Float;
+  +getInt: (arg: CodegenTypes.Int32) => CodegenTypes.Int32;
+  +getFloat: (arg: CodegenTypes.Float) => CodegenTypes.Float;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
@@ -283,10 +283,12 @@ const NATIVE_MODULE_WITH_UNSAFE_OBJECT = `
 
 import type {TurboModule} from '../RCTExport';
 import * as TurboModuleRegistry from '../TurboModuleRegistry';
-import type {UnsafeObject} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes} from 'react-native';
 
 export interface Spec extends TurboModule {
-  +getUnsafeObject: (o: UnsafeObject) => UnsafeObject,
+  +getUnsafeObject: (
+    o: CodegenTypes.UnsafeObject,
+  ) => CodegenTypes.UnsafeObject,
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');

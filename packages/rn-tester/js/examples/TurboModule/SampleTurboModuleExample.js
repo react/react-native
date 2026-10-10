@@ -11,12 +11,16 @@
 import type {EventSubscription, RootTag} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
+import NativeSampleTurboModule, {EnumInt} from './NativeSampleTurboModule';
 import styles from './TurboModuleExampleCommon';
 import * as React from 'react';
-import {FlatList, RootTagContext, TouchableOpacity, View} from 'react-native';
-import NativeSampleTurboModule, {
-  EnumInt,
-} from 'react-native/Libraries/TurboModule/samples/NativeSampleTurboModule';
+import {
+  FlatList,
+  Platform,
+  RootTagContext,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 type State = {
   testResults: {
@@ -68,6 +72,8 @@ type ErrorExamples =
   | 'getObjectAssert'
   | 'promiseAssert'
   | 'installJSIBindings';
+
+type AndroidExamples = 'requestSamplePermission';
 
 class SampleTurboModuleExample extends React.Component<{}, State> {
   static contextType: React.Context<RootTag> = RootTagContext;
@@ -176,8 +182,22 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
     installJSIBindings: () => global.__SampleTurboModuleJSIBindings,
   };
 
+  // $FlowFixMe[missing-local-annot]
+  _androidTests = {
+    requestSamplePermission: async () => {
+      try {
+        const isGranted =
+          await NativeSampleTurboModule.requestSamplePermission?.();
+        this._setResult('requestSamplePermission', isGranted);
+      } catch (e) {
+        this._setResult('requestSamplePermission', e.message);
+        return e.message;
+      }
+    },
+  };
+
   _setResult(
-    name: Examples | ErrorExamples,
+    name: Examples | ErrorExamples | AndroidExamples,
     result:
       | $FlowFixMe
       | void
@@ -291,6 +311,35 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
             </View>
           )}
         />
+        {Platform.OS === 'android' && (
+          <>
+            <View style={styles.item}>
+              <RNTesterText style={styles.buttonTextLarge}>
+                Activity result tests (Android)
+              </RNTesterText>
+            </View>
+            <FlatList
+              // $FlowFixMe[incompatible-type]
+              data={Object.keys(this._androidTests)}
+              keyExtractor={item => item}
+              renderItem={({item}: {item: AndroidExamples, ...}) => (
+                <View style={styles.item}>
+                  <TouchableOpacity
+                    style={[styles.column, styles.button]}
+                    onPress={e => this._androidTests[item]()}>
+                    <RNTesterText style={styles.buttonText}>
+                      {item}
+                    </RNTesterText>
+                  </TouchableOpacity>
+                  <View style={[styles.column]}>
+                    {/* $FlowFixMe[incompatible-type] */}
+                    {this._renderResult(item)}
+                  </View>
+                </View>
+              )}
+            />
+          </>
+        )}
         <View style={styles.item}>
           <RNTesterText style={styles.buttonTextLarge}>
             Report errors tests

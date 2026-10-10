@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
+#include <React/RendererCore.h>
 #include <react/renderer/components/text/TextEffectShadowNode.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
 
 namespace facebook::react {
 

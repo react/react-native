@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<18ffa42c9d28304df99548a350b014ac>>
+ * @generated SignedSource<<256b97731c59551616a8e0cbc777f3fa>>
  */
 
 /**
@@ -33,6 +33,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun disableEarlyViewCommandExecution(): Boolean
 
+  @DoNotStrip public fun disableIdleMountItemFrameCallbackRearmAndroid(): Boolean
+
   @DoNotStrip public fun disableImageViewPreallocationAndroid(): Boolean
 
   @DoNotStrip public fun disableMountItemReorderingAndroid(): Boolean
@@ -51,9 +53,9 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableAndroidTextMeasurementOptimizations(): Boolean
 
-  @DoNotStrip public fun enableBridgelessArchitecture(): Boolean
+  @DoNotStrip public fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean
 
-  @DoNotStrip public fun enableBufferedCallInvoker(): Boolean
+  @DoNotStrip public fun enableBridgelessArchitecture(): Boolean
 
   @DoNotStrip public fun enableCppPropsIteratorSetter(): Boolean
 
@@ -68,6 +70,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableExclusivePropsUpdateAndroid(): Boolean
 
   @DoNotStrip public fun enableFabricCommitBranching(): Boolean
+
+  @DoNotStrip public fun enableFabricCommitBranchingMergeOnMainThread(): Boolean
 
   @DoNotStrip public fun enableFabricLogs(): Boolean
 
@@ -109,6 +113,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableNativeCSSParsing(): Boolean
 
+  @DoNotStrip public fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean
+
   @DoNotStrip public fun enablePreparedTextLayout(): Boolean
 
   @DoNotStrip public fun enablePropsUpdateReconciliationAndroid(): Boolean
@@ -131,7 +137,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableVirtualViewContainerStateExperimental(): Boolean
 
-  @DoNotStrip public fun fixDifferentiatorParentTagForUnflattenCase(): Boolean
+  @DoNotStrip public fun fixBorderlessRippleAndroid(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 

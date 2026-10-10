@@ -72,6 +72,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   private boolean mAdjustsFontSizeToFit;
   private float mFontSize;
   private float mMinimumFontSize;
+  private float mMinimumFontScale;
   private float mLetterSpacing;
   private int mLinkifyMaskType;
   private boolean mTextIsSelectable;
@@ -133,6 +134,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     mEllipsizeLocation = TextUtils.TruncateAt.END;
     mFontSize = Float.NaN;
     mMinimumFontSize = Float.NaN;
+    mMinimumFontScale = Float.NaN;
     mLetterSpacing = 0.f;
     mOverflow = Overflow.VISIBLE;
     mSpanned = null;
@@ -239,6 +241,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
             getHeight(),
             YogaMeasureMode.EXACTLY,
             mMinimumFontSize,
+            mMinimumFontScale,
             mNumberOfLines,
             getIncludeFontPadding(),
             getBreakStrategy(),
@@ -540,8 +543,17 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     applyTextAttributes();
   }
 
+  /**
+   * @deprecated Use {@link #setMinimumFontScale(float)} instead.
+   */
+  @Deprecated
   public void setMinimumFontSize(float minimumFontSize) {
     mMinimumFontSize = minimumFontSize;
+    mShouldAdjustSpannableFontSize = true;
+  }
+
+  public void setMinimumFontScale(float minimumFontScale) {
+    mMinimumFontScale = minimumFontScale;
     mShouldAdjustSpannableFontSize = true;
   }
 

@@ -10,11 +10,11 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import AnimatedProps from '../../../../Libraries/Animated/nodes/AnimatedProps';
+import NativeAnimatedHelper from '../NativeAnimatedHelper';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {Animated} from 'react-native';
-import AnimatedProps from 'react-native/Libraries/Animated/nodes/AnimatedProps';
-import NativeAnimatedHelper from 'react-native/src/private/animated/NativeAnimatedHelper';
 
 function mockNativeAnimatedHelperAPI() {
   const mocks = {

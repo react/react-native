@@ -22,7 +22,19 @@ import {
   useColorScheme,
   useWindowDimensions,
 } from 'react-native';
-import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser';
+import {getDevServer} from 'react-native/unstable-internals-do-not-use';
+
+function openURLInBrowser(url: string): void {
+  fetch(getDevServer().url + 'open-url', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({url}),
+  }).catch(error => {
+    console.error('Failed to open URL in browser:', error);
+  });
+}
 
 export type NewAppScreenProps = Readonly<{
   templateFileName?: string,

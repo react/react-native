@@ -13,12 +13,12 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
+import NativeFantomTestSpecificMethods from '../../../src/private/testing/fantom/specs/NativeFantomTestSpecificMethods';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {ScrollView, View} from 'react-native';
-import NativeFantomTestSpecificMethods from 'react-native/src/private/testing/fantom/specs/NativeFantomTestSpecificMethods';
 
 NativeFantomTestSpecificMethods.registerForcedCloneCommitHook();
 

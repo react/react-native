@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
+from typing import Callable
 
 from doxmlparser import compound, index
 
@@ -46,16 +47,62 @@ from .utils import (
 )
 
 
+LocationFilter = Callable[[object], bool]
+
+
+def _skip_nothing(_location) -> bool:
+    return False
+
+
+def make_location_filter(
+    skipped_files: set[str] | None, source_dir: str
+) -> LocationFilter:
+    """
+    Returns a predicate telling whether a Doxygen `location` element points
+    into one of `skipped_files`. Doxygen reports paths relative to the
+    directory it ran in, or absolute for inputs outside it.
+    """
+    if not skipped_files:
+        return _skip_nothing
+
+    skipped = {os.path.realpath(path) for path in skipped_files}
+    cache: dict[str, bool] = {}
+
+    def is_skipped(location) -> bool:
+        if location is None or not location.file:
+            return False
+        if location.file not in cache:
+            path = os.path.realpath(os.path.join(source_dir, location.file))
+            cache[location.file] = path in skipped
+        return cache[location.file]
+
+    return is_skipped
+
+
+def _is_skipped_compound(compound_object, location_filter: LocationFilter) -> bool:
+    # Namespaces are filtered per member in `_process_namespace_sections`.
+    return compound_object.kind != "namespace" and location_filter(
+        compound_object.location
+    )
+
+
 def _process_namespace_sections(
-    snapshot, namespace_scope, compound_object, exclude_symbols: list[re.Pattern]
+    snapshot,
+    namespace_scope,
+    compound_object,
+    exclude_symbols: list[re.Pattern],
+    location_filter: LocationFilter = _skip_nothing,
 ):
     """
     Process all section definitions inside a namespace compound.
     """
     compound_name = compound_object.compoundname
     for section_def in compound_object.sectiondef:
+        # A namespace merges members from every header that reopens it, so
+        # each member is filtered by where it is declared.
+        members = [m for m in section_def.memberdef if not location_filter(m.location)]
         if section_def.kind == "var":
-            for variable_def in section_def.memberdef:
+            for variable_def in members:
                 # Skip out-of-class definitions (e.g. "Strct<T>::VALUE")
                 if has_scope_resolution_outside_angles(variable_def.get_name()):
                     continue
@@ -68,7 +115,7 @@ def _process_namespace_sections(
                     continue
                 namespace_scope.add_member(var_member)
         elif section_def.kind == "func":
-            for function_def in section_def.memberdef:
+            for function_def in members:
                 # Skip out-of-class definitions (e.g. "Strct<T>::convert")
                 if has_scope_resolution_outside_angles(function_def.get_name()):
                     continue
@@ -85,7 +132,7 @@ def _process_namespace_sections(
                         continue
                     namespace_scope.add_member(func_member)
         elif section_def.kind == "typedef":
-            for typedef_def in section_def.memberdef:
+            for typedef_def in members:
                 qualified_name = f"{compound_name}::{typedef_def.get_name()}"
                 if _should_exclude_symbol(qualified_name, exclude_symbols):
                     continue
@@ -96,7 +143,7 @@ def _process_namespace_sections(
                     continue
                 namespace_scope.add_member(typedef_member)
         elif section_def.kind == "enum":
-            for enum_def in section_def.memberdef:
+            for enum_def in members:
                 qualified_name = f"{compound_name}::{enum_def.get_name()}"
                 if _should_exclude_symbol(qualified_name, exclude_symbols):
                     continue
@@ -107,7 +154,12 @@ def _process_namespace_sections(
             )
 
 
-def _handle_namespace_compound(snapshot, compound_object, exclude_symbols=None):
+def _handle_namespace_compound(
+    snapshot,
+    compound_object,
+    exclude_symbols=None,
+    location_filter: LocationFilter = _skip_nothing,
+):
     """
     Handle a namespace compound definition.
     """
@@ -124,7 +176,7 @@ def _handle_namespace_compound(snapshot, compound_object, exclude_symbols=None):
     namespace_scope.location = compound_object.location.file
 
     _process_namespace_sections(
-        snapshot, namespace_scope, compound_object, exclude_symbols
+        snapshot, namespace_scope, compound_object, exclude_symbols, location_filter
     )
 
 
@@ -388,7 +440,11 @@ def find_excluded_symbol_references(
     return results
 
 
-def build_snapshot(xml_dir: str, exclude_symbols: list[str] | None = None) -> Snapshot:
+def build_snapshot(
+    xml_dir: str,
+    exclude_symbols: list[str] | None = None,
+    location_filter: LocationFilter = _skip_nothing,
+) -> Snapshot:
     """
     Reads the Doxygen XML output and builds a snapshot of the C++ API.
 
@@ -396,6 +452,9 @@ def build_snapshot(xml_dir: str, exclude_symbols: list[str] | None = None) -> Sn
         xml_dir: Path to the Doxygen XML output directory.
         exclude_symbols: Optional list of regex patterns. Compounds whose
             qualified name matches any of these patterns will be excluded.
+        location_filter: Predicate over Doxygen `location` elements (see
+            `make_location_filter`). Entities declared at a skipped location
+            are left out of the snapshot.
     """
     if exclude_symbols is None:
         exclude_symbols = []
@@ -421,7 +480,9 @@ def build_snapshot(xml_dir: str, exclude_symbols: list[str] | None = None) -> Sn
             if compound_object.prot == "private":
                 continue
 
-            if _should_exclude_symbol(compound_object.compoundname, compiled_patterns):
+            if _should_exclude_symbol(
+                compound_object.compoundname, compiled_patterns
+            ) or _is_skipped_compound(compound_object, location_filter):
                 continue
 
             kind = compound_object.kind
@@ -431,7 +492,9 @@ def build_snapshot(xml_dir: str, exclude_symbols: list[str] | None = None) -> Sn
             elif kind in _COMPOUND_HANDLERS:
                 handler = _COMPOUND_HANDLERS[kind]
                 if handler == _handle_namespace_compound:
-                    handler(snapshot, compound_object, compiled_patterns)
+                    handler(
+                        snapshot, compound_object, compiled_patterns, location_filter
+                    )
                 elif handler == _handle_class_compound:
                     handler(snapshot, compound_object, compiled_patterns)
                 elif handler in (

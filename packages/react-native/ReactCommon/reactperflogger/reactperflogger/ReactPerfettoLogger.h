@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 #include <reactperflogger/ReactPerfettoCategories.h>
 
 #include <optional>

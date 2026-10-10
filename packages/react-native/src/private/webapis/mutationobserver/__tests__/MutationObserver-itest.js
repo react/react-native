@@ -4,15 +4,16 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_flags enableMutationObserverByDefault:true
  * @flow strict-local
  * @format
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import type MutationObserverType from '../MutationObserver';
+import type MutationRecordType from '../MutationRecord';
 import type {HostInstance} from 'react-native';
-import type MutationObserverType from 'react-native/src/private/webapis/mutationobserver/MutationObserver';
-import type MutationRecordType from 'react-native/src/private/webapis/mutationobserver/MutationRecord';
 
 import ensureInstance from '../../../__tests__/utilities/ensureInstance';
 import {createShadowNodeReferenceCountingRef} from '../../../__tests__/utilities/ShadowNodeReferenceCounter';
@@ -21,17 +22,9 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {View} from 'react-native';
-import setUpMutationObserver from 'react-native/src/private/setup/setUpMutationObserver';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 declare const MutationObserver: Class<MutationObserverType>;
 declare const MutationRecord: Class<MutationRecordType>;
-
-setUpMutationObserver();
-
-function ensureReactNativeElement(value: unknown): ReactNativeElement {
-  return ensureInstance(value, ReactNativeElement);
-}
 
 function ensureMutationRecordArray(
   value: unknown,
@@ -81,7 +74,7 @@ describe('MutationObserver', () => {
         root.render(<View ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       expect(() => {
         const observer = new MutationObserver(() => {});
@@ -118,7 +111,7 @@ describe('MutationObserver', () => {
         root.render(<View ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       expect(() => {
         const observer = new MutationObserver(() => {});
@@ -136,7 +129,7 @@ describe('MutationObserver', () => {
         root.render(<View ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       expect(() => {
         const observer = new MutationObserver(() => {});
@@ -154,7 +147,7 @@ describe('MutationObserver', () => {
         root.render(<View ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       expect(() => {
         const observer = new MutationObserver(() => {});
@@ -173,7 +166,7 @@ describe('MutationObserver', () => {
         root.render(<View ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       expect(() => {
         const observer = new MutationObserver(() => {});
@@ -191,7 +184,7 @@ describe('MutationObserver', () => {
         root.render(<View ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       expect(() => {
         const observer = new MutationObserver(() => {});
@@ -212,7 +205,7 @@ describe('MutationObserver', () => {
         root.render(<View key="node1" ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       Fantom.runTask(() => {
         root.render(<></>);
@@ -236,7 +229,7 @@ describe('MutationObserver', () => {
         root.render(<View key="node1" ref={nodeRef} />);
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       const observerCallbackCallArgs = [];
       const observerCallback = (...args: ReadonlyArray<unknown>) => {
@@ -260,8 +253,8 @@ describe('MutationObserver', () => {
         );
       });
 
-      const childNode1 = ensureReactNativeElement(childNode1Ref.current);
-      const childNode2 = ensureReactNativeElement(childNode2Ref.current);
+      const childNode1 = nullthrows(childNode1Ref.current);
+      const childNode2 = nullthrows(childNode2Ref.current);
 
       expect(observerCallbackCallArgs.length).toBe(1);
       const firstCall = nullthrows(observerCallbackCallArgs.at(-1));
@@ -322,7 +315,7 @@ describe('MutationObserver', () => {
         );
       });
 
-      const observedNode = ensureReactNativeElement(observedNodeRef.current);
+      const observedNode = nullthrows(observedNodeRef.current);
 
       const observerCallback = jest.fn();
       const observer = new MutationObserver(observerCallback);
@@ -366,7 +359,7 @@ describe('MutationObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       const observerCallback = jest.fn();
       const observer = new MutationObserver(observerCallback);
@@ -387,7 +380,7 @@ describe('MutationObserver', () => {
         );
       });
 
-      const node111 = ensureReactNativeElement(node111Ref.current);
+      const node111 = nullthrows(node111Ref.current);
 
       expect(observerCallback).toHaveBeenCalledTimes(1);
       const firstCall = observerCallback.mock.lastCall;
@@ -426,7 +419,7 @@ describe('MutationObserver', () => {
         );
       });
 
-      const node = ensureReactNativeElement(nodeRef.current);
+      const node = nullthrows(nodeRef.current);
 
       const observerCallback = jest.fn();
       const observer = new MutationObserver(observerCallback);
@@ -451,8 +444,8 @@ describe('MutationObserver', () => {
         );
       });
 
-      const node111 = ensureReactNativeElement(node111Ref.current);
-      const node121 = ensureReactNativeElement(node121Ref.current);
+      const node111 = nullthrows(node111Ref.current);
+      const node121 = nullthrows(node121Ref.current);
 
       expect(observerCallback).toHaveBeenCalledTimes(1);
       const firstCall = observerCallback.mock.lastCall;
@@ -499,8 +492,8 @@ describe('MutationObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
 
         const observerCallback1 = jest.fn();
         const observer1 = new MutationObserver(observerCallback1);
@@ -530,8 +523,8 @@ describe('MutationObserver', () => {
           );
         });
 
-        const childNode11 = ensureReactNativeElement(childNode11Ref.current);
-        const childNode21 = ensureReactNativeElement(childNode21Ref.current);
+        const childNode11 = nullthrows(childNode11Ref.current);
+        const childNode21 = nullthrows(childNode21Ref.current);
 
         expect(observerCallback1).toHaveBeenCalledTimes(1);
         const observer1Records1 = ensureMutationRecordArray(
@@ -588,8 +581,8 @@ describe('MutationObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
 
         const observerCallback1 = jest.fn();
         const observer1 = new MutationObserver(observerCallback1);
@@ -615,7 +608,7 @@ describe('MutationObserver', () => {
           );
         });
 
-        const childNode111 = ensureReactNativeElement(childNode111Ref.current);
+        const childNode111 = nullthrows(childNode111Ref.current);
 
         expect(observerCallback1).toHaveBeenCalledTimes(1);
         const observer1Records1 = ensureMutationRecordArray(
@@ -675,8 +668,8 @@ describe('MutationObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node2 = ensureReactNativeElement(node2Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node2 = nullthrows(node2Ref.current);
 
         const observerCallback = jest.fn();
         const observer = new MutationObserver(observerCallback);
@@ -702,8 +695,8 @@ describe('MutationObserver', () => {
           );
         });
 
-        const childNode11 = ensureReactNativeElement(childNode11Ref.current);
-        const childNode21 = ensureReactNativeElement(childNode21Ref.current);
+        const childNode11 = nullthrows(childNode11Ref.current);
+        const childNode21 = nullthrows(childNode21Ref.current);
 
         expect(observerCallback).toHaveBeenCalledTimes(1);
         const records = ensureMutationRecordArray(
@@ -748,8 +741,8 @@ describe('MutationObserver', () => {
           );
         });
 
-        const node1 = ensureReactNativeElement(node1Ref.current);
-        const node11 = ensureReactNativeElement(node11Ref.current);
+        const node1 = nullthrows(node1Ref.current);
+        const node11 = nullthrows(node11Ref.current);
 
         const observerCallback = jest.fn();
         const observer = new MutationObserver(observerCallback);
@@ -771,7 +764,7 @@ describe('MutationObserver', () => {
           );
         });
 
-        const childNode111 = ensureReactNativeElement(childNode111Ref.current);
+        const childNode111 = nullthrows(childNode111Ref.current);
 
         expect(observerCallback).toHaveBeenCalledTimes(1);
         const records = ensureMutationRecordArray(
@@ -818,7 +811,7 @@ describe('MutationObserver', () => {
         });
 
         Fantom.runTask(() => {
-          observer.observe(ensureReactNativeElement(parentRef.current), {
+          observer.observe(nullthrows(parentRef.current), {
             childList: true,
           });
         });
@@ -845,7 +838,7 @@ describe('MutationObserver', () => {
         root.render(<View key="node1" ref={observedNodeRef} />);
       });
 
-      const observedNode = ensureReactNativeElement(observedNodeRef.current);
+      const observedNode = nullthrows(observedNodeRef.current);
 
       const observerCallback = jest.fn();
       const observer = new MutationObserver(observerCallback);
@@ -886,7 +879,7 @@ describe('MutationObserver', () => {
         root.render(<View key="node1" ref={observedNodeRef} />);
       });
 
-      const observedNode = ensureReactNativeElement(observedNodeRef.current);
+      const observedNode = nullthrows(observedNodeRef.current);
 
       const observerCallback = jest.fn();
       const observer = new MutationObserver(observerCallback);
@@ -911,7 +904,7 @@ describe('MutationObserver', () => {
         root.render(<View key="node1" ref={observedNodeRef} />);
       });
 
-      const observedNode = ensureReactNativeElement(observedNodeRef.current);
+      const observedNode = nullthrows(observedNodeRef.current);
 
       Fantom.runTask(() => {
         root.render(<></>);

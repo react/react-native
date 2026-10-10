@@ -13,16 +13,11 @@ Object {
  */
 #pragma once
 
+#include <React/Graphics.h>
+#include <React/ImageManager.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <cinttypes>
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/graphicsConversions.h>
-#include <react/renderer/core/propsConversions.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Point.h>
-#include <react/renderer/graphics/RectangleEdges.h>
-#include <react/renderer/imagemanager/primitives.h>
 #include <vector>
 #include <yoga/Yoga.h>
 
@@ -228,9 +223,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -271,10 +265,9 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Color.h>
+#include <React/Graphics.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -314,10 +307,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/graphicsConversions.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <yoga/Yoga.h>
 
 namespace facebook::react {
@@ -358,9 +349,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -400,9 +390,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -515,9 +504,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -557,9 +545,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -599,9 +586,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -647,10 +633,9 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/imagemanager/primitives.h>
+#include <React/ImageManager.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -690,9 +675,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -734,9 +718,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -776,9 +759,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -818,12 +800,10 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Point.h>
-#include <react/renderer/imagemanager/primitives.h>
+#include <React/Graphics.h>
+#include <React/ImageManager.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -866,9 +846,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -908,14 +887,11 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Point.h>
-#include <react/renderer/imagemanager/primitives.h>
+#include <React/Graphics.h>
+#include <React/Image.h>
+#include <React/ImageManager.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <vector>
 
 namespace facebook::react {
@@ -1160,10 +1136,9 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Point.h>
+#include <React/Graphics.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 
@@ -1203,9 +1178,8 @@ Object {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 

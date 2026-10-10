@@ -10,7 +10,7 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {SectionBase} from 'react-native/Libraries/Lists/SectionList';
+import type {SectionBase} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';

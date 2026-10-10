@@ -9,7 +9,7 @@
  * @format
  */
 
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 describe('FantomFeatureFlags', () => {
   it('allows overridding common feature flags', () => {

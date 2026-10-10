@@ -20,8 +20,8 @@ const EMPTY_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
 
@@ -40,8 +40,8 @@ const NATIVE_MODULE_WITH_COMPLEX_OBJECTS = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type String = string;
 
@@ -72,8 +72,8 @@ const NATIVE_MODULE_WITH_COMPLEX_OBJECTS_WITH_NULLABLE_KEY = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type String = string;
 
@@ -134,8 +134,8 @@ const NATIVE_MODULE_WITH_ALIASES = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 type NumNum = number;
 export type Num = (arg: NumNum) => void;
@@ -298,13 +298,12 @@ const NATIVE_MODULE_WITH_FLOAT_AND_INT32 = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import type {Int32, Float} from 'react-native/Libraries/Types/CodegenTypes';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {CodegenTypes, TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
-  readonly getInt: (arg: Int32) => Int32;
-  readonly getFloat: (arg: Float) => Float;
+  readonly getInt: (arg: CodegenTypes.Int32) => CodegenTypes.Int32;
+  readonly getFloat: (arg: CodegenTypes.Float) => CodegenTypes.Float;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
@@ -320,8 +319,8 @@ const NATIVE_MODULE_WITH_SIMPLE_OBJECT = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getObject: (o: Object) => Object,
@@ -340,12 +339,11 @@ const NATIVE_MODULE_WITH_UNSAFE_OBJECT = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-import type {UnsafeObject} from 'react-native/Libraries/Types/CodegenTypes';
+import type {CodegenTypes, TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
-  readonly getUnsafeObject: (o: UnsafeObject) => UnsafeObject;
+  readonly getUnsafeObject: (o: CodegenTypes.UnsafeObject) => CodegenTypes.UnsafeObject;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
@@ -361,8 +359,8 @@ const NATIVE_MODULE_WITH_PARTIALS = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type SomeObj = {
   a: string,
@@ -388,8 +386,8 @@ const NATIVE_MODULE_WITH_PARTIALS_COMPLEX = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type SomeObj = {
   a: string,
@@ -418,8 +416,8 @@ const NATIVE_MODULE_WITH_ROOT_TAG = `
 import type {
   TurboModule,
   RootTag,
-} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getRootTag: (rootTag: RootTag) => RootTag;
@@ -438,8 +436,8 @@ const NATIVE_MODULE_WITH_NULLABLE_PARAM = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly voidFunc: (arg: string | null | undefined) => void;
@@ -458,8 +456,8 @@ const NATIVE_MODULE_WITH_BASIC_ARRAY = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getArray: (arg: Array<string>) => (Array<(string)>);
@@ -479,8 +477,8 @@ const NATIVE_MODULE_WITH_BASIC_ARRAY2 = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getArray: (arg: string[]) => ((string)[]);
@@ -500,8 +498,8 @@ const NATIVE_MODULE_WITH_OBJECT_WITH_OBJECT_DEFINED_IN_FILE_AS_PROPERTY = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 type DisplayMetricsAndroid = {
   width: number;
@@ -533,8 +531,8 @@ const NATIVE_MODULE_WITH_ARRAY_WITH_UNION_AND_TOUPLE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getArray: (
@@ -555,8 +553,8 @@ const NATIVE_MODULE_WITH_ARRAY2_WITH_UNION_AND_TOUPLE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   getArray(
@@ -577,8 +575,8 @@ const NATIVE_MODULE_WITH_ARRAY_WITH_ALIAS = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type SomeString = string;
 
@@ -599,8 +597,8 @@ const NATIVE_MODULE_WITH_ARRAY2_WITH_ALIAS = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type SomeString = string;
 
@@ -621,8 +619,8 @@ const NATIVE_MODULE_WITH_COMPLEX_ARRAY = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getArray: (
@@ -643,8 +641,8 @@ const NATIVE_MODULE_WITH_COMPLEX_ARRAY2 = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getArray: (
@@ -665,8 +663,8 @@ const NATIVE_MODULE_WITH_PROMISE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type String = string;
 export type SomeObj = { a: string };
@@ -690,8 +688,8 @@ const NATIVE_MODULE_WITH_CALLBACK = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getValueWithCallback: (
@@ -712,8 +710,8 @@ const NATIVE_MODULE_WITH_UNION = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type ChooseInt = 1 | 2 | 3;
 export type ChooseFloat = 1.44 | 2.88 | 5.76;
@@ -738,8 +736,8 @@ const NATIVE_MODULE_WITH_UNION_RETURN_TYPES = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getStringUnion: () => 'light' | 'dark';
@@ -765,9 +763,8 @@ const NATIVE_MODULE_WITH_EVENT_EMITTERS = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import type {Double, Float, Int32} from 'react-native/Libraries/Types/CodegenTypes';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {CodegenTypes, TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export type ObjectStruct = {
   a: number;
@@ -778,16 +775,16 @@ export type ObjectStruct = {
 export type MappedObject = {[key: string]: string};
 
 export interface Spec extends TurboModule {
-  readonly onEvent1: EventEmitter<void>;
-  readonly onEvent2: EventEmitter<string>;
-  readonly onEvent3: EventEmitter<number>;
-  readonly onEvent4: EventEmitter<boolean>;
-  readonly onEvent5: EventEmitter<ObjectStruct>;
-  readonly onEvent6: EventEmitter<ObjectStruct[]>;
-  readonly onEvent7: EventEmitter<MappedObject>;
-  readonly onEvent8: EventEmitter<Double>;
-  readonly onEvent9: EventEmitter<Float>;
-  readonly onEvent10: EventEmitter<Int32>;
+  readonly onEvent1: CodegenTypes.EventEmitter<void>;
+  readonly onEvent2: CodegenTypes.EventEmitter<string>;
+  readonly onEvent3: CodegenTypes.EventEmitter<number>;
+  readonly onEvent4: CodegenTypes.EventEmitter<boolean>;
+  readonly onEvent5: CodegenTypes.EventEmitter<ObjectStruct>;
+  readonly onEvent6: CodegenTypes.EventEmitter<ObjectStruct[]>;
+  readonly onEvent7: CodegenTypes.EventEmitter<MappedObject>;
+  readonly onEvent8: CodegenTypes.EventEmitter<CodegenTypes.Double>;
+  readonly onEvent9: CodegenTypes.EventEmitter<CodegenTypes.Float>;
+  readonly onEvent10: CodegenTypes.EventEmitter<CodegenTypes.Int32>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
@@ -804,8 +801,8 @@ const ANDROID_ONLY_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {}
 
@@ -824,8 +821,8 @@ const IOS_ONLY_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export enum Quality {
   SD,
@@ -862,8 +859,8 @@ const CXX_ONLY_NATIVE_MODULE = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export enum Quality {
   SD,
@@ -930,9 +927,9 @@ const NAMESPACED_NATIVE_MODULE_WITH_FLOAT_AND_INT32 = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
+import type {TurboModule} from 'react-native';
 import type {CodegenTypes} from 'react-native';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getInt: (arg: CodegenTypes.Int32) => CodegenTypes.Int32;
@@ -952,8 +949,8 @@ const NAMESPACED_NATIVE_MODULE_WITH_UNSAFE_OBJECT = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 import type {CodegenTypes} from 'react-native';
 
 export interface Spec extends TurboModule {
@@ -973,9 +970,9 @@ const NAMESPACED_NATIVE_MODULE_WITH_LOCAL_TYPE_ALIASES = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
+import type {TurboModule} from 'react-native';
 import type {CodegenTypes} from 'react-native';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {TurboModuleRegistry} from 'react-native';
 
 type Double = CodegenTypes.Double;
 type MyFloat = CodegenTypes.Float;
@@ -998,9 +995,9 @@ const NAMESPACED_NATIVE_MODULE_WITH_EVENT_EMITTERS = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
+import type {TurboModule} from 'react-native';
 import type {CodegenTypes} from 'react-native';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {TurboModuleRegistry} from 'react-native';
 
 export type ObjectStruct = {
   a: number;
@@ -1034,8 +1031,8 @@ const NATIVE_MODULE_WITH_ARRAY_BUFFER = `
  * @format
  */
 
-import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
   readonly getArrayBuffer: () => ArrayBuffer;

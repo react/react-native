@@ -11,7 +11,7 @@
 
 #include "TraceEvent.h"
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 
 #include <cstdint>
 #include <optional>

@@ -42,7 +42,7 @@ describe('Switch', () => {
     expect(
       root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
     ).toEqual(
-      <rn-androidSwitch accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+      <rn-androidSwitch accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
     );
   });
 

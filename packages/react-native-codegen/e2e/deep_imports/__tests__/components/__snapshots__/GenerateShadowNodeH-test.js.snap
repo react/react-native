@@ -17,7 +17,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -55,7 +55,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -93,7 +93,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -131,7 +131,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -169,7 +169,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -207,7 +207,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -245,7 +245,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -283,7 +283,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -321,7 +321,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -359,7 +359,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -397,7 +397,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -435,7 +435,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -464,7 +464,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -502,7 +502,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -540,7 +540,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -578,7 +578,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -616,7 +616,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -654,7 +654,7 @@ Object {
 #include <react/renderer/components/RNCodegenModuleFixtures/EventEmitters.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/Props.h>
 #include <react/renderer/components/RNCodegenModuleFixtures/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {

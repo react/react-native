@@ -9,13 +9,12 @@
 
 #include <react/cxxstableapi/PrivateGuard.h>
 
+#include <React/MapBuffer.h>
+#include <React/RendererCore.h>
+#include <React/Utils.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
-#include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/imagemanager/ImageRequestParams.h>
 #include <react/renderer/imagemanager/primitives.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
-#include <react/renderer/mapbuffer/MapBufferBuilder.h>
-#include <react/utils/to_underlying.h>
 #include <vector>
 
 namespace facebook::react {

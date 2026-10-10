@@ -9,7 +9,7 @@
  */
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
-import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
+import type {TextStyle} from '../../StyleSheet/StyleSheetTypes';
 import type {
   BlurEvent,
   FocusEvent,
@@ -456,18 +456,10 @@ function InternalTextInput(props: TextInputProps): React.Node {
       submitBehavior = props.submitBehavior;
     }
   } else if (multiline) {
-    if (props.blurOnSubmit === true) {
-      submitBehavior = 'blurAndSubmit';
-    } else {
-      submitBehavior = 'newline';
-    }
+    submitBehavior = 'newline';
   } else {
     // Single line
-    if (props.blurOnSubmit !== false) {
-      submitBehavior = 'blurAndSubmit';
-    } else {
-      submitBehavior = 'submit';
-    }
+    submitBehavior = 'blurAndSubmit';
   }
 
   const accessible = props.accessible !== false;
@@ -543,16 +535,16 @@ function InternalTextInput(props: TextInputProps): React.Node {
   let _style = props.style;
   const flattenedStyle = flattenStyle<TextStyleProp>(props.style);
   if (flattenedStyle != null) {
-    let overrides: ?{...TextStyleInternal} = null;
+    let overrides: ?{...TextStyle} = null;
     if (typeof flattenedStyle?.fontWeight === 'number') {
-      overrides = overrides || ({} as {...TextStyleInternal});
+      overrides = overrides || ({} as {...TextStyle});
       overrides.fontWeight =
         // $FlowFixMe[incompatible-type]
-        flattenedStyle.fontWeight.toString() as TextStyleInternal['fontWeight'];
+        flattenedStyle.fontWeight.toString() as TextStyle['fontWeight'];
     }
 
     if (flattenedStyle.verticalAlign != null) {
-      overrides = overrides || ({} as {...TextStyleInternal});
+      overrides = overrides || ({} as {...TextStyle});
       overrides.textAlignVertical =
         verticalAlignToTextAlignVerticalMap[flattenedStyle.verticalAlign];
       overrides.verticalAlign = undefined;
@@ -906,7 +898,7 @@ const autoCompleteWebToTextContentTypeMap = {
  */
 const TextInput: component(
   ref?: React.RefSetter<TextInputInstance>,
-  ...props: React.ElementConfig<typeof InternalTextInput>
+  ...props: React.ComponentProps<typeof InternalTextInput>
 ) = function TextInput({
   ref: forwardedRef,
   allowFontScaling = true,
@@ -924,7 +916,7 @@ const TextInput: component(
   ...restProps
 }: {
   ref?: React.RefSetter<TextInputInstance>,
-  ...React.ElementConfig<typeof InternalTextInput>,
+  ...React.ComponentProps<typeof InternalTextInput>,
 }) {
   return (
     <InternalTextInput

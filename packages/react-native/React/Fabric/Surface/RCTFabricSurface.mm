@@ -105,6 +105,12 @@ using namespace facebook::react;
     [self->_surfacePresenter.mountingManager attachSurfaceToView:self.view
                                                        surfaceId:self->_surfaceHandler->getSurfaceId()];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
+      // This runs two async hops later; a concurrent instance teardown/reload may have unregistered
+      // the surface since the check in -start. Without this re-check SurfaceHandler::start()
+      // dereferences a now-null uiManager.
+      if (self->_surfaceHandler->getStatus() != SurfaceHandler::Status::Registered) {
+        return;
+      }
       self->_surfaceHandler->start();
       [self _propagateStageChange];
 

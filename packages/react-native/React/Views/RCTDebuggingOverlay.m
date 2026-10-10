@@ -32,8 +32,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
-  self = [super initWithFrame:frame];
-  if (self) {
+  if (self = [super initWithFrame:frame]) {
     _idToTraceUpdateMap = [NSMutableDictionary new];
   }
   return self;

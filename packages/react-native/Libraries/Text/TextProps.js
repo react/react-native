@@ -122,8 +122,6 @@ export type TextPropsAndroid = {
   /**
    * Smallest possible font scale when `adjustsFontSizeToFit` is enabled
    * (values 0.01-1.0).
-   *
-   * @platform ios
    */
   minimumFontScale?: ?number,
 };

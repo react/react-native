@@ -9,8 +9,6 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {CompositeAnimation} from 'react-native/Libraries/Animated/AnimatedMock';
-import type AnimatedValue from 'react-native/Libraries/Animated/nodes/AnimatedValue';
 
 import RNTConfigurationBlock from '../../components/RNTConfigurationBlock';
 import RNTesterButton from '../../components/RNTesterButton';
@@ -43,7 +41,7 @@ const items = [
     title: 'Parallel',
     description: 'Starts a number of animations at the same time',
     compositeAnimation: (
-      values: Array<AnimatedValue>,
+      values: Array<Animated.Value>,
       useNativeDriver: boolean,
     ) =>
       Animated.sequence([
@@ -64,7 +62,7 @@ const items = [
     description:
       'Starts the animations in order, waiting for each to complete before starting the next',
     compositeAnimation: (
-      values: Array<AnimatedValue>,
+      values: Array<Animated.Value>,
       useNativeDriver: boolean,
     ) =>
       Animated.sequence([
@@ -85,7 +83,7 @@ const items = [
     description:
       'Starts animations in order and in parallel, but with successive delays',
     compositeAnimation: (
-      values: Array<AnimatedValue>,
+      values: Array<Animated.Value>,
       useNativeDriver: boolean,
     ) =>
       Animated.sequence([
@@ -107,7 +105,7 @@ const items = [
     title: 'Delay',
     description: 'Starts an animation after a given delay',
     compositeAnimation: (
-      values: Array<AnimatedValue>,
+      values: Array<Animated.Value>,
       useNativeDriver: boolean,
     ) =>
       Animated.sequence([
@@ -133,7 +131,7 @@ component ComposingExampleItem(
   compositeAnimation: (
     values: Animated.Value[],
     useNativeDriver: boolean,
-  ) => CompositeAnimation,
+  ) => Animated.CompositeAnimation,
   useNativeDriver: boolean,
 ) {
   const {width: windowWidth} = useWindowDimensions();

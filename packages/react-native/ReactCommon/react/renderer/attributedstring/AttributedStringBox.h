@@ -11,6 +11,7 @@
 
 #include <memory>
 
+#include <React/Debug.h>
 #include <react/renderer/attributedstring/AttributedString.h>
 
 namespace facebook::react {

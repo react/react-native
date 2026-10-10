@@ -118,4 +118,71 @@ TEST(AccessibilityPropsTest, inherits_role_traits_when_raw_props_are_absent) {
   EXPECT_TRUE(hasTrait(props.accessibilityTraits, AccessibilityTraits::Button));
 }
 
+// `selected` is tri-state. A host platform needs to tell "this component is
+// selectable and currently unselected" (explicit `false`) apart from "this
+// component is not selectable at all" (unset), because the two map to
+// different accessibility APIs. Windows, for example, only implements
+// ISelectionItemProvider for the former.
+// See: github.com/facebook/react-native/issues/46988
+
+TEST(
+    AccessibilityPropsTest,
+    keeps_unset_selected_distinct_from_explicit_false) {
+  auto unset = parse(
+      folly::dynamic::object("accessibilityState", folly::dynamic::object()));
+  auto explicitlyFalse = parse(
+      folly::dynamic::object(
+          "accessibilityState", folly::dynamic::object("selected", false)));
+  auto explicitlyTrue = parse(
+      folly::dynamic::object(
+          "accessibilityState", folly::dynamic::object("selected", true)));
+
+  ASSERT_TRUE(unset.accessibilityState.has_value());
+  ASSERT_TRUE(explicitlyFalse.accessibilityState.has_value());
+  ASSERT_TRUE(explicitlyTrue.accessibilityState.has_value());
+
+  EXPECT_FALSE(unset.accessibilityState->selected.has_value());
+  EXPECT_EQ(explicitlyFalse.accessibilityState->selected, std::optional(false));
+  EXPECT_EQ(explicitlyTrue.accessibilityState->selected, std::optional(true));
+}
+
+TEST(AccessibilityPropsTest, omitted_state_leaves_selected_unset) {
+  auto props = parse(folly::dynamic::object("nativeID", "abc"));
+
+  EXPECT_FALSE(props.accessibilityState.has_value());
+}
+
+// Props diffing drives mounting, so the two states must not compare equal —
+// otherwise toggling between them would never reach the host view.
+TEST(AccessibilityPropsTest, unset_and_explicitly_false_selected_differ) {
+  auto unset = AccessibilityState{};
+  auto explicitlyFalse = AccessibilityState{.selected = false};
+
+  EXPECT_FALSE(unset == explicitlyFalse);
+}
+
+// Guards the silent-conversion hazard: `std::optional<bool>` is contextually
+// convertible to `bool`, so a bare `if (state.selected)` still compiles but
+// tests engagement rather than value. That would apply the Selected trait to
+// an explicitly unselected component.
+TEST(AccessibilityPropsTest, explicitly_false_selected_omits_selected_trait) {
+  auto props = parse(
+      folly::dynamic::object("role", "button")(
+          "accessibilityState", folly::dynamic::object("selected", false)));
+
+  EXPECT_TRUE(hasTrait(props.accessibilityTraits, AccessibilityTraits::Button));
+  EXPECT_FALSE(
+      hasTrait(props.accessibilityTraits, AccessibilityTraits::Selected));
+}
+
+TEST(AccessibilityPropsTest, unset_selected_omits_selected_trait) {
+  auto props = parse(
+      folly::dynamic::object("role", "button")(
+          "accessibilityState", folly::dynamic::object()));
+
+  EXPECT_TRUE(hasTrait(props.accessibilityTraits, AccessibilityTraits::Button));
+  EXPECT_FALSE(
+      hasTrait(props.accessibilityTraits, AccessibilityTraits::Selected));
+}
+
 } // namespace facebook::react

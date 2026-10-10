@@ -28,6 +28,7 @@
     "!**/__tests__/**"
   ],
   "dependencies": {
+    "@babel/runtime": "^7.25.0",
     "@jest/create-cache-key-function": "^29.7.0",
     "@react-native/js-polyfills": "0.87.0-main",
     "babel-jest": "^29.7.0",
@@ -35,6 +36,8 @@
     "regenerator-runtime": "^0.13.2"
   },
   "peerDependencies": {
-    "react": "^19.2.3"
+    "@babel/core": "^7.25.2",
+    "react": "^19.2.3",
+    "react-native": "1000.0.0"
   }
 }

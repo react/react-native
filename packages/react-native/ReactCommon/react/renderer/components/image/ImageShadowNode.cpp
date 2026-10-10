@@ -62,8 +62,8 @@ void ImageShadowNode::updateStateIfNeeded() {
       imageProps.shouldNotifyLoadEvents,
       imageProps.overlayColor,
       imageProps.tintColor,
-      imageProps.fadeDuration,
-      imageProps.progressiveRenderingEnabled,
+      imageProps.fadeDuration.value_or(300.f),
+      imageProps.progressiveRenderingEnabled.value_or(false),
       imageProps.loadingIndicatorSource,
       imageProps.internal_analyticTag,
       Size{

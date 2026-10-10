@@ -339,7 +339,6 @@ android {
             "-DHERMES_IS_ANDROID=True",
             "-DANDROID_STL=c++_shared",
             "-DANDROID_PIE=True",
-            "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
             "-DIMPORT_HOST_COMPILERS=${File(hermesBuildDir, "ImportHostCompilers.cmake").toString()}",
             "-DJSI_DIR=${jsiDir}",
             "-DHERMES_BUILD_SHARED_JSI=True",

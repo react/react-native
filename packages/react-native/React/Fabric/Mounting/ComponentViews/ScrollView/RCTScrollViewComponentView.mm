@@ -455,6 +455,9 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 
   [super updateProps:props oldProps:oldProps];
+
+  // Must run after `super updateProps:` so it is based on the latest calculated view.
+  ((RCTEnhancedScrollView *)_scrollView).inverted = [self isInverted];
 }
 
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState

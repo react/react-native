@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 #include <unordered_set>
 
 namespace facebook::react {

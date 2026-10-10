@@ -9,6 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <vector>
+
 #include <react/renderer/components/root/RootShadowNode.h>
 
 namespace facebook::react {

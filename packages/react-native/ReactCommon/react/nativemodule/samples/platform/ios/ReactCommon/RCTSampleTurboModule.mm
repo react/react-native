@@ -38,6 +38,7 @@ RCT_EXPORT_MODULE()
 
 - (void)initialize
 {
+  // ast-grep-ignore: common/objcpp/no-uiscreen-mainscreen
   UIScreen *mainScreen = UIScreen.mainScreen;
   CGSize screenSize = mainScreen.bounds.size;
 
@@ -79,6 +80,31 @@ RCT_EXPORT_MODULE()
 - (void)getImageUrl:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
   reject(@"Exception", @"Not implemented", nil);
+}
+
+- (void)requestSamplePermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+  reject(@"E_UNSUPPORTED_PLATFORM", @"Sample permissions are only available on Android", nil);
+}
+
+- (void)pickMedia:(NSString *_Nullable)mimeType
+          resolve:(RCTPromiseResolveBlock)resolve
+           reject:(RCTPromiseRejectBlock)reject
+{
+  reject(@"E_UNSUPPORTED_PLATFORM", @"The photo picker sample is only available on Android", nil);
+}
+
+- (void)pickMultipleMedia:(NSString *_Nullable)mimeType
+                 maxItems:(double)maxItems
+                  resolve:(RCTPromiseResolveBlock)resolve
+                   reject:(RCTPromiseRejectBlock)reject
+{
+  reject(@"E_UNSUPPORTED_PLATFORM", @"The photo picker sample is only available on Android", nil);
+}
+
+- (void)startSecondActivity
+{
+  // Android-only sample method.
 }
 
 #pragma mark - RCTTurboModuleWithJSIBindings

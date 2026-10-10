@@ -277,22 +277,25 @@ function createStringInterpolation(
     }),
   );
   if (!isColor) {
+    const components = outputRange[0].components;
     return input => {
-      const values = interpolations.map(interpolation => interpolation(input));
+      let result = '';
       let i = 0;
-      return outputRange[0].components
-        .map(c => (typeof c === 'number' ? values[i++] : c))
-        .join('');
+      for (let j = 0; j < components.length; j++) {
+        const c = components[j];
+        result += typeof c === 'number' ? interpolations[i++](input) : c;
+      }
+      return result;
     };
   } else {
     return input => {
-      const result = interpolations.map((interpolation, i) => {
-        const value = interpolation(input);
-        // rgba requires that the r,g,b are integers.... so we want to round them, but we *dont* want to
-        // round the opacity (4th column).
-        return i < 3 ? Math.round(value) : Math.round(value * 1000) / 1000;
-      });
-      return `rgba(${result[0]}, ${result[1]}, ${result[2]}, ${result[3]})`;
+      // rgba requires that the r,g,b are integers.... so we want to round them, but we *dont* want to
+      // round the opacity (4th column).
+      const r = Math.round(interpolations[0](input));
+      const g = Math.round(interpolations[1](input));
+      const b = Math.round(interpolations[2](input));
+      const a = Math.round(interpolations[3](input) * 1000) / 1000;
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
     };
   }
 }

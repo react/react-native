@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/components/view/ViewEventEmitter.h>
+#include <React/View.h>
 
 namespace facebook::react {
 

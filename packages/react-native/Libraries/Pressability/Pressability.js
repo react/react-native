@@ -371,12 +371,12 @@ let longPressDeactivationDistance = DEFAULT_LONG_PRESS_DEACTIVATION_DISTANCE;
 export default class Pressability {
   _config: PressabilityConfig;
   _eventHandlers: ?EventHandlers = null;
-  _hoverInDelayTimeout: ?TimeoutID = null;
-  _hoverOutDelayTimeout: ?TimeoutID = null;
+  _hoverInDelayTimeout: ?ReturnType<typeof setTimeout> = null;
+  _hoverOutDelayTimeout: ?ReturnType<typeof setTimeout> = null;
   _isHovered: boolean = false;
-  _longPressDelayTimeout: ?TimeoutID = null;
-  _pressDelayTimeout: ?TimeoutID = null;
-  _pressOutDelayTimeout: ?TimeoutID = null;
+  _longPressDelayTimeout: ?ReturnType<typeof setTimeout> = null;
+  _pressDelayTimeout: ?ReturnType<typeof setTimeout> = null;
+  _pressOutDelayTimeout: ?ReturnType<typeof setTimeout> = null;
   _responderID: ?number | HostInstance = null;
   _responderRegion: ?Readonly<{
     bottom: number,

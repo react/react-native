@@ -34,7 +34,7 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.header_dir             = "jserrorhandler"
-  s.source_files           = podspec_sources(["ErrorUtils.{cpp,h}", "JsErrorHandler.{cpp,h}", "StackTraceParser.{cpp,h}"], ["ErrorUtils.h", "JsErrorHandler.h", "StackTraceParser.h"])
+  s.source_files           = podspec_sources(["ErrorUtils.{cpp,h}", "JsErrorHandler.{cpp,h}", "StackTraceParser.{cpp,h}"], ["ErrorUtils.h", "JsErrorHandler.h"])
   s.pod_target_xcconfig = {
     "HEADER_SEARCH_PATHS" => header_search_paths.join(' '),
     "USE_HEADERMAP" => "YES",

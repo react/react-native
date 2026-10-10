@@ -20,6 +20,16 @@ export default function setUpDOM() {
   initialized = true;
 
   polyfillGlobal(
+    'DOMException',
+    () => require('../webapis/errors/DOMException').default,
+  );
+
+  polyfillGlobal(
+    'structuredClone',
+    () => require('../webapis/structuredClone/structuredClone').default,
+  );
+
+  polyfillGlobal(
     'DOMRect',
     () => require('../webapis/geometry/DOMRect').default,
   );

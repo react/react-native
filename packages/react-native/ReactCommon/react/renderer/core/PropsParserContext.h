@@ -11,8 +11,8 @@
 
 #include <optional>
 
+#include <React/Utils.h>
 #include <react/renderer/core/ReactPrimitives.h>
-#include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 

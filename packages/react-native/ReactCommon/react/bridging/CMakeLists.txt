@@ -13,6 +13,7 @@ file(GLOB react_bridging_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_bridging OBJECT ${react_bridging_SRC})
 
 target_include_directories(react_bridging PUBLIC ${REACT_COMMON_DIR})
+target_include_directories(react_bridging INTERFACE ${REACT_COMMON_DIR}/react/bridging)
 
 target_link_libraries(react_bridging jsi callinvoker react_cxxstableapi react_timing)
 target_compile_reactnative_options(react_bridging PRIVATE)

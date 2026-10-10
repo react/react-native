@@ -26,14 +26,6 @@ export type TouchableOpacityInstance = HostInstance;
 
 export type TouchableOpacityTVProps = Readonly<{
   /**
-   * *(Apple TV only)* TV preferred focus (see documentation for the View component).
-   *
-   * @platform ios
-   * @deprecated Use `focusable` instead
-   */
-  hasTVPreferredFocus?: ?boolean,
-
-  /**
    * Designates the next view to receive focus when the user navigates down. See the Android documentation.
    *
    * @platform android
@@ -261,7 +253,6 @@ class TouchableOpacity extends React.Component<
         nextFocusLeft={this.props.nextFocusLeft}
         nextFocusRight={this.props.nextFocusRight}
         nextFocusUp={this.props.nextFocusUp}
-        hasTVPreferredFocus={this.props.hasTVPreferredFocus}
         hitSlop={this.props.hitSlop}
         focusable={
           this.props.focusable !== false &&

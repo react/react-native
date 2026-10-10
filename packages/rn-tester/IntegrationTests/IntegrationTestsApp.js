@@ -30,7 +30,6 @@ const TESTS = [
   require('./PromiseTest'),
   require('./SyncMethodTest'),
   require('./WebSocketTest'),
-  require('./AccessibilityManagerTest'),
   require('./GlobalEvalWithSourceUrlTest'),
 ].map(mod => mod.default);
 

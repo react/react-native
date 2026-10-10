@@ -8,6 +8,7 @@
 #import "RCTTextLayoutManager.h"
 
 #import <array>
+#import <cmath>
 
 #import "RCTAttributedTextUtils.h"
 
@@ -186,8 +187,8 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                     // remains visible at small sizes and proportionate at
                     // large ones. ~`fontSize / 12` plus a 1.5pt floor.
                     CGFloat thickness = MAX(fontSize / 12.0f, 1.5f);
-                    CGFloat wavyWavelength = 1.0f + 2.0f * round(2.0f * thickness + 0.5f);
-                    CGFloat wavyCpDistance = 0.5f + round(3.0f * thickness + 0.5f);
+                    CGFloat wavyWavelength = 1.0f + 2.0f * std::round(2.0f * thickness + 0.5f);
+                    CGFloat wavyCpDistance = 0.5f + std::round(3.0f * thickness + 0.5f);
 
                     NSRange targetGlyphRange = [layoutManager glyphRangeForCharacterRange:attrRange
                                                                      actualCharacterRange:nullptr];
@@ -234,7 +235,6 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                                    CGFloat baseline =
                                                        lineRect.origin.y + font.ascender + frame.origin.y;
 
-                                                   // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
                                                    for (NSString *line in lines) {
                                                      CGFloat y = 0.0f;
                                                      if ([line isEqualToString:@"underline"]) {
@@ -463,8 +463,13 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   [textStorage addLayoutManager:layoutManager];
 
   if (paragraphAttributes.adjustsFontSizeToFit) {
-    CGFloat minimumFontSize = !isnan(paragraphAttributes.minimumFontSize) ? paragraphAttributes.minimumFontSize : 4.0;
     CGFloat maximumFontSize = [self _maximumFontSizeInAttributedString:attributedString];
+    CGFloat minimumFontSize = 4.0;
+    if (!isnan(paragraphAttributes.minimumFontSize)) {
+      minimumFontSize = paragraphAttributes.minimumFontSize;
+    } else if (!isnan(paragraphAttributes.minimumFontScale)) {
+      minimumFontSize = MAX(paragraphAttributes.minimumFontScale * maximumFontSize, 4.0);
+    }
     [textStorage scaleFontSizeToFitSize:size minimumFontSize:minimumFontSize maximumFontSize:maximumFontSize];
   }
 

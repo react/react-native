@@ -9,7 +9,7 @@
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
-import type {FlatListProps} from 'react-native/Libraries/Lists/FlatList';
+import type {FlatListProps} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';

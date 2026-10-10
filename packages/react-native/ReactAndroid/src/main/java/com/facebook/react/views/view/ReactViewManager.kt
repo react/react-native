@@ -124,14 +124,16 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
     view.axOrderList = axOrderList
   }
 
-  @ReactProp(name = "hasTVPreferredFocus")
-  public open fun setTVPreferredFocus(view: ReactViewGroup, hasTVPreferredFocus: Boolean) {
-    if (hasTVPreferredFocus) {
-      view.isFocusable = true
-      view.isFocusableInTouchMode = true
-      view.requestFocus()
-    }
-  }
+  /**
+   * Retained for binary compatibility with [ReactViewManager] subclasses.
+   *
+   * This method no longer registers a React prop or changes view focus.
+   */
+  @Deprecated("Use focusable or focus() instead")
+  public open fun setTVPreferredFocus(
+      view: ReactViewGroup,
+      hasTVPreferredFocus: Boolean,
+  ): Unit = Unit
 
   @ReactProp(name = ViewProps.BACKGROUND_IMAGE, customType = "BackgroundImage")
   public open fun setBackgroundImage(view: ReactViewGroup, backgroundImage: ReadableArray?) {

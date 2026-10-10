@@ -9,9 +9,9 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/SchedulerPriority.h>
-#include <react/debug/react_native_assert.h>
-#include <react/timing/primitives.h>
+#include <React/CallInvoker.h>
+#include <React/Debug.h>
+#include <React/Timing.h>
 #include <chrono>
 
 namespace facebook::react {

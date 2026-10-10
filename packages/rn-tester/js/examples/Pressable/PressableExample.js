@@ -255,7 +255,17 @@ function PressableNativeMethods() {
   );
 }
 
+const DISABLED_OPTIONS: Array<{label: string, value: ?boolean}> = [
+  {label: 'true', value: true},
+  {label: 'false', value: false},
+  {label: 'undefined', value: undefined},
+  {label: 'null', value: null},
+];
+
 function PressableDisabled() {
+  const [disabled, setDisabled] = useState<?boolean>(true);
+  const [timesPressed, setTimesPressed] = useState(0);
+
   return (
     <>
       <Pressable disabled={true} style={[styles.row, styles.block]}>
@@ -270,6 +280,33 @@ function PressableDisabled() {
           styles.block,
         ]}>
         <Text style={styles.button}>Enabled Pressable</Text>
+      </Pressable>
+
+      <View style={[styles.row, styles.block]}>
+        {DISABLED_OPTIONS.map(option => (
+          <Pressable
+            key={option.label}
+            onPress={() => setDisabled(option.value)}
+            style={[
+              styles.disabledOption,
+              disabled === option.value && styles.disabledOptionSelected,
+            ]}>
+            <Text>{option.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Pressable
+        disabled={disabled}
+        onPress={() => setTimesPressed(current => current + 1)}
+        style={({pressed}) => [
+          {opacity: pressed ? 0.5 : 1},
+          styles.row,
+          styles.block,
+          styles.disabledToggleTarget,
+        ]}>
+        <Text style={disabled === true ? styles.disabledButton : styles.button}>
+          {`disabled={${String(disabled)}}`} pressed {timesPressed} times
+        </Text>
       </Pressable>
     </>
   );
@@ -295,6 +332,22 @@ const styles = StyleSheet.create({
   disabledButton: {
     color: '#007AFF',
     opacity: 0.5,
+  },
+  disabledOption: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginHorizontal: 4,
+    borderRadius: 4,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#007AFF',
+  },
+  disabledOptionSelected: {
+    backgroundColor: '#cce4ff',
+  },
+  disabledToggleTarget: {
+    padding: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#007AFF',
   },
   hitSlopButton: {
     color: 'white',

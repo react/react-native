@@ -9,7 +9,7 @@
  */
 
 import invariant from 'invariant';
-import BatchedBridge from 'react-native/Libraries/BatchedBridge/BatchedBridge';
+import {BatchedBridge} from 'react-native/react-private-interface';
 
 const LoggingTestModule = {
   logToConsole(message: string): void {

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 /*
  * Adapted from react-native-windows under the MIT license.
@@ -15,8 +15,8 @@
 
 #include "AnimatedNode.h"
 
+#include <React/RendererCore.h>
 #include <react/renderer/animated/internal/primitives.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <mutex>
 
 namespace facebook::react {

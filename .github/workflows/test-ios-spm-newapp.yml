@@ -40,27 +40,27 @@ jobs:
       # release/ artifact slots together (and `--download skip` refuses an
       # incomplete slot). Please don't "optimise" this down to one flavor.
       - name: Download ReactCore (Debug)
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ReactCoreDebug.xcframework.tar.gz
           path: /tmp/rc-debug
       - name: Download ReactCore (Release)
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ReactCoreRelease.xcframework.tar.gz
           path: /tmp/rc-release
       - name: Download ReactNativeDependencies (Debug)
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ReactNativeDependenciesDebug.xcframework.tar.gz
           path: /tmp/deps-debug
       - name: Download ReactNativeDependencies (Release)
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ReactNativeDependenciesRelease.xcframework.tar.gz
           path: /tmp/deps-release
       - name: Download React Native package
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: react-native-package
           path: /tmp/react-native-tmp

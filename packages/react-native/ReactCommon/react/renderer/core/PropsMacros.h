@@ -9,8 +9,8 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <React/Utils.h>
 #include <react/renderer/core/RawPropsPrimitives.h>
-#include <react/utils/fnv1a.h>
 #include <functional>
 
 // We need to use clang pragmas inside of a macro below,

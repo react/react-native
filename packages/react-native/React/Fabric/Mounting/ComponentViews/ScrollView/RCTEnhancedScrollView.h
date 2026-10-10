@@ -53,6 +53,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray<NSNumber *> *snapToOffsets;
 
 /*
+ * Whether this scroll view is mirrored by a `scaleY(-1)` transform, as inverted virtualized lists
+ * are. UIKit does not account for that transform when it positions iOS 26 scroll edge effects, so
+ * they have to be compensated for here.
+ */
+@property (nonatomic, assign) BOOL inverted;
+
+/*
  * Makes `setContentOffset:` method no-op when given `block` is executed.
  * The block is being executed synchronously.
  */

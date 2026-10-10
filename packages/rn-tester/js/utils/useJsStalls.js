@@ -35,6 +35,7 @@ const useJsStalls = (): ({
   const {stallIntervalId} = stallsState;
 
   useEffect(() => {
+    // $FlowFixMe[incompatible-type]
     return () => clearInterval(stallIntervalId);
   }, [stallIntervalId]);
 

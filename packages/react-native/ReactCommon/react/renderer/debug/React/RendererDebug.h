@@ -32,7 +32,6 @@
 
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/debug/DebugStringConvertibleItem.h>
-#include <react/renderer/debug/debugStringConvertibleUtils.h>
 #include <react/renderer/debug/flags.h>
 
 #undef RN_UMBRELLA_CONTEXT

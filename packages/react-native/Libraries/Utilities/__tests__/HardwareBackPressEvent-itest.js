@@ -10,9 +10,8 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import {HardwareBackPressEvent} from 'react-native/Libraries/Utilities/HardwareBackPressEvent';
-import Event from 'react-native/src/private/webapis/dom/events/Event';
-import {setEventInitTimeStamp} from 'react-native/src/private/webapis/dom/events/internals/EventInternals';
+import {setEventInitTimeStamp} from '../../../src/private/webapis/dom/events/internals/EventInternals';
+import {HardwareBackPressEvent} from '../HardwareBackPressEvent';
 
 describe('HardwareBackPressEvent', () => {
   it('extends Event', () => {

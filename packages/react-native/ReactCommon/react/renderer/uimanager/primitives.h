@@ -9,12 +9,21 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/Debug.h>
+#include <React/RendererCore.h>
+
 #include <folly/dynamic.h>
 #include <jsi/JSIDynamic.h>
 #include <jsi/jsi.h>
-#include <react/debug/react_native_assert.h>
+
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <react/renderer/bridging/bridging.h>
-#include <react/renderer/core/ShadowNode.h>
 
 namespace facebook::react {
 

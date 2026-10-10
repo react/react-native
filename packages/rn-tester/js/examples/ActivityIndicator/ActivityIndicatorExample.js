@@ -16,7 +16,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 function ToggleAnimatingActivityIndicator() {
-  const timer = useRef<void | TimeoutID>();
+  const timer = useRef<void | ReturnType<typeof setTimeout>>();
 
   const [animating, setAnimating] = useState(true);
 

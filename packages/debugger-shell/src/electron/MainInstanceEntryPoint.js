@@ -36,6 +36,11 @@ function handleLaunchArgs(argv: string[]) {
       windowKey: {
         type: 'string',
       },
+      // Consumed by Chromium at startup (exposes the Chrome DevTools Protocol
+      // for automation); accepted here so that strict parsing doesn't reject it.
+      'remote-debugging-port': {
+        type: 'string',
+      },
     },
     args: argv,
   });

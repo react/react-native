@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #import <UIKit/UIKit.h>
 
 #import "RCTImageManagerProtocol.h"

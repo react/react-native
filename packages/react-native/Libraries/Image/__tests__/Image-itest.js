@@ -12,15 +12,15 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {AccessibilityProps, HostInstance} from 'react-native';
 
+import accessibilityPropsSuite from '../../../src/private/__tests__/utilities/accessibilityPropsSuite';
+import {testIDPropSuite} from '../../../src/private/__tests__/utilities/commonPropsSuite';
+import NativeFantom from '../../../src/private/testing/fantom/specs/NativeFantom';
+import * as ImageInjection from '../ImageInjection';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Image} from 'react-native';
-import * as ImageInjection from 'react-native/Libraries/Image/ImageInjection';
-import accessibilityPropsSuite from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
-import {testIDPropSuite} from 'react-native/src/private/__tests__/utilities/commonPropsSuite';
-import NativeFantom from 'react-native/src/private/testing/fantom/specs/NativeFantom';
 
 const LOGO_SOURCE = {uri: 'https://reactnative.dev/img/tiny_logo.png'};
 
@@ -36,12 +36,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-image
-            overflow="hidden"
-            resizeMode="cover"
-            source-scale="1"
-            source-type="remote"
-          />,
+          <rn-image overflow="hidden" source-scale="1" source-type="remote" />,
         );
 
         Fantom.runTask(() => {
@@ -49,12 +44,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-image
-            overflow="hidden"
-            resizeMode="cover"
-            source-scale="1"
-            source-type="remote"
-          />,
+          <rn-image overflow="hidden" source-scale="1" source-type="remote" />,
         );
       });
     });
@@ -282,7 +272,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['resizeMode']}).toJSX()).toEqual(
-          <rn-image resizeMode="cover" />,
+          <rn-image />,
         );
       });
 
@@ -294,11 +284,11 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['resizeMode']}).toJSX()).toEqual(
-          <rn-image resizeMode="cover" />,
+          <rn-image />,
         );
       });
 
-      it('can be set to "stretch", which is the same as not setting it', () => {
+      it('can be set to "stretch"', () => {
         const root = Fantom.createRoot();
 
         Fantom.runTask(() => {
@@ -306,7 +296,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['resizeMode']}).toJSX()).toEqual(
-          <rn-image />,
+          <rn-image resizeMode="stretch" />,
         );
       });
 

@@ -10,11 +10,14 @@ package com.facebook.react.uimanager.drawable
 import android.content.Context
 import android.graphics.Outline
 import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.DrawableWrapper
 import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.style.BorderInsets
 import com.facebook.react.uimanager.style.BorderRadiusStyle
@@ -240,10 +243,32 @@ internal class CompositeBackgroundDrawable(
       background?.let { layers.add(it) }
       backgroundImage?.let { layers.add(it) }
       border?.let { layers.add(it) }
-      feedbackUnderlay?.let { layers.add(it) }
+      feedbackUnderlay?.let {
+        layers.add(
+            if (ReactNativeFeatureFlags.fixBorderlessRippleAndroid()) {
+              UnprojectedRippleWrapper(it)
+            } else {
+              it
+            }
+        )
+      }
       layers.addAll(innerShadows.asReversed())
       outline?.let { layers.add(it) }
       return layers.toTypedArray()
     }
   }
+}
+
+/**
+ * Wraps the feedback underlay so it is never reported as projected. LayerDrawable reports itself as
+ * projected if any layer is, so a borderless ripple in the feedback underlay would project the
+ * entire background, including the background color and borders, onto the nearest native ancestor's
+ * background. With view flattening, that ancestor may be painted under the view's flattened React
+ * parent, hiding the background and ripple. Ignore the underlay's projection; borderless ripples
+ * can still draw outside the view's bounds since React Native views don't clip their children.
+ */
+private class UnprojectedRippleWrapper(drawable: Drawable) : DrawableWrapper(drawable) {
+  override fun isProjected(): Boolean = false
+
+  override fun getDirtyBounds(): Rect = drawable?.dirtyBounds ?: super.getDirtyBounds()
 }

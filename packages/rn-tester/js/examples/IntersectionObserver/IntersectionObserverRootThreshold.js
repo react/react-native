@@ -8,9 +8,6 @@
  * @format
  */
 
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
-
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
 import * as React from 'react';
 import {
@@ -22,7 +19,7 @@ import {
 } from 'react';
 import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
 
-declare const IntersectionObserver: Class<IntersectionObserverType>;
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 export const name = 'IntersectionObserver Root Threshold';
 export const title = name;

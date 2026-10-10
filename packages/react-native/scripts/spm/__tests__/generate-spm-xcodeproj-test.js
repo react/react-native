@@ -20,6 +20,7 @@ const {
   generateXcscheme,
   readScriptPhasesManifest,
 } = require('../generate-spm-xcodeproj');
+const {DOMParser} = require('@xmldom/xmldom');
 const {execFileSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -137,6 +138,40 @@ describe('scheme pre-action', () => {
     expect(result).toContain('&lt;');
   });
 
+  function parsedSyncScript(xml) {
+    return new DOMParser()
+      .parseFromString(xml, 'text/xml')
+      .getElementsByTagName('ActionContent')[0]
+      .getAttribute('scriptText');
+  }
+
+  const MULTILINE_SCRIPT = 'set -e\n\tif [ "$A" ]; then\r\n  a && b < c\nfi';
+
+  it('keeps line breaks and tabs when an XML parser reads the script', () => {
+    const result = generateXcscheme(
+      'MyApp',
+      'TARGET_UUID',
+      'MyApp',
+      MULTILINE_SCRIPT,
+    );
+    expect(parsedSyncScript(result)).toBe(MULTILINE_SCRIPT);
+  });
+
+  it('encodes line breaks when it refreshes a script written with raw ones', () => {
+    const legacy = generateXcscheme(
+      'MyApp',
+      'TARGET_UUID',
+      'MyApp',
+      'OLD',
+    ).replace('scriptText = "OLD"', 'scriptText = "old\n# line 2"');
+    const updated = addPreActionToScheme(
+      legacy,
+      'TARGET_UUID',
+      MULTILINE_SCRIPT,
+    );
+    expect(parsedSyncScript(updated)).toBe(MULTILINE_SCRIPT);
+  });
+
   it('refreshes stale script text and is idempotent', () => {
     const first = generateXcscheme(
       'MyApp',
@@ -232,6 +267,70 @@ describe('sync scripts', () => {
     expect(script).toContain(
       'WATCH_FILE="$SRCROOT/build/generated/autolinking/.spm-sync-watch-paths"',
     );
+  });
+
+  // Xcode writes per-user scheme state into <watched dir>/.swiftpm/ on every
+  // IDE build. Counting that as a change made every IDE build re-sync.
+  describe('the watched-directory staleness probe', () => {
+    // Runs the generated `find` in isolation, with $P/$STAMP bound as the
+    // build phase binds them.
+    function probe(watchedDir, stampFile) {
+      const findCommand = /\$\((find "\$P"[^()]*)\)/.exec(script)?.[1];
+      expect(findCommand).toBeDefined();
+      return execFileSync(
+        '/bin/bash',
+        [
+          '-c',
+          `set -euo pipefail\nP="$1"\nSTAMP="$2"\n${String(findCommand)}\n`,
+          'probe',
+          watchedDir,
+          stampFile,
+        ],
+        {encoding: 'utf8'},
+      );
+    }
+
+    let root;
+    let watchedDir;
+    let stampFile;
+    let schemeState;
+    let source;
+
+    beforeEach(() => {
+      root = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-sync-stale-'));
+      watchedDir = path.join(root, 'node_modules', 'react-native-foo');
+      schemeState = path.join(
+        watchedDir,
+        '.swiftpm/xcode/xcuserdata/someone.xcuserdatad/xcschemes/xcschememanagement.plist',
+      );
+      source = path.join(watchedDir, 'Foo.swift');
+      fs.mkdirSync(path.dirname(schemeState), {recursive: true});
+      fs.writeFileSync(schemeState, '<plist/>\n');
+      fs.writeFileSync(source, '// src\n');
+      // The stamp is written after the tree, so nothing is newer until a test
+      // makes it so.
+      stampFile = path.join(root, '.spm-sync-stamp');
+      fs.writeFileSync(stampFile, '');
+    });
+
+    afterEach(() => {
+      fs.rmSync(root, {recursive: true, force: true});
+    });
+
+    const touch = file => {
+      const future = new Date(Date.now() + 10_000);
+      fs.utimesSync(file, future, future);
+    };
+
+    it('ignores Xcode-owned state under .swiftpm', () => {
+      touch(schemeState);
+      expect(probe(watchedDir, stampFile)).toBe('');
+    });
+
+    it('still reports a changed source file', () => {
+      touch(source);
+      expect(probe(watchedDir, stampFile).trim()).toBe(source);
+    });
   });
 
   it('is deterministic, shared with the pre-action, and valid POSIX shell', () => {

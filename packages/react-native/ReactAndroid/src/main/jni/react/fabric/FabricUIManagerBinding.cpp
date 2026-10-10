@@ -767,17 +767,24 @@ void FabricUIManagerBinding::schedulerShouldRenderTransactions(
 
 void FabricUIManagerBinding::schedulerShouldMergeReactRevision(
     SurfaceId surfaceId) {
-  std::shared_lock lock(installMutex_);
-  auto mountingManager =
-      getMountingManager("schedulerShouldMergeReactRevision");
-  if (mountingManager) {
-    mountingManager->scheduleReactRevisionMerge(surfaceId);
+  if (ReactNativeFeatureFlags::enableFabricCommitBranchingMergeOnMainThread()) {
+    auto mountingManager =
+        getMountingManager("schedulerShouldMergeReactRevision");
+    if (mountingManager) {
+      mountingManager->scheduleReactRevisionMerge(surfaceId);
+    }
+  } else {
+    mergeReactRevision(surfaceId);
   }
 }
 
 void FabricUIManagerBinding::mergeReactRevision(SurfaceId surfaceId) {
-  std::shared_lock lock(installMutex_);
-  scheduler_->getUIManager()->getShadowTreeRegistry().visit(
+  auto scheduler = getScheduler();
+  if (!scheduler) {
+    return;
+  }
+
+  scheduler->getUIManager()->getShadowTreeRegistry().visit(
       surfaceId,
       [](const ShadowTree& shadowTree) { shadowTree.mergeReactRevision(); });
 }
@@ -853,6 +860,13 @@ void FabricUIManagerBinding::schedulerShouldSynchronouslyUpdateViewOnUIThread(
     const folly::dynamic& props) {
   if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() && mountingManager_) {
     mountingManager_->synchronouslyUpdateViewOnUIThread(tag, props);
+  }
+}
+
+void FabricUIManagerBinding::schedulerShouldSynchronouslyUpdateAnimatedProps(
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() && mountingManager_) {
+    mountingManager_->synchronouslyUpdateAnimatedProps(updates);
   }
 }
 

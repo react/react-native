@@ -42,7 +42,7 @@ ImageProps::ImageProps(
           rawProps,
           "resizeMode",
           sourceProps.resizeMode,
-          ImageResizeMode::Stretch)),
+          ImageResizeMode::Cover)),
       blurRadius(convertRawProp(
           context,
           rawProps,
@@ -246,11 +246,15 @@ folly::dynamic ImageProps::getDiffProps(const Props* prevProps) const {
   }
 
   if (fadeDuration != oldProps->fadeDuration) {
-    result["fadeDuration"] = fadeDuration;
+    result["fadeDuration"] =
+        fadeDuration.has_value() ? folly::dynamic(*fadeDuration) : nullptr;
   }
 
   if (progressiveRenderingEnabled != oldProps->progressiveRenderingEnabled) {
-    result["progressiveRenderingEnabled"] = progressiveRenderingEnabled;
+    result["progressiveRenderingEnabled"] =
+        progressiveRenderingEnabled.has_value()
+        ? folly::dynamic(*progressiveRenderingEnabled)
+        : nullptr;
   }
 
   return result;

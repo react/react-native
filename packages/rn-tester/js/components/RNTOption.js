@@ -11,12 +11,13 @@
 'use strict';
 
 import type {GestureResponderEvent} from 'react-native';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import {RNTesterThemeContext} from './RNTesterTheme';
 import * as React from 'react';
 import {useContext, useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 type Props = Readonly<{
   testID?: ?string,

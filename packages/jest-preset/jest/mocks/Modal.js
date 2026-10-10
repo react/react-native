@@ -9,7 +9,7 @@
  */
 
 import typeof * as TmockComponent from '../mockComponent';
-import type {ModalProps} from 'react-native/Libraries/Modal/Modal';
+import type {ModalProps} from 'react-native';
 
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;

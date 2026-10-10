@@ -12,7 +12,7 @@
 #import <string>
 #import <vector>
 
-#import <ReactCommon/TurboModule.h>
+#import <React/NativeModuleCore.h>
 #import <jsi/jsi.h>
 
 #import "RCTTurboModule.h"

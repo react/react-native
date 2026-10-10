@@ -141,13 +141,13 @@ const RNTesterNavbar = ({
           handleNavBarPress={handleNavBarPress}
           theme={theme}
         />
-        <PlaygroundTab
-          isComponentActive={isPlaygroundActive}
+        <APITab
+          isAPIActive={isAPIActive}
           handleNavBarPress={handleNavBarPress}
           theme={theme}
         />
-        <APITab
-          isAPIActive={isAPIActive}
+        <PlaygroundTab
+          isComponentActive={isPlaygroundActive}
           handleNavBarPress={handleNavBarPress}
           theme={theme}
         />

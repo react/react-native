@@ -12,6 +12,7 @@
 #import <objc/runtime.h>
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/utils/ManagedObjectWrapper.h>
+#import <cmath>
 #import <string>
 
 using namespace facebook::react;
@@ -86,9 +87,10 @@ UIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &
 int32_t ColorFromColorComponents(const facebook::react::ColorComponents &components)
 {
   float ratio = 255;
-  auto color = ((int32_t)round((float)components.alpha * ratio) & 0xff) << 24 |
-      ((int)round((float)components.red * ratio) & 0xff) << 16 |
-      ((int)round((float)components.green * ratio) & 0xff) << 8 | ((int)round((float)components.blue * ratio) & 0xff);
+  auto color = ((int32_t)std::round((float)components.alpha * ratio) & 0xff) << 24 |
+      ((int)std::round((float)components.red * ratio) & 0xff) << 16 |
+      ((int)std::round((float)components.green * ratio) & 0xff) << 8 |
+      ((int)std::round((float)components.blue * ratio) & 0xff);
   return color;
 }
 

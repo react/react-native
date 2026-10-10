@@ -1,5 +1,49 @@
 # Changelog
 
+## v0.88.0-rc.4
+
+### Changed
+
+- **TypeScript**: Allow module augmentation to extend generated props and style types ([447ccd1ddb](https://github.com/react/react-native/commit/447ccd1ddbf3b9d95ce5e54410d7a5a54ce9bade) by [@zoontek](https://github.com/zoontek))
+
+### Fixed
+
+#### Android specific
+
+- **Accessibility**: Properly re-enable a view after `accessibilityState.disabled` resets from `true`, which left `Pressable` partly untappable ([357b6998c4](https://github.com/react/react-native/commit/357b6998c4df940f2450448a20478b11deaf741b) by [@bigcupcoffee](https://github.com/bigcupcoffee))
+
+
+## v0.88.0-rc.3
+
+### Changed
+
+- **Hermes**: Bump Hermes to 260318099.0.4 ([993be7d6c6](https://github.com/react/react-native/commit/993be7d6c69c838bd6fb7acf6b979f8ea65ca03c) by [@fabriziocucci](https://github.com/fabriziocucci))
+
+### Fixed
+
+- **VirtualizedList**: Fix the Metro package-exports warning caused by `react-native/virtualized-lists` importing an unexported React Native subpath ([a506ed66cc](https://github.com/react/react-native/commit/a506ed66cc5744ec017556f49a2c296fb4bad318) by [@giaBaoJS](https://github.com/giaBaoJS))
+
+#### Android specific
+
+- **Renderer**: Bump androidx.collection to 1.4.4 to fix view registry entries getting lost in `SurfaceMountingManager` ([d6a5f159c6](https://github.com/react/react-native/commit/d6a5f159c6ef81651d38af2a33338b921700e044) by [@pawicao](https://github.com/pawicao))
+
+#### iOS specific
+
+- **SwiftPM**: Stop autolinking from recreating library package roots on every sync, which broke Xcode builds of apps using libraries that ship their own `Package.swift` ([97cc934dc7](https://github.com/react/react-native/commit/97cc934dc75184977363e06b1793277de82fed54) by [@chrfalch](https://github.com/chrfalch))
+
+## v0.88.0-rc.2
+
+### Changed
+
+- **Metro**: Bump the minimum Metro version to 0.87.1, so upgrading projects resolve the same Metro as freshly created ones ([f2439a83cf](https://github.com/react/react-native/commit/f2439a83cffc8f2bf8355a984a055ae7174bb4d9) by [@robhogan](https://github.com/robhogan))
+
+### Fixed
+
+- **TurboModules**: Revert the `RCTArrayBuffer` codegen change, restoring `NSMutableData *` for ObjC TurboModule methods that take or return an `ArrayBuffer`. 0.88 is a non-breaking release, and the change stopped modules that adopted ObjC `ArrayBuffer` support in 0.87 from compiling ([639cdedb50](https://github.com/react/react-native/commit/639cdedb506d6441e27eeb579225aa6a7def3ff9), [19a3184981](https://github.com/react/react-native/commit/19a31849817b8cf0eaef56305330c4b39d826fe8) by [@fabriziocucci](https://github.com/fabriziocucci))
+- **TurboModules**: Revert the rejection of `ArrayBuffer` as a TurboModule `EventEmitter` payload. C++ TurboModules could declare `EventEmitter<ArrayBuffer>` in 0.87 and it generated working code, so rejecting it at codegen time broke those builds ([070af03ab3](https://github.com/react/react-native/commit/070af03ab3b9584473b0ffb1a837ac252d127ec9) by [@fabriziocucci](https://github.com/fabriziocucci))
+- **TypeScript**: Restore the `.js` fallback for legacy deep imports of untyped modules, so `react-native/Libraries/*` specifiers resolve again under the `react-native-legacy-deep-imports` condition ([579212e15c](https://github.com/react/react-native/commit/579212e15c9197d6c614cfeb4561e4a85956ee3b) by [@fabriziocucci](https://github.com/fabriziocucci))
+
+
 ## v0.88.0-rc.1
 
 ### Added

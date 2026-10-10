@@ -14,6 +14,7 @@ add_library(react_renderer_animationbackend OBJECT ${react_renderer_animationbac
 target_include_directories(react_renderer_animationbackend PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(react_renderer_animationbackend
+      callinvoker
       react_codegen_rncore
       react_cxxstableapi
       react_debug
@@ -21,6 +22,7 @@ target_link_libraries(react_renderer_animationbackend
       react_renderer_graphics
       react_renderer_mounting
       react_renderer_uimanager
+      react_timing
       glog
       folly_runtime
 )

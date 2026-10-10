@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
-#include <react/renderer/graphics/Float.h>
+#include <React/Graphics.h>
 
 namespace facebook::react {
 

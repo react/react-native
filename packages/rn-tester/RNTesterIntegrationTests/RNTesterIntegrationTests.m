@@ -74,12 +74,6 @@
 // RCT_TEST_ONLY_WITH_PACKAGER(WebSocketTest) // Disabled due to test being based on deprecated RCTBridge; Requires a
 // WebSocket test server, see scripts/objc-test.sh
 
-// Disabled due to TODO(T225745315) causing AccessibilityManager to be unavailable
-// and in turn RCTDeviceInfo::_exportedDimensions to fall back to 1.0 font scale,
-// failing the test's assertion
-// TODO: re-enable this test when TODO(T225745315) is resolved
-// RCT_TEST(AccessibilityManagerTest)
-
 // RCT_TEST(GlobalEvalWithSourceUrlTest) // Disabled due to test being based on deprecated RCTBridge
 
 @end

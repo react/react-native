@@ -14,16 +14,6 @@ import {
   isPlatformObject,
 } from '../webidl/PlatformObjects';
 
-const VALID_ERROR_NAMES = new Set([
-  'Error',
-  'EvalError',
-  'RangeError',
-  'ReferenceError',
-  'SyntaxError',
-  'TypeError',
-  'URIError',
-]);
-
 const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
 
 const ObjectPrototype = Object.prototype;
@@ -35,7 +25,7 @@ const ObjectPrototype = Object.prototype;
 // any given point we only have one memory object alive anyway.
 const memory: Map<unknown, unknown> = new Map();
 
-function structuredCloneInternal<T>(value: T): T {
+function structuredCloneInternal(value: unknown): unknown {
   // Handles `null` and `undefined`.
   if (value == null) {
     return value;
@@ -60,21 +50,33 @@ function structuredCloneInternal<T>(value: T): T {
   }
 
   // Handles circular references.
-  if (memory.has(value)) {
-    // $FlowExpectedError[incompatible-type] we know memory.get(value) is T
-    return memory.get(value);
+  const existingClone = memory.get(value);
+  if (existingClone !== undefined) {
+    return existingClone;
   }
 
   // Handles arrays.
   if (Array.isArray(value)) {
-    const result = [];
+    const result: Array<unknown> = [];
     memory.set(value, result);
+    const keys = Object.keys(value);
 
-    for (const key of Object.keys(value)) {
-      result[key] = structuredCloneInternal(value[key]);
+    for (let index = 0; index < keys.length; index++) {
+      const key = keys[index];
+      const innerValue = value[key];
+      switch (typeof innerValue) {
+        case 'undefined':
+        case 'boolean':
+        case 'number':
+        case 'string':
+        case 'bigint':
+          result[key] = innerValue;
+          break;
+        default:
+          result[key] = structuredCloneInternal(innerValue);
+      }
     }
 
-    // $FlowExpectedError[incompatible-type] we know result is T
     return result;
   }
 
@@ -83,23 +85,73 @@ function structuredCloneInternal<T>(value: T): T {
   if (Object.getPrototypeOf(value) === ObjectPrototype) {
     const result = {};
     memory.set(value, result);
+    const keys = Object.keys(value);
 
-    for (const key of Object.keys(value)) {
-      // $FlowExpectedError[prop-missing]
-      result[key] = structuredCloneInternal(value[key]);
+    if (!Object.hasOwn(value, '__proto__')) {
+      for (let index = 0; index < keys.length; index++) {
+        const key = keys[index];
+        const innerValue = value[key];
+        switch (typeof innerValue) {
+          case 'undefined':
+          case 'boolean':
+          case 'number':
+          case 'string':
+          case 'bigint':
+            // $FlowExpectedError[prop-missing]
+            result[key] = innerValue;
+            break;
+          default:
+            // $FlowExpectedError[prop-missing]
+            result[key] = structuredCloneInternal(innerValue);
+        }
+      }
+    } else {
+      for (const key of keys) {
+        const clonedValue = structuredCloneInternal(value[key]);
+        if (key === '__proto__') {
+          defineEnumerableProperty(result, key, clonedValue);
+        } else {
+          // $FlowExpectedError[prop-missing]
+          result[key] = clonedValue;
+        }
+      }
     }
 
-    // $FlowExpectedError[incompatible-type] we know result is T
     return result;
   }
 
   // Handles complex types (typeof === 'object').
 
+  if (value instanceof ArrayBuffer) {
+    return cloneArrayBuffer(value);
+  }
+
+  if (value instanceof DataView) {
+    const result = new DataView(
+      cloneArrayBuffer(value.buffer),
+      value.byteOffset,
+      value.byteLength,
+    );
+    memory.set(value, result);
+    return result;
+  }
+
+  if (isTypedArray(value)) {
+    const result = cloneTypedArray(value);
+    memory.set(value, result);
+    return result;
+  }
+
+  if (value instanceof BigInt) {
+    const result = Object(value.valueOf());
+    memory.set(value, result);
+    return result;
+  }
+
   for (const Cls of BASIC_CONSTRUCTORS) {
     if (value instanceof Cls) {
       const result = new Cls(value);
       memory.set(value, result);
-      // $FlowExpectedError[incompatible-type] we know result is T
       return result;
     }
   }
@@ -115,7 +167,6 @@ function structuredCloneInternal<T>(value: T): T {
       );
     }
 
-    // $FlowExpectedError[incompatible-type] we know result is T
     return result;
   }
 
@@ -127,7 +178,6 @@ function structuredCloneInternal<T>(value: T): T {
       result.add(structuredCloneInternal(innerValue));
     }
 
-    // $FlowExpectedError[incompatible-type] we know result is T
     return result;
   }
 
@@ -135,7 +185,6 @@ function structuredCloneInternal<T>(value: T): T {
     const result = new RegExp(value.source, value.flags);
     memory.set(value, result);
 
-    // $FlowExpectedError[incompatible-type] we know result is T
     return result;
   }
 
@@ -148,21 +197,25 @@ function structuredCloneInternal<T>(value: T): T {
     return result;
   }
 
-  if (value instanceof Error) {
-    const result = value.cause
-      ? new Error(value.message, {cause: value.cause})
-      : new Error(value.message);
+  if (value instanceof AggregateError) {
+    const result = new AggregateError([], value.message);
     memory.set(value, result);
 
-    if (VALID_ERROR_NAMES.has(value.name)) {
-      result.name = value.name;
-    } else {
-      result.name = 'Error';
+    const errors = structuredCloneInternal(value.errors);
+    if (!Array.isArray(errors)) {
+      throw new TypeError('AggregateError errors must be an array');
     }
+    result.errors = errors;
 
-    result.stack = value.stack;
+    cloneErrorProperties(value, result);
+    return result;
+  }
 
-    // $FlowExpectedError[incompatible-type] we know result is T
+  if (value instanceof Error) {
+    const result = createErrorClone(value);
+    memory.set(value, result);
+
+    cloneErrorProperties(value, result);
     return result;
   }
 
@@ -177,16 +230,41 @@ function structuredCloneInternal<T>(value: T): T {
   // Arbitrary object slow path
   const result = {};
   memory.set(value, result);
+  const keys = Object.keys(value);
 
   // We need to use Object.keys instead of iterating by indices because we
   // also need to copy arbitrary fields set in the array.
-  for (const key of Object.keys(value)) {
-    // $FlowExpectedError[prop-missing]
-    result[key] = structuredCloneInternal(value[key]);
+  if (Object.hasOwn(value, '__proto__')) {
+    for (const key of keys) {
+      const clonedValue = structuredCloneInternal(value[key]);
+      if (key === '__proto__') {
+        defineEnumerableProperty(result, key, clonedValue);
+      } else {
+        // $FlowExpectedError[prop-missing]
+        result[key] = clonedValue;
+      }
+    }
+  } else {
+    for (let index = 0; index < keys.length; index++) {
+      const key = keys[index];
+      // $FlowExpectedError[prop-missing]
+      result[key] = structuredCloneInternal(value[key]);
+    }
   }
 
-  // $FlowExpectedError[incompatible-type] we know result is T
   return result;
+}
+
+function cloneErrorProperties(value: Error, result: Error): void {
+  if (Object.hasOwn(value, 'cause')) {
+    Object.defineProperty(result, 'cause', {
+      configurable: true,
+      value: structuredCloneInternal(value.cause),
+      writable: true,
+    });
+  }
+
+  result.stack = value.stack;
 }
 
 /**
@@ -209,6 +287,7 @@ function structuredCloneInternal<T>(value: T): T {
  */
 export default function structuredClone<T>(value: T): T {
   try {
+    // $FlowExpectedError[incompatible-type] structured cloning preserves the value's serializable type.
     return structuredCloneInternal(value);
   } finally {
     memory.clear();
@@ -216,6 +295,98 @@ export default function structuredClone<T>(value: T): T {
 }
 
 const NON_SERIALIZABLE_OBJECT_KEY = Symbol('nonSerializableObject');
+
+function cloneArrayBuffer(value: ArrayBuffer): ArrayBuffer {
+  const existingClone = memory.get(value);
+  if (existingClone instanceof ArrayBuffer) {
+    return existingClone;
+  }
+
+  const result = value.slice(0);
+  memory.set(value, result);
+  return result;
+}
+
+function cloneTypedArray(value: $TypedArray): $TypedArray {
+  const buffer = cloneArrayBuffer(value.buffer);
+  const {byteOffset, length} = value;
+
+  if (value instanceof Int8Array) {
+    return new Int8Array(buffer, byteOffset, length);
+  }
+  if (value instanceof Uint8Array) {
+    return new Uint8Array(buffer, byteOffset, length);
+  }
+  if (value instanceof Uint8ClampedArray) {
+    return new Uint8ClampedArray(buffer, byteOffset, length);
+  }
+  if (value instanceof Int16Array) {
+    return new Int16Array(buffer, byteOffset, length);
+  }
+  if (value instanceof Uint16Array) {
+    return new Uint16Array(buffer, byteOffset, length);
+  }
+  if (value instanceof Int32Array) {
+    return new Int32Array(buffer, byteOffset, length);
+  }
+  if (value instanceof Uint32Array) {
+    return new Uint32Array(buffer, byteOffset, length);
+  }
+  if (typeof Float16Array !== 'undefined' && value instanceof Float16Array) {
+    return new Float16Array(buffer, byteOffset, length);
+  }
+  if (value instanceof Float32Array) {
+    return new Float32Array(buffer, byteOffset, length);
+  }
+  if (value instanceof Float64Array) {
+    return new Float64Array(buffer, byteOffset, length);
+  }
+  if (value instanceof BigInt64Array) {
+    return new BigInt64Array(buffer, byteOffset, length);
+  }
+  if (value instanceof BigUint64Array) {
+    return new BigUint64Array(buffer, byteOffset, length);
+  }
+
+  throw new TypeError('Unsupported typed array');
+}
+
+function defineEnumerableProperty(
+  target: interface {},
+  key: string,
+  value: unknown,
+): void {
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: true,
+    value,
+    writable: true,
+  });
+}
+
+declare function isTypedArray(value: unknown): implies value is $TypedArray;
+function isTypedArray(value: unknown): boolean {
+  return ArrayBuffer.isView(value) && !(value instanceof DataView);
+}
+
+function createErrorClone(value: Error): Error {
+  switch (value.name) {
+    case 'EvalError':
+      return new EvalError(value.message);
+    case 'RangeError':
+      return new RangeError(value.message);
+    case 'ReferenceError':
+      return new ReferenceError(value.message);
+    case 'SyntaxError':
+      return new SyntaxError(value.message);
+    case 'TypeError':
+      return new TypeError(value.message);
+    case 'URIError':
+      return new URIError(value.message);
+    default:
+      return new Error(value.message);
+  }
+}
 
 function isNonSerializableObject<T extends interface {}>(obj: T): boolean {
   // $FlowExpectedError[invalid-in-lhs]

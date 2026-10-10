@@ -10,14 +10,29 @@
 
 'use strict';
 
-import type {ExtendedError} from 'react-native/Libraries/Core/ExtendedError';
-
 import * as React from 'react';
 import {useEffect} from 'react';
 import {NativeModules, View} from 'react-native';
-import parseErrorStack from 'react-native/Libraries/Core/Devtools/parseErrorStack';
 
 const {TestModule} = NativeModules;
+
+type ErrorWithEngine = Error &
+  interface {
+    jsEngine?: string,
+  };
+
+function getFirstStackFrameFile(stack?: string): ?string {
+  if (stack == null) {
+    return null;
+  }
+  for (const line of stack.split('\n')) {
+    const match = line.match(/(?:\(|@|\s)(https?:\/\/.*?):\d+:\d+\)?$/);
+    if (match != null) {
+      return match[1];
+    }
+  }
+  return null;
+}
 
 function GlobalEvalWithSourceUrlTest(): React.Node {
   useEffect(() => {
@@ -33,7 +48,7 @@ function GlobalEvalWithSourceUrlTest(): React.Node {
         'Expected globalEvalWithSourceUrl(expression) to return a value',
       );
     }
-    let syntaxError: ?ExtendedError;
+    let syntaxError: ?ErrorWithEngine;
     try {
       global.globalEvalWithSourceUrl('{');
     } catch (e) {
@@ -66,12 +81,10 @@ function GlobalEvalWithSourceUrlTest(): React.Node {
         'Expected globalEvalWithSourceUrl to throw an Error object',
       );
     }
-    const parsedStack = parseErrorStack(error?.stack);
-    if (parsedStack[0].file !== url) {
+    const firstStackFrameFile = getFirstStackFrameFile(error.stack);
+    if (firstStackFrameFile !== url) {
       throw new Error(
-        `Expected first eval stack frame to be in ${url} but found ${String(
-          parsedStack[0].file,
-        )}`,
+        `Expected first eval stack frame to be in ${url} but found ${String(firstStackFrameFile)}`,
       );
     }
     TestModule.markTestCompleted();

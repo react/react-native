@@ -11,11 +11,9 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import {EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY} from '../internals/EventTargetInternals';
 import createEventTargetHierarchyWithDepth from './createEventTargetHierarchyWithDepth';
 import {unstable_benchmark} from '@react-native/fantom';
-import Event from 'react-native/src/private/webapis/dom/events/Event';
-import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
-import {EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY} from 'react-native/src/private/webapis/dom/events/internals/EventTargetInternals';
 
 let event: Event;
 let eventTarget: EventTarget;

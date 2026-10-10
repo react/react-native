@@ -21,9 +21,9 @@ declare export class URLSearchParams {
   has(name: string): boolean;
   set(name: string, value: string): void;
   sort(): void;
-  @@iterator(): Iterator<[string, string]>;
+  @@iterator(): IteratorObject<[string, string]>;
   toString(): string;
-  keys(): Iterator<string>;
-  values(): Iterator<string>;
-  entries(): Iterator<[string, string]>;
+  keys(): IteratorObject<string>;
+  values(): IteratorObject<string>;
+  entries(): IteratorObject<[string, string]>;
 }
