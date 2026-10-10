@@ -149,14 +149,14 @@ class BorderRadiusStyleTest {
                 arrayOf(
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_LEFT_RADIUS,
-                    BorderRadiusProp.BORDER_BOTTOM_START_RADIUS,
+                    BorderRadiusProp.BORDER_BOTTOM_END_RADIUS,
                     BorderRadiusProp.BORDER_END_END_RADIUS,
                 ),
             ComputedBorderRadiusProp.COMPUTED_BORDER_BOTTOM_RIGHT_RADIUS to
                 arrayOf(
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_RIGHT_RADIUS,
-                    BorderRadiusProp.BORDER_BOTTOM_END_RADIUS,
+                    BorderRadiusProp.BORDER_BOTTOM_START_RADIUS,
                     BorderRadiusProp.BORDER_END_START_RADIUS,
                 ),
         )
@@ -171,6 +171,23 @@ class BorderRadiusStyleTest {
         assertThat(resolved.get(order.key)).isEqualTo(CornerRadii(count, count))
         count -= 1f
       }
+    }
+  }
+
+  @Test
+  fun testBottomLogicalCornersRTLRegardlessOfSwap() {
+    val borderRadiusStyle =
+        BorderRadiusStyle(
+            bottomStart = LengthPercentage(10f, LengthPercentageType.POINT),
+            bottomEnd = LengthPercentage(20f, LengthPercentageType.POINT),
+        )
+
+    for (swap in listOf(false, true)) {
+      setContextLeftAndRightSwap(ctx, swap)
+      val resolved = borderRadiusStyle.resolve(1, context = ctx, width = 100f, height = 100f)
+
+      assertThat(resolved.bottomLeft).isEqualTo(CornerRadii(20f, 20f))
+      assertThat(resolved.bottomRight).isEqualTo(CornerRadii(10f, 10f))
     }
   }
 
