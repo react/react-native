@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<26f30821669e81ddb8c654ea71bbaca6>>
+ * @generated SignedSource<<f5d4bdd00c19d855a464b8e6bb8359b5>>
  * @flow strict
  * @noformat
  */
@@ -41,6 +41,7 @@ export interface Spec extends TurboModule {
   readonly enableAndroidAutoOffscreenCompositingForElevation?: () => boolean;
   readonly enableAndroidTextMeasurementOptimizations?: () => boolean;
   readonly enableAsyncDiskCacheCheckInMultiSourceImageAndroid?: () => boolean;
+  readonly enableAsyncSettingsManagerUpdatesIOS?: () => boolean;
   readonly enableBridgelessArchitecture?: () => boolean;
   readonly enableCppPropsIteratorSetter?: () => boolean;
   readonly enableCustomFocusSearchOnClippedElementsAndroid?: () => boolean;
