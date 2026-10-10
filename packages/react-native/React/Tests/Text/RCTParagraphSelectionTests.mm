@@ -11,6 +11,8 @@
 #import <React/RCTParagraphComponentView.h>
 
 #import <React/RCTTouchableComponentViewProtocol.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #import <react/renderer/components/text/ParagraphProps.h>
 #import <react/renderer/components/text/ParagraphShadowNode.h>
@@ -24,11 +26,45 @@
 
 using namespace facebook::react;
 
+class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  explicit RCTParagraphSelectionFeatureFlags(bool partialTextSelection) : partialTextSelection_(partialTextSelection) {}
+
+  bool enableIOSPartialTextSelection() override
+  {
+    return partialTextSelection_;
+  }
+
+ private:
+  bool partialTextSelection_;
+};
+
+/*
+ * A native parent with an edit-menu action of its own.
+ */
+@interface RCTParagraphSelectionMenuParent : UIView
+
+- (void)customMenuAction:(id)sender;
+
+@end
+
+@implementation RCTParagraphSelectionMenuParent
+
+- (void)customMenuAction:(id)sender
+{
+}
+
+@end
+
 /*
  * Covers `<Text selectable>` on iOS. Selection is provided by a `UITextView`
  * that lays the paragraph out but never paints it, while
  * `RCTParagraphComponentView` keeps drawing the glyphs. These tests hold that
  * split in place, and hold the paragraph unchanged when it is not selectable.
+ *
+ * Partial selection is behind `enableIOSPartialTextSelection`. `setUp` turns
+ * the flag on. The tests under "With the flag off" turn it off, and hold the
+ * paragraph to the long-press menu that copies the whole text.
  */
 @interface RCTParagraphSelectionTests : XCTestCase
 @end
@@ -40,7 +76,24 @@ using namespace facebook::react;
 - (void)setUp
 {
   [super setUp];
+  [self setPartialTextSelectionEnabled:YES];
   _textLayoutManager = std::make_shared<const TextLayoutManager>(std::make_shared<const ContextContainer>());
+}
+
+- (void)tearDown
+{
+  ReactNativeFeatureFlags::dangerouslyReset();
+  [super tearDown];
+}
+
+/*
+ * Call this before the test creates a paragraph view. The view reads the flag
+ * on every change of `selectable`, on recycling and on every frame update, so
+ * a view that sees both values is half in each mode.
+ */
+- (void)setPartialTextSelectionEnabled:(BOOL)enabled
+{
+  ReactNativeFeatureFlags::dangerouslyForceOverride(std::make_unique<RCTParagraphSelectionFeatureFlags>(enabled));
 }
 
 #pragma mark - Fixtures
@@ -170,6 +223,41 @@ using namespace facebook::react;
     }
   }
   return nil;
+}
+
+- (UILongPressGestureRecognizer *)longPressRecognizerIn:(UIView *)view
+{
+  for (UIGestureRecognizer *recognizer in view.gestureRecognizers) {
+    if ([recognizer isKindOfClass:[UILongPressGestureRecognizer class]]) {
+      return (UILongPressGestureRecognizer *)recognizer;
+    }
+  }
+  return nil;
+}
+
+- (UIEditMenuInteraction *)editMenuInteractionIn:(UIView *)view API_AVAILABLE(ios(16.0))
+{
+  for (id<UIInteraction> interaction in view.interactions) {
+    if ([interaction isKindOfClass:[UIEditMenuInteraction class]]) {
+      return (UIEditMenuInteraction *)interaction;
+    }
+  }
+  return nil;
+}
+
+/*
+ * Mounts a recycled view again with the update calls of an insert. The view
+ * keeps its `_props`, and `prepareForRecycle` empties its layout metrics.
+ */
+- (void)mountRecycledView:(RCTParagraphComponentView *)view selectable:(BOOL)selectable text:(std::string)text
+{
+  [view updateProps:[self propsWithSelectable:selectable] oldProps:nullptr];
+  [view updateState:[self stateWithAttributedString:[self attributedStringWithText:std::move(text)]] oldState:nil];
+
+  auto layoutMetrics = LayoutMetrics{};
+  layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
+  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
 }
 
 #pragma mark - The paragraph keeps drawing itself
@@ -391,15 +479,7 @@ using namespace facebook::react;
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
   [view prepareForRecycle];
-
-  [view updateProps:[self propsWithSelectable:YES] oldProps:[self propsWithSelectable:YES]];
-  [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"The next paragraph"]] oldState:nil];
-
-  // `prepareForRecycle` empties the layout metrics, and the next insert sets them again.
-  auto layoutMetrics = LayoutMetrics{};
-  layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
-  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
-  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
+  [self mountRecycledView:view selectable:YES text:"The next paragraph"];
 
   UITextView *selectionTextView = [self selectionTextViewIn:view];
   XCTAssertNotNil(selectionTextView, @"A recycled selectable paragraph must get a selection text view again.");
@@ -502,6 +582,91 @@ using namespace facebook::react;
 
   XCTAssertNotNil(selectionTextView);
   XCTAssertTrue(selectionTextView.accessibilityElementsHidden, @"The text view must not be read by VoiceOver.");
+}
+
+#pragma mark - The selection text view owns the edit menu
+
+/*
+ * The paragraph implements `copy:` for the long-press menu of the flag-off
+ * path. With the flag on it must refuse `copy:`, or a copy that reaches it
+ * copies the whole text instead of the selected range.
+ */
+- (void)testSelectableParagraphLeavesCopyToTheSelectionTextView
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+
+  XCTAssertFalse(view.canBecomeFirstResponder, @"The selection text view owns the selection.");
+  XCTAssertFalse([view canPerformAction:@selector(copy:) withSender:nil], @"Only the selection text view may copy.");
+  XCTAssertNil([self longPressRecognizerIn:view], @"The long-press menu of the flag-off path must not exist.");
+}
+
+/*
+ * UIKit looks for the target of an edit-menu action up the responder chain,
+ * from the selection text view. A paragraph that answers for its parent stops
+ * that walk and then gets an action that it cannot perform.
+ */
+- (void)testSelectableParagraphLeavesOtherActionsToItsParent
+{
+  RCTParagraphSelectionMenuParent *parent = [RCTParagraphSelectionMenuParent new];
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  [parent addSubview:view];
+
+  XCTAssertTrue([parent canPerformAction:@selector(customMenuAction:) withSender:nil]);
+  XCTAssertFalse(
+      [view canPerformAction:@selector(customMenuAction:) withSender:nil],
+      @"The paragraph must not answer for an action that only its parent performs.");
+}
+
+#pragma mark - With the flag off
+
+/*
+ * Without the flag, a selectable paragraph is what it was before partial
+ * selection: no selection text view, and a long press that shows a menu to
+ * copy the whole text.
+ */
+- (void)testFlagOffSelectableParagraphKeepsTheLongPressMenu
+{
+  [self setPartialTextSelectionEnabled:NO];
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+
+  XCTAssertNil([self selectionTextViewIn:view], @"Without the flag, a paragraph must gain no selection text view.");
+  XCTAssertNotNil([self longPressRecognizerIn:view], @"Without the flag, a long press must show the menu.");
+  if (@available(iOS 16.0, *)) {
+    XCTAssertNotNil([self editMenuInteractionIn:view]);
+  }
+  XCTAssertTrue(view.canBecomeFirstResponder);
+  XCTAssertTrue([view canPerformAction:@selector(copy:) withSender:nil], @"The menu copies the whole text.");
+}
+
+- (void)testFlagOffTurningSelectableOffRemovesTheLongPressMenu
+{
+  [self setPartialTextSelectionEnabled:NO];
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+
+  [view updateProps:[self propsWithSelectable:NO] oldProps:[self propsWithSelectable:YES]];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+  XCTAssertNil([self longPressRecognizerIn:view]);
+  if (@available(iOS 16.0, *)) {
+    XCTAssertNil([self editMenuInteractionIn:view]);
+  }
+  XCTAssertFalse(view.canBecomeFirstResponder);
+}
+
+/*
+ * A recycled view keeps its props. When the next paragraph is selectable too,
+ * `updateProps:` sees no change and does not add the long press again, so
+ * recycling must not remove it.
+ */
+- (void)testFlagOffRecycledParagraphKeepsTheLongPressMenu
+{
+  [self setPartialTextSelectionEnabled:NO];
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  [view prepareForRecycle];
+  [self mountRecycledView:view selectable:YES text:"The next paragraph"];
+
+  XCTAssertNotNil([self longPressRecognizerIn:view], @"A recycled selectable paragraph must keep its long press.");
+  XCTAssertNil([self selectionTextViewIn:view]);
 }
 
 @end

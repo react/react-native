@@ -363,6 +363,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableIOSPartialTextSelection: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-10',
+        description:
+          'Enables partial text selection for selectable Text on iOS. When disabled, a long press shows a menu that copies the whole paragraph.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableIOSTextBaselineOffsetPerLine: {
       defaultValue: false,
       metadata: {

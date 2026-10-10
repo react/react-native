@@ -50,12 +50,21 @@ using namespace facebook::react;
 
 @end
 
+#if !TARGET_OS_TV
+@interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
+
+@property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
+
+@end
+#else
 @interface RCTParagraphComponentView ()
 @end
+#endif
 
 @implementation RCTParagraphComponentView {
   ParagraphAttributes _paragraphAttributes;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
+  UILongPressGestureRecognizer *_longPressGestureRecognizer;
   RCTParagraphTextView *_textView;
   CGRect _textLayoutFrame;
 #if !TARGET_OS_TV
@@ -186,7 +195,12 @@ using namespace facebook::react;
   _textView.state = nullptr;
   _accessibilityProvider = nil;
 #if !TARGET_OS_TV
-  [self disableContextMenu];
+  // Recycling removes only the selection text view. The long press stays,
+  // because the view keeps its `_props`: when the next paragraph is selectable
+  // too, `updateProps:` sees no change and does not add the long press again.
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    [self disableTextSelection];
+  }
 #endif
 }
 
@@ -217,7 +231,7 @@ using namespace facebook::react;
 
 #if !TARGET_OS_TV
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
-  if (paragraphProps.isSelectable) {
+  if (paragraphProps.isSelectable && ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
     // `drawingFrame` is the frame `RCTParagraphTextView` draws the glyphs into,
     // compression adjustment included. The selection must use the same frame,
     // or the selection rects sit away from the glyphs they select.
@@ -370,18 +384,120 @@ using namespace facebook::react;
 #pragma mark - Context Menu
 
 #if !TARGET_OS_TV
+- (void)enableContextMenu
+{
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    [self enableTextSelection];
+    return;
+  }
+
+  _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                                              action:@selector(handleLongPress:)];
+
+  if (@available(iOS 16.0, *)) {
+    _editMenuInteraction = [[UIEditMenuInteraction alloc] initWithDelegate:self];
+    [self addInteraction:_editMenuInteraction];
+  }
+  [self addGestureRecognizer:_longPressGestureRecognizer];
+}
+
+- (void)disableContextMenu
+{
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    [self disableTextSelection];
+    return;
+  }
+
+  [self removeGestureRecognizer:_longPressGestureRecognizer];
+  if (@available(iOS 16.0, *)) {
+    [self removeInteraction:_editMenuInteraction];
+    _editMenuInteraction = nil;
+  }
+  _longPressGestureRecognizer = nil;
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture
+{
+  if (@available(iOS 16.0, macCatalyst 16.0, *)) {
+    CGPoint location = [gesture locationInView:self];
+    UIEditMenuConfiguration *config = [UIEditMenuConfiguration configurationWithIdentifier:nil sourcePoint:location];
+    if (_editMenuInteraction) {
+      [_editMenuInteraction presentEditMenuWithConfiguration:config];
+    }
+  } else {
+    UIMenuController *menuController = [UIMenuController sharedMenuController];
+
+    if (menuController.isMenuVisible) {
+      return;
+    }
+
+    [menuController showMenuFromView:self rect:self.bounds];
+  }
+}
+
+- (BOOL)canBecomeFirstResponder
+{
+  // With partial selection, `_selectableTextView` is the responder that owns the selection.
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    return NO;
+  }
+
+  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
+  return paragraphProps.isSelectable;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+  // With partial selection, `_selectableTextView` copies the selected range.
+  // This class implements `copy:` for the long-press menu, so the inherited
+  // answer for `copy:` is YES and would make the paragraph copy all its text.
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    return action != @selector(copy:) && [super canPerformAction:action withSender:sender];
+  }
+
+  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
+
+  if (paragraphProps.isSelectable && action == @selector(copy:)) {
+    return YES;
+  }
+
+  return [self.nextResponder canPerformAction:action withSender:sender];
+}
+
+- (void)copy:(id)sender
+{
+  NSAttributedString *attributedText = self.attributedText;
+
+  NSMutableDictionary *item = [NSMutableDictionary new];
+
+  NSData *rtf = [attributedText dataFromRange:NSMakeRange(0, attributedText.length)
+                           documentAttributes:@{NSDocumentTypeDocumentAttribute : NSRTFDTextDocumentType}
+                                        error:nil];
+
+  if (rtf) {
+    [item setObject:rtf forKey:(id)kUTTypeFlatRTFD];
+  }
+
+  [item setObject:attributedText.string forKey:(id)kUTTypeUTF8PlainText];
+
+  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+  pasteboard.items = @[ item ];
+}
+
+#pragma mark - Text Selection
+
 /*
  * Selection is provided by a `UITextView` laid out with the paragraph's own
  * TextKit stack, which gives the platform behaviour users expect: long press to
  * select a word, drag handles to extend the range and an edit menu that copies
  * only what is selected.
  */
-- (void)enableContextMenu
+- (void)enableTextSelection
 {
   _selectableTextViewNeedsUpdate = YES;
 }
 
-- (void)disableContextMenu
+- (void)disableTextSelection
 {
   _selectableTextViewNeedsUpdate = NO;
   [self removeSelectableTextView];
@@ -445,13 +561,6 @@ using namespace facebook::react;
   _selectableTextView.frame = drawingFrame;
   _selectableTextView.sourceAttributedText = attributedText;
 }
-
-- (BOOL)canBecomeFirstResponder
-{
-  // While selectable, `_selectableTextView` is the responder that owns the selection.
-  return NO;
-}
-
 #else
 - (void)enableContextMenu
 {
