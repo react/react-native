@@ -56,20 +56,24 @@ TextMeasurement TextLayoutManager::measure(
                                                             layoutContext:layoutContext
                                                         layoutConstraints:layoutConstraints];
 
-            // TODO(D63303709): We compensate for the placeholder character
-            // being used to represent empty string. iOS TextLayoutManager
-            // should instead measure using `baseTextAttributes` of the
-            // `AttributedString`.
-            if (originalAtributedString.isEmpty()) {
-              measurement.size.width = 0;
-            }
-
             if (telemetry) {
               telemetry->didMeasureText();
             }
 
             return measurement;
           });
+
+      // TODO(D63303709): We compensate for the placeholder character
+      // being used to represent empty string. iOS TextLayoutManager
+      // should instead measure using `baseTextAttributes` of the
+      // `AttributedString`.
+      //
+      // This must happen outside of the cached value: the cache key is built
+      // from the placeholder, so an empty string shares its entry with a real
+      // string equal to the placeholder.
+      if (originalAtributedString.isEmpty()) {
+        measurement.size.width = 0;
+      }
       break;
     }
 
