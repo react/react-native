@@ -22,6 +22,7 @@ import * as React from 'react';
 import {createRef, useEffect, useRef, useState} from 'react';
 import {
   AccessibilityInfo,
+  ActivityIndicator,
   Alert,
   Button,
   Image,
@@ -2265,6 +2266,16 @@ function AriaHiddenExample(): React.Node {
         source={require('../../assets/like.png')}
         style={styles.button}
       />
+
+      <ScrollView aria-hidden={ariaHidden} style={{maxHeight: 60}}>
+        <Text>
+          {ariaHidden
+            ? 'ScrollView content that should be hidden'
+            : 'ScrollView content that should be accessible'}
+        </Text>
+      </ScrollView>
+
+      <ActivityIndicator aria-hidden={ariaHidden} />
     </View>
   );
 }

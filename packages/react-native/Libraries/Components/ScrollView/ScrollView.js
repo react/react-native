@@ -1858,10 +1858,19 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
 
     const baseStyle = horizontal ? styles.baseHorizontal : styles.baseVertical;
 
-    const {experimental_endDraggingSensitivityMultiplier, ...otherProps} =
-      this.props;
+    const {
+      experimental_endDraggingSensitivityMultiplier,
+      'aria-hidden': ariaHidden,
+      ...otherProps
+    } = this.props;
     const props = {
       ...otherProps,
+      accessibilityElementsHidden:
+        ariaHidden ?? this.props.accessibilityElementsHidden,
+      importantForAccessibility:
+        ariaHidden === true
+          ? ('no-hide-descendants' as const)
+          : this.props.importantForAccessibility,
       alwaysBounceHorizontal,
       alwaysBounceVertical,
       style: StyleSheet.compose(baseStyle, this.props.style),
