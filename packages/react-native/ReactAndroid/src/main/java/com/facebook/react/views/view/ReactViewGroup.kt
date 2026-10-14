@@ -509,6 +509,35 @@ public open class ReactViewGroup public constructor(context: Context?) :
     updateClippingToRect(clippingRect, excludedViews)
   }
 
+  /**
+   * A view that hides its descendants from accessibility services keeps them out of keyboard and
+   * D-pad navigation too, so a hardware keyboard never lands on content a screen reader cannot
+   * reach. A tap or a `focus()` call still reaches them.
+   */
+  private var hidesDescendantsFromNavigation = false
+
+  override fun setImportantForAccessibility(mode: Int) {
+    super.setImportantForAccessibility(mode)
+    hidesDescendantsFromNavigation = mode == IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+    // Keyboard focus leaves content that is now hidden; touch focus stays where the user types.
+    if (hidesDescendantsFromNavigation && !isInTouchMode) {
+      findFocus()?.takeIf { it !== this }?.clearFocus()
+    }
+  }
+
+  override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    super.addFocusables(views, direction, focusableMode)
+    if (hidesDescendantsFromNavigation) {
+      // A focused descendant stays a candidate so that focus search can move on from it.
+      views.subList(firstAddedIndex, views.size).removeAll { it !== this && !it.isFocused }
+    }
+  }
+
+  override fun onRequestFocusInDescendants(direction: Int, previouslyFocusedRect: Rect?): Boolean =
+      !hidesDescendantsFromNavigation &&
+          super.onRequestFocusInDescendants(direction, previouslyFocusedRect)
+
   internal fun requestFocusFromJS() {
     if (isAttachedToWindow) {
       super.requestFocus(FOCUS_DOWN, null)
