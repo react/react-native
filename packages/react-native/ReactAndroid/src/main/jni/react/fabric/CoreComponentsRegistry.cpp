@@ -14,7 +14,6 @@
 #include <react/renderer/components/image/ImageComponentDescriptor.h>
 #include <react/renderer/components/modal/ModalHostViewComponentDescriptor.h>
 #include <react/renderer/components/progressbar/AndroidProgressBarComponentDescriptor.h>
-#include <react/renderer/components/safeareaview/SafeAreaViewComponentDescriptor.h>
 #include <react/renderer/components/scrollview/AndroidHorizontalScrollContentViewComponentDescriptor.h>
 #include <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
 #include <react/renderer/components/text/ParagraphComponentDescriptor.h>
@@ -58,8 +57,6 @@ void addCoreComponents(
       concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<AndroidSwitchComponentDescriptor>());
-  providerRegistry->add(
-      concreteComponentDescriptorProvider<SafeAreaViewComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<TextComponentDescriptor>());
   providerRegistry->add(
