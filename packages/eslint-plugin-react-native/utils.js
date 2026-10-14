@@ -403,10 +403,6 @@ const publicAPIMapping = {
     default: 'usePressability',
     types: null,
   },
-  'Libraries/PushNotificationIOS/PushNotificationIOS': {
-    default: 'PushNotificationIOS',
-    types: ['PushNotificationEventName', 'PushNotificationPermissions'],
-  },
   'Libraries/ReactNative/AppRegistry': {
     default: null,
     types: [

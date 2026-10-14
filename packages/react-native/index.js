@@ -342,16 +342,6 @@ module.exports = {
     return require('./Libraries/StyleSheet/PlatformColorValueTypes')
       .PlatformColor;
   },
-  get PushNotificationIOS() {
-    warnOnce(
-      'pushNotificationIOS-moved',
-      'PushNotificationIOS has been extracted from react-native core and will be removed in a future release. ' +
-        "It can now be installed and imported from '@react-native-community/push-notification-ios' instead of 'react-native'. " +
-        'See https://github.com/react-native-push-notification/ios',
-    );
-    return require('./Libraries/PushNotificationIOS/PushNotificationIOS')
-      .default;
-  },
   get processColor() {
     return require('./Libraries/StyleSheet/processColor').default;
   },
@@ -463,6 +453,22 @@ if (__DEV__) {
         'InteractionManager has been removed from react-native core. ' +
           'Please refactor long tasks into smaller ones, and use ' +
           "'requestIdleCallback' instead.",
+      );
+    },
+  });
+
+  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
+   * attempting to access PushNotificationIOS. */
+  /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
+   * attempting to access PushNotificationIOS. */
+  Object.defineProperty(module.exports, 'PushNotificationIOS', {
+    configurable: true,
+    get() {
+      invariant(
+        false,
+        'PushNotificationIOS has been removed from react-native core. ' +
+          "Please use '@react-native-community/push-notification-ios' instead. " +
+          'See https://github.com/react-native-push-notification/ios',
       );
     },
   });

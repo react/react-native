@@ -826,7 +826,6 @@ class ReactNativePodsUtils
             "React-RCTImage",
             "React-RCTLinking",
             "React-RCTNetwork",
-            "React-RCTPushNotification",
             "React-RCTSettings",
             "React-RCTText",
             "React-RCTTest",

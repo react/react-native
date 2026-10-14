@@ -393,12 +393,6 @@ export {default as Platform} from './Libraries/Utilities/Platform';
 
 export {PlatformColor} from './Libraries/StyleSheet/PlatformColorValueTypes';
 
-export type {
-  PushNotificationEventName,
-  PushNotificationPermissions,
-} from './Libraries/PushNotificationIOS/PushNotificationIOS';
-export {default as PushNotificationIOS} from './Libraries/PushNotificationIOS/PushNotificationIOS';
-
 export type {ProcessedColorValue} from './Libraries/StyleSheet/processColor';
 export {default as processColor} from './Libraries/StyleSheet/processColor';
 

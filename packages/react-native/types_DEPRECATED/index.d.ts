@@ -123,7 +123,6 @@ export * from './Libraries/LogBox/LogBox';
 export * from './Libraries/Modal/Modal';
 export * as Systrace from './Libraries/Performance/Systrace';
 export * from './Libraries/PermissionsAndroid/PermissionsAndroid';
-export * from './Libraries/PushNotificationIOS/PushNotificationIOS';
 export * from './Libraries/ReactNative/AppRegistry';
 export * from './Libraries/ReactNative/I18nManager';
 export * from './Libraries/ReactNative/RendererProxy';

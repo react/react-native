@@ -610,10 +610,6 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
       {name: 'RCTNetworkHeaders', headerPatterns: ['Libraries/Network/*.h']},
       {
-        name: 'RCTPushNotificationHeaders',
-        headerPatterns: ['Libraries/PushNotificationIOS/*.h'],
-      },
-      {
         name: 'RCTSettingsHeaders',
         headerPatterns: ['Libraries/Settings/*.h'],
       },
@@ -641,9 +637,6 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerDir: 'React',
       },
     ],
-  },
-  'Libraries/PushNotificationIOS/React-RCTPushNotification.podspec': {
-    disabled: true,
   },
   'ReactCommon/react/renderer/css/React-renderercss.podspec': {
     name: 'React-renderercss',

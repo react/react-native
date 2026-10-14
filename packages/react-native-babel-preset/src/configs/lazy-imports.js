@@ -71,7 +71,6 @@ module.exports = new Set([
   'PanResponder',
   'PermissionsAndroid',
   'PixelRatio',
-  'PushNotificationIOS',
   'Settings',
   'Share',
   'StyleSheet',
