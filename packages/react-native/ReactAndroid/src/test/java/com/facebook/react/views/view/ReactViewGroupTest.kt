@@ -405,6 +405,37 @@ class ReactViewGroupTest {
   }
 
   @Test
+  fun `hidden descendants - the view hiding them stays a keyboard focus candidate itself`() {
+    val root = ReactViewGroup(context)
+    val hidden = containerView(top = 0).apply { isFocusable = true }
+    val hiddenControl = focusableView(top = 0)
+    val shown = focusableView(top = 20)
+    hidden.addView(hiddenControl)
+    root.addView(hidden)
+    root.addView(shown)
+
+    ReactViewManager().setImportantForAccessibility(hidden, "no-hide-descendants")
+
+    assertThat(collectKeyboardFocusables(root)).containsExactly(hidden, shown)
+  }
+
+  @Test
+  fun `hidden descendants - the view hiding them keeps keyboard focus it holds itself`() {
+    val root = ReactViewGroup(context)
+    val before = focusableView(top = 0)
+    val hidden = containerView(top = 20).apply { isFocusable = true }
+    hidden.addView(focusableView(top = 20))
+    root.addView(before)
+    root.addView(hidden)
+    Robolectric.buildActivity(Activity::class.java).setup().get().setContentView(root)
+    assertThat(hidden.requestFocus()).isTrue()
+
+    ReactViewManager().setImportantForAccessibility(hidden, "no-hide-descendants")
+
+    assertThat(hidden.isFocused).isTrue()
+  }
+
+  @Test
   fun `hidden descendants - leave the view's own descendant focusability as it was`() {
     val hidden =
         containerView(top = 0).apply { descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS }
