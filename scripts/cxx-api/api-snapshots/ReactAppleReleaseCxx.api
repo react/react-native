@@ -170,14 +170,6 @@ category RCTCxxConvert(NativeNetworkingIOS_SpecSendRequestQuery) {
   public virtual static RCTManagedPointer* JS_NativeNetworkingIOS_SpecSendRequestQuery:(id json);
 }
 
-category RCTCxxConvert(NativePushNotificationManagerIOS_Notification) {
-  public virtual static RCTManagedPointer* JS_NativePushNotificationManagerIOS_Notification:(id json);
-}
-
-category RCTCxxConvert(NativePushNotificationManagerIOS_SpecRequestPermissionsPermission) {
-  public virtual static RCTManagedPointer* JS_NativePushNotificationManagerIOS_SpecRequestPermissionsPermission:(id json);
-}
-
 category RCTCxxConvert(NativeReactDevToolsRuntimeSettingsModule_PartialReloadAndProfileConfig) {
   public virtual static RCTManagedPointer* JS_NativeReactDevToolsRuntimeSettingsModule_PartialReloadAndProfileConfig:(id json);
 }
@@ -452,11 +444,6 @@ interface NativeNetworkingIOSSpecBase : public NSObject {
 }
 
 interface NativePlatformConstantsIOSSpecBase : public NSObject {
-  protected facebook::react::EventEmitterCallback _eventEmitterCallback;
-  public virtual void setEventEmitterCallback:(EventEmitterCallbackWrapper* eventEmitterCallbackWrapper);
-}
-
-interface NativePushNotificationManagerIOSSpecBase : public NSObject {
   protected facebook::react::EventEmitterCallback _eventEmitterCallback;
   public virtual void setEventEmitterCallback:(EventEmitterCallbackWrapper* eventEmitterCallbackWrapper);
 }
@@ -2329,27 +2316,6 @@ protocol NativePlatformConstantsIOSSpec : public NSObjectRCTBridgeModule, public
   public virtual facebook::react::ModuleConstants<JS::NativePlatformConstantsIOS::Constants> getConstants();
 }
 
-protocol NativePushNotificationManagerIOSSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
-  public virtual void abandonPermissions();
-  public virtual void addListener:(NSString* eventType);
-  public virtual void cancelAllLocalNotifications();
-  public virtual void cancelLocalNotifications:(NSDictionary* userInfo);
-  public virtual void checkPermissions:(RCTResponseSenderBlock callback);
-  public virtual void getApplicationIconBadgeNumber:(RCTResponseSenderBlock callback);
-  public virtual void getAuthorizationStatus:(RCTResponseSenderBlock callback);
-  public virtual void getDeliveredNotifications:(RCTResponseSenderBlock callback);
-  public virtual void getInitialNotification:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
-  public virtual void getScheduledLocalNotifications:(RCTResponseSenderBlock callback);
-  public virtual void onFinishRemoteNotification:fetchResult:(NSString* notificationId, NSString* fetchResult);
-  public virtual void presentLocalNotification:(JS::NativePushNotificationManagerIOS::Notification& notification);
-  public virtual void removeAllDeliveredNotifications();
-  public virtual void removeDeliveredNotifications:(NSArray* identifiers);
-  public virtual void removeListeners:(double count);
-  public virtual void requestPermissions:resolve:reject:(JS::NativePushNotificationManagerIOS::SpecRequestPermissionsPermission& permission, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
-  public virtual void scheduleLocalNotification:(JS::NativePushNotificationManagerIOS::Notification& notification);
-  public virtual void setApplicationIconBadgeNumber:(double num);
-}
-
 protocol NativeReactDevToolsRuntimeSettingsModuleSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
   public virtual NSDictionary* getReloadAndProfileConfig();
   public virtual void setReloadAndProfileConfig:(JS::NativeReactDevToolsRuntimeSettingsModule::PartialReloadAndProfileConfig& config);
@@ -4214,10 +4180,6 @@ class facebook::react::NativePlatformConstantsIOSSpecJSI : public facebook::reac
   public NativePlatformConstantsIOSSpecJSI(const facebook::react::ObjCTurboModule::InitParams& params);
 }
 
-class facebook::react::NativePushNotificationManagerIOSSpecJSI : public facebook::react::ObjCTurboModule {
-  public NativePushNotificationManagerIOSSpecJSI(const facebook::react::ObjCTurboModule::InitParams& params);
-}
-
 class facebook::react::NativeReactDevToolsRuntimeSettingsModuleSpecJSI : public facebook::react::ObjCTurboModule {
   public NativeReactDevToolsRuntimeSettingsModuleSpecJSI(const facebook::react::ObjCTurboModule::InitParams& params);
 }
@@ -5751,20 +5713,6 @@ struct facebook::react::NativeAlertManagerArgs {
   public bool operator==(const facebook::react::NativeAlertManagerArgs& other) const;
 }
 
-template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8>
-struct facebook::react::NativePushNotificationManagerIOSNotification {
-  public P0 alertTitle;
-  public P1 alertBody;
-  public P2 userInfo;
-  public P3 category;
-  public P4 fireDate;
-  public P5 fireIntervalSeconds;
-  public P6 applicationIconBadgeNumber;
-  public P7 isSilent;
-  public P8 soundName;
-  public bool operator==(const facebook::react::NativePushNotificationManagerIOSNotification& other) const;
-}
-
 template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7>
 struct facebook::react::NativeExceptionsManagerExceptionData {
   public P0 message;
@@ -5919,14 +5867,6 @@ struct facebook::react::NativeMutationObserverNativeMutationObserverObserveOptio
   public P1 targetShadowNode;
   public P2 subtree;
   public bool operator==(const facebook::react::NativeMutationObserverNativeMutationObserverObserveOptions& other) const;
-}
-
-template <typename P0, typename P1, typename P2>
-struct facebook::react::NativePushNotificationManagerIOSPermissions {
-  public P0 alert;
-  public P1 badge;
-  public P2 sound;
-  public bool operator==(const facebook::react::NativePushNotificationManagerIOSPermissions& other) const;
 }
 
 template <typename P0, typename P1, typename P2>
@@ -6267,12 +6207,6 @@ class facebook::react::NativePlatformConstantsIOSCxxSpec : public facebook::reac
 }
 
 template <typename T>
-class facebook::react::NativePushNotificationManagerIOSCxxSpec : public facebook::react::TurboModule {
-  protected NativePushNotificationManagerIOSCxxSpec(std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
-  public static constexpr std::string_view kModuleName;
-}
-
-template <typename T>
 class facebook::react::NativeReactDevToolsRuntimeSettingsModuleCxxSpec : public facebook::react::TurboModule {
   protected NativeReactDevToolsRuntimeSettingsModuleCxxSpec(std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
   public static constexpr std::string_view kModuleName;
@@ -6560,20 +6494,6 @@ struct facebook::react::NativePerformanceRawPerformanceEntryBridging {
 
 template <typename T>
 struct facebook::react::NativePlatformConstantsIOSPlatformConstantsIOSBridging {
-  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
-  public static T types;
-  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
-}
-
-template <typename T>
-struct facebook::react::NativePushNotificationManagerIOSNotificationBridging {
-  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
-  public static T types;
-  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
-}
-
-template <typename T>
-struct facebook::react::NativePushNotificationManagerIOSPermissionsBridging {
   public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
   public static T types;
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
@@ -9142,27 +9062,6 @@ struct JS::NativePlatformConstantsIOS::ConstantsReactNativeVersion::Builder::Inp
   protected RCTRequired<double> major;
   protected RCTRequired<double> minor;
   protected RCTRequired<double> patch;
-}
-
-
-struct JS::NativePushNotificationManagerIOS::Notification {
-  protected NSString* alertBody() const;
-  protected NSString* alertTitle() const;
-  protected NSString* category() const;
-  protected NSString* soundName() const;
-  protected Notification(NSDictionary* const v);
-  protected id<NSObject> _Nullable userInfo() const;
-  protected std::optional<bool> isSilent() const;
-  protected std::optional<double> applicationIconBadgeNumber() const;
-  protected std::optional<double> fireDate() const;
-  protected std::optional<double> fireIntervalSeconds() const;
-}
-
-struct JS::NativePushNotificationManagerIOS::SpecRequestPermissionsPermission {
-  protected SpecRequestPermissionsPermission(NSDictionary* const v);
-  protected bool alert() const;
-  protected bool badge() const;
-  protected bool sound() const;
 }
 
 

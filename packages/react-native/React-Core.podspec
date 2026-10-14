@@ -24,7 +24,6 @@ header_subspecs = {
   'RCTImageHeaders'             => 'Libraries/Image/*.h',
   'RCTLinkingHeaders'           => 'Libraries/LinkingIOS/*.h',
   'RCTNetworkHeaders'           => 'Libraries/Network/*.h',
-  'RCTPushNotificationHeaders'  => 'Libraries/PushNotificationIOS/*.h',
   'RCTSettingsHeaders'          => 'Libraries/Settings/*.h',
   'RCTTextHeaders'              => 'Libraries/Text/**/*.h',
   'RCTVibrationHeaders'         => 'Libraries/Vibration/*.h',

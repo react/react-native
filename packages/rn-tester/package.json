@@ -76,13 +76,6 @@
         "path": "../react-native/ReactCommon/react/nativemodule/samples/platform/ios"
       },
       {
-        "name": "ReactRCTPushNotification",
-        "path": "../react-native/Libraries/PushNotificationIOS",
-        "exclude": [
-          "React-RCTPushNotification.podspec"
-        ]
-      },
-      {
         "name": "ScreenshotManager",
         "path": "NativeModuleExample"
       },
