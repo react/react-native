@@ -256,15 +256,6 @@ module.exports = {
   get BackHandler() {
     return require('./Libraries/Utilities/BackHandler').default;
   },
-  get Clipboard() {
-    warnOnce(
-      'clipboard-moved',
-      'Clipboard has been extracted from react-native core and will be removed in a future release. ' +
-        "It can now be installed and imported from '@react-native-clipboard/clipboard' instead of 'react-native'. " +
-        'See https://github.com/react-native-clipboard/clipboard',
-    );
-    return require('./Libraries/Components/Clipboard/Clipboard').default;
-  },
   get codegenNativeCommands() {
     return require('./Libraries/Utilities/codegenNativeCommands').default;
   },
@@ -463,6 +454,22 @@ if (__DEV__) {
         'InteractionManager has been removed from react-native core. ' +
           'Please refactor long tasks into smaller ones, and use ' +
           "'requestIdleCallback' instead.",
+      );
+    },
+  });
+
+  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
+   * attempting to access Clipboard. */
+  /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
+   * attempting to access Clipboard. */
+  Object.defineProperty(module.exports, 'Clipboard', {
+    configurable: true,
+    get() {
+      invariant(
+        false,
+        'Clipboard has been removed from react-native core. ' +
+          "It can now be installed and imported from '@react-native-clipboard/clipboard' instead of 'react-native'. " +
+          'See https://github.com/react-native-clipboard/clipboard',
       );
     },
   });
