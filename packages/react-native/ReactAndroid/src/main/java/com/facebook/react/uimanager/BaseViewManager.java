@@ -21,7 +21,6 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.AccessibilityDelegateCompat;
 import androidx.core.view.ViewCompat;
 import com.facebook.common.logging.FLog;
 import com.facebook.react.R;
@@ -174,11 +173,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     view.setFocusableInTouchMode(false);
 
     // Accessibility state the props apply to the view itself, as a new view has it. The delegate
-    // stays, since a view's constructor may have installed it, and forgets what it cached.
-    AccessibilityDelegateCompat accessibilityDelegate = ViewCompat.getAccessibilityDelegate(view);
-    if (accessibilityDelegate instanceof ReactAccessibilityDelegate) {
-      ((ReactAccessibilityDelegate) accessibilityDelegate).internal_prepareToRecycle();
-    }
+    // stays, since a view's constructor may have installed it.
     view.setContentDescription(null);
     view.setSelected(false);
     view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
@@ -498,11 +493,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   }
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_ACTIONS)
-  public void setAccessibilityActions(T view, ReadableArray accessibilityActions) {
-    if (accessibilityActions == null) {
-      return;
-    }
-
+  public void setAccessibilityActions(T view, @Nullable ReadableArray accessibilityActions) {
     view.setTag(R.id.accessibility_actions, accessibilityActions);
   }
 
