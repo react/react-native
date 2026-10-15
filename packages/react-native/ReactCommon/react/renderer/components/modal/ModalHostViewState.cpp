@@ -16,8 +16,7 @@ ModalHostViewState::ModalHostViewState()
 #ifdef RN_SERIALIZABLE_STATE
 folly::dynamic ModalHostViewState::getDynamic() const {
   return folly::dynamic::object("screenWidth", screenSize.width)(
-      "screenHeight", screenSize.height)(
-      "viewportOffsetX", viewportOffset.x)(
+      "screenHeight", screenSize.height)("viewportOffsetX", viewportOffset.x)(
       "viewportOffsetY", viewportOffset.y);
 }
 #endif
