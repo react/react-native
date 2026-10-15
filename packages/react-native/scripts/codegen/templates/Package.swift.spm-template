@@ -61,6 +61,10 @@ let package = Package(
                 .headerSearchPath("headers"),
                 .define("DEBUG", .when(configuration: .debug)),
                 .define("NDEBUG", .when(configuration: .release)),
+                // Generated code: nobody can act on a C++ stable API "for
+                // frameworks" warning here. Libraries are held to the API in
+                // their own packages.
+                .define("RN_ALLOW_FRAMEWORKS"),
             ],
             linkerSettings: [
                 .linkedFramework("Foundation")
@@ -79,6 +83,8 @@ let package = Package(
                 // Match the prebuilt React.framework NDEBUG-gated C++ ABI (see above).
                 .define("DEBUG", .when(configuration: .debug)),
                 .define("NDEBUG", .when(configuration: .release)),
+                // Generated code (see ReactCodegen above).
+                .define("RN_ALLOW_FRAMEWORKS"),
             ],
             linkerSettings: [
                 .linkedFramework("Foundation")

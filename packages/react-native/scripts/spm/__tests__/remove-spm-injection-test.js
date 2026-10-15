@@ -14,6 +14,7 @@ const {
   SPM_INJECTED_MARKER,
   injectSpmIntoExistingXcodeproj,
   readArtifactsVersionOverride,
+  readCxxApiDefines,
   readPinnedConfigCommand,
   removeSpmInjection,
 } = require('../generate-spm-xcodeproj');
@@ -209,6 +210,52 @@ describe('injectSpmIntoExistingXcodeproj — HERMES_CLI_PATH', () => {
         change => change.createdScalars ?? [],
       ),
     ).not.toContain('HERMES_CLI_PATH');
+  });
+});
+
+describe('injectSpmIntoExistingXcodeproj — C++ stable API defines', () => {
+  const BOTH = ['RN_STRICT_API', 'RN_ALLOW_FRAMEWORKS'];
+  const inject = (ctx, cxxApiDefines) =>
+    injectSpmIntoExistingXcodeproj({
+      appRoot: ctx.appRoot,
+      reactNativeRoot: ctx.rnRoot,
+      xcodeprojPath: ctx.xcodeprojPath,
+      cxxApiDefines,
+    });
+
+  it('defines the opted-in macros in every app-target config and records them', () => {
+    const ctx = scaffoldApp();
+    expect(inject(ctx, BOTH).status).toBe('injected');
+    // Debug + Release, each seeded with $(inherited) so project-level
+    // definitions (DEBUG=1) still apply.
+    expect(
+      pbxprojOf(ctx.xcodeprojPath).match(
+        /GCC_PREPROCESSOR_DEFINITIONS = \(\s*"\$\(inherited\)",\s*RN_STRICT_API,\s*RN_ALLOW_FRAMEWORKS,\s*\);/g,
+      ),
+    ).toHaveLength(2);
+    expect(readCxxApiDefines(ctx.appRoot)).toEqual(BOTH);
+  });
+
+  it('removes them on an update without the opt-ins', () => {
+    const ctx = scaffoldApp();
+    inject(ctx, BOTH);
+    inject(ctx, []);
+    expect(pbxprojOf(ctx.xcodeprojPath)).not.toContain('RN_STRICT_API');
+    expect(pbxprojOf(ctx.xcodeprojPath)).not.toContain('RN_ALLOW_FRAMEWORKS');
+    expect(readCxxApiDefines(ctx.appRoot)).toEqual([]);
+  });
+
+  it('round-trips add (opted in) → deinit byte-for-byte', () => {
+    const ctx = scaffoldApp();
+    const before = pbxprojOf(ctx.xcodeprojPath);
+    inject(ctx, BOTH);
+    expect(
+      removeSpmInjection({
+        appRoot: ctx.appRoot,
+        xcodeprojPath: ctx.xcodeprojPath,
+      }).status,
+    ).toBe('removed');
+    expect(pbxprojOf(ctx.xcodeprojPath)).toBe(before);
   });
 });
 

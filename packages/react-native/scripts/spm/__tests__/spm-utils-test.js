@@ -26,6 +26,7 @@ const {
   buildPerAppHeaderTree,
   defaultCacheDir,
   displayPath,
+  installSpmCodegenTemplate,
   isPublishableVersion,
   isValidSwiftName,
   makeLogger,
@@ -653,6 +654,58 @@ describe('runCodegenAndInstallTemplate', () => {
     // The SPM sync re-points the xcframework symlinks and installs the template
     // itself afterwards, so this in-codegen install must be suppressed.
     expect(fs.existsSync(codegenPkgSwift)).toBe(false);
+  });
+});
+
+describe('installSpmCodegenTemplate', () => {
+  let tempDir;
+  let appRoot;
+  let codegenPkgSwift;
+  // The real react-native package root, so the shipped template is exercised.
+  const reactNativeRoot = path.resolve(__dirname, '..', '..', '..');
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-codegen-template-'));
+    appRoot = path.join(tempDir, 'app');
+    fs.mkdirSync(path.join(appRoot, 'build', 'generated', 'ios'), {
+      recursive: true,
+    });
+    codegenPkgSwift = path.join(
+      appRoot,
+      'build',
+      'generated',
+      'ios',
+      'Package.swift',
+    );
+  });
+
+  afterEach(() => {
+    fs.rmSync(tempDir, {recursive: true, force: true});
+  });
+
+  const countOf = (content, define) =>
+    (content.match(new RegExp(`\\.define\\("${define}"\\)`, 'g')) ?? []).length;
+
+  it('defines RN_ALLOW_FRAMEWORKS in every C++ target of the generated code by default, and nothing else', () => {
+    installSpmCodegenTemplate(appRoot, reactNativeRoot);
+    const content = fs.readFileSync(codegenPkgSwift, 'utf8');
+    const ndebugCount = (content.match(/\.define\("NDEBUG"/g) ?? []).length;
+    expect(ndebugCount).toBeGreaterThan(0);
+    expect(countOf(content, 'RN_ALLOW_FRAMEWORKS')).toBe(ndebugCount);
+    expect(countOf(content, 'RN_STRICT_API')).toBe(0);
+  });
+
+  it("adds the app's opt-ins after every NDEBUG define, without repeating RN_ALLOW_FRAMEWORKS", () => {
+    installSpmCodegenTemplate(appRoot, reactNativeRoot, undefined, {
+      cxxApiDefines: ['RN_STRICT_API', 'RN_ALLOW_FRAMEWORKS'],
+    });
+    const content = fs.readFileSync(codegenPkgSwift, 'utf8');
+    const ndebugCount = (content.match(/\.define\("NDEBUG"/g) ?? []).length;
+    expect(countOf(content, 'RN_STRICT_API')).toBe(ndebugCount);
+    expect(countOf(content, 'RN_ALLOW_FRAMEWORKS')).toBe(ndebugCount);
+    expect(content).toMatch(
+      /\.define\("NDEBUG", \.when\(configuration: \.release\)\),\n[ \t]*\.define\("RN_STRICT_API"\),/,
+    );
   });
 });
 

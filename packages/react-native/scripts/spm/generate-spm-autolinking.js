@@ -74,6 +74,7 @@ const {
 const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
   AUTOLINKED_PACKAGE_NAME,
+  CXX_API_DEFINES,
   REACT_CODEGEN_PACKAGE_NAME,
   REACT_CODEGEN_PRODUCTS,
   REACT_NATIVE_PACKAGE_NAME,
@@ -218,6 +219,14 @@ function parseArgs(argv /*: Array<string> */) /*: AutolinkingArgs */ {
       type: 'string',
       describe: `Platform floor of the generated manifests (default: ${MIN_IOS_VERSION_SUPPORTED})`,
     })
+    .option('cxx-api-define', {
+      type: 'string',
+      array: true,
+      choices: [...CXX_API_DEFINES],
+      default: [],
+      describe:
+        "React Native C++ stable API macro to define in the app's spm.modules packages (repeatable)",
+    })
     .usage(
       'Usage: $0 [options]\n\nGenerates autolinked/Package.swift for SPM autolinking.',
     )
@@ -233,6 +242,7 @@ function parseArgs(argv /*: Array<string> */) /*: AutolinkingArgs */ {
     iosDeploymentTarget: sanitizeIosDeploymentTarget(
       parsed['ios-deployment-target'],
     ),
+    cxxApiDefines: parsed['cxx-api-define'],
   };
 }
 
@@ -427,6 +437,17 @@ const REACT_CXX_CONFIG_DEFINES = [
   '.define("DEBUG", .when(configuration: .debug))',
   '.define("NDEBUG", .when(configuration: .release))',
 ];
+
+// The config-gated defines plus the React Native C++ stable API macros the app
+// opted into (CXX_API_DEFINES).
+function reactCxxDefines(
+  cxxApiDefines /*: ReadonlyArray<string> */ = [],
+) /*: Array<string> */ {
+  return [
+    ...REACT_CXX_CONFIG_DEFINES,
+    ...Array.from(new Set(cxxApiDefines)).map(name => `.define("${name}")`),
+  ];
+}
 
 // Marker the autolinker stamps onto every synth Package.swift it writes.
 // Files lacking this marker are treated as user-managed (self-managed) and
@@ -1015,7 +1036,7 @@ function generateAutolinkedPackageSwift(
             name: "${t.name}",
             dependencies: [${reactProductDeps()}],
             path: "${t.path}",${excludeLine}${publicHeadersLine}${resourcesLine}
-            cxxSettings: [${REACT_CXX_CONFIG_DEFINES.join(', ')}],
+            cxxSettings: [${reactCxxDefines().join(', ')}],
             linkerSettings: [.linkedFramework("UIKit"), .linkedFramework("Foundation"), .linkedFramework("CoreGraphics")]
         )`;
   });
@@ -1226,7 +1247,10 @@ function generateSynthPackageSwift(spec /*: SynthPackageSpec */) /*: string */ {
   // Fabric C++ target must compile with the same NDEBUG state as the prebuilt
   // React.framework, else DebugStringConvertible's vtable / ShadowNode layout
   // diverges and a Release build fails to link. Mirrors Package.swift.
-  const cxxEntries = [...REACT_CXX_CONFIG_DEFINES, ...headerSearchPathList];
+  const cxxEntries = [
+    ...reactCxxDefines(spec.cxxApiDefines),
+    ...headerSearchPathList,
+  ];
   const cxxSettingsLine = `\n            cxxSettings: [${cxxEntries.join(', ')}],`;
 
   return `// swift-tools-version: 6.0
@@ -1730,6 +1754,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         swiftName,
       })),
       hasReactDep,
+      cxxApiDefines: args.cxxApiDefines,
       // Relative paths from the synth dir (<outputDir>/packages/<Name>) to the
       // app's React xcframeworks + codegen packages. Computed here because the
       // synth's depth is fixed and it is regenerated every run — no runtime

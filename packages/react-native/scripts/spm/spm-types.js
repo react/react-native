@@ -69,6 +69,9 @@ export type AutolinkingArgs = {
   xcframeworksPath: string | null,
   // Platform floor of every manifest this run writes; sanitized by parseArgs.
   iosDeploymentTarget: string,
+  // React Native C++ stable API macros (CXX_API_DEFINES) the app opted into;
+  // defined in the synth packages of its spm.modules.
+  cxxApiDefines: ReadonlyArray<string>,
 };
 
 export type SpmTarget = {
@@ -382,6 +385,8 @@ export type SynthPackageSpec = {
   // dep's own `common/cpp/` subtree.
   headerSearchPaths?: ?Array<string>,
   iosDeploymentTarget?: ?string,
+  // React Native C++ stable API macros defined in the synth target.
+  cxxApiDefines?: ReadonlyArray<string>,
 };
 
 

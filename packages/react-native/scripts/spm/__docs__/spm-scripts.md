@@ -233,6 +233,28 @@ A floor set in an `.xcconfig` your configuration is based on is honored,
 manifests (they never create new ones) — if you persisted a scaffold with
 `patch-package`, re-run `npx patch-package <dep>` afterwards.
 
+### C++ stable API (`RN_STRICT_API`)
+
+`RN_STRICT_API=1` and `RN_ALLOW_FRAMEWORKS=1` on `add`/`update` turn on React
+Native's C++ stable API checks:
+
+```bash
+RN_STRICT_API=1 npx react-native spm update
+```
+
+Each one defines the macro of the same name for the app target
+(`GCC_PREPROCESSOR_DEFINITIONS`), the packages generated for your
+[local native modules](#local-native-modules), and the app codegen package
+(`build/generated/ios/Package.swift`), which also always defines
+`RN_ALLOW_FRAMEWORKS`. Libraries build from their own `Package.swift`, so they
+are only checked if they define the macros themselves.
+
+The choice is recorded in `.spm-injected.json` (as `cxxApiDefines`), because the
+**Sync SPM Autolinking** build phase regenerates those packages on every build
+without your shell's environment. Unlike the pins above, every `add`/`update`
+reads the variables again: run `update` without one to turn it off. `deinit`
+removes the app-target definitions with the rest of the injection.
+
 ## Files the tool touches
 
 Paths are relative to the Xcode project directory (`ios/`) unless noted.
@@ -251,7 +273,9 @@ Paths are relative to the Xcode project directory (`ios/`) unless noted.
 The two pinned settings are the `--version` pin (`artifactsVersionOverride`, see
 [Pinning the React Native version](#pinning-the-react-native-version)) and the
 [autolinking config command](#the-autolinking-config-command-is-remembered).
-Because `deinit` drops the marker, it drops both.
+Because `deinit` drops the marker, it drops both. The marker also records the
+[C++ stable API](#c-stable-api-rn_strict_api) opt-ins (`cxxApiDefines`), but
+those are not pins: every `add`/`update` sets them from the environment again.
 
 ### In your repo — generated, gitignored
 

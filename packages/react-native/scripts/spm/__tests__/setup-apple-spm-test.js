@@ -20,6 +20,7 @@ const {
   resolveAction,
   resolveAppIosDeploymentTarget,
   resolveConfigCommandToPin,
+  resolveCxxApiDefines,
   resolveExplicitConfigCommand,
   shouldAutoDeintegrate,
 } = require('../../setup-apple-spm');
@@ -174,6 +175,60 @@ describe('generateAutolinkingConfigOrFailClosed', () => {
 // → the built-in default. undefined means "let generateAutolinkingConfig pick
 // the env var or the default".
 // ---------------------------------------------------------------------------
+
+describe('resolveCxxApiDefines', () => {
+  const ENV_VARS = ['RN_STRICT_API', 'RN_ALLOW_FRAMEWORKS'];
+  let tempDir;
+  let prevEnv;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-cxx-api-'));
+    prevEnv = ENV_VARS.map(name => process.env[name]);
+    ENV_VARS.forEach(name => delete process.env[name]);
+  });
+
+  afterEach(() => {
+    fs.rmSync(tempDir, {recursive: true, force: true});
+    ENV_VARS.forEach((name, i) => {
+      if (prevEnv[i] === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = prevEnv[i];
+      }
+    });
+  });
+
+  it('defines, on add/update, each opt-in whose env var is 1, whatever was recorded', () => {
+    mkInjectedXcodeproj(tempDir, 'MyApp.xcodeproj', {
+      cxxApiDefines: ['RN_STRICT_API', 'RN_ALLOW_FRAMEWORKS'],
+    });
+    process.env.RN_STRICT_API = '1';
+    process.env.RN_ALLOW_FRAMEWORKS = 'true';
+    expect(resolveCxxApiDefines('add', tempDir)).toEqual(['RN_STRICT_API']);
+    delete process.env.RN_STRICT_API;
+    process.env.RN_ALLOW_FRAMEWORKS = '1';
+    expect(resolveCxxApiDefines('update', tempDir)).toEqual([
+      'RN_ALLOW_FRAMEWORKS',
+    ]);
+  });
+
+  it('reuses the recorded macros on sync/codegen, which Xcode runs without the shell env', () => {
+    mkInjectedXcodeproj(tempDir, 'MyApp.xcodeproj', {
+      cxxApiDefines: ['RN_ALLOW_FRAMEWORKS', 'NOT_A_CXX_API_MACRO'],
+    });
+    process.env.RN_STRICT_API = '1';
+    expect(resolveCxxApiDefines('sync', tempDir)).toEqual([
+      'RN_ALLOW_FRAMEWORKS',
+    ]);
+    expect(resolveCxxApiDefines('codegen', tempDir)).toEqual([
+      'RN_ALLOW_FRAMEWORKS',
+    ]);
+  });
+
+  it('defines nothing on sync before anything is injected', () => {
+    expect(resolveCxxApiDefines('sync', tempDir)).toEqual([]);
+  });
+});
 
 describe('resolveExplicitConfigCommand', () => {
   const ENV = 'RCT_SPM_AUTOLINKING_CONFIG_COMMAND';
