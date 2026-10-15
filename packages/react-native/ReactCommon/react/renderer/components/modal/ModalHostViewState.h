@@ -35,9 +35,9 @@ class ModalHostViewState final {
       : screenSize(
             Size{.width = (Float)data["screenWidth"].getDouble(), .height = (Float)data["screenHeight"].getDouble()}),
         viewportOffset(
-            Point{.x = data.count("viewportOffsetX") ? (Float)data["viewportOffsetX"].getDouble() : 0.0f,
-                  .y = data.count("viewportOffsetY") ? (Float)data["viewportOffsetY"].getDouble() : 0.0f}) {
-        };
+            Point{
+                .x = data.count("viewportOffsetX") ? (Float)data["viewportOffsetX"].getDouble() : 0.0f,
+                .y = data.count("viewportOffsetY") ? (Float)data["viewportOffsetY"].getDouble() : 0.0f}) {};
 #endif
 
   const Size screenSize{};

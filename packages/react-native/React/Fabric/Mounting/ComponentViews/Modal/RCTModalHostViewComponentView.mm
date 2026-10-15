@@ -276,9 +276,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
       viewportOffset = frameInWindow.origin;
     }
     auto newState = ModalHostViewState{
-      RCTSizeFromCGSize(newBounds.size),
-      facebook::react::Point{(Float)viewportOffset.x, (Float)viewportOffset.y}
-    };
+        RCTSizeFromCGSize(newBounds.size), facebook::react::Point{(Float)viewportOffset.x, (Float)viewportOffset.y}};
     _state->updateState(std::move(newState));
   }
 }
