@@ -185,4 +185,65 @@ TEST(AccessibilityPropsTest, unset_selected_omits_selected_trait) {
       hasTrait(props.accessibilityTraits, AccessibilityTraits::Selected));
 }
 
+#if defined(ANDROID) && defined(RN_SERIALIZABLE_STATE)
+
+TEST(AccessibilityPropsTest, keeps_view_disabled_during_busy_updates) {
+  ViewProps oldProps;
+  oldProps.accessibilityState = AccessibilityState{.disabled = true};
+  ViewProps newProps = oldProps;
+  newProps.accessibilityState->busy = true;
+
+  auto diff = newProps.getDiffProps(&oldProps);
+
+  EXPECT_EQ(diff["accessibilityState"]["disabled"], true);
+  EXPECT_EQ(diff["accessibilityState"]["busy"], true);
+}
+
+TEST(AccessibilityPropsTest, keeps_view_enabled_during_busy_updates) {
+  ViewProps oldProps;
+  oldProps.accessibilityState = AccessibilityState{};
+  ViewProps newProps = oldProps;
+  newProps.accessibilityState->busy = true;
+
+  auto diff = newProps.getDiffProps(&oldProps);
+
+  EXPECT_EQ(diff["accessibilityState"]["disabled"], false);
+}
+
+TEST(
+    AccessibilityPropsTest,
+    removing_view_accessibility_state_clears_disabled) {
+  ViewProps oldProps;
+  oldProps.accessibilityState = AccessibilityState{.disabled = true};
+  ViewProps newProps = oldProps;
+  newProps.accessibilityState.reset();
+
+  auto diff = newProps.getDiffProps(&oldProps);
+
+  EXPECT_EQ(diff["accessibilityState"]["disabled"], false);
+}
+
+TEST(
+    AccessibilityPropsTest,
+    leaves_other_components_disabled_updates_unchanged) {
+  class CustomViewProps : public ViewProps {
+   public:
+    ComponentName getDiffPropsImplementationTarget() const override {
+      return "CustomView";
+    }
+  };
+
+  CustomViewProps oldProps;
+  oldProps.accessibilityState = AccessibilityState{.disabled = true};
+  CustomViewProps newProps = oldProps;
+  newProps.accessibilityState->busy = true;
+
+  auto diff = newProps.getDiffProps(&oldProps);
+
+  EXPECT_EQ(diff["accessibilityState"].count("disabled"), 0);
+  EXPECT_EQ(diff["accessibilityState"]["busy"], true);
+}
+
+#endif
+
 } // namespace facebook::react
