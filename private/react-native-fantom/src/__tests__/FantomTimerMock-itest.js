@@ -65,6 +65,39 @@ describe('Fantom timer mocks', () => {
     expect(timers.getPendingTimerCount()).toBe(0);
   });
 
+  it('runs each callback at its due time when advancing the clock', () => {
+    const timers = installTimerMock();
+    const calls: Array<string> = [];
+
+    setTimeout(() => {
+      calls.push('A at 100');
+      setTimeout(() => calls.push('B at 150'), 50);
+    }, 100);
+    setTimeout(() => calls.push('C at 200'), 200);
+
+    timers.advanceTimersByTime(200);
+
+    expect(calls).toEqual(['A at 100', 'B at 150', 'C at 200']);
+  });
+
+  it('runs a recurring timer once per interval when advancing the clock', () => {
+    const timers = installTimerMock();
+    const calls: Array<number> = [];
+    let count = 0;
+
+    const id = setInterval(() => {
+      count++;
+      calls.push(count);
+      // A timer scheduled from the callback runs before the next interval.
+      setTimeout(() => calls.push(-count), 0);
+    }, 100);
+
+    timers.advanceTimersByTime(350);
+    clearInterval(id);
+
+    expect(calls).toEqual([1, -1, 2, -2, 3, -3]);
+  });
+
   it('fires all pending timers with runAllTimers regardless of delay', () => {
     const timers = installTimerMock();
     const first = jest.fn();

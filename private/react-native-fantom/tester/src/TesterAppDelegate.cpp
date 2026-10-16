@@ -358,16 +358,14 @@ void TesterAppDelegate::setTimerMockEnabled(bool enabled) {
   }
 }
 
-void TesterAppDelegate::advanceTimers(double deltaMs) {
-  if (timerRegistry_ != nullptr) {
-    timerRegistry_->advanceTimersByTime(deltaMs);
-  }
+double TesterAppDelegate::advanceTimersToNextDue(double deltaMs) {
+  return timerRegistry_ != nullptr
+      ? timerRegistry_->advanceTimersToNextDue(deltaMs)
+      : -1;
 }
 
-void TesterAppDelegate::runAllTimers() {
-  if (timerRegistry_ != nullptr) {
-    timerRegistry_->runAllTimers();
-  }
+bool TesterAppDelegate::runNextTimer() {
+  return timerRegistry_ != nullptr && timerRegistry_->runNextTimer();
 }
 
 uint32_t TesterAppDelegate::getPendingTimerCount() {

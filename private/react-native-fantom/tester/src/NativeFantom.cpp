@@ -67,12 +67,14 @@ void NativeFantom::setTimerMockEnabled(
   appDelegate_.setTimerMockEnabled(enabled);
 }
 
-void NativeFantom::advanceTimers(jsi::Runtime& /*runtime*/, double deltaMs) {
-  appDelegate_.advanceTimers(deltaMs);
+double NativeFantom::advanceTimersToNextDue(
+    jsi::Runtime& /*runtime*/,
+    double deltaMs) {
+  return appDelegate_.advanceTimersToNextDue(deltaMs);
 }
 
-void NativeFantom::runAllTimers(jsi::Runtime& /*runtime*/) {
-  appDelegate_.runAllTimers();
+bool NativeFantom::runNextTimer(jsi::Runtime& /*runtime*/) {
+  return appDelegate_.runNextTimer();
 }
 
 double NativeFantom::getPendingTimerCount(jsi::Runtime& /*runtime*/) {

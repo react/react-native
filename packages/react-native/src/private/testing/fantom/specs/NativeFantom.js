@@ -125,8 +125,8 @@ interface Spec extends TurboModule {
   saveJSMemoryHeapSnapshot: (filePath: string) => void;
   forceHighResTimeStamp: (timeStamp: ?number) => void;
   setTimerMockEnabled: (enabled: boolean) => void;
-  advanceTimers: (deltaMs: number) => void;
-  runAllTimers: () => void;
+  advanceTimersToNextDue: (deltaMs: number) => number;
+  runNextTimer: () => boolean;
   getPendingTimerCount: () => number;
   startJSSamplingProfiler: () => void;
   stopJSSamplingProfilerAndSaveToFile: (filePath: string) => void;
