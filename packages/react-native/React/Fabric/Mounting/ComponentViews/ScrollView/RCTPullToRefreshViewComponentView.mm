@@ -21,6 +21,9 @@
 using namespace facebook::react;
 
 @interface RCTPullToRefreshViewComponentView () <RCTPullToRefreshViewViewProtocol, RCTRefreshableProtocol>
+#if !TARGET_OS_TV
+- (void)_updateAppearance;
+#endif
 @end
 
 #if TARGET_OS_TV
@@ -38,6 +41,24 @@ using namespace facebook::react;
 @end
 
 #else
+
+@interface RCTPullToRefreshControl : UIRefreshControl
+@property (nonatomic, weak) RCTPullToRefreshViewComponentView *componentView;
+@end
+
+@implementation RCTPullToRefreshControl
+
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+  if (self.window) {
+    // UIKit can apply new UIAppearance values when returning from a native screen,
+    // even though the React props have not changed.
+    [self.componentView _updateAppearance];
+  }
+}
+
+@end
 
 @implementation RCTPullToRefreshViewComponentView {
   UIRefreshControl *_refreshControl;
@@ -66,7 +87,9 @@ using namespace facebook::react;
 
 - (void)_initializeUIRefreshControl
 {
-  _refreshControl = [UIRefreshControl new];
+  RCTPullToRefreshControl *refreshControl = [RCTPullToRefreshControl new];
+  refreshControl.componentView = self;
+  _refreshControl = refreshControl;
   [_refreshControl addTarget:self
                       action:@selector(handleUIControlEventValueChanged)
             forControlEvents:UIControlEventValueChanged];
@@ -91,6 +114,10 @@ using namespace facebook::react;
 {
   const auto &oldConcreteProps = static_cast<const PullToRefreshViewProps &>(*_props);
   const auto &newConcreteProps = static_cast<const PullToRefreshViewProps &>(*props);
+
+  if (_recycled || newConcreteProps.backgroundColor != oldConcreteProps.backgroundColor) {
+    _refreshControl.backgroundColor = RCTUIColorFromSharedColor(newConcreteProps.backgroundColor);
+  }
 
   if (_recycled || newConcreteProps.tintColor != oldConcreteProps.tintColor) {
     _refreshControl.tintColor = RCTUIColorFromSharedColor(newConcreteProps.tintColor);
@@ -164,6 +191,22 @@ using namespace facebook::react;
 
   _refreshControl.attributedTitle =
       [[NSAttributedString alloc] initWithString:RCTNSStringFromString(concreteProps.title) attributes:attributes];
+}
+
+- (void)_updateAppearance
+{
+  const auto &concreteProps = static_cast<const PullToRefreshViewProps &>(*_props);
+
+  // Preserve UIKit defaults for appearance properties that React has not supplied.
+  if (concreteProps.backgroundColor) {
+    _refreshControl.backgroundColor = RCTUIColorFromSharedColor(concreteProps.backgroundColor);
+  }
+  if (concreteProps.tintColor) {
+    _refreshControl.tintColor = RCTUIColorFromSharedColor(concreteProps.tintColor);
+  }
+  if (!concreteProps.title.empty()) {
+    [self _updateTitle];
+  }
 }
 
 #pragma mark - Attaching & Detaching
