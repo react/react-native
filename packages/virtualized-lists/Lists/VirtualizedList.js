@@ -868,18 +868,26 @@ class VirtualizedList extends StateSafePureComponent<
     // first and last could be stale (e.g. if a new, shorter items props is passed in), so we make
     // sure we're rendering a reasonable range here.
     const itemCount = newProps.getItemCount(newProps.data);
-    if (itemCount === prevState.renderMask.numCells()) {
-      return prevState;
-    }
-
-    let maintainVisibleContentPositionAdjustment: ?number = null;
     const prevFirstVisibleItemKey = prevState.firstVisibleItemKey;
     const minIndexForVisible =
       newProps.maintainVisibleContentPosition?.minIndexForVisible ?? 0;
     const newFirstVisibleItemKey =
-      newProps.getItemCount(newProps.data) > minIndexForVisible
+      itemCount > minIndexForVisible
         ? VirtualizedList._getItemKey(newProps, minIndexForVisible)
         : null;
+    // React applies queued state updaters before getDerivedStateFromProps, so
+    // `_updateCellsToRender` may have already sized `renderMask` for the new
+    // data. An unchanged count then doesn't rule out a prepend, so with
+    // maintainVisibleContentPosition the key must be unchanged as well.
+    if (
+      itemCount === prevState.renderMask.numCells() &&
+      (newProps.maintainVisibleContentPosition == null ||
+        newFirstVisibleItemKey === prevFirstVisibleItemKey)
+    ) {
+      return prevState;
+    }
+
+    let maintainVisibleContentPositionAdjustment: ?number = null;
     if (
       newProps.maintainVisibleContentPosition != null &&
       prevFirstVisibleItemKey != null &&
