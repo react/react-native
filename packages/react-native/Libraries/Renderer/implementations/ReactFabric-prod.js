@@ -713,7 +713,7 @@ function traverseTwoPhase$1(inst, fn, arg) {
 }
 function getListener$1(inst, registrationName) {
   inst = inst.stateNode;
-  if (null === inst) return null;
+  if (null == inst) return null;
   inst = getFiberCurrentPropsFromNode$1(inst);
   if (null === inst) return null;
   if ((inst = inst[registrationName]) && "function" !== typeof inst)
@@ -1127,7 +1127,7 @@ var plugins = [],
   registrationNameModules = {};
 function getListener(inst, registrationName) {
   inst = inst.stateNode;
-  if (null === inst) return null;
+  if (null == inst) return null;
   inst = getFiberCurrentPropsFromNode$1(inst);
   if (null === inst) return null;
   if ((inst = inst[registrationName]) && "function" !== typeof inst)
