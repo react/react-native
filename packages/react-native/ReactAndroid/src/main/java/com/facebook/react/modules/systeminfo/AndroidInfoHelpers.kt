@@ -92,9 +92,14 @@ public object AndroidInfoHelpers {
       context.resources.getInteger(R.integer.react_native_dev_server_port)
 
   private fun getServerIpAddress(context: Context?, port: Int): String {
+    val metroHost = getMetroHostPropValue()
+    // A "host:port" value names the port too, like RCT_jsLocation on iOS.
+    if (metroHost.contains(':')) {
+      return metroHost
+    }
     val ipAddress: String =
         when {
-          getMetroHostPropValue().isNotEmpty() -> getMetroHostPropValue()
+          metroHost.isNotEmpty() -> metroHost
           isRunningOnGenymotion() -> GENYMOTION_LOCALHOST
           isRunningOnStockEmulator() -> EMULATOR_LOCALHOST
           else -> DEVICE_LOCALHOST
