@@ -2,6 +2,7 @@ name: E2E iOS RNTester
 
 permissions:
   contents: read
+  id-token: write
 
 on:
   workflow_call:
@@ -16,7 +17,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-26-large
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
@@ -44,8 +45,8 @@ jobs:
           app-id: com.meta.RNTester.localDevelopment
           maestro-flow: ./packages/rn-tester/.maestro/
           flavor: ${{ matrix.flavor }}
-          device-model: iPhone-17-Pro
-          device-os: iOS-26-2
+          device-model: iPhone-18-Pro
+          device-os: iOS-27-0
       - name: Report status
         id: report-status
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}

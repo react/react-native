@@ -81,7 +81,24 @@ function installAppOnSimulator(appPath, udid) {
   childProcess.execSync(`xcrun simctl install "${udid}" "${appPath}"`);
 }
 
+// A remote simulator's localhost is the remote host, so Metro needs a tunnel.
+function exposeMetroToSimulator(udid) {
+  const simRemote = process.env.SIM_REMOTE_BIN;
+  if (!simRemote) {
+    return;
+  }
+
+  console.log('Exposing local Metro port 8081 to the remote simulator');
+  childProcess.execSync(`"${simRemote}" reverse start "${udid}" 8081`, {
+    stdio: 'inherit',
+  });
+}
+
 function bringSimulatorInForeground() {
+  // Nothing to foreground on a remote simulator.
+  if (process.env.SIM_REMOTE_BIN) {
+    return;
+  }
   console.log('Bringing simulator in foreground');
   childProcess.execSync('open -a simulator');
 }
@@ -266,6 +283,9 @@ async function main(args = process.argv.slice(2)) {
   launchSimulator(simulator);
   installAppOnSimulator(appPath, simulator.udid);
   bringSimulatorInForeground();
+  if (isDebug) {
+    exposeMetroToSimulator(simulator.udid);
+  }
   await launchAppOnSimulator(appId, simulator.udid, isDebug);
   await executeFlows(appId, simulator.udid, maestroFlow, jsengine);
   console.log('Test finished');

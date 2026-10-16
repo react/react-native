@@ -2,6 +2,7 @@ name: E2E iOS Template App
 
 permissions:
   contents: read
+  id-token: write
 
 on:
   workflow_call:
@@ -15,6 +16,7 @@ on:
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
+  # Building needs Xcode; the tests drive a remote simulator from Linux.
   build:
     runs-on: macos-26-large
     strategy:
@@ -99,7 +101,7 @@ jobs:
 
   test:
     needs: build
-    runs-on: macos-26-large
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
