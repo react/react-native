@@ -7,6 +7,7 @@
 
 package com.facebook.react.views.text
 
+import android.graphics.text.LineBreakConfig
 import android.text.Layout
 import android.text.SpannableString
 import android.text.Spanned
@@ -123,6 +124,8 @@ class TextLayoutManagerMinimumFontScaleTest {
         true,
         Layout.BREAK_STRATEGY_SIMPLE,
         Layout.HYPHENATION_FREQUENCY_NONE,
+        /* lineBreakStyle = */ LineBreakConfig.LINE_BREAK_STYLE_NONE,
+        /* lineBreakWordStyle = */ LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE,
         Layout.Alignment.ALIGN_NORMAL,
         0,
         newPaint(),
@@ -149,6 +152,8 @@ class TextLayoutManagerMinimumFontScaleTest {
         true,
         Layout.BREAK_STRATEGY_SIMPLE,
         Layout.HYPHENATION_FREQUENCY_NONE,
+        /* lineBreakStyle = */ LineBreakConfig.LINE_BREAK_STYLE_NONE,
+        /* lineBreakWordStyle = */ LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE,
         Layout.Alignment.ALIGN_NORMAL,
         0,
         newPaint(),

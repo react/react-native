@@ -11,6 +11,7 @@ import android.content.res.AssetManager
 import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.text.LineBreakConfig
 import android.os.Build
 import android.text.BoringLayout
 import android.text.Layout
@@ -99,6 +100,8 @@ internal object TextLayoutManager {
   const val PA_KEY_TEXT_ALIGN_VERTICAL: Int = 8
   const val PA_KEY_TEXT_WIDTH_MODE: Int = 9
   const val PA_KEY_MINIMUM_FONT_SCALE: Int = 10
+  const val PA_KEY_LINE_BREAK: Int = 11
+  const val PA_KEY_WORD_BREAK: Int = 12
 
   private val TAG: String = TextLayoutManager::class.java.simpleName
 
@@ -849,6 +852,8 @@ internal object TextLayoutManager {
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
       alignment: Layout.Alignment,
       justificationMode: Int,
       ellipsizeMode: TextUtils.TruncateAt?,
@@ -895,6 +900,8 @@ internal object TextLayoutManager {
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
             alignment,
             justificationMode,
             ellipsizeMode,
@@ -913,6 +920,8 @@ internal object TextLayoutManager {
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
             alignment,
             justificationMode,
             ellipsizeMode,
@@ -963,6 +972,8 @@ internal object TextLayoutManager {
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
       alignment: Layout.Alignment,
       justificationMode: Int,
       ellipsizeMode: TextUtils.TruncateAt?,
@@ -988,6 +999,21 @@ internal object TextLayoutManager {
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       builder.setUseLineSpacingFromFallbacks(true)
+    }
+
+    // Leave the platform default in place unless a style was requested, so text without these props
+    // lays out exactly as before.
+    if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            (lineBreakStyle != LineBreakConfig.LINE_BREAK_STYLE_NONE ||
+                lineBreakWordStyle != LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE)
+    ) {
+      builder.setLineBreakConfig(
+          LineBreakConfig.Builder()
+              .setLineBreakStyle(lineBreakStyle)
+              .setLineBreakWordStyle(lineBreakWordStyle)
+              .build()
+      )
     }
 
     // Android shifts negative (left-side) start overhang itself. RTL start overhang is on the
@@ -1169,6 +1195,18 @@ internal object TextLayoutManager {
         TextAttributeProps.getHyphenationFrequency(
             paragraphAttributes.getString(PA_KEY_HYPHENATION_FREQUENCY),
         )
+    val lineBreakStyle =
+        TextAttributeProps.getLineBreakStyle(
+            if (paragraphAttributes.contains(PA_KEY_LINE_BREAK))
+                paragraphAttributes.getString(PA_KEY_LINE_BREAK)
+            else null,
+        )
+    val lineBreakWordStyle =
+        TextAttributeProps.getLineBreakWordStyle(
+            if (paragraphAttributes.contains(PA_KEY_WORD_BREAK))
+                paragraphAttributes.getString(PA_KEY_WORD_BREAK)
+            else null,
+        )
     val adjustFontSizeToFit =
         if (paragraphAttributes.contains(PA_KEY_ADJUST_FONT_SIZE_TO_FIT))
             paragraphAttributes.getBoolean(PA_KEY_ADJUST_FONT_SIZE_TO_FIT)
@@ -1211,6 +1249,8 @@ internal object TextLayoutManager {
           includeFontPadding,
           textBreakStrategy,
           hyphenationFrequency,
+          lineBreakStyle,
+          lineBreakWordStyle,
           alignment,
           justificationMode,
           paint,
@@ -1226,6 +1266,8 @@ internal object TextLayoutManager {
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
             alignment,
             justificationMode,
             ellipsizeMode,
@@ -1249,6 +1291,8 @@ internal object TextLayoutManager {
                 includeFontPadding,
                 textBreakStrategy,
                 hyphenationFrequency,
+                lineBreakStyle,
+                lineBreakWordStyle,
                 alignment,
                 justificationMode,
                 ellipsizeMode,
@@ -1372,6 +1416,8 @@ internal object TextLayoutManager {
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
       alignment: Layout.Alignment,
       justificationMode: Int,
       paint: TextPaint,
@@ -1436,6 +1482,8 @@ internal object TextLayoutManager {
               includeFontPadding,
               textBreakStrategy,
               hyphenationFrequency,
+              lineBreakStyle,
+              lineBreakWordStyle,
               alignment,
               justificationMode,
               null,

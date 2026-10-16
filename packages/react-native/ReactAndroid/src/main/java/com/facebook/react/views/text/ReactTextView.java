@@ -7,9 +7,11 @@
 
 package com.facebook.react.views.text;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.text.LineBreakConfig;
 import android.os.Build;
 import android.text.Layout;
 import android.text.Spannable;
@@ -26,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.view.AccessibilityDelegateCompat;
 import androidx.core.view.ViewCompat;
@@ -199,6 +202,10 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 
     setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NONE);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      setLineBreakStyle(LineBreakConfig.LINE_BREAK_STYLE_NONE);
+      setLineBreakWordStyle(LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE);
+    }
     updateView(); // call after changing ellipsizeLocation in particular
   }
 
@@ -251,6 +258,8 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
             getIncludeFontPadding(),
             getBreakStrategy(),
             getHyphenationFrequency(),
+            getLineBreakStyleCompat(),
+            getLineBreakWordStyleCompat(),
             // always passing ALIGN_NORMAL here should be fine, since this method doesn't depend on
             // how exactly lines are aligned, just their width
             Layout.Alignment.ALIGN_NORMAL,
@@ -597,6 +606,34 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   public void setHyphenationFrequency(int hyphenationFrequency) {
     super.setHyphenationFrequency(hyphenationFrequency);
     mShouldAdjustSpannableFontSize = true;
+  }
+
+  @Override
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  public void setLineBreakStyle(int lineBreakStyle) {
+    super.setLineBreakStyle(lineBreakStyle);
+    mShouldAdjustSpannableFontSize = true;
+  }
+
+  @Override
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  public void setLineBreakWordStyle(int lineBreakWordStyle) {
+    super.setLineBreakWordStyle(lineBreakWordStyle);
+    mShouldAdjustSpannableFontSize = true;
+  }
+
+  @SuppressLint("InlinedApi")
+  private int getLineBreakStyleCompat() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+        ? getLineBreakStyle()
+        : LineBreakConfig.LINE_BREAK_STYLE_NONE;
+  }
+
+  @SuppressLint("InlinedApi")
+  private int getLineBreakWordStyleCompat() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+        ? getLineBreakWordStyle()
+        : LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE;
   }
 
   @Override

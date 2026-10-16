@@ -6042,6 +6042,8 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	public fun setHyphenationFrequency (I)V
 	public fun setIncludeFontPadding (Z)V
 	public fun setLetterSpacing (F)V
+	public fun setLineBreakStyle (I)V
+	public fun setLineBreakWordStyle (I)V
 	public fun setLinkifyMask (I)V
 	public fun setMinimumFontScale (F)V
 	public fun setMinimumFontSize (F)V
@@ -6088,6 +6090,7 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public final fun setFontSize (Lcom/facebook/react/views/text/ReactTextView;F)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setLetterSpacing (Lcom/facebook/react/views/text/ReactTextView;F)V
+	public final fun setLineBreak (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setNumberOfLines (Lcom/facebook/react/views/text/ReactTextView;I)V
 	public final fun setOverflow (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public synthetic fun setPadding (Landroid/view/View;IIII)V
@@ -6096,6 +6099,7 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public final fun setSelectable (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setSelectionColor (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/Integer;)V
 	public final fun setTextAlignVertical (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
+	public final fun setWordBreak (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public synthetic fun updateExtraData (Landroid/view/View;Ljava/lang/Object;)V
 	public fun updateExtraData (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/Object;)V
 	public synthetic fun updateState (Landroid/view/View;Lcom/facebook/react/uimanager/ReactStylesDiffMap;Lcom/facebook/react/uimanager/StateWrapper;)Ljava/lang/Object;
