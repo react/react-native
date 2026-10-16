@@ -415,7 +415,13 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
     attachment.image = placeholderImage;
     attachment.bounds = bounds;
 
-    return [[NSMutableAttributedString attributedStringWithAttachment:attachment] mutableCopy];
+    NSMutableAttributedString *attributedString =
+        [[NSMutableAttributedString attributedStringWithAttachment:attachment] mutableCopy];
+    UIFont *font = RCTEffectiveFontFromTextAttributes(fragment.textAttributes);
+    if (font) {
+      [attributedString addAttribute:NSFontAttributeName value:font range:NSMakeRange(0, attributedString.length)];
+    }
+    return attributedString;
   } else {
     NSString *decoded = [[NSString alloc] initWithBytes:fragment.string.data()
                                                  length:fragment.string.size()
