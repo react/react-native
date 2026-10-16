@@ -850,15 +850,19 @@ static float computeFlexBasisForChildren(
 // Container-level recursion does no layout writes (no positions, no
 // alignment, no flex distribution); only the descendant leaf measure
 // callbacks observe state changes (the same ones a normal layout pass
-// would invoke). Roughly equivalent to FlexLayout's dedicated
-// `computeMinContentSize` cost: one measure call per leaf + linear walk
-// per container.
+// would invoke).
+//
+// Results are memoized per node and axis for the current layout generation
+// (see `LayoutResults::minContent`): each leaf's measure callback runs at
+// most once per axis per layout, and each container is walked once per
+// distinct `ownerWidth`.
 static float computeMinContentMainSize(
     yoga::Node* const node,
     const FlexDirection requestedAxis,
     const Direction ownerDirection,
     const float ownerWidth,
-    const float ownerHeight) {
+    const float ownerHeight,
+    const uint32_t generationCount) {
   const bool wantRow = isRow(requestedAxis);
 
   // 1. Static value wins for any node (leaf or container). Short-circuits
@@ -872,22 +876,29 @@ static float computeMinContentMainSize(
     return staticMin.unwrap();
   }
 
+  LayoutResults& layout = node->getLayout();
+  const auto axisIndex = yoga::to_underlying(dimension(requestedAxis));
+
   if (node->hasMeasureFunc()) {
-    // 2. Dynamic min-content callback if set (for Primitives whose
-    // min-content depends on state). Otherwise fall back to the regular
-    // measure function with `AtMost 0`, which text measurers naturally
-    // answer with longest-word width.
-    const YGSize size = node->hasMinContentMeasureFunc()
-        ? node->measureMinContent(
-              wantRow ? 0.0f : YGUndefined,
-              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
-              wantRow ? YGUndefined : 0.0f,
-              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost)
-        : node->measure(
-              wantRow ? 0.0f : YGUndefined,
-              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
-              wantRow ? YGUndefined : 0.0f,
-              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
+    if (layout.minContentGeneration[axisIndex] != generationCount) {
+      // 2. Dynamic min-content callback if set (for Primitives whose
+      // min-content depends on state). Otherwise fall back to the regular
+      // measure function with `AtMost 0`, which text measurers naturally
+      // answer with longest-word width.
+      const YGSize size = node->hasMinContentMeasureFunc()
+          ? node->measureMinContent(
+                wantRow ? 0.0f : YGUndefined,
+                wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+                wantRow ? YGUndefined : 0.0f,
+                wantRow ? MeasureMode::Undefined : MeasureMode::AtMost)
+          : node->measure(
+                wantRow ? 0.0f : YGUndefined,
+                wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+                wantRow ? YGUndefined : 0.0f,
+                wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
+      layout.minContent[axisIndex] = wantRow ? size.width : size.height;
+      layout.minContentGeneration[axisIndex] = generationCount;
+    }
     // Add the leaf's own padding and border, like the container branch below.
     const Direction leafDirection = node->resolveDirection(ownerDirection);
     const float paddingAndBorder =
@@ -895,11 +906,16 @@ static float computeMinContentMainSize(
             requestedAxis, leafDirection, ownerWidth) +
         node->style().computeFlexEndPaddingAndBorder(
             requestedAxis, leafDirection, ownerWidth);
-    return (wantRow ? size.width : size.height) + paddingAndBorder;
+    return layout.minContent[axisIndex] + paddingAndBorder;
   }
 
   if (node->getChildCount() == 0) {
     return 0.0f;
+  }
+
+  if (layout.minContentGeneration[axisIndex] == generationCount &&
+      yoga::inexactEquals(layout.minContentOwnerWidth[axisIndex], ownerWidth)) {
+    return layout.minContent[axisIndex];
   }
 
   const Direction direction = node->resolveDirection(ownerDirection);
@@ -919,11 +935,21 @@ static float computeMinContentMainSize(
     }
 
     float childMain = computeMinContentMainSize(
-        child, nodeMainAxis, direction, ownerWidth, ownerHeight);
+        child,
+        nodeMainAxis,
+        direction,
+        ownerWidth,
+        ownerHeight,
+        generationCount);
     childMain += child->style().computeMarginForAxis(nodeMainAxis, ownerWidth);
 
     float childCross = computeMinContentMainSize(
-        child, nodeCrossAxis, direction, ownerWidth, ownerHeight);
+        child,
+        nodeCrossAxis,
+        direction,
+        ownerWidth,
+        ownerHeight,
+        generationCount);
     childCross +=
         child->style().computeMarginForAxis(nodeCrossAxis, ownerWidth);
 
@@ -943,7 +969,11 @@ static float computeMinContentMainSize(
   const bool nodeMainIsRow = isRow(nodeMainAxis);
   const float widthMin = nodeMainIsRow ? mainTotal : crossMax;
   const float heightMin = nodeMainIsRow ? crossMax : mainTotal;
-  return wantRow ? widthMin : heightMin;
+  const float minContent = wantRow ? widthMin : heightMin;
+  layout.minContent[axisIndex] = minContent;
+  layout.minContentOwnerWidth[axisIndex] = ownerWidth;
+  layout.minContentGeneration[axisIndex] = generationCount;
+  return minContent;
 }
 
 // Computes the CSS Flexbox §4.5 automatic minimum main-axis size for
@@ -962,7 +992,8 @@ static FloatOptional computeAutoMinMainSize(
     const Direction direction,
     const float ownerMainAxisSize,
     const float ownerWidth,
-    const float ownerHeight) {
+    const float ownerHeight,
+    const uint32_t generationCount) {
   if (child->hasErrata(Errata::MinSizeUndefinedInsteadOfAuto)) {
     return FloatOptional{};
   }
@@ -1007,7 +1038,7 @@ static FloatOptional computeAutoMinMainSize(
 
   // Content size suggestion: probe via min-content recursion.
   const FloatOptional contentMain = FloatOptional{computeMinContentMainSize(
-      child, mainAxis, direction, ownerWidth, ownerHeight)};
+      child, mainAxis, direction, ownerWidth, ownerHeight, generationCount)};
 
   // Combine per §4.5: floor = min(content, specified) when specified is
   // definite; otherwise floor = min(content, transferred) when transferred
@@ -1432,7 +1463,8 @@ static void resolveFlexibleLength(
               direction,
               mainAxisOwnerSize,
               availableInnerWidth,
-              availableInnerHeight);
+              availableInnerHeight,
+              generationCount);
     }
   } else {
     for (auto currentLineChild : flexLine.itemsInFlow) {
