@@ -1672,8 +1672,7 @@ class VirtualizedList extends StateSafePureComponent<
     this._headerLength = this._selectLength(e.nativeEvent.layout);
   };
 
-  // $FlowFixMe[missing-local-annot]
-  _renderDebugOverlay() {
+  _renderDebugOverlay(): React.Node {
     const normalize =
       this._scrollMetrics.visibleLength /
       (this._listMetrics.getContentLength() || 1);
