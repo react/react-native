@@ -215,7 +215,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableAndroidTextMeasurementOptimizations: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-07-01',
         description:
@@ -556,7 +556,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enablePreparedTextLayout: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-05-01',
         description: 'Enables caching text layout artifacts for later reuse',
@@ -816,10 +816,10 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     preparedTextCacheSize: {
-      defaultValue: 200,
+      defaultValue: 1000,
       metadata: {
         description: 'Number cached PreparedLayouts in TextLayoutManager cache',
-        expectedReleaseValue: 200,
+        expectedReleaseValue: 1000,
         purpose: 'operational',
       },
       ossReleaseStage: 'none',
