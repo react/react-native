@@ -1752,8 +1752,7 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       this.props.contentContainerStyle,
     ];
     if (__DEV__ && this.props.style !== undefined) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
-      const style = flattenStyle(this.props.style);
+      const style = flattenStyle<ViewStyleProp>(this.props.style);
       const childLayoutProps = (
         ['alignItems', 'justifyContent'] as const
       ).filter(
