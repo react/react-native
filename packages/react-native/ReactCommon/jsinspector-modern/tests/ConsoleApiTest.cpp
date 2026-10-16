@@ -294,6 +294,8 @@ TEST_P(ConsoleApiTest, testConsoleError) {
 
 TEST_P(ConsoleApiTest, testConsoleLogWithErrorObject) {
   InSequence s;
+
+  // simple error
   expectConsoleApiCall(AllOf(
       AtJsonPtr("/type", "log"),
       AtJsonPtr("/args/0/type", "object"),
@@ -301,20 +303,167 @@ TEST_P(ConsoleApiTest, testConsoleLogWithErrorObject) {
       AtJsonPtr("/args/0/className", "Error"),
       AtJsonPtr(
           "/args/0/description",
-          "Error: wut\n"
-          "    at secondFunction (<eval>:6:28)\n"
-          "    at firstFunction (<eval>:3:21)\n"
-          "    at anonymous (<eval>:8:18)\n"
-          "    at global (<eval>:9:5)")));
-  eval(R"((() => {
+          // error name, colon (":"), and message
+          "Error: simple error\n"
+          "    at secondFunction (<eval>:8:28)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  // empty string error message
+  expectConsoleApiCall(AllOf(
+      AtJsonPtr("/type", "log"),
+      AtJsonPtr("/args/0/type", "object"),
+      AtJsonPtr("/args/0/subtype", "error"),
+      AtJsonPtr("/args/0/className", "Error"),
+      AtJsonPtr(
+          "/args/0/description",
+          // no colon (":"), just error name
+          "Error\n"
+          "    at secondFunction (<eval>:11:28)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  // no error message
+  expectConsoleApiCall(AllOf(
+      AtJsonPtr("/type", "log"),
+      AtJsonPtr("/args/0/type", "object"),
+      AtJsonPtr("/args/0/subtype", "error"),
+      AtJsonPtr("/args/0/className", "Error"),
+      AtJsonPtr(
+          "/args/0/description",
+          // no colon (":"), just error name
+          "Error\n"
+          "    at secondFunction (<eval>:14:28)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  // custom error name
+  expectConsoleApiCall(AllOf(
+      AtJsonPtr("/type", "log"),
+      AtJsonPtr("/args/0/type", "object"),
+      AtJsonPtr("/args/0/subtype", "error"),
+      AtJsonPtr("/args/0/className", "Error"),
+      AtJsonPtr(
+          "/args/0/description",
+          // custom error name, colon (":"), and message
+          "CustomNameError: some message\n"
+          "    at secondFunction (<eval>:17:29)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  // custom error name with empty message
+  expectConsoleApiCall(AllOf(
+      AtJsonPtr("/type", "log"),
+      AtJsonPtr("/args/0/type", "object"),
+      AtJsonPtr("/args/0/subtype", "error"),
+      AtJsonPtr("/args/0/className", "Error"),
+      AtJsonPtr(
+          "/args/0/description",
+          // no colon (":") and no message
+          "CustomNameError\n"
+          "    at secondFunction (<eval>:22:29)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  // custom error class
+  expectConsoleApiCall(AllOf(
+      AtJsonPtr("/type", "log"),
+      AtJsonPtr("/args/0/type", "object"),
+      AtJsonPtr("/args/0/subtype", "error"),
+      AtJsonPtr("/args/0/className", "Error"),
+      AtJsonPtr(
+          "/args/0/description",
+          // using the class name
+          "CustomClassError: custom class error\n"
+          "    at construct (native)\n"
+          "    at CustomClassError (<eval>:30:43)\n"
+          "    at secondFunction (<eval>:35:39)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  // custom error class with empty string message
+  expectConsoleApiCall(AllOf(
+      AtJsonPtr("/type", "log"),
+      AtJsonPtr("/args/0/type", "object"),
+      AtJsonPtr("/args/0/subtype", "error"),
+      AtJsonPtr("/args/0/className", "Error"),
+      AtJsonPtr(
+          "/args/0/description",
+          // using the class name, no colon (":"), no message
+          "CustomClassError\n"
+          "    at construct (native)\n"
+          "    at CustomClassError (<eval>:30:43)\n"
+          "    at secondFunction (<eval>:38:39)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  // custom error class with empty message
+  expectConsoleApiCall(AllOf(
+      AtJsonPtr("/type", "log"),
+      AtJsonPtr("/args/0/type", "object"),
+      AtJsonPtr("/args/0/subtype", "error"),
+      AtJsonPtr("/args/0/className", "Error"),
+      AtJsonPtr(
+          "/args/0/description",
+          // using the class name, no colon (":"), no message
+          "CustomClassError\n"
+          "    at construct (native)\n"
+          "    at CustomClassError (<eval>:30:43)\n"
+          "    at secondFunction (<eval>:41:39)\n"
+          "    at firstFunction (<eval>:4:21)\n"
+          "    at anonymous (<eval>:2:18)\n"
+          "    at global (<eval>:43:5)")));
+
+  eval(R"((() => {                        // line 1
+    firstFunction();                      // line 2
     function firstFunction() {
-      secondFunction();
+      secondFunction();                   // line 4
     }
     function secondFunction() {
-      console.log(new Error('wut'));
+      // simple error
+      console.log(new Error('simple error')); // line 8
+
+      // empty string error message
+      console.log(new Error(''));         // line 11
+
+      // no error message
+      console.log(new Error());           // line 14
+
+      // custom error name
+      const err1 = new Error('some message'); // line 17
+      err1.name = 'CustomNameError';
+      console.log(err1);
+
+      // custom error name with empty message
+      const err2 = new Error();           // line 22
+      err2.name = 'CustomNameError';
+      console.log(err2);
+
+      // custom error class
+      // hermes does not support classes so this is a transpiled version of:
+      // class CustomClassError extends Error {}
+      function CustomClassError(...args) {
+        const instance = Reflect.construct(Error, args);
+        Reflect.setPrototypeOf(instance, Reflect.getPrototypeOf(this));
+        return instance;
+      }
+      Object.setPrototypeOf(CustomClassError.prototype, Error.prototype);
+      console.log(new CustomClassError('custom class error'));    // line 35
+
+      // custom error class with empty string message
+      console.log(new CustomClassError(''));  // line 38
+
+      // custom error class with empty message
+      console.log(new CustomClassError());    // line 41
     }
-    firstFunction();
-  })())");
+  })())"); // line 43
 }
 
 TEST_P(ConsoleApiTest, testConsoleLogWithArrayOfErrors) {
