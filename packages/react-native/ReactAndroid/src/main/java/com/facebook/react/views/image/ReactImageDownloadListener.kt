@@ -7,16 +7,16 @@
 
 package com.facebook.react.views.image
 
-import android.graphics.Canvas
-import android.graphics.ColorFilter
-import android.graphics.PixelFormat
+import android.graphics.Color
 import android.graphics.drawable.Animatable
-import android.graphics.drawable.Drawable
+import android.graphics.drawable.ColorDrawable
 import com.facebook.drawee.controller.ControllerListener
 import com.facebook.drawee.drawable.ForwardingDrawable
 
+// The wrapped drawable has to be one that Fresco knows how to round (a ColorDrawable here), because
+// the hierarchy applies the rounding params to the leaf of the progress bar drawable.
 internal open class ReactImageDownloadListener<INFO> :
-    ForwardingDrawable(EmptyDrawable()), ControllerListener<INFO> {
+    ForwardingDrawable(ColorDrawable(Color.TRANSPARENT)), ControllerListener<INFO> {
   open fun onProgressChange(loaded: Int, total: Int) = Unit
 
   override fun onLevelChange(level: Int): Boolean {
@@ -35,18 +35,6 @@ internal open class ReactImageDownloadListener<INFO> :
   override fun onFailure(id: String, throwable: Throwable) = Unit
 
   override fun onRelease(id: String) = Unit
-
-  /** A [Drawable] that renders nothing. */
-  private class EmptyDrawable : Drawable() {
-    override fun draw(canvas: Canvas) = Unit
-
-    override fun setAlpha(alpha: Int) = Unit
-
-    override fun setColorFilter(colorFilter: ColorFilter?) = Unit
-
-    @Deprecated("Deprecated in Java", ReplaceWith("PixelFormat.OPAQUE"))
-    override fun getOpacity(): Int = PixelFormat.OPAQUE
-  }
 
   companion object {
     private const val MAX_LEVEL = 10000
