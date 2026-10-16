@@ -1082,6 +1082,25 @@ class VirtualizedList extends StateSafePureComponent<
   _getSpacerKey = (isVertical: boolean): string =>
     isVertical ? 'height' : 'width';
 
+  // An unmeasured cell's approximate offset can be the average cell length
+  // times its index, which ignores where the rendered cells before it end. A
+  // spacer starting there moves the cells after it whenever the average
+  // changes or a cell mounts or unmounts at its end. Start it where the cell
+  // before it ends instead. (Not where the cell after it starts: that would
+  // include any gap or margin between cells.)
+  _getSpacerStart(first: number, approxOffset: number): number {
+    if (
+      first > 0 &&
+      this._listMetrics.getCellMetrics(first, this.props) == null
+    ) {
+      const before = this._listMetrics.getCellMetrics(first - 1, this.props);
+      if (before != null) {
+        return before.offset + before.length;
+      }
+    }
+    return approxOffset;
+  }
+
   static _keyExtractor(
     item: Item,
     index: number,
@@ -1242,7 +1261,9 @@ class VirtualizedList extends StateSafePureComponent<
             this.props,
           );
           const spacerSize =
-            lastMetrics.offset + lastMetrics.length - firstMetrics.offset;
+            lastMetrics.offset +
+            lastMetrics.length -
+            this._getSpacerStart(section.first, firstMetrics.offset);
           cells.push(
             <View
               key={`$spacer-${section.first}`}

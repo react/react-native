@@ -2240,6 +2240,102 @@ it('renders full tail spacer if all cells measured', async () => {
   expect(component).toMatchSnapshot();
 });
 
+// The cells kept by initialNumToRender are followed by a spacer up to the
+// render window. When the spacer's first cell has never been measured at its
+// index, the spacer should still start where the cell before it ends, not at
+// `averageCellLength * index`, or the cells after it move whenever the average
+// does, and maintainVisibleContentPosition has to chase them.
+it.each([0, 10])(
+  'starts an interior spacer where the cell before it ends (gap: %d)',
+  async gap => {
+    const items = generateItems(40);
+    // The kept cells are taller than the rest, so the average cell length
+    // doesn't predict where they end.
+    const lengths = new Map(
+      items.map(item => [item.key, item.key < 2 ? 200 : 100]),
+    );
+    const list = extraData => (
+      <VirtualizedList
+        initialNumToRender={2}
+        windowSize={1}
+        extraData={extraData}
+        {...baseItemProps(items)}
+      />
+    );
+
+    let component;
+    await act(() => {
+      component = create(list(0));
+    });
+
+    await act(() => {
+      simulateCellLayout(component, items, 0, {
+        width: 10,
+        height: 200,
+        x: 0,
+        y: 0,
+      });
+      simulateCellLayout(component, items, 1, {
+        width: 10,
+        height: 200,
+        x: 0,
+        y: 200 + gap,
+      });
+      // The list jumped past cells 2-9, so they have never been measured.
+      for (let i = 10; i < 20; i++) {
+        simulateCellLayout(component, items, i, {
+          width: 10,
+          height: 100,
+          x: 0,
+          y: 1200 + (100 + gap) * (i - 10),
+        });
+      }
+      simulateLayout(component, {
+        viewport: {width: 10, height: 50},
+        content: {width: 10, height: 5000},
+      });
+      // Scroll into the middle of cell 12.
+      simulateScroll(component, {x: 0, y: 1425 + 2 * gap});
+      performAllBatches();
+    });
+
+    expect(component.getInstance().state.cellsAroundViewport).toEqual({
+      first: 12,
+      last: 12,
+    });
+    // From where cell 1 ends to where cell 11 ends.
+    expect(getSpacerLengths(component)[0]).toBe(1000);
+
+    // Measuring another cell changes the average cell length, but not the
+    // spacer.
+    lengths.set(20, 300);
+    await act(() => {
+      simulateCellLayout(component, items, 20, {
+        width: 10,
+        height: 300,
+        x: 0,
+        y: 1200 + (100 + gap) * 10,
+      });
+    });
+    await act(() => {
+      component.update(list(1));
+    });
+    expect(getSpacerLengths(component)[0]).toBe(1000);
+
+    // Nor does laying the list out again, including any gap between cells.
+    for (let pass = 2; pass < 5; pass++) {
+      await act(() => {
+        simulateLayoutPass(component, items, lengths, gap);
+        performAllBatches();
+      });
+      await act(() => {
+        component.update(list(pass));
+      });
+      expect(getSpacerLengths(component)[0]).toBe(1000);
+    }
+  },
+);
+
 it('renders windowSize derived region at top', async () => {
   const items = generateItems(10);
   const ITEM_HEIGHT = 10;
@@ -3139,6 +3235,34 @@ function simulateCellLayout(component, items, itemIndex, dimensions) {
     cellKey,
     itemIndex,
   );
+}
+
+// Lays out the rendered cells and spacers one after another, as native layout
+// would, with `gap` between each.
+function simulateLayoutPass(component, items, lengths, gap) {
+  let offset = 0;
+  for (const child of component.toJSON().children[0].children) {
+    if (child.children == null) {
+      offset += child.props.style.height + gap;
+      continue;
+    }
+    const key = child.children[0].props.value;
+    const length = lengths.get(key);
+    simulateCellLayout(
+      component,
+      items,
+      items.findIndex(item => item.key === key),
+      {width: 10, height: length, x: 0, y: offset},
+    );
+    offset += length + gap;
+  }
+}
+
+function getSpacerLengths(component) {
+  return component
+    .toJSON()
+    .children[0].children.filter(child => child.children == null)
+    .map(child => child.props.style.height);
 }
 
 function simulateScroll(component, position) {
