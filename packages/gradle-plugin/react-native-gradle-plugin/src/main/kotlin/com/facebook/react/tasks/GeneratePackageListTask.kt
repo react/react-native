@@ -64,10 +64,19 @@ abstract class GeneratePackageListTask : DefaultTask() {
    * Extracts the fully qualified class name from an import statement. E.g., "import
    * com.foo.bar.MyClass;" -> "com.foo.bar.MyClass"
    */
-  internal fun extractFqcnFromImport(importStatement: String): String? {
-    val match = Regex("import\\s+([\\w.]+)\\s*;").find(importStatement)
-    return match?.groupValues?.get(1)
-  }
+  internal fun extractFqcnFromImport(importStatement: String): String? =
+      extractFqcsFromImports(importStatement).firstOrNull()
+
+  /**
+   * Extracts the fully qualified class name from every import statement. E.g., "import
+   * com.foo.bar.MyClass;\nimport com.foo.baz.MyOtherClass;" -> ["com.foo.bar.MyClass",
+   * "com.foo.baz.MyOtherClass"]
+   */
+  internal fun extractFqcsFromImports(importStatements: String): List<String> =
+      Regex("import\\s+([\\w.]+)\\s*;")
+          .findAll(importStatements)
+          .map { it.groupValues[1] }
+          .toList()
 
   internal fun composePackageInstance(
       packageName: String,
@@ -87,14 +96,19 @@ abstract class GeneratePackageListTask : DefaultTask() {
           val interpolated = interpolateDynamicValues(packageInstance, packageName)
 
           // Use FQCN to avoid class name collisions between different packages
-          val fqcn = extractFqcnFromImport(interpolateDynamicValues(packageImportPath, packageName))
+          val interpolatedImportPath = interpolateDynamicValues(packageImportPath, packageName)
+          val fqcnByClassName =
+              extractFqcsFromImports(interpolatedImportPath)
+                  .associateBy { it.substringAfterLast('.') }
           val fqcnInstance =
-              if (fqcn != null) {
-                val className = fqcn.substringAfterLast('.')
-                // Replace the short class name with FQCN in the instance
-                interpolated.replace(Regex("\\b${Regex.escape(className)}\\b")) { fqcn }
-              } else {
+              if (fqcnByClassName.isEmpty()) {
                 interpolated
+              } else {
+                val classNamePattern = fqcnByClassName.keys.joinToString("|") { Regex.escape(it) }
+                // Replace every short class name with its FQCN in the instance
+                interpolated.replace(Regex("\\b(?:$classNamePattern)\\b")) { match ->
+                  fqcnByClassName.getValue(match.value)
+                }
               }
 
           // Add comment with package name before each instance
