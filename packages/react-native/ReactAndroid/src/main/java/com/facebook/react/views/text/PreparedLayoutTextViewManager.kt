@@ -124,6 +124,11 @@ internal class PreparedLayoutTextViewManager :
     view.isFocusable = accessible
   }
 
+  @ReactProp(name = "focusable", defaultBoolean = true)
+  fun setFocusable(view: PreparedLayoutTextView, focusable: Boolean) {
+    view.excludedFromKeyboardFocus = !focusable
+  }
+
   @ReactProp(name = "selectable", defaultBoolean = false)
   fun setSelectable(view: PreparedLayoutTextView, isSelectable: Boolean) {
     check(!isSelectable) {

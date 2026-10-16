@@ -91,6 +91,12 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
 
   @ColorInt var selectionColor: Int? = null
 
+  /**
+   * Set from the `focusable` prop. [isFocusable] also carries `accessible`, so a text excluded here
+   * stays focusable for accessibility services while keyboard navigation passes over it.
+   */
+  var excludedFromKeyboardFocus: Boolean = false
+
   val text: CharSequence?
     // Avoid mangling the getter name, to allow black box E2E tests to read text content via
     // reflection. Returns the full logical text, not `layout.text`, which can be an ellipsized
@@ -108,6 +114,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     overflow = Overflow.VISIBLE
     selection = null
     selectionColor = null
+    excludedFromKeyboardFocus = false
     lastFrameTimeNanos = 0L
     preparedLayout = null
     hasClickableSpansCache = null
@@ -429,6 +436,23 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     ) {
       accessibilityDelegateCompat.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
     }
+  }
+
+  override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    super.addFocusables(views, direction, focusableMode)
+    // A focused view stays a candidate so that focus search can move on from it.
+    if (excludedFromKeyboardFocus && !isFocused) {
+      views.subList(firstAddedIndex, views.size).remove(this)
+    }
+  }
+
+  override fun requestFocus(direction: Int, previouslyFocusedRect: Rect?): Boolean {
+    if (!excludedFromKeyboardFocus) {
+      return super.requestFocus(direction, previouslyFocusedRect)
+    }
+    return descendantFocusability != FOCUS_BLOCK_DESCENDANTS &&
+        onRequestFocusInDescendants(direction, previouslyFocusedRect)
   }
 
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {

@@ -6020,6 +6020,7 @@ public final class com/facebook/react/views/text/ReactFontManager$Companion {
 
 public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/widget/AppCompatTextView, com/facebook/react/uimanager/ReactCompoundView {
 	public fun <init> (Landroid/content/Context;)V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	protected fun dispatchHoverEvent (Landroid/view/MotionEvent;)Z
 	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
 	public fun getSpanned ()Landroid/text/Spannable;
@@ -6031,6 +6032,7 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	protected fun onMeasure (II)V
 	protected fun onSizeChanged (IIII)V
 	public fun reactTagForTouch (FF)I
+	public fun requestFocus (ILandroid/graphics/Rect;)Z
 	public fun setAdjustFontSizeToFit (Z)V
 	public fun setBackgroundColor (I)V
 	public fun setBorderColor (ILjava/lang/Integer;)V
@@ -6089,6 +6091,7 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public final fun setDataDetectorType (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setDisabled (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setEllipsizeMode (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
+	public final fun setFocusable (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setFontSize (Lcom/facebook/react/views/text/ReactTextView;F)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setLetterSpacing (Lcom/facebook/react/views/text/ReactTextView;F)V
