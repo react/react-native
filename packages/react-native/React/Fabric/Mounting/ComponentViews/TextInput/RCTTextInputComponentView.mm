@@ -381,6 +381,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _previousContentSize = _backedTextInputView.contentSize;
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onContentSizeChange([self _textInputMetrics]);
   }
+
+  if (layoutMetrics.frame.size.height > oldLayoutMetrics.frame.size.height) {
+    [self _scrollCaretIntoEnclosingScrollView];
+  }
 }
 
 - (void)prepareForRecycle
@@ -841,6 +845,38 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                                                           toPosition:selectedRange.start];
     [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
   }
+}
+
+- (void)_scrollCaretIntoEnclosingScrollView
+{
+  if (![_backedTextInputView isKindOfClass:[UITextView class]] || !_backedTextInputView.isFirstResponder) {
+    return;
+  }
+
+  UIScrollView *enclosingScrollView = nil;
+  for (UIView *view = self.superview; view != nil; view = view.superview) {
+    if ([view isKindOfClass:[UIScrollView class]]) {
+      enclosingScrollView = (UIScrollView *)view;
+      break;
+    }
+  }
+  if (enclosingScrollView == nil) {
+    return;
+  }
+
+  UITextRange *selectedTextRange = _backedTextInputView.selectedTextRange;
+  if (selectedTextRange == nil) {
+    return;
+  }
+
+  [_backedTextInputView layoutIfNeeded];
+  CGRect caretRect = [_backedTextInputView caretRectForPosition:selectedTextRange.end];
+  if (CGRectIsNull(caretRect) || CGRectIsInfinite(caretRect) || CGRectGetMaxY(caretRect) <= 0) {
+    return;
+  }
+
+  CGRect caretRectInScrollView = [_backedTextInputView convertRect:caretRect toView:enclosingScrollView];
+  [enclosingScrollView scrollRectToVisible:CGRectInset(caretRectInScrollView, 0, -4) animated:NO];
 }
 
 - (void)_setMultiline:(BOOL)multiline
