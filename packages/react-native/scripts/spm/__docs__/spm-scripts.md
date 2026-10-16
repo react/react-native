@@ -113,15 +113,15 @@ zero-arg path also implies `--deintegrate` (the safe-gate). So
 From the JS root of a standard RN app (sibling `ios/` subdir), the command
 redirects into `ios/` and prints a banner.
 
-| Action                | Description                                                                                                                                                                                                                                   |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add`                 | Inject SwiftPM packages (package refs, build settings, the Sync build phase) into the existing `.xcodeproj`, in place. Idempotent. Default on first run. `--deintegrate` first runs `pod deintegrate` + strips React Native from the Podfile. |
-| `update`              | Re-run the pipeline and refresh the existing injection. Default once a project is injected.                                                                                                                                                   |
-| `deinit`              | The inverse of `add`: surgically remove only what `add` injected (recorded in `.spm-injected.json`) and drop the marker. Git-recoverable; no prompt. Some edits it does not undo — see [Files the tool touches](#files-the-tool-touches).     |
-| `scaffold`            | Generate `Package.swift` into `node_modules/<dep>/` for community RN libraries that ship only a podspec.                                                                                                                                      |
-| `sync` (advanced)     | Lightweight resync invoked by the Xcode auto-sync hooks. Regenerates invariant codegen and autolinking output only. Not for humans.                                                                                                           |
-| `codegen` (advanced)  | Run codegen and install the SwiftPM codegen template only.                                                                                                                                                                                    |
-| `download` (advanced) | Download/check xcframework artifacts only.                                                                                                                                                                                                    |
+| Action                | Description                                                                                                                                                                                                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`                 | Inject SwiftPM packages (package refs, the base reference to `ReactNativeSPM/ReactNativeSPM.xcconfig`, the Sync build phase) into the existing `.xcodeproj`, in place. Idempotent. Default on first run. `--deintegrate` first runs `pod deintegrate` + strips React Native from the Podfile. |
+| `update`              | Re-run the pipeline and refresh the existing injection. Default once a project is injected.                                                                                                                                                                                                   |
+| `deinit`              | The inverse of `add`: surgically remove only what `add` injected (recorded in `.spm-injected.json`) and drop the marker. Git-recoverable; no prompt. Some edits it does not undo — see [Files the tool touches](#files-the-tool-touches).                                                     |
+| `scaffold`            | Generate `Package.swift` into `node_modules/<dep>/` for community RN libraries that ship only a podspec.                                                                                                                                                                                      |
+| `sync` (advanced)     | Lightweight resync invoked by the Xcode auto-sync hooks. Regenerates invariant codegen and autolinking output only. Not for humans.                                                                                                                                                           |
+| `codegen` (advanced)  | Run codegen and install the SwiftPM codegen template only.                                                                                                                                                                                                                                    |
+| `download` (advanced) | Download/check xcframework artifacts only.                                                                                                                                                                                                                                                    |
 
 ## CLI Options
 
@@ -214,8 +214,9 @@ frameworks are deliberately kept out of the package graph. Instead:
 
 - `spm add` downloads and validates **both** flavors into immutable app-local
   slots.
-- It injects SDK/architecture-qualified Xcode settings that link the exact
-  selected binaries.
+- It writes SDK/architecture-qualified Xcode settings to
+  `ReactNativeSPM/ReactNativeSPM.xcconfig`. They link the exact selected
+  binaries.
 - It adds one phase that copies and signs the selected frameworks into the app.
 
 Configurations containing `debug` or `development` select Debug; every other
@@ -223,15 +224,19 @@ configuration selects Release. Selection uses only generated build settings and
 standard macOS tools. Builds do not run Node, mutate symlinks, regenerate the
 package graph, or require a second build.
 
+The xcconfig sets `RN_SPM_FLAVOR` for each configuration by name. A
+configuration added later, e.g. duplicated in Xcode, falls back to release until
+you run `npx react-native spm update`.
+
 Those debug-flavored configurations also get `DEBUG` in
-`SWIFT_ACTIVE_COMPILATION_CONDITIONS`, injected as `("$(inherited)", DEBUG)`
-when the setting is absent. Only this makes Swift's `#if DEBUG` true
+`SWIFT_ACTIVE_COMPILATION_CONDITIONS`, set in the xcconfig as
+`$(inherited) DEBUG`. Only this makes Swift's `#if DEBUG` true
 (`GCC_PREPROCESSOR_DEFINITIONS` reaches C/ObjC/C++ only). `AppDelegate.swift`'s
 `bundleURL()` branches on it to load from Metro instead of a bundled
 `main.jsbundle`. CocoaPods injects it at `pod install` time, so this keeps
-SwiftPM apps at parity. An existing value is left alone only if it already
-contains `DEBUG`. Otherwise `DEBUG` is appended, and a scalar value is promoted
-to an array (see [Files the tool touches](#files-the-tool-touches)).
+SwiftPM apps at parity. `add` and `update` refuse a target value without
+`$(inherited)`, because it would hide this one (see
+[Build settings](#build-settings)).
 
 ### iOS deployment target
 
@@ -260,14 +265,16 @@ Paths are relative to the Xcode project directory (`ios/`) unless noted.
 
 ### In your repo — committed
 
-| Path                                                | Written by                  | What happens                                                                                                                                                                                                                                                                                                                                                                                                       | Undone by `deinit`?                                                                                                                                                                                        |
-| --------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MyApp.xcodeproj/project.pbxproj`                   | `add`, `update`, `scaffold` | SwiftPM package refs, the React build settings, the Sync build phase, and the flavored-framework embed phase are added; a re-run is a no-op. A `${PODS_ROOT}`-anchored `REACT_NATIVE_PATH` is replaced with the SwiftPM path. `add` also removes the template's unused `JavaScriptCore.framework` reference, and `add --deintegrate` removes an empty `Pods` group.                                                | Yes — exactly what was injected, per the marker, including the original `REACT_NATIVE_PATH` (one exception below). The removed `JavaScriptCore.framework` reference and `Pods` group are **not** restored. |
-| `MyApp.xcodeproj/.spm-injected.json`                | `add`, `update`, `scaffold` | Created. Three roles: it records every edit made — including the pre-injection value of any build setting rewritten — so removal is surgical and re-runs stay idempotent; it records the frameworks the project links (`linkedFrameworks`), which the build-time sync compares with the frameworks plugins provide; and it **pins configuration** later runs and Xcode builds must reuse (see the two pins below). | Yes — deleted, and the pins go with it                                                                                                                                                                     |
-| `MyApp.xcodeproj/xcshareddata/xcschemes/*.xcscheme` | `add`, `update`, `scaffold` | The sync pre-action is added to the scheme that builds your target; a shared scheme is created if there is none. Commit this or teammates lose the pre-action.                                                                                                                                                                                                                                                     | Yes — a scheme `add` created is deleted only if it is still byte-identical to the generated one; otherwise only the pre-action is stripped                                                                 |
-| `.gitignore`                                        | `add` only                  | Created if absent, else appended: a `# SPM – auto-generated at build time` block adding `Package.resolved`, `build/generated/`, `build/xcframeworks/`, `.build/`.                                                                                                                                                                                                                                                  | **No** — the block is left behind                                                                                                                                                                          |
-| `Podfile`                                           | `add --deintegrate`         | Only the lines containing the React Native directives (`use_react_native!`, `use_native_modules!`, `prepare_react_native_project!`) are stripped. Your own `pod '…'` lines are preserved. The argument lines of a multi-line `use_react_native!(` call and `react_native_post_install(...)` remain — remove them by hand before `pod install`.                                                                     | **No** — re-add the directives yourself to go back to CocoaPods                                                                                                                                            |
-| `Pods/`, `Pods-*.xcconfig`, `[CP]` phases           | `add --deintegrate`         | Removed by `pod deintegrate`. The `.xcworkspace` referencing them is left on disk.                                                                                                                                                                                                                                                                                                                                 | **No** — run `pod install` to restore                                                                                                                                                                      |
+| Path                                                | Written by                  | What happens                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Undone by `deinit`?                                                                                                                                                 |
+| --------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MyApp.xcodeproj/project.pbxproj`                   | `add`, `update`, `scaffold` | SwiftPM package refs, a reference to `ReactNativeSPM/ReactNativeSPM.xcconfig` set as the base configuration of each app configuration, the Sync build phase, and the flavored-framework embed phase are added. The two phases run their scripts from `ReactNativeSPM/Scripts/`. A re-run is a no-op. A `${PODS_ROOT}`-anchored `REACT_NATIVE_PATH` is removed, so the xcconfig's SwiftPM path applies. `add` also removes the template's unused `JavaScriptCore.framework` reference, and `add --deintegrate` removes an empty `Pods` group. | Yes — exactly what was injected, per the marker. The removed `REACT_NATIVE_PATH`, `JavaScriptCore.framework` reference, and `Pods` group are **not** restored.      |
+| `MyApp.xcodeproj/.spm-injected.json`                | `add`, `update`, `scaffold` | Created. Three roles: it records every edit made — including which configurations it based on the generated xcconfig — so removal is surgical and re-runs stay idempotent; it records the frameworks the project links (`linkedFrameworks`), which the build-time sync compares with the frameworks plugins provide; and it **pins configuration** later runs and Xcode builds must reuse (see the two pins below).                                                                                                                          | Yes — deleted, and the pins go with it                                                                                                                              |
+| `ReactNativeSPM/ReactNativeSPM.xcconfig`            | `add`, `update`, `scaffold` | Regenerated on each run and written when its content changes. Holds the React build settings: search paths, linker flags, `REACT_NATIVE_PATH`, the C++ standard, each configuration's flavor (`RN_SPM_FLAVOR`), and `DEBUG` for Swift on debug configurations (see [Build settings](#build-settings)). **Commit it.** Xcode reads it before any build phase runs, so a build cannot regenerate it. If it is missing, run `npx react-native spm update` and commit it.                                                                        | Yes — deleted, unless a configuration is based on an xcconfig of your own, which may `#include` it. Then the file is kept, and `deinit` names those configurations. |
+| `ReactNativeSPM/Scripts/`                           | `add`, `update`, `scaffold` | Regenerated on each run and written when their content changes: `sync-autolinking.sh` and `embed-flavored-frameworks.sh`, the scripts the Sync and embed phases run. Plugin script phases keep their scripts in `project.pbxproj`. **Commit it.** When a script is missing, its phase fails the build with `error: <path> is missing. Run 'npx react-native spm update' to generate it.`                                                                                                                                                     | Yes — both scripts are deleted                                                                                                                                      |
+| `MyApp.xcodeproj/xcshareddata/xcschemes/*.xcscheme` | `add`, `update`, `scaffold` | The sync pre-action is added to the scheme that builds your target; a shared scheme is created if there is none. Commit this or teammates lose the pre-action.                                                                                                                                                                                                                                                                                                                                                                               | Yes — a scheme `add` created is deleted only if it is still byte-identical to the generated one; otherwise only the pre-action is stripped                          |
+| `.gitignore`                                        | `add` only                  | Created if absent, else appended: a `# SPM – auto-generated at build time` block adding `Package.resolved`, `build/generated/`, `build/xcframeworks/`, `.build/`.                                                                                                                                                                                                                                                                                                                                                                            | **No** — the block is left behind                                                                                                                                   |
+| `Podfile`                                           | `add --deintegrate`         | Only the lines containing the React Native directives (`use_react_native!`, `use_native_modules!`, `prepare_react_native_project!`) are stripped. Your own `pod '…'` lines are preserved. The argument lines of a multi-line `use_react_native!(` call and `react_native_post_install(...)` remain — remove them by hand before `pod install`.                                                                                                                                                                                               | **No** — re-add the directives yourself to go back to CocoaPods                                                                                                     |
+| `Pods/`, `Pods-*.xcconfig`, `[CP]` phases           | `add --deintegrate`         | Removed by `pod deintegrate`. The `.xcworkspace` referencing them is left on disk.                                                                                                                                                                                                                                                                                                                                                                                                                                                           | **No** — run `pod install` to restore                                                                                                                               |
 
 The two pins are the `--version` pin (`artifactsVersionOverride`, see
 [Pinning the React Native version](#pinning-the-react-native-version)) and the
@@ -298,24 +305,32 @@ every other byte of your project — signing, capabilities, your own Build Phase
 — stays untouched. The injected refs point at three stable sub-package paths
 under `build/`. So adding or removing community deps changes only the
 sub-package contents (gitignored) and never re-injects. `deinit` leaves the
-project byte-identical to its pre-`add` state, with the exceptions above and one
-more, described next.
+project byte-identical to its pre-`add` state, with the exceptions above.
 
-**Build settings that already exist** are edited in place. `add` merges into
-five array settings: `HEADER_SEARCH_PATHS`, `OTHER_LDFLAGS`,
-`FRAMEWORK_SEARCH_PATHS`, `LD_RUNPATH_SEARCH_PATHS`, and (on debug
-configurations) `SWIFT_ACTIVE_COMPILATION_CONDITIONS`. Each keeps the shape it
-was written in: Xcode's multi-line form, or the compact one-line form that hand
-edits and other generators (XcodeGen, Tuist) emit.
+### Build settings
 
-A setting that exists as a plain _scalar_ is promoted to a `( … )` array. An
-Xcode-authored target can carry that shape, e.g.
-`LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";` written
-as a scalar rather than a list. `add` records the pre-injection value in the
-marker. `deinit` restores it by rewriting the whole field, because once folded
-together, the injected members and your own are indistinguishable. So **members
-you add to a promoted array by hand afterwards are lost**. That applies to
-`update` too, which reverts to the recorded baseline before re-injecting.
+The React build settings live in `ReactNativeSPM/ReactNativeSPM.xcconfig`, not
+in `project.pbxproj`. Each app configuration is based on that file. Its list
+settings start with `$(inherited)`. `add` and `update` refuse two setups, and
+the error names the fix:
+
+- **A configuration already based on an xcconfig of your own.** React Native
+  does not edit xcconfig files it does not own. Add
+  `#include "<path>/ReactNativeSPM.xcconfig"` to your file instead, with the
+  path relative to the folder that holds your file, and re-run. `#include`
+  chains are followed. The configuration then keeps your file as its base.
+- **A list setting the target sets without `$(inherited)`.** These are
+  `HEADER_SEARCH_PATHS`, `OTHER_LDFLAGS`, `FRAMEWORK_SEARCH_PATHS`,
+  `LD_RUNPATH_SEARCH_PATHS`, and on debug configurations
+  `SWIFT_ACTIVE_COMPILATION_CONDITIONS`. A target's own value outranks the
+  xcconfig, so it would hide React Native's values. Add `$(inherited)` and
+  re-run.
+
+A project set up by an earlier version carries these settings in
+`project.pbxproj`. The next `update` or `deinit` reverses the edits the marker
+recorded. It removes the settings that version added and puts back any value it
+replaced. An array that version promoted from a scalar goes back to its original
+value, so **members you added to it by hand are lost**.
 
 ## Environment variables
 
@@ -361,6 +376,11 @@ npx react-native spm      # downloads artifacts (if missing) + regenerates build
 On an already-injected project this routes to `update`. It fetches the
 xcframework artifacts into the shared cache if they aren't present, and
 regenerates `build/xcframeworks` + `build/generated`.
+
+`ReactNativeSPM/` is not under `build/`. It is committed with the project, so a
+fresh clone already has it (see
+[In your repo — committed](#in-your-repo--committed)). `update` rewrites it when
+its content changes.
 
 **Automate it** with a `postinstall` hook. It runs as part of the `npm install`
 / `yarn install` your CI already does before `xcodebuild`:
@@ -642,6 +662,12 @@ react-native spm deinit   # surgically removes everything `add` injected
 pod install               # then, to restore CocoaPods
 ```
 
+`deinit` removes each configuration's base reference to
+`ReactNativeSPM/ReactNativeSPM.xcconfig` and deletes the generated scripts. It
+deletes the xcconfig too, unless a configuration is based on an xcconfig of your
+own. That file may `#include` it, so `deinit` keeps it and names those
+configurations. Remove the `#include` and the file yourself.
+
 To reset the regenerable build state without un-injecting, delete the gitignored
 dirs and re-run:
 
@@ -659,6 +685,7 @@ across apps; refresh it with `react-native spm update --download force`.
 | Problem                                                                                                                | Fix                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `xcodebuild` fails: "Could not resolve package dependencies … `build/generated/autolinking` doesn't exist"             | Fresh clone — run `npx react-native spm` once before building (see [Fresh clones & CI](#fresh-clones--ci))                                                                                                                                                                                                                                                                  |
+| Build fails: `error: …/ReactNativeSPM/Scripts/<name>.sh is missing`                                                    | `ReactNativeSPM/` was not committed. Run `npx react-native spm update`, then commit `ReactNativeSPM/`                                                                                                                                                                                                                                                                       |
 | `spm add` fails: "CocoaPods-integrated project"                                                                        | Re-run `spm add --deintegrate` (runs `pod deintegrate` + strips RN from the Podfile), or `pod deintegrate` yourself first.                                                                                                                                                                                                                                                  |
 | `spm add` fails: "no .xcodeproj found"                                                                                 | Create an app first (`npx @react-native-community/cli init`) or make a project in Xcode, then `spm add`.                                                                                                                                                                                                                                                                    |
 | `spm add` fails: "multiple .xcodeproj found"                                                                           | Pass `--xcodeproj <path>` (and `--productName <target>` if multiple app targets).                                                                                                                                                                                                                                                                                           |
@@ -683,21 +710,24 @@ across apps; refresh it with `react-native spm update --download force`.
 
 `react-native spm add` and `react-native spm update` orchestrate these steps:
 
-| Step           | Script                                   | Output                                                                                            |
-| -------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| 1. CLI config  | `spm/generate-spm-autolinking-config.js` | `build/generated/autolinking/autolinking.json`                                                    |
-| 2. Codegen     | `generate-codegen-artifacts.js`          | `build/generated/ios/`                                                                            |
-| 3. Autolinking | `spm/generate-spm-autolinking.js`        | `build/generated/autolinking/Package.swift`                                                       |
-| 4. Download    | `spm/download-spm-artifacts.js`          | Complete Debug and Release cache slots                                                            |
-| 5. Package     | `spm/generate-spm-package.js`            | Immutable flavor slots, central manifest, canonical `ReactHeaders`, and invariant `Package.swift` |
-| 6. Inject      | `spm/generate-spm-xcodeproj.js`          | Invariant SwiftPM products plus configuration-qualified linker settings and the embed/sign phase  |
-| Auto-sync      | `spm/sync-spm-autolinking.js`            | Re-runs invariant codegen/autolinking output only at Xcode build time                             |
+| Step           | Script                                   | Output                                                                                                                                                            |
+| -------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. CLI config  | `spm/generate-spm-autolinking-config.js` | `build/generated/autolinking/autolinking.json`                                                                                                                    |
+| 2. Codegen     | `generate-codegen-artifacts.js`          | `build/generated/ios/`                                                                                                                                            |
+| 3. Autolinking | `spm/generate-spm-autolinking.js`        | `build/generated/autolinking/Package.swift`                                                                                                                       |
+| 4. Download    | `spm/download-spm-artifacts.js`          | Complete Debug and Release cache slots                                                                                                                            |
+| 5. Package     | `spm/generate-spm-package.js`            | Immutable flavor slots, central manifest, canonical `ReactHeaders`, and invariant `Package.swift`                                                                 |
+| 6. Inject      | `spm/generate-spm-xcodeproj.js`          | Invariant SwiftPM products and the embed/sign phase in the project, plus `ReactNativeSPM/` with the configuration-qualified linker settings and the phase scripts |
+| Auto-sync      | `spm/sync-spm-autolinking.js`            | Re-runs invariant codegen/autolinking output only at Xcode build time                                                                                             |
 
 ### Directory Layout
 
 ```text
 my-app/ios/
   MyApp.xcodeproj/                 <-- committed (your project; SwiftPM injected in place, carries .spm-injected.json)
+  ReactNativeSPM/                  <-- committed, rewritten by add/update
+    ReactNativeSPM.xcconfig        <-- React build settings; base configuration of the app configurations
+    Scripts/                       <-- scripts the Sync and embed phases run
   Podfile                          <-- kept; `--deintegrate` only strips the React Native lines (CocoaPods coexistence is best-effort)
   build/
     generated/
@@ -741,7 +771,7 @@ autolinking up to date without manual re-runs of `react-native spm`:
 | Hook                               | Where                                                                                       | Role                                                                                                |
 | ---------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Scheme pre-action                  | The app's **shared** scheme (`xcshareddata/xcschemes/`), under `BuildAction` → `PreActions` | Fires earlier in the build than a build phase can, so it is the one that normally does the re-sync. |
-| `Sync SPM Autolinking` build phase | `.xcodeproj`, prepended before `Sources`                                                    | **Safety net** for builds that bypass the scheme (and for a scheme whose pre-action was stripped).  |
+| `Sync SPM Autolinking` build phase | `.xcodeproj`, prepended before `Sources`; runs `ReactNativeSPM/Scripts/sync-autolinking.sh` | **Safety net** for builds that bypass the scheme (and for a scheme whose pre-action was stripped).  |
 
 The hooks keep an _existing_ set of generated packages current. They do not
 create the first one: see [Fresh clones & CI](#fresh-clones--ci).

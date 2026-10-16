@@ -23,9 +23,12 @@ const {
   findField,
   findObjectByUuid,
   findProjectObject,
-  forEachObjectInSection,
-  uuidsInArray,
 } = require('./spm-pbxproj');
+const {
+  readXcconfig,
+  xcconfigIncludePath,
+  xcconfigReferencePaths,
+} = require('./xcconfig-files');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -87,14 +90,6 @@ function sanitizeIosDeploymentTarget(raw /*: ?string */) /*: string */ {
     : MIN_IOS_VERSION_SUPPORTED;
 }
 
-function defaultReadFile(absPath /*: string */) /*: ?string */ {
-  try {
-    return fs.readFileSync(absPath, 'utf8');
-  } catch {
-    return null;
-  }
-}
-
 /**
  * `IPHONEOS_DEPLOYMENT_TARGET` as an xcconfig defines it, following `#include`
  * lines in place so a later assignment in the includer wins. Null when the file
@@ -116,10 +111,10 @@ function parseXcconfigSetting(
   let value /*: ?string */ = null;
   for (const rawLine of content.split('\n')) {
     const line = rawLine.replace(/\/\/.*$/, '').trim();
-    const include = line.match(/^#include\??\s+"([^"]+)"/);
-    if (include != null) {
+    const includePath = xcconfigIncludePath(absPath, line);
+    if (includePath != null) {
       const included = readXcconfigSetting(
-        path.resolve(path.dirname(absPath), include[1]),
+        includePath,
         readFile,
         visited,
         depth + 1,
@@ -155,41 +150,6 @@ function readXcconfigSetting(
 }
 
 /**
- * Directory components of the PBXGroup chain holding `uuid`, outermost first —
- * how a `"<group>"` file reference's path is anchored to the project dir.
- */
-function groupPathPrefix(
-  text /*: string */,
-  uuid /*: string */,
-) /*: Array<string> */ {
-  const groups /*: Array<{uuid: string, path: ?string, children: Set<string>}> */ =
-    [];
-  forEachObjectInSection(text, 'PBXGroup', ({uuid: groupUuid, ...body}) => {
-    const children = findField(text, body, 'children');
-    const groupPath = findField(text, body, 'path');
-    groups.push({
-      uuid: groupUuid,
-      path: groupPath != null ? unquote(groupPath.value) : null,
-      children: children != null ? uuidsInArray(children.value) : new Set(),
-    });
-  });
-
-  const parts /*: Array<string> */ = [];
-  let current = uuid;
-  for (let i = 0; i < groups.length; i++) {
-    const parent = groups.find(group => group.children.has(current));
-    if (parent == null) {
-      break;
-    }
-    if (parent.path != null) {
-      parts.unshift(parent.path);
-    }
-    current = parent.uuid;
-  }
-  return parts;
-}
-
-/**
  * Absolute paths to try for the xcconfig a configuration is based on, in order:
  * the reference's own anchoring first, then plain `<srcRoot>/<path>`.
  */
@@ -211,23 +171,16 @@ function xcconfigCandidates(
   if (pathField == null) {
     return [];
   }
-  const refPath = unquote(pathField.value);
-  if (path.isAbsolute(refPath)) {
-    return [refPath];
-  }
   const sourceTreeField = findField(text, ref, 'sourceTree');
-  const sourceTree =
-    sourceTreeField != null ? unquote(sourceTreeField.value) : '';
-  const fallback = path.join(srcRoot, refPath);
-  if (sourceTree !== '<group>') {
-    return [fallback];
-  }
-  const anchored = path.join(
+  return xcconfigReferencePaths(
+    text,
+    {
+      uuid: refUuid,
+      path: unquote(pathField.value),
+      sourceTree: sourceTreeField != null ? unquote(sourceTreeField.value) : '',
+    },
     srcRoot,
-    ...groupPathPrefix(text, refUuid),
-    refPath,
   );
-  return anchored === fallback ? [fallback] : [anchored, fallback];
 }
 
 function configName(
@@ -300,7 +253,7 @@ function readIosDeploymentTargetFromPbxproj(
 ) /*: ?string */ {
   const ctx /*: XcconfigContext */ = {
     srcRoot: opts?.srcRoot,
-    readFile: opts?.readFile ?? defaultReadFile,
+    readFile: opts?.readFile ?? readXcconfig,
   };
   const targetUuid = opts?.targetUuid;
   const marked = targetUuid != null ? findObjectByUuid(text, targetUuid) : null;

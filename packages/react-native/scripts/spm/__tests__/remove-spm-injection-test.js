@@ -76,6 +76,11 @@ function scaffoldApp(pbxproj /*: string */ = PLAIN) {
   );
   const rnRoot = path.join(appRoot, 'node_modules', 'react-native');
   fs.mkdirSync(rnRoot, {recursive: true});
+  seedArtifacts(appRoot);
+  return {appRoot, xcodeprojPath, rnRoot};
+}
+
+function seedArtifacts(appRoot /*: string */) {
   const artifactRoot = path.join(appRoot, 'build', 'xcframeworks');
   fs.mkdirSync(artifactRoot, {recursive: true});
   fs.writeFileSync(
@@ -83,7 +88,6 @@ function scaffoldApp(pbxproj /*: string */ = PLAIN) {
     JSON.stringify({version: 1, frameworks: []}),
   );
   fs.writeFileSync(path.join(artifactRoot, '.artifact-stamp'), 'test\n');
-  return {appRoot, xcodeprojPath, rnRoot};
 }
 
 // The hoisted `hermes-compiler` layout a real installed app has: the package
@@ -167,6 +171,57 @@ function readMarker(xcodeprojPath) {
   return JSON.parse(markerTextOf(xcodeprojPath));
 }
 
+const XCCONFIG_REL = 'ReactNativeSPM/ReactNativeSPM.xcconfig';
+const GENERATED_FILES = [
+  XCCONFIG_REL,
+  'ReactNativeSPM/Scripts/sync-autolinking.sh',
+  'ReactNativeSPM/Scripts/embed-flavored-frameworks.sh',
+];
+
+function generatedFileContents(appRoot) {
+  return GENERATED_FILES.map(file =>
+    fs.existsSync(path.join(appRoot, file))
+      ? fs.readFileSync(path.join(appRoot, file), 'utf8')
+      : null,
+  );
+}
+
+const APP_DEBUG_CONFIG = 'AA0000000000000000000901';
+
+// The app target's Debug configuration based on Config/App.xcconfig, an
+// xcconfig of the user's own.
+const FOREIGN_XCCONFIG = PLAIN.replace(
+  `${APP_DEBUG_CONFIG} /* Debug */ = {\n\t\t\tisa = XCBuildConfiguration;\n`,
+  `${APP_DEBUG_CONFIG} /* Debug */ = {\n\t\t\tisa = XCBuildConfiguration;\n\t\t\tbaseConfigurationReference = CC0000000000000000000001 /* App.xcconfig */;\n`,
+).replace(
+  '/* End PBXFileReference section */',
+  '\t\tCC0000000000000000000001 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/App.xcconfig; sourceTree = "<group>"; };\n/* End PBXFileReference section */',
+);
+
+function writeUserXcconfig(appRoot, content) {
+  fs.mkdirSync(path.join(appRoot, 'Config'), {recursive: true});
+  fs.writeFileSync(path.join(appRoot, 'Config', 'App.xcconfig'), content);
+}
+
+// What re-basing Debug on the user's own xcconfig in Xcode does after `add`.
+function rebaseDebugOnUserXcconfig(xcodeprojPath) {
+  const text = pbxprojOf(xcodeprojPath);
+  const start = text.indexOf(`${APP_DEBUG_CONFIG} /* Debug */ = {`);
+  const end = text.indexOf('buildSettings', start);
+  fs.writeFileSync(
+    path.join(xcodeprojPath, 'project.pbxproj'),
+    text.slice(0, start) +
+      text
+        .slice(start, end)
+        .replace(
+          /baseConfigurationReference = [0-9A-F]{24} \/\* ReactNativeSPM\.xcconfig \*\//,
+          'baseConfigurationReference = CC0000000000000000000001 /* App.xcconfig */',
+        ) +
+      text.slice(end),
+    'utf8',
+  );
+}
+
 function schemePathOf(xcodeprojPath) {
   return path.join(
     xcodeprojPath,
@@ -204,11 +259,120 @@ describe('injectSpmIntoExistingXcodeproj — HERMES_CLI_PATH', () => {
 
     expect(pbxprojOf(xcodeprojPath)).not.toContain('HERMES_CLI_PATH');
     expect(pbxprojOf(xcodeprojPath)).not.toContain(hermesc);
+    for (const file of GENERATED_FILES) {
+      expect(fs.readFileSync(path.join(appRoot, file), 'utf8')).not.toContain(
+        'HERMES_CLI_PATH',
+      );
+    }
+    expect(markerTextOf(xcodeprojPath)).not.toContain('HERMES_CLI_PATH');
+  });
+});
+
+// pnpm's layout: the project's node_modules/react-native links into a store
+// directory named after the version and dependency hash, and the Xcode project
+// sits one level down, in ios/. Config commands report the store path.
+function scaffoldPnpmApp() {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-pnpm-'));
+  scaffoldedAppRoots.push(projectRoot);
+  const nodeModules = path.join(projectRoot, 'node_modules');
+  const store = path.join(
+    nodeModules,
+    '.pnpm',
+    'react-native@0.87.0_abc123',
+    'node_modules',
+    'react-native',
+  );
+  fs.mkdirSync(store, {recursive: true});
+  fs.symlinkSync(
+    path.relative(nodeModules, store),
+    path.join(nodeModules, 'react-native'),
+  );
+  const appRoot = path.join(projectRoot, 'ios');
+  const xcodeprojPath = path.join(appRoot, 'MyApp.xcodeproj');
+  fs.mkdirSync(xcodeprojPath, {recursive: true});
+  fs.writeFileSync(path.join(xcodeprojPath, 'project.pbxproj'), PLAIN, 'utf8');
+  seedArtifacts(appRoot);
+  return {appRoot, xcodeprojPath, rnRoot: fs.realpathSync(store)};
+}
+
+// The xcconfig, scripts and scheme are committed, so they must name
+// react-native the way the app resolves it, not by its store location.
+describe('injectSpmIntoExistingXcodeproj — REACT_NATIVE_PATH', () => {
+  it('writes the node_modules link, not the pnpm store path', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldPnpmApp();
+    expect(rnRoot).toContain('.pnpm');
+
     expect(
-      readMarker(xcodeprojPath).buildSettingChanges.flatMap(
-        change => change.createdScalars ?? [],
-      ),
-    ).not.toContain('HERMES_CLI_PATH');
+      injectSpmIntoExistingXcodeproj({
+        appRoot,
+        reactNativeRoot: rnRoot,
+        xcodeprojPath,
+      }).status,
+    ).toBe('injected');
+
+    const generated = generatedFileContents(appRoot);
+    const [xcconfig, syncScript] = generated;
+    expect(xcconfig).toContain(
+      '\nREACT_NATIVE_PATH = $(SRCROOT)/../node_modules/react-native\n',
+    );
+    expect(syncScript).toContain('RN_DIR="../node_modules/react-native"');
+    for (const content of [
+      ...generated,
+      fs.readFileSync(schemePathOf(xcodeprojPath), 'utf8'),
+    ]) {
+      expect(content).not.toContain('.pnpm');
+    }
+  });
+
+  it('prefers the nearest node_modules link to react-native', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldPnpmApp();
+    fs.mkdirSync(path.join(appRoot, 'node_modules'));
+    fs.symlinkSync(rnRoot, path.join(appRoot, 'node_modules', 'react-native'));
+
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+
+    expect(fs.readFileSync(path.join(appRoot, XCCONFIG_REL), 'utf8')).toContain(
+      '\nREACT_NATIVE_PATH = $(SRCROOT)/node_modules/react-native\n',
+    );
+  });
+
+  it('skips a nearer node_modules/react-native that is another install', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldPnpmApp();
+    fs.mkdirSync(path.join(appRoot, 'node_modules', 'react-native'), {
+      recursive: true,
+    });
+
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+
+    expect(fs.readFileSync(path.join(appRoot, XCCONFIG_REL), 'utf8')).toContain(
+      '\nREACT_NATIVE_PATH = $(SRCROOT)/../node_modules/react-native\n',
+    );
+  });
+
+  it('falls back to the given path when no node_modules link resolves to it', () => {
+    const {appRoot, xcodeprojPath} = scaffoldApp();
+    const vendored = path.join(appRoot, 'vendor', 'react-native');
+    fs.mkdirSync(vendored, {recursive: true});
+
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: vendored,
+      xcodeprojPath,
+    });
+
+    const [xcconfig, syncScript] = generatedFileContents(appRoot);
+    expect(xcconfig).toContain(
+      '\nREACT_NATIVE_PATH = $(SRCROOT)/vendor/react-native\n',
+    );
+    expect(syncScript).toContain('RN_DIR="vendor/react-native"');
   });
 });
 
@@ -228,11 +392,15 @@ describe('removeSpmInjection — the surgical inverse of add', () => {
     expect(fs.existsSync(path.join(xcodeprojPath, SPM_INJECTED_MARKER))).toBe(
       true,
     );
+    expect(generatedFileContents(appRoot)).not.toContain(null);
 
     const removed = removeSpmInjection({appRoot, xcodeprojPath});
     expect(removed.status).toBe('removed');
     // Byte-identical to the pre-add pbxproj.
     expect(pbxprojOf(xcodeprojPath)).toBe(before);
+    expect(generatedFileContents(appRoot)).toEqual(
+      GENERATED_FILES.map(() => null),
+    );
     // Marker is gone.
     expect(fs.existsSync(path.join(xcodeprojPath, SPM_INJECTED_MARKER))).toBe(
       false,
@@ -258,12 +426,14 @@ describe('removeSpmInjection — the surgical inverse of add', () => {
     sync();
     const injected = pbxprojOf(xcodeprojPath);
     const marker = markerTextOf(xcodeprojPath);
+    const files = generatedFileContents(appRoot);
     const schemePath = schemePathOf(xcodeprojPath);
     expect(fs.existsSync(schemePath)).toBe(true);
 
     sync();
-    // The re-sync changed neither the project…
+    // The re-sync changed neither the project, nor the files it generates…
     expect(pbxprojOf(xcodeprojPath)).toBe(injected);
+    expect(generatedFileContents(appRoot)).toEqual(files);
     // …nor the record of what has to be undone.
     expect(markerTextOf(xcodeprojPath)).toBe(marker);
 
@@ -373,6 +543,267 @@ describe('removeSpmInjection — the surgical inverse of add', () => {
     const removed = removeSpmInjection({appRoot, xcodeprojPath});
     expect(removed.status).toBe('removed');
     expect(pbxprojOf(xcodeprojPath)).toBe(before);
+  });
+
+  it('keeps a base configuration the user re-pointed after add, and the xcconfig it may include', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    const repointed = pbxprojOf(xcodeprojPath).replace(
+      /baseConfigurationReference = [0-9A-F]{24} \/\* ReactNativeSPM\.xcconfig \*\//g,
+      'baseConfigurationReference = CC0000000000000000000001 /* App.xcconfig */',
+    );
+    fs.writeFileSync(
+      path.join(xcodeprojPath, 'project.pbxproj'),
+      repointed,
+      'utf8',
+    );
+
+    expect(removeSpmInjection({appRoot, xcodeprojPath}).status).toBe('removed');
+    expect(
+      pbxprojOf(xcodeprojPath).match(
+        /baseConfigurationReference = CC0000000000000000000001 \/\* App\.xcconfig \*\/;/g,
+      ),
+    ).toHaveLength(2);
+    expect(fs.existsSync(path.join(appRoot, XCCONFIG_REL))).toBe(true);
+  });
+
+  it('keeps the xcconfig while one configuration is re-based on a user xcconfig, removing the scripts', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    rebaseDebugOnUserXcconfig(xcodeprojPath);
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+
+    const logged = logSpy.mock.calls.map(([line]) => line).join('\n');
+    logSpy.mockRestore();
+    expect(pbxprojOf(xcodeprojPath)).toContain(
+      'baseConfigurationReference = CC0000000000000000000001 /* App.xcconfig */;',
+    );
+    expect(pbxprojOf(xcodeprojPath)).not.toContain('ReactNativeSPM.xcconfig');
+    expect(
+      generatedFileContents(appRoot).map(content => content != null),
+    ).toEqual([true, false, false]);
+    expect(logged).toContain(`Kept ${XCCONFIG_REL}`);
+  });
+
+  it('accepts a user xcconfig that #includes the generated one, across syncs and deinit', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(FOREIGN_XCCONFIG);
+    writeUserXcconfig(appRoot, `#include "../${XCCONFIG_REL}"\n`);
+    const sync = () =>
+      injectSpmIntoExistingXcodeproj({
+        appRoot,
+        reactNativeRoot: rnRoot,
+        xcodeprojPath,
+      });
+
+    expect(sync().status).toBe('injected');
+    const injected = pbxprojOf(xcodeprojPath);
+    expect(readMarker(xcodeprojPath).xcconfig.includedByConfigUuids).toEqual([
+      APP_DEBUG_CONFIG,
+    ]);
+    expect(sync().status).toBe('injected');
+    expect(pbxprojOf(xcodeprojPath)).toBe(injected);
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+    expect(pbxprojOf(xcodeprojPath)).toBe(FOREIGN_XCCONFIG);
+    expect(fs.existsSync(path.join(appRoot, XCCONFIG_REL))).toBe(true);
+  });
+
+  it('keeps the xcconfig a recorded configuration included, even once its base is gone', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(FOREIGN_XCCONFIG);
+    writeUserXcconfig(appRoot, `#include "../${XCCONFIG_REL}"\n`);
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    fs.writeFileSync(
+      path.join(xcodeprojPath, 'project.pbxproj'),
+      pbxprojOf(xcodeprojPath).replace(
+        '\t\t\tbaseConfigurationReference = CC0000000000000000000001 /* App.xcconfig */;\n',
+        '',
+      ),
+      'utf8',
+    );
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+    expect(fs.existsSync(path.join(appRoot, XCCONFIG_REL))).toBe(true);
+  });
+
+  it('deletes the xcconfig for a marker written before includes were recorded', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    const marker = readMarker(xcodeprojPath);
+    delete marker.xcconfig.includedByConfigUuids;
+    fs.writeFileSync(
+      path.join(xcodeprojPath, SPM_INJECTED_MARKER),
+      JSON.stringify(marker, null, 2) + '\n',
+    );
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+    expect(pbxprojOf(xcodeprojPath)).toBe(PLAIN);
+    expect(generatedFileContents(appRoot)).toEqual(
+      GENERATED_FILES.map(() => null),
+    );
+  });
+
+  // A ${PODS_ROOT}-anchored value resolves empty without CocoaPods, so putting
+  // it back would only restore a broken setting.
+  it('does not restore the ${PODS_ROOT}-anchored REACT_NATIVE_PATH it removed', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(
+      withSetting(
+        'REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";',
+      ),
+    );
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(pbxprojOf(xcodeprojPath)).not.toContain('PODS_ROOT');
+    expect(
+      readMarker(xcodeprojPath).xcconfig.removedPodsRootReactNativePath,
+    ).toBe(true);
+
+    // Sticky: the update that follows no longer sees the value it removed.
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(
+      readMarker(xcodeprojPath).xcconfig.removedPodsRootReactNativePath,
+    ).toBe(true);
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+    expect(pbxprojOf(xcodeprojPath)).toBe(PLAIN);
+  });
+
+  it('refuses a setting without $(inherited) and leaves the project untouched', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(
+      withSetting('HEADER_SEARCH_PATHS =   ;'),
+    );
+    const before = pbxprojOf(xcodeprojPath);
+    const result = injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(result.status).toBe('refused');
+    expect(result.reason).toContain('HEADER_SEARCH_PATHS (Debug, Release)');
+    expect(pbxprojOf(xcodeprojPath)).toBe(before);
+    expect(fs.existsSync(path.join(xcodeprojPath, SPM_INJECTED_MARKER))).toBe(
+      false,
+    );
+    expect(generatedFileContents(appRoot)).toEqual(
+      GENERATED_FILES.map(() => null),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A project injected before the settings moved to the generated xcconfig
+// carries them in project.pbxproj, recorded per configuration in the marker's
+// `buildSettingChanges`. The next sync reverses that record first, so the
+// project moves over on its own.
+// ---------------------------------------------------------------------------
+describe('a project injected with settings in project.pbxproj', () => {
+  const DEBUG = 'AA0000000000000000000901';
+  const RELEASE = 'AA00000000000000000000A2';
+
+  function scaffoldLegacyApp(fields, change) {
+    const app = scaffoldApp(
+      fields.length > 0 ? withSetting(fields.join('\n\t\t\t\t')) : PLAIN,
+    );
+    fs.writeFileSync(
+      path.join(app.xcodeprojPath, SPM_INJECTED_MARKER),
+      JSON.stringify({
+        target: 'MyApp',
+        targetUuid: 'AA0000000000000000000301',
+        injectedUuids: [],
+        createdArrayFields: [],
+        buildSettingChanges: [DEBUG, RELEASE].map(configUuid => ({
+          configUuid,
+          createdArrayKeys: [],
+          appendedArrayValues: {},
+          createdScalars: [],
+          ...change,
+        })),
+      }),
+    );
+    return app;
+  }
+
+  it('moves them into the generated xcconfig on the next sync', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldLegacyApp(
+      [
+        'OTHER_LDFLAGS = (\n\t\t\t\t\t"$(inherited)",\n\t\t\t\t\t"-ObjC",\n\t\t\t\t);',
+        'REACT_NATIVE_PATH = ../node_modules/react-native;',
+        'RN_SPM_FLAVOR = debug;',
+      ],
+      {
+        createdArrayKeys: ['OTHER_LDFLAGS'],
+        createdScalars: ['REACT_NATIVE_PATH', 'RN_SPM_FLAVOR'],
+      },
+    );
+    expect(
+      injectSpmIntoExistingXcodeproj({
+        appRoot,
+        reactNativeRoot: rnRoot,
+        xcodeprojPath,
+      }).status,
+    ).toBe('injected');
+
+    const migrated = pbxprojOf(xcodeprojPath);
+    expect(migrated).not.toMatch(
+      /OTHER_LDFLAGS|REACT_NATIVE_PATH|RN_SPM_FLAVOR/,
+    );
+    expect(migrated.match(/baseConfigurationReference = /g)).toHaveLength(2);
+    expect(readMarker(xcodeprojPath)).not.toHaveProperty('buildSettingChanges');
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+    expect(pbxprojOf(xcodeprojPath)).toBe(PLAIN);
+  });
+
+  // The setting the user had before the promotion lacks $(inherited), which
+  // only shows once the promotion is reversed.
+  it('refuses when reversing a promotion leaves a setting without $(inherited)', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldLegacyApp(
+      [
+        'OTHER_LDFLAGS = (\n\t\t\t\t\t"$(inherited)",\n\t\t\t\t\t"-lc++",\n\t\t\t\t\t"-ObjC",\n\t\t\t\t);',
+      ],
+      {promotedArrayScalars: {OTHER_LDFLAGS: '"-lc++"'}},
+    );
+    const result = injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(result.status).toBe('refused');
+    expect(result.reason).toContain('OTHER_LDFLAGS (Debug, Release)');
+  });
+
+  it('does not resurrect a promoted setting the user has since deleted', () => {
+    const {appRoot, xcodeprojPath} = scaffoldLegacyApp([], {
+      promotedArrayScalars: {
+        HEADER_SEARCH_PATHS: '"$(inherited) $(SRCROOT)/vendor/include"',
+      },
+    });
+    removeSpmInjection({appRoot, xcodeprojPath});
+    expect(pbxprojOf(xcodeprojPath)).toBe(PLAIN);
   });
 });
 
@@ -1325,10 +1756,9 @@ describe.each(Object.entries(PRE_EXISTING_HEADER_SEARCH_PATHS))(
 // findField's token for a BARE scalar ends AT the `;`, so it includes any
 // whitespace before it. Deinit must put those bytes back exactly, not a
 // tidied-up version of them.
-describe.each([
-  'HEADER_SEARCH_PATHS = $(inherited)   ; /* note */',
-  'HEADER_SEARCH_PATHS =   ;',
-])('removeSpmInjection with the untrimmed scalar `%s`', field => {
+describe('removeSpmInjection with an untrimmed scalar', () => {
+  const field = 'HEADER_SEARCH_PATHS = $(inherited)   ; /* note */';
+
   it('restores it byte-for-byte', () => {
     const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(withSetting(field));
     const before = pbxprojOf(xcodeprojPath);
@@ -1345,12 +1775,10 @@ describe.each([
   });
 });
 
-describe('a scalar array setting injection has nothing to add to', () => {
+describe("a list setting of the project's own that keeps $(inherited)", () => {
   const SCALAR = 'FRAMEWORK_SEARCH_PATHS = "$(inherited)";';
   const EDITED = 'FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/Vendor";';
 
-  // The fixture's flavored-frameworks manifest is empty, so
-  // FRAMEWORK_SEARCH_PATHS is injected with no values at all.
   it('is left untouched, unrecorded, and survives a later user edit', () => {
     const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(withSetting(SCALAR));
 
@@ -1363,11 +1791,7 @@ describe('a scalar array setting injection has nothing to add to', () => {
     const injected = pbxprojOf(xcodeprojPath);
     expect(injected).toContain(SCALAR);
     expect(injected).not.toMatch(/FRAMEWORK_SEARCH_PATHS = \(/);
-    for (const change of readMarker(xcodeprojPath).buildSettingChanges) {
-      expect(change.promotedArrayScalars ?? {}).not.toHaveProperty(
-        'FRAMEWORK_SEARCH_PATHS',
-      );
-    }
+    expect(markerTextOf(xcodeprojPath)).not.toContain('FRAMEWORK_SEARCH_PATHS');
 
     fs.writeFileSync(
       path.join(xcodeprojPath, 'project.pbxproj'),
@@ -1379,72 +1803,5 @@ describe('a scalar array setting injection has nothing to add to', () => {
     const after = pbxprojOf(xcodeprojPath);
     expect(after).toContain(EDITED);
     expect(after).not.toContain(SCALAR);
-  });
-});
-
-describe('a promoted array setting the user deleted after add', () => {
-  const SCALAR = '"$(inherited) $(SRCROOT)/vendor/include"';
-
-  it('is not resurrected by deinit', () => {
-    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(
-      withHeaderSearchPaths(SCALAR),
-    );
-    const before = pbxprojOf(xcodeprojPath);
-
-    injectSpmIntoExistingXcodeproj({
-      appRoot,
-      reactNativeRoot: rnRoot,
-      xcodeprojPath,
-    });
-
-    const deleted = pbxprojOf(xcodeprojPath).replace(
-      /\n\t+HEADER_SEARCH_PATHS = \(\n[\s\S]*?\n\t+\);/g,
-      '',
-    );
-    expect(deleted).not.toContain('HEADER_SEARCH_PATHS');
-    fs.writeFileSync(
-      path.join(xcodeprojPath, 'project.pbxproj'),
-      deleted,
-      'utf8',
-    );
-
-    removeSpmInjection({appRoot, xcodeprojPath});
-
-    // Everything else is back to its pre-injection bytes; only the setting the
-    // user deleted stays gone.
-    expect(pbxprojOf(xcodeprojPath)).toBe(
-      before.replaceAll(`\n\t\t\t\tHEADER_SEARCH_PATHS = ${SCALAR};`, ''),
-    );
-  });
-});
-
-// `deinit` removes appendedArrayValues before it restores promotedArrayScalars,
-// so recording a key under both happens to come out right today: the scalar
-// restore rewrites the whole value last. That makes the exclusivity below
-// invisible to a round-trip test, which is why it is asserted on the marker
-// directly — reversing those two loops would otherwise silently start removing
-// array members from an already-restored scalar.
-describe('a promoted scalar is recorded once, not twice', () => {
-  it('records promotedArrayScalars and not appendedArrayValues for the key', () => {
-    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp(
-      withHeaderSearchPaths('"$(inherited) $(SRCROOT)/vendor/include"'),
-    );
-
-    injectSpmIntoExistingXcodeproj({
-      appRoot,
-      reactNativeRoot: rnRoot,
-      xcodeprojPath,
-    });
-
-    const changes = readMarker(xcodeprojPath).buildSettingChanges;
-    expect(changes.length).toBeGreaterThan(0);
-    for (const change of changes) {
-      expect(Object.keys(change.promotedArrayScalars ?? {})).toContain(
-        'HEADER_SEARCH_PATHS',
-      );
-      expect(Object.keys(change.appendedArrayValues ?? {})).not.toContain(
-        'HEADER_SEARCH_PATHS',
-      );
-    }
   });
 });
