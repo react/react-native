@@ -20,8 +20,8 @@ import com.facebook.react.common.network.OkHttpCallUtil
 import com.facebook.testutils.shadows.ShadowArguments
 import com.facebook.testutils.shadows.ShadowInspectorNetworkReporter
 import com.facebook.testutils.shadows.ShadowSoLoader
+import java.io.ByteArrayInputStream
 import java.io.IOException
-import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import okhttp3.Call
 import okhttp3.Headers
@@ -414,14 +414,14 @@ class NetworkingModuleTest {
 
   @Test
   fun testMultipartPostRequestBody() {
-    val inputStream = mock<InputStream>()
-    whenever(inputStream.available()).thenReturn("imageUri".length)
     setupRequestBodyUtil()
-    with(requestBodyUtil) {
-      `when`<InputStream> { RequestBodyUtil.getFileInputStream(any(), any()) }
-          .thenReturn(inputStream)
-      `when`<RequestBody> { RequestBodyUtil.create(any(), any()) }.thenCallRealMethod()
-    }
+    requestBodyUtil
+        .`when`<RequestBody> { RequestBodyUtil.create(any(), any(), any()) }
+        .thenAnswer { invocation ->
+          UriRequestBody(invocation.getArgument(1), "imageUri".length.toLong()) {
+            ByteArrayInputStream("imageUri".toByteArray())
+          }
+        }
     val multipartBodyBuilderMock =
         mockConstruction(MultipartBody.Builder::class.java) { mock, _ ->
           whenever(mock.setType(any())).thenReturn(mock)
@@ -473,8 +473,9 @@ class NetworkingModuleTest {
     )
 
     // verify RequestBodyPart for image
-    requestBodyUtil.verify { RequestBodyUtil.getFileInputStream(any(), eq("imageUri")) }
-    requestBodyUtil.verify { RequestBodyUtil.create(eq(MediaType.parse("image/jpg")), any()) }
+    requestBodyUtil.verify {
+      RequestBodyUtil.create(any(), eq(MediaType.parse("image/jpg")), eq("imageUri"))
+    }
 
     // verify body
     val multipartBuilder = multipartBodyBuilderMock.constructed()[0]

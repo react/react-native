@@ -405,6 +405,45 @@ class NetworkEventUtilTest {
   }
 
   @Test
+  fun testGetRequestBodyPreviewDoesNotReadSingleUriBody() {
+    // A UriRequestBody isn't one-shot, but reading it would read the whole file just to build
+    // the preview, so it must get the same placeholder
+    var opened = false
+    val body =
+        UriRequestBody(MediaType.parse("application/octet-stream"), 512) {
+          opened = true
+          ByteArrayInputStream(ByteArray(512))
+        }
+
+    val preview = NetworkEventUtil.getRequestBodyPreview(body)
+
+    assertThat(preview).isEqualTo("[Binary data, 512 bytes]")
+    assertThat(opened).isFalse()
+  }
+
+  @Test
+  fun testGetRequestBodyPreviewDoesNotReadMultipartUriPart() {
+    var opened = false
+    val filePart =
+        UriRequestBody(MediaType.parse("application/octet-stream"), 2048) {
+          opened = true
+          ByteArrayInputStream(ByteArray(2048))
+        }
+    val body =
+        MultipartBody.Builder("test-boundary")
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("description", "an image")
+            .addFormDataPart("file", "photo.jpg", filePart)
+            .build()
+
+    val preview = NetworkEventUtil.getRequestBodyPreview(body)
+
+    assertThat(preview).contains("an image")
+    assertThat(preview).contains("[Binary data, 2048 bytes]")
+    assertThat(opened).isFalse()
+  }
+
+  @Test
   fun testNullReactContext() {
     val url = "http://example.com"
 
