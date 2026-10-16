@@ -931,7 +931,11 @@ public open class ReactTextInputManager public constructor() :
       }
     }
 
-    editText.setOnEditorActionListener { _: TextView?, actionId: Int, _: KeyEvent? ->
+    editText.setOnEditorActionListener { _: TextView?, actionId: Int, keyEvent: KeyEvent? ->
+      // TextView calls this again on key up for a hardware Enter it already handled on key down
+      if (keyEvent?.action == KeyEvent.ACTION_UP) {
+        return@setOnEditorActionListener true
+      }
       if ((actionId and EditorInfo.IME_MASK_ACTION) != 0 || actionId == EditorInfo.IME_NULL) {
         val isMultiline = editText.isMultiline
 
