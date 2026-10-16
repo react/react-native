@@ -16,6 +16,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.RippleDrawable
 import android.os.Build
 import android.view.View
 import android.widget.ImageView
@@ -222,6 +223,13 @@ public object BackgroundStyleApplicator {
     compositeBackgroundDrawable.background?.invalidateSelf()
     compositeBackgroundDrawable.backgroundImage?.invalidateSelf()
     compositeBackgroundDrawable.border?.invalidateSelf()
+
+    // Update feedback underlay and overlay
+    updateRippleMaskBorderRadius(
+        compositeBackgroundDrawable.feedbackUnderlay,
+        compositeBackgroundDrawable.borderRadius,
+    )
+    updateRippleMaskBorderRadius(view.foreground, compositeBackgroundDrawable.borderRadius)
 
     if (Build.VERSION.SDK_INT >= MIN_OUTSET_BOX_SHADOW_SDK_VERSION) {
       for (shadow in
@@ -448,7 +456,20 @@ public object BackgroundStyleApplicator {
    */
   @JvmStatic
   public fun setFeedbackUnderlay(view: View, drawable: Drawable?) {
-    view.background = ensureCompositeBackgroundDrawable(view).withNewFeedbackUnderlay(drawable)
+    val compositeBackgroundDrawable = ensureCompositeBackgroundDrawable(view)
+    updateRippleMaskBorderRadius(drawable, compositeBackgroundDrawable.borderRadius)
+    view.background = compositeBackgroundDrawable.withNewFeedbackUnderlay(drawable)
+  }
+
+  /**
+   * Sets a feedback overlay drawable for the view.
+   *
+   * @param view The view to apply the feedback overlay to
+   * @param drawable The drawable to use as feedback overlay, or null to remove
+   */
+  internal fun setFeedbackOverlay(view: View, drawable: Drawable?) {
+    updateRippleMaskBorderRadius(drawable, getCompositeBackgroundDrawable(view)?.borderRadius)
+    view.foreground = drawable
   }
 
   /**
@@ -652,6 +673,19 @@ public object BackgroundStyleApplicator {
 
   private fun getCompositeBackgroundDrawable(view: View): CompositeBackgroundDrawable? =
       view.background as? CompositeBackgroundDrawable
+
+  private fun updateRippleMaskBorderRadius(
+      drawable: Drawable?,
+      borderRadius: BorderRadiusStyle?,
+  ) {
+    val mask =
+        (drawable as? RippleDrawable)?.findDrawableByLayerId(android.R.id.mask)
+            as? BackgroundDrawable
+    if (mask != null) {
+      mask.borderRadius = borderRadius
+      mask.invalidateSelf()
+    }
+  }
 
   private fun ensureBackgroundDrawable(view: View): BackgroundDrawable {
     val compositeBackgroundDrawable = ensureCompositeBackgroundDrawable(view)
