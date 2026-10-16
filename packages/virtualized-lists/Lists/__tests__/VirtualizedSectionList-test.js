@@ -215,6 +215,64 @@ describe('VirtualizedSectionList', () => {
     expect(component).toMatchSnapshot();
   });
 
+  it('syncs ItemWithSeparator separator props when list re-renders with new leadingItem/trailingItem', async () => {
+    // Reproduces: When ItemWithSeparator re-renders with new props (e.g. after reorder),
+    // leadingItem/trailingItem can become stale (e.g. undefined when the row was previously at a boundary).
+    const separatorPropsReceived = [];
+    const ItemSeparatorWithCapture = props => {
+      separatorPropsReceived.push({
+        leadingItem: props.leadingItem?.key,
+        trailingItem: props.trailingItem?.key,
+      });
+      return <separator {...props} />;
+    };
+
+    let setSections;
+    const initialSections = [
+      {title: 's0', data: [{key: 'a'}, {key: 'b'}, {key: 'c'}]},
+    ];
+    const reorderedSections = [
+      {title: 's0', data: [{key: 'b'}, {key: 'a'}, {key: 'c'}]},
+    ];
+
+    function ListWithState() {
+      const [sections, setSectionsState] = React.useState(initialSections);
+      setSections = setSectionsState;
+      return (
+        <VirtualizedSectionList
+          ItemSeparatorComponent={ItemSeparatorWithCapture}
+          sections={sections}
+          renderItem={({item}) => <item title={item.key} />}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          keyExtractor={(item, index) => item.key}
+        />
+      );
+    }
+
+    let component;
+    await ReactTestRenderer.act(() => {
+      component = ReactTestRenderer.create(<ListWithState />);
+    });
+
+    separatorPropsReceived.length = 0;
+
+    await ReactTestRenderer.act(() => {
+      setSections(reorderedSections);
+    });
+
+    // After reorder: row "b" moved from index 1 to 0. Its trailing separator
+    // (between b and a) should show leadingItem: b, trailingItem: a.
+    // But buggy ItemWithSeparator keeps the initial
+    // state from when "b" was at index 1 (leadingItem: a, trailingItem: c), so
+    // the separator receives stale props and this assertion fails.
+    expect(separatorPropsReceived).toEqual(
+      expect.arrayContaining([
+        {leadingItem: 'b', trailingItem: 'a'},
+      ]),
+    );
+  });
+
   describe('scrollToLocation', () => {
     const ITEM_HEIGHT = 100;
 
