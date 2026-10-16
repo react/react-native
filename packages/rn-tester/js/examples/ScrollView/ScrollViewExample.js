@@ -470,6 +470,22 @@ const examples: Array<RNTesterModuleExample> = [
       return <ChildrenWithTouchEventsOverflowingContainerHorizontal />;
     },
   },
+  {
+    title: '<ScrollView> TextInputs\n',
+    description:
+      'Vertical scroll gestures on a TextInput should scroll the ScrollView unless the input can also scroll vertically.',
+    render(): React.Node {
+      return <VerticalScrollTextInputs />;
+    },
+  },
+  {
+    title: '<ScrollView> TextInputs (horizontal = true)\n',
+    description:
+      'Horizontal scroll gestures on a TextInput should scroll the ScrollView unless the input can also scroll horizontally.',
+    render(): React.Node {
+      return <HorizontalScrollTextInputs />;
+    },
+  },
 ];
 
 if (Platform.OS === 'ios') {
@@ -607,6 +623,131 @@ const ScrollsChildToFocusExample = () => {
         When false, focusing a TextInput will not automatically scroll it into
         view.
       </RNTesterText>
+    </View>
+  );
+};
+
+const VerticalScrollTextInputs = () => {
+  const _verticalScrollView =
+    useRef<?React.ElementRef<typeof ScrollView>>(null);
+  const [verticalScrolled, setVerticalScrolled] = useState(false);
+
+  return (
+    <View>
+      <RNTesterText style={styles.text}>
+        scrolled = {verticalScrolled ? 'true' : 'false'}
+      </RNTesterText>
+      <ScrollView
+        ref={_verticalScrollView}
+        style={{backgroundColor: '#eeeeee', height: 350}}
+        contentContainerStyle={{padding: 10, gap: 20}}
+        nestedScrollEnabled
+        onScroll={event => {
+          setVerticalScrolled(event.nativeEvent.contentOffset.y > 0);
+        }}>
+        <TextInput placeholder="TextInput" style={styles.textInput} />
+        <TextInput
+          placeholder="TextInput (center)"
+          style={styles.textInput}
+          textAlign="center"
+        />
+        <TextInput
+          placeholder="TextInput (right)"
+          style={styles.textInput}
+          textAlign="right"
+        />
+        <TextInput
+          defaultValue={
+            'A TextInput with a value that overflows the input width so it can be scrolled horizontally.'
+          }
+          placeholder="TextInput"
+          style={styles.textInput}
+        />
+        <TextInput
+          defaultValue={
+            'A multiline TextInput\nwith a value that\noverflows the input\nheight so it can be\nscrolled vertically.'
+          }
+          placeholder="TextInput"
+          style={styles.textInput}
+          multiline
+        />
+        <View
+          style={[styles.textInput, {backgroundColor: '#cccccc', height: 200}]}
+        />
+      </ScrollView>
+      <Button
+        label="Scroll to top"
+        onPress={() => {
+          nullthrows<$FlowFixMe>(_verticalScrollView.current).scrollTo({
+            y: 0,
+          });
+        }}
+      />
+    </View>
+  );
+};
+
+const HorizontalScrollTextInputs = () => {
+  const _horizontalScrollView =
+    useRef<?React.ElementRef<typeof ScrollView>>(null);
+  const [horizontalScrolled, setHorizontalScrolled] = useState(false);
+
+  return (
+    <View>
+      <RNTesterText style={styles.text} testID="horizontal_status">
+        scrolled = {horizontalScrolled ? 'true' : 'false'}
+      </RNTesterText>
+      <ScrollView
+        ref={_horizontalScrollView}
+        style={{backgroundColor: '#eeeeee'}}
+        contentContainerStyle={{padding: 10, gap: 20}}
+        nestedScrollEnabled
+        horizontal
+        onScroll={event => {
+          setHorizontalScrolled(event.nativeEvent.contentOffset.x > 0);
+        }}>
+        <View
+          style={[
+            styles.textInput,
+            {backgroundColor: '#cccccc', width: 100, height: '100%'},
+          ]}
+        />
+        <View style={{gap: 20}}>
+          <TextInput
+            placeholder="TextInput"
+            style={[styles.textInput, {width: 200}]}
+          />
+          <TextInput
+            defaultValue={
+              'A TextInput with a value that overflows the input width so it can be scrolled horizontally.'
+            }
+            placeholder="TextInput"
+            style={[styles.textInput, {width: 200}]}
+          />
+          <TextInput
+            defaultValue={
+              'A multiline TextInput\nwith a value that\noverflows the input\nheight so it can be\nscrolled vertically.'
+            }
+            placeholder="TextInput"
+            style={[styles.textInput, {width: 200}]}
+            multiline
+          />
+        </View>
+        <View
+          style={[
+            styles.textInput,
+            {backgroundColor: '#cccccc', width: 100, height: '100%'},
+          ]}
+        />
+      </ScrollView>
+      <Button
+        label="Scroll to start"
+        onPress={() => {
+          nullthrows<$FlowFixMe>(_horizontalScrollView.current).scrollTo({
+            x: 0,
+          });
+        }}
+      />
     </View>
   );
 };
@@ -1554,8 +1695,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   textInput: {
-    height: 40,
+    height: 48,
     borderColor: 'gray',
     borderWidth: 1,
+    paddingHorizontal: 10,
   },
 });
