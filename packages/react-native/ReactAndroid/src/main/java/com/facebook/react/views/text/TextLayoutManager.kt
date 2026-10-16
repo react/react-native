@@ -841,7 +841,8 @@ internal object TextLayoutManager {
     }
   }
 
-  private fun createLayout(
+  @VisibleForTesting
+  internal fun createLayout(
       text: Spannable,
       boring: BoringLayout.Metrics?,
       width: Float,
@@ -1356,6 +1357,8 @@ internal object TextLayoutManager {
         result.textBreakStrategy,
         result.justificationMode,
         baseTextAttributes,
+        // `result.layout.text` may be ellipsized; keep the full text for a11y.
+        sourceText = text,
     )
   }
 

@@ -713,7 +713,8 @@ public class FabricUIManager
         reactTags,
         preparedLayout.getTextBreakStrategy(),
         preparedLayout.getJustificationMode(),
-        preparedLayout.getBaseTextAttributes());
+        preparedLayout.getBaseTextAttributes(),
+        preparedLayout.getSourceText());
   }
 
   @AnyThread
