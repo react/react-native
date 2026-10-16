@@ -44,8 +44,15 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
+            const {data: basePullRequests} = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${pullRequest.base.ref}`,
+            });
             const {message, status, shouldAddPickLabel} = checkBranchTarget(
               pullRequest.base.ref,
+              basePullRequests.length > 0,
             );
 
             if (shouldAddPickLabel) {
