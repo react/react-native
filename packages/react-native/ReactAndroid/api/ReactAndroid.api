@@ -102,6 +102,7 @@ public class com/facebook/react/ReactActivityDelegate {
 	public fun getReactInstanceManager ()Lcom/facebook/react/ReactInstanceManager;
 	protected fun getReactNativeHost ()Lcom/facebook/react/ReactNativeHost;
 	protected fun isFabricEnabled ()Z
+	protected fun isFullyDrawnReportingEnabled ()Z
 	protected fun isWideColorGamutEnabled ()Z
 	protected fun loadApp (Ljava/lang/String;)V
 	public fun onActivityResult (IILandroid/content/Intent;)V
@@ -138,6 +139,7 @@ public class com/facebook/react/ReactDelegate {
 	public final fun getReactInstanceManager ()Lcom/facebook/react/ReactInstanceManager;
 	public final fun getReactRootView ()Lcom/facebook/react/ReactRootView;
 	protected final fun isFabricEnabled ()Z
+	public final fun isFullyDrawnReportingEnabled ()Z
 	public final fun loadApp ()V
 	public final fun loadApp (Ljava/lang/String;)V
 	public final fun onActivityResult (IILandroid/content/Intent;Z)V
@@ -152,6 +154,7 @@ public class com/facebook/react/ReactDelegate {
 	public final fun onUserLeaveHint ()V
 	public final fun onWindowFocusChanged (Z)V
 	public final fun reload ()V
+	public final fun setFullyDrawnReportingEnabled (Z)V
 	public final fun setReactRootView (Lcom/facebook/react/ReactRootView;)V
 	public final fun setReactSurface (Lcom/facebook/react/interfaces/fabric/ReactSurface;)V
 	public final fun shouldShowDevMenuOrReload (ILandroid/view/KeyEvent;)Z
