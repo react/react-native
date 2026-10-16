@@ -36,6 +36,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.EditorInfo
@@ -91,6 +92,7 @@ import com.facebook.react.views.text.internal.span.ReactStrikethroughSpan
 import com.facebook.react.views.text.internal.span.ReactTextPaintHolderSpan
 import com.facebook.react.views.text.internal.span.ReactUnderlineSpan
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -132,6 +134,9 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var scrollWatcher: ScrollWatcher?
   private var keyListener: InternalKeyListener? = null
   private var detectScrollMovement = false
+  private var touchDownX = 0f
+  private var touchDownY = 0f
+  private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
   private var onKeyPress = false
   private val textAttributes: TextAttributes
   private var typefaceDirty = false
@@ -316,6 +321,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   override fun onTouchEvent(ev: MotionEvent): Boolean {
     when (ev.action) {
       MotionEvent.ACTION_DOWN -> {
+        touchDownX = ev.x
+        touchDownY = ev.y
         detectScrollMovement = true
         // Disallow parent views to intercept touch events, until we can detect if we should be
         // capturing these touches or not.
@@ -324,19 +331,31 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
       MotionEvent.ACTION_MOVE ->
           if (detectScrollMovement) {
-            if (
-                !canScrollVertically(-1) &&
-                    !canScrollVertically(1) &&
-                    !canScrollHorizontally(-1) &&
-                    !canScrollHorizontally(1)
-            ) {
-              // We cannot scroll, let parent views take care of these touches.
-              this.parent.requestDisallowInterceptTouchEvent(false)
+            val deltaX = ev.x - touchDownX
+            val deltaY = ev.y - touchDownY
+            val dominantAxisDistance = max(abs(deltaX), abs(deltaY))
+            if (dominantAxisDistance > touchSlop) {
+              if (!canScrollInGestureDirection(deltaX, deltaY)) {
+                // We cannot scroll, let parent views take care of these touches.
+                this.parent.requestDisallowInterceptTouchEvent(false)
+              }
+              detectScrollMovement = false
             }
-            detectScrollMovement = false
           }
     }
     return super.onTouchEvent(ev)
+  }
+
+  private fun canScrollInGestureDirection(deltaX: Float, deltaY: Float): Boolean {
+    if (abs(deltaY) > abs(deltaX)) {
+      val canScrollUp = deltaY > 0 && canScrollVertically(-1)
+      val canScrollDown = deltaY <= 0 && canScrollVertically(1)
+      return canScrollUp || canScrollDown
+    } else {
+      val canScrollLeft = deltaX > 0 && canScrollHorizontally(-1)
+      val canScrollRight = deltaX <= 0 && canScrollHorizontally(1)
+      return canScrollLeft || canScrollRight
+    }
   }
 
   // Consume 'Enter' key events: TextView tries to give focus to the next TextInput, but it can't
