@@ -64,7 +64,7 @@ else
   # during recursive copying, and `rsync` is not installed by default in Git Bash.
   # As an added benefit, blob copy is faster.
   if [ "$OSTYPE" = "msys" ] || [ "$OSTYPE" = "cygwin" ]; then
-    tar cf - --exclude='*.lock' "$CODEGEN_DIR" | (cd "$TMP_DIR" && tar xvf - );
+    tar cf - --exclude='*.lock' -C "$CODEGEN_DIR" . | (cd "$TMP_DIR" && tar xvf - );
   else
     /bin/cp -R "$CODEGEN_DIR/." "$TMP_DIR";
   fi

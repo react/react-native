@@ -483,7 +483,7 @@ val prepareKotlinBuildScriptModel by
 val buildCodegenCLI by
     tasks.registering(BuildCodegenCLITask::class) {
       codegenDir.set(file("$rootDir/node_modules/@react-native/codegen"))
-      bashWindowsHome.set(project.findProperty("react.internal.windowsBashPath").toString())
+      bashWindowsHome.set(project.findProperty("react.internal.windowsBashPath")?.toString())
       logFile.set(file("$buildDir/codegen.log"))
       inputFiles.set(fileTree(codegenDir) { include("src/**/*.js") })
       outputFiles.set(
