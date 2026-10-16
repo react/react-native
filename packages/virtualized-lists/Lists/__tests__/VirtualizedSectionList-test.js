@@ -215,6 +215,73 @@ describe('VirtualizedSectionList', () => {
     expect(component).toMatchSnapshot();
   });
 
+  it('passes fresh leadingItem and trailingItem to ItemSeparatorComponent after sections reorder', async () => {
+    // Regression test for https://github.com/facebook/react-native/issues/55708.
+    // ItemWithSeparator stored leadingItem/trailingItem in useState seeded from
+    // the first render, so when the same cell key re-rendered with reordered
+    // data the separator kept the stale items (or undefined when the previous
+    // row was at a section boundary).
+    const separatorPropsByKey: {
+      [string]: Array<{leading: ?string, trailing: ?string}>,
+    } = {};
+    const RecordingSeparator = (props: $FlowFixMe) => {
+      const itemKey = props.leadingItem?.key ?? '__head__';
+      separatorPropsByKey[itemKey] = separatorPropsByKey[itemKey] ?? [];
+      separatorPropsByKey[itemKey].push({
+        leading: props.leadingItem?.key,
+        trailing: props.trailingItem?.key,
+      });
+      return <separator />;
+    };
+
+    const initial = [
+      // $FlowFixMe[incompatible-type]
+      {title: 's', data: [{key: 'a'}, {key: 'b'}, {key: 'c'}]},
+    ];
+    const reordered = [
+      // $FlowFixMe[incompatible-type]
+      {title: 's', data: [{key: 'b'}, {key: 'a'}, {key: 'c'}]},
+    ];
+
+    let component;
+    await ReactTestRenderer.act(() => {
+      component = ReactTestRenderer.create(
+        <VirtualizedSectionList
+          sections={initial}
+          // $FlowFixMe[missing-local-annot]
+          renderItem={({item}) => <item value={item.key} />}
+          getItem={(data, key) => data[key]}
+          getItemCount={data => data.length}
+          ItemSeparatorComponent={RecordingSeparator}
+        />,
+      );
+    });
+
+    await ReactTestRenderer.act(() => {
+      nullthrows(component).update(
+        <VirtualizedSectionList
+          sections={reordered}
+          // $FlowFixMe[missing-local-annot]
+          renderItem={({item}) => <item value={item.key} />}
+          getItem={(data, key) => data[key]}
+          getItemCount={data => data.length}
+          ItemSeparatorComponent={RecordingSeparator}
+        />,
+      );
+    });
+
+    // Last render of separator below "b" must reflect the reordered list:
+    // the item below b is now a, so trailing must be 'a'.
+    const lastBelowB = nullthrows(separatorPropsByKey['b']).at(-1);
+    expect(lastBelowB?.leading).toBe('b');
+    expect(lastBelowB?.trailing).toBe('a');
+
+    // Last render of separator below "a" must reflect a→c.
+    const lastBelowA = nullthrows(separatorPropsByKey['a']).at(-1);
+    expect(lastBelowA?.leading).toBe('a');
+    expect(lastBelowA?.trailing).toBe('c');
+  });
+
   describe('scrollToLocation', () => {
     const ITEM_HEIGHT = 100;
 
