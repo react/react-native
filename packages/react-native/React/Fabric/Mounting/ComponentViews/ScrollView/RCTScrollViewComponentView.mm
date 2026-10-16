@@ -315,6 +315,39 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     _containerView.transform = transform;
     _scrollView.transform = transform;
   }
+  [self _ensureScrollViewMatchesBounds];
+}
+
+// The scroll view is sized only by its autoresizing mask (set in init), which
+// propagates deltas at the moment this view's frame changes. If a frame change
+// lands while the delta cannot propagate (observed on-device: heavy mount /
+// teardown churn under thermal throttle), the scroll view is left at
+// CGRectZero permanently: fully mounted, correctly laid-out content is clipped
+// into invisibility while ShadowTree layout events keep firing. Enforce the
+// invariant explicitly so any desync self-heals on the next layout pass.
+- (void)_ensureScrollViewMatchesBounds
+{
+  CGRect bounds = self.bounds;
+  if (CGSizeEqualToSize(bounds.size, CGSizeZero)) {
+    return;
+  }
+  CGPoint center = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
+  if (!CGSizeEqualToSize(_scrollView.bounds.size, bounds.size) ||
+      !CGPointEqualToPoint(_scrollView.center, center)) {
+    // Adjust bounds.size + center rather than frame so the RTL transform is
+    // respected, and preserve bounds.origin - for UIScrollView it is the
+    // contentOffset.
+    CGRect scrollViewBounds = _scrollView.bounds;
+    scrollViewBounds.size = bounds.size;
+    _scrollView.bounds = scrollViewBounds;
+    _scrollView.center = center;
+  }
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  [self _ensureScrollViewMatchesBounds];
 }
 
 - (bool)isInverted
