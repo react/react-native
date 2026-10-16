@@ -46,6 +46,30 @@ test('deep cjs import', () => {
   `);
 });
 
+test('does not warn for a shadowed require function', () => {
+  const code = `
+    function load(require) {
+      return require('react-native/Libraries/Components/View/View');
+    }
+  `;
+
+  expect(transform(code, [rnDeepImportsWarningPlugin])).not.toContain(
+    'console.warn',
+  );
+});
+
+test('warns for a dynamic import when require is shadowed', () => {
+  const code = `
+    function load(require) {
+      return import('react-native/Libraries/Utilities/Platform');
+    }
+  `;
+
+  expect(transform(code, [rnDeepImportsWarningPlugin])).toContain(
+    "Deep imports from the 'react-native' package are deprecated ('react-native/Libraries/Utilities/Platform').",
+  );
+});
+
 test('multiple deep imports', () => {
   const code = `
     import View from 'react-native/Libraries/Components/View/View';
@@ -71,6 +95,16 @@ test('deep reexport', () => {
     "export { PressabilityDebugView } from 'react-native/Libraries/Pressability/PressabilityDebug';
     console.warn(\\"Deep imports from the 'react-native' package are deprecated ('react-native/Libraries/Pressability/PressabilityDebug'). Source: path/to/project/foo.js 2:4\\");"
   `);
+});
+
+test('deep export all', () => {
+  const code = `
+    export * from 'react-native/Libraries/Utilities/Platform';
+  `;
+
+  expect(transform(code, [rnDeepImportsWarningPlugin])).toContain(
+    "console.warn(\"Deep imports from the 'react-native' package are deprecated ('react-native/Libraries/Utilities/Platform'). Source: path/to/project/foo.js 2:4\");",
+  );
 });
 
 test('import from other package', () => {
