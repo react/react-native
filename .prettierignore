@@ -10,3 +10,5 @@ vendor
 packages/**/types_generated/
 
 packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
+packages/react-native/src/private/webapis/__tests__/wpt/generated/wpt-fixtures.json
+packages/react-native/src/private/webapis/__tests__/wpt/wpt-baseline.json
