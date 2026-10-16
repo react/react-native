@@ -248,6 +248,191 @@ describe('VirtualizedList', () => {
     expect(removeOwner(component.toJSON())).toMatchSnapshot();
   });
 
+  it('sets progressViewOffset on RefreshControl when inverted and layout is known', async () => {
+    const ITEM_HEIGHT = 50;
+    const layout = {width: 300, height: 600};
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={new Array(5).fill().map((_, ii) => ({id: String(ii)}))}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          getItemLayout={({index}) => ({
+            length: ITEM_HEIGHT,
+            offset: index * ITEM_HEIGHT,
+          })}
+          inverted={true}
+          keyExtractor={(item, index) => item.id}
+          onRefresh={jest.fn()}
+          refreshing={false}
+          renderItem={({item}) => <item value={item.id} />}
+        />,
+      );
+    });
+
+    const instance = component.getInstance();
+
+    // Simulate layout to set visibleLength
+    await act(() => {
+      instance._onLayout({nativeEvent: {layout, zoomScale: 1}});
+    });
+
+    // Force re-render after layout
+    await act(() => {
+      instance.forceUpdate();
+    });
+
+    const tree = component.toJSON();
+    // The RefreshControl should have progressViewOffset equal to the visible height
+    const refreshControl = tree.props.refreshControl;
+    expect(refreshControl.props.progressViewOffset).toBe(layout.height);
+  });
+
+  it('does not set progressViewOffset when not inverted', async () => {
+    const ITEM_HEIGHT = 50;
+    const layout = {width: 300, height: 600};
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={new Array(5).fill().map((_, ii) => ({id: String(ii)}))}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          getItemLayout={({index}) => ({
+            length: ITEM_HEIGHT,
+            offset: index * ITEM_HEIGHT,
+          })}
+          inverted={false}
+          keyExtractor={(item, index) => item.id}
+          onRefresh={jest.fn()}
+          refreshing={false}
+          renderItem={({item}) => <item value={item.id} />}
+        />,
+      );
+    });
+
+    const instance = component.getInstance();
+
+    await act(() => {
+      instance._onLayout({nativeEvent: {layout, zoomScale: 1}});
+    });
+
+    await act(() => {
+      instance.forceUpdate();
+    });
+
+    const tree = component.toJSON();
+    const refreshControl = tree.props.refreshControl;
+    // progressViewOffset should be undefined when not inverted
+    expect(refreshControl.props.progressViewOffset).toBeUndefined();
+  });
+
+  it('respects user-provided progressViewOffset when inverted', async () => {
+    const ITEM_HEIGHT = 50;
+    const layout = {width: 300, height: 600};
+    const customOffset = 100;
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={new Array(5).fill().map((_, ii) => ({id: String(ii)}))}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          getItemLayout={({index}) => ({
+            length: ITEM_HEIGHT,
+            offset: index * ITEM_HEIGHT,
+          })}
+          inverted={true}
+          keyExtractor={(item, index) => item.id}
+          onRefresh={jest.fn()}
+          refreshing={false}
+          progressViewOffset={customOffset}
+          renderItem={({item}) => <item value={item.id} />}
+        />,
+      );
+    });
+
+    const instance = component.getInstance();
+
+    await act(() => {
+      instance._onLayout({nativeEvent: {layout, zoomScale: 1}});
+    });
+
+    await act(() => {
+      instance.forceUpdate();
+    });
+
+    const tree = component.toJSON();
+    const refreshControl = tree.props.refreshControl;
+    // User-provided progressViewOffset should be respected
+    expect(refreshControl.props.progressViewOffset).toBe(customOffset);
+  });
+
+  it('does not set progressViewOffset before layout when inverted', async () => {
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={new Array(5).fill().map((_, ii) => ({id: String(ii)}))}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          getItemLayout={({index}) => ({length: 50, offset: index * 50})}
+          inverted={true}
+          keyExtractor={(item, index) => item.id}
+          onRefresh={jest.fn()}
+          refreshing={false}
+          renderItem={({item}) => <item value={item.id} />}
+        />,
+      );
+    });
+
+    const tree = component.toJSON();
+    const refreshControl = tree.props.refreshControl;
+    // Before layout, visibleLength is 0, so offset should be undefined to avoid flicker
+    expect(refreshControl.props.progressViewOffset).toBeUndefined();
+  });
+
+  it('clones custom refreshControl with offset when inverted', async () => {
+    const ITEM_HEIGHT = 50;
+    const layout = {width: 300, height: 600};
+    const RefreshControl = require('react-native').RefreshControl;
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={new Array(5).fill().map((_, ii) => ({id: String(ii)}))}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          getItemLayout={({index}) => ({
+            length: ITEM_HEIGHT,
+            offset: index * ITEM_HEIGHT,
+          })}
+          inverted={true}
+          keyExtractor={(item, index) => item.id}
+          onRefresh={jest.fn()}
+          refreshing={false}
+          refreshControl={<RefreshControl refreshing={false} />}
+          renderItem={({item}) => <item value={item.id} />}
+        />,
+      );
+    });
+
+    const instance = component.getInstance();
+
+    await act(() => {
+      instance._onLayout({nativeEvent: {layout, zoomScale: 1}});
+    });
+
+    await act(() => {
+      instance.forceUpdate();
+    });
+
+    const tree = component.toJSON();
+    const refreshControl = tree.props.refreshControl;
+    expect(refreshControl.props.progressViewOffset).toBe(layout.height);
+  });
+
   it('test getItem functionality where data is not an Array', async () => {
     let component;
     await act(() => {
