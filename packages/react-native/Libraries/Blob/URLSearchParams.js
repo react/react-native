@@ -154,3 +154,9 @@ export class URLSearchParams {
       .join('&');
   }
 }
+
+// `toString()` should return `"[object URLSearchParams]"`
+Object.defineProperty(URLSearchParams.prototype, Symbol.toStringTag, {
+  configurable: true,
+  value: 'URLSearchParams',
+});

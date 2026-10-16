@@ -86,4 +86,10 @@ describe('File', function () {
     // $FlowExpectedError[incompatible-type]
     expect(() => new File([])).toThrow();
   });
+
+  it('should have the File string tag', () => {
+    const file = new File(['abc'], 'test.txt');
+
+    expect(Object.prototype.toString.call(file)).toBe('[object File]');
+  });
 });
