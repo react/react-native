@@ -608,19 +608,12 @@ public open class ReactViewGroup public constructor(context: Context?) :
       return
     }
     focusPropsChanged = false
-    ReactAxOrderHelper.setFocusable(this, focusProps.isFocusable(isFocused))
-    ReactAxOrderHelper.setScreenReaderFocusable(this, focusProps.isScreenReaderFocusable)
-    importantForAccessibility =
-        focusProps.importantForAccessibility(
-            hasContentDescription = !contentDescription.isNullOrEmpty()
-        )
+    focusProps.applyTo(this)
   }
 
   override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
     super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
-    if (!gainFocus && focusProps.focusableOnlyFromJS) {
-      ReactAxOrderHelper.setFocusable(this, false)
-    }
+    focusProps.onFocusChanged(this, gainFocus)
   }
 
   override fun onInitializeAccessibilityNodeInfo(info: AccessibilityNodeInfo) {

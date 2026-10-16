@@ -6040,6 +6040,7 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	public fun onAttachedToWindow ()V
 	protected fun onDraw (Landroid/graphics/Canvas;)V
 	public final fun onFocusChanged (ZILandroid/graphics/Rect;)V
+	public fun onInitializeAccessibilityNodeInfo (Landroid/view/accessibility/AccessibilityNodeInfo;)V
 	protected fun onLayout (ZIIII)V
 	protected fun onMeasure (II)V
 	protected fun onSizeChanged (IIII)V
@@ -6102,7 +6103,10 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public final fun setDataDetectorType (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setDisabled (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setEllipsizeMode (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
+	public final fun setFocusable (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/Boolean;)V
 	public final fun setFontSize (Lcom/facebook/react/views/text/ReactTextView;F)V
+	public synthetic fun setImportantForAccessibility (Landroid/view/View;Ljava/lang/String;)V
+	public fun setImportantForAccessibility (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setLetterSpacing (Lcom/facebook/react/views/text/ReactTextView;F)V
 	public final fun setLineBreak (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
@@ -6111,6 +6115,8 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public synthetic fun setPadding (Landroid/view/View;IIII)V
 	public fun setPadding (Lcom/facebook/react/views/text/ReactTextView;IIII)V
 	protected final fun setReactTextViewManagerCallback (Lcom/facebook/react/views/text/ReactTextViewManagerCallback;)V
+	public synthetic fun setScreenReaderFocusable (Landroid/view/View;Z)V
+	public fun setScreenReaderFocusable (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setSelectable (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setSelectionColor (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/Integer;)V
 	public final fun setTextAlignVertical (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V

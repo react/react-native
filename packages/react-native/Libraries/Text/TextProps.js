@@ -95,6 +95,16 @@ export type TextPropsAndroid = {
   disabled?: ?boolean,
 
   /**
+   * Whether this `Text` should be focusable with a non-touch input device, eg.
+   * receive focus with a hardware keyboard. An accessible `Text` is focusable
+   * unless this is `false`, and accessibility services reach it either way. A
+   * `selectable` `Text` stays focusable, as selecting text takes focus.
+   *
+   * @platform android
+   */
+  focusable?: ?boolean,
+
+  /**
    * Highlight color of the text when selected.
    *
    * @platform android
