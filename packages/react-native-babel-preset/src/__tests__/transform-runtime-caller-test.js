@@ -95,11 +95,9 @@ describe('babel runtime caller options', () => {
   it('has no effect when caller options are absent', () => {
     const code = "import foo from './foo';\nfoo();";
     const result = transformWithCaller(code, {dev: false}, {});
-    // Default runtime version uses the legacy interop form (no `.default`).
+    // The preset's default runtime version applies, which uses the modern
+    // interop form (with `.default`).
     expect(result).toContain(
-      'require("@babel/runtime/helpers/interopRequireDefault")',
-    );
-    expect(result).not.toContain(
       'require("@babel/runtime/helpers/interopRequireDefault").default',
     );
   });
