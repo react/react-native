@@ -296,7 +296,7 @@ async function generateConfigFiles(tempDirectory: string) {
   );
   const adjustedApiExtractorConfig = apiExtractorConfig.replaceAll(
     '${typegen_directory}',
-    tempDirectory,
+    tempDirectory.split(path.sep).join('/'),
   );
   await fs.writeFile(
     path.join(tempDirectory, API_EXTRACTOR_CONFIG_FILE),
