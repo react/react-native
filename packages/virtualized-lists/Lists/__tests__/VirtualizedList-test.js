@@ -3048,6 +3048,82 @@ it('handles rapid prepends with coalesced scroll event (regression for #53542)',
   ).toBeGreaterThanOrEqual(0);
 });
 
+// Trigger: Content above the cell at the start of the viewport changes size, e.g. cells mounted above it are
+// taller than estimated. Native MVCP moves the scroll offset by the same amount, but the layout events reach
+// JS before the scroll event, and a cells update runs in between.
+// Expected: The render window waits for the corrected offset and keeps the anchor cell rendered.
+it('waits for the maintainVisibleContentPosition correction when the anchor cell moves', async () => {
+  const items = generateItems(40);
+  const ITEM_HEIGHT = 10;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(items)}
+      />,
+    );
+  });
+  const instance = component.getInstance();
+  // Lays out the rendered cells: cell 0 (kept for scroll-to-top) and the
+  // render window, `shift` further down than their index says.
+  const layoutRenderedCells = (shift = 0) => {
+    const {first, last} = instance.state.cellsAroundViewport;
+    const indices = [0];
+    for (let i = Math.max(1, first); i <= last; i++) {
+      indices.push(i);
+    }
+    for (const i of indices) {
+      simulateCellLayout(component, items, i, {
+        width: 10,
+        height: ITEM_HEIGHT,
+        x: 0,
+        y: i * ITEM_HEIGHT + shift,
+      });
+    }
+  };
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: items.length * ITEM_HEIGHT},
+    });
+    layoutRenderedCells();
+    simulateScroll(component, {x: 0, y: 205});
+    performAllBatches();
+  });
+  await act(() => {
+    layoutRenderedCells();
+    performAllBatches();
+  });
+
+  // Cell 20 is laid out across the start of the viewport.
+  expect(instance.state.cellsAroundViewport).toEqual({first: 20, last: 25});
+
+  // Content above the cells grows by 500 (e.g. a header), moving cell 20 down
+  // by 500. A cells update runs before the scroll event with native's
+  // correction.
+  await act(() => {
+    layoutRenderedCells(500);
+    performAllBatches();
+  });
+
+  // The offset (205) is now 495 above cell 20. The window waits for the
+  // correction rather than moving there and unmounting cell 20.
+  expect(instance.state.cellsAroundViewport).toEqual({first: 20, last: 25});
+
+  await act(() => {
+    simulateScroll(component, {x: 0, y: 705});
+    performAllBatches();
+  });
+
+  expect(instance.state.cellsAroundViewport.first).toBeLessThanOrEqual(20);
+  expect(instance.state.cellsAroundViewport.last).toBeGreaterThanOrEqual(20);
+});
+
 function generateItems(count, startKey = 0) {
   return Array(count)
     .fill()
