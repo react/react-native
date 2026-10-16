@@ -175,6 +175,9 @@ async function unstable_prepareDebuggerShell({
   } catch (e) {
     return {
       code: 'unexpected_error',
+      humanReadableMessage:
+        'An unexpected error occurred while preparing React Native DevTools. ' +
+        'Using a fallback version instead.',
       verboseInfo: e.message,
     };
   }
