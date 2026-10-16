@@ -43,6 +43,15 @@ static NSTextAlignment NSTextAlignmentFromTextAlign(NSString *textAlign, LayoutD
   return paragraphStyle.alignment;
 }
 
+static NSParagraphStyle *ParagraphStyleFromLayoutDirection(std::optional<LayoutDirection> layoutDirection)
+{
+  TextAttributes textAttributes;
+  textAttributes.layoutDirection = layoutDirection;
+
+  NSDictionary<NSAttributedStringKey, id> *attributes = RCTNSTextAttributesFromTextAttributes(textAttributes);
+  return attributes[NSParagraphStyleAttributeName];
+}
+
 static UIFont *FontFromSettings(std::optional<std::string> settings, std::optional<FontWeight> weight = std::nullopt)
 {
   TextAttributes textAttributes;
@@ -131,6 +140,22 @@ static NSDictionary<NSNumber *, NSNumber *> *FontVariationsFromSettings(std::opt
   XCTAssertEqual(NSTextAlignmentFromTextAlign(@"start", LayoutDirection::RightToLeft), NSTextAlignmentRight);
   XCTAssertEqual(NSTextAlignmentFromTextAlign(@"end", LayoutDirection::LeftToRight), NSTextAlignmentRight);
   XCTAssertEqual(NSTextAlignmentFromTextAlign(@"end", LayoutDirection::RightToLeft), NSTextAlignmentLeft);
+}
+
+- (void)testUndeclaredTextAlignmentResolvesWithLayoutDirection
+{
+  NSParagraphStyle *leftToRight = ParagraphStyleFromLayoutDirection(LayoutDirection::LeftToRight);
+  XCTAssertNotNil(leftToRight);
+  XCTAssertEqual(leftToRight.alignment, NSTextAlignmentLeft);
+
+  NSParagraphStyle *rightToLeft = ParagraphStyleFromLayoutDirection(LayoutDirection::RightToLeft);
+  XCTAssertNotNil(rightToLeft);
+  XCTAssertEqual(rightToLeft.alignment, NSTextAlignmentRight);
+}
+
+- (void)testUndeclaredTextAlignmentWithoutLayoutDirectionStaysNatural
+{
+  XCTAssertNil(ParagraphStyleFromLayoutDirection(std::nullopt));
 }
 
 - (void)testSamenessOfEmptyAttributedStrings

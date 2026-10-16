@@ -218,7 +218,7 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
   const bool isRTL = textAttributes.layoutDirection == LayoutDirection::RightToLeft;
-  if (textAttributes.alignment.has_value() || isRTL) {
+  if (textAttributes.alignment.has_value() || textAttributes.layoutDirection.has_value()) {
     TextAlignment textAlignment =
         RCTResolveTextAlignment(textAttributes.alignment.value_or(TextAlignment::Natural), isRTL);
 
