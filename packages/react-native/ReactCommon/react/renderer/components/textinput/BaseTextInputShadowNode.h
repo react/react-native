@@ -204,6 +204,23 @@ class BaseTextInputShadowNode
             layoutContext.fontSizeMultiplier;
     if (meaningfulState) {
       const auto &stateData = BaseShadowNode::getStateData();
+      const auto &props = BaseShadowNode::getConcreteProps();
+
+      // For uncontrolled TextInputs (no value prop), the react tree attributed
+      // string may have diverged from state if children changed since the last
+      // native state update. In that case, prefer the react tree for measurement
+      // since attributedStringBox may contain stale native text.
+      if (props.text.empty()) {
+        const auto &reactTreeAttributedString = getAttributedString(layoutContext);
+        if (!stateData.reactTreeAttributedString.isContentEqual(reactTreeAttributedString)) {
+          auto attributedString = reactTreeAttributedString;
+          if (attributedString.isEmpty()) {
+            attributedString = getPlaceholderAttributedString(layoutContext);
+          }
+          return AttributedStringBox{attributedString};
+        }
+      }
+
       auto attributedStringBox = stateData.attributedStringBox;
       if (attributedStringBox.getMode() == AttributedStringBox::Mode::OpaquePointer ||
           !attributedStringBox.getValue().isEmpty()) {
