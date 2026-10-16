@@ -17,12 +17,11 @@ on:
 jobs:
   test:
     runs-on: macos-26-large
-    outputs:
-      status: ${{ steps.report-status.outputs.status }}
     strategy:
       fail-fast: false
       matrix:
         flavor: [Debug, Release]
+        shard: [0, 1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -37,7 +36,6 @@ jobs:
         run: ls -lR /tmp/RNTesterBuild
       - name: Run E2E Tests
         id: run-tests
-        continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
           app-path: '/tmp/RNTesterBuild/RNTester.app'
@@ -46,10 +44,9 @@ jobs:
           flavor: ${{ matrix.flavor }}
           device-model: iPhone-17-Pro
           device-os: iOS-26-2
-      - name: Report status
-        id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
+          shard-index: ${{ matrix.shard }}
+          shard-count: '4'
+          reset-app: 'true'
 
   report:
     needs: test
@@ -60,8 +57,7 @@ jobs:
     steps:
       - id: check
         run: |
-          if [[ "${{ needs.test.result }}" != "success" ||
-                "${{ needs.test.outputs.status }}" == "failure" ]]; then
+          if [[ "${{ needs.test.result }}" != "success" ]]; then
             echo "status=failure" >> $GITHUB_OUTPUT
           else
             echo "status=success" >> $GITHUB_OUTPUT

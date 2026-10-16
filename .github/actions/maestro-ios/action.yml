@@ -26,6 +26,18 @@ inputs:
     required: false
     default: ''
     description: Maestro device OS name, such as iOS-26-2
+  shard-index:
+    required: false
+    default: '0'
+    description: Zero-based index of the flow shard to run
+  shard-count:
+    required: false
+    default: '1'
+    description: Number of flow shards
+  reset-app:
+    required: false
+    default: 'false'
+    description: Whether to reset the app before each flow attempt
 
 runs:
   using: composite
@@ -60,6 +72,10 @@ runs:
     - name: Run tests
       id: run-tests
       shell: bash
+      env:
+        MAESTRO_SHARD_INDEX: ${{ inputs.shard-index }}
+        MAESTRO_SHARD_COUNT: ${{ inputs.shard-count }}
+        MAESTRO_RESET_APP: ${{ inputs.reset-app }}
       run: |
         # Avoid exit from the job if one of the command returns an error.
         # Maestro can fail in case of flakyness, we have some retry logic.
@@ -74,23 +90,10 @@ runs:
           "${{ inputs.working-directory }}" \
           "${{ inputs.device-model }}" \
           "${{ inputs.device-os }}"
-    - name: Store video record
+    - name: Store Maestro reports
       if: always()
       uses: ./.github/actions/upload-artifact
       with:
-        name: e2e_ios_${{ inputs.app-id }}_report_${{ inputs.flavor }}_NewArch
+        name: e2e_ios_${{ inputs.app-id }}_report_${{ inputs.flavor }}_NewArch_shard_${{ inputs.shard-index }}_attempt_${{ github.run_attempt }}
         overwrite: true
-        path: |
-          video_record_1.mov
-          video_record_2.mov
-          video_record_3.mov
-          video_record_4.mov
-          video_record_5.mov
-          report.xml
-    - name: Store Logs
-      if: failure() && steps.run-tests.outcome == 'failure'
-      uses: ./.github/actions/upload-artifact
-      with:
-        name: maestro-logs-${{ inputs.app-id }}-${{ inputs.flavor }}-NewArch
-        overwrite: true
-        path: /tmp/MaestroLogs
+        path: maestro-reports

@@ -193,18 +193,6 @@ jobs:
     needs: test_ios_rntester
     if: ${{ needs.test_ios_rntester.result == 'success' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
-    secrets: inherit
-
-  test_e2e_ios_rntester_retry_1:
-    needs: test_e2e_ios_rntester
-    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.status == 'failure' }}
-    uses: ./.github/workflows/e2e-ios-rntester.yml
-    secrets: inherit
-
-  test_e2e_ios_rntester_retry_2:
-    needs: test_e2e_ios_rntester_retry_1
-    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.status == 'failure' }}
-    uses: ./.github/workflows/e2e-ios-rntester.yml
     with:
       fail-on-error: true
     secrets: inherit
