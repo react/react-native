@@ -2,6 +2,7 @@ name: E2E iOS RNTester
 
 permissions:
   contents: read
+  id-token: write
 
 on:
   workflow_call:
@@ -16,7 +17,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-26-large
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
