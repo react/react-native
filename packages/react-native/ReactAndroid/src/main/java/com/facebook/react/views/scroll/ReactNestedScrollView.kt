@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<37e2e57a137f899bb94e78bd265de562>>
+ * @generated SignedSource<<b24002822dc052f0a09d74324e7158e2>>
  */
 
 /**
@@ -1229,6 +1229,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       val currentScrollY = scrollY
       val maxScrollY = getMaxScrollY()
       if (currentScrollY > maxScrollY) {
+        maintainVisibleContentPositionHelper?.onWillClampScrollY(currentScrollY)
         scrollTo(scrollX, maxScrollY)
       }
     }
