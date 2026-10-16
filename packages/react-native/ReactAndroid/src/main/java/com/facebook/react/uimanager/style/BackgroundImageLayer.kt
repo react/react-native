@@ -13,60 +13,95 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 
 /**
- * Represents a single layer of a background image, typically containing a gradient.
+ * Represents a single layer of a background image, either a gradient or an image loaded from a URL.
  *
- * This class encapsulates gradient definitions (linear or radial) that can be applied as background
- * layers to React Native views. It provides parsing from React Native bridge data and shader
- * generation for rendering.
+ * This class encapsulates the background image definitions (linear gradient, radial gradient, or
+ * `url()`) that can be applied as background layers to React Native views. It provides parsing from
+ * React Native bridge data and shader generation for rendering.
  *
  * @see LinearGradient
  * @see RadialGradient
  */
-public class BackgroundImageLayer() {
-  private lateinit var gradient: Gradient
+public sealed class BackgroundImageLayer {
+  /** A layer rendered from a linear or radial gradient. */
+  public class GradientLayer internal constructor(private val gradient: Gradient) :
+      BackgroundImageLayer() {
+    /**
+     * Creates a shader for rendering this background layer.
+     *
+     * @param width The width of the area to fill
+     * @param height The height of the area to fill
+     * @return A Shader instance for rendering the gradient
+     */
+    public fun getShader(width: Float, height: Float): Shader = gradient.getShader(width, height)
+  }
 
-  private constructor(gradient: Gradient) : this() {
-    this.gradient = gradient
+  /**
+   * A layer rendered from an image fetched from [uri].
+   *
+   * @param uri The source URI of the image to draw
+   * @param intrinsicWidth Natural width in DIPs, or null
+   * @param intrinsicHeight Natural height in DIPs, or null
+   */
+  public class URLImageLayer(
+      public val uri: String,
+      public val intrinsicWidth: Float? = null,
+      public val intrinsicHeight: Float? = null,
+  ) : BackgroundImageLayer() {
+    override fun equals(other: Any?): Boolean =
+        other is URLImageLayer &&
+            uri == other.uri &&
+            intrinsicWidth == other.intrinsicWidth &&
+            intrinsicHeight == other.intrinsicHeight
   }
 
   public companion object {
     /**
      * Parses a ReadableMap into a BackgroundImageLayer.
      *
-     * The map should contain gradient configuration including a "type" key specifying either
-     * "linear-gradient" or "radial-gradient".
+     * The map should contain a "type" key specifying either "linear-gradient", "radial-gradient",
+     * or "url".
      *
-     * @param gradientMap The map containing gradient configuration
+     * @param backgroundImageMap The map containing the background image configuration
      * @param context Android context for resource resolution
      * @return A BackgroundImageLayer instance, or null if parsing fails
      */
-    public fun parse(gradientMap: ReadableMap?, context: Context): BackgroundImageLayer? {
-      if (gradientMap == null) {
-        return null
-      }
-      val gradient = parseGradient(gradientMap, context) ?: return null
-      return BackgroundImageLayer(gradient)
-    }
-
-    private fun parseGradient(gradientMap: ReadableMap, context: Context): Gradient? {
-      if (!gradientMap.hasKey("type") || gradientMap.getType("type") != ReadableType.String) {
+    public fun parse(backgroundImageMap: ReadableMap?, context: Context): BackgroundImageLayer? {
+      if (backgroundImageMap == null) {
         return null
       }
 
-      return when (gradientMap.getString("type")) {
-        "linear-gradient" -> LinearGradient.parse(gradientMap, context)
-        "radial-gradient" -> RadialGradient.parse(gradientMap, context)
+      if (!backgroundImageMap.hasKey("type") ||
+          backgroundImageMap.getType("type") != ReadableType.String) {
+        return null
+      }
+
+      return when (backgroundImageMap.getString("type")) {
+        "linear-gradient" -> {
+          val gradient = LinearGradient.parse(backgroundImageMap, context) ?: return null
+          GradientLayer(gradient)
+        }
+        "radial-gradient" -> {
+          val gradient = RadialGradient.parse(backgroundImageMap, context) ?: return null
+          GradientLayer(gradient)
+        }
+        "url" -> {
+          val uri = backgroundImageMap.getString("uri") ?: return null
+          URLImageLayer(
+              uri,
+              readDimension(backgroundImageMap, "intrinsicWidth"),
+              readDimension(backgroundImageMap, "intrinsicHeight"),
+          )
+        }
         else -> null
       }
     }
-  }
 
-  /**
-   * Creates a shader for rendering this background layer.
-   *
-   * @param width The width of the area to fill
-   * @param height The height of the area to fill
-   * @return A Shader instance for rendering the gradient
-   */
-  public fun getShader(width: Float, height: Float): Shader = gradient.getShader(width, height)
+    private fun readDimension(map: ReadableMap, key: String): Float? =
+        if (map.hasKey(key) && map.getType(key) == ReadableType.Number) {
+          map.getDouble(key).toFloat()
+        } else {
+          null
+        }
+  }
 }
