@@ -849,6 +849,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   UIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
+  // The copied tint can be transparent when the source hides its caret. Restore the
+  // selection color from props after changing the input type.
+  backedTextInputView.tintColor =
+      RCTUIColorFromSharedColor(static_cast<const TextInputProps &>(*_props).selectionColor);
   _backedTextInputView = backedTextInputView;
   [self addSubview:_backedTextInputView];
 }

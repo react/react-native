@@ -17,6 +17,8 @@
   NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
   NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
   NSArray<NSString *> *_acceptDragAndDropTypes;
+  // Keep the requested tint while a transparent tint hides the caret.
+  UIColor *_requestedTintColor;
 }
 
 // This should not be needed but internal build were failing without it.
@@ -210,13 +212,31 @@
 
 #pragma mark - Caret Manipulation
 
-- (CGRect)caretRectForPosition:(UITextPosition *)position
+// Returning CGRectZero for a hidden caret causes oversized Metal surface errors on iOS
+// 17. A transparent tint hides the caret without changing its bounds. Restore the tint
+// for non-empty selections to preserve the selection highlight and handles.
+- (void)setCaretHidden:(BOOL)caretHidden
 {
-  if (_caretHidden) {
-    return CGRectZero;
+  if (_caretHidden == caretHidden) {
+    return;
   }
 
-  return [super caretRectForPosition:position];
+  _caretHidden = caretHidden;
+  [self _updateAppliedTintColor];
+}
+
+// Do not override the getter. UIKit reads the applied caret color through `-tintColor`.
+- (void)setTintColor:(UIColor *)tintColor
+{
+  _requestedTintColor = tintColor;
+  [self _updateAppliedTintColor];
+}
+
+- (void)_updateAppliedTintColor
+{
+  UITextRange *selectedTextRange = self.selectedTextRange;
+  BOOL shouldHideCaret = _caretHidden && (selectedTextRange == nil || selectedTextRange.isEmpty);
+  [super setTintColor:shouldHideCaret ? [UIColor clearColor] : _requestedTintColor];
 }
 
 #pragma mark - Positioning Overrides
@@ -239,6 +259,7 @@
 - (void)setSelectedTextRange:(UITextRange *)selectedTextRange
 {
   [super setSelectedTextRange:selectedTextRange];
+  [self _updateAppliedTintColor];
   [_textInputDelegateAdapter selectedTextRangeWasSet];
 }
 #pragma clang diagnostic pop
@@ -252,6 +273,7 @@
   }
 
   [super setSelectedTextRange:selectedTextRange];
+  [self _updateAppliedTintColor];
 }
 
 - (void)scrollRangeToVisible:(NSRange)range
