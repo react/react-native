@@ -403,7 +403,8 @@ void RCTApplyBaselineOffset(NSMutableAttributedString *attributedText)
 
 static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
     const AttributedString::Fragment &fragment,
-    UIImage *placeholderImage)
+    UIImage *placeholderImage,
+    NSData *_Nullable eventEmitterWrapper)
 {
   if (fragment.isAttachment()) {
     auto layoutMetrics = fragment.parentShadowView.layoutMetrics;
@@ -427,9 +428,14 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
       string = RCTNSStringFromStringApplyingTextTransform(string, textTransform);
     }
 
-    return [[NSMutableAttributedString alloc]
-        initWithString:string
-            attributes:RCTNSTextAttributesFromTextAttributes(fragment.textAttributes)];
+    // Set with the initial attributes; adding it afterwards would re-split the runs.
+    NSMutableDictionary<NSAttributedStringKey, id> *attributes =
+        RCTNSTextAttributesFromTextAttributes(fragment.textAttributes);
+    if (eventEmitterWrapper != nil) {
+      attributes[RCTAttributedStringEventEmitterKey] = eventEmitterWrapper;
+    }
+
+    return [[NSMutableAttributedString alloc] initWithString:string attributes:attributes];
   }
 }
 
@@ -437,11 +443,13 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentWithAttributesFro
     const AttributedString::Fragment &fragment,
     UIImage *placeholderImage)
 {
-  auto nsAttributedStringFragment = RCTNSAttributedStringFragmentFromFragment(fragment, placeholderImage);
+  NSData *eventEmitterWrapper =
+      fragment.parentShadowView.componentHandle ? RCTWrapEventEmitter(fragment.parentShadowView.eventEmitter) : nil;
 
-  if (fragment.parentShadowView.componentHandle) {
-    auto eventEmitterWrapper = RCTWrapEventEmitter(fragment.parentShadowView.eventEmitter);
+  auto nsAttributedStringFragment =
+      RCTNSAttributedStringFragmentFromFragment(fragment, placeholderImage, eventEmitterWrapper);
 
+  if (fragment.isAttachment() && eventEmitterWrapper != nil) {
     NSDictionary<NSAttributedStringKey, id> *additionalTextAttributes =
         @{RCTAttributedStringEventEmitterKey : eventEmitterWrapper};
 
@@ -464,7 +472,7 @@ NSAttributedString *RCTNSAttributedStringFromAttributedString(const AttributedSt
 
   [nsAttributedString beginEditing];
 
-  for (auto fragment : attributedString.getFragments()) {
+  for (const auto &fragment : attributedString.getFragments()) {
     NSMutableAttributedString *nsAttributedStringFragment =
         RCTNSAttributedStringFragmentWithAttributesFromFragment(fragment, placeholderImage);
 
