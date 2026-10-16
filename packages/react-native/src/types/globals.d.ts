@@ -120,6 +120,104 @@ declare global {
 
   function structuredClone<T>(value: T): T;
 
+  type PerformanceEntryType =
+    'mark' | 'measure' | 'event' | 'longtask' | 'resource';
+
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/PerformanceEntry) */
+  interface PerformanceEntry {
+    readonly name: string;
+    readonly entryType: PerformanceEntryType;
+    readonly startTime: number;
+    readonly duration: number;
+    toJSON(): {
+      name: string;
+      entryType: PerformanceEntryType;
+      startTime: number;
+      duration: number;
+    };
+  }
+
+  var PerformanceEntry: {
+    prototype: PerformanceEntry;
+    new (): PerformanceEntry;
+  };
+
+  interface PerformanceMarkOptions {
+    detail?: unknown;
+    startTime?: number;
+  }
+
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/PerformanceMark) */
+  interface PerformanceMark extends PerformanceEntry {
+    readonly detail: unknown;
+  }
+
+  var PerformanceMark: {
+    prototype: PerformanceMark;
+    new (
+      markName: string,
+      markOptions?: PerformanceMarkOptions,
+    ): PerformanceMark;
+  };
+
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/PerformanceMeasure) */
+  interface PerformanceMeasure extends PerformanceEntry {
+    readonly detail: unknown;
+  }
+
+  var PerformanceMeasure: {
+    prototype: PerformanceMeasure;
+    new (): PerformanceMeasure;
+  };
+
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Performance) */
+  interface Performance {
+    readonly timeOrigin: number;
+    now(): number;
+    mark(
+      markName: string,
+      markOptions?: PerformanceMarkOptions,
+    ): PerformanceMark;
+    clearMarks(markName?: string): void;
+    measure(
+      measureName: string,
+      startMarkOrOptions?:
+        | string
+        | {
+            detail?: unknown;
+            start?: number | string;
+            duration?: number;
+          }
+        | {
+            detail?: unknown;
+            start?: number | string;
+            end?: number | string;
+          }
+        | {
+            detail?: unknown;
+            duration?: number | string;
+            end?: number | string;
+          },
+      endMark?: string,
+    ): PerformanceMeasure;
+    clearMeasures(measureName?: string): void;
+    getEntries(): ReadonlyArray<PerformanceEntry>;
+    getEntriesByType(
+      entryType: PerformanceEntryType,
+    ): ReadonlyArray<PerformanceEntry>;
+    getEntriesByName(
+      entryName: string,
+      entryType?: PerformanceEntryType,
+    ): ReadonlyArray<PerformanceEntry>;
+  }
+
+  var Performance: {
+    prototype: Performance;
+    new (): Performance;
+  };
+
+  var performance: Performance;
+
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/DOMRectReadOnly) */
   interface DOMRectReadOnly {
     /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/DOMRectReadOnly/bottom) */

@@ -15,6 +15,49 @@ const clonedValue: {nested: {value: number}} = structuredClone({
 });
 console.log(domExceptionCode, dataCloneErrorCode, clonedValue.nested.value);
 
+function testPerformance() {
+    const start: number = performance.now();
+    const timeOrigin: number = performance.timeOrigin;
+
+    const mark: PerformanceMark = performance.mark('start', {
+        detail: {foo: 'bar'},
+        startTime: start,
+    });
+    const markDetail: unknown = mark.detail;
+    performance.mark('end');
+
+    const measure: PerformanceMeasure = performance.measure('duration', 'start', 'end');
+    const measureDetail: unknown = measure.detail;
+    performance.measure('withOptions', {start: 'start', end: 'end', detail: 1});
+    performance.measure('withDuration', {start, duration: 10});
+
+    const entries: ReadonlyArray<PerformanceEntry> = performance.getEntries();
+    const marks: ReadonlyArray<PerformanceEntry> = performance.getEntriesByType('mark');
+    const named: ReadonlyArray<PerformanceEntry> = performance.getEntriesByName('start', 'mark');
+    const entry = entries[0];
+    const name: string = entry.name;
+    const entryType: PerformanceEntryType = entry.entryType;
+    const startTime: number = entry.startTime;
+    const duration: number = entry.duration;
+    const json: {name: string; entryType: PerformanceEntryType; startTime: number; duration: number} = entry.toJSON();
+
+    performance.clearMarks();
+    performance.clearMarks('start');
+    performance.clearMeasures();
+    performance.clearMeasures('duration');
+
+    const customMark: PerformanceMark = new PerformanceMark('custom', {startTime: 1});
+    const isPerformance: boolean = performance instanceof Performance;
+
+    console.log(timeOrigin, markDetail, measureDetail, marks, named, name, startTime, duration, json, customMark, isPerformance);
+
+    // @ts-expect-error
+    performance.mark();
+
+    // @ts-expect-error
+    performance.getEntriesByType('wrong-type');
+}
+
 function testInterval() {
     clearInterval(null);
     clearInterval(undefined);
