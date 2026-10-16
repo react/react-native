@@ -10,6 +10,7 @@ package com.facebook.react
 import com.facebook.react.model.ModelAutolinkingDependenciesJson
 import java.io.File
 import org.assertj.core.api.Assertions.assertThat
+import org.gradle.testfixtures.ProjectBuilder
 import org.intellij.lang.annotations.Language
 import org.junit.Rule
 import org.junit.Test
@@ -18,6 +19,20 @@ import org.junit.rules.TemporaryFolder
 class ReactPluginTest {
 
   @get:Rule val tempFolder = TemporaryFolder()
+
+  @Test
+  fun apply_withAndroidLibrary_configuresLegacyLibraryCodegenTasks() {
+    val project = ProjectBuilder.builder().withProjectDir(tempFolder.newFolder("library")).build()
+
+    project.plugins.apply("com.android.library")
+    project.plugins.apply("com.facebook.react")
+
+    assertThat(project.extensions.findByType(ReactExtension::class.java)).isNotNull()
+    assertThat(project.tasks.findByName("generateCodegenSchemaFromJavaScript")).isNotNull()
+    assertThat(project.tasks.findByName("generateCodegenArtifactsFromSchema")).isNotNull()
+    assertThat(project.tasks.findByName("createBundleDebugJsAndAssets")).isNull()
+    assertThat(project.pluginManager.hasPlugin("kotlin-android")).isFalse()
+  }
 
   @Test
   fun getPureCxxCodegenDependencies_filtersDependenciesCorrectly() {
