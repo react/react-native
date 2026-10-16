@@ -44,6 +44,11 @@ export type CellRendererProps<ItemT> = Readonly<{
   children: React.Node,
   index: number,
   item: ItemT,
+  itemCount?: number,
+  accessibilityRole?: string,
+  'aria-setsize'?: number,
+  'aria-posinset'?: number,
+  accessibilityCollectionItem?: Object,
   onFocusCapture?: (event: FocusEvent) => void,
   onLayout?: (event: LayoutChangeEvent) => void,
   style: StyleProp<ViewStyle>,
@@ -98,6 +103,15 @@ type OptionalVirtualizedListProps = {
     ...
   },
   horizontal?: ?boolean,
+  /**
+   * When set to false, disables automatic Accessibility Collection and List/ListItem attributes.
+   * Defaults to true.
+   */
+  accessibilityCollectionEnabled?: ?boolean,
+  /**
+   * Multiple columns for grid layout support.
+   */
+  numColumns?: ?number,
   /**
    * How many items to render in the initial batch. This should be enough to fill the screen but not
    * much more. Note these items will never be unmounted as part of the windowed rendering in order
