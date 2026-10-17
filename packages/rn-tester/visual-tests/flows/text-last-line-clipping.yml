@@ -1,0 +1,15 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/wrappedLastLineClipping
+- extendedWaitUntil:
+    visible:
+      id: 'last-line-clipping-example'
+    timeout: 15000
+- assertVisible: '(17px) This sentence wraps across multiple lines so the final line sits near a pixel boundary and must render fully, without being cut off.'
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/last-line-clipping/default
+    cropOn:
+      id: 'last-line-clipping-example'

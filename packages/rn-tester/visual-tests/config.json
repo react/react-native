@@ -1,0 +1,8 @@
+{
+  "defaults": {
+    "threshold": 0,
+    "includeAA": true,
+    "maxDiffPixels": 0
+  },
+  "tests": {}
+}

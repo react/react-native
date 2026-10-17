@@ -118,6 +118,8 @@
     "micromatch": "^4.0.4",
     "node-fetch": "^2.2.0",
     "nullthrows": "^1.1.1",
+    "pixelmatch": "5.3.0",
+    "pngjs": "7.0.0",
     "prettier": "3.9.4",
     "react": "19.3.0",
     "react-test-renderer": "19.3.0",

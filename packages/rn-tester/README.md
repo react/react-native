@@ -67,3 +67,7 @@ This is different from apps created using `react-native init` which have a depen
 ## Running tests (iOS)
 
 RNTester provides both integration and unit tests. You can run them all by hitting `Cmd+U` in Xcode. Alternatively, it is possible to run just unit tests or integration tests using the keybinding after selecting the appropriate scheme (either `RNTesterUnitTests` or `RNTesterIntegrationTests`).
+
+## Visual tests
+
+CI captures screenshots of selected RNTester examples on Android and iOS and compares them with `main`. See [visual-tests/README.md](visual-tests/README.md) to add a test or review a failure.

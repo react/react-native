@@ -209,6 +209,13 @@ jobs:
       fail-on-error: true
     secrets: inherit
 
+  test_visual_ios_rntester:
+    needs: test_ios_rntester
+    if: ${{ needs.test_ios_rntester.result == 'success' }}
+    uses: ./.github/workflows/visual-capture-rntester.yml
+    with:
+      platform: ios
+
   test_e2e_ios_templateapp:
     needs: [build_npm_package, prebuild_apple_dependencies, check_code_changes]
     if: needs.check_code_changes.outputs.should_test_ios == 'true'
@@ -405,6 +412,13 @@ jobs:
       fail-on-error: true
       retry-attempt: 2
     secrets: inherit
+
+  test_visual_android_rntester:
+    needs: build_android
+    if: ${{ needs.build_android.result == 'success' }}
+    uses: ./.github/workflows/visual-capture-rntester.yml
+    with:
+      platform: android
 
   build_npm_package:
     runs-on: 8-core-ubuntu

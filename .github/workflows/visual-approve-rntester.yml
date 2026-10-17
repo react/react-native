@@ -1,0 +1,67 @@
+# Records a maintainer's approval of a pull request's visual differences when
+# the visual-change-approved label is added, and updates the approval gate
+# when it is added or removed. Runs from the default branch on
+# pull_request_target and never checks out pull request code.
+name: Visual Approve RNTester
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  OUT_DIR: /tmp/visual-approval
+  VISUAL_BUCKET: ${{ vars.VISUAL_BUCKET }}
+  VISUAL_PUBLIC_BASE_URL: ${{ vars.VISUAL_PUBLIC_BASE_URL }}
+
+jobs:
+  approve:
+    if: github.event.label.name == 'visual-change-approved'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v6
+        with:
+          # Never the pull request: this workflow has write permissions.
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Decide
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/workflow-scripts/visual/approve-run.js prepare
+      - name: Check for an approval to record
+        id: staged
+        run: |
+          if [[ -d "$OUT_DIR/upload" ]]; then
+            echo "upload=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Authenticate to Google Cloud
+        if: steps.staged.outputs.upload == 'true'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          project_id: ${{ vars.VISUAL_GCP_PROJECT }}
+          workload_identity_provider: ${{ vars.VISUAL_WORKLOAD_IDENTITY_PROVIDER }}
+      - name: Setup gcloud
+        if: steps.staged.outputs.upload == 'true'
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+      - name: Record approval
+        if: steps.staged.outputs.upload == 'true'
+        run: gcloud storage cp --recursive --no-clobber "$OUT_DIR/upload/*" "gs://$VISUAL_BUCKET/"
+      - name: Update gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/workflow-scripts/visual/approve-run.js report
