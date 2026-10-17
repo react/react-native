@@ -55,4 +55,18 @@ describe('ActivityIndicator', () => {
       ),
     ).toEqual(<rn-androidProgressBar width="20" height="20" />);
   });
+
+  it('maps aria-hidden to importantForAccessibility around its indicator', () => {
+    const root = Fantom.createRoot();
+    Fantom.runTask(() => {
+      root.render(<ActivityIndicator aria-hidden={true} />);
+    });
+    expect(
+      root.getRenderedOutput({props: ['importantForAccessibility']}).toJSX(),
+    ).toEqual(
+      <rn-view importantForAccessibility="no-hide-descendants">
+        <rn-androidProgressBar />
+      </rn-view>,
+    );
+  });
 });

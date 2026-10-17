@@ -43,6 +43,60 @@ describe('<ScrollView>', () => {
     });
   });
 
+  describe('aria-hidden', () => {
+    it('is mapped to importantForAccessibility', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView aria-hidden={true} />);
+      });
+
+      expect(
+        root.getRenderedOutput({props: ['importantForAccessibility']}).toJSX(),
+      ).toEqual(
+        <rn-scrollView importantForAccessibility="no-hide-descendants">
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
+
+    it('resets importantForAccessibility when set to undefined', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView aria-hidden={true} />);
+      });
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView />);
+      });
+
+      expect(
+        root.getRenderedOutput({props: ['importantForAccessibility']}).toJSX(),
+      ).toEqual(
+        <rn-scrollView>
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
+
+    it('leaves an explicit importantForAccessibility in place when absent', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView importantForAccessibility="no" />);
+      });
+
+      expect(
+        root.getRenderedOutput({props: ['importantForAccessibility']}).toJSX(),
+      ).toEqual(
+        <rn-scrollView importantForAccessibility="no">
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
+  });
+
   describe('ref', () => {
     it('receives an instance or null', () => {
       const root = Fantom.createRoot();
