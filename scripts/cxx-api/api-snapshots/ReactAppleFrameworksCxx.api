@@ -4974,11 +4974,14 @@ class facebook::react::ModalHostViewShadowNode : public facebook::react::Concret
   public ModalHostViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ModalHostViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
   public static facebook::react::ShadowNodeTraits BaseTraits();
+  public virtual facebook::react::Transform getTransform() const override;
 }
 
 class facebook::react::ModalHostViewState {
   public ModalHostViewState();
   public ModalHostViewState(facebook::react::Size screenSize_);
+  public ModalHostViewState(facebook::react::Size screenSize_, facebook::react::Point viewportOffset_);
+  public const facebook::react::Point viewportOffset;
   public const facebook::react::Size screenSize;
   public using Shared = std::shared_ptr<const facebook::react::ModalHostViewState>;
 }
