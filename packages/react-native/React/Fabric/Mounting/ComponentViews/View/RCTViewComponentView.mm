@@ -17,6 +17,7 @@
 
 #import <RCTSwiftUIWrapper/RCTSwiftUIContainerViewWrapper.h>
 #import <React/RCTAssert.h>
+#import <React/RCTBackdropFilterLayer.h>
 #import <React/RCTBackgroundImageUtils.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
@@ -112,6 +113,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   CALayer *_outlineLayer;
   NSMutableArray<CALayer *> *_boxShadowLayers;
   CALayer *_filterLayer;
+  RCTBackdropFilterLayer *_backdropFilterLayer;
   NSMutableArray<CALayer *> *_backgroundImageLayers;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
@@ -599,6 +601,11 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     needsInvalidateLayer = YES;
   }
 
+  // `backdropFilter`
+  if (oldViewProps.backdropFilter != newViewProps.backdropFilter) {
+    needsInvalidateLayer = YES;
+  }
+
   // `focusable`
 #if TARGET_OS_TV
   if (oldViewProps.focusable != newViewProps.focusable) {
@@ -869,6 +876,8 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
   _outlineLayer = nil;
   [_filterLayer removeFromSuperlayer];
   _filterLayer = nil;
+  [_backdropFilterLayer removeFromSuperlayer];
+  _backdropFilterLayer = nil;
   [self clearExistingBackgroundImageLayers];
 
   [self _setLastSentSafeAreaInsets:nil];
@@ -1377,6 +1386,25 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       _filterLayer.zPosition = CGFLOAT_MAX;
       [layer addSublayer:_filterLayer];
     }
+  }
+
+  // backdrop filter
+  if (_props->backdropFilter.empty()) {
+    [_backdropFilterLayer removeFromSuperlayer];
+    _backdropFilterLayer = nil;
+  } else if (_backdropFilterLayer != nil) {
+    _backdropFilterLayer.filterFunctions = _props->backdropFilter;
+    _backdropFilterLayer.frame = self.bounds;
+    [_backdropFilterLayer setNeedsDisplay];
+  } else {
+    RCTBackdropFilterLayer *backdropLayer = [RCTBackdropFilterLayer layer];
+    backdropLayer.filterFunctions = _props->backdropFilter;
+    backdropLayer.hostView = self;
+    backdropLayer.hostBackgroundColorLayer = _backgroundColorLayer;
+    backdropLayer.frame = self.bounds;
+    [self.layer insertSublayer:backdropLayer atIndex:0];
+    _backdropFilterLayer = backdropLayer;
+    [backdropLayer setNeedsDisplay];
   }
 
   // background image
