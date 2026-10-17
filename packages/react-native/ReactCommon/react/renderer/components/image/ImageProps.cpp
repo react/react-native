@@ -12,6 +12,9 @@
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
 #include <react/renderer/graphics/Color.h>
 
+#include <algorithm>
+#include <tuple>
+
 namespace facebook::react {
 
 ImageProps::ImageProps(
@@ -145,6 +148,30 @@ static folly::dynamic convertEdgeInsets(const EdgeInsets& edgeInsets) {
   return edgeInsetsResult;
 }
 
+// ImageSource::operator== compares only the request identity: type and URI.
+static bool hasSamePayload(const ImageSource& lhs, const ImageSource& rhs) {
+  return std::tie(
+             lhs.type,
+             lhs.uri,
+             lhs.bundle,
+             lhs.scale,
+             lhs.size,
+             lhs.body,
+             lhs.method,
+             lhs.cache,
+             lhs.headers) ==
+      std::tie(
+             rhs.type,
+             rhs.uri,
+             rhs.bundle,
+             rhs.scale,
+             rhs.size,
+             rhs.body,
+             rhs.method,
+             rhs.cache,
+             rhs.headers);
+}
+
 ComponentName ImageProps::getDiffPropsImplementationTarget() const {
   return "Image";
 }
@@ -158,10 +185,13 @@ folly::dynamic ImageProps::getDiffProps(const Props* prevProps) const {
 
   folly::dynamic result = ViewProps::getDiffProps(oldProps);
 
-  if (sources != oldProps->sources) {
+  if (!std::ranges::equal(sources, oldProps->sources, hasSamePayload)) {
     auto sourcesArray = folly::dynamic::array();
     for (const auto& source : sources) {
       sourcesArray.push_back(toDynamic(source));
+    }
+    if (!sources.empty()) {
+      result["headers"] = sourcesArray[0]["headers"];
     }
     result["source"] = sourcesArray;
   }
@@ -221,7 +251,8 @@ folly::dynamic ImageProps::getDiffProps(const Props* prevProps) const {
     SharedColor prevTintColorValue =
         oldProps->tintColor.value_or(SharedColor{});
     if (tintColorValue != prevTintColorValue) {
-      result["tintColor"] = *tintColorValue;
+      result["tintColor"] = tintColorValue ? folly::dynamic(*tintColorValue)
+                                           : folly::dynamic(nullptr);
     }
   }
 

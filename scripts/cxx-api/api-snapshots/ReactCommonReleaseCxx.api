@@ -321,8 +321,8 @@ class facebook::react::AccessibilityProps {
   public facebook::react::AccessibilityTraits accessibilityTraits;
   public facebook::react::AccessibilityValue accessibilityValue;
   public facebook::react::ImportantForAccessibility importantForAccessibility;
-  public facebook::react::Role role;
   public std::optional<facebook::react::AccessibilityState> accessibilityState;
+  public std::optional<facebook::react::Role> role;
   public std::string accessibilityHint;
   public std::string accessibilityLabel;
   public std::string accessibilityLanguage;
