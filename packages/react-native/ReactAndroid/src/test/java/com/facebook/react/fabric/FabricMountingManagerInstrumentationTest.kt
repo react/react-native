@@ -8,6 +8,7 @@
 package com.facebook.react.fabric
 
 import android.graphics.Rect
+import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.facebook.react.ReactRootView
@@ -17,6 +18,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.fabric.events.EventBeatManager
 import com.facebook.react.fabric.mounting.MountingManager
 import com.facebook.react.fabric.mounting.MountingManager.MountItemExecutor
 import com.facebook.react.fabric.mounting.mountitems.IntBufferBatchMountItem
@@ -24,6 +26,7 @@ import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManager
@@ -54,6 +57,7 @@ import org.mockito.Mockito.`when`
 class FabricMountingManagerInstrumentationTest {
   private lateinit var mountingManager: MountingManager
   private lateinit var themedReactContext: ThemedReactContext
+
   private val surfaceId = 1
   private var nativeFeatureFlagsHelper: FabricMountingManagerTestHelper? = null
 
@@ -80,9 +84,16 @@ class FabricMountingManagerInstrumentationTest {
 
   @After
   fun tearDown() {
-    nativeFeatureFlagsHelper?.resetFeatureFlags()
-    ReactNativeFeatureFlags.dangerouslyReset()
-    ReactNativeFeatureFlagsCxxInterop.dangerouslyReset()
+    try {
+      while (cleanups.isNotEmpty()) {
+        cleanups.removeLast()()
+      }
+    } finally {
+      bindingDependencies.clear()
+      nativeFeatureFlagsHelper?.resetFeatureFlags()
+      ReactNativeFeatureFlags.dangerouslyReset()
+      ReactNativeFeatureFlagsCxxInterop.dangerouslyReset()
+    }
   }
 
   private fun startSurface() {
@@ -470,5 +481,152 @@ class FabricMountingManagerInstrumentationTest {
     override fun setPadding(view: ReactViewGroup, left: Int, top: Int, right: Int, bottom: Int) {
       view.setPadding(left, top, right, bottom)
     }
+  }
+
+  // ---- Surface lifecycle through a real FabricUIManagerBinding ----
+
+  /**
+   * The pull model is tested with Props 2.0 (accumulated, exclusive and reconciled props, and props
+   * diffed on insert); the push model with all of these flags off.
+   */
+  private fun overrideCxxFlags(pullModel: Boolean) {
+    ReactNativeFeatureFlagsCxxInterop.dangerouslyForceOverride(
+        object : ReactNativeFeatureFlagsDefaults() {
+          override fun enableMountingCoordinatorPullModelAndroid(): Boolean = pullModel
+
+          override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = pullModel
+
+          override fun enableExclusivePropsUpdateAndroid(): Boolean = pullModel
+
+          override fun enablePropsUpdateReconciliationAndroid(): Boolean = pullModel
+
+          override fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = pullModel
+        }
+    )
+  }
+
+  /**
+   * Run in reverse order after each test: stop the surfaces a test leaves running, then unregister
+   * the bindings.
+   */
+  private val cleanups = ArrayDeque<() -> Unit>()
+
+  /**
+   * Kept alive until the bindings are unregistered, as a React instance keeps them: the native
+   * binding's event beat uses the event beat manager, and the helper owns the view component
+   * descriptor of the committed views.
+   */
+  private val bindingDependencies = mutableListOf<Any>()
+
+  private fun registerBinding(fabricUIManager: FabricUIManager): FabricMountingManagerTestHelper {
+    val binding = FabricUIManagerBinding()
+    val helper = FabricMountingManagerTestHelper.create(fabricUIManager)
+    cleanups.addLast { runOnUiThread { binding.unregister() } }
+    val componentFactory = ComponentFactory()
+    val eventBeatManager = EventBeatManager()
+    bindingDependencies.addAll(listOf(helper, eventBeatManager))
+    helper.registerViewComponent(componentFactory)
+    DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(themedReactContext)
+    binding.register(
+        helper.createRuntimeExecutor(),
+        helper.createRuntimeScheduler(),
+        fabricUIManager,
+        eventBeatManager,
+        componentFactory,
+    )
+    return helper
+  }
+
+  private fun runOnUiThread(block: () -> Unit) {
+    InstrumentationRegistry.getInstrumentation().runOnMainSync(block)
+  }
+
+  private val rootMeasureSpec = View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY)
+
+  private fun startSurfaceWithHandler(fabricUIManager: FabricUIManager): SurfaceHandlerBinding {
+    val surfaceHandler = SurfaceHandlerBinding("TestModule")
+    surfaceHandler.setLayoutConstraints(
+        rootMeasureSpec,
+        rootMeasureSpec,
+        0,
+        0,
+        false,
+        false,
+        1f,
+        1f,
+    )
+    fabricUIManager.startSurface(
+        surfaceHandler,
+        themedReactContext,
+        ReactRootView(themedReactContext),
+    )
+    return surfaceHandler
+  }
+
+  /** Starts a surface through the bridgeless path and returns its id and a function stopping it. */
+  private fun startBridgelessSurface(fabricUIManager: FabricUIManager): Pair<Int, () -> Unit> {
+    val surfaceHandler = startSurfaceWithHandler(fabricUIManager)
+    return surfaceHandler.surfaceId to { fabricUIManager.stopSurface(surfaceHandler) }
+  }
+
+  /** Starts a surface through the legacy path and returns its id and a function stopping it. */
+  private fun startLegacySurface(fabricUIManager: FabricUIManager): Pair<Int, () -> Unit> {
+    val surfaceId =
+        fabricUIManager.startSurface(
+            ReactRootView(themedReactContext),
+            "TestModule",
+            null,
+            rootMeasureSpec,
+            rootMeasureSpec,
+        )
+    return surfaceId to { fabricUIManager.stopSurface(surfaceId) }
+  }
+
+  @Test
+  fun native_stopSurfaceWithSurfaceHandler_pullModel_pullsDeletes() {
+    assertStoppingSurfacePullsDeletes(pullModel = true, ::startBridgelessSurface)
+  }
+
+  @Test
+  fun native_stopSurfaceWithSurfaceHandler_pushModel_pullsDeletes() {
+    assertStoppingSurfacePullsDeletes(pullModel = false, ::startBridgelessSurface)
+  }
+
+  /** The legacy stop also runs on the UI thread, where its stop commit pulls inline. */
+  @Test
+  fun native_stopSurface_pullModel_pullsDeletes() {
+    assertStoppingSurfacePullsDeletes(pullModel = true, ::startLegacySurface)
+  }
+
+  /**
+   * The transaction that stops a surface deletes its views. Mounting override delegates, such as
+   * LayoutAnimations and C++ Animated, must see it pulled.
+   */
+  private fun assertStoppingSurfacePullsDeletes(
+      pullModel: Boolean,
+      startSurface: (FabricUIManager) -> Pair<Int, () -> Unit>,
+  ) {
+    overrideCxxFlags(pullModel)
+    val fabricUIManager = createFabricUIManager()
+    val helper = registerBinding(fabricUIManager)
+    lateinit var stopSurface: () -> Unit
+    var running = true
+    var mounted = false
+    runOnUiThread {
+      val (surfaceId, stop) = startSurface(fabricUIManager)
+      stopSurface = stop
+      cleanups.addLast { if (running) runOnUiThread(stop) }
+      helper.recordPulledDeletes(surfaceId)
+      helper.commitViews(surfaceId, intArrayOf(42, 43))
+      mounted = fabricUIManager.resolveView(42) != null
+    }
+    assertThat(mounted).isTrue()
+
+    runOnUiThread {
+      running = false
+      stopSurface()
+    }
+
+    assertThat(helper.pulledDeleteTags()).containsExactlyInAnyOrder(42, 43)
   }
 }
