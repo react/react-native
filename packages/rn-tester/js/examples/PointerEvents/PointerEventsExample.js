@@ -67,7 +67,7 @@ class ExampleBox extends React.Component<ExampleBoxProps, ExampleBoxState> {
   }
 }
 
-class NoneExample extends React.Component<$FlowFixMe> {
+class NoneExample extends React.Component<ExampleBoxComponentProps> {
   render(): React.Node {
     return (
       <View
