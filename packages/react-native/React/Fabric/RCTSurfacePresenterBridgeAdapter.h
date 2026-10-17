@@ -6,8 +6,8 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <React/RuntimeExecutor.h>
 #import <React/Utils.h>
-#import <ReactCommon/RuntimeExecutor.h>
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
