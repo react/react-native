@@ -554,6 +554,15 @@ if (Platform.OS === 'ios') {
       return <ScrollsChildToFocusExample />;
     },
   });
+  examples.push({
+    name: 'keyboardFocusOrder',
+    title: '<ScrollView> Keyboard focus order\n',
+    description:
+      'Tab through the card with a hardware keyboard: after its last control, focus should leave the scroll view for the button below it.',
+    render(): React.Node {
+      return <KeyboardFocusOrderExample />;
+    },
+  });
 }
 exports.examples = examples;
 
@@ -607,6 +616,25 @@ const ScrollsChildToFocusExample = () => {
         When false, focusing a TextInput will not automatically scroll it into
         view.
       </RNTesterText>
+    </View>
+  );
+};
+
+const KeyboardFocusOrderExample = () => {
+  return (
+    <View>
+      <ScrollView
+        style={[styles.scrollView, {height: 120}]}
+        nestedScrollEnabled>
+        <View style={styles.focusOrderCard}>
+          <View style={styles.focusOrderContent}>
+            <Text>A card with an action below its title</Text>
+            <Button label="Action" onPress={() => {}} />
+          </View>
+          <Button label="Dismiss" onPress={() => {}} />
+        </View>
+      </ScrollView>
+      <Button label="After the scroll view" onPress={() => {}} />
     </View>
   );
 };
@@ -1557,5 +1585,13 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
+  },
+  focusOrderCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 5,
+  },
+  focusOrderContent: {
+    flex: 1,
   },
 });

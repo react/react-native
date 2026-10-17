@@ -300,6 +300,13 @@ jint FabricUIManagerBinding::findNextFocusableElement(
     return -1;
   }
 
+  if (focusDirection == FocusDirection::FocusForward ||
+      focusDirection == FocusDirection::FocusBackward) {
+    nextNode = FocusOrderingHelper::findNextInTabOrder(
+        *parentShadowNode, focusedTag, focusDirection.value());
+    return nextNode == nullptr ? -1 : nextNode->getTag();
+  }
+
   LayoutMetrics childLayoutMetrics = uimanager->getRelativeLayoutMetrics(
       *focusedShadowNode, parentShadowNode.get(), {.includeTransform = true});
 
