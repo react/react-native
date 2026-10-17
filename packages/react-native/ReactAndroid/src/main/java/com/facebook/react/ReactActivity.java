@@ -132,6 +132,9 @@ public abstract class ReactActivity extends AppCompatActivity
 
   @Override
   public void onNewIntent(Intent intent) {
+    // Linking.getInitialURL() reads getIntent(), and a link that relaunches a reclaimed task
+    // arrives here before React Native can emit it as a url event.
+    setIntent(intent);
     if (!mDelegate.onNewIntent(intent)) {
       super.onNewIntent(intent);
     }
