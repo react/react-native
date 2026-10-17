@@ -145,6 +145,24 @@ function testRequestAnimationFrame(){
     );
 }
 
+function testQueueMicrotask() {
+    const result: void = queueMicrotask(noop);
+    console.log(result);
+
+    queueMicrotask(() => {
+        console.log('microtask');
+    });
+
+    // @ts-expect-error
+    queueMicrotask();
+
+    // @ts-expect-error
+    queueMicrotask('wrong-type');
+
+    // @ts-expect-error
+    queueMicrotask(noop, 'extra-arg');
+}
+
 function testRequestIdleCallback() {
     cancelIdleCallback(null);
     cancelIdleCallback(undefined);
