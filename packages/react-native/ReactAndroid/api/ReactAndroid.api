@@ -6251,6 +6251,7 @@ public class com/facebook/react/views/textinput/ReactEditText : androidx/appcomp
 	public final fun maybeUpdateTypeface ()V
 	public fun onAttachedToWindow ()V
 	public fun onConfigurationChanged (Landroid/content/res/Configuration;)V
+	protected fun onCreateContextMenu (Landroid/view/ContextMenu;)V
 	public fun onCreateInputConnection (Landroid/view/inputmethod/EditorInfo;)Landroid/view/inputmethod/InputConnection;
 	public fun onDragEvent (Landroid/view/DragEvent;)Z
 	public fun onDraw (Landroid/graphics/Canvas;)V

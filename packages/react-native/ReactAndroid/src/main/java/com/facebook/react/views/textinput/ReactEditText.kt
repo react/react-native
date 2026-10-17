@@ -29,6 +29,7 @@ import android.text.method.KeyListener
 import android.text.method.QwertyKeyListener
 import android.util.TypedValue
 import android.view.ActionMode
+import android.view.ContextMenu
 import android.view.DragEvent
 import android.view.Gravity
 import android.view.KeyEvent
@@ -387,6 +388,16 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       super.onTextContextMenuItem(
           if (id == android.R.id.paste) android.R.id.pasteAsPlainText else id,
       )
+
+  /*
+   * A secondary click opens the context menu that Editor fills with the text actions. With
+   * contextMenuHidden it gets no items, so no menu opens.
+   */
+  override fun onCreateContextMenu(menu: ContextMenu) {
+    if (!contextMenuHidden) {
+      super.onCreateContextMenu(menu)
+    }
+  }
 
   internal fun clearFocusAndMaybeRefocus() {
     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P || !isInTouchMode) {

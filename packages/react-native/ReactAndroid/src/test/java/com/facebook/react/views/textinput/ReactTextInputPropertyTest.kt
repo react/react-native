@@ -11,8 +11,10 @@
 
 package com.facebook.react.views.textinput
 
+import android.app.Activity
 import android.graphics.Color
 import android.os.Build
+import android.os.Looper
 import android.text.InputFilter
 import android.text.InputFilter.AllCaps
 import android.text.InputType
@@ -46,8 +48,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 
 /** Verify {@link EditText} view property being applied properly by {@link ReactTextInputManager} */
 @RunWith(RobolectricTestRunner::class)
@@ -650,6 +654,22 @@ class ReactTextInputPropertyTest {
     manager.updateProperties(view, buildStyles("borderRadius", null))
     assertThat(BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_RADIUS))
         .isNull()
+  }
+
+  @Test
+  fun testContextMenuHiddenRightClick() {
+    val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+    activity.setContentView(view)
+    view.setText("text")
+    shadowOf(Looper.getMainLooper()).idle()
+
+    // A mouse right-click opens the context menu at the pointer through showContextMenu(x, y),
+    // which answers whether a menu opened.
+    manager.updateProperties(view, buildStyles())
+    assertThat(view.showContextMenu(1f, 1f)).isTrue
+
+    manager.updateProperties(view, buildStyles("contextMenuHidden", true))
+    assertThat(view.showContextMenu(1f, 1f)).isFalse
   }
 
   private fun buildStyles(vararg keysAndValues: Any?): ReactStylesDiffMap {
