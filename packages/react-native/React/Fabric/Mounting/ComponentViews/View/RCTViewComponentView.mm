@@ -337,13 +337,21 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
 #ifndef NS_BLOCK_ASSERTIONS
   auto propsRawPtr = _props.get();
-  RCTAssert(
-      propsRawPtr &&
-          ([self class] == [RCTViewComponentView class] ||
-           typeid(*propsRawPtr).hash_code() != typeid(const ViewProps).hash_code()),
-      @"`RCTViewComponentView` subclasses (and `%@` particularly) must setup `_props`"
-       " instance variable with a default value in the constructor.",
-      NSStringFromClass([self class]));
+  // SOFTENED: third-party component views that reset _props to base ViewProps
+  // in prepareForRecycle (observed: react-native-maps RNMapsGoogleMapView) can
+  // receive updateProps with base ViewProps on the deep-link mount path
+  // (RN 0.88 + new arch). Aborting there takes the whole app down on a
+  // diagnostic-only invariant, and the static_casts below are valid for base
+  // ViewProps anyway. Log instead of abort.
+  if (!(propsRawPtr &&
+        ([self class] == [RCTViewComponentView class] ||
+         typeid(*propsRawPtr).hash_code() != typeid(const ViewProps).hash_code()))) {
+    RCTLogError(
+        @"`RCTViewComponentView` subclass `%@` received updateProps with base "
+        "ViewProps (_props not set by the subclass constructor or recycled). "
+        "Continuing with base props.",
+        NSStringFromClass([self class]));
+  }
 #endif
 
   const auto &oldViewProps = static_cast<const ViewProps &>(*_props);
