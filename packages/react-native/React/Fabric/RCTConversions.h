@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <cmath>
+
 #import <UIKit/UIKit.h>
 
 #import <React/Graphics.h>
@@ -152,6 +154,12 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
 
 inline CATransform3D RCTCATransform3DFromTransformMatrix(const facebook::react::Transform &transformMatrix)
 {
+  // Core Animation needs a finite transform: a NaN in one hides the layer and can hide its siblings.
+  for (const auto value : transformMatrix.matrix) {
+    if (!std::isfinite(value)) {
+      return CATransform3DIdentity;
+    }
+  }
   return {
       (CGFloat)transformMatrix.matrix[0],
       (CGFloat)transformMatrix.matrix[1],
