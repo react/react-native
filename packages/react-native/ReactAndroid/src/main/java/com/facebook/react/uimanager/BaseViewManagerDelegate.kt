@@ -86,6 +86,8 @@ public abstract class BaseViewManagerDelegate<
 
       ViewProps.FILTER -> mViewManager.setFilter(view, value as ReadableArray?)
 
+      ViewProps.BACKDROP_FILTER -> mViewManager.setBackdropFilter(view, value as ReadableArray?)
+
       ViewProps.MIX_BLEND_MODE -> mViewManager.setMixBlendMode(view, value as String?)
 
       ViewProps.SHADOW_COLOR ->
