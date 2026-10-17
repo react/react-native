@@ -104,7 +104,7 @@ BaseTextInputProps::BaseTextInputProps(
           rawProps,
           "editable",
           sourceProps.editable,
-          {})),
+          true)),
       readOnly(convertRawProp(
           context,
           rawProps,

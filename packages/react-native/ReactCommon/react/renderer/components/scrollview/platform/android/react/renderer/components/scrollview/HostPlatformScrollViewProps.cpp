@@ -25,13 +25,13 @@ HostPlatformScrollViewProps::HostPlatformScrollViewProps(
           rawProps,
           "sendMomentumEvents",
           sourceProps.sendMomentumEvents,
-          true)),
+          false)),
       nestedScrollEnabled(convertRawProp(
           context,
           rawProps,
           "nestedScrollEnabled",
           sourceProps.nestedScrollEnabled,
-          true)),
+          false)),
       fadingEdgeLength(convertRawProp(
           context,
           rawProps,
