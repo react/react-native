@@ -730,8 +730,8 @@ void FabricUIManagerBinding::schedulerShouldRenderTransactions(
   if (ReactNativeFeatureFlags::enableMountingCoordinatorPullModelAndroid()) {
     // Pull model: do NOT pull the transaction or build the batch here (on the
     // commit thread). Just notify Java that a transaction is available; the UI
-    // thread will pull it via a PullTransactionMountItem and call back into
-    // `pullAndExecuteTransaction`.
+    // thread calls back into `pullAndExecuteTransaction` at its next mount
+    // dispatch.
     mountingManager->onTransactionAvailable(
         mountingCoordinator->getSurfaceId());
   } else if (ReactNativeFeatureFlags::
