@@ -369,8 +369,12 @@ public class ReactImageView(
     // no worth marking as dirty if it already rendered.
   }
 
+  /** Sets the request headers. A change rebuilds the image request on the next update. */
   public fun setHeaders(headers: ReadableMap?) {
-    this.headers = headers
+    if (this.headers != headers) {
+      this.headers = headers
+      isDirty = true
+    }
   }
 
   // Disable rasterizing to offscreen layer in order to preserve background effects like box-shadow

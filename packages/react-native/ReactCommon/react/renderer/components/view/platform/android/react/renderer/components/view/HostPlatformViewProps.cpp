@@ -159,7 +159,7 @@ static void updateBorderWidthPropValue(
     if (newValue.has_value()) {
       result[propName] = newValue.value();
     } else {
-      result[propName] = NULL;
+      result[propName] = nullptr;
     }
   }
 }
@@ -395,58 +395,89 @@ inline static void updateNativeDrawableProp(
   result[propName] = nativeDrawableResult;
 }
 
-inline static void updateAccessibilityStateProp(
-    folly::dynamic& result,
-    const std::optional<AccessibilityState>& newState,
-    const std::optional<AccessibilityState>& oldState) {
-  folly::dynamic resultState = folly::dynamic::object();
+static folly::dynamic toDynamic(const AccessibilityState& state) {
+  folly::dynamic result = folly::dynamic::object();
+  result["disabled"] = state.disabled;
 
-  if (!newState.has_value() && oldState.has_value()) {
-    result["accessibilityState"] = resultState;
-    return;
+  // Omitting the key when `selected` is unset is what tells the platform the
+  // component is not selectable. BaseViewManager#setViewState falls back to
+  // `setSelected(false)` for an absent key, so the rendered result is
+  // unchanged from when this was a plain `bool`.
+  if (state.selected.has_value()) {
+    result["selected"] = state.selected.value();
   }
 
-  if (!oldState.has_value() || newState->disabled != oldState->disabled) {
-    resultState["disabled"] = newState->disabled;
+  result["busy"] = state.busy;
+
+  if (state.expanded.has_value()) {
+    result["expanded"] = state.expanded.value();
   }
 
-  if (!oldState.has_value() || newState->selected != oldState->selected) {
-    // Omitting the key when `selected` is unset is what tells the platform the
-    // component is not selectable. BaseViewManager#setViewState falls back to
-    // `setSelected(false)` for an absent key, so the rendered result is
-    // unchanged from when this was a plain `bool`.
-    if (newState->selected.has_value()) {
-      resultState["selected"] = newState->selected.value();
-    }
+  switch (state.checked) {
+    case AccessibilityState::Unchecked:
+      result["checked"] = false;
+      break;
+    case AccessibilityState::Checked:
+      result["checked"] = true;
+      break;
+    case AccessibilityState::Mixed:
+      result["checked"] = "mixed";
+      break;
+    case AccessibilityState::None:
+      result["checked"] = "none";
+      break;
   }
+  return result;
+}
 
-  if (!oldState.has_value() || newState->busy != oldState->busy) {
-    resultState["busy"] = newState->busy;
-  }
+static folly::dynamic toDynamic(
+    const std::variant<std::monostate, ValueUnit>& lengthPercentageOrAuto) {
+  const auto* valueUnit = std::get_if<ValueUnit>(&lengthPercentageOrAuto);
+  return valueUnit != nullptr ? valueUnit->toDynamic() : "auto";
+}
 
-  if (!oldState.has_value() || newState->expanded != oldState->expanded) {
-    if (newState->expanded.has_value()) {
-      resultState["expanded"] = newState->expanded.value();
-    }
+static folly::dynamic toDynamic(const BackgroundSize& backgroundSize) {
+  if (const auto* keyword =
+          std::get_if<BackgroundSizeKeyword>(&backgroundSize)) {
+    return *keyword == BackgroundSizeKeyword::Cover ? "cover" : "contain";
   }
+  const auto& size = std::get<BackgroundSizeLengthPercentage>(backgroundSize);
+  return folly::dynamic::object("x", toDynamic(size.x))("y", toDynamic(size.y));
+}
 
-  if (!oldState.has_value() || newState->checked != oldState->checked) {
-    switch (newState->checked) {
-      case AccessibilityState::Unchecked:
-        resultState["checked"] = false;
-        break;
-      case AccessibilityState::Checked:
-        resultState["checked"] = true;
-        break;
-      case AccessibilityState::Mixed:
-        resultState["checked"] = "mixed";
-        break;
-      case AccessibilityState::None:
-        resultState["checked"] = "none";
-        break;
-    }
+// JS sends one edge per axis, but the parser keeps the default top and left
+// next to a bottom or right.
+static folly::dynamic toDynamic(const BackgroundPosition& backgroundPosition) {
+  folly::dynamic result = folly::dynamic::object();
+  if (backgroundPosition.bottom.has_value()) {
+    result["bottom"] = backgroundPosition.bottom->toDynamic();
+  } else if (backgroundPosition.top.has_value()) {
+    result["top"] = backgroundPosition.top->toDynamic();
   }
-  result["accessibilityState"] = resultState;
+  if (backgroundPosition.right.has_value()) {
+    result["right"] = backgroundPosition.right->toDynamic();
+  } else if (backgroundPosition.left.has_value()) {
+    result["left"] = backgroundPosition.left->toDynamic();
+  }
+  return result;
+}
+
+static const char* toString(BackgroundRepeatStyle backgroundRepeatStyle) {
+  switch (backgroundRepeatStyle) {
+    case BackgroundRepeatStyle::Repeat:
+      return "repeat";
+    case BackgroundRepeatStyle::Space:
+      return "space";
+    case BackgroundRepeatStyle::Round:
+      return "round";
+    case BackgroundRepeatStyle::NoRepeat:
+      return "no-repeat";
+  }
+}
+
+static folly::dynamic toDynamic(const BackgroundRepeat& backgroundRepeat) {
+  return folly::dynamic::object("x", toString(backgroundRepeat.x))(
+      "y", toString(backgroundRepeat.y));
 }
 
 ComponentName HostPlatformViewProps::getDiffPropsImplementationTarget() const {
@@ -490,7 +521,8 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (role != oldProps->role) {
-    result["role"] = toString(role);
+    result["role"] =
+        role.has_value() ? toString(*role) : folly::dynamic(nullptr);
   }
 
   if (opacity != oldProps->opacity) {
@@ -528,7 +560,8 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (shadowColor != oldProps->shadowColor) {
-    result["shadowColor"] = *shadowColor;
+    result["shadowColor"] =
+        shadowColor ? folly::dynamic(*shadowColor) : folly::dynamic(nullptr);
   }
 
   if (shadowOpacity != oldProps->shadowOpacity) {
@@ -578,6 +611,18 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
 
   if (backgroundImage != oldProps->backgroundImage) {
     result["backgroundImage"] = toDynamic(backgroundImage);
+  }
+
+  if (backgroundSize != oldProps->backgroundSize) {
+    result["backgroundSize"] = toDynamic(backgroundSize);
+  }
+
+  if (backgroundPosition != oldProps->backgroundPosition) {
+    result["backgroundPosition"] = toDynamic(backgroundPosition);
+  }
+
+  if (backgroundRepeat != oldProps->backgroundRepeat) {
+    result["backgroundRepeat"] = toDynamic(backgroundRepeat);
   }
 
   if (mixBlendMode != oldProps->mixBlendMode) {
@@ -844,8 +889,9 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   // Accessibility
 
   if (accessibilityState != oldProps->accessibilityState) {
-    updateAccessibilityStateProp(
-        result, accessibilityState, oldProps->accessibilityState);
+    result["accessibilityState"] = accessibilityState.has_value()
+        ? toDynamic(*accessibilityState)
+        : folly::dynamic::object();
   }
 
   if (accessibilityLabel != oldProps->accessibilityLabel) {
@@ -878,7 +924,9 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (accessibilityRole != oldProps->accessibilityRole) {
-    result["accessibilityRole"] = accessibilityRole;
+    result["accessibilityRole"] = accessibilityRole.empty()
+        ? folly::dynamic(nullptr)
+        : folly::dynamic(accessibilityRole);
   }
 
   if (accessibilityLanguage != oldProps->accessibilityLanguage) {
@@ -899,7 +947,9 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
     if (accessibilityValue.text.has_value()) {
       accessibilityValueObject["text"] = accessibilityValue.text.value();
     }
-    result["accessibilityValue"] = accessibilityValueObject;
+    result["accessibilityValue"] = accessibilityValueObject.empty()
+        ? folly::dynamic(nullptr)
+        : accessibilityValueObject;
   }
 
   if (accessibilityActions != oldProps->accessibilityActions) {
