@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8d27c5f3feb4c8000922012882701b7e>>
+ * @generated SignedSource<<ed2231f3d12509b34d7bcc78fdc64bc0>>
  */
 
 /**
@@ -315,6 +315,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableIOSCompressedTextFrameAdjustment();
+  }
+
+  bool enableIOSPartialTextSelection() override {
+    auto value = values_["enableIOSPartialTextSelection"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableIOSPartialTextSelection();
   }
 
   bool enableIOSTextBaselineOffsetPerLine() override {

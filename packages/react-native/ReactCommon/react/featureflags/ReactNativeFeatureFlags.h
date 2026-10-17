@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<62dbb584d6aaf595314636a81346e3e5>>
+ * @generated SignedSource<<798a8c3d63d9f5db2d3e967ea05ce0bb>>
  */
 
 /**
@@ -190,6 +190,11 @@ class ReactNativeFeatureFlags {
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
    */
   RN_EXPORT static bool enableIOSCompressedTextFrameAdjustment();
+
+  /**
+   * Enables partial text selection for selectable Text on iOS. When disabled, a long press shows a menu that copies the whole paragraph.
+   */
+  RN_EXPORT static bool enableIOSPartialTextSelection();
 
   /**
    * Applies base offset for each line of text separately on iOS.

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<669f16e131d4a5ddc026ffecc6893575>>
+ * @generated SignedSource<<341755e90ca669194bea5b1858b385a0>>
  */
 
 /**
@@ -82,6 +82,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableFontScaleChangesUpdatingLayout(): Boolean = true
 
   override fun enableIOSCompressedTextFrameAdjustment(): Boolean = false
+
+  override fun enableIOSPartialTextSelection(): Boolean = false
 
   override fun enableIOSTextBaselineOffsetPerLine(): Boolean = false
 

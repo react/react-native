@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f90778065a9a5f48383dd9b4606bd862>>
+ * @generated SignedSource<<a83e4c29269bb09d21bfaa24867951d9>>
  */
 
 /**
@@ -144,6 +144,10 @@ bool ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() {
 
 bool ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() {
   return getAccessor().enableIOSCompressedTextFrameAdjustment();
+}
+
+bool ReactNativeFeatureFlags::enableIOSPartialTextSelection() {
+  return getAccessor().enableIOSPartialTextSelection();
 }
 
 bool ReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine() {
