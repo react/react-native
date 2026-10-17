@@ -460,6 +460,7 @@ export type {
 } from './Libraries/Pressability/Pressability';
 export {default as usePressability} from './Libraries/Pressability/usePressability';
 export {default as useColorScheme} from './Libraries/Utilities/useColorScheme';
+export {default as useScreenDimensions} from './Libraries/Utilities/useScreenDimensions';
 export {default as useWindowDimensions} from './Libraries/Utilities/useWindowDimensions';
 export {default as UTFSequence} from './Libraries/UTFSequence';
 export {default as Vibration} from './Libraries/Vibration/Vibration';
