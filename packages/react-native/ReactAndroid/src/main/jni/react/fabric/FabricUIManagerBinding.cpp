@@ -343,25 +343,18 @@ jintArray FabricUIManagerBinding::getRelativeAncestorList(
     return nullptr;
   }
 
-  ShadowNode::AncestorList ancestorList =
-      childShadowNode->getFamily().getAncestors(*rootShadowNode);
+  std::optional<std::vector<Tag>> ancestorTags =
+      FocusOrderingHelper::getRelativeAncestorTags(
+          *rootShadowNode, *childShadowNode);
 
-  if (ancestorList.empty() || ancestorList.size() < 2) {
+  if (!ancestorTags.has_value()) {
     return nullptr;
   }
 
-  // ignore the first ancestor as it is the rootShadowNode itself
-  std::vector<int> ancestorTags;
-  for (auto it = std::next(ancestorList.begin()); it != ancestorList.end();
-       ++it) {
-    auto& ancestor = *it;
-    ancestorTags.push_back(ancestor.first.get().getTag());
-  }
-
-  jintArray result = env->NewIntArray(static_cast<jint>(ancestorTags.size()));
+  jintArray result = env->NewIntArray(static_cast<jint>(ancestorTags->size()));
 
   env->SetIntArrayRegion(
-      result, 0, static_cast<jint>(ancestorTags.size()), ancestorTags.data());
+      result, 0, static_cast<jint>(ancestorTags->size()), ancestorTags->data());
 
   return result;
 }

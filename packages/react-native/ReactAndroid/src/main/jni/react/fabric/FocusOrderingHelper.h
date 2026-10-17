@@ -5,8 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#pragma once
+
 #include <react/renderer/uimanager/UIManager.h>
-#include "FabricUIManagerBinding.h"
+
+#include <optional>
+#include <vector>
 
 namespace facebook::react {
 
@@ -36,5 +40,14 @@ class FocusOrderingHelper {
       Tag tag);
 
   static std::optional<FocusDirection> resolveFocusDirection(int direction);
+
+  /*
+   * The tags of the nodes between `rootShadowNode` and `childShadowNode`,
+   * outermost first: empty for a direct child of `rootShadowNode`, and
+   * `std::nullopt` when `childShadowNode` does not descend from it.
+   */
+  static std::optional<std::vector<Tag>> getRelativeAncestorTags(
+      const ShadowNode &rootShadowNode,
+      const ShadowNode &childShadowNode);
 };
 } // namespace facebook::react

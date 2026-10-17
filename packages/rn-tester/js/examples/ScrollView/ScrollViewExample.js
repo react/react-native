@@ -405,9 +405,10 @@ const examples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    name: 'removeClippedSubviews',
     title: '<ScrollView> Remove Clipped Subviews\n',
     description:
-      'When true, offscreen child views (whose overflow value is hidden) are removed from their native backing superview when offscreen.',
+      'When true, offscreen child views (whose overflow value is hidden) are removed from their native backing superview when offscreen. The rows are focusable, so Tab on a hardware keyboard should reach every row either way.',
     render(): React.Node {
       return <RemoveClippedSubviews />;
     },
@@ -844,7 +845,9 @@ const RemoveClippedSubviews = () => {
         style={[styles.scrollView, {height: 200}]}
         removeClippedSubviews={removeClippedSubviews}
         nestedScrollEnabled>
-        {ITEMS.map(createItemRow)}
+        {ITEMS.map((msg, index) => (
+          <Item key={index} msg={msg} focusable={true} />
+        ))}
       </ScrollView>
       <Button
         label={'removeClippedSubviews: ' + removeClippedSubviews.toString()}
@@ -1476,12 +1479,15 @@ function ChildrenWithTouchEventsOverflowingContainerHorizontal() {
 }
 
 class Item extends React.PureComponent<{
+  focusable?: boolean,
   msg?: string,
   style?: ViewStyleProp,
 }> {
   render(): $FlowFixMe {
     return (
-      <View style={[styles.item, this.props.style]}>
+      <View
+        focusable={this.props.focusable}
+        style={[styles.item, this.props.style]}>
         <Text>{this.props.msg}</Text>
       </View>
     );
