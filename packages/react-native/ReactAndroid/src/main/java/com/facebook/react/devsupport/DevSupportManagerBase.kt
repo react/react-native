@@ -52,6 +52,7 @@ import com.facebook.react.devsupport.DevServerHelper.PackagerCommandListener
 import com.facebook.react.devsupport.InspectorFlags.getFuseboxEnabled
 import com.facebook.react.devsupport.StackTraceHelper.convertJavaStackTrace
 import com.facebook.react.devsupport.StackTraceHelper.convertJsStackTrace
+import com.facebook.react.devsupport.inspector.DevSupportHttpClient
 import com.facebook.react.devsupport.inspector.TracingState
 import com.facebook.react.devsupport.inspector.TracingStateProvider
 import com.facebook.react.devsupport.interfaces.BundleLoadCallback
@@ -450,9 +451,24 @@ public abstract class DevSupportManagerBase(
             return@DevOptionHandler
           }
 
-          ChangeBundleLocationDialog.show(context, devSettings) { host: String ->
-            devSettings.packagerConnectionSettings.debugServerHost = host
-            handleReloadJS()
+          ChangeBundleLocationDialog.show(context, devSettings) { input: String ->
+            val host = input.trim()
+            // An empty host resets to the default. An invalid host would crash the connection.
+            if (host.isEmpty() || DevSupportHttpClient.isValidHost(host)) {
+              devSettings.packagerConnectionSettings.debugServerHost = host
+              devServerHelper.closePackagerConnection()
+              handleReloadJS()
+            } else {
+              Toast.makeText(
+                      applicationContext,
+                      applicationContext.getString(
+                          R.string.catalyst_change_bundle_location_invalid,
+                          host,
+                      ),
+                      Toast.LENGTH_LONG,
+                  )
+                  .show()
+            }
           }
         }
 
