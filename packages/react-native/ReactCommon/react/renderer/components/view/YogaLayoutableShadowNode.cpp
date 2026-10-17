@@ -596,11 +596,20 @@ YogaLayoutableShadowNode& YogaLayoutableShadowNode::cloneChildInPlace(
 void YogaLayoutableShadowNode::setSize(Size size) const {
   ensureUnsealed();
 
+  auto width = yoga::StyleSizeLength::points(size.width);
+  auto height = yoga::StyleSizeLength::points(size.height);
+
+  // Component descriptors call this from `adopt`, which runs on every clone.
+  // Dirtying the node when nothing changed would make every commit that clones
+  // it re-run layout over the whole tree.
   auto style = yogaNode_.style();
-  style.setDimension(
-      yoga::Dimension::Width, yoga::StyleSizeLength::points(size.width));
-  style.setDimension(
-      yoga::Dimension::Height, yoga::StyleSizeLength::points(size.height));
+  if (width == style.dimension(yoga::Dimension::Width) &&
+      height == style.dimension(yoga::Dimension::Height)) {
+    return;
+  }
+
+  style.setDimension(yoga::Dimension::Width, width);
+  style.setDimension(yoga::Dimension::Height, height);
   yogaNode_.setStyle(style);
   yogaNode_.setDirty(true);
 }
@@ -635,6 +644,10 @@ void YogaLayoutableShadowNode::setPositionType(
   ensureUnsealed();
 
   auto style = yogaNode_.style();
+  if (style.positionType() == yoga::scopedEnum(positionType)) {
+    return;
+  }
+
   style.setPositionType(yoga::scopedEnum(positionType));
   yogaNode_.setStyle(style);
   yogaNode_.setDirty(true);

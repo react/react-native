@@ -326,6 +326,63 @@ TEST_F(YogaDirtyFlagTest, showingHiddenNodeMustDirtyItAndLayOutItsChildren) {
   EXPECT_EQ(child->getLayoutMetrics().frame.size.width, 42);
 }
 
+TEST_F(YogaDirtyFlagTest, settingUnchangedSizeMustNotDirtyYogaNode) {
+  /*
+   * Component descriptors call `setSize` from `adopt`, which runs on every
+   * clone. Setting the size a node already has must *not* dirty its Yoga node,
+   * otherwise every commit that clones it re-runs layout.
+   */
+  auto setSize = [](const ShadowNode& oldShadowNode) {
+    auto newShadowNode = oldShadowNode.clone({});
+    static_cast<YogaLayoutableShadowNode&>(*newShadowNode)
+        .setSize({.width = 100, .height = 200});
+    return newShadowNode;
+  };
+
+  auto sizedRootShadowNode =
+      rootShadowNode_->cloneTree(innerShadowNode_->getFamily(), setSize);
+
+  /*
+   * Changing the size *must* dirty the Yoga node.
+   */
+  EXPECT_TRUE(
+      static_cast<RootShadowNode&>(*sizedRootShadowNode).layoutIfNeeded());
+
+  auto newRootShadowNode =
+      sizedRootShadowNode->cloneTree(innerShadowNode_->getFamily(), setSize);
+
+  EXPECT_FALSE(
+      static_cast<RootShadowNode&>(*newRootShadowNode).layoutIfNeeded());
+}
+
+TEST_F(YogaDirtyFlagTest, settingUnchangedPositionTypeMustNotDirtyYogaNode) {
+  /*
+   * Setting the position type a node already has must *not* dirty its Yoga
+   * node.
+   */
+  auto setPositionType = [](const ShadowNode& oldShadowNode) {
+    auto newShadowNode = oldShadowNode.clone({});
+    static_cast<YogaLayoutableShadowNode&>(*newShadowNode)
+        .setPositionType(YGPositionTypeAbsolute);
+    return newShadowNode;
+  };
+
+  auto absoluteRootShadowNode = rootShadowNode_->cloneTree(
+      innerShadowNode_->getFamily(), setPositionType);
+
+  /*
+   * Changing the position type *must* dirty the Yoga node.
+   */
+  EXPECT_TRUE(
+      static_cast<RootShadowNode&>(*absoluteRootShadowNode).layoutIfNeeded());
+
+  auto newRootShadowNode = absoluteRootShadowNode->cloneTree(
+      innerShadowNode_->getFamily(), setPositionType);
+
+  EXPECT_FALSE(
+      static_cast<RootShadowNode&>(*newRootShadowNode).layoutIfNeeded());
+}
+
 TEST_F(YogaDirtyFlagTest, clonedPropsPreserveAspectRatio) {
   ContextContainer contextContainer{};
   PropsParserContext parserContext{-1, contextContainer};
