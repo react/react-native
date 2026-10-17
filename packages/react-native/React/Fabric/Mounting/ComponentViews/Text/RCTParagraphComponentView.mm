@@ -188,6 +188,13 @@ using namespace facebook::react;
   CGRect textViewFrame = self.bounds;
   CGRect drawingFrame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
 
+  // Lay out the text in the size the paragraph has in the shadow tree rather than in the current frame, which
+  // LayoutAnimation interpolates. Otherwise, line breaks change on every frame and words jump between lines.
+  // The text view clips the text to the current bounds.
+  if (_textView.state) {
+    drawingFrame.size = RCTCGSizeFromSize(_textView.state->getData().layoutSize);
+  }
+
   if (ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() && _textView.state &&
       drawingFrame.size.height > 0) {
     const auto &stateData = _textView.state->getData();

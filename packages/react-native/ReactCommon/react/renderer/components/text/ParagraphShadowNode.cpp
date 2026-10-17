@@ -178,6 +178,7 @@ void ParagraphShadowNode::updateStateIfNeeded(const Content& content) {
   auto& state = getStateData();
 
   react_native_assert(textLayoutManager_);
+#ifdef ANDROID
   if (state.attributedString == content.attributedString) {
     return;
   }
@@ -187,6 +188,20 @@ void ParagraphShadowNode::updateStateIfNeeded(const Content& content) {
           content.attributedString,
           content.paragraphAttributes,
           textLayoutManager_});
+#else
+  auto layoutSize = getLayoutMetrics().getContentFrame().size;
+  if (state.attributedString == content.attributedString &&
+      state.layoutSize == layoutSize) {
+    return;
+  }
+
+  setStateData(
+      ParagraphState{
+          content.attributedString,
+          content.paragraphAttributes,
+          textLayoutManager_,
+          layoutSize});
+#endif
 }
 
 MeasuredPreparedTextLayout* ParagraphShadowNode::findUsableLayout() {

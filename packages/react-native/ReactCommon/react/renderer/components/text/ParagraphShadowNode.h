@@ -110,8 +110,8 @@ class ParagraphShadowNode
   void updateStateIfNeeded(const Content &content, const MeasuredPreparedTextLayout &layout);
 
   /*
-   * Creates a `State` object (with `AttributedText` and
-   * `TextLayoutManager`) if needed.
+   * Creates a `State` object (with `AttributedText`, `TextLayoutManager` and,
+   * outside of Android, the size of the content frame) if needed.
    */
   void updateStateIfNeeded(const Content &content);
 
