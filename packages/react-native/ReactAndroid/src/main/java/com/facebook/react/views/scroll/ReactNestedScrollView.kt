@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<37e2e57a137f899bb94e78bd265de562>>
+ * @generated SignedSource<<71b6e6eea33dce97af22540ffdbeec49>>
  */
 
 /**
@@ -39,6 +39,7 @@ import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.HasChildPressedStateDelay
+import com.facebook.react.uimanager.HiddenSubtreeFocusHelper
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions
@@ -460,6 +461,16 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     super.onDetachedFromWindow()
     maintainVisibleContentPositionHelper?.stop()
   }
+
+  override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    super.addFocusables(views, direction, focusableMode)
+    HiddenSubtreeFocusHelper.removeHiddenFocusables(this, views, firstAddedIndex)
+  }
+
+  override fun onRequestFocusInDescendants(direction: Int, previouslyFocusedRect: Rect?): Boolean =
+      !HiddenSubtreeFocusHelper.hidesDescendants(this) &&
+          super.onRequestFocusInDescendants(direction, previouslyFocusedRect)
 
   override fun focusSearch(focused: View, direction: Int): View? {
     val nextFocus = super.focusSearch(focused, direction)

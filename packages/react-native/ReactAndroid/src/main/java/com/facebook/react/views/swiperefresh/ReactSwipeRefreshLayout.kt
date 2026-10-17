@@ -7,12 +7,15 @@
 
 package com.facebook.react.views.swiperefresh
 
+import android.graphics.Rect
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.HasChildPressedStateDelay
+import com.facebook.react.uimanager.HiddenSubtreeFocusHelper
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.events.NativeGestureUtil
 import kotlin.math.abs
@@ -84,6 +87,16 @@ public open class ReactSwipeRefreshLayout(reactContext: ReactContext) :
 
   override fun shouldDelayChildPressedState(): Boolean =
       hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
+
+  public override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    super.addFocusables(views, direction, focusableMode)
+    HiddenSubtreeFocusHelper.removeHiddenFocusables(this, views, firstAddedIndex)
+  }
+
+  override fun onRequestFocusInDescendants(direction: Int, previouslyFocusedRect: Rect?): Boolean =
+      !HiddenSubtreeFocusHelper.hidesDescendants(this) &&
+          super.onRequestFocusInDescendants(direction, previouslyFocusedRect)
 
   public override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (shouldInterceptTouchEvent(ev) && super.onInterceptTouchEvent(ev)) {

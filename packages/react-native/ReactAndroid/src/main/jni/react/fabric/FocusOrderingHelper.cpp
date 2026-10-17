@@ -227,6 +227,14 @@ void FocusOrderingHelper::traverseAndUpdateNextFocusableElement(
     }
   }
 
+  // A view that hides its descendants from accessibility services keeps them
+  // out of keyboard navigation, as ReactViewGroup does for the views it hosts.
+  if (props != nullptr &&
+      props->importantForAccessibility ==
+          ImportantForAccessibility::NoHideDescendants) {
+    return;
+  }
+
   for (auto& child : currNode->getChildren()) {
     if (child->getTraits().check(ShadowNodeTraits::Trait::RootNodeKind)) {
       continue;

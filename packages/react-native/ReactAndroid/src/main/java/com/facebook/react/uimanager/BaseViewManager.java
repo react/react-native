@@ -525,6 +525,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     } else if (importantForAccessibility.equals("no-hide-descendants")) {
       view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+      HiddenSubtreeFocusHelper.releaseHiddenKeyboardFocus(view);
     }
   }
 

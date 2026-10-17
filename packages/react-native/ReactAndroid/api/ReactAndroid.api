@@ -5161,6 +5161,7 @@ public abstract interface class com/facebook/react/viewmanagers/VirtualViewManag
 
 public final class com/facebook/react/views/drawer/ReactDrawerLayout : androidx/drawerlayout/widget/DrawerLayout, com/facebook/react/uimanager/HasChildPressedStateDelay {
 	public fun <init> (Lcom/facebook/react/bridge/ReactContext;)V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	public fun getHasChildPressedStateDelay ()Ljava/lang/Boolean;
 	public fun onInterceptTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun onTouchEvent (Landroid/view/MotionEvent;)Z
@@ -5515,6 +5516,7 @@ public class com/facebook/react/views/scroll/ReactHorizontalScrollView : android
 	public fun onLayoutChange (Landroid/view/View;IIIIIIII)V
 	protected fun onMeasure (II)V
 	protected fun onOverScrolled (IIZZ)V
+	protected fun onRequestFocusInDescendants (ILandroid/graphics/Rect;)Z
 	protected fun onScrollChanged (IIII)V
 	protected fun onSizeChanged (IIII)V
 	public fun onTouchEvent (Landroid/view/MotionEvent;)Z
@@ -5625,6 +5627,7 @@ public class com/facebook/react/views/scroll/ReactScrollView : android/widget/Sc
 	public fun <init> (Landroid/content/Context;Lcom/facebook/react/views/scroll/FpsListener;)V
 	public synthetic fun <init> (Landroid/content/Context;Lcom/facebook/react/views/scroll/FpsListener;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun abortAnimation ()V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
 	public fun draw (Landroid/graphics/Canvas;)V
 	public fun executeKeyEvent (Landroid/view/KeyEvent;)Z
@@ -5665,6 +5668,7 @@ public class com/facebook/react/views/scroll/ReactScrollView : android/widget/Sc
 	public fun onLayoutChange (Landroid/view/View;IIIIIIII)V
 	protected fun onMeasure (II)V
 	protected fun onOverScrolled (IIZZ)V
+	protected fun onRequestFocusInDescendants (ILandroid/graphics/Rect;)Z
 	protected fun onScrollChanged (IIII)V
 	protected fun onSizeChanged (IIII)V
 	public fun onTouchEvent (Landroid/view/MotionEvent;)Z
@@ -5980,10 +5984,12 @@ public final class com/facebook/react/views/scroll/VirtualViewContainerState$Com
 
 public class com/facebook/react/views/swiperefresh/ReactSwipeRefreshLayout : androidx/swiperefreshlayout/widget/SwipeRefreshLayout, com/facebook/react/uimanager/HasChildPressedStateDelay {
 	public fun <init> (Lcom/facebook/react/bridge/ReactContext;)V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	public fun canChildScrollUp ()Z
 	public fun getHasChildPressedStateDelay ()Ljava/lang/Boolean;
 	public fun onInterceptTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun onLayout (ZIIII)V
+	protected fun onRequestFocusInDescendants (ILandroid/graphics/Rect;)Z
 	public fun onTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun requestDisallowInterceptTouchEvent (Z)V
 	public fun setHasChildPressedStateDelay (Ljava/lang/Boolean;)V
@@ -6439,6 +6445,7 @@ public final class com/facebook/react/views/view/ReactDrawableHelper {
 public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGroup, com/facebook/react/touch/ReactHitSlopView, com/facebook/react/touch/ReactInterceptingViewGroup, com/facebook/react/uimanager/HasElevatedDescendantCache, com/facebook/react/uimanager/ReactClippingViewGroup, com/facebook/react/uimanager/ReactOverflowViewWithInset, com/facebook/react/uimanager/ReactPointerEventsView {
 	public fun <init> (Landroid/content/Context;)V
 	public fun addChildrenForAccessibility (Ljava/util/ArrayList;)V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	public final fun cleanUpAxOrderListener ()V
 	protected fun dispatchDraw (Landroid/graphics/Canvas;)V
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
@@ -6464,6 +6471,7 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	public fun onInterceptTouchEvent (Landroid/view/MotionEvent;)Z
 	protected fun onLayout (ZIIII)V
 	protected fun onMeasure (II)V
+	protected fun onRequestFocusInDescendants (ILandroid/graphics/Rect;)Z
 	protected fun onSizeChanged (IIII)V
 	public fun onTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun onViewAdded (Landroid/view/View;)V
