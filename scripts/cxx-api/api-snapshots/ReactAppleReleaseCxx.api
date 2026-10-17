@@ -225,6 +225,18 @@ category RCTCxxConvert(NativeWebSocketModule_SpecConnectOptions) {
   public virtual static RCTManagedPointer* JS_NativeWebSocketModule_SpecConnectOptions:(id json);
 }
 
+category RCTDevBanner(Subclassing) {
+  public virtual BOOL dimsBackground();
+  public virtual CGFloat minimumHeight();
+  public virtual NSAttributedString* attributedTextForMessage:textColor:(NSString* message, UIColor* textColor);
+  public virtual NSDirectionalEdgeInsets labelInsets();
+  public virtual NSUInteger stackLevel();
+  public virtual UIWindowLevel windowLevel();
+  public virtual _Nullable NSString* accessibilityLabelForMessage:(NSString* message);
+  public virtual _Nullable UIView* makeLeadingAccessoryView();
+  public virtual void didTapCapsule();
+}
+
 category RCTScrollViewComponentView(ScrollableProtocol) {
 }
 
@@ -941,6 +953,13 @@ interface RCTDecayAnimation : public NSObject <RCTAnimationDriver> {
 }
 
 interface RCTDefaultReactNativeFactoryDelegate : public UIResponder <RCTReactNativeFactoryDelegate> {
+}
+
+interface RCTDevBanner : public NSObject {
+  public @property (assign, readonly) BOOL visible;
+  public virtual void hide();
+  public virtual void showMessage:color:backgroundColor:dismissButton:(NSString* message, UIColor* color, UIColor* backgroundColor, BOOL dismissButton);
+  public virtual void updateMessage:(NSString* message);
 }
 
 interface RCTDevLoadingView : public NSObject <RCTDevLoadingViewProtocol, RCTBridgeModule> {
