@@ -1619,6 +1619,94 @@ describe('Native Animated', () => {
       );
     });
 
+    it('disconnects the previous native view before connecting a replacement', () => {
+      const findNodeHandle = jest
+        .fn()
+        .mockReturnValueOnce(11)
+        .mockReturnValueOnce(22);
+      jest.setMock('../../../../Libraries/ReactNative/RendererProxy', {
+        findNodeHandle,
+      });
+      const {Animated} = importModules();
+      const AnimatedProps =
+        require('../../../../Libraries/Animated/nodes/AnimatedProps').default;
+      const firstView = {};
+      const secondView = {};
+      const opacity = new Animated.Value(1);
+      const propsNode = new AnimatedProps({style: {opacity}}, jest.fn());
+      propsNode.__attach();
+      propsNode.setNativeView(firstView);
+      propsNode.__makeNative();
+      const propsTag = propsNode.__getNativeTag();
+
+      propsNode.setNativeView(secondView);
+
+      expect(
+        NativeAnimatedModule.connectAnimatedNodeToView,
+      ).toHaveBeenNthCalledWith(1, propsTag, 11);
+      expect(
+        NativeAnimatedModule.disconnectAnimatedNodeFromView,
+      ).toHaveBeenCalledWith(propsTag, 11);
+      expect(
+        NativeAnimatedModule.connectAnimatedNodeToView,
+      ).toHaveBeenNthCalledWith(2, propsTag, 22);
+      expect(
+        // $FlowFixMe[prop-missing]
+        NativeAnimatedModule.disconnectAnimatedNodeFromView.mock
+          .invocationCallOrder[0],
+      ).toBeLessThan(
+        // $FlowFixMe[prop-missing]
+        NativeAnimatedModule.connectAnimatedNodeToView.mock
+          .invocationCallOrder[1],
+      );
+
+      propsNode.setNativeView(secondView);
+      expect(
+        NativeAnimatedModule.connectAnimatedNodeToView,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        NativeAnimatedModule.disconnectAnimatedNodeFromView,
+      ).toHaveBeenCalledTimes(1);
+
+      propsNode.__detach();
+      expect(
+        NativeAnimatedModule.disconnectAnimatedNodeFromView,
+      ).toHaveBeenNthCalledWith(2, propsTag, 22);
+      expect(findNodeHandle).toHaveBeenCalledTimes(2);
+    });
+
+    it('only connects the latest view when switching to the native driver', () => {
+      jest.setMock('../../../../Libraries/ReactNative/RendererProxy', {
+        findNodeHandle: () => 22,
+      });
+      const {Animated} = importModules();
+      const AnimatedProps =
+        require('../../../../Libraries/Animated/nodes/AnimatedProps').default;
+      const opacity = new Animated.Value(1);
+      const propsNode = new AnimatedProps({style: {opacity}}, jest.fn());
+      propsNode.__attach();
+      propsNode.setNativeView({});
+      propsNode.setNativeView({});
+      expect(
+        NativeAnimatedModule.connectAnimatedNodeToView,
+      ).not.toHaveBeenCalled();
+      expect(
+        NativeAnimatedModule.disconnectAnimatedNodeFromView,
+      ).not.toHaveBeenCalled();
+
+      propsNode.__makeNative();
+      expect(
+        NativeAnimatedModule.connectAnimatedNodeToView,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        NativeAnimatedModule.connectAnimatedNodeToView,
+      ).toHaveBeenCalledWith(propsNode.__getNativeTag(), 22);
+      expect(
+        NativeAnimatedModule.disconnectAnimatedNodeFromView,
+      ).not.toHaveBeenCalled();
+      propsNode.__detach();
+    });
+
     it('creates new props, style and transform nodes at update', async () => {
       const {Animated} = importModules();
 
