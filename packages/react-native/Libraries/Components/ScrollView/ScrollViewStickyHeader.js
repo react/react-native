@@ -275,6 +275,13 @@ const ScrollViewStickyHeader: component(
     if (child.props.onLayout) {
       child.props.onLayout(event);
     }
+    // VirtualizedList cells use `onCellLayout` instead of `onLayout` for
+    // layout tracking. Forward the sticky wrapper's layout (which is measured
+    // relative to the ScrollView) so ListMetricsAggregator records the correct
+    // offset instead of the cell's offset relative to this wrapper (y = 0).
+    if (child.props.onCellLayout) {
+      child.props.onCellLayout(event, child.props.cellKey, child.props.index);
+    }
   };
 
   const child = React.Children.only<$FlowFixMe>(props.children);
@@ -304,6 +311,7 @@ const ScrollViewStickyHeader: component(
       }>
       {cloneElement(child, {
         onLayout: undefined, // we call this manually through our this._onLayout
+        onCellLayout: undefined, // likewise, forwarded manually above for VirtualizedList cells
         style: styles.fill, // We transfer the child style to the wrapper.
       })}
     </Animated.View>
