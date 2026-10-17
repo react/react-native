@@ -18,6 +18,30 @@ import * as React from 'react';
 import {createRef, useEffect, useLayoutEffect, useRef} from 'react';
 import {TextInput} from 'react-native';
 
+function touchStart(element: HostInstance): void {
+  Fantom.dispatchNativeEvent(
+    element,
+    'onTouchStart',
+    {
+      touches: [{identifier: 0, pageX: 5, pageY: 5, timestamp: 0}],
+      changedTouches: [{identifier: 0, pageX: 5, pageY: 5, timestamp: 0}],
+    },
+    {category: Fantom.NativeEventCategory.Discrete},
+  );
+}
+
+function touchEnd(element: HostInstance): void {
+  Fantom.dispatchNativeEvent(
+    element,
+    'onTouchEnd',
+    {
+      touches: [],
+      changedTouches: [{identifier: 0, pageX: 5, pageY: 5, timestamp: 200}],
+    },
+    {category: Fantom.NativeEventCategory.Discrete},
+  );
+}
+
 describe('<TextInput>', () => {
   describe('props', () => {
     describe('selection', () => {
@@ -252,6 +276,141 @@ describe('<TextInput>', () => {
         expect(onEndEditing).toHaveBeenCalledTimes(1);
         const [entry] = onEndEditing.mock.lastCall;
         expect(entry.text).toEqual('final text');
+      });
+    });
+
+    describe('onLongPress', () => {
+      let timers: Fantom.TimerMock;
+
+      beforeEach(() => {
+        timers = Fantom.installTimerMock();
+      });
+
+      afterEach(() => {
+        timers.uninstall();
+      });
+
+      it('is called once a touch is held past the long press delay', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onLongPress = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              onLongPress={onLongPress}
+              ref={nodeRef}
+              style={{height: 100, width: 100}}
+            />,
+          );
+        });
+
+        const element = nullthrows(nodeRef.current);
+        touchStart(element);
+        timers.advanceTimersByTime(499);
+        expect(onLongPress).toHaveBeenCalledTimes(0);
+
+        timers.advanceTimersByTime(1);
+        expect(onLongPress).toHaveBeenCalledTimes(1);
+
+        touchEnd(element);
+        timers.runAllTimers();
+      });
+
+      it('focuses the input as a press does, and the release that follows calls no onPress', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onPress = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              nativeID="text-input"
+              onLongPress={() => {}}
+              onPress={onPress}
+              ref={nodeRef}
+              style={{height: 100, width: 100}}
+            />,
+          );
+        });
+
+        root.takeMountingManagerLogs();
+
+        const element = nullthrows(nodeRef.current);
+        touchStart(element);
+        timers.advanceTimersByTime(500);
+
+        expect(root.takeMountingManagerLogs()).toEqual([
+          'Command {type: "AndroidTextInput", nativeID: "text-input", name: "focus"}',
+        ]);
+
+        touchEnd(element);
+        timers.runAllTimers();
+
+        expect(onPress).toHaveBeenCalledTimes(0);
+      });
+
+      it('does not change a press released before the delay, which calls onPress and focuses', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onLongPress = jest.fn();
+        const onPress = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              nativeID="text-input"
+              onLongPress={onLongPress}
+              onPress={onPress}
+              ref={nodeRef}
+              style={{height: 100, width: 100}}
+            />,
+          );
+        });
+
+        root.takeMountingManagerLogs();
+
+        const element = nullthrows(nodeRef.current);
+        touchStart(element);
+        timers.advanceTimersByTime(100);
+        touchEnd(element);
+        timers.runAllTimers();
+
+        expect(onLongPress).toHaveBeenCalledTimes(0);
+        expect(onPress).toHaveBeenCalledTimes(1);
+        expect(root.takeMountingManagerLogs()).toEqual([
+          'Command {type: "AndroidTextInput", nativeID: "text-input", name: "focus"}',
+        ]);
+      });
+
+      it('when not set, leaves a held press calling onPress and focusing', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onPress = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              nativeID="text-input"
+              onPress={onPress}
+              ref={nodeRef}
+              style={{height: 100, width: 100}}
+            />,
+          );
+        });
+
+        root.takeMountingManagerLogs();
+
+        const element = nullthrows(nodeRef.current);
+        touchStart(element);
+        timers.advanceTimersByTime(500);
+        touchEnd(element);
+        timers.runAllTimers();
+
+        expect(onPress).toHaveBeenCalledTimes(1);
+        expect(root.takeMountingManagerLogs()).toEqual([
+          'Command {type: "AndroidTextInput", nativeID: "text-input", name: "focus"}',
+        ]);
       });
     });
 
