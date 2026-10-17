@@ -53,6 +53,15 @@ it('refuses non-spec compliant colors', () => {
   expect(normalizeColor('rgb(1%, 2%, 3%)')).toBe(null);
 });
 
+it('refuses a string that only contains a functional color', () => {
+  expect(normalizeColor('xxrgb(1, 2, 3)yy')).toBe(null);
+  expect(normalizeColor('rgba(1, 2, 3, 0.5) extra')).toBe(null);
+  expect(normalizeColor('0 0 0 1px rgba(124, 58, 237, 1)')).toBe(null);
+  expect(normalizeColor('drop-shadow(0 0 4px hsl(0, 100%, 50%))')).toBe(null);
+  expect(normalizeColor('hsla(0, 100%, 50%, 1);')).toBe(null);
+  expect(normalizeColor('x hwb(0 0% 0%)')).toBe(null);
+});
+
 it('handles hex6 properly', () => {
   expect(normalizeColor('#000000')).toBe(0x000000ff);
   expect(normalizeColor('#ffffff')).toBe(0xffffffff);
