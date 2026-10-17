@@ -147,9 +147,9 @@ const getPreset = (src, options, babel) => {
     options.customTransformOptions?.unstable_preserveBlockScoping,
   );
 
-  // Preserve destructuring syntax if the experiment is enabled.
+  // Preserve destructuring syntax if the experiment is enabled. (no transform destructuring syntax by default)
   const preserveDestructuring = TRUE_VALS.has(
-    options.customTransformOptions?.unstable_preserveDestructuring,
+    options.customTransformOptions?.unstable_preserveDestructuring ?? true,
   );
 
   const isNull = src == null;
