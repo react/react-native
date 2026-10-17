@@ -108,10 +108,19 @@ function isModuleRequire(node) {
   return true;
 }
 
+// `context.sourceCode` and `context.filename` were added in ESLint 8.40, and
+// the method forms were removed in ESLint 10.
+function getSourceCode(context) {
+  return context.sourceCode ?? context.getSourceCode();
+}
+
+function getFilename(context) {
+  return context.filename ?? context.getFilename();
+}
+
 function isGeneratedFile(context) {
   return (
-    context
-      .getSourceCode()
+    getSourceCode(context)
       .getText()
       .indexOf('@' + 'generated SignedSource<<') !== -1
   );
@@ -137,7 +146,7 @@ module.exports = {
   },
 
   create(context) {
-    const filename = context.getFilename();
+    const filename = getFilename(context);
     const hasteModuleName = path.basename(filename).replace(/\.js$/, '');
 
     if (isGeneratedFile(context)) {
@@ -172,7 +181,7 @@ module.exports = {
 
         const [parsingErrors, tryParse] = createParserErrorCapturer();
 
-        const sourceCode = context.getSourceCode().getText();
+        const sourceCode = getSourceCode(context).getText();
         const ast = parser.getAst(sourceCode, filename);
 
         tryParse(() => {
