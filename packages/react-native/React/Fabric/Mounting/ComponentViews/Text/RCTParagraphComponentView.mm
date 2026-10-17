@@ -34,6 +34,16 @@ using namespace facebook::react;
 
 @end
 
+static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributedString)
+{
+  for (const auto &fragment : attributedString.getFragments()) {
+    if (fragment.isAttachment()) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
 // can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
 @interface RCTParagraphTextView : UIView
@@ -135,8 +145,22 @@ using namespace facebook::react;
 
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
 {
-  _textView.state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
-  [_textView setNeedsDisplay];
+  auto newState = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
+  // A relayout yields a new state even for unchanged text (the attributed
+  // string records fragment layout metrics); redraw only when content or
+  // paragraph attributes changed. Attachments are sized from those metrics.
+  BOOL needsDisplay = YES;
+  if (newState && oldState && _textView.state) {
+    const auto &newData = newState->getData();
+    const auto &oldData = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(oldState)->getData();
+    needsDisplay = !newData.attributedString.isContentEqual(oldData.attributedString) ||
+        newData.paragraphAttributes != oldData.paragraphAttributes ||
+        RCTAttributedStringHasAttachments(newData.attributedString);
+  }
+  _textView.state = newState;
+  if (needsDisplay) {
+    [_textView setNeedsDisplay];
+  }
 
   // If the attributed string has changed, we need to notify the accessibility system that something changed,
   // otherwise it may hold on to stale values (this happens most often when an element is updated async)
@@ -161,11 +185,18 @@ using namespace facebook::react;
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
            oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
 {
+  // Drawing depends on size, content frame and scale, not on position.
+  BOOL needsDisplay = _layoutMetrics.frame.size != layoutMetrics.frame.size ||
+      _layoutMetrics.getContentFrame() != layoutMetrics.getContentFrame() ||
+      _layoutMetrics.pointScaleFactor != layoutMetrics.pointScaleFactor;
+
   // Using stored `_layoutMetrics` as `oldLayoutMetrics` here to avoid
   // re-applying individual sub-values which weren't changed.
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:_layoutMetrics];
   _textView.layoutMetrics = _layoutMetrics;
-  [_textView setNeedsDisplay];
+  if (needsDisplay) {
+    [_textView setNeedsDisplay];
+  }
 }
 
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask
