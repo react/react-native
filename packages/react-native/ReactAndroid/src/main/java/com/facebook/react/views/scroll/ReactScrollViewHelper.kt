@@ -597,6 +597,23 @@ public object ReactScrollViewHelper {
     return host.findViewById(nextFocusableViewId)
   }
 
+  /**
+   * Returns whether [view] is [host] or one of its descendants. Unlike looking the view up by id,
+   * this also holds for views without an id, such as the `AndroidComposeView` that a `ComposeView`
+   * adds as its child.
+   */
+  @JvmStatic
+  internal fun isSelfOrDescendant(host: ViewGroup, view: View): Boolean {
+    var current: View? = view
+    while (current != null) {
+      if (current === host) {
+        return true
+      }
+      current = current.parent as? View
+    }
+    return false
+  }
+
   @JvmStatic
   public fun resolveAbsoluteDirection(
       @FocusRealDirection direction: Int,

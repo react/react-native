@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<37e2e57a137f899bb94e78bd265de562>>
+ * @generated SignedSource<<3cd05abbef2823a5f07515fe17ce394c>>
  */
 
 /**
@@ -64,6 +64,7 @@ import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_DISA
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_END
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_START
 import com.facebook.react.views.scroll.ReactScrollViewHelper.findNextFocusableView
+import com.facebook.react.views.scroll.ReactScrollViewHelper.isSelfOrDescendant
 import com.facebook.react.views.view.ImportantForInteractionHelper
 import com.facebook.systrace.Systrace
 import kotlin.math.abs
@@ -465,7 +466,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     val nextFocus = super.focusSearch(focused, direction)
 
     if (ReactNativeFeatureFlags.enableCustomFocusSearchOnClippedElementsAndroid()) {
-      if (nextFocus != null && findViewById<View>(nextFocus.id) != null) {
+      if (nextFocus != null && isSelfOrDescendant(this, nextFocus)) {
         return nextFocus
       }
       val nextFocusableView = findNextFocusableView(this, focused, direction)

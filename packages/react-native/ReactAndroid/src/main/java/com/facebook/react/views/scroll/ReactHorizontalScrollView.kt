@@ -62,6 +62,7 @@ import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_DISA
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_END
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_START
 import com.facebook.react.views.scroll.ReactScrollViewHelper.findNextFocusableView
+import com.facebook.react.views.scroll.ReactScrollViewHelper.isSelfOrDescendant
 import com.facebook.react.views.view.ImportantForInteractionHelper
 import com.facebook.systrace.Systrace
 import kotlin.math.abs
@@ -912,7 +913,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     if (ReactNativeFeatureFlags.enableCustomFocusSearchOnClippedElementsAndroid()) {
       // If we can find the next focus and it is a child of this view, return it, else it means we
       // are leaving the scroll view and we should try to find a clipped element
-      if (nextFocus != null && findViewById<View>(nextFocus.id) != null) {
+      if (nextFocus != null && isSelfOrDescendant(this, nextFocus)) {
         return nextFocus
       }
       val nextFocusableView = findNextFocusableView(this, focused, direction)
