@@ -103,7 +103,9 @@ Pod::Spec.new do |s|
   # This guard prevent to install the dependencies when we run \`pod install\` in the old architecture.
   s.pod_target_xcconfig    = {
     \\"CLANG_CXX_LANGUAGE_STANDARD\\" => rct_cxx_language_standard(),
-    \\"DEFINES_MODULE\\" => \\"YES\\"
+    \\"DEFINES_MODULE\\" => \\"YES\\",
+    # Generated code: see ReactCodegen.podspec.
+    \\"GCC_PREPROCESSOR_DEFINITIONS\\" => \\"$(inherited) RN_ALLOW_FRAMEWORKS=1\\"
   }
 
   s.dependency \\"ReactCodegen\\"
@@ -472,7 +474,10 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = {
     \\"HEADER_SEARCH_PATHS\\" => header_search_paths.join(' '),
     \\"FRAMEWORK_SEARCH_PATHS\\" => framework_search_paths,
-    \\"OTHER_CPLUSPLUSFLAGS\\" => \\"$(inherited) #{folly_compiler_flags} #{boost_compiler_flags}\\"
+    \\"OTHER_CPLUSPLUSFLAGS\\" => \\"$(inherited) #{folly_compiler_flags} #{boost_compiler_flags}\\",
+    # Generated code: nobody can act on a C++ stable API \\"for frameworks\\" warning
+    # here. Libraries are held to the API in their own pods.
+    \\"GCC_PREPROCESSOR_DEFINITIONS\\" => \\"$(inherited) RN_ALLOW_FRAMEWORKS=1\\"
   }
 
   s.dependency \\"React-jsiexecutor\\"
@@ -629,7 +634,9 @@ Pod::Spec.new do |s|
   # This guard prevent to install the dependencies when we run \`pod install\` in the old architecture.
   s.pod_target_xcconfig    = {
     \\"CLANG_CXX_LANGUAGE_STANDARD\\" => rct_cxx_language_standard(),
-    \\"DEFINES_MODULE\\" => \\"YES\\"
+    \\"DEFINES_MODULE\\" => \\"YES\\",
+    # Generated code: see ReactCodegen.podspec.
+    \\"GCC_PREPROCESSOR_DEFINITIONS\\" => \\"$(inherited) RN_ALLOW_FRAMEWORKS=1\\"
   }
 
   s.dependency \\"ReactCodegen\\"
@@ -970,7 +977,10 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = {
     \\"HEADER_SEARCH_PATHS\\" => header_search_paths.join(' '),
     \\"FRAMEWORK_SEARCH_PATHS\\" => framework_search_paths,
-    \\"OTHER_CPLUSPLUSFLAGS\\" => \\"$(inherited) #{folly_compiler_flags} #{boost_compiler_flags}\\"
+    \\"OTHER_CPLUSPLUSFLAGS\\" => \\"$(inherited) #{folly_compiler_flags} #{boost_compiler_flags}\\",
+    # Generated code: nobody can act on a C++ stable API \\"for frameworks\\" warning
+    # here. Libraries are held to the API in their own pods.
+    \\"GCC_PREPROCESSOR_DEFINITIONS\\" => \\"$(inherited) RN_ALLOW_FRAMEWORKS=1\\"
   }
 
   s.dependency \\"React-jsiexecutor\\"

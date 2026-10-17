@@ -27,7 +27,9 @@ Pod::Spec.new do |s|
   # This guard prevent to install the dependencies when we run `pod install` in the old architecture.
   s.pod_target_xcconfig    = {
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
-    "DEFINES_MODULE" => "YES"
+    "DEFINES_MODULE" => "YES",
+    # Generated code: see ReactCodegen.podspec.
+    "GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) RN_ALLOW_FRAMEWORKS=1"
   }
 
   s.dependency "ReactCodegen"

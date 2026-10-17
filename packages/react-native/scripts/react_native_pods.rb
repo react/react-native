@@ -122,6 +122,10 @@ def use_react_native! (
   # layers are still supported. Both will default to 1 in a future React Native release.
   ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] == '1' ? '1' : '0'
   ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] == '1' ? '1' : '0'
+  # Enforcing the C++ stable API is opt-in.
+  ENV['RN_STRICT_API'] = ENV['RN_STRICT_API'] == '1' ? '1' : '0'
+  # Silences the stable API's "for frameworks" warning.
+  ENV['RN_ALLOW_FRAMEWORKS'] = ENV['RN_ALLOW_FRAMEWORKS'] == '1' ? '1' : '0'
 
   ReactNativePodsUtils.check_minimum_required_xcode()
 
@@ -630,6 +634,8 @@ def react_native_post_install(
     installer,
     build_rncore_from_source: ReactNativeCoreUtils.build_rncore_from_source()
   )
+
+  ReactNativePodsUtils.set_strict_cxx_api_flags(installer)
 
   ReactNativePodsUtils.set_ccache_compiler_and_linker_build_settings(installer, react_native_path, ccache_enabled)
   ReactNativePodsUtils.updateOSDeploymentTarget(installer)

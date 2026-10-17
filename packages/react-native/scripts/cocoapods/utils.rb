@@ -24,6 +24,14 @@ class ReactNativePodsUtils
         'RCT_REMOVE_LEGACY_COMPONENT_INTEROP',
     ]
 
+    # Opt-in C++ stable API macros.
+    # RN_STRICT_API arms the react/cxxstableapi guards; RN_ALLOW_FRAMEWORKS
+    # silences their "for frameworks" warning.
+    STRICT_CXX_API_FLAGS = [
+        'RN_STRICT_API',
+        'RN_ALLOW_FRAMEWORKS',
+    ]
+
     # URI::File.build validates path components as ASCII, so escape the filesystem path first.
     def self.local_file_uri(path)
         URI::File.build(path: URI::DEFAULT_PARSER.escape(path)).to_s
@@ -596,6 +604,19 @@ class ReactNativePodsUtils
                 end
             else
                 self.remove_compiler_flag_from_project(installer, "-D#{flag}=1")
+            end
+        end
+    end
+
+    # The macros reach every target that inherits the project settings: the app,
+    # third-party pods and app codegen. React Native's own pods define RN_BUILDING,
+    # which keeps the guards inert for them.
+    def self.set_strict_cxx_api_flags(installer)
+        STRICT_CXX_API_FLAGS.each do |macro|
+            if ENV[macro] == '1'
+                self.add_compiler_flag_to_project(installer, "-D#{macro}")
+            else
+                self.remove_compiler_flag_from_project(installer, "-D#{macro}")
             end
         end
     end

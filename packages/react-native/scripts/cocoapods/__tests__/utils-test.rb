@@ -39,6 +39,8 @@ class UtilsTests < Test::Unit::TestCase
         ENV['USE_FRAMEWORKS'] = nil
         ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = nil
         ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = nil
+        ENV['RN_STRICT_API'] = nil
+        ENV['RN_ALLOW_FRAMEWORKS'] = nil
         system_reset_commands
         $RN_PLATFORMS = nil
     end
@@ -611,6 +613,79 @@ class UtilsTests < Test::Unit::TestCase
         assert_equal(1, Pod::UI.collected_warns.length)
         assert(Pod::UI.collected_warns.first.include?("RCT_REMOVE_LEGACY_MODULE_INTEROP=1"))
         assert(Pod::UI.collected_warns.first.include?("RCT_USE_PREBUILT_RNCORE=0"))
+    end
+
+    # ==================================== #
+    # Test - Set strict C++ API flags      #
+    # ==================================== #
+
+    def strict_cxx_api_installer_mock(user_project_mock, pods_project_mock)
+        return InstallerMock.new(pods_project_mock, [AggregatedProjectMock.new(user_project_mock)])
+    end
+
+    def strict_cxx_api_pods_project_mock
+        return PodsProjectMock.new([], {"hermes-engine" => {}}, "test/path-pod.xcodeproj", [
+            BuildConfigurationMock.new("Debug"),
+            BuildConfigurationMock.new("Release"),
+        ])
+    end
+
+    def assert_strict_cxx_api_flags(project_mock, strict:, allow_frameworks:)
+        project_mock.build_configurations.each do |config|
+            ["OTHER_CFLAGS", "OTHER_CPLUSPLUSFLAGS"].each do |key|
+                setting = config.build_settings[key]
+                assert_equal(strict, setting.include?("-DRN_STRICT_API"))
+                assert_equal(allow_frameworks, setting.include?("-DRN_ALLOW_FRAMEWORKS"))
+            end
+        end
+    end
+
+    def run_set_strict_cxx_api_flags
+        user_project_mock = prepare_empty_user_project_mock()
+        pods_project_mock = strict_cxx_api_pods_project_mock()
+        ReactNativePodsUtils.set_strict_cxx_api_flags(
+            strict_cxx_api_installer_mock(user_project_mock, pods_project_mock)
+        )
+        return [user_project_mock, pods_project_mock]
+    end
+
+    def test_setStrictCxxApiFlags_whenUnset_addsNothing
+        run_set_strict_cxx_api_flags().each do |project_mock|
+            assert_strict_cxx_api_flags(project_mock, strict: false, allow_frameworks: false)
+        end
+    end
+
+    def test_setStrictCxxApiFlags_whenStrictEnabled_addsRnStrictApiToUserAndPodsProjects
+        ENV['RN_STRICT_API'] = '1'
+        run_set_strict_cxx_api_flags().each do |project_mock|
+            assert_strict_cxx_api_flags(project_mock, strict: true, allow_frameworks: false)
+        end
+    end
+
+    def test_setStrictCxxApiFlags_whenAllowFrameworksEnabled_addsRnAllowFrameworksToUserAndPodsProjects
+        ENV['RN_ALLOW_FRAMEWORKS'] = '1'
+        run_set_strict_cxx_api_flags().each do |project_mock|
+            assert_strict_cxx_api_flags(project_mock, strict: false, allow_frameworks: true)
+        end
+    end
+
+    def test_setStrictCxxApiFlags_whenDisabled_removesPreviouslyAddedFlags
+        # Arrange
+        ENV['RN_STRICT_API'] = '1'
+        ENV['RN_ALLOW_FRAMEWORKS'] = '1'
+        user_project_mock = prepare_empty_user_project_mock()
+        pods_project_mock = strict_cxx_api_pods_project_mock()
+        installer = strict_cxx_api_installer_mock(user_project_mock, pods_project_mock)
+        ReactNativePodsUtils.set_strict_cxx_api_flags(installer)
+
+        # Act
+        ENV['RN_STRICT_API'] = '0'
+        ENV['RN_ALLOW_FRAMEWORKS'] = '0'
+        ReactNativePodsUtils.set_strict_cxx_api_flags(installer)
+
+        # Assert
+        assert_strict_cxx_api_flags(user_project_mock, strict: false, allow_frameworks: false)
+        assert_strict_cxx_api_flags(pods_project_mock, strict: false, allow_frameworks: false)
     end
 
     # ==================================== #
