@@ -12,6 +12,7 @@ import android.content.Context
 import android.graphics.BlendMode
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.view.FocusFinder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -288,6 +289,118 @@ class ReactViewGroupTest {
     // cached result must be unaffected.
     HasElevatedDescendantCache.invalidateAncestors(inner)
     assertThat(outer.hasOverlappingRendering()).isTrue()
+  }
+
+  @Test
+  fun `focusable false - keeps an accessible view out of keyboard focus search`() {
+    val root = ReactViewGroup(context)
+    val leading = focusableView(top = 0)
+    val excluded = accessibleView(top = 10, focusable = false)
+    val trailing = focusableView(top = 20)
+    root.addView(leading)
+    root.addView(excluded)
+    root.addView(trailing)
+
+    assertThat(collectKeyboardFocusables(root)).containsExactly(leading, trailing)
+    // Accessibility services still treat the view as one focusable element.
+    assertThat(excluded.isFocusable).isTrue()
+  }
+
+  @Test
+  fun `focusable false - keeps the descendants of an excluded view in keyboard focus search`() {
+    val root = ReactViewGroup(context)
+    val excluded = accessibleView(top = 0, focusable = false)
+    val descendant = focusableView(top = 0)
+    excluded.addView(descendant)
+    root.addView(excluded)
+
+    assertThat(collectKeyboardFocusables(root)).containsExactly(descendant)
+  }
+
+  @Test
+  fun `focusable false - default focus passes over an excluded view`() {
+    val root = ReactViewGroup(context)
+    val excluded = accessibleView(top = 0, focusable = false)
+    val trailing = focusableView(top = 10)
+    root.addView(excluded)
+    root.addView(trailing)
+
+    assertThat(root.requestFocus(View.FOCUS_DOWN)).isTrue()
+
+    assertThat(excluded.isFocused).isFalse()
+    assertThat(trailing.isFocused).isTrue()
+  }
+
+  @Test
+  fun `focusable false - focus requested from JS still reaches an excluded view`() {
+    val root = ReactViewGroup(context)
+    val excluded = accessibleView(top = 0, focusable = false)
+    root.addView(excluded)
+    Robolectric.buildActivity(Activity::class.java).setup().get().setContentView(root)
+
+    excluded.requestFocusFromJS()
+
+    assertThat(excluded.isFocused).isTrue()
+  }
+
+  @Test
+  fun `focusable false - keyboard focus moves on from an excluded view that holds focus`() {
+    val root = ReactViewGroup(context)
+    val leading = focusableView(top = 0)
+    val excluded = accessibleView(top = 10, focusable = false)
+    val trailing = focusableView(top = 20)
+    root.addView(leading)
+    root.addView(excluded)
+    root.addView(trailing)
+    Robolectric.buildActivity(Activity::class.java).setup().get().setContentView(root)
+    excluded.requestFocusFromJS()
+
+    assertThat(FocusFinder.getInstance().findNextFocus(root, excluded, View.FOCUS_FORWARD))
+        .isSameAs(trailing)
+    assertThat(FocusFinder.getInstance().findNextFocus(root, excluded, View.FOCUS_BACKWARD))
+        .isSameAs(leading)
+  }
+
+  @Test
+  fun `focusable true - returns a view to keyboard focus search`() {
+    val root = ReactViewGroup(context)
+    val view = accessibleView(top = 0, focusable = false)
+    root.addView(view)
+
+    ReactViewManager().setFocusable(view, true)
+
+    assertThat(collectKeyboardFocusables(root)).containsExactly(view)
+  }
+
+  @Test
+  fun `focusable false - recycling a view returns it to keyboard focus search`() {
+    val root = ReactViewGroup(context)
+    val view = accessibleView(top = 0, focusable = false)
+
+    view.recycleView()
+    root.addView(view)
+
+    assertThat(collectKeyboardFocusables(root)).containsExactly(view)
+  }
+
+  private fun focusableView(top: Int): View =
+      View(context).apply {
+        isFocusable = true
+        layout(0, top, 100, top + 10)
+      }
+
+  private fun accessibleView(top: Int, focusable: Boolean): ReactViewGroup =
+      ReactViewGroup(context).apply {
+        layout(0, top, 100, top + 10)
+        val manager = ReactViewManager()
+        manager.setAccessible(this, true)
+        manager.setFocusable(this, focusable)
+      }
+
+  private fun collectKeyboardFocusables(root: ViewGroup): List<View> {
+    val focusables = ArrayList<View>()
+    root.addFocusables(focusables, View.FOCUS_FORWARD, View.FOCUSABLES_ALL)
+    return focusables
   }
 
   // Mirrors the ViewManager mount/unmount hooks: attach/detach the child, then refresh the cache.

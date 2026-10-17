@@ -6439,6 +6439,7 @@ public final class com/facebook/react/views/view/ReactDrawableHelper {
 public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGroup, com/facebook/react/touch/ReactHitSlopView, com/facebook/react/touch/ReactInterceptingViewGroup, com/facebook/react/uimanager/HasElevatedDescendantCache, com/facebook/react/uimanager/ReactClippingViewGroup, com/facebook/react/uimanager/ReactOverflowViewWithInset, com/facebook/react/uimanager/ReactPointerEventsView {
 	public fun <init> (Landroid/content/Context;)V
 	public fun addChildrenForAccessibility (Ljava/util/ArrayList;)V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	public final fun cleanUpAxOrderListener ()V
 	protected fun dispatchDraw (Landroid/graphics/Canvas;)V
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
@@ -6468,6 +6469,7 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	public fun onTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun onViewAdded (Landroid/view/View;)V
 	public fun onViewRemoved (Landroid/view/View;)V
+	public fun requestFocus (ILandroid/graphics/Rect;)Z
 	public fun requestLayout ()V
 	public final fun setAxOrderList (Ljava/util/List;)V
 	public final fun setBackfaceVisibility (Ljava/lang/String;)V

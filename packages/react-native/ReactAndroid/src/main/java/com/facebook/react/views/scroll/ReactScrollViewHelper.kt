@@ -581,20 +581,41 @@ public object ReactScrollViewHelper {
         UIManagerHelper.getUIManager(host.context as ReactContext, UIManagerType.FABRIC)
             ?: return null
 
-    val nextFocusableViewId =
-        (uimanager as FabricUIManager).findNextFocusableElement(host.id, focused.id, direction)
-            ?: return null
+    // The shadow tree offers every focusable or accessible node, while a view can still keep
+    // itself out of keyboard navigation (focusable={false} on an accessible view), so the search
+    // moves on from a candidate that offers no keyboard focus. Forward and backward candidates can
+    // lead back to each other, which the visited ids end.
+    val visitedIds = mutableSetOf(focused.id)
+    var sourceId = focused.id
+    while (true) {
+      val nextFocusableViewId =
+          (uimanager as FabricUIManager).findNextFocusableElement(host.id, sourceId, direction)
+              ?: return null
+      if (!visitedIds.add(nextFocusableViewId)) {
+        return null
+      }
 
-    val ancestorIdList =
-        uimanager
-            .getRelativeAncestorList(host.getChildAt(0).id, nextFocusableViewId)
-            ?.toMutableSet() ?: return null
+      val ancestorIdList =
+          uimanager
+              .getRelativeAncestorList(host.getChildAt(0).id, nextFocusableViewId)
+              ?.toMutableSet() ?: return null
 
-    ancestorIdList.add(nextFocusableViewId)
+      ancestorIdList.add(nextFocusableViewId)
 
-    host.updateClippingRect(ancestorIdList)
+      host.updateClippingRect(ancestorIdList)
 
-    return host.findViewById(nextFocusableViewId)
+      val nextFocusableView = host.findViewById<View>(nextFocusableViewId) ?: return null
+      if (offersKeyboardFocus(nextFocusableView, direction)) {
+        return nextFocusableView
+      }
+      sourceId = nextFocusableViewId
+    }
+  }
+
+  private fun offersKeyboardFocus(view: View, @FocusDirection direction: Int): Boolean {
+    val focusables = ArrayList<View>()
+    view.addFocusables(focusables, direction)
+    return focusables.isNotEmpty()
   }
 
   @JvmStatic
