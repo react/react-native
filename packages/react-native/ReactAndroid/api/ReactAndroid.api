@@ -6284,6 +6284,7 @@ public class com/facebook/react/views/textinput/ReactEditText : androidx/appcomp
 	public fun setInputType (I)V
 	public final fun setLetterSpacingPt (F)V
 	public fun setLineHeight (I)V
+	public fun setLongClickable (Z)V
 	public final fun setMaxFontSizeMultiplier (F)V
 	protected final fun setNativeEventCount (I)V
 	public final fun setOnKeyPress (Z)V

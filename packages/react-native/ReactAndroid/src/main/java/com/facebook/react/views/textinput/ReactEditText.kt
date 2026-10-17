@@ -1126,6 +1126,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
   public fun setContextMenuHidden(contextMenuHidden: Boolean) {
     this.contextMenuHidden = contextMenuHidden
+    isLongClickable = !contextMenuHidden
+  }
+
+  // A long press selects text for the menu that contextMenuHidden hides, so the field takes none
+  // while the menu is hidden. TextView turns long-clicking back on whenever setInputType sets a key
+  // listener and when onAttachedToWindow makes the text selectable, so the gate is in the setter.
+  override fun setLongClickable(longClickable: Boolean) {
+    super.setLongClickable(longClickable && !contextMenuHidden)
   }
 
   protected fun applyTextAttributes() {

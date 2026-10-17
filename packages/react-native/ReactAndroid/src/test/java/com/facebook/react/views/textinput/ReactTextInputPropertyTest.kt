@@ -243,6 +243,28 @@ class ReactTextInputPropertyTest {
   }
 
   @Test
+  fun testContextMenuHidden() {
+    manager.updateProperties(view, buildStyles())
+    assertThat(view.isLongClickable).isTrue
+
+    manager.updateProperties(view, buildStyles("contextMenuHidden", true))
+    assertThat(view.isLongClickable).isFalse
+
+    manager.updateProperties(view, buildStyles("contextMenuHidden", true))
+    assertThat(view.isLongClickable).isFalse
+
+    // TextView turns long-clicking back on when a keyboard change sets a key listener and when
+    // attaching to a window makes the text selectable.
+    manager.updateProperties(view, buildStyles("keyboardType", "numeric"))
+    assertThat(view.isLongClickable).isFalse
+    view.setTextIsSelectable(true)
+    assertThat(view.isLongClickable).isFalse
+
+    manager.updateProperties(view, buildStyles("contextMenuHidden", false))
+    assertThat(view.isLongClickable).isTrue
+  }
+
+  @Test
   fun testAutoCompleteExtendedHints() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
       return
