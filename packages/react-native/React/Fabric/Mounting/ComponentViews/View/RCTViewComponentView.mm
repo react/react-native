@@ -458,7 +458,8 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // `border`
   if (oldViewProps.borderStyles != newViewProps.borderStyles || oldViewProps.borderRadii != newViewProps.borderRadii ||
-      oldViewProps.borderColors != newViewProps.borderColors) {
+      oldViewProps.borderColors != newViewProps.borderColors ||
+      oldViewProps.borderCurves != newViewProps.borderCurves) {
     needsInvalidateLayer = YES;
   }
 
