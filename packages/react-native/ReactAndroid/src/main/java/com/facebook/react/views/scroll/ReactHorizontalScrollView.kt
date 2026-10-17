@@ -850,7 +850,10 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
           velocityX
         }
 
-    if (pagingEnabled) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && scrollX <= 0 && correctedVelocityX < 0) {
+      // From Android 12 the platform absorbs this fling; an overscroll here sticks on Android 14.
+      super.fling(correctedVelocityX)
+    } else if (pagingEnabled) {
       flingAndSnap(correctedVelocityX)
     } else if (scroller != null) {
       // FB SCROLLVIEW CHANGE
