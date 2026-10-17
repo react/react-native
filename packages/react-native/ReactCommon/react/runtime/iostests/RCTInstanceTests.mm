@@ -11,6 +11,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBundleManager.h>
 #import <React/RCTJavaScriptLoader.h>
+#import <React/RCTSurfacePresenter.h>
 #import <ReactCommon/RCTHermesInstance.h>
 #import <ReactCommon/RCTInstance.h>
 #import <ReactCommon/RCTTurboModule.h>
@@ -239,6 +240,32 @@ static void (^sOnInit)(void);
       initCountAtBundleLoad,
       1u,
       @"FakeEagerModule -init must have fully returned before the JS bundle finishes loading");
+}
+
+- (void)testInvalidateDoesNotDeadlockWhenSuspendCallsIntoJS
+{
+  OCMStub([_mockDelegate unstableModulesRequiringMainQueueSetup]).andReturn(@[]);
+
+  RCTInstance *instance = [self makeInstance];
+  __weak RCTInstance *weakInstance = instance;
+
+  // Stands in for a surface observer that calls into JS while suspend stops surfaces.
+  id presenterMock = OCMPartialMock(instance.surfacePresenter);
+  OCMStub([(RCTSurfacePresenter *)presenterMock suspend]).andDo(^(NSInvocation *invocation) {
+    [weakInstance callFunctionOnJSModule:@"RCTLog" method:@"logIfNoNativeHook" args:@[]];
+    BOOL result = YES;
+    [invocation setReturnValue:&result];
+  });
+
+  // Invalidate off-main so a deadlock fails the wait instead of hanging the test runner.
+  XCTestExpectation *invalidated = [self expectationWithDescription:@"invalidate returned"];
+  dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+    [instance invalidate];
+    [invalidated fulfill];
+  });
+  [self waitForExpectations:@[ invalidated ] timeout:5.0];
+
+  [presenterMock stopMocking];
 }
 
 @end
