@@ -923,7 +923,8 @@ String Value::asString(IRuntime& rt) && {
 
 String Value::toString(IRuntime& runtime) const {
   Function toString = runtime.global().getPropertyAsFunction(runtime, "String");
-  return toString.call(runtime, *this).getString(runtime);
+  Value result = toString.call(runtime, *this);
+  return result.asString(runtime);
 }
 
 uint64_t BigInt::asUint64(IRuntime& runtime) const {
