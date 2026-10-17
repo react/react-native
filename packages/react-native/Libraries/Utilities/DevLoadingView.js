@@ -19,7 +19,7 @@ const COLOR_SCHEME = {
       textColor: '#242526',
     },
     refresh: {
-      backgroundColor: '#2584e8',
+      backgroundColor: '#1065AF',
       textColor: '#ffffff',
     },
     error: {
@@ -33,7 +33,7 @@ const COLOR_SCHEME = {
       textColor: '#ffffff',
     },
     refresh: {
-      backgroundColor: '#2584e8',
+      backgroundColor: '#1065AF',
       textColor: '#ffffff',
     },
     error: {

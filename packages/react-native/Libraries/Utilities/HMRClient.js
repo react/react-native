@@ -323,7 +323,8 @@ function setHMRUnavailableReason(reason: string) {
   // the warning to native engineers who use cached bundles without Metro.
   if (hmrClient.isEnabled() && didConnect) {
     DevLoadingView.showMessage(
-      'Fast Refresh disconnected. Reload app to reconnect.',
+      // Keeps 'to reconnect.' together when the banner wraps.
+      'Fast Refresh disconnected. Reload app to\u00A0reconnect.',
       'error',
       {dismissButton: true},
     );
