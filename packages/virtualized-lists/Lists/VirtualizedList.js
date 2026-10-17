@@ -658,6 +658,41 @@ class VirtualizedList extends StateSafePureComponent<
     return VirtualizedList._keyExtractor(item, index, props);
   }
 
+  /**
+   * The render window and mask to move to from `state`, or null when they
+   * don't change. It reads nothing from the caller, only its arguments and the
+   * scroll and layout metrics of `list` as they are when it runs, so the
+   * `_updateCellsToRender` updater and the check before it compute the same
+   * result for the same state.
+   */
+  static _computeCellsUpdate(
+    list: VirtualizedList,
+    props: VirtualizedListProps,
+    state: State,
+  ): ?{
+    cellsAroundViewport: {first: number, last: number},
+    renderMask: CellRenderMask,
+  } {
+    const cellsAroundViewport = list._adjustCellsAroundViewport(
+      props,
+      state.cellsAroundViewport,
+      state.pendingScrollUpdateCount,
+    );
+    const renderMask = VirtualizedList._createRenderMask(
+      props,
+      cellsAroundViewport,
+      list._getNonViewportRenderRegions(props),
+    );
+    if (
+      cellsAroundViewport.first === state.cellsAroundViewport.first &&
+      cellsAroundViewport.last === state.cellsAroundViewport.last &&
+      renderMask.equals(state.renderMask)
+    ) {
+      return null;
+    }
+    return {cellsAroundViewport, renderMask};
+  }
+
   static _createRenderMask(
     props: VirtualizedListProps,
     cellsAroundViewport: {first: number, last: number},
@@ -1457,6 +1492,9 @@ class VirtualizedList extends StateSafePureComponent<
   > = null;
   _parentRegistration: ?ParentRegistration = null;
   _offsetFromParentVirtualizedList: number = 0;
+  // Whether a state update is queued that React hasn't processed yet. While
+  // one is, `this.state` is behind the state the next updater will see.
+  _hasPendingStateUpdate: boolean = false;
   _pendingViewabilityUpdate: boolean = false;
   _prevParentOffset: number = 0;
   _scrollMetrics: {
@@ -2002,7 +2040,11 @@ class VirtualizedList extends StateSafePureComponent<
       zoomScale,
     };
     if (this.state.pendingScrollUpdateCount > 0) {
-      this.setState<'pendingScrollUpdateCount'>({pendingScrollUpdateCount: 0});
+      this._hasPendingStateUpdate = true;
+      this.setState<'pendingScrollUpdateCount'>(() => {
+        this._hasPendingStateUpdate = false;
+        return {pendingScrollUpdateCount: 0};
+      });
     }
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     this._notifyCrossOrientationChildren(false, 0);
@@ -2161,27 +2203,29 @@ class VirtualizedList extends StateSafePureComponent<
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     this._notifyCrossOrientationChildren();
 
+    // This runs on every scroll event, and most of the time the window of
+    // rendered cells doesn't change. The updater below would then return null,
+    // but React would still schedule and run a render pass to find that out,
+    // so do the same computation here first. It only gives the same answer
+    // while no other update is pending (`this.state` would be behind) and once
+    // the list has been laid out (before that, layout callbacks arrive back to
+    // back and the updater would see metrics from after this call).
+    if (
+      !this._hasPendingStateUpdate &&
+      this._scrollMetrics.visibleLength > 0 &&
+      this._listMetrics.getContentLength() > 0 &&
+      VirtualizedList._computeCellsUpdate(this, this.props, this.state) == null
+    ) {
+      // No update means no componentDidUpdate to reset this, which would
+      // push the next hiPri update onto the batching timer.
+      this._hiPriInProgress = false;
+      return;
+    }
+
+    this._hasPendingStateUpdate = true;
     this.setState<'cellsAroundViewport' | 'renderMask'>((state, props) => {
-      const cellsAroundViewport = this._adjustCellsAroundViewport(
-        props,
-        state.cellsAroundViewport,
-        state.pendingScrollUpdateCount,
-      );
-      const renderMask = VirtualizedList._createRenderMask(
-        props,
-        cellsAroundViewport,
-        this._getNonViewportRenderRegions(props),
-      );
-
-      if (
-        cellsAroundViewport.first === state.cellsAroundViewport.first &&
-        cellsAroundViewport.last === state.cellsAroundViewport.last &&
-        renderMask.equals(state.renderMask)
-      ) {
-        return null;
-      }
-
-      return {cellsAroundViewport, renderMask};
+      this._hasPendingStateUpdate = false;
+      return VirtualizedList._computeCellsUpdate(this, props, state);
     });
   };
 

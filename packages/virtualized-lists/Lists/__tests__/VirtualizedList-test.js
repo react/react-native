@@ -2275,6 +2275,47 @@ it('renders windowSize derived region at top', async () => {
   expect(component).toMatchSnapshot();
 });
 
+it('does not update state on a scroll that keeps the render window', async () => {
+  const items = generateItems(10);
+  const ITEM_HEIGHT = 10;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        maxToRenderPerBatch={1}
+        windowSize={3}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 20},
+      content: {width: 10, height: 100},
+    });
+    performAllBatches();
+  });
+
+  await act(() => {
+    jest.runAllTimers();
+  });
+
+  const setStateSpy = jest.spyOn(component.getInstance(), 'setState');
+
+  // The window already covers the viewport at the top and the 20 dip below
+  // it, so a scroll back to the top doesn't change it.
+  await act(() => {
+    simulateScroll(component, {x: 0, y: 0});
+    jest.runAllTimers();
+  });
+
+  expect(setStateSpy).not.toHaveBeenCalled();
+});
+
 it('renders windowSize derived region in middle', async () => {
   const items = generateItems(10);
   const ITEM_HEIGHT = 10;
