@@ -33,11 +33,13 @@ runs:
     - name: Installing Maestro
       shell: bash
       run: export MAESTRO_VERSION=2.6.1; curl -Ls "https://get.maestro.mobile.dev" | bash
-    - name: Installing Maestro dependencies
-      shell: bash
-      run: |
-        brew tap facebook/fb
-        brew install facebook/fb/idb-companion
+    - name: Install sim-remote
+      uses: software-mansion-labs/argent-cloud-actions/install@v2
+    - name: Acquire remote simulator
+      # Logs in with the job's OIDC id token; released in the post step.
+      uses: software-mansion-labs/argent-cloud-actions/acquire@v2
+      with:
+        label: react-native-e2e
     - name: Set up JDK 17
       uses: actions/setup-java@v5
       with:
@@ -57,6 +59,8 @@ runs:
         cd ${{ inputs.working-directory }}
         yarn start &
         sleep 5 # to give metro time to load
+    - name: Install Maestro shims
+      uses: software-mansion-labs/argent-cloud-actions/maestro-shims@v2
     - name: Run tests
       id: run-tests
       shell: bash
