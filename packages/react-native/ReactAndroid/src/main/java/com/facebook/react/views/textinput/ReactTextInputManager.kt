@@ -696,17 +696,8 @@ public open class ReactTextInputManager public constructor() :
 
   @ReactProp(name = "secureTextEntry", defaultBoolean = false)
   public fun setSecureTextEntry(view: ReactEditText, password: Boolean) {
-    updateStagedInputTypeFlag(
-        view = view,
-        flagsToUnset =
-            if (password) {
-              InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            } else {
-              InputType.TYPE_NUMBER_VARIATION_PASSWORD or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            },
-        flagsToSet = if (password) InputType.TYPE_TEXT_VARIATION_PASSWORD else 0,
-    )
-    checkPasswordType(view)
+    // Deferred to onAfterUpdateTransaction(), where it is applied to the keyboard type.
+    view.stagedSecureTextEntry = password
   }
 
   // This prop temporarily takes both numbers and strings.
@@ -756,15 +747,13 @@ public open class ReactTextInputManager public constructor() :
     } else if (KEYBOARD_TYPE_PHONE_PAD.equals(keyboardType, ignoreCase = true)) {
       flagsToSet = InputType.TYPE_CLASS_PHONE
     } else if (KEYBOARD_TYPE_VISIBLE_PASSWORD.equals(keyboardType, ignoreCase = true)) {
-      // This will supersede secureTextEntry={false}. If it doesn't, due to the way
-      //  the flags work out, the underlying field will end up a URI-type field.
       flagsToSet = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
     } else if (KEYBOARD_TYPE_URI.equals(keyboardType, ignoreCase = true)) {
       flagsToSet = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
     }
 
-    updateStagedInputTypeFlag(view, InputType.TYPE_MASK_CLASS, flagsToSet)
-    checkPasswordType(view)
+    // Deferred to onAfterUpdateTransaction(), where secureTextEntry is applied to it.
+    view.stagedKeyboardInputType = flagsToSet
   }
 
   @ReactProp(name = "returnKeyType")
@@ -905,6 +894,7 @@ public open class ReactTextInputManager public constructor() :
 
   override fun onAfterUpdateTransaction(view: ReactEditText) {
     super.onAfterUpdateTransaction(view)
+    reconcileKeyboardInputType(view)
     reconcileAutoCapitalize(view)
     view.commitStagedInputType()
     // setInputType() clears paint-level font variation settings, so update the typeface last to
@@ -1148,6 +1138,11 @@ public open class ReactTextInputManager public constructor() :
         (InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
             InputType.TYPE_TEXT_FLAG_CAP_WORDS or
             InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS)
+    private const val KEYBOARD_INPUT_TYPE_MASK =
+        (InputType.TYPE_MASK_CLASS or
+            InputType.TYPE_MASK_VARIATION or
+            InputType.TYPE_NUMBER_FLAG_SIGNED or
+            InputType.TYPE_NUMBER_FLAG_DECIMAL)
 
     private const val KEYBOARD_TYPE_EMAIL_ADDRESS = "email-address"
     private const val KEYBOARD_TYPE_NUMERIC = "numeric"
@@ -1192,20 +1187,29 @@ public open class ReactTextInputManager public constructor() :
       }
     }
 
-    // Sets the correct password type, since numeric and text passwords have different types
-    private fun checkPasswordType(view: ReactEditText) {
-      if (
-          (view.stagedInputType and INPUT_TYPE_KEYBOARD_NUMBERED) != 0 &&
-              (view.stagedInputType and InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0
-      ) {
-        // Text input type is numbered password, remove text password variation, add numeric one
-        updateStagedInputTypeFlag(
-            view,
-            InputType.TYPE_TEXT_VARIATION_PASSWORD,
-            InputType.TYPE_NUMBER_VARIATION_PASSWORD,
-        )
-      }
+    // A variation is a value within its class, not a set of flags: 0x10 is the URI variation of
+    // a text field and the password variation of a number field.
+    private fun reconcileKeyboardInputType(view: ReactEditText) {
+      val keyboardInputType =
+          if (view.stagedSecureTextEntry) {
+            toPasswordInputType(view.stagedKeyboardInputType)
+          } else {
+            view.stagedKeyboardInputType
+          }
+      view.stagedInputType =
+          (view.stagedInputType and KEYBOARD_INPUT_TYPE_MASK.inv()) or keyboardInputType
     }
+
+    // Only the text and number classes have a password variation.
+    private fun toPasswordInputType(keyboardInputType: Int): Int =
+        when (keyboardInputType and InputType.TYPE_MASK_CLASS) {
+          InputType.TYPE_CLASS_TEXT ->
+              InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+          InputType.TYPE_CLASS_NUMBER ->
+              (keyboardInputType and InputType.TYPE_MASK_VARIATION.inv()) or
+                  InputType.TYPE_NUMBER_VARIATION_PASSWORD
+          else -> keyboardInputType
+        }
 
     private fun updateStagedInputTypeFlag(view: ReactEditText, flagsToUnset: Int, flagsToSet: Int) {
       view.stagedInputType = (view.stagedInputType and flagsToUnset.inv()) or flagsToSet
