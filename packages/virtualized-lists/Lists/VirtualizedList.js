@@ -855,6 +855,7 @@ class VirtualizedList extends StateSafePureComponent<
     this._unregisterFromParent(false);
     // $FlowFixMe[incompatible-type]
     clearTimeout(this._updateCellsToRenderTimeoutID);
+    this._updateCellsToRenderTimeoutID = null;
     this._viewabilityTuples.forEach(tuple => {
       tuple.viewabilityHelper.dispose();
     });

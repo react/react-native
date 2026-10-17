@@ -3048,6 +3048,86 @@ it('handles rapid prepends with coalesced scroll event (regression for #53542)',
   ).toBeGreaterThanOrEqual(0);
 });
 
+it('renders all cells after being hidden and revealed by Suspense with a pending batch update', async () => {
+  const ITEM_HEIGHT = 40;
+  const listRef = createRef();
+  // The simulate* helpers only need `getInstance()`; the root here is a
+  // Suspense boundary, so point them at the list instance via the ref.
+  const list = {getInstance: () => listRef.current};
+
+  // Mirrors react-freeze (react-native-screens `freezeOnBlur`): suspend on a
+  // promise that never resolves so React hides the already-mounted subtree
+  // (componentWillUnmount) and later reveals the same instance
+  // (componentDidMount) instead of remounting it.
+  const neverResolves = new Promise(() => {});
+  function Freeze({freeze, children}) {
+    if (freeze) {
+      throw neverResolves;
+    }
+    return children;
+  }
+
+  const renderList = ({freeze, items}) => (
+    <React.Suspense fallback={null}>
+      <Freeze freeze={freeze}>
+        <VirtualizedList
+          ref={listRef}
+          initialNumToRender={12}
+          {...baseItemProps(items)}
+          {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+        />
+      </Freeze>
+    </React.Suspense>
+  );
+
+  let component;
+  await act(() => {
+    component = create(renderList({freeze: false, items: []}), {
+      unstable_isConcurrent: true,
+    });
+  });
+
+  // Layout with no data schedules a low-priority batch update. Leave the
+  // timer pending so it is still outstanding when the list is hidden.
+  await act(() => {
+    simulateLayout(list, {
+      viewport: {width: 300, height: 600},
+      content: {width: 300, height: 0},
+    });
+  });
+
+  await act(() => {
+    component.update(renderList({freeze: true, items: []}));
+  });
+  await act(() => {
+    component.update(renderList({freeze: false, items: []}));
+  });
+
+  const items = generateItems(28);
+  await act(() => {
+    component.update(renderList({freeze: false, items}));
+  });
+  await act(() => {
+    simulateContentLayout(list, {
+      width: 300,
+      height: items.length * ITEM_HEIGHT,
+    });
+    simulateScroll(list, {x: 0, y: 0});
+  });
+
+  // Each low-priority batch grows the render window by at most
+  // `maxToRenderPerBatch` cells, so advance through several batching periods.
+  for (let i = 0; i < 5; i++) {
+    await act(() => {
+      performAllBatches();
+    });
+  }
+
+  expect(component.root.findAllByType('MockCellItem')).toHaveLength(
+    items.length,
+  );
+});
+
 function generateItems(count, startKey = 0) {
   return Array(count)
     .fill()
