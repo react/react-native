@@ -7,7 +7,6 @@
 
 package com.facebook.react.fabric.mounting
 
-import android.os.SystemClock
 import android.view.View
 import androidx.annotation.UiThread
 import com.facebook.common.logging.FLog
@@ -17,6 +16,7 @@ import com.facebook.react.bridge.ReactIgnorableMountingException
 import com.facebook.react.bridge.ReactNoCrashSoftException
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.RetryableMountingLayerException
+import com.facebook.react.common.SystemClock
 import com.facebook.react.fabric.FabricUIManager
 import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem
 import com.facebook.react.fabric.mounting.mountitems.MountItem
@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 internal class MountItemDispatcher(
     private val mountingManager: MountingManager,
     private val itemDispatchListener: ItemDispatchListener,
+    private val frameIntervalSource: FrameIntervalSource,
 ) {
   private val viewCommandMountItems: Queue<DispatchCommandMountItem> = ConcurrentLinkedQueue()
   private val mountItems: Queue<MountItem> = ConcurrentLinkedQueue()
@@ -336,8 +337,17 @@ internal class MountItemDispatcher(
       return
     }
 
-    val deadline = lastFrameTimeNanos + FRAME_TIME_NS / 2
+    val deadline = lastFrameTimeNanos + computePreMountBudgetNanos()
     dispatchPreMountItemsImpl(deadline)
+  }
+
+  /**
+   * Half of the display's current frame, and never longer than [LONGEST_PRE_MOUNT_NANOS]. A display
+   * that reports no refresh rate is budgeted as a 60 Hz one.
+   */
+  private fun computePreMountBudgetNanos(): Long {
+    val frameIntervalNanos = frameIntervalSource.frameIntervalNanos() ?: FRAME_TIME_NS
+    return minOf(frameIntervalNanos / 2, LONGEST_PRE_MOUNT_NANOS)
   }
 
   private fun dispatchPreMountItemsImpl(deadline: Long) {
@@ -355,7 +365,7 @@ internal class MountItemDispatcher(
 
           try {
             while (true) {
-              if (System.nanoTime() > deadline) {
+              if (SystemClock.nanoTime() > deadline) {
                 break
               }
 
@@ -419,10 +429,21 @@ internal class MountItemDispatcher(
     fun onItemsQueued()
   }
 
+  fun interface FrameIntervalSource {
+    /** The display's current frame interval, or null while the display reports no refresh rate. */
+    fun frameIntervalNanos(): Long?
+  }
+
   private companion object {
     private const val TAG: String = "MountItemDispatcher"
 
     private const val FRAME_TIME_NS: Long = (1000000000 / 60).toLong()
+
+    /**
+     * The longest a frame pre-mounts for: half of a 30 Hz frame, so that a display below 30 Hz,
+     * such as an adaptive panel idling at 1 Hz, holds the UI thread no longer than at 30 Hz.
+     */
+    private const val LONGEST_PRE_MOUNT_NANOS: Long = 1_000_000_000L / 30 / 2
 
     private fun <E> drainConcurrentItemQueue(queue: Queue<E>): List<E>? {
       if (queue.isEmpty()) {

@@ -58,6 +58,7 @@ import com.facebook.react.fabric.events.FabricEventEmitter;
 import com.facebook.react.fabric.internal.interop.InteropUIBlockListener;
 import com.facebook.react.fabric.interop.UIBlock;
 import com.facebook.react.fabric.interop.UIBlockViewResolver;
+import com.facebook.react.fabric.mounting.DisplayFrameInterval;
 import com.facebook.react.fabric.mounting.MountItemDispatcher;
 import com.facebook.react.fabric.mounting.MountingManager;
 import com.facebook.react.fabric.mounting.SurfaceMountingManager;
@@ -182,6 +183,7 @@ public class FabricUIManager
   private final ReactApplicationContext mReactApplicationContext;
   private final MountingManager mMountingManager;
   private final FabricEventDispatcher mEventDispatcher;
+  private final DisplayFrameInterval mDisplayFrameInterval;
   private final MountItemDispatcher mMountItemDispatcher;
   private final ViewManagerRegistry mViewManagerRegistry;
 
@@ -252,8 +254,10 @@ public class FabricUIManager
     mDispatchUIFrameCallback = new DispatchUIFrameCallback(reactContext);
     mReactApplicationContext = reactContext;
     mMountingManager = new MountingManager(viewManagerRegistry, mMountItemExecutor);
+    mDisplayFrameInterval = new DisplayFrameInterval(reactContext);
     mMountItemDispatcher =
-        new MountItemDispatcher(mMountingManager, new MountItemDispatchListener());
+        new MountItemDispatcher(
+            mMountingManager, new MountItemDispatchListener(), mDisplayFrameInterval);
     mEventDispatcher = new FabricEventDispatcher(reactContext, new FabricEventEmitter(this));
     mBatchEventDispatchedListener = batchEventDispatchedListener;
     mReactApplicationContext.addLifecycleEventListener(this);
@@ -459,6 +463,7 @@ public class FabricUIManager
   @Override
   public void initialize() {
     mEventDispatcher.addBatchEventDispatchedListener(mBatchEventDispatchedListener);
+    mDisplayFrameInterval.start();
     if (ReactNativeFeatureFlags.enableFabricLogs()) {
       mDevToolsReactPerfLogger = new DevToolsReactPerfLogger();
       mDevToolsReactPerfLogger.addDevToolsReactPerfLoggerListener(FABRIC_PERF_LOGGER);
@@ -494,6 +499,7 @@ public class FabricUIManager
 
     mEventDispatcher.removeBatchEventDispatchedListener(mBatchEventDispatchedListener);
     mEventDispatcher.invalidate();
+    mDisplayFrameInterval.stop();
 
     mReactApplicationContext.unregisterComponentCallbacks(mViewManagerRegistry);
     mViewManagerRegistry.invalidate();
