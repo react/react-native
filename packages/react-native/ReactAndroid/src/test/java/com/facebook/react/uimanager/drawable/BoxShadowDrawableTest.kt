@@ -71,6 +71,27 @@ class BoxShadowDrawableTest {
   }
 
   @Test
+  fun blurredRoundedInsetShadowDrawsTheSamePathOnEveryDraw() {
+    assertDrawsTheSamePathOnEveryDraw(insetShadow(roundedBy(8f), blurRadius = 4f))
+  }
+
+  @Test
+  fun blurredRectangularInsetShadowDrawsTheSamePathOnEveryDraw() {
+    assertDrawsTheSamePathOnEveryDraw(insetShadow(null, blurRadius = 4f))
+  }
+
+  @Test
+  fun unblurredInsetShadowDrawsADoubleRoundRect() {
+    val calls =
+        RecordingCanvas()
+            .also { insetShadow(roundedBy(8f)).withBounds(Rect(0, 0, 100, 50)).draw(it) }
+            .calls
+
+    assertThat(calls).anyMatch { it.startsWith("drawDoubleRoundRect") }
+    assertThat(calls).noneMatch { it.startsWith("drawPath") }
+  }
+
+  @Test
   fun roundedOutsetShadowDrawsTheSameGeometryObjectsOnEveryDraw() {
     assertDrawsTheSameGeometryObjectsOnEveryDraw(outsetShadow(roundedBy(8f)))
   }
@@ -88,6 +109,80 @@ class BoxShadowDrawableTest {
     drawable.bounds = Rect(0, 0, 100, 50)
 
     assertDrawsLike(drawable, insetShadow(roundedBy(8f)).withBounds(Rect(0, 0, 100, 50)))
+  }
+
+  @Test
+  fun blurredInsetShadowFollowsBoundsThatGrowFromEmpty() {
+    val drawable = insetShadow(roundedBy(8f), blurRadius = 4f)
+    drawable.draw(RecordingCanvas())
+
+    drawable.bounds = Rect(0, 0, 100, 50)
+
+    assertDrawsLike(
+        drawable,
+        insetShadow(roundedBy(8f), blurRadius = 4f).withBounds(Rect(0, 0, 100, 50)),
+    )
+  }
+
+  @Test
+  fun blurredInsetShadowFollowsARadiusChangedInPlaceAndReassigned() {
+    val borderRadius = roundedBy(8f)
+    val drawable = insetShadow(borderRadius, blurRadius = 4f).withBounds(Rect(0, 0, 100, 50))
+    drawable.draw(RecordingCanvas())
+
+    borderRadius.set(BorderRadiusProp.BORDER_RADIUS, points(4f))
+    drawable.borderRadius = borderRadius
+
+    assertDrawsLike(
+        drawable,
+        insetShadow(roundedBy(4f), blurRadius = 4f).withBounds(Rect(0, 0, 100, 50)),
+    )
+  }
+
+  @Test
+  fun blurredInsetShadowFollowsADensityChange() {
+    val drawable = insetShadow(roundedBy(8f), blurRadius = 4f).withBounds(Rect(0, 0, 100, 50))
+    drawable.draw(RecordingCanvas())
+
+    setScreenDensity(3f)
+
+    assertDrawsLike(
+        drawable,
+        insetShadow(roundedBy(8f), blurRadius = 4f).withBounds(Rect(0, 0, 100, 50)),
+    )
+  }
+
+  @Test
+  fun blurredInsetShadowFollowsTheLeftAndRightSwapPreferenceInRtl() {
+    val drawable =
+        insetShadow(topLeftRoundedBy(8f), leftEdgeBy(3f), blurRadius = 4f)
+            .withBounds(Rect(0, 0, 100, 50))
+    drawable.layoutDirection = LayoutDirection.RTL
+    drawable.draw(RecordingCanvas())
+
+    I18nUtil.instance.swapLeftAndRightInRTL(context, false)
+
+    val expected =
+        insetShadow(topLeftRoundedBy(8f), leftEdgeBy(3f), blurRadius = 4f)
+            .withBounds(Rect(0, 0, 100, 50))
+    expected.layoutDirection = LayoutDirection.RTL
+    assertDrawsLike(drawable, expected)
+  }
+
+  @Test
+  fun insetShadowWhoseSpreadPassesHalfItsHeightDrawsLikeOneWhoseSpreadPassesItsWidth() {
+    assertDrawsLike(
+        insetShadow(null, spread = 15f).withBounds(Rect(0, 0, 100, 50)),
+        insetShadow(null, spread = 60f).withBounds(Rect(0, 0, 100, 50)),
+    )
+  }
+
+  @Test
+  fun blurredInsetShadowWhoseSpreadPassesHalfItsHeightDrawsLikeOneWhoseSpreadPassesItsWidth() {
+    assertDrawsLike(
+        insetShadow(null, blurRadius = 4f, spread = 15f).withBounds(Rect(0, 0, 100, 50)),
+        insetShadow(null, blurRadius = 4f, spread = 60f).withBounds(Rect(0, 0, 100, 50)),
+    )
   }
 
   @Test
@@ -298,6 +393,8 @@ class BoxShadowDrawableTest {
   private fun insetShadow(
       borderRadius: BorderRadiusStyle?,
       borderInsets: BorderInsets? = null,
+      blurRadius: Float = 0f,
+      spread: Float = 1f,
       drawableContext: Context = context,
   ): InsetBoxShadowDrawable =
       InsetBoxShadowDrawable(
@@ -305,8 +402,8 @@ class BoxShadowDrawableTest {
           shadowColor = Color.BLACK,
           offsetX = 2f,
           offsetY = 3f,
-          blurRadius = 0f,
-          spread = 1f,
+          blurRadius = blurRadius,
+          spread = spread,
           borderInsets = borderInsets,
           borderRadius = borderRadius,
       )
@@ -355,6 +452,18 @@ class BoxShadowDrawableTest {
     firstDraw.zip(secondDraw).forEach { (first, second) -> assertThat(second).isSameAs(first) }
   }
 
+  private fun assertDrawsTheSamePathOnEveryDraw(drawable: Drawable) {
+    drawable.bounds = Rect(0, 0, 100, 50)
+
+    val firstDraw = RecordingCanvas().also { drawable.draw(it) }.drawnPaths
+    val secondDraw = RecordingCanvas().also { drawable.draw(it) }.drawnPaths
+
+    assertThat(firstDraw).hasSize(1)
+    assertThat(secondDraw).hasSize(1)
+    assertThat(secondDraw.single()).isSameAs(firstDraw.single())
+    assertThat(firstDraw.single().fillType).isEqualTo(Path.FillType.EVEN_ODD)
+  }
+
   private fun assertDrawsLike(drawable: Drawable, expected: Drawable) {
     assertThat(RecordingCanvas().also { drawable.draw(it) }.calls)
         .isEqualTo(RecordingCanvas().also { expected.draw(it) }.calls)
@@ -374,6 +483,7 @@ class BoxShadowDrawableTest {
   private class RecordingCanvas : Canvas() {
     val calls = mutableListOf<String>()
     val geometry = mutableListOf<Any>()
+    val drawnPaths = mutableListOf<Path>()
 
     override fun clipPath(path: Path): Boolean {
       record("clipPath ${describe(path)}", path)
@@ -396,7 +506,8 @@ class BoxShadowDrawableTest {
     }
 
     override fun drawPath(path: Path, paint: Paint) {
-      record("drawPath ${describe(path)}", path)
+      drawnPaths.add(path)
+      record("drawPath ${path.fillType} ${describe(path)}", path)
     }
 
     override fun drawRect(rect: RectF, paint: Paint) {

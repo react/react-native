@@ -61,6 +61,8 @@ internal class InsetBoxShadowDrawable(
         }
       }
 
+  private val isBlurred = shadowPaint.maskFilter != null
+
   private var needUpdatePath = true
   private var pathDensity = 0f
   private var pathSwapsLeftAndRight = false
@@ -71,6 +73,7 @@ internal class InsetBoxShadowDrawable(
   private val innerRect = RectF()
   private val innerRadii = FloatArray(8)
   private val outerRect = RectF()
+  private val blurredShadowPath = Path()
 
   /*
    * We assume borderRadius & borderInsets to be shared across multiple drawables
@@ -124,10 +127,23 @@ internal class InsetBoxShadowDrawable(
     canvas.save().let { saveCount ->
       if (hasPaddingBoxRadii) {
         canvas.clipPath(paddingBoxPath)
-        canvas.drawDoubleRoundRect(outerRect, ZERO_RADII, innerRect, innerRadii, shadowPaint)
       } else {
         canvas.clipRect(paddingBoxRect)
-        canvas.drawDoubleRoundRect(outerRect, ZERO_RADII, innerRect, ZERO_RADII, shadowPaint)
+      }
+
+      // Skia caches a blurred mask only for a path it can key, and a double round rect reaches it
+      // as a volatile path, which it never keys.
+      // https://skia.googlesource.com/skia/+/d426e7d44d66c9a940dd42f5dde62c712caf801a/src/gpu/ganesh/Device.cpp#690
+      if (isBlurred) {
+        canvas.drawPath(blurredShadowPath, shadowPaint)
+      } else {
+        canvas.drawDoubleRoundRect(
+            outerRect,
+            ZERO_RADII,
+            innerRect,
+            if (hasPaddingBoxRadii) innerRadii else ZERO_RADII,
+            shadowPaint,
+        )
       }
 
       canvas.restoreToCount(saveCount)
@@ -181,7 +197,7 @@ internal class InsetBoxShadowDrawable(
     val y = offsetY.dpToPx()
     val spreadExtent = spread.dpToPx()
     innerRect.set(paddingBoxRect)
-    if (2 * spreadExtent > paddingBoxRect.width()) {
+    if (2 * spreadExtent > paddingBoxRect.width() || 2 * spreadExtent > paddingBoxRect.height()) {
       innerRect.setEmpty()
     } else {
       innerRect.inset(spreadExtent, spreadExtent)
@@ -200,6 +216,19 @@ internal class InsetBoxShadowDrawable(
       paddingBoxPath.addRoundRect(paddingBoxRect, paddingBoxRadii, Path.Direction.CW)
       for (index in innerRadii.indices) {
         innerRadii[index] = adjustRadiusForSpread(paddingBoxRadii[index], -spreadExtent)
+      }
+    }
+
+    if (isBlurred) {
+      blurredShadowPath.rewind()
+      blurredShadowPath.fillType = Path.FillType.EVEN_ODD
+      blurredShadowPath.addRect(outerRect, Path.Direction.CW)
+      if (!innerRect.isEmpty) {
+        blurredShadowPath.addRoundRect(
+            innerRect,
+            if (hasPaddingBoxRadii) innerRadii else ZERO_RADII,
+            Path.Direction.CW,
+        )
       }
     }
   }
