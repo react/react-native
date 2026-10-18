@@ -223,12 +223,6 @@ internal class ReactInstance(
       UIConstantsProviderBinding.install(
           // Use unbuffered RuntimeExecutor to install binding
           unbufferedRuntimeExecutor,
-          // Here we are construncting the return value for UManager.getConstants call.
-          // The old architectre relied on the constatnts struct to contain:
-          // 1. Eagerly loaded view configs for all native components.
-          // 2. genericBubblingEventTypes.
-          // 3. genericDirectEventTypes.
-          // We want to match this beahavior.
           { Arguments.makeNativeMap(UIManagerModuleConstantsHelper.defaultExportableEventTypes) },
           ConstantsForViewManagerProvider { viewManagerName: String ->
             val viewManager =
@@ -236,18 +230,8 @@ internal class ReactInstance(
                     ?: return@ConstantsForViewManagerProvider null
             getConstantsForViewManager(viewManager, customDirectEvents)
           },
-          {
-            val viewManagers: List<ViewManager<*, *>> =
-                ArrayList(viewManagerResolver.eagerViewManagerMap.values)
-            val constants = createConstants(viewManagers, customDirectEvents)
-
-            val lazyViewManagers = viewManagerResolver.lazyViewManagerNames
-            if (!lazyViewManagers.isEmpty()) {
-              constants["ViewManagerNames"] = ArrayList(lazyViewManagers)
-              constants["LazyViewManagersEnabled"] = true
-            }
-            Arguments.makeNativeMap(constants)
-          },
+          // Names only: each view config is built on first use.
+          { Arguments.makeNativeMap(createConstants(viewManagerResolver)) },
       )
     }
 
@@ -584,20 +568,13 @@ internal class ReactInstance(
       SoLoader.loadLibrary("rninstance")
     }
 
-    private fun createConstants(
-        viewManagers: List<ViewManager<in Nothing, in Nothing>>,
-        customDirectEvents: MutableMap<String, Any>?,
-    ): MutableMap<String, Any> {
+    private fun createConstants(viewManagerResolver: ViewManagerResolver): Map<String, Any> {
       ReactMarker.logMarker(ReactMarkerConstants.CREATE_UI_MANAGER_MODULE_CONSTANTS_START)
       SystraceMessage.beginSection(Systrace.TRACE_TAG_REACT, "CreateUIManagerConstants")
-          .arg("Lazy", false)
+          .arg("Lazy", true)
           .flush()
       try {
-        return UIManagerModuleConstantsHelper.createConstants(
-            viewManagers,
-            null,
-            customDirectEvents,
-        )
+        return UIManagerModuleConstantsHelper.createConstants(viewManagerResolver)
       } finally {
         Systrace.endSection(Systrace.TRACE_TAG_REACT)
         ReactMarker.logMarker(ReactMarkerConstants.CREATE_UI_MANAGER_MODULE_CONSTANTS_END)
