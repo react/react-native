@@ -303,6 +303,12 @@ async function generateConfigFiles(tempDirectory: string) {
     adjustedApiExtractorConfig,
   );
 
+  // copy ambient global declarations
+  await fs.copyFile(
+    path.join(__dirname, 'templates', 'globals.d.ts'),
+    path.join(tempDirectory, 'globals.d.ts'),
+  );
+
   // generate basic package.json
   const packageJSON = {name: 'react-native'};
   await fs.writeFile(
