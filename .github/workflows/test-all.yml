@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   id-token: write
 
 jobs:
@@ -194,12 +195,16 @@ jobs:
     needs: test_ios_rntester
     if: ${{ needs.test_ios_rntester.result == 'success' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      argent-label: facebook.test-all
     secrets: inherit
 
   test_e2e_ios_rntester_retry_1:
     needs: test_e2e_ios_rntester
     if: ${{ always() && needs.test_e2e_ios_rntester.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      argent-label: facebook.test-all
     secrets: inherit
 
   test_e2e_ios_rntester_retry_2:
@@ -207,6 +212,7 @@ jobs:
     if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
     with:
+      argent-label: facebook.test-all
       fail-on-error: true
     secrets: inherit
 
@@ -221,12 +227,16 @@ jobs:
     needs: [build_npm_package, prebuild_apple_dependencies, check_code_changes]
     if: needs.check_code_changes.outputs.should_test_ios == 'true'
     uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      argent-label: facebook.test-all
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_1:
     needs: test_e2e_ios_templateapp
     if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      argent-label: facebook.test-all
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_2:
@@ -234,6 +244,7 @@ jobs:
     if: ${{ always() && needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
+      argent-label: facebook.test-all
       fail-on-error: true
     secrets: inherit
 

@@ -1,0 +1,121 @@
+name: E2E iOS on demand
+
+# Runs the iOS Maestro E2E suites against a pull request when a maintainer
+# comments `@react-native-bot e2e-tests` on it. The apps come from the
+# artifacts a run of the pull request's head already built, the Maestro flows
+# from the pull request, and the workflows and scripts from the default branch.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+# Only a trigger comment shares the pull request's group, so a newer request
+# supersedes a running one and any other comment cancels nothing.
+concurrency:
+  group: e2e-ios-on-demand-${{ github.event.issue.number }}-${{ startsWith(github.event.comment.body, '@react-native-bot e2e-tests') && 'run' || github.event.comment.id }}
+  cancel-in-progress: true
+
+jobs:
+  request:
+    if: >-
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '@react-native-bot e2e-tests') &&
+      contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    outputs:
+      head-sha: ${{ steps.find.outputs.head-sha }}
+      run-id: ${{ steps.find.outputs.run-id }}
+    steps:
+      - name: Find the pull request's build
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          sha=$(gh api "repos/$GH_REPO/pulls/$PR" --jq .head.sha)
+          needed="RNTesterApp-NewArch-Debug RNTesterApp-NewArch-Release RNTestProject-Debug RNTestProject-Release react-native-package"
+          run_id=
+          for id in $(gh api "repos/$GH_REPO/actions/runs?head_sha=$sha&per_page=30" --jq '.workflow_runs[].id'); do
+            have=$(gh api "repos/$GH_REPO/actions/runs/$id/artifacts?per_page=100" --jq '.artifacts[].name')
+            missing=
+            for name in $needed; do
+              grep -qx "$name" <<<"$have" || missing="$missing $name"
+            done
+            if [ -z "$missing" ]; then
+              run_id=$id
+              break
+            fi
+          done
+          if [ -z "$run_id" ]; then
+            echo "::error::no run of $sha has built all of: $needed"
+            exit 1
+          fi
+          echo "head-sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "run-id=$run_id" >> "$GITHUB_OUTPUT"
+      - name: Acknowledge the request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COMMENT: ${{ github.event.comment.id }}
+        run: gh api -X POST "repos/$GH_REPO/issues/comments/$COMMENT/reactions" -f content=rocket > /dev/null
+
+  rntester:
+    needs: request
+    uses: ./.github/workflows/e2e-ios-rntester.yml
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    with:
+      argent-label: facebook.e2e-ios-on-demand
+      artifact-run-id: ${{ needs.request.outputs.run-id }}
+      flows-ref: ${{ needs.request.outputs.head-sha }}
+      fail-on-error: true
+
+  templateapp:
+    needs: request
+    uses: ./.github/workflows/e2e-ios-templateapp.yml
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    with:
+      argent-label: facebook.e2e-ios-on-demand
+      artifact-run-id: ${{ needs.request.outputs.run-id }}
+      flows-ref: ${{ needs.request.outputs.head-sha }}
+      fail-on-error: true
+
+  report:
+    needs: [request, rntester, templateapp]
+    if: always() && needs.request.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment the results
+        env:
+          GH_TOKEN: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN || github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+          REQUEST: ${{ needs.request.result }}
+          HEAD_SHA: ${{ needs.request.outputs.head-sha }}
+          RNTESTER: ${{ needs.rntester.outputs.status }}
+          TEMPLATEAPP: ${{ needs.templateapp.outputs.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ "$REQUEST" != "success" ]; then
+            body="iOS E2E: no run of the pull request's head has built the apps yet, see [the request]($RUN_URL)."
+          else
+            body="iOS E2E on ${HEAD_SHA:0:7} ([run]($RUN_URL)): RNTester **${RNTESTER:-skipped}**, template app **${TEMPLATEAPP:-skipped}**."
+          fi
+          gh api -X POST "repos/$GH_REPO/issues/$PR/comments" -f body="$body" > /dev/null

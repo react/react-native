@@ -26,6 +26,9 @@ inputs:
     required: false
     default: ''
     description: Maestro device OS name, such as iOS-26-2
+  argent-label:
+    required: true
+    description: Label the calling workflow is registered under on Argent Cloud; the job logs in as it
 
 runs:
   using: composite
@@ -39,7 +42,7 @@ runs:
       # Logs in with the job's OIDC id token; released in the post step.
       uses: software-mansion-labs/argent-cloud-actions/acquire@v2
       with:
-        label: react-native-e2e
+        label: ${{ inputs.argent-label }}
     - name: Set up JDK 17
       uses: actions/setup-java@v5
       with:

@@ -12,6 +12,10 @@ inputs:
   marker:
     description: 'HTML comment marker to identify this comment'
     required: true
+  issue-number:
+    description: 'Pull request to comment on; defaults to the one the workflow runs for'
+    required: false
+    default: ''
 runs:
   using: composite
   steps:
@@ -21,6 +25,7 @@ runs:
         SECTIONS_INPUT: ${{ inputs.sections }}
         MARKER_INPUT: ${{ inputs.marker }}
         HEADER_INPUT: ${{ inputs.header }}
+        ISSUE_NUMBER_INPUT: ${{ inputs.issue-number }}
       with:
         script: |
           const marker = process.env.MARKER_INPUT;
@@ -30,7 +35,7 @@ runs:
             .filter(s => s.trim());
 
           const {owner, repo} = context.repo;
-          const issue_number = context.issue.number;
+          const issue_number = Number(process.env.ISSUE_NUMBER_INPUT) || context.issue.number;
 
           const {data: comments} = await github.rest.issues.listComments({
             owner, repo, issue_number,
