@@ -13,10 +13,8 @@
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
-#include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/element/ComponentBuilder.h>
 #include <react/renderer/element/Element.h>
-#include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 
@@ -25,12 +23,9 @@ namespace {
 using yoga::Edge;
 using yoga::StyleLength;
 
-ScrollContentViewState stateWith(
-    EdgeInsets safeAreaPadding,
-    bool swapLeftAndRightInRTL = false) {
+ScrollContentViewState stateWith(EdgeInsets safeAreaPadding) {
   ScrollContentViewState state;
   state.safeAreaPadding = safeAreaPadding;
-  state.swapLeftAndRightInRTL = swapLeftAndRightInRTL;
   return state;
 }
 
@@ -56,25 +51,6 @@ ComponentDescriptorRegistry::Shared registryWithScrollContentView() {
       concreteComponentDescriptorProvider<
           ScrollContentViewComponentDescriptor>());
   return registry;
-}
-
-/*
- * Lays the tree out right to left at 300 by 600 points, with left and right
- * swapped as an RTL app does by default.
- */
-RootShadowNode::Unshared layOutInRTL(const RootShadowNode& rootShadowNode) {
-  ContextContainer contextContainer{};
-  PropsParserContext parserContext{-1, contextContainer};
-  auto layoutConstraints = rootShadowNode.getConcreteProps().layoutConstraints;
-  layoutConstraints.layoutDirection = kRTL;
-  layoutConstraints.minimumSize = {.width = 300, .height = 600};
-  layoutConstraints.maximumSize = {.width = 300, .height = 600};
-  auto layoutContext = rootShadowNode.getConcreteProps().layoutContext;
-  layoutContext.swapLeftAndRightInRTL = true;
-  auto newRootShadowNode =
-      rootShadowNode.clone(parserContext, layoutConstraints, layoutContext);
-  newRootShadowNode->layoutIfNeeded();
-  return newRootShadowNode;
 }
 
 } // namespace
@@ -157,39 +133,6 @@ TEST(ScrollContentViewShadowNodeTest, padsPhysicalEdgesInRTL) {
 
   // In RTL the start edge is on the right, where the inset is.
   EXPECT_EQ(style.padding(Edge::Start), StyleLength::points(84));
-  EXPECT_FALSE(style.padding(Edge::End).isDefined());
-}
-
-TEST(ScrollContentViewShadowNodeTest, readsSwappedPhysicalEdgesInRTL) {
-  yoga::Style style;
-  style.setPadding(Edge::Left, StyleLength::points(8));
-  style.setPadding(Edge::End, StyleLength::points(2));
-
-  ScrollContentViewShadowNode::padForSafeArea(
-      style,
-      stateWith({.left = 84, .top = 0, .right = 0, .bottom = 0}, true),
-      kRTL);
-
-  // Left is copied over start at layout, so it lands on the right, and the
-  // inset on the left raises the end edge.
-  EXPECT_EQ(style.padding(Edge::Start), StyleLength::points(8));
-  EXPECT_EQ(style.padding(Edge::End), StyleLength::points(84));
-  EXPECT_FALSE(style.padding(Edge::Left).isDefined());
-}
-
-TEST(ScrollContentViewShadowNodeTest, readsSwappedPhysicalEdgesInLTRSubtree) {
-  yoga::Style style;
-  style.setPadding(Edge::Left, StyleLength::points(100));
-  style.setPadding(Edge::Start, StyleLength::points(2));
-
-  ScrollContentViewShadowNode::padForSafeArea(
-      style,
-      stateWith({.left = 84, .top = 0, .right = 0, .bottom = 0}, true),
-      kLTR);
-
-  // The swap applies to the whole tree, so left is still copied over start,
-  // which a node laid out left to right keeps on the left.
-  EXPECT_EQ(style.padding(Edge::Start), StyleLength::points(100));
   EXPECT_FALSE(style.padding(Edge::End).isDefined());
 }
 
@@ -307,83 +250,6 @@ TEST(ScrollContentViewShadowNodeTest, cloningForChildCommitMustNotDirty) {
 
   EXPECT_FALSE(
       static_cast<RootShadowNode&>(*newRootShadowNode).layoutIfNeeded());
-}
-
-TEST(
-    ScrollContentViewShadowNodeTest,
-    keepsPaddingLeftOnStartEdgeAcrossStateClone) {
-  ComponentBuilder builder{registryWithScrollContentView()};
-
-  std::shared_ptr<RootShadowNode> rootShadowNode;
-  std::shared_ptr<ScrollContentViewShadowNode> contentShadowNode;
-  // clang-format off
-  builder.build(
-      Element<RootShadowNode>()
-        .reference(rootShadowNode)
-        .tag(1)
-        .children({
-          Element<ScrollContentViewShadowNode>()
-            .tag(2)
-            .reference(contentShadowNode)
-            .props([] {
-              auto props = std::make_shared<ScrollContentViewProps>();
-              props->yogaStyle.setPadding(Edge::Left, StyleLength::points(8));
-              return props;
-            })
-            .children({
-              Element<ViewShadowNode>()
-                .tag(3)
-            })
-        }));
-  // clang-format on
-  auto laidOutRootShadowNode = layOutInRTL(*rootShadowNode);
-
-  // The native view sends the swap after mount in an RTL app, whatever the
-  // behavior, which clones the node with its state alone.
-  auto state = stateWith({}, true);
-  auto newRootShadowNode = laidOutRootShadowNode->cloneTree(
-      contentShadowNode->getFamily(), [&](const ShadowNode& oldShadowNode) {
-        return oldShadowNode.clone(
-            {.state = std::make_shared<
-                 const ScrollContentViewShadowNode::ConcreteState>(
-                 std::make_shared<const ScrollContentViewState>(state),
-                 *oldShadowNode.getState())});
-      });
-  static_cast<RootShadowNode&>(*newRootShadowNode).layoutIfNeeded();
-
-  // Left is copied over start at layout, which in RTL is the right edge.
-  auto& childShadowNode = static_cast<const LayoutableShadowNode&>(
-      *newRootShadowNode->getChildren()[0]->getChildren()[0]);
-  EXPECT_EQ(childShadowNode.getLayoutMetrics().frame.origin.x, 0);
-  EXPECT_EQ(childShadowNode.getLayoutMetrics().frame.size.width, 292);
-}
-
-TEST(ScrollContentViewShadowNodeTest, swapsBorderRadiiInRTL) {
-  ComponentBuilder builder{registryWithScrollContentView()};
-
-  std::shared_ptr<RootShadowNode> rootShadowNode;
-  std::shared_ptr<ScrollContentViewShadowNode> contentShadowNode;
-  // clang-format off
-  builder.build(
-      Element<RootShadowNode>()
-        .reference(rootShadowNode)
-        .tag(1)
-        .children({
-          Element<ScrollContentViewShadowNode>()
-            .tag(2)
-            .reference(contentShadowNode)
-            .props([] {
-              auto props = std::make_shared<ScrollContentViewProps>();
-              props->borderRadii.topLeft = ValueUnit{10, UnitType::Point};
-              return props;
-            })
-        }));
-  // clang-format on
-  layOutInRTL(*rootShadowNode);
-
-  const auto& borderRadii = contentShadowNode->getConcreteProps().borderRadii;
-  EXPECT_TRUE(borderRadii.topStart.has_value());
-  EXPECT_FALSE(borderRadii.topLeft.has_value());
 }
 
 } // namespace facebook::react

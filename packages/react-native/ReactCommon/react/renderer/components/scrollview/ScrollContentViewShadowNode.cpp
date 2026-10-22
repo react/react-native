@@ -22,14 +22,9 @@ using yoga::StyleLength;
 
 /*
  * The padding edges Yoga reads for one physical edge, most specific first.
- * Along the row the logical edges take precedence over the physical ones, and
- * when left and right swap in RTL the physical values are copied over the
- * logical ones at layout, so they come first.
+ * Along the row the logical edges take precedence over the physical ones.
  */
-std::array<Edge, 4> paddingEdges(
-    Edge edge,
-    LayoutDirection layoutDirection,
-    bool swapLeftAndRightInRTL) {
+std::array<Edge, 4> paddingEdges(Edge edge, LayoutDirection layoutDirection) {
   auto rtl = layoutDirection == LayoutDirection::RightToLeft;
   switch (edge) {
     case Edge::Top:
@@ -37,22 +32,12 @@ std::array<Edge, 4> paddingEdges(
     case Edge::Bottom:
       return {Edge::Bottom, Edge::Vertical, Edge::All, Edge::All};
     case Edge::Left:
-      if (swapLeftAndRightInRTL) {
-        return rtl
-            ? std::array{Edge::Right, Edge::End, Edge::Horizontal, Edge::All}
-            : std::array{Edge::Left, Edge::Start, Edge::Horizontal, Edge::All};
-      }
       return {
           rtl ? Edge::End : Edge::Start,
           Edge::Left,
           Edge::Horizontal,
           Edge::All};
     case Edge::Right:
-      if (swapLeftAndRightInRTL) {
-        return rtl
-            ? std::array{Edge::Left, Edge::Start, Edge::Horizontal, Edge::All}
-            : std::array{Edge::Right, Edge::End, Edge::Horizontal, Edge::All};
-      }
       return {
           rtl ? Edge::Start : Edge::End,
           Edge::Right,
@@ -66,10 +51,8 @@ std::array<Edge, 4> paddingEdges(
 StyleLength resolvedPadding(
     const yoga::Style& style,
     Edge edge,
-    LayoutDirection layoutDirection,
-    bool swapLeftAndRightInRTL) {
-  for (auto candidate :
-       paddingEdges(edge, layoutDirection, swapLeftAndRightInRTL)) {
+    LayoutDirection layoutDirection) {
+  for (auto candidate : paddingEdges(edge, layoutDirection)) {
     auto value = style.padding(candidate);
     if (value.isDefined()) {
       return value;
@@ -138,15 +121,14 @@ void ScrollContentViewShadowNode::applySafeAreaPadding() {
     LayoutDirection layoutDirection) {
   const auto& insets = state.safeAreaPadding;
   const auto& contentInsets = state.contentInsetAdjustment;
-  auto swap = state.swapLeftAndRightInRTL;
   if (insets.top != 0 || insets.bottom != 0 || contentInsets.top != 0 ||
       contentInsets.bottom != 0) {
     auto top = padded(
-        resolvedPadding(style, Edge::Top, layoutDirection, swap),
+        resolvedPadding(style, Edge::Top, layoutDirection),
         insets.top,
         contentInsets.top);
     auto bottom = padded(
-        resolvedPadding(style, Edge::Bottom, layoutDirection, swap),
+        resolvedPadding(style, Edge::Bottom, layoutDirection),
         insets.bottom,
         contentInsets.bottom);
     style.setPadding(Edge::Top, top);
@@ -155,16 +137,16 @@ void ScrollContentViewShadowNode::applySafeAreaPadding() {
   if (insets.left != 0 || insets.right != 0 || contentInsets.left != 0 ||
       contentInsets.right != 0) {
     auto left = padded(
-        resolvedPadding(style, Edge::Left, layoutDirection, swap),
+        resolvedPadding(style, Edge::Left, layoutDirection),
         insets.left,
         contentInsets.left);
     auto right = padded(
-        resolvedPadding(style, Edge::Right, layoutDirection, swap),
+        resolvedPadding(style, Edge::Right, layoutDirection),
         insets.right,
         contentInsets.right);
     // The logical edges take precedence over every other padding edge along
-    // the row. The physical edges are cleared, since at layout they are copied
-    // over the logical ones when left and right swap in RTL.
+    // the row. The physical edges are cleared, since the logical ones now
+    // hold their values.
     auto rtl = layoutDirection == LayoutDirection::RightToLeft;
     style.setPadding(Edge::Start, rtl ? right : left);
     style.setPadding(Edge::End, rtl ? left : right);

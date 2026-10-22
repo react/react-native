@@ -22,7 +22,6 @@ import * as React from 'react';
 const ScrollView = require('../Components/ScrollView/ScrollView').default;
 const View = require('../Components/View/View').default;
 const AppContainer = require('../ReactNative/AppContainer').default;
-const I18nManager = require('../ReactNative/I18nManager').default;
 const {RootTagContext} = require('../ReactNative/RootTag');
 const StyleSheet = require('../StyleSheet/StyleSheet').default;
 
@@ -367,17 +366,13 @@ class Modal extends React.Component<ModalProps, ModalState> {
   }
 }
 
-const side = I18nManager.getConstants().isRTL ? 'right' : 'left';
 const styles = StyleSheet.create({
   modal: {
     position: 'absolute',
   },
-  /* $FlowFixMe[incompatible-type] Natural Inference rollout. See
-   * https://fburl.com/workplace/6291gfvu */
   container: {
-    // $FlowFixMe[incompatible-type]
-    [side]: 0,
     top: 0,
+    start: 0,
     flex: 1,
     backgroundColor: 'white',
   },

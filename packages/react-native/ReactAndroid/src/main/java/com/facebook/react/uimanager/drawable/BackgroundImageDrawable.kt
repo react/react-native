@@ -267,7 +267,7 @@ internal class BackgroundImageDrawable(
   }
 
   private fun computeBorderInsets(): RectF =
-      borderInsets?.resolve(layoutDirection, context).let {
+      borderInsets?.resolve(layoutDirection).let {
         RectF(
             it?.left?.dpToPx() ?: 0f,
             it?.top?.dpToPx() ?: 0f,
@@ -309,7 +309,6 @@ internal class BackgroundImageDrawable(
     val computedBorderRadius =
         borderRadius?.resolve(
             layoutDirection,
-            context,
             bounds.width().pxToDp(),
             bounds.height().pxToDp(),
         )

@@ -13,16 +13,13 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export type I18nManagerConstants = {
-  doLeftAndRightSwapInRTL: boolean,
   isRTL: boolean,
-  localeIdentifier?: ?string,
+  localeIdentifier: string,
 };
 
 export interface Spec extends TurboModule {
   readonly getConstants: () => I18nManagerConstants;
-  allowRTL: (allowRTL: boolean) => void;
-  forceRTL: (forceRTL: boolean) => void;
-  swapLeftAndRightInRTL: (flipStyles: boolean) => void;
+  forceRTL: (forceRTL: boolean) => boolean;
 }
 
 export default TurboModuleRegistry.get<Spec>('I18nManager') as ?Spec;

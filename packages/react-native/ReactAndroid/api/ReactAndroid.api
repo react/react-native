@@ -2746,12 +2746,9 @@ public final class com/facebook/react/modules/fresco/ReactNetworkImageRequest$Co
 
 public final class com/facebook/react/modules/i18nmanager/I18nUtil {
 	public static final field Companion Lcom/facebook/react/modules/i18nmanager/I18nUtil$Companion;
-	public final fun allowRTL (Landroid/content/Context;Z)V
-	public final fun doLeftAndRightSwapInRTL (Landroid/content/Context;)Z
-	public final fun forceRTL (Landroid/content/Context;Z)V
+	public final fun forceRTL (Z)V
 	public static final fun getInstance ()Lcom/facebook/react/modules/i18nmanager/I18nUtil;
 	public final fun isRTL (Landroid/content/Context;)Z
-	public final fun swapLeftAndRightInRTL (Landroid/content/Context;Z)V
 }
 
 public final class com/facebook/react/modules/i18nmanager/I18nUtil$Companion {

@@ -56,8 +56,7 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
       jfloat maxHeight,
       jfloat offsetX,
       jfloat offsetY,
-      jboolean isRTL,
-      jboolean doLeftAndRightSwapInRTL);
+      jboolean isRTL);
 
   static void initHybrid(jni::alias_ref<jhybridobject> jobj);
 
@@ -80,8 +79,7 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
       jfloat maxHeight,
       jfloat offsetX,
       jfloat offsetY,
-      jboolean isRTL,
-      jboolean doLeftAndRightSwapInRTL);
+      jboolean isRTL);
 
   void stopSurface(jint surfaceId);
 

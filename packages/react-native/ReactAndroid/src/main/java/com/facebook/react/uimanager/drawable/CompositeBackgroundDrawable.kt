@@ -207,12 +207,11 @@ internal class CompositeBackgroundDrawable(
       val computedBorderRadius =
           borderRadius?.resolve(
               layoutDirection,
-              context,
               bounds.width().pxToDp(),
               bounds.height().pxToDp(),
           )
 
-      val computedBorderInsets = borderInsets?.resolve(layoutDirection, context)
+      val computedBorderInsets = borderInsets?.resolve(layoutDirection)
 
       val radii =
           computedBorderRadius?.let {
@@ -255,7 +254,7 @@ internal class CompositeBackgroundDrawable(
    * round rect [getOutline] describes. Returns null otherwise.
    */
   fun getUniformBorderRadiusWithoutBorder(): Float? {
-    val computedBorderInsets = borderInsets?.resolve(layoutDirection, context)
+    val computedBorderInsets = borderInsets?.resolve(layoutDirection)
     if (
         computedBorderInsets != null &&
             (computedBorderInsets.left != 0f ||
@@ -269,7 +268,6 @@ internal class CompositeBackgroundDrawable(
     val computedBorderRadius =
         borderRadius?.resolve(
             layoutDirection,
-            context,
             bounds.width().pxToDp(),
             bounds.height().pxToDp(),
         ) ?: return null

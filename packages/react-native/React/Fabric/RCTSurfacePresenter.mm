@@ -168,6 +168,16 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
   return [_surfaceRegistry surfaceForRootTag:rootTag];
 }
 
+- (void)updateLayoutDirectionOfSurfaces
+{
+  RCTAssertMainQueue();
+  [_surfaceRegistry enumerateWithBlock:^(NSEnumerator<RCTFabricSurface *> *enumerator) {
+    for (RCTFabricSurface *surface in enumerator) {
+      [surface updateLayoutContext];
+    }
+  }];
+}
+
 - (id<RCTSurfaceProtocol>)createFabricSurfaceForModuleName:(NSString *)moduleName
                                          initialProperties:(NSDictionary *)initialProperties
 {
