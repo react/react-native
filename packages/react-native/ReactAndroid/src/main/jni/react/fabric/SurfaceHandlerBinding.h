@@ -37,7 +37,6 @@ class SurfaceHandlerBinding : public jni::HybridClass<SurfaceHandlerBinding> {
       jfloat maxHeight,
       jfloat offsetX,
       jfloat offsetY,
-      jboolean doLeftAndRightSwapInRTL,
       jboolean isRTL,
       jfloat pixelDensity,
       jfloat fontScale);

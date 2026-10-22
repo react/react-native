@@ -118,7 +118,14 @@ public class ReactSurfaceView(context: Context?, internal val surface: ReactSurf
 
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
     // Call updateLayoutSpecs to update locationOnScreen offsets, in case they've changed
-    if (wasMeasured && changed) {
+    if (changed) {
+      updateLastLayoutSpecs()
+    }
+  }
+
+  /** Sends the last measured layout specs again, so the surface reads the current RTL values. */
+  internal fun updateLastLayoutSpecs() {
+    if (wasMeasured) {
       val viewportOffset = viewportOffset
       surface.updateLayoutSpecs(
           widthMeasureSpec,

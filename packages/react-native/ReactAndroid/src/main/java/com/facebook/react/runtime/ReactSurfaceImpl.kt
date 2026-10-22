@@ -75,7 +75,6 @@ internal constructor(
         MeasureSpec.makeMeasureSpec(displayMetrics.heightPixels, MeasureSpec.AT_MOST),
         0,
         0,
-        doRTLSwap(context),
         isRTL(context),
         displayMetrics.density,
         getFontScale(context),
@@ -185,7 +184,6 @@ internal constructor(
         heightMeasureSpec,
         offsetX,
         offsetY,
-        doRTLSwap(context),
         isRTL(context),
         context.resources.displayMetrics.density,
         getFontScale(context),
@@ -216,8 +214,5 @@ internal constructor(
     private fun isRTL(context: Context): Boolean = I18nUtil.instance.isRTL(context)
 
     private fun getFontScale(context: Context): Float = context.resources.configuration.fontScale
-
-    private fun doRTLSwap(context: Context): Boolean =
-        I18nUtil.instance.doLeftAndRightSwapInRTL(context)
   }
 }

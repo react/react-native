@@ -605,7 +605,6 @@ class FabricMountingManagerInstrumentationTest {
         0,
         0,
         false,
-        false,
         1f,
         1f,
     )

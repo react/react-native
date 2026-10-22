@@ -7,11 +7,9 @@
 
 package com.facebook.react.uimanager.style
 
-import android.content.Context
 import android.graphics.Color
 import android.util.LayoutDirection
 import androidx.annotation.ColorInt
-import com.facebook.react.modules.i18nmanager.I18nUtil
 
 /**
  * Represents resolved border colors for all four physical edges of a box.
@@ -49,16 +47,14 @@ internal value class BorderColors(
   /**
    * Resolves logical edge colors to physical edge colors based on layout direction.
    *
-   * This method handles RTL layout direction and the doLeftAndRightSwapInRTL setting to correctly
-   * map logical properties (start, end, block-start, block-end) to physical edges (left, right,
-   * top, bottom).
+   * This method handles RTL layout direction to correctly map logical properties (start, end,
+   * block-start, block-end) to physical edges (left, right, top, bottom).
    *
    * @param layoutDirection The resolved layout direction (LTR or RTL)
-   * @param context Android context for RTL swap preference
    * @return ColorEdges with resolved physical edge colors
    * @throws IllegalArgumentException if layoutDirection is not LTR or RTL
    */
-  fun resolve(layoutDirection: Int, context: Context): ColorEdges {
+  fun resolve(layoutDirection: Int): ColorEdges {
     return when (layoutDirection) {
       LayoutDirection.LTR ->
           ColorEdges(
@@ -86,57 +82,30 @@ internal value class BorderColors(
                   ?: Color.BLACK,
           )
       LayoutDirection.RTL ->
-          if (I18nUtil.instance.doLeftAndRightSwapInRTL(context)) {
-            ColorEdges(
-                edgeColors[LogicalEdge.END.ordinal]
-                    ?: edgeColors[LogicalEdge.RIGHT.ordinal]
-                    ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-                edgeColors[LogicalEdge.BLOCK_START.ordinal]
-                    ?: edgeColors[LogicalEdge.TOP.ordinal]
-                    ?: edgeColors[LogicalEdge.BLOCK.ordinal]
-                    ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-                edgeColors[LogicalEdge.START.ordinal]
-                    ?: edgeColors[LogicalEdge.LEFT.ordinal]
-                    ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-                edgeColors[LogicalEdge.BLOCK_END.ordinal]
-                    ?: edgeColors[LogicalEdge.BOTTOM.ordinal]
-                    ?: edgeColors[LogicalEdge.BLOCK.ordinal]
-                    ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-            )
-          } else {
-            ColorEdges(
-                edgeColors[LogicalEdge.END.ordinal]
-                    ?: edgeColors[LogicalEdge.LEFT.ordinal]
-                    ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-                edgeColors[LogicalEdge.BLOCK_START.ordinal]
-                    ?: edgeColors[LogicalEdge.TOP.ordinal]
-                    ?: edgeColors[LogicalEdge.BLOCK.ordinal]
-                    ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-                edgeColors[LogicalEdge.START.ordinal]
-                    ?: edgeColors[LogicalEdge.RIGHT.ordinal]
-                    ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-                edgeColors[LogicalEdge.BLOCK_END.ordinal]
-                    ?: edgeColors[LogicalEdge.BOTTOM.ordinal]
-                    ?: edgeColors[LogicalEdge.BLOCK.ordinal]
-                    ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
-                    ?: edgeColors[LogicalEdge.ALL.ordinal]
-                    ?: Color.BLACK,
-            )
-          }
+          ColorEdges(
+              edgeColors[LogicalEdge.END.ordinal]
+                  ?: edgeColors[LogicalEdge.LEFT.ordinal]
+                  ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
+                  ?: edgeColors[LogicalEdge.ALL.ordinal]
+                  ?: Color.BLACK,
+              edgeColors[LogicalEdge.BLOCK_START.ordinal]
+                  ?: edgeColors[LogicalEdge.TOP.ordinal]
+                  ?: edgeColors[LogicalEdge.BLOCK.ordinal]
+                  ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
+                  ?: edgeColors[LogicalEdge.ALL.ordinal]
+                  ?: Color.BLACK,
+              edgeColors[LogicalEdge.START.ordinal]
+                  ?: edgeColors[LogicalEdge.RIGHT.ordinal]
+                  ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
+                  ?: edgeColors[LogicalEdge.ALL.ordinal]
+                  ?: Color.BLACK,
+              edgeColors[LogicalEdge.BLOCK_END.ordinal]
+                  ?: edgeColors[LogicalEdge.BOTTOM.ordinal]
+                  ?: edgeColors[LogicalEdge.BLOCK.ordinal]
+                  ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
+                  ?: edgeColors[LogicalEdge.ALL.ordinal]
+                  ?: Color.BLACK,
+          )
       else -> throw IllegalArgumentException("Expected resolved layout direction")
     }
   }

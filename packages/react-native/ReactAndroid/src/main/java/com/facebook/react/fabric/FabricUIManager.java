@@ -389,8 +389,7 @@ public class FabricUIManager
         getMaxSize(heightMeasureSpec),
         viewportOffset.x,
         viewportOffset.y,
-        I18nUtil.getInstance().isRTL(context),
-        I18nUtil.getInstance().doLeftAndRightSwapInRTL(context));
+        I18nUtil.getInstance().isRTL(context));
     return rootTag;
   }
 
@@ -1148,10 +1147,8 @@ public class FabricUIManager
 
     Context context = surfaceMountingManager.getContext();
     boolean isRTL = false;
-    boolean doLeftAndRightSwapInRTL = false;
     if (context != null) {
       isRTL = I18nUtil.getInstance().isRTL(context);
-      doLeftAndRightSwapInRTL = I18nUtil.getInstance().doLeftAndRightSwapInRTL(context);
     }
 
     Assertions.assertNotNull(mBinding, "Binding in FabricUIManager is null");
@@ -1163,8 +1160,7 @@ public class FabricUIManager
         getMaxSize(heightMeasureSpec),
         offsetX,
         offsetY,
-        isRTL,
-        doLeftAndRightSwapInRTL);
+        isRTL);
   }
 
   @Override

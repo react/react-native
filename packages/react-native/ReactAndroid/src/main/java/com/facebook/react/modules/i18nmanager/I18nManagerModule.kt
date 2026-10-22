@@ -10,10 +10,12 @@ package com.facebook.react.modules.i18nmanager
 import androidx.core.os.ConfigurationCompat
 import com.facebook.fbreact.specs.NativeI18nManagerSpec
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.runtime.BridgelessReactContext
 import java.util.Locale
 
-/** [com.facebook.react.bridge.NativeModule] that allows JS to set allowRTL and get isRTL status. */
+/** [com.facebook.react.bridge.NativeModule] that allows JS to set forceRTL and get isRTL status. */
 @ReactModule(name = NativeI18nManagerSpec.NAME)
 internal class I18nManagerModule(context: ReactApplicationContext?) :
     NativeI18nManagerSpec(context) {
@@ -24,21 +26,24 @@ internal class I18nManagerModule(context: ReactApplicationContext?) :
 
     return mapOf(
         "isRTL" to I18nUtil.instance.isRTL(context),
-        "doLeftAndRightSwapInRTL" to I18nUtil.instance.doLeftAndRightSwapInRTL(context),
-        "localeIdentifier" to locale.toString(),
+        "localeIdentifier" to locale.toLanguageTag(),
     )
   }
 
-  override fun allowRTL(value: Boolean) {
-    I18nUtil.instance.allowRTL(reactApplicationContext, value)
-  }
+  override fun forceRTL(value: Boolean): Boolean {
+    val wasRTL = I18nUtil.instance.isRTL(reactApplicationContext)
+    I18nUtil.instance.forceRTL(value)
+    val isRTL = I18nUtil.instance.isRTL(reactApplicationContext)
 
-  override fun forceRTL(value: Boolean) {
-    I18nUtil.instance.forceRTL(reactApplicationContext, value)
-  }
+    if (isRTL != wasRTL) {
+      // Returns before the relayout, so JS reads the new value before any layout event
+      UiThreadUtil.runOnUiThread {
+        (reactApplicationContext as? BridgelessReactContext)
+            ?.updateLayoutDirectionOfAttachedSurfaces()
+      }
+    }
 
-  override fun swapLeftAndRightInRTL(value: Boolean) {
-    I18nUtil.instance.swapLeftAndRightInRTL(reactApplicationContext, value)
+    return isRTL
   }
 
   companion object {

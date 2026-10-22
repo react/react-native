@@ -14,7 +14,6 @@ import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.annotations.internal.LegacyArchitecture
 import com.facebook.react.common.annotations.internal.LegacyArchitectureLogLevel
 import com.facebook.react.common.annotations.internal.LegacyArchitectureLogger
-import com.facebook.react.modules.i18nmanager.I18nUtil
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.annotations.ReactPropGroup
 import com.facebook.yoga.YogaAlign
@@ -579,8 +578,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
       return
     }
 
-    val spacingType =
-        maybeTransformLeftRightToStartEnd(ViewProps.PADDING_MARGIN_SPACING_TYPES[index])
+    val spacingType = ViewProps.PADDING_MARGIN_SPACING_TYPES[index]
 
     tempYogaValue.setFromDynamic(margin)
     when (tempYogaValue.unit) {
@@ -613,8 +611,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
       return
     }
 
-    val spacingType =
-        maybeTransformLeftRightToStartEnd(ViewProps.PADDING_MARGIN_SPACING_TYPES[index])
+    val spacingType = ViewProps.PADDING_MARGIN_SPACING_TYPES[index]
 
     tempYogaValue.setFromDynamic(padding)
     when (tempYogaValue.unit) {
@@ -644,7 +641,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
     if (isVirtual()) {
       return
     }
-    val spacingType = maybeTransformLeftRightToStartEnd(ViewProps.BORDER_SPACING_TYPES[index])
+    val spacingType = ViewProps.BORDER_SPACING_TYPES[index]
     setBorder(spacingType, PixelUtil.toPixelFromDIP(borderWidth))
   }
 
@@ -674,7 +671,7 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
             Spacing.BOTTOM,
         )
 
-    val spacingType = maybeTransformLeftRightToStartEnd(positionSpacingTypes[index])
+    val spacingType = positionSpacingTypes[index]
 
     tempYogaValue.setFromDynamic(position)
     when (tempYogaValue.unit) {
@@ -685,18 +682,6 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
     }
 
     position.recycle()
-  }
-
-  private fun maybeTransformLeftRightToStartEnd(spacingType: Int): Int {
-    if (!I18nUtil.instance.doLeftAndRightSwapInRTL(getThemedContext())) {
-      return spacingType
-    }
-
-    return when (spacingType) {
-      Spacing.LEFT -> Spacing.START
-      Spacing.RIGHT -> Spacing.END
-      else -> spacingType
-    }
   }
 
   @ReactProp(name = ViewProps.POSITION)

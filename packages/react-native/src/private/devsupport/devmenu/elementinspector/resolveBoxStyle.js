@@ -92,8 +92,7 @@ function resolveBoxStyle(
 
     const styleForEnd = getStyleValue(prefix + 'End');
     if (styleForEnd != null) {
-      const constants = I18nManager.getConstants();
-      if (constants.isRTL && constants.doLeftAndRightSwapInRTL) {
+      if (I18nManager.isRTL) {
         result.left = styleForEnd;
       } else {
         result.right = styleForEnd;
@@ -102,8 +101,7 @@ function resolveBoxStyle(
     }
     const styleForStart = getStyleValue(prefix + 'Start');
     if (styleForStart != null) {
-      const constants = I18nManager.getConstants();
-      if (constants.isRTL && constants.doLeftAndRightSwapInRTL) {
+      if (I18nManager.isRTL) {
         result.right = styleForStart;
       } else {
         result.left = styleForStart;

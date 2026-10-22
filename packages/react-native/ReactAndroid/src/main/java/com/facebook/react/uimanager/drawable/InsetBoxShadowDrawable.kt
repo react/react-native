@@ -152,7 +152,6 @@ internal class InsetBoxShadowDrawable(
     val resolvedBorderRadii =
         borderRadius?.resolve(
             layoutDirection,
-            context,
             bounds.width().toFloat().pxToDp(),
             bounds.height().toFloat().pxToDp(),
         )
@@ -186,7 +185,7 @@ internal class InsetBoxShadowDrawable(
   }
 
   private fun computeBorderInsets(): RectF? =
-      borderInsets?.resolve(layoutDirection, context)?.let {
+      borderInsets?.resolve(layoutDirection)?.let {
         RectF(it.left.dpToPx(), it.top.dpToPx(), it.right.dpToPx(), it.bottom.dpToPx())
       }
 
