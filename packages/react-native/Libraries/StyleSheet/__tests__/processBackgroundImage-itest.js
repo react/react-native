@@ -1022,6 +1022,48 @@ describe('processBackgroundImage', () => {
     ]);
   });
 
+  it('should reject px string color stop positions in linear and radial gradient objects', () => {
+    const inputs: ReadonlyArray<BackgroundImageValue> = [
+      {
+        type: 'linear-gradient',
+        colorStops: [{color: 'red', positions: ['20px']}, {color: 'blue'}],
+      },
+      {
+        type: 'radial-gradient',
+        shape: 'circle',
+        size: 'closest-side',
+        position: {top: '50%', left: '50%'},
+        colorStops: [{color: 'red', positions: ['20px']}, {color: 'blue'}],
+      },
+    ];
+
+    for (const input of inputs) {
+      expect(processBackgroundImage([input])).toEqual([]);
+    }
+  });
+
+  it('should reject px string transition hints in linear and radial gradient objects', () => {
+    const colorStops = [{color: 'red'}, {positions: ['20px']}, {color: 'blue'}];
+    const inputs = [
+      {
+        type: 'linear-gradient' as const,
+        colorStops,
+      },
+      {
+        type: 'radial-gradient' as const,
+        shape: 'circle' as const,
+        size: 'closest-side' as const,
+        position: {top: '50%', left: '50%'},
+        colorStops,
+      },
+    ];
+
+    for (const input of inputs) {
+      // $FlowFixMe[incompatible-type] - `positions` is missing types.
+      expect(processBackgroundImage([input])).toEqual([]);
+    }
+  });
+
   it('should process radial gradient object syntax', () => {
     const input = [
       {
