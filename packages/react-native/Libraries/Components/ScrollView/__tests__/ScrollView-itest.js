@@ -71,6 +71,38 @@ describe('<ScrollView>', () => {
     });
   });
 
+  describe('web-style accessibility props', () => {
+    it('maps aria-label to accessibilityLabel', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView aria-label="Photos" />);
+      });
+
+      expect(
+        root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+      ).toEqual(
+        <rn-scrollView accessibilityLabel="Photos">
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
+
+    it('maps id to nativeID', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView id="feed" />);
+      });
+
+      expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+        <rn-scrollView nativeID="feed">
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
+  });
+
   describe('ref', () => {
     it('receives an instance or null', () => {
       const root = Fantom.createRoot();
