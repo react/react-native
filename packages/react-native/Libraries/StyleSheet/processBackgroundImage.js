@@ -281,11 +281,13 @@ function processColorStops(
       Array.isArray(positions) &&
       positions.length === 1
     ) {
-      const position = parseColorStopPosition(
-        positions[0],
-        allowAngularPositions,
-      );
-      if (position == null) {
+      const position = allowAngularPositions
+        ? parseColorStopPosition(positions[0], true)
+        : positions[0];
+      if (
+        typeof position !== 'number' &&
+        (typeof position !== 'string' || !position.endsWith('%'))
+      ) {
         return null;
       }
       processedColorStops.push({
@@ -300,11 +302,13 @@ function processColorStops(
       }
       if (positions != null && positions.length > 0) {
         for (const rawPosition of positions) {
-          const position = parseColorStopPosition(
-            rawPosition,
-            allowAngularPositions,
-          );
-          if (position == null) {
+          const position = allowAngularPositions
+            ? parseColorStopPosition(rawPosition, true)
+            : rawPosition;
+          if (
+            typeof position !== 'number' &&
+            (typeof position !== 'string' || !position.endsWith('%'))
+          ) {
             return null;
           }
           processedColorStops.push({
