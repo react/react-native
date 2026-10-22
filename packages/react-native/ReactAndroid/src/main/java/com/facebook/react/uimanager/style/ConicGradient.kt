@@ -38,12 +38,14 @@ internal class ConicGradient(
       if (positionMap.hasKey("top")) {
         top = LengthPercentage.setFromDynamic(positionMap.getDynamic("top"), allowNegative = true)
       } else if (positionMap.hasKey("bottom")) {
-        bottom = LengthPercentage.setFromDynamic(positionMap.getDynamic("bottom"), allowNegative = true)
+        bottom =
+            LengthPercentage.setFromDynamic(positionMap.getDynamic("bottom"), allowNegative = true)
       }
       if (positionMap.hasKey("left")) {
         left = LengthPercentage.setFromDynamic(positionMap.getDynamic("left"), allowNegative = true)
       } else if (positionMap.hasKey("right")) {
-        right = LengthPercentage.setFromDynamic(positionMap.getDynamic("right"), allowNegative = true)
+        right =
+            LengthPercentage.setFromDynamic(positionMap.getDynamic("right"), allowNegative = true)
       }
 
       val colorStopsArray = gradientMap.getArray("colorStops") ?: return null
@@ -76,16 +78,24 @@ internal class ConicGradient(
     var centerX = width / 2f
     var centerY = height / 2f
     position.top?.let {
-      centerY = if (it.type == LengthPercentageType.PERCENT) it.resolve(height) else it.resolve(height).dpToPx()
+      centerY =
+          if (it.type == LengthPercentageType.PERCENT) it.resolve(height)
+          else it.resolve(height).dpToPx()
     }
     position.bottom?.let {
-      centerY = if (it.type == LengthPercentageType.PERCENT) height - it.resolve(height) else height - it.resolve(height).dpToPx()
+      centerY =
+          if (it.type == LengthPercentageType.PERCENT) height - it.resolve(height)
+          else height - it.resolve(height).dpToPx()
     }
     position.left?.let {
-      centerX = if (it.type == LengthPercentageType.PERCENT) it.resolve(width) else it.resolve(width).dpToPx()
+      centerX =
+          if (it.type == LengthPercentageType.PERCENT) it.resolve(width)
+          else it.resolve(width).dpToPx()
     }
     position.right?.let {
-      centerX = if (it.type == LengthPercentageType.PERCENT) width - it.resolve(width) else width - it.resolve(width).dpToPx()
+      centerX =
+          if (it.type == LengthPercentageType.PERCENT) width - it.resolve(width)
+          else width - it.resolve(width).dpToPx()
     }
 
     val finalStops = ColorStopUtils.getFixedColorStops(colorStops, 1f)
