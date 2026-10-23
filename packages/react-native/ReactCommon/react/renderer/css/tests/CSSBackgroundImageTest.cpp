@@ -639,6 +639,56 @@ TEST_F(CSSBackgroundImageTest, ConicGradientWithFourValuePosition) {
   ASSERT_EQ(result, expected);
 }
 
+TEST_F(CSSBackgroundImageTest, ConicGradientWithThreeValuePosition) {
+  const std::vector<std::pair<std::string, CSSRadialGradientPosition>>
+      testCases = {
+          {"conic-gradient(at right 10px top, red, blue)",
+           {.top = CSSPercentage{.value = 0.0f},
+            .right = CSSLength{.value = 10.0f, .unit = CSSLengthUnit::Px}}},
+          {"conic-gradient(at top 20px left, red, blue)",
+           {.top = CSSLength{.value = 20.0f, .unit = CSSLengthUnit::Px},
+            .left = CSSPercentage{.value = 0.0f}}},
+          {"conic-gradient(at left bottom 10%, red, blue)",
+           {.bottom = CSSPercentage{.value = 10.0f},
+            .left = CSSPercentage{.value = 0.0f}}},
+          {"conic-gradient(at center top 25%, red, blue)",
+           {.top = CSSPercentage{.value = 25.0f},
+            .left = CSSPercentage{.value = 50.0f}}},
+          {"conic-gradient(at right 25% center, red, blue)",
+           {.top = CSSPercentage{.value = 50.0f},
+            .right = CSSPercentage{.value = 25.0f}}},
+          {"conic-gradient(at top 25% center, red, blue)",
+           {.top = CSSPercentage{.value = 25.0f},
+            .left = CSSPercentage{.value = 50.0f}}}};
+
+  for (const auto& [input, expectedPosition] : testCases) {
+    const auto result = parseCSSProperty<CSSBackgroundImage>(input);
+    decltype(result) expected = CSSConicGradientFunction{
+        .from = CSSAngle{.degrees = 0.0f},
+        .position = expectedPosition,
+        .items = {
+            CSSConicColorStop{
+                .color = CSSColor{.r = 255, .g = 0, .b = 0, .a = 255}},
+            CSSConicColorStop{
+                .color = CSSColor{.r = 0, .g = 0, .b = 255, .a = 255}}}};
+    ASSERT_EQ(result, expected) << "Failed for input: " << input;
+  }
+}
+
+TEST_F(CSSBackgroundImageTest, ConicGradientRejectsInvalidThreeValuePosition) {
+  for (const auto& input : {
+           "conic-gradient(at left top center, red, blue)",
+           "conic-gradient(at center 10px top, red, blue)",
+           "conic-gradient(at 10px left top, red, blue)",
+           "conic-gradient(at left 10px right, red, blue)",
+           "conic-gradient(at left 10px 20px, red, blue)",
+       }) {
+    const auto result = parseCSSProperty<CSSBackgroundImage>(input);
+    ASSERT_TRUE(std::holds_alternative<std::monostate>(result))
+        << "Unexpectedly accepted: " << input;
+  }
+}
+
 TEST_F(CSSBackgroundImageTest, InvalidGradientFunctionName) {
   const std::string input =
       "aoeusntial-gradient(red 0%, yellow 30%, green 60%, blue 100%)";
