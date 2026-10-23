@@ -79,6 +79,25 @@ Open the JavaScript debugger for a given CDP target. Must be provided with one o
     curl -X POST 'http://localhost:8081/open-debugger?target=<targetId>'
 </details>
 
+#### POST `/open-stack-frame`
+
+Open a source file in the user's editor. Mounted when `unstable_watchFolders` is provided. Takes a JSON body with the following keys:
+
+- `file` — The path to the file, absolute or relative to the first watch folder. It must resolve, through any symlinks, to a file inside one of `unstable_watchFolders`; anything else gets a 400.
+- `lineNumber` (optional) — The line to open the file at, a positive integer. Other values are ignored.
+
+Launches are throttled to one every 2 seconds; a request inside that window gets a 429.
+
+The editor is launched by `DevToolLauncher.launchEditor`. The default implementation uses [`launch-editor`](https://www.npmjs.com/package/launch-editor), which respects the `REACT_EDITOR` environment variable.
+
+<details>
+<summary>Example</summary>
+
+    curl -X POST 'http://localhost:8081/open-stack-frame' \
+      -H 'Content-Type: application/json' \
+      -d '{"file": "/path/to/App.js", "lineNumber": 12}'
+</details>
+
 ### WebSocket endpoints
 
 <small>`DevMiddlewareAPI.websocketEndpoints`</small>

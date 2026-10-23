@@ -18,6 +18,7 @@ const DefaultToolLauncher = {
     .mockImplementation(() => Promise.resolve()),
   launchDebuggerShell: jest.fn().mockImplementation(() => Promise.resolve()),
   prepareDebuggerShell: jest.fn().mockResolvedValue({code: 'not_implemented'}),
+  launchEditor: jest.fn().mockImplementation(() => Promise.resolve()),
 };
 
 export default DefaultToolLauncher;

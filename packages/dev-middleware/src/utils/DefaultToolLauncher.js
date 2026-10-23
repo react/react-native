@@ -14,6 +14,7 @@ const {
   unstable_prepareDebuggerShell,
   unstable_spawnDebuggerShellWithArgs,
 } = require('@react-native/debugger-shell');
+const launchEditor = require('launch-editor');
 const open = require('open');
 
 const {apps, openApp} = open;
@@ -70,6 +71,17 @@ const DefaultToolLauncher = {
     }
 
     return await unstable_prepareDebuggerShell();
+  },
+
+  async launchEditor(file: string, lineNumber?: number): Promise<void> {
+    if (process.env.NODE_ENV === 'test') {
+      assertMockedInTests();
+    }
+
+    launchEditor(
+      lineNumber != null ? `${file}:${lineNumber}` : file,
+      process.env.REACT_EDITOR,
+    );
   },
 };
 

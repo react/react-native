@@ -24,6 +24,9 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 
 import getBaseUrlFromRequest from '../utils/getBaseUrlFromRequest';
 import getDevToolsFrontendUrl from '../utils/getDevToolsFrontendUrl';
+import isAllowedOrigin, {
+  ALLOWED_ORIGIN_HOSTNAMES,
+} from '../utils/isAllowedOrigin';
 import Device from './Device';
 import EventLoopPerfTracker from './EventLoopPerfTracker';
 import InspectorProxyHeartbeat from './InspectorProxyHeartbeat';
@@ -31,13 +34,6 @@ import nullthrows from 'nullthrows';
 import WS from 'ws';
 
 const debug = require('debug')('Metro:InspectorProxy');
-
-const WS_DEBUGGER_ALLOWED_ORIGIN_HOSTNAMES = new Set([
-  'localhost',
-  '127.0.0.1',
-  '0.0.0.0',
-  '[::]',
-]);
 
 const WS_DEVICE_URL = '/inspector/device';
 const WS_DEBUGGER_URL = '/inspector/debug';
@@ -500,15 +496,8 @@ export default class InspectorProxy implements InspectorProxyQueries {
           req: http$IncomingMessage<>,
         }>,
       ) => {
-        if (this.#serverBaseUrl.origin === info.origin) {
+        if (isAllowedOrigin(info.origin, this.#serverBaseUrl)) {
           return true;
-        }
-
-        if (URL.canParse(info.origin)) {
-          const {hostname} = new URL(info.origin);
-          if (WS_DEBUGGER_ALLOWED_ORIGIN_HOSTNAMES.has(hostname)) {
-            return true;
-          }
         }
 
         this.#logger?.error(
@@ -516,7 +505,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
           info.origin,
           info.req.url,
           this.#serverBaseUrl.origin,
-          Array.from(WS_DEBUGGER_ALLOWED_ORIGIN_HOSTNAMES).join(', '),
+          Array.from(ALLOWED_ORIGIN_HOSTNAMES).join(', '),
         );
         return false;
       },

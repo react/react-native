@@ -18,6 +18,7 @@ import type {NextHandleFunction} from 'connect';
 
 import InspectorProxy from './inspector-proxy/InspectorProxy';
 import openDebuggerMiddleware from './middleware/openDebuggerMiddleware';
+import openStackFrameMiddleware from './middleware/openStackFrameMiddleware';
 import DefaultToolLauncher from './utils/DefaultToolLauncher';
 import reactNativeDebuggerFrontendPath from '@react-native/debugger-frontend';
 import connect from 'connect';
@@ -77,6 +78,16 @@ type Options = Readonly<{
    * This is an unstable API with no semver guarantees.
    */
   unstable_trackInspectorProxyEventLoopPerf?: boolean,
+
+  /**
+   * The directories served by the dev server, typically the Metro server root
+   * followed by `watchFolders`. When provided, the `/open-stack-frame`
+   * endpoint is mounted to open source files inside these directories in the
+   * user's editor.
+   *
+   * This is an unstable API with no semver guarantees.
+   */
+  unstable_watchFolders?: ReadonlyArray<string>,
 }>;
 
 type DevMiddlewareAPI = Readonly<{
@@ -92,6 +103,7 @@ export default function createDevMiddleware({
   unstable_toolLauncher = DefaultToolLauncher,
   unstable_customInspectorMessageHandler,
   unstable_trackInspectorProxyEventLoopPerf = false,
+  unstable_watchFolders,
 }: Options): DevMiddlewareAPI {
   // $FlowFixMe[incompatible-type]
   const normalizedServerBaseUrl: ReadonlyURL = new URL(serverBaseUrl);
@@ -136,8 +148,21 @@ export default function createDevMiddleware({
       serveStaticMiddleware(path.join(reactNativeDebuggerFrontendPath), {
         fallthrough: false,
       }),
-    )
-    .use((...args) => inspectorProxy.processRequest(...args));
+    );
+
+  if (unstable_watchFolders != null) {
+    middleware.use(
+      '/open-stack-frame',
+      openStackFrameMiddleware({
+        serverBaseUrl: normalizedServerBaseUrl,
+        watchFolders: unstable_watchFolders,
+        toolLauncher: unstable_toolLauncher,
+        logger,
+      }),
+    );
+  }
+
+  middleware.use((...args) => inspectorProxy.processRequest(...args));
 
   return {
     middleware,

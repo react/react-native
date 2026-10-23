@@ -37,6 +37,7 @@
     "connect": "^3.6.5",
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
+    "launch-editor": "^2.9.1",
     "nullthrows": "^1.1.1",
     "open": "^8.4.2",
     "serve-static": "^1.16.2",

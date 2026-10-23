@@ -64,4 +64,14 @@ export interface DevToolLauncher {
    * errors via the returned result object.
    */
   readonly prepareDebuggerShell?: () => Promise<DebuggerShellPreparationResult>;
+
+  /**
+   * Attempt to open a source file in the user's editor, at the given line
+   * when provided.
+   *
+   * `file` is an absolute path on the host of dev-middleware. The returned
+   * promise SHOULD resolve once the launch is issued, without waiting for the
+   * editor to exit.
+   */
+  readonly launchEditor?: (file: string, lineNumber?: number) => Promise<void>;
 }

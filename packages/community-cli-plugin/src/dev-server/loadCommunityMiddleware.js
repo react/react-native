@@ -40,7 +40,6 @@ const unusedMiddlewareStub: Server = {};
 // FIXME: Several features will break without community middleware
 // (@react-native-community/cli-server-api) and should be migrated into core.
 // e.g. used by packages/react-native/Libraries/Core/Devtools/:
-// - /open-stack-frame
 // - /open-url
 // - /symbolicate
 // e.g. used by ./isDevServerRunning.js:

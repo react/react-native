@@ -60,7 +60,7 @@ async function runDevServer(
   const hostname = args.host?.length ? args.host : 'localhost';
   const {
     projectRoot,
-    server: {port},
+    server: {port, unstable_serverRoot},
     watchFolders,
   } = metroConfig;
   const protocol = args.https === true ? 'https' : 'http';
@@ -121,6 +121,10 @@ async function runDevServer(
   const {middleware, websocketEndpoints} = createDevMiddleware({
     serverBaseUrl: devServerUrl,
     logger: createDevMiddlewareLogger(terminalReporter),
+    unstable_watchFolders: [
+      unstable_serverRoot ?? projectRoot,
+      ...watchFolders,
+    ],
   });
 
   const reporter: Reporter = {
