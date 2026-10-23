@@ -927,9 +927,6 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
       if (third.has_value()) {
         parser.syntaxParser().consumeWhitespace();
         fourth = parsePositionComponent(parser);
-        if (!fourth.has_value()) {
-          return {};
-        }
       }
       auto position = resolvePosition(*first, second, third, fourth);
       if (!position.has_value()) {
@@ -1001,6 +998,57 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
     return std::get<CSSPercentage>(component);
   }
 
+  // [ center | [ left | right ] <length-percentage>? ] && [ center | [ top | bottom ] <length-percentage>? ]
+  // with exactly one offset, which belongs to the edge keyword directly before it.
+  static std::optional<CSSRadialGradientPosition> resolveThreeValuePosition(
+      const PositionComponent &first,
+      const PositionComponent &second,
+      const PositionComponent &third)
+  {
+    const bool offsetIsSecond = !std::holds_alternative<CSSGradientPositionKeyword>(second);
+    if (!std::holds_alternative<CSSGradientPositionKeyword>(first) ||
+        offsetIsSecond == !std::holds_alternative<CSSGradientPositionKeyword>(third)) {
+      return {};
+    }
+    auto offsetKeyword = std::get<CSSGradientPositionKeyword>(offsetIsSecond ? first : second);
+    auto bareKeyword = std::get<CSSGradientPositionKeyword>(offsetIsSecond ? third : first);
+    auto isHorizontal = [](CSSGradientPositionKeyword keyword) {
+      return keyword == CSSGradientPositionKeyword::Left || keyword == CSSGradientPositionKeyword::Right;
+    };
+    if (offsetKeyword == CSSGradientPositionKeyword::Center ||
+        (bareKeyword != CSSGradientPositionKeyword::Center &&
+         isHorizontal(bareKeyword) == isHorizontal(offsetKeyword))) {
+      return {};
+    }
+
+    CSSRadialGradientPosition position;
+    auto setEdge = [&position](CSSGradientPositionKeyword keyword, std::variant<CSSLength, CSSPercentage> value) {
+      switch (keyword) {
+        case CSSGradientPositionKeyword::Left:
+          position.left = value;
+          break;
+        case CSSGradientPositionKeyword::Right:
+          position.right = value;
+          break;
+        case CSSGradientPositionKeyword::Top:
+          position.top = value;
+          break;
+        case CSSGradientPositionKeyword::Bottom:
+          position.bottom = value;
+          break;
+        case CSSGradientPositionKeyword::Center:
+          break;
+      }
+    };
+    setEdge(offsetKeyword, positionValue(offsetIsSecond ? second : third));
+    if (bareKeyword == CSSGradientPositionKeyword::Center) {
+      (isHorizontal(offsetKeyword) ? position.top : position.left) = CSSPercentage{50.0f};
+    } else {
+      setEdge(bareKeyword, CSSPercentage{0.0f});
+    }
+    return position;
+  }
+
   static std::optional<CSSRadialGradientPosition> resolvePosition(
       const PositionComponent &first,
       const std::optional<PositionComponent> &second,
@@ -1009,7 +1057,13 @@ struct CSSDataTypeParser<CSSConicGradientFunction> {
   {
     CSSRadialGradientPosition position;
     if (third.has_value()) {
-      if (!second.has_value() || !fourth.has_value() || !std::holds_alternative<CSSGradientPositionKeyword>(first) ||
+      if (!second.has_value()) {
+        return {};
+      }
+      if (!fourth.has_value()) {
+        return resolveThreeValuePosition(first, *second, *third);
+      }
+      if (!std::holds_alternative<CSSGradientPositionKeyword>(first) ||
           !std::holds_alternative<CSSGradientPositionKeyword>(*third) ||
           std::holds_alternative<CSSGradientPositionKeyword>(*second) ||
           std::holds_alternative<CSSGradientPositionKeyword>(*fourth)) {
