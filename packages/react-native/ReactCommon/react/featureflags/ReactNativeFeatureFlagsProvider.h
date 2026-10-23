@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7413e958441d0502dc1266ff87e9da85>>
+ * @generated SignedSource<<b83d33747adc246ae7139edb545cacb9>>
  */
 
 /**
@@ -79,6 +79,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enablePropsUpdateReconciliationAndroid() = 0;
   virtual bool enableResizeObserverByDefault() = 0;
   virtual bool enableSwiftUIBasedFilters() = 0;
+  virtual bool enableSynchronousTransformOverlay() = 0;
   virtual bool enableViewCulling() = 0;
   virtual bool enableViewRecycling() = 0;
   virtual bool enableViewRecyclingForImage() = 0;

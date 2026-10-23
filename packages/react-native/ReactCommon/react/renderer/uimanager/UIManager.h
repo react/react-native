@@ -20,6 +20,7 @@
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 #include <react/renderer/mounting/ShadowTreeRegistry.h>
+#include <react/renderer/uimanager/SynchronousTransformOverlay.h>
 #include <react/renderer/uimanager/UIManagerAnimationBackend.h>
 #include <react/renderer/uimanager/UIManagerAnimationDelegate.h>
 #include <react/renderer/uimanager/UIManagerDelegate.h>
@@ -90,6 +91,31 @@ class UIManager final : public ShadowTreeDelegate {
   void synchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props);
 
   void synchronouslyUpdateAnimatedProps(const std::unordered_map<Tag, AnimatedProps> &updates);
+
+  /*
+   * Records `transform` / `transformOrigin` values that were applied to the
+   * mounted view with the given `tag` synchronously (without a commit), so
+   * that layout queries reflect them. Called by the platform mounting layer
+   * for every synchronous update, and available to libraries that write
+   * props synchronously through their own channels. No-op unless the
+   * `enableSynchronousTransformOverlay` feature flag is enabled.
+   */
+  void recordSynchronousTransform(Tag tag, const folly::dynamic &props) const;
+
+  /*
+   * Drops the recorded synchronous transform for `tag`. To be called by the
+   * system that wrote it when it stops managing the view (the committed
+   * props are authoritative again).
+   */
+  void removeSynchronousTransform(Tag tag) const;
+
+  /*
+   * Returns the provider that layout queries should use to take synchronous
+   * transforms into account, or `nullptr` when there is nothing to override
+   * (feature flag disabled or no synchronous transforms recorded).
+   * `getRelativeLayoutMetrics` uses it automatically.
+   */
+  const LayoutableShadowNode::TransformOverrideProvider *getTransformOverrideProvider() const;
 
   /*
    * Provides access to a UIManagerBinding.
@@ -251,6 +277,17 @@ class UIManager final : public ShadowTreeDelegate {
       const ShadowNode &shadowNode,
       const std::shared_ptr<const ShadowNode> &ancestorShadowNode) const;
 
+  /*
+   * Drops the synchronous transforms recorded for views that are no longer
+   * part of any shadow tree. `committedRootShadowNode` stands in for the
+   * current revision of the surface with `committedSurfaceId`, which is
+   * being committed when this is called from `shadowTreeDidCommit`.
+   */
+  void pruneSynchronousTransformOverlay(
+      SurfaceId committedSurfaceId,
+      const RootShadowNode::Shared &committedRootShadowNode,
+      bool force) const;
+
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   UIManagerDelegate *delegate_{};
   UIManagerAnimationDelegate *animationDelegate_{nullptr};
@@ -272,6 +309,8 @@ class UIManager final : public ShadowTreeDelegate {
   std::unique_ptr<LazyShadowTreeRevisionConsistencyManager> lazyShadowTreeRevisionConsistencyManager_;
 
   std::shared_ptr<UIManagerAnimationBackend> animationBackend_;
+
+  mutable SynchronousTransformOverlay synchronousTransformOverlay_;
 };
 
 } // namespace facebook::react

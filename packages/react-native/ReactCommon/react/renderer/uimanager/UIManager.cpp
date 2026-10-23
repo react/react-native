@@ -25,6 +25,7 @@
 
 #include <glog/logging.h>
 
+#include <unordered_set>
 #include <utility>
 
 namespace {
@@ -306,6 +307,9 @@ ShadowTree::Unique UIManager::stopSurface(SurfaceId surfaceId) const {
     if (leakChecker_) {
       leakChecker_->stopSurface(surfaceId);
     }
+
+    // The views of the surface are gone; drop their synchronous transforms.
+    pruneSynchronousTransformOverlay(surfaceId, nullptr, /* force */ true);
   }
 
   if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
@@ -401,6 +405,10 @@ LayoutMetrics UIManager::getRelativeLayoutMetrics(
 
   if (layoutableAncestorShadowNode == nullptr) {
     return EmptyLayoutMetrics;
+  }
+
+  if (policy.transformOverrideProvider == nullptr) {
+    policy.transformOverrideProvider = getTransformOverrideProvider();
   }
 
   return LayoutableShadowNode::computeRelativeLayoutMetrics(
@@ -680,12 +688,17 @@ void UIManager::shadowTreeDidCommit(
     const noexcept {
   TraceSection s("UIManager::shadowTreeDidCommit");
 
-  std::shared_lock lock(commitHookMutex_);
+  {
+    std::shared_lock lock(commitHookMutex_);
 
-  for (auto* commitHook : commitHooks_) {
-    commitHook->shadowTreeDidCommit(
-        shadowTree, rootShadowNode, affectedLayoutableNodes);
+    for (auto* commitHook : commitHooks_) {
+      commitHook->shadowTreeDidCommit(
+          shadowTree, rootShadowNode, affectedLayoutableNodes);
+    }
   }
+
+  pruneSynchronousTransformOverlay(
+      shadowTree.getSurfaceId(), rootShadowNode, /* force */ false);
 }
 
 void UIManager::reportMount(SurfaceId surfaceId) const {
@@ -774,6 +787,67 @@ void UIManager::synchronouslyUpdateAnimatedProps(
   if (delegate_ != nullptr) {
     delegate_->uiManagerShouldSynchronouslyUpdateAnimatedProps(updates);
   }
+}
+
+#pragma mark - Synchronous transform overlay
+
+void UIManager::recordSynchronousTransform(Tag tag, const folly::dynamic& props)
+    const {
+  if (!ReactNativeFeatureFlags::enableSynchronousTransformOverlay()) {
+    return;
+  }
+  // Transforms do not depend on the surface, so any surface id will do.
+  PropsParserContext propsParserContext{-1, *contextContainer_};
+  synchronousTransformOverlay_.update(tag, props, propsParserContext);
+}
+
+void UIManager::removeSynchronousTransform(Tag tag) const {
+  synchronousTransformOverlay_.remove(tag);
+}
+
+const LayoutableShadowNode::TransformOverrideProvider*
+UIManager::getTransformOverrideProvider() const {
+  if (!ReactNativeFeatureFlags::enableSynchronousTransformOverlay() ||
+      synchronousTransformOverlay_.isEmpty()) {
+    return nullptr;
+  }
+  return &synchronousTransformOverlay_;
+}
+
+void UIManager::pruneSynchronousTransformOverlay(
+    SurfaceId committedSurfaceId,
+    const RootShadowNode::Shared& committedRootShadowNode,
+    bool force) const {
+  if (synchronousTransformOverlay_.isEmpty() ||
+      (!force && !synchronousTransformOverlay_.needsPruning())) {
+    return;
+  }
+
+  TraceSection s("UIManager::pruneSynchronousTransformOverlay");
+
+  std::unordered_set<Tag> aliveTags;
+  auto collectTags = [&aliveTags](auto&& self, const ShadowNode& node) -> void {
+    aliveTags.insert(node.getTag());
+    for (const auto& child : node.getChildren()) {
+      self(self, *child);
+    }
+  };
+
+  if (committedRootShadowNode != nullptr) {
+    collectTags(collectTags, *committedRootShadowNode);
+  }
+  shadowTreeRegistry_.enumerate([&](const ShadowTree& shadowTree,
+                                    bool& /*stop*/) {
+    if (shadowTree.getSurfaceId() == committedSurfaceId) {
+      return;
+    }
+    if (auto rootShadowNode = shadowTree.getCurrentRevision().rootShadowNode) {
+      collectTags(collectTags, *rootShadowNode);
+    }
+  });
+
+  synchronousTransformOverlay_.prune(
+      [&aliveTags](Tag tag) { return aliveTags.contains(tag); });
 }
 
 #pragma mark ContextContainer

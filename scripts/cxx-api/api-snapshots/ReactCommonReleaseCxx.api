@@ -836,6 +836,7 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public static facebook::react::LayoutMetrics computeLayoutMetricsFromRoot(const facebook::react::ShadowNodeFamily& descendantNodeFamily, const facebook::react::LayoutableShadowNode& rootNode, facebook::react::LayoutableShadowNode::LayoutInspectingPolicy policy);
   public static facebook::react::LayoutMetrics computeRelativeLayoutMetrics(const facebook::react::ShadowNode::AncestorList& ancestors, facebook::react::LayoutableShadowNode::LayoutInspectingPolicy policy);
   public static facebook::react::LayoutMetrics computeRelativeLayoutMetrics(const facebook::react::ShadowNodeFamily& descendantNodeFamily, const facebook::react::LayoutableShadowNode& ancestorNode, facebook::react::LayoutableShadowNode::LayoutInspectingPolicy policy);
+  public static facebook::react::Transform resolveTransform(const facebook::react::LayoutableShadowNode& shadowNode, const facebook::react::LayoutableShadowNode::TransformOverrideProvider* transformOverrideProvider);
   public static std::shared_ptr<const facebook::react::ShadowNode> findNodeAtPoint(const std::shared_ptr<const facebook::react::ShadowNode>& node, facebook::react::Point point);
   public using UnsharedList = std::vector<facebook::react::LayoutableShadowNode*>;
   public virtual Float baseline(const facebook::react::LayoutContext& layoutContext, facebook::react::Size size) const;
@@ -853,11 +854,17 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public void setLayoutMetrics(facebook::react::LayoutMetrics layoutMetrics);
 }
 
+class facebook::react::LayoutableShadowNode::TransformOverrideProvider {
+  public virtual std::optional<facebook::react::Transform> getTransformOverride(const facebook::react::LayoutableShadowNode& shadowNode) const = 0;
+  public virtual ~TransformOverrideProvider() = default;
+}
+
 struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool clipSpecifiedAncestor;
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public const facebook::react::LayoutableShadowNode::TransformOverrideProvider* transformOverrideProvider;
 }
 
 class facebook::react::LongLivedObject {

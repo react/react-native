@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6887b671526bc8a3b0678e3e45b4e3b4>>
+ * @generated SignedSource<<1692d5c36eb41b2f8ccb842cd5986560>>
  */
 
 /**
@@ -300,6 +300,11 @@ class ReactNativeFeatureFlags {
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
    */
   RN_EXPORT static bool enableSwiftUIBasedFilters();
+
+  /**
+   * When enabled, transforms applied to views synchronously on the UI thread (e.g. by native-driven animations, without a ShadowTree commit) are recorded in UIManager and taken into account by layout queries (measure, measureInWindow, getBoundingClientRect), so that they match the mounted views.
+   */
+  RN_EXPORT static bool enableSynchronousTransformOverlay();
 
   /**
    * Enables View Culling: as soon as a view goes off screen, it can be reused anywhere in the UI and pieced together with other items to create new UI elements.

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<17f41335dce7e5b45e7af2878c47d69b>>
+ * @generated SignedSource<<685e46e638a7f907d6f8ba8406aa4711>>
  */
 
 /**
@@ -86,6 +86,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enablePropsUpdateReconciliationAndroid();
   bool enableResizeObserverByDefault();
   bool enableSwiftUIBasedFilters();
+  bool enableSynchronousTransformOverlay();
   bool enableViewCulling();
   bool enableViewRecycling();
   bool enableViewRecyclingForImage();
@@ -142,7 +143,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 97> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -196,6 +197,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enablePropsUpdateReconciliationAndroid_;
   std::atomic<std::optional<bool>> enableResizeObserverByDefault_;
   std::atomic<std::optional<bool>> enableSwiftUIBasedFilters_;
+  std::atomic<std::optional<bool>> enableSynchronousTransformOverlay_;
   std::atomic<std::optional<bool>> enableViewCulling_;
   std::atomic<std::optional<bool>> enableViewRecycling_;
   std::atomic<std::optional<bool>> enableViewRecyclingForImage_;
