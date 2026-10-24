@@ -5,7 +5,7 @@
 [npm]: https://img.shields.io/npm/v/@react-native/eslint-plugin.svg?color=blue
 [npm downloads]: https://img.shields.io/npm/dm/@react-native/eslint-plugin.svg
 
-ESLint rules for [`@react-native/eslint-config`](https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native). You probably want to install that package instead.
+ESLint rules for [`@react-native/eslint-config`](https://github.com/react/react-native/tree/HEAD/packages/eslint-config-react-native). You probably want to install that package instead.
 
 ## Rules
 
