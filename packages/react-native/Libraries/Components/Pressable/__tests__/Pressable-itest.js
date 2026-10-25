@@ -46,7 +46,6 @@ describe('<Pressable>', () => {
         expect(root.getRenderedOutput().toJSX()).toEqual(
           <rn-view
             accessible="true"
-            accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
             backgroundColor="rgba(0, 0, 255, 1)"
             borderWidth="3"
             height="50"
@@ -70,7 +69,6 @@ describe('<Pressable>', () => {
         expect(root.getRenderedOutput().toJSX()).toEqual(
           <rn-view
             accessible="true"
-            accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
             backgroundColor="rgba(128, 128, 128, 1)"
           />,
         );
@@ -188,6 +186,137 @@ describe('<Pressable>', () => {
       });
     });
 
+    describe('accessibilityState', () => {
+      const rawFalseInputs: ReadonlyArray<
+        React.ComponentProps<typeof Pressable>,
+      > = [
+        {'aria-busy': false},
+        {'aria-checked': false},
+        {'aria-disabled': false},
+        {'aria-expanded': false},
+        {'aria-selected': false},
+        {disabled: false},
+      ];
+      for (const props of rawFalseInputs) {
+        it(`creates state for ${Object.keys(props)[0]}=false without an accessibilityState input`, () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<Pressable {...props} />);
+          });
+          expect(
+            Object.hasOwn(
+              root
+                .getRenderedOutput({props: ['accessibilityState']})
+                .toJSONObject().props,
+              'accessibilityState',
+            ),
+          ).toBe(true);
+        });
+      }
+      const cases: ReadonlyArray<{
+        name: string,
+        props: React.ComponentProps<typeof Pressable>,
+        state: ?string,
+      }> = [
+        {name: 'no input', props: {}, state: null},
+        {
+          name: 'nullish raw inputs',
+          props: {
+            accessibilityState: null,
+            'aria-busy': null,
+            'aria-checked': null,
+            'aria-disabled': null,
+            'aria-expanded': null,
+            'aria-selected': null,
+            disabled: null,
+          },
+          state: null,
+        },
+        {
+          name: 'explicit empty state',
+          props: {accessibilityState: {}},
+          state:
+            '{disabled:false,selected:null,checked:None,busy:false,expanded:null}',
+        },
+        {
+          name: 'explicit all-nullish state',
+          props: {
+            accessibilityState: {
+              busy: undefined,
+              checked: undefined,
+              disabled: undefined,
+              expanded: undefined,
+              selected: undefined,
+            },
+          },
+          state:
+            '{disabled:false,selected:null,checked:None,busy:false,expanded:null}',
+        },
+        {
+          name: 'false aliases overriding state',
+          props: {
+            accessibilityState: {
+              busy: true,
+              checked: true,
+              disabled: true,
+              expanded: true,
+              selected: true,
+            },
+            'aria-busy': false,
+            'aria-checked': false,
+            'aria-disabled': false,
+            'aria-expanded': false,
+            'aria-selected': false,
+          },
+          state:
+            '{disabled:false,selected:false,checked:Unchecked,busy:false,expanded:false}',
+        },
+        {
+          name: 'mixed alias overriding state',
+          props: {accessibilityState: {checked: true}, 'aria-checked': 'mixed'},
+          state:
+            '{disabled:false,selected:null,checked:Mixed,busy:false,expanded:null}',
+        },
+        {
+          name: 'disabled false overriding alias and state',
+          props: {
+            disabled: false,
+            'aria-disabled': true,
+            accessibilityState: {disabled: true},
+          },
+          state:
+            '{disabled:false,selected:null,checked:None,busy:false,expanded:null}',
+        },
+        {
+          name: 'disabled true overriding alias and state',
+          props: {
+            disabled: true,
+            'aria-disabled': false,
+            accessibilityState: {disabled: false},
+          },
+          state:
+            '{disabled:true,selected:null,checked:None,busy:false,expanded:null}',
+        },
+      ];
+      for (const {name, props, state} of cases) {
+        it(`preserves presence and values for ${name}`, () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<Pressable {...props} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            state == null ? (
+              <rn-view />
+            ) : (
+              <rn-view accessibilityState={state} />
+            ),
+          );
+        });
+      }
+    });
+
     describe('android_ripple', () => {
       it('renders with a numeric color and alpha', () => {
         const root = Fantom.createRoot();
@@ -199,10 +328,7 @@ describe('<Pressable>', () => {
         });
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-view
-            accessible="true"
-            accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-          />,
+          <rn-view accessible="true" />,
         );
       });
 
@@ -221,10 +347,7 @@ describe('<Pressable>', () => {
         });
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-view
-            accessible="true"
-            accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-          />,
+          <rn-view accessible="true" />,
         );
       });
 
@@ -243,10 +366,7 @@ describe('<Pressable>', () => {
         });
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-view
-            accessible="true"
-            accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-          />,
+          <rn-view accessible="true" />,
         );
       });
     });
@@ -268,9 +388,7 @@ describe('<Pressable>', () => {
         expect(element.childNodes.length).toBe(1);
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-view
-            accessible="true"
-            accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}">
+          <rn-view accessible="true">
             <rn-paragraph
               allowFontScaling="true"
               ellipsizeMode="tail"
