@@ -10,6 +10,7 @@
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
+import type {ViewProps} from '../View/ViewPropTypes';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
 
 import Animated from '../../Animated/Animated';
@@ -186,83 +187,47 @@ class TouchableOpacity extends React.Component<
     const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
       this.state.pressability.getEventHandlers();
 
-    let _accessibilityState = {
-      busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
-      checked:
-        this.props['aria-checked'] ?? this.props.accessibilityState?.checked,
-      disabled:
-        this.props['aria-disabled'] ?? this.props.accessibilityState?.disabled,
-      expanded:
-        this.props['aria-expanded'] ?? this.props.accessibilityState?.expanded,
-      selected:
-        this.props['aria-selected'] ?? this.props.accessibilityState?.selected,
-    };
+    const {
+      accessible,
+      activeOpacity,
+      children,
+      delayLongPress,
+      delayPressIn,
+      delayPressOut,
+      disabled,
+      focusable,
+      hostRef,
+      onBlur: _onBlur,
+      onFocus: _onFocus,
+      onLongPress,
+      onPress,
+      onPressIn,
+      onPressOut,
+      pressRetentionOffset,
+      rejectResponderTermination,
+      style,
+      touchSoundDisabled,
+      ...restProps
+    } = this.props;
 
-    _accessibilityState =
-      this.props.disabled != null
-        ? {
-            ..._accessibilityState,
-            disabled: this.props.disabled,
-          }
-        : _accessibilityState;
+    const pressabilityConfig = this._createPressabilityConfig();
+    if (pressabilityConfig.disabled != null) {
+      // Expose Pressability's resolved disabled state to accessibility through View.
+      restProps['aria-disabled'] = pressabilityConfig.disabled;
+    }
 
-    const accessibilityValue = {
-      max: this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
-      min: this.props['aria-valuemin'] ?? this.props.accessibilityValue?.min,
-      now: this.props['aria-valuenow'] ?? this.props.accessibilityValue?.now,
-      text: this.props['aria-valuetext'] ?? this.props.accessibilityValue?.text,
-    };
+    const viewProps: ViewProps = restProps;
 
-    const accessibilityLiveRegion =
-      this.props['aria-live'] === 'off'
-        ? 'none'
-        : (this.props['aria-live'] ?? this.props.accessibilityLiveRegion);
-
-    const accessibilityLabel =
-      this.props['aria-label'] ?? this.props.accessibilityLabel;
     return (
       <Animated.View
-        accessible={this.props.accessible !== false}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityHint={this.props.accessibilityHint}
-        accessibilityLanguage={this.props.accessibilityLanguage}
-        accessibilityRole={this.props.accessibilityRole}
-        accessibilityState={_accessibilityState}
-        accessibilityActions={this.props.accessibilityActions}
-        onAccessibilityAction={this.props.onAccessibilityAction}
-        accessibilityValue={accessibilityValue}
-        importantForAccessibility={
-          this.props['aria-hidden'] === true
-            ? 'no-hide-descendants'
-            : // $FlowFixMe[incompatible-type] - AnimatedProps types were made more strict and need refining at this call site
-              this.props.importantForAccessibility
-        }
-        accessibilityViewIsModal={
-          this.props['aria-modal'] ?? this.props.accessibilityViewIsModal
-        }
-        accessibilityLiveRegion={accessibilityLiveRegion}
-        accessibilityElementsHidden={
-          this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden
-        }
-        style={[this.props.style, {opacity: this.state.anim}]}
-        nativeID={this.props.id ?? this.props.nativeID}
-        testID={this.props.testID}
-        onLayout={this.props.onLayout}
-        nextFocusDown={this.props.nextFocusDown}
-        nextFocusForward={this.props.nextFocusForward}
-        nextFocusLeft={this.props.nextFocusLeft}
-        nextFocusRight={this.props.nextFocusRight}
-        nextFocusUp={this.props.nextFocusUp}
-        hitSlop={this.props.hitSlop}
-        focusable={
-          this.props.focusable !== false &&
-          this.props.onPress !== undefined &&
-          !this.props.disabled
-        }
+        {...viewProps}
+        accessible={accessible !== false}
+        style={[style, {opacity: this.state.anim}]}
+        focusable={focusable !== false && onPress !== undefined && !disabled}
         // $FlowFixMe[prop-missing]
-        ref={this.props.hostRef}
+        ref={hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
-        {this.props.children}
+        {children}
         {__DEV__ ? (
           <PressabilityDebugView color="cyan" hitSlop={this.props.hitSlop} />
         ) : null}

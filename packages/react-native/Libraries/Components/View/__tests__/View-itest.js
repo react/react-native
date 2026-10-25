@@ -12,7 +12,7 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {HostInstance} from 'react-native';
+import type {AccessibilityProps, HostInstance} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
@@ -458,6 +458,100 @@ describe('<View>', () => {
     });
 
     describe('accessibility', () => {
+      it('omits accessibilityState when no state input is supplied', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(<View collapsable={false} />);
+        });
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(<rn-view />);
+      });
+
+      it('accepts explicitly supplied empty and all-nullish accessibilityState', () => {
+        const root = Fantom.createRoot();
+        const emptyStates: ReadonlyArray<
+          AccessibilityProps['accessibilityState'],
+        > = [
+          {},
+          {
+            busy: undefined,
+            checked: undefined,
+            disabled: undefined,
+            expanded: undefined,
+            selected: undefined,
+          },
+        ];
+        for (const accessibilityState of emptyStates) {
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                accessibilityState={accessibilityState}
+                collapsable={false}
+              />,
+            );
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}" />,
+          );
+        }
+      });
+
+      it('keeps false state fields and gives aliases precedence', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(
+            <View
+              accessibilityState={{
+                busy: true,
+                checked: true,
+                disabled: true,
+                expanded: true,
+                selected: true,
+              }}
+              aria-busy={false}
+              aria-checked={false}
+              aria-disabled={false}
+              aria-expanded={false}
+              aria-selected={false}
+              collapsable={false}
+            />,
+          );
+        });
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:false,selected:false,checked:Unchecked,busy:false,expanded:false}" />,
+        );
+      });
+
+      it('keeps accessibilityState present when replaced with an explicit empty object', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(
+            <View
+              accessibilityState={{checked: 'mixed'}}
+              collapsable={false}
+            />,
+          );
+        });
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:false,selected:null,checked:Mixed,busy:false,expanded:null}" />,
+        );
+        Fantom.runTask(() => {
+          root.render(<View accessibilityState={{}} collapsable={false} />);
+        });
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
       describe('accessibilityActions', () => {
         it('is propagated to the mounting layer', () => {
           const root = Fantom.createRoot();

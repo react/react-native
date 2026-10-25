@@ -10,7 +10,6 @@
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
-import type {AccessibilityState} from '../View/ViewAccessibility';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
 
 import View from '../../Components/View/View';
@@ -97,10 +96,7 @@ class TouchableHighlightImpl extends React.Component<
   _createPressabilityConfig(): PressabilityConfig {
     return {
       cancelable: !this.props.rejectResponderTermination,
-      disabled:
-        this.props.disabled != null
-          ? this.props.disabled
-          : this.props.accessibilityState?.disabled,
+      disabled: this.props.disabled ?? this.props.accessibilityState?.disabled,
       hitSlop: this.props.hitSlop,
       delayLongPress: this.props.delayLongPress,
       delayPressIn: this.props.delayPressIn,
@@ -222,70 +218,46 @@ class TouchableHighlightImpl extends React.Component<
     const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
       this.state.pressability.getEventHandlers();
 
-    const accessibilityState: ?AccessibilityState =
-      this.props.disabled != null
-        ? {
-            ...this.props.accessibilityState,
-            disabled: this.props.disabled,
-          }
-        : this.props.accessibilityState;
+    const {
+      accessible,
+      activeOpacity,
+      children,
+      delayLongPress,
+      delayPressIn,
+      delayPressOut,
+      disabled,
+      focusable,
+      hostRef,
+      onBlur: _onBlur,
+      onFocus: _onFocus,
+      onHideUnderlay,
+      onLongPress,
+      onPress,
+      onPressIn,
+      onPressOut,
+      onShowUnderlay,
+      pressRetentionOffset,
+      rejectResponderTermination,
+      style,
+      testOnly_pressed,
+      touchSoundDisabled,
+      underlayColor,
+      ...restProps
+    } = this.props;
 
-    const accessibilityValue = {
-      max: this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
-      min: this.props['aria-valuemin'] ?? this.props.accessibilityValue?.min,
-      now: this.props['aria-valuenow'] ?? this.props.accessibilityValue?.now,
-      text: this.props['aria-valuetext'] ?? this.props.accessibilityValue?.text,
-    };
+    const disabledState = disabled ?? this.props.accessibilityState?.disabled;
+    if (disabledState != null) {
+      // Expose Pressability's resolved disabled state to accessibility through View.
+      restProps['aria-disabled'] = disabledState;
+    }
 
-    const accessibilityLiveRegion =
-      this.props['aria-live'] === 'off'
-        ? 'none'
-        : (this.props['aria-live'] ?? this.props.accessibilityLiveRegion);
-
-    const accessibilityLabel =
-      this.props['aria-label'] ?? this.props.accessibilityLabel;
     return (
       <View
-        accessible={this.props.accessible !== false}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityHint={this.props.accessibilityHint}
-        accessibilityLanguage={this.props.accessibilityLanguage}
-        accessibilityRole={this.props.accessibilityRole}
-        accessibilityState={accessibilityState}
-        accessibilityValue={accessibilityValue}
-        accessibilityActions={this.props.accessibilityActions}
-        onAccessibilityAction={this.props.onAccessibilityAction}
-        importantForAccessibility={
-          this.props['aria-hidden'] === true
-            ? 'no-hide-descendants'
-            : this.props.importantForAccessibility
-        }
-        accessibilityViewIsModal={
-          this.props['aria-modal'] ?? this.props.accessibilityViewIsModal
-        }
-        accessibilityLiveRegion={accessibilityLiveRegion}
-        accessibilityElementsHidden={
-          this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden
-        }
-        style={StyleSheet.compose(
-          this.props.style,
-          this.state.extraStyles?.underlay,
-        )}
-        onLayout={this.props.onLayout}
-        hitSlop={this.props.hitSlop}
-        nextFocusDown={this.props.nextFocusDown}
-        nextFocusForward={this.props.nextFocusForward}
-        nextFocusLeft={this.props.nextFocusLeft}
-        nextFocusRight={this.props.nextFocusRight}
-        nextFocusUp={this.props.nextFocusUp}
-        focusable={
-          this.props.focusable !== false &&
-          this.props.onPress !== undefined &&
-          !this.props.disabled
-        }
-        nativeID={this.props.id ?? this.props.nativeID}
-        testID={this.props.testID}
-        ref={this.props.hostRef}
+        {...restProps}
+        accessible={accessible !== false}
+        style={StyleSheet.compose(style, this.state.extraStyles?.underlay)}
+        focusable={focusable !== false && onPress !== undefined && !disabled}
+        ref={hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {child.type === React.Fragment
           ? child

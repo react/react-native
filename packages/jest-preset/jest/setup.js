@@ -137,8 +137,6 @@ mock(
   'm#react-native/Libraries/Components/TextInput/TextInput',
   'm#./mocks/TextInput',
 );
-// $FlowFixMe[cannot-resolve-module]
-mock('m#react-native/Libraries/Components/View/View', 'm#./mocks/View');
 mock(
   // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/Components/View/ViewNativeComponent',
