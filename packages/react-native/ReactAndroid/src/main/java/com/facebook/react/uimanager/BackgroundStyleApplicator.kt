@@ -639,6 +639,32 @@ public object BackgroundStyleApplicator {
     }
   }
 
+  /**
+   * Replaces the original (non-React-managed) background layer of the view's composite background,
+   * keeping the outline, shadows, border and other layers installed by this applicator.
+   *
+   * @param view The view whose original background layer to replace
+   * @param originalBackground The drawable to use as the original background layer
+   * @return true if the view had a composite background and the layer was replaced
+   */
+  @JvmStatic
+  public fun setOriginalBackground(view: View, originalBackground: Drawable?): Boolean {
+    val composite = getCompositeBackgroundDrawable(view) ?: return false
+    view.background = composite.withNewOriginalBackground(originalBackground)
+    return true
+  }
+
+  /**
+   * Gets the original (non-React-managed) background layer of the view's composite background, if
+   * the view has one.
+   *
+   * @param view The view to get the original background layer from
+   * @return The original background layer, or null if the view has no composite background
+   */
+  @JvmStatic
+  public fun getOriginalBackground(view: View): Drawable? =
+      getCompositeBackgroundDrawable(view)?.originalBackground
+
   private fun ensureCompositeBackgroundDrawable(view: View): CompositeBackgroundDrawable {
     if (view.background is CompositeBackgroundDrawable) {
       return view.background as CompositeBackgroundDrawable

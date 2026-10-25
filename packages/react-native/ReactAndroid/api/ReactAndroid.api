@@ -3171,6 +3171,7 @@ public final class com/facebook/react/uimanager/BackgroundStyleApplicator {
 	public static final fun getBorderRadius (Landroid/view/View;Lcom/facebook/react/uimanager/style/BorderRadiusProp;)Lcom/facebook/react/uimanager/LengthPercentage;
 	public static final fun getBorderStyle (Landroid/view/View;)Lcom/facebook/react/uimanager/style/BorderStyle;
 	public static final fun getBorderWidth (Landroid/view/View;Lcom/facebook/react/uimanager/style/LogicalEdge;)Ljava/lang/Float;
+	public static final fun getOriginalBackground (Landroid/view/View;)Landroid/graphics/drawable/Drawable;
 	public static final fun getOutlineColor (Landroid/view/View;)Ljava/lang/Integer;
 	public final fun getOutlineOffset (Landroid/view/View;)Ljava/lang/Float;
 	public final fun getOutlineStyle (Landroid/view/View;)Lcom/facebook/react/uimanager/style/OutlineStyle;
@@ -3185,6 +3186,7 @@ public final class com/facebook/react/uimanager/BackgroundStyleApplicator {
 	public static final fun setBoxShadow (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public static final fun setBoxShadow (Landroid/view/View;Ljava/util/List;)V
 	public static final fun setFeedbackUnderlay (Landroid/view/View;Landroid/graphics/drawable/Drawable;)V
+	public static final fun setOriginalBackground (Landroid/view/View;Landroid/graphics/drawable/Drawable;)Z
 	public static final fun setOutlineColor (Landroid/view/View;Ljava/lang/Integer;)V
 	public static final fun setOutlineOffset (Landroid/view/View;F)V
 	public static final fun setOutlineStyle (Landroid/view/View;Lcom/facebook/react/uimanager/style/OutlineStyle;)V
