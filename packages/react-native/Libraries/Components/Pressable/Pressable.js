@@ -203,16 +203,8 @@ function Pressable({
 }): React.Node {
   const {
     accessible,
-    accessibilityState,
-    'aria-live': ariaLive,
     android_disableSound,
     android_ripple,
-    'aria-busy': ariaBusy,
-    'aria-checked': ariaChecked,
-    'aria-disabled': ariaDisabled,
-    'aria-expanded': ariaExpanded,
-    'aria-label': ariaLabel,
-    'aria-selected': ariaSelected,
     blockNativeResponder,
     cancelable,
     children,
@@ -248,43 +240,7 @@ function Pressable({
   const shouldUpdatePressed =
     typeof children === 'function' || typeof style === 'function';
 
-  let _accessibilityState = {
-    busy: ariaBusy ?? accessibilityState?.busy,
-    checked: ariaChecked ?? accessibilityState?.checked,
-    disabled: ariaDisabled ?? accessibilityState?.disabled,
-    expanded: ariaExpanded ?? accessibilityState?.expanded,
-    selected: ariaSelected ?? accessibilityState?.selected,
-  };
-
-  _accessibilityState =
-    disabled != null ? {..._accessibilityState, disabled} : _accessibilityState;
-
-  const accessibilityValue = {
-    max: props['aria-valuemax'] ?? props.accessibilityValue?.max,
-    min: props['aria-valuemin'] ?? props.accessibilityValue?.min,
-    now: props['aria-valuenow'] ?? props.accessibilityValue?.now,
-    text: props['aria-valuetext'] ?? props.accessibilityValue?.text,
-  };
-
-  const accessibilityLiveRegion =
-    ariaLive === 'off' ? 'none' : (ariaLive ?? props.accessibilityLiveRegion);
-
-  const accessibilityLabel = ariaLabel ?? props.accessibilityLabel;
-  const restPropsWithDefaults: React.ComponentProps<typeof View> = {
-    ...restProps,
-    ...android_rippleConfig?.viewProps,
-    accessible: accessible !== false,
-    accessibilityViewIsModal:
-      restProps['aria-modal'] ?? restProps.accessibilityViewIsModal,
-    accessibilityLiveRegion,
-    accessibilityLabel,
-    accessibilityState: _accessibilityState,
-    focusable: focusable !== false,
-    accessibilityValue,
-    hitSlop,
-  };
-
-  const config = useMemo(
+  const pressabilityConfig = useMemo(
     () => ({
       cancelable,
       disabled,
@@ -353,7 +309,20 @@ function Pressable({
     ],
   );
 
-  const eventHandlers = usePressability(config);
+  const eventHandlers = usePressability(pressabilityConfig);
+
+  const restPropsWithDefaults: {...React.ComponentProps<typeof View>} = {
+    ...restProps,
+    ...android_rippleConfig?.viewProps,
+    accessible: accessible !== false,
+    focusable: focusable !== false,
+    hitSlop,
+  };
+
+  if (pressabilityConfig.disabled != null) {
+    // Expose Pressability's resolved disabled state to accessibility through View.
+    restPropsWithDefaults['aria-disabled'] = pressabilityConfig.disabled;
+  }
 
   return (
     <View

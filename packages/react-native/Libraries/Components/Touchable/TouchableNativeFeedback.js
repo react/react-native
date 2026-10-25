@@ -275,81 +275,115 @@ class TouchableNativeFeedback extends React.Component<
     const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
       this.state.pressability.getEventHandlers();
 
-    let _accessibilityState = {
-      busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
-      checked:
-        this.props['aria-checked'] ?? this.props.accessibilityState?.checked,
-      disabled:
-        this.props['aria-disabled'] ?? this.props.accessibilityState?.disabled,
-      expanded:
-        this.props['aria-expanded'] ?? this.props.accessibilityState?.expanded,
-      selected:
-        this.props['aria-selected'] ?? this.props.accessibilityState?.selected,
-    };
+    const {
+      accessible,
+      background,
+      children: childrenProp,
+      delayLongPress,
+      delayPressIn,
+      delayPressOut,
+      disabled,
+      focusable,
+      onBlur: _onBlur,
+      onFocus: _onFocus,
+      onLongPress,
+      onPress,
+      onPressIn,
+      onPressOut,
+      pressRetentionOffset,
+      rejectResponderTermination,
+      style: _style,
+      touchSoundDisabled,
+      useForeground,
+      ...restProps
+    } = this.props;
 
-    _accessibilityState =
-      this.props.disabled != null
-        ? {
-            ..._accessibilityState,
-            disabled: this.props.disabled,
-          }
-        : _accessibilityState;
+    const pressabilityConfig = this._createPressabilityConfig();
+    if (pressabilityConfig.disabled != null) {
+      // Expose Pressability's resolved disabled state to accessibility through View.
+      restProps['aria-disabled'] = pressabilityConfig.disabled;
+    }
 
-    const accessibilityValue = {
-      max: this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
-      min: this.props['aria-valuemin'] ?? this.props.accessibilityValue?.min,
-      now: this.props['aria-valuenow'] ?? this.props.accessibilityValue?.now,
-      text: this.props['aria-valuetext'] ?? this.props.accessibilityValue?.text,
-    };
+    if (element.type !== View) {
+      const accessibilityLabel =
+        this.props['aria-label'] ?? this.props.accessibilityLabel;
+      if (accessibilityLabel != null) {
+        restProps.accessibilityLabel = accessibilityLabel;
+      }
+      const nativeID = this.props.id ?? this.props.nativeID;
+      if (nativeID != null) {
+        restProps.nativeID = nativeID;
+      }
+      const ariaHidden = this.props['aria-hidden'];
+      if (ariaHidden != null) {
+        restProps.accessibilityElementsHidden = ariaHidden;
+        if (ariaHidden === true) {
+          restProps.importantForAccessibility = 'no-hide-descendants';
+        }
+      }
 
-    const accessibilityLiveRegion =
-      this.props['aria-live'] === 'off'
-        ? 'none'
-        : (this.props['aria-live'] ?? this.props.accessibilityLiveRegion);
+      const state = this.props.accessibilityState;
+      const busy = this.props['aria-busy'] ?? state?.busy;
+      const checked = this.props['aria-checked'] ?? state?.checked;
+      const disabledState = restProps['aria-disabled'] ?? state?.disabled;
+      const expanded = this.props['aria-expanded'] ?? state?.expanded;
+      const selected = this.props['aria-selected'] ?? state?.selected;
+      if (
+        busy != null ||
+        checked != null ||
+        disabledState != null ||
+        expanded != null ||
+        selected != null
+      ) {
+        restProps.accessibilityState = {
+          busy,
+          checked,
+          disabled: disabledState,
+          expanded,
+          selected,
+        };
+      }
 
-    const accessibilityLabel =
-      this.props['aria-label'] ?? this.props.accessibilityLabel;
+      const ariaLive = this.props['aria-live'];
+      if (ariaLive !== undefined) {
+        restProps.accessibilityLiveRegion =
+          ariaLive === 'off' ? 'none' : ariaLive;
+      }
+      if (this.props['aria-modal'] !== undefined) {
+        restProps.accessibilityViewIsModal = this.props['aria-modal'];
+      }
+      if (
+        this.props['aria-valuemax'] != null ||
+        this.props['aria-valuemin'] != null ||
+        this.props['aria-valuenow'] != null ||
+        this.props['aria-valuetext'] != null
+      ) {
+        restProps.accessibilityValue = {
+          max:
+            this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
+          min:
+            this.props['aria-valuemin'] ?? this.props.accessibilityValue?.min,
+          now:
+            this.props['aria-valuenow'] ?? this.props.accessibilityValue?.now,
+          text:
+            this.props['aria-valuetext'] ?? this.props.accessibilityValue?.text,
+        };
+      }
+    }
+
     return cloneElement(
       element,
       {
+        ...restProps,
         ...eventHandlersWithoutBlurAndFocus,
         ...getBackgroundProp(
-          this.props.background === undefined
+          background === undefined
             ? TouchableNativeFeedback.SelectableBackground()
-            : this.props.background,
-          this.props.useForeground === true,
+            : background,
+          useForeground === true,
         ),
-        accessible: this.props.accessible !== false,
-        accessibilityHint: this.props.accessibilityHint,
-        accessibilityLanguage: this.props.accessibilityLanguage,
-        accessibilityLabel: accessibilityLabel,
-        accessibilityRole: this.props.accessibilityRole,
-        accessibilityState: _accessibilityState,
-        accessibilityActions: this.props.accessibilityActions,
-        onAccessibilityAction: this.props.onAccessibilityAction,
-        accessibilityValue: accessibilityValue,
-        importantForAccessibility:
-          this.props['aria-hidden'] === true
-            ? 'no-hide-descendants'
-            : this.props.importantForAccessibility,
-        accessibilityViewIsModal:
-          this.props['aria-modal'] ?? this.props.accessibilityViewIsModal,
-        accessibilityLiveRegion: accessibilityLiveRegion,
-        accessibilityElementsHidden:
-          this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden,
-        hitSlop: this.props.hitSlop,
-        focusable:
-          this.props.focusable !== false &&
-          this.props.onPress !== undefined &&
-          !this.props.disabled,
-        nativeID: this.props.id ?? this.props.nativeID,
-        nextFocusDown: this.props.nextFocusDown,
-        nextFocusForward: this.props.nextFocusForward,
-        nextFocusLeft: this.props.nextFocusLeft,
-        nextFocusRight: this.props.nextFocusRight,
-        nextFocusUp: this.props.nextFocusUp,
-        onLayout: this.props.onLayout,
-        testID: this.props.testID,
+        accessible: accessible !== false,
+        focusable: focusable !== false && onPress !== undefined && !disabled,
       },
       ...children,
     );
