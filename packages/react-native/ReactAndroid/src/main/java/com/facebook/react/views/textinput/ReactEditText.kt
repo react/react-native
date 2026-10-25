@@ -52,6 +52,8 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.graphics.withTranslation
 import androidx.core.util.Predicate
 import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
 import com.facebook.react.common.ReactConstants
@@ -176,8 +178,25 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       return field
     }
 
+  /**
+   * Whether the text takes edits. A field that does not keeps its focus and its selection: it
+   * carries no key listener, which is how [android.widget.TextView] refuses typing, an input method
+   * and cut and paste while staying enabled.
+   */
+  internal var isEditable: Boolean = true
+    set(value) {
+      if (field != value) {
+        field = value
+        applyKeyListener()
+      }
+    }
+
+  // The input type the props configure. A field with no key listener reports TYPE_NULL from
+  // getInputType(), so the configuration is read from here.
+  private var configuredInputType: Int
+
   internal val isMultiline: Boolean
-    get() = (inputType and InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0
+    get() = (configuredInputType and InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0
 
   // Mirrors TextView.shouldAdvanceFocusOnEnter, which advances focus on Enter for both email
   // address and subject even when multiline (newlines don't make sense there).
@@ -191,7 +210,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
   private val isSecureText: Boolean
     get() =
-        ((inputType and
+        ((configuredInputType and
             (InputType.TYPE_NUMBER_VARIATION_PASSWORD or InputType.TYPE_TEXT_VARIATION_PASSWORD)) !=
             0)
 
@@ -237,6 +256,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     disableFullscreen = false
     listeners = null
     stagedInputType = inputType
+    configuredInputType = inputType
     if (keyListener == null) {
       keyListener = InternalKeyListener()
     }
@@ -262,7 +282,23 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
                 this@ReactEditText.isFocusable,
                 this@ReactEditText.importantForAccessibility,
             ) {
+          // TextView reports every EditText as editable and offers to replace its text, whatever
+          // its key listener says.
+          override fun onInitializeAccessibilityNodeInfo(
+              host: View,
+              info: AccessibilityNodeInfoCompat,
+          ) {
+            super.onInitializeAccessibilityNodeInfo(host, info)
+            if (!this@ReactEditText.isEditable) {
+              info.isEditable = false
+              info.removeAction(AccessibilityActionCompat.ACTION_SET_TEXT)
+            }
+          }
+
           override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean {
+            if (action == AccessibilityNodeInfo.ACTION_SET_TEXT && !this@ReactEditText.isEditable) {
+              return false
+            }
             if (action == AccessibilityNodeInfo.ACTION_CLICK) {
               val length = checkNotNull(text).length
               if (length > 0) {
@@ -464,9 +500,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   // that. This method will eventually replace requestFocusInternal()
   private fun requestFocusProgrammatically(): Boolean {
     val focused = super.requestFocus(FOCUS_DOWN, null)
-    if (isInTouchMode && showSoftInputOnFocus) {
-      showSoftKeyboard()
-    }
+    showSoftKeyboardIfEditable()
 
     return focused
   }
@@ -601,7 +635,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   }
 
   internal fun commitStagedInputType() {
-    if (inputType != stagedInputType) {
+    if (configuredInputType != stagedInputType) {
       val selectionStart = selectionStart
       val selectionEnd = selectionEnd
       inputType = stagedInputType
@@ -614,6 +648,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     val tf = super.getTypeface()
     super.setInputType(type)
     stagedInputType = type
+    configuredInputType = type
     // Input type password defaults to monospace font, so we need to re-apply the font
     super.setTypeface(tf)
 
@@ -663,7 +698,11 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       keyListener = InternalKeyListener()
     }
     keyListener?.inputType = type
-    super.setKeyListener(keyListener)
+    applyKeyListener()
+  }
+
+  private fun applyKeyListener() {
+    super.setKeyListener(if (isEditable) keyListener else null)
   }
 
   public fun setPlaceholder(placeholder: String?) {
@@ -1007,10 +1046,9 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
   protected fun showSoftKeyboard(): Boolean = inputMethodManager.showSoftInput(this, 0)
 
-  // Mirrors the guard on requestFocusProgrammatically(), plus editability ("editable"
-  // prop maps to isEnabled): never summon the keyboard for a read-only input.
+  // Never summon the keyboard for an input that cannot be edited.
   private fun showSoftKeyboardIfEditable() {
-    if (isEnabled && isInTouchMode && showSoftInputOnFocus) {
+    if (isEditable && isEnabled && isInTouchMode && showSoftInputOnFocus) {
       showSoftKeyboard()
     }
   }

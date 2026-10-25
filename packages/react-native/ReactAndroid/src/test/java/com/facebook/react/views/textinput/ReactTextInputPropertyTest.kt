@@ -13,6 +13,7 @@ package com.facebook.react.views.textinput
 
 import android.graphics.Color
 import android.os.Build
+import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputFilter.AllCaps
 import android.text.InputType
@@ -20,13 +21,19 @@ import android.text.Layout
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
+import android.text.method.PasswordTransformationMethod
 import android.util.DisplayMetrics
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.EditorInfo
 import androidx.annotation.RequiresApi
 import androidx.autofill.HintConstants
 import androidx.core.content.res.ResourcesCompat.ID_NULL
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
@@ -227,19 +234,105 @@ class ReactTextInputPropertyTest {
   @Test
   fun testEditable() {
     manager.updateProperties(view, buildStyles())
-    assertThat(view.isEnabled).isTrue
+    assertThat(view.onCheckIsTextEditor()).isTrue
 
     manager.updateProperties(view, buildStyles("editable", false))
-    assertThat(view.isEnabled).isFalse
+    assertThat(view.onCheckIsTextEditor()).isFalse
+    assertThat(view.isEnabled).isTrue
 
     manager.updateProperties(view, buildStyles("editable", null))
-    assertThat(view.isEnabled).isTrue
+    assertThat(view.onCheckIsTextEditor()).isTrue
 
     manager.updateProperties(view, buildStyles("editable", false))
-    assertThat(view.isEnabled).isFalse
+    assertThat(view.onCheckIsTextEditor()).isFalse
+    assertThat(view.isEnabled).isTrue
 
     manager.updateProperties(view, buildStyles("editable", true))
+    assertThat(view.onCheckIsTextEditor()).isTrue
+  }
+
+  @Test
+  fun testNonEditableTakesFocus() {
+    manager.updateProperties(view, buildStyles("editable", false))
     assertThat(view.isEnabled).isTrue
+    assertThat(view.requestFocus()).isTrue
+  }
+
+  @Test
+  fun testNonEditableRefusesAccessibilitySetText() {
+    val setText = Bundle()
+    setText.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "a")
+
+    manager.updateProperties(view, buildStyles("editable", false))
+    val info = AccessibilityNodeInfoCompat.obtain()
+    ViewCompat.onInitializeAccessibilityNodeInfo(view, info)
+    assertThat(info.isEditable).isFalse
+    assertThat(info.actionList).doesNotContain(AccessibilityActionCompat.ACTION_SET_TEXT)
+    assertThat(
+            ViewCompat.performAccessibilityAction(
+                view,
+                AccessibilityNodeInfo.ACTION_SET_TEXT,
+                setText,
+            )
+        )
+        .isFalse
+    assertThat(view.text.toString()).isEmpty()
+
+    manager.updateProperties(view, buildStyles("editable", true))
+    assertThat(
+            ViewCompat.performAccessibilityAction(
+                view,
+                AccessibilityNodeInfo.ACTION_SET_TEXT,
+                setText,
+            )
+        )
+        .isTrue
+    assertThat(view.text.toString()).isEqualTo("a")
+  }
+
+  @Test
+  fun testNonEditableRefusesKeys() {
+    manager.updateProperties(view, buildStyles("editable", false))
+    view.onKeyDown(KeyEvent.KEYCODE_A, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_A))
+    assertThat(view.text.toString()).isEmpty()
+
+    manager.updateProperties(view, buildStyles("editable", true))
+    view.onKeyDown(KeyEvent.KEYCODE_A, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_A))
+    assertThat(view.text.toString()).isEqualTo("a")
+  }
+
+  @Test
+  fun testNonEditableKeepsInputType() {
+    val emailTypeFlags = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS or InputType.TYPE_CLASS_TEXT
+
+    manager.updateProperties(view, buildStyles("keyboardType", "email-address", "editable", false))
+    manager.updateProperties(view, buildStyles("editable", true))
+    assertThat(view.inputType and generalKeyboardTypeFlags).isEqualTo(emailTypeFlags)
+  }
+
+  @Test
+  fun testNonEditableTakesKeyboardTypeChanges() {
+    val numericTypeFlags =
+        (InputType.TYPE_CLASS_NUMBER or
+            InputType.TYPE_NUMBER_FLAG_DECIMAL or
+            InputType.TYPE_NUMBER_FLAG_SIGNED)
+
+    manager.updateProperties(view, buildStyles("editable", false))
+    manager.updateProperties(view, buildStyles("keyboardType", "numeric"))
+    manager.updateProperties(view, buildStyles("editable", true))
+    assertThat(view.inputType and generalKeyboardTypeFlags).isEqualTo(numericTypeFlags)
+  }
+
+  @Test
+  fun testNonEditableKeepsMultilineAndSecureText() {
+    manager.updateProperties(view, buildStyles("multiline", true, "editable", false))
+    assertThat(view.isMultiline).isTrue
+
+    manager.updateProperties(view, buildStyles("multiline", false, "secureTextEntry", true))
+    assertThat(view.transformationMethod).isInstanceOf(PasswordTransformationMethod::class.java)
+
+    manager.updateProperties(view, buildStyles("secureTextEntry", false))
+    assertThat(view.transformationMethod).isNotInstanceOf(PasswordTransformationMethod::class.java)
   }
 
   @Test

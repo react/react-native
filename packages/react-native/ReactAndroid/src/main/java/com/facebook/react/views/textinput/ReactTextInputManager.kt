@@ -606,7 +606,7 @@ public open class ReactTextInputManager public constructor() :
 
   @ReactProp(name = "editable", defaultBoolean = true)
   public fun setEditable(view: ReactEditText, editable: Boolean) {
-    view.isEnabled = editable
+    view.isEditable = editable
   }
 
   @ReactProp(name = ViewProps.NUMBER_OF_LINES, defaultInt = 1)
