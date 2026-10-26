@@ -1323,22 +1323,6 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
 }
 @end
 
-/**
- * DEPRECATED!! DO NOT USE
- * Instead use `[_bridge moduleForClass:[RCTImageLoader class]]`
- */
-@implementation RCTBridge (RCTImageLoader)
-
-- (RCTImageLoader *)imageLoader
-{
-  RCTLogWarn(
-      @"Calling bridge.imageLoader is deprecated and will not work in newer versions of RN. Please update to the "
-       "moduleForClass API or turboModuleRegistry API.");
-  return [self moduleForClass:[RCTImageLoader class]];
-}
-
-@end
-
 @implementation RCTBridgeProxy (RCTImageLoader)
 
 - (RCTImageLoader *)imageLoader

@@ -51,6 +51,8 @@ public class ReactVirtualView(context: Context) :
   @VisibleForTesting
   internal fun doAttachedToWindow() {
     scrollView = getScrollView()
+    // Ancestors that are already laid out won't fire onLayoutChange again, so the offset must be
+    // computed here even if this view hasn't had its own layout yet.
     updateParentOffset()
     // onAttachedToWindow is usually called before layout but there are cases where it's called
     // after. If called after, we need to report the updated layout to the VirtualViewContainer

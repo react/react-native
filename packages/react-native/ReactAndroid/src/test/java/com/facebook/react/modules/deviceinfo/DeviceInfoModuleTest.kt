@@ -33,7 +33,6 @@ import com.facebook.testutils.shadows.ShadowNativeMap
 import com.facebook.testutils.shadows.ShadowReadableNativeMap
 import com.facebook.testutils.shadows.ShadowSoLoader
 import com.facebook.testutils.shadows.ShadowWritableNativeMap
-import junit.framework.TestCase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -64,7 +63,7 @@ import org.robolectric.annotation.Config
             ShadowReadableNativeMap::class,
         ],
 )
-class DeviceInfoModuleTest : TestCase() {
+class DeviceInfoModuleTest {
 
   private lateinit var deviceInfoModule: DeviceInfoModule
   private lateinit var fakePortraitDisplayMetrics: WritableMap
@@ -73,7 +72,7 @@ class DeviceInfoModuleTest : TestCase() {
   private lateinit var displayMetricsHolder: MockedStatic<DisplayMetricsHolder>
 
   @Before
-  public override fun setUp() {
+  fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
     fakePortraitDisplayMetrics = JavaOnlyMap()
     fakePortraitDisplayMetrics.putInt("width", 100)

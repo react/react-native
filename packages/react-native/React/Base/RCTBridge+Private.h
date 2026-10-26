@@ -8,7 +8,6 @@
 #import <React/RCTBridge.h>
 
 @class RCTModuleRegistry;
-@protocol RCTJavaScriptExecutor;
 
 #if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXTERN NSArray<Class> *RCTGetModuleClasses(void);
@@ -36,18 +35,13 @@ RCT_EXTERN void RCTRegisterModule(Class);
 /**
  * An object that allows one to require NativeModules/TurboModules.
  * RCTModuleRegistry is implemented in bridgeless mode and bridge mode.
- * Used by RCTRootView.
  */
-@property (nonatomic, strong, readonly) RCTModuleRegistry *moduleRegistry;
+@property (nonatomic, strong, readonly) RCTModuleRegistry *moduleRegistry __deprecated_msg(
+    "Access RCTModuleRegistry directly instead; this property will be removed.");
 
 @end
 
 @interface RCTBridge (RCTCxxBridge)
-
-/**
- * Called on the child bridge to run the executor and start loading.
- */
-- (void)start;
 
 /**
  * Dispatch work to a module's queue - this is also supports the fake RCTJSThread

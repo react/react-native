@@ -288,15 +288,6 @@ RCT_EXPORT_MODULE()
 
 @end
 
-@implementation RCTBridge (RCTWebSocketModule)
-
-- (RCTWebSocketModule *)webSocketModule
-{
-  return [self moduleForClass:[RCTWebSocketModule class]];
-}
-
-@end
-
 @implementation RCTBridgeProxy (RCTWebSocketModule)
 
 - (RCTWebSocketModule *)webSocketModule

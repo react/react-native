@@ -12,9 +12,14 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Outline
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.InsetDrawable
+import android.graphics.drawable.NinePatchDrawable
+import android.graphics.drawable.StateListDrawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -38,6 +43,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
@@ -238,6 +244,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     textAttributes = TextAttributes()
 
     applyTextAttributes()
+    outlineProvider = TextFieldOutlineProvider()
 
     // Turn off hardware acceleration for Oreo (T40484798)
     // see https://issuetracker.google.com/issues/67102093
@@ -1376,6 +1383,35 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
     override fun clearMetaKeyState(view: View, content: Editable, states: Int) {
       keyListener.clearMetaKeyState(view, content, states)
+    }
+  }
+
+  /**
+   * Uses the view bounds as the outline when the padding is below the theme EditText background's
+   * own padding, which would otherwise collapse the outline to a strip through the text.
+   */
+  private class TextFieldOutlineProvider : ViewOutlineProvider() {
+    private val backgroundPadding = Rect()
+
+    override fun getOutline(view: View, outline: Outline) {
+      ViewOutlineProvider.BACKGROUND.getOutline(view, outline)
+      val background = view.background ?: return
+      if (isThemeTextFieldBackground(background) && hasLessPaddingThan(background, view)) {
+        outline.setRect(0, 0, view.width, view.height)
+      }
+    }
+
+    private fun isThemeTextFieldBackground(background: Drawable): Boolean {
+      val selector = (background as? InsetDrawable)?.drawable as? StateListDrawable
+      return selector?.current is NinePatchDrawable
+    }
+
+    private fun hasLessPaddingThan(background: Drawable, view: View): Boolean {
+      background.getPadding(backgroundPadding)
+      return view.paddingLeft < backgroundPadding.left ||
+          view.paddingTop < backgroundPadding.top ||
+          view.paddingRight < backgroundPadding.right ||
+          view.paddingBottom < backgroundPadding.bottom
     }
   }
 

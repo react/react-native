@@ -552,21 +552,6 @@ RCT_EXPORT_MODULE()
 
 #endif // #if RCT_DEV_MENU
 
-@implementation RCTBridge (RCTDevSettings)
-
-- (RCTDevSettings *)devSettings
-{
-#if RCT_REMOTE_PROFILE
-  return [self moduleForClass:[RCTDevSettings class]];
-#elif RCT_DEV_MENU
-  return devSettingsMenuEnabled ? [self moduleForClass:[RCTDevSettings class]] : nil;
-#else
-  return nil;
-#endif
-}
-
-@end
-
 @implementation RCTBridgeProxy (RCTDevSettings)
 
 - (RCTDevSettings *)devSettings
