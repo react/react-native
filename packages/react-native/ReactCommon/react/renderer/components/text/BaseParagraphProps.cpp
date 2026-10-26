@@ -64,7 +64,7 @@ void BaseParagraphProps::setProp(
   // of these fields together, and because there are some collisions between
   // propnames parsed here and outside of ParagraphAttributes.
   // This code is also duplicated in AndroidTextInput.
-  static auto paDefaults = ParagraphAttributes{};
+  static constinit auto paDefaults = ParagraphAttributes{};
   switch (hash) {
     REBUILD_FIELD_SWITCH_CASE(
         paDefaults,

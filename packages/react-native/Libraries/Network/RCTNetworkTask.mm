@@ -21,7 +21,7 @@
   RCTNetworkTask *_selfReference;
 }
 
-static auto currentRequestId = std::atomic<NSUInteger>(0);
+static constinit auto currentRequestId = std::atomic<NSUInteger>(0);
 
 - (instancetype)initWithRequest:(NSURLRequest *)request
                         handler:(id<RCTURLRequestHandler>)handler

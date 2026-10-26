@@ -11,7 +11,7 @@
 #include <mutex>
 
 void initializePerfetto() {
-  static std::once_flag s_PerfettoIsInitialized;
+  static constinit std::once_flag s_PerfettoIsInitialized;
 
   std::call_once(s_PerfettoIsInitialized, []() {
     perfetto::TracingInitArgs args;

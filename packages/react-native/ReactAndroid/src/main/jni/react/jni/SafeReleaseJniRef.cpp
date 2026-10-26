@@ -20,7 +20,7 @@ void ensureThreadDurationJNIEnvAttached() {
   // > exits, and call DetachCurrentThread() from there.
   // https://github.com/facebookincubator/fbjni/blob/7b7efda0d49b956acf1d3307510e3c73fc55b404/cxx/fbjni/detail/Environment.h#L101
   // https://developer.android.com/training/articles/perf-jni#threads
-  static thread_local std::optional<jni::ThreadScope> threadScope;
+  static constinit thread_local std::optional<jni::ThreadScope> threadScope;
 
   if (jni::detail::currentOrNull() == nullptr) {
     threadScope.emplace();

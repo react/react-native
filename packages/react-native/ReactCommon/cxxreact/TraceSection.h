@@ -168,7 +168,7 @@ inline os_log_t instrumentsLogHandle = nullptr;
 
 static inline os_log_t getOrCreateInstrumentsLogHandle()
 {
-  static std::once_flag flag{};
+  static constinit std::once_flag flag{};
   std::call_once(flag, []() {
     if (!instrumentsLogHandle) {
       instrumentsLogHandle = os_log_create("dev.reactnative.instruments", OS_LOG_CATEGORY_DYNAMIC_TRACING);
