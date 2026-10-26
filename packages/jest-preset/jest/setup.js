@@ -63,13 +63,19 @@ Object.defineProperties(global, {
     },
     writable: true,
   },
-  window: {
+});
+
+// Host environments such as jsdom expose a non-configurable Window accessor.
+// Keep that binding, while preserving the writable alias in Node environments.
+const windowDescriptor = Object.getOwnPropertyDescriptor(global, 'window');
+if (windowDescriptor == null || windowDescriptor.configurable) {
+  Object.defineProperty(global, 'window', {
     configurable: true,
     enumerable: true,
     value: global,
     writable: true,
-  },
-});
+  });
+}
 
 // This setup script will be published in the react-native package.
 // Other people might not have prettier installed, so it will crash the mock below.
