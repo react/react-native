@@ -170,7 +170,7 @@ internal class BorderDrawable(
 
   override fun draw(canvas: Canvas) {
     updatePathEffect()
-    computedBorderColors = borderColors?.resolve(layoutDirection, context) ?: computedBorderColors
+    computedBorderColors = borderColors?.resolve(layoutDirection) ?: computedBorderColors
     if (borderRadius?.hasRoundedBorders() == true) {
       drawRoundedBorders(canvas)
     } else {
@@ -547,7 +547,7 @@ internal class BorderDrawable(
   }
 
   private fun computeBorderInsets(): RectF {
-    borderInsets?.resolve(layoutDirection, context)?.let {
+    borderInsets?.resolve(layoutDirection)?.let {
       return RectF(
           if (it.left.isNaN()) 0f else it.left.dpToPx(),
           if (it.top.isNaN()) 0f else it.top.dpToPx(),
@@ -719,7 +719,6 @@ internal class BorderDrawable(
     computedBorderRadius =
         this.borderRadius?.resolve(
             layoutDirection,
-            this.context,
             outerClipTempRectForBorderRadius?.width()?.pxToDp() ?: 0f,
             outerClipTempRectForBorderRadius?.height()?.pxToDp() ?: 0f,
         )

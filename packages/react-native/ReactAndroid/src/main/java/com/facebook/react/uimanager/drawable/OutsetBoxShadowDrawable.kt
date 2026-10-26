@@ -81,7 +81,7 @@ internal class OutsetBoxShadowDrawable(
     val resolutionWidth = bounds.width().toFloat().pxToDp()
     val resolutionHeight = bounds.height().toFloat().pxToDp()
     val computedBorderRadii =
-        borderRadius?.resolve(layoutDirection, context, resolutionWidth, resolutionHeight)?.let {
+        borderRadius?.resolve(layoutDirection, resolutionWidth, resolutionHeight)?.let {
           ComputedBorderRadius(
               topLeft = CornerRadii(it.topLeft.horizontal.dpToPx(), it.topLeft.vertical.dpToPx()),
               topRight =

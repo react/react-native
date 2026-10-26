@@ -1815,7 +1815,6 @@ struct facebook::react::LayoutConstraints {
 struct facebook::react::LayoutContext {
   public Float fontSizeMultiplier;
   public Float pointScaleFactor;
-  public bool swapLeftAndRightInRTL;
   public facebook::react::Point viewportOffset;
   public facebook::react::Size viewportSize;
   public std::vector<const facebook::react::LayoutableShadowNode*>* affectedNodes;
@@ -1825,7 +1824,6 @@ struct facebook::react::LayoutMetrics {
   public Float fontSizeMultiplier;
   public Float pointScaleFactor;
   public bool operator==(const facebook::react::LayoutMetrics& rhs) const = default;
-  public bool wasLeftAndRightSwapped;
   public facebook::react::DisplayType displayType;
   public facebook::react::EdgeInsets borderWidth;
   public facebook::react::EdgeInsets contentInsets;

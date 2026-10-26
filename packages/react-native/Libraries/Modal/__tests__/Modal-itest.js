@@ -19,7 +19,12 @@ import {createRef} from 'react';
 import {Modal} from 'react-native';
 
 const DEFAULT_MODAL_CHILD_VIEW = (
-  <rn-view backgroundColor="rgba(255, 255, 255, 1)" flex="1" left="0" top="0" />
+  <rn-view
+    backgroundColor="rgba(255, 255, 255, 1)"
+    flex="1"
+    start="0"
+    top="0"
+  />
 );
 
 describe('<Modal>', () => {

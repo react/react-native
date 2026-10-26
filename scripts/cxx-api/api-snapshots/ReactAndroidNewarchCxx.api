@@ -2372,7 +2372,7 @@ class facebook::react::SurfaceHandlerBinding : public jni::HybridClass<facebook:
   public static constexpr char* const kJavaDescriptor;
   public static void registerNatives();
   public void setDisplayMode(jint mode);
-  public void setLayoutConstraints(jfloat minWidth, jfloat maxWidth, jfloat minHeight, jfloat maxHeight, jfloat offsetX, jfloat offsetY, jboolean doLeftAndRightSwapInRTL, jboolean isRTL, jfloat pixelDensity, jfloat fontScale);
+  public void setLayoutConstraints(jfloat minWidth, jfloat maxWidth, jfloat minHeight, jfloat maxHeight, jfloat offsetX, jfloat offsetY, jboolean isRTL, jfloat pixelDensity, jfloat fontScale);
   public void setProps(facebook::react::NativeMap* props);
 }
 
@@ -3341,7 +3341,6 @@ struct facebook::react::LayoutConstraints {
 }
 
 struct facebook::react::LayoutContext {
-  public bool swapLeftAndRightInRTL;
   public facebook::react::Float fontSizeMultiplier;
   public facebook::react::Float pointScaleFactor;
   public facebook::react::Point viewportOffset;
@@ -3351,7 +3350,6 @@ struct facebook::react::LayoutContext {
 
 struct facebook::react::LayoutMetrics {
   public bool operator==(const facebook::react::LayoutMetrics& rhs) const = default;
-  public bool wasLeftAndRightSwapped;
   public facebook::react::DisplayType displayType;
   public facebook::react::EdgeInsets borderWidth;
   public facebook::react::EdgeInsets contentInsets;
@@ -4034,14 +4032,6 @@ struct facebook::react::NativeDeviceInfoDeviceInfoConstants {
 }
 
 template <typename P0, typename P1, typename P2>
-struct facebook::react::NativeI18nManagerI18nManagerConstants {
-  public P0 doLeftAndRightSwapInRTL;
-  public P1 isRTL;
-  public P2 localeIdentifier;
-  public bool operator==(const facebook::react::NativeI18nManagerI18nManagerConstants& other) const;
-}
-
-template <typename P0, typename P1, typename P2>
 struct facebook::react::NativeMutationObserverNativeMutationObserverObserveOptions {
   public P0 mutationObserverId;
   public P1 targetShadowNode;
@@ -4076,6 +4066,13 @@ struct facebook::react::NativeBlobModuleConstants {
   public P0 BLOB_URI_SCHEME;
   public P1 BLOB_URI_HOST;
   public bool operator==(const facebook::react::NativeBlobModuleConstants& other) const;
+}
+
+template <typename P0, typename P1>
+struct facebook::react::NativeI18nManagerI18nManagerConstants {
+  public P0 isRTL;
+  public P1 localeIdentifier;
+  public bool operator==(const facebook::react::NativeI18nManagerI18nManagerConstants& other) const;
 }
 
 template <typename P0, typename P1>

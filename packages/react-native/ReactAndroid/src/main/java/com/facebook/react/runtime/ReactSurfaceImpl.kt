@@ -76,7 +76,6 @@ internal constructor(
         MeasureSpec.makeMeasureSpec(displayMetrics.heightPixels, MeasureSpec.AT_MOST),
         0,
         0,
-        doRTLSwap(context),
         isRTL(context),
         displayMetrics.density,
         getFontScale(context),
@@ -186,7 +185,6 @@ internal constructor(
         heightMeasureSpec,
         offsetX,
         offsetY,
-        doRTLSwap(context),
         isRTL(context),
         context.resources.displayMetrics.density,
         getFontScale(context),
@@ -220,8 +218,5 @@ internal constructor(
         if (ReactNativeFeatureFlags.enableFontScaleChangesUpdatingLayout())
             context.resources.configuration.fontScale
         else 1f
-
-    private fun doRTLSwap(context: Context): Boolean =
-        I18nUtil.instance.doLeftAndRightSwapInRTL(context)
   }
 }

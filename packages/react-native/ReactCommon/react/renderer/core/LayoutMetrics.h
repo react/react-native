@@ -34,10 +34,6 @@ struct LayoutMetrics {
   PositionType positionType{PositionType::Relative};
   // See `LayoutDirection` for all possible options.
   LayoutDirection layoutDirection{LayoutDirection::Undefined};
-  // Whether React Native treated cardinal directions as flow-relative
-  // directions due to being laid out in RTL with `doLeftAndRightSwapInRTL`
-  // enabled.
-  bool wasLeftAndRightSwapped{false};
   // Pixel density. Number of device pixels per density-independent pixel.
   Float pointScaleFactor{1.0};
   // Surface font scale this node was last laid out with.

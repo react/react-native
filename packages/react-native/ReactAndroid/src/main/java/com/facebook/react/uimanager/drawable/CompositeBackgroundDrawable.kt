@@ -190,12 +190,11 @@ internal class CompositeBackgroundDrawable(
       val computedBorderRadius =
           borderRadius?.resolve(
               layoutDirection,
-              context,
               bounds.width().toFloat(),
               bounds.height().toFloat(),
           )
 
-      val computedBorderInsets = borderInsets?.resolve(layoutDirection, context)
+      val computedBorderInsets = borderInsets?.resolve(layoutDirection)
 
       val radii =
           computedBorderRadius?.let {

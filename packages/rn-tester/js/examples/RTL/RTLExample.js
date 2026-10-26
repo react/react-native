@@ -15,7 +15,6 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import RNTexterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {
-  Alert,
   Animated,
   Button,
   I18nManager,
@@ -42,8 +41,6 @@ type AnimationState = {
 const SCALE = PixelRatio.get();
 const IMAGE_DIMENSION = 100 * SCALE;
 const IMAGE_SIZE = [IMAGE_DIMENSION, IMAGE_DIMENSION];
-
-const IS_RTL = I18nManager.isRTL;
 
 function ListItem(props: {imageSource: number}) {
   return (
@@ -121,10 +118,10 @@ const IconsExample = withRTLState(({isRTL, setRTL}) => {
             Without directional meaning
           </RNTexterText>
         </View>
-        <View style={styles.rightAlignStyle}>
+        <View style={styles.endAlignStyle}>
           <Image
             source={require('../../assets/poke.png')}
-            style={[styles.image, styles.withRTLStyle]}
+            style={[styles.image, isRTL && styles.flipped]}
           />
           <RNTexterText style={styles.fontSizeExtraSmall}>
             With directional meaning
@@ -171,7 +168,7 @@ function withRTLState(
     constructor(...args) {
       super(...args);
       this.state = {
-        isRTL: IS_RTL,
+        isRTL: I18nManager.isRTL,
       };
     }
 
@@ -211,7 +208,7 @@ class RTLToggleExample extends React.Component<any, RTLToggleState> {
     super(props);
 
     this.state = {
-      isRTL: IS_RTL,
+      isRTL: I18nManager.isRTL,
     };
   }
 
@@ -228,7 +225,7 @@ class RTLToggleExample extends React.Component<any, RTLToggleState> {
           <View style={styles.switchRowSwitchView}>
             <Switch
               onValueChange={this._onDirectionChange}
-              style={styles.rightAlignStyle}
+              style={styles.endAlignStyle}
               value={this.state.isRTL}
             />
           </View>
@@ -240,12 +237,6 @@ class RTLToggleExample extends React.Component<any, RTLToggleState> {
   _onDirectionChange = () => {
     I18nManager.forceRTL(!this.state.isRTL);
     this.setState({isRTL: !this.state.isRTL});
-    Alert.alert(
-      'Reload this page',
-      'Please reload this page to change the UI direction! ' +
-        'All examples in this app will be affected. ' +
-        'Check them out to see what they look like in RTL layout.',
-    );
   };
 }
 
@@ -346,8 +337,8 @@ const PaddingExample = withRTLState(({isRTL, setRTL}) => {
             backgroundColor: 'white',
             paddingTop: 5,
             paddingBottom: 5,
-            borderLeftWidth: 1,
-            borderRightWidth: 1,
+            borderStartWidth: 1,
+            borderEndWidth: 1,
             borderColor: 'gray',
           }}>
           <RTLToggler setRTL={setRTL} isRTL={isRTL} />
@@ -380,8 +371,8 @@ const MarginExample = withRTLState(({isRTL, setRTL}) => {
             paddingBottom: 5,
             marginStart: 50,
             marginEnd: 10,
-            borderLeftWidth: 1,
-            borderRightWidth: 1,
+            borderStartWidth: 1,
+            borderEndWidth: 1,
             borderColor: 'gray',
           }}>
           <RTLToggler setRTL={setRTL} isRTL={isRTL} />
@@ -481,8 +472,8 @@ const BorderColorExample = withRTLState(({isRTL, setRTL}) => {
           style={{
             borderStartColor: 'red',
             borderEndColor: 'green',
-            borderLeftWidth: 20,
-            borderRightWidth: 20,
+            borderStartWidth: 20,
+            borderEndWidth: 20,
             padding: 10,
           }}>
           <View>
@@ -624,16 +615,16 @@ const styles = StyleSheet.create({
   switchRowSwitchView: {
     flex: 3,
   },
-  rightAlignStyle: {
-    right: 10,
+  endAlignStyle: {
+    end: 10,
     position: 'absolute',
   },
   list: {
     height: 120,
     marginBottom: 5,
     borderTopWidth: 0.5,
-    borderLeftWidth: 0.5,
-    borderRightWidth: 0.5,
+    borderStartWidth: 0.5,
+    borderEndWidth: 0.5,
     borderColor: '#e5e5e5',
   },
   row: {
@@ -659,11 +650,11 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#e5e5e5',
   },
-  withRTLStyle: {
-    transform: [{scaleX: IS_RTL ? -1 : 1}],
+  flipped: {
+    transform: [{scaleX: -1}],
   },
   image: {
-    left: 30,
+    start: 30,
     width: 48,
     height: 48,
   },
@@ -693,11 +684,11 @@ const styles = StyleSheet.create({
   fontSizeExtraSmall: {
     fontSize: 8,
   },
-  textAlignLeft: {
-    textAlign: 'left',
+  textAlignStart: {
+    textAlign: 'start',
   },
-  textAlignRight: {
-    textAlign: 'right',
+  textAlignEnd: {
+    textAlign: 'end',
   },
   textBox: {
     width: 28,
@@ -741,34 +732,34 @@ exports.examples = [
     },
   },
   {
-    title: "Using textAlign: 'left'",
+    title: "Using textAlign: 'start'",
     description: ('In iOS/Android, text alignment flips regardless of ' +
       'languages or text content.') as string,
     render: function (): React.MixedElement {
       return (
         <TextAlignmentExample
-          style={[styles.fontSizeSmall, styles.textAlignLeft]}
+          style={[styles.fontSizeSmall, styles.textAlignStart]}
         />
       );
     },
   },
   {
-    title: "Using textAlign: 'right'",
+    title: "Using textAlign: 'end'",
     description: ('In iOS/Android, text alignment flips regardless of ' +
       'languages or text content.') as string,
     render: function (): React.MixedElement {
       return (
         <TextAlignmentExample
-          style={[styles.fontSizeSmall, styles.textAlignRight]}
+          style={[styles.fontSizeSmall, styles.textAlignEnd]}
         />
       );
     },
   },
   {
-    title: "Using textAlign: 'right' for TextInput",
+    title: "Using textAlign: 'end' for TextInput",
     description: 'Flip TextInput direction to RTL' as string,
     render: function (): React.MixedElement {
-      return <TextInputExample style={[styles.textAlignRight]} />;
+      return <TextInputExample style={[styles.textAlignEnd]} />;
     },
   },
   {

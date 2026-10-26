@@ -245,6 +245,7 @@ category RCTSurfacePresenter(Surface) {
   public virtual void setupAnimationDriverWithSurfaceHandler:(const facebook::react::SurfaceHandler& surfaceHandler);
   public virtual void synchronouslyUpdateViewOnUIThread:props:(NSNumber* reactTag, NSDictionary* props);
   public virtual void unregisterSurface:(RCTFabricSurface* surface);
+  public virtual void updateLayoutDirectionOfSurfaces();
 }
 
 category UIImage(React) {
@@ -1166,14 +1167,10 @@ interface RCTI18nManager : public NSObject <RCTBridgeModule> {
 }
 
 interface RCTI18nUtil : public NSObject {
-  public virtual BOOL doLeftAndRightSwapInRTL();
   public virtual BOOL isRTL();
-  public virtual BOOL isRTLAllowed();
   public virtual BOOL isRTLForced();
   public virtual static instancetype sharedInstance();
-  public virtual void allowRTL:(BOOL value);
   public virtual void forceRTL:(BOOL value);
-  public virtual void swapLeftAndRightInRTL:(BOOL value);
 }
 
 interface RCTImageCache : public NSObject <RCTImageCache> {
@@ -2354,11 +2351,9 @@ protocol NativeHeadlessJsTaskSupportSpec : public NSObjectRCTBridgeModule, publi
 }
 
 protocol NativeI18nManagerSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
+  public virtual NSNumber* forceRTL:(BOOL forceRTL);
   public virtual facebook::react::ModuleConstants<JS::NativeI18nManager::Constants> constantsToExport();
   public virtual facebook::react::ModuleConstants<JS::NativeI18nManager::Constants> getConstants();
-  public virtual void allowRTL:(BOOL allowRTL);
-  public virtual void forceRTL:(BOOL forceRTL);
-  public virtual void swapLeftAndRightInRTL:(BOOL flipStyles);
 }
 
 protocol NativeImageEditorSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
@@ -2950,6 +2945,7 @@ protocol RCTSurfacePresenterStub : public NSObject {
   public virtual void addObserver:(id<RCTSurfacePresenterObserver> observer);
   public virtual void removeObserver:(id<RCTSurfacePresenterObserver> observer);
   public virtual void synchronouslyUpdateViewOnUIThread:props:(NSNumber* reactTag, NSDictionary* props);
+  public virtual void updateLayoutDirectionOfSurfaces();
 }
 
 protocol RCTSurfaceProtocol : public NSObject {
@@ -8277,7 +8273,6 @@ struct facebook::react::LayoutConstraints {
 }
 
 struct facebook::react::LayoutContext {
-  public bool swapLeftAndRightInRTL;
   public facebook::react::Float fontSizeMultiplier;
   public facebook::react::Float pointScaleFactor;
   public facebook::react::Point viewportOffset;
@@ -8287,7 +8282,6 @@ struct facebook::react::LayoutContext {
 
 struct facebook::react::LayoutMetrics {
   public bool operator==(const facebook::react::LayoutMetrics& rhs) const = default;
-  public bool wasLeftAndRightSwapped;
   public facebook::react::DisplayType displayType;
   public facebook::react::EdgeInsets borderWidth;
   public facebook::react::EdgeInsets contentInsets;
@@ -9084,14 +9078,6 @@ struct facebook::react::NativeDeviceInfoDeviceInfoConstants {
 }
 
 template <typename P0, typename P1, typename P2>
-struct facebook::react::NativeI18nManagerI18nManagerConstants {
-  public P0 doLeftAndRightSwapInRTL;
-  public P1 isRTL;
-  public P2 localeIdentifier;
-  public bool operator==(const facebook::react::NativeI18nManagerI18nManagerConstants& other) const;
-}
-
-template <typename P0, typename P1, typename P2>
 struct facebook::react::NativeMutationObserverNativeMutationObserverObserveOptions {
   public P0 mutationObserverId;
   public P1 targetShadowNode;
@@ -9134,6 +9120,13 @@ struct facebook::react::NativeBlobModuleConstants {
   public P0 BLOB_URI_SCHEME;
   public P1 BLOB_URI_HOST;
   public bool operator==(const facebook::react::NativeBlobModuleConstants& other) const;
+}
+
+template <typename P0, typename P1>
+struct facebook::react::NativeI18nManagerI18nManagerConstants {
+  public P0 isRTL;
+  public P1 localeIdentifier;
+  public bool operator==(const facebook::react::NativeI18nManagerI18nManagerConstants& other) const;
 }
 
 template <typename P0, typename P1>
@@ -13714,8 +13707,7 @@ struct JS::NativeI18nManager::Constants::Builder {
 }
 
 struct JS::NativeI18nManager::Constants::Builder::Input {
-  protected NSString* localeIdentifier;
-  protected RCTRequired<bool> doLeftAndRightSwapInRTL;
+  protected RCTRequired<NSString*> localeIdentifier;
   protected RCTRequired<bool> isRTL;
 }
 

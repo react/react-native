@@ -821,6 +821,12 @@ public class ReactHostImpl(
     synchronized(attachedSurfaces) { attachedSurfaces.remove(surface) }
   }
 
+  @ThreadConfined(ThreadConfined.UI)
+  internal fun updateLayoutDirectionOfAttachedSurfaces() {
+    val surfaces = synchronized(attachedSurfaces) { attachedSurfaces.toList() }
+    surfaces.forEach { surface -> surface.view?.updateLastLayoutSpecs() }
+  }
+
   internal fun isSurfaceAttached(surface: ReactSurfaceImpl): Boolean =
       synchronized(attachedSurfaces) {
         return attachedSurfaces.contains(surface)

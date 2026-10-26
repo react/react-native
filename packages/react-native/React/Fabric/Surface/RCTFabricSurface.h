@@ -116,6 +116,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (const facebook::react::SurfaceHandler &)surfaceHandler;
 
+/**
+ * Lays out the Surface again with the current layout direction, screen scale
+ * and font size multiplier. Must be called on the main thread.
+ */
+- (void)updateLayoutContext;
+
 @end
 
 @interface RCTFabricSurface (Deprecated)

@@ -68,6 +68,10 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
 
   override fun getSourceURL(): String? = sourceURLRef.get()
 
+  fun updateLayoutDirectionOfAttachedSurfaces() {
+    reactHost.updateLayoutDirectionOfAttachedSurfaces()
+  }
+
   fun setSourceURL(sourceURL: String?) {
     sourceURLRef.set(sourceURL)
   }

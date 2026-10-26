@@ -48,6 +48,8 @@
 	<string>You need to add NSPhotoLibraryUsageDescription key in Info.plist to enable photo library usage, otherwise it is going to *fail silently*!</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<key>RCTSupportsRTL</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -360,8 +360,7 @@ void FabricUIManagerBinding::startSurfaceWithConstraints(
     jfloat maxHeight,
     jfloat offsetX,
     jfloat offsetY,
-    jboolean isRTL,
-    jboolean doLeftAndRightSwapInRTL) {
+    jboolean isRTL) {
   TraceSection s("FabricUIManagerBinding::startSurfaceWithConstraints");
 
   if (enableFabricLogs_) {
@@ -388,7 +387,6 @@ void FabricUIManagerBinding::startSurfaceWithConstraints(
   context.viewportOffset =
       Point{.x = offsetX / pointScaleFactor_, .y = offsetY / pointScaleFactor_};
   context.pointScaleFactor = {pointScaleFactor_};
-  context.swapLeftAndRightInRTL = doLeftAndRightSwapInRTL != 0;
   LayoutConstraints constraints = {};
   constraints.minimumSize = minimumSize;
   constraints.maximumSize = maximumSize;
@@ -514,8 +512,7 @@ void FabricUIManagerBinding::setConstraints(
     jfloat maxHeight,
     jfloat offsetX,
     jfloat offsetY,
-    jboolean isRTL,
-    jboolean doLeftAndRightSwapInRTL) {
+    jboolean isRTL) {
   TraceSection s("FabricUIManagerBinding::setConstraints");
 
   auto scheduler = getScheduler();
@@ -536,7 +533,6 @@ void FabricUIManagerBinding::setConstraints(
   context.viewportOffset =
       Point{.x = offsetX / pointScaleFactor_, .y = offsetY / pointScaleFactor_};
   context.pointScaleFactor = {pointScaleFactor_};
-  context.swapLeftAndRightInRTL = doLeftAndRightSwapInRTL != 0;
   LayoutConstraints constraints = {};
   constraints.minimumSize = minimumSize;
   constraints.maximumSize = maximumSize;

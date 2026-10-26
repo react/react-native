@@ -65,6 +65,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable RCTFabricSurface *)surfaceForRootTag:(ReactTag)rootTag;
 
+/*
+ * Lays out all surfaces again with the current layout direction. Must be called on the main thread.
+ */
+- (void)updateLayoutDirectionOfSurfaces;
+
 - (void)synchronouslyUpdateViewOnUIThread:(NSNumber *)reactTag props:(NSDictionary *)props;
 - (void)schedulerDidSynchronouslyUpdateViewOnUIThread:(ReactTag)tag props:(folly::dynamic)props;
 

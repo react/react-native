@@ -9,7 +9,10 @@
 
 #import <UIKit/UIKit.h>
 
-@implementation RCTI18nUtil
+@implementation RCTI18nUtil {
+  BOOL _isRTLSupported;
+  BOOL _isRTLForced;
+}
 
 + (instancetype)sharedInstance
 {
@@ -17,47 +20,39 @@
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     sharedInstance = [self new];
-    [sharedInstance swapLeftAndRightInRTL:true];
   });
 
   return sharedInstance;
 }
 
+- (instancetype)init
+{
+  if (self = [super init]) {
+    _isRTLSupported = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"RCTSupportsRTL"] boolValue];
+    _isRTLForced = NO;
+  }
+  return self;
+}
+
 /**
  * Check if the app is currently running on an RTL locale.
- * This only happens when the app:
+ * Always false unless `RCTSupportsRTL` is true in Info.plist.
+ * Otherwise, this only happens when the app:
  * - is forcing RTL layout, regardless of the active language (for development purpose)
- * - allows RTL layout when using RTL locale
+ * - or is using an RTL locale
  */
 - (BOOL)isRTL
 {
+  if (!_isRTLSupported) {
+    return NO;
+  }
   if ([self isRTLForced]) {
     return YES;
   }
-  if ([self isRTLAllowed] && [self isApplicationPreferredLanguageRTL]) {
+  if ([self isApplicationPreferredLanguageRTL]) {
     return YES;
   }
   return NO;
-}
-
-/**
- * Should be used very early during app start up
- * Before the bridge is initialized
- * @return whether the app allows RTL layout, default is true
- */
-- (BOOL)isRTLAllowed
-{
-  NSNumber *value = [[NSUserDefaults standardUserDefaults] objectForKey:@"RCTI18nUtil_allowRTL"];
-  if (value == nil) {
-    return YES;
-  }
-  return [value boolValue];
-}
-
-- (void)allowRTL:(BOOL)rtlStatus
-{
-  [[NSUserDefaults standardUserDefaults] setBool:rtlStatus forKey:@"RCTI18nUtil_allowRTL"];
-  [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 /**
@@ -66,25 +61,12 @@
  */
 - (BOOL)isRTLForced
 {
-  BOOL rtlStatus = [[NSUserDefaults standardUserDefaults] boolForKey:@"RCTI18nUtil_forceRTL"];
-  return rtlStatus;
+  return _isRTLForced;
 }
 
 - (void)forceRTL:(BOOL)rtlStatus
 {
-  [[NSUserDefaults standardUserDefaults] setBool:rtlStatus forKey:@"RCTI18nUtil_forceRTL"];
-  [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-- (BOOL)doLeftAndRightSwapInRTL
-{
-  return [[NSUserDefaults standardUserDefaults] boolForKey:@"RCTI18nUtil_makeRTLFlipLeftAndRightStyles"];
-}
-
-- (void)swapLeftAndRightInRTL:(BOOL)value
-{
-  [[NSUserDefaults standardUserDefaults] setBool:value forKey:@"RCTI18nUtil_makeRTLFlipLeftAndRightStyles"];
-  [[NSUserDefaults standardUserDefaults] synchronize];
+  _isRTLForced = rtlStatus;
 }
 
 // Check if the current device language is RTL

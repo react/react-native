@@ -18,11 +18,7 @@
 + (instancetype)sharedInstance;
 
 - (BOOL)isRTL;
-- (BOOL)isRTLAllowed;
-- (void)allowRTL:(BOOL)value;
 - (BOOL)isRTLForced;
 - (void)forceRTL:(BOOL)value;
-- (BOOL)doLeftAndRightSwapInRTL;
-- (void)swapLeftAndRightInRTL:(BOOL)value;
 
 @end

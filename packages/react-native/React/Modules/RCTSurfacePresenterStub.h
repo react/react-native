@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)synchronouslyUpdateViewOnUIThread:(NSNumber *)reactTag props:(NSDictionary *)props;
 - (void)addObserver:(id<RCTSurfacePresenterObserver>)observer;
 - (void)removeObserver:(id<RCTSurfacePresenterObserver>)observer;
+- (void)updateLayoutDirectionOfSurfaces;
 
 @end
 

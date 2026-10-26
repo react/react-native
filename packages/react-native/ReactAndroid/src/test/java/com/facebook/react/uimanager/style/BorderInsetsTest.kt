@@ -7,12 +7,10 @@
 
 package com.facebook.react.uimanager.style
 
-import android.content.Context
 import android.util.LayoutDirection
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -23,7 +21,7 @@ class BorderInsetsTest {
     borderInsets.setBorderWidth(LogicalEdge.ALL, 4f)
     borderInsets.setBorderWidth(LogicalEdge.LEFT, Float.NaN)
 
-    val resolved = borderInsets.resolve(LayoutDirection.LTR, mock<Context>())
+    val resolved = borderInsets.resolve(LayoutDirection.LTR)
 
     assertThat(resolved.left).isEqualTo(4f)
     assertThat(resolved.top).isEqualTo(4f)

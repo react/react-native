@@ -136,8 +136,7 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * ShadowTree has been constructed, but before it has been is laid out or
    * committed.
    */
-  void
-  configureYogaTree(float pointScaleFactor, Float fontSizeMultiplier, YGErrata defaultErrata, bool swapLeftAndRight);
+  void configureYogaTree(float pointScaleFactor, Float fontSizeMultiplier, YGErrata defaultErrata);
 
   /**
    * Return an errata based on a `layoutConformance` prop if given, otherwise
@@ -161,37 +160,6 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
       YGMeasureMode heightMode);
   static float yogaNodeBaselineCallbackConnector(YGNodeConstRef yogaNode, float width, float height);
   static YogaLayoutableShadowNode &shadowNodeFromContext(YGNodeConstRef yogaNode);
-
-#pragma mark - RTL Legacy Autoflip
-
-  /*
-   * Reassigns the following values:
-   * - (left|right) → (start|end)
-   * - margin(Left|Right) → margin(Start|End)
-   * - padding(Left|Right) → padding(Start|End)
-   * - borderTop(Left|Right)Radius → borderTop(Start|End)Radius
-   * - borderBottom(Left|Right)Radius → borderBottom(Start|End)Radius
-   * - border(Left|Right)Width → border(Start|End)Width
-   * - border(Left|Right)Color → border(Start|End)Color
-   * This is neccesarry to be backwards compatible with old renderer, it swaps
-   * the values as well in https://fburl.com/diffusion/kl7bjr3h
-   */
-  void swapStyleLeftAndRight();
-  /*
-   * In shadow node passed as argument, reassigns following values
-   * - borderTop(Left|Right)Radius → borderTop(Start|End)Radius
-   * - borderBottom(Left|Right)Radius → borderBottom(Start|End)Radius
-   * - border(Left|Right)Width → border(Start|End)Width
-   * - border(Left|Right)Color → border(Start|End)Color
-   */
-  void swapLeftAndRightInViewProps();
-  /*
-   * In yoga node passed as argument, reassigns following values
-   * - (left|right) → (start|end)
-   * - margin(Left|Right) → margin(Start|End)
-   * - padding(Left|Right) → padding(Start|End)
-   */
-  void swapLeftAndRightInYogaStyleProps();
 
   /*
    * Combine a base yoga::Style with aliased properties which should be

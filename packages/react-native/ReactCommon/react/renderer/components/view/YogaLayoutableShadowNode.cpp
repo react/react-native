@@ -490,8 +490,7 @@ void YogaLayoutableShadowNode::updateYogaProps() {
 void YogaLayoutableShadowNode::configureYogaTree(
     float pointScaleFactor,
     Float fontSizeMultiplier,
-    YGErrata defaultErrata,
-    bool swapLeftAndRight) {
+    YGErrata defaultErrata) {
   ensureUnsealed();
 
   // Set state on our own Yoga node
@@ -511,11 +510,6 @@ void YogaLayoutableShadowNode::configureYogaTree(
     yogaNode_.markDirtyAndPropagate();
   }
 
-  // TODO: `swapLeftAndRight` modified backing props and cannot be undone
-  if (swapLeftAndRight) {
-    swapStyleLeftAndRight();
-  }
-
   yogaTreeHasBeenConfigured_ = true;
 
   // Recursively propagate the configuration to child nodes. If a child was
@@ -531,7 +525,6 @@ void YogaLayoutableShadowNode::configureYogaTree(
         childLayoutMetrics.pointScaleFactor == pointScaleFactor &&
         floatEquality(
             childLayoutMetrics.fontSizeMultiplier, fontSizeMultiplier) &&
-        childLayoutMetrics.wasLeftAndRightSwapped == swapLeftAndRight &&
         childErrata == child.resolveErrata(errata)) {
       continue;
     }
@@ -539,13 +532,10 @@ void YogaLayoutableShadowNode::configureYogaTree(
     if (doesOwn(child)) {
       auto& mutableChild = const_cast<YogaLayoutableShadowNode&>(child);
       mutableChild.configureYogaTree(
-          pointScaleFactor,
-          fontSizeMultiplier,
-          child.resolveErrata(errata),
-          swapLeftAndRight);
+          pointScaleFactor, fontSizeMultiplier, child.resolveErrata(errata));
     } else {
       cloneChildInPlace(i).configureYogaTree(
-          pointScaleFactor, fontSizeMultiplier, errata, swapLeftAndRight);
+          pointScaleFactor, fontSizeMultiplier, errata);
     }
   }
 }
@@ -647,16 +637,12 @@ void YogaLayoutableShadowNode::layoutTree(
 
   TraceSection s1("YogaLayoutableShadowNode::layoutTree");
 
-  bool swapLeftAndRight = layoutContext.swapLeftAndRightInRTL &&
-      layoutConstraints.layoutDirection == LayoutDirection::RightToLeft;
-
   {
     TraceSection s2("YogaLayoutableShadowNode::configureYogaTree");
     configureYogaTree(
         layoutContext.pointScaleFactor,
         layoutContext.fontSizeMultiplier,
-        YGErrataAll /*defaultErrata*/,
-        swapLeftAndRight);
+        YGErrataAll /*defaultErrata*/);
   }
 
   auto minimumSize = layoutConstraints.minimumSize;
@@ -721,7 +707,6 @@ void YogaLayoutableShadowNode::layoutTree(
     auto layoutMetrics = layoutMetricsFromYogaNode(yogaNode_);
     layoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
     layoutMetrics.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
-    layoutMetrics.wasLeftAndRightSwapped = swapLeftAndRight;
     setLayoutMetrics(layoutMetrics);
     yogaNode_.setHasNewLayout(false);
   }
@@ -769,9 +754,6 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       auto newLayoutMetrics = layoutMetricsFromYogaNode(*childYogaNode);
       newLayoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
       newLayoutMetrics.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
-      newLayoutMetrics.wasLeftAndRightSwapped =
-          layoutContext.swapLeftAndRightInRTL &&
-          newLayoutMetrics.layoutDirection == LayoutDirection::RightToLeft;
 
       // Child node's layout has changed. When a node is added to
       // `affectedNodes`, onLayout event is called on the component. Comparing
@@ -961,114 +943,6 @@ yoga::Config& YogaLayoutableShadowNode::initializeYogaConfig(
   }
 
   return config;
-}
-
-#pragma mark - RTL left and right swapping
-
-void YogaLayoutableShadowNode::swapStyleLeftAndRight() {
-  ensureUnsealed();
-
-  swapLeftAndRightInYogaStyleProps();
-  swapLeftAndRightInViewProps();
-}
-
-void YogaLayoutableShadowNode::swapLeftAndRightInYogaStyleProps() {
-  auto yogaStyle = yogaNode_.style();
-
-  // Swap Yoga node values, position, padding and margin.
-
-  if (yogaStyle.position(yoga::Edge::Left).isDefined()) {
-    yogaStyle.setPosition(
-        yoga::Edge::Start, yogaStyle.position(yoga::Edge::Left));
-    yogaStyle.setPosition(yoga::Edge::Left, yoga::StyleLength::undefined());
-  }
-
-  if (yogaStyle.position(yoga::Edge::Right).isDefined()) {
-    yogaStyle.setPosition(
-        yoga::Edge::End, yogaStyle.position(yoga::Edge::Right));
-    yogaStyle.setPosition(yoga::Edge::Right, yoga::StyleLength::undefined());
-  }
-
-  if (yogaStyle.padding(yoga::Edge::Left).isDefined()) {
-    yogaStyle.setPadding(
-        yoga::Edge::Start, yogaStyle.padding(yoga::Edge::Left));
-    yogaStyle.setPadding(yoga::Edge::Left, yoga::StyleLength::undefined());
-  }
-
-  if (yogaStyle.padding(yoga::Edge::Right).isDefined()) {
-    yogaStyle.setPadding(yoga::Edge::End, yogaStyle.padding(yoga::Edge::Right));
-    yogaStyle.setPadding(yoga::Edge::Right, yoga::StyleLength::undefined());
-  }
-
-  if (yogaStyle.margin(yoga::Edge::Left).isDefined()) {
-    yogaStyle.setMargin(yoga::Edge::Start, yogaStyle.margin(yoga::Edge::Left));
-    yogaStyle.setMargin(yoga::Edge::Left, yoga::StyleLength::undefined());
-  }
-
-  if (yogaStyle.margin(yoga::Edge::Right).isDefined()) {
-    yogaStyle.setMargin(yoga::Edge::End, yogaStyle.margin(yoga::Edge::Right));
-    yogaStyle.setMargin(yoga::Edge::Right, yoga::StyleLength::undefined());
-  }
-
-  if (yogaStyle.border(yoga::Edge::Left).isDefined()) {
-    yogaStyle.setBorder(yoga::Edge::Start, yogaStyle.border(yoga::Edge::Left));
-    yogaStyle.setBorder(yoga::Edge::Left, yoga::StyleLength::undefined());
-  }
-
-  if (yogaStyle.border(yoga::Edge::Right).isDefined()) {
-    yogaStyle.setBorder(yoga::Edge::End, yogaStyle.border(yoga::Edge::Right));
-    yogaStyle.setBorder(yoga::Edge::Right, yoga::StyleLength::undefined());
-  }
-
-  yogaNode_.setStyle(yogaStyle);
-}
-
-void YogaLayoutableShadowNode::swapLeftAndRightInViewProps() {
-  if (auto viewShadowNode = dynamic_cast<ViewShadowNode*>(this)) {
-    // TODO: Do not mutate props directly.
-    auto& props = const_cast<ViewProps&>(viewShadowNode->getConcreteProps());
-
-    // Swap border node values, borderRadii, borderColors and borderStyles.
-    if (props.borderRadii.topLeft.has_value()) {
-      props.borderRadii.topStart = props.borderRadii.topLeft;
-      props.borderRadii.topLeft.reset();
-    }
-
-    if (props.borderRadii.bottomLeft.has_value()) {
-      props.borderRadii.bottomStart = props.borderRadii.bottomLeft;
-      props.borderRadii.bottomLeft.reset();
-    }
-
-    if (props.borderRadii.topRight.has_value()) {
-      props.borderRadii.topEnd = props.borderRadii.topRight;
-      props.borderRadii.topRight.reset();
-    }
-
-    if (props.borderRadii.bottomRight.has_value()) {
-      props.borderRadii.bottomEnd = props.borderRadii.bottomRight;
-      props.borderRadii.bottomRight.reset();
-    }
-
-    if (props.borderColors.left.has_value()) {
-      props.borderColors.start = props.borderColors.left;
-      props.borderColors.left.reset();
-    }
-
-    if (props.borderColors.right.has_value()) {
-      props.borderColors.end = props.borderColors.right;
-      props.borderColors.right.reset();
-    }
-
-    if (props.borderStyles.left.has_value()) {
-      props.borderStyles.start = props.borderStyles.left;
-      props.borderStyles.left.reset();
-    }
-
-    if (props.borderStyles.right.has_value()) {
-      props.borderStyles.end = props.borderStyles.right;
-      props.borderStyles.right.reset();
-    }
-  }
 }
 
 #pragma mark - Consistency Ensuring Helpers

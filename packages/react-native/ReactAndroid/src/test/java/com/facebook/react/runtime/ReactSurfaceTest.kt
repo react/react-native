@@ -128,7 +128,7 @@ class ReactSurfaceTest {
     reactSurface.attach(reactHost)
     reactSurface.updateLayoutSpecs(measureSpecWidth, measureSpecHeight, 2, 3)
     verify(surfaceHandler)
-        .setLayoutConstraints(measureSpecWidth, measureSpecHeight, 2, 3, true, false, 1.0f, 1.0f)
+        .setLayoutConstraints(measureSpecWidth, measureSpecHeight, 2, 3, false, 1.0f, 1.0f)
   }
 
   @Test
