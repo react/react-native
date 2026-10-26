@@ -144,11 +144,18 @@ manifests. On the next build the phase re-syncs when a watched **file** is newer
 than the last sync, a watched **dir** has a newer child, or a watched path has
 **vanished** (a rename forces a re-sync so the config error surfaces).
 
+A watched path that does not exist yet is watched for **appearing**. When it is
+created, the next build re-syncs. So a plugin that builds precompiled modules
+should list their output folder, even when a fresh clone does not have it yet.
+List only folders that the Xcode build itself does not write to, or every build
+re-syncs.
+
 Unlike `flavoredFrameworks`, watch paths are best-effort: a non-array is ignored
 with a warning (never fatal), and each non-string / empty / **relative** entry
 is dropped with a warning. Absolute-only, because the generated phase tests
-these paths with no cwd context. The kept paths are folded into
-`<outputDir>/.spm-sync-watch-paths` alongside RN's own, then deduped and sorted.
+these paths with no cwd context. The kept paths are folded in with RN's own,
+deduped, and sorted: paths that exist go to `<outputDir>/.spm-sync-watch-paths`,
+and paths that do not exist yet go to `<outputDir>/.spm-sync-watch-absent`.
 
 ### `scriptPhases` — build-time shell phases on the app target
 
