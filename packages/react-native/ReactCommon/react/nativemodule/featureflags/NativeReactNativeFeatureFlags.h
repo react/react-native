@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<90f271ea47f91e6a84979209b7b3d816>>
+ * @generated SignedSource<<c5c567ecabac9981955c2d094c03e52a>>
  */
 
 /**
@@ -159,6 +159,8 @@ class NativeReactNativeFeatureFlags
   bool fixBorderlessRippleAndroid(jsi::Runtime& runtime);
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
+
+  bool fixTextInlineViewLineHeight(jsi::Runtime& runtime);
 
   bool fixTextLayoutOnPixelDensityChange(jsi::Runtime& runtime);
 

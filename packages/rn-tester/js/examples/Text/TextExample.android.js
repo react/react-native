@@ -1768,6 +1768,13 @@ const examples = [
     },
   },
   {
+    title: 'Inline views with line height',
+    name: 'inlineViewsLineHeight',
+    render(): React.Node {
+      return <TextInlineView.ChangeLineHeight />;
+    },
+  },
+  {
     title: 'Inline views with multiple nested texts',
     name: 'inlineViewsMultiple',
     render(): React.Node {
