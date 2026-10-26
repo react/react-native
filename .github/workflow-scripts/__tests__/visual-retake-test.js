@@ -13,9 +13,10 @@ const {
   flowsTaking,
   judgeRetakes,
   retakeCandidates,
+  retakeScreenshots,
   screenshotIds,
 } = require('../visual/retake');
-const {ANDROID_ENVIRONMENT} = require('./__fixtures__/visual');
+const {ANDROID_ENVIRONMENT, SHA_A} = require('./__fixtures__/visual');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -26,6 +27,11 @@ const baselineManifest = {
     {id: 'switch/basic/toggled', sha256: 'b'},
   ],
 };
+
+const BUNNY = path.join(
+  __dirname,
+  '../../../packages/rn-tester/js/assets/bunny.png',
+);
 
 const images = [
   {id: 'switch/basic/default', sha256: 'a'},
@@ -108,12 +114,56 @@ describe('visual retake', () => {
     ).toEqual(unstable);
   });
 
+  test('retakes every screenshot when the environment has no baseline', async () => {
+    // The repo's Jest config fakes timers, and the retake waits on one.
+    jest.useRealTimers();
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'visual-test-'));
+    const fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response(null, {status: 404}));
+    try {
+      const outputDir = path.join(directory, 'out');
+      const png = fs.readFileSync(BUNNY);
+      const write = (dir, id, contents) => {
+        fs.mkdirSync(path.join(dir, path.dirname(id)), {recursive: true});
+        fs.writeFileSync(path.join(dir, `${id}.png`), contents);
+      };
+      write(outputDir, 'view/basic/default', png);
+      write(outputDir, 'view/basic/flaky', png);
+      const flow = path.join(directory, 'view.yml');
+      fs.writeFileSync(
+        flow,
+        [
+          '- takeScreenshot: ${VISUAL_OUTPUT_DIR}/view/basic/default',
+          '- takeScreenshot: ${VISUAL_OUTPUT_DIR}/view/basic/flaky',
+        ].join('\n'),
+      );
+      const runFlows = jest.fn((flows, retakeDir) => {
+        write(retakeDir, 'view/basic/default', png);
+        write(retakeDir, 'view/basic/flaky', Buffer.concat([png, png]));
+      });
+      const {unstable} = await retakeScreenshots({
+        platform: 'android',
+        environment: ANDROID_ENVIRONMENT,
+        flows: [flow],
+        outputDir,
+        publicBaseUrl: 'https://storage.example',
+        runFlows,
+        candidateShas: [SHA_A],
+        delayMs: 0,
+      });
+      expect(runFlows).toHaveBeenCalledWith([flow], `${outputDir}-retake`);
+      expect(unstable).toEqual(['view/basic/flaky']);
+    } finally {
+      fetchSpy.mockRestore();
+      fs.rmSync(directory, {recursive: true, force: true});
+    }
+  });
+
   test('marks unstable screenshots in the manifest', () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'visual-test-'));
     try {
-      const png = fs.readFileSync(
-        path.join(__dirname, '../../../packages/rn-tester/js/assets/bunny.png'),
-      );
+      const png = fs.readFileSync(BUNNY);
       for (const id of ['view/basic/default', 'view/basic/flaky']) {
         fs.mkdirSync(path.join(directory, path.dirname(id)), {recursive: true});
         fs.writeFileSync(path.join(directory, `${id}.png`), png);

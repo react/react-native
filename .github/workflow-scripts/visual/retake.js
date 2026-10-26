@@ -18,7 +18,8 @@
  *   replaces it only if the retake matches the baseline. A real change
  *   differs both times and is kept.
  * - A screenshot with no baseline is retaken, and is unstable unless both
- *   captures are identical. Compare doesn't publish unstable screenshots as
+ *   captures are identical. With no baseline for the environment at all,
+ *   that's every screenshot. Compare doesn't publish unstable screenshots as
  *   the baseline, so a new test's first baseline is one that was captured
  *   the same way twice.
  *
@@ -120,6 +121,7 @@ async function retakeScreenshots({
   publicBaseUrl,
   runFlows,
   candidateShas = baselineCandidates(),
+  delayMs = RETAKE_DELAY_MS,
 }) {
   const {environmentKey, images} = buildManifest({
     captureDir: outputDir,
@@ -132,13 +134,8 @@ async function retakeScreenshots({
     environmentKey,
     candidateShas,
   });
-  if (baseline == null) {
-    return {
-      unstable: [],
-      lines: [`No baseline for \`${environmentKey}\`, so nothing was retaken.`],
-    };
-  }
-  const {changed, added} = retakeCandidates(images, baseline.manifest);
+  const baselineManifest = baseline?.manifest ?? {images: []};
+  const {changed, added} = retakeCandidates(images, baselineManifest);
   if (changed.length === 0 && added.length === 0) {
     return {unstable: [], lines: []};
   }
@@ -146,7 +143,7 @@ async function retakeScreenshots({
   const retakeDir = `${outputDir}-retake`;
   fs.rmSync(retakeDir, {recursive: true, force: true});
   fs.mkdirSync(retakeDir, {recursive: true});
-  await new Promise(resolve => setTimeout(resolve, RETAKE_DELAY_MS));
+  await new Promise(resolve => setTimeout(resolve, delayMs));
   runFlows(flowsTaking(flows, [...changed, ...added]), retakeDir);
 
   const retakePath = id => path.join(retakeDir, `${id}.png`);
@@ -154,7 +151,7 @@ async function retakeScreenshots({
     changed,
     added,
     images,
-    baselineManifest: baseline.manifest,
+    baselineManifest,
     retakeSha: id =>
       fs.existsSync(retakePath(id))
         ? sha256(fs.readFileSync(retakePath(id)))
@@ -166,7 +163,9 @@ async function retakeScreenshots({
   fs.rmSync(retakeDir, {recursive: true, force: true});
 
   const lines = [
-    `Retook ${changed.length + added.length} screenshot(s) against the baseline at \`${baseline.sha.slice(0, 12)}\`:`,
+    baseline == null
+      ? `Retook ${added.length} screenshot(s), with no baseline for \`${environmentKey}\`:`
+      : `Retook ${changed.length + added.length} screenshot(s) against the baseline at \`${baseline.sha.slice(0, 12)}\`:`,
     ...changed.map(
       id =>
         `- \`${id}\`: ${replaced.includes(id) ? 'matched the baseline on the retake, replaced' : 'differed again, kept'}`,
