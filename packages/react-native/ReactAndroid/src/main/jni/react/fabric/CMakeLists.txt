@@ -48,6 +48,7 @@ target_link_libraries(
         react_renderer_textlayoutmanager
         react_renderer_uimanager
         react_renderer_uimanager_consistency
+        rrc_keyboardavoidingview
         rrc_legacyviewmanagerinterop
         react_utils
         reactnativejni

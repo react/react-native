@@ -33,6 +33,7 @@ target_link_libraries(react_newarchdefaults
         react_renderer_componentregistry
         react_renderer_textlayoutmanager
         rrc_image
+        rrc_keyboardavoidingview
         rrc_modal
         rrc_progressbar
         rrc_safeareaview

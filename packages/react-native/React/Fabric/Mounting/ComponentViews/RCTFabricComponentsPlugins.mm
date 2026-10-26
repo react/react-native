@@ -21,6 +21,7 @@ Class<RCTComponentViewProtocol> RCTFabricComponentsProvider(const char *name) {
     {"ActivityIndicatorView", RCTActivityIndicatorViewCls},
     {"DebuggingOverlay", RCTDebuggingOverlayCls},
     {"InputAccessoryView", RCTInputAccessoryCls},
+    {"KeyboardAvoidingView", RCTKeyboardAvoidingViewCls},
     {"Paragraph", RCTParagraphCls},
     {"PullToRefreshView", RCTPullToRefreshViewCls},
     {"SafeAreaView", RCTSafeAreaViewCls},

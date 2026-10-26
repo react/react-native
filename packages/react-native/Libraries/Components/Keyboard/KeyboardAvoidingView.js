@@ -16,9 +16,13 @@ import type {
 } from '../View/ViewPropTypes';
 import type {KeyboardEvent, KeyboardMetrics} from './Keyboard';
 
+import KeyboardAvoidingViewNativeComponent from '../../../src/private/components/keyboardavoidingview/specs/KeyboardAvoidingViewNativeComponent';
+import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import LayoutAnimation from '../../LayoutAnimation/LayoutAnimation';
 import StyleSheet from '../../StyleSheet/StyleSheet';
+import NativeDeviceInfo from '../../Utilities/NativeDeviceInfo';
 import Platform from '../../Utilities/Platform';
+import warnOnce from '../../Utilities/warnOnce';
 import {type EventSubscription} from '../../vendor/emitter/EventEmitter';
 import AccessibilityInfo from '../AccessibilityInfo/AccessibilityInfo';
 import View from '../View/View';
@@ -45,6 +49,15 @@ type KeyboardAvoidingViewPropsCore = Readonly<{
   enabled?: ?boolean,
 
   /**
+   * Follow the keyboard animation natively, frame by frame.
+   * Requires the `useSharedAnimatedBackend` feature flag and an edge-to-edge
+   * app; otherwise, this prop has no effect.
+   *
+   * @default `false`
+   */
+  experimental_native?: ?boolean,
+
+  /**
    * Distance between the top of the user screen and the React Native view,
    * may be non-zero in some use cases.
    *
@@ -62,6 +75,46 @@ export type KeyboardAvoidingViewProps = Readonly<{
 type KeyboardAvoidingViewState = {
   bottom: number,
 };
+
+function getIsNativeSupported(): boolean {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  if (!ReactNativeFeatureFlags.useSharedAnimatedBackend()) {
+    if (__DEV__) {
+      warnOnce(
+        'KeyboardAvoidingView-experimental_native-flag',
+        'KeyboardAvoidingView: `experimental_native` has no effect because ' +
+          'the `useSharedAnimatedBackend` feature flag is disabled.',
+      );
+    }
+    return false;
+  }
+  if (
+    Platform.OS === 'android' &&
+    NativeDeviceInfo.getConstants().isEdgeToEdge !== true
+  ) {
+    if (__DEV__) {
+      warnOnce(
+        'KeyboardAvoidingView-experimental_native-edge-to-edge',
+        'KeyboardAvoidingView: `experimental_native` has no effect because ' +
+          'the app is not edge-to-edge.',
+      );
+    }
+    return false;
+  }
+  return true;
+}
+
+let isNativeSupported: ?boolean = null;
+
+function shouldUseNative(props: KeyboardAvoidingViewProps): boolean {
+  if (props.experimental_native !== true || props.behavior == null) {
+    return false;
+  }
+  if (isNativeSupported == null) {
+    isNativeSupported = getIsNativeSupported();
+  }
+  return isNativeSupported;
+}
 
 /**
  * Automatically adjusts its height, position, or bottom padding based on the
@@ -161,6 +214,10 @@ class KeyboardAvoidingView extends React.Component<
   };
 
   _updateBottomIfNecessary = async () => {
+    if (shouldUseNative(this.props)) {
+      return;
+    }
+
     if (this._keyboardEvent == null) {
       this._setBottom(0);
       return;
@@ -196,12 +253,36 @@ class KeyboardAvoidingView extends React.Component<
     if (enabled && this._bottom !== prevState.bottom) {
       this.setState({bottom: this._bottom});
     }
+    this._updateSubscriptions();
   }
 
   componentDidMount(): void {
     if (!Keyboard.isVisible()) {
       this._keyboardEvent = null;
       this._setBottom(0);
+    }
+    this._updateSubscriptions();
+  }
+
+  // Only the JavaScript implementation needs keyboard events.
+  _updateSubscriptions(): void {
+    const shouldSubscribe = !shouldUseNative(this.props);
+
+    if (shouldSubscribe === this._subscriptions.length > 0) {
+      return;
+    }
+
+    if (!shouldSubscribe) {
+      this._subscriptions.forEach(subscription => {
+        subscription.remove();
+      });
+      this._subscriptions = [];
+      // The last event goes stale while unsubscribed.
+      this._keyboardEvent = null;
+      if (this._bottom !== 0) {
+        this._setBottom(0);
+      }
+      return;
     }
 
     if (Platform.OS === 'ios') {
@@ -235,12 +316,47 @@ class KeyboardAvoidingView extends React.Component<
       children,
       contentContainerStyle,
       enabled = true,
-      // eslint-disable-next-line no-unused-vars
+      experimental_native,
       keyboardVerticalOffset = 0,
       style,
       onLayout,
       ...props
     } = this.props;
+
+    if (shouldUseNative(this.props)) {
+      if (behavior === 'position') {
+        return (
+          <View
+            ref={this.viewRef}
+            style={style}
+            onLayout={onLayout}
+            collapsable={false}
+            {...props}>
+            <KeyboardAvoidingViewNativeComponent
+              behavior="position"
+              enabled={enabled === true}
+              keyboardVerticalOffset={keyboardVerticalOffset}
+              style={contentContainerStyle}>
+              {children}
+            </KeyboardAvoidingViewNativeComponent>
+          </View>
+        );
+      }
+
+      return (
+        <KeyboardAvoidingViewNativeComponent
+          ref={this.viewRef}
+          behavior={behavior}
+          enabled={enabled === true}
+          keyboardVerticalOffset={keyboardVerticalOffset}
+          style={style}
+          onLayout={onLayout}
+          {...props}>
+          {children}
+        </KeyboardAvoidingViewNativeComponent>
+      );
+    }
+
     const bottomHeight = enabled === true ? this.state.bottom : 0;
     switch (behavior) {
       case 'height':
