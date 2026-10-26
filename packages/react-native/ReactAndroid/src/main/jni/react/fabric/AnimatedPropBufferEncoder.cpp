@@ -9,10 +9,13 @@
 
 #include <folly/Conv.h>
 #include <react/renderer/animationbackend/AnimatedPropsSerializer.h>
+#include <array>
 #include <numbers>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 
 namespace facebook::react {
 
@@ -87,74 +90,110 @@ constexpr int CMD_TRANSFORM_PERSPECTIVE = 112;
 constexpr int CMD_UNIT_PX = 202;
 constexpr int CMD_UNIT_PERCENT = 203;
 
-std::optional<int> propNameToCommand(const std::string& name) {
-  static const std::unordered_map<std::string_view, int> kMap = {
-      {"opacity", CMD_OPACITY},
-      {"elevation", CMD_ELEVATION},
-      {"zIndex", CMD_Z_INDEX},
-      {"shadowOpacity", CMD_SHADOW_OPACITY},
-      {"shadowRadius", CMD_SHADOW_RADIUS},
-      {"backgroundColor", CMD_BACKGROUND_COLOR},
-      {"color", CMD_COLOR},
-      {"tintColor", CMD_TINT_COLOR},
-      {"placeholderTextColor", CMD_PLACEHOLDER_TEXT_COLOR},
-      {"shadowColor", CMD_SHADOW_COLOR},
-      {"borderRadius", CMD_BORDER_RADIUS},
-      {"borderTopLeftRadius", CMD_BORDER_TOP_LEFT_RADIUS},
-      {"borderTopRightRadius", CMD_BORDER_TOP_RIGHT_RADIUS},
-      {"borderTopStartRadius", CMD_BORDER_TOP_START_RADIUS},
-      {"borderTopEndRadius", CMD_BORDER_TOP_END_RADIUS},
-      {"borderBottomLeftRadius", CMD_BORDER_BOTTOM_LEFT_RADIUS},
-      {"borderBottomRightRadius", CMD_BORDER_BOTTOM_RIGHT_RADIUS},
-      {"borderBottomStartRadius", CMD_BORDER_BOTTOM_START_RADIUS},
-      {"borderBottomEndRadius", CMD_BORDER_BOTTOM_END_RADIUS},
-      {"borderStartStartRadius", CMD_BORDER_START_START_RADIUS},
-      {"borderStartEndRadius", CMD_BORDER_START_END_RADIUS},
-      {"borderEndStartRadius", CMD_BORDER_END_START_RADIUS},
-      {"borderEndEndRadius", CMD_BORDER_END_END_RADIUS},
-      {"borderColor", CMD_BORDER_COLOR},
-      {"borderTopColor", CMD_BORDER_TOP_COLOR},
-      {"borderBottomColor", CMD_BORDER_BOTTOM_COLOR},
-      {"borderLeftColor", CMD_BORDER_LEFT_COLOR},
-      {"borderRightColor", CMD_BORDER_RIGHT_COLOR},
-      {"borderStartColor", CMD_BORDER_START_COLOR},
-      {"borderEndColor", CMD_BORDER_END_COLOR},
-      {"borderBlockColor", CMD_BORDER_BLOCK_COLOR},
-      {"borderBlockStartColor", CMD_BORDER_BLOCK_START_COLOR},
-      {"borderBlockEndColor", CMD_BORDER_BLOCK_END_COLOR},
-      {"outlineColor", CMD_OUTLINE_COLOR},
-      {"outlineOffset", CMD_OUTLINE_OFFSET},
-      {"outlineWidth", CMD_OUTLINE_WIDTH},
-      {"transform", CMD_START_OF_TRANSFORM},
-  };
-  auto it = kMap.find(name);
-  if (it == kMap.end()) {
+using CommandEntry = std::pair<std::string_view, int>;
+
+// Group by name length so lookup only scans a small set of candidates.
+template <size_t MaxLength>
+constexpr auto indexCommandLengths(std::span<const CommandEntry> entries) {
+  std::array<std::span<const CommandEntry>, MaxLength + 1> index{};
+  size_t start = 0;
+  for (size_t length = 0; length < index.size(); ++length) {
+    auto end = start;
+    while (end < entries.size() && entries[end].first.size() == length) {
+      ++end;
+    }
+    index[length] = entries.subspan(start, end - start);
+    start = end;
+  }
+  return index;
+}
+
+std::optional<int> findCommand(
+    std::string_view name,
+    std::span<const std::span<const CommandEntry>> index) {
+  if (name.size() >= index.size()) {
     return std::nullopt;
   }
-  return it->second;
+  for (const auto& [key, command] : index[name.size()]) {
+    if (key == name) {
+      return command;
+    }
+  }
+  return std::nullopt;
+}
+
+std::optional<int> propNameToCommand(const std::string& name) {
+  static constexpr std::array<CommandEntry, 37> kMap{{
+      {"color", CMD_COLOR},
+      {"zIndex", CMD_Z_INDEX},
+      {"opacity", CMD_OPACITY},
+      {"elevation", CMD_ELEVATION},
+      {"tintColor", CMD_TINT_COLOR},
+      {"transform", CMD_START_OF_TRANSFORM},
+      {"borderColor", CMD_BORDER_COLOR},
+      {"shadowColor", CMD_SHADOW_COLOR},
+      {"borderRadius", CMD_BORDER_RADIUS},
+      {"outlineColor", CMD_OUTLINE_COLOR},
+      {"outlineWidth", CMD_OUTLINE_WIDTH},
+      {"shadowRadius", CMD_SHADOW_RADIUS},
+      {"outlineOffset", CMD_OUTLINE_OFFSET},
+      {"shadowOpacity", CMD_SHADOW_OPACITY},
+      {"borderEndColor", CMD_BORDER_END_COLOR},
+      {"borderTopColor", CMD_BORDER_TOP_COLOR},
+      {"backgroundColor", CMD_BACKGROUND_COLOR},
+      {"borderLeftColor", CMD_BORDER_LEFT_COLOR},
+      {"borderBlockColor", CMD_BORDER_BLOCK_COLOR},
+      {"borderRightColor", CMD_BORDER_RIGHT_COLOR},
+      {"borderStartColor", CMD_BORDER_START_COLOR},
+      {"borderBottomColor", CMD_BORDER_BOTTOM_COLOR},
+      {"borderEndEndRadius", CMD_BORDER_END_END_RADIUS},
+      {"borderTopEndRadius", CMD_BORDER_TOP_END_RADIUS},
+      {"borderBlockEndColor", CMD_BORDER_BLOCK_END_COLOR},
+      {"borderTopLeftRadius", CMD_BORDER_TOP_LEFT_RADIUS},
+      {"borderEndStartRadius", CMD_BORDER_END_START_RADIUS},
+      {"borderStartEndRadius", CMD_BORDER_START_END_RADIUS},
+      {"borderTopRightRadius", CMD_BORDER_TOP_RIGHT_RADIUS},
+      {"borderTopStartRadius", CMD_BORDER_TOP_START_RADIUS},
+      {"placeholderTextColor", CMD_PLACEHOLDER_TEXT_COLOR},
+      {"borderBlockStartColor", CMD_BORDER_BLOCK_START_COLOR},
+      {"borderBottomEndRadius", CMD_BORDER_BOTTOM_END_RADIUS},
+      {"borderBottomLeftRadius", CMD_BORDER_BOTTOM_LEFT_RADIUS},
+      {"borderStartStartRadius", CMD_BORDER_START_START_RADIUS},
+      {"borderBottomRightRadius", CMD_BORDER_BOTTOM_RIGHT_RADIUS},
+      {"borderBottomStartRadius", CMD_BORDER_BOTTOM_START_RADIUS},
+  }};
+  static constexpr auto kIndex =
+      indexCommandLengths<kMap.back().first.size()>(kMap);
+  static_assert(
+      kIndex.back().data() ==
+          std::span<const CommandEntry>{kMap}.last(kIndex.back().size()).data(),
+      "Command entries must be sorted by name length");
+  return findCommand(name, kIndex);
 }
 
 std::optional<int> transformNameToCommand(const std::string& name) {
-  static const std::unordered_map<std::string_view, int> kMap = {
-      {"translateX", CMD_TRANSFORM_TRANSLATE_X},
-      {"translateY", CMD_TRANSFORM_TRANSLATE_Y},
+  static constexpr std::array<CommandEntry, 13> kMap{{
       {"scale", CMD_TRANSFORM_SCALE},
-      {"scaleX", CMD_TRANSFORM_SCALE_X},
-      {"scaleY", CMD_TRANSFORM_SCALE_Y},
-      {"rotate", CMD_TRANSFORM_ROTATE},
-      {"rotateX", CMD_TRANSFORM_ROTATE_X},
-      {"rotateY", CMD_TRANSFORM_ROTATE_Y},
-      {"rotateZ", CMD_TRANSFORM_ROTATE_Z},
       {"skewX", CMD_TRANSFORM_SKEW_X},
       {"skewY", CMD_TRANSFORM_SKEW_Y},
       {"matrix", CMD_TRANSFORM_MATRIX},
+      {"rotate", CMD_TRANSFORM_ROTATE},
+      {"scaleX", CMD_TRANSFORM_SCALE_X},
+      {"scaleY", CMD_TRANSFORM_SCALE_Y},
+      {"rotateX", CMD_TRANSFORM_ROTATE_X},
+      {"rotateY", CMD_TRANSFORM_ROTATE_Y},
+      {"rotateZ", CMD_TRANSFORM_ROTATE_Z},
+      {"translateX", CMD_TRANSFORM_TRANSLATE_X},
+      {"translateY", CMD_TRANSFORM_TRANSLATE_Y},
       {"perspective", CMD_TRANSFORM_PERSPECTIVE},
-  };
-  auto it = kMap.find(name);
-  if (it == kMap.end()) {
-    return std::nullopt;
-  }
-  return it->second;
+  }};
+  static constexpr auto kIndex =
+      indexCommandLengths<kMap.back().first.size()>(kMap);
+  static_assert(
+      kIndex.back().data() ==
+          std::span<const CommandEntry>{kMap}.last(kIndex.back().size()).data(),
+      "Command entries must be sorted by name length");
+  return findCommand(name, kIndex);
 }
 
 bool packLength(
