@@ -1240,6 +1240,9 @@ interface RCTKeyCommands : public NSObject {
   public virtual void unregisterKeyCommandWithInput:modifierFlags:(NSString* input, UIKeyModifierFlags flags);
 }
 
+interface RCTKeyboardAvoidingViewComponentView : public RCTViewComponentView {
+}
+
 interface RCTKeyboardObserver : public RCTEventEmitter {
 }
 
@@ -2764,6 +2767,9 @@ protocol RCTJSRuntimeConfiguratorProtocol {
   public virtual JSRuntimeFactoryRef createJSRuntimeFactory();
 }
 
+protocol RCTKeyboardAvoidingViewViewProtocol : public NSObject {
+}
+
 protocol RCTLocalizationProtocol : public NSObject {
   public virtual NSString* localizedString:withDescription:(NSString* oldString, NSString* description);
 }
@@ -3159,6 +3165,9 @@ using facebook::react::GradientDirection = std::variant<facebook::react::Float, 
 using facebook::react::HostPlatformTouch = facebook::react::BaseTouch;
 using facebook::react::HostPlatformViewEventEmitter = facebook::react::BaseViewEventEmitter;
 using facebook::react::ImageSources = std::vector<facebook::react::ImageSource>;
+using facebook::react::KeyboardAvoidingViewComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::KeyboardAvoidingViewShadowNode>;
+using facebook::react::KeyboardAvoidingViewShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::KeyboardAvoidingViewComponentName, facebook::react::KeyboardAvoidingViewProps, facebook::react::KeyboardAvoidingViewEventEmitter, facebook::react::KeyboardAvoidingViewState>;
+using facebook::react::KeyboardAvoidingViewState = facebook::react::StateData;
 using facebook::react::ModalHostViewSupportedOrientationsMask = uint32_t;
 using facebook::react::NativeMethodCallFunc = std::function<void()>;
 using facebook::react::PromiseSetupFunctionType = std::function<void(facebook::jsi::Runtime& rt, std::shared_ptr<facebook::react::Promise>)>;
@@ -3383,6 +3392,7 @@ template <typename T>
 facebook::react::RectangleEdges<T> facebook::react::operator-(const facebook::react::RectangleEdges<T>& lhs, const facebook::react::RectangleEdges<T>& rhs) noexcept;
 JSI_EXPORT const char facebook::react::ActivityIndicatorViewComponentName[];
 JSI_EXPORT const char facebook::react::DebuggingOverlayComponentName[];
+JSI_EXPORT const char facebook::react::KeyboardAvoidingViewComponentName[];
 JSI_EXPORT const char facebook::react::PullToRefreshViewComponentName[];
 JSI_EXPORT const char facebook::react::UnimplementedNativeViewComponentName[];
 
@@ -3957,6 +3967,22 @@ class facebook::react::JSBigString : public facebook::jsi::Buffer {
   public virtual const uint8_t* data() const final;
   public virtual size_t size() const override = 0;
   public ~JSBigString() override = default;
+}
+
+class facebook::react::KeyboardAvoidingViewEventEmitter : public facebook::react::BaseViewEventEmitter {
+  public void onKeyboardInsetChange(facebook::react::KeyboardAvoidingViewEventEmitter::OnKeyboardInsetChange value) const;
+}
+
+struct facebook::react::KeyboardAvoidingViewEventEmitter::OnKeyboardInsetChange {
+  public facebook::react::Float inset;
+  public facebook::react::Float maxHeight;
+}
+
+class facebook::react::KeyboardAvoidingViewProps : public facebook::react::HostPlatformViewProps {
+  public KeyboardAvoidingViewProps() = default;
+  public KeyboardAvoidingViewProps(const facebook::react::PropsParserContext& context, const facebook::react::KeyboardAvoidingViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public bool enabled;
+  public facebook::react::Float keyboardVerticalOffset;
 }
 
 class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode {

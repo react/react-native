@@ -59,6 +59,9 @@ void addCoreComponents(
   providerRegistry->add(
       concreteComponentDescriptorProvider<ImageComponentDescriptor>());
   providerRegistry->add(
+      concreteComponentDescriptorProvider<
+          KeyboardAvoidingViewComponentDescriptor>());
+  providerRegistry->add(
       concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<AndroidSwitchComponentDescriptor>());
