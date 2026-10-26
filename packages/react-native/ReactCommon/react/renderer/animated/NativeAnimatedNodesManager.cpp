@@ -39,7 +39,7 @@ namespace facebook::react {
 
 // Global function pointer for getting current time. Current time
 // can be injected for testing purposes.
-static TimePointFunction g_now = &std::chrono::steady_clock::now;
+static constinit TimePointFunction g_now = &std::chrono::steady_clock::now;
 void g_setNativeAnimatedNowTimestampFunction(TimePointFunction nowFunction) {
   g_now = nowFunction;
 }
@@ -91,7 +91,8 @@ void mergeObjects(folly::dynamic& out, const folly::dynamic& objectToMerge) {
 
 } // namespace
 
-thread_local bool NativeAnimatedNodesManager::isOnRenderThread_{false};
+constinit thread_local bool NativeAnimatedNodesManager::isOnRenderThread_{
+    false};
 
 NativeAnimatedNodesManager::NativeAnimatedNodesManager(
     DirectManipulationCallback&& directManipulationCallback,

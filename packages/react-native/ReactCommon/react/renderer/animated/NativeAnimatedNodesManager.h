@@ -236,7 +236,7 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
 
   std::unique_ptr<AnimatedNode> animatedNode(Tag tag, const folly::dynamic &config) noexcept;
 
-  static thread_local bool isOnRenderThread_;
+  static constinit thread_local bool isOnRenderThread_;
 
   std::mutex animatedNodesCreatedAsyncMutex_;
   std::unordered_map<Tag, std::unique_ptr<AnimatedNode>> animatedNodesCreatedAsync_;

@@ -22,7 +22,7 @@
 
 namespace facebook::react {
 
-std::once_flag perfettoInit;
+constinit std::once_flag perfettoInit;
 void initializePerfetto() {
   std::call_once(perfettoInit, []() {
     perfetto::TracingInitArgs args;

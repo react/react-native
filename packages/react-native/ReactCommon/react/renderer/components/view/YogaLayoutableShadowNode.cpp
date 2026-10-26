@@ -62,7 +62,7 @@ static int FabricDefaultYogaLog(
   return size_s;
 }
 
-thread_local LayoutContext threadLocalLayoutContext;
+constinit thread_local LayoutContext threadLocalLayoutContext;
 
 YogaLayoutableShadowNode::YogaLayoutableShadowNode(
     const ShadowNodeFragment& fragment,
