@@ -13,7 +13,7 @@ namespace facebook::react {
 namespace {
 
 inline uint64_t getNextId() noexcept {
-  static std::atomic<uint64_t> nextId = 1;
+  static constinit std::atomic<uint64_t> nextId = 1;
   return nextId++;
 }
 
