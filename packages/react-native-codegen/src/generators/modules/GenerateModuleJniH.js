@@ -96,6 +96,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_${targetName} PRIVATE)
+
+# Generated code: acknowledge any "for frameworks" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_${targetName} PRIVATE RN_ALLOW_FRAMEWORKS)
 `;
 };
 

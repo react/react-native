@@ -12,6 +12,7 @@ import com.facebook.react.model.ModelCodegenConfig
 import com.facebook.react.model.ModelPackageJson
 import com.facebook.react.tests.createProject
 import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
+import com.facebook.react.utils.ProjectUtils.isAllowFrameworksCxxApiEnabled
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
 import com.facebook.react.utils.ProjectUtils.isNewArchEnabled
@@ -147,6 +148,39 @@ class ProjectUtilsTest {
     val project = createProject()
     project.extensions.extraProperties.set("strictCxxApiEnabled", "¯\\_(ツ)_/¯")
     assertThat(project.isStrictCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isAllowFrameworksCxxApiEnabled_returnsFalseByDefault() {
+    assertThat(createProject().isAllowFrameworksCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isAllowFrameworksCxxApiEnabled_withEnabledViaProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("allowFrameworksCxxApi", "true")
+    assertThat(project.isAllowFrameworksCxxApiEnabled).isTrue()
+  }
+
+  @Test
+  fun isAllowFrameworksCxxApiEnabled_withEnabledViaScopedProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.allowFrameworksCxxApi", "true")
+    assertThat(project.isAllowFrameworksCxxApiEnabled).isTrue()
+  }
+
+  @Test
+  fun isAllowFrameworksCxxApiEnabled_withDisabledViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("allowFrameworksCxxApi", "false")
+    assertThat(project.isAllowFrameworksCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isAllowFrameworksCxxApiEnabled_withInvalidViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("allowFrameworksCxxApi", "¯\\_(ツ)_/¯")
+    assertThat(project.isAllowFrameworksCxxApiEnabled).isFalse()
   }
 
   @Test

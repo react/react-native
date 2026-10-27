@@ -61,6 +61,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_SampleWithUppercaseName PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_SampleWithUppercaseName PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -126,6 +129,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_array_buffer_native_module PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_array_buffer_native_module PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -184,6 +190,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_array_buffer_promise_native_module PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_array_buffer_promise_native_module PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -249,6 +258,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_complex_objects PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_complex_objects PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -307,6 +319,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_cxx_only_native_modules PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_cxx_only_native_modules PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -372,6 +387,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_empty_native_modules PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_empty_native_modules PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -437,6 +455,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_event_emitter_module PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_event_emitter_module PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -502,6 +523,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_native_modules_with_type_aliases PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_native_modules_with_type_aliases PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -575,6 +599,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_real_module_example PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_real_module_example PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -640,6 +667,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_simple_native_modules PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_simple_native_modules PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -705,6 +735,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_string_literals PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_string_literals PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -778,6 +811,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_two_modules_different_files PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_two_modules_different_files PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;
@@ -843,6 +879,9 @@ target_link_libraries(
 )
 
 target_compile_reactnative_options(react_codegen_union_module PRIVATE)
+
+# Generated code: acknowledge any \\"for frameworks\\" C++ stable API header it reaches, nobody can act on that warning
+target_compile_definitions(react_codegen_union_module PRIVATE RN_ALLOW_FRAMEWORKS)
 ",
 }
 `;

@@ -36,6 +36,13 @@ object PropertyUtils {
   const val STRICT_CXX_API_ENABLED = "strictCxxApiEnabled"
   const val SCOPED_STRICT_CXX_API_ENABLED = "react.strictCxxApiEnabled"
 
+  /**
+   * Public property that acknowledges the app's own use of "for frameworks" C++ stable API headers
+   * by defining RN_ALLOW_FRAMEWORKS for the app's native code
+   */
+  const val ALLOW_FRAMEWORKS_CXX_API = "allowFrameworksCxxApi"
+  const val SCOPED_ALLOW_FRAMEWORKS_CXX_API = "react.allowFrameworksCxxApi"
+
   /** Public property that excludes jsctooling from core */
   const val USE_THIRD_PARTY_JSC = "useThirdPartyJSC"
   const val SCOPED_USE_THIRD_PARTY_JSC = "react.useThirdPartyJSC"

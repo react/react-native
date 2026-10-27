@@ -48,20 +48,22 @@ if (PROJECT_ROOT_DIR)
 endif ()
 
 file(GLOB override_cpp_SRC CONFIGURE_DEPENDS *.cpp)
+# Sources React Native generates or provides for the app, as opposed to the app's own code.
+file(GLOB react_native_app_SRC CONFIGURE_DEPENDS
+        ${BUILD_DIR}/generated/autolinking/src/main/jni/*.cpp)
 # We check if the user is providing a custom OnLoad.cpp file. If so, we pick that
 # for compilation. Otherwise we fallback to using the `default-app-setup/OnLoad.cpp` 
 # file instead.
-if(override_cpp_SRC)
-        file(GLOB input_SRC CONFIGURE_DEPENDS
-                *.cpp
-                ${BUILD_DIR}/generated/autolinking/src/main/jni/*.cpp)
-else()
-        file(GLOB input_SRC CONFIGURE_DEPENDS
-                ${REACT_ANDROID_DIR}/cmake-utils/default-app-setup/*.cpp
-                ${BUILD_DIR}/generated/autolinking/src/main/jni/*.cpp)
+if(NOT override_cpp_SRC)
+        file(GLOB default_app_setup_SRC CONFIGURE_DEPENDS
+                ${REACT_ANDROID_DIR}/cmake-utils/default-app-setup/*.cpp)
+        list(APPEND react_native_app_SRC ${default_app_setup_SRC})
 endif()
 
-add_library(${CMAKE_PROJECT_NAME} SHARED ${input_SRC})
+add_library(${CMAKE_PROJECT_NAME} SHARED ${override_cpp_SRC} ${react_native_app_SRC})
+
+# Nobody can act on a "for frameworks" warning in React Native's own sources.
+set_property(SOURCE ${react_native_app_SRC} APPEND PROPERTY COMPILE_DEFINITIONS RN_ALLOW_FRAMEWORKS)
 
 target_include_directories(${CMAKE_PROJECT_NAME}
         PUBLIC
@@ -92,6 +94,12 @@ target_compile_options(common_flags INTERFACE ${folly_FLAGS})
 if(RN_STRICT_API)
         target_compile_definitions(common_flags INTERFACE RN_STRICT_API)
         target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE RN_STRICT_API)
+endif()
+
+# The app's own switch only: libraries and codegen declare RN_ALLOW_FRAMEWORKS
+# for their own targets.
+if(RN_ALLOW_FRAMEWORKS)
+        target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE RN_ALLOW_FRAMEWORKS)
 endif()
 
 # Defines the `reactnative_pch` target and `target_reuse_reactnative_pch()`, so
