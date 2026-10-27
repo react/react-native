@@ -107,6 +107,41 @@ describe('processBackgroundImage', () => {
     ]);
   });
 
+  it('should accept a single conic color stop with two positions', () => {
+    expect(processBackgroundImage('conic-gradient(red 0deg 360deg)')).toEqual([
+      {
+        type: 'conic-gradient',
+        from: 0,
+        position: {top: '50%', left: '50%'},
+        colorStops: [
+          {color: processColor('red'), position: '0%'},
+          {color: processColor('red'), position: '100%'},
+        ],
+      },
+    ]);
+  });
+
+  it('should accept a single conic object color stop with two positions', () => {
+    const input: ReadonlyArray<BackgroundImageValue> = [
+      {
+        type: 'conic-gradient',
+        colorStops: [{color: 'red', positions: ['0deg', '360deg']}],
+      },
+    ];
+
+    expect(processBackgroundImage(input)).toEqual([
+      {
+        type: 'conic-gradient',
+        from: 0,
+        position: {top: '50%', left: '50%'},
+        colorStops: [
+          {color: processColor('red'), position: '0%'},
+          {color: processColor('red'), position: '100%'},
+        ],
+      },
+    ]);
+  });
+
   it('should reject invalid conic gradient object stops', () => {
     expect(
       processBackgroundImage([
