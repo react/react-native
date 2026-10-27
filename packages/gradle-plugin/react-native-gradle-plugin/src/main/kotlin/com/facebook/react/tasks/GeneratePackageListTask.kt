@@ -83,18 +83,28 @@ abstract class GeneratePackageListTask : DefaultTask() {
               requireNotNull(dep.packageInstance) {
                 "RNGP - Autolinking: Missing `packageInstance` in `config` for dependency $name. This is required to generate the autolinking package list."
               }
-          val packageImportPath = dep.packageImportPath
           val interpolated = interpolateDynamicValues(packageInstance, packageName)
 
-          // Use FQCN to avoid class name collisions between different packages
-          val fqcn = extractFqcnFromImport(interpolateDynamicValues(packageImportPath, packageName))
+          // Use FQCNs to avoid class name collisions between different libraries.
+          val packageImportPaths = dep.packageImportPaths
           val fqcnInstance =
-              if (fqcn != null) {
-                val className = fqcn.substringAfterLast('.')
-                // Replace the short class name with FQCN in the instance
-                interpolated.replace(Regex("\\b${Regex.escape(className)}\\b")) { fqcn }
+              if (packageImportPaths != null) {
+                packageImportPaths.fold(interpolated) { acc, fqcn ->
+                  val className = fqcn.substringAfterLast('.')
+                  // Negative lookbehind ensures we only replace bare class names,
+                  // not ones already part of a fully qualified name.
+                  acc.replace(Regex("(?<!\\.)\\b${Regex.escape(className)}\\b")) { fqcn }
+                }
               } else {
-                interpolated
+                val fqcn =
+                    extractFqcnFromImport(
+                        interpolateDynamicValues(dep.packageImportPath, packageName))
+                if (fqcn != null) {
+                  val className = fqcn.substringAfterLast('.')
+                  interpolated.replace(Regex("\\b${Regex.escape(className)}\\b")) { fqcn }
+                } else {
+                  interpolated
+                }
               }
 
           // Add comment with package name before each instance
