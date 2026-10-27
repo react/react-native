@@ -109,6 +109,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
   __weak UIView *_contentView;
 
   CGRect _prevFirstVisibleFrame;
+  NSInteger _firstVisibleViewTag;
   __weak UIView *_firstVisibleView;
   NSInteger _firstVisibleViewTag;
 
@@ -712,6 +713,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   self.frame = oldFrame;
   _contentView = nil;
   _prevFirstVisibleFrame = CGRectZero;
+  _firstVisibleViewTag = 0;
   _firstVisibleView = nil;
   _firstVisibleViewTag = 0;
   _virtualViewContainerState = nil;
@@ -1081,6 +1083,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     }
     if (hasNewView || ii == _contentView.subviews.count - 1) {
       _prevFirstVisibleFrame = subview.frame;
+      _firstVisibleViewTag = subview.tag;
       _firstVisibleView = subview;
       _firstVisibleViewTag = subview.tag;
       break;
@@ -1116,6 +1119,12 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // This prevents MVCP from applying a delta after scrollToOffset(0) during reset/clear
   if (_firstVisibleView.superview != _contentView) {
     return;
+  }
+
+  if(_firstVisibleView && _firstVisibleView.tag != _firstVisibleViewTag) {
+    _prevFirstVisibleFrame = CGRectZero;
+    _firstVisibleViewTag = 0;
+    _firstVisibleView = nil;
   }
 
   std::optional<int> autoscrollThreshold = props.maintainVisibleContentPosition.value().autoscrollToTopThreshold;
