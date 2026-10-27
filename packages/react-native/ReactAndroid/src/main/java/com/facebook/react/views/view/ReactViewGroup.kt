@@ -182,6 +182,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
    */
   private fun initView() {
     clipChildren = false
+    isEnabled = true
 
     _removeClippedSubviews = false
     inSubviewClippingLoop = false
