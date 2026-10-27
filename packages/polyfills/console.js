@@ -571,6 +571,90 @@ function consoleAssertPolyfill(expression, label) {
 
 function stub() {}
 
+// Use high-resolution timer if available, fall back to Date.now
+var now = global.nativePerformanceNow || Date.now;
+
+// console.time / console.timeLog / console.timeEnd
+// https://console.spec.whatwg.org/#timing
+var timerTable = {};
+
+function consoleTimePolyfill(label) {
+  var name = label === undefined ? 'default' : '' + label;
+  if (timerTable[name] !== undefined) {
+    global.nativeLoggingHook(
+      'Timer "' + name + '" already exists',
+      LOG_LEVELS.warn,
+    );
+    return;
+  }
+  timerTable[name] = now();
+}
+
+function consoleTimeEndPolyfill(label) {
+  var name = label === undefined ? 'default' : '' + label;
+  var startTime = timerTable[name];
+  if (startTime === undefined) {
+    global.nativeLoggingHook(
+      'Timer "' + name + '" does not exist',
+      LOG_LEVELS.warn,
+    );
+    return;
+  }
+  delete timerTable[name];
+  var elapsed = now() - startTime;
+  global.nativeLoggingHook(name + ': ' + elapsed + 'ms', LOG_LEVELS.info);
+}
+
+function consoleTimeLogPolyfill(label) {
+  var name = label === undefined ? 'default' : '' + label;
+  var startTime = timerTable[name];
+  if (startTime === undefined) {
+    global.nativeLoggingHook(
+      'Timer "' + name + '" does not exist',
+      LOG_LEVELS.warn,
+    );
+    return;
+  }
+  var elapsed = now() - startTime;
+  var extra =
+    arguments.length > 1
+      ? ' ' +
+        Array.prototype.slice
+          .call(arguments, 1)
+          .map(function (arg) {
+            return inspect(arg, {depth: 10});
+          })
+          .join(' ')
+      : '';
+  global.nativeLoggingHook(
+    name + ': ' + elapsed + 'ms' + extra,
+    LOG_LEVELS.info,
+  );
+}
+
+// console.count / console.countReset
+// https://console.spec.whatwg.org/#counting
+var countTable = {};
+
+function consoleCountPolyfill(label) {
+  var name = label === undefined ? 'default' : '' + label;
+  var count = (countTable[name] || 0) + 1;
+  countTable[name] = count;
+  global.nativeLoggingHook(name + ': ' + count, LOG_LEVELS.info);
+}
+
+function consoleCountResetPolyfill(label) {
+  var name = label === undefined ? 'default' : '' + label;
+  if (countTable[name] === undefined) {
+    global.nativeLoggingHook(
+      'Count for "' + name + '" does not exist',
+      LOG_LEVELS.warn,
+    );
+    return;
+  }
+  countTable[name] = 0;
+}
+
 // https://developer.chrome.com/docs/devtools/console/api#createtask
 function consoleCreateTaskStub() {
   return {run: cb => cb()};
@@ -587,11 +671,12 @@ if (global.nativeLoggingHook) {
   }
 
   global.console = {
-    time: stub,
-    timeEnd: stub,
+    time: consoleTimePolyfill,
+    timeEnd: consoleTimeEndPolyfill,
+    timeLog: consoleTimeLogPolyfill,
     timeStamp: stub,
-    count: stub,
-    countReset: stub,
+    count: consoleCountPolyfill,
+    countReset: consoleCountResetPolyfill,
     createTask: consoleCreateTaskStub,
     ...(originalConsole ?? {}),
     error: getNativeLogFunction(LOG_LEVELS.error),
