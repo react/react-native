@@ -57,6 +57,11 @@ using namespace facebook::react;
 
 static NSSet<NSNumber *> *returnKeyTypesSet;
 
+static BOOL RCTAdjustsFontForContentSizeCategoryFromTextAttributes(const TextAttributes &textAttributes)
+{
+  return textAttributes.allowFontScaling.value_or(true);
+}
+
 @implementation RCTTextInputComponentView {
   TextInputShadowNode::ConcreteState::Shared _state;
   UIView<RCTBackedTextInputViewProtocol, RCTBackedTextInputViewPendingEdit> *_backedTextInputView;
@@ -107,6 +112,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
     _backedTextInputView = defaultProps->multiline ? [RCTUITextView new] : [RCTUITextField new];
     _backedTextInputView.textInputDelegate = self;
+    _backedTextInputView.adjustsFontForContentSizeCategory =
+        RCTAdjustsFontForContentSizeCategoryFromTextAttributes(defaultProps->textAttributes);
     _ignoreNextTextInputCall = NO;
     _comingFromJS = NO;
     _didMoveToWindow = NO;
@@ -159,6 +166,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     const auto &newTextInputProps = static_cast<const TextInputProps &>(*_props);
     _backedTextInputView.defaultTextAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+    _backedTextInputView.adjustsFontForContentSizeCategory =
+        RCTAdjustsFontForContentSizeCategoryFromTextAttributes(newTextInputProps.textAttributes);
   }
 }
 
@@ -321,6 +330,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     defaultAttributes[RCTAttributedStringEventEmitterKey] =
         _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
     _backedTextInputView.defaultTextAttributes = defaultAttributes;
+    _backedTextInputView.adjustsFontForContentSizeCategory =
+        RCTAdjustsFontForContentSizeCategoryFromTextAttributes(newTextInputProps.textAttributes);
   }
 
   if (newTextInputProps.selectionColor != oldTextInputProps.selectionColor) {
