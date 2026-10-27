@@ -5,13 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-@file:Suppress("DEPRECATION")
-
 package com.facebook.react.fabric
 
 import com.facebook.react.ReactRootView
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.fabric.mounting.MountingManager
 import com.facebook.react.fabric.mounting.MountingManager.MountItemExecutor
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
@@ -19,15 +16,18 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.uimanager.ViewManagerRegistry
 import com.facebook.react.views.view.ReactViewManager
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 /** Tests [FabricUIManager] */
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class])
 class MountingManagerTest {
   private lateinit var mountingManager: MountingManager
   private lateinit var mountItemExecutor: MountItemExecutor
@@ -37,8 +37,7 @@ class MountingManagerTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val reactContext = BridgeReactContext(RuntimeEnvironment.getApplication())
-    reactContext.initializeWithInstance(createMockCatalystInstance())
+    val reactContext = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     val viewManagers = listOf<ViewManager<*, *>>(ReactViewManager())
     mountItemExecutor = MountItemExecutor {

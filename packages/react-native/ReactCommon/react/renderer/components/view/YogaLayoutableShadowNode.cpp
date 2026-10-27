@@ -62,7 +62,7 @@ static int FabricDefaultYogaLog(
   return size_s;
 }
 
-thread_local LayoutContext threadLocalLayoutContext;
+constinit thread_local LayoutContext threadLocalLayoutContext;
 
 YogaLayoutableShadowNode::YogaLayoutableShadowNode(
     const ShadowNodeFragment& fragment,
@@ -505,8 +505,7 @@ void YogaLayoutableShadowNode::configureYogaTree(
   // re-measurement. We propagate up to the root so an unchanged, still-cached
   // ancestor isn't skipped by `calculateLayoutInternal` before reaching us. An
   // owner that is already dirty stops it; the child loop below covers that.
-  if (ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() &&
-      getTraits().check(ShadowNodeTraits::Trait::MeasurableYogaNode) &&
+  if (getTraits().check(ShadowNodeTraits::Trait::MeasurableYogaNode) &&
       !floatEquality(
           getLayoutMetrics().fontSizeMultiplier, fontSizeMultiplier)) {
     yogaNode_.markDirtyAndPropagate();
@@ -554,8 +553,7 @@ void YogaLayoutableShadowNode::configureYogaTree(
     // Apply the rule of `updateYogaChildren()` so Yoga doesn't skip it.
     if (yogaLayoutableChildren_[i]->yogaNode_.isDirty() &&
         !yogaNode_.isDirty() &&
-        yogaNode_.style().display() != yoga::Display::None &&
-        ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout()) {
+        yogaNode_.style().display() != yoga::Display::None) {
       yogaNode_.setDirty(true);
     }
   }

@@ -13,10 +13,9 @@ package com.facebook.react.views.scroll
 import android.annotation.SuppressLint
 import android.util.DisplayMetrics
 import android.view.View
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.DisplayMetricsHolder
@@ -25,6 +24,7 @@ import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.style.BorderRadiusProp
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -32,22 +32,21 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 /** Verifies border radius properties applied by the vertical and horizontal ScrollView managers. */
 @SuppressLint("DeprecatedClass", "DeprecatedMethod")
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class])
 class ReactScrollViewPropertyTest {
 
-  private lateinit var context: BridgeReactContext
-  private lateinit var catalystInstanceMock: CatalystInstance
+  private lateinit var context: ReactApplicationContext
   private lateinit var themedContext: ThemedReactContext
 
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    context = BridgeReactContext(RuntimeEnvironment.getApplication())
-    catalystInstanceMock = createMockCatalystInstance()
-    context.initializeWithInstance(catalystInstanceMock)
+    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themedContext = ThemedReactContext(context, context, null, -1)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
   }

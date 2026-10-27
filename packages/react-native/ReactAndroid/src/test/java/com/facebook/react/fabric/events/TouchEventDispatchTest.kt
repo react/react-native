@@ -16,6 +16,8 @@ import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactTestHelper
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.queue.MessageQueueThread
+import com.facebook.react.bridge.queue.ReactQueueConfiguration
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.modules.core.ReactChoreographer
 import com.facebook.react.uimanager.DisplayMetricsHolder
@@ -36,7 +38,9 @@ import org.mockito.ArgumentMatchers.*
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -516,7 +520,15 @@ class TouchEventDispatchTest {
     metrics.density = 1f
     DisplayMetricsHolder.setScreenDisplayMetrics(metrics)
 
-    val reactContext = ReactTestHelper.createCatalystContextForTest()
+    val reactContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val uiQueueThread: MessageQueueThread = mock()
+    whenever(uiQueueThread.isOnThread()).thenReturn(true)
+    val queueConfig: ReactQueueConfiguration = mock()
+    whenever(queueConfig.getUIQueueThread()).thenReturn(uiQueueThread)
+    whenever(queueConfig.getNativeModulesQueueThread()).thenReturn(uiQueueThread)
+    whenever(queueConfig.getJSQueueThread()).thenReturn(uiQueueThread)
+    reactContext.initializeMessageQueueThreads(queueConfig)
 
     eventEmitter = mock()
     eventDispatcher = FabricEventDispatcher(reactContext, eventEmitter)

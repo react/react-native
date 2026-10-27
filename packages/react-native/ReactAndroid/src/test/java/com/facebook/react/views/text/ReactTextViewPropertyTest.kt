@@ -5,17 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO T207169925: Migrate CatalystInstance to Reacthost and remove the Suppress("DEPRECATION")
-// annotation
-@file:Suppress("DEPRECATION")
-
 package com.facebook.react.views.text
 
 import android.util.DisplayMetrics
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
@@ -27,6 +22,7 @@ import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.style.BorderRadiusProp
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -34,13 +30,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 /** Verify view properties are being applied correctly by [ReactTextViewManager] */
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class])
 class ReactTextViewPropertyTest {
 
-  private lateinit var context: BridgeReactContext
-  private lateinit var catalystInstanceMock: CatalystInstance
+  private lateinit var context: ReactApplicationContext
   private lateinit var themedContext: ThemedReactContext
   private lateinit var manager: ReactTextViewManager
 
@@ -52,9 +49,7 @@ class ReactTextViewPropertyTest {
           override fun enableViewRecycling(): Boolean = true
         },
     )
-    context = BridgeReactContext(RuntimeEnvironment.getApplication())
-    catalystInstanceMock = createMockCatalystInstance()
-    context.initializeWithInstance(catalystInstanceMock)
+    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themedContext = ThemedReactContext(context, context, null, -1)
     manager = ReactTextViewManager()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())

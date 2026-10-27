@@ -28,8 +28,10 @@
 #include <glog/logging.h>
 
 #include <algorithm>
+#include <array>
 #include <cfenv>
 #include <cmath>
+#include <string_view>
 #include <vector>
 
 namespace facebook::react {
@@ -81,7 +83,7 @@ namespace {
 // List of layout-only props extracted from ViewProps.kt used to filter out
 // component props from Props 1.5 to validate the Props 2.0 output
 inline bool isLayoutOnlyProp(const std::string& propName) {
-  static const std::vector<std::string> layoutOnlyProps = {
+  static constexpr std::array<std::string_view, 46> layoutOnlyProps = {
       // Flexbox Alignment
       "alignItems",
       "alignSelf",
@@ -146,8 +148,10 @@ inline bool isLayoutOnlyProp(const std::string& propName) {
       // Other
       "collapsable",
   };
-  return std::find(layoutOnlyProps.begin(), layoutOnlyProps.end(), propName) !=
-      layoutOnlyProps.end();
+  return std::find(
+             layoutOnlyProps.begin(),
+             layoutOnlyProps.end(),
+             std::string_view{propName}) != layoutOnlyProps.end();
 }
 #endif
 

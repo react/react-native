@@ -856,15 +856,6 @@ RCT_EXPORT_MODULE()
 
 @end
 
-@implementation RCTBridge (RCTNetworking)
-
-- (RCTNetworking *)networking
-{
-  return [self moduleForClass:[RCTNetworking class]];
-}
-
-@end
-
 @implementation RCTBridgeProxy (RCTNetworking)
 
 - (RCTNetworking *)networking

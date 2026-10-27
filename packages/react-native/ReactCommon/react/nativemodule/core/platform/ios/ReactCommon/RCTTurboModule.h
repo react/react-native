@@ -16,8 +16,11 @@
 #import <React/RCTModuleMethod.h>
 #import <functional>
 #import <memory>
+#import <mutex>
 #import <string>
+#import <string_view>
 #import <unordered_map>
+#import <vector>
 
 #define RCT_IS_TURBO_MODULE_CLASS(klass) \
   ((RCTTurboModuleEnabled() && [(klass) conformsToProtocol:@protocol(RCTTurboModule)]))
@@ -132,14 +135,27 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
   // Does the NativeModule dispatch async methods to the JS thread?
   const bool isSyncModule_;
 
-  /**
-   * TODO(ramanpreet):
-   * Investigate an optimization that'll let us get rid of this NSMutableDictionary.
-   * Perhaps, have the code-generated TurboModule subclass implement
-   * getMethodArgConversionSelector below.
-   */
-  NSMutableDictionary<NSString *, NSMutableArray *> *methodArgConversionSelectors_;
-  NSDictionary<NSString *, NSArray<NSString *> *> *methodArgumentTypeNames_;
+  struct MethodInfo {
+    // Looked up on the method's first call, since it doesn't change.
+    NSMethodSignature *signature;
+    // Argument types declared with RCT_EXPORT_METHOD, used to convert arguments with RCTConvert.
+    NSArray<NSString *> *argumentTypeNames;
+    // RCTCxxConvert selectors that convert arguments to C++ structs, set by the generated code.
+    std::vector<SEL> argConversionSelectors;
+  };
+  struct MethodNameHash {
+    using is_transparent = void;
+    size_t operator()(std::string_view methodName) const
+    {
+      return std::hash<std::string_view>{}(methodName);
+    }
+  };
+  // Keyed by the method's JS name; looked up without allocating a std::string.
+  std::unordered_map<std::string, MethodInfo, MethodNameHash, std::equal_to<>> methodInfos_;
+  bool argumentTypeNamesLoaded_{false};
+  std::mutex methodInfosMutex_;
+  MethodInfo &findOrCreateMethodInfo(std::string_view methodName);
+  NSMethodSignature *getMethodSignature(const char *methodName, SEL selector);
 
   bool isMethodSync(TurboModuleMethodValueKind returnType);
   bool mustCopyJSHeapArrayBufferBytes(TurboModuleMethodValueKind returnType);
@@ -199,17 +215,4 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
 
 @optional
 - (void)setEventEmitterCallback:(EventEmitterCallbackWrapper *)eventEmitterCallbackWrapper;
-@end
-
-/**
- * These methods are all implemented by RCTCxxBridge, which subclasses RCTBridge. Hence, they must only be used in
- * contexts where the concrete class of an RCTBridge instance is RCTCxxBridge. This happens, for example, when
- * [RCTCxxBridgeDelegate jsExecutorFactoryForBridge:(RCTBridge *)] is invoked by RCTCxxBridge.
- *
- * TODO: Consolidate this extension with the one in RCTSurfacePresenter.
- */
-@interface RCTBridge (RCTTurboModule)
-- (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
-- (std::shared_ptr<facebook::react::NativeMethodCallInvoker>)decorateNativeMethodCallInvoker:
-    (std::shared_ptr<facebook::react::NativeMethodCallInvoker>)nativeMethodCallInvoker;
 @end

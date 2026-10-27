@@ -25,7 +25,6 @@ typedef void (^InterceptorBlock)(std::string eventName, folly::dynamic &&event);
 @interface RCTLegacyViewManagerInteropCoordinator : NSObject
 
 - (instancetype)initWithComponentData:(RCTComponentData *)componentData
-                               bridge:(nullable RCTBridge *)bridge
                           bridgeProxy:(nullable RCTBridgeProxy *)bridgeProxy
                 bridgelessInteropData:(RCTBridgeModuleDecorator *)bridgelessInteropData;
 

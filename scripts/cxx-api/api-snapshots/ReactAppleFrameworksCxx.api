@@ -43,11 +43,6 @@ category RCTBridge(RCTSurfacePresenterStub) {
   public virtual void setSurfacePresenter:(id<RCTSurfacePresenterStub> presenter);
 }
 
-category RCTBridge(RCTTurboModule) {
-  public virtual std::shared_ptr<facebook::react::CallInvoker> jsCallInvoker();
-  public virtual std::shared_ptr<facebook::react::NativeMethodCallInvoker> decorateNativeMethodCallInvoker:(std::shared_ptr<facebook::react::NativeMethodCallInvoker> nativeMethodCallInvoker);
-}
-
 category RCTBridge(RCTUIManager) {
   public @property (assign, readonly) RCTUIManager* uiManager;
 }
@@ -794,8 +789,8 @@ interface RCTCallInvoker : public NSObject {
 }
 
 interface RCTCallableJSModules : public NSObject {
-  public virtual void invokeModule:method:withArgs:(NSString* moduleName, NSString* methodName, NSArray* args);
-  public virtual void invokeModule:method:withArgs:onComplete:(NSString* moduleName, NSString* methodName, NSArray* args, dispatch_block_t onComplete);
+  public virtual void invokeModule:method:withArgs:(NSString* moduleName, NSString* methodName, _Nullable NSArray* args);
+  public virtual void invokeModule:method:withArgs:onComplete:(NSString* moduleName, NSString* methodName, _Nullable NSArray* args, _Nullable dispatch_block_t onComplete);
   public virtual void setBridgelessJSModuleMethodInvoker:(RCTBridgelessJSModuleMethodInvoker bridgelessJSModuleMethodInvoker);
 }
 
@@ -814,8 +809,7 @@ interface RCTComponentData : public NSObject {
   public @property (assign, readonly) Class managerClass;
   public @property (copy) void(^eventInterceptor)(NSString* eventName, NSDictionary* event, NSNumber* reactTag);
   public @property (copy, readonly) NSString* name;
-  public @property (strong, readonly) RCTViewManager* bridgelessViewManager;
-  public @property (weak, readonly) RCTViewManager* manager;
+  public @property (strong, readonly) RCTViewManager* manager;
   public virtual NSDictionary<NSString*, id>* viewConfig();
   public virtual RCTShadowView* createShadowViewWithTag:(NSNumber* tag);
   public virtual UIView* createViewWithTag:rootTag:(_Nullable NSNumber* tag, _Nullable NSNumber* rootTag);
@@ -1398,22 +1392,6 @@ interface RCTModalHostViewComponentView : public RCTViewComponentView <UIAdaptiv
   public virtual void presentViewController:animated:completion:(UIViewController* modalViewController, BOOL animated, void(^)(void) completion);
 }
 
-interface RCTModuleData : public NSObject <RCTInvalidating> {
-  public @property (assign) BOOL requiresMainQueueSetup;
-  public @property (assign, readonly) BOOL hasConstantsToExport;
-  public @property (assign, readonly) BOOL hasInstance;
-  public @property (assign, readonly) BOOL implementsBatchDidComplete;
-  public @property (copy, readonly) NSArray<id<RCTBridgeMethod>>* methods;
-  public @property (copy, readonly) NSDictionary<NSString*, id<RCTBridgeMethod>>* methodsByName;
-  public @property (copy, readonly) NSDictionary<NSString*, id>* exportedConstants;
-  public @property (copy, readonly) NSString* name;
-  public @property (strong) id<RCTBridgeModule> instance;
-  public @property (strong, readonly) Class moduleClass;
-  public @property (strong, readonly) dispatch_queue_t methodQueue;
-  public @property (weak) id<RCTModuleDataCallInvokerProvider> callInvokerProvider;
-  public virtual void gatherConstants();
-}
-
 interface RCTModuleMethod : public NSObject <RCTBridgeMethod> {
   public @property (assign, readonly) Class moduleClass;
   public @property (assign, readonly) SEL selector;
@@ -1426,9 +1404,9 @@ interface RCTModuleProviders : public NSObject {
 
 interface RCTModuleRegistry : public NSObject {
   public virtual BOOL moduleIsInitialized:(Class moduleClass);
-  public virtual id moduleForClass:(Class moduleClass);
-  public virtual id moduleForName:(const char* moduleName);
-  public virtual id moduleForName:lazilyLoadIfNecessary:(const char* moduleName, BOOL lazilyLoad);
+  public virtual _Nullable id moduleForClass:(Class moduleClass);
+  public virtual _Nullable id moduleForName:(const char* moduleName);
+  public virtual _Nullable id moduleForName:lazilyLoadIfNecessary:(const char* moduleName, BOOL lazilyLoad);
   public virtual void setTurboModuleRegistry:(id<RCTTurboModuleRegistry> turboModuleRegistry);
 }
 
@@ -2158,8 +2136,8 @@ interface RCTViewManager : public NSObject <RCTBridgeModule> {
 }
 
 interface RCTViewRegistry : public NSObject {
-  public virtual UIView* viewForReactTag:(NSNumber* reactTag);
-  public virtual void addUIBlock:(RCTViewRegistryUIBlock block);
+  public virtual _Nullable UIView* viewForReactTag:(NSNumber* reactTag);
+  public virtual void addUIBlock:(_Nullable RCTViewRegistryUIBlock block);
   public virtual void setBridgelessComponentViewProvider:(RCTBridgelessComponentViewProvider bridgelessComponentViewProvider);
 }
 
@@ -2622,8 +2600,8 @@ protocol RCTBridgeModule : public NSObject {
   public @property (weak) RCTCallableJSModules* callableJSModules;
   public @property (weak) RCTModuleRegistry* moduleRegistry;
   public @property (weak, readonly) RCTBridge* bridge;
-  public virtual NSArray<id<RCTBridgeMethod>>* methodsToExport();
   public virtual NSDictionary* constantsToExport();
+  public virtual _Nullable NSArray<id<RCTBridgeMethod>>* methodsToExport();
   public virtual static BOOL requiresMainQueueSetup();
   public virtual static NSString* moduleName();
   public virtual void batchDidComplete();
@@ -2878,10 +2856,6 @@ protocol RCTLocalizationProtocol : public NSObject {
 }
 
 protocol RCTModalHostViewViewProtocol : public NSObject {
-}
-
-protocol RCTModuleDataCallInvokerProvider : public NSObject {
-  public virtual RCTCallInvoker* callInvokerForModuleData:(RCTModuleData* moduleData);
 }
 
 protocol RCTModuleProvider : public NSObjectNSObject {
@@ -12822,13 +12796,13 @@ constexpr bool facebook::yoga::operator>=(facebook::yoga::FloatOptional lhs, fac
 constexpr facebook::yoga::FloatOptional facebook::yoga::operator+(facebook::yoga::FloatOptional lhs, facebook::yoga::FloatOptional rhs);
 
 class facebook::yoga::Config : public YGConfig {
-  public Config(YGLogger logger);
   public YGNodeRef cloneNode(YGNodeConstRef node, YGNodeConstRef owner, size_t childIndex) const;
   public bool hasErrata(facebook::yoga::Errata errata) const;
   public bool useWebDefaults() const;
+  public constexpr Config(YGLogger logger);
   public facebook::yoga::Errata getErrata() const;
   public float getPointScaleFactor() const;
-  public static const facebook::yoga::Config& getDefault();
+  public static constexpr const facebook::yoga::Config& getDefault();
   public uint32_t getVersion() const noexcept;
   public void addErrata(facebook::yoga::Errata errata);
   public void log(const facebook::yoga::Node* node, facebook::yoga::LogLevel logLevel, const char* format, va_list args) const;

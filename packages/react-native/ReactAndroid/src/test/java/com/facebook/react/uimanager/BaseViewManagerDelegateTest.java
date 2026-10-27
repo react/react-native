@@ -16,13 +16,17 @@ import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests;
 import com.facebook.react.views.view.ReactViewGroup;
 import com.facebook.react.views.view.ReactViewManager;
+import com.facebook.testutils.shadows.ShadowSoLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(shadows = ShadowSoLoader.class)
 public class BaseViewManagerDelegateTest {
   private ReactViewManager viewManager;
   private ReactViewGroup view;
@@ -34,7 +38,9 @@ public class BaseViewManagerDelegateTest {
     // (non-JNI) accessor so Robolectric doesn't try to load react_featureflagsjni.
     ReactNativeFeatureFlagsForTests.INSTANCE.setUp();
     viewManager = mock(ReactViewManager.class);
-    ReactApplicationContext context = ReactTestHelper.createCatalystContextForTest();
+    ReactApplicationContext context =
+        ReactTestHelper.INSTANCE.createTestReactApplicationContext(
+            RuntimeEnvironment.getApplication());
     ThemedReactContext themedReactContext = new ThemedReactContext(context, context, null, -1);
     view = new ReactViewGroup(themedReactContext);
     delegate = new BaseViewManagerDelegate<>(viewManager) {};

@@ -13,10 +13,10 @@ import android.os.Bundle
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.facebook.react.R
-import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
@@ -26,33 +26,35 @@ import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
-@Config(shadows = [ShadowArguments::class])
+@Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class ReactAccessibilityDelegateTest {
   private lateinit var view: ReactViewGroup
-  private lateinit var reactContext: BridgeReactContext
+  private lateinit var reactContext: ReactApplicationContext
   private lateinit var themedReactContext: ThemedReactContext
   private lateinit var accessibilityDelegate: ReactAccessibilityDelegate
 
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    reactContext = BridgeReactContext(RuntimeEnvironment.getApplication())
-    reactContext.initializeWithInstance(createMockCatalystInstance())
+    reactContext = spy(createTestReactApplicationContext(RuntimeEnvironment.getApplication()))
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     view = ReactViewGroup(themedReactContext).apply { id = 100 }
     accessibilityDelegate = ReactAccessibilityDelegate(view, false, 0)
@@ -266,6 +268,7 @@ class ReactAccessibilityDelegateTest {
     whenever(uiManager.eventDispatcher).thenReturn(eventDispatcher)
     val uiManagerHelper = mockStatic(UIManagerHelper::class.java)
     try {
+      doReturn(true).whenever(reactContext).hasActiveReactInstance()
       uiManagerHelper
           .`when`<UIManager?> {
             UIManagerHelper.getUIManager(themedReactContext, UIManagerType.FABRIC)

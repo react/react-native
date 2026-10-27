@@ -17,17 +17,20 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowManager
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.CatalystInstance
-import com.facebook.react.bridge.ReactTestHelper
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.UIManagerModule
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
@@ -38,25 +41,24 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
-@Config(shadows = [ShadowArguments::class])
+@Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class RootViewTest {
 
-  private lateinit var reactContext: BridgeReactContext
-  private lateinit var catalystInstanceMock: CatalystInstance
+  private lateinit var reactContext: ReactApplicationContext
 
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
 
-    catalystInstanceMock = ReactTestHelper.createMockCatalystInstance()
-    reactContext = spy(BridgeReactContext(RuntimeEnvironment.getApplication()))
-    reactContext.initializeWithInstance(catalystInstanceMock)
+    reactContext = spy(createTestReactApplicationContext(RuntimeEnvironment.getApplication()))
+    doNothing().whenever(reactContext).emitDeviceEvent(any(), any())
 
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(reactContext)
     val uiManagerModuleMock: UIManagerModule = mock()
-    whenever(catalystInstanceMock.getNativeModule(UIManagerModule::class.java))
-        .thenReturn(uiManagerModuleMock)
+    doReturn(uiManagerModuleMock)
+        .whenever(reactContext)
+        .getNativeModule(UIManagerModule::class.java)
   }
 
   @Test

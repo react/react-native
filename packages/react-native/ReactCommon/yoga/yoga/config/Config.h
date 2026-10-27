@@ -32,7 +32,7 @@ bool configUpdateInvalidatesLayout(
 
 class YG_EXPORT Config : public ::YGConfig {
  public:
-  explicit Config(YGLogger logger) : logger_{logger} {}
+  explicit constexpr Config(YGLogger logger) : logger_{logger} {}
 
   void setUseWebDefaults(bool useWebDefaults);
   bool useWebDefaults() const;
@@ -66,9 +66,20 @@ class YG_EXPORT Config : public ::YGConfig {
   YGNodeRef
   cloneNode(YGNodeConstRef node, YGNodeConstRef owner, size_t childIndex) const;
 
+#if defined(_WIN32)
   static const Config& getDefault();
+#else
+  static constexpr const Config& getDefault() {
+    return defaultConfig_;
+  }
+#endif
 
  private:
+#if !defined(_WIN32)
+  // NOLINTNEXTLINE(facebook-hte-NonPodStaticDeclaration)
+  static constinit const Config defaultConfig_;
+#endif
+
   YGCloneNodeFunc cloneNodeCallback_{nullptr};
   YGLogger logger_{};
 
@@ -81,6 +92,10 @@ class YG_EXPORT Config : public ::YGConfig {
   float pointScaleFactor_ = 1.0f;
   void* context_ = nullptr;
 };
+
+#if !defined(_WIN32)
+inline constexpr Config Config::defaultConfig_{nullptr};
+#endif
 
 inline Config* resolveRef(const YGConfigRef ref) {
   return static_cast<Config*>(ref);

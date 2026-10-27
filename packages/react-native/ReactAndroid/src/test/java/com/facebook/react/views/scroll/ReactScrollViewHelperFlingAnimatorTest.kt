@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReactTestHelper
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.Event
@@ -63,10 +64,12 @@ class ReactScrollViewHelperFlingAnimatorTest {
   @Before
   @Suppress("UNCHECKED_CAST")
   fun setUp() {
+    ReactNativeFeatureFlagsForTests.setUp()
     mockChild = mock()
     mockAnimator = ValueAnimator()
     mockEventDispatcher = mock()
-    mockContext = ReactTestHelper.createCatalystContextForTest()
+    mockContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
 
     mockScrollView = mock<MockScrollView>()
 

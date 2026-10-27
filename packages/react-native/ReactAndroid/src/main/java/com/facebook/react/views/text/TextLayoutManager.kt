@@ -902,7 +902,12 @@ internal object TextLayoutManager {
             }
           }
         }
-    val enableStartOverhang = widthYogaMeasureMode == YogaMeasureMode.EXACTLY
+    // Bounds-based width is limited to text with RTL characters. An EXACTLY width usually comes
+    // from an earlier advance-based AT_MOST measurement, and LTR glyph bounds that are wider than
+    // their advances (some OEM fonts) would make a single line overflow that width and ellipsize.
+    val enableStartOverhang =
+        widthYogaMeasureMode == YogaMeasureMode.EXACTLY &&
+            TextDirectionHeuristics.ANYRTL_LTR.isRtl(text, 0, text.length)
     val layout =
         buildLayout(
             text,

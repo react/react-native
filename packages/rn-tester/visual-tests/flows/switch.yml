@@ -80,6 +80,12 @@ appId: ${APP_ID}
     id: 'initial-false-switch'
 - tapOn:
     id: 'initial-true-switch'
+- assertVisible:
+    id: 'initial-false-switch'
+    checked: true
+- assertVisible:
+    id: 'initial-true-switch'
+    checked: false
 - waitForAnimationToEnd:
     timeout: 5000
 - takeScreenshot:

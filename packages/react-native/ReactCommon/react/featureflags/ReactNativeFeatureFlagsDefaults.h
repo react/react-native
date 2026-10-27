@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<46e48274f8b27b9c6136b13048682252>>
+ * @generated SignedSource<<35e8175277baa31d135d802ef5a5e6f1>>
  */
 
 /**
@@ -145,8 +145,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    return true;
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    return false;
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -298,6 +298,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxWebSocketEventsEnabled() override {
+    return false;
+  }
+
+  bool keepTimersRunningWhileHostPausedAndroid() override {
     return false;
   }
 

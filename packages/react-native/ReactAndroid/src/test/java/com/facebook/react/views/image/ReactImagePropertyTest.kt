@@ -5,10 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO T207169925: Migrate CatalystInstance to Reacthost and remove the Suppress("DEPRECATION")
-// annotation
-@file:Suppress("DEPRECATION")
-
 package com.facebook.react.views.image
 
 import android.graphics.Color
@@ -19,10 +15,9 @@ import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder
 import com.facebook.drawee.drawable.ScalingUtils
 import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.modules.fresco.ReactNetworkImageRequest
@@ -37,6 +32,7 @@ import com.facebook.react.util.RNLog
 import com.facebook.react.views.imagehelper.ImageSource
 import com.facebook.soloader.SoLoader
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -61,18 +57,18 @@ import org.robolectric.annotation.Config
  * Verify that [com.facebook.drawee.drawable.ScalingUtils] properties are being applied correctly by
  * [ReactImageManager].
  */
-@Config(shadows = [ShadowArguments::class])
+@Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class ReactImagePropertyTest {
 
-  private lateinit var context: BridgeReactContext
-  private lateinit var catalystInstanceMock: CatalystInstance
+  private lateinit var context: ReactApplicationContext
   private lateinit var themeContext: ThemedReactContext
   private lateinit var rnLog: MockedStatic<RNLog>
   private lateinit var flogMock: MockedStatic<FLog>
 
   @Before
   fun setup() {
+    ReactNativeFeatureFlagsForTests.setUp()
 
     rnLog = mockStatic(RNLog::class.java)
     rnLog.`when`<Boolean> { RNLog.w(any(), anyString()) }.thenAnswer {}
@@ -80,14 +76,10 @@ class ReactImagePropertyTest {
     flogMock = mockStatic(FLog::class.java)
 
     SoLoader.setInTestMode()
-    context = BridgeReactContext(RuntimeEnvironment.getApplication())
-    catalystInstanceMock = createMockCatalystInstance()
-    context.initializeWithInstance(catalystInstanceMock)
+    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themeContext = ThemedReactContext(context, context, null, -1)
     Fresco.initialize(context)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
-
-    ReactNativeFeatureFlagsForTests.setUp()
   }
 
   @After

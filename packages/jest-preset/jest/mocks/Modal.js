@@ -16,6 +16,7 @@ const mockComponent =
 
 type TModal = component(...ModalProps);
 
+// $FlowFixMe[incompatible-type]
 const BaseComponent = mockComponent(
   'react-native/Libraries/Modal/Modal',
   null, // instanceMethods

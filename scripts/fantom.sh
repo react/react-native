@@ -33,7 +33,7 @@ for arg in "$@"; do
   esac
 done
 
-if [[ -n "$FANTOM_RUN_BENCHMARKS" ]]; then
+if [[ -n "$FANTOM_RUN_BENCHMARKS" || -n "$FANTOM_DEBUG_JS" ]]; then
   ARGS+=("--runInBand")
 fi
 

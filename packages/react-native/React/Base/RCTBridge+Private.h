@@ -8,8 +8,6 @@
 #import <React/RCTBridge.h>
 
 @class RCTModuleRegistry;
-@class RCTModuleData;
-@protocol RCTJavaScriptExecutor;
 
 #if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXTERN NSArray<Class> *RCTGetModuleClasses(void);
@@ -18,22 +16,9 @@ RCT_EXTERN void RCTRegisterModule(Class);
 
 @interface RCTBridge ()
 
-// Used for the profiler flow events between JS and native
-@property (nonatomic, assign) int64_t flowID;
-@property (nonatomic, assign) CFMutableDictionaryRef flowIDMap;
-@property (nonatomic, strong) NSLock *flowIDMapLock;
-
-// Used by RCTDevMenu
-@property (nonatomic, copy) NSString *bridgeDescription;
-
-+ (instancetype)currentBridge;
-+ (void)setCurrentBridge:(RCTBridge *)bridge;
-
-/**
- * Bridge setup code - creates an instance of RCTBachedBridge. Exposed for
- * test only
- */
-- (void)setUp;
++ (instancetype)currentBridge __deprecated_msg("This API will be removed along with the legacy architecture.");
++ (void)setCurrentBridge:(RCTBridge *)bridge
+    __deprecated_msg("This API will be removed along with the legacy architecture.");
 
 /**
  * This method is used to invoke a callback that was registered in the
@@ -49,42 +34,15 @@ RCT_EXTERN void RCTRegisterModule(Class);
 @property (atomic, strong) RCTBridge *batchedBridge;
 
 /**
- * The block that creates the modules' instances to be added to the bridge.
- * Exposed for RCTCxxBridge
- */
-@property (nonatomic, copy, readonly) RCTBridgeModuleListProvider moduleProvider;
-
-/**
- * Used by RCTDevMenu to override the `hot` param of the current bundleURL.
- */
-@property (nonatomic, strong, readwrite) NSURL *bundleURL;
-
-/**
  * An object that allows one to require NativeModules/TurboModules.
  * RCTModuleRegistry is implemented in bridgeless mode and bridge mode.
- * Used by RCTRootView.
  */
-@property (nonatomic, strong, readonly) RCTModuleRegistry *moduleRegistry;
+@property (nonatomic, strong, readonly) RCTModuleRegistry *moduleRegistry __deprecated_msg(
+    "Access RCTModuleRegistry directly instead; this property will be removed.");
 
 @end
 
 @interface RCTBridge (RCTCxxBridge)
-
-/**
- * Used by RCTModuleData
- */
-
-@property (nonatomic, weak, readonly) RCTBridge *parentBridge;
-
-/**
- * Used by RCTModuleData
- */
-@property (nonatomic, assign, readonly) BOOL moduleSetupComplete;
-
-/**
- * Called on the child bridge to run the executor and start loading.
- */
-- (void)start;
 
 /**
  * Dispatch work to a module's queue - this is also supports the fake RCTJSThread
@@ -93,40 +51,8 @@ RCT_EXTERN void RCTRegisterModule(Class);
 - (void)dispatchBlock:(dispatch_block_t)block queue:(dispatch_queue_t)queue;
 
 /**
- * Get the module data for a given module name. Used by UIManager to implement
- * the `dispatchViewManagerCommand` method.
- */
-- (RCTModuleData *)moduleDataForName:(NSString *)moduleName;
-
-/**
  * Registers additional classes with the ModuleRegistry.
  */
 - (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules;
-
-/**
- * Updates the ModuleRegistry with a pre-initialized instance.
- */
-- (void)updateModuleWithInstance:(id<RCTBridgeModule>)instance;
-
-/**
- * Systrace profiler toggling methods exposed for the RCTDevMenu
- */
-- (void)startProfiling;
-- (void)stopProfiling:(void (^)(NSData *))callback;
-
-/**
- * Synchronously call a specific native module's method and return the result
- */
-- (id)callNativeModule:(NSUInteger)moduleID method:(NSUInteger)methodID params:(NSArray *)params;
-
-/**
- * Hook exposed for RCTLog to send logs to JavaScript when not running in JSC
- */
-- (void)logMessage:(NSString *)message level:(NSString *)level;
-
-/**
- * Allow super fast, one time, timers to skip the queue and be directly executed
- */
-- (void)_immediatelyCallTimer:(NSNumber *)timer;
 
 @end

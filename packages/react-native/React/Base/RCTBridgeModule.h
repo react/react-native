@@ -24,11 +24,13 @@
 @class RCTCallableJSModules;
 @class RCTPerformanceLogger;
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * The type of a block that is capable of sending a response to a bridged
  * operation. Use this for returning callback methods to JS.
  */
-typedef void (^RCTResponseSenderBlock)(NSArray *response);
+typedef void (^RCTResponseSenderBlock)(NSArray *_Nullable response);
 
 /**
  * The type of a block that is capable of sending an error response to a
@@ -40,14 +42,14 @@ typedef void (^RCTResponseErrorBlock)(NSError *error);
  * Block that bridge modules use to resolve the JS promise waiting for a result.
  * Nil results are supported and are converted to JS's undefined value.
  */
-typedef void (^RCTPromiseResolveBlock)(id result);
+typedef void (^RCTPromiseResolveBlock)(id _Nullable result);
 
 /**
  * Block that bridge modules use to reject the JS promise waiting for a result.
  * The error may be nil but it is preferable to pass an NSError object for more
  * precise error messages.
  */
-typedef void (^RCTPromiseRejectBlock)(NSString *code, NSString *message, NSError *error);
+typedef void (^RCTPromiseRejectBlock)(NSString *_Nullable code, NSString *_Nullable message, NSError *_Nullable error);
 
 RCT_EXTERN_C_BEGIN
 
@@ -127,7 +129,15 @@ RCT_EXTERN_C_END
 
 // Implemented by RCT_EXPORT_MODULE. When absent, callers fall back to the ObjC class
 // name, so a TurboModule resolved via a provider or plugin socket need not declare it.
+// Deliberately left without nullability: implementations inside NS_ASSUME_NONNULL regions
+// are implicitly nonnull while others (e.g. Expo's EXModuleRegistryHolderReactModule) are
+// explicitly nullable, and either specifier here would conflict with one of them.
+#pragma clang assume_nonnull end
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullability-completeness"
 + (NSString *)moduleName;
+#pragma clang diagnostic pop
+#pragma clang assume_nonnull begin
 
 /**
  * A reference to the RCTModuleRegistry. Useful for modules that require access
@@ -135,7 +145,7 @@ RCT_EXTERN_C_END
  * moduleRegistry = _moduleRegistry;`. If using Swift, add
  * `@objc var moduleRegistry: RCTModuleRegistry!` to your module.
  */
-@property (nonatomic, weak, readwrite) RCTModuleRegistry *moduleRegistry;
+@property (nonatomic, weak, nullable, readwrite) RCTModuleRegistry *moduleRegistry;
 
 /**
  * A reference to the RCTViewRegistry. Useful for modules that query UIViews,
@@ -146,7 +156,7 @@ RCT_EXTERN_C_END
  * viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;`. If using Swift, add
  * `@objc var viewRegistry_DEPRECATED: RCTViewRegistry!` to your module.
  */
-@property (nonatomic, weak, readwrite) RCTViewRegistry *viewRegistry_DEPRECATED;
+@property (nonatomic, weak, nullable, readwrite) RCTViewRegistry *viewRegistry_DEPRECATED;
 
 /**
  * A reference to the RCTBundleManager. Useful for modules that need to read
@@ -156,7 +166,7 @@ RCT_EXTERN_C_END
  * _bundleManager;`. If using Swift, add `@objc var bundleManager:
  * RCTBundleManager!` to your module.
  */
-@property (nonatomic, weak, readwrite) RCTBundleManager *bundleManager;
+@property (nonatomic, weak, nullable, readwrite) RCTBundleManager *bundleManager;
 
 /**
  * A reference to an RCTCallableJSModules. Useful for modules that need to
@@ -167,7 +177,7 @@ RCT_EXTERN_C_END
  * _callableJSModules;`. If using Swift, add `@objc var callableJSModules:
  * RCTCallableJSModules!` to your module.
  */
-@property (nonatomic, weak, readwrite) RCTCallableJSModules *callableJSModules;
+@property (nonatomic, weak, nullable, readwrite) RCTCallableJSModules *callableJSModules;
 
 /**
  * The launch options that were used to initialize the React instance.
@@ -195,7 +205,7 @@ RCT_EXTERN_C_END
  * To implement this in your module, just add `@synthesize bridge = _bridge;`
  * If using Swift, add `@objc var bridge: RCTBridge!` to your module.
  */
-@property (nonatomic, weak, readonly) RCTBridge *bridge RCT_DEPRECATED;
+@property (nonatomic, weak, nullable, readonly) RCTBridge *bridge RCT_DEPRECATED;
 
 /**
  * This property is deprecated. This selector used to support two functionalities.
@@ -379,7 +389,7 @@ RCT_EXTERN_C_END
  * methods defined using the macros above.  This method is called only once,
  * before registration.
  */
-- (NSArray<id<RCTBridgeMethod>> *)methodsToExport;
+- (nullable NSArray<id<RCTBridgeMethod>> *)methodsToExport;
 
 /**
  * Injects constants into JS. These constants are made accessible via NativeModules.ModuleName.X. It is only called once
@@ -405,15 +415,15 @@ RCT_EXTERN_C_END
 @interface RCTModuleRegistry : NSObject
 - (void)setTurboModuleRegistry:(id<RCTTurboModuleRegistry>)turboModuleRegistry;
 
-- (id)moduleForName:(const char *)moduleName;
-- (id)moduleForName:(const char *)moduleName lazilyLoadIfNecessary:(BOOL)lazilyLoad;
+- (nullable id)moduleForName:(const char *)moduleName;
+- (nullable id)moduleForName:(const char *)moduleName lazilyLoadIfNecessary:(BOOL)lazilyLoad;
 - (BOOL)moduleIsInitialized:(Class)moduleClass;
 
 // Note: This method lazily load the module as necessary.
-- (id)moduleForClass:(Class)moduleClass;
+- (nullable id)moduleForClass:(Class)moduleClass;
 @end
 
-typedef UIView * (^RCTBridgelessComponentViewProvider)(NSNumber *);
+typedef UIView *_Nullable (^RCTBridgelessComponentViewProvider)(NSNumber *);
 
 typedef void (^RCTViewRegistryUIBlock)(RCTViewRegistry *viewRegistry);
 
@@ -423,15 +433,15 @@ typedef void (^RCTViewRegistryUIBlock)(RCTViewRegistry *viewRegistry);
 @interface RCTViewRegistry : NSObject
 - (void)setBridgelessComponentViewProvider:(RCTBridgelessComponentViewProvider)bridgelessComponentViewProvider;
 
-- (UIView *)viewForReactTag:(NSNumber *)reactTag;
-- (void)addUIBlock:(RCTViewRegistryUIBlock)block;
+- (nullable UIView *)viewForReactTag:(NSNumber *)reactTag;
+- (void)addUIBlock:(nullable RCTViewRegistryUIBlock)block;
 @end
 
 typedef void (^RCTBridgelessJSModuleMethodInvoker)(
     NSString *moduleName,
     NSString *methodName,
-    NSArray *args,
-    dispatch_block_t onComplete);
+    NSArray *_Nullable args,
+    dispatch_block_t _Nullable onComplete);
 
 /**
  * A class that allows NativeModules to call methods on JavaScript modules registered
@@ -440,9 +450,11 @@ typedef void (^RCTBridgelessJSModuleMethodInvoker)(
 @interface RCTCallableJSModules : NSObject
 - (void)setBridgelessJSModuleMethodInvoker:(RCTBridgelessJSModuleMethodInvoker)bridgelessJSModuleMethodInvoker;
 
-- (void)invokeModule:(NSString *)moduleName method:(NSString *)methodName withArgs:(NSArray *)args;
+- (void)invokeModule:(NSString *)moduleName method:(NSString *)methodName withArgs:(nullable NSArray *)args;
 - (void)invokeModule:(NSString *)moduleName
               method:(NSString *)methodName
-            withArgs:(NSArray *)args
-          onComplete:(dispatch_block_t)onComplete;
+            withArgs:(nullable NSArray *)args
+          onComplete:(nullable dispatch_block_t)onComplete;
 @end
+
+NS_ASSUME_NONNULL_END

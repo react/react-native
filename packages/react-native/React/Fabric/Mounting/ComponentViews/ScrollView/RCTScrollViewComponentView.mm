@@ -8,7 +8,6 @@
 #import "RCTScrollViewComponentView.h"
 
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Private.h>
 #import <React/RCTConstants.h>
 #import <React/RCTScrollEvent.h>
 

@@ -116,16 +116,6 @@ const getPreset = (src, options, babel) => {
     transformProfile === 'hermes-stable' ||
     transformProfile === 'hermes-canary';
 
-  // We enable regenerator in Hermes V1 dev builds for the time being because
-  // Hermes V1 doesn't yet fully support debugging native generators.
-  // (e.g. - it's not possible to inspect local variables when paused in a
-  // generator).
-  //
-  // Use native generators in release mode because it has already yielded perf
-  // wins. The next release of Hermes V1 will close this gap, so this won't
-  // be permanent.
-  const enableRegenerator = isHermesProfile && dev;
-
   // Preserve class syntax and related features for Hermes V1 profiles.
   const preserveClasses = isHermesProfile;
 
@@ -155,20 +145,10 @@ const getPreset = (src, options, babel) => {
   const enableBabelRuntime =
     options.enableBabelRuntime ?? babel?.caller(getEnableBabelRuntime) ?? true;
 
-  // When @babel/plugin-transform-runtime is disabled, generators and async
-  // functions are lowered by @babel/plugin-transform-regenerator, which cannot
-  // handle destructuring patterns inside them (e.g. `const {a} = await x()`).
-  const usesRegeneratorTransform =
-    enableRegenerator && enableBabelRuntime === false;
-
   // Preserve destructuring syntax by default, as Hermes supports it natively.
-  // It is still transformed when the regenerator transform is in use, because
-  // that transform requires destructuring to be lowered first.
-  const preserveDestructuring =
-    !usesRegeneratorTransform &&
-    TRUE_VALS.has(
-      options.customTransformOptions?.unstable_preserveDestructuring ?? true,
-    );
+  const preserveDestructuring = TRUE_VALS.has(
+    options.customTransformOptions?.unstable_preserveDestructuring ?? true,
+  );
 
   const isNull = src == null;
   const hasClass = isNull || src.indexOf('class') !== -1;
@@ -225,12 +205,6 @@ const getPreset = (src, options, babel) => {
   extraPlugins.push([
     require('@babel/plugin-transform-named-capturing-groups-regex'),
   ]);
-  // Needed for regenerator
-  if (enableRegenerator) {
-    extraPlugins.push([
-      require('@babel/plugin-transform-optional-catch-binding'),
-    ]);
-  }
 
   if (!preserveDestructuring) {
     extraPlugins.push([
@@ -251,20 +225,6 @@ const getPreset = (src, options, babel) => {
   ) {
     extraPlugins.push([require('@babel/plugin-transform-react-display-name')]);
   }
-  // This is also needed for regenerator
-  if (enableRegenerator && (isNull || src.indexOf('?.') !== -1)) {
-    extraPlugins.push([
-      require('@babel/plugin-transform-optional-chaining'),
-      {loose: true},
-    ]);
-  }
-  // This is also needed for regenerator
-  if (enableRegenerator && (isNull || src.indexOf('??') !== -1)) {
-    extraPlugins.push([
-      require('@babel/plugin-transform-nullish-coalescing-operator'),
-      {loose: true},
-    ]);
-  }
 
   if (dev && !options.disableDeepImportWarnings) {
     firstPartyPlugins.push([require('../plugin-warn-on-deep-imports.js')]);
@@ -273,17 +233,6 @@ const getPreset = (src, options, babel) => {
   if (dev && !options.useTransformReactJSXExperimental) {
     extraPlugins.push([require('@babel/plugin-transform-react-jsx-source')]);
     extraPlugins.push([require('@babel/plugin-transform-react-jsx-self')]);
-  }
-
-  if (
-    enableRegenerator &&
-    (isNull || (src.indexOf('for') !== -1 && src.indexOf('of') !== -1))
-  ) {
-    // Needed for regenerator
-    extraPlugins.push([
-      require('@babel/plugin-transform-for-of'),
-      {loose: true},
-    ]);
   }
 
   if (enableBabelRuntime !== false) {
@@ -298,15 +247,13 @@ const getPreset = (src, options, babel) => {
       require('@babel/plugin-transform-runtime'),
       {
         helpers: true,
-        regenerator: enableRegenerator,
+        regenerator: false,
         ...(isVersion && {version: enableBabelRuntime}),
         ...(babelRuntimeModuleName != null && {
           moduleName: babelRuntimeModuleName,
         }),
       },
     ]);
-  } else if (enableRegenerator) {
-    extraPlugins.push([require('@babel/plugin-transform-regenerator')]);
   }
 
   return {

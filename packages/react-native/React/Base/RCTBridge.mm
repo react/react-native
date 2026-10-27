@@ -24,10 +24,8 @@
 #import "RCTInspectorUtils.h"
 #import "RCTJSThread.h"
 #import "RCTLog.h"
-#import "RCTModuleData.h"
 #import "RCTPausedInDebuggerOverlayController.h"
 #import "RCTPerformanceLogger.h"
-#import "RCTProfile.h"
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
 
@@ -322,10 +320,6 @@ void RCTUIManagerSetDispatchAccessibilityManagerInitOntoMain(BOOL enabled)
 - (BOOL)isBatchActive
 {
   return NO;
-}
-
-- (void)setUp
-{
 }
 
 - (void)enqueueCallback:(NSNumber *)cbID args:(NSArray *)args

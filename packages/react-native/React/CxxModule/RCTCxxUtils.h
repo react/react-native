@@ -11,7 +11,6 @@
 #import <Foundation/Foundation.h>
 
 @class RCTBridge;
-@class RCTModuleData;
 
 namespace facebook::react {
 

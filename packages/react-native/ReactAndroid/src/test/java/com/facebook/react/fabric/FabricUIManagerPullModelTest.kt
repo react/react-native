@@ -39,6 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadow.api.Shadow
@@ -76,7 +77,8 @@ class FabricUIManagerPullModelTest {
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
     overrideFeatureFlags()
-    reactContext = ReactTestHelper.createCatalystContextForTest()
+    reactContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     underTest =
         FabricUIManager(
             reactContext,

@@ -17,8 +17,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.bridge.ScrollEndedListener
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.DisplayMetricsHolder
@@ -27,6 +27,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.soloader.SoLoader
+import com.facebook.testutils.shadows.ShadowSoLoader
 import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
@@ -43,14 +44,16 @@ import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 
 /** Cancelled drags must emit END_DRAG once and complete native scrolling cleanup. */
 @SuppressLint("DeprecatedClass", "DeprecatedMethod")
+@Config(shadows = [ShadowSoLoader::class])
 @RunWith(ParameterizedRobolectricTestRunner::class)
 @LooperMode(LooperMode.Mode.PAUSED)
 class ReactScrollViewTouchCancelTest(private val kind: String) {
-  private lateinit var context: BridgeReactContext
+  private lateinit var context: ReactApplicationContext
   private lateinit var themedContext: ThemedReactContext
   private lateinit var uiManagerHelperMock: MockedStatic<UIManagerHelper>
   private lateinit var root: TestRoot
@@ -78,8 +81,7 @@ class ReactScrollViewTouchCancelTest(private val kind: String) {
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
     SoLoader.setInTestMode()
-    context = BridgeReactContext(RuntimeEnvironment.getApplication())
-    context.initializeWithInstance(createMockCatalystInstance())
+    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     context.scrollEndedListeners.addListener(scrollEndedListener)
     themedContext = ThemedReactContext(context, context, null, -1)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())

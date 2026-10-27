@@ -454,7 +454,6 @@ let reactCore = RNTarget(
   path: "React",
   searchPaths: [
     "React/I18n",
-    "React/Profiler",
     "ReactCommon/react/runtime/platform/ios", // explicit header search path to break circular dependency. RCTHost imports `RCTDefines.h` in ReactCore, ReacCore needs to import RCTHost
   ],
   linkedFrameworks: ["CoreServices"],

@@ -34,6 +34,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /**
@@ -65,7 +66,8 @@ class SurfaceMountingManagerSynchronousMountPropsTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val reactContext = ReactTestHelper.createCatalystContextForTest()
+    val reactContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     mountingManager =
         MountingManager(

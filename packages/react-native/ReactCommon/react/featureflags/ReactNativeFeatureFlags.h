@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e3c3ccaf63fcdcf48c6f02f793f77b65>>
+ * @generated SignedSource<<6887b671526bc8a3b0678e3e45b4e3b4>>
  */
 
 /**
@@ -187,9 +187,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableFlexboxAutoMinSizeInStrictMode();
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
    */
-  RN_EXPORT static bool enableFontScaleChangesUpdatingLayout();
+  RN_EXPORT static bool enableFollowUpMountItemDispatchAndroid();
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
@@ -380,6 +380,11 @@ class ReactNativeFeatureFlags {
    * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
    */
   RN_EXPORT static bool fuseboxWebSocketEventsEnabled();
+
+  /**
+   * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+   */
+  RN_EXPORT static bool keepTimersRunningWhileHostPausedAndroid();
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.

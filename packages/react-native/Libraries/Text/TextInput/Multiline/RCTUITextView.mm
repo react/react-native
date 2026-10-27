@@ -348,6 +348,15 @@ static UIColor *defaultPlaceholderColor(void)
   return [super canPerformAction:action withSender:sender];
 }
 
+// UIKit queries this when the keyboard becomes active, including when the app returns to the
+// foreground. The default implementation calls `canPerformAction:` with `paste:`, which
+// synchronously queries the system pasteboard on the main thread and can hang the app. TextInput
+// only accepts text, so opt out of image paste; text paste is unaffected.
+- (BOOL)supportsImagePaste
+{
+  return NO;
+}
+
 - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder
 {
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 && !TARGET_OS_TV

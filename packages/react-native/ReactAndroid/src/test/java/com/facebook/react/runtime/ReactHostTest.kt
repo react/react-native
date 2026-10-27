@@ -168,4 +168,38 @@ class ReactHostTest {
     reactHost.onHostDestroy(activityController.get())
     assertThat(reactHost.lifecycleState).isEqualTo(LifecycleState.BEFORE_CREATE)
   }
+
+  @Test
+  fun testActivityDestroyedDuringReload() {
+    val bgTasks = ArrayDeque<Runnable>()
+    reactHost =
+        spy(
+            ReactHostImpl(
+                activityController.get().application,
+                reactHostDelegate,
+                mock(),
+                { bgTasks.add(it) },
+                Task.IMMEDIATE_EXECUTOR,
+                false /* allowPackagerServerAccess */,
+                false /* useDevSupport */,
+            ),
+        )
+    doReturn(null).whenever(reactHost).getOrCreateReactHostInspectorTarget()
+    doNothing().whenever(reactHost).unregisterInstanceFromInspector(any())
+
+    reactHost.start()
+    while (bgTasks.isNotEmpty()) bgTasks.removeFirst().run()
+    reactHost.onHostResume(activityController.get())
+
+    reactHost.reload("Reload from testing infra")
+    reactHost.onHostPause(activityController.get())
+    reactHost.onHostDestroy(activityController.get())
+    while (bgTasks.isNotEmpty()) bgTasks.removeFirst().run()
+    assertThat(reactHost.lifecycleState).isEqualTo(LifecycleState.BEFORE_CREATE)
+
+    val newActivity = Robolectric.buildActivity(Activity::class.java).create().start().resume()
+    reactHost.onHostResume(newActivity.get())
+    val newReactContext = mockedBridgelessReactContextCtor.constructed().last()
+    verify(newReactContext).onHostResume(newActivity.get())
+  }
 }

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b5f4608f47743d0e2e9b1db3db551227>>
+ * @generated SignedSource<<a89ede36c4631b7a7709899858a7f9c9>>
  */
 
 /**
@@ -205,10 +205,10 @@ public object ReactNativeFeatureFlags {
   public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = accessor.enableFlexboxAutoMinSizeInStrictMode()
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
    */
   @JvmStatic
-  public fun enableFontScaleChangesUpdatingLayout(): Boolean = accessor.enableFontScaleChangesUpdatingLayout()
+  public fun enableFollowUpMountItemDispatchAndroid(): Boolean = accessor.enableFollowUpMountItemDispatchAndroid()
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
@@ -437,6 +437,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fuseboxWebSocketEventsEnabled(): Boolean = accessor.fuseboxWebSocketEventsEnabled()
+
+  /**
+   * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+   */
+  @JvmStatic
+  public fun keepTimersRunningWhileHostPausedAndroid(): Boolean = accessor.keepTimersRunningWhileHostPausedAndroid()
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.

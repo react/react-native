@@ -296,14 +296,6 @@ using namespace facebook;
   return YES;
 }
 
-- (void)start
-{
-  [self
-      logError:
-          @"Starting the bridge proxy does nothing. If you want to start React Native, please use RCTHost start. Nooping"
-           cmd:_cmd];
-}
-
 - (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules
 {
   [self

@@ -177,6 +177,7 @@ const Switch: component(
   ...SwitchProps,
 }): React.Node {
   const {
+    accessibilityState,
     disabled,
     ios_backgroundColor,
     onChange,
@@ -227,16 +228,15 @@ const Switch: component(
     }
   }, [value, native]);
 
+  const _disabled = disabled != null ? disabled : accessibilityState?.disabled;
+
+  const _accessibilityState: ?AccessibilityState =
+    _disabled !== accessibilityState?.disabled
+      ? {...accessibilityState, disabled: _disabled}
+      : accessibilityState;
+
   if (Platform.OS === 'android') {
     const {onTintColor, tintColor, ...androidProps} = restProps;
-    const {accessibilityState} = androidProps;
-    const _disabled =
-      disabled != null ? disabled : accessibilityState?.disabled;
-
-    const _accessibilityState: ?AccessibilityState =
-      _disabled !== accessibilityState?.disabled
-        ? {...accessibilityState, disabled: _disabled}
-        : accessibilityState;
 
     const platformProps = {
       accessibilityState: _accessibilityState,
@@ -262,6 +262,7 @@ const Switch: component(
     );
   } else {
     const platformProps = {
+      accessibilityState: _accessibilityState,
       disabled,
       onTintColor: trackColorForTrue,
       style: StyleSheet.compose(

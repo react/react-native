@@ -20,11 +20,14 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.uimanager.ViewManagerRegistry
 import com.facebook.react.views.view.ReactViewManager
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 /**
  * Tests for [SurfaceMountingManager] view lifecycle around preallocateView, deleteView, and
@@ -42,6 +45,7 @@ import org.robolectric.RobolectricTestRunner
  * See T223288217.
  */
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class])
 class SurfaceMountingManagerTest {
   private lateinit var mountingManager: MountingManager
   private lateinit var themedReactContext: ThemedReactContext
@@ -50,7 +54,8 @@ class SurfaceMountingManagerTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val reactContext = ReactTestHelper.createCatalystContextForTest()
+    val reactContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     mountingManager =
         MountingManager(

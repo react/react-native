@@ -25,6 +25,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.views.image.ReactCallerContextFactory
 import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper
 import com.facebook.testutils.shadows.ShadowArguments
@@ -45,6 +46,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /** The payload is never decoded — every test here mocks the image pipeline. */
@@ -60,7 +62,9 @@ class ImageLoaderModuleTest {
 
   @Before
   fun setUp() {
-    reactContext = ReactTestHelper.createCatalystContextForTest()
+    ReactNativeFeatureFlagsForTests.setUp()
+    reactContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     imageLoaderModule = ImageLoaderModule(reactContext)
 
     mockedHelper = mockStatic(ResourceDrawableIdHelper::class.java)

@@ -14,8 +14,10 @@ import com.facebook.proguard.annotations.DoNotStripAny
 import com.facebook.react.bridge.NativeMap
 import com.facebook.react.bridge.ReadableNativeMap
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.mapbuffer.ReadableMapBuffer
 import com.facebook.react.uimanager.ReferenceStateWrapper
+import com.facebook.react.uimanager.StateWrapper
 
 /**
  * This class holds reference to the C++ EventEmitter object. Instances of this class are created on
@@ -23,6 +25,7 @@ import com.facebook.react.uimanager.ReferenceStateWrapper
  */
 @SuppressLint("MissingNativeLoadLibrary")
 @DoNotStripAny
+@OptIn(UnstableReactNativeAPI::class)
 internal class StateWrapperImpl private constructor() : HybridClassBase(), ReferenceStateWrapper {
 
   private external fun initHybrid()
@@ -33,7 +36,7 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
 
   private external fun getStateDataReferenceImpl(): Any?
 
-  external fun updateStateImpl(map: NativeMap)
+  external fun updateStateImpl(map: NativeMap, updateMode: Int)
 
   override val stateDataMapBuffer: ReadableMapBuffer?
     get() {
@@ -67,11 +70,15 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
   }
 
   override fun updateState(map: WritableMap) {
+    updateState(map, StateWrapper.UpdateMode.Asynchronous)
+  }
+
+  override fun updateState(map: WritableMap, updateMode: StateWrapper.UpdateMode) {
     if (!isValid) {
       FLog.e(TAG, "Race between StateWrapperImpl destruction and updateState")
       return
     }
-    updateStateImpl(map as NativeMap)
+    updateStateImpl(map as NativeMap, updateMode.value)
   }
 
   override fun destroyState() {

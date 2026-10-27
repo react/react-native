@@ -258,9 +258,9 @@ void ParagraphShadowNode::updateStateIfNeeded(const Content& content) {
 #endif
 }
 
-MeasuredPreparedTextLayout* ParagraphShadowNode::findUsableLayout(
+const MeasuredPreparedTextLayout* ParagraphShadowNode::findUsableLayout(
     Float pointScaleFactor) {
-  MeasuredPreparedTextLayout* ret = nullptr;
+  const MeasuredPreparedTextLayout* ret = nullptr;
 
   if constexpr (TextLayoutManagerExtended::supportsPreparedTextLayout()) {
     // We consider the layout to be reusable, if our content measurement,
@@ -274,7 +274,7 @@ MeasuredPreparedTextLayout* ParagraphShadowNode::findUsableLayout(
     // equally sized one carried over from a previous revision.
     for (auto it = measuredLayouts_.rbegin(); it != measuredLayouts_.rend();
          ++it) {
-      auto& prevLayout = *it;
+      const auto& prevLayout = **it;
       if (prevLayout.pointScaleFactor == pointScaleFactor &&
           floatEquality(
               prevLayout.measurement.size.width, expectedSize.width) &&
@@ -312,9 +312,9 @@ Size ParagraphShadowNode::measureContent(
     // Layouts carried over from a previous revision may have been prepared
     // at another pixel density, which they can't be reused for.
     for (const auto& layout : measuredLayouts_) {
-      if (layout.layoutConstraints == layoutConstraints &&
-          layout.pointScaleFactor == layoutContext.pointScaleFactor) {
-        return layout.measurement.size;
+      if (layout->layoutConstraints == layoutConstraints &&
+          layout->pointScaleFactor == layoutContext.pointScaleFactor) {
+        return layout->measurement.size;
       }
     }
   }
@@ -340,13 +340,15 @@ Size ParagraphShadowNode::measureContent(
           preparedLayout, textLayoutContext, layoutConstraints);
 
       measuredLayouts_.push_back(
-          MeasuredPreparedTextLayout{
-              .layoutConstraints = layoutConstraints,
-              .pointScaleFactor = layoutContext.pointScaleFactor,
-              .measurement = measurement,
-              // PreparedTextLayout is not trivially copyable on all platforms
-              // NOLINTNEXTLINE(performance-move-const-arg)
-              .preparedTextLayout = std::move(preparedLayout)});
+          std::make_shared<const MeasuredPreparedTextLayout>(
+              MeasuredPreparedTextLayout{
+                  .layoutConstraints = layoutConstraints,
+                  .pointScaleFactor = layoutContext.pointScaleFactor,
+                  .measurement = measurement,
+                  // PreparedTextLayout is not trivially copyable on all
+                  // platforms
+                  // NOLINTNEXTLINE(performance-move-const-arg)
+                  .preparedTextLayout = std::move(preparedLayout)}));
       assert_valid_size(measurement.size, layoutConstraints);
       return measurement.size;
     }
@@ -427,12 +429,9 @@ void ParagraphShadowNode::layout(LayoutContext layoutContext) {
 
       // Only this layout can be reused by a later revision (see the copy
       // constructor), so drop the others measured for this one.
-      if (measuredLayouts_.size() > 1) {
-        auto usedLayout = std::move(*measuredLayout);
-        measuredLayouts_.clear();
-        measuredLayouts_.push_back(std::move(usedLayout));
-        measuredLayout = &measuredLayouts_.back();
-      }
+      std::erase_if(measuredLayouts_, [&](const auto& layout) {
+        return layout.get() != measuredLayout;
+      });
 
     } else if (ReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange()) {
       MeasuredPreparedTextLayout unpreparedLayout;

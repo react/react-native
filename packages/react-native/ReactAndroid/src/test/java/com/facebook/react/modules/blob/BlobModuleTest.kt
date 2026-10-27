@@ -12,8 +12,10 @@ import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.soloader.SoLoader
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.util.UUID
@@ -26,11 +28,12 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, shadows = [ShadowArguments::class])
+@Config(manifest = Config.NONE, shadows = [ShadowArguments::class, ShadowSoLoader::class])
 class BlobModuleTest {
   private lateinit var bytes: ByteArray
   private lateinit var blobId: String
@@ -40,6 +43,7 @@ class BlobModuleTest {
 
   @Before
   fun prepareModules() {
+    ReactNativeFeatureFlagsForTests.setUp()
     mockedStaticSoLoader = mockStatic(SoLoader::class.java)
     mockedStaticSoLoader
         .`when`<Boolean> { SoLoader.loadLibrary("reactnativeblob") }
@@ -48,7 +52,7 @@ class BlobModuleTest {
     bytes = ByteArray(120)
     Random.Default.nextBytes(bytes)
 
-    context = ReactTestHelper.createCatalystContextForTest()
+    context = ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     blobModule = BlobModule(context)
     blobId = blobModule.store(bytes)
   }

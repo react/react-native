@@ -8,20 +8,25 @@
  * @format
  */
 
-const {setVersion} = require('../set-version');
-const path = require('node:path');
-
-jest.mock('../../shared/consts', () => ({
-  REPO_ROOT: path.join(__dirname, '__fixtures__', 'set-version'),
-  PACKAGES_DIR: path.join(__dirname, '__fixtures__', 'set-version', 'packages'),
-  REACT_NATIVE_PACKAGE_DIR: path.join(
-    __dirname,
-    '__fixtures__',
-    'set-version',
-    'packages',
-    'react-native',
-  ),
-}));
+jest.mock('../../shared/consts', () => {
+  const path = require('node:path');
+  return {
+    REPO_ROOT: path.join(__dirname, '__fixtures__', 'set-version'),
+    PACKAGES_DIR: path.join(
+      __dirname,
+      '__fixtures__',
+      'set-version',
+      'packages',
+    ),
+    REACT_NATIVE_PACKAGE_DIR: path.join(
+      __dirname,
+      '__fixtures__',
+      'set-version',
+      'packages',
+      'react-native',
+    ),
+  };
+});
 
 let customWriteFileExpect = null;
 const writeFileMock = jest.fn().mockImplementation((filePath, content) => {
@@ -45,25 +50,28 @@ const writeFileMock = jest.fn().mockImplementation((filePath, content) => {
   expect(content).toMatchSnapshot(normalizedFilePath);
 });
 
+// set-version's dependencies read `fs` and the repo paths when they load, so
+// both are mocked before it is required. Otherwise it writes to the real repo.
+jest.mock('node:fs', () => {
+  // $FlowFixMe[underconstrained-implicit-instantiation]
+  const originalFs = jest.requireActual('node:fs');
+
+  return {
+    ...originalFs,
+    writeFileSync: writeFileMock,
+    promises: {
+      ...originalFs.promises,
+      writeFile: writeFileMock,
+    },
+  };
+});
+
+const {setVersion} = require('../set-version');
+const path = require('node:path');
+
 describe('setVersion', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  beforeAll(() => {
-    jest.mock('node:fs', () => {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
-      const originalFs = jest.requireActual('node:fs');
-
-      return {
-        ...originalFs,
-        writeFileSync: writeFileMock,
-        promises: {
-          ...originalFs.promises,
-          writeFile: writeFileMock,
-        },
-      };
-    });
   });
 
   test('updates monorepo for release-candidate', async () => {

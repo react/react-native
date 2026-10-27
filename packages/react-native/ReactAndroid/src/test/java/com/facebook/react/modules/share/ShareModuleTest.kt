@@ -13,7 +13,9 @@ import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactTestHelper
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -25,7 +27,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 
-@Config(shadows = [ShadowArguments::class])
+@Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class ShareModuleTest {
 
@@ -34,9 +36,11 @@ class ShareModuleTest {
 
   @Before
   fun prepareModules() {
+    ReactNativeFeatureFlagsForTests.setUp()
     activityController = Robolectric.buildActivity(FragmentActivity::class.java)
     val activity = activityController.create().start().resume().get()
-    val applicationContext = ReactTestHelper.createCatalystContextForTest()
+    val applicationContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     applicationContext.onNewIntent(activity, Intent())
     shareModule = ShareModule(applicationContext)
   }

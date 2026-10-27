@@ -11,6 +11,7 @@ import android.view.Window
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper
 import com.facebook.react.interfaces.ExtraWindowEventListener
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowSoLoader
 import org.junit.Before
 import org.junit.Test
@@ -31,7 +32,9 @@ class ThemedReactContextTest {
 
   @Before
   fun setUp() {
-    reactApplicationContext = ReactTestHelper.createCatalystContextForTest()
+    ReactNativeFeatureFlagsForTests.setUp()
+    reactApplicationContext =
+        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themedReactContext =
         ThemedReactContext(reactApplicationContext, RuntimeEnvironment.getApplication(), null, -1)
     window = mock()

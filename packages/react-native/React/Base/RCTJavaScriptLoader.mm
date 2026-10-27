@@ -13,7 +13,6 @@
 
 #import <cxxreact/JSBundleType.h>
 
-#import "RCTBridge.h"
 #import "RCTConvert.h"
 #import "RCTMultipartDataTask.h"
 #import "RCTPerformanceLogger.h"

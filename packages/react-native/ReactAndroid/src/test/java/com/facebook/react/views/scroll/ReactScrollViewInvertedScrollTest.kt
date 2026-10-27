@@ -16,10 +16,9 @@ import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
-import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.ReactStylesDiffMap
@@ -27,6 +26,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.soloader.SoLoader
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -38,10 +38,12 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 /** Verifies the direction of wheel and joystick scrolling in regular and inverted ScrollViews. */
 @SuppressLint("DeprecatedClass", "DeprecatedMethod")
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class])
 class ReactScrollViewInvertedScrollTest {
 
   private lateinit var themedContext: ThemedReactContext
@@ -51,8 +53,7 @@ class ReactScrollViewInvertedScrollTest {
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
     SoLoader.setInTestMode()
-    val context = BridgeReactContext(RuntimeEnvironment.getApplication())
-    context.initializeWithInstance(createMockCatalystInstance())
+    val context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
     themedContext = ThemedReactContext(context, context, null, -1)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
     uiManagerHelperMock = mockStatic(UIManagerHelper::class.java)

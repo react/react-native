@@ -5,10 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO T207169925: Migrate CatalystInstance to Reacthost and remove the Suppress("DEPRECATION")
-// annotation
-@file:Suppress("DEPRECATION")
-
 package com.facebook.react.views.textinput
 
 import android.graphics.Color
@@ -27,10 +23,9 @@ import android.view.inputmethod.EditorInfo
 import androidx.annotation.RequiresApi
 import androidx.autofill.HintConstants
 import androidx.core.content.res.ResourcesCompat.ID_NULL
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.DisplayMetricsHolder
@@ -42,19 +37,21 @@ import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHint
 import com.facebook.react.views.text.ReactTextUpdate
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 /** Verify {@link EditText} view property being applied properly by {@link ReactTextInputManager} */
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class])
 class ReactTextInputPropertyTest {
 
-  private lateinit var context: BridgeReactContext
-  private lateinit var catalystInstanceMock: CatalystInstance
+  private lateinit var context: ReactApplicationContext
   private lateinit var themedContext: ThemedReactContext
   private lateinit var manager: ReactTextInputManager
   private lateinit var view: ReactEditText
@@ -72,10 +69,9 @@ class ReactTextInputPropertyTest {
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    context = BridgeReactContext(RuntimeEnvironment.getApplication())
-    catalystInstanceMock = createMockCatalystInstance()
-    context.initializeWithInstance(catalystInstanceMock)
-    themedContext = ThemedReactContext(context, context.baseContext, null, ID_NULL)
+    val application = RuntimeEnvironment.getApplication()
+    context = createTestReactApplicationContext(application)
+    themedContext = ThemedReactContext(context, application, null, ID_NULL)
     manager = ReactTextInputManager()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
     view = manager.createViewInstance(themedContext)

@@ -26,11 +26,9 @@
 		E62F11842A5C6584000BF1C8 /* UpdatePropertiesExampleView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 272E6B3C1BEA849E001FCF37 /* UpdatePropertiesExampleView.mm */; };
 		E7C1241A22BEC44B00DA25C0 /* RNTesterIntegrationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7C1241922BEC44B00DA25C0 /* RNTesterIntegrationTests.m */; };
 		E7DB20D122B2BAA6005AC45F /* RCTBundleURLProviderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20A922B2BAA3005AC45F /* RCTBundleURLProviderTests.m */; };
-		E7DB20D222B2BAA6005AC45F /* RCTModuleInitNotificationRaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20AA22B2BAA3005AC45F /* RCTModuleInitNotificationRaceTests.m */; };
 		E7DB20D322B2BAA6005AC45F /* RCTBlobManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20AB22B2BAA3005AC45F /* RCTBlobManagerTests.m */; };
 		E7DB20D522B2BAA6005AC45F /* RCTPerformanceLoggerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20AD22B2BAA3005AC45F /* RCTPerformanceLoggerTests.m */; };
 		E7DB20D622B2BAA6005AC45F /* RCTFontTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20AF22B2BAA4005AC45F /* RCTFontTests.m */; };
-		E7DB20D722B2BAA6005AC45F /* RCTModuleInitTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20B022B2BAA4005AC45F /* RCTModuleInitTests.m */; };
 		E7DB20D822B2BAA6005AC45F /* RCTJSONTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20B122B2BAA4005AC45F /* RCTJSONTests.m */; };
 		E7DB20D922B2BAA6005AC45F /* RCTAnimationUtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20B222B2BAA4005AC45F /* RCTAnimationUtilsTests.m */; };
 		E7DB20DA22B2BAA6005AC45F /* RNTesterUnitTestsBundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E7DB20B322B2BAA4005AC45F /* RNTesterUnitTestsBundle.js */; };
@@ -56,6 +54,7 @@
 		E7DB218C22B41FCD005AC45F /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7DB218B22B41FCD005AC45F /* XCTest.framework */; };
 		F0D621C32BBB9E38005960AC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F0D621C22BBB9E38005960AC /* PrivacyInfo.xcprivacy */; };
 		F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */; };
+		F1A0B1C23D4E5F6071829322 /* RCTTurboModuleStringConversionTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */; };
 		D1A60AD11B9247A080734F02 /* RCTDevLoadingViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */; };
 /* End PBXBuildFile section */
 
@@ -112,12 +111,10 @@
 		E7DB209F22B2BA84005AC45F /* RNTesterUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RNTesterUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB20A322B2BA84005AC45F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E7DB20A922B2BAA3005AC45F /* RCTBundleURLProviderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTBundleURLProviderTests.m; sourceTree = "<group>"; };
-		E7DB20AA22B2BAA3005AC45F /* RCTModuleInitNotificationRaceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTModuleInitNotificationRaceTests.m; sourceTree = "<group>"; };
 		E7DB20AB22B2BAA3005AC45F /* RCTBlobManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTBlobManagerTests.m; sourceTree = "<group>"; };
 		E7DB20AD22B2BAA3005AC45F /* RCTPerformanceLoggerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTPerformanceLoggerTests.m; sourceTree = "<group>"; };
 		E7DB20AE22B2BAA4005AC45F /* RCTImageLoaderHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTImageLoaderHelpers.h; sourceTree = "<group>"; };
 		E7DB20AF22B2BAA4005AC45F /* RCTFontTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTFontTests.m; sourceTree = "<group>"; };
-		E7DB20B022B2BAA4005AC45F /* RCTModuleInitTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTModuleInitTests.m; sourceTree = "<group>"; };
 		E7DB20B122B2BAA4005AC45F /* RCTJSONTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTJSONTests.m; sourceTree = "<group>"; };
 		E7DB20B222B2BAA4005AC45F /* RCTAnimationUtilsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTAnimationUtilsTests.m; sourceTree = "<group>"; };
 		E7DB20B322B2BAA4005AC45F /* RNTesterUnitTestsBundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = RNTesterUnitTestsBundle.js; sourceTree = "<group>"; };
@@ -164,6 +161,7 @@
 		E7DB218B22B41FCD005AC45F /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		F0D621C22BBB9E38005960AC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTurboModuleArrayBufferTests.mm; sourceTree = "<group>"; };
+		F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTurboModuleStringConversionTests.mm; sourceTree = "<group>"; };
 		D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTDevLoadingViewTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -341,10 +339,9 @@
 				E7DB20CD22B2BAA5005AC45F /* RCTImageUtilTests.m */,
 				E7DB20B122B2BAA4005AC45F /* RCTJSONTests.m */,
 				E7DB20C322B2BAA4005AC45F /* RCTMethodArgumentTests.m */,
-				E7DB20AA22B2BAA3005AC45F /* RCTModuleInitNotificationRaceTests.m */,
-				E7DB20B022B2BAA4005AC45F /* RCTModuleInitTests.m */,
 				E7DB20CB22B2BAA5005AC45F /* RCTModuleMethodTests.mm */,
 				F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */,
+				F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */,
 				E7DB20CF22B2BAA5005AC45F /* RCTMultipartStreamReaderTests.m */,
 				A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */,
 				E7DB20BE22B2BAA4005AC45F /* RCTNativeAnimatedNodesManagerTests.m */,
@@ -754,7 +751,6 @@
 			files = (
 				A975CA6C2C05EADF0043F72A /* RCTNetworkTaskTests.m in Sources */,
 				E7DB20DF22B2BAA6005AC45F /* RCTImageLoaderTests.m in Sources */,
-				E7DB20D222B2BAA6005AC45F /* RCTModuleInitNotificationRaceTests.m in Sources */,
 				E7DB20D522B2BAA6005AC45F /* RCTPerformanceLoggerTests.m in Sources */,
 				E7DB20D922B2BAA6005AC45F /* RCTAnimationUtilsTests.m in Sources */,
 				E7DB20D122B2BAA6005AC45F /* RCTBundleURLProviderTests.m in Sources */,
@@ -762,6 +758,7 @@
 				E7DB20E022B2BAA6005AC45F /* RCTMethodArgumentTests.m in Sources */,
 				E7DB20E822B2BAA6005AC45F /* RCTModuleMethodTests.mm in Sources */,
 				F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */,
+				F1A0B1C23D4E5F6071829322 /* RCTTurboModuleStringConversionTests.mm in Sources */,
 				E7DB20E222B2BAA6005AC45F /* RCTGzipTests.m in Sources */,
 				E7DB20ED22B2BAA6005AC45F /* RCTURLUtilsTests.m in Sources */,
 				E7DB20D322B2BAA6005AC45F /* RCTBlobManagerTests.m in Sources */,
@@ -772,7 +769,6 @@
 				E7DB20DB22B2BAA6005AC45F /* RCTNativeAnimatedNodesManagerTests.m in Sources */,
 				E7DB20E722B2BAA6005AC45F /* RCTConvert_NSURLTests.m in Sources */,
 				E7DB20EA22B2BAA6005AC45F /* RCTImageUtilTests.m in Sources */,
-				E7DB20D722B2BAA6005AC45F /* RCTModuleInitTests.m in Sources */,
 				D1A60AD11B9247A080734F02 /* RCTDevLoadingViewTests.m in Sources */,
 				E7DB20E522B2BAA6005AC45F /* RCTDevMenuTests.m in Sources */,
 				E7DB20DE22B2BAA6005AC45F /* RCTUnicodeDecodeTests.m in Sources */,

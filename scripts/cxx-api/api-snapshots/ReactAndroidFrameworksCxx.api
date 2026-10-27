@@ -3781,7 +3781,7 @@ class facebook::react::State {
   public virtual facebook::react::MapBuffer getMapBuffer() const = 0;
   public virtual folly::dynamic getDynamic() const = 0;
   public virtual jni::local_ref<jobject> getJNIReference() const = 0;
-  public virtual void updateState(folly::dynamic&& data) const = 0;
+  public virtual void updateState(folly::dynamic&& data, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const = 0;
   public virtual ~State() = default;
 }
 
@@ -3805,7 +3805,7 @@ class facebook::react::StateWrapperImpl : public jni::HybridClass<facebook::reac
   public static void registerNatives();
   public std::shared_ptr<const facebook::react::State> getState() const;
   public void setState(std::shared_ptr<const facebook::react::State> state);
-  public void updateStateImpl(facebook::react::NativeMap* map);
+  public void updateStateImpl(facebook::react::NativeMap* map, jint updateMode);
 }
 
 class facebook::react::SurfaceHandler {
@@ -6913,7 +6913,7 @@ class facebook::react::ConcreteState : public facebook::react::State {
   public virtual facebook::react::MapBuffer getMapBuffer() const override;
   public virtual folly::dynamic getDynamic() const override;
   public virtual jni::local_ref<jobject> getJNIReference() const override;
-  public virtual void updateState(folly::dynamic&& data) const override;
+  public virtual void updateState(folly::dynamic&& data, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const override;
   public void updateState(facebook::react::ConcreteState::Data&& newData, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const;
   public void updateState(std::function<facebook::react::StateData::Shared(const facebook::react::ConcreteState::Data& oldData)> callback, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const;
   public ~ConcreteState() override = default;
@@ -11010,13 +11010,13 @@ constexpr bool facebook::yoga::operator>=(facebook::yoga::FloatOptional lhs, fac
 constexpr facebook::yoga::FloatOptional facebook::yoga::operator+(facebook::yoga::FloatOptional lhs, facebook::yoga::FloatOptional rhs);
 
 class facebook::yoga::Config : public YGConfig {
-  public Config(YGLogger logger);
   public YGNodeRef cloneNode(YGNodeConstRef node, YGNodeConstRef owner, size_t childIndex) const;
   public bool hasErrata(facebook::yoga::Errata errata) const;
   public bool useWebDefaults() const;
+  public constexpr Config(YGLogger logger);
   public facebook::yoga::Errata getErrata() const;
   public float getPointScaleFactor() const;
-  public static const facebook::yoga::Config& getDefault();
+  public static constexpr const facebook::yoga::Config& getDefault();
   public uint32_t getVersion() const noexcept;
   public void addErrata(facebook::yoga::Errata errata);
   public void log(const facebook::yoga::Node* node, facebook::yoga::LogLevel logLevel, const char* format, va_list args) const;

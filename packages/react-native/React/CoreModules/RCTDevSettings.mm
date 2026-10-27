@@ -17,7 +17,6 @@
 #import <React/RCTDevMenu.h>
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
-#import <React/RCTProfile.h>
 #import <React/RCTReloadCommand.h>
 #import <React/RCTUtils.h>
 #import <atomic>
@@ -128,7 +127,7 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 static RCTHandlerToken reloadToken;
 static RCTHandlerToken devMenuToken;
-static std::atomic<int> numInitializedModules{0};
+static constinit std::atomic<int> numInitializedModules{0};
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
@@ -163,11 +162,6 @@ RCT_EXPORT_MODULE()
 + (BOOL)requiresMainQueueSetup
 {
   return NO;
-}
-
-- (BOOL)_isBridgeMode
-{
-  return [self.bridge isKindOfClass:[RCTBridge class]];
 }
 
 - (instancetype)initWithDataSource:(id<RCTDevSettingsDataSource>)dataSource
@@ -221,36 +215,9 @@ RCT_EXPORT_MODULE()
 #endif
 
 #if RCT_ENABLE_INSPECTOR
-  if ([self _isBridgeMode]) {
-    // We need this dispatch to the main thread because the bridge is not yet
-    // finished with its initialisation. By the time it relinquishes control of
-    // the main thread, this operation can be performed.
-    __weak __typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-      __typeof(self) strongSelf = weakSelf;
-      if (!strongSelf) {
-        return;
-      }
-      id dispatchBlock = ^{
-        __typeof(self) strongSelf2 = weakSelf;
-        if (!strongSelf2) {
-          return;
-        }
-        NSURL *url = strongSelf2.bundleManager.bundleURL;
-        [RCTInspectorDevServerHelper connectWithBundleURL:url];
-      };
-      [strongSelf.bridge dispatchBlock:dispatchBlock queue:RCTJSThread];
-    });
-  } else {
-    NSURL *url = self.bundleManager.bundleURL;
-    [RCTInspectorDevServerHelper connectWithBundleURL:url];
-  }
+  NSURL *url = self.bundleManager.bundleURL;
+  [RCTInspectorDevServerHelper connectWithBundleURL:url];
 #endif
-
-  __weak __typeof(self) weakSelf = self;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [weakSelf _synchronizeAllSettings];
-  });
 }
 
 - (dispatch_queue_t)methodQueue
@@ -295,11 +262,7 @@ RCT_EXPORT_MODULE()
 - (BOOL)isDeviceDebuggingAvailable
 {
 #if RCT_ENABLE_INSPECTOR
-  if ([self _isBridgeMode]) {
-    return self.bridge.isInspectable;
-  } else {
-    return self.isInspectable;
-  }
+  return self.isInspectable;
 #else
   return false;
 #endif // RCT_ENABLE_INSPECTOR
@@ -341,31 +304,11 @@ RCT_EXPORT_MODULE()
 - (void)setProfilingEnabled:(BOOL)enabled
 {
   [self _updateSettingWithValue:@(enabled) forKey:kRCTDevSettingProfilingEnabled];
-  [self _profilingSettingDidChange];
 }
 
 - (BOOL)isProfilingEnabled
 {
   return [[self settingForKey:kRCTDevSettingProfilingEnabled] boolValue];
-}
-
-- (void)_profilingSettingDidChange
-{
-  BOOL enabled = self.isProfilingEnabled;
-  if (self.isHotLoadingAvailable && enabled != RCTProfileIsProfiling()) {
-    if (enabled) {
-      [self.bridge startProfiling];
-    } else {
-      __weak __typeof(self) weakSelf = self;
-      [self.bridge stopProfiling:^(NSData *logData) {
-        __typeof(self) strongSelf = weakSelf;
-        if (!strongSelf) {
-          return;
-        }
-        RCTProfileSendResult(strongSelf.bridge, @"systrace", logData);
-      }];
-    }
-  }
 }
 
 - (void)setHotLoadingEnabled:(BOOL)enabled
@@ -430,17 +373,12 @@ RCT_EXPORT_MODULE()
 
 - (void)setExecutorClass:(Class)executorClass
 {
-  _executorClass = executorClass;
-  if (self.bridge.executorClass != executorClass) {
-    // TODO (6929129): we can remove this special case test once we have better
-    // support for custom executors in the dev menu. But right now this is
-    // needed to prevent overriding a custom executor with the default if a
-    // custom executor has been set directly on the bridge
-    if (executorClass == Nil) {
-      return;
-    }
-
-    self.bridge.executorClass = executorClass;
+  if (executorClass == Nil) {
+    _executorClass = Nil;
+    return;
+  }
+  if (_executorClass != executorClass) {
+    _executorClass = executorClass;
     RCTTriggerReloadCommandListeners(@"Custom executor class reset");
   }
 }
@@ -505,15 +443,6 @@ RCT_EXPORT_MODULE()
 
 #pragma mark - Internal
 
-/**
- *  Query the data source for all possible settings and make sure we're doing the right
- *  thing for the state of each setting.
- */
-- (void)_synchronizeAllSettings
-{
-  [self _profilingSettingDidChange];
-}
-
 - (void)jsLoaded:(NSNotification *)notification
 {
   // In bridge mode, the bridge that sent the notif must be the same as the one stored in this module.
@@ -530,9 +459,6 @@ RCT_EXPORT_MODULE()
     if (!strongSelf) {
       return;
     }
-    // update state again after the bridge has finished loading
-    [strongSelf _synchronizeAllSettings];
-
     // Inspector can only be shown after JS has loaded
     if ([strongSelf isElementInspectorShown]) {
 #pragma clang diagnostic push
@@ -625,21 +551,6 @@ RCT_EXPORT_MODULE()
 @end
 
 #endif // #if RCT_DEV_MENU
-
-@implementation RCTBridge (RCTDevSettings)
-
-- (RCTDevSettings *)devSettings
-{
-#if RCT_REMOTE_PROFILE
-  return [self moduleForClass:[RCTDevSettings class]];
-#elif RCT_DEV_MENU
-  return devSettingsMenuEnabled ? [self moduleForClass:[RCTDevSettings class]] : nil;
-#else
-  return nil;
-#endif
-}
-
-@end
 
 @implementation RCTBridgeProxy (RCTDevSettings)
 
