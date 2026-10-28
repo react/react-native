@@ -204,6 +204,20 @@ class BaseTextInputShadowNode
             layoutContext.fontSizeMultiplier;
     if (meaningfulState) {
       const auto &stateData = BaseShadowNode::getStateData();
+
+      // State is synced with the React tree in `layout()`, after measurement. When
+      // `text` is empty and the children changed, `attributedStringBox` still holds
+      // the previous text, so measure the React tree instead.
+      if (BaseShadowNode::getConcreteProps().text.empty()) {
+        auto attributedString = getAttributedString(layoutContext);
+        if (!stateData.reactTreeAttributedString.isContentEqual(attributedString)) {
+          if (attributedString.isEmpty()) {
+            attributedString = getPlaceholderAttributedString(layoutContext);
+          }
+          return AttributedStringBox{attributedString};
+        }
+      }
+
       auto attributedStringBox = stateData.attributedStringBox;
       if (attributedStringBox.getMode() == AttributedStringBox::Mode::OpaquePointer ||
           !attributedStringBox.getValue().isEmpty()) {
