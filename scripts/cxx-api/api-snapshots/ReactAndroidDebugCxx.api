@@ -1269,6 +1269,7 @@ class facebook::react::FabricUIManagerBinding : public jni::HybridClass<facebook
 
 class facebook::react::FocusOrderingHelper {
   public static std::optional<facebook::react::FocusDirection> resolveFocusDirection(int direction);
+  public static std::optional<std::vector<facebook::react::Tag>> getRelativeAncestorTags(const facebook::react::ShadowNode& rootShadowNode, const facebook::react::ShadowNode& childShadowNode);
   public static std::shared_ptr<const facebook::react::ShadowNode> findShadowNodeByTagRecursively(const std::shared_ptr<const facebook::react::ShadowNode>& parentShadowNode, facebook::react::Tag tag);
   public static void traverseAndUpdateNextFocusableElement(const std::shared_ptr<const facebook::react::ShadowNode>& parentShadowNode, const std::shared_ptr<const facebook::react::ShadowNode>& focusedShadowNode, const std::shared_ptr<const facebook::react::ShadowNode>& currNode, facebook::react::FocusDirection focusDirection, const facebook::react::UIManager& uimanager, facebook::react::Rect sourceRect, std::optional<facebook::react::Rect>& nextRect, std::shared_ptr<const facebook::react::ShadowNode>& nextNode);
 }
