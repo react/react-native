@@ -551,8 +551,8 @@ void YogaLayoutableShadowNode::configureYogaTree(
     // An in-place clone can come back dirty without dirtying this node, from
     // `setSize()` in a descriptor's `adopt()` or from `completeClone()`.
     // Apply the rule of `updateYogaChildren()` so Yoga doesn't skip it.
-    if (yogaLayoutableChildren_[i]->yogaNode_.isDirty() &&
-        !yogaNode_.isDirty() &&
+    const auto& updatedYogaNode = yogaLayoutableChildren_[i]->yogaNode_;
+    if (updatedYogaNode.isDirty() && !yogaNode_.isDirty() &&
         yogaNode_.style().display() != yoga::Display::None) {
       yogaNode_.setDirty(true);
     }
