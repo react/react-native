@@ -65,7 +65,9 @@ const addListener = jest.fn((name, fn) => {
   } else if (name === 'didCompleteNetworkResponse') {
     void Promise.resolve().then(() => fn([REQUEST_ID, mockRequestError]));
   } else if (name === 'didReceiveNetworkResponse') {
-    void Promise.resolve().then(() => fn([REQUEST_ID, null, mockHeaders]));
+    void Promise.resolve().then(() =>
+      fn([REQUEST_ID, mockStatus, mockHeaders]),
+    );
   }
   return {remove: removeListener};
 });
@@ -83,10 +85,12 @@ let loadBundleFromServer: (bundlePathAndQuery: string) => Promise<void>;
 let mockHeaders: {'Content-Type': string};
 let mockDataResponse;
 let mockRequestError = null;
+let mockStatus: number = 200;
 
 beforeEach(() => {
   jest.resetModules();
   jest.clearAllMocks();
+  mockStatus = 200;
   loadBundleFromServer = require('../loadBundleFromServer').default;
 });
 
@@ -221,6 +225,26 @@ test('shows and hides the loading view around concurrent requests', async () => 
   await promise2;
   expect(loadingViewMock.hide).toHaveBeenCalledTimes(1);
 });
+
+test.each([404, 500])(
+  'loadBundleFromServer will throw for HTTP %d status',
+  async (status: number) => {
+    mockHeaders = {'Content-Type': 'application/javascript'};
+    mockDataResponse = 'Error response body';
+    mockRequestError = null;
+    mockStatus = status;
+
+    const error: unknown = await loadBundleFromServer(
+      '/Fail.bundle?platform=ios',
+    ).catch(e => e);
+
+    invariant(
+      error instanceof LoadBundleFromServerRequestError,
+      'Expected a LoadBundleFromServerRequestError',
+    );
+    expect(error.message).toMatch(new RegExp(`HTTP ${status}`));
+  },
+);
 
 test('loadBundleFromServer does not cache errors', async () => {
   mockHeaders = {'Content-Type': 'application/json'};
