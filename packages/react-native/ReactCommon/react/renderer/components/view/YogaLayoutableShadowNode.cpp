@@ -778,9 +778,11 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       auto newLayoutMetrics = layoutMetricsFromYogaNode(*childYogaNode);
       newLayoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
       newLayoutMetrics.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
+      // Store the swap that `configureYogaTree` applied, which comes from the
+      // root, not this node's direction. Otherwise a `direction` override never
+      // matches the skip check there and is configured again on every pass.
       newLayoutMetrics.wasLeftAndRightSwapped =
-          layoutContext.swapLeftAndRightInRTL &&
-          newLayoutMetrics.layoutDirection == LayoutDirection::RightToLeft;
+          layoutMetrics_.wasLeftAndRightSwapped;
 
       // Child node's layout has changed. When a node is added to
       // `affectedNodes`, onLayout event is called on the component. Comparing

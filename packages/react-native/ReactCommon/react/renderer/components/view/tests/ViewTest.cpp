@@ -952,14 +952,13 @@ TEST_F(FontScaleLayoutTest, fontScaleChangeSkipsHiddenSubtreeUntilShown) {
   EXPECT_EQ(leaf.getLayoutMetrics().frame.size.height, 15);
 }
 
-// Under an RTL root that swaps left and right, a `direction: ltr` subtree
-// stores no swap in its layout metrics, so `configureYogaTree` configures it
-// again on every pass and clones its children in place. The input-like leaf
-// comes back dirty from that clone, so its owners are dirtied and Yoga lays it
-// out again at the same geometry.
+// A `direction: ltr` subtree under an RTL root that swaps left and right must
+// be configured again only when the swap passed down changes. Configuring it
+// again clones the input-like leaf in place, which dirties it, so Yoga would
+// lay it out again on every commit.
 TEST_F(
     FontScaleLayoutTest,
-    rtlDirectionOverrideLaysOutDirtyCloneOnUnrelatedCommit) {
+    rtlDirectionOverrideIsConfiguredOnlyWhenTheSwapChanges) {
   auto rootShadowNode = std::shared_ptr<RootShadowNode>{};
   auto siblingShadowNode = std::shared_ptr<ViewShadowNode>{};
 
@@ -997,27 +996,52 @@ TEST_F(
 
   builder_.build(element);
 
-  auto layoutConstraints = rootShadowNode->getConcreteProps().layoutConstraints;
-  layoutConstraints.layoutDirection = LayoutDirection::RightToLeft;
-  layoutConstraints.minimumSize = {.width = 100, .height = 100};
-  layoutConstraints.maximumSize = {.width = 100, .height = 100};
-  auto layoutContext = rootShadowNode->getConcreteProps().layoutContext;
-  layoutContext.swapLeftAndRightInRTL = true;
-  auto rtlRootShadowNode =
-      rootShadowNode->clone(parserContext_, layoutConstraints, layoutContext);
-  EXPECT_TRUE(rtlRootShadowNode->layoutIfNeeded());
-
-  auto overrideSubtreeFrames = [](const RootShadowNode& root) {
+  auto layOutWithDirection =
+      [this](
+          const RootShadowNode& root,
+          LayoutDirection layoutDirection,
+          std::vector<const LayoutableShadowNode*>* affectedNodes) {
+        auto layoutConstraints = root.getConcreteProps().layoutConstraints;
+        layoutConstraints.layoutDirection = layoutDirection;
+        layoutConstraints.minimumSize = {.width = 100, .height = 100};
+        layoutConstraints.maximumSize = {.width = 100, .height = 100};
+        auto layoutContext = root.getConcreteProps().layoutContext;
+        layoutContext.swapLeftAndRightInRTL = true;
+        auto newRoot =
+            root.clone(parserContext_, layoutConstraints, layoutContext);
+        EXPECT_TRUE(newRoot->layoutIfNeeded(affectedNodes));
+        return newRoot;
+      };
+  auto tagsOf = [](const std::vector<const LayoutableShadowNode*>& nodes) {
+    auto tags = std::vector<Tag>{};
+    for (const auto* node : nodes) {
+      tags.push_back(node->getTag());
+    }
+    return tags;
+  };
+  auto leafOf = [](const RootShadowNode& root) {
+    return root.getChildren().at(0)->getChildren().at(1)->getChildren().at(0);
+  };
+  auto overrideSubtreeFrames = [&](const RootShadowNode& root) {
     const auto& overrideNode = root.getChildren().at(0)->getChildren().at(1);
-    const auto& leaf = overrideNode->getChildren().at(0);
     return std::pair{
         static_cast<const LayoutableShadowNode&>(*overrideNode)
             .getLayoutMetrics()
             .frame,
-        static_cast<const LayoutableShadowNode&>(*leaf)
+        static_cast<const LayoutableShadowNode&>(*leafOf(root))
             .getLayoutMetrics()
             .frame};
   };
+
+  auto ltrRootShadowNode = layOutWithDirection(
+      *rootShadowNode, LayoutDirection::LeftToRight, nullptr);
+
+  // Turning the root RTL changes the swap passed down, so the subtree is
+  // configured again and the leaf is laid out again.
+  auto affectedNodes = std::vector<const LayoutableShadowNode*>{};
+  auto rtlRootShadowNode = layOutWithDirection(
+      *ltrRootShadowNode, LayoutDirection::RightToLeft, &affectedNodes);
+  EXPECT_EQ(tagsOf(affectedNodes), (std::vector<Tag>{2, 3, 4, 5}));
   auto framesBeforeCommit = overrideSubtreeFrames(*rtlRootShadowNode);
 
   auto committedRootShadowNode =
@@ -1030,17 +1054,13 @@ TEST_F(
                 yoga::Dimension::Height, yoga::StyleSizeLength::points(10));
             return oldShadowNode.clone(ShadowNodeFragment{.props = viewProps});
           }));
-  auto affectedNodes = std::vector<const LayoutableShadowNode*>{};
+  affectedNodes.clear();
   EXPECT_TRUE(committedRootShadowNode->layoutIfNeeded(&affectedNodes));
 
   EXPECT_EQ(
       overrideSubtreeFrames(*committedRootShadowNode), framesBeforeCommit);
-
-  auto affectedTags = std::vector<Tag>{};
-  for (const auto* node : affectedNodes) {
-    affectedTags.push_back(node->getTag());
-  }
-  EXPECT_EQ(affectedTags, (std::vector<Tag>{2, 3, 4, 5}));
+  EXPECT_EQ(tagsOf(affectedNodes), (std::vector<Tag>{2, 3, 4}));
+  EXPECT_EQ(leafOf(*committedRootShadowNode), leafOf(*rtlRootShadowNode));
 }
 #endif
 
