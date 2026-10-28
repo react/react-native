@@ -60,6 +60,24 @@ class StableTouchCoordinatesHelperTest {
   }
 
   @Test
+  fun compensatesMovementOfFlippedView() {
+    view.scaleY = -1f
+    dispatch(MotionEvent.ACTION_DOWN, 100f)
+    view.offsetTopAndBottom(-50)
+
+    assertThat(dispatch(MotionEvent.ACTION_MOVE, 70f)).isEqualTo(120f)
+  }
+
+  @Test
+  fun compensatesMovementOfScaledAncestor() {
+    parent.scaleY = 2f
+    dispatch(MotionEvent.ACTION_DOWN, 100f)
+    view.offsetTopAndBottom(-50)
+
+    assertThat(dispatch(MotionEvent.ACTION_MOVE, 150f)).isEqualTo(100f)
+  }
+
+  @Test
   fun ignoresAncestorScroll() {
     dispatch(MotionEvent.ACTION_DOWN, 100f)
     parent.scrollTo(0, 50)

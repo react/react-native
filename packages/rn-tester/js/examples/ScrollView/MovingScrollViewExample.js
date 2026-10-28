@@ -30,8 +30,8 @@ const DATA = Array.from({length: 60}, (_, index) => ({
 
 const START = 400;
 
-type Mode = 'top' | 'translateY' | 'left' | 'nested';
-const MODES: Array<Mode> = ['top', 'translateY', 'left', 'nested'];
+type Mode = 'top' | 'translateY' | 'left' | 'inverted' | 'nested';
+const MODES: Array<Mode> = ['top', 'translateY', 'left', 'inverted', 'nested'];
 const MULTIPLIERS = [0, 1, 2];
 
 function MovingScrollViewExample(): React.Node {
@@ -85,17 +85,18 @@ function MovingCase({
   const horizontal = mode === 'left';
   const shift = Math.max(
     0,
-    (horizontal ? START / 2 : START) - offset * multiplier,
+    (horizontal ? START / 2 : mode === 'inverted' ? 300 : START) -
+      offset * multiplier,
   );
   const moveStyle =
-    mode === 'top'
+    mode === 'top' || mode === 'inverted'
       ? {top: shift}
       : mode === 'translateY'
         ? {transform: [{translateY: shift}]}
         : {left: shift};
   return (
     <>
-      <Text>
+      <Text style={styles.status}>
         mode={mode} multiplier={multiplier} stutters={stutters} offset=
         {offset.toFixed(1)}
       </Text>
@@ -103,6 +104,7 @@ function MovingCase({
         <FlatList
           data={DATA}
           horizontal={horizontal}
+          inverted={mode === 'inverted'}
           renderItem={({item}) => (
             <View style={horizontal ? styles.column : styles.row}>
               <Text>{item.text}</Text>
@@ -130,7 +132,7 @@ function NestedCase(): React.Node {
   const [inner, setInner] = useState(0);
   return (
     <>
-      <Text>
+      <Text style={styles.status}>
         outer={outer.toFixed(1)} inner={inner.toFixed(1)} sum=
         {(outer + inner).toFixed(1)}
       </Text>
@@ -158,6 +160,7 @@ function NestedCase(): React.Node {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
+  status: {color: 'white', backgroundColor: '#333', fontSize: 18},
   toolbar: {flexDirection: 'row', gap: 8, padding: 4},
   button: {padding: 8, backgroundColor: '#ddd'},
   active: {backgroundColor: '#8f8'},
