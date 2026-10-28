@@ -951,6 +951,97 @@ TEST_F(FontScaleLayoutTest, fontScaleChangeSkipsHiddenSubtreeUntilShown) {
   EXPECT_EQ(leaf.getLayoutMetrics().fontSizeMultiplier, 1.5);
   EXPECT_EQ(leaf.getLayoutMetrics().frame.size.height, 15);
 }
+
+// Under an RTL root that swaps left and right, a `direction: ltr` subtree
+// stores no swap in its layout metrics, so `configureYogaTree` configures it
+// again on every pass and clones its children in place. The input-like leaf
+// comes back dirty from that clone, so its owners are dirtied and Yoga lays it
+// out again at the same geometry.
+TEST_F(
+    FontScaleLayoutTest,
+    rtlDirectionOverrideLaysOutDirtyCloneOnUnrelatedCommit) {
+  auto rootShadowNode = std::shared_ptr<RootShadowNode>{};
+  auto siblingShadowNode = std::shared_ptr<ViewShadowNode>{};
+
+  // clang-format off
+  auto element =
+      Element<RootShadowNode>()
+        .reference(rootShadowNode)
+        .tag(1)
+        .children({
+          Element<ViewShadowNode>()
+            .tag(2)
+            .children({
+              Element<ViewShadowNode>()
+                .tag(3)
+                .reference(siblingShadowNode)
+                .props([] {
+                  auto sharedProps = std::make_shared<ViewProps>();
+                  sharedProps->yogaStyle.setDimension(
+                      yoga::Dimension::Width, yoga::StyleSizeLength::points(10));
+                  sharedProps->yogaStyle.setDimension(
+                      yoga::Dimension::Height, yoga::StyleSizeLength::points(10));
+                  return sharedProps;
+                }),
+              Element<ViewShadowNode>()
+                .tag(4)
+                .props([] {
+                  auto sharedProps = std::make_shared<ViewProps>();
+                  sharedProps->yogaStyle.setDirection(yoga::Direction::LTR);
+                  return sharedProps;
+                })
+                .children({Element<FontScaledInputShadowNode>().tag(5)})
+            })
+        });
+  // clang-format on
+
+  builder_.build(element);
+
+  auto layoutConstraints = rootShadowNode->getConcreteProps().layoutConstraints;
+  layoutConstraints.layoutDirection = LayoutDirection::RightToLeft;
+  layoutConstraints.minimumSize = {.width = 100, .height = 100};
+  layoutConstraints.maximumSize = {.width = 100, .height = 100};
+  auto layoutContext = rootShadowNode->getConcreteProps().layoutContext;
+  layoutContext.swapLeftAndRightInRTL = true;
+  auto rtlRootShadowNode =
+      rootShadowNode->clone(parserContext_, layoutConstraints, layoutContext);
+  EXPECT_TRUE(rtlRootShadowNode->layoutIfNeeded());
+
+  auto overrideSubtreeFrames = [](const RootShadowNode& root) {
+    const auto& overrideNode = root.getChildren().at(0)->getChildren().at(1);
+    const auto& leaf = overrideNode->getChildren().at(0);
+    return std::pair{
+        static_cast<const LayoutableShadowNode&>(*overrideNode)
+            .getLayoutMetrics()
+            .frame,
+        static_cast<const LayoutableShadowNode&>(*leaf)
+            .getLayoutMetrics()
+            .frame};
+  };
+  auto framesBeforeCommit = overrideSubtreeFrames(*rtlRootShadowNode);
+
+  auto committedRootShadowNode =
+      std::static_pointer_cast<RootShadowNode>(rtlRootShadowNode->cloneTree(
+          siblingShadowNode->getFamily(), [](const ShadowNode& oldShadowNode) {
+            auto viewProps = std::make_shared<ViewProps>();
+            viewProps->yogaStyle.setDimension(
+                yoga::Dimension::Width, yoga::StyleSizeLength::points(20));
+            viewProps->yogaStyle.setDimension(
+                yoga::Dimension::Height, yoga::StyleSizeLength::points(10));
+            return oldShadowNode.clone(ShadowNodeFragment{.props = viewProps});
+          }));
+  auto affectedNodes = std::vector<const LayoutableShadowNode*>{};
+  EXPECT_TRUE(committedRootShadowNode->layoutIfNeeded(&affectedNodes));
+
+  EXPECT_EQ(
+      overrideSubtreeFrames(*committedRootShadowNode), framesBeforeCommit);
+
+  auto affectedTags = std::vector<Tag>{};
+  for (const auto* node : affectedNodes) {
+    affectedTags.push_back(node->getTag());
+  }
+  EXPECT_EQ(affectedTags, (std::vector<Tag>{2, 3, 4, 5}));
+}
 #endif
 
 } // namespace facebook::react
