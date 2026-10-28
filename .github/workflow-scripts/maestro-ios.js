@@ -9,6 +9,7 @@
 
 const childProcess = require('child_process');
 const fs = require('fs');
+const path = require('path');
 
 const usage = `
 === Usage ===
@@ -65,20 +66,24 @@ function findAvailableSimulator(deviceModel, deviceOS) {
 
 function launchSimulator(simulator) {
   console.log(`Launching simulator ${simulator.name} (${simulator.udid})`);
-  try {
-    childProcess.execSync(`xcrun simctl boot "${simulator.udid}"`);
-  } catch (error) {
-    if (
-      !error.message.includes('Unable to boot device in current state: Booted')
-    ) {
-      throw error;
-    }
-  }
+  childProcess.execFileSync(
+    'xcrun',
+    ['simctl', 'bootstatus', simulator.udid, '-b'],
+    {
+      stdio: 'inherit',
+      timeout: 10 * 60 * 1000,
+      killSignal: 'SIGKILL',
+    },
+  );
 }
 
 function installAppOnSimulator(appPath, udid) {
   console.log(`Installing app at path ${appPath}`);
-  childProcess.execSync(`xcrun simctl install "${udid}" "${appPath}"`);
+  childProcess.execFileSync('xcrun', ['simctl', 'install', udid, appPath], {
+    stdio: 'inherit',
+    timeout: 60 * 1000,
+    killSignal: 'SIGKILL',
+  });
 }
 
 function bringSimulatorInForeground() {
@@ -94,7 +99,11 @@ function sleep(ms) {
 
 async function launchAppOnSimulator(appId, udid, isDebug) {
   console.log('Launch the app');
-  childProcess.execSync(`xcrun simctl launch "${udid}" "${appId}"`);
+  childProcess.execFileSync('xcrun', ['simctl', 'launch', udid, appId], {
+    stdio: 'inherit',
+    timeout: 60 * 1000,
+    killSignal: 'SIGKILL',
+  });
 
   if (isDebug) {
     console.log('Wait for metro to warm');
@@ -102,19 +111,17 @@ async function launchAppOnSimulator(appId, udid, isDebug) {
   }
 }
 
-function startVideoRecording(udid, currentAttempt) {
-  console.log(
-    `Start video record using pid: video_record_${currentAttempt}.pid`,
-  );
+function startVideoRecording(udid, outputPath) {
+  console.log(`Start video recording: ${outputPath}`);
 
-  const recordingArgs =
-    `simctl io ${udid} recordVideo --force video_record_${currentAttempt}.mov`.split(
-      ' ',
-    );
-  const recordingProcess = childProcess.spawn('xcrun', recordingArgs, {
-    detached: true,
-    stdio: 'ignore',
-  });
+  const recordingProcess = childProcess.spawn(
+    'xcrun',
+    ['simctl', 'io', udid, 'recordVideo', '--force', outputPath],
+    {
+      detached: true,
+      stdio: 'ignore',
+    },
+  );
 
   return recordingProcess;
 }
@@ -179,60 +186,167 @@ async function executeFlowWithRetries(
   appId,
   udid,
   flow,
-  jsengine,
-  currentAttempt,
+  reportDirectory,
+  options,
 ) {
-  const recProcess = startVideoRecording(udid, currentAttempt);
-  try {
-    const timeout = 1000 * 60 * 10; // 10 minutes
-    const command = `$HOME/.maestro/bin/maestro --udid="${udid}" test "${flow}" --format junit -e APP_ID="${appId}"`;
-    console.info(`Executing flow: ${flow} (attempt ${currentAttempt})`);
-    console.log(command);
-    childProcess.execSync(`MAESTRO_DRIVER_STARTUP_TIMEOUT=1500000 ${command}`, {
-      stdio: 'inherit',
-      timeout,
-    });
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const attemptDirectory = path.resolve(
+      reportDirectory,
+      `attempt-${attempt}`,
+    );
+    fs.mkdirSync(attemptDirectory, {recursive: true});
+    let recordingProcess;
 
-    await stopVideoRecording(recProcess);
-  } catch (error) {
-    await stopVideoRecording(recProcess);
+    try {
+      let flowPath = flow;
+      if (options.resetApp) {
+        // Uninstall first so the old process cannot repopulate the keychain.
+        for (const args of [
+          ['uninstall', udid, appId],
+          ['keychain', udid, 'reset'],
+          ['install', udid, options.appPath],
+          ['privacy', udid, 'reset', 'all', appId],
+          ['ui', udid, 'appearance', 'light'],
+        ]) {
+          childProcess.execFileSync('xcrun', ['simctl', ...args], {
+            stdio: 'inherit',
+            timeout: 60 * 1000,
+            killSignal: 'SIGKILL',
+          });
+        }
 
-    if (currentAttempt < MAX_ATTEMPTS) {
-      console.info(`Retrying flow: ${flow}`);
-      await executeFlowWithRetries(
-        appId,
+        flowPath = path.join(attemptDirectory, 'flow.yml');
+        fs.writeFileSync(
+          flowPath,
+          `appId: ${JSON.stringify(appId)}
+---
+- setOrientation: portrait
+- launchApp
+- runFlow: ${JSON.stringify(path.resolve(flow))}
+`,
+        );
+      }
+
+      recordingProcess = startVideoRecording(
         udid,
-        flow,
-        jsengine,
-        currentAttempt + 1,
+        path.join(attemptDirectory, 'video.mov'),
       );
-    } else {
-      console.error(
-        `Failed to execute flow ${flow} after ${MAX_ATTEMPTS} attempts.`,
+      console.info(`Executing flow: ${flow} (attempt ${attempt})`);
+      childProcess.execFileSync(
+        path.join(process.env.HOME, '.maestro', 'bin', 'maestro'),
+        [
+          '--udid',
+          udid,
+          'test',
+          flowPath,
+          '--format',
+          'junit',
+          '--output',
+          path.join(attemptDirectory, 'report.xml'),
+          '--debug-output',
+          path.join(attemptDirectory, 'logs'),
+          '--test-output-dir',
+          attemptDirectory,
+          '-e',
+          `APP_ID=${appId}`,
+        ],
+        {
+          env: {...process.env, MAESTRO_DRIVER_STARTUP_TIMEOUT: '1500000'},
+          stdio: 'inherit',
+          timeout: 1000 * 60 * 10,
+          killSignal: 'SIGKILL',
+        },
       );
-      throw error;
+      return;
+    } catch (error) {
+      fs.writeFileSync(path.join(attemptDirectory, 'error.txt'), String(error));
+      if (attempt === MAX_ATTEMPTS) {
+        console.error(
+          `Failed to execute flow ${flow} after ${MAX_ATTEMPTS} attempts.`,
+        );
+        throw error;
+      }
+      console.info(`Retrying flow: ${flow}`);
+    } finally {
+      await stopVideoRecording(recordingProcess);
     }
   }
 }
 
-async function executeFlows(appId, udid, maestroFlow, jsengine) {
-  if (!fs.existsSync(maestroFlow) || !fs.lstatSync(maestroFlow).isDirectory()) {
-    await executeFlowWithRetries(appId, udid, maestroFlow, jsengine, 1);
-    return;
+async function executeFlows(appId, udid, maestroFlow, jsengine, options = {}) {
+  const {
+    shardIndex = 0,
+    shardCount = 1,
+    reportDirectory = 'maestro-reports',
+  } = options;
+  if (
+    !Number.isInteger(shardCount) ||
+    shardCount < 1 ||
+    !Number.isInteger(shardIndex) ||
+    shardIndex < 0 ||
+    shardIndex >= shardCount
+  ) {
+    throw new Error(`Invalid shard ${shardIndex} of ${shardCount}`);
+  }
+  if (options.resetApp && !options.appPath) {
+    throw new Error('Resetting app state requires an app path');
   }
 
-  for (const file of fs.readdirSync(maestroFlow).sort()) {
-    const filePath = `${maestroFlow.replace(/\/$/, '')}/${file}`;
-    if (fs.lstatSync(filePath).isDirectory()) {
-      // Fragments pulled in via `runFlow`; they have no `launchApp` of their
-      // own and fail when run standalone.
-      if (file === 'helpers') {
-        continue;
-      }
-      await executeFlows(appId, udid, filePath, jsengine);
-    } else if (file.endsWith('.yml') || file.endsWith('.yaml')) {
-      await executeFlowWithRetries(appId, udid, filePath, jsengine, 1);
+  function collectFlows(directory) {
+    if (!fs.existsSync(directory) || !fs.lstatSync(directory).isDirectory()) {
+      return [directory];
     }
+    const flows = [];
+    for (const file of fs.readdirSync(directory).sort()) {
+      const filePath = path.join(directory, file);
+      if (fs.lstatSync(filePath).isDirectory()) {
+        // Helper fragments are only runnable via their parent flow.
+        if (file !== 'helpers') {
+          flows.push(...collectFlows(filePath));
+        }
+      } else if (file.endsWith('.yml') || file.endsWith('.yaml')) {
+        flows.push(filePath);
+      }
+    }
+    return flows;
+  }
+
+  const flows = collectFlows(maestroFlow);
+  if (flows.length === 0) {
+    throw new Error(`No Maestro flows found at ${maestroFlow}`);
+  }
+  const selectedFlows = flows.filter(
+    (_, index) => index % shardCount === shardIndex,
+  );
+  fs.mkdirSync(reportDirectory, {recursive: true});
+  fs.writeFileSync(
+    path.join(reportDirectory, 'manifest.json'),
+    JSON.stringify({shardIndex, shardCount, flows: selectedFlows}, null, 2),
+  );
+  console.info(
+    `Shard ${shardIndex + 1}/${shardCount}: ${selectedFlows.length}/${flows.length} flows`,
+  );
+
+  const failures = [];
+  for (let index = 0; index < selectedFlows.length; index++) {
+    const flow = selectedFlows[index];
+    try {
+      await executeFlowWithRetries(
+        appId,
+        udid,
+        flow,
+        path.join(reportDirectory, `${index}-${path.basename(flow)}`),
+        options,
+      );
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  if (failures.length > 0) {
+    throw new AggregateError(
+      failures,
+      `${failures.length} Maestro flow(s) failed`,
+    );
   }
 }
 
@@ -249,6 +363,12 @@ async function main(args = process.argv.slice(2)) {
   const workingDirectory = args[5];
   const deviceModel = args[6] || null;
   const deviceOS = args[7] || null;
+  const options = {
+    appPath,
+    resetApp: process.env.MAESTRO_RESET_APP === 'true',
+    shardIndex: Number(process.env.MAESTRO_SHARD_INDEX ?? 0),
+    shardCount: Number(process.env.MAESTRO_SHARD_COUNT ?? 1),
+  };
 
   console.info('\n==============================');
   console.info('Running tests for iOS with the following parameters:');
@@ -267,7 +387,7 @@ async function main(args = process.argv.slice(2)) {
   installAppOnSimulator(appPath, simulator.udid);
   bringSimulatorInForeground();
   await launchAppOnSimulator(appId, simulator.udid, isDebug);
-  await executeFlows(appId, simulator.udid, maestroFlow, jsengine);
+  await executeFlows(appId, simulator.udid, maestroFlow, jsengine, options);
   console.log('Test finished');
 }
 
@@ -278,4 +398,5 @@ if (require.main === module) {
 module.exports = {
   executeFlows,
   findAvailableSimulator,
+  main,
 };
