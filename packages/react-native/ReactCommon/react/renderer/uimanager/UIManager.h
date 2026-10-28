@@ -101,6 +101,7 @@ class UIManager final : public ShadowTreeDelegate {
    * `enableSynchronousTransformOverlay` feature flag is enabled.
    */
   void recordSynchronousTransform(Tag tag, const folly::dynamic &props) const;
+  void recordSynchronousTransform(Tag tag, const AnimatedProps &props) const;
 
   /*
    * Drops the recorded synchronous transform for `tag`. To be called by the

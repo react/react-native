@@ -20,8 +20,9 @@ on animated views.
 Animation systems that write props through the platform entry points
 (`FabricUIManager.synchronouslyUpdateViewOnUIThread` on Android,
 `RCTSurfacePresenter`'s `schedulerDidSynchronouslyUpdateViewOnUIThread:props:`
-on iOS, `UIManager::synchronouslyUpdateViewOnUIThread` in C++) are covered
-automatically. Systems that bypass them call
+on iOS, `UIManager::synchronouslyUpdateViewOnUIThread` in C++, and the batched
+`AnimatedProps` path of `UIManager::synchronouslyUpdateAnimatedProps`) are
+covered automatically. Systems that bypass them call
 `UIManager::recordSynchronousTransform(tag, props)` with the props they applied,
 and `UIManager::removeSynchronousTransform(tag)` when they stop managing a view.
 

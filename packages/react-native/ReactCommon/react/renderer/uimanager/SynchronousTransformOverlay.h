@@ -10,6 +10,7 @@
 #include <react/cxxstableapi/PrivateGuard.h>
 
 #include <folly/dynamic.h>
+#include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/ReactPrimitives.h>
@@ -32,8 +33,8 @@ namespace facebook::react {
  * final values.
  *
  * Layout queries (`measure`, `measureInWindow`, `getBoundingClientRect`,
- * `findNodeAtPoint`, `UIManager::getRelativeLayoutMetrics`) consult the
- * overlay through the `TransformOverrideProvider` interface, so they describe
+ * `UIManager::getRelativeLayoutMetrics`) consult the overlay through the
+ * `TransformOverrideProvider` interface, so they describe
  * the mounted views rather than the stale committed props. Only `transform`
  * is tracked because it is the only synchronously updated prop that affects
  * geometry; layout props always go through a commit.
@@ -50,6 +51,12 @@ class SynchronousTransformOverlay final : public LayoutableShadowNode::Transform
    * props would be, so the overlay matches what a commit would produce.
    */
   void update(Tag tag, const folly::dynamic &props, const PropsParserContext &context);
+
+  /*
+   * Same as above for the typed `AnimatedProps` representation used by the
+   * batched synchronous update path (`optimizedAnimatedPropUpdates`).
+   */
+  void update(Tag tag, const AnimatedProps &props, const PropsParserContext &context);
 
   /*
    * Drops the entry for `tag`, if any. Called by the systems that write

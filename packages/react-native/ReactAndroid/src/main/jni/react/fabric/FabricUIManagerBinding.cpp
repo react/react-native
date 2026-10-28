@@ -860,9 +860,17 @@ void FabricUIManagerBinding::schedulerShouldSynchronouslyUpdateViewOnUIThread(
 void FabricUIManagerBinding::schedulerShouldSynchronouslyUpdateAnimatedProps(
     const std::unordered_map<Tag, AnimatedProps>& updates) {
   if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() && mountingManager_) {
-    // TODO: record the transforms of this batched path (behind
-    // `optimizedAnimatedPropUpdates`) in the synchronous transform overlay;
-    // it bypasses `FabricUIManager.synchronouslyUpdateViewOnUIThread`.
+    // This batched path bypasses
+    // `FabricUIManager.synchronouslyUpdateViewOnUIThread`, which records the
+    // synchronous transforms of the per-view path.
+    if (ReactNativeFeatureFlags::enableSynchronousTransformOverlay() &&
+        scheduler_ != nullptr) {
+      if (auto uiManager = scheduler_->getUIManager()) {
+        for (const auto& [tag, props] : updates) {
+          uiManager->recordSynchronousTransform(tag, props);
+        }
+      }
+    }
     mountingManager_->synchronouslyUpdateAnimatedProps(updates);
   }
 }

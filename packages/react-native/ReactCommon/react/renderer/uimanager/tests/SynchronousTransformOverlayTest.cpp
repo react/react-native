@@ -9,6 +9,7 @@
 
 #include <folly/dynamic.h>
 #include <gtest/gtest.h>
+#include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/components/view/ViewShadowNode.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/element/Element.h>
@@ -99,6 +100,32 @@ TEST_F(SynchronousTransformOverlayTest, parsesTransformLikeProps) {
   transform = overlay_.getTransformOverride(*childShadowNode_);
   ASSERT_TRUE(transform.has_value());
   EXPECT_EQ(*transform, Transform::Translate(0, 100, 0));
+}
+
+TEST_F(SynchronousTransformOverlayTest, parsesAnimatedProps) {
+  auto animatedProps = AnimatedProps{};
+  animatedProps.props.push_back(
+      std::make_unique<AnimatedProp<Transform>>(
+          TRANSFORM, Transform::Translate(0, 300, 0)));
+
+  overlay_.update(2, animatedProps, propsParserContext_);
+
+  auto transform = overlay_.getTransformOverride(*childShadowNode_);
+  ASSERT_TRUE(transform.has_value());
+  EXPECT_EQ(*transform, Transform::Translate(0, 300, 0));
+}
+
+TEST_F(SynchronousTransformOverlayTest, parsesUntypedAnimatedProps) {
+  auto animatedProps = AnimatedProps{};
+  animatedProps.rawProps = std::make_unique<RawProps>(folly::dynamic::object(
+      "transform",
+      folly::dynamic::array(folly::dynamic::object("translateY", 300))));
+
+  overlay_.update(2, animatedProps, propsParserContext_);
+
+  auto transform = overlay_.getTransformOverride(*childShadowNode_);
+  ASSERT_TRUE(transform.has_value());
+  EXPECT_EQ(*transform, Transform::Translate(0, 300, 0));
 }
 
 TEST_F(SynchronousTransformOverlayTest, mergesTransformOriginUpdates) {

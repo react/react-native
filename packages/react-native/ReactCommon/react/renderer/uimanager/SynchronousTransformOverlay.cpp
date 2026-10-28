@@ -41,6 +41,32 @@ void SynchronousTransformOverlay::update(
   updateEntry(tag, std::move(entry));
 }
 
+void SynchronousTransformOverlay::update(
+    Tag tag,
+    const AnimatedProps& props,
+    const PropsParserContext& context) {
+  if (props.rawProps != nullptr) {
+    // `rawProps` carries the props the animation system could not type,
+    // which may include `transform` (e.g. matrices or percentages).
+    update(tag, static_cast<folly::dynamic>(*props.rawProps), context);
+  }
+
+  auto entry = Entry{};
+  for (const auto& prop : props.props) {
+    switch (prop->propName) {
+      case TRANSFORM:
+        entry.transform = get<Transform>(*prop);
+        break;
+      case TRANSFORM_ORIGIN:
+        entry.transformOrigin = get<TransformOrigin>(*prop);
+        break;
+      default:
+        break;
+    }
+  }
+  updateEntry(tag, std::move(entry));
+}
+
 void SynchronousTransformOverlay::updateEntry(Tag tag, Entry&& entry) {
   if (!entry.transform.has_value() && !entry.transformOrigin.has_value()) {
     return;

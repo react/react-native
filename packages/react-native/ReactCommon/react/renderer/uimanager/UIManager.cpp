@@ -801,6 +801,15 @@ void UIManager::recordSynchronousTransform(Tag tag, const folly::dynamic& props)
   synchronousTransformOverlay_.update(tag, props, propsParserContext);
 }
 
+void UIManager::recordSynchronousTransform(Tag tag, const AnimatedProps& props)
+    const {
+  if (!ReactNativeFeatureFlags::enableSynchronousTransformOverlay()) {
+    return;
+  }
+  PropsParserContext propsParserContext{-1, *contextContainer_};
+  synchronousTransformOverlay_.update(tag, props, propsParserContext);
+}
+
 void UIManager::removeSynchronousTransform(Tag tag) const {
   synchronousTransformOverlay_.remove(tag);
 }

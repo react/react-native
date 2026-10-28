@@ -6078,6 +6078,7 @@ class facebook::react::SynchronousTransformOverlay : public facebook::react::Lay
   public void clear();
   public void prune(const std::function<bool(facebook::react::Tag)>& isAlive);
   public void remove(facebook::react::Tag tag);
+  public void update(facebook::react::Tag tag, const facebook::react::AnimatedProps& props, const facebook::react::PropsParserContext& context);
   public void update(facebook::react::Tag tag, const folly::dynamic& props, const facebook::react::PropsParserContext& context);
 }
 
@@ -6366,6 +6367,7 @@ class facebook::react::UIManager : public facebook::react::ShadowTreeDelegate {
   public void appendChild(const std::shared_ptr<const facebook::react::ShadowNode>& parentShadowNode, const std::shared_ptr<const facebook::react::ShadowNode>& childShadowNode) const;
   public void completeSurface(facebook::react::SurfaceId surfaceId, const std::shared_ptr<std::vector<std::shared_ptr<const facebook::react::ShadowNode>>>& rootChildren, facebook::react::ShadowTree::CommitOptions commitOptions);
   public void dispatchCommand(const std::shared_ptr<const facebook::react::ShadowNode>& shadowNode, const std::string& commandName, const folly::dynamic& args) const;
+  public void recordSynchronousTransform(facebook::react::Tag tag, const facebook::react::AnimatedProps& props) const;
   public void recordSynchronousTransform(facebook::react::Tag tag, const folly::dynamic& props) const;
   public void registerCommitHook(facebook::react::UIManagerCommitHook& commitHook);
   public void registerMountHook(facebook::react::UIManagerMountHook& mountHook);
