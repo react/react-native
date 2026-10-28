@@ -84,6 +84,7 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
       return
     }
     isListening = false
+    firstVisibleViewRef = null
     uIManager.removeUIManagerEventListener(this)
   }
 
@@ -125,22 +126,78 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
     val scrollView = scrollView ?: return
     val contentView = contentView ?: return
 
+    val children = List(contentView.childCount) { contentView.getChildAt(it) }
+    val subviews =
+        if (config.minIndexForVisible > 0) {
+          // We only need to sort if minIndexForVisible is non-zero. Normally, we just do a full
+          // linear scan and find the earliest item.
+          //
+          // If minIndexForVisible is set though, we have to exclude the first `minIndexForVisible`
+          // items, which requires sorting to do.
+          children.sortedWith(
+              compareBy<View>({ if (horizontal) it.x else it.y }, { contentView.indexOfChild(it) })
+          )
+        } else {
+          children
+        }
+
+    if (config.minIndexForVisible >= subviews.size) {
+      return
+    }
+
     val currentScroll = if (horizontal) scrollView.scrollX else scrollView.scrollY
-    for (i in config.minIndexForVisible until contentView.childCount) {
-      val child = contentView.getChildAt(i)
+    var firstVisibleView: View? = null
+    // We cannot assume that the views will be in position order because of things like z-index
+    // which will change the order of views in their parent. This means we need to iterate through
+    // the full children array and find the view with the smallest position that is bigger than
+    // the scroll position.
+    var firstVisibleViewPosition = Float.MAX_VALUE
+    for (i in config.minIndexForVisible until subviews.size) {
+      val child = subviews[i]
 
       // Compute the position of the end of the child
       val position = if (horizontal) child.x + child.width else child.y + child.height
 
-      // If the child is partially visible or this is the last child, select it as the anchor.
-      if (position > currentScroll || i == contentView.childCount - 1) {
-        firstVisibleViewRef = WeakReference(child)
-        val frame = Rect()
-        child.getHitRect(frame)
-        prevFirstVisibleFrame = frame
+      // If we encounter a zero-sized view as the first subview, assume it's the anchor without
+      // checking anything else.
+      //
+      // This is the easiest way to accommodate LegendList without introducing new APIs. LegendList
+      // renders a zero-sized, absolutely positioned `ScrollAdjust` view as the first child of the
+      // scroll content. It sits at a large biased offset and moves by the amount the list wants
+      // the scroll position adjusted. Because its end position is past every other child, the
+      // smallest-end scan below would otherwise pick a stationary sibling and skip the adjustment.
+      // See:
+      // https://github.com/react/react-native/pull/57959#issuecomment-6341492122
+      // https://github.com/LegendApp/legend-list/blob/v3.7.0/src/components/ScrollAdjust.native.tsx#L15-L24
+      // https://github.com/LegendApp/legend-list/blob/v3.7.0/src/components/ListComponent.tsx#L246-L257
+      if (
+          i == config.minIndexForVisible &&
+              child.width == 0 &&
+              child.height == 0 &&
+              position > currentScroll
+      ) {
+        firstVisibleView = child
         break
       }
+
+      // If the child is partially visible or this is the last child, select it as the anchor.
+      if (
+          (position > currentScroll && position < firstVisibleViewPosition) ||
+              (firstVisibleView == null && i == subviews.size - 1)
+      ) {
+        firstVisibleView = child
+        firstVisibleViewPosition = position
+      }
     }
+
+    if (firstVisibleView == null) {
+      return
+    }
+
+    firstVisibleViewRef = WeakReference(firstVisibleView)
+    val frame = Rect()
+    firstVisibleView.getHitRect(frame)
+    prevFirstVisibleFrame = frame
   }
 
   // UIManagerListener

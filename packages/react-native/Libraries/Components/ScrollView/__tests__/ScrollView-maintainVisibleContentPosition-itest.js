@@ -348,6 +348,134 @@ test('maintainVisibleContentPosition with minIndexForVisible > 0 skips early ite
   expect(logs2.length).toBeGreaterThan(0);
 });
 
+function renderItemWithZIndex(item: Item, height: number = ITEM_HEIGHT) {
+  return (
+    <View
+      key={item.key}
+      nativeID={`item_${item.id}`}
+      style={{height, width: 100, zIndex: -item.id}}>
+      <View
+        nativeID={`inner_${item.id}`}
+        style={{
+          height: height - 2,
+          width: 100 - 2,
+          backgroundColor: '#4CAF50',
+        }}
+      />
+    </View>
+  );
+}
+
+// Trigger: z-index reorders native subviews so hierarchy index != layout order.
+// Expected: MVCP selects the topmost visible anchor by layout position, not hierarchy order.
+test('maintainVisibleContentPosition with zIndex preserves anchor on height change', () => {
+  const root = Fantom.createRoot({
+    viewportWidth: 100,
+    viewportHeight: VIEWPORT_HEIGHT,
+  });
+  const nodeRef = createRef<HostInstance>();
+
+  const items = makeItems(NUM_ITEMS);
+  const anchorId = 8;
+  let anchorHeight = ITEM_HEIGHT;
+
+  Fantom.runTask(() => {
+    root.render(
+      <ScrollView
+        ref={nodeRef}
+        style={{height: VIEWPORT_HEIGHT, width: 100}}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
+        {items.map(item =>
+          item.id === anchorId
+            ? renderItemWithZIndex(item, anchorHeight)
+            : renderItemWithZIndex(item),
+        )}
+      </ScrollView>,
+    );
+  });
+
+  root.takeMountingManagerLogs();
+
+  Fantom.scrollTo(nodeRef, {
+    x: 0,
+    y: ITEM_HEIGHT * anchorId,
+  });
+
+  root.takeMountingManagerLogs();
+
+  anchorHeight = ITEM_HEIGHT * 2;
+
+  Fantom.runTask(() => {
+    root.render(
+      <ScrollView
+        ref={nodeRef}
+        style={{height: VIEWPORT_HEIGHT, width: 100}}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
+        {items.map(item =>
+          item.id === anchorId
+            ? renderItemWithZIndex(item, anchorHeight)
+            : renderItemWithZIndex(item),
+        )}
+      </ScrollView>,
+    );
+  });
+
+  const heightChangeLogs = root.takeMountingManagerLogs();
+  expect(heightChangeLogs.length).toBeGreaterThan(0);
+  expect(heightChangeLogs.some(log => log.includes(`item_${anchorId}`))).toBe(
+    true,
+  );
+});
+
+// Trigger: z-index reorders native subviews when minIndexForVisible > 0.
+// Expected: minIndex skip uses layout order, not native hierarchy order.
+test('maintainVisibleContentPosition with zIndex and minIndexForVisible > 0 skips early items', () => {
+  const root = Fantom.createRoot({
+    viewportWidth: 100,
+    viewportHeight: VIEWPORT_HEIGHT,
+  });
+  const nodeRef = createRef<HostInstance>();
+
+  const items = makeItems(NUM_ITEMS);
+
+  Fantom.runTask(() => {
+    root.render(
+      <ScrollView
+        ref={nodeRef}
+        style={{height: VIEWPORT_HEIGHT, width: 100}}
+        maintainVisibleContentPosition={{minIndexForVisible: 5}}>
+        {items.map(renderItemWithZIndex)}
+      </ScrollView>,
+    );
+  });
+
+  root.takeMountingManagerLogs();
+
+  Fantom.scrollTo(nodeRef, {
+    x: 0,
+    y: ITEM_HEIGHT * 8,
+  });
+
+  root.takeMountingManagerLogs();
+
+  const itemsAfterPrepend = [...makeItems(3, NUM_ITEMS), ...items];
+
+  Fantom.runTask(() => {
+    root.render(
+      <ScrollView
+        ref={nodeRef}
+        style={{height: VIEWPORT_HEIGHT, width: 100}}
+        maintainVisibleContentPosition={{minIndexForVisible: 5}}>
+        {itemsAfterPrepend.map(renderItemWithZIndex)}
+      </ScrollView>,
+    );
+  });
+
+  const prependLogs = root.takeMountingManagerLogs();
+  expect(prependLogs.length).toBeGreaterThan(0);
+  expect(prependLogs.some(log => log.includes('item_8'))).toBe(true);
+});
+
 // Trigger: User actively dragging (touch-scrolling) when data change triggers MVCP.
 // Expected: MVCP correction may compete with user's scroll. Scroll skip guard on `patch/add-scrolling-guard`
 // branch would skip correction during user dragging, but this is NOT merged.
