@@ -35,7 +35,10 @@ const {
 const {
   BASELINE_SEARCH_DEPTH,
   approvalKey,
+  baselineImageKey,
   baselinePrefix,
+  blobKey,
+  existsAt,
   fetchBuffer,
   fetchJsonOrNull,
   findBaseline,
@@ -158,10 +161,18 @@ async function comparePlatform({
     };
   }
 
+  const location = {
+    environmentKey,
+    sha: baseline.sha,
+    imageStore: baseline.manifest.imageStore ?? null,
+  };
+  const baselineImages = new Map(
+    baseline.manifest.images.map(image => [image.id, image]),
+  );
   const expectedUrl = id =>
     publicUrl(
       publicBaseUrl,
-      `${baselinePrefix(environmentKey, baseline.sha)}/${id}.png`,
+      baselineImageKey(location, baselineImages.get(id)),
     );
   const results = await compareCapture({
     manifest,
@@ -201,7 +212,11 @@ async function comparePlatform({
     platform,
     environmentKey,
     manifest,
-    baseline: {sha: baseline.sha, distance: baseline.distance},
+    baseline: {
+      sha: baseline.sha,
+      distance: baseline.distance,
+      imageStore: location.imageStore,
+    },
     results,
     error: null,
   };
@@ -225,20 +240,35 @@ function missingCapture(platform, context) {
  * Stages the capture as the baseline for `sha`, leaving out new screenshots
  * whose two captures differed. They stay new until a later push to the
  * default branch captures them the same way twice.
+ *
+ * Only images not already in `blobs/` are staged, so a push that changes
+ * nothing visually publishes just its manifest. `blobExists(key)` checks the
+ * bucket. `validateCapture` has checked each image's hash, so its blob key
+ * matches its contents.
  */
-function stageBaseline({outDir, captureDir, manifest, sha}) {
-  const prefix = baselinePrefix(manifest.environmentKey, sha);
+async function stageBaseline({outDir, captureDir, manifest, sha, blobExists}) {
   const images = manifest.images.filter(image => image.unstable !== true);
+  const staged = new Set();
   for (const image of images) {
+    const key = blobKey(image.sha256);
+    if (staged.has(key) || (await blobExists(key))) {
+      continue;
+    }
+    staged.add(key);
     writeFile(
-      path.join(outDir, 'baseline-images', prefix, `${image.id}.png`),
+      path.join(outDir, 'baseline-blobs', key),
       fs.readFileSync(path.join(captureDir, `${image.id}.png`)),
     );
   }
-  // Uploaded after the images: a baseline exists once its manifest does.
+  // Uploaded after the blobs: a baseline exists once its manifest does.
   writeFile(
-    path.join(outDir, 'baseline-manifests', prefix, 'manifest.json'),
-    `${JSON.stringify({...manifest, images}, null, 2)}\n`,
+    path.join(
+      outDir,
+      'baseline-manifests',
+      baselinePrefix(manifest.environmentKey, sha),
+      'manifest.json',
+    ),
+    `${JSON.stringify({...manifest, imageStore: 'blobs', images}, null, 2)}\n`,
   );
 }
 
@@ -293,11 +323,12 @@ async function prepare() {
       );
     }
     if (context.kind === 'main') {
-      stageBaseline({
+      await stageBaseline({
         outDir,
         captureDir,
         manifest: result.manifest,
         sha: context.headSha,
+        blobExists: key => existsAt(publicUrl(publicBaseUrl, key)),
       });
     }
     platforms.push(result);
@@ -352,11 +383,19 @@ async function report() {
   const summaryLines = [];
   const commentPlatforms = [];
   for (const platform of state.platforms) {
+    const expectedById = new Map(
+      platform.results
+        .filter(result => result.expected != null)
+        .map(result => [result.id, result.expected]),
+    );
     const imageUrl = (kind, id) =>
       kind === 'expected'
         ? publicUrl(
             publicBaseUrl,
-            `${baselinePrefix(platform.environmentKey, platform.baseline.sha)}/${id}.png`,
+            baselineImageKey(
+              {environmentKey: platform.environmentKey, ...platform.baseline},
+              expectedById.get(id),
+            ),
           )
         : publicUrl(
             publicBaseUrl,

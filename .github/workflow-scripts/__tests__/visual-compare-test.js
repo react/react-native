@@ -282,35 +282,47 @@ describe('visual comparison', () => {
   });
 
   describe('stageBaseline', () => {
-    test('leaves out unstable screenshots', () => {
+    test('stages blobs not yet uploaded and a manifest that refers to them', async () => {
       const captureDir = path.join(directory, 'capture');
       const outDir = path.join(directory, 'out');
+      const white = makePng(4, 4);
+      const black = makePng(4, 4, () => [0, 0, 0, 255]);
+      const grey = makePng(4, 4, () => [128, 128, 128, 255]);
       const manifest = writeCapture(captureDir, {
-        'text/stable/default': makePng(4, 4),
-        'text/unstable/default': makePng(4, 4),
+        'text/uploaded/default': white,
+        'text/new/default': black,
+        'text/new/same': black,
+        'text/unstable/default': grey,
       });
-      manifest.images[1].unstable = true;
-      stageBaseline({outDir, captureDir, manifest, sha: SHA_A});
-      const prefix = `baselines/${manifest.environmentKey}/${SHA_A}`;
+      manifest.images.find(
+        image => image.id === 'text/unstable/default',
+      ).unstable = true;
+      await stageBaseline({
+        outDir,
+        captureDir,
+        manifest,
+        sha: SHA_A,
+        blobExists: async key => key === `blobs/${sha256(white)}.png`,
+      });
       const staged = JSON.parse(
         fs.readFileSync(
-          path.join(outDir, 'baseline-manifests', prefix, 'manifest.json'),
+          path.join(
+            outDir,
+            'baseline-manifests',
+            `baselines/${manifest.environmentKey}/${SHA_A}/manifest.json`,
+          ),
           'utf8',
         ),
       );
-      expect(staged.images.map(image => image.id)).toEqual([
-        'text/stable/default',
+      expect(staged.imageStore).toBe('blobs');
+      expect(staged.images.map(image => image.id).sort()).toEqual([
+        'text/new/default',
+        'text/new/same',
+        'text/uploaded/default',
       ]);
       expect(
-        fs.existsSync(
-          path.join(
-            outDir,
-            'baseline-images',
-            prefix,
-            'text/unstable/default.png',
-          ),
-        ),
-      ).toBe(false);
+        fs.readdirSync(path.join(outDir, 'baseline-blobs', 'blobs')),
+      ).toEqual([`${sha256(black)}.png`]);
     });
   });
 

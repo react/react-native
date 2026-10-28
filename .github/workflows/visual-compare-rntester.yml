@@ -139,8 +139,10 @@ jobs:
           # Objects are write-once; --no-clobber makes a rerun skip what an
           # earlier attempt already uploaded.
           gcloud storage cp --recursive --no-clobber "$OUT_DIR/upload/*" "gs://$VISUAL_BUCKET/"
-          if [[ -d "$OUT_DIR/baseline-images" ]]; then
-            gcloud storage cp --recursive --no-clobber "$OUT_DIR/baseline-images/*" "gs://$VISUAL_BUCKET/"
+          if [[ -d "$OUT_DIR/baseline-blobs" ]]; then
+            gcloud storage cp --recursive --no-clobber "$OUT_DIR/baseline-blobs/*" "gs://$VISUAL_BUCKET/"
+          fi
+          if [[ -d "$OUT_DIR/baseline-manifests" ]]; then
             # A baseline exists once its manifest does, so the manifest goes last.
             gcloud storage cp --recursive --no-clobber "$OUT_DIR/baseline-manifests/*" "gs://$VISUAL_BUCKET/"
           fi
