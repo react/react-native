@@ -9,6 +9,7 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {HostInstance} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
 import ScrollViewPressableStickyHeaderExample from './ScrollViewPressableStickyHeaderExample';
@@ -17,6 +18,7 @@ import * as React from 'react';
 import {cloneElement, useCallback, useRef, useState} from 'react';
 import {
   Platform,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -294,13 +296,31 @@ const examples: Array<RNTesterModuleExample> = [
     name: 'stubbyHorizontalScrollView',
     title: '<ScrollView> (horizontal = true) in RTL not filling content\n',
     description:
-      'A horizontal RTL ScrollView whose content is smaller thatn its containner',
+      'A horizontal RTL ScrollView whose content is smaller than its container',
     render(): React.Node {
       return (
         <View testID="stubby-horizontal-rtl-scrollview">
           <HorizontalScrollView direction="rtl" itemCount={1} />
         </View>
       );
+    },
+  },
+  {
+    name: 'horizontalScrollViewMeasureRTL',
+    title: '<ScrollView> (horizontal = true) in RTL measure\n',
+    description:
+      'Scroll to the end and tap the button. Touch x and measureInWindow x should match.',
+    render(): React.Node {
+      return <HorizontalScrollViewMeasureRTL />;
+    },
+  },
+  {
+    name: 'horizontalScrollViewContentOffsetRTL',
+    title: '<ScrollView> (horizontal = true) in RTL contentOffset\n',
+    description:
+      'contentOffset, scrollTo and onScroll all count x from the left edge. Remounting and tapping scrollTo should show the same page.',
+    render(): React.Node {
+      return <HorizontalScrollViewContentOffsetRTL />;
     },
   },
   {
@@ -805,6 +825,104 @@ const HorizontalScrollView = (props: {
           });
         }}
         testID={'scroll_to_end_button'}
+      />
+    </View>
+  );
+};
+
+const HorizontalScrollViewMeasureRTL = () => {
+  const buttonRef = useRef<?HostInstance>(null);
+  const [touchX, setTouchX] = useState<?number>(null);
+  const [measuredX, setMeasuredX] = useState<?number>(null);
+
+  return (
+    <View style={{direction: 'rtl'}}>
+      <ScrollView
+        automaticallyAdjustContentInsets={false}
+        horizontal={true}
+        style={[styles.scrollView, styles.horizontalScrollView]}>
+        <View style={styles.measureRTLContent}>
+          <Pressable
+            ref={buttonRef}
+            style={styles.button}
+            onPressIn={event => {
+              const {pageX, locationX} = event.nativeEvent;
+              setTouchX(Math.round(pageX - locationX));
+              buttonRef.current?.measureInWindow(x => {
+                setMeasuredX(Math.round(x));
+              });
+            }}>
+            <View pointerEvents="none">
+              <Text>Tap to measure</Text>
+            </View>
+          </Pressable>
+        </View>
+      </ScrollView>
+      <RNTesterText>Touch x: {touchX ?? '-'}</RNTesterText>
+      <RNTesterText>measureInWindow x: {measuredX ?? '-'}</RNTesterText>
+    </View>
+  );
+};
+
+const RTL_PAGE_WIDTH = 200;
+const RTL_PAGE_OFFSET = RTL_PAGE_WIDTH * 3;
+
+const HorizontalScrollViewContentOffsetRTL = () => {
+  const scrollRef = useRef<?React.ElementRef<typeof ScrollView>>();
+  const [mountKey, setMountKey] = useState(0);
+  const [scrollX, setScrollX] = useState<?number>(null);
+
+  return (
+    <View style={{direction: 'rtl'}}>
+      {/* $FlowFixMe[incompatible-use] */}
+      <ScrollView
+        key={mountKey}
+        ref={scrollRef}
+        automaticallyAdjustContentInsets={false}
+        contentOffset={{x: RTL_PAGE_OFFSET, y: 0}}
+        horizontal={true}
+        onScroll={event => {
+          setScrollX(Math.round(event.nativeEvent.contentOffset.x));
+        }}
+        pagingEnabled={true}
+        scrollEventThrottle={16}
+        style={[styles.horizontalScrollView, {width: RTL_PAGE_WIDTH}]}>
+        {[0, 1, 2, 3, 4, 5].map(page => (
+          <View key={page} style={styles.contentOffsetRTLPage}>
+            <Text>Page {page}</Text>
+          </View>
+        ))}
+      </ScrollView>
+      <RNTesterText testID="rtl_content_offset_scroll_x">
+        onScroll x: {scrollX ?? '-'}
+      </RNTesterText>
+      <Button
+        label={`Remount with contentOffset x: ${RTL_PAGE_OFFSET}`}
+        onPress={() => {
+          setScrollX(null);
+          setMountKey(key => key + 1);
+        }}
+        testID="rtl_content_offset_remount"
+      />
+      <Button
+        label="scrollTo x: 0"
+        onPress={() => {
+          nullthrows<$FlowFixMe>(scrollRef.current).scrollTo({
+            x: 0,
+            animated: false,
+          });
+        }}
+        testID="rtl_content_offset_scroll_to_start"
+      />
+      <Button
+        label={`scrollTo x: ${RTL_PAGE_OFFSET}`}
+        onPress={() => {
+          nullthrows<$FlowFixMe>(scrollRef.current).scrollTo({
+            x: RTL_PAGE_OFFSET,
+            animated: false,
+          });
+        }}
+        testID="rtl_content_offset_scroll_to_page"
       />
     </View>
   );
@@ -1675,6 +1793,19 @@ const styles = StyleSheet.create({
   },
   horizontalScrollView: {
     height: 106,
+  },
+  measureRTLContent: {
+    width: 800,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  contentOffsetRTLPage: {
+    width: RTL_PAGE_WIDTH,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#cccccc',
   },
   text: {
     fontSize: 16,

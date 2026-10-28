@@ -27,6 +27,15 @@ void ScrollViewShadowNode::updateStateIfNeeded() {
 
   if (state.contentBoundingRect != contentBoundingRect) {
     state.contentBoundingRect = contentBoundingRect;
+#ifndef ANDROID
+    // RTL scroll views start on the right until the native view reports.
+    if (getState()->getRevision() == State::initialRevisionValue &&
+        getLayoutMetrics().layoutDirection == LayoutDirection::RightToLeft &&
+        state.contentOffset.x == 0) {
+      state.contentOffset.x =
+          contentBoundingRect.size.width - getLayoutMetrics().frame.size.width;
+    }
+#endif
     setStateData(std::move(state));
   }
 }

@@ -2553,6 +2553,7 @@ describe('horizontal ScrollView in RTL script', () => {
           contentOffset={{x: 100, y: 0}}>
           <View nativeID={'item1'} style={{height: 90, width: 90, margin: 5}} />
           <View nativeID={'item2'} style={{height: 90, width: 90, margin: 5}} />
+          <View nativeID={'item3'} style={{height: 90, width: 90, margin: 5}} />
         </ScrollView>,
       );
     });
@@ -2565,6 +2566,35 @@ describe('horizontal ScrollView in RTL script', () => {
       'Insert {type: "View", parentNativeID: (N/A), index: 0, nativeID: "item2"}',
       'Insert {type: "AndroidHorizontalScrollContentView", parentNativeID: (N/A), index: 0, nativeID: (N/A)}',
       'Insert {type: "ScrollView", parentNativeID: (root), index: 0, nativeID: (N/A)}',
+    ]);
+  });
+
+  it('measures scroll position from the left edge', () => {
+    const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 100});
+    const nodeRef = createRef<HostInstance>();
+
+    Fantom.runTask(() => {
+      root.render(
+        <ScrollView
+          ref={nodeRef}
+          style={{direction: 'rtl', height: 100, width: 100}}
+          horizontal={true}>
+          <View nativeID={'item1'} style={{height: 90, width: 90, margin: 5}} />
+          <View nativeID={'item2'} style={{height: 90, width: 90, margin: 5}} />
+        </ScrollView>,
+      );
+    });
+
+    root.takeMountingManagerLogs();
+
+    Fantom.scrollTo(nodeRef, {x: 0, y: 0});
+
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Update {type: "ScrollView", nativeID: (N/A)}',
+      'Remove {type: "View", parentNativeID: (N/A), index: 0, nativeID: "item1"}',
+      'Delete {type: "View", nativeID: "item1"}',
+      'Create {type: "View", nativeID: "item2"}',
+      'Insert {type: "View", parentNativeID: (N/A), index: 0, nativeID: "item2"}',
     ]);
   });
 });
