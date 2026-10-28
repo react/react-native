@@ -21,6 +21,7 @@ import type {
   PluginPackageDep,
   PluginProductDep,
   PluginScriptPhase,
+  PodspecModel,
   ReactDescriptor,
   RawAutolinkingJson,
   SpmModuleConfig,
@@ -71,7 +72,7 @@ const {
   MIN_IOS_VERSION_SUPPORTED,
   sanitizeIosDeploymentTarget,
 } = require('./ios-deployment-target');
-const {findPodspecs} = require('./read-podspec');
+const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
   AUTOLINKED_PACKAGE_NAME,
   CXX_API_DEFINES,
@@ -500,14 +501,24 @@ function hasPodspec(absSource /*: string */) /*: boolean */ {
 }
 
 /**
- * True when a dep has BOTH Swift and C-family (.m/.mm/.c/.cpp) sources. SPM
- * cannot compile mixed-language sources in a single target, and RN libs that
- * mix them are typically bidirectionally coupled (ObjC↔Swift) — which can't be
- * split into two targets either (it would be a circular dependency). So such a
- * dep is unsupportable by the scaffolder; we surface a clear, distinct error
- * instead of emitting a manifest that fails with a cryptic SPM resolve error.
- * Heuristic filesystem scan (bounded depth; skips examples/tests/build noise).
+ * True when a source list has BOTH Swift and C-family (.m/.mm/.c/.cpp) files.
+ * SPM cannot compile mixed-language sources in a single target, and RN libs
+ * that mix them are typically bidirectionally coupled (ObjC↔Swift) — which
+ * can't be split into two targets either (it would be a circular dependency).
+ * So such a dep is unsupportable by the scaffolder; we surface a clear,
+ * distinct error instead of emitting a manifest that fails with a cryptic SPM
+ * resolve error.
  */
+function isMixedLanguageSourceList(
+  files /*: ReadonlyArray<string> */,
+) /*: boolean */ {
+  return (
+    files.some(f => /\.swift$/i.test(f)) &&
+    files.some(f => /\.(mm?|c|cc|cpp|cxx)$/i.test(f))
+  );
+}
+
+// Heuristic filesystem scan (bounded depth; skips examples/tests/build noise).
 function hasMixedLanguageSources(absSource /*: string */) /*: boolean */ {
   const SKIP /*: Set<string> */ = new Set([
     'node_modules',
@@ -519,10 +530,9 @@ function hasMixedLanguageSources(absSource /*: string */) /*: boolean */ {
     'Example',
     'examples',
   ]);
-  let hasSwift = false;
-  let hasClang = false;
+  const files /*: Array<string> */ = [];
   const walk = (dir /*: string */, depth /*: number */) => {
-    if (depth > 6 || (hasSwift && hasClang)) return;
+    if (depth > 6) return;
     let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
     try {
       // $FlowFixMe[incompatible-type] Dirent typing
@@ -537,16 +547,70 @@ function hasMixedLanguageSources(absSource /*: string */) /*: boolean */ {
         if (!name.startsWith('.') && !SKIP.has(name)) {
           walk(path.join(dir, name), depth + 1);
         }
-      } else if (/\.swift$/i.test(name)) {
-        hasSwift = true;
-      } else if (/\.(mm?|c|cc|cpp|cxx)$/i.test(name)) {
-        hasClang = true;
+      } else {
+        files.push(name);
       }
-      if (hasSwift && hasClang) return;
     }
   };
   walk(absSource, 0);
-  return hasSwift && hasClang;
+  return isMixedLanguageSourceList(files);
+}
+
+// Judges the sources the podspec compiles, like the scaffolder does, so a stray
+// Swift file the pod never builds can't flip the verdict. Only for the
+// missing-manifest error path: reading a podspec may spawn `pod ipc spec`.
+// Podspec choice and glob root match scaffoldPackageSwiftForDep. Where the
+// scaffolder would give up (podspec missing or unreadable), the filesystem
+// heuristic still yields a verdict for the error message.
+function isMixedLanguageDep(
+  absSource /*: string */,
+  root /*: string */,
+  configuredPodspecPath /*: ?string */,
+) /*: boolean */ {
+  const podspecPath = configuredPodspecPath ?? findPodspecs(root)[0];
+  if (podspecPath != null) {
+    try {
+      const model = readPodspecCached(podspecPath);
+      const {files} = podspecSourceFiles(root, model);
+      return isMixedLanguageSourceList(files);
+    } catch {
+      // An unreadable podspec leaves only the filesystem heuristic available.
+    }
+  }
+  return hasMixedLanguageSources(absSource);
+}
+
+function podspecSourceFiles(
+  root /*: string */,
+  model /*: PodspecModel */,
+) /*: {files: Array<string>, warnings: Array<string>} */ {
+  const warnings /*: Array<string> */ = [];
+  // SPM's `sources:` field does NOT accept CocoaPods-style globs — it wants
+  // a list of explicit file paths (relative to the target's `path:`).
+  // Expand the podspec globs against the actual filesystem so the emitted
+  // Package.swift parses cleanly.
+  let expandedSources /*: Array<string> */ = [];
+  try {
+    expandedSources = expandSpmSourceGlobs(root, model.sourceFiles);
+  } catch (e) {
+    warnings.push(
+      `Source glob expansion failed (${e.message}); emitting raw globs — SPM will likely reject them.`,
+    );
+    expandedSources = model.sourceFiles;
+  }
+  if (model.excludeFiles.length > 0) {
+    try {
+      // $FlowFixMe[untyped-import] micromatch has no types
+      const micromatch = require('micromatch');
+      const isExcluded = micromatch.matcher(model.excludeFiles);
+      expandedSources = expandedSources.filter(f => !isExcluded(f));
+    } catch (e) {
+      warnings.push(
+        `exclude_files filtering failed (${e.message}); keeping all sources.`,
+      );
+    }
+  }
+  return {files: expandedSources, warnings};
 }
 
 /**
@@ -1377,6 +1441,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
           origin: 'npm',
           npmName: dep.name,
           root: dep.root,
+          podspecPath: dep.platforms.ios.podspecPath,
         });
         log(`Found npm native module: ${target.name} → ${target.path}`);
       }
@@ -1533,7 +1598,11 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         name: target.name,
         npmName: entry.npmName ?? target.name,
         hasPodspec: hasPodspec(absSource),
-        mixed: hasMixedLanguageSources(absSource),
+        mixed: isMixedLanguageDep(
+          absSource,
+          entry.root ?? absSource,
+          entry.podspecPath,
+        ),
       });
       // Drop any stale wrapper from a previous synth-mode run so SPM doesn't
       // resolve against it.
@@ -1995,6 +2064,8 @@ module.exports = {
   findSelfManagedPackageDir,
   hasPodspec,
   hasMixedLanguageSources,
+  isMixedLanguageSourceList,
+  podspecSourceFiles,
   readDenyPluginsFromConfig,
   MissingManifestError,
   reportMissingManifests,
