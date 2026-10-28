@@ -25,8 +25,15 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
   horizontal?: ?boolean,
   useScrollRefScroll?: ?boolean,
   waitForInteraction?: ?boolean,
+  scrollToLocationOnTest?: ?{sectionIndex: number, itemIndex: number},
 }): React.Node {
-  const {offScreen, horizontal, useScrollRefScroll, waitForInteraction} = props;
+  const {
+    offScreen,
+    horizontal,
+    useScrollRefScroll,
+    waitForInteraction,
+    scrollToLocationOnTest,
+  } = props;
   const exampleTestID = `section-list-viewability-${
     horizontal === true ? 'horizontal' : 'vertical'
   }-${waitForInteraction === true ? 'wait' : 'no-wait'}`;
@@ -56,7 +63,18 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
       ? () => {
           ref?.current?.getScrollResponder()?.scrollToEnd();
         }
-      : null;
+      : scrollToLocationOnTest != null
+        ? () => {
+            // Programmatic scrolls don't trigger `onScrollBeginDrag`, so latch
+            // `waitForInteraction` explicitly before scrolling.
+            ref?.current?.recordInteraction();
+            ref?.current?.scrollToLocation({
+              ...scrollToLocationOnTest,
+              viewPosition: 0.5,
+              animated: false,
+            });
+          }
+        : null;
 
   return (
     <SectionListBaseExample

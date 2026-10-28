@@ -17,6 +17,12 @@ export default {
   description: 'E2E Test:\nonViewableItemsChanged-waitForInteraction',
   hidden: true,
   render: function (): React.MixedElement {
-    return <SectionList_BaseOnViewableItemsChanged waitForInteraction={true} />;
+    return (
+      <SectionList_BaseOnViewableItemsChanged
+        waitForInteraction={true}
+        // Desserts section, Cheesecake item (see SectionListBaseExample DATA).
+        scrollToLocationOnTest={{sectionIndex: 3, itemIndex: 0}}
+      />
+    );
   },
 };

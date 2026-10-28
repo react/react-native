@@ -28,15 +28,16 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
     visible:
       id: 'section-list-viewability-horizontal-wait'
     timeout: 30000
-# The example requires 100% item visibility before reporting viewability.
-# Target Cheesecake, the item asserted in the output below.
-- scrollUntilVisible:
-    element:
+# Tap twice: the first scroll uses estimated layout and measures Cheesecake,
+# the second centers it exactly now that its metrics are known.
+- tapOn:
+    id: 'start_test'
+- extendedWaitUntil:
+    visible:
       id: 'Cheesecake'
-    direction: RIGHT
-    speed: 60
-    visibilityPercentage: 100
-    timeout: 120000
+    timeout: 30000
+- tapOn:
+    id: 'start_test'
 - extendedWaitUntil:
     visible:
       id: 'output'
@@ -52,14 +53,15 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
           visible:
             id: 'section-list-viewability-vertical-wait'
           timeout: 30000
-      - scrollUntilVisible:
-          element:
-            text: 'Brownie'
-          direction: DOWN
-          speed: 60
-          visibilityPercentage: 50
-          centerElement: true
-          timeout: 60000
+      # Same two-tap deterministic scroll as the horizontal step above.
+      - tapOn:
+          id: 'start_test'
+      - extendedWaitUntil:
+          visible:
+            id: 'Cheesecake'
+          timeout: 30000
+      - tapOn:
+          id: 'start_test'
       - extendedWaitUntil:
           visible:
             id: 'output'

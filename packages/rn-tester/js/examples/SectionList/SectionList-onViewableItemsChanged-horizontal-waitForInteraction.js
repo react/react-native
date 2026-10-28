@@ -22,6 +22,8 @@ export default {
       <SectionList_BaseOnViewableItemsChanged
         horizontal={true}
         waitForInteraction={true}
+        // Desserts section, Cheesecake item (see SectionListBaseExample DATA).
+        scrollToLocationOnTest={{sectionIndex: 3, itemIndex: 0}}
       />
     );
   },
