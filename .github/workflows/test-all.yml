@@ -11,6 +11,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # A new push to a pull request makes the previous run obsolete, so cancel it
+  # instead of spending (macOS) runner time on it. Runs on branches are never
+  # cancelled: each one gets its own group.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   set_release_type:
     runs-on: ubuntu-latest
