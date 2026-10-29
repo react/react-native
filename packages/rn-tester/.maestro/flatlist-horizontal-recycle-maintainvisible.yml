@@ -2,7 +2,7 @@
 # Items are 200px wide + 4px margin = 204px each
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

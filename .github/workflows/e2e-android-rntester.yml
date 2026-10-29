@@ -74,7 +74,7 @@ jobs:
           # These timing-sensitive flows remain covered by the release APK.
           # Running the debug ARM64 APK through native translation can delay
           # React commits long enough for Maestro to miss taps and assertions.
-          exclude-tags: ${{ matrix.flavor == 'debug' && 'android-release-only' || '' }}
+          exclude-tags: ${{ matrix.flavor == 'debug' && 'release-only' || '' }}
       - name: Store per-flow test state
         if: always()
         uses: ./.github/actions/upload-artifact

@@ -77,7 +77,11 @@ jobs:
           device-model: iPhone-17-Pro
           device-os: iOS-26-2
           test-state-path: /tmp/maestro-ios-state/results.json
-          exclude-tags: android-only
+          # The `release-only` flows (FlatList maintainVisibleContentPosition)
+          # are half of the suite and test scroll behavior that doesn't depend
+          # on the build flavor. Nearly 90% of their failed attempts were in
+          # Debug, so like on Android they only run against Release.
+          exclude-tags: ${{ matrix.flavor == 'Debug' && 'android-only,release-only' || 'android-only' }}
       - name: Store per-flow test state
         if: always()
         uses: ./.github/actions/upload-artifact
