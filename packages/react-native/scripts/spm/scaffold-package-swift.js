@@ -112,7 +112,9 @@ const {log, warn} = makeLogger('scaffold-package-swift');
 // (the `.v15` enum cannot express a dependency minimum like 16.4).
 // v21: `resources:` is emitted before `publicHeadersPath:`, the argument order
 // `.target(...)` requires (the reverse order fails to resolve).
-const SCAFFOLDER_VERSION = 21;
+// v22: podspecs that call `install_modules_dependencies(s)` get
+// `.define("RCT_NEW_ARCH_ENABLED", to: "1")`, as CocoaPods adds it.
+const SCAFFOLDER_VERSION = 22;
 const SCAFFOLDER_VERSION_LINE_RE = /^\/\/ AUTO-SCAFFOLDED-VERSION: (\d+)$/m;
 
 const AUTOGEN_MARKER =
@@ -528,11 +530,23 @@ function translatePodspecToSpmTarget(
     }
   }
 
+  // CocoaPods' `install_modules_dependencies(s)` adds -DRCT_NEW_ARCH_ENABLED=1
+  // to the pod (scripts/cocoapods/new_architecture.rb), and libraries gate
+  // their TurboModule/Fabric code on it. The helper is stripped before the
+  // podspec is read, so restore the define here.
+  const preprocessorDefines =
+    model.usesInstallModulesDependencies === true
+      ? [
+          ...model.preprocessorDefines,
+          {name: 'RCT_NEW_ARCH_ENABLED', value: '1', config: null},
+        ]
+      : model.preprocessorDefines;
+
   return {
     swiftName,
     sources: expandedSources,
     headerSearchPaths,
-    preprocessorDefines: model.preprocessorDefines,
+    preprocessorDefines,
     needsObjCPrefix,
     coreReactNative,
     siblingNames,
