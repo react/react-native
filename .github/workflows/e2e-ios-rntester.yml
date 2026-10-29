@@ -22,7 +22,11 @@ on:
 
 jobs:
   test:
-    runs-on: macos-26-large
+    # Standard arm64 runner: the simulator runs natively with GPU rendering
+    # (the Intel -large runner rendered in software), and standard runners
+    # aren't billed for public repositories. RNTesterApp is built for both
+    # x86_64 and arm64 simulators.
+    runs-on: macos-26
     outputs:
       # Matrix legs only keep the last value written to an output name, so each
       # flavor writes its own.
