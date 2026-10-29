@@ -243,6 +243,9 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   if (_removeClippedSubviews) {
     [_reactSubviews removeObjectAtIndex:index];
   } else {
+    // This getter can migrate children from a recycled clipping container.
+    // Reconcile before reading superview, even when assertions are disabled.
+    (void)self.currentContainerView;
     RCTAssert(
         childComponentView.superview != nil,
         @"Attempt to unmount a view which is not mounted. (parent: %@, child: %@, index: %@)",
