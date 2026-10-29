@@ -15,22 +15,49 @@ let FlowParser, TypeScriptParser, RNCodegen;
 const {cheap: traverseCheap} = require('@babel/traverse').default;
 const {basename} = require('node:path');
 
+function getCodegenLoadError(srcError, libError) {
+  if (libError != null && libError.code !== 'MODULE_NOT_FOUND') {
+    return (
+      'Unable to load @react-native/codegen: its built `lib/` output failed ' +
+      'to load, so NativeComponent specs cannot be transformed. Rebuild it, ' +
+      'e.g. `yarn workspace @react-native/codegen build`, then retry.'
+    );
+  }
+  if (srcError != null && srcError.code !== 'MODULE_NOT_FOUND') {
+    return (
+      'Unable to load @react-native/codegen: the package is checked out ' +
+      'from source but was never built (its `lib/` output is missing), so ' +
+      'NativeComponent specs cannot be transformed. Build it first, e.g. ' +
+      '`yarn workspace @react-native/codegen build`, then retry.'
+    );
+  }
+  return (
+    'Unable to load @react-native/codegen: the package could not be found, ' +
+    'so NativeComponent specs cannot be transformed. Install dependencies ' +
+    'first, then retry.'
+  );
+}
+
 try {
   FlowParser =
     require('@react-native/codegen/src/parsers/flow/parser').FlowParser;
   TypeScriptParser =
     require('@react-native/codegen/src/parsers/typescript/parser').TypeScriptParser;
   RNCodegen = require('@react-native/codegen/src/generators/RNCodegen');
-} catch (e) {
-  // Fallback to lib when source doesn't exit (e.g. when installed as a dev dependency)
-  FlowParser =
+} catch (srcError) {
+  // Fallback to lib when source isn't usable (e.g. when installed as a dev dependency)
+  try {
+    FlowParser =
+      // $FlowFixMe[cannot-resolve-module]
+      require('@react-native/codegen/lib/parsers/flow/parser').FlowParser;
+    TypeScriptParser =
+      // $FlowFixMe[cannot-resolve-module]
+      require('@react-native/codegen/lib/parsers/typescript/parser').TypeScriptParser;
     // $FlowFixMe[cannot-resolve-module]
-    require('@react-native/codegen/lib/parsers/flow/parser').FlowParser;
-  TypeScriptParser =
-    // $FlowFixMe[cannot-resolve-module]
-    require('@react-native/codegen/lib/parsers/typescript/parser').TypeScriptParser;
-  // $FlowFixMe[cannot-resolve-module]
-  RNCodegen = require('@react-native/codegen/lib/generators/RNCodegen');
+    RNCodegen = require('@react-native/codegen/lib/generators/RNCodegen');
+  } catch (libError) {
+    throw new Error(getCodegenLoadError(srcError, libError), {cause: libError});
+  }
 }
 
 const flowParser = new FlowParser();
