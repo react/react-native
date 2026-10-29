@@ -25,6 +25,11 @@ node maestro-ios.js <path to app> <app_id> <maestro_flow> <jsengine> <flavor> <w
 @param {string} deviceOS - Optional Maestro device OS, such as iOS-26-2
 @param {string} testStatePath - Optional file used to persist per-flow results between CI retries
 @param {string} excludeTags - Optional comma-separated flow tags to exclude
+
+node maestro-ios.js boot [device_model] [device_os]
+
+Starts booting the simulator the tests will run on and returns without
+waiting for the boot to finish.
 ==============
 `;
 
@@ -557,11 +562,24 @@ async function main(args = process.argv.slice(2)) {
   console.log('Test finished');
 }
 
+// Lets the workflow start the (slow) simulator boot before the rest of the
+// setup, instead of waiting for it in the middle of the test step.
+function boot(args) {
+  if (args.length > 2) {
+    throw new Error(`Invalid number of arguments.\n${usage}`);
+  }
+  launchSimulator(findAvailableSimulator(args[0] || null, args[1] || null));
+}
+
 if (require.main === module) {
-  main().catch(error => {
-    console.error(error);
-    process.exitCode = 1;
-  });
+  const args = process.argv.slice(2);
+  const command = args[0] === 'boot' ? () => boot(args.slice(1)) : main;
+  Promise.resolve()
+    .then(command)
+    .catch(error => {
+      console.error(error);
+      process.exitCode = 1;
+    });
 }
 
 module.exports = {

@@ -37,22 +37,23 @@ inputs:
 
 runs:
   using: composite
+  # Expects Node.js to be set up by the calling job.
   steps:
+    # Booting takes a couple of minutes; it finishes while the next steps run.
+    - name: Boot simulator
+      shell: bash
+      run: |
+        node .github/workflow-scripts/maestro-ios.js boot \
+          "${{ inputs.device-model }}" \
+          "${{ inputs.device-os }}"
     - name: Installing Maestro
       shell: bash
       run: export MAESTRO_VERSION=2.6.1; curl -Ls "https://get.maestro.mobile.dev" | bash
-    - name: Installing Maestro dependencies
-      shell: bash
-      run: |
-        brew tap facebook/fb
-        brew install facebook/fb/idb-companion
     - name: Set up JDK 17
       uses: actions/setup-java@v5
       with:
         java-version: '17'
         distribution: 'zulu'
-    - name: Setup node.js
-      uses: ./.github/actions/setup-node
     - name: Run yarn install
       uses: ./.github/actions/yarn-install
     - name: Start Metro in Debug
