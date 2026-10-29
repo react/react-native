@@ -5,24 +5,18 @@ tags:
   - release-only
 ---
 - launchApp
+# Change to portrait
 - setOrientation: portrait
 - waitForAnimationToEnd:
     timeout: 3000
-- assertVisible: 'Components'
-- scrollUntilVisible:
-    element:
-      id: 'FlatList'
-    direction: DOWN
-    speed: 40
-- tapOn:
-    id: 'FlatList'
-- scrollUntilVisible:
-    element:
-      id: 'maintainVisibleContentPosition'
-    direction: DOWN
-    speed: 40
-- tapOn:
-    id: 'maintainVisibleContentPosition'
+# Open the example directly instead of scrolling through the list
+- stopApp
+- openLink: rntester://example/FlatListExample/maintainVisibleContentPosition
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'scroll-offset-display'
+    timeout: 120000
 # Scroll to offset 400 (item 10 should be visible)
 - tapOn:
     text: 'ScrollToOffset 500'
