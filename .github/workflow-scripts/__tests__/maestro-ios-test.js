@@ -21,10 +21,26 @@ const path = require('path');
 const {
   collectFlows,
   executeFlowSuite,
+  filterFlowsByTags,
   findAvailableSimulator,
   loadState,
+  parseJUnitReport,
   runMaestroFlow,
 } = require('../maestro-ios');
+
+// Simulates a single Maestro run in which the flows matching `failing` fail.
+function suiteResults(failing = () => false) {
+  return jest.fn(async (appId, udid, flows) => {
+    return new Map(
+      flows.map(flow => [
+        path.relative(process.cwd(), flow),
+        failing(flow)
+          ? {passed: false, error: 'failed assertion'}
+          : {passed: true},
+      ]),
+    );
+  });
+}
 
 describe('Maestro iOS runner', () => {
   let temporaryDirectory;
@@ -71,14 +87,54 @@ describe('Maestro iOS runner', () => {
     ]);
   });
 
-  it('retries a failing flow once on a rebooted simulator and keeps going', async () => {
+  it('excludes flows with matching tags', () => {
+    const androidOnlyFlow = path.join(temporaryDirectory, 'android-only.yml');
+    const regularFlow = path.join(temporaryDirectory, 'regular.yml');
+    fs.writeFileSync(
+      androidOnlyFlow,
+      'appId: x\ntags:\n  - android-only\n---\n- launchApp\n',
+    );
+    fs.writeFileSync(regularFlow, 'appId: x\n---\n- launchApp\n');
+
+    expect(
+      filterFlowsByTags([androidOnlyFlow, regularFlow], ['android-only']),
+    ).toEqual([regularFlow]);
+  });
+
+  it('parses flow results from a Maestro JUnit report', () => {
+    const report = `<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="iPhone 17 Pro" tests="3" failures="1">
+    <testcase id="first" name="first" classname="first" file="flows/first.yml" time="3.0" status="SUCCESS"/>
+    <testcase id="second" name="second" classname="second" file="flows/second.yml" time="5.0" status="ERROR">
+      <failure>Assertion is false: &quot;Cheesecake&quot; is visible</failure>
+    </testcase>
+    <testcase id="third" name="third" classname="third" file="flows/third.yml" status="WARNING">
+    </testcase>
+  </testsuite>
+</testsuites>`;
+
+    expect(parseJUnitReport(report)).toEqual(
+      new Map([
+        ['flows/first.yml', {passed: true, error: 'SUCCESS'}],
+        [
+          'flows/second.yml',
+          {passed: false, error: 'Assertion is false: "Cheesecake" is visible'},
+        ],
+        ['flows/third.yml', {passed: true, error: 'WARNING'}],
+      ]),
+    );
+  });
+
+  it('runs all flows together, then retries each failure once on a rebooted simulator', async () => {
     const flows = ['first.yml', 'second.yml', 'third.yml'].map(file =>
       path.join(temporaryDirectory, file),
     );
     const statePath = path.join(temporaryDirectory, 'state', 'results.json');
+    const executeSuite = suiteResults(flow => !flow.endsWith('first.yml'));
     const executeFlow = jest.fn(async (appId, udid, flow) => {
       if (flow.endsWith('second.yml')) {
-        throw new Error('failed assertion');
+        throw new Error('failed again');
       }
     });
     const resetSimulator = jest.fn();
@@ -90,33 +146,32 @@ describe('Maestro iOS runner', () => {
         udid: 'device-id',
         state: loadState(statePath),
         statePath,
+        executeSuite,
         executeFlow,
         resetSimulator,
       }),
     ).rejects.toThrow('1 Maestro flow(s) failed');
 
+    expect(executeSuite).toHaveBeenCalledTimes(1);
+    expect(executeSuite.mock.calls[0][2]).toEqual(flows);
     expect(executeFlow.mock.calls.map(call => [call[2], call[3]])).toEqual([
-      [flows[0], 1],
-      [flows[1], 1],
       [flows[1], 2],
-      [flows[2], 1],
+      [flows[2], 2],
     ]);
-    expect(resetSimulator).toHaveBeenCalledTimes(1);
+    expect(resetSimulator).toHaveBeenCalledTimes(2);
     expect(resetSimulator).toHaveBeenCalledWith('device-id');
     expect(Object.values(loadState(statePath).flows)).toEqual([
       {status: 'passed', attempts: 1},
-      {status: 'failed', attempts: 2, error: 'failed assertion'},
-      {status: 'passed', attempts: 1},
+      {status: 'failed', attempts: 2, error: 'failed again'},
+      {status: 'passed', attempts: 2},
     ]);
   });
 
-  it('passes a flow that succeeds on its retry', async () => {
-    const flow = path.join(temporaryDirectory, 'flaky.yml');
+  it('does not retry when every flow passes', async () => {
+    const flow = path.join(temporaryDirectory, 'first.yml');
     const statePath = path.join(temporaryDirectory, 'results.json');
-    const executeFlow = jest
-      .fn()
-      .mockRejectedValueOnce(new Error('flaky'))
-      .mockResolvedValueOnce();
+    const executeFlow = jest.fn();
+    const resetSimulator = jest.fn();
 
     await executeFlowSuite({
       flows: [flow],
@@ -124,12 +179,15 @@ describe('Maestro iOS runner', () => {
       udid: 'device-id',
       state: loadState(statePath),
       statePath,
+      executeSuite: suiteResults(),
       executeFlow,
-      resetSimulator: jest.fn(),
+      resetSimulator,
     });
 
+    expect(executeFlow).not.toHaveBeenCalled();
+    expect(resetSimulator).not.toHaveBeenCalled();
     expect(Object.values(loadState(statePath).flows)).toEqual([
-      {status: 'passed', attempts: 2},
+      {status: 'passed', attempts: 1},
     ]);
   });
 
@@ -145,28 +203,26 @@ describe('Maestro iOS runner', () => {
         udid: 'device-id',
         state: loadState(statePath),
         statePath,
-        executeFlow: jest.fn(async (appId, udid, flow) => {
-          if (flow.endsWith('second.yml')) {
-            throw new Error('failed assertion');
-          }
-        }),
+        executeSuite: suiteResults(flow => flow.endsWith('second.yml')),
+        executeFlow: jest.fn().mockRejectedValue(new Error('failed again')),
         resetSimulator: jest.fn(),
       }),
     ).rejects.toThrow();
 
-    const retry = jest.fn();
+    const executeSuite = suiteResults();
     await executeFlowSuite({
       flows,
       appId: 'com.example',
       udid: 'device-id',
       state: loadState(statePath),
       statePath,
-      executeFlow: retry,
+      executeSuite,
+      executeFlow: jest.fn(),
       resetSimulator: jest.fn(),
     });
 
-    expect(retry).toHaveBeenCalledTimes(1);
-    expect(retry.mock.calls[0][2]).toBe(flows[1]);
+    expect(executeSuite).toHaveBeenCalledTimes(1);
+    expect(executeSuite.mock.calls[0][2]).toEqual([flows[1]]);
   });
 
   it('waits for the recorder to exit before returning', async () => {

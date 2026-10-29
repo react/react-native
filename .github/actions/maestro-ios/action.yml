@@ -30,6 +30,10 @@ inputs:
     required: false
     default: ''
     description: The path used to persist per-flow test results between retries
+  exclude-tags:
+    required: false
+    default: ''
+    description: Comma-separated flow tags to exclude from the test run
 
 runs:
   using: composite
@@ -78,7 +82,8 @@ runs:
           "${{ inputs.working-directory }}" \
           "${{ inputs.device-model }}" \
           "${{ inputs.device-os }}" \
-          "${{ inputs.test-state-path }}"
+          "${{ inputs.test-state-path }}" \
+          "${{ inputs.exclude-tags }}"
     - name: Store Logs
       if: always()
       uses: ./.github/actions/upload-artifact
@@ -86,5 +91,5 @@ runs:
         name: maestro-logs-${{ inputs.app-id }}-${{ inputs.flavor }}-NewArch
         overwrite: true
         if-no-files-found: ignore
-        # Contains the recording, report and debug output of failed attempts only
+        # Only failed runs leave their report, debug output and recording here
         path: /tmp/MaestroLogs

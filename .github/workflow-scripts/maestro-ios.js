@@ -13,7 +13,7 @@ const path = require('path');
 
 const usage = `
 === Usage ===
-node maestro-ios.js <path to app> <app_id> <maestro_flow> <jsengine> <flavor> <working_directory> [device_model] [device_os] [test_state_path]
+node maestro-ios.js <path to app> <app_id> <maestro_flow> <jsengine> <flavor> <working_directory> [device_model] [device_os] [test_state_path] [exclude_tags]
 
 @param {string} appPath - Path to the app APK
 @param {string} appId - App ID that needs to be launched
@@ -24,6 +24,7 @@ node maestro-ios.js <path to app> <app_id> <maestro_flow> <jsengine> <flavor> <w
 @param {string} deviceModel - Optional Maestro device model, such as iPhone-17-Pro
 @param {string} deviceOS - Optional Maestro device OS, such as iOS-26-2
 @param {string} testStatePath - Optional file used to persist per-flow results between CI retries
+@param {string} excludeTags - Optional comma-separated flow tags to exclude
 ==============
 `;
 
@@ -32,6 +33,7 @@ node maestro-ios.js <path to app> <app_id> <maestro_flow> <jsengine> <flavor> <w
 const MAX_ATTEMPTS = 2;
 const DEFAULT_STATE_PATH = '/tmp/maestro-ios-state/results.json';
 const MAESTRO_LOG_DIRECTORY = '/tmp/MaestroLogs';
+const FLOW_TIMEOUT_MS = 10 * 60 * 1000;
 const STATE_VERSION = 1;
 
 function findAvailableSimulator(deviceModel, deviceOS) {
@@ -285,6 +287,115 @@ function writeResultsSummary(flowKeys, state) {
   }
 }
 
+function getFlowTags(flow) {
+  const contents = fs.readFileSync(flow, 'utf8');
+  const tags = [];
+  const tagBlockPattern = /^tags:\s*\r?\n((?:^[ \t]+-[ \t]*[^\r\n]+\r?\n?)*)/gm;
+
+  for (const match of contents.matchAll(tagBlockPattern)) {
+    for (const line of match[1].split(/\r?\n/)) {
+      const tag = line.match(/^[ \t]+-[ \t]*(.+?)\s*$/)?.[1];
+      if (tag != null) {
+        tags.push(tag);
+      }
+    }
+  }
+
+  return tags;
+}
+
+function filterFlowsByTags(flows, excludeTags) {
+  if (excludeTags.length === 0) {
+    return flows;
+  }
+
+  return flows.filter(flow => {
+    const tags = getFlowTags(flow);
+    const excludedTag = tags.find(tag => excludeTags.includes(tag));
+    if (excludedTag != null) {
+      console.info(`Skipping flow tagged ${excludedTag}: ${flow}`);
+      return false;
+    }
+    return true;
+  });
+}
+
+function decodeXmlEntities(value) {
+  return value
+    .replaceAll('&quot;', '"')
+    .replaceAll('&apos;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&');
+}
+
+// Maps each flow key in a Maestro JUnit report to whether it passed, plus the
+// failure message for flows that did not.
+function parseJUnitReport(contents) {
+  const results = new Map();
+  const testCasePattern = /<testcase\b([^>]*?)(?:\/>|>([\s\S]*?)<\/testcase>)/g;
+  for (const [, attributes, body = ''] of contents.matchAll(testCasePattern)) {
+    const attribute = name =>
+      attributes.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
+    const file = attribute('file');
+    if (file == null) {
+      continue;
+    }
+    const status = attribute('status');
+    const failure = body.match(/<failure\b[^>]*>([\s\S]*?)<\/failure>/)?.[1];
+    results.set(getFlowKey(decodeXmlEntities(file)), {
+      passed: status === 'SUCCESS' || status === 'WARNING',
+      error: failure != null ? decodeXmlEntities(failure.trim()) : status,
+    });
+  }
+  return results;
+}
+
+function maestroCommand(udid, flows, appId, outputPath) {
+  const flowArguments = flows.map(flow => `"${flow}"`).join(' ');
+  return `MAESTRO_DRIVER_STARTUP_TIMEOUT=1500000 $HOME/.maestro/bin/maestro --udid="${udid}" test ${flowArguments} --format junit --output "${outputPath}/report.xml" --debug-output "${outputPath}" --flatten-debug-output -e APP_ID="${appId}"`;
+}
+
+// Runs every flow in a single Maestro invocation, so the CLI and the XCTest
+// driver start once instead of once per flow. Flows missing from the report
+// (e.g. because Maestro crashed or timed out) count as failed.
+function runMaestroSuite(appId, udid, flows) {
+  const outputPath = path.join(MAESTRO_LOG_DIRECTORY, 'suite');
+  fs.mkdirSync(outputPath, {recursive: true});
+
+  const command = maestroCommand(udid, flows, appId, outputPath);
+  console.info(`Executing ${flows.length} flow(s) in a single Maestro run`);
+  console.log(command);
+  let runError = null;
+  try {
+    childProcess.execSync(command, {
+      stdio: 'inherit',
+      timeout: flows.length * FLOW_TIMEOUT_MS,
+    });
+  } catch (error) {
+    runError = error;
+  }
+
+  const reportPath = path.join(outputPath, 'report.xml');
+  const report = fs.existsSync(reportPath)
+    ? parseJUnitReport(fs.readFileSync(reportPath, 'utf8'))
+    : new Map();
+  const missingError =
+    runError instanceof Error
+      ? runError.message
+      : 'Flow did not report a result';
+  const results = new Map(
+    flows.map(flow => [
+      getFlowKey(flow),
+      report.get(getFlowKey(flow)) ?? {passed: false, error: missingError},
+    ]),
+  );
+  if ([...results.values()].every(result => result.passed)) {
+    fs.rmSync(outputPath, {recursive: true, force: true});
+  }
+  return results;
+}
+
 async function runMaestroFlow(appId, udid, flow, attempt) {
   const outputName = `${path.basename(flow, path.extname(flow))}-attempt-${attempt}`;
   const outputPath = path.join(MAESTRO_LOG_DIRECTORY, outputName);
@@ -293,13 +404,12 @@ async function runMaestroFlow(appId, udid, flow, attempt) {
   const videoPath = path.join(outputPath, 'recording.mov');
   const recProcess = startVideoRecording(udid, videoPath);
   try {
-    const timeout = 1000 * 60 * 10; // 10 minutes
-    const command = `$HOME/.maestro/bin/maestro --udid="${udid}" test "${flow}" --format junit --output "${outputPath}/report.xml" --debug-output "${outputPath}" --flatten-debug-output -e APP_ID="${appId}"`;
+    const command = maestroCommand(udid, [flow], appId, outputPath);
     console.info(`Executing flow: ${flow} (attempt ${attempt})`);
     console.log(command);
-    childProcess.execSync(`MAESTRO_DRIVER_STARTUP_TIMEOUT=1500000 ${command}`, {
+    childProcess.execSync(command, {
       stdio: 'inherit',
-      timeout,
+      timeout: FLOW_TIMEOUT_MS,
     });
   } catch (error) {
     await stopVideoRecording(recProcess);
@@ -317,6 +427,7 @@ async function executeFlowSuite({
   udid,
   state,
   statePath,
+  executeSuite = runMaestroSuite,
   executeFlow = runMaestroFlow,
   resetSimulator = rebootSimulator,
 }) {
@@ -327,30 +438,50 @@ async function executeFlowSuite({
   }
   saveState(statePath, state);
 
+  const flowsToRun = flows.filter((flow, index) => {
+    if (state.flows[flowKeys[index]].status === 'passed') {
+      console.info(`Skipping previously passed flow: ${flow}`);
+      return false;
+    }
+    return true;
+  });
+
+  // First attempt: every flow in one Maestro run.
+  if (flowsToRun.length > 0) {
+    const results = await executeSuite(appId, udid, flowsToRun);
+    for (const flow of flowsToRun) {
+      const result = state.flows[getFlowKey(flow)];
+      const {passed, error} = results.get(getFlowKey(flow));
+      result.attempts += 1;
+      result.status = passed ? 'passed' : 'failed';
+      if (passed) {
+        delete result.error;
+      } else {
+        result.error = error;
+      }
+    }
+    saveState(statePath, state);
+  }
+
+  // Retries: each failed flow on its own, on a rebooted simulator.
   const failedFlows = [];
-  for (let index = 0; index < flows.length; index++) {
-    const flow = flows[index];
-    const flowKey = flowKeys[index];
+  for (const flow of flowsToRun) {
+    const flowKey = getFlowKey(flow);
     const result = state.flows[flowKey];
 
-    if (result.status === 'passed') {
-      console.info(`Skipping previously passed flow: ${flow}`);
-      continue;
-    }
-
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      if (attempt > 1) {
-        console.info(`Retrying flow: ${flow}`);
-        resetSimulator(udid);
-      }
+    for (
+      let attempt = 2;
+      attempt <= MAX_ATTEMPTS && result.status === 'failed';
+      attempt++
+    ) {
+      console.info(`Retrying flow: ${flow}`);
+      resetSimulator(udid);
       result.attempts += 1;
       try {
         await executeFlow(appId, udid, flow, attempt);
         result.status = 'passed';
         delete result.error;
-        break;
       } catch (error) {
-        result.status = 'failed';
         result.error = error instanceof Error ? error.message : String(error);
       } finally {
         saveState(statePath, state);
@@ -375,7 +506,7 @@ async function executeFlowSuite({
 }
 
 async function main(args = process.argv.slice(2)) {
-  if (args.length < 6 || args.length > 9) {
+  if (args.length < 6 || args.length > 10) {
     throw new Error(`Invalid number of arguments.\n${usage}`);
   }
 
@@ -388,6 +519,10 @@ async function main(args = process.argv.slice(2)) {
   const deviceModel = args[6] || null;
   const deviceOS = args[7] || null;
   const statePath = args[8] || DEFAULT_STATE_PATH;
+  const excludeTags = (args[9] ?? '')
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean);
 
   console.info('\n==============================');
   console.info('Running tests for iOS with the following parameters:');
@@ -400,9 +535,10 @@ async function main(args = process.argv.slice(2)) {
   console.info(`DEVICE_MODEL: ${deviceModel ?? '<automatic>'}`);
   console.info(`DEVICE_OS: ${deviceOS ?? '<automatic>'}`);
   console.info(`TEST_STATE_PATH: ${statePath}`);
+  console.info(`EXCLUDE_TAGS: ${excludeTags.join(',') || '<none>'}`);
   console.info('==============================\n');
 
-  const flows = collectFlows(maestroFlow);
+  const flows = filterFlowsByTags(collectFlows(maestroFlow), excludeTags);
   const state = loadState(statePath);
 
   const simulator = findAvailableSimulator(deviceModel, deviceOS);
@@ -431,8 +567,9 @@ if (require.main === module) {
 module.exports = {
   collectFlows,
   executeFlowSuite,
+  filterFlowsByTags,
   findAvailableSimulator,
-  formatResults,
   loadState,
+  parseJUnitReport,
   runMaestroFlow,
 };
