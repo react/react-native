@@ -1881,7 +1881,7 @@ class facebook::react::EventEmitterWrapper : public jni::HybridClass<facebook::r
   public static void registerNatives();
   public void dispatchEvent(std::string eventName, facebook::react::NativeMap* payload, int category, jlong eventTimestamp);
   public void dispatchEventSynchronously(std::string eventName, facebook::react::NativeMap* params, jlong eventTimestamp);
-  public void dispatchUniqueEvent(std::string eventName, facebook::react::NativeMap* payload, jlong eventTimestamp);
+  public void dispatchUniqueEvent(std::string eventName, facebook::react::NativeMap* payload, jlong eventTimestamp, int customCoalesceKey);
 }
 
 class facebook::react::EventListenerContainer {
