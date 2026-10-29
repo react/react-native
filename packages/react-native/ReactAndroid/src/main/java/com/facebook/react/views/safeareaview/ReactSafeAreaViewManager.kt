@@ -8,11 +8,14 @@
 package com.facebook.react.views.safeareaview
 
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ViewManagerDelegate
+import com.facebook.react.uimanager.ViewProps
+import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.SafeAreaViewManagerDelegate
 import com.facebook.react.viewmanagers.SafeAreaViewManagerInterface
 
@@ -29,6 +32,11 @@ internal class ReactSafeAreaViewManager :
       ReactSafeAreaView(context)
 
   override fun getName(): String = REACT_CLASS
+
+  @ReactProp(name = ViewProps.POINTER_EVENTS)
+  override fun setPointerEvents(view: ReactSafeAreaView, value: String?) {
+    view.pointerEvents = PointerEvents.parsePointerEvents(value)
+  }
 
   @Suppress("DEPRECATION")
   override fun createShadowNodeInstance(): com.facebook.react.uimanager.LayoutShadowNode =
