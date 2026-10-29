@@ -201,6 +201,8 @@ jobs:
     needs: test_e2e_ios_rntester
     if: ${{ always() && needs.test_e2e_ios_rntester.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_ios_rntester_retry_2:
@@ -209,6 +211,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-rntester.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
 
   test_visual_ios_rntester:
@@ -229,6 +232,8 @@ jobs:
     needs: test_e2e_ios_templateapp
     if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_2:
@@ -237,6 +242,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
 
   test_ios_spm_rntester:

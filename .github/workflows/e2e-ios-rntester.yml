@@ -9,6 +9,9 @@ on:
       fail-on-error:
         type: boolean
         default: false
+      retry-attempt:
+        type: number
+        default: 0
     outputs:
       status:
         description: 'The result of the E2E tests (success or failure)'
@@ -17,23 +20,29 @@ on:
 jobs:
   test:
     runs-on: macos-26-large
-    outputs:
-      status: ${{ steps.report-status.outputs.status }}
     strategy:
       fail-fast: false
       matrix:
         flavor: [Debug, Release]
     steps:
       - name: Checkout
+        id: checkout
+        continue-on-error: true
         uses: actions/checkout@v6
       - name: Setup Node.js
+        id: setup-node
+        continue-on-error: true
         uses: ./.github/actions/setup-node
       - name: Download App
+        id: download-app
+        continue-on-error: true
         uses: ./.github/actions/download-artifact
         with:
           name: RNTesterApp-NewArch-${{ matrix.flavor }}
           path: /tmp/RNTesterBuild/RNTester.app
       - name: Check downloaded folder content
+        id: check-app
+        continue-on-error: true
         run: ls -lR /tmp/RNTesterBuild
       - name: Run E2E Tests
         id: run-tests
@@ -46,26 +55,58 @@ jobs:
           flavor: ${{ matrix.flavor }}
           device-model: iPhone-17-Pro
           device-os: iOS-26-2
-      - name: Report status
-        id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
+      - name: Record test outcome
+        if: always()
+        # Step outcomes retain failures hidden by continue-on-error.
+        env:
+          ATTEMPT_SUCCEEDED: >-
+            ${{ steps.checkout.outcome == 'success' &&
+                steps.setup-node.outcome == 'success' &&
+                steps.download-app.outcome == 'success' &&
+                steps.check-app.outcome == 'success' &&
+                steps.run-tests.outcome == 'success' }}
+        run: |
+          mkdir -p "${{ runner.temp }}/ci-attempt-status"
+          if [[ "$ATTEMPT_SUCCEEDED" == true ]]; then
+            echo success > "${{ runner.temp }}/ci-attempt-status/status"
+          else
+            echo failure > "${{ runner.temp }}/ci-attempt-status/status"
+          fi
+      - name: Upload test outcome
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ios-rntester-test-status-${{ inputs.retry-attempt }}-${{ matrix.flavor }}
+          path: ${{ runner.temp }}/ci-attempt-status/status
+          if-no-files-found: error
 
   report:
     needs: test
     if: always()
     runs-on: ubuntu-latest
+    # One status artifact per matrix flavor avoids nondeterministic matrix job outputs.
     outputs:
       status: ${{ steps.check.outputs.status }}
     steps:
+      - name: Download attempt outcomes
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          pattern: ios-rntester-test-status-${{ inputs.retry-attempt }}-*
+          path: ${{ runner.temp }}/ci-attempt-status
       - id: check
+        shell: bash
         run: |
-          if [[ "${{ needs.test.result }}" != "success" ||
-                "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
-          fi
+          status=success
+          for flavor in Debug Release; do
+            outcome="${{ runner.temp }}/ci-attempt-status/ios-rntester-test-status-${{ inputs.retry-attempt }}-${flavor}/status"
+            if [[ ! -f "$outcome" || "$(<"$outcome")" != success ]]; then
+              status=failure
+              echo "::warning::iOS RNTester test (${flavor}) did not succeed on attempt ${{ inputs.retry-attempt }}"
+            fi
+          done
+          echo "status=$status" >> "$GITHUB_OUTPUT"
       - name: Fail if needed
         if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
         run: exit 1
