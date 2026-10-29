@@ -213,7 +213,8 @@ jobs:
 
   test_visual_ios_rntester:
     needs: test_ios_rntester
-    if: ${{ needs.test_ios_rntester.result == 'success' }}
+    # Pause visual regression on pull requests; keep main baselines up to date.
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.test_ios_rntester.result == 'success' }}
     uses: ./.github/workflows/visual-capture-rntester.yml
     with:
       platform: ios
@@ -419,7 +420,8 @@ jobs:
 
   test_visual_android_rntester:
     needs: build_android
-    if: ${{ needs.build_android.result == 'success' }}
+    # Pause visual regression on pull requests; keep main baselines up to date.
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.build_android.result == 'success' }}
     uses: ./.github/workflows/visual-capture-rntester.yml
     with:
       platform: android

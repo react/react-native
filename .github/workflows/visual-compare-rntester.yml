@@ -1,13 +1,11 @@
 # Trusted half of RNTester visual regression testing. Runs from the default
-# branch after Test All completes, including for pull requests from forks, and
-# compares whatever visual-capture-rntester.yml captured in that run. The
+# branch after Test All completes on main and compares whatever
+# visual-capture-rntester.yml captured in that run. The
 # capture artifacts are treated as inert data: they are validated before any
 # image is decoded, and nothing in them is executed.
 #
-# Pull requests: compare with the baseline for the base commit (or its
-#   nearest ancestor with one), upload a report, and set check runs.
-# Pushes to the default branch: as above, then publish the captures as the
-#   immutable baseline for that commit.
+# Pull request comparisons are temporarily paused; pushes to the default
+# branch compare captures and publish the immutable baseline for that commit.
 name: Visual Compare RNTester
 
 on:
@@ -33,23 +31,16 @@ env:
 jobs:
   find_captures:
     # Test All can fail for reasons unrelated to rendering, so a failed run is
-    # still compared. A platform with no capture is reported as such. Pushes
-    # to other branches have no baseline to compare with or publish. Pull
-    # requests into other branches are skipped in compare-run.js, because
-    # workflow_run doesn't include the base branch of a pull request from a
-    # fork. Nothing runs until the repository has GCP credentials configured.
+    # still compared. A platform with no capture is reported as such. Only
+    # main pushes run comparisons while pull request testing is paused.
+    # Nothing runs until the repository has GCP credentials configured.
     if: |
       vars.VISUAL_GCP_PROJECT != '' &&
       vars.VISUAL_WORKLOAD_IDENTITY_PROVIDER != '' &&
       contains(fromJSON('["success", "failure"]'), github.event.workflow_run.conclusion) &&
-      (
-        github.event.workflow_run.event == 'pull_request' ||
-        (
-          github.event.workflow_run.event == 'push' &&
-          github.event.workflow_run.head_branch == github.event.repository.default_branch &&
-          github.event.workflow_run.head_repository.full_name == github.repository
-        )
-      )
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == github.event.repository.default_branch &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       actions: read
