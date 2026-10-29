@@ -23,8 +23,16 @@ internal object TouchesHelper {
     ReactNativeJNISoLoader.staticInit()
   }
 
-  // Values per pointer in the data passed to nativeCreateTouchPayload.
-  private const val POINTER_FIELDS = 8
+  // Keep in sync with the field indices in TouchesHelper.cpp.
+  const val PAGE_X_INDEX = 0
+  const val PAGE_Y_INDEX = 1
+  const val LOCATION_X_INDEX = 2
+  const val LOCATION_Y_INDEX = 3
+  const val TARGET_SURFACE_INDEX = 4
+  const val TARGET_INDEX = 5
+  const val TIMESTAMP_INDEX = 6
+  const val IDENTIFIER_INDEX = 7
+  const val POINTER_FIELDS = 8
 
   /**
    * Fills the pointer data of [nativeCreateTouchPayload]: for each pointer of the
@@ -46,24 +54,24 @@ internal object TouchesHelper {
     val targetViewCoordinateY = motionEvent.y - event.viewY
 
     for (index in 0 until motionEvent.pointerCount) {
-      var field = index * POINTER_FIELDS
+      val field = index * POINTER_FIELDS
 
       // pageX,Y values are relative to the RootReactView
       // the motionEvent already contains coordinates in that view
-      pointerData[field++] = motionEvent.getX(index).pxToDp().toDouble()
-      pointerData[field++] = motionEvent.getY(index).pxToDp().toDouble()
+      pointerData[field + PAGE_X_INDEX] = motionEvent.getX(index).pxToDp().toDouble()
+      pointerData[field + PAGE_Y_INDEX] = motionEvent.getY(index).pxToDp().toDouble()
 
       // locationX,Y values are relative to the target view
       // To compute the values for the view, we subtract that views location from the event X,Y
       val locationX = motionEvent.getX(index) - targetViewCoordinateX
       val locationY = motionEvent.getY(index) - targetViewCoordinateY
-      pointerData[field++] = locationX.pxToDp().toDouble()
-      pointerData[field++] = locationY.pxToDp().toDouble()
+      pointerData[field + LOCATION_X_INDEX] = locationX.pxToDp().toDouble()
+      pointerData[field + LOCATION_Y_INDEX] = locationY.pxToDp().toDouble()
 
-      pointerData[field++] = event.surfaceId.toDouble()
-      pointerData[field++] = event.viewTag.toDouble()
-      pointerData[field++] = event.timestampMs.toDouble()
-      pointerData[field] = motionEvent.getPointerId(index).toDouble()
+      pointerData[field + TARGET_SURFACE_INDEX] = event.surfaceId.toDouble()
+      pointerData[field + TARGET_INDEX] = event.viewTag.toDouble()
+      pointerData[field + TIMESTAMP_INDEX] = event.timestampMs.toDouble()
+      pointerData[field + IDENTIFIER_INDEX] = motionEvent.getPointerId(index).toDouble()
     }
 
     return pointerData

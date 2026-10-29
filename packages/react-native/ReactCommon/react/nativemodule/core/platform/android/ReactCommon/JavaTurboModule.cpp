@@ -594,14 +594,15 @@ const JavaTurboModule::MethodInfo& JavaTurboModule::getMethodInfo(
   std::lock_guard<std::mutex> lock(methodInfosMutex_);
   auto entry = methodInfos_.find(methodID);
   if (entry == methodInfos_.end()) {
-    entry = methodInfos_
-                .emplace(
-                    methodID,
-                    MethodInfo{
-                        getMethodArgTypesFromSignature(methodSignature),
-                        methodSignature.substr(
-                            methodSignature.find_last_of(')') + 1)})
-                .first;
+    entry =
+        methodInfos_
+            .emplace(
+                methodID,
+                MethodInfo{
+                    .argTypes = getMethodArgTypesFromSignature(methodSignature),
+                    .returnType = methodSignature.substr(
+                        methodSignature.find_last_of(')') + 1)})
+            .first;
   }
   return entry->second;
 }

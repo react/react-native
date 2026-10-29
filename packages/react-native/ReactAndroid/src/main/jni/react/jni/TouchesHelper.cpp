@@ -18,20 +18,29 @@ namespace facebook::react {
 
 namespace {
 
-// Must match TouchesHelper.POINTER_FIELDS and the order documented on
-// TouchesHelper.nativeCreateTouchPayload.
+// Keep in sync with the field indices in TouchesHelper.kt.
+constexpr jint kPageXIndex = 0;
+constexpr jint kPageYIndex = 1;
+constexpr jint kLocationXIndex = 2;
+constexpr jint kLocationYIndex = 3;
+constexpr jint kTargetSurfaceIndex = 4;
+constexpr jint kTargetIndex = 5;
+constexpr jint kTimestampIndex = 6;
+constexpr jint kIdentifierIndex = 7;
 constexpr jint kPointerFields = 8;
 
 folly::dynamic createTouch(const double* fields) {
   folly::dynamic touch = folly::dynamic::object();
-  touch.insert("pageX", fields[0]);
-  touch.insert("pageY", fields[1]);
-  touch.insert("locationX", fields[2]);
-  touch.insert("locationY", fields[3]);
-  touch.insert("targetSurface", static_cast<int>(fields[4]));
-  touch.insert("target", static_cast<int>(fields[5]));
-  touch.insert("timestamp", fields[6]);
-  touch.insert("identifier", fields[7]);
+  // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  touch.insert("pageX", fields[kPageXIndex]);
+  touch.insert("pageY", fields[kPageYIndex]);
+  touch.insert("locationX", fields[kLocationXIndex]);
+  touch.insert("locationY", fields[kLocationYIndex]);
+  touch.insert("targetSurface", static_cast<int>(fields[kTargetSurfaceIndex]));
+  touch.insert("target", static_cast<int>(fields[kTargetIndex]));
+  touch.insert("timestamp", fields[kTimestampIndex]);
+  touch.insert("identifier", fields[kIdentifierIndex]);
+  // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   return touch;
 }
 
@@ -53,6 +62,7 @@ local_ref<WritableNativeMap::jhybridobject> createTouchPayload(
   folly::dynamic changedTouches = folly::dynamic::array();
   folly::dynamic touches = folly::dynamic::array();
   for (jint index = 0; index < pointerCount; index++) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     const double* fields = values.get() + index * kPointerFields;
     if ((changedPointers & (1 << index)) != 0) {
       changedTouches.push_back(createTouch(fields));
@@ -64,15 +74,18 @@ local_ref<WritableNativeMap::jhybridobject> createTouchPayload(
 
   auto jPayload = WritableNativeMap::newObjectJavaArgs();
   auto* payload = jPayload->cthis();
+  // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   const double* fields = values.get() + eventPointer * kPointerFields;
-  payload->putDouble("pageX", fields[0]);
-  payload->putDouble("pageY", fields[1]);
-  payload->putDouble("locationX", fields[2]);
-  payload->putDouble("locationY", fields[3]);
-  payload->putInt("targetSurface", static_cast<int>(fields[4]));
-  payload->putInt("target", static_cast<int>(fields[5]));
-  payload->putDouble("timestamp", fields[6]);
-  payload->putDouble("identifier", fields[7]);
+  payload->putDouble("pageX", fields[kPageXIndex]);
+  payload->putDouble("pageY", fields[kPageYIndex]);
+  payload->putDouble("locationX", fields[kLocationXIndex]);
+  payload->putDouble("locationY", fields[kLocationYIndex]);
+  payload->putInt(
+      "targetSurface", static_cast<int>(fields[kTargetSurfaceIndex]));
+  payload->putInt("target", static_cast<int>(fields[kTargetIndex]));
+  payload->putDouble("timestamp", fields[kTimestampIndex]);
+  payload->putDouble("identifier", fields[kIdentifierIndex]);
+  // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   WritableNativeArray changedTouchesArray(std::move(changedTouches));
   payload->putNativeArray("changedTouches", &changedTouchesArray);
   WritableNativeArray touchesArray(std::move(touches));
