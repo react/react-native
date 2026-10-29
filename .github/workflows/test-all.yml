@@ -197,18 +197,24 @@ jobs:
     uses: ./.github/workflows/e2e-ios-rntester.yml
     secrets: inherit
 
+  # Each flow already gets a retry inside the job, so a flow that failed is
+  # reported straight away. These retries only re-run jobs that stopped before
+  # running every flow, and they skip flows that already passed.
   test_e2e_ios_rntester_retry_1:
     needs: test_e2e_ios_rntester
-    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.status == 'failure' }}
+    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.retryable == 'true' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_ios_rntester_retry_2:
     needs: test_e2e_ios_rntester_retry_1
-    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.status == 'failure' }}
+    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.retryable == 'true' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
 
   test_visual_ios_rntester:

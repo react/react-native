@@ -9,16 +9,25 @@ on:
       fail-on-error:
         type: boolean
         default: false
+      retry-attempt:
+        type: number
+        default: 0
     outputs:
       status:
         description: 'The result of the E2E tests (success or failure)'
         value: ${{ jobs.report.outputs.status }}
+      retryable:
+        description: 'Whether the failure came from a job that did not finish running every flow'
+        value: ${{ jobs.report.outputs.retryable }}
 
 jobs:
   test:
     runs-on: macos-26-large
     outputs:
-      status: ${{ steps.report-status.outputs.status }}
+      # Matrix legs only keep the last value written to an output name, so each
+      # flavor writes its own.
+      debug-result: ${{ steps.classify.outputs.debug-result }}
+      release-result: ${{ steps.classify.outputs.release-result }}
     strategy:
       fail-fast: false
       matrix:
@@ -26,17 +35,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Download previous per-flow test state
+        if: ${{ inputs.retry-attempt > 0 }}
+        continue-on-error: true
+        uses: ./.github/actions/download-artifact
+        with:
+          name: e2e_ios_rntester_state_${{ matrix.flavor }}_NewArch
+          path: /tmp/maestro-ios-state
+      - name: Check for unfinished E2E flows
+        id: test-state
+        shell: bash
+        run: |
+          SHOULD_RUN=true
+          if [[ -f /tmp/maestro-ios-state/results.json ]] && \
+            jq -e '(.flows | length > 0) and all(.flows[]; .status == "passed")' /tmp/maestro-ios-state/results.json > /dev/null; then
+            SHOULD_RUN=false
+          fi
+          echo "should-run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
       - name: Setup Node.js
+        if: steps.test-state.outputs.should-run == 'true'
         uses: ./.github/actions/setup-node
       - name: Download App
+        if: steps.test-state.outputs.should-run == 'true'
         uses: ./.github/actions/download-artifact
         with:
           name: RNTesterApp-NewArch-${{ matrix.flavor }}
           path: /tmp/RNTesterBuild/RNTester.app
       - name: Check downloaded folder content
+        if: steps.test-state.outputs.should-run == 'true'
         run: ls -lR /tmp/RNTesterBuild
       - name: Run E2E Tests
         id: run-tests
+        if: steps.test-state.outputs.should-run == 'true'
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
@@ -46,10 +76,36 @@ jobs:
           flavor: ${{ matrix.flavor }}
           device-model: iPhone-17-Pro
           device-os: iOS-26-2
-      - name: Report status
-        id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
+          test-state-path: /tmp/maestro-ios-state/results.json
+      - name: Store per-flow test state
+        if: always()
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: e2e_ios_rntester_state_${{ matrix.flavor }}_NewArch
+          overwrite: true
+          if-no-files-found: warn
+          path: /tmp/maestro-ios-state/results.json
+      - name: Classify result
+        id: classify
+        if: always()
+        shell: bash
+        # passed: every flow passed.
+        # failed: a flow failed all of its attempts; retrying the job would only
+        #   repeat the same failure.
+        # incomplete: the job stopped before running every flow (runner or
+        #   setup failure); a retry can pick up the remaining flows.
+        run: |
+          STATE=/tmp/maestro-ios-state/results.json
+          if [[ "${{ steps.test-state.outputs.should-run }}" == "false" || "${{ steps.run-tests.outcome }}" == "success" ]]; then
+            RESULT=passed
+          elif [[ -f "$STATE" ]] && jq -e 'any(.flows[]; .status == "failed")' "$STATE" > /dev/null; then
+            RESULT=failed
+          else
+            RESULT=incomplete
+          fi
+          FLAVOR=$(echo "${{ matrix.flavor }}" | tr '[:upper:]' '[:lower:]')
+          echo "Result: $RESULT"
+          echo "$FLAVOR-result=$RESULT" >> "$GITHUB_OUTPUT"
 
   report:
     needs: test
@@ -57,15 +113,26 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.check.outputs.status }}
+      retryable: ${{ steps.check.outputs.retryable }}
     steps:
       - id: check
+        env:
+          DEBUG_RESULT: ${{ needs.test.outputs.debug-result }}
+          RELEASE_RESULT: ${{ needs.test.outputs.release-result }}
+        # A missing result means the leg did not get as far as classifying
+        # itself, which is treated like an incomplete run.
         run: |
-          if [[ "${{ needs.test.result }}" != "success" ||
-                "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
+          echo "Debug: ${DEBUG_RESULT:-<missing>}, Release: ${RELEASE_RESULT:-<missing>}"
+          if [[ "$DEBUG_RESULT" == "passed" && "$RELEASE_RESULT" == "passed" ]]; then
             echo "status=success" >> $GITHUB_OUTPUT
+            echo "retryable=false" >> $GITHUB_OUTPUT
+          elif [[ "$DEBUG_RESULT" == "failed" || "$RELEASE_RESULT" == "failed" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "retryable=false" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "retryable=true" >> $GITHUB_OUTPUT
           fi
       - name: Fail if needed
-        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
+        if: ${{ steps.check.outputs.status == 'failure' && (inputs.fail-on-error || steps.check.outputs.retryable == 'false') }}
         run: exit 1
