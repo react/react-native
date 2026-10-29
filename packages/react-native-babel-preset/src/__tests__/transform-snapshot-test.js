@@ -477,9 +477,32 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).not.toContain('/u');
     });
 
-    it('handles named capturing groups in regex', () => {
+    it('preserves named capturing groups with hermes-stable profile', () => {
+      const code = `const match = str.match(/(?<c>.)\\k<c>1/u);`;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+      });
+      expect(result).toContain('/(?<c>.)\\k<c>1/u');
+      expect(result).not.toContain('_wrapRegExp');
+    });
+
+    it('transforms duplicate named capturing groups with hermes-stable profile', () => {
+      const code = `const match = str.match(/(?<y>\\d{4})-\\d\\d|\\d\\d-(?<y>\\d{4})/);`;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+      });
+      expect(result).toContain('_wrapRegExp');
+      expect(result).not.toContain('?<y>');
+    });
+
+    it('transforms named capturing groups with hermes-legacy profile', () => {
       const code = `const match = str.match(/(?<year>\\d{4})-(?<month>\\d{2})/);`;
-      const result = transformCode(code, {dev: false});
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-legacy',
+      });
       expect(result).toContain('_wrapRegExp');
     });
 

@@ -123,6 +123,10 @@ const getPreset = (src, options, babel) => {
   // escapes, which Babel would otherwise expand into explicit character ranges.
   const preserveUnicodeRegex = isHermesProfile;
 
+  // Hermes V1 supports named capturing groups natively, except for a name
+  // repeated across alternatives, i.e. `/(?<y>\d{4})-\d\d|\d\d-(?<y>\d{4})/`.
+  const preserveNamedCapturingGroups = isHermesProfile;
+
   // Private fields can only be preserved when the surrounding class syntax is
   // also preserved. Babel's class transform requires the private transforms.
   const preserveClassPrivate =
@@ -206,9 +210,16 @@ const getPreset = (src, options, babel) => {
     extraPlugins.push([require('@babel/plugin-transform-classes')]);
   }
 
-  extraPlugins.push([
-    require('@babel/plugin-transform-named-capturing-groups-regex'),
-  ]);
+  if (preserveNamedCapturingGroups) {
+    // Lowers only regexes that repeat a group name.
+    extraPlugins.push([
+      require('@babel/plugin-transform-duplicate-named-capturing-groups-regex'),
+    ]);
+  } else {
+    extraPlugins.push([
+      require('@babel/plugin-transform-named-capturing-groups-regex'),
+    ]);
+  }
 
   if (!preserveDestructuring) {
     extraPlugins.push([

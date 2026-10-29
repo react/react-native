@@ -38,6 +38,7 @@
     "@babel/plugin-transform-class-properties": "^7.25.4",
     "@babel/plugin-transform-classes": "^7.25.4",
     "@babel/plugin-transform-destructuring": "^7.24.8",
+    "@babel/plugin-transform-duplicate-named-capturing-groups-regex": "^7.25.9",
     "@babel/plugin-transform-flow-strip-types": "^7.25.2",
     "@babel/plugin-transform-modules-commonjs": "^7.24.8",
     "@babel/plugin-transform-named-capturing-groups-regex": "^7.24.7",

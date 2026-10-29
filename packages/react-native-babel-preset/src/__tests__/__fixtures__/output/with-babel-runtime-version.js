@@ -40,7 +40,6 @@ exports.parseDate = parseDate;
 exports.processUser = processUser;
 exports.safeJsonParse = safeJsonParse;
 exports.sumPairs = sumPairs;
-var _wrapRegExp2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapRegExp"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _classPrivateFieldLooseBase2 = _interopRequireDefault(require("@babel/runtime/helpers/classPrivateFieldLooseBase"));
 var _classPrivateFieldLooseKey2 = _interopRequireDefault(require("@babel/runtime/helpers/classPrivateFieldLooseKey"));
@@ -167,11 +166,7 @@ function sumPairs(pairs) {
   return total;
 }
 function parseDate(dateString) {
-  var regex = (0, _wrapRegExp2.default)(/(\d{4})-(\d{2})-(\d{2})/, {
-    year: 1,
-    month: 2,
-    day: 3
-  });
+  var regex = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
   var match = dateString.match(regex);
   if (match?.groups) {
     return {
