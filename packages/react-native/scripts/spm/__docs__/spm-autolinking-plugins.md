@@ -305,15 +305,14 @@ only, simulator only, …), the script must check `$CONFIGURATION` /
 #### `context.react` — depending on React
 
 A plugin that emits its own `Package.swift` must declare React as a dependency.
-React Native's package path, identity, and product names differ between local
-and remote mode, and they **move as RN repackages**. So take them from
-`context.react` rather than re-deriving them:
+React Native's package path, identity, and product names **move as RN
+repackages**. So take them from `context.react` rather than re-deriving them:
 
 ```js
 react: {
   packageRef:
     {name: 'ReactNative', path: '<absolute>', relPath: '<relative-to-outputDir>'} // local
-    | {name: '<identity>', url: '<url>', version: '<version>'},                   // remote (SPM-resolved)
+    | {name: '<identity>', url: '<url>', version: '<version>'},                   // remote (planned, unsupported)
   products: [
     {name: 'ReactHeaders', package: 'ReactNative'},
     {name: 'ReactNativeHeaders', package: 'ReactNative'},
@@ -323,7 +322,8 @@ react: {
 }
 ```
 
-- The `packageRef` keys signal local or remote mode: `path` xor `url`+`version`.
+- `packageRef` has the local `path` shape. The `url`+`version` shape appears
+  only in the unsupported, planned remote mode.
 - `packageRef.path` is **absolute**, so it is correct in any subdirectory of
   `outputDir` the plugin writes its manifest into. The generated manifests are
   gitignored and regenerated every sync, so this has no portability cost.
