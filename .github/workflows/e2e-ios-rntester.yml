@@ -52,10 +52,9 @@ jobs:
             SHOULD_RUN=false
           fi
           echo "should-run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
-      - name: Setup Node.js
-        if: steps.test-state.outputs.should-run == 'true'
-        uses: ./.github/actions/setup-node
+      # First, so that a missing app fails the job before any other setup.
       - name: Download App
+        id: download-app
         if: steps.test-state.outputs.should-run == 'true'
         uses: ./.github/actions/download-artifact
         with:
@@ -64,6 +63,9 @@ jobs:
       - name: Check downloaded folder content
         if: steps.test-state.outputs.should-run == 'true'
         run: ls -lR /tmp/RNTesterBuild
+      - name: Setup Node.js
+        if: steps.test-state.outputs.should-run == 'true'
+        uses: ./.github/actions/setup-node
       - name: Run E2E Tests
         id: run-tests
         if: steps.test-state.outputs.should-run == 'true'
@@ -95,14 +97,19 @@ jobs:
         if: always()
         shell: bash
         # passed: every flow passed.
-        # failed: a flow failed all of its attempts; retrying the job would only
-        #   repeat the same failure.
+        # failed: a flow failed all of its attempts, or the app to test is
+        #   missing; retrying the job would only repeat the same failure.
         # incomplete: the job stopped before running every flow (runner or
         #   setup failure); a retry can pick up the remaining flows.
         run: |
           STATE=/tmp/maestro-ios-state/results.json
           if [[ "${{ steps.test-state.outputs.should-run }}" == "false" || "${{ steps.run-tests.outcome }}" == "success" ]]; then
             RESULT=passed
+          elif [[ "${{ steps.download-app.outcome }}" == "failure" ]]; then
+            # test_ios_rntester uses continue-on-error, so it reports success
+            # even when the build that uploads this app failed.
+            echo "::error::RNTesterApp-NewArch-${{ matrix.flavor }} is missing. Check the test_ios_rntester (${{ matrix.flavor }}, frameworks: false) job."
+            RESULT=failed
           elif [[ -f "$STATE" ]] && jq -e 'any(.flows[]; .status == "failed")' "$STATE" > /dev/null; then
             RESULT=failed
           else
