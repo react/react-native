@@ -302,11 +302,14 @@ class ViewabilityHelper {
     ) => ViewToken,
   ) {
     // Filter out indices that have gone out of view since this call was scheduled.
-    // Use a Set so the lookup is O(1) per index instead of O(n) (`includes`).
-    const currentViewableIndices = new Set(this._viewableIndices);
-    viewableIndicesToCheck = viewableIndicesToCheck.filter(ii =>
-      currentViewableIndices.has(ii),
-    );
+    // Both call sites pass the array stored in `this._viewableIndices`, in which
+    // case every index is trivially still viewable and the O(n^2) filter can be
+    // skipped.
+    if (viewableIndicesToCheck !== this._viewableIndices) {
+      viewableIndicesToCheck = viewableIndicesToCheck.filter(ii =>
+        this._viewableIndices.includes(ii),
+      );
+    }
     const prevItems = this._viewableItems;
     const nextItems = new Map(
       viewableIndicesToCheck.map(ii => {
