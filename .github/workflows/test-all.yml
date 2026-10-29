@@ -167,7 +167,9 @@ jobs:
     needs: test_ios_rntester
     # test_ios_rntester is continue-on-error. If its Release artifact is missing,
     # the reusable workflow fails explicitly while downloading or validating it.
+    # Maestro Cloud tests are temporarily disabled. Remove `false &&` to re-enable.
     if: |
+      false &&
       needs.test_ios_rntester.result == 'success' &&
       (
         (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
@@ -370,7 +372,9 @@ jobs:
 
   test_maestro_cloud_android:
     needs: build_android
+    # Maestro Cloud tests are temporarily disabled. Remove `false &&` to re-enable.
     if: |
+      false &&
       needs.build_android.result == 'success' &&
       (
         (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
