@@ -26,6 +26,10 @@ inputs:
     required: false
     default: ''
     description: Maestro device OS name, such as iOS-26-2
+  test-state-path:
+    required: false
+    default: ''
+    description: The path used to persist per-flow test results between retries
 
 runs:
   using: composite
@@ -73,24 +77,14 @@ runs:
           "${{ inputs.flavor }}" \
           "${{ inputs.working-directory }}" \
           "${{ inputs.device-model }}" \
-          "${{ inputs.device-os }}"
-    - name: Store video record
-      if: always()
-      uses: ./.github/actions/upload-artifact
-      with:
-        name: e2e_ios_${{ inputs.app-id }}_report_${{ inputs.flavor }}_NewArch
-        overwrite: true
-        path: |
-          video_record_1.mov
-          video_record_2.mov
-          video_record_3.mov
-          video_record_4.mov
-          video_record_5.mov
-          report.xml
+          "${{ inputs.device-os }}" \
+          "${{ inputs.test-state-path }}"
     - name: Store Logs
-      if: failure() && steps.run-tests.outcome == 'failure'
+      if: always()
       uses: ./.github/actions/upload-artifact
       with:
         name: maestro-logs-${{ inputs.app-id }}-${{ inputs.flavor }}-NewArch
         overwrite: true
+        if-no-files-found: ignore
+        # Contains the recording, report and debug output of failed attempts only
         path: /tmp/MaestroLogs
