@@ -660,11 +660,10 @@ public class ReactHostImpl(
     val method =
         "onActivityResult(activity = \"$activity\", requestCode = \"$requestCode\", resultCode = \"$resultCode\", data = \"$data\")"
 
-    val currentContext = currentReactContext
-    if (currentContext != null) {
-      currentContext.onActivityResult(activity, requestCode, resultCode, data)
-    } else {
-      raiseSoftException(method, "Tried to access onActivityResult while context is not ready")
+    callWithExistingReactContext(method) { reactContext ->
+      if (!activity.isDestroyed) {
+        reactContext.onActivityResult(activity, requestCode, resultCode, data)
+      }
     }
   }
 
@@ -928,6 +927,32 @@ public class ReactHostImpl(
                 }
               },
               executor,
+          )
+
+  /** Schedule UI work after an already requested ReactInstance has finished initializing. */
+  private fun callWithExistingReactContext(
+      callingMethod: String,
+      runnable: (reactContext: ReactContext) -> Unit,
+  ): Task<Boolean> =
+      // Read the task on the host executor, after any previously scheduled start work.
+      Task.call({ createReactInstanceTaskRef.get() }, bgExecutor)
+          .onSuccess(
+              { instanceTask ->
+                val reactContext = currentReactContext
+                if (instanceTask.getResult() == null || reactContext == null) {
+                  raiseSoftException(
+                      "callWithExistingReactContext($callingMethod)",
+                      "Execute: ReactContext is null. Dropping work.",
+                  )
+                  false
+                } else if (instanceTask.getResult() !== reactInstance) {
+                  false
+                } else {
+                  runnable(reactContext)
+                  true
+                }
+              },
+              uiExecutor,
           )
 
   /** Create a ReactInstance if it doesn't exist already, and schedule work on it. */
