@@ -15,6 +15,7 @@ import type {
   AutolinkedDep,
   AutolinkingIosPlatform,
   PodspecModel,
+  PreprocessorDefine,
   ScaffoldResult,
   SpmScaffoldSpec,
 } from './spm-types';
@@ -534,7 +535,7 @@ function translatePodspecToSpmTarget(
   // to the pod (scripts/cocoapods/new_architecture.rb), and libraries gate
   // their TurboModule/Fabric code on it. The helper is stripped before the
   // podspec is read, so restore the define here.
-  const preprocessorDefines =
+  const preprocessorDefines /*: Array<PreprocessorDefine> */ =
     model.usesInstallModulesDependencies === true
       ? [
           ...model.preprocessorDefines,
