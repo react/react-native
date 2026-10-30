@@ -18,6 +18,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.modules.fresco.FrescoModule
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
@@ -92,10 +93,22 @@ public constructor(
             ?: callerContextFactory?.getOrCreateCallerContext(context.moduleName, null)
     return ReactImageView(
         context,
-        draweeControllerBuilder ?: Fresco.newDraweeControllerBuilder(),
+        draweeControllerBuilder ?: newDraweeControllerBuilder(context),
         globalImageLoadListener,
         callerContext,
     )
+  }
+
+  private fun newDraweeControllerBuilder(
+      context: ThemedReactContext
+  ): AbstractDraweeControllerBuilder<*, *, *, *> {
+    if (!FrescoModule.hasBeenInitialized()) {
+      // FrescoModule initializes Fresco on the native modules thread while the JS bundle loads, so
+      // the first Image can be created before that finishes. Getting the module waits for it.
+      // Fresco.hasBeenInitialized() doesn't help here: it turns true when initialization starts.
+      context.reactApplicationContext.getNativeModule(FrescoModule::class.java)
+    }
+    return Fresco.newDraweeControllerBuilder()
   }
 
   public override fun getName(): String = REACT_CLASS
