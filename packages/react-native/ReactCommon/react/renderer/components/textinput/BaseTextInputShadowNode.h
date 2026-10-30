@@ -47,7 +47,7 @@ class BaseTextInputShadowNode
 
   using BaseShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = BaseShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
