@@ -131,6 +131,114 @@ val prepareNlohmannJson by
       into("$thirdParty/nlohmann_json")
     }
 
+val boringsslVersion = "603b54d3d338efde4b84ece7be9aa410e44b1417"
+val boringsslArchive = File(downloadsDir, "boringssl-$boringsslVersion.tar.gz")
+val downloadBoringSSL by
+    tasks.registering(Download::class) {
+      dependsOn(createNativeDepsDirectories)
+      src("https://github.com/google/boringssl/archive/$boringsslVersion.tar.gz")
+      onlyIfModified(true)
+      overwrite(false)
+      retries(5)
+      quiet(true)
+      dest(boringsslArchive)
+    }
+val prepareBoringSSL by
+    tasks.registering(Copy::class) {
+      dependsOn(downloadBoringSSL)
+      from(tarTree(boringsslArchive))
+      eachFile { path = path.substringAfter("/") }
+      includeEmptyDirs = false
+      into("$thirdParty/boringssl")
+    }
+
+// Match the CPU Skia revision used by the native tester in Buck.
+val skiaVersion = "3f8fc145ba678f3bd47af50f8fb51bcde474ef9c"
+
+fun downloadSkiaSource(name: String, url: String, destination: File) =
+    tasks.register<Download>("downloadSkia${name}") {
+      dependsOn(createNativeDepsDirectories)
+      src(url)
+      onlyIfModified(true)
+      overwrite(false)
+      retries(5)
+      quiet(true)
+      dest(destination)
+    }
+
+val skiaArchive = File(downloadsDir, "skia-$skiaVersion.tar.gz")
+val downloadSkia =
+    downloadSkiaSource(
+        "Core",
+        "https://github.com/google/skia/archive/$skiaVersion.tar.gz",
+        skiaArchive,
+    )
+val prepareSkiaSource by
+    tasks.registering(Copy::class) {
+      dependsOn(downloadSkia)
+      from(tarTree(skiaArchive))
+      from("tester/third-party/skia/CMakeLists.txt")
+      eachFile { path = path.substringAfter("/") }
+      filesMatching("**/SkRasterPipeline_opts.h") {
+        filter { line ->
+          line.replace(
+              "#if !defined(__clang__)",
+              "#if defined(SK_RASTER_PIPELINE_FORCE_SCALAR) || !defined(__clang__)",
+          )
+        }
+      }
+      filesMatching("**/SkBlitter_Sprite.cpp") {
+        filter { line ->
+          line
+              .replace(
+                  "    if (gSkForceRasterPipelineBlitter) {",
+                  "#if !defined(SK_FORCE_RASTER_PIPELINE_BLITTER)\n    if (gSkForceRasterPipelineBlitter) {",
+              )
+              .replace(
+                  "    if (!blitter && !paint.getMaskFilter()) {",
+                  "#endif\n    if (!blitter && !paint.getMaskFilter()) {",
+              )
+        }
+      }
+      includeEmptyDirs = false
+      into("$thirdParty/skia")
+    }
+
+// GN builds these dependencies into libskia, including FreeType's color PNG glyph support.
+val skiaDependencies =
+    mapOf(
+        "freetype" to "https://github.com/freetype/freetype/archive/refs/tags/VER-2-14-2.tar.gz",
+        "harfbuzz" to
+            "https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz.git/+archive/8d1b000a3edc90c12267b836b4ef3f81c0e53edc.tar.gz",
+        "libpng" to "https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.55.tar.gz",
+        "zlib" to
+            "https://chromium.googlesource.com/chromium/src/third_party/zlib/+archive/c876c8f87101c5a75f6014b0f832499afeb65b73.tar.gz",
+    )
+val prepareSkiaDependencies =
+    skiaDependencies.map { (name, url) ->
+      val archive = File(downloadsDir, "skia-$name-${url.substringAfterLast('/')}")
+      val download = downloadSkiaSource(name.replaceFirstChar { it.uppercase() }, url, archive)
+      tasks.register<Copy>("prepareSkia${name.replaceFirstChar { it.uppercase() }}") {
+        dependsOn(download, prepareSkiaSource)
+        from(tarTree(archive))
+        if (name == "freetype" || name == "libpng") {
+          eachFile { path = path.substringAfter("/") }
+        }
+        if (name == "zlib") {
+          filesMatching("zutil.h") {
+            filter { line ->
+              line.replace(
+                  "defined(TARGET_OS_MAC)",
+                  "(defined(TARGET_OS_MAC) && !defined(__APPLE__))",
+              )
+            }
+          }
+        }
+        includeEmptyDirs = false
+        into("$thirdParty/skia/third_party/externals/$name")
+      }
+    }
+
 var codegenSrcDir = File("$reactAndroidBuildDir/generated/source/codegen/jni")
 var codegenOutDir = File("$buildDir/codegen")
 val prepareRNCodegen by
@@ -166,6 +274,9 @@ val prepareNative3pDependencies by
           prepareGflags,
           prepareNlohmannJson,
           prepareFolly,
+          prepareBoringSSL,
+          prepareSkiaSource,
+          *prepareSkiaDependencies.toTypedArray(),
           ":packages:react-native:ReactAndroid:prepareBoost",
           ":packages:react-native:ReactAndroid:prepareDoubleConversion",
           ":packages:react-native:ReactAndroid:prepareFastFloat",
@@ -197,6 +308,7 @@ val configureFantomTester by
               "-DCMAKE_BUILD_TYPE=Debug",
               "-DFANTOM_CODEGEN_DIR=$buildDir/codegen",
               "-DFANTOM_THIRD_PARTY_DIR=$buildDir/third-party",
+              "-DFANTOM_NINJA=$cmakePath/bin/ninja",
               "-DREACT_ANDROID_DIR=$reactAndroidDir",
               "-DREACT_COMMON_DIR=$reactNativeDir/ReactCommon",
               "-DREACT_CXX_PLATFORM_DIR=$reactNativeDir/ReactCxxPlatform",
@@ -215,6 +327,7 @@ val buildFantomTester by
     tasks.registering(CustomExecTask::class) {
       dependsOn(configureFantomTester)
       workingDir(testerDir)
+      inputs.dir(testerDir)
       inputs.files(testerBuildOutputFileTree)
       commandLine(
           cmakeBinaryPath,

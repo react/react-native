@@ -21,6 +21,8 @@ TesterMountingManager::TesterMountingManager(
     std::function<void(SurfaceId)>&& onAfterMount)
     : onAfterMount_(onAfterMount), renderer_(std::make_unique<RenderOutput>()) {
   imageLoader_ = std::make_shared<FantomImageLoader>();
+  textLayoutManager_ = std::make_shared<FantomTextLayoutManager>(
+      std::make_shared<const ContextContainer>());
 }
 
 void TesterMountingManager::executeMount(
@@ -116,7 +118,7 @@ folly::dynamic TesterMountingManager::getViewFabricUpdateProps(
 }
 
 ComponentRegistryFactory TesterMountingManager::getComponentRegistryFactory() {
-  return getDefaultComponentRegistryFactory();
+  return getDefaultComponentRegistryFactory(textLayoutManager_);
 }
 
 StubViewTree TesterMountingManager::getViewTree(SurfaceId surfaceId) {

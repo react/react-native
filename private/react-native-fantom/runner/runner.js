@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {ScreenshotResult} from '../runtime/ScreenshotContext';
 import type {
   FailureDetail,
   TestCaseResult,
@@ -48,6 +49,12 @@ import {
   getTestBuildOutputPath,
 } from './paths';
 import {
+  createScreenshotDifferences,
+  formatScreenshotFailure,
+  getScreenshotConfig,
+  processScreenshotResults,
+} from './screenshots/screenshotUtils';
+import {
   getInitialSnapshotData,
   processInlineSnapshotResults,
   saveInlineSnapshotsToSource,
@@ -64,6 +71,7 @@ import {
 // $FlowExpectedError[untyped-import]
 import {formatResultsErrors} from 'jest-message-util';
 import {SnapshotState, buildSnapshotResolver} from 'jest-snapshot';
+import {randomUUID} from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -80,13 +88,23 @@ if (EnvironmentOptions.profileJS) {
 function buildError(
   failureDetail: FailureDetail,
   sourceMapPath: string,
+  screenshotResults: ReadonlyArray<ScreenshotResult> = [],
 ): Error {
-  const error = new Error(failureDetail.message);
+  const error = new Error(
+    formatScreenshotFailure(failureDetail.message, screenshotResults),
+  );
   if (failureDetail.stack != null) {
-    error.stack = symbolicateStackTrace(sourceMapPath, failureDetail.stack);
+    error.stack = symbolicateStackTrace(
+      sourceMapPath,
+      formatScreenshotFailure(failureDetail.stack, screenshotResults),
+    );
   }
   if (failureDetail.cause != null) {
-    error.cause = buildError(failureDetail.cause, sourceMapPath);
+    error.cause = buildError(
+      failureDetail.cause,
+      sourceMapPath,
+      screenshotResults,
+    );
   }
   return error;
 }
@@ -225,6 +243,14 @@ module.exports = async function runTest(
   let coverageMap: CoverageMap = {};
   const snapshotResolver = await buildSnapshotResolver(config);
   const snapshotPath = snapshotResolver.resolveSnapshotPath(testPath);
+  const screenshotConfig = getScreenshotConfig(
+    snapshotPath,
+    path.join(
+      TEST_BUILD_OUTPUT_PATH,
+      'screenshots',
+      `${randomUUID()}-${path.basename(testPath)}`,
+    ),
+  );
   const snapshotState = new SnapshotState(snapshotPath, {
     updateSnapshot: globalConfig.updateSnapshot,
     snapshotFormat: config.snapshotFormat,
@@ -257,12 +283,13 @@ module.exports = async function runTest(
     {
       ancestorTitles,
       duration: 0,
-      failureDetails: [] as Array<Error>,
+      failureDetails: [] as Array<Error | void>,
       failureMessages: [] as Array<string>,
       fullName: title,
       numPassingAsserts: 0,
       snapshotResults: {} as TestSnapshotResults,
       inlineSnapshotResults: [] as TestInlineSnapshotResults,
+      screenshotResults: [] as Array<ScreenshotResult>,
       status: 'pending' as TestCaseResult['status'],
       testFilePath: testPath,
       title,
@@ -330,6 +357,10 @@ module.exports = async function runTest(
       snapshotConfig: {
         updateSnapshot: snapshotState._updateSnapshot,
         data: getInitialSnapshotData(snapshotState),
+        screenshots: {
+          ...screenshotConfig,
+          receivedDirectory: `${screenshotConfig.receivedDirectory}-${testResultsByConfig.length}`,
+        },
       },
       jsHeapSnapshotOutputPathTemplate,
       jsHeapSnapshotOutputPathTemplateToken,
@@ -456,18 +487,30 @@ module.exports = async function runTest(
     }
 
     const testResults =
-      nullthrows(processedResult.testResults).map(testResult => ({
-        ancestorTitles: [] as Array<string>,
-        testFilePath: testPath,
-        ...testResult,
-        failureMessages: testResult.failureMessages.map(maybeStackTrace =>
-          symbolicateStackTrace(sourceMapPath, maybeStackTrace),
-        ),
-        failureDetails: testResult.failureDetails.map(failureDetails =>
-          buildError(failureDetails, sourceMapPath),
-        ),
-        snapshotResults: testResult.snapshotResults,
-      })) ?? [];
+      nullthrows(processedResult.testResults).map(testResult => {
+        const screenshotResults = createScreenshotDifferences(
+          testResult.screenshotResults,
+          globalConfig.updateSnapshot,
+        );
+        return {
+          ancestorTitles: [] as Array<string>,
+          testFilePath: testPath,
+          ...testResult,
+          screenshotResults,
+          failureMessages: testResult.failureMessages.map(maybeStackTrace =>
+            symbolicateStackTrace(
+              sourceMapPath,
+              formatScreenshotFailure(maybeStackTrace, screenshotResults),
+            ),
+          ),
+          failureDetails: testResult.failureDetails.map(failureDetail =>
+            failureDetail == null
+              ? undefined
+              : buildError(failureDetail, sourceMapPath, screenshotResults),
+          ),
+          snapshotResults: testResult.snapshotResults,
+        };
+      }) ?? [];
 
     // Process inline snapshot results (requires source map for symbolication)
     if (hasInlineSnapshotUpdates) {
@@ -553,13 +596,15 @@ module.exports = async function runTest(
 
   const testResults = testResultsByConfig.flat();
 
-  const snapshotResults = testResults.map(
-    testResult => testResult.snapshotResults,
+  processScreenshotResults(
+    screenshotConfig,
+    testResults.flatMap(result => result.screenshotResults),
+    globalConfig.updateSnapshot,
+    testResults,
   );
-
   const snapshotResult = updateSnapshotsAndGetJestSnapshotResult(
     snapshotState,
-    snapshotResults,
+    testResults,
   );
 
   printBenchmarkResultsRanking(benchmarkResults);

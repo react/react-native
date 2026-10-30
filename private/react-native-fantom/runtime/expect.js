@@ -517,12 +517,15 @@ class Expect {
       ).blameToPreviousFrame();
     }
 
+    const Screenshot = require('../src/Screenshot').default;
+    const screenshot =
+      this.#received instanceof Screenshot ? this.#received : undefined;
     const receivedValue = format(this.#received, {
       plugins: [plugins.ReactElement],
     });
 
     try {
-      snapshotContext.toMatchSnapshot(receivedValue, expected);
+      snapshotContext.toMatchSnapshot(receivedValue, expected, screenshot);
     } catch (err) {
       throw new ErrorWithCustomBlame(err.message).blameToPreviousFrame();
     }
