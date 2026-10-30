@@ -9,12 +9,12 @@
  */
 
 const Linking = {
-  openURL: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  openURL: jest.fn(() => Promise.resolve()) as JestMockFn<$FlowFixMe, $FlowFixMe>,
   canOpenURL: jest.fn(() => Promise.resolve(true)) as JestMockFn<
     $FlowFixMe,
     $FlowFixMe,
   >,
-  openSettings: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  openSettings: jest.fn(() => Promise.resolve()) as JestMockFn<$FlowFixMe, $FlowFixMe>,
   addEventListener: jest.fn(() => ({
     remove: jest.fn(),
   })) as JestMockFn<$FlowFixMe, $FlowFixMe>,
@@ -22,7 +22,7 @@ const Linking = {
     $FlowFixMe,
     $FlowFixMe,
   >,
-  sendIntent: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  sendIntent: jest.fn(() => Promise.resolve()) as JestMockFn<$FlowFixMe, $FlowFixMe>,
 };
 
 export default Linking;
