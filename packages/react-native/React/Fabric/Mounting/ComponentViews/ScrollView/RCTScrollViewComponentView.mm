@@ -23,6 +23,7 @@
 #import "RCTCustomPullToRefreshViewProtocol.h"
 #import "RCTEnhancedScrollView.h"
 #import "RCTFabricComponentsPlugins.h"
+#import "RCTScrollContentViewComponentView.h"
 #import "RCTVirtualViewContainerState.h"
 
 using namespace facebook::react;
@@ -204,7 +205,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
   CGPoint absoluteViewOrigin = [self convertPoint:self.bounds.origin toView:nil];
   CGFloat scrollViewLowerY = isInverted ? absoluteViewOrigin.y : absoluteViewOrigin.y + self.bounds.size.height;
 
-  UIEdgeInsets newEdgeInsets = _scrollView.contentInset;
+  UIEdgeInsets newEdgeInsets = ((RCTEnhancedScrollView *)_scrollView).baseContentInset;
   CGFloat inset = MAX(scrollViewLowerY - keyboardEndFrame.origin.y, 0);
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
   if (isInverted) {
@@ -257,7 +258,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
                         delay:0.0
                       options:animationOptionsWithCurve(curve)
                    animations:^{
-                     self->_scrollView.contentInset = newEdgeInsets;
+                     ((RCTEnhancedScrollView *)self->_scrollView).baseContentInset = newEdgeInsets;
                      self->_scrollView.verticalScrollIndicatorInsets = newEdgeInsets;
                      [self scrollTo:newContentOffset.x y:newContentOffset.y animated:NO];
                    }
@@ -345,6 +346,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   MAP_SCROLL_VIEW_PROP(bouncesZoom);
   MAP_SCROLL_VIEW_PROP(canCancelContentTouches);
   MAP_SCROLL_VIEW_PROP(centerContent);
+  MAP_SCROLL_VIEW_PROP(horizontal);
   // MAP_SCROLL_VIEW_PROP(automaticallyAdjustContentInsets);
   MAP_SCROLL_VIEW_PROP(decelerationRate);
   MAP_SCROLL_VIEW_PROP(directionalLockEnabled);
@@ -396,13 +398,15 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // When disabling centerContent, reset inset to prop value
   // (enabling is handled automatically by the setCenterContent: setter)
   if (oldScrollViewProps.centerContent && !newScrollViewProps.centerContent) {
-    _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+    ((RCTEnhancedScrollView *)_scrollView).baseContentInset =
+        RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
   }
 
   // Only apply contentInset from props if centerContent is disabled
   // When centerContent is enabled, the inset is calculated by centerContentIfNeeded
   if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset && !newScrollViewProps.centerContent) {
-    _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+    ((RCTEnhancedScrollView *)_scrollView).baseContentInset =
+        RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
   }
   if (oldScrollViewProps.contentOffset != newScrollViewProps.contentOffset) {
     _scrollView.contentOffset = RCTCGPointFromPoint(newScrollViewProps.contentOffset);
@@ -444,6 +448,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     } else if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Always) {
       scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
+    ((RCTEnhancedScrollView *)_scrollView).padsContentForSafeArea =
+        contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never;
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
 
@@ -458,6 +464,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   // Must run after `super updateProps:` so it is based on the latest calculated view.
   ((RCTEnhancedScrollView *)_scrollView).inverted = [self isInverted];
+  [self _updateContentViewSafeAreaPadding];
 }
 
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
@@ -557,6 +564,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [_containerView insertSubview:childComponentView atIndex:index];
   if (![childComponentView conformsToProtocol:@protocol(RCTCustomPullToRefreshViewProtocol)]) {
     _contentView = childComponentView;
+    [self _updateContentViewSafeAreaPadding];
   }
 }
 
@@ -596,7 +604,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   auto metrics = ScrollViewEventEmitter::Metrics{};
   metrics.contentSize = RCTSizeFromCGSize(_scrollView.contentSize);
   metrics.contentOffset = RCTPointFromCGPoint(_scrollView.contentOffset);
-  metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(_scrollView.contentInset);
+  metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(((RCTEnhancedScrollView *)_scrollView).baseContentInset);
   metrics.containerSize = RCTSizeFromCGSize(_scrollView.bounds.size);
   metrics.zoomScale = _scrollView.zoomScale;
   metrics.timestamp = CACurrentMediaTime();
@@ -700,11 +708,12 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // Invalidate cached content size so that updateState: recalculates the
   // container frame after zoomScale reset (which may have mutated it in RTL).
   _contentSize = CGSizeZero;
-  _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(props.contentInset);
+  ((RCTEnhancedScrollView *)_scrollView).baseContentInset = RCTUIEdgeInsetsFromEdgeInsets(props.contentInset);
   // We set the default behavior to "never" so that iOS
   // doesn't do weird things to UIScrollView insets automatically
   // and keeps it as an opt-in behavior.
   _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+  ((RCTEnhancedScrollView *)_scrollView).padsContentForSafeArea = NO;
   _shouldUpdateContentInsetAdjustmentBehavior = YES;
   _automaticallyAdjustKeyboardInsets = NO;
   _isUserTriggeredScrolling = NO;
@@ -857,6 +866,46 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     // The view is being removed, ensure that the scroll end event is dispatched
     [self _handleScrollEndIfNeeded];
   }
+  [self _updateContentViewSafeAreaPadding];
+}
+
+- (void)safeAreaInsetsDidChange
+{
+  [super safeAreaInsetsDidChange];
+  [self _updateContentViewSafeAreaPadding];
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  // Moving or resizing the view changes its insets without `safeAreaInsetsDidChange` firing; that only reports
+  // window-level changes.
+  [self _updateContentViewSafeAreaPadding];
+}
+
+/*
+ * Hands the content container the safe area to pad its content by: the pair of insets across the scrollable axis,
+ * unless `contentInsetAdjustmentBehavior` is `never`. Along the scrollable axis UIKit turns the safe area into content
+ * insets instead, so content scrolls under the system UI.
+ */
+- (void)_updateContentViewSafeAreaPadding
+{
+  if (![_contentView isKindOfClass:[RCTScrollContentViewComponentView class]]) {
+    return;
+  }
+  const auto &props = static_cast<const ScrollViewProps &>(*_props);
+  UIEdgeInsets padding = UIEdgeInsetsZero;
+  if (props.contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never) {
+    UIEdgeInsets insets = self.safeAreaInsets;
+    if (props.horizontal) {
+      padding.top = insets.top;
+      padding.bottom = insets.bottom;
+    } else {
+      padding.left = insets.left;
+      padding.right = insets.right;
+    }
+  }
+  ((RCTScrollContentViewComponentView *)_contentView).safeAreaPadding = padding;
 }
 
 - (void)_handleScrollEndIfNeeded

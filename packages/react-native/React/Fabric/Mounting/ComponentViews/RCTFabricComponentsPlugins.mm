@@ -24,6 +24,7 @@ Class<RCTComponentViewProtocol> RCTFabricComponentsProvider(const char *name) {
     {"Paragraph", RCTParagraphCls},
     {"PullToRefreshView", RCTPullToRefreshViewCls},
     {"SafeAreaView", RCTSafeAreaViewCls},
+    {"ScrollContentView", RCTScrollContentViewCls},
     {"ScrollView", RCTScrollViewCls},
     {"Switch", RCTSwitchCls},
     {"TextInput", RCTTextInputCls},

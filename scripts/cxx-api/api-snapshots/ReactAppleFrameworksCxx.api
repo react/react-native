@@ -1032,11 +1032,14 @@ interface RCTDivisionAnimatedNode : public RCTValueAnimatedNode {
 interface RCTEnhancedScrollView : public UIScrollView {
   public @property (assign) BOOL centerContent;
   public @property (assign) BOOL disableIntervalMomentum;
+  public @property (assign) BOOL horizontal;
   public @property (assign) BOOL inverted;
+  public @property (assign) BOOL padsContentForSafeArea;
   public @property (assign) BOOL pinchGestureEnabled;
   public @property (assign) BOOL snapToEnd;
   public @property (assign) BOOL snapToStart;
   public @property (assign) CGFloat snapToInterval;
+  public @property (assign) UIEdgeInsets baseContentInset;
   public @property (copy) NSArray<NSNumber*>* snapToOffsets;
   public @property (copy) NSString* snapToAlignment;
   public @property (strong, readonly) RCTGenericDelegateSplitter<id<UIScrollViewDelegate>>* delegateSplitter;
@@ -1676,6 +1679,10 @@ interface RCTScheduler : public NSObject {
   public virtual void reportMount:(facebook::react::SurfaceId surfaceId);
   public virtual void setupAnimationDriver:(const facebook::react::SurfaceHandler& surfaceHandler);
   public virtual void unregisterSurface:(const facebook::react::SurfaceHandler& surfaceHandler);
+}
+
+interface RCTScrollContentViewComponentView : public RCTViewComponentView {
+  public @property (assign) UIEdgeInsets safeAreaPadding;
 }
 
 interface RCTScrollEvent : public NSObject <RCTEvent> {
