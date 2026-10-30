@@ -103,6 +103,16 @@ TEST(ViewPropsDiffTest, gradientColorHintEmitsNullColor) {
                       "position", nullptr)))))}});
 }
 
+// `require()` assets send their natural size with the uri.
+TEST(ViewPropsDiffTest, urlBackgroundImageKeepsIntrinsicSize) {
+  expectPayloads({{dynamic::object(
+      "backgroundImage",
+      dynamic::array(
+          dynamic::object("type", "url")("uri", "https://example.com/a.png"),
+          dynamic::object("type", "url")("uri", "asset.png")(
+              "intrinsicWidth", 100)("intrinsicHeight", 50)))}});
+}
+
 // BaseViewManager.setViewState replaces the whole state: an absent `selected`
 // deselects the view and an absent `disabled` re-enables it. Props 2.0 sends an
 // unset `checked` as "none", which Java ignores.

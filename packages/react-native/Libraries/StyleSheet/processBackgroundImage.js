@@ -13,16 +13,19 @@
 import type {ProcessedColorValue} from './processColor';
 import type {
   BackgroundImageValue,
+  GradientBackgroundImageValue,
   RadialGradientPosition,
   RadialGradientShape,
   RadialGradientSize,
 } from './StyleSheetTypes';
 
+const resolveAssetSource = require('../Image/resolveAssetSource').default;
 const processColor = require('./processColor').default;
 
 // Pre-compiled regex patterns for performance - avoids regex compilation on each call
 const NEWLINE_REGEX = /\n/g;
 const GRADIENT_REGEX = /^(linear|radial)-gradient\(((?:\([^)]*\)|[^()])*)\)/;
+const URL_FUNCTION_REGEX = /^url\(/i;
 const COMMA_SPLIT_REGEX = /,(?![^(]*\))/;
 const WHITESPACE_SPLIT_REGEX = /\s+/;
 const COLOR_STOP_PARTS_REGEX = /\S+\([^)]*\)|\S+/g;
@@ -70,13 +73,63 @@ type RadialGradientBackgroundImage = {
   }>,
 };
 
+type URLBackgroundImage = {
+  type: 'url',
+  uri: string,
+  // Natural size in layout units, known only for bundled assets. Native falls
+  // back to the decoded image's own size when these are absent.
+  intrinsicWidth?: number,
+  intrinsicHeight?: number,
+};
+
 // null color indicate that the transition hint syntax is used. e.g. red, 20%, blue
 type ColorStopColor = ProcessedColorValue | null;
 // percentage or pixel value
 type ColorStopPosition = number | string | null;
 
 type ParsedBackgroundImageValue =
-  LinearGradientBackgroundImage | RadialGradientBackgroundImage;
+  | LinearGradientBackgroundImage
+  | RadialGradientBackgroundImage
+  | URLBackgroundImage;
+
+/**
+ * With native CSS parsing, native code parses `backgroundImage` but cannot
+ * resolve a `require()` asset, so this resolves only those.
+ */
+export function processBackgroundImageAssets(
+  backgroundImage: ?(ReadonlyArray<BackgroundImageValue> | string),
+): ?(ReadonlyArray<BackgroundImageValue | URLBackgroundImage> | string) {
+  if (!Array.isArray(backgroundImage)) {
+    return backgroundImage;
+  }
+  return backgroundImage.map(bgImage =>
+    bgImage.type === 'url' && typeof bgImage.uri === 'number'
+      ? (processURLBackgroundImage(bgImage.uri) ?? bgImage)
+      : bgImage,
+  );
+}
+
+function processURLBackgroundImage(uri: number | string): ?URLBackgroundImage {
+  if (typeof uri === 'string') {
+    return {type: 'url', uri};
+  }
+  const source = resolveAssetSource(uri);
+  if (source == null || source.uri == null) {
+    return null;
+  }
+  // The asset registry records these already divided by the asset's scale, so
+  // they are layout units and need no density maths native side. Matches how
+  // `Image` derives its default dimensions. The registry reports both
+  // dimensions or neither.
+  return typeof source.width === 'number' && typeof source.height === 'number'
+    ? {
+        type: 'url',
+        uri: source.uri,
+        intrinsicWidth: source.width,
+        intrinsicHeight: source.height,
+      }
+    : {type: 'url', uri: source.uri};
+}
 
 export default function processBackgroundImage(
   backgroundImage: ?(ReadonlyArray<BackgroundImageValue> | string),
@@ -92,6 +145,16 @@ export default function processBackgroundImage(
     );
   } else if (Array.isArray(backgroundImage)) {
     for (const bgImage of backgroundImage) {
+      if (bgImage.type === 'url') {
+        const urlBackgroundImage = processURLBackgroundImage(bgImage.uri);
+        if (urlBackgroundImage == null) {
+          // If the URI is invalid, return an empty array. Same as web.
+          return [];
+        }
+        result = result.concat(urlBackgroundImage);
+        continue;
+      }
+
       const processedColorStops = processColorStops(bgImage);
       if (processedColorStops == null) {
         // If a color stop is invalid, return an empty array and do not apply any gradient. Same as web.
@@ -191,7 +254,9 @@ export default function processBackgroundImage(
   return result;
 }
 
-function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
+function processColorStops(
+  bgImage: GradientBackgroundImageValue,
+): ReadonlyArray<{
   color: ColorStopColor,
   position: ColorStopPosition,
 }> | null {
@@ -258,10 +323,26 @@ function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
 function parseBackgroundImageCSSString(
   cssString: string,
 ): ReadonlyArray<ParsedBackgroundImageValue> {
-  const gradients = [];
+  const backgroundImages: Array<ParsedBackgroundImageValue> = [];
   const bgImageStrings = splitGradients(cssString);
 
   for (const bgImageString of bgImageStrings) {
+    if (URL_FUNCTION_REGEX.test(bgImageString)) {
+      const uri = parseURLFunctionBody(bgImageString.slice('url('.length));
+      if (uri == null) {
+        // An invalid url makes the whole list invalid. Same as web.
+        return [];
+      }
+      // A url() in a css string is not an asset, so its natural size is only
+      // known once the image is decoded. An empty url stays as a layer that
+      // draws nothing. Same as web.
+      backgroundImages.push({
+        type: 'url',
+        uri,
+      });
+      continue;
+    }
+
     const bgImage = bgImageString.toLowerCase();
     const match = GRADIENT_REGEX.exec(bgImage);
     if (match) {
@@ -272,11 +353,92 @@ function parseBackgroundImageCSSString(
         : parseLinearGradientCSSString(gradientContent);
 
       if (gradient != null) {
-        gradients.push(gradient);
+        backgroundImages.push(gradient);
       }
     }
   }
-  return gradients;
+  return backgroundImages;
+}
+
+const isCSSWhitespace = (char: string): boolean =>
+  char === ' ' ||
+  char === '\t' ||
+  char === '\n' ||
+  char === '\r' ||
+  char === '\f';
+
+const isCSSNewline = (char: string): boolean =>
+  char === '\n' || char === '\r' || char === '\f';
+
+// https://www.w3.org/TR/css-syntax-3/#non-printable-code-point
+const isCSSNonPrintable = (char: string): boolean => {
+  const code = char.charCodeAt(0);
+  return (
+    code <= 0x08 ||
+    code === 0x0b ||
+    (code >= 0x0e && code <= 0x1f) ||
+    code === 0x7f
+  );
+};
+
+// Parses the text after `url(`. Returns the url, or null for an invalid url.
+// The unquoted form follows https://www.w3.org/TR/css-syntax-3/#consume-url-token
+// and the quoted form is a string token followed by `)`.
+function parseURLFunctionBody(input: string): ?string {
+  let i = 0;
+  while (i < input.length && isCSSWhitespace(input[i])) {
+    i++;
+  }
+
+  const quote = input[i];
+  if (quote === '"' || quote === "'") {
+    let uri = '';
+    i++;
+    while (true) {
+      if (i >= input.length || isCSSNewline(input[i])) {
+        return null;
+      }
+      const char = input[i];
+      if (char === quote) {
+        i++;
+        break;
+      }
+      uri += char;
+      i++;
+    }
+    while (i < input.length && isCSSWhitespace(input[i])) {
+      i++;
+    }
+    return input[i] === ')' && i === input.length - 1 ? uri : null;
+  }
+
+  let uri = '';
+  while (i < input.length) {
+    const char = input[i];
+    if (char === ')') {
+      return i === input.length - 1 ? uri : null;
+    }
+    if (isCSSWhitespace(char)) {
+      while (i < input.length && isCSSWhitespace(input[i])) {
+        i++;
+      }
+      return i >= input.length || (input[i] === ')' && i === input.length - 1)
+        ? uri
+        : null;
+    }
+    if (
+      char === '"' ||
+      char === "'" ||
+      char === '(' ||
+      isCSSNonPrintable(char)
+    ) {
+      return null;
+    }
+    uri += char;
+    i++;
+  }
+  // A missing `)` at the end is a parse error, but the url is kept.
+  return uri;
 }
 
 function parseRadialGradientCSSString(

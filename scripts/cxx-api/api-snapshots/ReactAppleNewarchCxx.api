@@ -3129,7 +3129,7 @@ using facebook::react::ModuleConstants = _RCTTypedModuleConstants<void(^)(typena
 using facebook::react::ActivityIndicatorViewComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::ActivityIndicatorViewShadowNode>;
 using facebook::react::ActivityIndicatorViewShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::ActivityIndicatorViewComponentName, facebook::react::ActivityIndicatorViewProps, facebook::react::ActivityIndicatorViewEventEmitter, facebook::react::ActivityIndicatorViewState>;
 using facebook::react::ActivityIndicatorViewState = facebook::react::StateData;
-using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
+using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient, facebook::react::URLBackgroundImage>;
 using facebook::react::BackgroundSize = std::variant<facebook::react::BackgroundSizeKeyword, facebook::react::BackgroundSizeLengthPercentage>;
 using facebook::react::BorderColors = facebook::react::RectangleEdges<facebook::react::SharedColor>;
 using facebook::react::BorderCurves = facebook::react::RectangleCorners<facebook::react::BorderCurve>;
@@ -5616,6 +5616,14 @@ struct facebook::react::TransformOrigin {
   public bool operator==(const facebook::react::TransformOrigin& other) const = default;
   public float z;
   public std::array<facebook::react::ValueUnit, 2> xy;
+}
+
+struct facebook::react::URLBackgroundImage {
+  public bool operator!=(const facebook::react::URLBackgroundImage& rhs) const;
+  public bool operator==(const facebook::react::URLBackgroundImage& rhs) const;
+  public facebook::react::Float intrinsicHeight;
+  public facebook::react::Float intrinsicWidth;
+  public std::string uri;
 }
 
 struct facebook::react::ValueUnit {

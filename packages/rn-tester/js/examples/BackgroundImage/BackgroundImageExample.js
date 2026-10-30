@@ -441,4 +441,68 @@ exports.examples = [
       );
     },
   },
+  {
+    title: 'URL Image',
+    name: 'url-image',
+    render(): React.Node {
+      return (
+        <BackgroundImageBox
+          style={{
+            width: 200,
+            height: 200,
+            backgroundImage: 'url(https://reactnative.dev/img/tiny_logo.png)',
+            backgroundRepeat: 'no-repeat',
+          }}
+          testID="background-image-url"
+        />
+      );
+    },
+  },
+  {
+    title: 'URL Image from local file',
+    name: 'local-image',
+    render(): React.Node {
+      return (
+        <BackgroundImageBox
+          style={{
+            width: 200,
+            height: 200,
+            backgroundImage: [
+              {
+                type: 'url',
+                uri: require('../../assets/bunny.png'),
+              },
+            ],
+            backgroundSize: [{x: 200, y: 200}],
+            backgroundRepeat: 'no-repeat',
+          }}
+          testID="background-image-local"
+        />
+      );
+    },
+  },
+  {
+    title: 'URL Image from local file at its natural size',
+    name: 'local-image-natural-size',
+    description:
+      'A @3x asset draws at its size in points (33x33), not at its pixel size (99x99).',
+    render(): React.Node {
+      return (
+        <BackgroundImageBox
+          style={{
+            width: 99,
+            height: 99,
+            backgroundImage: [
+              {
+                type: 'url',
+                uri: require('../../assets/flux.png'),
+              },
+            ],
+            backgroundRepeat: 'no-repeat',
+          }}
+          testID="background-image-local-natural-size"
+        />
+      );
+    },
+  },
 ] as Array<RNTesterModuleExample>;

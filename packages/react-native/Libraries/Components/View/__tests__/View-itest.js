@@ -353,6 +353,31 @@ describe('<View>', () => {
       });
 
       describe('background-image', () => {
+        it('resolves a require() asset in the object syntax', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                style={{
+                  backgroundImage: [
+                    {
+                      type: 'url',
+                      uri: require('../../../Image/__tests__/img/img1.png'),
+                    },
+                  ],
+                }}
+              />,
+            );
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['backgroundImage']}).toJSX(),
+          ).toEqual(
+            <rn-view backgroundImage="[url(file://drawable-mdpi/packages_reactnative_libraries_image___tests___img_img1.png)]" />,
+          );
+        });
+
         it('it parses CSS and object syntax', () => {
           const root = Fantom.createRoot();
 

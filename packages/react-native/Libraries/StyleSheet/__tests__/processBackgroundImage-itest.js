@@ -363,6 +363,10 @@ describe('processBackgroundImage', () => {
           {color: 'blue', positions: ['100%']},
         ],
       },
+      {
+        type: 'url',
+        uri: 'https://example.com',
+      },
     ];
     const result = processBackgroundImage(input);
     expect(result).toEqual([
@@ -373,6 +377,10 @@ describe('processBackgroundImage', () => {
           {color: processColor('red'), position: '0%'},
           {color: processColor('blue'), position: '100%'},
         ],
+      },
+      {
+        type: 'url',
+        uri: 'https://example.com',
       },
     ]);
   });
@@ -657,7 +665,11 @@ describe('processBackgroundImage', () => {
             ],
           },
         ]);
-        expect(result[0].colorStops[0].color).toEqual({
+        const layer = result[0];
+        if (layer.type !== 'linear-gradient') {
+          throw new Error(`Expected a linear-gradient, got ${layer.type}`);
+        }
+        expect(layer.colorStops[0].color).toEqual({
           semantic: ['systemRedColor'],
         });
       });
@@ -674,7 +686,11 @@ describe('processBackgroundImage', () => {
             ],
           },
         ]);
-        expect(result[0].colorStops[0].color).toEqual({
+        const layer = result[0];
+        if (layer.type !== 'linear-gradient') {
+          throw new Error(`Expected a linear-gradient, got ${layer.type}`);
+        }
+        expect(layer.colorStops[0].color).toEqual({
           dynamic: {light: 0xff000000, dark: 0xffffffff},
         });
       });
@@ -696,7 +712,11 @@ describe('processBackgroundImage', () => {
             ],
           },
         ]);
-        expect(result[0].colorStops[0].color).toEqual({
+        const layer = result[0];
+        if (layer.type !== 'linear-gradient') {
+          throw new Error(`Expected a linear-gradient, got ${layer.type}`);
+        }
+        expect(layer.colorStops[0].color).toEqual({
           resource_paths: ['?attr/colorPrimary'],
         });
       });
@@ -1188,4 +1208,193 @@ describe('processBackgroundImage', () => {
     expect(result1).toEqual([]);
     expect(result2).toEqual([]);
   });
+
+  it('should parse url unquoted', () => {
+    const result = processBackgroundImage('url(https://example.com/image.png)');
+    expect(result).toEqual([
+      {type: 'url', uri: 'https://example.com/image.png'},
+    ]);
+  });
+
+  it('should parse url double quoted', () => {
+    const result = processBackgroundImage(
+      'url("https://example.com/image.png")',
+    );
+    expect(result).toEqual([
+      {type: 'url', uri: 'https://example.com/image.png'},
+    ]);
+  });
+
+  it('should parse url single quoted', () => {
+    const result = processBackgroundImage(
+      "url('https://example.com/image.png')",
+    );
+    expect(result).toEqual([
+      {type: 'url', uri: 'https://example.com/image.png'},
+    ]);
+  });
+
+  it('should parse url case insensitive', () => {
+    const result = processBackgroundImage('UrL(https://example.com/image.png)');
+    expect(result).toEqual([
+      {type: 'url', uri: 'https://example.com/image.png'},
+    ]);
+  });
+
+  it('should parse url with query params', () => {
+    const result = processBackgroundImage(
+      'url(https://example.com/image.png?size=Large&format=webp)',
+    );
+    expect(result).toEqual([
+      {
+        type: 'url',
+        uri: 'https://example.com/image.png?size=Large&format=webp',
+      },
+    ]);
+  });
+
+  it('should parse url with whitespace', () => {
+    const result = processBackgroundImage(
+      'url(  https://example.com/image.png  )',
+    );
+    expect(result).toEqual([
+      {type: 'url', uri: 'https://example.com/image.png'},
+    ]);
+  });
+
+  it('should parse multiple urls', () => {
+    const result = processBackgroundImage(
+      'url(https://example.com/bg1.png), url(https://example.com/bg2.png)',
+    );
+    expect(result).toEqual([
+      {type: 'url', uri: 'https://example.com/bg1.png'},
+      {type: 'url', uri: 'https://example.com/bg2.png'},
+    ]);
+  });
+
+  it('should parse url mixed with gradients', () => {
+    const result = processBackgroundImage(
+      'radial-gradient(circle at top left, red, blue), url(https://example.com/image.png), linear-gradient(to bottom, green, yellow)',
+    );
+    expect(result).toEqual([
+      {
+        type: 'radial-gradient',
+        shape: 'circle',
+        size: 'farthest-corner',
+        position: {top: '0%', left: '0%'},
+        colorStops: [
+          {color: processColor('red'), position: null},
+          {color: processColor('blue'), position: null},
+        ],
+      },
+      {type: 'url', uri: 'https://example.com/image.png'},
+      {
+        type: 'linear-gradient',
+        direction: {type: 'angle', value: 180},
+        colorStops: [
+          {color: processColor('green'), position: null},
+          {color: processColor('yellow'), position: null},
+        ],
+      },
+    ]);
+  });
+
+  // An empty url is valid CSS. It draws nothing, but it stays a layer, so the
+  // other layers and their background sizes and positions keep their index.
+  it('should keep an empty url as a layer', () => {
+    expect(processBackgroundImage('url()')).toEqual([{type: 'url', uri: ''}]);
+  });
+
+  it('should keep an empty quoted url as a layer', () => {
+    expect(processBackgroundImage('url("")')).toEqual([{type: 'url', uri: ''}]);
+  });
+
+  it('should keep an empty uri in the object syntax as a layer', () => {
+    expect(processBackgroundImage([{type: 'url', uri: ''}])).toEqual([
+      {type: 'url', uri: ''},
+    ]);
+  });
+
+  it('should keep the other layers next to an empty url', () => {
+    const result = processBackgroundImage(
+      'url(""), linear-gradient(red, blue)',
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({type: 'url', uri: ''});
+    expect(result[1].type).toBe('linear-gradient');
+  });
+
+  it('should return empty when one url is invalid', () => {
+    expect(
+      processBackgroundImage('url(my photo.png), linear-gradient(red, blue)'),
+    ).toEqual([]);
+  });
+
+  it('should keep parentheses inside a quoted url', () => {
+    // Parentheses are valid unencoded in urls, and CSS requires quotes for them.
+    const result = processBackgroundImage(
+      'url("https://upload.wikimedia.org/wikipedia/commons/6/69/Surface_of_Mercury_(14433689302).jpg"), linear-gradient(red, blue)',
+    );
+    expect(result).toEqual([
+      {
+        type: 'url',
+        uri: 'https://upload.wikimedia.org/wikipedia/commons/6/69/Surface_of_Mercury_(14433689302).jpg',
+      },
+      {
+        type: 'linear-gradient',
+        direction: {type: 'angle', value: 180},
+        colorStops: [
+          {color: processColor('red'), position: null},
+          {color: processColor('blue'), position: null},
+        ],
+      },
+    ]);
+  });
+
+  it('should keep the comma in a quoted data uri', () => {
+    const result = processBackgroundImage(
+      'url("data:image/png;base64,iVBORw0KGgo="), url(https://example.com/a.png)',
+    );
+    expect(result).toEqual([
+      {type: 'url', uri: 'data:image/png;base64,iVBORw0KGgo='},
+      {type: 'url', uri: 'https://example.com/a.png'},
+    ]);
+  });
+
+  // https://www.w3.org/TR/css-syntax-3/#consume-url-token
+  for (const [name, backgroundImage] of [
+    ['whitespace inside an unquoted url', 'url(my photo.png)'],
+    [
+      'parentheses inside an unquoted url',
+      'url(https://upload.wikimedia.org/wikipedia/commons/6/69/Surface_of_Mercury_(14433689302).jpg)',
+    ],
+    ['a quote inside an unquoted url', 'url(a"b.png)'],
+    ['text after a quoted url', 'url("a.png" x)'],
+    ['mismatched quotes', 'url("a.png\')'],
+  ]) {
+    it(`should return empty for ${name}`, () => {
+      expect(processBackgroundImage(backgroundImage)).toEqual([]);
+    });
+  }
+
+  it('should parse a url with a missing closing parenthesis', () => {
+    expect(processBackgroundImage('url(a.png')).toEqual([
+      {type: 'url', uri: 'a.png'},
+    ]);
+  });
+
+  it('should keep a backslash in a quoted url', () => {
+    expect(processBackgroundImage('url("a\\20b.png")')).toEqual([
+      {type: 'url', uri: 'a\\20b.png'},
+    ]);
+  });
+
+  for (const [name, backgroundImage] of [
+    ['an escaped parenthesis', 'url(a\\)b.png)'],
+    ['an escaped quote in a quoted url', 'url("a\\"b.png")'],
+  ]) {
+    it(`should return empty for ${name}`, () => {
+      expect(processBackgroundImage(backgroundImage)).toEqual([]);
+    });
+  }
 });

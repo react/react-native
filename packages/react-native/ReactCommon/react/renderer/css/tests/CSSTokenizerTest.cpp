@@ -239,4 +239,125 @@ TEST(CSSTokenizer, hash_values) {
       CSSToken{CSSTokenType::Delim, "*"},
       CSSToken{CSSTokenType::EndOfFile});
 }
+
+// https://www.w3.org/TR/css-syntax-3/#consume-string-token
+
+TEST(CSSTokenizer, string_values) {
+  EXPECT_TOKENS(
+      "\"hello\"",
+      CSSToken{CSSTokenType::String, "hello"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "'hello'",
+      CSSToken{CSSTokenType::String, "hello"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "\"it's\"",
+      CSSToken{CSSTokenType::String, "it's"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "\"http://localhost:8081/1.png\"",
+      CSSToken{CSSTokenType::String, "http://localhost:8081/1.png"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "\"\"",
+      CSSToken{CSSTokenType::String, ""},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "\"abc",
+      CSSToken{CSSTokenType::String, "abc"},
+      CSSToken{CSSTokenType::EndOfFile});
+}
+
+TEST(CSSTokenizer, bad_string_values) {
+  EXPECT_TOKENS(
+      "\"abc\ndef\"",
+      CSSToken{CSSTokenType::BadString},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Ident, "def"},
+      CSSToken{CSSTokenType::String, ""},
+      CSSToken{CSSTokenType::EndOfFile});
+}
+
+// https://www.w3.org/TR/css-syntax-3/#consume-url-token
+TEST(CSSTokenizer, url_values) {
+  EXPECT_TOKENS(
+      "url(a.png)",
+      CSSToken{CSSTokenType::Url, "a.png"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "url(http://localhost:8081/1.png)",
+      CSSToken{CSSTokenType::Url, "http://localhost:8081/1.png"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "url(  a.png  )",
+      CSSToken{CSSTokenType::Url, "a.png"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "url()",
+      CSSToken{CSSTokenType::Url, ""},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "URL(a.png)",
+      CSSToken{CSSTokenType::Url, "a.png"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  // A quoted body stays a function block holding a <string-token>.
+  EXPECT_TOKENS(
+      "url(\"a.png\")",
+      CSSToken{CSSTokenType::Function, "url"},
+      CSSToken{CSSTokenType::String, "a.png"},
+      CSSToken{CSSTokenType::CloseParen},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "url(  'a.png')",
+      CSSToken{CSSTokenType::Function, "url"},
+      CSSToken{CSSTokenType::String, "a.png"},
+      CSSToken{CSSTokenType::CloseParen},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "url(a.png",
+      CSSToken{CSSTokenType::Url, "a.png"},
+      CSSToken{CSSTokenType::EndOfFile});
+}
+
+TEST(CSSTokenizer, bad_url_values) {
+  EXPECT_TOKENS(
+      "url(my file.png)",
+      CSSToken{CSSTokenType::BadUrl},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  // Nor is an unescaped paren or quote. Recovery stops at the first `)`, which
+  // here is the inner one, so the remainder tokenizes as ordinary values.
+  EXPECT_TOKENS(
+      "url(a(1).png)",
+      CSSToken{CSSTokenType::BadUrl},
+      CSSToken{CSSTokenType::Delim, "."},
+      CSSToken{CSSTokenType::Ident, "png"},
+      CSSToken{CSSTokenType::CloseParen},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "url(a\"b.png)",
+      CSSToken{CSSTokenType::BadUrl},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "url(my file.png) auto",
+      CSSToken{CSSTokenType::BadUrl},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Ident, "auto"},
+      CSSToken{CSSTokenType::EndOfFile});
+}
 } // namespace facebook::react

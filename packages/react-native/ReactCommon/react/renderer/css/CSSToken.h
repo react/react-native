@@ -34,6 +34,10 @@ enum class CSSTokenType {
   Percentage,
   WhiteSpace,
   Hash,
+  String,
+  BadString,
+  Url,
+  BadUrl,
 };
 
 /*

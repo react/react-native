@@ -12,7 +12,9 @@ import type {AnyAttributeType} from '../../Renderer/shims/ReactNativeTypes';
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import processAspectRatio from '../../StyleSheet/processAspectRatio';
-import processBackgroundImage from '../../StyleSheet/processBackgroundImage';
+import processBackgroundImage, {
+  processBackgroundImageAssets,
+} from '../../StyleSheet/processBackgroundImage';
 import processBackgroundPosition from '../../StyleSheet/processBackgroundPosition';
 import processBackgroundRepeat from '../../StyleSheet/processBackgroundRepeat';
 import processBackgroundSize from '../../StyleSheet/processBackgroundSize';
@@ -45,7 +47,7 @@ export const boxShadowAttribute: AnyAttributeType = nativeCSSParsing
   : {process: processBoxShadow};
 
 export const backgroundImageAttribute: AnyAttributeType = nativeCSSParsing
-  ? true
+  ? {process: processBackgroundImageAssets}
   : {process: processBackgroundImage};
 
 export const backgroundSizeAttribute: AnyAttributeType = nativeCSSParsing
