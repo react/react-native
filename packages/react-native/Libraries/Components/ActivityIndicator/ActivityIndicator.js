@@ -13,6 +13,7 @@
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewProps} from '../View/ViewPropTypes';
 
+import resolveAriaProps from '../../../src/private/components/view/resolveAriaProps';
 import StyleSheet, {type ColorValue} from '../../StyleSheet/StyleSheet';
 import Platform from '../../Utilities/Platform';
 import View from '../View/View';
@@ -142,7 +143,7 @@ const ActivityIndicator: component(
     animating,
     color,
     hidesWhenStopped,
-    ...restProps,
+    ...resolveAriaProps(restProps),
     ref: forwardedRef,
     style: sizeStyle,
     size: sizeProp,

@@ -31,6 +31,7 @@ import {
   VScrollContentViewNativeComponent,
   VScrollViewNativeComponent,
 } from '../../../src/private/components/scrollview/VScrollViewNativeComponents';
+import resolveAriaProps from '../../../src/private/components/view/resolveAriaProps';
 import AnimatedImplementation from '../../Animated/AnimatedImplementation';
 import FrameRateLogger from '../../Interaction/FrameRateLogger';
 import {findNodeHandle} from '../../ReactNative/RendererProxy';
@@ -1861,7 +1862,7 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
     const {experimental_endDraggingSensitivityMultiplier, ...otherProps} =
       this.props;
     const props = {
-      ...otherProps,
+      ...resolveAriaProps(otherProps),
       alwaysBounceHorizontal,
       alwaysBounceVertical,
       style: StyleSheet.compose(baseStyle, this.props.style),
