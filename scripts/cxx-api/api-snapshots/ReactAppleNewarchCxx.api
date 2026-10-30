@@ -2418,6 +2418,7 @@ protocol NativeSourceCodeSpec : public NSObjectRCTBridgeModule, public RCTTurboM
 }
 
 protocol NativeStatusBarManagerIOSSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
+  public virtual NSString* _Nullable getVerticalBarEdge();
   public virtual facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> constantsToExport();
   public virtual facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> getConstants();
   public virtual void addListener:(NSString* eventType);

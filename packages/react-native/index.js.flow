@@ -136,6 +136,7 @@ export type {
   StatusBarInstance,
   StatusBarProps,
   StatusBarStyle,
+  StatusBarVerticalBarEdgeIOS,
 } from './Libraries/Components/StatusBar/StatusBar';
 export {default as StatusBar} from './Libraries/Components/StatusBar/StatusBar';
 
@@ -461,6 +462,7 @@ export type {
 export {default as usePressability} from './Libraries/Pressability/usePressability';
 export {default as useAppState} from './Libraries/AppState/useAppState';
 export {default as useColorScheme} from './Libraries/Utilities/useColorScheme';
+export {default as useVerticalBarEdgeIOS} from './Libraries/Components/StatusBar/useVerticalBarEdgeIOS';
 export {default as useWindowDimensions} from './Libraries/Utilities/useWindowDimensions';
 export {default as UTFSequence} from './Libraries/UTFSequence';
 export {default as Vibration} from './Libraries/Vibration/Vibration';
