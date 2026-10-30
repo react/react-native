@@ -14,6 +14,12 @@
 #import <React/UIView+ComponentViewProtocol.h>
 #import <React/View.h>
 
+#include <memory>
+
+namespace facebook::react {
+class ImageManager;
+} // namespace facebook::react
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -59,6 +65,12 @@ NS_ASSUME_NONNULL_BEGIN
  * Insets used when hit testing inside this view.
  */
 @property (nonatomic, assign) UIEdgeInsets hitTestEdgeInsets;
+
+/**
+ * Used to load the `url()` entries of `backgroundImage`.
+ * Set by `RCTComponentViewRegistry` when it creates the view.
+ */
+- (void)setBackgroundImageManager:(std::shared_ptr<facebook::react::ImageManager>)imageManager;
 
 /**
  * Enforcing `call super` semantic for overridden methods from `RCTComponentViewProtocol`.

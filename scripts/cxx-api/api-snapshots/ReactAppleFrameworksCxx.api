@@ -662,9 +662,16 @@ interface RCTBackedTextViewDelegateAdapter : public NSObject {
   public virtual void skipNextTextInputDidChangeSelectionEventWithTextRange:(UITextRange* textRange);
 }
 
+interface RCTBackgroundImageURLLoader : public NSObject {
+  public virtual _Nullable UIImage* imageForURI:(const std::string& uri);
+  public virtual instancetype initWithImageManager:onLoad:(std::shared_ptr<facebook::react::ImageManager> imageManager, void(^)(void) onLoad);
+  public virtual void loadBackgroundImages:surfaceId:(const std::vector<facebook::react::BackgroundImage>& backgroundImages, facebook::react::SurfaceId surfaceId);
+}
+
 interface RCTBackgroundImageUtils : public NSObject {
   public virtual static CALayer* createBackgroundImageLayerWithSize:paintingArea:itemSize:backgroundPosition:backgroundRepeat:itemLayer:(const CGRect& positioningArea, const CGRect& paintingArea, const CGSize& itemSize, const facebook::react::BackgroundPosition& backgroundPosition, const facebook::react::BackgroundRepeat& backgroundRepeat, CALayer* itemLayer);
-  public virtual static CGSize calculateBackgroundImageSize:itemIntrinsicSize:backgroundSize:backgroundRepeat:(const CGRect& positioningArea, CGSize itemIntrinsicSize, const facebook::react::BackgroundSize& backgroundSize, const facebook::react::BackgroundRepeat& backgroundRepeat);
+  public virtual static CALayer* createURLImageLayerWithImage:size:(UIImage* image, CGSize size);
+  public virtual static CGSize calculateBackgroundImageSize:itemIntrinsicSize:itemHasIntrinsicRatio:backgroundSize:backgroundRepeat:(const CGRect& positioningArea, CGSize itemIntrinsicSize, BOOL itemHasIntrinsicRatio, const facebook::react::BackgroundSize& backgroundSize, const facebook::react::BackgroundRepeat& backgroundRepeat);
 }
 
 interface RCTBlobManager : public NSObject <RCTBridgeModule, RCTURLRequestHandler, RCTInitializing> {
@@ -837,6 +844,7 @@ interface RCTComponentViewRegistry : public NSObject {
   public virtual const RCTComponentViewDescriptor& componentViewDescriptorWithTag:(facebook::react::Tag tag);
   public virtual const RCTComponentViewDescriptor& dequeueComponentViewWithComponentHandle:tag:(facebook::react::ComponentHandle componentHandle, facebook::react::Tag tag);
   public virtual void enqueueComponentViewWithComponentHandle:tag:componentViewDescriptor:(facebook::react::ComponentHandle componentHandle, facebook::react::Tag tag, RCTComponentViewDescriptor componentViewDescriptor);
+  public virtual void setImageManager:(std::shared_ptr<facebook::react::ImageManager> imageManager);
 }
 
 interface RCTComposedViewRegistry : public NSMutableDictionary {
@@ -2127,6 +2135,7 @@ interface RCTViewComponentView : public UIView <RCTComponentViewProtocol, RCTTou
   public virtual UIView* betterHitTest:withEvent:(CGPoint point, UIEvent* event);
   public virtual void finalizeUpdates:(RNComponentViewUpdateMask updateMask);
   public virtual void prepareForRecycle();
+  public virtual void setBackgroundImageManager:(std::shared_ptr<facebook::react::ImageManager> imageManager);
   public virtual void updateEventEmitter:(const facebook::react::EventEmitter::Shared& eventEmitter);
   public virtual void updateLayoutMetrics:oldLayoutMetrics:(const facebook::react::LayoutMetrics& layoutMetrics, const facebook::react::LayoutMetrics& oldLayoutMetrics);
   public virtual void updateProps:oldProps:(const facebook::react::Props::Shared& props, const facebook::react::Props::Shared& oldProps);

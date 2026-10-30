@@ -15,6 +15,7 @@
 #import <React/RCTUtils.h>
 #import <cxxreact/TraceSection.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/components/image/ImageComponentDescriptor.h>
 #import <react/renderer/components/root/RootShadowNode.h>
 #import <react/renderer/core/LayoutableShadowNode.h>
 #import <react/renderer/core/RawProps.h>
@@ -159,6 +160,12 @@ static void RCTPerformMountInstructions(
 - (void)setContextContainer:(std::shared_ptr<const ContextContainer>)contextContainer
 {
   _contextContainer = contextContainer;
+
+  if (_contextContainer) {
+    if (auto imageManager = _contextContainer->find<std::shared_ptr<ImageManager>>(ImageManagerKey)) {
+      [_componentViewRegistry setImageManager:*imageManager];
+    }
+  }
 }
 
 - (void)attachSurfaceToView:(UIView *)view surfaceId:(SurfaceId)surfaceId

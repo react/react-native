@@ -12,6 +12,12 @@
 #import <React/RCTComponentViewProtocol.h>
 #import <React/RendererCore.h>
 
+#include <memory>
+
+namespace facebook::react {
+class ImageManager;
+} // namespace facebook::react
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -49,6 +55,12 @@ NS_ASSUME_NONNULL_BEGIN
  * Returns `nil` if there is no registered component with the `tag`.
  */
 - (nullable UIView<RCTComponentViewProtocol> *)findComponentViewWithTag:(facebook::react::Tag)tag;
+
+/**
+ * Passed to every `RCTViewComponentView` the registry creates, to load
+ * `url()` background images.
+ */
+- (void)setImageManager:(std::shared_ptr<facebook::react::ImageManager>)imageManager;
 
 @end
 

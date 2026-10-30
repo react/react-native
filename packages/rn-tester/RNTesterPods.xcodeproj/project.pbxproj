@@ -43,6 +43,7 @@
 		E7DB20E622B2BAA6005AC45F /* RCTImageLoaderHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20C922B2BAA5005AC45F /* RCTImageLoaderHelpers.m */; };
 		E7DB20E722B2BAA6005AC45F /* RCTConvert_NSURLTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CA22B2BAA5005AC45F /* RCTConvert_NSURLTests.m */; };
 		E7DB20E822B2BAA6005AC45F /* RCTModuleMethodTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CB22B2BAA5005AC45F /* RCTModuleMethodTests.mm */; };
+		B7C4E2A15D3F48096A1B2C02 /* RCTBackgroundImageUtilsTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = B7C4E2A15D3F48096A1B2C01 /* RCTBackgroundImageUtilsTests.mm */; };
 		E7DB20E922B2BAA6005AC45F /* RCTComponentPropsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CC22B2BAA5005AC45F /* RCTComponentPropsTests.m */; };
 		E7DB20EA22B2BAA6005AC45F /* RCTImageUtilTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CD22B2BAA5005AC45F /* RCTImageUtilTests.m */; };
 		E7DB20EB22B2BAA6005AC45F /* RCTConvert_YGValueTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CE22B2BAA5005AC45F /* RCTConvert_YGValueTests.m */; };
@@ -129,6 +130,7 @@
 		E7DB20C922B2BAA5005AC45F /* RCTImageLoaderHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTImageLoaderHelpers.m; sourceTree = "<group>"; };
 		E7DB20CA22B2BAA5005AC45F /* RCTConvert_NSURLTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTConvert_NSURLTests.m; sourceTree = "<group>"; };
 		E7DB20CB22B2BAA5005AC45F /* RCTModuleMethodTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTModuleMethodTests.mm; sourceTree = "<group>"; };
+		B7C4E2A15D3F48096A1B2C01 /* RCTBackgroundImageUtilsTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTBackgroundImageUtilsTests.mm; sourceTree = "<group>"; };
 		E7DB20CC22B2BAA5005AC45F /* RCTComponentPropsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTComponentPropsTests.m; sourceTree = "<group>"; };
 		E7DB20CD22B2BAA5005AC45F /* RCTImageUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTImageUtilTests.m; sourceTree = "<group>"; };
 		E7DB20CE22B2BAA5005AC45F /* RCTConvert_YGValueTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTConvert_YGValueTests.m; sourceTree = "<group>"; };
@@ -322,6 +324,7 @@
 				E7DB20A322B2BA84005AC45F /* Info.plist */,
 				E7DB20C622B2BAA5005AC45F /* RCTAllocationTests.m */,
 				E7DB20B222B2BAA4005AC45F /* RCTAnimationUtilsTests.m */,
+				B7C4E2A15D3F48096A1B2C01 /* RCTBackgroundImageUtilsTests.mm */,
 				E7DB20AB22B2BAA3005AC45F /* RCTBlobManagerTests.m */,
 				E7DB20A922B2BAA3005AC45F /* RCTBundleURLProviderTests.m */,
 				E7DB20CC22B2BAA5005AC45F /* RCTComponentPropsTests.m */,
@@ -757,6 +760,7 @@
 				E7DB20EC22B2BAA6005AC45F /* RCTMultipartStreamReaderTests.m in Sources */,
 				E7DB20E022B2BAA6005AC45F /* RCTMethodArgumentTests.m in Sources */,
 				E7DB20E822B2BAA6005AC45F /* RCTModuleMethodTests.mm in Sources */,
+				B7C4E2A15D3F48096A1B2C02 /* RCTBackgroundImageUtilsTests.mm in Sources */,
 				F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */,
 				F1A0B1C23D4E5F6071829322 /* RCTTurboModuleStringConversionTests.mm in Sources */,
 				E7DB20E222B2BAA6005AC45F /* RCTGzipTests.m in Sources */,

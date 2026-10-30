@@ -29,7 +29,9 @@
 
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/componentregistry/ComponentDescriptorFactory.h>
+#import <react/renderer/components/image/ImageComponentDescriptor.h>
 #import <react/renderer/components/text/BaseTextProps.h>
+#import <react/renderer/imagemanager/ImageManager.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/scheduler/SchedulerToolbox.h>
 #import <react/utils/ContextContainer.h>
@@ -95,6 +97,13 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
     _runtimeExecutor = runtimeExecutor;
     _bridgelessBindingsExecutor = bridgelessBindingsExecutor;
     _contextContainer = contextContainer;
+
+    // One `ImageManager` for `<Image>` and `url()` background images, because `RCTImageLoader` must not get
+    // requests from more than one queue. Its constructor requires the image loader.
+    if (!contextContainer->find<std::shared_ptr<ImageManager>>(ImageManagerKey).has_value() &&
+        contextContainer->find<std::shared_ptr<void>>("RCTImageLoader").has_value()) {
+      contextContainer->insert(ImageManagerKey, std::make_shared<ImageManager>(contextContainer));
+    }
 
     _surfaceRegistry = [RCTSurfaceRegistry new];
     _mountingManager = [RCTMountingManager new];

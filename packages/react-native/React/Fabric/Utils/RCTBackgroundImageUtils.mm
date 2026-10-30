@@ -148,8 +148,60 @@
   return backgroundImageLayer;
 }
 
+// Layers draw the `CGImage`, which ignores `imageOrientation`, so a transform orients it.
++ (CALayer *)createURLImageLayerWithImage:(UIImage *)image size:(CGSize)size
+{
+  CALayer *itemLayer = [CALayer layer];
+  itemLayer.frame = CGRectMake(0, 0, size.width, size.height);
+  if (image.imageOrientation == UIImageOrientationUp) {
+    itemLayer.contents = (__bridge id)image.CGImage;
+    return itemLayer;
+  }
+
+  CATransform3D transform = CATransform3DIdentity;
+  BOOL swapsAxes = NO;
+  switch (image.imageOrientation) {
+    case UIImageOrientationUp:
+      break;
+    case UIImageOrientationUpMirrored:
+      transform = CATransform3DMakeScale(-1, 1, 1);
+      break;
+    case UIImageOrientationDown:
+      transform = CATransform3DMakeRotation(M_PI, 0, 0, 1);
+      break;
+    case UIImageOrientationDownMirrored:
+      transform = CATransform3DMakeScale(1, -1, 1);
+      break;
+    case UIImageOrientationRight:
+      transform = CATransform3DMakeRotation(M_PI_2, 0, 0, 1);
+      swapsAxes = YES;
+      break;
+    case UIImageOrientationLeft:
+      transform = CATransform3DMakeRotation(-M_PI_2, 0, 0, 1);
+      swapsAxes = YES;
+      break;
+    case UIImageOrientationLeftMirrored:
+      transform = CATransform3DConcat(CATransform3DMakeRotation(M_PI_2, 0, 0, 1), CATransform3DMakeScale(-1, 1, 1));
+      swapsAxes = YES;
+      break;
+    case UIImageOrientationRightMirrored:
+      transform = CATransform3DConcat(CATransform3DMakeRotation(-M_PI_2, 0, 0, 1), CATransform3DMakeScale(-1, 1, 1));
+      swapsAxes = YES;
+      break;
+  }
+
+  CALayer *imageLayer = [CALayer layer];
+  imageLayer.contents = (__bridge id)image.CGImage;
+  imageLayer.bounds = swapsAxes ? CGRectMake(0, 0, size.height, size.width) : CGRectMake(0, 0, size.width, size.height);
+  imageLayer.position = CGPointMake(size.width / 2, size.height / 2);
+  imageLayer.transform = transform;
+  [itemLayer addSublayer:imageLayer];
+  return itemLayer;
+}
+
 + (CGSize)calculateBackgroundImageSize:(const CGRect &)positioningArea
                      itemIntrinsicSize:(CGSize)itemIntrinsicSize
+                 itemHasIntrinsicRatio:(BOOL)itemHasIntrinsicRatio
                         backgroundSize:(const facebook::react::BackgroundSize &)backgroundSize
                       backgroundRepeat:(const facebook::react::BackgroundRepeat &)backgroundRepeat
 {
@@ -159,9 +211,13 @@
 
   CGSize itemFinalSize = itemIntrinsicSize;
   CGSize positioningAreaSize = positioningArea.size;
+  bool xAuto = true;
+  bool yAuto = true;
 
   if (std::holds_alternative<facebook::react::BackgroundSizeLengthPercentage>(backgroundSize)) {
     auto backgroundSizeLengthPercentage = std::get<facebook::react::BackgroundSizeLengthPercentage>(backgroundSize);
+    xAuto = backgroundSizeLengthPercentage.isXAuto();
+    yAuto = backgroundSizeLengthPercentage.isYAuto();
     if (std::holds_alternative<facebook::react::ValueUnit>(backgroundSizeLengthPercentage.x)) {
       auto xValue = std::get<facebook::react::ValueUnit>(backgroundSizeLengthPercentage.x);
       if (xValue.unit == facebook::react::UnitType::Percent) {
@@ -181,13 +237,21 @@
     }
   }
 
+  // An `auto` dimension keeps the image's aspect ratio. Without a ratio (gradients), it stays at its intrinsic size.
+  bool keepsRatio = itemHasIntrinsicRatio && itemIntrinsicSize.width > 0 && itemIntrinsicSize.height > 0;
+  CGFloat ratio = keepsRatio ? itemIntrinsicSize.width / itemIntrinsicSize.height : 0;
+  if (keepsRatio && !xAuto && yAuto) {
+    itemFinalSize.height = itemFinalSize.width / ratio;
+  } else if (keepsRatio && xAuto && !yAuto) {
+    itemFinalSize.width = itemFinalSize.height * ratio;
+  }
+
   if (backgroundRepeat.x == facebook::react::BackgroundRepeatStyle::Round) {
     if (itemFinalSize.width > 0 && positioningAreaSize.width > 0) {
       if (fmod(positioningAreaSize.width, itemFinalSize.width) != 0) {
-        auto divisor = static_cast<float>(round(positioningAreaSize.width / itemFinalSize.width));
-        if (divisor > 0) {
-          itemFinalSize.width = positioningAreaSize.width / divisor;
-        }
+        // CSS rounds to the nearest whole number of tiles, but at least one.
+        CGFloat divisor = std::max<CGFloat>(1, round(positioningAreaSize.width / itemFinalSize.width));
+        itemFinalSize.width = positioningAreaSize.width / divisor;
       }
     }
   }
@@ -195,12 +259,20 @@
   if (backgroundRepeat.y == facebook::react::BackgroundRepeatStyle::Round) {
     if (itemFinalSize.height > 0 && positioningAreaSize.height > 0) {
       if (fmod(positioningAreaSize.height, itemFinalSize.height) != 0) {
-        auto divisor = static_cast<float>(round(positioningAreaSize.height / itemFinalSize.height));
-        if (divisor > 0) {
-          itemFinalSize.height = positioningAreaSize.height / divisor;
-        }
+        // CSS rounds to the nearest whole number of tiles, but at least one.
+        CGFloat divisor = std::max<CGFloat>(1, round(positioningAreaSize.height / itemFinalSize.height));
+        itemFinalSize.height = positioningAreaSize.height / divisor;
       }
     }
+  }
+
+  // With `round` on one axis only, an `auto` other axis is scaled again to restore the ratio.
+  bool roundX = backgroundRepeat.x == facebook::react::BackgroundRepeatStyle::Round;
+  bool roundY = backgroundRepeat.y == facebook::react::BackgroundRepeatStyle::Round;
+  if (keepsRatio && roundX && !roundY && yAuto) {
+    itemFinalSize.height = itemFinalSize.width / ratio;
+  } else if (keepsRatio && roundY && !roundX && xAuto) {
+    itemFinalSize.width = itemFinalSize.height * ratio;
   }
 
   return itemFinalSize;

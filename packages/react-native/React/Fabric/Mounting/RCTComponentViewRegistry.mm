@@ -24,6 +24,7 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
 @implementation RCTComponentViewRegistry {
   std::unordered_map<Tag, RCTComponentViewDescriptor> _registry;
   std::unordered_map<ComponentHandle, std::vector<RCTComponentViewDescriptor>> _recyclePool;
+  std::shared_ptr<ImageManager> _imageManager;
 }
 
 - (instancetype)init
@@ -93,7 +94,11 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
   auto &recycledViews = _recyclePool[componentHandle];
 
   if (recycledViews.empty()) {
-    return [self.componentViewFactory createComponentViewWithComponentHandle:componentHandle];
+    auto componentViewDescriptor = [self.componentViewFactory createComponentViewWithComponentHandle:componentHandle];
+    if (_imageManager && [componentViewDescriptor.view isKindOfClass:[RCTViewComponentView class]]) {
+      [(RCTViewComponentView *)componentViewDescriptor.view setBackgroundImageManager:_imageManager];
+    }
+    return componentViewDescriptor;
   }
 
   auto componentViewDescriptor = recycledViews.back();
@@ -117,6 +122,11 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
   [componentViewDescriptor.view prepareForRecycle];
 
   recycledViews.push_back(componentViewDescriptor);
+}
+
+- (void)setImageManager:(std::shared_ptr<ImageManager>)imageManager
+{
+  _imageManager = std::move(imageManager);
 }
 
 - (void)handleApplicationDidReceiveMemoryWarningNotification

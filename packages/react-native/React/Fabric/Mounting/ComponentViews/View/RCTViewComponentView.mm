@@ -11,12 +11,14 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
+#import <algorithm>
 #import <ranges>
 #import <string_view>
 #import <unordered_set>
 
 #import <RCTSwiftUIWrapper/RCTSwiftUIContainerViewWrapper.h>
 #import <React/RCTAssert.h>
+#import <React/RCTBackgroundImageURLLoader.h>
 #import <React/RCTBackgroundImageUtils.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
@@ -123,6 +125,8 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   NSMutableSet<NSString *> *_accessibilityOrderNativeIDs;
   RCTSwiftUIContainerViewWrapper *_swiftUIWrapper;
   BOOL _focusable;
+  std::shared_ptr<ImageManager> _imageManager;
+  RCTBackgroundImageURLLoader *_backgroundImageURLLoader;
 }
 
 #ifdef RCT_DYNAMIC_FRAMEWORKS
@@ -842,6 +846,9 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
 {
   [super finalizeUpdates:updateMask];
   _useCustomContainerView = [self styleWouldClipOverflowInk];
+  if ((updateMask & RNComponentViewUpdateMaskProps) != 0) {
+    [self updateBackgroundImageURLRequests];
+  }
   if (!_needsInvalidateLayer) {
     return;
   }
@@ -882,6 +889,7 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
   [_filterLayer removeFromSuperlayer];
   _filterLayer = nil;
   [self clearExistingBackgroundImageLayers];
+  _backgroundImageURLLoader = nil;
 
   [self _setLastSentSafeAreaInsets:nil];
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
@@ -1419,29 +1427,48 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         backgroundRepeat = _props->backgroundRepeat[imageIndex % _props->backgroundRepeat.size()];
       }
 
+      CGSize itemIntrinsicSize = backgroundPositioningArea.size;
+      BOOL itemHasIntrinsicRatio = NO;
+      UIImage *urlImage = nil;
+      if (const auto *urlBackgroundImage = std::get_if<URLBackgroundImage>(&backgroundImage)) {
+        urlImage = [_backgroundImageURLLoader imageForURI:urlBackgroundImage->uri];
+        // Bundled assets send their natural size in layout units. A plain url
+        // has none, so use the size of the decoded image.
+        if (urlBackgroundImage->intrinsicWidth > 0 && urlBackgroundImage->intrinsicHeight > 0) {
+          itemIntrinsicSize = CGSizeMake(urlBackgroundImage->intrinsicWidth, urlBackgroundImage->intrinsicHeight);
+          itemHasIntrinsicRatio = YES;
+        } else if (urlImage != nil) {
+          itemIntrinsicSize = urlImage.size;
+          itemHasIntrinsicRatio = YES;
+        }
+      }
+
       CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
-                                                                       itemIntrinsicSize:backgroundPositioningArea.size
+                                                                       itemIntrinsicSize:itemIntrinsicSize
+                                                                   itemHasIntrinsicRatio:itemHasIntrinsicRatio
                                                                           backgroundSize:backgroundSize
                                                                         backgroundRepeat:backgroundRepeat];
 
-      CALayer *gradientLayer;
+      CALayer *itemLayer;
 
       if (std::holds_alternative<LinearGradient>(backgroundImage)) {
         const auto &linearGradient = std::get<LinearGradient>(backgroundImage);
-        gradientLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
+        itemLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
       } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
         const auto &radialGradient = std::get<RadialGradient>(backgroundImage);
-        gradientLayer = [RCTRadialGradient gradientLayerWithSize:backgroundImageSize gradient:radialGradient];
+        itemLayer = [RCTRadialGradient gradientLayerWithSize:backgroundImageSize gradient:radialGradient];
+      } else if (urlImage != nil) {
+        itemLayer = [RCTBackgroundImageUtils createURLImageLayerWithImage:urlImage size:backgroundImageSize];
       }
 
-      if (gradientLayer != nil) {
+      if (itemLayer != nil) {
         CALayer *backgroundImageLayer =
             [RCTBackgroundImageUtils createBackgroundImageLayerWithSize:backgroundPositioningArea
                                                            paintingArea:backgroundPaintingArea
                                                                itemSize:backgroundImageSize
                                                      backgroundPosition:backgroundPosition
                                                        backgroundRepeat:backgroundRepeat
-                                                              itemLayer:gradientLayer];
+                                                              itemLayer:itemLayer];
         [self shapeLayerToMatchView:backgroundImageLayer borderMetrics:borderMetricsBI];
         backgroundImageLayer.masksToBounds = YES;
         backgroundImageLayer.zPosition = BACKGROUND_COLOR_ZPOSITION;
@@ -1541,6 +1568,35 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   maskLayer.path = path;
   CGPathRelease(path);
   return maskLayer;
+}
+
+- (void)setBackgroundImageManager:(std::shared_ptr<ImageManager>)imageManager
+{
+  _imageManager = std::move(imageManager);
+}
+
+- (void)updateBackgroundImageURLRequests
+{
+  bool hasURLBackgroundImage = std::ranges::any_of(_props->backgroundImage, [](const auto &backgroundImage) {
+    return std::holds_alternative<URLBackgroundImage>(backgroundImage);
+  });
+  if (!hasURLBackgroundImage || !_imageManager) {
+    // Releasing it cancels all loads
+    _backgroundImageURLLoader = nil;
+    return;
+  }
+
+  if (_backgroundImageURLLoader == nil) {
+    __weak RCTViewComponentView *weakSelf = self;
+    _backgroundImageURLLoader = [[RCTBackgroundImageURLLoader alloc] initWithImageManager:_imageManager
+                                                                                   onLoad:^{
+                                                                                     [weakSelf invalidateLayer];
+                                                                                   }];
+  }
+
+  const auto &eventTarget = _eventEmitter ? _eventEmitter->getEventTarget() : nullptr;
+  [_backgroundImageURLLoader loadBackgroundImages:_props->backgroundImage
+                                        surfaceId:eventTarget ? eventTarget->getSurfaceId() : -1];
 }
 
 - (void)clearExistingBackgroundImageLayers
