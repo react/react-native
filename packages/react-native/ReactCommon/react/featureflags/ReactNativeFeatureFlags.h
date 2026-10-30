@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6887b671526bc8a3b0678e3e45b4e3b4>>
+ * @generated SignedSource<<bb76b02e7f51c6ef0b94011271284de1>>
  */
 
 /**
@@ -115,6 +115,11 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
    */
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
+
+  /**
+   * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) inherits neither.
+   */
+  RN_EXPORT static bool enableAliasedTextRoleInheritance();
 
   /**
    * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<674f975884ae746e067e614523f2bfc3>>
+ * @generated SignedSource<<5f226f20f5882b620a30b108bccefb8b>>
  * @flow strict
  * @noformat
  */
@@ -64,6 +64,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
+  enableAliasedTextRoleInheritance: Getter<boolean>,
   enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>,
@@ -282,6 +283,10 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
+/**
+ * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) inherits neither.
+ */
+export const enableAliasedTextRoleInheritance: Getter<boolean> = createNativeFlagGetter('enableAliasedTextRoleInheritance', false);
 /**
  * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
  */
