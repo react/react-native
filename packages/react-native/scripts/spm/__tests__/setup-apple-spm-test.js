@@ -699,6 +699,20 @@ describe('podfilePodNames', () => {
     ).toEqual(['RNSVG', 'OCMock']);
   });
 
+  it('reads past blank and comment lines inside a continued pod statement', () => {
+    expect(
+      namesIn([
+        "  pod 'React-Core',",
+        '    # comment',
+        "    :path => '../node_modules/react-native/'",
+        "  pod 'React-RCTText',",
+        '',
+        "    :path => '../node_modules/react-native/Libraries/Text'",
+        "  pod 'OCMock', '~> 3.9.1'",
+      ]),
+    ).toEqual(['OCMock']);
+  });
+
   it('keeps pods whose names use Ruby interpolation', () => {
     expect(
       namesIn([
@@ -1024,6 +1038,29 @@ describe('CocoaPods conversion', () => {
 
       expect(output(logSpy)).toContain(
         'No SPM injection found — nothing to remove.',
+      );
+    });
+
+    it('does not mention `pod install` when it removed nothing', async () => {
+      fs.writeFileSync(podfilePath, STOCK_PODFILE);
+
+      await main(['deinit']);
+
+      expect(output(logSpy)).not.toContain('pod install');
+    });
+
+    it('says where to run `pod install` when run from the JS root', async () => {
+      const iosDir = path.join(appRoot, 'ios');
+      fs.mkdirSync(iosDir);
+      fs.writeFileSync(path.join(appRoot, 'package.json'), '{}');
+      mkXcodeproj(iosDir, 'MyApp.xcodeproj');
+      mkInjectedXcodeproj(iosDir, 'MyApp.xcodeproj');
+      fs.writeFileSync(path.join(iosDir, 'Podfile'), STOCK_PODFILE);
+
+      await main(['deinit']);
+
+      expect(output(logSpy)).toContain(
+        'To go back to CocoaPods, run `cd ios && pod install`.',
       );
     });
 

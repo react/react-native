@@ -779,7 +779,7 @@ function podfilePodNames(appRoot /*: string */) /*: Array<string> */ {
   for (const line of fs.readFileSync(podfilePath, 'utf8').split('\n')) {
     // `#{` is Ruby string interpolation, not a comment. A line that ends in
     // `,` continues on the next one.
-    const code = continued + line.split(/#(?!\{)/)[0].trimEnd();
+    const code = (continued + line.split(/#(?!\{)/)[0]).trimEnd();
     if (code.endsWith(',')) {
       continued = code + ' ';
     } else {
@@ -1154,10 +1154,10 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
     // removeSpmInjection drops the marker, and the record with it.
     const gitignoreRecord =
       xcodeprojPath != null ? readMarker(xcodeprojPath)?.gitignore : null;
-    if (
+    const removed =
       xcodeprojPath != null &&
-      removeSpmInjection({appRoot, xcodeprojPath}).status === 'removed'
-    ) {
+      removeSpmInjection({appRoot, xcodeprojPath}).status === 'removed';
+    if (removed && xcodeprojPath != null) {
       log(`Removed SPM packages from ${path.basename(xcodeprojPath)}.`);
     } else {
       log('No SPM injection found — nothing to remove.');
@@ -1170,8 +1170,12 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
           'Remove them by hand.',
       );
     }
-    if (fs.existsSync(path.join(appRoot, 'Podfile'))) {
-      log('To go back to CocoaPods, run `pod install`.');
+    if (removed && fs.existsSync(path.join(appRoot, 'Podfile'))) {
+      const podInstall =
+        appRoot === process.cwd()
+          ? 'pod install'
+          : `cd ${path.relative(process.cwd(), appRoot)} && pod install`;
+      log(`To go back to CocoaPods, run \`${podInstall}\`.`);
     }
     return;
   }
