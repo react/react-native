@@ -173,6 +173,59 @@ describe('readSwiftpmConfig', () => {
       warnSpy.mockRestore();
     }
   });
+
+  it('says nothing when swiftpmConfig mirrors every field of the spm block', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const settings = {
+        name: 'RNSentry',
+        dependencies: ['react-native-worklets'],
+      };
+      const root = makeRoot({name: 'lib', swiftpmConfig: settings});
+      const config = readSwiftpmConfig(root, {
+        spm: {name: 'RNSentry', dependencies: ['react-native-worklets']},
+      });
+      expect(config).toEqual(settings);
+      expect(warnSpy).not.toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('still warns about a field the two places disagree on', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const root = makeRoot({
+        name: 'lib',
+        swiftpmConfig: {name: 'RNSVG', dependencies: ['a']},
+      });
+      const config = readSwiftpmConfig(root, {
+        spm: {name: 'OldName', dependencies: ['a']},
+      });
+      expect(config).toEqual({name: 'RNSVG', dependencies: ['a']});
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      const message = warnSpy.mock.calls[0].join(' ');
+      expect(message).toContain("deprecated 'spm' block (name)");
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('names only the fields the spm block alone declares', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const root = makeRoot({name: 'lib', swiftpmConfig: {name: 'RNSVG'}});
+      const config = readSwiftpmConfig(root, {
+        spm: {name: 'RNSVG', dependencies: ['a']},
+      });
+      expect(config).toEqual({name: 'RNSVG', dependencies: ['a']});
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      const message = warnSpy.mock.calls[0].join(' ');
+      expect(message).toContain("deprecated 'spm' block (dependencies)");
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
 });
 
 describe('readSwiftpmConfig (unknown keys)', () => {

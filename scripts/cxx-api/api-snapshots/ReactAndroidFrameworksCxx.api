@@ -2499,6 +2499,7 @@ class facebook::react::JavaTurboModule : public facebook::react::TurboModule {
   protected void configureEventEmitterCallback();
   protected void setEventEmitterCallback(jni::alias_ref<jobject>);
   public JavaTurboModule(const facebook::react::JavaTurboModule::InitParams& params);
+  public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const char* methodName, const char* methodSignature, const facebook::jsi::Value* args, size_t argCount);
   public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const std::string& methodName, const std::string& methodSignature, const facebook::jsi::Value* args, size_t argCount, jmethodID& cachedMethodID);
   public virtual ~JavaTurboModule();
 }
