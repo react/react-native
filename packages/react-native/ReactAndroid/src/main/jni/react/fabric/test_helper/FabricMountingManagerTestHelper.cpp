@@ -10,6 +10,7 @@
 #include <react/fabric/FabricUIManagerBinding.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
+#include <react/jni/WritableNativeMap.h>
 #include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/root/RootShadowNode.h>
@@ -61,6 +62,17 @@ class FabricMountingManagerTestHelper::DeleteRecorder
 };
 
 namespace {
+
+jni::local_ref<WritableNativeMap::jhybridobject> createWritableNativeMapFromCxx(
+    jni::alias_ref<jclass> /*unused*/,
+    jboolean withContents) {
+  if (withContents == JNI_FALSE) {
+    return WritableNativeMap::newObjectCxxArgs();
+  }
+  folly::dynamic payload = folly::dynamic::object("value", 42)(
+      "nested", folly::dynamic::object("enabled", true));
+  return WritableNativeMap::newObjectCxxArgs(std::move(payload));
+}
 
 ShadowView makeShadowView(jint surfaceId, jint tag) {
   ShadowView sv{};
@@ -402,6 +414,8 @@ FabricMountingManagerTestHelper::pulledDeleteTags() {
 
 void FabricMountingManagerTestHelper::registerNatives() {
   registerHybrid({
+      makeNativeMethod(
+          "createWritableNativeMapFromCxx", createWritableNativeMapFromCxx),
       makeNativeMethod(
           "initHybrid", FabricMountingManagerTestHelper::initHybrid),
       makeNativeMethod(

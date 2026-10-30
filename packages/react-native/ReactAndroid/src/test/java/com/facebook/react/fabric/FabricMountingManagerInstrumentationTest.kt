@@ -8,6 +8,10 @@
 package com.facebook.react.fabric
 
 import android.graphics.Rect
+import android.os.ParcelFileDescriptor
+import android.os.Process
+import android.os.SystemClock
+import android.util.Log
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -35,6 +39,7 @@ import com.facebook.react.uimanager.events.BatchEventDispatchedListener
 import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.react.views.view.ReactViewManager
 import com.facebook.soloader.SoLoader
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.After
@@ -132,6 +137,55 @@ class FabricMountingManagerInstrumentationTest {
     val smm = mountingManager.getSurfaceManagerEnforced(surfaceId, "test")
     assertThat(smm.getViewExists(42)).isTrue()
     assertThat(smm.getView(42)).isNotNull()
+  }
+
+  @Test
+  fun writableNativeMap_createdInCxx_preservesContentsAndRemainsWritable() {
+    val map = createWritableNativeMapFromCxx(true)
+
+    map.putInt("added", 7)
+    map.putString("label", "writable")
+    assertThat(map.getInt("value")).isEqualTo(42)
+    assertThat(map.getMap("nested")?.getBoolean("enabled")).isTrue()
+    assertThat(map.getInt("added")).isEqualTo(7)
+    assertThat(map.getString("label")).isEqualTo("writable")
+  }
+
+  @Test
+  fun writableNativeMap_createdInCxxWithoutContents_isEmptyAndWritable() {
+    val map = createWritableNativeMapFromCxx(false)
+
+    assertThat(map.toString()).isEqualTo("{}")
+    map.putInt("value", 42)
+    assertThat(map.getInt("value")).isEqualTo(42)
+  }
+
+  private fun createWritableNativeMapFromCxx(withContents: Boolean): WritableNativeMap {
+    val token = UUID.randomUUID().toString()
+    val startMarker = "WritableNativeMap start $token"
+    val endMarker = "WritableNativeMap end $token"
+    Log.i("WritableNativeMapTest", startMarker)
+    val map = FabricMountingManagerTestHelper.createWritableNativeMapFromCxx(withContents)
+    Log.i("WritableNativeMapTest", endMarker)
+
+    val deadline = SystemClock.elapsedRealtime() + 2_000
+    do {
+      val descriptor =
+          InstrumentationRegistry.getInstrumentation()
+              .uiAutomation
+              .executeShellCommand("logcat -d -b main --pid=${Process.myPid()}")
+      val logs =
+          ParcelFileDescriptor.AutoCloseInputStream(descriptor).bufferedReader().use {
+            it.readText()
+          }
+      if (logs.contains(endMarker)) {
+        assertThat(logs).contains(startMarker)
+        assertThat(logs.substringAfter(startMarker).substringBefore(endMarker))
+            .doesNotContain("Attempt to set C++ native pointer twice")
+        return map
+      }
+    } while (SystemClock.elapsedRealtime() < deadline)
+    throw AssertionError("WritableNativeMap log markers did not arrive")
   }
 
   @Test
@@ -252,7 +306,7 @@ class FabricMountingManagerInstrumentationTest {
   }
 
   private fun mountPaddedView(
-      fixTextLayoutOnPixelDensityChange: Boolean
+      fixTextLayoutOnPixelDensityChange: Boolean,
   ): Pair<FabricMountingManagerTestHelper, ReactViewGroup> {
     val fabricUIManager = createFabricUIManager(listOf(PaddingViewManager()))
     val helper = FabricMountingManagerTestHelper.create(fabricUIManager)
@@ -281,7 +335,7 @@ class FabricMountingManagerInstrumentationTest {
     ReactNativeFeatureFlagsCxxInterop.dangerouslyForceOverride(
         object : ReactNativeFeatureFlagsDefaults() {
           override fun enableMountingCoordinatorPullModelAndroid(): Boolean = true
-        }
+        },
     )
   }
 
@@ -501,7 +555,7 @@ class FabricMountingManagerInstrumentationTest {
           override fun enablePropsUpdateReconciliationAndroid(): Boolean = pullModel
 
           override fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = pullModel
-        }
+        },
     )
   }
 

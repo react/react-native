@@ -6807,6 +6807,7 @@ struct facebook::react::WritableNativeMap : public jni::HybridClass<facebook::re
   public WritableNativeMap(folly::dynamic&& val);
   public friend HybridBase;
   public static constexpr auto kJavaDescriptor;
+  public static jni::local_ref<JavaPart> newObjectCxxArgs(folly::dynamic&& val = folly::dynamic::object());
   public static void initHybrid(jni::alias_ref<jhybridobject> jobj);
   public static void registerNatives();
   public void mergeNativeMap(facebook::react::ReadableNativeMap* other);
