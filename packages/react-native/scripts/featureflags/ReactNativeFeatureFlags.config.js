@@ -707,6 +707,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    fixMultilineContentJumpAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-22',
+        description:
+          'Flushes TextInput state updates synchronously on Android when a multiline input changes line count, so the new height mounts in the same frame instead of the content jumping. Pairs with enableFollowUpMountItemDispatchAndroid for updates that happen during mount dispatch.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     fixTextLayoutOnPixelDensityChange: {
       defaultValue: false,
       metadata: {
