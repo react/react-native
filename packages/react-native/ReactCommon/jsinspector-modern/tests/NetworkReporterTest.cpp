@@ -625,6 +625,75 @@ TEST_P(NetworkReporterTest, testWebSocketCreatedWithInitiator) {
                                 })");
 }
 
+TEST_P(NetworkReporterTest, testWebSocketCreatedWithInitiatorFramesToSkip) {
+  InSequence s;
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 0,
+                                          "result": {}
+                                      })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 0,
+                                  "method": "Debugger.enable"
+                              })");
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 1,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 1,
+                                  "method": "Network.enable"
+                                })");
+
+  auto& runtime = engineAdapter_->getRuntime();
+
+  // `apiShim` stands in for an API implementation (such as the `WebSocket`
+  // constructor) that asks for its own frame to be omitted.
+  auto requestId = this->eval(R"( // line 0
+    function apiShim() { // line 1
+      return globalThis.__NETWORK_REPORTER__.createDevToolsRequestId(1); // line 2
+    } // line 3
+    function openSocket() { // line 4
+      return apiShim(); // line 5
+    } // line 6
+    openSocket(); // line 7
+
+    //# sourceURL=webSocketInitiatorFramesToSkipTest.js
+  )")
+                       .asString(runtime)
+                       .utf8(runtime);
+
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketCreated"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/url", "wss://example.com/frames-to-skip"),
+      AtJsonPtr("/params/initiator/type", "script"),
+      AtJsonPtr(
+          "/params/initiator/stack/callFrames",
+          AllOf(
+              Each(AtJsonPtr("/url", "webSocketInitiatorFramesToSkipTest.js")),
+              ElementsAre(
+                  AllOf(
+                      AtJsonPtr("/functionName", "openSocket"),
+                      AtJsonPtr("/lineNumber", 5)),
+                  AllOf(
+                      AtJsonPtr("/functionName", "global"),
+                      AtJsonPtr("/lineNumber", 7))))))));
+
+  NetworkReporter::getInstance().reportWebSocketCreated(
+      requestId, "wss://example.com/frames-to-skip");
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 2,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 2,
+                                  "method": "Network.disable"
+                                })");
+}
+
 TEST_P(NetworkReporterTest, testNetworkEventsWhenDisabled) {
   EXPECT_FALSE(NetworkReporter::getInstance().isDebuggingEnabled());
 
