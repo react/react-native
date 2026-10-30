@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   # A new push to a pull request makes the previous run obsolete, so cancel it

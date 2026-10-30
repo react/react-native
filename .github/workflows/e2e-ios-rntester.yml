@@ -2,6 +2,7 @@ name: E2E iOS RNTester
 
 permissions:
   contents: read
+  actions: read
 
 on:
   workflow_call:
@@ -31,6 +32,8 @@ jobs:
       # flavor writes its own.
       debug-result: ${{ steps.classify.outputs.debug-result }}
       release-result: ${{ steps.classify.outputs.release-result }}
+      failure-debug: ${{ steps.report-status.outputs.failure-debug }}
+      failure-release: ${{ steps.report-status.outputs.failure-release }}
     strategy:
       fail-fast: false
       matrix:
@@ -121,6 +124,24 @@ jobs:
           FLAVOR=$(echo "${{ matrix.flavor }}" | tr '[:upper:]' '[:lower:]')
           echo "Result: $RESULT"
           echo "$FLAVOR-result=$RESULT" >> "$GITHUB_OUTPUT"
+      - name: Report status
+        id: report-status
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          STEP_RESULTS: ${{ toJSON(steps) }}
+          JOB_STATUS: ${{ job.status }}
+          TEST_FLAVOR: ${{ matrix.flavor }}
+        with:
+          script: |
+            const {recordJobFailure} = require('./.github/workflow-scripts/report-test-results');
+            await recordJobFailure({github, context, core,
+              steps: JSON.parse(process.env.STEP_RESULTS),
+              flavor: process.env.TEST_FLAVOR,
+              runnerName: process.env.RUNNER_NAME,
+              jobStatus: process.env.JOB_STATUS,
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});
 
   report:
     needs: test
@@ -148,6 +169,27 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
             echo "retryable=true" >> $GITHUB_OUTPUT
           fi
+      - name: Checkout
+        if: steps.check.outputs.status == 'failure'
+        continue-on-error: true
+        uses: actions/checkout@v6
+      - name: Report failed jobs
+        id: diagnostics
+        if: ${{ always() && steps.check.outputs.status == 'failure' }}
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+          REPORT_STATUS: ${{ steps.check.outputs.status }}
+        with:
+          script: |
+            const {reportTestResults} = require('./.github/workflow-scripts/report-test-results');
+            const results = JSON.parse(process.env.JOB_RESULTS);
+            results.test.outputs = {...results.test.outputs, status: process.env.REPORT_STATUS};
+            await reportTestResults({context, core,
+              needs: results,
+              failOnError: false,
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});
       - name: Fail if needed
         if: ${{ steps.check.outputs.status == 'failure' && (inputs.fail-on-error || steps.check.outputs.retryable == 'false') }}
         run: exit 1
