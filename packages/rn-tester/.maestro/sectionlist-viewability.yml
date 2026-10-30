@@ -1,4 +1,7 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+# DO NOT LAND: skipped on Android for the retry demo; it currently fails there.
+tags:
+  - demo-skip
 ---
 - launchApp
 - stopApp

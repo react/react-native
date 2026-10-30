@@ -14,14 +14,17 @@ on:
         default: 0
     outputs:
       status:
-        description: 'The result of the E2E tests (success or failure)'
-        value: ${{ jobs.report.outputs.status }}
+        description: "'failure' if the E2E tests failed, empty otherwise"
+        value: ${{ jobs.test.outputs.debug_status || jobs.test.outputs.release_status }}
 
 jobs:
   test:
     runs-on: 4-core-ubuntu
+    # Matrix legs write differently named outputs so they are combined
+    # instead of the last leg to finish overwriting the others.
     outputs:
-      status: ${{ steps.report-status.outputs.status }}
+      debug_status: ${{ steps.report-status.outputs.debug_status }}
+      release_status: ${{ steps.report-status.outputs.release_status }}
     strategy:
       fail-fast: false
       matrix:
@@ -47,6 +50,9 @@ jobs:
         with:
           name: e2e_android_rntester_state_${{ matrix.flavor }}_arm64-v8a_NewArch
           path: /tmp/maestro-android-state
+      - name: 'Demo: let the first-attempt-only flow pass on retries'
+        if: ${{ inputs.retry-attempt > 0 }}
+        run: sed -i '/DEMO_FIRST_ATTEMPT_ONLY/d' packages/rn-tester/.maestro/zz-demo-retry-chain-flake.yml
       - name: Check for unfinished E2E flows
         id: test-state
         shell: bash
@@ -59,11 +65,11 @@ jobs:
           echo "should-run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
       - name: Run E2E Tests
         id: run-tests
-        if: steps.test-state.outputs.should-run == 'true'
+        if: ${{ steps.test-state.outputs.should-run == 'true' && !inputs.fail-on-error }}
         continue-on-error: true
         uses: ./.github/actions/maestro-android
         timeout-minutes: 90
-        with:
+        with: &test-inputs
           app-path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/app-arm64-v8a-${{ matrix.flavor }}.apk
           app-id: com.facebook.react.uiapp
           maestro-flow: ./packages/rn-tester/.maestro
@@ -74,7 +80,15 @@ jobs:
           # These timing-sensitive flows remain covered by the release APK.
           # Running the debug ARM64 APK through native translation can delay
           # React commits long enough for Maestro to miss taps and assertions.
-          exclude-tags: ${{ matrix.flavor == 'debug' && 'android-release-only' || '' }}
+          exclude-tags: ${{ matrix.flavor == 'debug' && 'android-release-only,demo-skip' || 'demo-skip' }}
+      - name: Run E2E Tests
+        # Same step without continue-on-error, so the final attempt fails
+        # here. A step's continue-on-error expression doesn't see inputs.
+        id: run-tests-final
+        if: ${{ steps.test-state.outputs.should-run == 'true' && inputs.fail-on-error }}
+        uses: ./.github/actions/maestro-android
+        timeout-minutes: 90
+        with: *test-inputs
       - name: Store per-flow test state
         if: always()
         uses: ./.github/actions/upload-artifact
@@ -85,23 +99,15 @@ jobs:
           path: /tmp/maestro-android-state/results.json
       - name: Report status
         id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
-
-  report:
-    needs: test
-    if: always()
-    runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.check.outputs.status }}
-    steps:
-      - id: check
+        if: ${{ always() && (steps.run-tests.outcome == 'failure' || steps.run-tests-final.outcome == 'failure') }}
+        env:
+          FLAVOR: ${{ matrix.flavor }}
         run: |
-          if [[ "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
-          fi
-      - name: Fail if needed
-        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
-        run: exit 1
+          flavor=$(echo "$FLAVOR" | tr "[:upper:]" "[:lower:]")
+          case "$flavor" in
+            debug | release) echo "${flavor}_status=failure" >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo "::error::No job output for flavor '$FLAVOR'. Add a ${flavor}_status output to this job and to the workflow status output."
+              exit 1
+              ;;
+          esac

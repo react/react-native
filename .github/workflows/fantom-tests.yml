@@ -11,8 +11,8 @@ on:
         default: false
     outputs:
       status:
-        description: 'The result of the Fantom tests (success or failure)'
-        value: ${{ jobs.report.outputs.status }}
+        description: "'failure' if the Fantom tests failed, empty otherwise"
+        value: ${{ jobs.test.outputs.status }}
 
 jobs:
   test:
@@ -28,27 +28,16 @@ jobs:
         uses: actions/checkout@v6
       - name: Run Fantom Tests
         id: run-tests
+        if: ${{ !inputs.fail-on-error }}
         continue-on-error: true
+        uses: ./.github/actions/run-fantom-tests
+      - name: Run Fantom Tests
+        # Same step without continue-on-error, so the final attempt fails
+        # here. A step's continue-on-error expression doesn't see inputs.
+        id: run-tests-final
+        if: ${{ inputs.fail-on-error }}
         uses: ./.github/actions/run-fantom-tests
       - name: Report status
         id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        if: ${{ always() && (steps.run-tests.outcome == 'failure' || steps.run-tests-final.outcome == 'failure') }}
         run: echo "status=failure" >> $GITHUB_OUTPUT
-
-  report:
-    needs: test
-    if: always()
-    runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.check.outputs.status }}
-    steps:
-      - id: check
-        run: |
-          if [[ "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
-          fi
-      - name: Fail if needed
-        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
-        run: exit 1
