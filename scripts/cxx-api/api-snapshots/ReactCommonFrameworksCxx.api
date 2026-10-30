@@ -84,6 +84,7 @@ const char facebook::react::ViewComponentName[];
 const facebook::react::EventTag facebook::react::EMPTY_EVENT_TAG;
 constexpr auto facebook::react::kSimpleThreadSafeCacheSizeCap;
 constexpr char facebook::react::LayoutConformanceShadowNodeComponentName[];
+constexpr char* const facebook::react::AnimationBackendKey;
 constexpr char* const facebook::react::TextLayoutManagerKey;
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
 constexpr facebook::react::Tag facebook::react::kNoTag;

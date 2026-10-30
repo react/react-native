@@ -119,6 +119,7 @@ add_react_common_subdir(react/renderer/components/legacyviewmanagerinterop)
 add_react_common_subdir(react/renderer/componentregistry/native)
 add_react_common_subdir(react/renderer/components/text)
 add_react_common_subdir(react/renderer/components/unimplementedview)
+add_react_common_subdir(react/renderer/components/keyboardavoidingview)
 add_react_common_subdir(react/renderer/components/modal)
 add_react_common_subdir(react/renderer/components/scrollview)
 add_react_common_subdir(react/renderer/components/safeareaview)
@@ -253,6 +254,7 @@ add_library(reactnative
           $<TARGET_OBJECTS:reactperflogger>
           $<TARGET_OBJECTS:rninstance>
           $<TARGET_OBJECTS:rrc_image>
+          $<TARGET_OBJECTS:rrc_keyboardavoidingview>
           $<TARGET_OBJECTS:rrc_legacyviewmanagerinterop>
           $<TARGET_OBJECTS:rrc_modal>
           $<TARGET_OBJECTS:rrc_native>
@@ -357,6 +359,7 @@ target_include_directories(reactnative
         $<TARGET_PROPERTY:reactperflogger,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rninstance,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_image,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:rrc_keyboardavoidingview,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_legacyviewmanagerinterop,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_modal,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:rrc_native,INTERFACE_INCLUDE_DIRECTORIES>

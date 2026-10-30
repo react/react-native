@@ -11,6 +11,7 @@
 #include "EventBeatManager.h"
 #include "EventEmitterWrapper.h"
 #include "FabricUIManagerBinding.h"
+#include "KeyboardAvoidingViewBinding.h"
 #include "StateWrapperImpl.h"
 #include "SurfaceHandlerBinding.h"
 
@@ -19,6 +20,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*unused*/) {
     facebook::react::EventBeatManager::registerNatives();
     facebook::react::EventEmitterWrapper::registerNatives();
     facebook::react::FabricUIManagerBinding::registerNatives();
+    facebook::react::KeyboardAvoidingViewBinding::registerNatives();
     facebook::react::StateWrapperImpl::registerNatives();
     facebook::react::ComponentFactory::registerNatives();
     facebook::react::SurfaceHandlerBinding::registerNatives();

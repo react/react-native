@@ -22,6 +22,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -72,6 +73,19 @@ const BEHAVIOR_DESCRIPTIONS: {[KeyboardAvoidingBehavior]: string} = {
   height: 'Shrinks the view height by the keyboard overlap.',
 };
 
+const NativeToggle = (props: {native: boolean, setNative: boolean => void}) => {
+  return (
+    <View style={styles.nativeToggle}>
+      <Text>experimental_native</Text>
+      <Switch
+        testID="keyboard_avoiding_view_native_toggle"
+        value={props.native}
+        onValueChange={props.setNative}
+      />
+    </View>
+  );
+};
+
 const BehaviorPicker = (props: {
   behavior: KeyboardAvoidingBehavior,
   setBehavior: KeyboardAvoidingBehavior => void,
@@ -114,11 +128,16 @@ const BehaviorPicker = (props: {
 const KeyboardAvoidingViewBehaviour = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [behavior, setBehavior] = useState<KeyboardAvoidingBehavior>('padding');
+  const [native, setNative] = useState(false);
   return (
     <View style={styles.outerContainer}>
       <Modal animationType="fade" visible={modalOpen}>
-        <KeyboardAvoidingView behavior={behavior} style={styles.container}>
+        <KeyboardAvoidingView
+          behavior={behavior}
+          experimental_native={native}
+          style={styles.container}>
           <BehaviorPicker behavior={behavior} setBehavior={setBehavior} />
+          <NativeToggle native={native} setNative={setNative} />
           <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
@@ -304,6 +323,13 @@ const styles = StyleSheet.create({
   touchableText: {
     fontWeight: '500',
     color: 'blue',
+  },
+  nativeToggle: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   behaviorDescription: {
     textAlign: 'center',

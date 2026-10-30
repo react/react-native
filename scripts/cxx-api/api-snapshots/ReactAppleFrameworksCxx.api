@@ -1303,6 +1303,9 @@ interface RCTKeyCommands : public NSObject {
   public virtual void unregisterKeyCommandWithInput:modifierFlags:(NSString* input, UIKeyModifierFlags flags);
 }
 
+interface RCTKeyboardAvoidingViewComponentView : public RCTViewComponentView {
+}
+
 interface RCTKeyboardObserver : public RCTEventEmitter {
 }
 
@@ -2854,6 +2857,9 @@ protocol RCTJSRuntimeConfiguratorProtocol {
   public virtual JSRuntimeFactoryRef createJSRuntimeFactory();
 }
 
+protocol RCTKeyboardAvoidingViewViewProtocol : public NSObject {
+}
+
 protocol RCTLocalizationProtocol : public NSObject {
   public virtual NSString* localizedString:withDescription:(NSString* oldString, NSString* description);
 }
@@ -3233,6 +3239,7 @@ const char facebook::react::ViewComponentName[];
 const facebook::react::EventTag facebook::react::EMPTY_EVENT_TAG;
 constexpr auto facebook::react::kSimpleThreadSafeCacheSizeCap;
 constexpr char facebook::react::LayoutConformanceShadowNodeComponentName[];
+constexpr char* const facebook::react::AnimationBackendKey;
 constexpr char* const facebook::react::TextLayoutManagerKey;
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
 constexpr facebook::react::Tag facebook::react::kNoTag;
@@ -4735,6 +4742,19 @@ struct facebook::react::JsErrorHandler::ProcessedError::StackFrame {
   public std::optional<int> lineNumber;
   public std::optional<std::string> file;
   public std::string methodName;
+}
+
+class facebook::react::KeyboardAvoidingViewEventEmitter : public facebook::react::BaseViewEventEmitter {
+}
+
+class facebook::react::KeyboardAvoidingViewProps : public facebook::react::HostPlatformViewProps {
+  public KeyboardAvoidingViewProps() = default;
+  public KeyboardAvoidingViewProps(const facebook::react::PropsParserContext& context, const facebook::react::KeyboardAvoidingViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public bool enabled;
+  public facebook::react::Float keyboardInset;
+  public facebook::react::Float keyboardRestingHeight;
+  public facebook::react::Float keyboardVerticalOffset;
+  public facebook::react::KeyboardAvoidingViewBehavior behavior;
 }
 
 class facebook::react::LayoutAnimationCallbackWrapper {
@@ -7237,6 +7257,13 @@ enum facebook::react::KeyboardAppearance {
   Dark,
   Default,
   Light,
+}
+
+enum facebook::react::KeyboardAvoidingViewBehavior {
+  Height,
+  None,
+  Padding,
+  Position,
 }
 
 enum facebook::react::KeyboardType {

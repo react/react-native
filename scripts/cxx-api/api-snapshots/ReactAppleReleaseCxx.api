@@ -1260,6 +1260,9 @@ interface RCTKeyCommands : public NSObject {
   public virtual void unregisterKeyCommandWithInput:modifierFlags:(NSString* input, UIKeyModifierFlags flags);
 }
 
+interface RCTKeyboardAvoidingViewComponentView : public RCTViewComponentView {
+}
+
 interface RCTKeyboardObserver : public RCTEventEmitter {
 }
 
@@ -2773,6 +2776,9 @@ protocol RCTJSRuntimeConfiguratorProtocol {
   public virtual JSRuntimeFactoryRef createJSRuntimeFactory();
 }
 
+protocol RCTKeyboardAvoidingViewViewProtocol : public NSObject {
+}
+
 protocol RCTLocalizationProtocol : public NSObject {
   public virtual NSString* localizedString:withDescription:(NSString* oldString, NSString* description);
 }
@@ -3968,6 +3974,19 @@ class facebook::react::JSBigString : public facebook::jsi::Buffer {
   public ~JSBigString() override = default;
 }
 
+class facebook::react::KeyboardAvoidingViewEventEmitter : public facebook::react::BaseViewEventEmitter {
+}
+
+class facebook::react::KeyboardAvoidingViewProps : public facebook::react::HostPlatformViewProps {
+  public KeyboardAvoidingViewProps() = default;
+  public KeyboardAvoidingViewProps(const facebook::react::PropsParserContext& context, const facebook::react::KeyboardAvoidingViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public bool enabled;
+  public facebook::react::Float keyboardInset;
+  public facebook::react::Float keyboardRestingHeight;
+  public facebook::react::Float keyboardVerticalOffset;
+  public facebook::react::KeyboardAvoidingViewBehavior behavior;
+}
+
 class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode {
   public LayoutableShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public LayoutableShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
@@ -4984,6 +5003,13 @@ enum facebook::react::ImportantForAccessibility : uint8_t {
 enum facebook::react::Isolation {
   Auto,
   Isolate,
+}
+
+enum facebook::react::KeyboardAvoidingViewBehavior {
+  Height,
+  None,
+  Padding,
+  Position,
 }
 
 enum facebook::react::LayoutConformance : uint8_t {

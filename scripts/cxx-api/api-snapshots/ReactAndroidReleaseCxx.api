@@ -1704,6 +1704,26 @@ struct facebook::react::JavaTurboModule::InitParams {
   public std::string moduleName;
 }
 
+class facebook::react::KeyboardAvoidingViewBinding : public facebook::jni::JavaClass<facebook::react::KeyboardAvoidingViewBinding> {
+  public static constexpr char* const kJavaDescriptor;
+  public static void registerNatives();
+}
+
+class facebook::react::KeyboardAvoidingViewEventEmitter : public facebook::react::BaseViewEventEmitter {
+}
+
+class facebook::react::KeyboardAvoidingViewProps : public facebook::react::HostPlatformViewProps {
+  public KeyboardAvoidingViewProps() = default;
+  public KeyboardAvoidingViewProps(const facebook::react::PropsParserContext& context, const facebook::react::KeyboardAvoidingViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public bool enabled;
+  public facebook::react::Float keyboardInset;
+  public facebook::react::Float keyboardRestingHeight;
+  public facebook::react::Float keyboardVerticalOffset;
+  public facebook::react::KeyboardAvoidingViewBehavior behavior;
+  public virtual facebook::react::ComponentName getDiffPropsImplementationTarget() const override;
+  public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
+}
+
 class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode {
   public LayoutableShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public LayoutableShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
@@ -2853,6 +2873,13 @@ enum facebook::react::ImportantForAccessibility : uint8_t {
 enum facebook::react::Isolation {
   Auto,
   Isolate,
+}
+
+enum facebook::react::KeyboardAvoidingViewBehavior {
+  Height,
+  None,
+  Padding,
+  Position,
 }
 
 enum facebook::react::LayoutConformance : uint8_t {

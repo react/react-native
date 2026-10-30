@@ -130,6 +130,7 @@ Scheduler::Scheduler(
   // Must come after `setDelegate`: the backend's constructor registers a
   // surface-start callback, and `UIManager` silently drops those while it has
   // no delegate.
+  contextContainer_->erase(AnimationBackendKey);
   if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
     auto animationBackend = std::make_shared<AnimationBackend>(
         schedulerToolbox.animationChoreographer, uiManager);
@@ -138,6 +139,10 @@ Scheduler::Scheduler(
         animationBackend);
 
     uiManager->unstable_setAnimationBackend(animationBackend);
+
+    contextContainer_->insert(
+        AnimationBackendKey,
+        std::weak_ptr<UIManagerAnimationBackend>(animationBackend));
   }
 
   auto bindingsExecutor =

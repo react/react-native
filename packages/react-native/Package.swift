@@ -490,6 +490,7 @@ let reactFabric = RNTarget(
     "consistency",
     "uimanager/consistency/tests",
     "components/inputaccessory",
+    "components/keyboardavoidingview",
     "components/modal",
     "components/rncore",
     "components/safeareaview",
@@ -510,6 +511,12 @@ let reactFabric = RNTarget(
 let reactFabricInputAccessory = RNTarget(
   name: .reactFabricInputAccessory,
   path: "ReactCommon/react/renderer/components/inputaccessory",
+  dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging]
+)
+
+let reactFabricKeyboardAvoidingView = RNTarget(
+  name: .reactFabricKeyboardAvoidingView,
+  path: "ReactCommon/react/renderer/components/keyboardavoidingview",
   dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging]
 )
 
@@ -588,7 +595,7 @@ let reactRCTFabric = RNTarget(
   name: .reactRCTFabric,
   path: "React/Fabric",
   searchPaths: [virtualViewPath],
-  dependencies: [.reactNativeDependencies, .reactCore, .reactRCTImage, .yoga, .reactRCTText, .jsi, .reactFabricInputAccessory, .reactFabricModal, .reactFabricSafeAreaView, .reactFabricSwitch, .reactFabricText, .reactFabricTextInput, .reactFabricUnimplementedView, .reactFabricTextLayoutManager, .reactGraphics, .reactImageManager, .reactDebug, .reactUtils, .reactPerformanceTimeline, .reactRendererDebug, .reactRendererConsistency, .reactRuntimeScheduler, .reactRCTAnimation, .reactJsInspector, .reactJsInspectorNetwork, .reactJsInspectorTracing, .reactFabric, .reactFabricImage, .rctSwiftUIWrapper]
+  dependencies: [.reactNativeDependencies, .reactCore, .reactRCTImage, .yoga, .reactRCTText, .jsi, .reactFabricInputAccessory, .reactFabricKeyboardAvoidingView, .reactFabricModal, .reactFabricSafeAreaView, .reactFabricSwitch, .reactFabricText, .reactFabricTextInput, .reactFabricUnimplementedView, .reactFabricTextLayoutManager, .reactGraphics, .reactImageManager, .reactDebug, .reactUtils, .reactPerformanceTimeline, .reactRendererDebug, .reactRendererConsistency, .reactRuntimeScheduler, .reactRCTAnimation, .reactJsInspector, .reactJsInspectorNetwork, .reactJsInspectorTracing, .reactFabric, .reactFabricImage, .rctSwiftUIWrapper]
 )
 
 /// React-ImageManagerApple.podspec
@@ -710,6 +717,7 @@ let targets = [
   reactRCTFabric,
   reactFabricImage,
   reactFabricInputAccessory,
+  reactFabricKeyboardAvoidingView,
   reactFabricModal,
   reactFabricSafeAreaView,
   reactFabricSwitch,
@@ -897,6 +905,7 @@ extension String {
 
   static let reactFabricImage = "React-FabricImage"
   static let reactFabricInputAccessory = "React-FabricInputAccessory"
+  static let reactFabricKeyboardAvoidingView = "React-FabricKeyboardAvoidingView"
   static let reactFabricModal = "React-FabricModal"
   static let reactFabricSafeAreaView = "React-FabricSafeAreaView"
   static let reactFabricSwitch = "React-FabricSwitch"
