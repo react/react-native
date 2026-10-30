@@ -2,6 +2,8 @@ name: E2E iOS RNTester
 
 permissions:
   contents: read
+  actions: read
+  id-token: write
 
 on:
   workflow_call:
@@ -9,6 +11,18 @@ on:
       fail-on-error:
         type: boolean
         default: false
+      artifact-run-id:
+        description: Run to take the app artifacts from; defaults to this run
+        type: string
+        default: ''
+      flows-ref:
+        description: Ref to take the Maestro flows from; defaults to the checked-out tree
+        type: string
+        default: ''
+      argent-label:
+        description: Label the calling workflow is registered under on Argent Cloud
+        type: string
+        required: true
     outputs:
       status:
         description: 'The result of the E2E tests (success or failure)'
@@ -16,7 +30,10 @@ on:
 
 jobs:
   test:
-    runs-on: macos-26-large
+    # A pull_request run has no id token to log into the remote simulators
+    # with; the suite runs on request from e2e-ios-on-demand.yml instead.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
@@ -33,6 +50,20 @@ jobs:
         with:
           name: RNTesterApp-NewArch-${{ matrix.flavor }}
           path: /tmp/RNTesterBuild/RNTester.app
+          run-id: ${{ inputs.artifact-run-id || github.run_id }}
+          github-token: ${{ github.token }}
+      - name: Checkout the Maestro flows under test
+        if: ${{ inputs.flows-ref != '' }}
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.flows-ref }}
+          path: .flows-under-test
+          sparse-checkout: packages/rn-tester/.maestro
+      - name: Use the Maestro flows under test
+        if: ${{ inputs.flows-ref != '' }}
+        run: |
+          rm -rf packages/rn-tester/.maestro
+          mv .flows-under-test/packages/rn-tester/.maestro packages/rn-tester/.maestro
       - name: Check downloaded folder content
         run: ls -lR /tmp/RNTesterBuild
       - name: Run E2E Tests
@@ -40,6 +71,7 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
+          argent-label: ${{ inputs.argent-label }}
           app-path: '/tmp/RNTesterBuild/RNTester.app'
           app-id: com.meta.RNTester.localDevelopment
           maestro-flow: ./packages/rn-tester/.maestro/
@@ -59,8 +91,11 @@ jobs:
       status: ${{ steps.check.outputs.status }}
     steps:
       - id: check
+        # A skipped test job is not a failure: the tests do not run on a
+        # pull_request run.
         run: |
-          if [[ "${{ needs.test.result }}" != "success" ||
+          test="${{ needs.test.result }}"
+          if [[ ("$test" != "success" && "$test" != "skipped") ||
                 "${{ needs.test.outputs.status }}" == "failure" ]]; then
             echo "status=failure" >> $GITHUB_OUTPUT
           else

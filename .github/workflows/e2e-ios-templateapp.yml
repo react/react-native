@@ -2,6 +2,8 @@ name: E2E iOS Template App
 
 permissions:
   contents: read
+  actions: read
+  id-token: write
 
 on:
   workflow_call:
@@ -9,13 +11,27 @@ on:
       fail-on-error:
         type: boolean
         default: false
+      artifact-run-id:
+        description: Run to take the app and package artifacts from; defaults to this run, which then builds them
+        type: string
+        default: ''
+      flows-ref:
+        description: Ref to take the Maestro flows from; defaults to the checked-out tree
+        type: string
+        default: ''
+      argent-label:
+        description: Label the calling workflow is registered under on Argent Cloud
+        type: string
+        required: true
     outputs:
       status:
         description: 'The result of the E2E tests (success or failure)'
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
+  # Building needs Xcode; the tests drive a remote simulator from Linux.
   build:
+    if: inputs.artifact-run-id == ''
     runs-on: macos-26-large
     strategy:
       fail-fast: false
@@ -99,7 +115,12 @@ jobs:
 
   test:
     needs: build
-    runs-on: macos-26-large
+    # A pull_request run has no id token to log into the remote simulators
+    # with; the suite runs on request from e2e-ios-on-demand.yml instead.
+    if: >-
+      always() && github.event_name != 'pull_request' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped')
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
@@ -118,6 +139,8 @@ jobs:
         with:
           name: RNTestProject-${{ matrix.flavor }}
           path: /tmp/RNTestProjectBuild/RNTestProject.app
+          run-id: ${{ inputs.artifact-run-id || github.run_id }}
+          github-token: ${{ github.token }}
       - name: Check downloaded folder content
         run: ls -l /tmp/RNTestProjectBuild/RNTestProject.app
       - name: Download React Native Package
@@ -126,6 +149,20 @@ jobs:
         with:
           name: react-native-package
           path: /tmp/react-native-tmp
+          run-id: ${{ inputs.artifact-run-id || github.run_id }}
+          github-token: ${{ github.token }}
+      - name: Checkout the Maestro flows under test
+        if: ${{ inputs.flows-ref != '' }}
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.flows-ref }}
+          path: .flows-under-test
+          sparse-checkout: scripts/e2e/.maestro
+      - name: Use the Maestro flows under test
+        if: ${{ inputs.flows-ref != '' }}
+        run: |
+          rm -rf scripts/e2e/.maestro
+          mv .flows-under-test/scripts/e2e/.maestro scripts/e2e/.maestro
       - name: Configure git
         if: ${{ matrix.flavor == 'Debug' }}
         shell: bash
@@ -152,6 +189,7 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
+          argent-label: ${{ inputs.argent-label }}
           app-path: '/tmp/RNTestProjectBuild/RNTestProject.app'
           app-id: org.reactjs.native.example.RNTestProject
           maestro-flow: ./scripts/e2e/.maestro/
@@ -170,9 +208,13 @@ jobs:
       status: ${{ steps.check.outputs.status }}
     steps:
       - id: check
+        # Skipped jobs are not failures: the build is skipped when the apps
+        # come from another run, the tests on a pull_request run.
         run: |
-          if [[ "${{ needs.build.result }}" != "success" ||
-                "${{ needs.test.result }}" != "success" ||
+          build="${{ needs.build.result }}"
+          test="${{ needs.test.result }}"
+          if [[ ("$build" != "success" && "$build" != "skipped") ||
+                ("$test" != "success" && "$test" != "skipped") ||
                 "${{ needs.test.outputs.status }}" == "failure" ]]; then
             echo "status=failure" >> $GITHUB_OUTPUT
           else

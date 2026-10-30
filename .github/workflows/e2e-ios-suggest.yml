@@ -1,0 +1,48 @@
+name: Suggest the iOS E2E run
+
+# Once a pull request's Test All run has built the apps, tells maintainers how
+# to run the iOS Maestro E2E suites against them (see e2e-ios-on-demand.yml).
+
+on:
+  workflow_run:
+    workflows: [Test All]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  suggest:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Find the pull request whose apps were built
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          have=$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID/artifacts?per_page=100" --jq '.artifacts[].name')
+          for name in RNTesterApp-NewArch-Debug RNTesterApp-NewArch-Release RNTestProject-Debug RNTestProject-Release react-native-package; do
+            if ! grep -qx "$name" <<<"$have"; then
+              echo "$name was not built; nothing to suggest"
+              exit 0
+            fi
+          done
+          pr=$(gh api "repos/$GH_REPO/commits/$HEAD_SHA/pulls" --jq '.[0].number // empty')
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+      - name: Post the hint
+        if: steps.find.outputs.pr != ''
+        uses: ./.github/actions/post-pr-comment
+        with:
+          issue-number: ${{ steps.find.outputs.pr }}
+          marker: '<!-- e2e-ios-on-demand -->'
+          sections: '["Maintainers: to run the iOS Maestro E2E suites on remote simulators against this pull request, comment `@react-native-bot e2e-tests`"]'
