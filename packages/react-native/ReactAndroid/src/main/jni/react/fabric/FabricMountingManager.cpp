@@ -621,6 +621,15 @@ void FabricMountingManager::executeMount(
   std::vector<CppMountItem> cppUpdateOverflowInsetMountItems;
   std::vector<CppMountItem> cppUpdateEventEmitterMountItems;
 
+  // Views created by this transaction, with the state and event emitter their
+  // Create item already passes to Java. Their Insert doesn't need to pass them
+  // again.
+  struct CreatedView {
+    const State* state;
+    const EventEmitter* eventEmitter;
+  };
+  std::unordered_map<Tag, CreatedView> createdViews;
+
   {
     std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
 
@@ -660,6 +669,9 @@ void FabricMountingManager::executeMount(
           if (shouldCreateView) {
             cppCommonMountItems.push_back(
                 CppMountItem::CreateMountItem(newChildShadowView));
+            createdViews[newChildShadowView.tag] = CreatedView{
+                .state = newChildShadowView.state.get(),
+                .eventEmitter = newChildShadowView.eventEmitter.get()};
           } else {
             allocatedView->second.state = AllocatedViewState::Mounted;
           }
@@ -759,6 +771,13 @@ void FabricMountingManager::executeMount(
           break;
         }
         case ShadowViewMutation::Insert: {
+          auto createdView = createdViews.find(newChildShadowView.tag);
+          bool createdWithSameState = createdView != createdViews.end() &&
+              createdView->second.state == newChildShadowView.state.get();
+          bool createdWithSameEventEmitter =
+              createdView != createdViews.end() &&
+              createdView->second.eventEmitter ==
+                  newChildShadowView.eventEmitter.get();
           if (!isVirtual) {
             // Insert item
             cppCommonMountItems.push_back(
@@ -807,7 +826,7 @@ void FabricMountingManager::executeMount(
             }
 
             // State
-            if (newChildShadowView.state) {
+            if (newChildShadowView.state && !createdWithSameState) {
               (maintainMutationOrder ? cppCommonMountItems
                                      : cppUpdateStateMountItems)
                   .push_back(
@@ -848,13 +867,16 @@ void FabricMountingManager::executeMount(
           }
 
           // EventEmitter
-          // On insert we always update the event emitter, as we do not pass
-          // it in when preallocating views
-          (maintainMutationOrder ? cppCommonMountItems
-                                 : cppUpdateEventEmitterMountItems)
-              .push_back(
-                  CppMountItem::UpdateEventEmitterMountItem(
-                      mutation.newChildShadowView));
+          // On insert we update the event emitter, as we do not pass it in
+          // when preallocating views. A view created by this transaction
+          // already got it with its Create item.
+          if (!createdWithSameEventEmitter) {
+            (maintainMutationOrder ? cppCommonMountItems
+                                   : cppUpdateEventEmitterMountItems)
+                .push_back(
+                    CppMountItem::UpdateEventEmitterMountItem(
+                        mutation.newChildShadowView));
+          }
 
           break;
         }
