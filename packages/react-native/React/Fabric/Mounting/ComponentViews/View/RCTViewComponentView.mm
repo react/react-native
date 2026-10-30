@@ -245,7 +245,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   } else {
     // This getter can migrate children from a recycled clipping container.
     // Reconcile before reading superview, even when assertions are disabled.
-    (void)self.currentContainerView;
+    [[maybe_unused]] UIView *containerView = self.currentContainerView;
     RCTAssert(
         childComponentView.superview != nil,
         @"Attempt to unmount a view which is not mounted. (parent: %@, child: %@, index: %@)",
@@ -253,14 +253,14 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         childComponentView,
         @(index));
     RCTAssert(
-        childComponentView.superview == self.currentContainerView,
+        childComponentView.superview == containerView,
         @"Attempt to unmount a view which is mounted inside a different view. (parent: %@, child: %@, index: %@, existing parent: %@)",
         self,
         childComponentView,
         @(index),
         @([childComponentView.superview tag]));
 #ifndef NS_BLOCK_ASSERTIONS
-    NSArray<UIView *> *containerSubviews = self.currentContainerView.subviews;
+    NSArray<UIView *> *containerSubviews = containerView.subviews;
     BOOL isIndexInBounds = index >= 0 && (NSUInteger)index < containerSubviews.count;
     RCTAssert(
         isIndexInBounds && [containerSubviews objectAtIndex:index] == childComponentView,
