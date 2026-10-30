@@ -115,8 +115,9 @@ discovery code**. A second thing is optional:
 
 1. Depend on the React Native package and the app's codegen package by relative
    path. SwiftPM reaches the library's manifest through React Native's
-   per-library link folder, `build/generated/autolinking/libs/<Name>`. The paths
-   are relative to that folder:
+   per-library link folder, `build/generated/autolinking/libs/<SwiftName>`,
+   named after the library's Swift name, not its npm name. The paths are
+   relative to that folder:
    `.package(name: "ReactNative", path: "../../../../xcframeworks")` and
    `.package(name: "React-GeneratedCode", path: "../../../ios")`. The target
    then depends on `.product(name: "ReactHeaders", package: "ReactNative")`,
@@ -133,9 +134,13 @@ discovery code**. A second thing is optional:
    own tree. The app-side codegen then skips the library's spec, so there are no
    duplicate symbols.
 
-These relative paths are the intended design. The folders they reach,
-`build/xcframeworks` and `build/generated/ios` under the app's `ios/` folder,
-are stable, so a library may rely on them.
+This is how a hand-authored library links today. The folders these relative
+paths reach, `build/xcframeworks` and `build/generated/ios` under the app's
+`ios/` folder, are generated output: `spm` recreates them on each machine, and
+they are gitignored. The paths resolve only when SwiftPM reaches the library
+through its `libs/<SwiftName>` link folder, so the library cannot build on its
+own (for example, `swift build` in its own repository). Libraries depend on this
+layout today, so React Native will not change it without notice.
 
 The normal pattern is rule 1 alone: the library uses the app's generated code
 from `React-GeneratedCode`. A library that takes rule 2 carries its own
