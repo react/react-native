@@ -589,6 +589,24 @@ TEST_F(
   EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 1);
 }
 
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    EmptySurfaceStartRunsSurfaceStartCallbacks) {
+  setUp();
+  std::vector<SurfaceId> startedSurfaces;
+  scheduler_->getUIManager()->addOnSurfaceStartCallback(
+      [&](const ShadowTree& shadowTree) {
+        startedSurfaces.push_back(shadowTree.getSurfaceId());
+      });
+  surfaceHandler_->constraintLayout(
+      {.layoutDirection = LayoutDirection::LeftToRight}, {});
+
+  surfaceHandler_->start();
+
+  EXPECT_EQ(startedSurfaces, std::vector<SurfaceId>{11});
+  surfaceHandler_->stop();
+}
+
 TEST(SchedulerDelegateTest, animatedPropsUseExistingViewUpdatesByDefault) {
   class PropsDelegate : public RecordingDelegate {
    public:
