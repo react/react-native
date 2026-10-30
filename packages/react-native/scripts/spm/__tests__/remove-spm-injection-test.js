@@ -1946,7 +1946,7 @@ describe('gitignore marker field', () => {
       appRoot,
       reactNativeRoot: rnRoot,
       xcodeprojPath,
-      gitignore: RECORD,
+      gitignoreAppended: RECORD,
     });
     expect(readMarker(xcodeprojPath).gitignore).toEqual(RECORD);
   });
@@ -1957,7 +1957,7 @@ describe('gitignore marker field', () => {
       appRoot,
       reactNativeRoot: rnRoot,
       xcodeprojPath,
-      gitignore: RECORD,
+      gitignoreAppended: RECORD,
     });
     injectSpmIntoExistingXcodeproj({
       appRoot,
@@ -1965,6 +1965,26 @@ describe('gitignore marker field', () => {
       xcodeprojPath,
     });
     expect(readMarker(xcodeprojPath).gitignore).toEqual(RECORD);
+  });
+
+  it('extends the record with the lines a later add appended', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      gitignoreAppended: RECORD,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      gitignoreAppended: {created: false, lines: ['# SPM', '.build/']},
+    });
+    expect(readMarker(xcodeprojPath).gitignore).toEqual({
+      created: true,
+      lines: ['# SPM', 'Package.resolved', '# SPM', '.build/'],
+    });
   });
 
   it('writes no record when add never passed one', () => {

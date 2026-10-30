@@ -23,16 +23,14 @@ cd ios
 npx react-native spm      # add on first run, update thereafter
 ```
 
-On a fresh CocoaPods app, this converts the app to SwiftPM. It runs
-`pod deintegrate` and moves the `Podfile` to `Podfile.bak`. A Podfile with pods
-that are not part of React Native is not converted automatically;
-`spm add --deintegrate` converts it and warns that those pods are not installed.
-Without a Podfile, the CLI needs `@react-native-community/cli` 21 or newer to
-find the iOS project.
+On a CocoaPods app, this stops and changes nothing. To convert the app, run
+`npx react-native spm add --deintegrate`. It runs `pod deintegrate` and keeps
+the `Podfile`. It warns about pods that are not part of React Native, because
+they are not installed while the app uses SwiftPM.
 
-To go back to CocoaPods, run `npx react-native spm deinit`, then `pod install`
-in `ios/`. If your Podfile does not call `react_native_post_install`, check
-`REACT_NATIVE_PATH`; see
+`pod install` on a converted app stops with an error. To go back to CocoaPods,
+run `npx react-native spm deinit`, then `pod install` in `ios/`. If your Podfile
+does not call `react_native_post_install`, check `REACT_NATIVE_PATH`; see
 [Removing / resetting](./spm-scripts.md#removing--resetting).
 
 **If an autolinked dependency ships no `Package.swift`, setup stops with

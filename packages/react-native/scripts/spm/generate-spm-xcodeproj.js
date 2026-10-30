@@ -2804,7 +2804,7 @@ function linkedReactNativeRoot(
  * when the project can't be safely edited (caller surfaces it; fail-loud).
  */
 function injectSpmIntoExistingXcodeproj(
-  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: ReadonlyArray<string>, gitignore?: ?GitignoreRecord} */,
+  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: ReadonlyArray<string>, gitignoreAppended?: ?GitignoreRecord} */,
 ) /*: {status: 'injected', target: string} | {status: 'refused', reason: string} */ {
   const {appRoot, reactNativeRoot, xcodeprojPath} = opts;
   const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
@@ -2958,6 +2958,18 @@ function injectSpmIntoExistingXcodeproj(
   // the whole marker, this field with it.
   const configCommand = opts.configCommand ?? prevMarker?.configCommand ?? null;
 
+  // `add` passes the lines it appends to .gitignore; `update` passes none and
+  // keeps the record. Without one (an older marker), deinit leaves .gitignore
+  // untouched.
+  const appended = opts.gitignoreAppended;
+  const gitignore /*: ?GitignoreRecord */ =
+    appended == null
+      ? prevMarker?.gitignore
+      : {
+          created: prevMarker?.gitignore?.created === true || appended.created,
+          lines: [...(prevMarker?.gitignore?.lines ?? []), ...appended.lines],
+        };
+
   // Marker: idempotency signal + the exact, reversible record of every edit so
   // `deinit` (removeSpmInjection) can undo precisely what was added.
   writeIfChanged(
@@ -3005,10 +3017,7 @@ function injectSpmIntoExistingXcodeproj(
             schemeResult.status === 'created' ||
             prevMarker?.scheme?.created === true,
         },
-        // Passed by `add` with the previous record already folded in;
-        // `update` passes none and keeps it. Without one (an older marker),
-        // deinit leaves .gitignore untouched.
-        gitignore: opts.gitignore ?? prevMarker?.gitignore,
+        gitignore,
       },
       null,
       2,

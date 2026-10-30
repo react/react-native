@@ -26,10 +26,7 @@ export type SetupArgs = {
   // `add` target selection: which app target (when several) and which project.
   productName: string | null,
   xcodeprojPath: string | null,
-  // `add`: run `pod deintegrate` + move the Podfile to Podfile.bak before
-  // injecting.
-  // Also implied on the zero-arg path when resolveAction's safe-gate detects a
-  // freshly-scaffolded CocoaPods project (see setup-apple-spm.js).
+  // `add`: run `pod deintegrate` before injecting. The Podfile is kept.
   deintegrate: boolean,
   // Skip the single remaining confirmation (the add/update dirty-pbxproj
   // warning). Non-TTY auto-proceeds regardless (git is the safety net).

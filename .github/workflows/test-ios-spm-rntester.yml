@@ -94,11 +94,11 @@ jobs:
             echo "::error::spm add did not inject SwiftPM: $XCODE_PROJECT/.spm-injected.json is missing"
             exit 1
           fi
-          if [[ -f Podfile ]] && grep -q 'use_react_native!' Podfile; then
-            echo "::error::spm add --deintegrate left use_react_native! in the Podfile"
+          if grep -q 'Pods-' "$XCODE_PROJECT/project.pbxproj"; then
+            echo "::error::spm add --deintegrate left CocoaPods references in $XCODE_PROJECT"
             exit 1
           fi
-          echo "SwiftPM injected in place; Podfile de-integrated."
+          echo "SwiftPM injected in place; CocoaPods de-integrated."
       - name: Build ${{ env.XCODE_SCHEME }} (${{ matrix.flavor }})
         shell: bash
         working-directory: ${{ env.APP_IOS_DIR }}
