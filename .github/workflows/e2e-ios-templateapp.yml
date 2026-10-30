@@ -11,8 +11,8 @@ on:
         default: false
     outputs:
       status:
-        description: 'The result of the E2E tests (success or failure)'
-        value: ${{ jobs.report.outputs.status }}
+        description: "'failure' if the E2E tests failed, empty otherwise"
+        value: ${{ jobs.test.outputs.debug_status || jobs.test.outputs.release_status }}
 
 jobs:
   build:
@@ -100,8 +100,11 @@ jobs:
   test:
     needs: build
     runs-on: macos-26-large
+    # Matrix legs write differently named outputs so they are combined
+    # instead of the last leg to finish overwriting the others.
     outputs:
-      status: ${{ steps.report-status.outputs.status }}
+      debug_status: ${{ steps.report-status.outputs.debug_status }}
+      release_status: ${{ steps.report-status.outputs.release_status }}
     strategy:
       fail-fast: false
       matrix:
@@ -149,35 +152,33 @@ jobs:
           node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
       - name: Run E2E Tests
         id: run-tests
+        if: ${{ !inputs.fail-on-error }}
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
-        with:
+        with: &test-inputs
           app-path: '/tmp/RNTestProjectBuild/RNTestProject.app'
           app-id: org.reactjs.native.example.RNTestProject
           maestro-flow: ./scripts/e2e/.maestro/
           flavor: ${{ matrix.flavor }}
           working-directory: /tmp/RNTestProject
+      - name: Run E2E Tests
+        # Same step without continue-on-error, so the final attempt fails
+        # here. A step's continue-on-error expression doesn't see inputs.
+        id: run-tests-final
+        if: ${{ inputs.fail-on-error }}
+        uses: ./.github/actions/maestro-ios
+        with: *test-inputs
       - name: Report status
         id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
-
-  report:
-    needs: [build, test]
-    if: always()
-    runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.check.outputs.status }}
-    steps:
-      - id: check
+        if: ${{ always() && (steps.run-tests.outcome == 'failure' || steps.run-tests-final.outcome == 'failure') }}
+        env:
+          FLAVOR: ${{ matrix.flavor }}
         run: |
-          if [[ "${{ needs.build.result }}" != "success" ||
-                "${{ needs.test.result }}" != "success" ||
-                "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
-          fi
-      - name: Fail if needed
-        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
-        run: exit 1
+          flavor=$(echo "$FLAVOR" | tr "[:upper:]" "[:lower:]")
+          case "$flavor" in
+            debug | release) echo "${flavor}_status=failure" >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo "::error::No job output for flavor '$FLAVOR'. Add a ${flavor}_status output to this job and to the workflow status output."
+              exit 1
+              ;;
+          esac
