@@ -9,6 +9,9 @@ on:
       fail-on-error:
         type: boolean
         default: false
+      retry-attempt:
+        type: number
+        default: 0
     outputs:
       status:
         description: 'The result of the E2E tests (success or failure)'
@@ -23,44 +26,68 @@ jobs:
         flavor: [Debug, Release]
     steps:
       - name: Checkout
+        id: checkout
+        continue-on-error: true
         uses: actions/checkout@v6
       - name: Setup node.js
+        id: setup-node
+        continue-on-error: true
         uses: ./.github/actions/setup-node
       - name: Run yarn
+        id: install-yarn
+        continue-on-error: true
         uses: ./.github/actions/yarn-install
       - name: Setup ruby
+        id: setup-ruby
+        continue-on-error: true
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6.10
       - name: Download React Native Package
+        id: download-package
+        continue-on-error: true
         uses: ./.github/actions/download-artifact
         with:
           name: react-native-package
           path: /tmp/react-native-tmp
       - name: Print /tmp folder
+        id: check-package
+        continue-on-error: true
         run: ls -lR /tmp/react-native-tmp
       - name: Download ReactNativeDependencies
+        id: download-dependencies
+        continue-on-error: true
         uses: ./.github/actions/download-artifact
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
           path: /tmp/third-party
       - name: Print third-party folder
+        id: check-dependencies
+        continue-on-error: true
         shell: bash
         run: ls -lR /tmp/third-party
       - name: Download React Native Prebuilds
+        id: download-prebuilds
+        continue-on-error: true
         uses: ./.github/actions/download-artifact
         with:
           name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
           path: /tmp/ReactCore
       - name: Print ReactCore folder
+        id: check-prebuilds
+        continue-on-error: true
         shell: bash
         run: ls -lR /tmp/ReactCore
       - name: Configure git
+        id: configure-git
+        continue-on-error: true
         shell: bash
         run: |
           git config --global user.email "react-native-bot@meta.com"
           git config --global user.name "React Native Bot"
       - name: Build the app
+        id: build-app
+        continue-on-error: true
         run: |
           REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
           echo "React Native tgs is $REACT_NATIVE_PKG"
@@ -91,48 +118,97 @@ jobs:
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "/tmp/RNTestProject"
       - name: Upload app
+        id: upload-app
+        continue-on-error: true
         uses: ./.github/actions/upload-artifact
         with:
           name: RNTestProject-${{ matrix.flavor }}
           overwrite: true
           path: /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app
+          if-no-files-found: error
+      - name: Record build outcome
+        if: always()
+        env:
+          ATTEMPT_SUCCEEDED: >-
+            ${{ steps.checkout.outcome == 'success' &&
+                steps.setup-node.outcome == 'success' &&
+                steps.install-yarn.outcome == 'success' &&
+                steps.setup-ruby.outcome == 'success' &&
+                steps.download-package.outcome == 'success' &&
+                steps.check-package.outcome == 'success' &&
+                steps.download-dependencies.outcome == 'success' &&
+                steps.check-dependencies.outcome == 'success' &&
+                steps.download-prebuilds.outcome == 'success' &&
+                steps.check-prebuilds.outcome == 'success' &&
+                steps.configure-git.outcome == 'success' &&
+                steps.build-app.outcome == 'success' &&
+                steps.upload-app.outcome == 'success' }}
+        run: |
+          mkdir -p "${{ runner.temp }}/ci-attempt-status"
+          if [[ "$ATTEMPT_SUCCEEDED" == true ]]; then
+            echo success > "${{ runner.temp }}/ci-attempt-status/status"
+          else
+            echo failure > "${{ runner.temp }}/ci-attempt-status/status"
+          fi
+      - name: Upload build outcome
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ios-templateapp-build-status-${{ inputs.retry-attempt }}-${{ matrix.flavor }}
+          path: ${{ runner.temp }}/ci-attempt-status/status
+          if-no-files-found: error
 
   test:
     needs: build
     runs-on: macos-26-large
-    outputs:
-      status: ${{ steps.report-status.outputs.status }}
     strategy:
       fail-fast: false
       matrix:
         flavor: [Debug, Release]
     steps:
       - name: Checkout
+        id: checkout
+        continue-on-error: true
         uses: actions/checkout@v6
       - name: Setup node.js
+        id: setup-node
+        continue-on-error: true
         uses: ./.github/actions/setup-node
       - name: Run yarn
+        id: install-yarn
+        continue-on-error: true
         uses: ./.github/actions/yarn-install
       - name: Download app
+        id: download-app
+        continue-on-error: true
         uses: ./.github/actions/download-artifact
         with:
           name: RNTestProject-${{ matrix.flavor }}
           path: /tmp/RNTestProjectBuild/RNTestProject.app
       - name: Check downloaded folder content
+        id: check-app
+        continue-on-error: true
         run: ls -l /tmp/RNTestProjectBuild/RNTestProject.app
       - name: Download React Native Package
+        id: download-package
+        continue-on-error: true
         if: ${{ matrix.flavor == 'Debug' }}
         uses: ./.github/actions/download-artifact
         with:
           name: react-native-package
           path: /tmp/react-native-tmp
       - name: Configure git
+        id: configure-git
+        continue-on-error: true
         if: ${{ matrix.flavor == 'Debug' }}
         shell: bash
         run: |
           git config --global user.email "react-native-bot@meta.com"
           git config --global user.name "React Native Bot"
       - name: Prepare project for Metro
+        id: prepare-metro
+        continue-on-error: true
         if: ${{ matrix.flavor == 'Debug' }}
         # In Debug the app loads its bundle from Metro, which must run from an
         # initialized project. Re-initialize it here (JS only — no pods); the
@@ -157,27 +233,64 @@ jobs:
           maestro-flow: ./scripts/e2e/.maestro/
           flavor: ${{ matrix.flavor }}
           working-directory: /tmp/RNTestProject
-      - name: Report status
-        id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
+      - name: Record test outcome
+        if: always()
+        env:
+          ATTEMPT_SUCCEEDED: >-
+            ${{ steps.checkout.outcome == 'success' &&
+                steps.setup-node.outcome == 'success' &&
+                steps.install-yarn.outcome == 'success' &&
+                steps.download-app.outcome == 'success' &&
+                steps.check-app.outcome == 'success' &&
+                (matrix.flavor != 'Debug' ||
+                  (steps.download-package.outcome == 'success' &&
+                   steps.configure-git.outcome == 'success' &&
+                   steps.prepare-metro.outcome == 'success')) &&
+                steps.run-tests.outcome == 'success' }}
+        run: |
+          mkdir -p "${{ runner.temp }}/ci-attempt-status"
+          if [[ "$ATTEMPT_SUCCEEDED" == true ]]; then
+            echo success > "${{ runner.temp }}/ci-attempt-status/status"
+          else
+            echo failure > "${{ runner.temp }}/ci-attempt-status/status"
+          fi
+      - name: Upload test outcome
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ios-templateapp-test-status-${{ inputs.retry-attempt }}-${{ matrix.flavor }}
+          path: ${{ runner.temp }}/ci-attempt-status/status
+          if-no-files-found: error
 
   report:
     needs: [build, test]
     if: always()
     runs-on: ubuntu-latest
+    # One status artifact per matrix flavor avoids nondeterministic matrix job outputs.
     outputs:
       status: ${{ steps.check.outputs.status }}
     steps:
+      - name: Download attempt outcomes
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          pattern: ios-templateapp-*-status-${{ inputs.retry-attempt }}-*
+          path: ${{ runner.temp }}/ci-attempt-status
       - id: check
+        shell: bash
         run: |
-          if [[ "${{ needs.build.result }}" != "success" ||
-                "${{ needs.test.result }}" != "success" ||
-                "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
-          fi
+          status=success
+          for phase in build test; do
+            for flavor in Debug Release; do
+              outcome="${{ runner.temp }}/ci-attempt-status/ios-templateapp-${phase}-status-${{ inputs.retry-attempt }}-${flavor}/status"
+              if [[ ! -f "$outcome" || "$(<"$outcome")" != success ]]; then
+                status=failure
+                echo "::warning::iOS TemplateApp ${phase} (${flavor}) did not succeed on attempt ${{ inputs.retry-attempt }}"
+              fi
+            done
+          done
+          echo "status=$status" >> "$GITHUB_OUTPUT"
       - name: Fail if needed
         if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
         run: exit 1
