@@ -22,6 +22,12 @@ class FakeAnimationBackend : public UIManagerAnimationBackend {
   AnimationTimestamp pushTimestamp{0};
 
   void onAnimationFrame(AnimationTimestamp /*timestamp*/) override {}
+  AnimationFrontendId registerFrontend(
+      AnimationFrontend /*frontend*/) override {
+    return 1;
+  }
+  void startFrontend(AnimationFrontendId /*frontendId*/) override {}
+  void stopFrontend(AnimationFrontendId /*frontendId*/) override {}
   CallbackId start(const Callback& /*callback*/) override {
     return 0;
   }

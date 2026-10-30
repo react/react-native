@@ -219,6 +219,8 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
  private:
   void stopRenderCallbackIfNeeded(bool isAsync) noexcept;
 
+  AnimationFrontendId animationFrontendIdLocked(UIManagerAnimationBackend &animationBackend);
+
   bool onAnimationFrame(double timestamp);
 
   bool isAnimationUpdateNeeded() const noexcept;
@@ -302,10 +304,10 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
   bool warnedAboutGraphTraversal_ = false;
 #endif
 
-  // Protects the register/publish and exchange/stop lifecycle for the shared
-  // AnimationBackend callback.
+  // Protects the registration of the frontend and its start and stop.
   std::mutex animationBackendCallbackMutex_;
-  std::optional<CallbackId> animationBackendCallbackId_;
+  // Registered on the first start, and kept until the backend is destroyed.
+  std::optional<AnimationFrontendId> animationFrontendId_;
 
   friend class ColorAnimatedNode;
   friend class AnimationDriver;

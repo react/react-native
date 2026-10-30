@@ -40,6 +40,11 @@ class AnimationTestsBase : public testing::Test {
     NativeAnimatedNodesManager::isOnRenderThread_ = true;
   }
 
+  static void runOnRenderThread() noexcept
+  {
+    NativeAnimatedNodesManager::isOnRenderThread_ = true;
+  }
+
   bool nodeNeedsUpdate(Tag nodeTag) const
   {
     return nodesManager_->updatedNodeTags_.contains(nodeTag);
