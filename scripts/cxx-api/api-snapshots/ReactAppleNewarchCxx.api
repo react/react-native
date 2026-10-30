@@ -1637,6 +1637,10 @@ interface RCTScheduler : public NSObject {
   public virtual void unregisterSurface:(const facebook::react::SurfaceHandler& surfaceHandler);
 }
 
+interface RCTScrollContentViewComponentView : public RCTViewComponentView {
+  public @property (assign) UIEdgeInsets safeAreaPadding;
+}
+
 interface RCTScrollEvent : public NSObject <RCTEvent> {
   public virtual instancetype initWithEventName:reactTag:scrollViewContentOffset:scrollViewContentInset:scrollViewContentSize:scrollViewFrame:scrollViewZoomScale:userData:coalescingKey:(NSString* eventName, NSNumber* reactTag, CGPoint scrollViewContentOffset, UIEdgeInsets scrollViewContentInset, CGSize scrollViewContentSize, CGRect scrollViewFrame, CGFloat scrollViewZoomScale, NSDictionary* userData, uint16_t coalescingKey);
 }
