@@ -162,6 +162,13 @@ jobs:
           # test_ios_rntester_dynamic_frameworks).
           use-prebuilds: true
           flavor: ${{ matrix.flavor }}
+          # One cell only: scripts/objc-test.sh runs its own `pod install` and
+          # `build-for-testing` with no -configuration and no USE_FRAMEWORKS, so
+          # `yarn test-ios` builds and tests Debug + static source pods whichever
+          # cell invokes it. Release, because those Debug products would otherwise
+          # overwrite the RNTesterApp-NewArch-Debug artifact that `Upload RNTester
+          # App` publishes for test_e2e_ios_rntester.
+          run-unit-tests: ${{ matrix.flavor == 'Release' && matrix.frameworks == false }}
 
   test_maestro_cloud_ios:
     needs: test_ios_rntester
