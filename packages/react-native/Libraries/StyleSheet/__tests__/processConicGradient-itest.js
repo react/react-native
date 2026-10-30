@@ -232,18 +232,8 @@ describe('conic gradient processing', () => {
     'conic-gradient(red 10px, blue), conic-gradient(red, blue)',
     'conic-gradient(red 10px, blue), conic-gradient(red, blue), conic-gradient(red 10px, blue)',
   ]) {
-    it(`preserves existing per-layer filtering for ${input}`, () => {
-      expect(processBackgroundImage(input)).toEqual([
-        {
-          type: 'conic-gradient',
-          from: 0,
-          position: {left: '50%', top: '50%'},
-          colorStops: [
-            {color: red, position: null},
-            {color: blue, position: null},
-          ],
-        },
-      ]);
+    it(`rejects the entire string when a layer is invalid: ${input}`, () => {
+      expect(processBackgroundImage(input)).toEqual([]);
     });
   }
 
