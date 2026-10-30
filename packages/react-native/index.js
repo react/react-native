@@ -392,6 +392,10 @@ module.exports = {
   get usePressability() {
     return require('./Libraries/Pressability/usePressability').default;
   },
+  get useVerticalBarEdgeIOS() {
+    return require('./Libraries/Components/StatusBar/useVerticalBarEdgeIOS')
+      .default;
+  },
   get useWindowDimensions() {
     return require('./Libraries/Utilities/useWindowDimensions').default;
   },
