@@ -1322,9 +1322,10 @@ void FabricMountingManager::synchronouslyUpdateViewOnUIThread(
       JFabricUIManager::javaClassStatic()
           ->getMethod<void(jint, ReadableMap::javaobject)>(
               "synchronouslyUpdateViewOnUIThread");
-  auto propsMap = reinterpret_cast<ReadableMap::javaobject>(
-      ReadableNativeMap::newObjectCxxArgs(props).release());
-  synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap);
+  auto propsMap = jni::adopt_local(
+      reinterpret_cast<ReadableMap::javaobject>(
+          ReadableNativeMap::newObjectCxxArgs(props).release()));
+  synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap.get());
 }
 
 void FabricMountingManager::synchronouslyUpdateAnimatedProps(
