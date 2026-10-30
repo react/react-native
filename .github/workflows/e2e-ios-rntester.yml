@@ -22,8 +22,7 @@ on:
 
 jobs:
   test:
-    # Standard arm64 runner: the simulator runs natively with GPU rendering
-    # (the Intel -large runner rendered in software), and standard runners
+    # Standard arm64 runner: the simulator runs natively, and standard runners
     # aren't billed for public repositories. RNTesterApp is built for both
     # x86_64 and arm64 simulators.
     runs-on: macos-26
