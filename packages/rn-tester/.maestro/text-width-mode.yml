@@ -1,6 +1,4 @@
 appId: ${APP_ID}
-tags:
-  - local-screenshot-baseline
 ---
 - runFlow: ./helpers/launch-app-and-search.yml
 - inputText: 'Text'
