@@ -43,7 +43,9 @@
     "metro": "^0.87.2",
     "nocache": "^3.0.1",
     "open": "^8.4.2",
-    "semver": "^7.1.3"
+    "pretty-format": "^29.7.0",
+    "semver": "^7.1.3",
+    "ws": "^7.5.10"
   },
   "devDependencies": {
     "metro-resolver": "^0.87.2"

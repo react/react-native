@@ -33,7 +33,8 @@ beforeEach(async () => {
         serverBaseUrl: new URL(baseUrl),
         projectRoot: '/project',
         watchFolders: ['/project'],
-      }),
+        logger: {warn: () => {}, error: () => {}},
+      }).middleware,
     )
     .use((req, res) => {
       res.writeHead(404);
@@ -60,5 +61,36 @@ describe('createDevServerMiddleware', () => {
     });
 
     expect(resp.status).toBe(403);
+  });
+});
+
+describe('createDevServerMiddleware sockets', () => {
+  const {startTestServer} = require('./SocketTestUtils');
+  let testServer;
+
+  beforeEach(async () => {
+    const connect = require('connect');
+    const createDevServerMiddleware =
+      require('../createDevServerMiddleware').default;
+    testServer = await startTestServer();
+    const {middleware, websocketEndpoints} = createDevServerMiddleware({
+      serverBaseUrl: testServer.baseUrl,
+      projectRoot: '/project',
+      watchFolders: ['/project'],
+      logger: {warn: () => {}, error: () => {}},
+    });
+    testServer.server.on('request', connect().use(middleware));
+    testServer.mount('/message', websocketEndpoints['/message']);
+  });
+
+  afterEach(() => testServer.close());
+
+  test('reloads the connected apps on /reload', async () => {
+    const app = await testServer.connect('/message');
+
+    const resp = await fetch(testServer.baseUrl.origin + '/reload');
+
+    expect(await resp.text()).toBe('OK');
+    expect(await app.next()).toEqual({version: 2, method: 'reload'});
   });
 });
