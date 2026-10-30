@@ -1,0 +1,16 @@
+# DO NOT LAND. Fails on purpose in the Android Release E2E job only, to
+# exercise the CI retry chain.
+# - android-release-only: the Debug job excludes it.
+# - local-screenshot-baseline: keeps it out of the Maestro Cloud runs.
+# - The platform condition makes it a no-op in the iOS E2E job.
+appId: ${APP_ID}
+tags:
+  - android-release-only
+  - local-screenshot-baseline
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp
+      - assertVisible: 'Deliberate failure to exercise the CI retry chain'

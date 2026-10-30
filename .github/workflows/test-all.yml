@@ -199,13 +199,13 @@ jobs:
 
   test_e2e_ios_rntester_retry_1:
     needs: test_e2e_ios_rntester
-    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_ios_rntester.result == 'failure' || needs.test_e2e_ios_rntester.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
     secrets: inherit
 
   test_e2e_ios_rntester_retry_2:
     needs: test_e2e_ios_rntester_retry_1
-    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_ios_rntester_retry_1.result == 'failure' || needs.test_e2e_ios_rntester_retry_1.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
     with:
       fail-on-error: true
@@ -227,13 +227,13 @@ jobs:
 
   test_e2e_ios_templateapp_retry_1:
     needs: test_e2e_ios_templateapp
-    if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_ios_templateapp.result == 'failure' || needs.test_e2e_ios_templateapp.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_2:
     needs: test_e2e_ios_templateapp_retry_1
-    if: ${{ always() && needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_ios_templateapp_retry_1.result == 'failure' || needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
       fail-on-error: true
@@ -287,7 +287,7 @@ jobs:
 
   test_e2e_android_templateapp_retry_1:
     needs: test_e2e_android_templateapp
-    if: ${{ always() && needs.test_e2e_android_templateapp.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_android_templateapp.result == 'failure' || needs.test_e2e_android_templateapp.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
     with:
       retry-attempt: 1
@@ -295,7 +295,7 @@ jobs:
 
   test_e2e_android_templateapp_retry_2:
     needs: test_e2e_android_templateapp_retry_1
-    if: ${{ always() && needs.test_e2e_android_templateapp_retry_1.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_android_templateapp_retry_1.result == 'failure' || needs.test_e2e_android_templateapp_retry_1.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
     with:
       fail-on-error: true
@@ -333,13 +333,13 @@ jobs:
 
   run_fantom_tests_retry_1:
     needs: run_fantom_tests
-    if: ${{ always() && needs.run_fantom_tests.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.run_fantom_tests.result == 'failure' || needs.run_fantom_tests.outputs.status == 'failure') }}
     uses: ./.github/workflows/fantom-tests.yml
     secrets: inherit
 
   run_fantom_tests_retry_2:
     needs: run_fantom_tests_retry_1
-    if: ${{ always() && needs.run_fantom_tests_retry_1.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.run_fantom_tests_retry_1.result == 'failure' || needs.run_fantom_tests_retry_1.outputs.status == 'failure') }}
     uses: ./.github/workflows/fantom-tests.yml
     with:
       fail-on-error: true
@@ -403,7 +403,7 @@ jobs:
 
   test_e2e_android_rntester_retry_1:
     needs: test_e2e_android_rntester
-    if: ${{ always() && needs.test_e2e_android_rntester.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_android_rntester.result == 'failure' || needs.test_e2e_android_rntester.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-android-rntester.yml
     with:
       retry-attempt: 1
@@ -411,7 +411,7 @@ jobs:
 
   test_e2e_android_rntester_retry_2:
     needs: test_e2e_android_rntester_retry_1
-    if: ${{ always() && needs.test_e2e_android_rntester_retry_1.outputs.status == 'failure' }}
+    if: ${{ always() && (needs.test_e2e_android_rntester_retry_1.result == 'failure' || needs.test_e2e_android_rntester_retry_1.outputs.status == 'failure') }}
     uses: ./.github/workflows/e2e-android-rntester.yml
     with:
       fail-on-error: true
