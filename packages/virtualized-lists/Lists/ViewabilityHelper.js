@@ -301,15 +301,6 @@ class ViewabilityHelper {
       props: CellMetricProps,
     ) => ViewToken,
   ) {
-    // Filter out indices that have gone out of view since this call was scheduled.
-    // Both call sites pass the array stored in `this._viewableIndices`, in which
-    // case every index is trivially still viewable and the O(n^2) filter can be
-    // skipped.
-    if (viewableIndicesToCheck !== this._viewableIndices) {
-      viewableIndicesToCheck = viewableIndicesToCheck.filter(ii =>
-        this._viewableIndices.includes(ii),
-      );
-    }
     const prevItems = this._viewableItems;
     const nextItems = new Map(
       viewableIndicesToCheck.map(ii => {
