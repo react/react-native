@@ -271,9 +271,11 @@ function parseBackgroundImageCSSString(
         ? parseRadialGradientCSSString(gradientContent)
         : parseLinearGradientCSSString(gradientContent);
 
-      if (gradient != null) {
-        gradients.push(gradient);
+      if (gradient == null) {
+        // If a gradient is invalid, return an empty array and do not apply any gradient. Same as web.
+        return [];
       }
+      gradients.push(gradient);
     }
   }
   return gradients;
@@ -803,6 +805,10 @@ function getAngleInDegrees(angle?: string): ?number {
 }
 
 function getPositionFromCSSValue(position: string) {
+  if (position === '0') {
+    return 0;
+  }
+
   if (position.endsWith('px')) {
     return parseFloat(position);
   }
