@@ -294,7 +294,9 @@ const getPreset = (src, options, babel) => {
           [require('@babel/plugin-syntax-dynamic-import')],
           [require('@babel/plugin-syntax-export-default-from')],
           ...passthroughSyntaxPlugins,
-          [require('@babel/plugin-transform-unicode-regex')],
+          ...(isHermesProfile
+            ? [[require('@babel/plugin-transform-unicode-property-regex')]]
+            : [[require('@babel/plugin-transform-unicode-regex')]]),
         ],
       },
       {
