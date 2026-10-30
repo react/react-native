@@ -27,6 +27,11 @@ using AnimationFrontendId = uint32_t;
 
 // A producer of animation mutations, such as C++ Animated or Reanimated.
 struct AnimationFrontend {
+  // Whether the commit hook writes the frontend's direct (non-layout) values
+  // into React commits. Without it, only the values of mutations that finish
+  // an animation are written, by the end-of-animation commit. Can only be off
+  // with enableCxxAnimatedDirectPathInBackend.
+  bool commitDirectProps{true};
   // Runs every frame while the frontend is started, after the callbacks passed
   // to `start(callback)` and those of frontends registered earlier.
   std::function<AnimationMutations(AnimationTimestamp)> onAnimationFrame;
@@ -43,6 +48,7 @@ class UIManagerAnimationBackend {
   // Starting a started frontend or stopping a stopped one does nothing.
   virtual void startFrontend(AnimationFrontendId frontendId) = 0;
   virtual void stopFrontend(AnimationFrontendId frontendId) = 0;
+  virtual void pushAnimationMutations(AnimationFrontendId frontendId, const Callback &callback) = 0;
   virtual CallbackId start(const Callback &callback) = 0;
   virtual void stop(CallbackId callbackId) = 0;
   virtual void clearRegistry(SurfaceId surfaceId) = 0;

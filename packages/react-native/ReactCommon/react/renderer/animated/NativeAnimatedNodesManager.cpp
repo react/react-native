@@ -555,11 +555,17 @@ void NativeAnimatedNodesManager::handleAnimatedEvent(
     // frames.
     if (useSharedAnimatedBackend_) {
       if (auto animationBackend = animationBackend_.lock()) {
+        AnimationFrontendId frontendId = 0;
+        {
+          std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
+          frontendId = animationFrontendIdLocked(*animationBackend);
+        }
         // Pass stepAnimations false so this push only propagates event values.
         // Frames step time-based drivers with the vsync time, which can be
         // earlier than this push's time, so stepping them here would move them
         // backward on the next frame.
         animationBackend->pushAnimationMutations(
+            frontendId,
             [this](AnimationTimestamp timestamp) -> AnimationMutations {
               return pullAnimationMutations(
                   timestamp, /* stepAnimations */ false);
@@ -648,14 +654,16 @@ AnimationFrontendId NativeAnimatedNodesManager::animationFrontendIdLocked(
     UIManagerAnimationBackend& animationBackend) {
   if (!animationFrontendId_.has_value()) {
     animationFrontendId_ = animationBackend.registerFrontend(
-        {.onAnimationFrame =
+        {.commitDirectProps =
+             !ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend(),
+         .onAnimationFrame =
              [weak = weak_from_this()](
                  AnimationTimestamp timestamp) -> AnimationMutations {
-          if (auto self = weak.lock()) {
-            return self->pullAnimationMutations(timestamp);
-          }
-          return {};
-        }});
+           if (auto self = weak.lock()) {
+             return self->pullAnimationMutations(timestamp);
+           }
+           return {};
+         }});
   }
   return *animationFrontendId_;
 }
@@ -1018,7 +1026,8 @@ void NativeAnimatedNodesManager::insertMutations(
 
     if (auto family = weakFamily.lock()) {
       propsBuilder.storeDynamic(update.second);
-      if (shouldRequestAsyncFlush_.contains(tag)) {
+      bool finished = shouldRequestAsyncFlush_.contains(tag);
+      if (finished) {
         mutations.asyncFlushSurfaces.insert(family->getSurfaceId());
       }
       mutations.batch.push_back(
@@ -1027,6 +1036,7 @@ void NativeAnimatedNodesManager::insertMutations(
               .family = family,
               .props = propsBuilder.get(),
               .hasLayoutUpdates = hasLayoutUpdates,
+              .finishesAnimation = finished,
           });
     }
   }

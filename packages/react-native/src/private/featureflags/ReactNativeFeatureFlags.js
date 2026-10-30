@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<674f975884ae746e067e614523f2bfc3>>
+ * @generated SignedSource<<1150cbfba442f9611610ebb16ada83ea>>
  * @flow strict
  * @noformat
  */
@@ -70,6 +70,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableBridgelessArchitecture: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
+  enableCxxAnimatedDirectPathInBackend: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
   enableDoubleMeasurementFixAndroid: Getter<boolean>,
   enableEagerRootViewAttachment: Getter<boolean>,
@@ -306,6 +307,10 @@ export const enableCppPropsIteratorSetter: Getter<boolean> = createNativeFlagGet
  * This enables the fabric implementation of focus search so that we can focus clipped elements
  */
 export const enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean> = createNativeFlagGetter('enableCustomFocusSearchOnClippedElementsAndroid', true);
+/**
+ * With the shared animation backend, C++ Animated keeps its non-layout values out of React commits and commits the final values once per surface when animations end, as it does without the backend.
+ */
+export const enableCxxAnimatedDirectPathInBackend: Getter<boolean> = createNativeFlagGetter('enableCxxAnimatedDirectPathInBackend', false);
 /**
  * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.
  */

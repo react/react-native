@@ -3864,6 +3864,7 @@ class facebook::react::AnimationBackend : public facebook::react::UIManagerAnima
   public virtual void clearRegistryOnSurfaceStop(facebook::react::SurfaceId surfaceId) override;
   public virtual void onAnimationFrame(facebook::react::AnimationTimestamp timestamp) override;
   public virtual void pushAnimationMutations(const facebook::react::UIManagerAnimationBackend::Callback& callback) override;
+  public virtual void pushAnimationMutations(facebook::react::AnimationFrontendId frontendId, const facebook::react::UIManagerAnimationBackend::Callback& callback) override;
   public virtual void registerJSInvoker(std::shared_ptr<facebook::react::CallInvoker> jsInvoker) override;
   public virtual void startFrontend(facebook::react::AnimationFrontendId frontendId) override;
   public virtual void stop(facebook::react::CallbackId callbackId) override;
@@ -6389,6 +6390,7 @@ class facebook::react::UIManagerAnimationBackend {
   public virtual void clearRegistryOnSurfaceStop(facebook::react::SurfaceId surfaceId) = 0;
   public virtual void onAnimationFrame(facebook::react::AnimationTimestamp timestamp) = 0;
   public virtual void pushAnimationMutations(const facebook::react::UIManagerAnimationBackend::Callback& callback) = 0;
+  public virtual void pushAnimationMutations(facebook::react::AnimationFrontendId frontendId, const facebook::react::UIManagerAnimationBackend::Callback& callback) = 0;
   public virtual void registerJSInvoker(std::shared_ptr<facebook::react::CallInvoker> jsInvoker) = 0;
   public virtual void startFrontend(facebook::react::AnimationFrontendId frontendId) = 0;
   public virtual void stop(facebook::react::CallbackId callbackId) = 0;
@@ -7771,6 +7773,7 @@ struct facebook::react::AnimationConfig {
 }
 
 struct facebook::react::AnimationFrontend {
+  public bool commitDirectProps;
   public std::function<facebook::react::AnimationMutations(facebook::react::AnimationTimestamp)> onAnimationFrame;
 }
 
@@ -7788,6 +7791,7 @@ struct facebook::react::AnimationKeyFrame {
 }
 
 struct facebook::react::AnimationMutation {
+  public bool finishesAnimation;
   public bool hasLayoutUpdates;
   public facebook::react::AnimatedProps props;
   public facebook::react::Tag tag;

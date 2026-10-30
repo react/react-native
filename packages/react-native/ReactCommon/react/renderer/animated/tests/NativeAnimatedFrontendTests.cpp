@@ -7,7 +7,10 @@
 
 #include "AnimationTestsBase.h"
 
+#include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #include <react/renderer/animated/NativeAnimatedNodesManager.h>
+#include <react/renderer/animated/drivers/AnimationDriverUtils.h>
 #include <react/renderer/animationbackend/AnimationMutation.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/element/ComponentBuilder.h>
@@ -35,6 +38,9 @@ class RecordingAnimationBackend : public UIManagerAnimationBackend {
     startedFrontends.push_back(frontendId);
   }
   void stopFrontend(AnimationFrontendId /*frontendId*/) override {}
+  void pushAnimationMutations(
+      AnimationFrontendId /*frontendId*/,
+      const Callback& /*callback*/) override {}
   CallbackId start(const Callback& /*callback*/) override {
     startedCallbacks++;
     return 0;
@@ -45,6 +51,18 @@ class RecordingAnimationBackend : public UIManagerAnimationBackend {
   void trigger() override {}
   void pushAnimationMutations(const Callback& /*callback*/) override {}
   void registerJSInvoker(std::shared_ptr<CallInvoker> /*jsInvoker*/) override {}
+};
+
+class DirectPathFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  explicit DirectPathFlags(bool directPath) : directPath_(directPath) {}
+
+  bool enableCxxAnimatedDirectPathInBackend() override {
+    return directPath_;
+  }
+
+ private:
+  bool directPath_;
 };
 
 constexpr Tag kValueNode = 1;
@@ -58,6 +76,10 @@ class NativeAnimatedFrontendTests : public AnimationTestsBase {
  protected:
   void SetUp() override {
     runOnRenderThread();
+  }
+
+  void TearDown() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
   }
 
   // Starts animating the view's opacity in four frames.
@@ -89,6 +111,26 @@ class NativeAnimatedFrontendTests : public AnimationTestsBase {
     manager_->startRenderCallbackIfNeeded(false);
   }
 
+  // Animates the view's opacity and returns whether each frame's mutation of
+  // the view finishes the animation.
+  std::vector<bool> finishesAnimationPerFrame(bool directPath) {
+    ReactNativeFeatureFlags::dangerouslyForceOverride(
+        std::make_unique<DirectPathFlags>(directPath));
+    startAnimation();
+
+    std::vector<bool> finishes;
+    for (int frame = 0; frame < 4; frame++) {
+      auto mutations = manager_->pullAnimationMutations(
+          AnimationTimestamp(1000 + SingleFrameIntervalMs * frame));
+      for (const auto& mutation : mutations.batch) {
+        if (mutation.tag == kView) {
+          finishes.push_back(mutation.finishesAnimation);
+        }
+      }
+    }
+    return finishes;
+  }
+
   std::shared_ptr<RecordingAnimationBackend> backend_ =
       std::make_shared<RecordingAnimationBackend>();
   std::shared_ptr<NativeAnimatedNodesManager> manager_;
@@ -102,6 +144,37 @@ TEST_F(NativeAnimatedFrontendTests, registersAndStartsAFrontend) {
   startAnimation();
 
   ASSERT_EQ(backend_->frontends.size(), 1u);
+  EXPECT_EQ(backend_->startedFrontends, std::vector<AnimationFrontendId>{1});
+  EXPECT_EQ(backend_->startedCallbacks, 0);
+}
+
+TEST_F(NativeAnimatedFrontendTests, onlyTheLastFrameFinishesTheAnimation) {
+  auto finishes = finishesAnimationPerFrame(true);
+  ASSERT_GE(finishes.size(), 2u);
+  for (size_t frame = 0; frame + 1 < finishes.size(); frame++) {
+    EXPECT_FALSE(finishes[frame]) << "frame " << frame;
+  }
+  EXPECT_TRUE(finishes.back());
+}
+
+TEST_F(
+    NativeAnimatedFrontendTests,
+    registersAFrontendThatKeepsDirectValuesOutOfReactCommits) {
+  finishesAnimationPerFrame(true);
+
+  ASSERT_EQ(backend_->frontends.size(), 1u);
+  EXPECT_FALSE(backend_->frontends[0].commitDirectProps);
+  EXPECT_EQ(backend_->startedFrontends, std::vector<AnimationFrontendId>{1});
+  EXPECT_EQ(backend_->startedCallbacks, 0);
+}
+
+TEST_F(
+    NativeAnimatedFrontendTests,
+    registersAFrontendThatCommitsDirectValuesWithoutTheFlag) {
+  finishesAnimationPerFrame(false);
+
+  ASSERT_EQ(backend_->frontends.size(), 1u);
+  EXPECT_TRUE(backend_->frontends[0].commitDirectProps);
   EXPECT_EQ(backend_->startedFrontends, std::vector<AnimationFrontendId>{1});
   EXPECT_EQ(backend_->startedCallbacks, 0);
 }

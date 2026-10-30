@@ -28,6 +28,7 @@ namespace facebook::react {
 class AnimationBackend;
 class AnimationBackendCommitHook;
 class AnimatedPropsRegistry;
+struct FrontendMutations;
 
 using Callback = std::function<AnimationMutations(AnimationTimestamp)>;
 
@@ -64,6 +65,7 @@ class AnimationBackend : public UIManagerAnimationBackend {
   AnimationFrontendId registerFrontend(AnimationFrontend frontend) override;
   void startFrontend(AnimationFrontendId frontendId) override;
   void stopFrontend(AnimationFrontendId frontendId) override;
+  void pushAnimationMutations(AnimationFrontendId frontendId, const Callback &callback) override;
 
  private:
   using SurfaceUpdates = std::unordered_map<Tag, AnimationMutation>;
@@ -76,7 +78,7 @@ class AnimationBackend : public UIManagerAnimationBackend {
   void applySurfaceUpdates(
       std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
       const std::set<SurfaceId> &asyncFlushSurfaces);
-  void applyMutations(std::vector<AnimationMutations> batches);
+  void applyMutations(std::vector<FrontendMutations> batches);
   void resumeFramesLocked();
   void pauseFramesIfIdleLocked();
   std::vector<CallbackWithId> callbacks;

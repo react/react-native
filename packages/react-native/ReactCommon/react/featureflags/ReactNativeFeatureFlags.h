@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6887b671526bc8a3b0678e3e45b4e3b4>>
+ * @generated SignedSource<<becdbd22259309c5c0047f16ddb3e1ad>>
  */
 
 /**
@@ -145,6 +145,11 @@ class ReactNativeFeatureFlags {
    * This enables the fabric implementation of focus search so that we can focus clipped elements
    */
   RN_EXPORT static bool enableCustomFocusSearchOnClippedElementsAndroid();
+
+  /**
+   * With the shared animation backend, C++ Animated keeps its non-layout values out of React commits and commits the final values once per surface when animations end, as it does without the backend.
+   */
+  RN_EXPORT static bool enableCxxAnimatedDirectPathInBackend();
 
   /**
    * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.

@@ -278,6 +278,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableCxxAnimatedDirectPathInBackend: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-28',
+        description:
+          'With the shared animation backend, C++ Animated keeps its non-layout values out of React commits and commits the final values once per surface when animations end, as it does without the backend.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableDestroyShadowTreeRevisionAsync: {
       defaultValue: false,
       metadata: {

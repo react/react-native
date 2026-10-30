@@ -38,6 +38,11 @@ class FakeAnimationBackend : public UIManagerAnimationBackend {
   void pushAnimationMutations(const Callback& callback) override {
     callback(pushTimestamp);
   }
+  void pushAnimationMutations(
+      AnimationFrontendId /*frontendId*/,
+      const Callback& callback) override {
+    callback(pushTimestamp);
+  }
   void registerJSInvoker(std::shared_ptr<CallInvoker> /*jsInvoker*/) override {}
 };
 

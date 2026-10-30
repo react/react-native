@@ -306,7 +306,8 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
 
   // Protects the registration of the frontend and its start and stop.
   std::mutex animationBackendCallbackMutex_;
-  // Registered on the first start, and kept until the backend is destroyed.
+  // Registered on the first start or event, and kept until the backend is
+  // destroyed.
   std::optional<AnimationFrontendId> animationFrontendId_;
 
   friend class ColorAnimatedNode;
