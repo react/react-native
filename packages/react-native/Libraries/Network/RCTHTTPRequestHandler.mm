@@ -156,6 +156,13 @@ RCT_EXPORT_MODULE()
 
   NSArray<NSHTTPCookie *> *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:request.URL];
   nextRequest.allHTTPHeaderFields = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];
+
+  NSString *originalAuthorizationHeader = [task.originalRequest valueForHTTPHeaderField:@"Authorization"];
+
+  // Forward the original Authorization header if set
+  if (originalAuthorizationHeader) {
+    [nextRequest addValue:originalAuthorizationHeader forHTTPHeaderField:@"Authorization" ];
+  }
   completionHandler(nextRequest);
 }
 
