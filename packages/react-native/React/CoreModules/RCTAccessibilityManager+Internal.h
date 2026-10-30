@@ -19,6 +19,17 @@ void RCTAccessibilityManagerSetIsVoiceOverEnabled(
     RCTAccessibilityManager *accessibilityManager,
     BOOL isVoiceOverEnabled);
 
+// Returns the raw settings behind getPreferences(), keyed by the
+// AccessibilityPreferences field names. Returning nil reads the system.
+typedef NSDictionary<NSString *, id> *_Nullable (^RCTAccessibilityPreferencesReader)(void);
+
+// Replaces how this module reads the settings behind getPreferences(), and
+// re-reads them without sending accessibilityPreferencesChanged. Pass nil to
+// read the system settings again.
+void RCTAccessibilityManagerSetPreferencesReader(
+    RCTAccessibilityManager *accessibilityManager,
+    RCTAccessibilityPreferencesReader _Nullable preferencesReader);
+
 RCT_EXTERN_C_END
 
 NS_ASSUME_NONNULL_END

@@ -37,6 +37,7 @@
 		E7DB20DF22B2BAA6005AC45F /* RCTImageLoaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20C222B2BAA4005AC45F /* RCTImageLoaderTests.m */; };
 		E7DB20E022B2BAA6005AC45F /* RCTMethodArgumentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20C322B2BAA4005AC45F /* RCTMethodArgumentTests.m */; };
 		E7DB20E222B2BAA6005AC45F /* RCTGzipTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20C522B2BAA4005AC45F /* RCTGzipTests.m */; };
+		A11E0F0D2EA6000100A11E0F /* RCTAccessibilityManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11E0F0C2EA6000100A11E0F /* RCTAccessibilityManagerTests.m */; };
 		E7DB20E322B2BAA6005AC45F /* RCTAllocationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20C622B2BAA5005AC45F /* RCTAllocationTests.m */; };
 		E7DB20E422B2BAA6005AC45F /* RCTFormatErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20C722B2BAA5005AC45F /* RCTFormatErrorTests.m */; };
 		E7DB20E522B2BAA6005AC45F /* RCTDevMenuTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20C822B2BAA5005AC45F /* RCTDevMenuTests.m */; };
@@ -123,6 +124,7 @@
 		E7DB20C222B2BAA4005AC45F /* RCTImageLoaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTImageLoaderTests.m; sourceTree = "<group>"; };
 		E7DB20C322B2BAA4005AC45F /* RCTMethodArgumentTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTMethodArgumentTests.m; sourceTree = "<group>"; };
 		E7DB20C522B2BAA4005AC45F /* RCTGzipTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTGzipTests.m; sourceTree = "<group>"; };
+		A11E0F0C2EA6000100A11E0F /* RCTAccessibilityManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTAccessibilityManagerTests.m; sourceTree = "<group>"; };
 		E7DB20C622B2BAA5005AC45F /* RCTAllocationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTAllocationTests.m; sourceTree = "<group>"; };
 		E7DB20C722B2BAA5005AC45F /* RCTFormatErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTFormatErrorTests.m; sourceTree = "<group>"; };
 		E7DB20C822B2BAA5005AC45F /* RCTDevMenuTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTDevMenuTests.m; sourceTree = "<group>"; };
@@ -333,6 +335,7 @@
 				E7DB20AF22B2BAA4005AC45F /* RCTFontTests.m */,
 				E7DB20C722B2BAA5005AC45F /* RCTFormatErrorTests.m */,
 				E7DB20C522B2BAA4005AC45F /* RCTGzipTests.m */,
+				A11E0F0C2EA6000100A11E0F /* RCTAccessibilityManagerTests.m */,
 				E7DB20AE22B2BAA4005AC45F /* RCTImageLoaderHelpers.h */,
 				E7DB20C922B2BAA5005AC45F /* RCTImageLoaderHelpers.m */,
 				E7DB20C222B2BAA4005AC45F /* RCTImageLoaderTests.m */,
@@ -760,6 +763,7 @@
 				F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */,
 				F1A0B1C23D4E5F6071829322 /* RCTTurboModuleStringConversionTests.mm in Sources */,
 				E7DB20E222B2BAA6005AC45F /* RCTGzipTests.m in Sources */,
+				A11E0F0D2EA6000100A11E0F /* RCTAccessibilityManagerTests.m in Sources */,
 				E7DB20ED22B2BAA6005AC45F /* RCTURLUtilsTests.m in Sources */,
 				E7DB20D322B2BAA6005AC45F /* RCTBlobManagerTests.m in Sources */,
 				E7DB20E322B2BAA6005AC45F /* RCTAllocationTests.m in Sources */,

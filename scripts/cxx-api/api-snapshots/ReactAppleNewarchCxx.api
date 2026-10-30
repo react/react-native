@@ -2129,6 +2129,7 @@ protocol NativeAccessibilityManagerSpec : public NSObjectRCTBridgeModule, public
   public virtual void getCurrentDarkerSystemColorsState:onError:(RCTResponseSenderBlock onSuccess, RCTResponseSenderBlock onError);
   public virtual void getCurrentGrayscaleState:onError:(RCTResponseSenderBlock onSuccess, RCTResponseSenderBlock onError);
   public virtual void getCurrentInvertColorsState:onError:(RCTResponseSenderBlock onSuccess, RCTResponseSenderBlock onError);
+  public virtual void getCurrentPreferences:onError:(RCTResponseSenderBlock onSuccess, RCTResponseSenderBlock onError);
   public virtual void getCurrentPrefersCrossFadeTransitionsState:onError:(RCTResponseSenderBlock onSuccess, RCTResponseSenderBlock onError);
   public virtual void getCurrentReduceMotionState:onError:(RCTResponseSenderBlock onSuccess, RCTResponseSenderBlock onError);
   public virtual void getCurrentReduceTransparencyState:onError:(RCTResponseSenderBlock onSuccess, RCTResponseSenderBlock onError);

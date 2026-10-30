@@ -23,6 +23,7 @@ For a list of complete Typescript examples: check https://github.com/bgrieder/RN
 import * as React from 'react';
 import {
   AccessibilityInfo,
+  AccessibilityPreferences,
   ActionSheetIOS,
   Alert,
   Animated,
@@ -1469,6 +1470,19 @@ AccessibilityInfo.isShowBordersEnabled().then(isEnabled =>
 );
 AccessibilityInfo.addEventListener('showBordersChanged', isEnabled =>
   console.log(`AccessibilityInfo.showBordersChanged => ${isEnabled}`),
+);
+AccessibilityInfo.getPreferences().then(
+  (preferences: AccessibilityPreferences) =>
+    console.log(
+      `AccessibilityInfo.getPreferences => ${preferences.prefersSwitchLabels} ${preferences.prefersNonColorIndicators}`,
+    ),
+);
+AccessibilityInfo.addEventListener(
+  'preferencesChanged',
+  (preferences: AccessibilityPreferences) =>
+    console.log(
+      `AccessibilityInfo.preferencesChanged => ${preferences.prefersSwitchLabels}`,
+    ),
 );
 AccessibilityInfo.isBoldTextEnabled().then(isEnabled =>
   console.log(`AccessibilityInfo.isBoldTextEnabled => ${isEnabled}`),

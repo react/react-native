@@ -56,7 +56,48 @@ static NSNotificationName RCTShowBordersStatusDidChangeNotification()
 #pragma clang diagnostic pop
 }
 
-@implementation RCTAccessibilityManager
+static NSDictionary<NSString *, id> *RCTSystemAccessibilityPreferences(void)
+{
+  return @{
+    @"prefersSwitchLabels" : @(UIAccessibilityIsOnOffSwitchLabelsEnabled()),
+    @"prefersNonColorIndicators" : @(UIAccessibilityShouldDifferentiateWithoutColor()),
+  };
+}
+
+static BOOL RCTAccessibilityPreferenceValue(id value)
+{
+  return [value respondsToSelector:@selector(boolValue)] && [value boolValue];
+}
+
+// Builds the AccessibilityInfo.getPreferences() snapshot from `reader`, or from
+// the system settings when `reader` is nil. The keys must match the fields of
+// AccessibilityPreferences in AccessibilityInfo.js. Only those keys are read,
+// and each value is boxed from a BOOL, so the snapshot always has exactly these
+// keys and every value is a CFBoolean, whatever the reader returns.
+static NSDictionary<NSString *, NSNumber *> *RCTCurrentAccessibilityPreferences(
+    RCTAccessibilityPreferencesReader _Nullable reader)
+{
+  NSDictionary<NSString *, id> *raw = nil;
+  if (reader != nil) {
+    raw = reader();
+    if (raw == nil) {
+      RCTLogWarn(@"The accessibility preferences reader returned nil, so the system settings are used instead.");
+    }
+  }
+  if (raw == nil) {
+    raw = RCTSystemAccessibilityPreferences();
+  }
+  return @{
+    @"prefersSwitchLabels" : @(RCTAccessibilityPreferenceValue(raw[@"prefersSwitchLabels"])),
+    @"prefersNonColorIndicators" : @(RCTAccessibilityPreferenceValue(raw[@"prefersNonColorIndicators"])),
+  };
+}
+
+@implementation RCTAccessibilityManager {
+  NSDictionary<NSString *, NSNumber *> *_preferences;
+  // Replaced in tests through RCTAccessibilityManagerSetPreferencesReader.
+  RCTAccessibilityPreferencesReader _preferencesReader;
+}
 
 @synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;
 @synthesize moduleRegistry = _moduleRegistry;
@@ -126,6 +167,17 @@ RCT_EXPORT_MODULE()
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(preferencesStatusDidChange:)
+                                                 name:UIAccessibilityOnOffSwitchLabelsDidChangeNotification
+                                               object:nil];
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(preferencesStatusDidChange:)
+               name:UIAccessibilityShouldDifferentiateWithoutColorDidChangeNotification
+             object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(voiceVoiceOverStatusDidChange:)
                                                  name:UIAccessibilityVoiceOverStatusDidChangeNotification
                                                object:nil];
@@ -138,6 +190,7 @@ RCT_EXPORT_MODULE()
     _isDarkerSystemColorsEnabled = UIAccessibilityDarkerSystemColorsEnabled();
     _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
     _isShowBordersEnabled = RCTIsShowBordersEnabled();
+    _preferences = RCTCurrentAccessibilityPreferences(nil);
     _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
   }
   return self;
@@ -251,6 +304,19 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"showBordersChanged"
                                                                           body:@(_isShowBordersEnabled)];
+#pragma clang diagnostic pop
+  }
+}
+
+- (void)preferencesStatusDidChange:(__unused NSNotification *)notification
+{
+  NSDictionary<NSString *, NSNumber *> *newPreferences = RCTCurrentAccessibilityPreferences(_preferencesReader);
+  if (![_preferences isEqualToDictionary:newPreferences]) {
+    _preferences = newPreferences;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"accessibilityPreferencesChanged"
+                                                                          body:_preferences];
 #pragma clang diagnostic pop
   }
 }
@@ -469,6 +535,11 @@ static void setMultipliers(
   onSuccess(@[ @(_isVoiceOverEnabled) ]);
 }
 
+- (void)getCurrentPreferences:(RCTResponseSenderBlock)onSuccess onError:(__unused RCTResponseSenderBlock)onError
+{
+  onSuccess(@[ _preferences ]);
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
@@ -482,6 +553,14 @@ void RCTAccessibilityManagerSetIsVoiceOverEnabled(
     BOOL isVoiceOverEnabled)
 {
   [accessibilityManager _setIsVoiceOverEnabled:isVoiceOverEnabled];
+}
+
+void RCTAccessibilityManagerSetPreferencesReader(
+    RCTAccessibilityManager *accessibilityManager,
+    RCTAccessibilityPreferencesReader _Nullable preferencesReader)
+{
+  accessibilityManager->_preferencesReader = [preferencesReader copy];
+  accessibilityManager->_preferences = RCTCurrentAccessibilityPreferences(accessibilityManager->_preferencesReader);
 }
 
 @end

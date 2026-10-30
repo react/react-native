@@ -47,6 +47,30 @@ type AccessibilityAnnouncementFinishedEventHandler = (
   event: AccessibilityAnnouncementFinishedEvent,
 ) => void;
 
+/**
+ * Accessibility settings that change how an app should draw its own controls,
+ * named by what the user needs rather than by each platform's setting. A field
+ * is `false` on a platform that has no such setting.
+ *
+ * Fields will be added over time, so read the object that `getPreferences()`
+ * or `preferencesChanged` gives you rather than building one yourself.
+ */
+export interface AccessibilityPreferences {
+  /** On/Off Labels (iOS): draw I/O marks on custom switches. */
+  readonly prefersSwitchLabels: boolean;
+  /**
+   * Differentiate Without Color (iOS): convey state with shapes, icons or
+   * text, not by color alone.
+   */
+  readonly prefersNonColorIndicators: boolean;
+}
+
+type AccessibilityPreferencesEventName = 'preferencesChanged'; // iOS-only Event
+
+type AccessibilityPreferencesEventHandler = (
+  preferences: AccessibilityPreferences,
+) => void;
+
 type AccessibilityEventTypes =
   'click' | 'focus' | 'viewHoverEnter' | 'windowStateChange';
 
@@ -94,6 +118,14 @@ export interface AccessibilityInfoStatic {
    * @platform ios
    */
   isShowBordersEnabled: () => Promise<boolean>;
+
+  /**
+   * Query the accessibility preferences that change how custom controls
+   * should be drawn. On Android, every field is `false`.
+   * On iOS, rejects if the native module or method is missing (for example,
+   * JS newer than the app binary).
+   */
+  getPreferences: () => Promise<AccessibilityPreferences>;
 
   /**
    * Query whether darker system colors is currently enabled.
@@ -150,6 +182,16 @@ export interface AccessibilityInfoStatic {
   addEventListener(
     eventName: AccessibilityAnnouncementEventName,
     handler: AccessibilityAnnouncementFinishedEventHandler,
+  ): EmitterSubscription;
+  /**
+   * Fires when any field of `getPreferences()` changes, with the new
+   * preferences.
+   *
+   * @platform ios
+   */
+  addEventListener(
+    eventName: AccessibilityPreferencesEventName,
+    handler: AccessibilityPreferencesEventHandler,
   ): EmitterSubscription;
 
   /**

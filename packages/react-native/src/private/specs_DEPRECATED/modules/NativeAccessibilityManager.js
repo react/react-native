@@ -42,6 +42,13 @@ export interface Spec extends TurboModule {
     onSuccess: (isShowBordersEnabled: boolean) => void,
     onError: (error: UnsafeObject) => void,
   ) => void;
+  readonly getCurrentPreferences?: (
+    onSuccess: (preferences: {
+      prefersSwitchLabels: boolean,
+      prefersNonColorIndicators: boolean,
+    }) => void,
+    onError: (error: UnsafeObject) => void,
+  ) => void;
   readonly getCurrentReduceTransparencyState: (
     onSuccess: (isReduceTransparencyEnabled: boolean) => void,
     onError: (error: UnsafeObject) => void,

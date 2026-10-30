@@ -242,6 +242,7 @@ export {default as VirtualizedSectionList} from './Libraries/Lists/VirtualizedSe
 // #endregion
 // #region APIs
 
+export type {AccessibilityPreferences} from './Libraries/Components/AccessibilityInfo/AccessibilityInfo';
 export {default as AccessibilityInfo} from './Libraries/Components/AccessibilityInfo/AccessibilityInfo';
 
 export type {

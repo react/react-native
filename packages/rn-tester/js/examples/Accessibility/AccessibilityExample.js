@@ -11,7 +11,11 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {EventSubscription, GestureResponderEvent} from 'react-native';
+import type {
+  AccessibilityPreferences,
+  EventSubscription,
+  GestureResponderEvent,
+} from 'react-native';
 
 import RNTesterBlock from '../../components/RNTesterBlock';
 import RNTesterText from '../../components/RNTesterText';
@@ -1606,6 +1610,7 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
             />
           </>
         )}
+        <PreferencesStatusExample />
       </View>
     );
   }
@@ -1642,6 +1647,66 @@ function DisplayOptionStatusExample({
         {optionName}
         {' is '}
         {statusEnabled ? 'enabled' : 'disabled'}.
+      </RNTesterText>
+    </View>
+  );
+}
+
+function describePreferences(preferences: AccessibilityPreferences): string {
+  return (
+    `switch labels ${preferences.prefersSwitchLabels ? 'on' : 'off'}, ` +
+    `non-color indicators ${preferences.prefersNonColorIndicators ? 'on' : 'off'}`
+  );
+}
+
+function PreferencesStatusExample(): React.Node {
+  const [preferences, setPreferences] =
+    useState<?AccessibilityPreferences>(null);
+  const [error, setError] = useState<?string>(null);
+  const [lastEvent, setLastEvent] = useState<?AccessibilityPreferences>(null);
+  useEffect(() => {
+    let isMounted = true;
+    // An event carries newer preferences than a starting read still in flight.
+    let receivedEvent = false;
+    const listener = AccessibilityInfo.addEventListener(
+      'preferencesChanged',
+      newPreferences => {
+        receivedEvent = true;
+        setPreferences(newPreferences);
+        setLastEvent(newPreferences);
+      },
+    );
+    AccessibilityInfo.getPreferences()
+      .then(newPreferences => {
+        if (isMounted && !receivedEvent) {
+          setPreferences(newPreferences);
+        }
+      })
+      .catch((e: Error) => {
+        if (isMounted && !receivedEvent) {
+          setError(e.message);
+        }
+      });
+    return function cleanup() {
+      isMounted = false;
+      listener.remove();
+    };
+  }, []);
+  let status = 'loading';
+  if (preferences != null) {
+    status = describePreferences(preferences);
+  } else if (error != null) {
+    status = `Unavailable: ${error}`;
+  }
+  return (
+    <View>
+      <RNTesterText>
+        {'Preferences: '}
+        {status}.
+      </RNTesterText>
+      <RNTesterText>
+        {'Last preferencesChanged: '}
+        {lastEvent == null ? 'none' : describePreferences(lastEvent)}.
       </RNTesterText>
     </View>
   );

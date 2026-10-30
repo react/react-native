@@ -22,6 +22,13 @@ const mockGetCurrentShowBordersState = jest.fn((onSuccess, onError) =>
 const mockGetCurrentBoldTextState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
+const IOS_PREFERENCES: AccessibilityPreferences = {
+  prefersSwitchLabels: true,
+  prefersNonColorIndicators: false,
+};
+const mockGetCurrentPreferences = jest.fn((onSuccess, onError) =>
+  onSuccess(IOS_PREFERENCES),
+);
 const mockGetCurrentGrayscaleState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
@@ -38,6 +45,13 @@ const mockGetCurrentVoiceOverState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
 let mockNativeAccessibilityManagerIOS: {
+  getCurrentPreferences: JestMockFn<
+    [
+      onSuccess: (preferences: AccessibilityPreferences) => void,
+      onError: (error: Error) => void,
+    ],
+    void,
+  > | null,
   getCurrentShowBordersState: JestMockFn<
     [
       onSuccess: (isShowBordersEnabled: boolean) => void,
@@ -102,6 +116,7 @@ let mockNativeAccessibilityManagerIOS: {
     void,
   > | null,
 } = {
+  getCurrentPreferences: mockGetCurrentPreferences,
   getCurrentShowBordersState: mockGetCurrentShowBordersState,
   getCurrentPrefersCrossFadeTransitionsState:
     mockGetCurrentPrefersCrossFadeTransitionsState,
@@ -172,6 +187,8 @@ jest.mock('../NativeAccessibilityInfo', () => ({
   __esModule: true,
   default: mockNativeAccessibilityInfoAndroid,
 }));
+
+import type {AccessibilityPreferences} from '../AccessibilityInfo';
 
 const Platform = require('../../../Utilities/Platform').default;
 const AccessibilityInfo = require('../AccessibilityInfo').default;
@@ -831,9 +848,13 @@ describe('AccessibilityInfo', () => {
     });
 
     describe('iOS', () => {
-      it('should return originalTimeout', async () => {
+      it('should return originalTimeout, as the iOS module has no getRecommendedTimeoutMillis', async () => {
         /* $FlowFixMe[incompatible-type] */
         Platform.OS = 'ios';
+
+        expect(
+          jest.requireMock('../NativeAccessibilityManager').default,
+        ).not.toHaveProperty('getRecommendedTimeoutMillis');
 
         const recommendedTimeoutMillis =
           await AccessibilityInfo.getRecommendedTimeoutMillis(5000);
@@ -843,8 +864,54 @@ describe('AccessibilityInfo', () => {
     });
   });
 
+  describe('getPreferences', () => {
+    describe('Android', () => {
+      it('should return neutral preferences without calling native', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        const preferences = await AccessibilityInfo.getPreferences();
+
+        expect(preferences).toEqual({
+          prefersSwitchLabels: false,
+          prefersNonColorIndicators: false,
+        });
+        expect(mockGetCurrentPreferences).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('iOS', () => {
+      it('should call getCurrentPreferences if available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        const preferences = await AccessibilityInfo.getPreferences();
+
+        expect(mockGetCurrentPreferences).toHaveBeenCalled();
+        expect(preferences).toEqual(IOS_PREFERENCES);
+      });
+
+      it('should throw error if getCurrentPreferences is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        mockNativeAccessibilityManagerIOS.getCurrentPreferences = null;
+
+        const result: unknown = await AccessibilityInfo.getPreferences().catch(
+          e => e,
+        );
+
+        invariant(result instanceof Error, 'Expected getPreferences to reject');
+        expect(result.message).toEqual(
+          'NativeAccessibilityManagerIOS.getCurrentPreferences is not available',
+        );
+      });
+    });
+  });
+
   afterEach(() => {
     mockNativeAccessibilityManagerIOS = {
+      getCurrentPreferences: mockGetCurrentPreferences,
       getCurrentShowBordersState: mockGetCurrentShowBordersState,
       getCurrentPrefersCrossFadeTransitionsState:
         mockGetCurrentPrefersCrossFadeTransitionsState,

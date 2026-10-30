@@ -4,9 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow strict
+ * @flow strict-local
  * @format
  */
+
+import type {AccessibilityPreferences} from 'react-native';
 
 const AccessibilityInfo = {
   addEventListener: jest.fn(() => ({
@@ -20,6 +22,12 @@ const AccessibilityInfo = {
   isAccessibilityServiceEnabled: jest.fn(() =>
     Promise.resolve(false),
   ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  getPreferences: jest.fn(() =>
+    Promise.resolve({
+      prefersSwitchLabels: false,
+      prefersNonColorIndicators: false,
+    }),
+  ) as JestMockFn<[], Promise<AccessibilityPreferences>>,
   isShowBordersEnabled: jest.fn(() => Promise.resolve(false)) as JestMockFn<
     $FlowFixMe,
     $FlowFixMe,

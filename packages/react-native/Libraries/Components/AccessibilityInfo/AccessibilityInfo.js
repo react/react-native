@@ -18,6 +18,27 @@ import legacySendAccessibilityEvent from './legacySendAccessibilityEvent';
 import NativeAccessibilityInfoAndroid from './NativeAccessibilityInfo';
 import NativeAccessibilityManagerIOS from './NativeAccessibilityManager';
 
+/**
+ * Accessibility settings that change how an app should draw its own controls,
+ * named by what the user needs rather than by each platform's setting. A field
+ * is `false` on a platform that has no such setting.
+ *
+ * Fields will be added over time, so read the object that `getPreferences()`
+ * or `preferencesChanged` gives you rather than building one yourself.
+ */
+export type AccessibilityPreferences = Readonly<{
+  // On/Off Labels (iOS): draw I/O marks on custom switches.
+  prefersSwitchLabels: boolean,
+  // Differentiate Without Color (iOS): convey state with shapes, icons or text,
+  // not by color alone.
+  prefersNonColorIndicators: boolean,
+}>;
+
+const NEUTRAL_PREFERENCES: AccessibilityPreferences = {
+  prefersSwitchLabels: false,
+  prefersNonColorIndicators: false,
+};
+
 // Events that are only supported on Android.
 type AccessibilityEventDefinitionsAndroid = {
   accessibilityServiceChanged: [boolean],
@@ -29,6 +50,7 @@ type AccessibilityEventDefinitionsIOS = {
   announcementFinished: [{announcement: string, success: boolean}],
   boldTextChanged: [boolean],
   darkerSystemColorsChanged: [boolean],
+  preferencesChanged: [AccessibilityPreferences],
   reduceTransparencyChanged: [boolean],
   showBordersChanged: [boolean],
 };
@@ -69,6 +91,7 @@ const EventNames: Map<keyof AccessibilityEventDefinitions, string> =
         ['screenReaderChanged', 'screenReaderChanged'],
         ['darkerSystemColorsChanged', 'darkerSystemColorsChanged'],
         ['showBordersChanged', 'showBordersChanged'],
+        ['preferencesChanged', 'accessibilityPreferencesChanged'],
       ]);
 
 /**
@@ -320,6 +343,43 @@ const AccessibilityInfo = {
   },
 
   /**
+   * Query the accessibility preferences that change how custom controls should
+   * be drawn (see `AccessibilityPreferences`).
+   *
+   * Returns a promise which resolves to an `AccessibilityPreferences` object.
+   * On Android, which has none of these settings, every field is `false`.
+   * On iOS, rejects if the native module or method is missing (for example,
+   * JS newer than the app binary).
+   */
+  getPreferences(): Promise<AccessibilityPreferences> {
+    if (Platform.OS === 'android') {
+      return Promise.resolve({...NEUTRAL_PREFERENCES});
+    } else {
+      return new Promise((resolve, reject) => {
+        if (NativeAccessibilityManagerIOS?.getCurrentPreferences != null) {
+          // Besides `AccessibilityPreferences`, the fields are written by
+          // hand inline in the native module spec (a named type would add C++
+          // structs to the API snapshots) and in the TypeScript types.
+          // Passing `resolve` as `onSuccess` makes Flow's exact object types
+          // check the spec against `AccessibilityPreferences`;
+          // `__typetests__` covers the TypeScript types. The native keys in
+          // RCTAccessibilityManager.mm must match too.
+          NativeAccessibilityManagerIOS.getCurrentPreferences(resolve, reject);
+        } else {
+          // A new API, so a missing native method rejects, as
+          // `isShowBordersEnabled` does, rather than resolving a snapshot that
+          // looks like every setting is off.
+          reject(
+            new Error(
+              'NativeAccessibilityManagerIOS.getCurrentPreferences is not available',
+            ),
+          );
+        }
+      });
+    }
+  },
+
+  /**
    * Query whether reduced transparency is currently enabled.
    *
    * Returns a promise which resolves to a boolean.
@@ -442,6 +502,8 @@ const AccessibilityInfo = {
    * - `showBordersChanged`: iOS-only event. Fires when the state of the show borders toggle changes
    *   (called Button Shapes before iOS 26.1).
    *   The argument to the event handler is a boolean.
+   * - `preferencesChanged`: iOS-only event. Fires when any field of `getPreferences()` changes.
+   *   The argument to the event handler is the new `AccessibilityPreferences` object.
    *
    * These events are only supported on Android:
    *
