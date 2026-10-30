@@ -893,6 +893,12 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
       jsi::Value returnValue = jsi::Value::null();
       if (returnObject != nullptr) {
         auto jResult = jni::adopt_local(returnObject);
+        if (!jResult->isInstanceOf(NativeMap::javaClassStatic())) {
+          throw jsi::JSError(
+              runtime,
+              name_ + "." + methodName +
+                  "() must return a native map, such as one from Arguments.createMap()");
+        }
         auto result = jni::static_ref_cast<NativeMap::jhybridobject>(jResult);
         returnValue =
             jsi::valueFromDynamic(runtime, result->cthis()->consume());
@@ -913,6 +919,12 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
       jsi::Value returnValue = jsi::Value::null();
       if (returnObject != nullptr) {
         auto jResult = jni::adopt_local(returnObject);
+        if (!jResult->isInstanceOf(NativeArray::javaClassStatic())) {
+          throw jsi::JSError(
+              runtime,
+              name_ + "." + methodName +
+                  "() must return a native array, such as one from Arguments.createArray()");
+        }
         auto result = jni::static_ref_cast<NativeArray::jhybridobject>(jResult);
         returnValue =
             jsi::valueFromDynamic(runtime, result->cthis()->consume());
