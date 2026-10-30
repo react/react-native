@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2eb3f4a3dca013c51ad2913944855010>>
+ * @generated SignedSource<<9a8a9d5bb580291412397dc811f3660b>>
  * @flow strict
  * @noformat
  */
@@ -63,6 +63,7 @@ export interface Spec extends TurboModule {
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
   readonly enableImperativeEvents?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
+  readonly enableInteractableResponderViews?: () => boolean;
   readonly enableInteropViewManagerClassLookUpOptimizationIOS?: () => boolean;
   readonly enableIntersectionObserverByDefault?: () => boolean;
   readonly enableKeyEvents?: () => boolean;
