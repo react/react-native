@@ -609,23 +609,9 @@ void NativeAnimatedNodesManager::startRenderCallbackIfNeeded(bool isAsync) {
     if (!animationBackend) {
       return;
     }
-    // AnimationBackend::start registers the callback before returning the id.
-    // Keep registration and id publication in one critical section; otherwise a
-    // concurrent stop can observe no id and leave the registered callback
-    // orphaned in the backend.
     std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
-    if (animationBackendCallbackId_.has_value()) {
-      return;
-    }
-    auto weak = weak_from_this();
-    auto callbackId = animationBackend->start(
-        [weak](AnimationTimestamp timestamp) -> AnimationMutations {
-          if (auto self = weak.lock()) {
-            return self->pullAnimationMutations(timestamp);
-          }
-          return {};
-        });
-    animationBackendCallbackId_ = callbackId;
+    animationBackend->startFrontend(
+        animationFrontendIdLocked(*animationBackend));
   }
 }
 
@@ -651,22 +637,27 @@ void NativeAnimatedNodesManager::stopRenderCallbackIfNeeded(
 
   {
     auto animationBackend = animationBackend_.lock();
-    CallbackId callbackId = 0;
-    {
-      std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
-      if (!animationBackendCallbackId_.has_value()) {
-        return;
-      }
-      // Clear the published id while holding the same mutex that protects
-      // start registration. This makes a concurrent start either see an active
-      // callback or wait until this stop owns the callback id.
-      callbackId = *animationBackendCallbackId_;
-      animationBackendCallbackId_.reset();
-    }
-    if (animationBackend) {
-      animationBackend->stop(callbackId);
+    std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
+    if (animationBackend && animationFrontendId_.has_value()) {
+      animationBackend->stopFrontend(*animationFrontendId_);
     }
   }
+}
+
+AnimationFrontendId NativeAnimatedNodesManager::animationFrontendIdLocked(
+    UIManagerAnimationBackend& animationBackend) {
+  if (!animationFrontendId_.has_value()) {
+    animationFrontendId_ = animationBackend.registerFrontend(
+        {.onAnimationFrame =
+             [weak = weak_from_this()](
+                 AnimationTimestamp timestamp) -> AnimationMutations {
+          if (auto self = weak.lock()) {
+            return self->pullAnimationMutations(timestamp);
+          }
+          return {};
+        }});
+  }
+  return *animationFrontendId_;
 }
 
 bool NativeAnimatedNodesManager::isAnimationUpdateNeeded() const noexcept {
