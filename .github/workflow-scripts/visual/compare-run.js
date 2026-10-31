@@ -33,6 +33,7 @@ const {
   renderPullRequestComment,
 } = require('./report');
 const {
+  BASELINE_SEARCH_DEPTH,
   approvalKey,
   baselinePrefix,
   fetchBuffer,
@@ -45,7 +46,6 @@ const {validateCapture} = require('./validate');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const BASELINE_SEARCH_DEPTH = 20;
 const PLATFORMS = ['android', 'ios'];
 // The default Actions token posts as this bot. Only its comments are edited.
 const COMMENT_AUTHOR = 'github-actions[bot]';
@@ -221,9 +221,15 @@ function missingCapture(platform, context) {
   };
 }
 
+/**
+ * Stages the capture as the baseline for `sha`, leaving out new screenshots
+ * whose two captures differed. They stay new until a later push to the
+ * default branch captures them the same way twice.
+ */
 function stageBaseline({outDir, captureDir, manifest, sha}) {
   const prefix = baselinePrefix(manifest.environmentKey, sha);
-  for (const image of manifest.images) {
+  const images = manifest.images.filter(image => image.unstable !== true);
+  for (const image of images) {
     writeFile(
       path.join(outDir, 'baseline-images', prefix, `${image.id}.png`),
       fs.readFileSync(path.join(captureDir, `${image.id}.png`)),
@@ -232,7 +238,7 @@ function stageBaseline({outDir, captureDir, manifest, sha}) {
   // Uploaded after the images: a baseline exists once its manifest does.
   writeFile(
     path.join(outDir, 'baseline-manifests', prefix, 'manifest.json'),
-    `${JSON.stringify(manifest, null, 2)}\n`,
+    `${JSON.stringify({...manifest, images}, null, 2)}\n`,
   );
 }
 
@@ -466,4 +472,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = {resolveContext};
+module.exports = {resolveContext, stageBaseline};

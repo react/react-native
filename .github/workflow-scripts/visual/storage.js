@@ -10,6 +10,9 @@
 
 const {SHA_PATTERN} = require('./manifest');
 
+// How many commits back from a capture's base commit to look for a baseline.
+const BASELINE_SEARCH_DEPTH = 20;
+
 // Object layout. Every key is write-once: reports and approvals include the
 // run that produced them, and a baseline is only ever written for a new SHA.
 //
@@ -130,6 +133,7 @@ async function findBaseline({publicBaseUrl, environmentKey, candidateShas}) {
 }
 
 module.exports = {
+  BASELINE_SEARCH_DEPTH,
   approvalKey,
   baselinePrefix,
   fetchBuffer,

@@ -1,0 +1,188 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
+ * @format
+ */
+
+const {buildManifest} = require('../visual/manifest');
+const {
+  flowsTaking,
+  judgeRetakes,
+  retakeCandidates,
+  retakeScreenshots,
+  screenshotIds,
+} = require('../visual/retake');
+const {ANDROID_ENVIRONMENT, SHA_A} = require('./__fixtures__/visual');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+const baselineManifest = {
+  images: [
+    {id: 'switch/basic/default', sha256: 'a'},
+    {id: 'switch/basic/toggled', sha256: 'b'},
+  ],
+};
+
+const BUNNY = path.join(
+  __dirname,
+  '../../../packages/rn-tester/js/assets/bunny.png',
+);
+
+const images = [
+  {id: 'switch/basic/default', sha256: 'a'},
+  {id: 'switch/basic/toggled', sha256: 'x'},
+  {id: 'view/basic/default', sha256: 'n'},
+];
+
+describe('visual retake', () => {
+  test('reads the test IDs a flow captures', () => {
+    const flow = [
+      'appId: ${APP_ID}',
+      '---',
+      '- takeScreenshot:',
+      '    path: ${VISUAL_OUTPUT_DIR}/switch/basic/default',
+      '    cropOn:',
+      "      id: 'switch-basic'",
+      '- takeScreenshot:',
+      "    path: '${VISUAL_OUTPUT_DIR}/switch/basic/toggled'",
+    ].join('\n');
+    expect(screenshotIds(flow)).toEqual([
+      'switch/basic/default',
+      'switch/basic/toggled',
+    ]);
+  });
+
+  test('selects only the flows that take the given IDs', () => {
+    const files = {
+      '/flows/switch.yml':
+        '- takeScreenshot: ${VISUAL_OUTPUT_DIR}/switch/basic/toggled',
+      '/flows/text.yml':
+        '- takeScreenshot: ${VISUAL_OUTPUT_DIR}/text/width-mode/default',
+      '/flows/view.yml':
+        '- takeScreenshot: ${VISUAL_OUTPUT_DIR}/view/basic/default',
+    };
+    expect(
+      flowsTaking(
+        Object.keys(files),
+        ['text/width-mode/default', 'switch/basic/toggled'],
+        file => files[file],
+      ),
+    ).toEqual(['/flows/switch.yml', '/flows/text.yml']);
+  });
+
+  test('retakes changed and new screenshots but not unchanged ones', () => {
+    expect(retakeCandidates(images, baselineManifest)).toEqual({
+      changed: ['switch/basic/toggled'],
+      added: ['view/basic/default'],
+    });
+  });
+
+  test.each([
+    ['matches the baseline', 'b', ['switch/basic/toggled']],
+    ['still differs', 'y', []],
+    ['is missing', null, []],
+  ])('replaces a changed screenshot if its retake %s', (_, sha, replaced) => {
+    expect(
+      judgeRetakes({
+        changed: ['switch/basic/toggled'],
+        added: [],
+        images,
+        baselineManifest,
+        retakeSha: () => sha,
+      }).replaced,
+    ).toEqual(replaced);
+  });
+
+  test.each([
+    ['is identical', 'n', []],
+    ['differs', 'y', ['view/basic/default']],
+    ['is missing', null, ['view/basic/default']],
+  ])('marks a new screenshot unstable if its retake %s', (_, sha, unstable) => {
+    expect(
+      judgeRetakes({
+        changed: [],
+        added: ['view/basic/default'],
+        images,
+        baselineManifest,
+        retakeSha: () => sha,
+      }).unstable,
+    ).toEqual(unstable);
+  });
+
+  test('retakes every screenshot when the environment has no baseline', async () => {
+    // The repo's Jest config fakes timers, and the retake waits on one.
+    jest.useRealTimers();
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'visual-test-'));
+    const fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response(null, {status: 404}));
+    try {
+      const outputDir = path.join(directory, 'out');
+      const png = fs.readFileSync(BUNNY);
+      const write = (dir, id, contents) => {
+        fs.mkdirSync(path.join(dir, path.dirname(id)), {recursive: true});
+        fs.writeFileSync(path.join(dir, `${id}.png`), contents);
+      };
+      write(outputDir, 'view/basic/default', png);
+      write(outputDir, 'view/basic/flaky', png);
+      const flow = path.join(directory, 'view.yml');
+      fs.writeFileSync(
+        flow,
+        [
+          '- takeScreenshot: ${VISUAL_OUTPUT_DIR}/view/basic/default',
+          '- takeScreenshot: ${VISUAL_OUTPUT_DIR}/view/basic/flaky',
+        ].join('\n'),
+      );
+      const runFlows = jest.fn((flows, retakeDir) => {
+        write(retakeDir, 'view/basic/default', png);
+        write(retakeDir, 'view/basic/flaky', Buffer.concat([png, png]));
+      });
+      const {unstable} = await retakeScreenshots({
+        platform: 'android',
+        environment: ANDROID_ENVIRONMENT,
+        flows: [flow],
+        outputDir,
+        publicBaseUrl: 'https://storage.example',
+        runFlows,
+        candidateShas: [SHA_A],
+        delayMs: 0,
+      });
+      expect(runFlows).toHaveBeenCalledWith([flow], `${outputDir}-retake`);
+      expect(unstable).toEqual(['view/basic/flaky']);
+    } finally {
+      fetchSpy.mockRestore();
+      fs.rmSync(directory, {recursive: true, force: true});
+    }
+  });
+
+  test('marks unstable screenshots in the manifest', () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'visual-test-'));
+    try {
+      const png = fs.readFileSync(BUNNY);
+      for (const id of ['view/basic/default', 'view/basic/flaky']) {
+        fs.mkdirSync(path.join(directory, path.dirname(id)), {recursive: true});
+        fs.writeFileSync(path.join(directory, `${id}.png`), png);
+      }
+      const manifest = buildManifest({
+        captureDir: directory,
+        platform: 'android',
+        environment: ANDROID_ENVIRONMENT,
+        git: null,
+        unstableIds: ['view/basic/flaky'],
+      });
+      expect(manifest.images.map(({id, unstable}) => ({id, unstable}))).toEqual(
+        [
+          {id: 'view/basic/default', unstable: undefined},
+          {id: 'view/basic/flaky', unstable: true},
+        ],
+      );
+    } finally {
+      fs.rmSync(directory, {recursive: true, force: true});
+    }
+  });
+});

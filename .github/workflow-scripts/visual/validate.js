@@ -137,6 +137,9 @@ function validateCapture(captureDir, limits = LIMITS) {
       ) {
         errors.push(`${id}: file does not match its manifest entry`);
       }
+      if (image.unstable !== undefined && image.unstable !== true) {
+        errors.push(`${id}: unstable must be true or absent`);
+      }
     }
     if (totalBytes > limits.maxTotalBytes) {
       errors.push(`Total size ${totalBytes} exceeds ${limits.maxTotalBytes}`);

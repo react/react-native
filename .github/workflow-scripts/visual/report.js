@@ -43,7 +43,10 @@ function describeChange(result) {
 }
 
 function heading(result) {
-  const change = describeChange(result);
+  const change =
+    result.status === 'added' && result.captured?.unstable === true
+      ? 'unstable: its two captures differed'
+      : describeChange(result);
   return `\`${result.id}\`: ${STATUS_LABELS[result.status]}${change ? `, ${change}` : ''}`;
 }
 

@@ -150,14 +150,17 @@ describe('visual reports and approval', () => {
             {id: 'a/b/same', status: 'unchanged'},
             changed('a/b/changed'),
           ]),
-          platform('ios', [{id: 'a/b/new', status: 'added', captured: {}}]),
+          platform('ios', [
+            {id: 'a/b/new', status: 'added', captured: {}},
+            {id: 'a/b/flaky', status: 'added', captured: {unstable: true}},
+          ]),
         ],
         headSha: SHA_A,
         gateSummary: 'Needs approval.',
       });
       expect(body.startsWith(COMMENT_MARKER)).toBe(true);
       expect(body).toContain(
-        '**2 visual difference(s)** at `aaaaaaaaaaaa`. Needs approval.',
+        '**3 visual difference(s)** at `aaaaaaaaaaaa`. Needs approval.',
       );
       expect(body).toContain(
         '### android `a/b/changed`: Changed, 3 px (3.000%)',
@@ -168,7 +171,10 @@ describe('visual reports and approval', () => {
       expect(body).toContain(
         '<details><summary>Expected and Captured</summary>',
       );
-      expect(body).toContain('### ios `a/b/new`: New');
+      expect(body).toContain('### ios `a/b/new`: New\n');
+      expect(body).toContain(
+        '### ios `a/b/flaky`: New, unstable: its two captures differed',
+      );
       expect(body).toContain('<details open><summary>Captured</summary>');
       expect(body).not.toContain('a/b/same');
     });
