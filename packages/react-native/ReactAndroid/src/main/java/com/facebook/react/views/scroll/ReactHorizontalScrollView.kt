@@ -660,6 +660,14 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
         ev.action == MotionEvent.ACTION_DOWN &&
             findDeepestScrollViewForMotionEvent(this, ev) != null
     ) {
+      // Skipping super keeps a stale pointer from a gesture a child claimed; clear it.
+      // A cancel also stops the scroller, so leave a running fling or snap alone.
+      if (scroller?.isFinished != false) {
+        val cancel = MotionEvent.obtain(ev)
+        cancel.action = MotionEvent.ACTION_CANCEL
+        super.onInterceptTouchEvent(cancel)
+        cancel.recycle()
+      }
       return false
     }
 
