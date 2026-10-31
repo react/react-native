@@ -892,6 +892,8 @@ YGSize YogaLayoutableShadowNode::yogaNodeMeasureCallbackConnector(
   TraceSection s("YogaLayoutableShadowNode::yogaNodeMeasureCallbackConnector");
 
   auto& shadowNode = shadowNodeFromContext(yogaNode);
+  // Measuring may write to the node, so it must not be a committed one.
+  shadowNode.ensureUnsealed();
 
   auto minimumSize = Size{.width = 0, .height = 0};
   auto maximumSize = Size{

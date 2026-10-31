@@ -35,13 +35,16 @@ struct LayoutResults {
   // means "no auto-min applies."
   FloatOptional computedAutoMinMainSize = {};
 
-  // Memoized min-content sizes for §4.5, indexed by dimension and valid only
-  // during layout generation `minContentGeneration`. A leaf stores its measured
-  // min-content without padding and border, which doesn't depend on the owner.
-  // A container stores its full min-content, which depends on
-  // `minContentOwnerWidth` through percentage padding and margins.
+  // Memoized min-content sizes for §4.5, indexed by dimension, with the layout
+  // generation each was computed in (0 for none). Like `cachedMeasurements`,
+  // they hold until the node, its config or its direction changes. A leaf
+  // stores its measured min-content without padding and border, which doesn't
+  // depend on the owner. A container stores its full min-content, which
+  // depends on `minContentOwnerWidth` when a percentage padding or margin in
+  // the subtree it walked resolves against it.
   std::array<uint32_t, 2> minContentGeneration = {};
   std::array<float, 2> minContentOwnerWidth = {{YGUndefined, YGUndefined}};
+  std::array<bool, 2> minContentResolvesAgainstOwnerWidth = {};
   std::array<float, 2> minContent = {{YGUndefined, YGUndefined}};
 
   // Instead of recomputing the entire layout every single time, we cache some

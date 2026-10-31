@@ -6691,6 +6691,7 @@ class facebook::yoga::Node : public YGNode {
 class facebook::yoga::Style {
   public bool flexEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool flexStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
+  public bool hasPercentMarginOrPadding() const;
   public bool horizontalInsetsDefined() const;
   public bool inlineEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool inlineStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
@@ -7217,6 +7218,7 @@ struct facebook::yoga::LayoutResults {
   public float position(facebook::yoga::PhysicalEdge physicalEdge) const;
   public float rawDimension(facebook::yoga::Dimension axis) const;
   public static constexpr int32_t MaxCachedMeasurements;
+  public std::array<bool, 2> minContentResolvesAgainstOwnerWidth;
   public std::array<facebook::yoga::CachedMeasurement, facebook::yoga::LayoutResults::MaxCachedMeasurements> cachedMeasurements;
   public std::array<float, 2> minContent;
   public std::array<float, 2> minContentOwnerWidth;

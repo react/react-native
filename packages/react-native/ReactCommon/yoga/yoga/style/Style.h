@@ -346,7 +346,7 @@ class YG_EXPORT Style {
   // axes, and a percentage size or size bound against the owner's size on its
   // own axis.
   bool resolvesAgainstOwnerWidth() const {
-    return anyIsPercent(margin_) || anyIsPercent(padding_) ||
+    return hasPercentMarginOrPadding() ||
         dimensions_[yoga::to_underlying(Dimension::Width)].isPercent() ||
         minDimensions_[yoga::to_underlying(Dimension::Width)].isPercent() ||
         maxDimensions_[yoga::to_underlying(Dimension::Width)].isPercent();
@@ -356,6 +356,10 @@ class YG_EXPORT Style {
     return dimensions_[yoga::to_underlying(Dimension::Height)].isPercent() ||
         minDimensions_[yoga::to_underlying(Dimension::Height)].isPercent() ||
         maxDimensions_[yoga::to_underlying(Dimension::Height)].isPercent();
+  }
+
+  bool hasPercentMarginOrPadding() const {
+    return anyIsPercent(margin_) || anyIsPercent(padding_);
   }
 
   FloatOptional aspectRatio() const {

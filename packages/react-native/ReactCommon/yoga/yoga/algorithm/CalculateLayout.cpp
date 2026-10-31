@@ -825,6 +825,41 @@ static float computeFlexBasisForChildren(
   return totalOuterFlexBasis;
 }
 
+// Whether what an earlier layout cached for `node` no longer holds: the node or
+// a descendant changed and has not been visited in this layout yet, or its
+// config or the direction it inherits changed.
+static bool isCacheStale(
+    const yoga::Node* const node,
+    const Direction ownerDirection,
+    const uint32_t generationCount) {
+  const LayoutResults& layout = node->getLayout();
+  return (node->isDirty() && layout.generationCount != generationCount) ||
+      layout.configVersion != node->getConfig()->getVersion() ||
+      layout.lastOwnerDirection != ownerDirection;
+}
+
+// A min-content size memoized in this layout holds for the rest of it, and one
+// memoized in an earlier layout holds for as long as the node's cached
+// measurements do.
+static bool hasMemoizedMinContent(
+    const yoga::Node* const node,
+    const Dimension axisDimension,
+    const Direction ownerDirection,
+    const uint32_t generationCount) {
+  const uint32_t memoizedGeneration =
+      node->getLayout().minContentGeneration[yoga::to_underlying(axisDimension)];
+  return memoizedGeneration == generationCount ||
+      (memoizedGeneration != 0 &&
+       !isCacheStale(node, ownerDirection, generationCount));
+}
+
+// A min-content size, and whether a percentage padding or margin resolved
+// against the owner's width went into it.
+struct MinContentSize {
+  float size;
+  bool resolvesAgainstOwnerWidth;
+};
+
 // Returns the min-content size of `node` along `requestedAxis`, used by CSS
 // Flexbox §4.5 automatic minimum sizing.
 //
@@ -850,13 +885,16 @@ static float computeFlexBasisForChildren(
 // Container-level recursion does no layout writes (no positions, no
 // alignment, no flex distribution); only the descendant leaf measure
 // callbacks observe state changes (the same ones a normal layout pass
-// would invoke).
+// would invoke). Like a layout pass, it first clones the children a container
+// does not own, since the measure callbacks and the memoized results below
+// write to them.
 //
-// Results are memoized per node and axis for the current layout generation
-// (see `LayoutResults::minContent`): each leaf's measure callback runs at
-// most once per axis per layout, and each container is walked once per
-// distinct `ownerWidth`.
-static float computeMinContentMainSize(
+// Results are memoized per node and axis (see `LayoutResults::minContent`) for
+// as long as the node's cached measurements hold, so a later layout walks only
+// the subtrees that changed: a leaf's measure callback runs again only once the
+// leaf is marked dirty, and a container is walked again for a new `ownerWidth`
+// only when a percentage padding or margin below it resolves against it.
+static MinContentSize computeMinContentMainSize(
     yoga::Node* const node,
     const FlexDirection requestedAxis,
     const Direction ownerDirection,
@@ -873,14 +911,16 @@ static float computeMinContentMainSize(
   const FloatOptional staticMin =
       wantRow ? node->getMinContentWidth() : node->getMinContentHeight();
   if (staticMin.isDefined()) {
-    return staticMin.unwrap();
+    return {staticMin.unwrap(), node->style().hasPercentMarginOrPadding()};
   }
 
   LayoutResults& layout = node->getLayout();
-  const auto axisIndex = yoga::to_underlying(dimension(requestedAxis));
+  const Dimension axisDimension = dimension(requestedAxis);
+  const auto axisIndex = yoga::to_underlying(axisDimension);
 
   if (node->hasMeasureFunc()) {
-    if (layout.minContentGeneration[axisIndex] != generationCount) {
+    if (!hasMemoizedMinContent(
+            node, axisDimension, ownerDirection, generationCount)) {
       // 2. Dynamic min-content callback if set (for Primitives whose
       // min-content depends on state). Otherwise fall back to the regular
       // measure function with `AtMost 0`, which text measurers naturally
@@ -906,16 +946,23 @@ static float computeMinContentMainSize(
             requestedAxis, leafDirection, ownerWidth) +
         node->style().computeFlexEndPaddingAndBorder(
             requestedAxis, leafDirection, ownerWidth);
-    return layout.minContent[axisIndex] + paddingAndBorder;
+    return {
+        layout.minContent[axisIndex] + paddingAndBorder,
+        node->style().hasPercentMarginOrPadding()};
   }
 
   if (node->getChildCount() == 0) {
-    return 0.0f;
+    return {0.0f, node->style().hasPercentMarginOrPadding()};
   }
 
-  if (layout.minContentGeneration[axisIndex] == generationCount &&
-      yoga::inexactEquals(layout.minContentOwnerWidth[axisIndex], ownerWidth)) {
-    return layout.minContent[axisIndex];
+  if (hasMemoizedMinContent(
+          node, axisDimension, ownerDirection, generationCount) &&
+      (!layout.minContentResolvesAgainstOwnerWidth[axisIndex] ||
+       yoga::inexactEquals(
+           layout.minContentOwnerWidth[axisIndex], ownerWidth))) {
+    return {
+        layout.minContent[axisIndex],
+        layout.minContentResolvesAgainstOwnerWidth[axisIndex]};
   }
 
   const Direction direction = node->resolveDirection(ownerDirection);
@@ -926,7 +973,9 @@ static float computeMinContentMainSize(
 
   float mainTotal = 0.0f;
   float crossMax = 0.0f;
+  bool resolvesAgainstOwnerWidth = node->style().hasPercentMarginOrPadding();
 
+  node->cloneChildrenIfNeeded();
   for (size_t i = 0; i < node->getChildCount(); i++) {
     auto* const child = node->getChild(i);
     if (child->style().display() == Display::None ||
@@ -934,27 +983,30 @@ static float computeMinContentMainSize(
       continue;
     }
 
-    float childMain = computeMinContentMainSize(
+    const MinContentSize childMain = computeMinContentMainSize(
         child,
         nodeMainAxis,
         direction,
         ownerWidth,
         ownerHeight,
         generationCount);
-    childMain += child->style().computeMarginForAxis(nodeMainAxis, ownerWidth);
-
-    float childCross = computeMinContentMainSize(
+    const MinContentSize childCross = computeMinContentMainSize(
         child,
         nodeCrossAxis,
         direction,
         ownerWidth,
         ownerHeight,
         generationCount);
-    childCross +=
-        child->style().computeMarginForAxis(nodeCrossAxis, ownerWidth);
 
-    mainTotal += childMain;
-    crossMax = std::max(crossMax, childCross);
+    mainTotal += childMain.size +
+        child->style().computeMarginForAxis(nodeMainAxis, ownerWidth);
+    crossMax = std::max(
+        crossMax,
+        childCross.size +
+            child->style().computeMarginForAxis(nodeCrossAxis, ownerWidth));
+    resolvesAgainstOwnerWidth = resolvesAgainstOwnerWidth ||
+        childMain.resolvesAgainstOwnerWidth ||
+        childCross.resolvesAgainstOwnerWidth;
   }
 
   mainTotal += node->style().computeFlexStartPaddingAndBorder(
@@ -972,8 +1024,10 @@ static float computeMinContentMainSize(
   const float minContent = wantRow ? widthMin : heightMin;
   layout.minContent[axisIndex] = minContent;
   layout.minContentOwnerWidth[axisIndex] = ownerWidth;
+  layout.minContentResolvesAgainstOwnerWidth[axisIndex] =
+      resolvesAgainstOwnerWidth;
   layout.minContentGeneration[axisIndex] = generationCount;
-  return minContent;
+  return {minContent, resolvesAgainstOwnerWidth};
 }
 
 // Computes the CSS Flexbox §4.5 automatic minimum main-axis size for
@@ -1037,8 +1091,10 @@ static FloatOptional computeAutoMinMainSize(
   }
 
   // Content size suggestion: probe via min-content recursion.
-  const FloatOptional contentMain = FloatOptional{computeMinContentMainSize(
-      child, mainAxis, direction, ownerWidth, ownerHeight, generationCount)};
+  const FloatOptional contentMain = FloatOptional{
+      computeMinContentMainSize(
+          child, mainAxis, direction, ownerWidth, ownerHeight, generationCount)
+          .size};
 
   // Combine per §4.5: floor = min(content, specified) when specified is
   // definite; otherwise floor = min(content, transferred) when transferred
@@ -2740,9 +2796,7 @@ bool calculateLayoutInternal(
   depth++;
 
   const bool needToVisitNode =
-      (node->isDirty() && layout->generationCount != generationCount) ||
-      layout->configVersion != node->getConfig()->getVersion() ||
-      layout->lastOwnerDirection != ownerDirection;
+      isCacheStale(node, ownerDirection, generationCount);
 
   if (needToVisitNode) {
     // Invalidate the cached results.
@@ -2755,6 +2809,13 @@ bool calculateLayoutInternal(
     layout->cachedLayout.computedHeight = -1;
     layout->cachedLayout.ownerWidth = -1;
     layout->cachedLayout.ownerHeight = -1;
+    // A min-content size memoized earlier in this layout already reflects the
+    // change.
+    for (auto& minContentGeneration : layout->minContentGeneration) {
+      if (minContentGeneration != generationCount) {
+        minContentGeneration = 0;
+      }
+    }
   }
 
   CachedMeasurement* cachedResults = nullptr;
