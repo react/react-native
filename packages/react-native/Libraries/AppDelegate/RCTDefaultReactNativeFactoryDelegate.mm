@@ -15,8 +15,33 @@
 #endif
 
 #import <RCTAnimatedModuleProvider/RCTAnimatedModuleProvider.h>
+#import <React/RCTStatusBarAppearance.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/nativemodule/defaults/DefaultTurboModules.h>
+
+@interface RCTRootViewController : UIViewController
+@end
+
+@implementation RCTRootViewController
+
+#if !TARGET_OS_TV
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+  return RCTStatusBarAppearance.style;
+}
+
+- (BOOL)prefersStatusBarHidden
+{
+  return RCTStatusBarAppearance.hidden;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation
+{
+  return RCTStatusBarAppearance.updateAnimation;
+}
+#endif
+
+@end
 
 @implementation RCTDefaultReactNativeFactoryDelegate {
   // C++ Native Animated provider, created once on first use (getTurboModule: may be called
@@ -29,7 +54,7 @@
 
 - (UIViewController *)createRootViewController
 {
-  return [UIViewController new];
+  return [RCTRootViewController new];
 }
 
 - (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController
