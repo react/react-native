@@ -247,6 +247,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableAsyncSettingsManagerUpdatesIOS: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-10',
+        description:
+          'Process SettingsManager defaults notifications on a dedicated serial queue on iOS.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableBridgelessArchitecture: {
       defaultValue: true,
       metadata: {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c305274be2fc6720b6c0eb75e78bd6b0>>
+ * @generated SignedSource<<d0cf5ef3e81e970fc5a7b29e9ba0fef6>>
  */
 
 /**
@@ -42,6 +42,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableAndroidAutoOffscreenCompositingForElevationCache: Boolean? = null
   private var enableAndroidTextMeasurementOptimizationsCache: Boolean? = null
   private var enableAsyncDiskCacheCheckInMultiSourceImageAndroidCache: Boolean? = null
+  private var enableAsyncSettingsManagerUpdatesIOSCache: Boolean? = null
   private var enableBridgelessArchitectureCache: Boolean? = null
   private var enableCppPropsIteratorSetterCache: Boolean? = null
   private var enableCustomFocusSearchOnClippedElementsAndroidCache: Boolean? = null
@@ -298,6 +299,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableAsyncDiskCacheCheckInMultiSourceImageAndroid()
       accessedFeatureFlags.add("enableAsyncDiskCacheCheckInMultiSourceImageAndroid")
       enableAsyncDiskCacheCheckInMultiSourceImageAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun enableAsyncSettingsManagerUpdatesIOS(): Boolean {
+    var cached = enableAsyncSettingsManagerUpdatesIOSCache
+    if (cached == null) {
+      cached = currentProvider.enableAsyncSettingsManagerUpdatesIOS()
+      accessedFeatureFlags.add("enableAsyncSettingsManagerUpdatesIOS")
+      enableAsyncSettingsManagerUpdatesIOSCache = cached
     }
     return cached
   }
