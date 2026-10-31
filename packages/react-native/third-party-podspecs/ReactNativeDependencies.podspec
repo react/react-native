@@ -76,11 +76,7 @@ Pod::Spec.new do |spec|
       :execution_position => :before_compile,
       :script => <<-EOS
       . "$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh"
-
-      CONFIG="Release"
-      if echo $GCC_PREPROCESSOR_DEFINITIONS | grep -q "DEBUG=1"; then
-        CONFIG="Debug"
-      fi
+      . "$REACT_NATIVE_PATH/scripts/xcode/resolve-prebuilt-configuration.sh"
 
       "$NODE_BINARY" "$REACT_NATIVE_PATH/third-party-podspecs/replace_dependencies_version.js" -c "$CONFIG" -r "#{version}" -p "$PODS_ROOT"
       EOS
