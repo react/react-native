@@ -8,7 +8,10 @@
 #pragma once
 
 #include <fbjni/fbjni.h>
+#include <folly/dynamic.h>
 #include <react/renderer/mounting/ShadowView.h>
+
+#include <memory>
 
 namespace facebook::react {
 
@@ -63,6 +66,9 @@ struct CppMountItem final {
   ShadowView oldChildShadowView = {};
   ShadowView newChildShadowView = {};
   int index = {};
+
+  // For UpdateProps items, the props diff when it was already computed.
+  std::unique_ptr<folly::dynamic> diffProps = {};
 };
 
 } // namespace facebook::react

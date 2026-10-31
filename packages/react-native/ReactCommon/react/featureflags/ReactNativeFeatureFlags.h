@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6887b671526bc8a3b0678e3e45b4e3b4>>
+ * @generated SignedSource<<8fc79697c78a91d401a1aec0b5e44d1b>>
  */
 
 /**
@@ -135,6 +135,11 @@ class ReactNativeFeatureFlags {
    * Feature flag to enable the new bridgeless architecture.
    */
   RN_EXPORT static bool enableBridgelessArchitecture();
+
+  /**
+   * When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView, TextInput). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.
+   */
+  RN_EXPORT static bool enableCoreComponentsPropsUpdateReconciliationAndroid();
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).

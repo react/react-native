@@ -143,7 +143,7 @@ inline static void updateEventProp(
     const ViewEvents& newEvents,
     const ViewEvents& oldEvents,
     const ViewEvents::Offset& offset,
-    const std::string& name) {
+    const char* name) {
   if (newEvents[offset] != oldEvents[offset]) {
     auto value = newEvents[offset];
     result[name] = value;
@@ -152,7 +152,7 @@ inline static void updateEventProp(
 
 static void updateBorderWidthPropValue(
     folly::dynamic& result,
-    const std::string& propName,
+    const char* propName,
     const std::optional<float>& newValue,
     const std::optional<float>& oldValue) {
   if (newValue != oldValue) {
@@ -189,7 +189,7 @@ static void updateBorderWidthProps(
 
 static void updateBorderRadiusPropValue(
     folly::dynamic& result,
-    const std::string& propName,
+    const char* propName,
     const std::optional<ValueUnit>& newValue,
     const std::optional<ValueUnit>& oldValue) {
   if (newValue != oldValue) {
@@ -298,7 +298,7 @@ static void updateBorderStyleProps(
 
 static void updateBorderColorPropValue(
     folly::dynamic& result,
-    const std::string& propName,
+    const char* propName,
     const std::optional<SharedColor>& newColor,
     const std::optional<SharedColor>& oldColor) {
   if (newColor != oldColor) {
@@ -344,7 +344,7 @@ static void updateBorderColorsProps(
 
 inline static void updateNativeDrawableProp(
     folly::dynamic& result,
-    const std::string& propName,
+    const char* propName,
     const std::optional<NativeDrawable>& nativeDrawable) {
   folly::dynamic nativeDrawableResult;
   if (nativeDrawable.has_value()) {
@@ -392,7 +392,7 @@ inline static void updateNativeDrawableProp(
     nativeDrawableResult = folly::dynamic(nullptr);
   }
 
-  result[propName] = nativeDrawableResult;
+  result[propName] = std::move(nativeDrawableResult);
 }
 
 static folly::dynamic toDynamic(const AccessibilityState& state) {
@@ -651,7 +651,6 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
 
   if (getClipsContentToBounds() != oldProps->getClipsContentToBounds()) {
     result["overflow"] = getClipsContentToBounds() ? "hidden" : "visible";
-    result["scroll"] = result["overflow"];
   }
 
   if (backfaceVisibility != oldProps->backfaceVisibility) {
@@ -873,8 +872,8 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   // Transforms
-  if (transform != oldProps->transform ||
-      transformOrigin != oldProps->transformOrigin) {
+  // Java re-applies the last transform when only the origin changes.
+  if (transform != oldProps->transform) {
     folly::dynamic resultTranslateArray = folly::dynamic::array();
     for (const auto& operation : transform.operations) {
       updateTransformProps(transform, operation, resultTranslateArray);
@@ -904,7 +903,8 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
          accessibilityLabelledBy.value) {
       accessibilityLabelledByValues.push_back(accessibilityLabelledByValue);
     }
-    result["accessibilityLabelledBy"] = accessibilityLabelledByValues;
+    result["accessibilityLabelledBy"] =
+        std::move(accessibilityLabelledByValues);
   }
 
   if (accessibilityOrder != oldProps->accessibilityOrder) {
@@ -912,7 +912,8 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
     for (const auto& accessibilityChildId : accessibilityOrder) {
       accessibilityChildrenIds.push_back(accessibilityChildId);
     }
-    result["experimental_accessibilityOrder"] = accessibilityChildrenIds;
+    result["experimental_accessibilityOrder"] =
+        std::move(accessibilityChildrenIds);
   }
 
   if (accessibilityLiveRegion != oldProps->accessibilityLiveRegion) {
@@ -949,7 +950,7 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
     }
     result["accessibilityValue"] = accessibilityValueObject.empty()
         ? folly::dynamic(nullptr)
-        : accessibilityValueObject;
+        : std::move(accessibilityValueObject);
   }
 
   if (accessibilityActions != oldProps->accessibilityActions) {
@@ -960,9 +961,9 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
       if (accessibilityAction.label.has_value()) {
         accessibilityActionObject["label"] = accessibilityAction.label.value();
       }
-      accessibilityActionsArray.push_back(accessibilityActionObject);
+      accessibilityActionsArray.push_back(std::move(accessibilityActionObject));
     }
-    result["accessibilityActions"] = accessibilityActionsArray;
+    result["accessibilityActions"] = std::move(accessibilityActionsArray);
   }
 
   if (accessibilityViewIsModal != oldProps->accessibilityViewIsModal) {
