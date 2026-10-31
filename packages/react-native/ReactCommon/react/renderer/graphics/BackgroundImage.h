@@ -9,12 +9,13 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <react/renderer/graphics/ConicGradient.h>
 #include <react/renderer/graphics/LinearGradient.h>
 #include <react/renderer/graphics/RadialGradient.h>
 
 namespace facebook::react {
 
-using BackgroundImage = std::variant<LinearGradient, RadialGradient>;
+using BackgroundImage = std::variant<ConicGradient, LinearGradient, RadialGradient>;
 
 #ifdef RN_SERIALIZABLE_STATE
 folly::dynamic toDynamic(const BackgroundImage &backgroundImage);
@@ -32,7 +33,9 @@ inline std::string toString(std::vector<BackgroundImage> &value)
     }
 
     const auto &backgroundImage = value[i];
-    if (std::holds_alternative<LinearGradient>(backgroundImage)) {
+    if (std::holds_alternative<ConicGradient>(backgroundImage)) {
+      std::get<ConicGradient>(backgroundImage).toString(ss);
+    } else if (std::holds_alternative<LinearGradient>(backgroundImage)) {
       std::get<LinearGradient>(backgroundImage).toString(ss);
     } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
       std::get<RadialGradient>(backgroundImage).toString(ss);

@@ -792,6 +792,10 @@ interface RCTComposedViewRegistry : public NSMutableDictionary {
   public virtual instancetype initWithUIManager:andRegistry:(RCTUIManager* uiManager, NSDictionary<NSNumber*, UIView*>* registry);
 }
 
+interface RCTConicGradient : public NSObject {
+  public virtual static CALayer* gradientLayerWithSize:gradient:(CGSize size, const facebook::react::ConicGradient& gradient);
+}
+
 interface RCTConvert : public NSObject {
   public typedef BOOL css_backface_visibility_t;
   public typedef NSArray CGColorArray;
@@ -3082,7 +3086,7 @@ using facebook::react::ModuleConstants = _RCTTypedModuleConstants<void(^)(typena
 using facebook::react::ActivityIndicatorViewComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::ActivityIndicatorViewShadowNode>;
 using facebook::react::ActivityIndicatorViewShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::ActivityIndicatorViewComponentName, facebook::react::ActivityIndicatorViewProps, facebook::react::ActivityIndicatorViewEventEmitter, facebook::react::ActivityIndicatorViewState>;
 using facebook::react::ActivityIndicatorViewState = facebook::react::StateData;
-using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
+using facebook::react::BackgroundImage = std::variant<facebook::react::ConicGradient, facebook::react::LinearGradient, facebook::react::RadialGradient>;
 using facebook::react::BackgroundSize = std::variant<facebook::react::BackgroundSizeKeyword, facebook::react::BackgroundSizeLengthPercentage>;
 using facebook::react::BorderColors = facebook::react::RectangleEdges<facebook::react::SharedColor>;
 using facebook::react::BorderCurves = facebook::react::RectangleCorners<facebook::react::BorderCurve>;
@@ -5257,6 +5261,13 @@ struct facebook::react::ColorStop {
   public bool operator==(const facebook::react::ColorStop& other) const = default;
   public facebook::react::SharedColor color;
   public facebook::react::ValueUnit position;
+}
+
+struct facebook::react::ConicGradient {
+  public bool operator==(const facebook::react::ConicGradient& other) const = default;
+  public facebook::react::Float from;
+  public facebook::react::RadialGradientPosition position;
+  public std::vector<facebook::react::ColorStop> colorStops;
 }
 
 struct facebook::react::CornerRadii {

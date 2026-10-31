@@ -114,6 +114,12 @@ describe('processBackgroundPosition', () => {
     ]);
   });
 
+  it('should parse top center', () => {
+    expect(processBackgroundPosition('top center')).toEqual([
+      {top: '0%', left: '50%'},
+    ]);
+  });
+
   it('should parse center center', () => {
     expect(processBackgroundPosition('center center')).toEqual([
       {top: '50%', left: '50%'},
@@ -123,6 +129,24 @@ describe('processBackgroundPosition', () => {
   it('should parse center bottom', () => {
     expect(processBackgroundPosition('center bottom')).toEqual([
       {top: '100%', left: '50%'},
+    ]);
+  });
+
+  it('should parse bottom center', () => {
+    expect(processBackgroundPosition('bottom center')).toEqual([
+      {top: '100%', left: '50%'},
+    ]);
+  });
+
+  it('should parse center left', () => {
+    expect(processBackgroundPosition('center left')).toEqual([
+      {top: '50%', left: '0%'},
+    ]);
+  });
+
+  it('should parse center right', () => {
+    expect(processBackgroundPosition('center right')).toEqual([
+      {top: '50%', left: '100%'},
     ]);
   });
 
@@ -284,6 +308,12 @@ describe('processBackgroundPosition', () => {
   it('should parse right percentage bottom percentage', () => {
     expect(processBackgroundPosition('right 25% bottom 75%')).toEqual([
       {bottom: '75%', right: '25%'},
+    ]);
+  });
+
+  it('should parse vertical position before horizontal position', () => {
+    expect(processBackgroundPosition('top 75% left 25%')).toEqual([
+      {top: '75%', left: '25%'},
     ]);
   });
 

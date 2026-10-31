@@ -71,5 +71,28 @@ describe('<View> native CSS parsing', () => {
       expect(backgroundImage).toContain('linear-gradient');
       expect(backgroundImage).toContain('rgba(230, 100, 101, 1)');
     });
+
+    it('parses a conic-gradient()', () => {
+      const backgroundImage = mountedProp(
+        {
+          backgroundImage: 'conic-gradient(from 45deg, #e66465, #9198e5)',
+        },
+        'backgroundImage',
+      );
+      expect(backgroundImage).toBe(
+        '[conic-gradient(from 45deg at 50% 50% , rgba(230, 100, 101, 1), rgba(145, 152, 229, 1))]',
+      );
+    });
+
+    it('parses a four-value conic-gradient position', () => {
+      expect(
+        mountedProp(
+          {
+            backgroundImage: 'conic-gradient(at top 20px left 10px, red, blue)',
+          },
+          'backgroundImage',
+        ),
+      ).toContain('at 10px 20px');
+    });
   });
 });

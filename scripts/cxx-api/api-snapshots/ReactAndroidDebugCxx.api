@@ -391,7 +391,7 @@ using facebook::react::AndroidDrawerLayoutState = facebook::react::StateData;
 using facebook::react::AndroidSwipeRefreshLayoutComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::AndroidSwipeRefreshLayoutShadowNode>;
 using facebook::react::AndroidSwipeRefreshLayoutShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::AndroidSwipeRefreshLayoutComponentName, facebook::react::AndroidSwipeRefreshLayoutProps, facebook::react::AndroidSwipeRefreshLayoutEventEmitter, facebook::react::AndroidSwipeRefreshLayoutState>;
 using facebook::react::AndroidSwipeRefreshLayoutState = facebook::react::StateData;
-using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
+using facebook::react::BackgroundImage = std::variant<facebook::react::ConicGradient, facebook::react::LinearGradient, facebook::react::RadialGradient>;
 using facebook::react::BackgroundSize = std::variant<facebook::react::BackgroundSizeKeyword, facebook::react::BackgroundSizeLengthPercentage>;
 using facebook::react::BorderColors = facebook::react::RectangleEdges<facebook::react::SharedColor>;
 using facebook::react::BorderCurves = facebook::react::RectangleCorners<facebook::react::BorderCurve>;
@@ -3187,6 +3187,14 @@ struct facebook::react::ColorStop {
   public facebook::react::SharedColor color;
   public facebook::react::ValueUnit position;
   public folly::dynamic toDynamic() const;
+}
+
+struct facebook::react::ConicGradient {
+  public bool operator==(const facebook::react::ConicGradient& other) const = default;
+  public facebook::react::Float from;
+  public facebook::react::RadialGradientPosition position;
+  public folly::dynamic toDynamic() const;
+  public std::vector<facebook::react::ColorStop> colorStops;
 }
 
 struct facebook::react::CornerRadii {

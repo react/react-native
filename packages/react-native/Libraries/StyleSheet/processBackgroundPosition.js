@@ -82,7 +82,19 @@ const parseBackgroundPositionCSSString = (
       if (t1 == null || t2 == null) {
         return [];
       }
-      const token1 = t1.toLowerCase().trim();
+      let token1 = t1.toLowerCase().trim();
+      let token2 = t2.toLowerCase().trim();
+      // `center` can represent either axis. Normalize the valid vertical-first
+      // and horizontal-second forms to the existing horizontal-first grammar.
+      if (
+        ((token1 === 'top' || token1 === 'bottom') && token2 === 'center') ||
+        (token1 === 'center' && (token2 === 'left' || token2 === 'right'))
+      ) {
+        const firstToken = token1;
+        token1 = token2;
+        token2 = firstToken;
+      }
+
       if (token1 === 'left') {
         left = '0%';
       } else if (token1 === 'center') {
@@ -101,7 +113,6 @@ const parseBackgroundPositionCSSString = (
         left = value;
       }
 
-      const token2 = t2.toLowerCase().trim();
       if (token2 === 'top') {
         top = '0%';
       } else if (token2 === 'center') {
@@ -219,16 +230,28 @@ const parseBackgroundPositionCSSString = (
       if (value1 == null || value2 == null) {
         return [];
       }
-      if (keyword1 === 'left') {
-        left = value1;
-      } else if (keyword1 === 'right') {
-        right = value1;
-      }
-
-      if (keyword2 === 'top') {
-        top = value2;
-      } else if (keyword2 === 'bottom') {
-        bottom = value2;
+      const assignPosition = (
+        keyword: string,
+        value: string | number,
+      ): boolean => {
+        if (keyword === 'left') {
+          left = value;
+        } else if (keyword === 'right') {
+          right = value;
+        } else if (keyword === 'top') {
+          top = value;
+        } else if (keyword === 'bottom') {
+          bottom = value;
+        } else {
+          return false;
+        }
+        return true;
+      };
+      if (
+        !assignPosition(keyword1, value1) ||
+        !assignPosition(keyword2, value2)
+      ) {
+        return [];
       }
     }
 

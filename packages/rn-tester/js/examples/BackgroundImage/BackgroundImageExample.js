@@ -12,6 +12,7 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import ConicGradientCornerCases from './ConicGradientCornerCases';
 import {StyleSheet, Text, View} from 'react-native';
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
@@ -60,6 +61,13 @@ exports.title = 'BackgroundImage';
 exports.category = 'UI';
 exports.description = 'Examples of background gradients applied to views.';
 exports.examples = [
+  {
+    title: 'Conic Gradient Corner Cases',
+    name: 'conic-corner-cases',
+    description:
+      'Compare geometry, positions, stops, tiling, and updates in string and object syntax.',
+    render: () => <ConicGradientCornerCases />,
+  },
   {
     title: 'Basic Linear Gradient',
     description: 'A simple linear gradient from top to bottom.',
@@ -176,6 +184,40 @@ exports.examples = [
               }}
               testID="background-image-radial-2"
             />
+          </View>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Conic Gradient',
+    description:
+      'Conic gradients rotate color stops clockwise around a configurable center.',
+    name: 'conic',
+    render(): React.Node {
+      return (
+        <View>
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text>Quadrants</Text>
+              <BackgroundImageBox
+                style={{
+                  backgroundImage:
+                    'conic-gradient(from 0deg, #ff6b6b 0deg 90deg, #4ecdc4 90deg 180deg, #45b7d1 180deg 270deg, #f9ca24 270deg 360deg)',
+                }}
+                testID="background-image-conic-quadrants"
+              />
+            </View>
+            <View style={styles.col}>
+              <Text>Rotated and off-center</Text>
+              <BackgroundImageBox
+                style={{
+                  backgroundImage:
+                    'conic-gradient(from 45deg at 30% 70%, #ff6b6b, #4ecdc4, #ff6b6b)',
+                }}
+                testID="background-image-conic-position"
+              />
+            </View>
           </View>
         </View>
       );

@@ -407,7 +407,24 @@ type RadialGradientValue = {
   }>;
 };
 
-export type BackgroundImageValue = LinearGradientValue | RadialGradientValue;
+type ConicGradientValue = {
+  type: 'conic-gradient';
+  from?: string | undefined;
+  position?: RadialGradientPosition | undefined;
+  colorStops: ReadonlyArray<
+    | {
+        color: ColorValue | null;
+        positions?: ReadonlyArray<string> | undefined;
+      }
+    | {
+        color?: null | undefined;
+        positions: readonly [string];
+      }
+  >;
+};
+
+export type BackgroundImageValue =
+  LinearGradientValue | RadialGradientValue | ConicGradientValue;
 
 export type BackgroundSizeValue = {
   x: string | number;
