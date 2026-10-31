@@ -11,6 +11,7 @@
 const createReplaceDefaultExportName = require('../replaceDefaultExportName');
 const babel = require('@babel/core');
 const flowApiTranslator = require('flow-api-translator');
+const path = require('node:path');
 
 const prettierOptions = {parser: 'babel'};
 
@@ -32,7 +33,10 @@ async function translate(code: string, fileName: string): Promise<string> {
 describe('replaceDefaultExportName', () => {
   test('should replace default export name with unambiguous one', async () => {
     const code = `export default Foo;`;
-    const result = await translate(code, 'mock/path/to/module/Foo.js');
+    const result = await translate(
+      code,
+      path.join('mock', 'path', 'to', 'module', 'Foo.js'),
+    );
     expect(result).toMatchInlineSnapshot(`
       "declare const $$Foo: typeof Foo;
       declare type $$Foo = typeof $$Foo;
