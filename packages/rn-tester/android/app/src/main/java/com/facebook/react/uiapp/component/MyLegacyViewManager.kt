@@ -33,12 +33,9 @@ internal class MyLegacyViewManager(reactContext: ReactApplicationContext) :
     super.setOpacity(view, opacity)
   }
 
-  @ReactProp(name = ViewProps.COLOR)
-  fun setColor(view: MyNativeView, color: String?): Unit =
-      when (color) {
-        null -> view.setBackgroundColor(Color.TRANSPARENT)
-        else -> view.setBackgroundColor(Color.parseColor(color))
-      }
+  @ReactProp(name = ViewProps.COLOR, customType = "Color")
+  fun setColor(view: MyNativeView, color: Int?): Unit =
+      view.setBackgroundColor(color ?: Color.TRANSPARENT)
 
   @ReactProp(name = "cornerRadius")
   fun setCornerRadius(view: MyNativeView, cornerRadius: Float) {

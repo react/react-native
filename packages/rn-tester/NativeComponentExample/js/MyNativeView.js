@@ -10,6 +10,7 @@
 
 import type {MyLegacyViewType} from './MyLegacyViewNativeComponent';
 import type {MyNativeViewType} from './MyNativeViewNativeComponent';
+import type {ColorValue} from 'react-native';
 
 import RNTMyLegacyNativeView from './MyLegacyViewNativeComponent';
 import {
@@ -31,6 +32,12 @@ const colors = [
   '#003300',
   '#330000',
   '#000033',
+];
+
+const legacyColors: ReadonlyArray<ColorValue> = [
+  'rgb(255, 255, 255)',
+  'hsl(240, 100%, 50%)',
+  'steelblue',
 ];
 
 const cornerRadiuses = [0, 20, 40, 60, 80, 100, 120];
@@ -101,6 +108,7 @@ export default function MyNativeView(props: {}): React.Node {
   const ref = useRef<React.ElementRef<MyNativeViewType> | null>(null);
   const legacyRef = useRef<React.ElementRef<MyLegacyViewType> | null>(null);
   const [currentBGColor, setCurrentBGColor] = useState<number>(0);
+  const [legacyColorIndex, setLegacyColorIndex] = useState<?number>(null);
   const [opacity, setOpacity] = useState(1.0);
   const [arrayValues, setArrayValues] = useState([1, 2, 3]);
   const [hsba, setHsba] = useState<HSBA>(new HSBA());
@@ -141,6 +149,9 @@ export default function MyNativeView(props: {}): React.Node {
         ref={legacyRef}
         style={{flex: 1}}
         opacity={opacity}
+        color={
+          legacyColorIndex == null ? undefined : legacyColors[legacyColorIndex]
+        }
         onColorChanged={event => {
           const normalizedHue =
             Platform.OS === 'android'
@@ -193,6 +204,17 @@ export default function MyNativeView(props: {}): React.Node {
               newColor,
             );
             setCurrentBGColor(nextBGColor);
+          }}
+        />
+        <Button
+          title="Set Color Prop"
+          onPress={() => {
+            setLegacyColorIndex(
+              legacyColorIndex == null ||
+                legacyColorIndex + 1 >= legacyColors.length
+                ? 0
+                : legacyColorIndex + 1,
+            );
           }}
         />
         <Button
