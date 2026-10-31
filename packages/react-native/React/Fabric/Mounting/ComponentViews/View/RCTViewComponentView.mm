@@ -1485,7 +1485,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         CALayer *maskLayer =
             [self createMaskLayer:self.bounds
                      cornerInsets:RCTGetCornerInsets(
-                                      RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)];
+                                      RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)
+                      borderCurve:borderMetrics.borderCurves.topLeft];
         self.currentContainerView.layer.mask = maskLayer;
       }
 
@@ -1497,7 +1498,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
           // If the subview is an image view, we have to apply the mask directly to the image view's layer,
           // otherwise the image might overflow with the border radius.
-          subview.layer.mask = [self createMaskLayer:subview.bounds cornerInsets:cornerInsets];
+          subview.layer.mask = [self createMaskLayer:subview.bounds
+                                        cornerInsets:cornerInsets
+                                         borderCurve:borderMetrics.borderCurves.topLeft];
         }
       }
     } else if (
@@ -1506,7 +1509,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       CALayer *maskLayer = [self createMaskLayer:RCTCGRectFromRect(_layoutMetrics.getPaddingFrame())
                                     cornerInsets:RCTGetCornerInsets(
                                                      RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
-                                                     RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths))];
+                                                     RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths))
+                                     borderCurve:borderMetrics.borderCurves.topLeft];
       self.currentContainerView.layer.mask = maskLayer;
     } else {
       self.currentContainerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
@@ -1526,16 +1530,59 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
     layer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);
   } else {
-    CAShapeLayer *maskLayer = [self
+    CALayer *maskLayer = [self
         createMaskLayer:self.bounds
-           cornerInsets:RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)];
+           cornerInsets:RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)
+            borderCurve:borderMetrics.borderCurves.topLeft];
     layer.mask = maskLayer;
     layer.cornerRadius = 0;
   }
 }
 
-- (CAShapeLayer *)createMaskLayer:(CGRect)bounds cornerInsets:(RCTCornerInsets)cornerInsets
+- (CALayer *)createMaskLayer:(CGRect)bounds
+                cornerInsets:(RCTCornerInsets)cornerInsets
+                 borderCurve:(BorderCurve)borderCurve
 {
+  if (borderCurve == BorderCurve::Continuous) {
+    const struct {
+      CGSize size;
+      CACornerMask mask;
+    } corners[] = {
+        {cornerInsets.topLeft, kCALayerMinXMinYCorner},
+        {cornerInsets.topRight, kCALayerMaxXMinYCorner},
+        {cornerInsets.bottomLeft, kCALayerMinXMaxYCorner},
+        {cornerInsets.bottomRight, kCALayerMaxXMaxYCorner}};
+    CGFloat radius = 0;
+    CACornerMask maskedCorners = 0;
+    bool useCoreAnimationMask = true;
+    for (const auto &corner : corners) {
+      if (CGSizeEqualToSize(corner.size, CGSizeZero)) {
+        continue;
+      }
+      if (corner.size.width != corner.size.height || (radius != 0 && corner.size.width != radius)) {
+        useCoreAnimationMask = false;
+        break;
+      }
+      radius = corner.size.width;
+      maskedCorners |= corner.mask;
+    }
+
+    if (useCoreAnimationMask && radius > 0 && radius <= MIN(bounds.size.width, bounds.size.height) / 2) {
+      // Core Animation supports a shared radius on any subset of corners. A
+      // rounded-rect CGPath would replace the requested continuous curve with
+      // circular arcs, including when only the top or bottom corners are round.
+      // Larger asymmetric radii need the path renderer: a native layer distorts
+      // the square corners when its radius exceeds half the shorter dimension.
+      CALayer *maskLayer = [CALayer layer];
+      maskLayer.frame = bounds;
+      maskLayer.backgroundColor = UIColor.blackColor.CGColor;
+      maskLayer.cornerRadius = radius;
+      maskLayer.cornerCurve = CornerCurveFromBorderCurve(borderCurve);
+      maskLayer.maskedCorners = maskedCorners;
+      return maskLayer;
+    }
+  }
+
   CGPathRef path = RCTPathCreateWithRoundedRect(bounds, cornerInsets, nil, NO);
   CAShapeLayer *maskLayer = [CAShapeLayer layer];
   maskLayer.path = path;

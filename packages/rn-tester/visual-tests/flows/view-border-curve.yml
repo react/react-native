@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          file: ../helpers/capture-border-curve.yml
+          env:
+            EXAMPLE: border-curve
+            WAIT_FOR_IMAGES: false
+      - runFlow:
+          file: ../helpers/capture-border-curve.yml
+          env:
+            EXAMPLE: border-curve-circular
+            WAIT_FOR_IMAGES: false
+      - runFlow:
+          file: ../helpers/capture-border-curve.yml
+          env:
+            EXAMPLE: border-curve-boundaries
+            WAIT_FOR_IMAGES: true
+      - runFlow:
+          file: ../helpers/capture-border-curve.yml
+          env:
+            EXAMPLE: border-curve-boundaries-circular
+            WAIT_FOR_IMAGES: true
