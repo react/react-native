@@ -19,6 +19,17 @@ type BackPressEventName = 'backPress' | 'hardwareBackPress';
 type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean;
 
 const _backPressSubscriptions: Array<BackPressHandler> = [];
+let nativeNavigationEnabled = false;
+const nativeNavigationFallbacks: Set<BackPressHandler> = new Set();
+
+function updateNativeNavigation(): void {
+  NativeDeviceEventManager?.setNativeNavigationEnabled(
+    nativeNavigationEnabled,
+    _backPressSubscriptions.some(
+      handler => !nativeNavigationFallbacks.has(handler),
+    ),
+  );
+}
 
 RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function (nativeEvent) {
   const options = {};
@@ -47,12 +58,28 @@ RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function (nativeEvent) {
  */
 type TBackHandler = {
   readonly exitApp: () => void,
+  readonly setNativeNavigationEnabled: (enabled: boolean) => void,
   readonly addEventListener: (
     eventName: BackPressEventName,
     handler: BackPressHandler,
-  ) => {remove: () => void, ...},
+    options?: {nativeNavigationFallback?: boolean, ...},
+  ) => {
+    remove: () => void,
+    setNativeNavigationFallback: (enabled: boolean) => void,
+    ...
+  },
 };
 const BackHandler: TBackHandler = {
+  /**
+   * Opt into native predictive Back ownership on Android. With no registered
+   * JavaScript handlers, native navigators or the system own Back. Any handler
+   * conservatively restores JavaScript ownership, regardless of its return value.
+   * Configure this once at the navigation root, not per screen.
+   */
+  setNativeNavigationEnabled(enabled: boolean): void {
+    nativeNavigationEnabled = enabled;
+    updateNativeNavigation();
+  },
   /**
    * Programmatically exit the app.
    */
@@ -67,19 +94,42 @@ const BackHandler: TBackHandler = {
   /**
    * Listen for the `hardwareBackPress` event. The handler should return `true`
    * to prevent the event from bubbling to earlier registered listeners.
+   *
+   * Navigation libraries may mark their fallback as nativeNavigationFallback
+   * only while an equivalent native owner is ready. The fallback remains in the
+   * JS chain, so an unhandled overlay event still navigates. Use the returned
+   * setNativeNavigationFallback method to change ownership without changing
+   * handler ordering. Ordinary application handlers must keep the default.
    */
   addEventListener: function (
     eventName: BackPressEventName,
     handler: BackPressHandler,
-  ): {remove: () => void, ...} {
+    options?: {nativeNavigationFallback?: boolean, ...},
+  ): {
+    remove: () => void,
+    setNativeNavigationFallback: (enabled: boolean) => void,
+    ...
+  } {
     if (_backPressSubscriptions.indexOf(handler) === -1) {
       _backPressSubscriptions.push(handler);
+      if (options?.nativeNavigationFallback === true) {
+        nativeNavigationFallbacks.add(handler);
+      }
+      if (nativeNavigationEnabled) updateNativeNavigation();
     }
     return {
+      setNativeNavigationFallback: (enabled: boolean): void => {
+        if (_backPressSubscriptions.indexOf(handler) === -1) return;
+        if (enabled) nativeNavigationFallbacks.add(handler);
+        else nativeNavigationFallbacks.delete(handler);
+        if (nativeNavigationEnabled) updateNativeNavigation();
+      },
       remove: (): void => {
         const index = _backPressSubscriptions.indexOf(handler);
         if (index !== -1) {
           _backPressSubscriptions.splice(index, 1);
+          nativeNavigationFallbacks.delete(handler);
+          if (nativeNavigationEnabled) updateNativeNavigation();
         }
       },
     };

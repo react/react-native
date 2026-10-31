@@ -17,17 +17,25 @@ function emptyFunction(): void {}
 
 type TBackHandler = {
   exitApp(): void,
+  setNativeNavigationEnabled(enabled: boolean): void,
   addEventListener(
     eventName: BackPressEventName,
     handler: BackPressHandler,
-  ): {remove: () => void, ...},
+    options?: {nativeNavigationFallback?: boolean, ...},
+  ): {
+    remove: () => void,
+    setNativeNavigationFallback: (enabled: boolean) => void,
+    ...
+  },
 };
 
 const BackHandler: TBackHandler = {
   exitApp: emptyFunction,
+  setNativeNavigationEnabled: emptyFunction,
   addEventListener(_eventName: BackPressEventName, _handler: BackPressHandler) {
     return {
       remove: emptyFunction,
+      setNativeNavigationFallback: emptyFunction,
     };
   },
 };

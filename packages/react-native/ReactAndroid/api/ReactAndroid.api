@@ -1,3 +1,15 @@
+public final class com/facebook/react/BackNavigationCoordinator {
+	public fun <init> ()V
+	public fun addListener (Ljava/lang/Runnable;)V
+	public fun hasJavaScriptHandlers ()Z
+	public fun isJavaScriptEnabled ()Z
+	public fun isNativeNavigationEnabled ()Z
+	public fun release (Ljava/lang/Object;)V
+	public fun removeListener (Ljava/lang/Runnable;)V
+	public fun update (Ljava/lang/Object;ZZ)V
+	public fun withNativeFallback (Ljava/lang/Runnable;)V
+}
+
 public abstract class com/facebook/react/BaseReactPackage : com/facebook/react/ReactPackage {
 	public fun <init> ()V
 	public fun createNativeModules (Lcom/facebook/react/bridge/ReactApplicationContext;)Ljava/util/List;
@@ -61,6 +73,7 @@ public final class com/facebook/react/NativeModuleRegistryBuilder {
 public abstract class com/facebook/react/ReactActivity : androidx/appcompat/app/AppCompatActivity, com/facebook/react/modules/core/DefaultHardwareBackBtnHandler, com/facebook/react/modules/core/PermissionAwareActivity {
 	protected fun <init> ()V
 	protected fun createReactActivityDelegate ()Lcom/facebook/react/ReactActivityDelegate;
+	public final fun getBackNavigationCoordinator ()Lcom/facebook/react/BackNavigationCoordinator;
 	protected fun getMainComponentName ()Ljava/lang/String;
 	public fun getReactActivityDelegate ()Lcom/facebook/react/ReactActivityDelegate;
 	public fun getReactDelegate ()Lcom/facebook/react/ReactDelegate;
@@ -2528,13 +2541,18 @@ public abstract interface class com/facebook/react/modules/core/DefaultHardwareB
 	public abstract fun invokeDefaultOnBackPressed ()V
 }
 
-public class com/facebook/react/modules/core/DeviceEventManagerModule : com/facebook/fbreact/specs/NativeDeviceEventManagerSpec {
+public class com/facebook/react/modules/core/DeviceEventManagerModule : com/facebook/fbreact/specs/NativeDeviceEventManagerSpec, com/facebook/react/bridge/LifecycleEventListener {
 	public static final field Companion Lcom/facebook/react/modules/core/DeviceEventManagerModule$Companion;
 	public static final field NAME Ljava/lang/String;
 	public fun <init> (Lcom/facebook/react/bridge/ReactApplicationContext;Lcom/facebook/react/modules/core/DefaultHardwareBackBtnHandler;)V
 	public fun emitHardwareBackPressed ()V
 	public fun emitNewIntentReceived (Landroid/net/Uri;)V
+	public fun invalidate ()V
 	public fun invokeDefaultBackPressHandler ()V
+	public fun onHostDestroy ()V
+	public fun onHostPause ()V
+	public fun onHostResume ()V
+	public fun setNativeNavigationEnabled (ZZ)V
 }
 
 public final class com/facebook/react/modules/core/DeviceEventManagerModule$Companion {
