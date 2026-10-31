@@ -23,13 +23,11 @@ import android.graphics.Region
 import android.graphics.drawable.Drawable
 import android.os.Build
 import com.facebook.react.uimanager.FloatUtil.floatsEqual
-import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.Spacing
 import com.facebook.react.uimanager.style.BorderColors
 import com.facebook.react.uimanager.style.BorderInsets
-import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderRadiusStyle
 import com.facebook.react.uimanager.style.BorderStyle
 import com.facebook.react.uimanager.style.ColorEdges
@@ -52,30 +50,42 @@ private const val ALL_BITS_UNSET = 0
 internal class BorderDrawable(
     private val context: Context,
     val borderWidth: Spacing?,
-    /*
-     * We assume borderRadius & borderInsets to be shared across multiple drawables
-     * therefore user should invalidate this drawable when changing either of them
-     */
-    var borderRadius: BorderRadiusStyle?,
-    var borderInsets: BorderInsets?,
+    borderRadius: BorderRadiusStyle?,
+    borderInsets: BorderInsets?,
     borderStyle: BorderStyle?,
 ) : Drawable() {
-  private fun <T> invalidatingAndPathChange(initialValue: T): ReadWriteProperty<Any?, T> =
+  private fun <T> invalidatingChange(initialValue: T): ReadWriteProperty<Any?, T> =
       object : ObservableProperty<T>(initialValue) {
         override fun afterChange(property: KProperty<*>, oldValue: T, newValue: T) {
           if (oldValue != newValue) {
-            needUpdatePath = true
             invalidateSelf()
           }
         }
       }
 
+  /*
+   * We assume borderRadius & borderInsets to be shared across multiple drawables
+   * therefore user should assign them to this drawable again when changing either of them
+   */
+  var borderRadius: BorderRadiusStyle? = borderRadius
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
+
+  var borderInsets: BorderInsets? = borderInsets
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
+
   /** Border Properties */
-  var borderStyle: BorderStyle? by invalidatingAndPathChange(borderStyle)
+  var borderStyle: BorderStyle? by invalidatingChange(borderStyle)
 
   private var borderColors: BorderColors? = null
   private var computedBorderColors: ColorEdges = ColorEdges()
   private var computedBorderRadius: ComputedBorderRadius? = null
+  private var computedBorderInsets: RectF = RectF()
   private var borderAlpha: Int = 255
 
   /**
@@ -90,8 +100,10 @@ internal class BorderDrawable(
 
   private var needUpdatePath: Boolean = true
 
+  /** The inner clip is inset by the border widths only while an edge's color is visible. */
+  private var pathInsetForVisibleBorder: Boolean = false
+
   private var pathForSingleBorder: Path? = null
-  private var pathForOutline: Path? = null
 
   private var centerDrawPath: Path? = null
   private var outerClipPathForBorderRadius: Path? = null
@@ -111,14 +123,14 @@ internal class BorderDrawable(
   private var outerClipTempRectForBorderRadius: RectF? = null
   private var tempRectForCenterDrawPath: RectF? = null
 
-  override fun invalidateSelf() {
-    needUpdatePath = true
-    super.invalidateSelf()
-  }
-
   override fun onBoundsChange(bounds: Rect) {
     super.onBoundsChange(bounds)
     needUpdatePath = true
+  }
+
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    needUpdatePath = true
+    return true
   }
 
   override fun setAlpha(alpha: Int) {
@@ -171,6 +183,7 @@ internal class BorderDrawable(
   override fun draw(canvas: Canvas) {
     updatePathEffect()
     computedBorderColors = borderColors?.resolve(layoutDirection, context) ?: computedBorderColors
+    updatePath()
     if (borderRadius?.hasRoundedBorders() == true) {
       drawRoundedBorders(canvas)
     } else {
@@ -202,26 +215,15 @@ internal class BorderDrawable(
     }
   }
 
-  fun setBorderRadius(property: BorderRadiusProp, radius: LengthPercentage?) {
-    if (radius != borderRadius?.get(property)) {
-      borderRadius?.set(property, radius)
-      needUpdatePath = true
-      invalidateSelf()
-    }
-  }
-
   fun setBorderStyle(style: String?) {
     val borderStyle = if (style == null) null else BorderStyle.valueOf(style.uppercase())
     this.borderStyle = borderStyle
-    needUpdatePath = true
-    invalidateSelf()
   }
 
   fun setBorderColor(position: LogicalEdge, color: Int?) {
     borderColors = borderColors ?: BorderColors()
 
     borderColors?.edgeColors?.set(position.ordinal, color)
-    needUpdatePath = true
     invalidateSelf()
   }
 
@@ -230,7 +232,7 @@ internal class BorderDrawable(
   }
 
   private fun drawRectangularBorders(canvas: Canvas) {
-    val borderWidth = computeBorderInsets()
+    val borderWidth = computedBorderInsets
     val borderLeft = borderWidth.left.roundToInt()
     val borderTop = borderWidth.top.roundToInt()
     val borderRight = borderWidth.right.roundToInt()
@@ -261,7 +263,7 @@ internal class BorderDrawable(
           val bottom = bounds.bottom
           borderPaint.color = multiplyColorAlpha(fastBorderColor, borderAlpha)
           borderPaint.style = Paint.Style.STROKE
-          pathForSingleBorder = Path()
+          pathForSingleBorder = pathForSingleBorder ?: Path()
           if (borderLeft > 0) {
             pathForSingleBorder?.reset()
             val width = borderWidth.left.roundToInt()
@@ -360,13 +362,12 @@ internal class BorderDrawable(
   }
 
   private fun drawRoundedBorders(canvas: Canvas) {
-    updatePath()
     canvas.save()
 
     // Clip outer border
     canvas.clipPath(checkNotNull(outerClipPathForBorderRadius))
 
-    val borderWidth = computeBorderInsets()
+    val borderWidth = computedBorderInsets
     if (
         borderWidth.top > 0 ||
             borderWidth.bottom > 0 ||
@@ -660,17 +661,29 @@ internal class BorderDrawable(
     }
   }
 
+  private fun hasVisibleBorderColor(): Boolean =
+      Color.alpha(computedBorderColors.left) != 0 ||
+          Color.alpha(computedBorderColors.top) != 0 ||
+          Color.alpha(computedBorderColors.right) != 0 ||
+          Color.alpha(computedBorderColors.bottom) != 0
+
   private fun updatePath() {
-    if (!needUpdatePath) {
+    val insetForVisibleBorder = hasVisibleBorderColor()
+    if (!needUpdatePath && insetForVisibleBorder == pathInsetForVisibleBorder) {
       return
     }
 
     needUpdatePath = false
+    pathInsetForVisibleBorder = insetForVisibleBorder
+    computedBorderInsets = computeBorderInsets()
+
+    if (borderRadius?.hasRoundedBorders() != true) {
+      return
+    }
 
     // Path
     innerClipPathForBorderRadius = innerClipPathForBorderRadius ?: Path()
     outerClipPathForBorderRadius = outerClipPathForBorderRadius ?: Path()
-    pathForOutline = Path()
 
     // RectF
     innerClipTempRectForBorderRadius = innerClipTempRectForBorderRadius ?: RectF()
@@ -684,15 +697,10 @@ internal class BorderDrawable(
     outerClipTempRectForBorderRadius?.set(bounds)
     tempRectForCenterDrawPath?.set(bounds)
 
-    val borderWidth = computeBorderInsets()
+    val borderWidth = computedBorderInsets
 
     // Clip border ONLY if at least one edge is non-transparent
-    if (
-        Color.alpha(computedBorderColors.left) != 0 ||
-            Color.alpha(computedBorderColors.top) != 0 ||
-            Color.alpha(computedBorderColors.right) != 0 ||
-            Color.alpha(computedBorderColors.bottom) != 0
-    ) {
+    if (insetForVisibleBorder) {
       innerClipTempRectForBorderRadius?.top =
           innerClipTempRectForBorderRadius?.top?.plus(borderWidth.top) ?: 0f
       innerClipTempRectForBorderRadius?.bottom =
@@ -774,27 +782,6 @@ internal class BorderDrawable(
           Path.Direction.CW,
       )
     }
-
-    var extraRadiusForOutline = 0f
-
-    if (this.borderWidth != null) {
-      extraRadiusForOutline = this.borderWidth[Spacing.ALL] / 2f
-    }
-
-    pathForOutline?.addRoundRect(
-        RectF(bounds),
-        floatArrayOf(
-            topLeftRadius.horizontal + extraRadiusForOutline,
-            topLeftRadius.vertical + extraRadiusForOutline,
-            topRightRadius.horizontal + extraRadiusForOutline,
-            topRightRadius.vertical + extraRadiusForOutline,
-            bottomRightRadius.horizontal + extraRadiusForOutline,
-            bottomRightRadius.vertical + extraRadiusForOutline,
-            bottomLeftRadius.horizontal + extraRadiusForOutline,
-            bottomLeftRadius.vertical + extraRadiusForOutline,
-        ),
-        Path.Direction.CW,
-    )
 
     if (computedBorderRadius?.isUniform() != true) {
       centerDrawPath = centerDrawPath ?: Path()

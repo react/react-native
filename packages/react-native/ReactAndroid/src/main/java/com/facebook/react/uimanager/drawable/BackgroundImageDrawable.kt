@@ -34,17 +34,29 @@ import kotlin.math.round
 
 internal class BackgroundImageDrawable(
     private val context: Context,
-    /*
-     * We assume borderRadius & borderInsets to be shared across multiple drawables
-     * therefore we should manually invalidate this drawable when changing either of them
-     */
-    var borderRadius: BorderRadiusStyle? = null,
-    var borderInsets: BorderInsets? = null,
+    borderRadius: BorderRadiusStyle? = null,
+    borderInsets: BorderInsets? = null,
 ) : Drawable() {
   private var needUpdatePath = true
   private var backgroundImageClipPath: Path? = null
   private var backgroundPositioningArea: RectF? = null
   private var backgroundPaintingArea: RectF? = null
+
+  /*
+   * We assume borderRadius & borderInsets to be shared across multiple drawables
+   * therefore user should assign them to this drawable again when changing either of them
+   */
+  var borderRadius: BorderRadiusStyle? = borderRadius
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
+
+  var borderInsets: BorderInsets? = borderInsets
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
 
   var backgroundImageLayers: List<BackgroundImageLayer>? = null
     set(value) {
@@ -81,14 +93,14 @@ internal class BackgroundImageDrawable(
   private val backgroundPaint: Paint =
       Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
-  override fun invalidateSelf() {
-    needUpdatePath = true
-    super.invalidateSelf()
-  }
-
   override fun onBoundsChange(bounds: Rect) {
     super.onBoundsChange(bounds)
     needUpdatePath = true
+  }
+
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    needUpdatePath = true
+    return true
   }
 
   override fun setAlpha(alpha: Int) {
