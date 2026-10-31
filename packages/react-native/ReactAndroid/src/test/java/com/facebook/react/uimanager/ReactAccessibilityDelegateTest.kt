@@ -20,6 +20,7 @@ import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationConte
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole
 import com.facebook.react.uimanager.common.UIManagerType
 import com.facebook.react.uimanager.events.Event
 import com.facebook.react.uimanager.events.EventDispatcher
@@ -457,5 +458,98 @@ class ReactAccessibilityDelegateTest {
 
     assertThat(result).isTrue()
     assertThat(view.getTag(R.id.accessibility_state_expanded)).isEqualTo(false)
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_uncheckedCheckbox_setsStateDescription() {
+    val info = initializeNodeInfoWithCheckedState(AccessibilityRole.CHECKBOX, checked = false)
+
+    assertThat(info.isCheckable).isTrue()
+    assertThat(info.isChecked).isFalse()
+    assertThat(info.stateDescription)
+        .isEqualTo(view.context.getString(R.string.state_unchecked_description))
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_checkedCheckbox_leavesStateDescriptionUnset() {
+    val info = initializeNodeInfoWithCheckedState(AccessibilityRole.CHECKBOX, checked = true)
+
+    assertThat(info.isCheckable).isTrue()
+    assertThat(info.isChecked).isTrue()
+    assertThat(info.stateDescription).isNull()
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_uncheckedRadio_setsStateDescription() {
+    val info = initializeNodeInfoWithCheckedState(AccessibilityRole.RADIO, checked = false)
+
+    assertThat(info.stateDescription)
+        .isEqualTo(view.context.getString(R.string.state_unchecked_description))
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_uncheckedWithoutRole_setsStateDescription() {
+    val info = initializeNodeInfoWithCheckedState(role = null, checked = false)
+
+    assertThat(info.isCheckable).isTrue()
+    assertThat(info.stateDescription)
+        .isEqualTo(view.context.getString(R.string.state_unchecked_description))
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_switchOff_setsStateDescription() {
+    val info = initializeNodeInfoWithCheckedState(AccessibilityRole.SWITCH, checked = false)
+
+    assertThat(info.isChecked).isFalse()
+    assertThat(info.stateDescription)
+        .isEqualTo(view.context.getString(R.string.state_off_description))
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_switchOn_setsStateDescription() {
+    val info = initializeNodeInfoWithCheckedState(AccessibilityRole.SWITCH, checked = true)
+
+    assertThat(info.isChecked).isTrue()
+    assertThat(info.stateDescription)
+        .isEqualTo(view.context.getString(R.string.state_on_description))
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_roleProp_switchOff_setsStateDescription() {
+    view.setTag(R.id.role, ReactAccessibilityDelegate.Role.SWITCH)
+    view.setTag(R.id.accessibility_state, JavaOnlyMap().apply { putBoolean("checked", false) })
+    val info = AccessibilityNodeInfoCompat.obtain()
+
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, info)
+
+    assertThat(info.stateDescription)
+        .isEqualTo(view.context.getString(R.string.state_off_description))
+  }
+
+  @Test
+  fun testOnInitializeAccessibilityNodeInfo_noCheckedState_leavesStateDescriptionUnset() {
+    view.setTag(R.id.accessibility_role, AccessibilityRole.CHECKBOX)
+    view.setTag(R.id.accessibility_state, JavaOnlyMap().apply { putBoolean("selected", true) })
+    val info = AccessibilityNodeInfoCompat.obtain()
+
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, info)
+
+    assertThat(info.isSelected).isTrue()
+    assertThat(info.stateDescription).isNull()
+  }
+
+  private fun initializeNodeInfoWithCheckedState(
+      role: AccessibilityRole?,
+      checked: Boolean,
+  ): AccessibilityNodeInfoCompat {
+    if (role != null) {
+      view.setTag(R.id.accessibility_role, role)
+    }
+    view.setTag(R.id.accessibility_state, JavaOnlyMap().apply { putBoolean("checked", checked) })
+    val info = AccessibilityNodeInfoCompat.obtain()
+
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, info)
+
+    return info
   }
 }
