@@ -25,6 +25,11 @@ export type ImageSize = {
 
 export type ImageResolvedAssetSource = ResolvedAssetSource;
 
+// Declared outside the object type below so that the generated TypeScript keeps
+// `null`: `?T` on an object member is translated to `T | undefined`, while
+// `resolveAssetSource` returns `null` for an asset that isn't registered.
+type ResolveAssetSourceResult = ?ImageResolvedAssetSource;
+
 type ImageComponentStaticsIOS = Readonly<{
   getSize(uri: string): Promise<ImageSize>,
   getSize(
@@ -59,7 +64,7 @@ type ImageComponentStaticsIOS = Readonly<{
   /**
    * @see https://reactnative.dev/docs/image#resolveassetsource
    */
-  resolveAssetSource(source: ImageSource): ?ImageResolvedAssetSource,
+  resolveAssetSource(source: ImageSource): ResolveAssetSourceResult,
 }>;
 
 type ImageComponentStaticsAndroid = Readonly<{
