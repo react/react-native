@@ -520,25 +520,23 @@ JNIArgs convertJSIArgsToJNIArgs(
   return jniArgs;
 }
 
-// Returns null with a pending Java exception if the map has a value that
-// Arguments.makeNativeMap() can't convert.
-jni::local_ref<NativeMap::jhybridobject> convertFromJMapToNativeMap(
-    JNIEnv* env,
-    jobject arg) {
+struct JArguments : public jni::JavaClass<JArguments> {
+  constexpr static auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/Arguments;";
+
   // We currently use Java Argument.makeNativeMap() method to do this conversion
   // This could also be done purely in C++, but iterative over map methods
   // but those may end up calling reflection methods anyway
   // TODO (axe) Investigate the best way to convert Java Map to Value
-  static const auto jArguments =
-      jni::findClassStatic("com/facebook/react/bridge/Arguments");
-  static jmethodID jMakeNativeMap = env->GetStaticMethodID(
-      jArguments.get(),
-      "makeNativeMap",
-      "(Ljava/util/Map;)Lcom/facebook/react/bridge/WritableNativeMap;");
-  return jni::adopt_local(
-      static_cast<NativeMap::jhybridobject>(
-          env->CallStaticObjectMethod(jArguments.get(), jMakeNativeMap, arg)));
-}
+  static jni::local_ref<WritableNativeMap::jhybridobject> makeNativeMap(
+      jni::alias_ref<jni::JMap<jstring, jobject>> map) {
+    static const auto method =
+        javaClassStatic()
+            ->getStaticMethod<WritableNativeMap::jhybridobject(
+                jni::alias_ref<jni::JMap<jstring, jobject>>)>("makeNativeMap");
+    return method(javaClassStatic(), map);
+  }
+};
 
 /**
  * Creates JSError with current JS runtime stack and Throwable stack trace.
@@ -724,8 +722,9 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
     TMPL::syncMethodCallArgConversionEnd(moduleName, methodName);
     TMPL::syncMethodCallExecutionStart(moduleName, methodName);
 
-    auto constantsMap =
-        jni::adopt_local(env->CallObjectMethod(instance, methodID));
+    auto constantsMap = jni::adopt_local(
+        static_cast<jni::JMap<jstring, jobject>::javaobject>(
+            env->CallObjectMethod(instance, methodID)));
     checkJNIErrorForMethodCall();
 
     TMPL::syncMethodCallExecutionEnd(moduleName, methodName);
@@ -733,8 +732,7 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
 
     jsi::Value returnValue = jsi::Value::undefined();
     if (constantsMap) {
-      auto nativeMap = convertFromJMapToNativeMap(env, constantsMap.get());
-      checkJNIErrorForMethodCall();
+      auto nativeMap = JArguments::makeNativeMap(constantsMap);
       returnValue =
           jsi::valueFromDynamic(runtime, nativeMap->cthis()->consume());
     }
