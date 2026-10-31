@@ -57,6 +57,8 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
                   "package.json",
                   "react-native.config.js",
                   "pnpm-lock.yaml",
+                  "bun.lock",
+                  "bun.lockb",
               ),
   ) {
     outputFile.parentFile.mkdirs()
