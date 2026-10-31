@@ -55,8 +55,9 @@ async function stopMetroServer(metroServer: MetroServer): Promise<void> {
     metroServer.closeIdleConnections();
   }
 
+  let timeoutId;
   const timeout = new Promise<void>(resolve => {
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       // $FlowFixMe[method-unbinding] Node 18.2+ API
       if (typeof metroServer.closeAllConnections === 'function') {
         /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
@@ -67,5 +68,9 @@ async function stopMetroServer(metroServer: MetroServer): Promise<void> {
     }, SHUTDOWN_TIMEOUT_MS);
   });
 
-  await Promise.race([closed, timeout]);
+  try {
+    await Promise.race([closed, timeout]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
