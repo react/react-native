@@ -31,6 +31,7 @@ beforeEach(async () => {
     .use(
       createDevServerMiddleware({
         serverBaseUrl: new URL(baseUrl),
+        projectRoot: '/project',
         watchFolders: ['/project'],
       }),
     )
@@ -46,8 +47,15 @@ afterEach(() => {
 });
 
 describe('createDevServerMiddleware', () => {
+  test('serves /status', async () => {
+    const resp = await fetch(baseUrl + '/status');
+
+    expect(resp.status).toBe(200);
+    expect(await resp.text()).toBe('packager-status:running');
+  });
+
   test('refuses a cross-origin request before any route', async () => {
-    const resp = await fetch(baseUrl + '/open-url', {
+    const resp = await fetch(baseUrl + '/status', {
       headers: {Origin: 'https://example.com'},
     });
 
