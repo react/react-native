@@ -92,6 +92,18 @@ void EventEmitter::dispatchUniqueEvent(
       eventTimestamp);
 }
 
+void EventEmitter::dispatchUniqueEvent(
+    std::string type,
+    folly::dynamic&& payload,
+    HighResTimeStamp eventTimestamp,
+    RawEvent::CoalescingKey coalescingKey) const {
+  dispatchUniqueEvent(
+      std::move(type),
+      DynamicEventPayload::create(std::move(payload)),
+      eventTimestamp,
+      coalescingKey);
+}
+
 void EventEmitter::dispatchEvent(
     std::string type,
     const ValueFactory& payloadFactory,
@@ -181,6 +193,18 @@ void EventEmitter::dispatchUniqueEvent(
     std::string type,
     SharedEventPayload payload,
     HighResTimeStamp eventTimestamp) const {
+  dispatchUniqueEvent(
+      std::move(type),
+      std::move(payload),
+      eventTimestamp,
+      RawEvent::DefaultCoalescingKey);
+}
+
+void EventEmitter::dispatchUniqueEvent(
+    std::string type,
+    SharedEventPayload payload,
+    HighResTimeStamp eventTimestamp,
+    RawEvent::CoalescingKey coalescingKey) const {
   TraceSection s("EventEmitter::dispatchUniqueEvent");
 
   auto eventDispatcher = eventDispatcher_.lock();
@@ -203,7 +227,8 @@ void EventEmitter::dispatchUniqueEvent(
       std::move(shadowNodeFamily),
       RawEvent::Category::Continuous,
       true,
-      eventTimestamp));
+      eventTimestamp,
+      coalescingKey));
 }
 
 void EventEmitter::setEnabled(bool enabled) {
