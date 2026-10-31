@@ -8,17 +8,16 @@
 package com.facebook.react.uimanager.drawable
 
 import android.content.Context
-import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import androidx.annotation.RequiresApi
-import com.facebook.react.uimanager.FilterHelper
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.style.BorderRadiusStyle
@@ -28,37 +27,109 @@ import kotlin.math.roundToInt
 
 internal const val MIN_OUTSET_BOX_SHADOW_SDK_VERSION = 28
 
-// "the resulting shadow must approximate {...} a Gaussian blur with a standard deviation equal
-// to half the blur radius"
-// https://www.w3.org/TR/css-backgrounds-3/#shadow-blur
-private const val BLUR_RADIUS_SIGMA_SCALE = 0.5f
-
 /** Draws an outer box-shadow https://www.w3.org/TR/css-backgrounds-3/#shadow-shape */
 @RequiresApi(MIN_OUTSET_BOX_SHADOW_SDK_VERSION)
 internal class OutsetBoxShadowDrawable(
     private val context: Context,
-    private val shadowColor: Int,
-    private val offsetX: Float,
-    private val offsetY: Float,
-    private val blurRadius: Float,
-    private val spread: Float,
-    /*
-     * We assume borderRadius to be shared across multiple drawables
-     * therefore we should manually invalidate this drawable when changing it
-     */
-    var borderRadius: BorderRadiusStyle? = null,
+    shadowColor: Int,
+    offsetX: Float,
+    offsetY: Float,
+    blurRadius: Float,
+    spread: Float,
+    borderRadius: BorderRadiusStyle? = null,
 ) : Drawable() {
-  private val shadowPaint =
-      Paint().apply {
-        color = shadowColor
-        val convertedBlurRadius = FilterHelper.sigmaToRadius(blurRadius * BLUR_RADIUS_SIGMA_SCALE)
-        if (convertedBlurRadius > 0) {
-          maskFilter = BlurMaskFilter(convertedBlurRadius, BlurMaskFilter.Blur.NORMAL)
-        }
+  private val shadowPaint = Paint().apply { maskFilter = createBoxShadowMaskFilter(blurRadius) }
+
+  private var drawableAlpha = 255
+
+  var shadowColor: Int = shadowColor
+    set(value) {
+      if (value != field) {
+        field = value
+        applyShadowColor()
+        invalidateSelf()
       }
+    }
+
+  var offsetX: Float = offsetX
+    set(value) {
+      if (value != field) {
+        field = value
+        invalidateGeometry()
+      }
+    }
+
+  var offsetY: Float = offsetY
+    set(value) {
+      if (value != field) {
+        field = value
+        invalidateGeometry()
+      }
+    }
+
+  var blurRadius: Float = blurRadius
+    set(value) {
+      if (value != field) {
+        field = value
+        shadowPaint.maskFilter = createBoxShadowMaskFilter(value)
+        invalidateSelf()
+      }
+    }
+
+  var spread: Float = spread
+    set(value) {
+      if (value != field) {
+        field = value
+        invalidateGeometry()
+      }
+    }
+
+  private var needUpdatePath = true
+  private val shadowRect = RectF()
+  private var hasRoundedBorders = false
+  private val subpixelInsetBounds = RectF()
+  private val radii = FloatArray(8)
+  private val clipOutPath = Path()
+  private val shadowPath = Path()
+
+  /*
+   * We assume borderRadius to be shared across multiple drawables
+   * therefore we should assign it to this drawable again when changing it
+   */
+  var borderRadius: BorderRadiusStyle? = borderRadius
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
+
+  init {
+    applyShadowColor()
+  }
+
+  override fun onBoundsChange(bounds: Rect) {
+    super.onBoundsChange(bounds)
+    needUpdatePath = true
+  }
+
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    needUpdatePath = true
+    return true
+  }
 
   override fun setAlpha(alpha: Int) {
-    shadowPaint.alpha = (((alpha / 255f) * (Color.alpha(shadowColor) / 255f)) * 255f).roundToInt()
+    drawableAlpha = alpha
+    applyShadowColor()
+    invalidateSelf()
+  }
+
+  private fun applyShadowColor() {
+    shadowPaint.color = shadowColor
+    shadowPaint.alpha =
+        (((drawableAlpha / 255f) * (Color.alpha(shadowColor) / 255f)) * 255f).roundToInt()
+  }
+
+  private fun invalidateGeometry() {
+    needUpdatePath = true
     invalidateSelf()
   }
 
@@ -78,6 +149,26 @@ internal class OutsetBoxShadowDrawable(
   }
 
   override fun draw(canvas: Canvas) {
+    updatePath()
+
+    canvas.save().let { saveCount ->
+      if (hasRoundedBorders) {
+        canvas.clipOutPath(clipOutPath)
+        canvas.drawPath(shadowPath, shadowPaint)
+      } else {
+        canvas.clipOutRect(bounds)
+        canvas.drawRect(shadowRect, shadowPaint)
+      }
+      canvas.restoreToCount(saveCount)
+    }
+  }
+
+  private fun updatePath() {
+    if (!needUpdatePath) {
+      return
+    }
+    needUpdatePath = false
+
     val resolutionWidth = bounds.width().toFloat().pxToDp()
     val resolutionHeight = bounds.height().toFloat().pxToDp()
     val computedBorderRadii =
@@ -94,74 +185,35 @@ internal class OutsetBoxShadowDrawable(
         }
 
     val spreadExtent = spread.dpToPx()
-    val shadowRect =
-        RectF(bounds).apply {
-          inset(-spreadExtent, -spreadExtent)
-          offset(offsetX.dpToPx(), offsetY.dpToPx())
-        }
+    shadowRect.set(bounds)
+    shadowRect.inset(-spreadExtent, -spreadExtent)
+    shadowRect.offset(offsetX.dpToPx(), offsetY.dpToPx())
 
-    canvas.save().let { saveCount ->
-      if (computedBorderRadii?.hasRoundedBorders() == true) {
-        drawShadowRoundRect(canvas, shadowRect, spreadExtent, computedBorderRadii)
-      } else {
-        drawShadowRect(canvas, shadowRect)
-      }
-      canvas.restoreToCount(saveCount)
+    hasRoundedBorders = computedBorderRadii?.hasRoundedBorders() == true
+    if (computedBorderRadii == null || !hasRoundedBorders) {
+      return
     }
-  }
 
-  private fun drawShadowRoundRect(
-      canvas: Canvas,
-      shadowRect: RectF,
-      spreadExtent: Float,
-      computedBorderRadii: ComputedBorderRadius,
-  ) {
     // We inset the clip slightly, to avoid Skia artifacts with antialiased
     // clipping. This inset is only visible when no background is present.
     // https://neugierig.org/software/chromium/notes/2010/07/clipping.html
-    val subpixelInsetBounds = RectF(bounds).apply { inset(0.4f, 0.4f) }
-    canvas.clipOutPath(
-        Path().apply {
-          addRoundRect(
-              subpixelInsetBounds,
-              floatArrayOf(
-                  computedBorderRadii.topLeft.horizontal,
-                  computedBorderRadii.topLeft.vertical,
-                  computedBorderRadii.topRight.horizontal,
-                  computedBorderRadii.topRight.vertical,
-                  computedBorderRadii.bottomRight.horizontal,
-                  computedBorderRadii.bottomRight.vertical,
-                  computedBorderRadii.bottomLeft.horizontal,
-                  computedBorderRadii.bottomLeft.vertical,
-              ),
-              Path.Direction.CW,
-          )
-        },
-    )
+    subpixelInsetBounds.set(bounds)
+    subpixelInsetBounds.inset(0.4f, 0.4f)
+    radii[0] = computedBorderRadii.topLeft.horizontal
+    radii[1] = computedBorderRadii.topLeft.vertical
+    radii[2] = computedBorderRadii.topRight.horizontal
+    radii[3] = computedBorderRadii.topRight.vertical
+    radii[4] = computedBorderRadii.bottomRight.horizontal
+    radii[5] = computedBorderRadii.bottomRight.vertical
+    radii[6] = computedBorderRadii.bottomLeft.horizontal
+    radii[7] = computedBorderRadii.bottomLeft.vertical
+    clipOutPath.rewind()
+    clipOutPath.addRoundRect(subpixelInsetBounds, radii, Path.Direction.CW)
 
-    canvas.drawPath(
-        Path().apply {
-          addRoundRect(
-              shadowRect,
-              floatArrayOf(
-                  adjustRadiusForSpread(computedBorderRadii.topLeft.horizontal, spreadExtent),
-                  adjustRadiusForSpread(computedBorderRadii.topLeft.vertical, spreadExtent),
-                  adjustRadiusForSpread(computedBorderRadii.topRight.horizontal, spreadExtent),
-                  adjustRadiusForSpread(computedBorderRadii.topRight.vertical, spreadExtent),
-                  adjustRadiusForSpread(computedBorderRadii.bottomRight.horizontal, spreadExtent),
-                  adjustRadiusForSpread(computedBorderRadii.bottomRight.vertical, spreadExtent),
-                  adjustRadiusForSpread(computedBorderRadii.bottomLeft.horizontal, spreadExtent),
-                  adjustRadiusForSpread(computedBorderRadii.bottomLeft.vertical, spreadExtent),
-              ),
-              Path.Direction.CW,
-          )
-        },
-        shadowPaint,
-    )
-  }
-
-  private fun drawShadowRect(canvas: Canvas, shadowRect: RectF) {
-    canvas.clipOutRect(bounds)
-    canvas.drawRect(shadowRect, shadowPaint)
+    for (index in radii.indices) {
+      radii[index] = adjustRadiusForSpread(radii[index], spreadExtent)
+    }
+    shadowPath.rewind()
+    shadowPath.addRoundRect(shadowRect, radii, Path.Direction.CW)
   }
 }

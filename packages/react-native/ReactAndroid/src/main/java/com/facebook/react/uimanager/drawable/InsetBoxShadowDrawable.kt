@@ -8,13 +8,13 @@
 package com.facebook.react.uimanager.drawable
 
 import android.content.Context
-import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import androidx.annotation.RequiresApi
@@ -29,40 +29,123 @@ import kotlin.math.roundToInt
 
 internal const val MIN_INSET_BOX_SHADOW_SDK_VERSION = 29
 
-// "the resulting shadow must approximate {...} a Gaussian blur with a standard deviation equal
-// to half the blur radius"
-// https://www.w3.org/TR/css-backgrounds-3/#shadow-blur
-private const val BLUR_RADIUS_SIGMA_SCALE = 0.5f
-
 private val ZERO_RADII = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
 
 /** Draws an inner box-shadow https://www.w3.org/TR/css-backgrounds-3/#shadow-shape */
 @RequiresApi(MIN_INSET_BOX_SHADOW_SDK_VERSION)
 internal class InsetBoxShadowDrawable(
     private val context: Context,
-    private val shadowColor: Int,
-    private val offsetX: Float,
-    private val offsetY: Float,
-    private val blurRadius: Float,
-    private val spread: Float,
-    /*
-     * We assume borderRadius & borderInsets to be shared across multiple drawables
-     * therefore user should invalidate this drawable when changing either of them
-     */
-    var borderInsets: BorderInsets? = null,
-    var borderRadius: BorderRadiusStyle? = null,
+    shadowColor: Int,
+    offsetX: Float,
+    offsetY: Float,
+    blurRadius: Float,
+    spread: Float,
+    borderInsets: BorderInsets? = null,
+    borderRadius: BorderRadiusStyle? = null,
 ) : Drawable() {
-  private val shadowPaint =
-      Paint().apply {
-        color = shadowColor
-        val convertedBlurRadius = FilterHelper.sigmaToRadius(blurRadius * BLUR_RADIUS_SIGMA_SCALE)
-        if (convertedBlurRadius > 0) {
-          maskFilter = BlurMaskFilter(convertedBlurRadius, BlurMaskFilter.Blur.NORMAL)
-        }
+  private val shadowPaint = Paint().apply { maskFilter = createBoxShadowMaskFilter(blurRadius) }
+
+  private var drawableAlpha = 255
+
+  private val isBlurred: Boolean
+    get() = shadowPaint.maskFilter != null
+
+  var shadowColor: Int = shadowColor
+    set(value) {
+      if (value != field) {
+        field = value
+        applyShadowColor()
+        invalidateSelf()
       }
+    }
+
+  var offsetX: Float = offsetX
+    set(value) {
+      if (value != field) {
+        field = value
+        invalidateGeometry()
+      }
+    }
+
+  var offsetY: Float = offsetY
+    set(value) {
+      if (value != field) {
+        field = value
+        invalidateGeometry()
+      }
+    }
+
+  var blurRadius: Float = blurRadius
+    set(value) {
+      if (value != field) {
+        field = value
+        shadowPaint.maskFilter = createBoxShadowMaskFilter(value)
+        invalidateGeometry()
+      }
+    }
+
+  var spread: Float = spread
+    set(value) {
+      if (value != field) {
+        field = value
+        invalidateGeometry()
+      }
+    }
+
+  private var needUpdatePath = true
+  private val paddingBoxRect = RectF()
+  private val paddingBoxRadii = FloatArray(8)
+  private var hasPaddingBoxRadii = false
+  private val paddingBoxPath = Path()
+  private val innerRect = RectF()
+  private val innerRadii = FloatArray(8)
+  private val outerRect = RectF()
+  private val blurredShadowPath = Path()
+
+  /*
+   * We assume borderRadius & borderInsets to be shared across multiple drawables
+   * therefore user should assign them to this drawable again when changing either of them
+   */
+  var borderInsets: BorderInsets? = borderInsets
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
+
+  var borderRadius: BorderRadiusStyle? = borderRadius
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
+
+  init {
+    applyShadowColor()
+  }
+
+  override fun onBoundsChange(bounds: Rect) {
+    super.onBoundsChange(bounds)
+    needUpdatePath = true
+  }
+
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    needUpdatePath = true
+    return true
+  }
 
   override fun setAlpha(alpha: Int) {
-    shadowPaint.alpha = (((alpha / 255f) * (Color.alpha(shadowColor) / 255f)) * 255f).roundToInt()
+    drawableAlpha = alpha
+    applyShadowColor()
+    invalidateSelf()
+  }
+
+  private fun applyShadowColor() {
+    shadowPaint.color = shadowColor
+    shadowPaint.alpha =
+        (((drawableAlpha / 255f) * (Color.alpha(shadowColor) / 255f)) * 255f).roundToInt()
+  }
+
+  private fun invalidateGeometry() {
+    needUpdatePath = true
     invalidateSelf()
   }
 
@@ -82,69 +165,105 @@ internal class InsetBoxShadowDrawable(
   }
 
   override fun draw(canvas: Canvas) {
+    updatePath()
+
+    canvas.save().let { saveCount ->
+      if (hasPaddingBoxRadii) {
+        canvas.clipPath(paddingBoxPath)
+      } else {
+        canvas.clipRect(paddingBoxRect)
+      }
+
+      // Skia caches a blurred mask only for a path it can key, and a double round rect reaches it
+      // as a volatile path, which it never keys.
+      if (isBlurred) {
+        canvas.drawPath(blurredShadowPath, shadowPaint)
+      } else {
+        canvas.drawDoubleRoundRect(
+            outerRect,
+            ZERO_RADII,
+            innerRect,
+            if (hasPaddingBoxRadii) innerRadii else ZERO_RADII,
+            shadowPaint,
+        )
+      }
+
+      canvas.restoreToCount(saveCount)
+    }
+  }
+
+  private fun updatePath() {
+    if (!needUpdatePath) {
+      return
+    }
+    needUpdatePath = false
+
     val computedBorderRadii = computeBorderRadii()
     val computedBorderInsets = computeBorderInsets()
 
-    val paddingBoxRect =
-        RectF(
-            bounds.left + (computedBorderInsets?.left ?: 0f),
-            bounds.top + (computedBorderInsets?.top ?: 0f),
-            bounds.right - (computedBorderInsets?.right ?: 0f),
-            bounds.bottom - (computedBorderInsets?.bottom ?: 0f),
-        )
-    val paddingBoxRadii =
-        computedBorderRadii?.let {
-          floatArrayOf(
-              innerRadius(it.topLeft.horizontal, computedBorderInsets?.left),
-              innerRadius(it.topLeft.vertical, computedBorderInsets?.top),
-              innerRadius(it.topRight.horizontal, computedBorderInsets?.right),
-              innerRadius(it.topRight.vertical, computedBorderInsets?.top),
-              innerRadius(it.bottomRight.horizontal, computedBorderInsets?.right),
-              innerRadius(it.bottomRight.vertical, computedBorderInsets?.bottom),
-              innerRadius(it.bottomLeft.horizontal, computedBorderInsets?.left),
-              innerRadius(it.bottomLeft.vertical, computedBorderInsets?.bottom),
-          )
-        }
+    paddingBoxRect.set(
+        bounds.left + (computedBorderInsets?.left ?: 0f),
+        bounds.top + (computedBorderInsets?.top ?: 0f),
+        bounds.right - (computedBorderInsets?.right ?: 0f),
+        bounds.bottom - (computedBorderInsets?.bottom ?: 0f),
+    )
+    hasPaddingBoxRadii = computedBorderRadii != null
+    if (computedBorderRadii != null) {
+      paddingBoxRadii[0] =
+          innerRadius(computedBorderRadii.topLeft.horizontal, computedBorderInsets?.left)
+      paddingBoxRadii[1] =
+          innerRadius(computedBorderRadii.topLeft.vertical, computedBorderInsets?.top)
+      paddingBoxRadii[2] =
+          innerRadius(computedBorderRadii.topRight.horizontal, computedBorderInsets?.right)
+      paddingBoxRadii[3] =
+          innerRadius(computedBorderRadii.topRight.vertical, computedBorderInsets?.top)
+      paddingBoxRadii[4] =
+          innerRadius(computedBorderRadii.bottomRight.horizontal, computedBorderInsets?.right)
+      paddingBoxRadii[5] =
+          innerRadius(computedBorderRadii.bottomRight.vertical, computedBorderInsets?.bottom)
+      paddingBoxRadii[6] =
+          innerRadius(computedBorderRadii.bottomLeft.horizontal, computedBorderInsets?.left)
+      paddingBoxRadii[7] =
+          innerRadius(computedBorderRadii.bottomLeft.vertical, computedBorderInsets?.bottom)
+    }
 
     val x = offsetX.dpToPx()
     val y = offsetY.dpToPx()
     val spreadExtent = spread.dpToPx()
-    val innerRect =
-        RectF(paddingBoxRect).apply {
-          if (2 * spreadExtent > paddingBoxRect.width()) {
-            setEmpty()
-          } else {
-            inset(spreadExtent, spreadExtent)
-          }
-          offset(x, y)
-        }
+    innerRect.set(paddingBoxRect)
+    if (2 * spreadExtent > paddingBoxRect.width()) {
+      innerRect.setEmpty()
+    } else {
+      innerRect.inset(spreadExtent, spreadExtent)
+    }
+    innerRect.offset(x, y)
 
     // Graciously stolen from Blink
     // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/paint/box_painter_base.cc;l=338;drc=0a301506035e13015ea5c8dd39164d0d5954fa60
     val blurExtent = FilterHelper.sigmaToRadius(blurRadius)
-    val outerRect =
-        RectF(innerRect).apply {
-          set(paddingBoxRect)
-          inset(-blurExtent, -blurExtent)
-          union(RectF(innerRect))
-        }
+    outerRect.set(paddingBoxRect)
+    outerRect.inset(-blurExtent, -blurExtent)
+    outerRect.union(innerRect)
 
-    canvas.save().let { saveCount ->
-      if (paddingBoxRadii != null) {
-        canvas.clipPath(
-            Path().apply { addRoundRect(paddingBoxRect, paddingBoxRadii, Path.Direction.CW) },
-        )
-
-        val innerRadii =
-            paddingBoxRadii.map { adjustRadiusForSpread(it, -spreadExtent) }.toFloatArray()
-
-        canvas.drawDoubleRoundRect(outerRect, ZERO_RADII, innerRect, innerRadii, shadowPaint)
-      } else {
-        canvas.clipRect(paddingBoxRect)
-        canvas.drawDoubleRoundRect(outerRect, ZERO_RADII, innerRect, ZERO_RADII, shadowPaint)
+    if (hasPaddingBoxRadii) {
+      paddingBoxPath.rewind()
+      paddingBoxPath.addRoundRect(paddingBoxRect, paddingBoxRadii, Path.Direction.CW)
+      for (index in innerRadii.indices) {
+        innerRadii[index] = adjustRadiusForSpread(paddingBoxRadii[index], -spreadExtent)
       }
+    }
 
-      canvas.restoreToCount(saveCount)
+    if (isBlurred) {
+      blurredShadowPath.rewind()
+      blurredShadowPath.fillType = Path.FillType.EVEN_ODD
+      blurredShadowPath.addRect(outerRect, Path.Direction.CW)
+      if (!innerRect.isEmpty) {
+        blurredShadowPath.addRoundRect(
+            innerRect,
+            if (hasPaddingBoxRadii) innerRadii else ZERO_RADII,
+            Path.Direction.CW,
+        )
+      }
     }
   }
 

@@ -145,7 +145,7 @@ public object BackgroundStyleApplicator {
     composite.borderInsets?.setBorderWidth(edge, width)
 
     if (Build.VERSION.SDK_INT >= MIN_INSET_BOX_SHADOW_SDK_VERSION) {
-      for (shadow in composite.innerShadows.filterIsInstance<InsetBoxShadowDrawable>()) {
+      for (shadow in composite.innerShadows) {
         shadow.borderInsets = composite.borderInsets
       }
     }
@@ -224,15 +224,13 @@ public object BackgroundStyleApplicator {
     compositeBackgroundDrawable.border?.invalidateSelf()
 
     if (Build.VERSION.SDK_INT >= MIN_OUTSET_BOX_SHADOW_SDK_VERSION) {
-      for (shadow in
-          compositeBackgroundDrawable.outerShadows.filterIsInstance<OutsetBoxShadowDrawable>()) {
+      for (shadow in compositeBackgroundDrawable.outerShadows) {
         shadow.borderRadius = compositeBackgroundDrawable.borderRadius
       }
     }
 
     if (Build.VERSION.SDK_INT >= MIN_INSET_BOX_SHADOW_SDK_VERSION) {
-      for (shadow in
-          compositeBackgroundDrawable.innerShadows.filterIsInstance<InsetBoxShadowDrawable>()) {
+      for (shadow in compositeBackgroundDrawable.innerShadows) {
         shadow.borderRadius = compositeBackgroundDrawable.borderRadius
       }
     }
@@ -375,6 +373,12 @@ public object BackgroundStyleApplicator {
     val borderInsets = compositeBackgroundDrawable.borderInsets
     val borderRadius = compositeBackgroundDrawable.borderRadius
 
+    // An animated shadow sets a list of the same shape on every frame, so its drawables take the
+    // new values in place instead of the view getting new drawables and a new background per frame.
+    val reuseShadows = holdsShadowDrawablesFor(compositeBackgroundDrawable, shadows)
+    var innerIndex = 0
+    var outerIndex = 0
+
     /**
      * z-ordering of user-provided shadow-list is opposite direction of LayerDrawable z-ordering
      * https://drafts.csswg.org/css-backgrounds/#shadow-layers
@@ -388,36 +392,75 @@ public object BackgroundStyleApplicator {
       val inset = boxShadow.inset ?: false
 
       if (inset && Build.VERSION.SDK_INT >= MIN_INSET_BOX_SHADOW_SDK_VERSION) {
-        innerShadows.add(
-            InsetBoxShadowDrawable(
-                context = view.context,
-                borderRadius = borderRadius,
-                borderInsets = borderInsets,
-                shadowColor = color,
-                offsetX = offsetX,
-                offsetY = offsetY,
-                blurRadius = blurRadius,
-                spread = spreadDistance,
-            ),
-        )
+        if (reuseShadows) {
+          val shadow = compositeBackgroundDrawable.innerShadows[innerIndex++]
+          shadow.shadowColor = color
+          shadow.offsetX = offsetX
+          shadow.offsetY = offsetY
+          shadow.blurRadius = blurRadius
+          shadow.spread = spreadDistance
+        } else {
+          innerShadows.add(
+              InsetBoxShadowDrawable(
+                  context = view.context,
+                  borderRadius = borderRadius,
+                  borderInsets = borderInsets,
+                  shadowColor = color,
+                  offsetX = offsetX,
+                  offsetY = offsetY,
+                  blurRadius = blurRadius,
+                  spread = spreadDistance,
+              ),
+          )
+        }
       } else if (!inset && Build.VERSION.SDK_INT >= MIN_OUTSET_BOX_SHADOW_SDK_VERSION) {
-        outerShadows.add(
-            OutsetBoxShadowDrawable(
-                context = view.context,
-                borderRadius = borderRadius,
-                shadowColor = color,
-                offsetX = offsetX,
-                offsetY = offsetY,
-                blurRadius = blurRadius,
-                spread = spreadDistance,
-            ),
-        )
+        if (reuseShadows) {
+          val shadow = compositeBackgroundDrawable.outerShadows[outerIndex++]
+          shadow.shadowColor = color
+          shadow.offsetX = offsetX
+          shadow.offsetY = offsetY
+          shadow.blurRadius = blurRadius
+          shadow.spread = spreadDistance
+        } else {
+          outerShadows.add(
+              OutsetBoxShadowDrawable(
+                  context = view.context,
+                  borderRadius = borderRadius,
+                  shadowColor = color,
+                  offsetX = offsetX,
+                  offsetY = offsetY,
+                  blurRadius = blurRadius,
+                  spread = spreadDistance,
+              ),
+          )
+        }
       }
     }
 
-    view.background =
-        ensureCompositeBackgroundDrawable(view)
-            .withNewShadows(outerShadows = outerShadows, innerShadows = innerShadows)
+    if (!reuseShadows) {
+      view.background =
+          ensureCompositeBackgroundDrawable(view)
+              .withNewShadows(outerShadows = outerShadows, innerShadows = innerShadows)
+    }
+  }
+
+  /** Whether the background already holds one shadow drawable per inset and per outset shadow. */
+  private fun holdsShadowDrawablesFor(
+      compositeBackgroundDrawable: CompositeBackgroundDrawable,
+      shadows: List<BoxShadow>,
+  ): Boolean {
+    var innerCount = 0
+    var outerCount = 0
+    for (boxShadow in shadows) {
+      val inset = boxShadow.inset ?: false
+      if (inset && Build.VERSION.SDK_INT >= MIN_INSET_BOX_SHADOW_SDK_VERSION) {
+        innerCount++
+      } else if (!inset && Build.VERSION.SDK_INT >= MIN_OUTSET_BOX_SHADOW_SDK_VERSION) {
+        outerCount++
+      }
+    }
+    return innerCount == compositeBackgroundDrawable.innerShadows.size &&
+        outerCount == compositeBackgroundDrawable.outerShadows.size
   }
 
   /**
