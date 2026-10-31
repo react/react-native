@@ -347,10 +347,22 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                          // Remove color attributes for truncated range
                                          for (NSAttributedStringKey key in
                                               @[ NSForegroundColorAttributeName, NSBackgroundColorAttributeName ]) {
-                                           [textStorage removeAttribute:key range:characterRange];
                                            id attribute = [textStorage attribute:key
                                                                          atIndex:characterRange.location - 1
                                                                   effectiveRange:nil];
+                                           // Editing the storage discards the layout just computed, so leave
+                                           // a range that already carries the color untouched.
+                                           NSRange currentRange;
+                                           id currentAttribute = [textStorage attribute:key
+                                                                                atIndex:characterRange.location
+                                                                  longestEffectiveRange:&currentRange
+                                                                                inRange:characterRange];
+                                           if (NSEqualRanges(currentRange, characterRange) &&
+                                               (currentAttribute == attribute ||
+                                                [currentAttribute isEqual:attribute])) {
+                                             continue;
+                                           }
+                                           [textStorage removeAttribute:key range:characterRange];
                                            if (attribute != nullptr) {
                                              [textStorage addAttribute:key value:attribute range:characterRange];
                                            }
