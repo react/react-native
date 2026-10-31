@@ -61,10 +61,10 @@ The same stability concern applies to minification. If the app minifies class
 names (R8/ProGuard), the obfuscated name of the owner class is not guaranteed to
 be the same from one build to the next, so a result delivered after an app
 update can be dropped. Keep the owner class's name (for example with
-`-keepnames`) if results must survive across builds. React Native's consumer
-R8 rules already keep the names of `ActivityResultContract` subclasses, so R8
-doesn't merge different contracts into one class, which would give them the
-same key.
+`-keepnames`) if results must survive across builds. React Native's consumer R8
+rules already keep the names of `ActivityResultContract` subclasses, so R8
+doesn't merge different contracts into one class, which would give them the same
+key.
 
 Registering the same contract class twice from one owner throws
 `IllegalStateException`. In that case use the overload that takes a key:
