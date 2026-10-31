@@ -301,10 +301,6 @@ class ViewabilityHelper {
       props: CellMetricProps,
     ) => ViewToken,
   ) {
-    // Filter out indices that have gone out of view since this call was scheduled.
-    viewableIndicesToCheck = viewableIndicesToCheck.filter(ii =>
-      this._viewableIndices.includes(ii),
-    );
     const prevItems = this._viewableItems;
     const nextItems = new Map(
       viewableIndicesToCheck.map(ii => {
