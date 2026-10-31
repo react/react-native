@@ -1311,6 +1311,13 @@ const examples = [
     render: (): React.Node => <TextInlineView.Basic />,
   },
   {
+    title: 'Inline views with line height',
+    name: 'inlineViewsLineHeight',
+    render(): React.Node {
+      return <TextInlineView.ChangeLineHeight />;
+    },
+  },
+  {
     title: 'Inline image/view clipped by <Text>',
     render: (): React.Node => <TextInlineView.ClippedByText />,
   },

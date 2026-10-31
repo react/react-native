@@ -199,6 +199,64 @@ function ChangeInnerViewSize(): React.Node {
   );
 }
 
+component ChangeLineHeight() {
+  return (
+    <View>
+      <InlineImageLineHeightCase
+        label="no lineHeight, view: 35 (reference)"
+        size={35}
+      />
+      <InlineImageLineHeightCase
+        label="lineHeight: 15, view: 35"
+        lineHeight={15}
+        size={35}
+      />
+      <InlineImageLineHeightCase
+        label="lineHeight: 40, smaller view: 20"
+        lineHeight={40}
+        size={20}
+      />
+    </View>
+  );
+}
+
+component InlineImageLineHeightCase(
+  label: string,
+  size: number,
+  lineHeight?: number,
+) {
+  return (
+    <View style={{marginBottom: 12}}>
+      <RNTesterText variant="label">{label}</RNTesterText>
+      <View
+        style={{
+          borderWidth: 1,
+          borderColor: 'grey',
+          marginTop: 4,
+          padding: 4,
+          backgroundColor: 'lightgrey',
+        }}>
+        <RNTesterText style={lineHeight != null ? {lineHeight} : null}>
+          This text{' '}
+          <View
+            style={{width: size, height: size, backgroundColor: 'steelblue'}}
+          />{' '}
+          contains multiple inline blue views. The inline views should be
+          contained within the container and should not overflow on any other
+          lines.{' '}
+          <View
+            style={{width: size, height: size, backgroundColor: 'steelblue'}}
+          />{' '}
+          The line spacing between every line should be consistent as well.{' '}
+          <View
+            style={{width: size, height: size, backgroundColor: 'steelblue'}}
+          />
+        </RNTesterText>
+      </View>
+    </View>
+  );
+}
+
 module.exports = {
   Basic,
   NestedTexts,
@@ -206,4 +264,5 @@ module.exports = {
   ChangeImageSize,
   ChangeViewSize,
   ChangeInnerViewSize,
+  ChangeLineHeight,
 };
