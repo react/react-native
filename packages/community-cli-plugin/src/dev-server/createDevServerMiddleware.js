@@ -8,8 +8,11 @@
  * @format
  */
 
+import type {Logger} from './createMessageSocket';
 import type {Server} from 'connect';
 
+import createEventsSocket from './createEventsSocket';
+import createMessageSocket from './createMessageSocket';
 import openStackFrameMiddleware from './openStackFrameMiddleware';
 import openURLMiddleware from './openURLMiddleware';
 import securityHeadersMiddleware from './securityHeadersMiddleware';
@@ -22,22 +25,56 @@ type Options = Readonly<{
   serverBaseUrl: URL,
   projectRoot: string,
   watchFolders: ReadonlyArray<string>,
+  logger: Logger,
+}>;
+
+type DevServerMiddleware = Readonly<{
+  middleware: Server,
+  websocketEndpoints: {[path: string]: ws$WebSocketServer},
+  messageSocket: Readonly<{
+    broadcast: (method: string, params?: ?{[string]: unknown}) => void,
+  }>,
+  eventsSocket: Readonly<{
+    reportEvent: (event: unknown) => void,
+  }>,
 }>;
 
 /**
- * The dev server routes that React Native tooling and apps call outside
- * Metro and `@react-native/dev-middleware`.
+ * The dev server routes and WebSockets that React Native tooling and apps
+ * call outside Metro and `@react-native/dev-middleware`.
  */
 export default function createDevServerMiddleware({
   serverBaseUrl,
   projectRoot,
   watchFolders,
-}: Options): Server {
-  return connect()
+  logger,
+}: Options): DevServerMiddleware {
+  const messageSocket = createMessageSocket({logger, serverBaseUrl});
+  const eventsSocket = createEventsSocket({
+    logger,
+    serverBaseUrl,
+    broadcast: messageSocket.broadcast,
+  });
+
+  const middleware = connect()
     .use(securityHeadersMiddleware({serverBaseUrl}))
     .use(compression())
     .use(nocache())
     .use('/open-stack-frame', openStackFrameMiddleware({watchFolders}))
     .use('/open-url', openURLMiddleware())
-    .use('/status', statusMiddleware({projectRoot}));
+    .use('/status', statusMiddleware({projectRoot}))
+    .use('/reload', (req, res) => {
+      messageSocket.broadcast('reload');
+      res.end('OK');
+    });
+
+  return {
+    middleware,
+    websocketEndpoints: {
+      '/message': messageSocket.server,
+      '/events': eventsSocket.server,
+    },
+    messageSocket: {broadcast: messageSocket.broadcast},
+    eventsSocket: {reportEvent: eventsSocket.reportEvent},
+  };
 }

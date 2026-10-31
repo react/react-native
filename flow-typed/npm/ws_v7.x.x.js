@@ -39,7 +39,13 @@ declare class ws$WebSocketServer extends events$EventEmitter {
       perMessageDeflate?: boolean | ws$PerMessageDeflateOptions,
       port?: number,
       server?: http$Server | https$Server,
-      verifyClient?: () => unknown,
+      verifyClient?: (
+        info: Readonly<{
+          origin: string,
+          secure: boolean,
+          req: http$IncomingMessage<>,
+        }>,
+      ) => unknown,
     },
     callback?: () => unknown,
   ): this;
