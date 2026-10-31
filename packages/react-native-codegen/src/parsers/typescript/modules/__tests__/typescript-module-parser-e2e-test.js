@@ -18,6 +18,7 @@ import type {
 const {
   MissingTypeParameterGenericParserError,
   UnnamedFunctionParamParserError,
+  UnsupportedEnumDeclarationParserError,
   UnsupportedGenericParserError,
   UnsupportedTypeAnnotationParserError,
 } = require('../../../errors');
@@ -144,6 +145,26 @@ describe('TypeScript Module Parser', () => {
           },
         },
       ]);
+    });
+
+    it.each([
+      'VALUE = -1.5',
+      'ZERO = 0, VALUE = -1.5',
+      'VALUE = -1e-2',
+      'VALUE = -(1.5)',
+    ])('should reject fractional enum members: %s', members => {
+      const parser = () =>
+        parseModule(`
+          import type {TurboModule} from 'RCTExport';
+          import * as TurboModuleRegistry from 'TurboModuleRegistry';
+          enum MyEnum { ${members} }
+          export interface Spec extends TurboModule {
+            useArg(arg: MyEnum): void;
+          }
+          export default TurboModuleRegistry.get<Spec>('Foo');
+        `);
+
+      expect(parser).toThrow(UnsupportedEnumDeclarationParserError);
     });
 
     it('should properly parse enums', () => {
