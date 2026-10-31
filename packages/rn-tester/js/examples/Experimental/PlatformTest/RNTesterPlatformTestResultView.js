@@ -12,7 +12,12 @@ import type {
   PlatformTestResult,
   PlatformTestResultStatus,
 } from './RNTesterPlatformTestTypes';
-import type {ListRenderItemInfo, TextStyle} from 'react-native';
+import type {
+  ListRenderItemInfo,
+  SafeAreaInsets,
+  SafeAreaInsetsChangeEvent,
+  TextStyle,
+} from 'react-native';
 
 import RNTesterPlatformTestMinimizedResultView from './RNTesterPlatformTestMinimizedResultView';
 import RNTesterPlatformTestResultsText from './RNTesterPlatformTestResultsText';
@@ -21,10 +26,10 @@ import {memo, useCallback, useMemo, useState} from 'react';
 import {
   Button,
   FlatList,
+  I18nManager,
   KeyboardAvoidingView,
   Modal,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Switch,
   Text,
@@ -87,7 +92,7 @@ function FilterModalButton(props: FilterModalProps) {
         animationType="fade"
         presentationStyle="overFullScreen"
         transparent={true}>
-        <SafeAreaView style={styles.filterModalRoot}>
+        <View style={styles.filterModalRoot}>
           <KeyboardAvoidingView
             style={styles.filterModalKeyboardAvoidingRoot}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -123,7 +128,7 @@ function FilterModalButton(props: FilterModalProps) {
               </View>
             </View>
           </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
       </Modal>
     </>
   );
@@ -230,6 +235,27 @@ export default function RNTesterPlatformTestResultView(
   );
 
   const [resultsExpanded, setResultsExpanded] = useState(false);
+  const [safeAreaInsets, setSafeAreaInsets] = useState<?SafeAreaInsets>(null);
+  const handleSafeAreaInsetsChange = useCallback(
+    (event: SafeAreaInsetsChangeEvent) => {
+      setSafeAreaInsets(event.nativeEvent.insets);
+    },
+    [],
+  );
+  const safeAreaPaddingStyle = useMemo(() => {
+    if (safeAreaInsets == null) {
+      return null;
+    }
+    // Insets are physical edges, but Yoga treats paddingLeft/paddingRight as
+    // start/end when swapLeftAndRightInRTL is on.
+    const swap = I18nManager.isRTL && I18nManager.doLeftAndRightSwapInRTL;
+    return {
+      paddingTop: safeAreaInsets.top,
+      paddingRight: swap ? safeAreaInsets.left : safeAreaInsets.right,
+      paddingBottom: safeAreaInsets.bottom,
+      paddingLeft: swap ? safeAreaInsets.right : safeAreaInsets.left,
+    };
+  }, [safeAreaInsets]);
 
   const handleReset = useCallback(() => {
     setFilterFailStatus(false);
@@ -266,12 +292,16 @@ export default function RNTesterPlatformTestResultView(
         animationType="slide"
         onRequestClose={handleMaximizedPress}
         visible={resultsExpanded}>
-        <SafeAreaView
-          style={{
-            width: '100%',
-            height: '100%',
-            flexDirection: 'column',
-          }}>
+        <View
+          experimental_onSafeAreaInsetsChange={handleSafeAreaInsetsChange}
+          style={[
+            {
+              width: '100%',
+              height: '100%',
+              flexDirection: 'column',
+            },
+            safeAreaPaddingStyle,
+          ]}>
           <View style={styles.resultsHeader}>
             <View style={styles.titleContainer}>
               <Text style={styles.title}>Results</Text>
@@ -308,7 +338,7 @@ export default function RNTesterPlatformTestResultView(
             <TableHeader />
             <FlatList data={filteredResults} renderItem={renderTableRow} />
           </View>
-        </SafeAreaView>
+        </View>
       </Modal>
     </>
   );

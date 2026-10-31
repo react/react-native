@@ -12,6 +12,7 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
+import SafeAreaView from '../../../../src/private/components/safeareaview/SafeAreaView_INTERNAL_DO_NOT_USE';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {createRef} from 'react';
@@ -114,5 +115,43 @@ describe('experimental_onSafeAreaInsetsChange', () => {
         .getRenderedOutput({props: ['experimental_onSafeAreaInsetsChange']})
         .toJSX(),
     ).toEqual(<rn-view experimental_onSafeAreaInsetsChange="true" />);
+  });
+});
+
+describe('<SafeAreaView>', () => {
+  it('applies the insets it receives as padding', () => {
+    const root = Fantom.createRoot();
+    const nodeRef = createRef<HostInstance>();
+
+    Fantom.runTask(() => {
+      root.render(<SafeAreaView collapsable={false} ref={nodeRef} />);
+    });
+
+    expect(
+      root
+        .getRenderedOutput({
+          props: ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+        })
+        .toJSX(),
+    ).toEqual(<rn-view />);
+
+    Fantom.dispatchNativeEvent(nodeRef, 'safeAreaInsetsChange', {
+      insets: INSETS,
+    });
+
+    expect(
+      root
+        .getRenderedOutput({
+          props: ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+        })
+        .toJSX(),
+    ).toEqual(
+      <rn-view
+        paddingBottom="34"
+        paddingLeft="0"
+        paddingRight="0"
+        paddingTop="44"
+      />,
+    );
   });
 });
