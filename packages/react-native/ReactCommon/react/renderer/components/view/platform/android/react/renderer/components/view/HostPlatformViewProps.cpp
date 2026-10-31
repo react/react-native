@@ -651,7 +651,6 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
 
   if (getClipsContentToBounds() != oldProps->getClipsContentToBounds()) {
     result["overflow"] = getClipsContentToBounds() ? "hidden" : "visible";
-    result["scroll"] = result["overflow"];
   }
 
   if (backfaceVisibility != oldProps->backfaceVisibility) {

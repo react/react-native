@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<17f41335dce7e5b45e7af2878c47d69b>>
+ * @generated SignedSource<<917c49b8668e677e8e85ca97c8cb91db>>
  */
 
 /**
@@ -53,6 +53,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableAndroidTextMeasurementOptimizations();
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid();
   bool enableBridgelessArchitecture();
+  bool enableCoreComponentsPropsUpdateReconciliationAndroid();
   bool enableCppPropsIteratorSetter();
   bool enableCustomFocusSearchOnClippedElementsAndroid();
   bool enableDestroyShadowTreeRevisionAsync();
@@ -142,7 +143,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 97> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -163,6 +164,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableAndroidTextMeasurementOptimizations_;
   std::atomic<std::optional<bool>> enableAsyncDiskCacheCheckInMultiSourceImageAndroid_;
   std::atomic<std::optional<bool>> enableBridgelessArchitecture_;
+  std::atomic<std::optional<bool>> enableCoreComponentsPropsUpdateReconciliationAndroid_;
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
   std::atomic<std::optional<bool>> enableCustomFocusSearchOnClippedElementsAndroid_;
   std::atomic<std::optional<bool>> enableDestroyShadowTreeRevisionAsync_;

@@ -86,6 +86,14 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
 #endif
 };
 
+#ifdef RN_SERIALIZABLE_STATE
+/*
+ * Whether mount instructions for `componentName` are built with
+ * `Props::getDiffProps` instead of raw props, given the enabled feature flags.
+ */
+bool isPropsDiffingEnabled(ComponentName componentName, const Props &props);
+#endif
+
 namespace detail {
 
 /*
