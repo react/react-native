@@ -642,15 +642,16 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                   CGSize attachmentSize = attachment.bounds.size;
                   CGRect glyphRect = [layoutManager boundingRectForGlyphRange:range inTextContainer:textContainer];
 
-                  CGRect frame;
-                  UIFont *font = [[textStorage attributedSubstringFromRange:range] attribute:NSFontAttributeName
-                                                                                     atIndex:0
-                                                                              effectiveRange:nil];
-                  frame = {
-                      .origin =
-                          {glyphRect.origin.x,
-                           glyphRect.origin.y + glyphRect.size.height - attachmentSize.height + font.descender},
-                      .size = attachmentSize};
+                  // Sit the attachment on the baseline TextKit laid its line out with. That accounts for the offset
+                  // that centers glyphs within a custom `lineHeight`, and for the line's largest font. The
+                  // attachment's own run has no font (TextKit fills in 12pt Helvetica), so its descender can't be used.
+                  NSUInteger glyphIndex = attachmentGlyphRange.location;
+                  CGRect lineFragmentRect = [layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex
+                                                                            effectiveRange:NULL];
+                  CGFloat baseline = lineFragmentRect.origin.y + [layoutManager locationForGlyphAtIndex:glyphIndex].y;
+
+                  CGRect frame = {
+                      .origin = {glyphRect.origin.x, baseline - attachmentSize.height}, .size = attachmentSize};
 
                   auto rect = facebook::react::Rect{
                       .origin = facebook::react::Point{.x = frame.origin.x, .y = frame.origin.y},
