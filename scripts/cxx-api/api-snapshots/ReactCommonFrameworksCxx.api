@@ -1523,6 +1523,7 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public static facebook::react::LayoutMetrics computeLayoutMetricsFromRoot(const facebook::react::ShadowNodeFamily& descendantNodeFamily, const facebook::react::LayoutableShadowNode& rootNode, facebook::react::LayoutableShadowNode::LayoutInspectingPolicy policy);
   public static facebook::react::LayoutMetrics computeRelativeLayoutMetrics(const facebook::react::ShadowNode::AncestorList& ancestors, facebook::react::LayoutableShadowNode::LayoutInspectingPolicy policy);
   public static facebook::react::LayoutMetrics computeRelativeLayoutMetrics(const facebook::react::ShadowNodeFamily& descendantNodeFamily, const facebook::react::LayoutableShadowNode& ancestorNode, facebook::react::LayoutableShadowNode::LayoutInspectingPolicy policy);
+  public static facebook::react::Transform resolveTransform(const facebook::react::LayoutableShadowNode& shadowNode, const facebook::react::LayoutableShadowNode::TransformOverrideProvider* transformOverrideProvider);
   public static std::shared_ptr<const facebook::react::ShadowNode> findNodeAtPoint(const std::shared_ptr<const facebook::react::ShadowNode>& node, facebook::react::Point point);
   public using UnsharedList = std::vector<facebook::react::LayoutableShadowNode*>;
   public virtual Float baseline(const facebook::react::LayoutContext& layoutContext, facebook::react::Size size) const;
@@ -1540,11 +1541,17 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public void setLayoutMetrics(facebook::react::LayoutMetrics layoutMetrics);
 }
 
+class facebook::react::LayoutableShadowNode::TransformOverrideProvider {
+  public virtual std::optional<facebook::react::Transform> getTransformOverride(const facebook::react::LayoutableShadowNode& shadowNode) const = 0;
+  public virtual ~TransformOverrideProvider() = default;
+}
+
 struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool clipSpecifiedAncestor;
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public const facebook::react::LayoutableShadowNode::TransformOverrideProvider* transformOverrideProvider;
 }
 
 class facebook::react::LineMeasureCacheKey {
@@ -2452,6 +2459,17 @@ class facebook::react::SurfaceTelemetry {
   public void incorporate(const facebook::react::TransactionTelemetry& telemetry, int numberOfMutations);
 }
 
+class facebook::react::SynchronousTransformOverlay : public facebook::react::LayoutableShadowNode::TransformOverrideProvider {
+  public bool isEmpty() const;
+  public bool needsPruning() const;
+  public virtual std::optional<facebook::react::Transform> getTransformOverride(const facebook::react::LayoutableShadowNode& shadowNode) const override;
+  public void clear();
+  public void prune(const std::function<bool(facebook::react::Tag)>& isAlive);
+  public void remove(facebook::react::Tag tag);
+  public void update(facebook::react::Tag tag, const facebook::react::AnimatedProps& props, const facebook::react::PropsParserContext& context);
+  public void update(facebook::react::Tag tag, const folly::dynamic& props, const facebook::react::PropsParserContext& context);
+}
+
 class facebook::react::TaskPriorityComparer {
   public bool operator()(const std::shared_ptr<facebook::react::Task>& lhs, const std::shared_ptr<facebook::react::Task>& rhs);
 }
@@ -2662,6 +2680,7 @@ class facebook::react::TurboModuleWithJSIBindings {
 
 class facebook::react::UIManager : public facebook::react::ShadowTreeDelegate {
   public UIManager(const facebook::react::RuntimeExecutor& runtimeExecutor, std::shared_ptr<const facebook::react::ContextContainer> contextContainer);
+  public const facebook::react::LayoutableShadowNode::TransformOverrideProvider* getTransformOverrideProvider() const;
   public const facebook::react::ShadowTreeRegistry& getShadowTreeRegistry() const;
   public facebook::react::LayoutMetrics getRelativeLayoutMetrics(const facebook::react::ShadowNode& shadowNode, const facebook::react::ShadowNode* ancestorShadowNode, facebook::react::LayoutableShadowNode::LayoutInspectingPolicy policy) const;
   public facebook::react::ShadowTree::Unique stopSurface(facebook::react::SurfaceId surfaceId) const;
@@ -2684,9 +2703,12 @@ class facebook::react::UIManager : public facebook::react::ShadowTreeDelegate {
   public void appendChild(const std::shared_ptr<const facebook::react::ShadowNode>& parentShadowNode, const std::shared_ptr<const facebook::react::ShadowNode>& childShadowNode) const;
   public void completeSurface(facebook::react::SurfaceId surfaceId, const std::shared_ptr<std::vector<std::shared_ptr<const facebook::react::ShadowNode>>>& rootChildren, facebook::react::ShadowTree::CommitOptions commitOptions);
   public void dispatchCommand(const std::shared_ptr<const facebook::react::ShadowNode>& shadowNode, const std::string& commandName, const folly::dynamic& args) const;
+  public void recordSynchronousTransform(facebook::react::Tag tag, const facebook::react::AnimatedProps& props) const;
+  public void recordSynchronousTransform(facebook::react::Tag tag, const folly::dynamic& props) const;
   public void registerCommitHook(facebook::react::UIManagerCommitHook& commitHook);
   public void registerMountHook(facebook::react::UIManagerMountHook& mountHook);
   public void removeEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener);
+  public void removeSynchronousTransform(facebook::react::Tag tag) const;
   public void reportMount(facebook::react::SurfaceId surfaceId) const;
   public void sendAccessibilityEvent(const std::shared_ptr<const facebook::react::ShadowNode>& shadowNode, const std::string& eventType);
   public void setAnimationDelegate(facebook::react::UIManagerAnimationDelegate* delegate);
@@ -6003,11 +6025,11 @@ bool facebook::react::dom::isConnected(const facebook::react::RootShadowNode::Sh
 facebook::react::dom::DOMBorderWidthRounded facebook::react::dom::getBorderWidth(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);
 facebook::react::dom::DOMOffset facebook::react::dom::getOffset(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);
 facebook::react::dom::DOMPoint facebook::react::dom::getScrollPosition(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);
-facebook::react::dom::DOMRect facebook::react::dom::getBoundingClientRect(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode, bool includeTransform);
-facebook::react::dom::DOMRect facebook::react::dom::measureInWindow(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);
+facebook::react::dom::DOMRect facebook::react::dom::getBoundingClientRect(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode, bool includeTransform, const facebook::react::LayoutableShadowNode::TransformOverrideProvider* transformOverrideProvider = nullptr);
+facebook::react::dom::DOMRect facebook::react::dom::measureInWindow(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode, const facebook::react::LayoutableShadowNode::TransformOverrideProvider* transformOverrideProvider = nullptr);
 facebook::react::dom::DOMSizeRounded facebook::react::dom::getInnerSize(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);
 facebook::react::dom::DOMSizeRounded facebook::react::dom::getScrollSize(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);
-facebook::react::dom::RNMeasureRect facebook::react::dom::measure(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);
+facebook::react::dom::RNMeasureRect facebook::react::dom::measure(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode, const facebook::react::LayoutableShadowNode::TransformOverrideProvider* transformOverrideProvider = nullptr);
 std::optional<facebook::react::dom::DOMRect> facebook::react::dom::measureLayout(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode, const facebook::react::ShadowNode& relativeToShadowNode);
 std::shared_ptr<const facebook::react::ShadowNode> facebook::react::dom::getElementById(const std::shared_ptr<const facebook::react::ShadowNode>& currentRevision, const std::string& id);
 std::shared_ptr<const facebook::react::ShadowNode> facebook::react::dom::getParentNode(const facebook::react::RootShadowNode::Shared& currentRevision, const facebook::react::ShadowNode& shadowNode);

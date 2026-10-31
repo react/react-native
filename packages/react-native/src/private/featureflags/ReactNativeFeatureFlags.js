@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<674f975884ae746e067e614523f2bfc3>>
+ * @generated SignedSource<<6e51075f5084b75494efb1ff3cf6d239>>
  * @flow strict
  * @noformat
  */
@@ -101,6 +101,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
+  enableSynchronousTransformOverlay: Getter<boolean>,
   enableViewCulling: Getter<boolean>,
   enableViewRecycling: Getter<boolean>,
   enableViewRecyclingForImage: Getter<boolean>,
@@ -430,6 +431,10 @@ export const enableResizeObserverByDefault: Getter<boolean> = createNativeFlagGe
  * When enabled, it will use SwiftUI for filter effects like blur on iOS.
  */
 export const enableSwiftUIBasedFilters: Getter<boolean> = createNativeFlagGetter('enableSwiftUIBasedFilters', false);
+/**
+ * When enabled, transforms applied to views synchronously on the UI thread (e.g. by native-driven animations, without a ShadowTree commit) are recorded in UIManager and taken into account by layout queries (measure, measureInWindow, getBoundingClientRect), so that they match the mounted views.
+ */
+export const enableSynchronousTransformOverlay: Getter<boolean> = createNativeFlagGetter('enableSynchronousTransformOverlay', false);
 /**
  * Enables View Culling: as soon as a view goes off screen, it can be reused anywhere in the UI and pieced together with other items to create new UI elements.
  */

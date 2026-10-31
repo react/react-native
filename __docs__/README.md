@@ -48,6 +48,7 @@ TODO: Explain the different components of React Native at a high level.
         - [Runtime Shadow Node Reference Update](../packages/react-native/ReactCommon/react/renderer/core/__docs__/RSNRU.md)
         - [passChildrenWhenCloningPersistedNodes](../packages/react-native/ReactCommon/react/renderer/core/__docs__/passChildrenWhenCloning.md)
       - Layout
+        - [Synchronous Transform Overlay](../packages/react-native/ReactCommon/react/renderer/uimanager/__docs__/SynchronousTransformOverlay.md)
       - Mounting
       - [Animation Backend](../packages/react-native/ReactCommon/react/renderer/animationbackend/__docs__/AnimationBackend.md)
       - [Native Animated](../packages/react-native/ReactCommon/react/renderer/animated/__docs__/NativeAnimated.md)

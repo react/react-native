@@ -18,6 +18,8 @@
 #include "AnimatedProps.h"
 #include "AnimationMutation.h"
 
+#include <vector>
+
 namespace facebook::react {
 
 struct PropsSnapshot {
@@ -45,6 +47,12 @@ class AnimatedPropsRegistry {
   void initializeSurface(SurfaceId surfaceId);
   void clear(SurfaceId surfaceId);
   void clearOnSurfaceStop(SurfaceId surfaceId);
+
+  /*
+   * Returns the tags of the views that have (pending or applied) entries in
+   * the registry for the given surface.
+   */
+  std::vector<Tag> getTags(SurfaceId surfaceId);
   std::pair<std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> &, SnapshotMap &> getMap(SurfaceId surfaceId);
 
  private:

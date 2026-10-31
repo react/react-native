@@ -208,6 +208,13 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
     return;
   }
 
+  // Every synchronous update (Animated, the Animation Backend, third-party
+  // animation libraries) funnels through here, so this is where UIManager
+  // learns about transforms that bypassed the ShadowTree.
+  if (ReactNativeFeatureFlags::enableSynchronousTransformOverlay()) {
+    scheduler.uiManager->recordSynchronousTransform(tag, props);
+  }
+
   [_mountingManager synchronouslyUpdateViewOnUIThread:tag
                                          changedProps:std::move(props)
                                   componentDescriptor:*componentDescriptor];

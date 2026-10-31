@@ -301,7 +301,8 @@ void AnimationBackend::requestAsyncFlushForSurfaces(
           }
           uiManager->getShadowTreeRegistry().visit(
               surfaceId,
-              [weakAnimatedPropsRegistry](const ShadowTree& shadowTree) {
+              [weakAnimatedPropsRegistry,
+               &uiManager](const ShadowTree& shadowTree) {
                 auto result = shadowTree.commit(
                     [weakAnimatedPropsRegistry](
                         const RootShadowNode& oldRootShadowNode) {
@@ -322,6 +323,12 @@ void AnimationBackend::requestAsyncFlushForSurfaces(
                         updateRuntimeShadowNodeReferencesOnCommitThread()) {
                   if (auto animatedPropsRegistry =
                           weakAnimatedPropsRegistry.lock()) {
+                    // The committed tree now carries the final values, so
+                    // the synchronous transforms are no longer needed.
+                    for (const auto tag : animatedPropsRegistry->getTags(
+                             shadowTree.getSurfaceId())) {
+                      uiManager->removeSynchronousTransform(tag);
+                    }
                     animatedPropsRegistry->clear(shadowTree.getSurfaceId());
                   }
                 }
@@ -331,6 +338,11 @@ void AnimationBackend::requestAsyncFlushForSurfaces(
 }
 
 void AnimationBackend::clearRegistry(SurfaceId surfaceId) {
+  if (auto uiManager = uiManager_.lock()) {
+    for (const auto tag : animatedPropsRegistry_->getTags(surfaceId)) {
+      uiManager->removeSynchronousTransform(tag);
+    }
+  }
   animatedPropsRegistry_->clear(surfaceId);
 }
 

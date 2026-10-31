@@ -673,7 +673,10 @@ jsi::Value UIManagerBinding::get(
             return jsi::Value::undefined();
           }
 
-          auto measureRect = dom::measure(currentRevision, *shadowNode);
+          auto measureRect = dom::measure(
+              currentRevision,
+              *shadowNode,
+              uiManager->getTransformOverrideProvider());
 
           callbackFunction.call(
               runtime,
@@ -714,7 +717,10 @@ jsi::Value UIManagerBinding::get(
             return jsi::Value::undefined();
           }
 
-          auto rect = dom::measureInWindow(currentRevision, *shadowNode);
+          auto rect = dom::measureInWindow(
+              currentRevision,
+              *shadowNode,
+              uiManager->getTransformOverrideProvider());
           callbackFunction.call(
               runtime,
               {jsi::Value{runtime, rect.x},
@@ -853,7 +859,10 @@ jsi::Value UIManagerBinding::get(
           }
 
           auto domRect = dom::getBoundingClientRect(
-              currentRevision, *shadowNode, includeTransform);
+              currentRevision,
+              *shadowNode,
+              includeTransform,
+              uiManager->getTransformOverrideProvider());
 
           return jsi::Array::createWithElements(
               runtime,
@@ -940,7 +949,10 @@ jsi::Value UIManagerBinding::get(
           }
 
           auto domRect = dom::getBoundingClientRect(
-              currentRevision, *shadowNode, true /* includeTransform */);
+              currentRevision,
+              *shadowNode,
+              true /* includeTransform */,
+              uiManager->getTransformOverrideProvider());
 
           auto result = jsi::Object(runtime);
           result.setProperty(runtime, "x", domRect.x);

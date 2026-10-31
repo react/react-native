@@ -1431,4 +1431,123 @@ TEST(LayoutableShadowNodeTest, inversedContentOriginOffset) {
   EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 130);
 }
 
+namespace {
+
+/*
+ * Overrides the transform of a single node, like `SynchronousTransformOverlay`
+ * does for views that were transformed without a commit.
+ */
+class SingleNodeTransformOverrideProvider
+    : public LayoutableShadowNode::TransformOverrideProvider {
+ public:
+  SingleNodeTransformOverrideProvider(Tag tag, Transform transform)
+      : tag_(tag), transform_(std::move(transform)) {}
+
+  std::optional<Transform> getTransformOverride(
+      const LayoutableShadowNode& shadowNode) const override {
+    if (shadowNode.getTag() == tag_) {
+      return transform_;
+    }
+    return std::nullopt;
+  }
+
+ private:
+  Tag tag_;
+  Transform transform_;
+};
+
+} // namespace
+
+/*
+ * The provided transform takes precedence over the committed `transform` prop
+ * of the node and of its ancestors, while the nodes without an override keep
+ * using their props.
+ */
+TEST(LayoutableShadowNodeTest, relativeLayoutMetricsWithTransformOverride) {
+  auto builder = simpleComponentBuilder();
+  auto childShadowNode = std::shared_ptr<ViewShadowNode>{};
+  auto grandChildShadowNode = std::shared_ptr<ViewShadowNode>{};
+  // clang-format off
+  auto element =
+    Element<ViewShadowNode>()
+      .tag(1)
+      .finalize([](ViewShadowNode &shadowNode){
+        auto layoutMetrics = EmptyLayoutMetrics;
+        layoutMetrics.frame.size = {.width=1000, .height=1000};
+        shadowNode.setLayoutMetrics(layoutMetrics);
+      })
+      .children({
+        Element<ViewShadowNode>()
+        .tag(2)
+        .finalize([](ViewShadowNode &shadowNode){
+          auto layoutMetrics = EmptyLayoutMetrics;
+          layoutMetrics.frame.origin = {.x=10, .y=20};
+          layoutMetrics.frame.size = {.width=100, .height=200};
+          shadowNode.setLayoutMetrics(layoutMetrics);
+        })
+        .props([] {
+          // The committed (stale) transform.
+          auto sharedProps = std::make_shared<ViewProps>();
+          sharedProps->transform = Transform::Translate(5, 5, 0);
+          return sharedProps;
+        })
+        .reference(childShadowNode)
+        .children({
+          Element<ViewShadowNode>()
+          .tag(3)
+          .finalize([](ViewShadowNode &shadowNode){
+            auto layoutMetrics = EmptyLayoutMetrics;
+            layoutMetrics.frame.origin = {.x=1, .y=2};
+            layoutMetrics.frame.size = {.width=10, .height=10};
+            shadowNode.setLayoutMetrics(layoutMetrics);
+          })
+          .props([] {
+            auto sharedProps = std::make_shared<ViewProps>();
+            sharedProps->transform = Transform::Translate(0, 100, 0);
+            return sharedProps;
+          })
+          .reference(grandChildShadowNode)
+        })
+    });
+  // clang-format on
+
+  auto parentShadowNode = builder.build(element);
+
+  // Without a provider the committed transform is used.
+  auto relativeLayoutMetrics =
+      LayoutableShadowNode::computeRelativeLayoutMetrics(
+          childShadowNode->getFamily(), *parentShadowNode, {});
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 15);
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 25);
+
+  auto provider =
+      SingleNodeTransformOverrideProvider{2, Transform::Translate(100, 0, 0)};
+
+  relativeLayoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
+      childShadowNode->getFamily(),
+      *parentShadowNode,
+      {.transformOverrideProvider = &provider});
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 110);
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 20);
+  EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 100);
+  EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 200);
+
+  // The override of an ancestor applies to descendants, which keep their
+  // own committed transform.
+  relativeLayoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
+      grandChildShadowNode->getFamily(),
+      *parentShadowNode,
+      {.transformOverrideProvider = &provider});
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 111);
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 122);
+
+  // `includeTransform = false` ignores the override as well.
+  relativeLayoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
+      childShadowNode->getFamily(),
+      *parentShadowNode,
+      {.includeTransform = false, .transformOverrideProvider = &provider});
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 10);
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 20);
+}
+
 } // namespace facebook::react

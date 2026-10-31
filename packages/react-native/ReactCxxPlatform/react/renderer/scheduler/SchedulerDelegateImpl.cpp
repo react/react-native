@@ -68,6 +68,9 @@ void SchedulerDelegateImpl::schedulerDidSendAccessibilityEvent(
 void SchedulerDelegateImpl::schedulerShouldSynchronouslyUpdateViewOnUIThread(
     Tag tag,
     const folly::dynamic& props) {
+  if (uiManager_ != nullptr) {
+    uiManager_->recordSynchronousTransform(tag, props);
+  }
   mountingManager_->synchronouslyUpdateViewOnUIThread(tag, props);
 }
 

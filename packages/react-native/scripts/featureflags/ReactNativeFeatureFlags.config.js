@@ -608,6 +608,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'canary',
     },
+    enableSynchronousTransformOverlay: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-23',
+        description:
+          'When enabled, transforms applied to views synchronously on the UI thread (e.g. by native-driven animations, without a ShadowTree commit) are recorded in UIManager and taken into account by layout queries (measure, measureInWindow, getBoundingClientRect), so that they match the mounted views.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableViewCulling: {
       defaultValue: false,
       metadata: {
