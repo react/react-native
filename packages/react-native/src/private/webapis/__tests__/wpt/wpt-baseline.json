@@ -1,0 +1,2273 @@
+{
+  "fetch": {
+    "files": [
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/basic/historical.any.js",
+        "tests": [
+          {
+            "name": "'type' getter should not exist on Request objects",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers object no longer has a getAll() method",
+            "status": "PASS"
+          },
+          {
+            "name": "Response object no longer has a trailer getter",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/body/formdata.any.js",
+        "tests": [
+          {
+            "name": "Consume empty request.formData() as FormData",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume empty response.formData() as FormData",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume multipart/form-data headers case-insensitively",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/body/mime-type.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request: MIME type for Blob from empty body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request: MIME type for Blob from empty body with Content-Type",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request: overriding explicit Content-Type",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request: removing implicit Content-Type",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request: setting missing Content-Type",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response: MIME type for Blob from empty body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response: MIME type for Blob from empty body with Content-Type",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response: overriding explicit Content-Type",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response: removing implicit Content-Type",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response: setting missing Content-Type",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/body/textstream.any.js",
+        "tests": [
+          {
+            "name": "Request.textStream() basic functionality",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request.textStream() ignores Content-Type charset (UTF-16LE)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request.textStream() on consumed body throws TypeError",
+            "status": "PASS"
+          },
+          {
+            "name": "Request.textStream() on locked body throws TypeError",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request.textStream() with null body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response.textStream() basic functionality",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response.textStream() ignores Content-Type charset (UTF-16LE)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response.textStream() ignores invalid Content-Type charset (invalid-charset)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response.textStream() on consumed body throws TypeError",
+            "status": "PASS"
+          },
+          {
+            "name": "Response.textStream() on locked body throws TypeError",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response.textStream() with empty body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Response.textStream() with null body",
+            "status": "FAIL"
+          },
+          {
+            "name": "textStream method existence",
+            "status": "FAIL"
+          },
+          {
+            "name": "textStream() handles chunked byte stream input",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/header-setcookie.any.js",
+        "tests": [
+          {
+            "name": "Adding Set-Cookie headers normalizes their value",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid Set-Cookie headers throws",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers iterator does not combine set-cookie & set-cookie2 headers",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers iterator does not combine set-cookie headers",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers iterator does not special case set-cookie2 headers",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers iterator is correctly updated with set-cookie changes",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers iterator is correctly updated with set-cookie changes #2",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers iterator preserves per header ordering, but sorts keys alphabetically",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers iterator preserves per header ordering, but sorts keys alphabetically (and ignores value ordering)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers iterator preserves set-cookie ordering",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.append works for set-cookie",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.delete works for set-cookie",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers.prototype.get combines set-cookie headers in order",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie ignores set-cookie2 headers",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie preserves header ordering",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie with an empty header",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie with multiple headers",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie with no headers present",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie with one header",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie with one header created from an object",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.getSetCookie with two equal headers",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers.prototype.has works for set-cookie",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers.prototype.set works for set-cookie",
+            "status": "PASS"
+          },
+          {
+            "name": "Set-Cookie is a forbidden response header",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/headers-basic.any.js",
+        "tests": [
+          {
+            "name": "Appending a value pair during iteration causes it to be reached during iteration",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check Symbol.iterator method",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check append method",
+            "status": "PASS"
+          },
+          {
+            "name": "Check delete method",
+            "status": "PASS"
+          },
+          {
+            "name": "Check entries method",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check forEach method",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check get method",
+            "status": "PASS"
+          },
+          {
+            "name": "Check has method",
+            "status": "PASS"
+          },
+          {
+            "name": "Check keys method",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check set method",
+            "status": "PASS"
+          },
+          {
+            "name": "Check values method",
+            "status": "FAIL"
+          },
+          {
+            "name": "Create headers from empty object",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers from no parameter",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers from undefined parameter",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers with 1 should throw",
+            "status": "FAIL"
+          },
+          {
+            "name": "Create headers with existing headers",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers with existing headers with custom iterator",
+            "status": "FAIL"
+          },
+          {
+            "name": "Create headers with null should throw",
+            "status": "FAIL"
+          },
+          {
+            "name": "Create headers with record",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers with sequence",
+            "status": "PASS"
+          },
+          {
+            "name": "Iteration skips elements removed while iterating",
+            "status": "FAIL"
+          },
+          {
+            "name": "Prepending a value pair before the current element position causes it to be skipped during iteration and adds the current element a second time",
+            "status": "FAIL"
+          },
+          {
+            "name": "Removing elements already iterated over causes an element to be skipped during iteration",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/headers-casing.any.js",
+        "tests": [
+          {
+            "name": "Check append method, names use characters with different case",
+            "status": "PASS"
+          },
+          {
+            "name": "Check delete method, names use characters with different case",
+            "status": "PASS"
+          },
+          {
+            "name": "Check set method, names use characters with different case",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers, names use characters with different case",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/headers-combine.any.js",
+        "tests": [
+          {
+            "name": "Check append methods when called with already used name",
+            "status": "PASS"
+          },
+          {
+            "name": "Check delete and has methods when using same name for different values",
+            "status": "PASS"
+          },
+          {
+            "name": "Check set methods when called with already used name",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers using same name for different values",
+            "status": "PASS"
+          },
+          {
+            "name": "Iterate combined values",
+            "status": "PASS"
+          },
+          {
+            "name": "Iterate combined values in sorted order",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/headers-errors.any.js",
+        "tests": [
+          {
+            "name": "Check headers append with an invalid name [object Object]",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers append with an invalid name invalidĀ",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers append with an invalid value invalidĀ",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check headers delete with an invalid name [object Object]",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers delete with an invalid name invalidĀ",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers get with an invalid name [object Object]",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers get with an invalid name invalidĀ",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers has with an invalid name [object Object]",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers has with an invalid name invalidĀ",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers set with an invalid name [object Object]",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers set with an invalid name invalidĀ",
+            "status": "PASS"
+          },
+          {
+            "name": "Check headers set with an invalid value invalidĀ",
+            "status": "FAIL"
+          },
+          {
+            "name": "Create headers giving an array having one string as init argument",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers giving an array having three strings as init argument",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers giving bad header name as init argument",
+            "status": "PASS"
+          },
+          {
+            "name": "Create headers giving bad header value as init argument",
+            "status": "FAIL"
+          },
+          {
+            "name": "Headers forEach loop should stop if callback is throwing exception",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers forEach throws if argument is not callable",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/headers-forbidden-override.any.js",
+        "tests": [
+          {
+            "name": "header X-HTTP-METHOD is allowed to use value \",TRACE\",",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-HTTP-METHOD is allowed to use value GET",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-HTTP-METHOD is allowed to use value GETTRACE",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value  connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value CONNECT",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value GET,track ",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value TRACE",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value TRACK",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value \\nconnect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value \\rtrace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value \\ttrack",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value trace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value trace,",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD is forbidden to use value track",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is allowed to use value \",TRACE\",",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is allowed to use value GET",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is allowed to use value GETTRACE",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value  connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value CONNECT",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value GET,track ",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value TRACE",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value TRACK",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value \\nconnect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value \\rtrace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value \\ttrack",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value trace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value trace,",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-HTTP-METHOD-OVERRIDE is forbidden to use value track",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is allowed to use value \",TRACE\",",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is allowed to use value GET",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is allowed to use value GETTRACE",
+            "status": "PASS"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value  connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value CONNECT",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value GET,track ",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value TRACE",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value TRACK",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value \\nconnect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value \\rtrace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value \\ttrack",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value trace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value trace,",
+            "status": "FAIL"
+          },
+          {
+            "name": "header X-METHOD-OVERRIDE is forbidden to use value track",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is allowed to use value \",TRACE\",",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-http-method is allowed to use value GET",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-http-method is allowed to use value GETTRACE",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value  connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value CONNECT",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value GET,track ",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value TRACE",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value TRACK",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value \\nconnect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value \\rtrace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value \\ttrack",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value trace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value trace,",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method is forbidden to use value track",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is allowed to use value \",TRACE\",",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-http-method-override is allowed to use value GET",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-http-method-override is allowed to use value GETTRACE",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value  connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value CONNECT",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value GET,track ",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value TRACE",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value TRACK",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value \\nconnect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value \\rtrace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value \\ttrack",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value trace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value trace,",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-http-method-override is forbidden to use value track",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is allowed to use value \",TRACE\",",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-method-override is allowed to use value GET",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-method-override is allowed to use value GETTRACE",
+            "status": "PASS"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value  connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value CONNECT",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value GET,track ",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value TRACE",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value TRACK",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value \\nconnect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value \\rtrace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value \\ttrack",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value connect",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value trace",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value trace,",
+            "status": "FAIL"
+          },
+          {
+            "name": "header x-method-override is forbidden to use value track",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/headers-normalize.any.js",
+        "tests": [
+          {
+            "name": "Check append method with not normalized values",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check set method with not normalized values",
+            "status": "FAIL"
+          },
+          {
+            "name": "Create headers with not normalized values",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "ERROR",
+        "path": "fetch/api/headers/headers-record.any.js",
+        "tests": [
+          {
+            "name": "<harness completion>",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/headers/headers-structure.any.js",
+        "tests": [
+          {
+            "name": "Headers has append method",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers has delete method",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers has entries method",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers has get method",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers has has method",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers has keys method",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers has set method",
+            "status": "PASS"
+          },
+          {
+            "name": "Headers has values method",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/forbidden-method.any.js",
+        "tests": [
+          {
+            "name": "Request() with a forbidden method CONNECT must throw.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request() with a forbidden method TRACE must throw.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request() with a forbidden method TRACK must throw.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request() with a forbidden method connect must throw.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request() with a forbidden method trace must throw.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request() with a forbidden method track must throw.",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-clone-readable-stream-body.any.js",
+        "tests": [
+          {
+            "name": "new Request(clone) preserves a ReadableStream body that came from clone()",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-constructor-init-body-override.any.js",
+        "tests": [
+          {
+            "name": "Check that the body of a new request can be duplicated from an existing Request object",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check that the body of a new request can be overridden when created from an existing Request object",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-consume-empty.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume request's body as arrayBuffer",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume request's body as blob",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume request's body as formData with correct multipart type (error case)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume request's body as formData with correct urlencoded type",
+            "status": "PASS"
+          },
+          {
+            "name": "Consume request's body as formData without correct type (error case)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume request's body as json (error case)",
+            "status": "PASS"
+          },
+          {
+            "name": "Consume request's body as text",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-consume.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-disturbed.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request's body: initial state",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-error.any.js",
+        "tests": [
+          {
+            "name": "Bad cache init parameter value",
+            "status": "FAIL"
+          },
+          {
+            "name": "Bad credentials init parameter value",
+            "status": "FAIL"
+          },
+          {
+            "name": "Bad mode init parameter value",
+            "status": "FAIL"
+          },
+          {
+            "name": "Bad redirect init parameter value",
+            "status": "FAIL"
+          },
+          {
+            "name": "Bad referrerPolicy init parameter value",
+            "status": "FAIL"
+          },
+          {
+            "name": "Input URL has credentials",
+            "status": "FAIL"
+          },
+          {
+            "name": "Input URL is not valid",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request should get its content-type from init headers if one is provided",
+            "status": "PASS"
+          },
+          {
+            "name": "Request should get its content-type from the body if none is provided",
+            "status": "PASS"
+          },
+          {
+            "name": "Request should get its content-type from the init request",
+            "status": "PASS"
+          },
+          {
+            "name": "Request should not get its content-type from the init request if init headers are provided",
+            "status": "PASS"
+          },
+          {
+            "name": "Request with cache mode: only-if-cached and fetch mode cors",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request with cache mode: only-if-cached and fetch mode no-cors",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request with cache mode: only-if-cached and fetch mode: same-origin",
+            "status": "PASS"
+          },
+          {
+            "name": "RequestInit's cache mode is only-if-cached and mode is not same-origin",
+            "status": "FAIL"
+          },
+          {
+            "name": "RequestInit's method is forbidden",
+            "status": "FAIL"
+          },
+          {
+            "name": "RequestInit's method is invalid",
+            "status": "FAIL"
+          },
+          {
+            "name": "RequestInit's mode is navigate",
+            "status": "FAIL"
+          },
+          {
+            "name": "RequestInit's mode is no-cors and method is not simple",
+            "status": "FAIL"
+          },
+          {
+            "name": "RequestInit's referrer is invalid",
+            "status": "FAIL"
+          },
+          {
+            "name": "RequestInit's window is not null",
+            "status": "FAIL"
+          },
+          {
+            "name": "Untitled",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-headers.any.js",
+        "tests": [
+          {
+            "name": "Adding invalid no-cors request header \"Content-Type: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid no-cors request header \"Empty-Value: \"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid no-cors request header \"Potato: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid no-cors request header \"proxy: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid no-cors request header \"proxya: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid no-cors request header \"sec: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid no-cors request header \"secb: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"ACCEPT-ENCODING: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Accept-Charset: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Accept-Encoding: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Access-Control-Request-Headers: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Access-Control-Request-Method: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Connection: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Content-Length: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Cookie2: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Cookie: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"DNT: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Date: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Expect: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Host: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Keep-Alive: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Origin: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Proxy-: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Referer: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Sec-: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Set-Cookie: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"TE: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Trailer: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Transfer-Encoding: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Upgrade: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"Via: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"accept-charset: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"proxy-a: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding invalid request header \"sec-b: KO\"",
+            "status": "FAIL"
+          },
+          {
+            "name": "Adding valid no-cors request header \"Accept-Language: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"Accept: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"CONTENT-type: text/plain;charset=UTF-8\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"content-TYPE: text/plain\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"content-language: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"content-type: application/x-www-form-urlencoded\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"content-type: application/x-www-form-urlencoded;charset=UTF-8\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"content-type: multipart/form-data\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid no-cors request header \"content-type: multipart/form-data;charset=UTF-8\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"Content-Type: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"Potato: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"Set-Cookie2: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"User-Agent: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"proxy: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"proxya: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"sec: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Adding valid request header \"secb: OK\"",
+            "status": "PASS"
+          },
+          {
+            "name": "Check that no-cors request constructor is filtering headers provided as init parameter",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check that no-cors request constructor is filtering headers provided as part of request parameter",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check that request constructor is filtering headers provided as init parameter",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request should get its content-type from init headers if one is provided",
+            "status": "PASS"
+          },
+          {
+            "name": "Request should get its content-type from the body if none is provided",
+            "status": "PASS"
+          },
+          {
+            "name": "Request should get its content-type from the init request",
+            "status": "PASS"
+          },
+          {
+            "name": "Request should not get its content-type from the init request if init headers are provided",
+            "status": "PASS"
+          },
+          {
+            "name": "Test that Request.headers has the [SameObject] extended attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Testing empty Request Content-Type header",
+            "status": "FAIL"
+          },
+          {
+            "name": "Testing request header creations with various objects",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-init-002.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "Initialize Request with headers values",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-init-contenttype.any.js",
+        "tests": [
+          {
+            "name": "Can override Content-Type for Request with Blob body (empty type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Request with Blob body (no type set)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Request with Blob body (set type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Request with FormData body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Request with ReadableStream body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Request with URLSearchParams body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Request with buffer source body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Request with empty body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Request with string body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Request with Blob body (empty type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Request with Blob body (no type set)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Request with Blob body (set type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Request with FormData body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Request with ReadableStream body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Request with URLSearchParams body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Request with buffer source body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Request with empty body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Request with string body",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-init-stream.any.js",
+        "tests": [
+          {
+            "name": "Constructing a Request with a Request on which body.getReader() is called",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Request with a Request on which body.getReader().read() is called",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Request with a Request on which read() and releaseLock() are called",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Request with a stream holds the original object.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Request with a stream on which getReader() is called",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Request with a stream on which read() and releaseLock() are called",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Request with a stream on which read() is called",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is OK to omit .duplex when the body is a Blob.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is OK to omit .duplex when the body is a Uint8Array.",
+            "status": "PASS"
+          },
+          {
+            "name": "It is OK to omit .duplex when the body is a string.",
+            "status": "PASS"
+          },
+          {
+            "name": "It is OK to omit .duplex when the body is null.",
+            "status": "PASS"
+          },
+          {
+            "name": "It is OK to omit duplex when init.body is not given and input.body is given.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is OK to set .duplex = 'half' when the body is a Blob.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is OK to set .duplex = 'half' when the body is a ReadableStream.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is OK to set .duplex = 'half' when the body is a Uint8Array.",
+            "status": "PASS"
+          },
+          {
+            "name": "It is OK to set .duplex = 'half' when the body is a string.",
+            "status": "PASS"
+          },
+          {
+            "name": "It is OK to set .duplex = 'half' when the body is null.",
+            "status": "PASS"
+          },
+          {
+            "name": "It is error to omit .duplex when the body is a ReadableStream.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is error to set .duplex = 'full' when the body is a Blob.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is error to set .duplex = 'full' when the body is a ReadableStream.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is error to set .duplex = 'full' when the body is a Uint8Array.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is error to set .duplex = 'full' when the body is a string.",
+            "status": "FAIL"
+          },
+          {
+            "name": "It is error to set .duplex = 'full' when the body is null.",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-keepalive.any.js",
+        "tests": [
+          {
+            "name": "keepalive flag",
+            "status": "FAIL"
+          },
+          {
+            "name": "keepalive flag with stream body",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/request/request-structure.any.js",
+        "tests": [
+          {
+            "name": "Check bodyUsed attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check cache attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check credentials attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check destination attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check duplex attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check headers attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check integrity attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check isHistoryNavigation attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check isReloadNavigation attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check method attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check mode attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check redirect attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check referrer attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check referrerPolicy attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check url attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request does not expose blocking attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Request does not expose internalpriority attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Request does not expose priority attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Request has arrayBuffer method",
+            "status": "PASS"
+          },
+          {
+            "name": "Request has blob method",
+            "status": "FAIL"
+          },
+          {
+            "name": "Request has clone method",
+            "status": "PASS"
+          },
+          {
+            "name": "Request has formData method",
+            "status": "PASS"
+          },
+          {
+            "name": "Request has json method",
+            "status": "PASS"
+          },
+          {
+            "name": "Request has text method",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-consume-empty.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume response's body as arrayBuffer",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume response's body as blob",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume response's body as formData with correct multipart type (error case)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume response's body as formData with correct urlencoded type",
+            "status": "PASS"
+          },
+          {
+            "name": "Consume response's body as formData without correct type (error case)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Consume response's body as json (error case)",
+            "status": "PASS"
+          },
+          {
+            "name": "Consume response's body as text",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-consume-stream.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "Read empty blob response's body as readableStream",
+            "status": "FAIL"
+          },
+          {
+            "name": "Read empty text response's body as readableStream",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-error-from-stream.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "ReadableStreamDefaultReader Promise receives ReadableStream pull() Error",
+            "status": "FAIL"
+          },
+          {
+            "name": "ReadableStreamDefaultReader Promise receives ReadableStream start() Error",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-error.any.js",
+        "tests": [
+          {
+            "name": "Throws RangeError when responseInit's status is 0",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws RangeError when responseInit's status is 100",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws RangeError when responseInit's status is 1000",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws RangeError when responseInit's status is 199",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws RangeError when responseInit's status is 600",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws TypeError when building a response with body and a body status of 204",
+            "status": "FAIL"
+          },
+          {
+            "name": "Throws TypeError when building a response with body and a body status of 205",
+            "status": "FAIL"
+          },
+          {
+            "name": "Throws TypeError when building a response with body and a body status of 304",
+            "status": "FAIL"
+          },
+          {
+            "name": "Throws TypeError when responseInit's statusText is \\n",
+            "status": "FAIL"
+          },
+          {
+            "name": "Throws TypeError when responseInit's statusText is Ā",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-from-stream.any.js",
+        "tests": [
+          {
+            "name": "Constructing a Response with a stream on which getReader() is called",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Response with a stream on which read() and releaseLock() are called",
+            "status": "FAIL"
+          },
+          {
+            "name": "Constructing a Response with a stream on which read() is called",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-init-001.any.js",
+        "tests": [
+          {
+            "name": "Check default value for body attribute",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check default value for ok attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Check default value for status attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Check default value for statusText attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Check default value for type attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Check default value for url attribute",
+            "status": "PASS"
+          },
+          {
+            "name": "Check status init values and associated getter",
+            "status": "PASS"
+          },
+          {
+            "name": "Check statusText init values and associated getter",
+            "status": "PASS"
+          },
+          {
+            "name": "Test that Response.headers has the [SameObject] extended attribute",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-init-002.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          },
+          {
+            "name": "Initialize Response with headers values",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-init-contenttype.any.js",
+        "tests": [
+          {
+            "name": "Can override Content-Type for Response with Blob body (empty type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Response with Blob body (no type set)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Response with Blob body (set type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Response with FormData body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Response with ReadableStream body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Can override Content-Type for Response with URLSearchParams body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Response with buffer source body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Response with empty body",
+            "status": "PASS"
+          },
+          {
+            "name": "Can override Content-Type for Response with string body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Response with Blob body (empty type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Response with Blob body (no type set)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Response with Blob body (set type)",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Response with FormData body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Response with ReadableStream body",
+            "status": "FAIL"
+          },
+          {
+            "name": "Default Content-Type for Response with URLSearchParams body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Response with buffer source body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Response with empty body",
+            "status": "PASS"
+          },
+          {
+            "name": "Default Content-Type for Response with string body",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-static-error.any.js",
+        "tests": [
+          {
+            "name": "Check response returned by static method error()",
+            "status": "FAIL"
+          },
+          {
+            "name": "the 'guard' of the Headers instance should be immutable",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-static-json.any.js",
+        "tests": [
+          {
+            "name": "Check response returned by static json() with init undefined",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with init {\"headers\":{\"content-type\":\"foo/bar\"}}",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with init {\"headers\":{\"x-foo\":\"bar\"}}",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with init {\"headers\":{}}",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with init {\"status\":400}",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with init {\"statusText\":\"foo\"}",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with input U+dead",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with input U+df06U+d834",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static json() with input 𝌆",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check static json() encodes JSON objects correctly",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check static json() propagates JSON serializer errors",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check static json() throws when data is circular",
+            "status": "PASS"
+          },
+          {
+            "name": "Check static json() throws when data is not encodable",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws TypeError when calling static json() with a status of 204",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws TypeError when calling static json() with a status of 205",
+            "status": "PASS"
+          },
+          {
+            "name": "Throws TypeError when calling static json() with a status of 304",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-static-redirect.any.js",
+        "tests": [
+          {
+            "name": "Check default redirect response",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check error returned when giving invalid status to redirect(), status = 200",
+            "status": "PASS"
+          },
+          {
+            "name": "Check error returned when giving invalid status to redirect(), status = 309",
+            "status": "PASS"
+          },
+          {
+            "name": "Check error returned when giving invalid status to redirect(), status = 400",
+            "status": "PASS"
+          },
+          {
+            "name": "Check error returned when giving invalid status to redirect(), status = 500",
+            "status": "PASS"
+          },
+          {
+            "name": "Check error returned when giving invalid url to redirect()",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static method redirect(), status = 301",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static method redirect(), status = 302",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static method redirect(), status = 303",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static method redirect(), status = 307",
+            "status": "FAIL"
+          },
+          {
+            "name": "Check response returned by static method redirect(), status = 308",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-stream-bad-chunk.any.js",
+        "tests": [
+          {
+            "name": "ReadableStream with non-Uint8Array chunk passed to Response.arrayBuffer() causes TypeError",
+            "status": "FAIL"
+          },
+          {
+            "name": "ReadableStream with non-Uint8Array chunk passed to Response.blob() causes TypeError",
+            "status": "FAIL"
+          },
+          {
+            "name": "ReadableStream with non-Uint8Array chunk passed to Response.bytes() causes TypeError",
+            "status": "FAIL"
+          },
+          {
+            "name": "ReadableStream with non-Uint8Array chunk passed to Response.formData() causes TypeError",
+            "status": "FAIL"
+          },
+          {
+            "name": "ReadableStream with non-Uint8Array chunk passed to Response.json() causes TypeError",
+            "status": "FAIL"
+          },
+          {
+            "name": "ReadableStream with non-Uint8Array chunk passed to Response.text() causes TypeError",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-stream-disturbed-6.any.js",
+        "tests": [
+          {
+            "name": "A closed stream on which read() has been called",
+            "status": "FAIL"
+          },
+          {
+            "name": "A non-closed stream on which cancel() has been called",
+            "status": "FAIL"
+          },
+          {
+            "name": "A non-closed stream on which read() has been called",
+            "status": "FAIL"
+          },
+          {
+            "name": "An errored stream on which cancel() has been called",
+            "status": "FAIL"
+          },
+          {
+            "name": "An errored stream on which read() has been called",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-stream-disturbed-by-pipe.any.js",
+        "tests": [
+          {
+            "name": "using pipeThrough on Response body should disturb it synchronously",
+            "status": "FAIL"
+          },
+          {
+            "name": "using pipeTo on Response body should disturb it synchronously",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/api/response/response-stream-with-broken-then.any.js",
+        "tests": [
+          {
+            "name": "Attempt to inject 8.2 via Object.prototype.then.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Attempt to inject undefined via Object.prototype.then.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Attempt to inject value: undefined via Object.prototype.then.",
+            "status": "FAIL"
+          },
+          {
+            "name": "Attempt to inject {done: false, value: bye} via Object.prototype.then.",
+            "status": "FAIL"
+          },
+          {
+            "name": "intercepting arraybuffer to body readable stream conversion via Object.prototype.then should not be possible",
+            "status": "FAIL"
+          },
+          {
+            "name": "intercepting arraybuffer to text conversion via Object.prototype.then should not be possible",
+            "status": "PASS"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "fetch/content-type/multipart-malformed.any.js",
+        "tests": [
+          {
+            "name": "Invalid form data should not crash the browser",
+            "status": "FAIL"
+          }
+        ]
+      }
+    ],
+    "manifest": {
+      "sha256": "aad155ccc1c4d436994b1b60646f44f38b51b21b1f23f6a036cb1299f54ab38e",
+      "version": 9
+    },
+    "revision": "6c7127bdd9f2cc6a3668fd9791757843e09d5a9e",
+    "source": "https://chromium.googlesource.com/external/w3c/web-platform-tests/+/6c7127bdd9f2cc6a3668fd9791757843e09d5a9e",
+    "summary": {
+      "BLOCKED": 0,
+      "FAIL": 321,
+      "FLAKY": 0,
+      "NOTRUN": 0,
+      "PASS": 164,
+      "PRECONDITION_FAILED": 0,
+      "TIMEOUT": 0,
+      "noOpTests": 0,
+      "total": 485,
+      "unsupportedFiles": 447
+    },
+    "suite": "fetch"
+  },
+  "streams": {
+    "blocked": {
+      "gatedFiles": 64,
+      "gatedTests": 978,
+      "missingGlobals": [
+        "CountQueuingStrategy",
+        "ReadableByteStreamController",
+        "ReadableStream",
+        "ReadableStreamDefaultReader",
+        "TransformStream",
+        "WritableStream"
+      ],
+      "reason": "ReadableStream not implemented"
+    },
+    "files": [
+      {
+        "harnessStatus": "OK",
+        "path": "streams/readable-streams/async-iterator.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          }
+        ]
+      },
+      {
+        "harnessStatus": "OK",
+        "path": "streams/readable-streams/from.any.js",
+        "tests": [
+          {
+            "name": "<file evaluation>",
+            "status": "FAIL"
+          }
+        ]
+      }
+    ],
+    "manifest": {
+      "sha256": "aad155ccc1c4d436994b1b60646f44f38b51b21b1f23f6a036cb1299f54ab38e",
+      "version": 9
+    },
+    "revision": "6c7127bdd9f2cc6a3668fd9791757843e09d5a9e",
+    "source": "https://chromium.googlesource.com/external/w3c/web-platform-tests/+/6c7127bdd9f2cc6a3668fd9791757843e09d5a9e",
+    "summary": {
+      "BLOCKED": 978,
+      "FAIL": 2,
+      "FLAKY": 0,
+      "NOTRUN": 0,
+      "PASS": 0,
+      "PRECONDITION_FAILED": 0,
+      "TIMEOUT": 0,
+      "noOpTests": 22,
+      "total": 980,
+      "unsupportedFiles": 29
+    },
+    "suite": "streams"
+  }
+}
