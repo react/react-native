@@ -131,6 +131,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
   public var stagedInputType: Int
   internal var stagedAutoCapitalize: Int = 0
+  internal var stagedKeyboardInputType: Int = InputType.TYPE_CLASS_TEXT
+  internal var stagedSecureTextEntry: Boolean = false
   public var submitBehavior: String? = null
   public var dragAndDropFilter: List<String>? = null
 

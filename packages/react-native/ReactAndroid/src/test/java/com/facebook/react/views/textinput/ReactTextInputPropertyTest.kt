@@ -16,6 +16,7 @@ import android.text.Layout
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
+import android.text.method.PasswordTransformationMethod
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.View
@@ -65,6 +66,11 @@ class ReactTextInputPropertyTest {
           InputType.TYPE_CLASS_PHONE or
           InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD and
           InputType.TYPE_TEXT_VARIATION_PASSWORD.inv())
+
+  private val classAndVariation: Int = InputType.TYPE_MASK_CLASS or InputType.TYPE_MASK_VARIATION
+
+  private val numberKeyboardBits: Int =
+      classAndVariation or InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
 
   @Before
   fun setup() {
@@ -403,6 +409,115 @@ class ReactTextInputPropertyTest {
   }
 
   @Test
+  fun testSecureTextEntryFalseKeepsTheKeyboardVariationInEitherPropOrder() {
+    val textKeyboards =
+        mapOf(
+            "email-address" to InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
+            "url" to InputType.TYPE_TEXT_VARIATION_URI,
+            "visible-password" to InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+        )
+    for ((keyboardType, variation) in textKeyboards) {
+      for (secureTextEntryFirst in listOf(false, true)) {
+        val editText = applyKeyboardProps(keyboardType, false, secureTextEntryFirst)
+        assertThat(editText.inputType and classAndVariation)
+            .describedAs(
+                "%s, secureTextEntry applied first: %s",
+                keyboardType,
+                secureTextEntryFirst,
+            )
+            .isEqualTo(InputType.TYPE_CLASS_TEXT or variation)
+      }
+    }
+  }
+
+  @Test
+  fun testSecureTextEntryMasksEveryTextKeyboardInEitherPropOrder() {
+    for (keyboardType in listOf("default", "email-address", "url", "visible-password")) {
+      for (secureTextEntryFirst in listOf(false, true)) {
+        val editText = applyKeyboardProps(keyboardType, true, secureTextEntryFirst)
+        val subject = "$keyboardType, secureTextEntry applied first: $secureTextEntryFirst"
+        assertThat(editText.inputType and classAndVariation)
+            .describedAs(subject)
+            .isEqualTo(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)
+        assertThat(editText.transformationMethod)
+            .describedAs(subject)
+            .isInstanceOf(PasswordTransformationMethod::class.java)
+      }
+    }
+  }
+
+  @Test
+  fun testSecureTextEntryUsesTheNumberPasswordForNumberKeyboards() {
+    val numberKeyboards =
+        mapOf(
+            "number-pad" to InputType.TYPE_CLASS_NUMBER,
+            "decimal-pad" to (InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL),
+            "numeric" to
+                (InputType.TYPE_CLASS_NUMBER or
+                    InputType.TYPE_NUMBER_FLAG_DECIMAL or
+                    InputType.TYPE_NUMBER_FLAG_SIGNED),
+        )
+    for ((keyboardType, keyboardInputType) in numberKeyboards) {
+      for (secureTextEntryFirst in listOf(false, true)) {
+        val editText = applyKeyboardProps(keyboardType, true, secureTextEntryFirst)
+        val subject = "$keyboardType, secureTextEntry applied first: $secureTextEntryFirst"
+        assertThat(editText.inputType and numberKeyboardBits)
+            .describedAs(subject)
+            .isEqualTo(keyboardInputType or InputType.TYPE_NUMBER_VARIATION_PASSWORD)
+        assertThat(editText.transformationMethod)
+            .describedAs(subject)
+            .isInstanceOf(PasswordTransformationMethod::class.java)
+      }
+    }
+  }
+
+  @Test
+  fun testSecureTextEntryLeavesAKeyboardWithNoPasswordVariationAsItIs() {
+    for (secureTextEntryFirst in listOf(false, true)) {
+      val editText = applyKeyboardProps("phone-pad", true, secureTextEntryFirst)
+      assertThat(editText.inputType and classAndVariation)
+          .describedAs("secureTextEntry applied first: %s", secureTextEntryFirst)
+          .isEqualTo(InputType.TYPE_CLASS_PHONE)
+    }
+  }
+
+  @Test
+  fun testRevealingAPasswordRestoresTheKeyboardVariation() {
+    manager.updateProperties(view, buildStyles("keyboardType", "url", "secureTextEntry", true))
+    manager.updateProperties(view, buildStyles("secureTextEntry", false))
+    assertThat(view.inputType and classAndVariation)
+        .isEqualTo(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI)
+
+    manager.updateProperties(
+        view,
+        buildStyles("keyboardType", "number-pad", "secureTextEntry", true),
+    )
+    manager.updateProperties(view, buildStyles("secureTextEntry", false))
+    assertThat(view.inputType and numberKeyboardBits).isEqualTo(InputType.TYPE_CLASS_NUMBER)
+  }
+
+  @Test
+  fun testChangingTheKeyboardTypeReplacesItsVariationAndNumberFlags() {
+    manager.updateProperties(view, buildStyles("keyboardType", "url"))
+    manager.updateProperties(view, buildStyles("keyboardType", "email-address"))
+    assertThat(view.inputType and classAndVariation)
+        .isEqualTo(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
+
+    manager.updateProperties(view, buildStyles("keyboardType", "numeric"))
+    manager.updateProperties(view, buildStyles("keyboardType", "number-pad"))
+    assertThat(view.inputType and numberKeyboardBits).isEqualTo(InputType.TYPE_CLASS_NUMBER)
+  }
+
+  @Test
+  fun testSecureTextEntryStaysMaskedWithWordCapitalization() {
+    manager.updateProperties(view, buildStyles("autoCapitalize", "words"))
+    manager.updateProperties(view, buildStyles("secureTextEntry", true))
+    assertThat(view.inputType and classAndVariation)
+        .isEqualTo(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)
+    assertThat(view.transformationMethod).isInstanceOf(PasswordTransformationMethod::class.java)
+  }
+
+  @Test
   fun testIncrementalInputTypeUpdates() {
     manager.updateProperties(view, buildStyles())
     assertThat(view.inputType and InputType.TYPE_CLASS_NUMBER).isZero
@@ -650,6 +765,23 @@ class ReactTextInputPropertyTest {
 
   private fun buildStyles(vararg keysAndValues: Any?): ReactStylesDiffMap {
     return ReactStylesDiffMap(JavaOnlyMap.of(*keysAndValues))
+  }
+
+  private fun applyKeyboardProps(
+      keyboardType: String,
+      secureTextEntry: Boolean,
+      secureTextEntryFirst: Boolean,
+  ): ReactEditText {
+    val editText = manager.createViewInstance(themedContext)
+    if (secureTextEntryFirst) {
+      manager.setSecureTextEntry(editText, secureTextEntry)
+      manager.setKeyboardType(editText, keyboardType)
+    } else {
+      manager.setKeyboardType(editText, keyboardType)
+      manager.setSecureTextEntry(editText, secureTextEntry)
+    }
+    manager.updateProperties(editText, buildStyles())
+    return editText
   }
 
   private class MarkerSpan
