@@ -821,4 +821,86 @@ function getResult() {
   EXPECT_EQ(result.getNumber(), 1);
 }
 
+TEST_F(ReactInstanceTest, testCallFunctionOnModule_withArgFactory) {
+  initializeRuntimeWithScript(R"xyz123(
+let result;
+const module = {
+  bar: (a, b) => {
+    result = a + ':' + b;
+  },
+};
+RN$registerCallableModule('foo', () => module);
+function getResult() {
+  return result;
+}
+  )xyz123");
+
+  instance_->callFunctionOnModule(
+      "foo", "bar", [](jsi::Runtime& runtime, std::vector<jsi::Value>& args) {
+        args.emplace_back(jsi::String::createFromAscii(runtime, "baz"));
+        args.emplace_back(2);
+      });
+  step();
+
+  auto result = runtime_->global()
+                    .getPropertyAsFunction(*runtime_, "getResult")
+                    .call(*runtime_);
+  EXPECT_EQ(result.getString(*runtime_).utf8(*runtime_), "baz:2");
+}
+
+TEST_F(ReactInstanceTest, testCallFunctionOnModule_withEmptyArgFactory) {
+  initializeRuntimeWithScript(R"xyz123(
+let result;
+const module = {
+  bar: (...args) => {
+    result = args.length;
+  },
+};
+RN$registerCallableModule('foo', () => module);
+function getResult() {
+  return result;
+}
+  )xyz123");
+
+  instance_->callFunctionOnModule("foo", "bar", ReactInstance::ArgFactory{});
+  step();
+
+  auto result = runtime_->global()
+                    .getPropertyAsFunction(*runtime_, "getResult")
+                    .call(*runtime_);
+  EXPECT_EQ(result.getNumber(), 0);
+}
+
+TEST_F(ReactInstanceTest, testCallFunctionOnModule_withEmptyNames) {
+  initializeRuntimeWithScript(R"xyz123(
+let calls = 0;
+const module = {
+  bar: () => {
+    calls++;
+  },
+};
+RN$registerCallableModule('foo', () => module);
+function getCalls() {
+  return calls;
+}
+  )xyz123");
+
+  bool argFactoryCalled = false;
+  auto argFactory = [&](jsi::Runtime& /*runtime*/,
+                        std::vector<jsi::Value>& /*args*/) {
+    argFactoryCalled = true;
+  };
+  instance_->callFunctionOnModule("", "bar", argFactory);
+  instance_->callFunctionOnModule("foo", "", argFactory);
+  instance_->callFunctionOnModule("", "bar", folly::dynamic::array());
+  instance_->callFunctionOnModule("foo", "", folly::dynamic::array());
+  step();
+
+  EXPECT_FALSE(argFactoryCalled);
+  auto calls = runtime_->global()
+                   .getPropertyAsFunction(*runtime_, "getCalls")
+                   .call(*runtime_);
+  EXPECT_EQ(calls.getNumber(), 0);
+}
+
 } // namespace facebook::react
