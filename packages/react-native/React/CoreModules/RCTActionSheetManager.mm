@@ -22,6 +22,55 @@
 
 using namespace facebook::react;
 
+@interface RCTShareActivityItemSource : NSObject <UIActivityItemSource>
+
+- (instancetype)initWithItem:(id)item pasteboardItem:(nullable id)pasteboardItem subject:(nullable NSString *)subject;
+
+@end
+
+@implementation RCTShareActivityItemSource {
+  id _item;
+  id _pasteboardItem;
+  NSString *_subject;
+}
+
+- (instancetype)initWithItem:(id)item pasteboardItem:(nullable id)pasteboardItem subject:(nullable NSString *)subject
+{
+  if (self = [super init]) {
+    _item = item;
+    _pasteboardItem = pasteboardItem;
+    _subject = subject;
+  }
+  return self;
+}
+
+- (id)activityViewControllerPlaceholderItem:(UIActivityViewController *)activityViewController
+{
+  return _item;
+}
+
+- (nullable id)activityViewController:(UIActivityViewController *)activityViewController
+                  itemForActivityType:(nullable UIActivityType)activityType
+{
+  return [activityType isEqualToString:UIActivityTypeCopyToPasteboard] ? _pasteboardItem : _item;
+}
+
+- (BOOL)respondsToSelector:(SEL)selector
+{
+  if (selector == @selector(activityViewController:subjectForActivityType:)) {
+    return _subject != nil;
+  }
+  return [super respondsToSelector:selector];
+}
+
+- (NSString *)activityViewController:(UIActivityViewController *)activityViewController
+              subjectForActivityType:(nullable UIActivityType)activityType
+{
+  return _subject;
+}
+
+@end
+
 @interface RCTActionSheetManager () <NativeActionSheetManagerSpec>
 
 @property (nonatomic, strong) NSMutableArray<UIAlertController *> *alertControllers;
@@ -264,6 +313,14 @@ RCT_EXPORT_MODULE()
           return;
         }
         [items addObject:data];
+      } else if (message != nullptr) {
+        // On Copy, UIKit writes each activity item to its own pasteboard item, and a plain-text
+        // paste (including through Universal Clipboard) only reads the first one.
+        items[0] = [[RCTShareActivityItemSource alloc] initWithItem:message pasteboardItem:nil subject:subject];
+        NSString *pasteboardText = [NSString stringWithFormat:@"%@ %@", message, URL.absoluteString];
+        [items addObject:[[RCTShareActivityItemSource alloc] initWithItem:URL
+                                                           pasteboardItem:pasteboardText
+                                                                  subject:subject]];
       } else {
         [items addObject:URL];
       }
