@@ -354,7 +354,7 @@ SharedDebugStringConvertibleList AndroidTextInputProps::getDebugProps() const {
 #endif
 
 ComponentName AndroidTextInputProps::getDiffPropsImplementationTarget() const {
-  return "TextInput";
+  return "AndroidTextInput";
 }
 
 folly::dynamic AndroidTextInputProps::getDiffProps(
