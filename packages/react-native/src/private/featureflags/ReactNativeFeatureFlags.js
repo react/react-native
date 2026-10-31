@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<674f975884ae746e067e614523f2bfc3>>
+ * @generated SignedSource<<2d80ba45e181319587accfb4e341194b>>
  * @flow strict
  * @noformat
  */
@@ -485,7 +485,7 @@ export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fu
 /**
  * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
-export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', false);
+export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', true);
 /**
  * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
