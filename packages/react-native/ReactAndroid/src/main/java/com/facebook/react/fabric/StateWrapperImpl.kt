@@ -28,8 +28,6 @@ import com.facebook.react.uimanager.StateWrapper
 @OptIn(UnstableReactNativeAPI::class)
 internal class StateWrapperImpl private constructor() : HybridClassBase(), ReferenceStateWrapper {
 
-  private external fun initHybrid()
-
   private external fun getStateDataImpl(): ReadableNativeMap?
 
   private external fun getStateMapBufferDataImpl(): ReadableMapBuffer?
@@ -64,10 +62,6 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
       }
       return getStateDataReferenceImpl()
     }
-
-  init {
-    initHybrid()
-  }
 
   override fun updateState(map: WritableMap) {
     updateState(map, StateWrapper.UpdateMode.Asynchronous)

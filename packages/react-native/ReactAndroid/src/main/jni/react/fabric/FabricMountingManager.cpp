@@ -439,9 +439,8 @@ inline void writeCreateMountItem(
   // lifetime of the Java object
   jni::local_ref<StateWrapperImpl::JavaPart> javaStateWrapper = nullptr;
   if (mountItem.newChildShadowView.state != nullptr) {
-    javaStateWrapper = StateWrapperImpl::newObjectJavaArgs();
-    StateWrapperImpl* cStateWrapper = cthis(javaStateWrapper);
-    cStateWrapper->setState(mountItem.newChildShadowView.state);
+    javaStateWrapper =
+        StateWrapperImpl::newObjectCxxArgs(mountItem.newChildShadowView.state);
   }
 
   // Do not hold a reference to javaEventEmitter from the C++ side.
@@ -502,9 +501,7 @@ inline void writeUpdateStateMountItem(
   // lifetime of the Java object
   jni::local_ref<StateWrapperImpl::JavaPart> javaStateWrapper = nullptr;
   if (state != nullptr) {
-    javaStateWrapper = StateWrapperImpl::newObjectJavaArgs();
-    StateWrapperImpl* cStateWrapper = cthis(javaStateWrapper);
-    cStateWrapper->setState(state);
+    javaStateWrapper = StateWrapperImpl::newObjectCxxArgs(state);
   }
 
   buffer.writeObject(
@@ -1213,9 +1210,7 @@ void FabricMountingManager::preallocateRegisteredView(
   bool preventPassingStateWrapperForText =
       strcmp(shadowView.componentName, "Paragraph") == 0;
   if (shadowView.state != nullptr && !preventPassingStateWrapperForText) {
-    javaStateWrapper = StateWrapperImpl::newObjectJavaArgs();
-    StateWrapperImpl* cStateWrapper = cthis(javaStateWrapper);
-    cStateWrapper->setState(shadowView.state);
+    javaStateWrapper = StateWrapperImpl::newObjectCxxArgs(shadowView.state);
   }
 
   jni::local_ref<jobject> props = getProps({}, shadowView);
