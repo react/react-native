@@ -395,10 +395,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _backedTextInputView.textContainerInset =
       RCTUIEdgeInsetsFromEdgeInsets(layoutMetrics.contentInsets - layoutMetrics.borderWidth);
 
-  if (!CGSizeEqualToSize(_previousContentSize, _backedTextInputView.contentSize) && _eventEmitter) {
-    _previousContentSize = _backedTextInputView.contentSize;
-    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onContentSizeChange([self _textInputMetrics]);
-  }
+  [self _emitContentSizeChangeIfNeeded];
 }
 
 - (void)prepareForRecycle
@@ -415,6 +412,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _backedTextInputView.inputAccessoryViewID = nil;
   _backedTextInputView.inputAccessoryView = nil;
   _hasInputAccessoryView = false;
+  _previousContentSize = CGSizeZero;
   [_backedTextInputView resignFirstResponder];
 }
 
@@ -565,6 +563,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     const auto &textInputEventEmitter = static_cast<const TextInputEventEmitter &>(*_eventEmitter);
     textInputEventEmitter.onChange([self _textInputMetrics]);
   }
+
+  [self _emitContentSizeChangeAfterTextChange];
 }
 
 - (void)textInputDidChangeSelection
@@ -803,6 +803,30 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   };
 }
 
+- (void)_emitContentSizeChangeAfterTextChange
+{
+  if (![self _hasEmittedContentSize]) {
+    return;
+  }
+  [_backedTextInputView layoutIfNeeded];
+  [self _emitContentSizeChangeIfNeeded];
+}
+
+- (BOOL)_hasEmittedContentSize
+{
+  return !CGSizeEqualToSize(_previousContentSize, CGSizeZero);
+}
+
+- (void)_emitContentSizeChangeIfNeeded
+{
+  CGSize contentSize = _backedTextInputView.contentSize;
+  if (CGSizeEqualToSize(_previousContentSize, contentSize) || !_eventEmitter) {
+    return;
+  }
+  _previousContentSize = contentSize;
+  static_cast<const TextInputEventEmitter &>(*_eventEmitter).onContentSizeChange([self _textInputMetrics]);
+}
+
 - (void)_updateState
 {
   if (!_state) {
@@ -882,6 +906,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [self _restoreTextSelectionAndIgnoreCaretChange:YES];
   [self _updateTypingAttributes];
   _lastStringStateWasUpdatedWith = attributedString;
+  [self _emitContentSizeChangeAfterTextChange];
 }
 
 // Ensure that newly typed text will inherit any custom attributes. We follow the logic of RN Android, where attributes
