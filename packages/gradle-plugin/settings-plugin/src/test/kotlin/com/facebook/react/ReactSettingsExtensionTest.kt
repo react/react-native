@@ -273,7 +273,13 @@ class ReactSettingsExtensionTest {
 
     val monitoredUpdateConfig = createMonitoredUpdateConfig()
 
-    checkAndUpdateCache(monitoredUpdateConfig, outputFile, buildFolder, lockfileCollection)
+    checkAndUpdateCache(
+        monitoredUpdateConfig,
+        outputFile,
+        buildFolder,
+        lockfileCollection,
+        File("/"),
+    )
 
     // The autolinking.json file is valid, SHA's are untouched therefore config should NOT be
     // refreshed
@@ -294,7 +300,13 @@ class ReactSettingsExtensionTest {
 
     val monitoredUpdateConfig = createMonitoredUpdateConfig()
 
-    checkAndUpdateCache(monitoredUpdateConfig, outputFile, buildFolder, lockfileCollection)
+    checkAndUpdateCache(
+        monitoredUpdateConfig,
+        outputFile,
+        buildFolder,
+        lockfileCollection,
+        tempFolder.root,
+    )
 
     // The autolinking.json file is invalid and should be refreshed
     assertThat(monitoredUpdateConfig.run).isTrue()
@@ -327,9 +339,72 @@ class ReactSettingsExtensionTest {
 
     val monitoredUpdateConfig = createMonitoredUpdateConfig()
 
-    checkAndUpdateCache(monitoredUpdateConfig, outputFile, buildFolder, lockfileCollection)
+    checkAndUpdateCache(
+        monitoredUpdateConfig,
+        outputFile,
+        buildFolder,
+        lockfileCollection,
+        tempFolder.root,
+    )
 
     // The autolinking.json file is invalid and should be refreshed
+    assertThat(monitoredUpdateConfig.run).isTrue()
+  }
+
+  @Test
+  fun checkAndUpdateConfigIfCachedConfigIsFromAnotherProjectDir() {
+    val project = ProjectBuilder.builder().withProjectDir(tempFolder.root).build()
+    val buildFolder = tempFolder.newFolder("build")
+    val generatedFolder = tempFolder.newFolder("build", "generated")
+    val outputFile =
+        File(generatedFolder, "autolinking.json").apply {
+          writeText(
+              """
+              {
+                "root": "/old",
+                "reactNativePath": "/old/node_modules/react-native",
+                "reactNativeVersion": "0.75",
+                "dependencies": {},
+                "healthChecks": [],
+                "platforms": {
+                  "ios": {},
+                  "android": {}
+                },
+                "assets": [],
+                "project": {
+                  "ios": {},
+                  "android": {
+                    "sourceDir": "/old/android",
+                    "appName": "app",
+                    "packageName": "com.TestApp",
+                    "applicationId": "com.TestApp",
+                    "mainActivity": ".MainActivity",
+                    "assets": []
+                  }
+                }
+              }
+              """
+                  .trimIndent(),
+          )
+        }
+    tempFolder.newFile("yarn.lock").apply { writeText("I'm a lockfile") }
+    val lockfileCollection = project.files("yarn.lock")
+
+    // Prebuild the shas so that only the project location differs
+    checkAndUpdateLockfiles(lockfileCollection, buildFolder)
+
+    val monitoredUpdateConfig = createMonitoredUpdateConfig()
+
+    checkAndUpdateCache(
+        monitoredUpdateConfig,
+        outputFile,
+        buildFolder,
+        lockfileCollection,
+        tempFolder.root,
+    )
+
+    // The autolinking.json file was generated for a project in another folder and should be
+    // refreshed
     assertThat(monitoredUpdateConfig.run).isTrue()
   }
 
@@ -345,7 +420,14 @@ class ReactSettingsExtensionTest {
     val lockfiles = project.files("yarn.lock")
     val emptyConfigFile = File(tempFolder.newFolder("build", "autolinking"), "autolinking.json")
 
-    assertThat(ReactSettingsExtension.isCacheDirty(emptyConfigFile, buildFolder, lockfiles))
+    assertThat(
+            ReactSettingsExtension.isCacheDirty(
+                emptyConfigFile,
+                buildFolder,
+                lockfiles,
+                tempFolder.root,
+            ),
+        )
         .isTrue()
   }
 
@@ -367,7 +449,14 @@ class ReactSettingsExtensionTest {
                 .trimIndent(),
         )
 
-    assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))
+    assertThat(
+            ReactSettingsExtension.isCacheDirty(
+                invalidConfigFile,
+                buildFolder,
+                lockfiles,
+                tempFolder.root,
+            ),
+        )
         .isTrue()
   }
 
@@ -391,7 +480,14 @@ class ReactSettingsExtensionTest {
                 .trimIndent(),
         )
 
-    assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))
+    assertThat(
+            ReactSettingsExtension.isCacheDirty(
+                invalidConfigFile,
+                buildFolder,
+                lockfiles,
+                tempFolder.root,
+            ),
+        )
         .isTrue()
   }
 
@@ -416,7 +512,14 @@ class ReactSettingsExtensionTest {
                 .trimIndent(),
         )
 
-    assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))
+    assertThat(
+            ReactSettingsExtension.isCacheDirty(
+                invalidConfigFile,
+                buildFolder,
+                lockfiles,
+                tempFolder.root,
+            ),
+        )
         .isTrue()
   }
 
@@ -454,7 +557,14 @@ class ReactSettingsExtensionTest {
                 .trimIndent(),
         )
 
-    assertThat(ReactSettingsExtension.isCacheDirty(invalidConfigFile, buildFolder, lockfiles))
+    assertThat(
+            ReactSettingsExtension.isCacheDirty(
+                invalidConfigFile,
+                buildFolder,
+                lockfiles,
+                tempFolder.root,
+            ),
+        )
         .isTrue()
   }
 

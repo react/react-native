@@ -76,7 +76,13 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
           }
         }
 
-    checkAndUpdateCache(updateConfig, outputFile, outputFolder, lockFiles)
+    checkAndUpdateCache(
+        updateConfig,
+        outputFile,
+        outputFolder,
+        lockFiles,
+        settings.layout.rootDirectory.asFile,
+    )
 
     linkLibraries(getLibrariesToAutolink(outputFile))
   }
@@ -123,12 +129,14 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
      * @param cacheJsonConfig Our current cached autolinking.json config, which may exist
      * @param cacheFolder The folder we store our cached SHAs and config
      * @param lockFiles The [FileCollection] of the lockfiles to check.
+     * @param projectDir The root directory of the Android project being configured.
      * @return `true` if the cache needs to be rebuilt, `false` otherwise
      */
     internal fun isCacheDirty(
         cacheJsonConfig: File,
         cacheFolder: File,
         lockFiles: FileCollection,
+        projectDir: File,
     ): Boolean {
       if (cacheJsonConfig.exists().not() || cacheJsonConfig.length() == 0L) {
         return true
@@ -137,7 +145,8 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
       if (lockFilesChanged) {
         return true
       }
-      return isConfigModelInvalid(JsonUtils.fromAutolinkingConfigJson(cacheJsonConfig))
+      val model = JsonUtils.fromAutolinkingConfigJson(cacheJsonConfig)
+      return isConfigModelInvalid(model) || isConfigFromAnotherProjectDir(model, projectDir)
     }
 
     /**
@@ -147,14 +156,16 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
      * @param cacheJsonConfig Our current cached autolinking.json config, which may exist
      * @param cacheFolder The folder we store our cached SHAs and config
      * @param lockFiles The [FileCollection] of the lockfiles to check.
+     * @param projectDir The root directory of the Android project being configured.
      */
     internal fun checkAndUpdateCache(
         updateJsonConfig: GenerateConfig,
         cacheJsonConfig: File,
         cacheFolder: File,
         lockFiles: FileCollection,
+        projectDir: File,
     ) {
-      if (isCacheDirty(cacheJsonConfig, cacheFolder, lockFiles)) {
+      if (isCacheDirty(cacheJsonConfig, cacheFolder, lockFiles, projectDir)) {
         val exitValue = updateJsonConfig.execute()
         if (exitValue != 0) {
           val prefixCommand =
@@ -221,5 +232,13 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
 
     internal fun isConfigModelInvalid(model: ModelAutolinkingConfigJson?) =
         model?.project?.android?.packageName == null
+
+    internal fun isConfigFromAnotherProjectDir(
+        model: ModelAutolinkingConfigJson?,
+        projectDir: File,
+    ): Boolean {
+      val sourceDir = model?.project?.android?.sourceDir ?: return false
+      return File(sourceDir).canonicalFile != projectDir.canonicalFile
+    }
   }
 }
