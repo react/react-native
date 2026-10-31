@@ -151,7 +151,7 @@ AccessibilityProps::AccessibilityProps(
       onAccessibilityMagicTap(convertRawProp(
           context,
           rawProps,
-          "onAccessibilityMagicTap",
+          "onMagicTap",
           sourceProps.onAccessibilityMagicTap,
           {})),
       onAccessibilityEscape(convertRawProp(
@@ -227,7 +227,7 @@ void AccessibilityProps::setProp(
       RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityIgnoresInvertColors);
       RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityRespondsToUserInteraction);
       RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityTap);
-      RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityMagicTap);
+      RAW_SET_PROP_SWITCH_CASE(onAccessibilityMagicTap, "onMagicTap");
       RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityEscape);
       RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityAction);
       RAW_SET_PROP_SWITCH_CASE_BASIC(importantForAccessibility);
