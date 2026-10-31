@@ -50,6 +50,7 @@ import com.facebook.react.views.drawer.ReactDrawerLayoutManager
 import com.facebook.react.views.image.ReactImageManager
 import com.facebook.react.views.modal.ReactModalHostManager
 import com.facebook.react.views.progressbar.ReactProgressBarViewManager
+import com.facebook.react.views.safeareaprovider.ReactSafeAreaProviderManager
 import com.facebook.react.views.safeareaview.ReactSafeAreaViewManager
 import com.facebook.react.views.scroll.ReactHorizontalScrollContainerViewManager
 import com.facebook.react.views.scroll.ReactHorizontalScrollViewManager
@@ -149,6 +150,7 @@ constructor(private val config: MainPackageConfig? = null) :
           else ReactScrollViewManager(),
           ReactSwitchManager(),
           ReactSafeAreaViewManager(),
+          ReactSafeAreaProviderManager(),
           SwipeRefreshLayoutManager(),
           // Native equivalents
           ReactImageManager(),
@@ -180,6 +182,8 @@ constructor(private val config: MainPackageConfig? = null) :
               ModuleSpec.viewManagerSpec { ReactProgressBarViewManager() },
           ReactSafeAreaViewManager.REACT_CLASS to
               ModuleSpec.viewManagerSpec { ReactSafeAreaViewManager() },
+          ReactSafeAreaProviderManager.REACT_CLASS to
+              ModuleSpec.viewManagerSpec { ReactSafeAreaProviderManager() },
           ReactScrollViewManager.REACT_CLASS to
               ModuleSpec.viewManagerSpec {
                 if (ReactNativeFeatureFlags.useNestedScrollViewAndroid())
