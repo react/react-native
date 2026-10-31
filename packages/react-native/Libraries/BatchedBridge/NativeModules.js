@@ -11,9 +11,18 @@
 'use strict';
 
 import type {ExtendedError} from '../Core/ExtendedError';
+import typeof BatchedBridgeT from './BatchedBridge';
 
-const BatchedBridge = require('./BatchedBridge').default;
 const invariant = require('invariant');
+
+// Lazy-require to avoid loading the legacy bridge in bridgeless mode.
+let BatchedBridge: ?BatchedBridgeT = null;
+function getBatchedBridge(): BatchedBridgeT {
+  if (BatchedBridge == null) {
+    BatchedBridge = require('./BatchedBridge').default;
+  }
+  return BatchedBridge;
+}
 
 export type ModuleConfig = [
   string /* name */,
@@ -77,7 +86,7 @@ function genModule(
   }
 
   if (__DEV__) {
-    BatchedBridge.createDebugLookup(moduleID, moduleName, methods);
+    getBatchedBridge().createDebugLookup(moduleID, moduleName, methods);
   }
 
   return {name: moduleName, module};
@@ -106,7 +115,7 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
       // $FlowFixMe[incompatible-type]
       const enqueueingFrameError: ExtendedError = new Error();
       return new Promise((resolve, reject) => {
-        BatchedBridge.enqueueNativeCall(
+        getBatchedBridge().enqueueNativeCall(
           moduleID,
           methodID,
           args,
@@ -142,7 +151,7 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
       const callbackCount = hasSuccessCallback + hasErrorCallback;
       const newArgs = args.slice(0, args.length - callbackCount);
       if (type === 'sync') {
-        return BatchedBridge.callNativeSyncHook(
+        return getBatchedBridge().callNativeSyncHook(
           moduleID,
           methodID,
           newArgs,
@@ -150,7 +159,7 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
           onSuccess,
         );
       } else {
-        BatchedBridge.enqueueNativeCall(
+        getBatchedBridge().enqueueNativeCall(
           moduleID,
           methodID,
           newArgs,
