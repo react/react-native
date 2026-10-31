@@ -329,15 +329,11 @@ jni::local_ref<jobject> getProps(
     const ShadowView& oldShadowView,
     const ShadowView& newShadowView) {
   // We calculate the diffing between the props of the last mounted ShadowTree
-  // and the Props of the latest commited ShadowTree). ONLY for <View>
-  // components when the "enablePropsUpdateReconciliationAndroid" feature flag
-  // is enabled.
+  // and the Props of the latest commited ShadowTree), for components selected
+  // by `isPropsDiffingEnabled`.
   auto* oldProps = oldShadowView.props.get();
   auto* newProps = newShadowView.props.get();
-  if ((ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid()) &&
-      strcmp(
-          newShadowView.componentName,
-          newProps->getDiffPropsImplementationTarget()) == 0) {
+  if (isPropsDiffingEnabled(newShadowView.componentName, *newProps)) {
     auto diff = newProps->getDiffProps(oldProps);
 
 #ifdef REACT_NATIVE_DEBUG

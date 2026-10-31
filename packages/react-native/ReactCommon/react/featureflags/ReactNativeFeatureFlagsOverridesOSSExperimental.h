@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ce1f3ba8d99493c855b95ce9929716ac>>
+ * @generated SignedSource<<02c8f99ea2314241417752f2efbbefa3>>
  */
 
 /**
@@ -34,6 +34,10 @@ class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatur
   }
 
   bool disableIdleMountItemFrameCallbackRearmAndroid() override {
+    return true;
+  }
+
+  bool enableCoreComponentsPropsUpdateReconciliationAndroid() override {
     return true;
   }
 

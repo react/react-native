@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c5daa3cf1c88507ccb625ba7367dfcaf>>
+ * @generated SignedSource<<dd4b709a0ae7dd4f6f144208945beda8>>
  */
 
 /**
@@ -26,6 +26,8 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android : 
   override fun disableIdleEventDispatchFrameCallbackRearmAndroid(): Boolean = true
 
   override fun disableIdleMountItemFrameCallbackRearmAndroid(): Boolean = true
+
+  override fun enableCoreComponentsPropsUpdateReconciliationAndroid(): Boolean = true
 
   override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = true
 

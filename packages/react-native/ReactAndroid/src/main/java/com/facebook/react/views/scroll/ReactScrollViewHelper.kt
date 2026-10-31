@@ -24,12 +24,14 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.fabric.FabricUIManager
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
 import com.facebook.react.uimanager.PixelUtil.toPixelFromDIP
 import com.facebook.react.uimanager.ReactClippingViewGroup
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.common.UIManagerType
+import com.facebook.react.uimanager.style.Overflow
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
@@ -63,6 +65,18 @@ public object ReactScrollViewHelper {
   // https://android.googlesource.com/platform/frameworks/base/+/ae5bcf23b5f0875e455790d6af387184dbd009c1/core/java/android/widget/OverScroller.java#44
   private var SMOOTH_SCROLL_DURATION = 250
   private var smoothScrollDurationInitialized = false
+
+  // With props diffing, props equal to the C++ default (`visible`) are not sent, so the native
+  // default has to match it.
+  internal fun getDefaultOverflow(): Overflow =
+      if (
+          ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid() ||
+              ReactNativeFeatureFlags.enableCoreComponentsPropsUpdateReconciliationAndroid()
+      ) {
+        Overflow.VISIBLE
+      } else {
+        Overflow.SCROLL
+      }
 
   /** Shared by [ReactScrollView] and [ReactHorizontalScrollView]. */
   @JvmStatic

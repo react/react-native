@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5d7adbc00208fc9995b1c3e69c677a38>>
+ * @generated SignedSource<<5774837740e2ec0d6337db8b2c5e9ab9>>
  */
 
 /**
@@ -187,12 +187,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
   private var activelyScrolling = false
   private var clippingRect: Rect? = null
-  private var _overflow: Overflow =
-      if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) {
-        Overflow.VISIBLE
-      } else {
-        Overflow.SCROLL
-      }
+  private var _overflow: Overflow = ReactScrollViewHelper.getDefaultOverflow()
   private var dragging = false
   private var pagingEnabled = false
   private var postTouchRunnable: Runnable? = null
@@ -234,12 +229,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     _virtualViewContainerState = null
     activelyScrolling = false
     clippingRect = null
-    _overflow =
-        if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) {
-          Overflow.VISIBLE
-        } else {
-          Overflow.SCROLL
-        }
+    _overflow = ReactScrollViewHelper.getDefaultOverflow()
     dragging = false
     pagingEnabled = false
     postTouchRunnable = null
@@ -392,11 +382,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
         if (overflow == null) {
           Overflow.SCROLL
         } else {
-          Overflow.fromString(
-              overflow,
-              if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
-              else Overflow.SCROLL,
-          )
+          Overflow.fromString(overflow, ReactScrollViewHelper.getDefaultOverflow())
         }
     ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
     invalidate()
