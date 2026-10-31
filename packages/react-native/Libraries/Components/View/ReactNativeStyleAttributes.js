@@ -40,6 +40,10 @@ export const filterAttribute: AnyAttributeType = nativeCSSParsing
   ? true
   : {process: processFilter};
 
+export const backdropFilterAttribute: AnyAttributeType = nativeCSSParsing
+  ? true
+  : {process: processFilter};
+
 export const boxShadowAttribute: AnyAttributeType = nativeCSSParsing
   ? true
   : {process: processBoxShadow};
@@ -180,6 +184,11 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
    * Filter
    */
   filter: filterAttribute,
+
+  /**
+   * BackdropFilter
+   */
+  backdropFilter: backdropFilterAttribute,
 
   /**
    * MixBlendMode
