@@ -13,6 +13,7 @@
 #include <oscompat/OSCompat.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/networking/NetworkReporter.h>
+#include <react/performance/timeline/PerformanceEntryReporter.h>
 
 using namespace ::testing;
 
@@ -280,6 +281,38 @@ TEST_P(NetworkReporterTest, testLoadingFailedError) {
                                   "id": 2,
                                   "method": "Network.disable"
                                 })");
+}
+
+TEST_P(NetworkReporterTest, testFailedRequestDiscardsResourceTimingData) {
+  auto& networkReporter = NetworkReporter::getInstance();
+  auto performanceEntryReporter = PerformanceEntryReporter::getInstance();
+  const std::string requestId = "failed-request-resource-timing";
+  const std::string retryUrl = "https://example.com/retry";
+
+  performanceEntryReporter->clearEntries(PerformanceEntryType::RESOURCE);
+
+  networkReporter.reportRequestStart(
+      requestId,
+      {.url = "https://example.com/failed", .httpMethod = "GET"},
+      0,
+      std::nullopt);
+  networkReporter.reportRequestFailed(requestId, false);
+
+  // Reusing the ID makes retained timing data observable without exposing
+  // NetworkReporter internals.
+  networkReporter.reportRequestStart(
+      requestId, {.url = retryUrl, .httpMethod = "GET"}, 0, std::nullopt);
+  networkReporter.reportResponseStart(
+      requestId, {.url = retryUrl, .statusCode = 200}, 0);
+  networkReporter.reportResponseEnd(requestId, 0);
+
+  const auto entries =
+      performanceEntryReporter->getEntries(PerformanceEntryType::RESOURCE);
+  ASSERT_EQ(1, entries.size());
+  EXPECT_EQ(
+      retryUrl, std::get<PerformanceResourceTiming>(entries.front()).name);
+
+  performanceEntryReporter->clearEntries(PerformanceEntryType::RESOURCE);
 }
 
 TEST_P(NetworkReporterTest, testCompleteNetworkFlow) {
