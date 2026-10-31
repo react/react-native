@@ -245,6 +245,70 @@ static NSDictionary<NSNumber *, NSNumber *> *FontVariationsFromSettings(std::opt
       attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
 }
 
+- (void)testSamenessOfDifferentEventEmitterWrappers
+{
+  // RCTWrapEventEmitter allocates a new wrapper each time, so the text a TextInput state is built from and the text
+  // the field shows never share one, even for the same emitter.
+  NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString1 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+  [attributedString1 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(nullptr)
+                            range:NSMakeRange(0, 12)];
+
+  NSMutableAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString2 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+  [attributedString2 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(nullptr)
+                            range:NSMakeRange(0, 12)];
+
+  NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes = @{};
+
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString1, attributedString2, insensitiveAttributes, TextAttributes{}));
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
+}
+
+- (void)testSamenessOfMissingEventEmitter
+{
+  // Text typed into a field carries no event emitter; the state echoing it does.
+  NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString1 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+  [attributedString1 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(nullptr)
+                            range:NSMakeRange(0, 12)];
+
+  NSMutableAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString2 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+
+  NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes = @{};
+
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString1, attributedString2, insensitiveAttributes, TextAttributes{}));
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
+}
+
+- (void)testDifferenceOfOtherAttributesNextToEventEmitter
+{
+  // Ignoring the event emitter must not hide a real difference in the same run.
+  NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString1 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 12)];
+  [attributedString1 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(nullptr)
+                            range:NSMakeRange(0, 12)];
+
+  NSMutableAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString2 addAttribute:NSForegroundColorAttributeName value:[UIColor blueColor] range:NSMakeRange(0, 12)];
+
+  NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes = @{};
+
+  XCTAssertFalse(RCTIsAttributedStringEffectivelySame(
+      attributedString1, attributedString2, insensitiveAttributes, TextAttributes{}));
+  XCTAssertFalse(RCTIsAttributedStringEffectivelySame(
+      attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
+}
+
 - (void)testSamenessOfResolvedParagraphStyleLtr
 {
   NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
