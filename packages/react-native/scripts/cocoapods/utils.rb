@@ -306,14 +306,29 @@ class ReactNativePodsUtils
             system("echo 'export NODE_BINARY=$(command -v node)' > #{file_path}")
         end
 
-        if !file_manager.exist?("#{file_path}.local")
+        local_file_exists = file_manager.exist?("#{file_path}.local")
+        if !local_file_exists || !self.local_node_binary_exists?("#{file_path}.local", file_manager: file_manager)
             # When installing pods with a yarn alias, yarn creates a fake yarn and node executables
             # in a temporary folder.
             # Using `node --print "process.argv[0]";` we are able to retrieve the actual path from which node is running.
             # see https://github.com/facebook/react-native/issues/43285 for more info. We've tweaked this slightly.
             node_binary = Shellwords.escape(`node --print "process.argv[0]"`.strip)
-            system("echo 'export NODE_BINARY=#{node_binary}' > #{file_path}.local")
+            if local_file_exists
+                local_env = file_manager.read("#{file_path}.local")
+                file_manager.write("#{file_path}.local", local_env.gsub(/^export NODE_BINARY=.*$/) { "export NODE_BINARY=#{node_binary}" })
+            else
+                system("echo 'export NODE_BINARY=#{node_binary}' > #{file_path}.local")
+            end
         end
+    end
+
+    def self.local_node_binary_exists?(local_file_path, file_manager: File)
+        node_binary = file_manager.read(local_file_path).scan(/^export NODE_BINARY=(.*)$/).flatten.last
+        return true if node_binary.nil?
+        node_binary = Shellwords.split(node_binary).first
+        return false if node_binary.nil? || node_binary.empty?
+        return true if !node_binary.start_with?("/")
+        return file_manager.exist?(node_binary)
     end
 
     # It examines the target_definition property and sets the appropriate value for
