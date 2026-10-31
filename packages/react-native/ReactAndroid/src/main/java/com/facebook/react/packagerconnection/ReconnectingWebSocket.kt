@@ -77,16 +77,18 @@ public class ReconnectingWebSocket(
   }
 
   public fun closeQuietly() {
-    closed = true
-    closeWebSocketQuietly()
-    messageCallback = null
+    synchronized(this) {
+      closed = true
+      closeWebSocketQuietly()
+      messageCallback = null
+    }
 
     connectionCallback?.onDisconnected()
   }
 
   private fun closeWebSocketQuietly() {
     try {
-      webSocket?.close(1_000, "End of session")
+      webSocket?.close(CLOSE_NORMAL, CLOSE_REASON)
     } catch (e: Exception) {
       // swallow, no need to handle it here
     }
@@ -100,6 +102,10 @@ public class ReconnectingWebSocket(
 
   @Synchronized
   override fun onOpen(webSocket: WebSocket, response: Response) {
+    if (closed) {
+      webSocket.close(CLOSE_NORMAL, CLOSE_REASON)
+      return
+    }
     this.webSocket = webSocket
     suppressConnectionErrors = false
 
@@ -155,5 +161,7 @@ public class ReconnectingWebSocket(
     private val TAG: String = ReconnectingWebSocket::class.java.simpleName
 
     private const val RECONNECT_DELAY_MS = 2_000L
+    private const val CLOSE_NORMAL = 1_000
+    private const val CLOSE_REASON = "End of session"
   }
 }
