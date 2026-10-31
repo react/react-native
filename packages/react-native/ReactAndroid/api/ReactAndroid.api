@@ -5126,6 +5126,7 @@ public class com/facebook/react/viewmanagers/SafeAreaViewManagerDelegate : com/f
 }
 
 public abstract interface class com/facebook/react/viewmanagers/SafeAreaViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setPointerEvents (Landroid/view/View;Ljava/lang/String;)V
 }
 
 public class com/facebook/react/viewmanagers/UnimplementedNativeViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
