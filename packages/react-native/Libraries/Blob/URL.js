@@ -230,3 +230,9 @@ export class URL {
     return usernameMatch ? usernameMatch[1] : '';
   }
 }
+
+// `toString()` should return `"[object URL]"`
+Object.defineProperty(URL.prototype, Symbol.toStringTag, {
+  configurable: true,
+  value: 'URL',
+});
