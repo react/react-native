@@ -66,6 +66,7 @@ import com.facebook.react.uimanager.ReactRootViewTagGenerator;
 import com.facebook.react.uimanager.ReactStage;
 import com.facebook.react.uimanager.RootView;
 import com.facebook.react.uimanager.RootViewUtil;
+import com.facebook.react.uimanager.TapFocusTracker;
 import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.common.UIManagerType;
 import com.facebook.react.uimanager.events.EventDispatcher;
@@ -105,6 +106,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
   private @Nullable JSTouchDispatcher mJSTouchDispatcher;
   private @Nullable JSPointerDispatcher mJSPointerDispatcher;
   private @Nullable JSKeyDispatcher mJSKeyDispatcher;
+  private @Nullable TapFocusTracker mTapFocusTracker;
   private final ReactAndroidHWInputDeviceHelper mAndroidHWInputDeviceHelper =
       new ReactAndroidHWInputDeviceHelper();
   private boolean mWasMeasured = false;
@@ -259,6 +261,9 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
 
   @Override
   public boolean onInterceptTouchEvent(MotionEvent ev) {
+    if (mTapFocusTracker != null) {
+      mTapFocusTracker.handleMotionEvent(ev);
+    }
     if (shouldDispatchJSTouchEvent(ev)) {
       dispatchJSTouchEvent(ev);
     }
@@ -268,6 +273,9 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
 
   @Override
   public boolean onTouchEvent(MotionEvent ev) {
+    if (mTapFocusTracker != null) {
+      mTapFocusTracker.handleMotionEvent(ev);
+    }
     if (shouldDispatchJSTouchEvent(ev)) {
       dispatchJSTouchEvent(ev);
     }
@@ -450,6 +458,30 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     }
   }
 
+  private void startTrackingKeyEventTargets() {
+    TapFocusTracker tapFocusTracker = mTapFocusTracker;
+    if (tapFocusTracker == null) {
+      if (!ReactNativeFeatureFlags.enableKeyEvents()) {
+        return;
+      }
+      tapFocusTracker = new TapFocusTracker(this);
+      mTapFocusTracker = tapFocusTracker;
+      ViewCompat.addOnUnhandledKeyEventListener(this, this::dispatchUnfocusedJSKeyEvent);
+    }
+    if (isAttachedToWindow()) {
+      tapFocusTracker.observeWindow();
+    }
+  }
+
+  private boolean dispatchUnfocusedJSKeyEvent(View view, KeyEvent keyEvent) {
+    // A root that is its window's top view gets every key through dispatchKeyEvent, and any root
+    // gets here a key that a focused view left unhandled, after dispatchKeyEvent sent it.
+    if (getRootView() != this && getRootView().findFocus() == null) {
+      dispatchJSKeyEvent(keyEvent);
+    }
+    return false;
+  }
+
   @Override
   public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
     // Override in order to still receive events to onInterceptTouchEvent even when some other
@@ -479,6 +511,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     if (isViewAttachedToReactInstance()) {
       removeOnGlobalLayoutListener();
       getViewTreeObserver().addOnGlobalLayoutListener(getCustomGlobalLayoutListener());
+      startTrackingKeyEventTargets();
     }
   }
 
@@ -487,6 +520,9 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     super.onDetachedFromWindow();
     if (isViewAttachedToReactInstance()) {
       removeOnGlobalLayoutListener();
+    }
+    if (mTapFocusTracker != null) {
+      mTapFocusTracker.stopObservingWindow();
     }
   }
 
@@ -706,7 +742,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     }
 
     if (ReactNativeFeatureFlags.enableKeyEvents()) {
-      mJSKeyDispatcher = new JSKeyDispatcher();
+      mJSKeyDispatcher = new JSKeyDispatcher(this);
     }
 
     if (mRootViewEventListener != null) {
@@ -820,6 +856,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
       mIsAttachedToInstance = true;
       Assertions.assertNotNull(mReactInstanceManager).attachRootView(this);
       getViewTreeObserver().addOnGlobalLayoutListener(getCustomGlobalLayoutListener());
+      startTrackingKeyEventTargets();
     } finally {
       ReactMarker.logMarker(ReactMarkerConstants.ROOT_VIEW_ATTACH_TO_REACT_INSTANCE_MANAGER_END);
       Systrace.endSection(TRACE_TAG_REACT);

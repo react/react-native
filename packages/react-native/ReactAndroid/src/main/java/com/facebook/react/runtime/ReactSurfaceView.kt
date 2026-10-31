@@ -74,7 +74,7 @@ public class ReactSurfaceView(context: Context?, internal val surface: ReactSurf
       jsPointerDispatcher = JSPointerDispatcher(this)
     }
     if (ReactNativeFeatureFlags.enableKeyEvents()) {
-      jsKeyDispatcher = JSKeyDispatcher()
+      jsKeyDispatcher = JSKeyDispatcher(this)
     }
   }
 
