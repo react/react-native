@@ -75,6 +75,7 @@ const {findPodspecs} = require('./read-podspec');
 const {
   AUTOLINKED_PACKAGE_NAME,
   CXX_API_DEFINES,
+  NESTED_PACKAGE_SWIFT_DIRS,
   REACT_CODEGEN_PACKAGE_NAME,
   REACT_CODEGEN_PRODUCTS,
   REACT_NATIVE_PACKAGE_NAME,
@@ -462,19 +463,26 @@ const AUTOGEN_MARKER =
  * libraries that want to ship a real SPM manifest and have full control
  * over their target settings.
  *
- * Two layouts are recognized:
+ * Three layouts are recognized, checked in this order:
  *   1. <dep>/Package.swift            — manifest at the npm-package root
  *   2. <dep>/ios/Package.swift        — manifest co-located with ObjC
  *                                       sources, keeping the npm-package
  *                                       root free of SPM artifacts
  *                                       (.build/, .swiftpm/, Package.resolved)
+ *   3. <dep>/apple/Package.swift      — same as 2, for libraries that keep
+ *                                       sources shared across Apple
+ *                                       platforms in apple/
+ *
+ * The first hand-authored manifest wins, so a root manifest shadows a nested
+ * one, and ios/ shadows apple/.
  *
  * Returns the directory that contains the hand-authored manifest, or null
  * when no candidate exists. That directory is what the aggregator hands to
- * SPM as `.package(path:)` — for layout 2 that means `<dep>/ios`.
+ * SPM as `.package(path:)` — for layouts 2 and 3 that means `<dep>/ios` or
+ * `<dep>/apple`.
  */
 function findSelfManagedPackageDir(absSource /*: string */) /*: ?string */ {
-  for (const sub of ['', 'ios']) {
+  for (const sub of ['', ...NESTED_PACKAGE_SWIFT_DIRS]) {
     const dir = sub === '' ? absSource : path.join(absSource, sub);
     try {
       const content = fs.readFileSync(path.join(dir, 'Package.swift'), 'utf8');
@@ -1504,9 +1512,10 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
     }
     const selfManagedDir = findSelfManagedPackageDir(absSource);
     if (selfManagedDir != null) {
-      // Record the manifest's actual directory — for the nested layout this
-      // is <dep>/ios, not <dep>. SPM resolves `.package(path:)` against that
-      // directory expecting Package.swift to live alongside.
+      // Record the manifest's actual directory — for the nested layouts this
+      // is <dep>/ios or <dep>/apple, not <dep>. SPM resolves
+      // `.package(path:)` against that directory expecting Package.swift to
+      // live alongside.
       selfManagedDirs.set(target.name, selfManagedDir);
       // If a wrapper exists from a prior synth-mode run (i.e. the dep WAS
       // autolinker-wrapped, then later transitioned to self-managed via

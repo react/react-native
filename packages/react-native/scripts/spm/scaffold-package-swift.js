@@ -47,6 +47,7 @@ const {expandSpmSourceGlobs} = require('./generate-spm-autolinking');
 const {MIN_IOS_VERSION_SUPPORTED} = require('./ios-deployment-target');
 const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
+  NESTED_PACKAGE_SWIFT_DIRS,
   REACT_CODEGEN_PACKAGE_NAME,
   REACT_CODEGEN_PRODUCTS,
   REACT_NATIVE_PACKAGE_NAME,
@@ -916,24 +917,29 @@ function scaffoldPackageSwiftForDep(
   const pkgSwiftPath = path.join(dep.root, 'Package.swift');
 
   // A self-managed Package.swift may live either at the dep root (legacy
-  // convention) or inside ios/ (preferred for community RN libs that want
-  // their npm-package root free of SPM artifacts). If a nested manifest
+  // convention) or inside ios/ or apple/ (preferred for community RN libs that
+  // want their npm-package root free of SPM artifacts). If a nested manifest
   // exists and is user-authored, skip — writing a stray root manifest would
   // cause the autolinker to prefer the wrong file.
-  const nestedPkgSwiftPath = path.join(dep.root, 'ios', 'Package.swift');
-  if (!fs.existsSync(pkgSwiftPath) && fs.existsSync(nestedPkgSwiftPath)) {
-    const nested = fs.readFileSync(nestedPkgSwiftPath, 'utf8');
-    if (
-      !nested.includes(AUTOGEN_MARKER) &&
-      !nested.includes(SCAFFOLDER_MARKER)
-    ) {
-      return {
-        depName,
-        status: 'skipped-self-managed',
-        reason:
-          'Existing ios/Package.swift was not produced by this scaffolder. ' +
-          'Leaving it alone.',
-      };
+  if (!fs.existsSync(pkgSwiftPath)) {
+    for (const sub of NESTED_PACKAGE_SWIFT_DIRS) {
+      const nestedPkgSwiftPath = path.join(dep.root, sub, 'Package.swift');
+      if (!fs.existsSync(nestedPkgSwiftPath)) {
+        continue;
+      }
+      const nested = fs.readFileSync(nestedPkgSwiftPath, 'utf8');
+      if (
+        !nested.includes(AUTOGEN_MARKER) &&
+        !nested.includes(SCAFFOLDER_MARKER)
+      ) {
+        return {
+          depName,
+          status: 'skipped-self-managed',
+          reason:
+            `Existing ${sub}/Package.swift was not produced by this scaffolder. ` +
+            'Leaving it alone.',
+        };
+      }
     }
   }
 

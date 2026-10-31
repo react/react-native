@@ -608,12 +608,23 @@ deprecated `spm` settings in it are then ignored rather than silently applied.
 ## Self-managed community packages
 
 The autolinker references a community library that ships its own `Package.swift`
-directly, instead of wrapping it. SwiftPM derives package identity from the path
-basename, and several libs may put their manifest inside an `ios/` subdir. To
-keep identity unique, each self-managed dep is exposed through a uniquely-named
-symlink at `build/generated/autolinking/libs/<SwiftName>/`. The aggregator
-`Package.swift` references that path, so two libs that both ship
-`<dep>/ios/Package.swift` never collide on identity `"ios"`.
+directly, instead of wrapping it. It looks for the manifest at the library root,
+then in `ios/`, then in `apple/`, and uses the first one it did not generate
+itself. A manifest in `ios/` or `apple/` keeps SwiftPM artifacts (`.build/`,
+`.swiftpm/`, `Package.resolved`) out of the npm package root.
+
+For a self-managed library, `swiftpmConfig.name` must equal the name of a
+product its `Package.swift` declares. The aggregator depends on the library as
+`.product(name: "<SwiftName>", package: "<SwiftName>")`, and SwiftPM fails to
+resolve the package graph if no product has that name. A manifest in `ios/` or
+`apple/` follows the same rule as one at the root.
+
+SwiftPM derives package identity from the path basename, and several libs may
+put their manifest inside an `ios/` or `apple/` subdir. To keep identity unique,
+each self-managed dep is exposed through a uniquely-named symlink at
+`build/generated/autolinking/libs/<SwiftName>/`. The aggregator `Package.swift`
+references that path, so two libs that both ship `<dep>/ios/Package.swift` never
+collide on identity `"ios"`.
 
 The `libs/` directory is not recreated on each autolinker run. An alias that
 does not change keeps its inode, because Xcode holds each one as a loaded
