@@ -155,4 +155,45 @@ TEST_F(FabricUIManagerTest, SetNativePropsMergesWithReactRender) {
   EXPECT_FLOAT_EQ(merged.opacity, 0.5);
 }
 
+// Cloning a node whose props already include the props set by
+// `setNativeProps_DEPRECATED` (as Yoga does for every child of a node it lays
+// out) keeps those props instead of parsing them again. Props set later are
+// still applied.
+TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsOnlyOnce) {
+  uiManager_->setNativeProps_DEPRECATED(
+      currentViewNode(), RawProps(folly::dynamic::object("opacity", 0.5)));
+
+  auto first = currentViewNode()->clone({});
+  EXPECT_FLOAT_EQ(
+      static_cast<const ViewProps&>(*first->getProps()).opacity, 0.5);
+
+  auto second = first->clone({});
+  EXPECT_EQ(second->getProps(), first->getProps());
+
+  uiManager_->setNativeProps_DEPRECATED(
+      currentViewNode(), RawProps(folly::dynamic::object("opacity", 0.25)));
+  auto third = second->clone({});
+  EXPECT_NE(third->getProps(), second->getProps());
+  EXPECT_FLOAT_EQ(
+      static_cast<const ViewProps&>(*third->getProps()).opacity, 0.25);
+}
+
+// After a React re-render replaces a node's props, the next clone applies the
+// props set by `setNativeProps_DEPRECATED` again.
+TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsAfterReactRender) {
+  uiManager_->setNativeProps_DEPRECATED(
+      currentViewNode(), RawProps(folly::dynamic::object("opacity", 0.5)));
+  auto applied = currentViewNode()->clone({});
+
+  auto rerendered = uiManager_->cloneNode(
+      *applied,
+      /*children=*/nullptr,
+      RawProps(folly::dynamic::object("nativeID", "from-react")));
+  auto cloned = rerendered->clone({});
+  EXPECT_NE(cloned->getProps(), rerendered->getProps());
+  auto& props = static_cast<const ViewProps&>(*cloned->getProps());
+  EXPECT_EQ(props.nativeId, "from-react");
+  EXPECT_FLOAT_EQ(props.opacity, 0.5);
+}
+
 } // namespace facebook::react

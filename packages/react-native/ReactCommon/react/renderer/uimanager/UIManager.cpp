@@ -150,6 +150,7 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
                 *family.nativeProps_DEPRECATED, // source
                 (folly::dynamic)rawProps, // patch
                 NullValueStrategy::Ignore));
+        family.nativePropsVersion_DEPRECATED++;
 
         // 2. Compute the final set of props.
         //
@@ -465,6 +466,7 @@ void UIManager::setNativeProps_DEPRECATED(
   auto& family = shadowNode->getFamily();
   {
     std::lock_guard<std::mutex> lock(family.nativePropsMutex);
+    family.nativePropsVersion_DEPRECATED++;
     if (family.nativeProps_DEPRECATED) {
       // Values in `rawProps` patch (take precedence over)
       // `nativeProps_DEPRECATED`. For example, if both
