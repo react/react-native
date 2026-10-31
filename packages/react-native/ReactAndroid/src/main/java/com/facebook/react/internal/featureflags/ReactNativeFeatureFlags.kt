@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a89ede36c4631b7a7709899858a7f9c9>>
+ * @generated SignedSource<<f8f977e57eb4363282e0a38815ebef3b>>
  */
 
 /**
@@ -215,6 +215,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableIOSCompressedTextFrameAdjustment(): Boolean = accessor.enableIOSCompressedTextFrameAdjustment()
+
+  /**
+   * Enables partial text selection for selectable Text on iOS. When disabled, a long press shows a menu that copies the whole paragraph.
+   */
+  @JvmStatic
+  public fun enableIOSPartialTextSelection(): Boolean = accessor.enableIOSPartialTextSelection()
 
   /**
    * Applies base offset for each line of text separately on iOS.

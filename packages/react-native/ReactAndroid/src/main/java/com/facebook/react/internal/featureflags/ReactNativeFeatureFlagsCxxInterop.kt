@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6d86d4adbc261c9271b5bed72bd12dcf>>
+ * @generated SignedSource<<62c8542ea911b11cc7a7071815c435bd>>
  */
 
 /**
@@ -89,6 +89,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSCompressedTextFrameAdjustment(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableIOSPartialTextSelection(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSTextBaselineOffsetPerLine(): Boolean
 

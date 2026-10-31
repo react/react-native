@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c305274be2fc6720b6c0eb75e78bd6b0>>
+ * @generated SignedSource<<3f5c522a9ff9b898c315229a4b70c0b8>>
  */
 
 /**
@@ -55,6 +55,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableFlexboxAutoMinSizeInStrictModeCache: Boolean? = null
   private var enableFollowUpMountItemDispatchAndroidCache: Boolean? = null
   private var enableIOSCompressedTextFrameAdjustmentCache: Boolean? = null
+  private var enableIOSPartialTextSelectionCache: Boolean? = null
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
   private var enableIOSViewClipToPaddingBoxCache: Boolean? = null
   private var enableImagePrefetchingAndroidCache: Boolean? = null
@@ -428,6 +429,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableIOSCompressedTextFrameAdjustment()
       accessedFeatureFlags.add("enableIOSCompressedTextFrameAdjustment")
       enableIOSCompressedTextFrameAdjustmentCache = cached
+    }
+    return cached
+  }
+
+  override fun enableIOSPartialTextSelection(): Boolean {
+    var cached = enableIOSPartialTextSelectionCache
+    if (cached == null) {
+      cached = currentProvider.enableIOSPartialTextSelection()
+      accessedFeatureFlags.add("enableIOSPartialTextSelection")
+      enableIOSPartialTextSelectionCache = cached
     }
     return cached
   }
