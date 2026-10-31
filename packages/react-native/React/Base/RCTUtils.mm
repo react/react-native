@@ -1115,7 +1115,7 @@ UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL)
   return RCTImageFromLocalAssetURL(bundleImageUrl);
 }
 
-UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
+static UIImage *__nullable RCTImageFromLocalAssetURLWithSystemCache(NSURL *imageURL, BOOL useSystemCache)
 {
   if (RCTUseAssetCatalog()) {
     NSString *catalogName = RCTAssetCatalogNameForURL(imageURL);
@@ -1158,7 +1158,7 @@ UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
   }
 
   UIImage *image = nil;
-  if (imageName) {
+  if (imageName && useSystemCache) {
     if (bundle) {
       image = [UIImage imageNamed:imageName inBundle:bundle compatibleWithTraitCollection:nil];
     } else {
@@ -1187,7 +1187,11 @@ UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
                                                            error:nil];
     for (NSURL *frameworkURL in possibleFrameworks) {
       bundle = [NSBundle bundleWithURL:frameworkURL];
-      image = [UIImage imageNamed:imageName inBundle:bundle compatibleWithTraitCollection:nil];
+      if (useSystemCache) {
+        image = [UIImage imageNamed:imageName inBundle:bundle compatibleWithTraitCollection:nil];
+      } else {
+        image = [UIImage imageWithContentsOfFile:[bundle.bundlePath stringByAppendingPathComponent:imageName]];
+      }
       if (image) {
         RCTLogWarn(@"Image %@ not found in mainBundle, but found in %@", imageName, bundle);
         break;
@@ -1195,6 +1199,16 @@ UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
     }
   }
   return image;
+}
+
+UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
+{
+  return RCTImageFromLocalAssetURLWithSystemCache(imageURL, YES);
+}
+
+UIImage *__nullable RCTImageFromLocalAssetURLIgnoringSystemCache(NSURL *imageURL)
+{
+  return RCTImageFromLocalAssetURLWithSystemCache(imageURL, NO);
 }
 
 RCT_EXTERN NSString *__nullable RCTTempFilePath(NSString *extension, NSError **error)

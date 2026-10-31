@@ -167,6 +167,12 @@ RCT_EXTERN BOOL RCTIsLocalAssetURL(NSURL *__nullable imageURL);
 // does not correspond to a local asset.
 RCT_EXTERN UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL);
 
+// Same as RCTImageFromLocalAssetURL, but reads the image file directly instead of
+// using +[UIImage imageNamed:], so the image is not kept in the system image cache
+// after it is no longer used. Images compiled into an asset catalog can only be
+// loaded by name and still go through the system cache.
+RCT_EXTERN UIImage *__nullable RCTImageFromLocalAssetURLIgnoringSystemCache(NSURL *imageURL);
+
 // Only used in case when RCTImageFromLocalAssetURL fails to get an image
 // This method basically checks for the image in the bundle location, instead
 // of the CodePush location

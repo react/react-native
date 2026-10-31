@@ -71,6 +71,21 @@ typedef dispatch_block_t RCTImageLoaderCancellationBlock;
                               completionHandlerWithMetadata:
                                   (RCTImageLoaderCompletionBlockWithMetadata)completionHandlerWithMetadata;
 
+/*
+ * Load the image without using any cache the loader keeps of its own (for
+ * example the system cache behind +[UIImage imageNamed:]). Called instead of
+ * the methods above when the image source asks to ignore local caches
+ * (`cache: 'reload'`). Loaders that don't implement it are called as usual.
+ */
+- (nullable RCTImageLoaderCancellationBlock)
+     loadImageIgnoringCacheForURL:(NSURL *)imageURL
+                             size:(CGSize)size
+                            scale:(CGFloat)scale
+                       resizeMode:(RCTResizeMode)resizeMode
+                  progressHandler:(RCTImageLoaderProgressBlock)progressHandler
+               partialLoadHandler:(RCTImageLoaderPartialLoadBlock)partialLoadHandler
+    completionHandlerWithMetadata:(RCTImageLoaderCompletionBlockWithMetadata)completionHandlerWithMetadata;
+
 /**
  * If more than one RCTImageURLLoader responds YES to `-canLoadImageURL:`
  * then `loaderPriority` is used to determine which one to use. The loader

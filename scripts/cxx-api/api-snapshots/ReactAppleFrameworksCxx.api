@@ -2771,6 +2771,7 @@ protocol RCTImageURLLoader : public RCTBridgeModule {
   public virtual BOOL shouldCacheLoadedImages();
   public virtual _Nullable RCTImageLoaderCancellationBlock loadImageForURL:size:scale:resizeMode:progressHandler:partialLoadHandler:completionHandler:(NSURL* imageURL, CGSize size, CGFloat scale, RCTResizeMode resizeMode, RCTImageLoaderProgressBlock progressHandler, RCTImageLoaderPartialLoadBlock partialLoadHandler, RCTImageLoaderCompletionBlock completionHandler);
   public virtual _Nullable RCTImageLoaderCancellationBlock loadImageForURL:size:scale:resizeMode:progressHandler:partialLoadHandler:completionHandlerWithMetadata:(NSURL* imageURL, CGSize size, CGFloat scale, RCTResizeMode resizeMode, RCTImageLoaderProgressBlock progressHandler, RCTImageLoaderPartialLoadBlock partialLoadHandler, RCTImageLoaderCompletionBlockWithMetadata completionHandlerWithMetadata);
+  public virtual _Nullable RCTImageLoaderCancellationBlock loadImageIgnoringCacheForURL:size:scale:resizeMode:progressHandler:partialLoadHandler:completionHandlerWithMetadata:(NSURL* imageURL, CGSize size, CGFloat scale, RCTResizeMode resizeMode, RCTImageLoaderProgressBlock progressHandler, RCTImageLoaderPartialLoadBlock partialLoadHandler, RCTImageLoaderCompletionBlockWithMetadata completionHandlerWithMetadata);
   public virtual float loaderPriority();
 }
 

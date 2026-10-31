@@ -335,6 +335,7 @@ static UIImage *RCTCachedImageForURL(
 static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
     id<RCTImageURLLoader> loadHandler,
     NSURL *imageURL,
+    BOOL ignoreCache,
     CGSize size,
     CGFloat scale,
     RCTResizeMode resizeMode,
@@ -342,6 +343,19 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
     RCTImageLoaderPartialLoadBlock partialLoadHandler,
     RCTImageLoaderCompletionBlockWithMetadata completionHandler)
 {
+  if (ignoreCache &&
+      [loadHandler respondsToSelector:@selector
+                   (loadImageIgnoringCacheForURL:
+                                            size:scale:resizeMode:progressHandler:partialLoadHandler
+                                                :completionHandlerWithMetadata:)]) {
+    return [loadHandler loadImageIgnoringCacheForURL:imageURL
+                                                size:size
+                                               scale:scale
+                                          resizeMode:resizeMode
+                                     progressHandler:progressHandler
+                                  partialLoadHandler:partialLoadHandler
+                       completionHandlerWithMetadata:completionHandler];
+  }
   if ([loadHandler
           respondsToSelector:@selector
           (loadImageForURL:size:scale:resizeMode:progressHandler:partialLoadHandler:completionHandlerWithMetadata:)]) {
@@ -619,6 +633,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
     RCTImageLoaderCancellationBlock cb = RCTLoadImageURLFromLoader(
         loadHandler,
         request.URL,
+        request.cachePolicy == NSURLRequestReloadIgnoringLocalCacheData,
         size,
         scale,
         resizeMode,
@@ -663,6 +678,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
         cancelLoadLocal = RCTLoadImageURLFromLoader(
             loadHandler,
             request.URL,
+            request.cachePolicy == NSURLRequestReloadIgnoringLocalCacheData,
             size,
             scale,
             resizeMode,

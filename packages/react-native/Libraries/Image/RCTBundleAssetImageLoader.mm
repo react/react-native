@@ -18,6 +18,24 @@
 @interface RCTBundleAssetImageLoader () <RCTTurboModule>
 @end
 
+static void RCTCompleteLocalAssetLoad(
+    UIImage *image,
+    NSURL *imageURL,
+    RCTImageLoaderProgressBlock progressHandler,
+    RCTImageLoaderCompletionBlock completionHandler)
+{
+  if (image != nullptr) {
+    if (progressHandler != nullptr) {
+      progressHandler(1, 1);
+    }
+    completionHandler(nil, image);
+  } else {
+    NSString *message = [NSString stringWithFormat:@"Could not find image %@", imageURL];
+    RCTLogWarn(@"%@", message);
+    completionHandler(RCTErrorWithMessage(message), nil);
+  }
+}
+
 @implementation RCTBundleAssetImageLoader
 
 RCT_EXPORT_MODULE()
@@ -49,18 +67,26 @@ RCT_EXPORT_MODULE()
                                          partialLoadHandler:(RCTImageLoaderPartialLoadBlock)partialLoadHandler
                                           completionHandler:(RCTImageLoaderCompletionBlock)completionHandler
 {
-  UIImage *image = RCTImageFromLocalAssetURL(imageURL);
-  if (image != nullptr) {
-    if (progressHandler != nullptr) {
-      progressHandler(1, 1);
-    }
-    completionHandler(nil, image);
-  } else {
-    NSString *message = [NSString stringWithFormat:@"Could not find image %@", imageURL];
-    RCTLogWarn(@"%@", message);
-    completionHandler(RCTErrorWithMessage(message), nil);
-  }
+  RCTCompleteLocalAssetLoad(RCTImageFromLocalAssetURL(imageURL), imageURL, progressHandler, completionHandler);
+  return nil;
+}
 
+- (nullable RCTImageLoaderCancellationBlock)
+     loadImageIgnoringCacheForURL:(NSURL *)imageURL
+                             size:(CGSize)size
+                            scale:(CGFloat)scale
+                       resizeMode:(RCTResizeMode)resizeMode
+                  progressHandler:(RCTImageLoaderProgressBlock)progressHandler
+               partialLoadHandler:(RCTImageLoaderPartialLoadBlock)partialLoadHandler
+    completionHandlerWithMetadata:(RCTImageLoaderCompletionBlockWithMetadata)completionHandler
+{
+  RCTCompleteLocalAssetLoad(
+      RCTImageFromLocalAssetURLIgnoringSystemCache(imageURL),
+      imageURL,
+      progressHandler,
+      ^(NSError *error, UIImage *image) {
+        completionHandler(error, image, nil);
+      });
   return nil;
 }
 
