@@ -23,6 +23,7 @@
 #import "RCTCustomPullToRefreshViewProtocol.h"
 #import "RCTEnhancedScrollView.h"
 #import "RCTFabricComponentsPlugins.h"
+#import "RCTScrollContentViewComponentView.h"
 #import "RCTVirtualViewContainerState.h"
 
 using namespace facebook::react;
@@ -449,9 +450,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     } else if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Always) {
       scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
+    ((RCTEnhancedScrollView *)_scrollView).padsContentForSafeArea =
+        contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never;
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
-  scrollView.padsContentForSafeArea = newScrollViewProps.padsContentForSafeArea;
 
   MAP_SCROLL_VIEW_PROP(disableIntervalMomentum);
   MAP_SCROLL_VIEW_PROP(snapToInterval);
@@ -464,6 +466,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   // Must run after `super updateProps:` so it is based on the latest calculated view.
   ((RCTEnhancedScrollView *)_scrollView).inverted = [self isInverted];
+  [self _updateContentViewSafeAreaPadding];
 }
 
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
@@ -563,6 +566,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [_containerView insertSubview:childComponentView atIndex:index];
   if (![childComponentView conformsToProtocol:@protocol(RCTCustomPullToRefreshViewProtocol)]) {
     _contentView = childComponentView;
+    [self _updateContentViewSafeAreaPadding];
   }
 }
 
@@ -866,6 +870,46 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     // The view is being removed, ensure that the scroll end event is dispatched
     [self _handleScrollEndIfNeeded];
   }
+  [self _updateContentViewSafeAreaPadding];
+}
+
+- (void)safeAreaInsetsDidChange
+{
+  [super safeAreaInsetsDidChange];
+  [self _updateContentViewSafeAreaPadding];
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  // Moving or resizing the view changes its insets without `safeAreaInsetsDidChange` firing; that only reports
+  // window-level changes.
+  [self _updateContentViewSafeAreaPadding];
+}
+
+/*
+ * Hands the content container the safe area to pad its content by: the pair of insets across the scrollable axis,
+ * unless `contentInsetAdjustmentBehavior` is `never`. Along the scrollable axis UIKit turns the safe area into content
+ * insets instead, so content scrolls under the system UI.
+ */
+- (void)_updateContentViewSafeAreaPadding
+{
+  if (![_contentView isKindOfClass:[RCTScrollContentViewComponentView class]]) {
+    return;
+  }
+  const auto &props = static_cast<const ScrollViewProps &>(*_props);
+  UIEdgeInsets padding = UIEdgeInsetsZero;
+  if (props.contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never) {
+    UIEdgeInsets insets = self.safeAreaInsets;
+    if (props.horizontal) {
+      padding.top = insets.top;
+      padding.bottom = insets.bottom;
+    } else {
+      padding.left = insets.left;
+      padding.right = insets.right;
+    }
+  }
+  ((RCTScrollContentViewComponentView *)_contentView).safeAreaPadding = padding;
 }
 
 - (void)_handleScrollEndIfNeeded
