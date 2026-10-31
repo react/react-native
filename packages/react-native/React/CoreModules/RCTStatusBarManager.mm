@@ -17,6 +17,24 @@
 
 static NSString *const kStatusBarFrameDidChange = @"statusBarFrameDidChange";
 static NSString *const kStatusBarFrameWillChange = @"statusBarFrameWillChange";
+static NSString *const kVerticalBarEdgeDidChange = @"verticalBarEdgeDidChange";
+
+static NSString *_Nullable RCTVerticalBarEdge(UITraitCollection *traitCollection)
+{
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100 /* __IPHONE_27_1 */
+  if (@available(iOS 27.1, tvOS 27.1, *)) {
+    switch (traitCollection.verticalBarEdge) {
+      case UIVerticalBarEdgeLeading:
+        return @"leading";
+      case UIVerticalBarEdgeTrailing:
+        return @"trailing";
+      default:
+        return nil;
+    }
+  }
+#endif
+  return nil;
+}
 
 @implementation RCTConvert (UIStatusBar)
 
@@ -53,6 +71,8 @@ RCT_ENUM_CONVERTER(
 
 @implementation RCTStatusBarManager {
   facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> _constants;
+  __weak UIWindow *_verticalBarEdgeWindow;
+  id _verticalBarEdgeRegistration;
 }
 
 static BOOL RCTViewControllerBasedStatusBarAppearance()
@@ -85,7 +105,7 @@ RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[ kStatusBarFrameDidChange, kStatusBarFrameWillChange ];
+  return @[ kStatusBarFrameDidChange, kStatusBarFrameWillChange, kVerticalBarEdgeDidChange ];
 }
 
 - (void)startObserving
@@ -102,11 +122,48 @@ RCT_EXPORT_MODULE()
              name:UIApplicationWillChangeStatusBarFrameNotification
            object:nil];
 #pragma clang diagnostic pop
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self observeVerticalBarEdge];
+  });
 }
 
 - (void)stopObserving
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100 /* __IPHONE_27_1 */
+    if (self->_verticalBarEdgeRegistration != nil) {
+      [self->_verticalBarEdgeWindow unregisterForTraitChanges:self->_verticalBarEdgeRegistration];
+    }
+#endif
+    self->_verticalBarEdgeRegistration = nil;
+    self->_verticalBarEdgeWindow = nil;
+  });
+}
+
+- (void)observeVerticalBarEdge
+{
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100 /* __IPHONE_27_1 */
+  if (@available(iOS 27.1, tvOS 27.1, *)) {
+    UIWindow *window = RCTKeyWindow();
+    if (_verticalBarEdgeRegistration != nil || window == nil) {
+      return;
+    }
+    __weak __typeof(self) weakSelf = self;
+    _verticalBarEdgeWindow = window;
+    _verticalBarEdgeRegistration = [window
+        registerForTraitChanges:UITraitCollection.systemTraitsAffectingVerticalBarEdge
+                    withHandler:^(id<UITraitEnvironment> traitEnvironment, UITraitCollection *previousTraitCollection) {
+                      NSString *edge = RCTVerticalBarEdge(traitEnvironment.traitCollection);
+                      NSString *previousEdge = RCTVerticalBarEdge(previousTraitCollection);
+                      if (edge != previousEdge && ![edge isEqualToString:previousEdge]) {
+                        [weakSelf sendEventWithName:kVerticalBarEdgeDidChange body:@{@"edge" : edge ?: [NSNull null]}];
+                      }
+                    }];
+  }
+#endif
 }
 
 - (void)emitEvent:(NSString *)eventName forNotification:(NSNotification *)notification
@@ -141,6 +198,15 @@ RCT_EXPORT_MODULE()
   callback(@[ @{
     @"height" : @(RCTUIStatusBarManager().statusBarFrame.size.height),
   } ]);
+}
+
+- (NSString *)getVerticalBarEdge
+{
+  __block NSString *edge;
+  RCTUnsafeExecuteOnMainQueueSync(^{
+    edge = RCTVerticalBarEdge(RCTKeyWindow().traitCollection);
+  });
+  return edge;
 }
 
 - (void)setStyle:(NSString *)style animated:(BOOL)animated
