@@ -829,6 +829,13 @@ export interface TextInputProps
   onEndEditing?: ((e: TextInputEndEditingEvent) => void) | undefined;
 
   /**
+   * Called when a touch is held for 500ms. The input is focused then, as on a
+   * press, and the release that follows does not call `onPress`.
+   */
+  onLongPress?:
+    ((e: NativeSyntheticEvent<NativeTouchEvent>) => void) | undefined;
+
+  /**
    * Called when a single tap gesture is detected.
    */
   onPress?: ((e: NativeSyntheticEvent<NativeTouchEvent>) => void) | undefined;
