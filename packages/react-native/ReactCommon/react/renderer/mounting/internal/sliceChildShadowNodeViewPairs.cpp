@@ -264,9 +264,17 @@ bool sliceChangedChildShadowNodeViewPairsRecursively(
       continue;
     }
 
-    if (oldChildShadowNode.getTag() != newChildShadowNode.getTag() ||
+    // A child whose tag or order index changed can still be listed if it is a
+    // leaf that doesn't form a view, like the raw text of a `Text` whose
+    // string changed: it has no mount index, so it doesn't shift the views
+    // around it, and both lists are sorted by order index at the end.
+    bool isReplaced =
+        oldChildShadowNode.getTag() != newChildShadowNode.getTag() ||
         oldChildShadowNode.getOrderIndex() !=
-            newChildShadowNode.getOrderIndex()) {
+            newChildShadowNode.getOrderIndex();
+    if (isReplaced &&
+        (!oldChildShadowNode.getChildren().empty() ||
+         !newChildShadowNode.getChildren().empty())) {
       return false;
     }
 
@@ -282,7 +290,12 @@ bool sliceChangedChildShadowNodeViewPairsRecursively(
         newLayoutOffset);
     bool isStatic = newChildSlice.shadowView.layoutMetrics.positionType ==
         PositionType::Static;
-    if (oldChildSlice.isConcreteView != newChildSlice.isConcreteView ||
+    if (isReplaced) {
+      if (oldChildSlice.isConcreteView || newChildSlice.isConcreteView) {
+        return false;
+      }
+    } else if (
+        oldChildSlice.isConcreteView != newChildSlice.isConcreteView ||
         oldChildSlice.areChildrenFlattened !=
             newChildSlice.areChildrenFlattened ||
         (oldChildSlice.shadowView.layoutMetrics.positionType ==
@@ -303,7 +316,7 @@ bool sliceChangedChildShadowNodeViewPairsRecursively(
         newChildSlice,
         newChildShadowNode);
 
-    if (!newChildSlice.areChildrenFlattened) {
+    if (isReplaced || !newChildSlice.areChildrenFlattened) {
       continue;
     }
     if (isStatic) {
