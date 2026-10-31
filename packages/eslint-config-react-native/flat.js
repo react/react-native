@@ -9,17 +9,18 @@
  */
 
 const sharedConfig = require('./shared.js');
-const babelParser = require('@babel/eslint-parser');
+const eslintCommentsPlugin = require('@eslint-community/eslint-plugin-eslint-comments');
+const {fixupPluginRules} = require('@eslint/compat');
 const reactNativePlugin = require('@react-native/eslint-plugin');
 const typescriptPlugin = require('@typescript-eslint/eslint-plugin');
 const typescriptParser = require('@typescript-eslint/parser');
 const prettierConfig = require('eslint-config-prettier');
-const eslintCommentsPlugin = require('eslint-plugin-eslint-comments');
 const ftFlowPlugin = require('eslint-plugin-ft-flow');
 const jestPlugin = require('eslint-plugin-jest');
 const reactPlugin = require('eslint-plugin-react');
 const reactHooksPlugin = require('eslint-plugin-react-hooks');
 const reactNativeExternalPlugin = require('eslint-plugin-react-native');
+const flowParser = require('flow-eslint');
 
 // Convert globals from legacy format (true/false) to flat config format ('readonly'/'writable')
 const convertGlobals = globals => {
@@ -31,6 +32,9 @@ const convertGlobals = globals => {
 };
 
 // Flat Config for ESLint 9+
+//
+// `fixupPluginRules` adapts plugins that still call rule context methods
+// removed in ESLint 10 (e.g. `context.getSourceCode()`).
 module.exports = [
   // Apply prettier config first (to disable conflicting rules)
   prettierConfig,
@@ -45,9 +49,9 @@ module.exports = [
     },
     plugins: {
       'eslint-comments': eslintCommentsPlugin,
-      react: reactPlugin,
+      react: fixupPluginRules(reactPlugin),
       'react-hooks': reactHooksPlugin,
-      'react-native': reactNativeExternalPlugin,
+      'react-native': fixupPluginRules(reactNativeExternalPlugin),
       '@react-native': reactNativePlugin,
       jest: jestPlugin,
     },
@@ -55,23 +59,23 @@ module.exports = [
     rules: sharedConfig.rules,
   },
 
-  // JavaScript files with Babel parser and Flow
+  // JavaScript files, parsed as Flow
   {
     ...sharedConfig.overrides.flow,
     files: ['**/*.js'],
     languageOptions: {
-      parser: babelParser,
+      parser: flowParser,
     },
     plugins: {
-      'ft-flow': ftFlowPlugin,
+      'ft-flow': fixupPluginRules(ftFlowPlugin),
     },
   },
 
-  // JSX files with Babel parser
+  // JSX files, parsed as Flow
   {
     files: ['**/*.jsx'],
     languageOptions: {
-      parser: babelParser,
+      parser: flowParser,
     },
   },
 
