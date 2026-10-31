@@ -190,6 +190,12 @@ AttributedString AndroidTextInputShadowNode::getAttributedString(
     // that effect.
     fragment.textAttributes.backgroundColor = clearColor();
     fragment.parentShadowView = ShadowView(*this);
+    // Clearing `props` and `state` (which we don't use) allows avoiding
+    // retaining the previous state revision. Same rationale as
+    // `shadowViewFromShadowNode()` in `BaseTextInputShadowNode.h`, which this
+    // platform override does not inherit.
+    fragment.parentShadowView.props = nullptr;
+    fragment.parentShadowView.state = nullptr;
     attributedString.prependFragment(std::move(fragment));
   }
 
