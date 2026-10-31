@@ -1309,6 +1309,11 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.57.0.tgz#a5417ae8427873f1dd08b70b3574b453e67b5f7f"
   integrity sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==
 
+"@expo-google-fonts/noto-color-emoji@0.4.7":
+  version "0.4.7"
+  resolved "https://registry.yarnpkg.com/@expo-google-fonts/noto-color-emoji/-/noto-color-emoji-0.4.7.tgz#9d3fe605309fb5cd554b145c870c12b38dbde772"
+  integrity sha512-0jZUhh9r92VouxJ5z59Vxw1BGjbaat7EEEasmsLI+doe5hXS1/d4oZUyfyv/TFvkwuZjqvbDh6WdYM9q0ZhiyA==
+
 "@expo/spawn-async@^1.7.2":
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/@expo/spawn-async/-/spawn-async-1.7.2.tgz#fcfe66c3e387245e72154b1a7eae8cada6a47f58"
@@ -3852,6 +3857,11 @@ define-properties@^1.1.3, define-properties@^1.2.0, define-properties@^1.2.1:
     define-data-property "^1.0.1"
     has-property-descriptors "^1.0.0"
     object-keys "^1.1.1"
+
+dejavu-fonts-ttf@2.37.3:
+  version "2.37.3"
+  resolved "https://registry.yarnpkg.com/dejavu-fonts-ttf/-/dejavu-fonts-ttf-2.37.3.tgz#23f2bf5af594ca2a8a3a53224224b03467a6e0b8"
+  integrity sha512-f1hd7jJbeQa1VWcw+K2KrTXS50zTMaHpVC4XIKJpNcDeYR5ajMtj/iLlQDYNvLOKamUB3ARVVCf79lNwNVztSQ==
 
 depd@2.0.0, depd@~2.0.0:
   version "2.0.0"

@@ -9,7 +9,7 @@
  */
 
 import {ensureMockFunction} from './mocks';
-import {snapshotContext} from './snapshotContext';
+import {ScreenshotSnapshotError, snapshotContext} from './snapshotContext';
 import deepEqual from 'deep-equal';
 import {diff} from 'jest-diff';
 import {format, plugins} from 'pretty-format';
@@ -517,14 +517,27 @@ class Expect {
       ).blameToPreviousFrame();
     }
 
+    const Screenshot = require('../src/Screenshot').default;
+    const screenshot =
+      this.#received instanceof Screenshot ? this.#received : undefined;
     const receivedValue = format(this.#received, {
       plugins: [plugins.ReactElement],
     });
 
     try {
-      snapshotContext.toMatchSnapshot(receivedValue, expected);
+      snapshotContext.toMatchSnapshot(receivedValue, expected, screenshot);
     } catch (err) {
-      throw new ErrorWithCustomBlame(err.message).blameToPreviousFrame();
+      const error = new ErrorWithCustomBlame(
+        err.message,
+      ).blameToPreviousFrame();
+      if (err instanceof ScreenshotSnapshotError) {
+        err.stack = error.stack;
+        err.previewError.stack = new ErrorWithCustomBlame(
+          err.previewError.message,
+        ).blameToPreviousFrame().stack;
+        throw err;
+      }
+      throw error;
     }
   }
 
