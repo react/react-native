@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<674f975884ae746e067e614523f2bfc3>>
+ * @generated SignedSource<<8cdfb2126d4af4c32e114fc4531e995a>>
  * @flow strict
  * @noformat
  */
@@ -70,6 +70,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableBridgelessArchitecture: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
+  enableDeferredViewCleanupAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
   enableDoubleMeasurementFixAndroid: Getter<boolean>,
   enableEagerRootViewAttachment: Getter<boolean>,
@@ -306,6 +307,10 @@ export const enableCppPropsIteratorSetter: Getter<boolean> = createNativeFlagGet
  * This enables the fabric implementation of focus search so that we can focus clipped elements
  */
 export const enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean> = createNativeFlagGetter('enableCustomFocusSearchOnClippedElementsAndroid', true);
+/**
+ * Experiment with retiring pure RCTView subtrees immediately and cleaning native descendants in bounded slices after drawing on Android
+ */
+export const enableDeferredViewCleanupAndroid: Getter<boolean> = createNativeFlagGetter('enableDeferredViewCleanupAndroid', false);
 /**
  * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.
  */

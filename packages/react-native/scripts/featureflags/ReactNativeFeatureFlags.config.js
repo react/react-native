@@ -278,6 +278,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableDeferredViewCleanupAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-27',
+        description:
+          'Experiment with retiring pure RCTView subtrees immediately and cleaning native descendants in bounded slices after drawing on Android',
+        expectedReleaseValue: false,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableDestroyShadowTreeRevisionAsync: {
       defaultValue: false,
       metadata: {
