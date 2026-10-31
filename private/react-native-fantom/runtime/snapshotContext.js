@@ -8,11 +8,16 @@
  * @format
  */
 
+import type Screenshot from '../src/Screenshot';
+import type {ScreenshotConfig} from './ScreenshotContext';
+
+import {screenshotContext} from './ScreenshotContext';
 import {diff} from 'jest-diff';
 
 export type SnapshotConfig = {
   updateSnapshot: 'all' | 'new' | 'none',
   data: {[key: string]: string},
+  screenshots?: ScreenshotConfig,
 };
 
 export type TestSnapshotResults = {
@@ -31,8 +36,6 @@ export type InlineSnapshotResult =
   | {pass: false, isNew: boolean, value: string, stackTrace: string};
 
 export type TestInlineSnapshotResults = Array<InlineSnapshotResult>;
-
-const COMPARISON_EQUALS_STRING = 'Compared values have no visual difference.';
 
 const INDENTATION_REGEX: RegExp = /^([^\S\n]*)\S/m;
 
@@ -94,57 +97,52 @@ class SnapshotContext {
     };
   }
 
-  toMatchSnapshot(received: string, label: ?string): void {
+  toMatchSnapshot(
+    received: string,
+    label: ?string,
+    screenshot?: Screenshot,
+  ): void {
     const snapshotState = this.#snapshotState;
     if (snapshotState == null) {
       throw new Error(
         'Snapshot state is not set, call `setTargetTest()` first',
       );
     }
-
-    const snapshotKey = `${snapshotState.testFullName}${
-      label != null ? `: ${label}` : ''
-    } ${++snapshotState.callCount}`;
-
-    if (snapshotConfig == null) {
+    const config = snapshotConfig;
+    if (config == null) {
       throw new Error(
         'Snapshot config is not set. Did you forget to call `setupSnapshotConfig`?',
       );
     }
-
-    const updateSnapshot = snapshotConfig.updateSnapshot;
-    const snapshot = snapshotConfig.data[snapshotKey];
-
-    if (snapshot == null) {
-      snapshotState.snapshotResults[snapshotKey] = {
-        pass: false,
-        value: received,
-      };
-
-      if (updateSnapshot === 'none') {
-        throw new Error(
-          `Expected to have snapshot \`${snapshotKey}\` but it was not found.`,
-        );
-      }
-
+    const key = `${snapshotState.testFullName}${label != null ? `: ${label}` : ''} ${++snapshotState.callCount}`;
+    const snapshot = config.data[key];
+    const isNew = snapshot == null;
+    let pass = snapshot === received;
+    if (screenshot != null) {
+      pass = screenshotContext.record(screenshot, key, pass, isNew);
+    }
+    snapshotState.snapshotResults[key] = pass
+      ? {pass: true}
+      : {pass: false, value: received};
+    if (
+      pass ||
+      config.updateSnapshot === 'all' ||
+      (isNew && config.updateSnapshot === 'new')
+    ) {
       return;
     }
-
-    const result = diff(snapshot, received) ?? 'Failed to compare output';
-    if (result !== COMPARISON_EQUALS_STRING) {
-      snapshotState.snapshotResults[snapshotKey] = {
-        pass: false,
-        value: received,
-      };
-
-      if (updateSnapshot !== 'all') {
-        throw new Error(`Expected to match snapshot.\n${result}`);
-      }
-
-      return;
+    const message = isNew
+      ? `Expected to have snapshot \`${key}\` but it was not found.`
+      : `Expected to match snapshot.\n${diff(snapshot, received) ?? 'Failed to compare output'}`;
+    if (screenshot != null) {
+      throw new ScreenshotSnapshotError(
+        `${message}\n${screenshotContext.getFailureMessage()}`,
+        isNew
+          ? `Expected to have screenshot snapshot \`${key}\` but it was not found.`
+          : 'Expected to match screenshot snapshot.',
+      );
     }
-
-    snapshotState.snapshotResults[snapshotKey] = {pass: true};
+    throw new Error(message);
   }
 
   toMatchInlineSnapshot(
@@ -217,8 +215,22 @@ class SnapshotContext {
   }
 }
 
+export class ScreenshotSnapshotError extends Error {
+  previewError: Error;
+
+  constructor(message: string, previewMessage: string) {
+    super(message);
+    this.previewError = new Error(previewMessage);
+  }
+
+  getPreviewMessage(): string {
+    return this.previewError.stack ?? this.previewError.message;
+  }
+}
+
 export const snapshotContext: SnapshotContext = new SnapshotContext();
 
 export function setupSnapshotConfig(config: SnapshotConfig) {
   snapshotConfig = config;
+  screenshotContext.configure(config.screenshots);
 }

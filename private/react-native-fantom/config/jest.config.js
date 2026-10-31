@@ -54,6 +54,7 @@ module.exports = {
   testPathIgnorePatterns: baseConfig.testPathIgnorePatterns,
   transformIgnorePatterns: ['.*'],
   testRunner: '<rootDir>/private/react-native-fantom/runner/index.js',
+  reporters: ['<rootDir>/private/react-native-fantom/reporter/index.js'],
   watchPathIgnorePatterns: ['<rootDir>/private/react-native-fantom/build/'],
   globalSetup:
     '<rootDir>/private/react-native-fantom/runner/global-setup/setup.js',

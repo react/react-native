@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "FantomTextInput.h"
+
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/image/ImageComponentDescriptor.h>
@@ -21,11 +23,13 @@
 
 namespace facebook::react {
 
-inline ComponentRegistryFactory getDefaultComponentRegistryFactory()
+inline ComponentRegistryFactory getDefaultComponentRegistryFactory(std::shared_ptr<TextLayoutManager> textLayoutManager)
 {
-  return [](const EventDispatcher::Weak &eventDispatcher,
-            const std::shared_ptr<const ContextContainer> &contextContainer) {
-    static auto providerRegistry = []() {
+  return [textLayoutManager = std::move(textLayoutManager)](
+             const EventDispatcher::Weak &eventDispatcher,
+             const std::shared_ptr<const ContextContainer> &contextContainer) {
+    contextContainer->insert("TextLayoutManager", textLayoutManager);
+    static const auto providerRegistry = []() {
       auto providerRegistry = std::make_shared<ComponentDescriptorProviderRegistry>();
       providerRegistry->add(concreteComponentDescriptorProvider<ImageComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<LayoutConformanceComponentDescriptor>());
@@ -36,9 +40,16 @@ inline ComponentRegistryFactory getDefaultComponentRegistryFactory()
       providerRegistry->add(concreteComponentDescriptorProvider<TextComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<ViewComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());
+      providerRegistry->add(
+          concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomAndroidTextInputName>>());
+      providerRegistry->add(
+          concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomSinglelineTextInputName>>());
+      providerRegistry->add(
+          concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomMultilineTextInputName>>());
       return providerRegistry;
     }();
-    return providerRegistry->createComponentDescriptorRegistry({eventDispatcher, contextContainer, nullptr});
+    return providerRegistry->createComponentDescriptorRegistry(
+        {.eventDispatcher = eventDispatcher, .contextContainer = contextContainer, .flavor = nullptr});
   };
 }
 

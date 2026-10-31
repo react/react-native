@@ -508,6 +508,8 @@ void YogaLayoutableShadowNode::configureYogaTree(
   if (getTraits().check(ShadowNodeTraits::Trait::MeasurableYogaNode) &&
       !floatEquality(
           getLayoutMetrics().fontSizeMultiplier, fontSizeMultiplier)) {
+    // Cloning can dirty the node before it has an owner; restart propagation.
+    yogaNode_.setDirty(false);
     yogaNode_.markDirtyAndPropagate();
   }
 

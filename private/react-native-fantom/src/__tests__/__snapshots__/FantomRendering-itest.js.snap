@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Fantom rendering edge cases clips overflowing descendants to rounded bounds without clipping siblings: hidden overflow 2`] = `
+Object {
+  "hash": "d96b7c47c122e6fa6e7baa6176704599759933d9dcadc45eacf2151600428a9e",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom rendering edge cases clips overflowing descendants to rounded bounds without clipping siblings: visible overflow 1`] = `
+Object {
+  "hash": "d1abab448c9de50610e7bb36a4b0d3a44ab91693a67c518c0f907de1c0d86533",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom rendering edge cases positions absolute children within bordered parents without affecting flow 1`] = `
+Object {
+  "hash": "97a42fd0b859db84a7e455b5e9d4f9e239be2b03941cb7dc0f8a515988005fbc",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom rendering edge cases preserves sibling z-index order and nested stacking after updates 1`] = `
+Object {
+  "hash": "02d66a4bc95ebd7d9d6d6ec4ccf666ac88fda34aa5b5d1ec4dfbf3eb8e02db52",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom rendering edge cases preserves sibling z-index order and nested stacking after updates: updated stacking 2`] = `
+Object {
+  "hash": "508558e0f125fdad08b6eb73d7977836b389def8f63854edb6f063ffa17c2a75",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom rendering edge cases renders affine transforms and skips singular siblings at fractional coordinates 1`] = `
+Object {
+  "hash": "a2e0e843ad978f06363351b91a5140658fb69e8d97049766cbf330959d580daf",
+  "type": "Screenshot",
+}
+`;

@@ -14,14 +14,17 @@
 #include <react/renderer/components/modal/ModalHostViewShadowNode.h>
 #include <react/renderer/components/scrollview/ScrollViewShadowNode.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
 #include "TesterAppDelegate.h"
 
 #include <jsi/instrumentation.h>
+#include "render/ImageRenderer.h"
 #include "render/RenderFormatOptions.h"
 #include "render/RenderOutput.h"
+#include "render/TextLayout.h"
 
 namespace facebook::react {
 
@@ -51,6 +54,25 @@ SurfaceId NativeFantom::startSurface(
       static_cast<float>(viewportOffsetX),
       static_cast<float>(viewportOffsetY));
   return surfaceId;
+}
+
+void NativeFantom::updateSurfaceConstraints(
+    jsi::Runtime& /*runtime*/,
+    SurfaceId surfaceId,
+    double viewportWidth,
+    double viewportHeight,
+    double devicePixelRatio,
+    double fontScale,
+    double viewportOffsetX,
+    double viewportOffsetY) {
+  appDelegate_.updateSurfaceConstraints(
+      surfaceId,
+      static_cast<float>(viewportWidth),
+      static_cast<float>(viewportHeight),
+      static_cast<float>(devicePixelRatio),
+      static_cast<float>(fontScale),
+      static_cast<float>(viewportOffsetX),
+      static_cast<float>(viewportOffsetY));
 }
 
 void NativeFantom::stopSurface(jsi::Runtime& /*runtime*/, SurfaceId surfaceId) {
@@ -112,6 +134,41 @@ std::string NativeFantom::getRenderedOutput(
   auto viewTree = appDelegate_.mountingManager_->getViewTree(surfaceId);
   return appDelegate_.mountingManager_->renderer()->render(
       viewTree, formatOptions);
+}
+
+jsi::Object NativeFantom::takeScreenshot(
+    jsi::Runtime& runtime,
+    SurfaceId surfaceId) {
+  try {
+    auto screenshot = ImageRenderer{}.capture(
+        appDelegate_.mountingManager_->getViewTree(surfaceId), assetPaths_);
+    auto object = jsi::Object::createFromHostObject(runtime, screenshot);
+    object.setExternalMemoryPressure(runtime, screenshot->getMemorySize());
+    return object;
+  } catch (const std::exception& error) {
+    throw jsi::JSError(
+        runtime,
+        std::string("Cannot render Fantom screenshot: ") + error.what());
+  }
+}
+
+void NativeFantom::registerAsset(
+    jsi::Runtime& /*runtime*/,
+    const std::string& uri,
+    const std::string& filePath) {
+  assetPaths_.insert_or_assign(uri, filePath);
+}
+
+void NativeFantom::registerFont(
+    jsi::Runtime& runtime,
+    const std::string& filePath) {
+  try {
+    const auto asset = assetPaths_.find(filePath);
+    facebook::react::registerFont(
+        asset == assetPaths_.end() ? filePath : asset->second);
+  } catch (const std::exception& error) {
+    throw jsi::JSError(runtime, error.what());
+  }
 }
 
 void NativeFantom::reportTestSuiteResultsJSON(

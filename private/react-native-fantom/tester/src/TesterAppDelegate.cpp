@@ -309,7 +309,10 @@ void TesterAppDelegate::updateSurfaceConstraints(
     SurfaceId surfaceId,
     float widthDp,
     float heightDp,
-    float pointScaleFactor) {
+    float pointScaleFactor,
+    float fontScale,
+    float viewportOffsetX,
+    float viewportOffsetY) {
   Size extentsDp{static_cast<Float>(widthDp), static_cast<Float>(heightDp)};
   LayoutConstraints layoutConstraints{
       .minimumSize = extentsDp,
@@ -319,6 +322,8 @@ void TesterAppDelegate::updateSurfaceConstraints(
 
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
+      .fontSizeMultiplier = fontScale,
+      .viewportOffset = {.x = viewportOffsetX, .y = viewportOffsetY},
   };
 
   reactHost_->setSurfaceConstraints(

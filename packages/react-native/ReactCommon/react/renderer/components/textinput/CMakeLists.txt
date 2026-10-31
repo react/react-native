@@ -6,12 +6,19 @@
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
+include(${REACT_COMMON_DIR}/cmake-utils/internal/react-native-platform-selector.cmake)
 include(${REACT_COMMON_DIR}/cmake-utils/react-native-flags.cmake)
 
-file(GLOB rrc_textinput_SRC CONFIGURE_DEPENDS *.cpp platform/android/react/renderer/components/androidtextinput/*.cpp)
+react_native_android_selector(platform_SRC
+        platform/android/react/renderer/components/androidtextinput/*.cpp
+        "")
+file(GLOB rrc_textinput_SRC CONFIGURE_DEPENDS *.cpp ${platform_SRC})
 add_library(rrc_textinput OBJECT ${rrc_textinput_SRC})
 
-target_include_directories(rrc_textinput PUBLIC . ${CMAKE_CURRENT_SOURCE_DIR}/platform/android/)
+react_native_android_selector(platform_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/android/
+        "")
+target_include_directories(rrc_textinput PUBLIC . ${platform_DIR})
 
 target_link_libraries(rrc_textinput
         glog

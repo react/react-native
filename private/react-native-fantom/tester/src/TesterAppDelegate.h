@@ -68,7 +68,14 @@ class TesterAppDelegate {
       float viewportOffsetX = 0.0f,
       float viewportOffsetY = 0.0f);
 
-  void updateSurfaceConstraints(SurfaceId surfaceId, float widthDp, float heightDp, float pointScaleFactor);
+  void updateSurfaceConstraints(
+      SurfaceId surfaceId,
+      float widthDp,
+      float heightDp,
+      float pointScaleFactor,
+      float fontScale,
+      float viewportOffsetX,
+      float viewportOffsetY);
 
   void stopSurface(SurfaceId surfaceId);
 
