@@ -10,6 +10,7 @@
 import * as React from 'react';
 // @ts-ignore
 import {View, StyleSheet, type ShadowStyleIOS} from 'react-native';
+import type {ViewStyle} from 'react-native';
 
 export function App() {
   return <View style={styles.container} />;
@@ -53,3 +54,13 @@ const styles3 = StyleSheet.create({
     shadowOffset: shadowOffsetConst,
   },
 });
+
+const transforms: ViewStyle['transform'] = [];
+transforms.forEach(transform => {
+  Object.keys(transform);
+});
+
+const invalidTransforms: ViewStyle['transform'] = [
+  // @ts-expect-error Transform objects must not combine multiple properties.
+  {scale: 1, translateX: 1},
+];
