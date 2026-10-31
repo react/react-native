@@ -76,4 +76,7 @@ export interface Dimensions {
 
 export function useWindowDimensions(): ScaledSize;
 
+/** Returns screen dimensions and updates when they change. */
+export function useScreenDimensions(): ScaledSize;
+
 export const Dimensions: Dimensions;

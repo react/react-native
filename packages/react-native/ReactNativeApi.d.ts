@@ -5456,6 +5456,7 @@ declare function useColorScheme(): ColorSchemeName | null
 declare function usePressability(
   config: null | PressabilityConfig | undefined,
 ): null | PressabilityEventHandlers
+declare function useScreenDimensions(): DisplayMetrics | DisplayMetricsAndroid
 declare function useWindowDimensions(): DisplayMetrics | DisplayMetricsAndroid
 declare type UTFSequence = typeof UTFSequence
 declare type Value = null | {
@@ -6090,5 +6091,6 @@ export {
   useAppState, // 9338748a
   useColorScheme, // d585efdb
   usePressability, // af291ad3
+  useScreenDimensions, // a8bd8ad8
   useWindowDimensions, // bb4b683f
 }

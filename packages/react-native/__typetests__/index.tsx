@@ -121,6 +121,7 @@ import {
   requireNativeComponent,
   useColorScheme,
   useWindowDimensions,
+  useScreenDimensions,
   // @ts-ignore
   SectionListData,
   ToastAndroid,
@@ -163,6 +164,11 @@ function testDimensions() {
     dimensionsListener,
   );
   subscription.remove();
+}
+
+function TestUseScreenDimensions() {
+  const {width, height, scale, fontScale} = useScreenDimensions();
+  const metrics: number[] = [width, height, scale, fontScale];
 }
 
 function TextUseWindowDimensions() {
