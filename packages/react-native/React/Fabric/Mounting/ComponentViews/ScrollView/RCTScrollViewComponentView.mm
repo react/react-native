@@ -725,6 +725,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _firstVisibleView = nil;
   _firstVisibleViewTag = 0;
   _virtualViewContainerState = nil;
+  _scrollView.frame = self.bounds;
 }
 
 #pragma mark - UIScrollViewDelegate
