@@ -266,7 +266,15 @@ void UIManager::startSurface(
 void UIManager::startEmptySurface(
     ShadowTree::Unique&& shadowTree) const noexcept {
   TraceSection s("UIManager::startEmptySurface");
+  auto surfaceId = shadowTree->getSurfaceId();
   shadowTreeRegistry_.add(std::move(shadowTree));
+
+  shadowTreeRegistry_.visit(
+      surfaceId, [delegate = delegate_](const ShadowTree& shadowTree) {
+        if (delegate != nullptr) {
+          delegate->uiManagerDidStartSurface(shadowTree);
+        }
+      });
 }
 
 void UIManager::setSurfaceProps(
