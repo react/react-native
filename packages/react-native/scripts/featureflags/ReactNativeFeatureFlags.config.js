@@ -566,6 +566,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enablePremountItemsBetweenFramesAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-20',
+        description:
+          'Pre-mount views on Android in the time each frame leaves free: after the frame, in short slices that stop before the next vsync, and, after a frame that left none, before the next traversal for as long as the last draw slept, or for half a frame once two frames in a row were busy for a whole frame, at most half a frame, instead of before every traversal for half of a 60 Hz frame.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enablePreparedTextLayout: {
       defaultValue: true,
       metadata: {

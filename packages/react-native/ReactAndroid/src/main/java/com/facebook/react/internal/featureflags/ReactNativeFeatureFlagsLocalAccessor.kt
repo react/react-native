@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c305274be2fc6720b6c0eb75e78bd6b0>>
+ * @generated SignedSource<<04b7d62642eb868ae9f3feabc4887599>>
  */
 
 /**
@@ -72,6 +72,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableMutationObserverByDefaultCache: Boolean? = null
   private var enableNativeCSSParsingCache: Boolean? = null
   private var enablePreallocatedPropsDiffOnInsertAndroidCache: Boolean? = null
+  private var enablePremountItemsBetweenFramesAndroidCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableResizeObserverByDefaultCache: Boolean? = null
@@ -598,6 +599,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enablePreallocatedPropsDiffOnInsertAndroid()
       accessedFeatureFlags.add("enablePreallocatedPropsDiffOnInsertAndroid")
       enablePreallocatedPropsDiffOnInsertAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun enablePremountItemsBetweenFramesAndroid(): Boolean {
+    var cached = enablePremountItemsBetweenFramesAndroidCache
+    if (cached == null) {
+      cached = currentProvider.enablePremountItemsBetweenFramesAndroid()
+      accessedFeatureFlags.add("enablePremountItemsBetweenFramesAndroid")
+      enablePremountItemsBetweenFramesAndroidCache = cached
     }
     return cached
   }

@@ -7,7 +7,6 @@
 
 package com.facebook.react.fabric.mounting
 
-import android.os.SystemClock
 import android.view.View
 import androidx.annotation.UiThread
 import com.facebook.common.logging.FLog
@@ -17,6 +16,7 @@ import com.facebook.react.bridge.ReactIgnorableMountingException
 import com.facebook.react.bridge.ReactNoCrashSoftException
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.RetryableMountingLayerException
+import com.facebook.react.common.SystemClock
 import com.facebook.react.fabric.FabricUIManager
 import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem
 import com.facebook.react.fabric.mounting.mountitems.MountItem
@@ -26,6 +26,9 @@ import com.facebook.systrace.Systrace
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+
+/** A 60 Hz frame: half of it is a frame's pre-mount budget from its start. */
+internal const val SIXTY_HERTZ_FRAME_NANOS: Long = 1_000_000_000L / 60
 
 internal class MountItemDispatcher(
     private val mountingManager: MountingManager,
@@ -49,6 +52,12 @@ internal class MountItemDispatcher(
   /** Pull model: @return true if any surface has a transaction waiting to be pulled. */
   fun hasSurfaceIdsToPull(): Boolean = surfaceIdsToPull.isNotEmpty()
 
+  /**
+   * @return true if any mount items or view commands are waiting to be dispatched. A dispatch also
+   *   pulls the surfaces waiting to be pulled, before the mount items.
+   */
+  fun hasMountItems(): Boolean = !viewCommandMountItems.isEmpty() || !mountItems.isEmpty()
+
   // Items can be queued from any thread while the DISPATCH_UI frame callback is disarmed at
   // idle (see FabricUIManager's doFrameGuarded); the listener re-arms it.
   private fun notifyItemsQueued() {
@@ -64,8 +73,6 @@ internal class MountItemDispatcher(
 
   var runStartTime: Long = 0L
     private set
-
-  private var lastFrameTimeNanos: Long = 0L
 
   fun addViewCommandMountItem(mountItem: DispatchCommandMountItem) {
     if (!ReactNativeFeatureFlags.disableEarlyViewCommandExecution()) {
@@ -361,15 +368,25 @@ internal class MountItemDispatcher(
   @UiThread
   @ThreadConfined(UI)
   fun dispatchPreMountItems(frameTimeNanos: Long) {
-    lastFrameTimeNanos = frameTimeNanos
+    dispatchPreMountItemsUntil(frameTimeNanos + SIXTY_HERTZ_FRAME_NANOS / 2)
+  }
 
+  fun hasPreMountItems(): Boolean = !preMountItems.isEmpty()
+
+  /**
+   * Executes pre-mount items until [deadlineNanos], and returns whether any are left. An item
+   * starts only while the deadline has not passed, so the last one can run past it by its own
+   * duration.
+   */
+  @UiThread
+  @ThreadConfined(UI)
+  fun dispatchPreMountItemsUntil(deadlineNanos: Long): Boolean {
     if (preMountItems.isEmpty()) {
       // Avoid starting systrace if there are no pre mount items.
-      return
+      return false
     }
-
-    val deadline = lastFrameTimeNanos + FRAME_TIME_NS / 2
-    dispatchPreMountItemsImpl(deadline)
+    dispatchPreMountItemsImpl(deadlineNanos)
+    return !preMountItems.isEmpty()
   }
 
   private fun dispatchPreMountItemsImpl(deadline: Long) {
@@ -387,7 +404,7 @@ internal class MountItemDispatcher(
 
           try {
             while (true) {
-              if (System.nanoTime() > deadline) {
+              if (SystemClock.nanoTime() > deadline) {
                 break
               }
 
@@ -478,8 +495,6 @@ internal class MountItemDispatcher(
 
   private companion object {
     private const val TAG: String = "MountItemDispatcher"
-
-    private const val FRAME_TIME_NS: Long = (1000000000 / 60).toLong()
 
     private fun <E> drainConcurrentItemQueue(queue: Queue<E>): List<E>? {
       if (queue.isEmpty()) {

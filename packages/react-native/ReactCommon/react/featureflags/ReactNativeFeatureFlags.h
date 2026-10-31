@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6887b671526bc8a3b0678e3e45b4e3b4>>
+ * @generated SignedSource<<60e248f5455e2108457c56f2db28bb58>>
  */
 
 /**
@@ -280,6 +280,11 @@ class ReactNativeFeatureFlags {
    * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
    */
   RN_EXPORT static bool enablePreallocatedPropsDiffOnInsertAndroid();
+
+  /**
+   * Pre-mount views on Android in the time each frame leaves free: after the frame, in short slices that stop before the next vsync, and, after a frame that left none, before the next traversal for as long as the last draw slept, or for half a frame once two frames in a row were busy for a whole frame, at most half a frame, instead of before every traversal for half of a 60 Hz frame.
+   */
+  RN_EXPORT static bool enablePremountItemsBetweenFramesAndroid();
 
   /**
    * Enables caching text layout artifacts for later reuse
