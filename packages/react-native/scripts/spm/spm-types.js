@@ -106,6 +106,9 @@ export type TargetEntry = {
   // the autolinking model (`dep.root`) so the watch file can flag manifest edits
   // without walking up from the (possibly nested) target source dir.
   root?: string,
+  // The podspec autolinking.json names (origin 'npm' only). The mixed-language
+  // check must read the same podspec the scaffolder would.
+  podspecPath?: ?string,
   // Filled in for npm-origin entries during the mirror step; consumed by the
   // synth-package emission step further down.
   mirrorReady?: ?{

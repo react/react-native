@@ -43,7 +43,11 @@ const {
   expandSpmDependencies,
   resolveSwiftName,
 } = require('./expand-spm-dependencies');
-const {expandSpmSourceGlobs} = require('./generate-spm-autolinking');
+const {
+  expandSpmSourceGlobs,
+  isMixedLanguageSourceList,
+  podspecSourceFiles,
+} = require('./generate-spm-autolinking');
 const {MIN_IOS_VERSION_SUPPORTED} = require('./ios-deployment-target');
 const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
@@ -393,32 +397,9 @@ function translatePodspecToSpmTarget(
     coreReactNative = true;
   }
 
-  // SPM's `sources:` field does NOT accept CocoaPods-style globs — it wants
-  // a list of explicit file paths (relative to the target's `path:`).
-  // Expand the podspec globs against the actual filesystem so the emitted
-  // Package.swift parses cleanly.
-  let expandedSources /*: Array<string> */ = [];
-  try {
-    expandedSources = expandSpmSourceGlobs(dep.root, model.sourceFiles);
-  } catch (e) {
-    warnings.push(
-      `Source glob expansion failed (${e.message}); emitting raw globs — SPM will likely reject them.`,
-    );
-    expandedSources = model.sourceFiles;
-  }
-  // Strip files matching exclude_files (podspec's negation list).
-  if (model.excludeFiles.length > 0) {
-    try {
-      // $FlowFixMe[untyped-import] micromatch has no types
-      const micromatch = require('micromatch');
-      const isExcluded = micromatch.matcher(model.excludeFiles);
-      expandedSources = expandedSources.filter(f => !isExcluded(f));
-    } catch (e) {
-      warnings.push(
-        `exclude_files filtering failed (${e.message}); keeping all sources.`,
-      );
-    }
-  }
+  const sources = podspecSourceFiles(dep.root, model);
+  warnings.push(...sources.warnings);
+  let expandedSources = sources.files;
   // Never self-ingest scaffold artifacts: a re-scaffold runs with the
   // previous run's output on disk, and root-level podspec globs sweep it
   // into sources — `*.{h,...,swift}` matches Package.swift itself, whose
@@ -1023,9 +1004,7 @@ function scaffoldPackageSwiftForDep(
   // language source files" resolve error — skip with a clear reason (and remove
   // any stale scaffolded manifest so the autolinker reports it distinctly and
   // points the user at opting it out / a binary distribution).
-  const hasSwift = spec.sources.some(f => /\.swift$/i.test(f));
-  const hasClang = spec.sources.some(f => /\.(mm?|c|cc|cpp|cxx)$/i.test(f));
-  if (hasSwift && hasClang) {
+  if (isMixedLanguageSourceList(spec.sources)) {
     if (!ctx.dryRun && fs.existsSync(pkgSwiftPath)) {
       const existing = fs.readFileSync(pkgSwiftPath, 'utf8');
       if (existing.includes(SCAFFOLDER_MARKER)) {
