@@ -2325,6 +2325,13 @@ static void calculateLayoutImpl(
     float leadPerLine = 0;
     float currentLead = leadingPaddingAndBorderCross;
     float extraSpacePerLine = 0;
+    // With wrap-reverse the cross positions set here are mirrored further
+    // below, so an item's flex end margin is the one that leads here.
+    const bool isWrapReverse = node->style().flexWrap() == Wrap::WrapReverse;
+    // The erratum keeps the cross positions this pass produced before it
+    // honored margins and relative insets.
+    const bool ignoresCrossMarginAndInset =
+        node->hasErrata(Errata::WrapCrossAlignmentIgnoresMarginAndInset);
 
     const float unclampedCrossDim = sizingModeCrossDim == SizingMode::StretchFit
         ? availableInnerCrossDim + paddingAndBorderAxisCross
@@ -2443,43 +2450,69 @@ static void calculateLayoutImpl(
           continue;
         }
         if (child->style().positionType() != PositionType::Absolute) {
+          const float flexStartMargin = child->style().computeFlexStartMargin(
+              crossAxis, direction, availableInnerWidth);
+          const float flexEndMargin = child->style().computeFlexEndMargin(
+              crossAxis, direction, availableInnerWidth);
+          // The erratum leaves the margins unswapped for wrap-reverse and
+          // drops the inset. Flex start, center and baseline used other
+          // offsets there, so they check the erratum themselves.
+          const bool reverseMargins =
+              isWrapReverse && !ignoresCrossMarginAndInset;
+          const float leadingCrossMargin =
+              reverseMargins ? flexEndMargin : flexStartMargin;
+          const float trailingCrossMargin =
+              reverseMargins ? flexStartMargin : flexEndMargin;
+          const float relativePositionCross = ignoresCrossMarginAndInset
+              ? 0.0f
+              : child->relativePosition(
+                    crossAxis, direction, availableInnerCrossDim);
+
           switch (resolveChildAlignment(node, child)) {
             case Align::Start:
             case Align::End:
               // Not yet implemented
               break;
             case Align::FlexStart: {
-              child->setLayoutPosition(
-                  currentLead +
-                      child->style().computeFlexStartPosition(
-                          crossAxis, direction, availableInnerWidth),
-                  flexStartEdge(crossAxis));
+              if (ignoresCrossMarginAndInset) {
+                child->setLayoutPosition(
+                    currentLead +
+                        child->style().computeFlexStartPosition(
+                            crossAxis, direction, availableInnerWidth),
+                    flexStartEdge(crossAxis));
+              } else {
+                child->setLayoutPosition(
+                    currentLead + leadingCrossMargin + relativePositionCross,
+                    flexStartEdge(crossAxis));
+              }
               break;
             }
             case Align::FlexEnd: {
               child->setLayoutPosition(
-                  currentLead + lineHeight -
-                      child->style().computeFlexEndMargin(
-                          crossAxis, direction, availableInnerWidth) -
+                  currentLead + lineHeight - trailingCrossMargin -
                       child->getLayout().measuredDimension(
-                          dimension(crossAxis)),
+                          dimension(crossAxis)) +
+                      relativePositionCross,
                   flexStartEdge(crossAxis));
               break;
             }
             case Align::Center: {
-              float childHeight =
+              const float childCrossDim =
                   child->getLayout().measuredDimension(dimension(crossAxis));
+              const float childOuterCrossDim =
+                  childCrossDim + leadingCrossMargin + trailingCrossMargin;
 
               child->setLayoutPosition(
-                  currentLead + (lineHeight - childHeight) / 2,
+                  ignoresCrossMarginAndInset
+                      ? currentLead + (lineHeight - childCrossDim) / 2
+                      : currentLead + (lineHeight - childOuterCrossDim) / 2 +
+                          leadingCrossMargin + relativePositionCross,
                   flexStartEdge(crossAxis));
               break;
             }
             case Align::Stretch: {
               child->setLayoutPosition(
-                  currentLead +
-                      child->style().computeFlexStartMargin(
-                          crossAxis, direction, availableInnerWidth),
+                  currentLead + leadingCrossMargin + relativePositionCross,
                   flexStartEdge(crossAxis));
 
               // Remeasure child with the line height as it as been only
@@ -2528,10 +2561,12 @@ static void calculateLayoutImpl(
               child->setLayoutPosition(
                   currentLead + maxAscentForCurrentLine -
                       calculateBaseline(child) +
-                      child->style().computeFlexStartPosition(
-                          FlexDirection::Column,
-                          direction,
-                          availableInnerCrossDim),
+                      (ignoresCrossMarginAndInset
+                           ? child->style().computeFlexStartPosition(
+                                 FlexDirection::Column,
+                                 direction,
+                                 availableInnerCrossDim)
+                           : relativePositionCross),
                   PhysicalEdge::Top);
 
               break;
@@ -2643,14 +2678,28 @@ static void calculateLayoutImpl(
   }
 
   // As we only wrapped in normal direction yet, we need to reverse the
-  // positions on wrap-reverse.
+  // positions on wrap-reverse. A relative inset is a physical offset, so it is
+  // taken out before reversing and added back afterwards (the erratum mirrors
+  // it with the rest of the position).
   if (performLayout && node->style().flexWrap() == Wrap::WrapReverse) {
+    const bool ignoresCrossMarginAndInset =
+        node->hasErrata(Errata::WrapCrossAlignmentIgnoresMarginAndInset);
     for (auto child : node->getLayoutChildren()) {
       if (child->style().positionType() != PositionType::Absolute) {
+        const float relativePositionCross =
+            child->style().display() == Display::None ||
+                ignoresCrossMarginAndInset
+            ? 0.0f
+            : child->relativePosition(
+                  crossAxis, direction, availableInnerCrossDim);
+        const float positionInFlow =
+            child->getLayout().position(flexStartEdge(crossAxis)) -
+            relativePositionCross;
         child->setLayoutPosition(
             node->getLayout().measuredDimension(dimension(crossAxis)) -
-                child->getLayout().position(flexStartEdge(crossAxis)) -
-                child->getLayout().measuredDimension(dimension(crossAxis)),
+                positionInFlow -
+                child->getLayout().measuredDimension(dimension(crossAxis)) +
+                relativePositionCross,
             flexStartEdge(crossAxis));
       }
     }
