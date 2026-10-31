@@ -7,19 +7,23 @@
 
 package com.facebook.react.modules.accessibilityinfo
 
+import android.content.ComponentCallbacks
 import android.content.ContentResolver
 import android.content.Context
+import android.content.res.Configuration
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
+import com.facebook.common.logging.FLog
 import com.facebook.fbreact.specs.NativeAccessibilityInfoSpec
 import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
+import com.facebook.react.common.ReactConstants
 import com.facebook.react.module.annotations.ReactModule
 
 /**
@@ -72,6 +76,29 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
           }
         }
       }
+  // Listener that is notified on every configuration change. Only a change to the font weight
+  // adjustment, which the bold text setting controls, sends an event. Registered on Android 12
+  // (API 31) and later, where the adjustment exists.
+  private val boldTextCallbacks: ComponentCallbacks =
+      object : ComponentCallbacks {
+        override fun onConfigurationChanged(newConfig: Configuration) {
+          // A change already queued on the main thread can arrive after `invalidate()`.
+          if (!invalidated && reactApplicationContext.hasActiveReactInstance()) {
+            updateAndSendBoldTextChangeEvent(
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    isBoldFontWeightAdjustment(newConfig.fontWeightAdjustment)
+            )
+          }
+        }
+
+        @Deprecated("Overrides deprecated ComponentCallbacks.onLowMemory()")
+        override fun onLowMemory(): Unit = Unit
+      }
+  // Only read and written on the main thread.
+  private var boldTextCallbacksRegistered = false
+  // Set by `invalidate()`, on any thread, and read on the main thread. Once set, nothing registers
+  // again and queued callbacks send nothing.
+  @Volatile private var invalidated = false
   private val accessibilityManager: AccessibilityManager?
   private val touchExplorationStateChangeListener: ReactTouchExplorationStateChangeListener =
       ReactTouchExplorationStateChangeListener()
@@ -80,6 +107,8 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
   private val contentResolver: ContentResolver
   private var reduceMotionEnabled = false
   private var highTextContrastEnabled = false
+  // Written on the main thread and read on the native modules thread.
+  @Volatile private var boldTextEnabled = false
   private var touchExplorationEnabled = false
   private var accessibilityServiceEnabled = false
   private var recommendedTimeout = 0
@@ -95,6 +124,7 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
     accessibilityServiceEnabled = accessibilityManager?.isEnabled ?: false
     reduceMotionEnabled = isReduceMotionEnabledValue
     highTextContrastEnabled = isHighTextContrastEnabledValue
+    boldTextEnabled = isBoldTextEnabledValue
     grayscaleModeEnabled = isGrayscaleEnabledValue
   }
 
@@ -154,6 +184,13 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
       ) != 0
     }
 
+  private val isBoldTextEnabledValue: Boolean
+    get() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            isBoldFontWeightAdjustment(
+                reactApplicationContext.resources.configuration.fontWeightAdjustment
+            )
+
   override fun isReduceMotionEnabled(successCallback: Callback) {
     successCallback.invoke(reduceMotionEnabled)
   }
@@ -168,6 +205,10 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
 
   override fun isHighTextContrastEnabled(successCallback: Callback) {
     successCallback.invoke(highTextContrastEnabled)
+  }
+
+  override fun isBoldTextEnabled(successCallback: Callback) {
+    successCallback.invoke(boldTextEnabled)
   }
 
   override fun isTouchExplorationEnabled(successCallback: Callback) {
@@ -208,6 +249,14 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
     }
   }
 
+  private fun updateAndSendBoldTextChangeEvent(isBoldTextEnabled: Boolean) {
+    if (boldTextEnabled != isBoldTextEnabled) {
+      boldTextEnabled = isBoldTextEnabled
+      getReactApplicationContextIfActiveOrWarn()
+          ?.emitDeviceEvent(BOLD_TEXT_EVENT_NAME, boldTextEnabled)
+    }
+  }
+
   private fun updateAndSendTouchExplorationChangeEvent(enabled: Boolean) {
     if (touchExplorationEnabled != enabled) {
       touchExplorationEnabled = enabled
@@ -234,6 +283,9 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
   }
 
   override fun onHostResume() {
+    if (invalidated) {
+      return
+    }
     accessibilityManager?.addTouchExplorationStateChangeListener(
         touchExplorationStateChangeListener,
     )
@@ -243,12 +295,15 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
     val highTextContrastUri =
         Settings.Secure.getUriFor(ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED_CONSTANT)
     contentResolver.registerContentObserver(highTextContrastUri, false, highTextContrastObserver)
+    registerBoldTextCallbacks()
     updateAndSendTouchExplorationChangeEvent(
         accessibilityManager?.isTouchExplorationEnabled == true,
     )
     updateAndSendAccessibilityServiceChangeEvent(accessibilityManager?.isEnabled == true)
     updateAndSendReduceMotionChangeEvent()
     updateAndSendHighTextContrastChangeEvent()
+    // The listener is removed while paused, so read the current value again.
+    updateAndSendBoldTextChangeEvent(isBoldTextEnabledValue)
     updateAndSendInvertColorsChangeEvent()
     updateAndSendGrayscaleModeChangeEvent()
   }
@@ -260,6 +315,25 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
     accessibilityManager?.removeAccessibilityStateChangeListener(accessibilityServiceChangeListener)
     contentResolver.unregisterContentObserver(animationScaleObserver)
     contentResolver.unregisterContentObserver(highTextContrastObserver)
+    unregisterBoldTextCallbacks()
+  }
+
+  private fun registerBoldTextCallbacks() {
+    if (
+        !invalidated &&
+            !boldTextCallbacksRegistered &&
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    ) {
+      reactApplicationContext.applicationContext.registerComponentCallbacks(boldTextCallbacks)
+      boldTextCallbacksRegistered = true
+    }
+  }
+
+  private fun unregisterBoldTextCallbacks() {
+    if (boldTextCallbacksRegistered) {
+      reactApplicationContext.applicationContext.unregisterComponentCallbacks(boldTextCallbacks)
+      boldTextCallbacksRegistered = false
+    }
   }
 
   override fun initialize() {
@@ -270,10 +344,23 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
     updateAndSendAccessibilityServiceChangeEvent(accessibilityManager?.isEnabled == true)
     updateAndSendReduceMotionChangeEvent()
     updateAndSendHighTextContrastChangeEvent()
+    updateAndSendBoldTextChangeEvent(isBoldTextEnabledValue)
   }
 
   override fun invalidate() {
+    // Removing the listener first drops an `onHostResume` that `ReactContext` has already queued.
     reactApplicationContext.removeLifecycleEventListener(this)
+    invalidated = true
+    // `invalidate()` can run off the main thread, but the callbacks are registered on it.
+    if (UiThreadUtil.isOnUiThread()) {
+      unregisterBoldTextCallbacks()
+    } else if (!UiThreadUtil.runOnUiThread { unregisterBoldTextCallbacks() }) {
+      FLog.w(
+          ReactConstants.TAG,
+          "AccessibilityInfoModule: could not post to the main thread, so the bold text " +
+              "listener may leak.",
+      )
+    }
     super.invalidate()
   }
 
@@ -318,5 +405,15 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
         "high_text_contrast_enabled" // constant is marked with @hide
     private const val INVERT_COLOR_EVENT_NAME = "invertColorDidChange"
     private const val GRAYSCALE_MODE_EVENT_NAME = "grayscaleModeDidChange"
+    private const val BOLD_TEXT_EVENT_NAME = "boldTextDidChange"
+
+    /**
+     * Bold text raises the font weight adjustment, and a negative adjustment means lighter text.
+     * [Configuration.FONT_WEIGHT_ADJUSTMENT_UNDEFINED] means the value is not known. It is
+     * [Int.MAX_VALUE], so the `> 0` check alone would treat it as bold; it is excluded first.
+     */
+    internal fun isBoldFontWeightAdjustment(fontWeightAdjustment: Int): Boolean =
+        fontWeightAdjustment != Configuration.FONT_WEIGHT_ADJUSTMENT_UNDEFINED &&
+            fontWeightAdjustment > 0
   }
 }

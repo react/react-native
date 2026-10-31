@@ -27,7 +27,6 @@ type AccessibilityEventDefinitionsAndroid = {
 // Events that are only supported on iOS.
 type AccessibilityEventDefinitionsIOS = {
   announcementFinished: [{announcement: string, success: boolean}],
-  boldTextChanged: [boolean],
   darkerSystemColorsChanged: [boolean],
   reduceTransparencyChanged: [boolean],
   showBordersChanged: [boolean],
@@ -36,6 +35,7 @@ type AccessibilityEventDefinitionsIOS = {
 type AccessibilityEventDefinitions = {
   ...AccessibilityEventDefinitionsAndroid,
   ...AccessibilityEventDefinitionsIOS,
+  boldTextChanged: [boolean],
   change: [boolean], // screenReaderChanged
   grayscaleChanged: [boolean],
   invertColorsChanged: [boolean],
@@ -53,6 +53,7 @@ const EventNames: Map<keyof AccessibilityEventDefinitions, string> =
         ['change', 'touchExplorationDidChange'],
         ['reduceMotionChanged', 'reduceMotionDidChange'],
         ['highTextContrastChanged', 'highTextContrastDidChange'],
+        ['boldTextChanged', 'boldTextDidChange'],
         ['screenReaderChanged', 'touchExplorationDidChange'],
         ['accessibilityServiceChanged', 'accessibilityServiceDidChange'],
         ['invertColorsChanged', 'invertColorDidChange'],
@@ -83,11 +84,22 @@ const AccessibilityInfo = {
    * Returns a promise which resolves to a boolean.
    * The result is `true` when bold text is enabled and `false` otherwise.
    *
-   * @platform ios
+   * On Android, bold text is supported on Android 12 (API 31) and later;
+   * earlier versions always resolve to `false`.
    */
   isBoldTextEnabled(): Promise<boolean> {
     if (Platform.OS === 'android') {
-      return Promise.resolve(false);
+      return new Promise(resolve => {
+        if (NativeAccessibilityInfoAndroid?.isBoldTextEnabled != null) {
+          NativeAccessibilityInfoAndroid.isBoldTextEnabled(resolve);
+        } else {
+          // `isBoldTextEnabled` is an existing API that resolved `false` on
+          // Android before native support was added, so it keeps resolving
+          // `false` when the native module or method is missing. APIs that are
+          // new reject instead, like `isShowBordersEnabled`.
+          resolve(false);
+        }
+      });
     } else {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerIOS != null) {
@@ -420,12 +432,12 @@ const AccessibilityInfo = {
    * - `invertColorsChanged`: Fires when the state of the invert colors toggle
    *   changes. The argument to the event handler is a boolean. The boolean is `true` when invert
    *   colors is enabled and `false` otherwise.
+   * - `boldTextChanged`: Fires when the state of the bold text toggle changes.
+   *   The argument to the event handler is a boolean. The boolean is `true` when bold text
+   *   is enabled and `false` otherwise. On Android, requires Android 12 (API 31) or later.
    *
    * These events are only supported on iOS:
    *
-   * - `boldTextChanged`: iOS-only event. Fires when the state of the bold text toggle changes.
-   *   The argument to the event handler is a boolean. The boolean is `true` when a bold text
-   *   is enabled and `false` otherwise.
    * - `reduceTransparencyChanged`: iOS-only event. Fires when the state of the reduce transparency
    *   toggle changes.  The argument to the event handler is a boolean. The boolean is `true`
    *   when a reduce transparency is enabled and `false` otherwise.

@@ -11,7 +11,7 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {EventSubscription, GestureResponderEvent} from 'react-native';
+import type {EventSubscription} from 'react-native';
 
 import RNTesterBlock from '../../components/RNTesterBlock';
 import RNTesterText from '../../components/RNTesterText';
@@ -1392,21 +1392,17 @@ class EnabledExamples extends React.Component<{}> {
   render(): React.Node {
     return (
       <View style={styles.sectionContainer}>
+        <RNTesterBlock title="isBoldTextEnabled()">
+          <EnabledExample test="bold text" eventListener="boldTextChanged" />
+        </RNTesterBlock>
+
         {Platform.OS === 'ios' ? (
-          <>
-            <RNTesterBlock title="isBoldTextEnabled()">
-              <EnabledExample
-                test="bold text"
-                eventListener="boldTextChanged"
-              />
-            </RNTesterBlock>
-            <RNTesterBlock title="isReduceTransparencyEnabled()">
-              <EnabledExample
-                test="reduce transparency"
-                eventListener="reduceTransparencyChanged"
-              />
-            </RNTesterBlock>
-          </>
+          <RNTesterBlock title="isReduceTransparencyEnabled()">
+            <EnabledExample
+              test="reduce transparency"
+              eventListener="reduceTransparencyChanged"
+            />
+          </RNTesterBlock>
         ) : null}
 
         {Platform.OS === 'android' ? (
@@ -1503,42 +1499,56 @@ class EnabledExample extends React.Component<
   },
   {
     isEnabled: boolean,
+    error: ?string,
   },
 > {
-  state: {isEnabled: boolean} = {
+  state: {isEnabled: boolean, error: ?string} = {
     isEnabled: false,
+    error: null,
   };
   _subscription: EventSubscription;
   componentDidMount(): null | Promise<unknown> {
     this._subscription = AccessibilityInfo.addEventListener(
       this.props.eventListener,
-      this._handleToggled,
+      this._handleChanged,
     );
 
+    let initialValue: ?Promise<boolean> = null;
     switch (this.props.eventListener) {
       case 'reduceMotionChanged':
-        return AccessibilityInfo.isReduceMotionEnabled().then(state => {
-          this.setState({isEnabled: state});
-        });
+        initialValue = AccessibilityInfo.isReduceMotionEnabled();
+        break;
       case 'accessibilityServiceChanged':
-        return AccessibilityInfo.isAccessibilityServiceEnabled().then(state => {
-          this.setState({isEnabled: state});
-        });
+        initialValue = AccessibilityInfo.isAccessibilityServiceEnabled();
+        break;
+      case 'boldTextChanged':
+        initialValue = AccessibilityInfo.isBoldTextEnabled();
+        break;
       default:
         return null;
     }
+    return initialValue.then(
+      state => {
+        this.setState({isEnabled: state, error: null});
+      },
+      (error: unknown) => {
+        this.setState({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      },
+    );
   }
 
   componentWillUnmount() {
     this._subscription?.remove();
   }
 
-  _handleToggled = (isEnabled: void | GestureResponderEvent | boolean) => {
-    if (!this.state.isEnabled) {
-      this.setState({isEnabled: true});
-    } else {
-      this.setState({isEnabled: false});
-    }
+  _handleChanged = (isEnabled: boolean) => {
+    this.setState({isEnabled, error: null});
+  };
+
+  _handleToggled = () => {
+    this.setState(state => ({isEnabled: !state.isEnabled}));
   };
 
   render(): React.Node {
@@ -1546,7 +1556,11 @@ class EnabledExample extends React.Component<
       <View>
         <RNTesterText>
           The {this.props.test} is{' '}
-          {this.state.isEnabled ? 'enabled' : 'disabled'}
+          {this.state.error != null
+            ? `Unavailable: ${this.state.error}`
+            : this.state.isEnabled
+              ? 'enabled'
+              : 'disabled'}
         </RNTesterText>
         <Button
           title={this.state.isEnabled ? 'disable' : 'enable'}
@@ -1577,13 +1591,13 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
           optionChecker={AccessibilityInfo.isScreenReaderEnabled}
           notification={'screenReaderChanged'}
         />
+        <DisplayOptionStatusExample
+          optionName={'Bold Text'}
+          optionChecker={AccessibilityInfo.isBoldTextEnabled}
+          notification={'boldTextChanged'}
+        />
         {isAndroid ? null : (
           <>
-            <DisplayOptionStatusExample
-              optionName={'Bold Text'}
-              optionChecker={AccessibilityInfo.isBoldTextEnabled}
-              notification={'boldTextChanged'}
-            />
             <DisplayOptionStatusExample
               optionName={'Grayscale'}
               optionChecker={AccessibilityInfo.isGrayscaleEnabled}

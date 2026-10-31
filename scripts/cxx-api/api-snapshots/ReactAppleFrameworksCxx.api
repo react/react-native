@@ -2143,6 +2143,7 @@ protocol NativeAccessibilityInfoSpec : public RCTBridgeModule, public RCTTurboMo
   public virtual void announceForAccessibility:(NSString* announcement);
   public virtual void getRecommendedTimeoutMillis:onSuccess:(double mSec, RCTResponseSenderBlock onSuccess);
   public virtual void isAccessibilityServiceEnabled:(RCTResponseSenderBlock onSuccess);
+  public virtual void isBoldTextEnabled:(RCTResponseSenderBlock onSuccess);
   public virtual void isGrayscaleEnabled:(RCTResponseSenderBlock onSuccess);
   public virtual void isHighTextContrastEnabled:(RCTResponseSenderBlock onSuccess);
   public virtual void isInvertColorsEnabled:(RCTResponseSenderBlock onSuccess);
