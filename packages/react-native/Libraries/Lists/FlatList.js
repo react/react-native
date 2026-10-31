@@ -350,8 +350,29 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     viewPosition?: number,
     ...
   }) {
-    if (this._listRef) {
-      this._listRef.scrollToItem(params);
+    const listRef = this._listRef;
+    if (listRef == null) {
+      return;
+    }
+    const numColumns = numColumnsOrDefault(this.props.numColumns);
+    if (numColumns <= 1) {
+      listRef.scrollToItem(params);
+      return;
+    }
+    // Each index of the underlying list is a row of `numColumns` items, so
+    // scroll to the row that contains the item.
+    const {data} = this.props;
+    if (!isArrayLike(data)) {
+      return;
+    }
+    for (let index = 0; index < data.length; index++) {
+      if (data[index] === params.item) {
+        listRef.scrollToIndex({
+          ...params,
+          index: Math.floor(index / numColumns),
+        });
+        return;
+      }
     }
   }
 
