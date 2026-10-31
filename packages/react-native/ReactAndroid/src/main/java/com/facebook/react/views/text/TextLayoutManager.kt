@@ -1091,6 +1091,7 @@ internal object TextLayoutManager {
       paint.letterSpacing = baseTextAttributes.letterSpacing
     }
 
+    var typefaceToApply = paint.typeface
     if (
         baseTextAttributes.fontStyle != ReactConstants.UNSET ||
             baseTextAttributes.fontWeight != ReactConstants.UNSET ||
@@ -1106,9 +1107,7 @@ internal object TextLayoutManager {
               baseTextAttributes.fontFamily,
               assets,
           )
-      paint.setTypeface(
-          ReactTypefaceUtils.applyFontWeightAdjustment(typeface, fontWeightAdjustment),
-      )
+      typefaceToApply = ReactTypefaceUtils.applyFontWeightAdjustment(typeface, fontWeightAdjustment)
 
       if (
           baseTextAttributes.fontStyle != ReactConstants.UNSET &&
@@ -1125,12 +1124,16 @@ internal object TextLayoutManager {
     } else {
       val typeface = ReactTypefaceUtils.applyFontWeightAdjustment(null, fontWeightAdjustment)
       if (typeface != null) {
-        paint.setTypeface(typeface)
+        typefaceToApply = typeface
       }
     }
 
     paint.fontFeatureSettings = baseTextAttributes.fontFeatureSettings
-    ReactTypefaceUtils.applyFontVariationSettings(paint, baseTextAttributes.fontVariationSettings)
+    ReactTypefaceUtils.applyTypeface(
+        paint,
+        typefaceToApply,
+        baseTextAttributes.fontVariationSettings,
+    )
   }
 
   /**

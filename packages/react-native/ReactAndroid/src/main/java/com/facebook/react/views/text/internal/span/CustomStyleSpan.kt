@@ -93,13 +93,10 @@ internal class CustomStyleSpan(
           ReactTypefaceUtils.applyStyles(paint.typeface, style, weight, family, assetManager)
       val adjustedTypeface =
           ReactTypefaceUtils.applyFontWeightAdjustment(typeface, fontWeightAdjustment)
-      paint.apply {
-        fontFeatureSettings = fontFeatureSettingsParam
-        setTypeface(adjustedTypeface)
-        ReactTypefaceUtils.applyFontVariationSettings(this, fontVariationSettingsParam)
-        isSubpixelText = true
-        isLinearText = true
-      }
+      paint.fontFeatureSettings = fontFeatureSettingsParam
+      ReactTypefaceUtils.applyTypeface(paint, adjustedTypeface, fontVariationSettingsParam)
+      paint.isSubpixelText = true
+      paint.isLinearText = true
     }
   }
 }

@@ -36,12 +36,18 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHint
 import com.facebook.react.views.text.ReactTextUpdate
+import com.facebook.react.views.text.ReactTypefaceUtils
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
 import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -530,6 +536,70 @@ class ReactTextInputPropertyTest {
 
     manager.updateProperties(view, buildStyles("fontVariationSettings", null))
     assertThat(view.parsedFontVariationSettings).isNull()
+  }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  @Test
+  fun testUnchangedTypefaceDoesNotResetFontVariations() {
+    manager.updateProperties(
+        view,
+        buildStyles("fontFamily", "sans-serif", "fontVariationSettings", "'wght' 600"),
+    )
+    val spyView = spy(view)
+    val baseTypeface =
+        ReactTypefaceUtils.applyStyles(view.typeface, 0, 400, "sans-serif", themedContext.assets)
+    doReturn(baseTypeface).whenever(spyView).typeface
+    doReturn("'wght' 600").whenever(spyView).fontVariationSettings
+    doReturn(true).whenever(spyView).setFontVariationSettings("'wght' 600")
+
+    spyView.setFontFamily("sans-serif")
+    spyView.maybeUpdateTypeface()
+
+    verify(spyView, never()).setFontVariationSettings(null)
+  }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  @Test
+  fun testChangedFontVariationsDoNotRequirePreliminaryReset() {
+    manager.updateProperties(view, buildStyles("fontFamily", "sans-serif"))
+    val spyView = spy(view)
+    doReturn("'wght' 400").whenever(spyView).fontVariationSettings
+    doReturn(true).whenever(spyView).setFontVariationSettings("'wght' 600")
+
+    spyView.setFontWeight("700")
+    spyView.setReactFontVariationSettings("'wght' 600")
+    spyView.maybeUpdateTypeface()
+
+    verify(spyView, never()).setFontVariationSettings(null)
+  }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  @Test
+  fun testTypefaceChangeStillResetsMatchingFontVariations() {
+    manager.updateProperties(view, buildStyles("fontFamily", "sans-serif"))
+    val spyView = spy(view)
+    doReturn("'wght' 600").whenever(spyView).fontVariationSettings
+
+    spyView.setFontWeight("700")
+    spyView.setReactFontVariationSettings("'wght' 600")
+    spyView.maybeUpdateTypeface()
+
+    verify(spyView).setFontVariationSettings(null)
+  }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  @Test
+  fun testUnsupportedFontVariationsClearPreviousAxes() {
+    manager.updateProperties(view, buildStyles("fontFamily", "sans-serif"))
+    val spyView = spy(view)
+    val settings = "'XXXX' 1"
+    doReturn("'wght' 600").whenever(spyView).fontVariationSettings
+    doReturn(false).whenever(spyView).setFontVariationSettings(settings)
+
+    spyView.setReactFontVariationSettings(settings)
+    spyView.maybeUpdateTypeface()
+
+    verify(spyView).setFontVariationSettings(null)
   }
 
   @Test

@@ -195,6 +195,7 @@ class TextLayoutManagerFontWeightAdjustmentTest {
   fun `reused paint re-applies unchanged font variation settings to a new typeface`() {
     val paint = mock<Paint>()
     whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+    whenever(paint.setFontVariationSettings("'wght' 600")).thenReturn(true)
 
     ReactTypefaceUtils.applyFontVariationSettings(paint, "'wght' 600")
 
@@ -219,6 +220,7 @@ class TextLayoutManagerFontWeightAdjustmentTest {
   fun `scratch text paint re-applies font variation settings on repeated measurement`() {
     val paint = mock<TextPaint>()
     whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+    whenever(paint.setFontVariationSettings("'wght' 600")).thenReturn(true)
     val textAttributes =
         TextAttributeProps.fromReadableMap(
             ReactStylesDiffMap(
@@ -237,6 +239,127 @@ class TextLayoutManagerFontWeightAdjustmentTest {
       verify(paint).setTypeface(any())
       verify(paint).setFontVariationSettings(null)
       verify(paint).setFontVariationSettings("'wght' 600")
+    }
+  }
+
+  @Test
+  fun `changed variation settings do not require a preliminary reset`() {
+    val paint = mock<Paint>()
+    whenever(paint.fontVariationSettings).thenReturn("'wght' 400")
+    whenever(paint.setFontVariationSettings("'wght' 600")).thenReturn(true)
+
+    ReactTypefaceUtils.applyFontVariationSettings(paint, "'wght' 600")
+
+    verify(paint).setFontVariationSettings("'wght' 600")
+    verify(paint, never()).setFontVariationSettings(null)
+  }
+
+  @Test
+  fun `unchanged typeface and variations do not require a reset`() {
+    val paint = mock<Paint>()
+    val typeface = mock<Typeface>()
+    whenever(paint.typeface).thenReturn(typeface)
+    whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+    whenever(paint.setFontVariationSettings("'wght' 600")).thenReturn(true)
+
+    ReactTypefaceUtils.applyTypeface(paint, typeface, "'wght' 600")
+
+    verify(paint, never()).setTypeface(any())
+    verify(paint, never()).setFontVariationSettings(null)
+    verify(paint).setFontVariationSettings("'wght' 600")
+  }
+
+  @Test
+  fun `replacing a typeface still resets identical variations before applying`() {
+    val paint = mock<Paint>()
+    val baseTypeface = mock<Typeface>()
+    whenever(paint.typeface).thenReturn(mock<Typeface>())
+    whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+    whenever(paint.setFontVariationSettings("'wght' 600")).thenReturn(true)
+
+    ReactTypefaceUtils.applyTypeface(paint, baseTypeface, "'wght' 600")
+
+    inOrder(paint) {
+      verify(paint).setTypeface(baseTypeface)
+      verify(paint).setFontVariationSettings(null)
+      verify(paint).setFontVariationSettings("'wght' 600")
+    }
+  }
+
+  @Test
+  fun `span skips resetting an unchanged typeface and variations`() {
+    val assets = RuntimeEnvironment.getApplication().assets
+    val typeface = ReactTypefaceUtils.applyStyles(null, Typeface.NORMAL, 600, "sans-serif", assets)
+    val paint = mock<TextPaint>()
+    whenever(paint.typeface).thenReturn(typeface)
+    whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+    whenever(paint.setFontVariationSettings("'wght' 600")).thenReturn(true)
+    val span = CustomStyleSpan(Typeface.NORMAL, 600, null, "'wght' 600", "sans-serif", assets)
+
+    span.updateMeasureState(paint)
+
+    verify(paint, never()).setTypeface(any())
+    verify(paint, never()).setFontVariationSettings(null)
+    verify(paint).setFontVariationSettings("'wght' 600")
+  }
+
+  @Test
+  fun `scratch text paint skips resetting an unchanged typeface and variations`() {
+    val assets = RuntimeEnvironment.getApplication().assets
+    val typeface = ReactTypefaceUtils.applyStyles(null, Typeface.NORMAL, 600, "sans-serif", assets)
+    val paint = mock<TextPaint>()
+    whenever(paint.typeface).thenReturn(typeface)
+    whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+    whenever(paint.setFontVariationSettings("'wght' 600")).thenReturn(true)
+    val attributes =
+        TextAttributeProps.fromReadableMap(
+            ReactStylesDiffMap(
+                JavaOnlyMap.of(
+                    "fontFamily",
+                    "sans-serif",
+                    "fontWeight",
+                    "600",
+                    "fontVariationSettings",
+                    "'wght' 600",
+                ),
+            ),
+        )
+
+    TextLayoutManager.updateTextPaint(paint, attributes, assets, 0)
+
+    verify(paint, never()).setTypeface(any())
+    verify(paint, never()).setFontVariationSettings(null)
+    verify(paint).setFontVariationSettings("'wght' 600")
+  }
+
+  @Test
+  fun `unsupported variations clear previous settings with unchanged or replaced typeface`() {
+    for (typefaceChanged in listOf(false, true)) {
+      val paint = mock<Paint>()
+      val typeface = mock<Typeface>()
+      whenever(paint.typeface).thenReturn(if (typefaceChanged) mock() else typeface)
+      whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+      whenever(paint.setFontVariationSettings("'XXXX' 1")).thenReturn(false)
+
+      ReactTypefaceUtils.applyTypeface(paint, typeface, "'XXXX' 1")
+
+      inOrder(paint) {
+        verify(paint).setFontVariationSettings("'XXXX' 1")
+        verify(paint).setFontVariationSettings(null)
+      }
+    }
+  }
+
+  @Test
+  fun `null and empty variations still clear previous settings`() {
+    for (settings in listOf(null, "")) {
+      val paint = mock<Paint>()
+      whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+      whenever(paint.setFontVariationSettings(settings)).thenReturn(true)
+
+      ReactTypefaceUtils.applyFontVariationSettings(paint, settings, false)
+
+      verify(paint).setFontVariationSettings(settings)
     }
   }
 
