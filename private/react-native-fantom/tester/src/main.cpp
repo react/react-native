@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
   auto config = ReactInstanceConfig{
       .appId = "com.meta.reactnative.fantom",
       .deviceName = "RN Fantom",
+      .enableInspector = false,
   };
 
   if (AppSettings::inspectorPort.has_value()) {
