@@ -5,17 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// Conflicting okhttp versions + This class needs to be rewritten to don't
-// use AsyncTasks
+// Conflicting okhttp versions
 @file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
 
 package com.facebook.react.devsupport
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.os.AsyncTask
 import android.provider.Settings.Secure
+import androidx.annotation.VisibleForTesting
 import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.ReactConstants
@@ -39,6 +37,10 @@ import java.io.UnsupportedEncodingException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.Locale
+import java.util.concurrent.Executor
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -56,9 +58,6 @@ import okio.Okio
  * - Android stock emulator with standard non-configurable local loopback alias: 10.0.2.2
  * - Genymotion emulator with default settings: 10.0.3.2
  */
-@SuppressLint(
-    "StaticFieldLeak",
-) // TODO: This entire class should be rewritten to don't use AsyncTask
 public open class DevServerHelper(
     private val settings: DeveloperSettings,
     private val applicationContext: Context,
@@ -73,7 +72,8 @@ public open class DevServerHelper(
 
     public fun onPackagerDevMenuCommand()
 
-    // Allow apps to provide listeners for custom packager commands.
+    // Allow apps to provide listeners for custom packager commands. Handlers must not block,
+    // because closing the connection waits for a running handler.
     public fun customCommandHandlers(): Map<String, RequestHandler>?
   }
 
@@ -87,8 +87,27 @@ public open class DevServerHelper(
   private val packagerStatusCheck: PackagerStatusCheck = PackagerStatusCheck(client)
   private val packageName: String = applicationContext.packageName
 
+  // Must stay single-threaded: open and close have to run in call order.
+  @VisibleForTesting
+  internal var packagerConnectionExecutor: Executor =
+      ThreadPoolExecutor(0, 1, 30, TimeUnit.SECONDS, LinkedBlockingQueue()) { runnable ->
+        Thread(runnable, PACKAGER_CONNECTION_THREAD_NAME)
+      }
   private var packagerClient: JSPackagerClient? = null
-  private var inspectorPackagerConnection: IInspectorPackagerConnection? = null
+  private var packagerClientHost: String? = null
+  // Written on the executor thread; disableDebugger() reads it from other threads.
+  @Volatile private var inspectorPackagerConnection: IInspectorPackagerConnection? = null
+  private var inspectorPackagerConnectionHost: String? = null
+  @VisibleForTesting
+  internal var inspectorConnectionFactory: () -> IInspectorPackagerConnection? = {
+    val deviceName = getInspectorHostMetadata(applicationContext)["deviceName"]
+    if (deviceName == null) {
+      FLog.w(ReactConstants.TAG, "Could not get device name from Inspector Host Metadata.")
+      null
+    } else {
+      CxxInspectorPackagerConnection(inspectorDeviceUrl, deviceName, packageName)
+    }
+  }
 
   /** Returns an opaque ID which is stable for the current combination of device and app, stable */
   private val inspectorDeviceId: String
@@ -138,92 +157,81 @@ public open class DevServerHelper(
     get() = settings.isJSMinifyEnabled
 
   public fun openPackagerConnection(clientId: String?, commandListener: PackagerCommandListener) {
-    if (packagerClient != null) {
-      FLog.w(ReactConstants.TAG, "Packager connection already open, nooping.")
-      return
-    }
-    object : AsyncTask<Void, Void, Void>() {
-          @Deprecated("This needs to be rewritten to not use AsyncTasks")
-          override fun doInBackground(vararg backgroundParams: Void): Void? {
-            val handlers: MutableMap<String, RequestHandler> = mutableMapOf()
-            handlers["reload"] =
-                object : NotificationOnlyHandler() {
-                  override fun onNotification(params: Any?) {
-                    commandListener.onPackagerReloadCommand()
-                  }
-                }
-            handlers["devMenu"] =
-                object : NotificationOnlyHandler() {
-                  override fun onNotification(params: Any?) {
-                    commandListener.onPackagerDevMenuCommand()
-                  }
-                }
-            commandListener.customCommandHandlers()?.let { handlers.putAll(it) }
-
-            val onPackagerConnectedCallback: ReconnectingWebSocket.ConnectionCallback =
-                object : ReconnectingWebSocket.ConnectionCallback {
-                  override fun onConnected() {
-                    commandListener.onPackagerConnected()
-                  }
-
-                  override fun onDisconnected() {
-                    commandListener.onPackagerDisconnected()
-                  }
-                }
-
-            checkNotNull(clientId)
-            packagerClient =
-                JSPackagerClient(
-                        clientId,
-                        packagerConnectionSettings,
-                        handlers,
-                        onPackagerConnectedCallback,
-                    )
-                    .apply { init() }
-
-            return null
-          }
+    val id = checkNotNull(clientId)
+    packagerConnectionExecutor.execute {
+      val host = packagerConnectionSettings.debugServerHost
+      packagerClient?.let { client ->
+        if (host == packagerClientHost) {
+          FLog.w(ReactConstants.TAG, "Packager connection already open, nooping.")
+          return@execute
         }
-        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        // The dev server host changed without a close.
+        client.close()
+        packagerClient = null
+      }
+      val handlers: MutableMap<String, RequestHandler> = mutableMapOf()
+      handlers["reload"] =
+          object : NotificationOnlyHandler() {
+            override fun onNotification(params: Any?) {
+              commandListener.onPackagerReloadCommand()
+            }
+          }
+      handlers["devMenu"] =
+          object : NotificationOnlyHandler() {
+            override fun onNotification(params: Any?) {
+              commandListener.onPackagerDevMenuCommand()
+            }
+          }
+      commandListener.customCommandHandlers()?.let { handlers.putAll(it) }
+
+      val onPackagerConnectedCallback: ReconnectingWebSocket.ConnectionCallback =
+          object : ReconnectingWebSocket.ConnectionCallback {
+            override fun onConnected() {
+              commandListener.onPackagerConnected()
+            }
+
+            override fun onDisconnected() {
+              commandListener.onPackagerDisconnected()
+            }
+          }
+
+      packagerClient =
+          JSPackagerClient(
+                  id,
+                  packagerConnectionSettings,
+                  handlers,
+                  onPackagerConnectedCallback,
+              )
+              .apply { init() }
+      packagerClientHost = host
+    }
   }
 
   public fun closePackagerConnection() {
-    object : AsyncTask<Void, Void, Void>() {
-          @Deprecated("This class needs to be rewritten to don't use AsyncTasks")
-          override fun doInBackground(vararg params: Void): Void? {
-            packagerClient?.close()
-            packagerClient = null
-            return null
-          }
-        }
-        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+    packagerConnectionExecutor.execute {
+      packagerClient?.close()
+      packagerClient = null
+      packagerClientHost = null
+    }
   }
 
   public fun openInspectorConnection() {
-    if (inspectorPackagerConnection != null) {
-      FLog.w(ReactConstants.TAG, "Inspector connection already open, nooping.")
-      return
-    }
-    object : AsyncTask<Void, Void, Void>() {
-          @Deprecated("This class needs to be rewritten to don't use AsyncTasks")
-          override fun doInBackground(vararg params: Void): Void? {
-            val metadata = getInspectorHostMetadata(applicationContext)
-            val deviceName = metadata["deviceName"]
-            if (deviceName == null) {
-              FLog.w(ReactConstants.TAG, "Could not get device name from Inspector Host Metadata.")
-              return null
-            }
-            inspectorPackagerConnection =
-                CxxInspectorPackagerConnection(
-                        this@DevServerHelper.inspectorDeviceUrl,
-                        deviceName,
-                        packageName,
-                    )
-                    .apply { connect() }
-            return null
-          }
+    packagerConnectionExecutor.execute {
+      val host = packagerConnectionSettings.debugServerHost
+      inspectorPackagerConnection?.let { connection ->
+        if (host == inspectorPackagerConnectionHost) {
+          FLog.w(ReactConstants.TAG, "Inspector connection already open, nooping.")
+          return@execute
         }
-        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        // The dev server host changed without a close.
+        connection.closeQuietly()
+        inspectorPackagerConnection = null
+      }
+      val connection = inspectorConnectionFactory() ?: return@execute
+      connection.connect()
+      inspectorPackagerConnection = connection
+      inspectorPackagerConnectionHost = host
+    }
   }
 
   public fun disableDebugger() {
@@ -231,15 +239,11 @@ public open class DevServerHelper(
   }
 
   public fun closeInspectorConnection() {
-    object : AsyncTask<Void, Void, Void>() {
-          @Deprecated("This class needs to be rewritten to don't use AsyncTasks")
-          override fun doInBackground(vararg params: Void): Void? {
-            inspectorPackagerConnection?.closeQuietly()
-            inspectorPackagerConnection = null
-            return null
-          }
-        }
-        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+    packagerConnectionExecutor.execute {
+      inspectorPackagerConnection?.closeQuietly()
+      inspectorPackagerConnection = null
+      inspectorPackagerConnectionHost = null
+    }
   }
 
   @JvmOverloads
@@ -385,6 +389,7 @@ public open class DevServerHelper(
 
   private companion object {
     private const val DEBUGGER_MSG_DISABLE = "{ \"id\":1,\"method\":\"Debugger.disable\" }"
+    private const val PACKAGER_CONNECTION_THREAD_NAME = "ReactPackagerConnection"
 
     private fun getSHA256(string: String): String {
       val digest =
