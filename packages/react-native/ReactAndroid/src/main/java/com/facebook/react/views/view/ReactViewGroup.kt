@@ -160,6 +160,12 @@ public open class ReactViewGroup public constructor(context: Context?) :
       null
   private var focusOnAttach = false
 
+  /**
+   * Set from the `focusable` prop. [isFocusable] also carries `accessible`, so a view excluded here
+   * stays focusable for accessibility services while keyboard navigation passes over it.
+   */
+  internal var excludedFromKeyboardFocus = false
+
   internal var nativeBackgroundMap: ReadableMap? = null
   internal var nativeForegroundMap: ReadableMap? = null
 
@@ -202,6 +208,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     childrenRemovedWhileTransitioning = null
     nativeBackgroundMap = null
     nativeForegroundMap = null
+    excludedFromKeyboardFocus = false
   }
 
   internal open fun recycleView() {
@@ -507,6 +514,23 @@ public open class ReactViewGroup public constructor(context: Context?) :
     val clippingRect = checkNotNull(clippingRect)
     calculateClippingRect(this, clippingRect)
     updateClippingToRect(clippingRect, excludedViews)
+  }
+
+  override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    super.addFocusables(views, direction, focusableMode)
+    // A focused view stays a candidate so that focus search can move on from it.
+    if (excludedFromKeyboardFocus && !isFocused) {
+      views.subList(firstAddedIndex, views.size).remove(this)
+    }
+  }
+
+  override fun requestFocus(direction: Int, previouslyFocusedRect: Rect?): Boolean {
+    if (!excludedFromKeyboardFocus) {
+      return super.requestFocus(direction, previouslyFocusedRect)
+    }
+    return descendantFocusability != FOCUS_BLOCK_DESCENDANTS &&
+        onRequestFocusInDescendants(direction, previouslyFocusedRect)
   }
 
   internal fun requestFocusFromJS() {
