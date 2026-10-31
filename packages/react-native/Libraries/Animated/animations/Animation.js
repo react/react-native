@@ -46,6 +46,9 @@ export default class Animation {
   _useNativeDriver: boolean;
 
   __active: boolean;
+  // Set when the value is explicitly assigned while this animation is running,
+  // so that its (asynchronous) native end result does not overwrite that value.
+  __isValueOverridden: boolean = false;
   __isInteraction: boolean;
   __isLooping: ?boolean;
   __iterations: number;
@@ -148,14 +151,18 @@ export default class Animation {
           const {value, offset} = result;
           const syncBeforeCallback =
             ReactNativeFeatureFlags.animatedShouldSyncValueBeforeStartCallback();
-          if (syncBeforeCallback && value != null) {
+          if (
+            syncBeforeCallback &&
+            value != null &&
+            !this.__isValueOverridden
+          ) {
             animatedValue.__onAnimatedValueUpdateReceived(value, offset);
           }
 
           this.__notifyAnimationEnd(result);
 
           if (value != null) {
-            if (!syncBeforeCallback) {
+            if (!syncBeforeCallback && !this.__isValueOverridden) {
               animatedValue.__onAnimatedValueUpdateReceived(value, offset);
             }
 

@@ -13,7 +13,7 @@ import typeof TNativeAnimatedModule from '../../specs_DEPRECATED/modules/NativeA
 import {create, unmount, update} from '@react-native/jest-preset/jest/renderer';
 import {format} from 'node:util';
 import * as React from 'react';
-import {createRef} from 'react';
+import {Activity, createRef} from 'react';
 
 describe('Native Animated', () => {
   let NativeAnimatedModule: Exclude<TNativeAnimatedModule, null | void>;
@@ -1485,6 +1485,63 @@ describe('Native Animated', () => {
 
       animation.stop();
       expect(NativeAnimatedModule.stopAnimation).toBeCalledWith(animationId);
+    });
+
+    it.each([
+      // $FlowFixMe[unclear-type]
+      ['resetAnimation', (value: any) => value.resetAnimation(), 1],
+      // $FlowFixMe[unclear-type]
+      ['setValue', (value: any) => value.setValue(0.5), 0.5],
+    ])(
+      'does not let a stopped animation overwrite the value set by %s',
+      (_name, assignValue, expectedValue) => {
+        const {Animated} = importModules();
+
+        const value = new Animated.Value(1);
+        Animated.timing(value, {
+          toValue: 0.2,
+          duration: 50,
+          useNativeDriver: true,
+        }).start();
+
+        assignValue(value);
+
+        // Native reports where the animation was stopped, asynchronously.
+        // $FlowFixMe[prop-missing]
+        NativeAnimatedModule.startAnimatingNode.mock.calls[0][3]({
+          finished: false,
+          value: 0.2,
+        });
+
+        expect(value.__getValue()).toBe(expectedValue);
+      },
+    );
+
+    it('commits the latest value when revealed after animating while hidden', async () => {
+      const {Animated} = importModules();
+
+      const opacity = new Animated.Value(0.2);
+      // A stable element, so that nothing else re-renders it when revealed.
+      const child = <Animated.View style={{opacity}} />;
+
+      const root = await create(<Activity mode="visible">{child}</Activity>);
+      expect(root.toJSON()?.props.style.opacity).toBe(0.2);
+
+      await update(root, <Activity mode="hidden">{child}</Activity>);
+
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 50,
+        useNativeDriver: true,
+      }).start();
+      // $FlowFixMe[prop-missing]
+      NativeAnimatedModule.startAnimatingNode.mock.calls[0][3]({
+        finished: true,
+        value: 1,
+      });
+
+      await update(root, <Activity mode="visible">{child}</Activity>);
+      expect(root.toJSON()?.props.style.opacity).toBe(1);
     });
 
     it('calls stopAnimation callback with native value', () => {
