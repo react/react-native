@@ -31,7 +31,7 @@ javax-inject = "1"
 jsc-android = "2026004.0.1"
 jsr305 = "3.0.2"
 junit = "4.13.2"
-kotlin = "2.2.10"
+kotlin = "2.3.21"
 mockito = "3.12.4"
 mockito-kotlin = "3.2.0"
 nexus-publish = "2.0.0"
@@ -50,7 +50,7 @@ fmt="12.1.0"
 folly="2024.11.18.00"
 glog="0.3.5"
 gflags="2.2.0"
-nlohmannjson="3.11.2"
+nlohmannjson="3.12.0"
 
 [libraries]
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }

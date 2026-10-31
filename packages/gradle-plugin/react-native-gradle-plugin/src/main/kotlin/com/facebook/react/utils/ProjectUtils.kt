@@ -12,9 +12,11 @@ import com.facebook.react.model.ModelPackageJson
 import com.facebook.react.utils.PropertyUtils.EDGE_TO_EDGE_ENABLED
 import com.facebook.react.utils.PropertyUtils.HERMES_ENABLED
 import com.facebook.react.utils.PropertyUtils.REACT_NATIVE_ARCHITECTURES
+import com.facebook.react.utils.PropertyUtils.RESET_METRO_CACHE_BEFORE_BUNDLING
 import com.facebook.react.utils.PropertyUtils.SCOPED_EDGE_TO_EDGE_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_HERMES_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_REACT_NATIVE_ARCHITECTURES
+import com.facebook.react.utils.PropertyUtils.SCOPED_RESET_METRO_CACHE_BEFORE_BUNDLING
 import com.facebook.react.utils.PropertyUtils.SCOPED_STRICT_CXX_API_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_USE_THIRD_PARTY_JSC
 import com.facebook.react.utils.PropertyUtils.STRICT_CXX_API_ENABLED
@@ -71,6 +73,19 @@ internal object ProjectUtils {
             project.property(USE_THIRD_PARTY_JSC).toString().toBoolean()) ||
             (project.hasProperty(SCOPED_USE_THIRD_PARTY_JSC) &&
                 project.property(SCOPED_USE_THIRD_PARTY_JSC).toString().toBoolean())
+
+  internal val Project.shouldResetMetroCacheBeforeBundling: Boolean
+    get() {
+      val value =
+          when {
+            project.hasProperty(SCOPED_RESET_METRO_CACHE_BEFORE_BUNDLING) ->
+                project.property(SCOPED_RESET_METRO_CACHE_BEFORE_BUNDLING)
+            project.hasProperty(RESET_METRO_CACHE_BEFORE_BUNDLING) ->
+                project.property(RESET_METRO_CACHE_BEFORE_BUNDLING)
+            else -> return true
+          }
+      return value.toString().lowercase().toBooleanStrictOrNull() ?: true
+    }
 
   internal fun Project.needsCodegenFromPackageJson(rootProperty: DirectoryProperty): Boolean {
     val parsedPackageJson = readPackageJsonFile(this, rootProperty)

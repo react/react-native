@@ -91,6 +91,16 @@ private constructor(fabricUIManager: FabricUIManager) : HybridClassBase() {
     }
 
     @JvmStatic
+    external fun fabricUIManagerAliasUsesOwnedHandle(fabricUIManager: FabricUIManager): Boolean
+
+    @JvmStatic
+    external fun readFabricUIManagerFromContext(
+        fabricUIManager: FabricUIManager,
+        useGlobalRef: Boolean,
+        uninstall: Boolean,
+    ): FabricUIManager
+
+    @JvmStatic
     fun create(fabricUIManager: FabricUIManager): FabricMountingManagerTestHelper {
       return FabricMountingManagerTestHelper(fabricUIManager)
     }

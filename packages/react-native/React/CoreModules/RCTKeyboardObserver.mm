@@ -18,6 +18,31 @@ static NSDictionary *RCTParseKeyboardNotification(NSNotification *notification);
 @interface RCTKeyboardObserver () <NativeKeyboardObserverSpec>
 @end
 
+#if !TARGET_OS_TV
+@interface UIResponder (RCTKeyboardObserver)
+- (void)reactCollectFirstResponder:(NSMutableArray<UIResponder *> *)firstResponders;
+@end
+
+@implementation UIResponder (RCTKeyboardObserver)
+
+- (void)reactCollectFirstResponder:(NSMutableArray<UIResponder *> *)firstResponders
+{
+  if (self.isFirstResponder) {
+    [firstResponders addObject:self];
+  }
+}
+
+@end
+
+// UIKit sends a nil-targeted action to the first responder, if there is one, and then up its responder chain.
+static BOOL RCTHasFirstResponder()
+{
+  NSMutableArray<UIResponder *> *firstResponders = [NSMutableArray new];
+  [RCTSharedApplication() sendAction:@selector(reactCollectFirstResponder:) to:nil from:firstResponders forEvent:nil];
+  return firstResponders.count > 0;
+}
+#endif
+
 @implementation RCTKeyboardObserver
 
 RCT_EXPORT_MODULE()
@@ -69,8 +94,34 @@ RCT_EXPORT_MODULE()
     [self sendEventWithName:@ #EVENT body:RCTParseKeyboardNotification(notification)]; \
   }
 
+#if !TARGET_OS_TV
+// UIKit can post a show notification with an empty end frame while no view is first responder, for example when the
+// window is resized. No keyboard can be shown then, so it is sent as the matching hide.
+- (void)keyboardWillShow:(NSNotification *)notification
+{
+  if (self.callableJSModules == nil) {
+    return;
+  }
+  BOOL isShown =
+      !CGRectIsEmpty([notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue]) || RCTHasFirstResponder();
+  [self sendEventWithName:isShown ? @"keyboardWillShow" : @"keyboardWillHide"
+                     body:RCTParseKeyboardNotification(notification)];
+}
+
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+  if (self.callableJSModules == nil) {
+    return;
+  }
+  BOOL isShown =
+      !CGRectIsEmpty([notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue]) || RCTHasFirstResponder();
+  [self sendEventWithName:isShown ? @"keyboardDidShow" : @"keyboardDidHide"
+                     body:RCTParseKeyboardNotification(notification)];
+}
+#else
 IMPLEMENT_KEYBOARD_HANDLER(keyboardWillShow)
 IMPLEMENT_KEYBOARD_HANDLER(keyboardDidShow)
+#endif
 IMPLEMENT_KEYBOARD_HANDLER(keyboardWillHide)
 IMPLEMENT_KEYBOARD_HANDLER(keyboardDidHide)
 IMPLEMENT_KEYBOARD_HANDLER(keyboardWillChangeFrame)

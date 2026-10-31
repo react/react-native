@@ -591,7 +591,7 @@ function isResponderRelevantTopLevelType(topLevelType: string): boolean {
  */
 export function processResponderEvent(
   topLevelType: string,
-  eventTarget: EventTarget | null,
+  eventTarget: ?EventTarget,
   nativeEvent: {[string]: unknown},
 ): void {
   // Fast path: if this event isn't one the responder system cares about and

@@ -30,6 +30,8 @@
 #import <mutex>
 
 #import <sstream>
+#import <string>
+#import <type_traits>
 #import <vector>
 
 using namespace facebook;
@@ -48,44 +50,108 @@ namespace TurboModuleConvertUtils {
 /**
  * All static helper functions are ObjC++ specific.
  */
-static jsi::Value convertNSNumberToJSIBoolean(jsi::Runtime &runtime, NSNumber *value)
+static jsi::Value convertNSNumberToJSIBoolean(jsi::Runtime &runtime, __unsafe_unretained NSNumber *value)
 {
   return jsi::Value((bool)[value boolValue]);
 }
 
-static jsi::Value convertNSNumberToJSINumber(jsi::Runtime &runtime, NSNumber *value)
+static jsi::Value convertNSNumberToJSINumber(jsi::Runtime &runtime, __unsafe_unretained NSNumber *value)
 {
   return jsi::Value([value doubleValue]);
 }
 
-static jsi::String convertNSStringToJSIString(jsi::Runtime &runtime, NSString *value)
+// Creates a JS string or property name from the string's own ASCII or UTF-16 characters.
+template <typename T>
+static T convertNSStringToJSI(jsi::Runtime &runtime, __unsafe_unretained NSString *value)
 {
-  return jsi::String::createFromUtf8(runtime, ([value UTF8String] != nullptr) ? [value UTF8String] : "");
+  auto fromAscii = [&](const char *ascii, size_t length) {
+    if constexpr (std::is_same_v<T, jsi::PropNameID>) {
+      return jsi::PropNameID::forAscii(runtime, ascii, length);
+    } else {
+      return jsi::String::createFromAscii(runtime, ascii, length);
+    }
+  };
+  auto fromUtf16 = [&](const char16_t *utf16, size_t length) {
+    if constexpr (std::is_same_v<T, jsi::PropNameID>) {
+      return jsi::PropNameID::forUtf16(runtime, utf16, length);
+    } else {
+      return jsi::String::createFromUtf16(runtime, utf16, length);
+    }
+  };
+
+  if (value == nil) {
+    return fromAscii("", 0);
+  }
+
+  // Hand the JS runtime the string's own ASCII or UTF-16 characters when
+  // CoreFoundation can expose them, and copy them once otherwise.
+  auto string = (__bridge CFStringRef)value;
+  CFIndex length = CFStringGetLength(string);
+  if (const char *ascii = CFStringGetCStringPtr(string, kCFStringEncodingASCII)) {
+    return fromAscii(ascii, static_cast<size_t>(length));
+  }
+  if (const UniChar *characters = CFStringGetCharactersPtr(string)) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    return fromUtf16(reinterpret_cast<const char16_t *>(characters), static_cast<size_t>(length));
+  }
+  std::u16string utf16(length, u'\0');
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  CFStringGetCharacters(string, CFRangeMake(0, length), reinterpret_cast<UniChar *>(utf16.data()));
+  return fromUtf16(utf16.data(), utf16.size());
 }
 
-static jsi::Object convertNSDictionaryToJSIObject(jsi::Runtime &runtime, NSDictionary *value)
+// Doesn't retain `value`: the caller holds it, and containers hold what they contain while it is converted.
+static jsi::Value convertUnretainedObjCObjectToJSIValue(jsi::Runtime &runtime, __unsafe_unretained id value);
+
+// Reads a container's objects at once. They aren't retained, as the container holds them.
+template <typename ReadObjects>
+static std::vector<__unsafe_unretained id> getObjects(NSUInteger count, ReadObjects readObjects)
 {
+  std::vector<__unsafe_unretained id> objects(count);
+  readObjects(objects.data());
+  return objects;
+}
+
+static jsi::Object convertNSDictionaryToJSIObject(jsi::Runtime &runtime, __unsafe_unretained NSDictionary *value)
+{
+  NSUInteger count = value.count;
+  std::vector<__unsafe_unretained id> keysAndObjects = getObjects(count * 2, [&](__unsafe_unretained id *objects) {
+    [value getObjects:objects + count andKeys:objects count:count];
+  });
   jsi::Object result = jsi::Object(runtime);
-  for (NSString *k in value) {
-    result.setProperty(runtime, convertNSStringToJSIString(runtime, k), convertObjCObjectToJSIValue(runtime, value[k]));
+  for (NSUInteger i = 0; i < count; i++) {
+    result.setProperty(
+        runtime,
+        convertNSStringToJSI<jsi::PropNameID>(runtime, keysAndObjects[i]),
+        convertUnretainedObjCObjectToJSIValue(runtime, keysAndObjects[count + i]));
   }
   return result;
 }
 
-static jsi::Array convertNSArrayToJSIArray(jsi::Runtime &runtime, NSArray *value)
+static std::vector<__unsafe_unretained id> getObjects(__unsafe_unretained NSArray *value)
 {
-  jsi::Array result = jsi::Array(runtime, value.count);
-  for (size_t i = 0; i < value.count; i++) {
-    result.setValueAtIndex(runtime, i, convertObjCObjectToJSIValue(runtime, value[i]));
+  NSUInteger count = value.count;
+  return getObjects(
+      count, [&](__unsafe_unretained id *objects) { [value getObjects:objects range:NSMakeRange(0, count)]; });
+}
+
+static jsi::Array convertNSArrayToJSIArray(jsi::Runtime &runtime, __unsafe_unretained NSArray *value)
+{
+  std::vector<__unsafe_unretained id> objects = getObjects(value);
+  jsi::Array result = jsi::Array(runtime, objects.size());
+  for (size_t i = 0; i < objects.size(); i++) {
+    result.setValueAtIndex(runtime, i, convertUnretainedObjCObjectToJSIValue(runtime, objects[i]));
   }
   return result;
 }
 
-static std::vector<jsi::Value> convertNSArrayToStdVector(jsi::Runtime &runtime, NSArray *value)
+static std::vector<jsi::Value> convertNSArrayToStdVector(jsi::Runtime &runtime, __unsafe_unretained NSArray *value)
 {
+  std::vector<__unsafe_unretained id> objects = getObjects(value);
   std::vector<jsi::Value> result;
-  for (size_t i = 0; i < value.count; i++) {
-    result.emplace_back(convertObjCObjectToJSIValue(runtime, value[i]));
+  result.reserve(objects.size());
+  for (__unsafe_unretained id object : objects) {
+    result.emplace_back(convertUnretainedObjCObjectToJSIValue(runtime, object));
   }
   return result;
 }
@@ -131,8 +197,13 @@ static jsi::ArrayBuffer convertRCTArrayBufferToJSIArrayBuffer(jsi::Runtime &runt
 
 jsi::Value convertObjCObjectToJSIValue(jsi::Runtime &runtime, id value)
 {
+  return convertUnretainedObjCObjectToJSIValue(runtime, value);
+}
+
+static jsi::Value convertUnretainedObjCObjectToJSIValue(jsi::Runtime &runtime, __unsafe_unretained id value)
+{
   if ([value isKindOfClass:[NSString class]]) {
-    return convertNSStringToJSIString(runtime, (NSString *)value);
+    return convertNSStringToJSI<jsi::String>(runtime, value);
   } else if ([value isKindOfClass:[NSNumber class]]) {
     if ([value isKindOfClass:[@YES class]]) {
       return convertNSNumberToJSIBoolean(runtime, (NSNumber *)value);
@@ -150,10 +221,62 @@ jsi::Value convertObjCObjectToJSIValue(jsi::Runtime &runtime, id value)
   return jsi::Value::undefined();
 }
 
+static bool hasLoneSurrogate(const char16_t *chars, size_t length)
+{
+  bool hasSurrogate = false;
+  for (size_t i = 0; i < length; i++) {
+    hasSurrogate |= (chars[i] & 0xF800) == 0xD800;
+  }
+  if (!hasSurrogate) {
+    return false;
+  }
+  for (size_t i = 0; i < length; i++) {
+    if ((chars[i] & 0xFC00) == 0xD800 && i + 1 < length && (chars[i + 1] & 0xFC00) == 0xDC00) {
+      i++;
+    } else if ((chars[i] & 0xF800) == 0xD800) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static NSString *convertJSIStringToNSString(jsi::Runtime &runtime, const jsi::String &value)
 {
-  auto utf8 = value.utf8(runtime);
-  NSString *result = [[NSString alloc] initWithBytes:utf8.data() length:utf8.size() encoding:NSUTF8StringEncoding];
+  // Copy the string's own ASCII or UTF-16 characters instead of converting them to UTF-8 and back.
+  NSString *result = nil;
+  size_t chunkCount = 0;
+  bool needsUTF8 = false;
+  auto readChunk = [&](bool ascii, const void *data, size_t length) {
+    if (++chunkCount > 1) {
+      needsUTF8 = true;
+      return;
+    }
+    if (ascii) {
+      result = [[NSString alloc] initWithBytes:data length:length encoding:NSASCIIStringEncoding];
+      return;
+    }
+    const auto *chars = static_cast<const char16_t *>(data);
+    // Strings used to reach native code through UTF-8, and decoding UTF-8 into an NSString drops a
+    // byte order mark (U+FEFF) at the start. Drop it here too, so native code gets the same string.
+    if (length > 0 && chars[0] == 0xFEFF) {
+      chars++;
+      length--;
+    }
+    // A lone surrogate can't be encoded as UTF-8, and native code often needs UTF-8, so such strings
+    // keep going through UTF-8, which replaces it as before.
+    if (hasLoneSurrogate(chars, length)) {
+      needsUTF8 = true;
+      return;
+    }
+    result = [[NSString alloc] initWithCharacters:reinterpret_cast<const unichar *>(chars) length:length];
+  };
+  value.getStringData(runtime, readChunk);
+
+  // Strings that arrive in several chunks also take the UTF-8 path. No runtime here splits strings.
+  if (needsUTF8 || (result == nil && chunkCount > 0)) {
+    auto utf8 = value.utf8(runtime);
+    result = [[NSString alloc] initWithBytes:utf8.data() length:utf8.size() encoding:NSUTF8StringEncoding];
+  }
   return result != nil ? result : @"";
 }
 
@@ -617,7 +740,7 @@ jsi::Value ObjCTurboModule::convertReturnIdToJSIValue(
       break;
     }
     case StringKind: {
-      returnValue = convertNSStringToJSIString(runtime, (NSString *)result);
+      returnValue = convertNSStringToJSI<jsi::String>(runtime, (NSString *)result);
       break;
     }
     case ObjectKind: {
@@ -658,9 +781,8 @@ jsi::Value ObjCTurboModule::convertReturnIdToJSIValue(
  */
 NSString *ObjCTurboModule::getArgumentTypeName(jsi::Runtime &runtime, NSString *methodName, int argIndex)
 {
-  if (methodArgumentTypeNames_ == nullptr) {
-    NSMutableDictionary<NSString *, NSArray<NSString *> *> *methodArgumentTypeNames = [NSMutableDictionary new];
-
+  std::lock_guard<std::mutex> lock(methodInfosMutex_);
+  if (!argumentTypeNamesLoaded_) {
     unsigned int numberOfMethods;
     Class cls = [instance_ class];
     Method *methods = class_copyMethodList(object_getClass(cls), &numberOfMethods);
@@ -685,19 +807,21 @@ NSString *ObjCTurboModule::getArgumentTypeName(jsi::Runtime &runtime, NSString *
           [argumentTypes addObject:arguments[j].type];
         }
 
-        NSString *normalizedOtherMethodName = [otherMethodName componentsSeparatedByString:@":"][0];
-        methodArgumentTypeNames[normalizedOtherMethodName] = argumentTypes;
+        std::string_view otherMethodNameView = otherMethodName.UTF8String;
+        std::string_view normalizedOtherMethodName = otherMethodNameView.substr(0, otherMethodNameView.find(':'));
+        findOrCreateMethodInfo(normalizedOtherMethodName).argumentTypeNames = argumentTypes;
       }
 
       free(methods);
     }
 
-    methodArgumentTypeNames_ = methodArgumentTypeNames;
+    argumentTypeNamesLoaded_ = true;
   }
 
-  if (methodArgumentTypeNames_[methodName] != nullptr) {
-    assert([methodArgumentTypeNames_[methodName] count] > argIndex);
-    return methodArgumentTypeNames_[methodName][argIndex];
+  auto it = methodInfos_.find(std::string_view(methodName.UTF8String));
+  if (it != methodInfos_.end() && it->second.argumentTypeNames != nil) {
+    assert([it->second.argumentTypeNames count] > argIndex);
+    return it->second.argumentTypeNames[argIndex];
   }
 
   return nil;
@@ -796,18 +920,19 @@ void ObjCTurboModule::setInvocationArg(
     /**
      * Convert objects using RCTCxxConvert to structs.
      */
-    if ([objCArg isKindOfClass:[NSDictionary class]] && hasMethodArgConversionSelector(methodNameNSString, i)) {
+    if ([objCArg isKindOfClass:[NSDictionary class]]) {
       SEL methodArgConversionSelector = getMethodArgConversionSelector(methodNameNSString, i);
+      if (methodArgConversionSelector != nullptr) {
+        // Message dispatch logic from old infra (link:
+        // https://github.com/facebook/react-native/commit/6783694158057662fd7b11fc123c339b2b21bfe6#diff-263fc157dfce55895cdc16495b55d190R350)
+        RCTManagedPointer *(*convert)(id, SEL, id) = (__typeof__(convert))objc_msgSend;
+        RCTManagedPointer *box = convert([RCTCxxConvert class], methodArgConversionSelector, objCArg);
 
-      // Message dispatch logic from old infra (link:
-      // https://github.com/facebook/react-native/commit/6783694158057662fd7b11fc123c339b2b21bfe6#diff-263fc157dfce55895cdc16495b55d190R350)
-      RCTManagedPointer *(*convert)(id, SEL, id) = (__typeof__(convert))objc_msgSend;
-      RCTManagedPointer *box = convert([RCTCxxConvert class], methodArgConversionSelector, objCArg);
-
-      void *pointer = box.voidPointer;
-      [inv setArgument:&pointer atIndex:i + 2];
-      [retainedObjectsForInvocation addObject:box];
-      return;
+        void *pointer = box.voidPointer;
+        [inv setArgument:&pointer atIndex:i + 2];
+        [retainedObjectsForInvocation addObject:box];
+        return;
+      }
     }
   }
 
@@ -818,6 +943,26 @@ void ObjCTurboModule::setInvocationArg(
   if (objCArg != nullptr) {
     [retainedObjectsForInvocation addObject:objCArg];
   }
+}
+
+ObjCTurboModule::MethodInfo &ObjCTurboModule::findOrCreateMethodInfo(std::string_view methodName)
+{
+  auto it = methodInfos_.find(methodName);
+  if (it == methodInfos_.end()) {
+    it = methodInfos_.emplace(std::string(methodName), MethodInfo{}).first;
+  }
+  return it->second;
+}
+
+NSMethodSignature *ObjCTurboModule::getMethodSignature(const char *methodName, SEL selector)
+{
+  std::lock_guard<std::mutex> lock(methodInfosMutex_);
+  MethodInfo &methodInfo = findOrCreateMethodInfo(methodName);
+  if (methodInfo.signature == nil) {
+    const NSObject<RCTBridgeModule> *module = instance_;
+    methodInfo.signature = [module methodSignatureForSelector:selector];
+  }
+  return methodInfo.signature;
 }
 
 NSInvocation *ObjCTurboModule::createMethodInvocation(
@@ -837,8 +982,7 @@ NSInvocation *ObjCTurboModule::createMethodInvocation(
     TurboModulePerfLogger::asyncMethodCallArgConversionStart(moduleName, methodName);
   }
 
-  const NSObject<RCTBridgeModule> *module = instance_;
-  NSMethodSignature *methodSignature = [module methodSignatureForSelector:selector];
+  NSMethodSignature *methodSignature = getMethodSignature(methodName, selector);
   if (count > methodSignature.numberOfArguments - 2) {
     throw jsi::JSError(
         runtime,
@@ -964,36 +1108,28 @@ jsi::Value ObjCTurboModule::invokeObjCMethod(
 
 BOOL ObjCTurboModule::hasMethodArgConversionSelector(NSString *methodName, size_t argIndex)
 {
-  return (methodArgConversionSelectors_ != nullptr) && (methodArgConversionSelectors_[methodName] != nullptr) &&
-      ![methodArgConversionSelectors_[methodName][argIndex] isEqual:(id)kCFNull];
+  return getMethodArgConversionSelector(methodName, argIndex) != nullptr;
 }
 
 SEL ObjCTurboModule::getMethodArgConversionSelector(NSString *methodName, size_t argIndex)
 {
-  assert(hasMethodArgConversionSelector(methodName, argIndex));
-  return (SEL)((NSValue *)methodArgConversionSelectors_[methodName][argIndex]).pointerValue;
+  std::lock_guard<std::mutex> lock(methodInfosMutex_);
+  auto it = methodInfos_.find(std::string_view(methodName.UTF8String));
+  if (it == methodInfos_.end() || argIndex >= it->second.argConversionSelectors.size()) {
+    return nullptr;
+  }
+  return it->second.argConversionSelectors[argIndex];
 }
 
 void ObjCTurboModule::setMethodArgConversionSelector(NSString *methodName, size_t argIndex, NSString *fnName)
 {
-  if (methodArgConversionSelectors_ == nullptr) {
-    methodArgConversionSelectors_ = [NSMutableDictionary new];
+  const char *methodNameUTF8 = methodName.UTF8String;
+  std::lock_guard<std::mutex> lock(methodInfosMutex_);
+  std::vector<SEL> &selectors = findOrCreateMethodInfo(methodNameUTF8).argConversionSelectors;
+  if (selectors.empty()) {
+    selectors.resize(methodMap_.at(methodNameUTF8).argCount, nullptr);
   }
-
-  if (methodArgConversionSelectors_[methodName] == nullptr) {
-    auto metaData = methodMap_.at([methodName UTF8String]);
-    auto argCount = metaData.argCount;
-
-    methodArgConversionSelectors_[methodName] = [NSMutableArray arrayWithCapacity:argCount];
-    for (int i = 0; i < argCount; i += 1) {
-      [methodArgConversionSelectors_[methodName] addObject:(id)kCFNull];
-    }
-  }
-
-  SEL selector = NSSelectorFromString(fnName);
-  NSValue *selectorValue = [NSValue valueWithPointer:selector];
-
-  methodArgConversionSelectors_[methodName][argIndex] = selectorValue;
+  selectors.at(argIndex) = NSSelectorFromString(fnName);
 }
 
 void ObjCTurboModule::setEventEmitterCallback(EventEmitterCallback eventEmitterCallback)

@@ -15,7 +15,6 @@
 #include <React/RCTBridgeProxy.h>
 #include <React/RCTComponentData.h>
 #include <React/RCTEventDispatcher.h>
-#include <React/RCTModuleData.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/legacyviewmanagerinterop/LegacyViewManagerInteropState.h>
 #include <react/utils/ContextContainer.h>

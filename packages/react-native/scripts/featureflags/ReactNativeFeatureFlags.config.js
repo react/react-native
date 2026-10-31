@@ -374,17 +374,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableFontScaleChangesUpdatingLayout: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2025-04-07',
-        description:
-          'Enables font scale changes updating layout for measurable nodes.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     enableIOSCompressedTextFrameAdjustment: {
       defaultValue: false,
       metadata: {
@@ -803,6 +792,17 @@ const definitions: FeatureFlagDefinitions = {
         purpose: 'experimentation',
       },
       ossReleaseStage: 'canary',
+    },
+    keepTimersRunningWhileHostPausedAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-22',
+        description:
+          'Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
     },
     optimizedAnimatedPropUpdates: {
       defaultValue: false,

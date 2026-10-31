@@ -142,12 +142,6 @@ typedef void (^RCTConnectedHandler)(void);
 
 @end
 
-@interface RCTBridge (RCTDevSettings)
-
-@property (nonatomic, readonly) RCTDevSettings *devSettings;
-
-@end
-
 @interface RCTBridgeProxy (RCTDevSettings)
 
 @property (nonatomic, readonly) RCTDevSettings *devSettings;

@@ -5,11 +5,56 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/renderer/components/scrollview/BaseScrollViewProps.h>
 #include <react/renderer/components/scrollview/ScrollViewState.h>
+#include <react/renderer/core/RawPropsParser.h>
 
 #include <gtest/gtest.h>
 
 namespace facebook::react {
+
+namespace {
+
+BaseScrollViewProps parseScrollViewProps(
+    const folly::dynamic& value,
+    const BaseScrollViewProps& sourceProps = BaseScrollViewProps{}) {
+  ContextContainer contextContainer{};
+  PropsParserContext context{-1, contextContainer};
+  RawProps raw{value};
+  RawPropsParser parser{};
+  parser.prepare<BaseScrollViewProps>();
+  raw.parse(parser);
+  return {context, sourceProps, raw};
+}
+
+} // namespace
+
+TEST(ScrollViewPropsTest, safeAreaPaddingRequiresExplicitOptIn) {
+  EXPECT_FALSE(BaseScrollViewProps{}.padsContentForSafeArea);
+  for (const auto* behavior :
+       {"never", "automatic", "scrollableAxes", "always"}) {
+    auto props = parseScrollViewProps(
+        folly::dynamic::object("contentInsetAdjustmentBehavior", behavior));
+    EXPECT_FALSE(props.padsContentForSafeArea);
+  }
+}
+
+TEST(ScrollViewPropsTest, safeAreaPaddingCanBeEnabledAndDisabled) {
+  auto enabled = parseScrollViewProps(
+      folly::dynamic::object("padsContentForSafeArea", true));
+  EXPECT_TRUE(enabled.padsContentForSafeArea);
+  auto disabled = parseScrollViewProps(
+      folly::dynamic::object("padsContentForSafeArea", false), enabled);
+  EXPECT_FALSE(disabled.padsContentForSafeArea);
+}
+
+TEST(ScrollViewPropsTest, safeAreaPaddingResetsToDefault) {
+  auto enabled = parseScrollViewProps(
+      folly::dynamic::object("padsContentForSafeArea", true));
+  auto reset = parseScrollViewProps(
+      folly::dynamic::object("padsContentForSafeArea", nullptr), enabled);
+  EXPECT_FALSE(reset.padsContentForSafeArea);
+}
 
 TEST(ScrollViewStateTest, defaultConstructor) {
   ScrollViewState state;

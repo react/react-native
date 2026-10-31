@@ -50,6 +50,7 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
     'aria-live': ariaLive,
+    'aria-modal': ariaModal,
     'aria-selected': ariaSelected,
     'aria-valuemax': ariaValueMax,
     'aria-valuemin': ariaValueMin,
@@ -74,6 +75,10 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
   if (ariaLive !== undefined) {
     resolvedProps.accessibilityLiveRegion =
       ariaLive === 'off' ? 'none' : ariaLive;
+  }
+
+  if (ariaModal !== undefined) {
+    resolvedProps.accessibilityViewIsModal = ariaModal;
   }
 
   if (ariaHidden !== undefined) {

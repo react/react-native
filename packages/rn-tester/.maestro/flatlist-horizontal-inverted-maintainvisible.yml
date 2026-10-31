@@ -3,7 +3,7 @@
 # In inverted mode, prepending adds items to the right end
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

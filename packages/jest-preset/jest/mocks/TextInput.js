@@ -18,6 +18,7 @@ const MockNativeMethods = jest.requireActual<TMockNativeMethods>(
   '../MockNativeMethods',
 ).default;
 
+// $FlowFixMe[incompatible-type]
 const TextInput = mockComponent(
   'react-native/Libraries/Components/TextInput/TextInput',
   {

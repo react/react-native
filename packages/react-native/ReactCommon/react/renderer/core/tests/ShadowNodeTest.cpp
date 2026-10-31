@@ -17,6 +17,29 @@
 
 using namespace facebook::react;
 
+TEST(ShadowNodeTraitsTest, constexprMutation) {
+  static_assert(ShadowNodeTraits{}.get() == ShadowNodeTraits::Trait::None);
+  static_assert(ShadowNodeTraits{}.check(ShadowNodeTraits::Trait::None));
+
+  constexpr auto traits = [] {
+    auto result = ShadowNodeTraits{};
+    result.set(ShadowNodeTraits::Trait::ViewKind);
+    result.set(ShadowNodeTraits::Trait::FormsView);
+    result.unset(ShadowNodeTraits::Trait::ViewKind);
+    return result;
+  }();
+
+  static_assert(traits.get() == ShadowNodeTraits::Trait::FormsView);
+  static_assert(traits.check(ShadowNodeTraits::Trait::FormsView));
+  static_assert(!traits.check(ShadowNodeTraits::Trait::ViewKind));
+
+  auto runtimeTraits = traits;
+  runtimeTraits.set(ShadowNodeTraits::Trait::Hidden);
+  EXPECT_TRUE(runtimeTraits.check(ShadowNodeTraits::Trait::Hidden));
+  runtimeTraits.unset(ShadowNodeTraits::Trait::FormsView);
+  EXPECT_EQ(runtimeTraits.get(), ShadowNodeTraits::Trait::Hidden);
+}
+
 class ShadowNodeTest : public testing::Test {
  protected:
   ShadowNodeTest()
@@ -175,6 +198,18 @@ class ShadowNodeTest : public testing::Test {
 
   SurfaceId surfaceId_ = 1;
 };
+
+TEST_F(ShadowNodeTest, constexprBaseTraits) {
+  static_assert(
+      ShadowNode::BaseTraits().get() == ShadowNodeTraits::Trait::None);
+
+  constexpr auto traits = TestShadowNode::BaseTraits();
+  static_assert(traits.check(ShadowNodeTraits::Trait::ViewKind));
+  static_assert(traits.check(ShadowNodeTraits::Trait::FormsStackingContext));
+  static_assert(traits.check(ShadowNodeTraits::Trait::FormsView));
+
+  EXPECT_EQ(traits.get(), componentDescriptor_.getTraits().get());
+}
 
 TEST_F(ShadowNodeTest, handleShadowNodeCreation) {
   EXPECT_FALSE(nodeZ_->getSealed());

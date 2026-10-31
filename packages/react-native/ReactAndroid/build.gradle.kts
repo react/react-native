@@ -11,6 +11,7 @@ import com.facebook.react.tasks.internal.*
 import com.facebook.react.tasks.internal.utils.*
 import de.undercouch.gradle.tasks.download.Download
 import java.nio.file.Paths
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -575,8 +576,8 @@ android {
 
   kotlin {
     compilerOptions {
-      // Using '-Xjvm-default=all' to generate default java methods for interfaces
-      freeCompilerArgs = listOf("-Xjvm-default=all")
+      // Generate default java methods for interfaces
+      jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
       // Using -PenableWarningsAsErrors=true prop to enable allWarningsAsErrors
       allWarningsAsErrors = enableWarningsAsErrors()
     }

@@ -36,6 +36,7 @@ SurfaceId NativeFantom::startSurface(
     double viewportWidth,
     double viewportHeight,
     double devicePixelRatio,
+    double fontScale,
     double viewportOffsetX,
     double viewportOffsetY) {
   SurfaceId surfaceId = nextSurfaceId_;
@@ -46,6 +47,7 @@ SurfaceId NativeFantom::startSurface(
       static_cast<float>(viewportHeight),
       surfaceId,
       static_cast<float>(devicePixelRatio),
+      static_cast<float>(fontScale),
       static_cast<float>(viewportOffsetX),
       static_cast<float>(viewportOffsetY));
   return surfaceId;

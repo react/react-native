@@ -27,6 +27,7 @@ const MockNativeMethods = jest.requireActual<TMockNativeMethods>(
 
 const RCTScrollView = requireNativeComponent<ScrollViewProps>('RCTScrollView');
 
+// $FlowFixMe[incompatible-type]
 const BaseComponent = mockComponent(
   'react-native/Libraries/Components/ScrollView/ScrollView',
   {

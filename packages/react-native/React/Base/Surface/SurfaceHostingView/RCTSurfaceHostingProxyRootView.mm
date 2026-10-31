@@ -13,7 +13,6 @@
 #import "RCTBridge.h"
 #import "RCTLog.h"
 #import "RCTPerformanceLogger.h"
-#import "RCTProfile.h"
 #import "RCTRootViewDelegate.h"
 #import "RCTSurface.h"
 #import "UIView+React.h"
@@ -118,7 +117,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 {
   [super surface:surface didChangeStage:stage];
   if (RCTSurfaceStageIsRunning(stage)) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [_bridge.performanceLogger markStopForTag:RCTPLTTI];
+#pragma clang diagnostic pop
 #if TARGET_OS_TV
     dispatch_async(dispatch_get_main_queue(), ^{
       self.reactPreferredFocusedView = nil;

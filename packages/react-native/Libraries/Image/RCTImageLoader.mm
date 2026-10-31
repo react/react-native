@@ -32,7 +32,7 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
   return image.images ? image.images.count * singleImageBytes : singleImageBytes;
 }
 
-static auto currentRequestCount = std::atomic<uint64_t>(0);
+static constinit auto currentRequestCount = std::atomic<uint64_t>(0);
 
 static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLResponse *response)
 {
@@ -1321,22 +1321,6 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
 {
   resolve([self getImageCacheStatus:uris]);
 }
-@end
-
-/**
- * DEPRECATED!! DO NOT USE
- * Instead use `[_bridge moduleForClass:[RCTImageLoader class]]`
- */
-@implementation RCTBridge (RCTImageLoader)
-
-- (RCTImageLoader *)imageLoader
-{
-  RCTLogWarn(
-      @"Calling bridge.imageLoader is deprecated and will not work in newer versions of RN. Please update to the "
-       "moduleForClass API or turboModuleRegistry API.");
-  return [self moduleForClass:[RCTImageLoader class]];
-}
-
 @end
 
 @implementation RCTBridgeProxy (RCTImageLoader)

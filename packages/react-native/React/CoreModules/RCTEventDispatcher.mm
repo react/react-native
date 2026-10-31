@@ -9,7 +9,6 @@
 
 #import <React/RCTAssert.h>
 #import <React/RCTComponentEvent.h>
-#import <React/RCTProfile.h>
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModule.h>
 

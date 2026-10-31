@@ -67,7 +67,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 
   // `role` wins over the legacy `accessibilityRole` when both are set, matching
   // how the traits themselves are resolved.
-  if (props.role != Role::None) {
+  if (props.role.value_or(Role::None) != Role::None) {
     static const std::unordered_set<Role> interactiveRoles{
         Role::Button,
         Role::Checkbox,
@@ -82,7 +82,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
         Role::Switch,
         Role::Tab,
         Role::Treeitem};
-    return interactiveRoles.contains(props.role);
+    return interactiveRoles.contains(*props.role);
   }
 
   static const std::unordered_set<std::string_view> interactiveAccessibilityRoles{
@@ -1690,8 +1690,9 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
   }
 
   NSMutableArray *valueComponents = [NSMutableArray new];
-  NSString *roleString = (props.role != Role::None) ? [NSString stringWithUTF8String:toString(props.role).c_str()]
-                                                    : [NSString stringWithUTF8String:props.accessibilityRole.c_str()];
+  NSString *roleString = (props.role.value_or(Role::None) != Role::None)
+      ? [NSString stringWithUTF8String:toString(*props.role).c_str()]
+      : [NSString stringWithUTF8String:props.accessibilityRole.c_str()];
 
   // In iOS, checkbox and radio buttons aren't recognized as traits. However,
   // because our apps use checkbox and radio buttons often, we should announce

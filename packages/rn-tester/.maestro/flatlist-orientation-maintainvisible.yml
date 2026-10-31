@@ -7,7 +7,7 @@
 # to work correctly after the change.
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<089745d80569272425613b8ac8b20779>>
+ * @generated SignedSource<<582161393da4471f85dc394e356e68db>>
  */
 
 /**
@@ -98,8 +98,6 @@ class NativeReactNativeFeatureFlags
 
   bool enableFollowUpMountItemDispatchAndroid(jsi::Runtime& runtime);
 
-  bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
-
   bool enableIOSCompressedTextFrameAdjustment(jsi::Runtime& runtime);
 
   bool enableIOSPartialTextSelection(jsi::Runtime& runtime);
@@ -177,6 +175,8 @@ class NativeReactNativeFeatureFlags
   bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
 
   bool fuseboxWebSocketEventsEnabled(jsi::Runtime& runtime);
+
+  bool keepTimersRunningWhileHostPausedAndroid(jsi::Runtime& runtime);
 
   bool optimizedAnimatedPropUpdates(jsi::Runtime& runtime);
 

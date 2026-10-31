@@ -173,10 +173,10 @@ function _getFilterAmount(filterName: string, filterArgs: unknown): ?number {
     case 'opacity':
     case 'saturate':
     case 'sepia':
-      if (
-        (Boolean(unit) && unit !== '%' && unit !== 'px') ||
-        filterArgAsNumber < 0
-      ) {
+      if (typeof filterArgs === 'string' && filterArgs.trim() === '') {
+        return 1;
+      }
+      if ((Boolean(unit) && unit !== '%') || filterArgAsNumber < 0) {
         return undefined;
       }
       if (unit === '%') {

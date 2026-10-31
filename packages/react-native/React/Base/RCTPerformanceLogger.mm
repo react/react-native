@@ -12,14 +12,12 @@
 #import "RCTLog.h"
 #import "RCTPerformanceLogger.h"
 #import "RCTPerformanceLoggerLabels.h"
-#import "RCTProfile.h"
 #import "RCTRootView.h"
 
 using namespace facebook::react;
 
 @interface RCTPerformanceLogger () {
   int64_t _data[RCTPLSize][2];
-  NSInteger _cookies[RCTPLSize];
 }
 
 @end
@@ -46,12 +44,6 @@ static const std::unordered_map<RCTPLTag, ReactMarker::ReactMarkerId> &getStopTa
 
 - (void)markStartForTag:(RCTPLTag)tag
 {
-#if RCT_PROFILE
-  if (RCTProfileIsProfiling()) {
-    NSString *label = RCTPLLabelForTag(tag);
-    _cookies[tag] = RCTProfileBeginAsyncEvent(RCTProfileTagAlways, label, nil);
-  }
-#endif
   const NSTimeInterval currentTime = CACurrentMediaTime() * 1000;
   _data[tag][0] = currentTime;
   _data[tag][1] = 0;
@@ -65,12 +57,6 @@ static const std::unordered_map<RCTPLTag, ReactMarker::ReactMarkerId> &getStopTa
 
 - (void)markStopForTag:(RCTPLTag)tag
 {
-#if RCT_PROFILE
-  if (RCTProfileIsProfiling()) {
-    NSString *label = RCTPLLabelForTag(tag);
-    RCTProfileEndAsyncEvent(RCTProfileTagAlways, @"native", _cookies[tag], label, @"RCTPerformanceLogger");
-  }
-#endif
   const NSTimeInterval currentTime = CACurrentMediaTime() * 1000;
   if (_data[tag][0] != 0 && _data[tag][1] == 0) {
     _data[tag][1] = currentTime;

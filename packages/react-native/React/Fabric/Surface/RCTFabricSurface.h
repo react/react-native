@@ -10,7 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCTBridge;
 @class RCTSurfaceView;
 @class RCTSurfacePresenter;
 
@@ -115,17 +114,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCTFabricSurface (Internal)
 
 - (const facebook::react::SurfaceHandler &)surfaceHandler;
-
-@end
-
-@interface RCTFabricSurface (Deprecated)
-
-/**
- * Deprecated. Use `initWithSurfacePresenter:moduleName:initialProperties` instead.
- */
-- (instancetype)initWithBridge:(RCTBridge *)bridge
-                    moduleName:(NSString *)moduleName
-             initialProperties:(NSDictionary *)initialProperties;
 
 @end
 

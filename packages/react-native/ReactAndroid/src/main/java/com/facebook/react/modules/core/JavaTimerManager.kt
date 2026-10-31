@@ -20,6 +20,7 @@ import com.facebook.react.common.SystemClock.nanoTime
 import com.facebook.react.common.SystemClock.uptimeMillis
 import com.facebook.react.common.annotations.internal.LegacyArchitecture
 import com.facebook.react.devsupport.interfaces.DevSupportManager
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.jstasks.HeadlessJsTaskContext
 import com.facebook.react.jstasks.HeadlessJsTaskEventListener
 import java.util.PriorityQueue
@@ -50,6 +51,7 @@ public open class JavaTimerManager(
   private val idleCallbackGuard = Any()
   private val timerIdsToTimers: SparseArray<Timer> = SparseArray()
   private val isPaused = AtomicBoolean(true)
+  private val isDestroyed = AtomicBoolean(false)
   private val isRunningTasks = AtomicBoolean(false)
   private val timerFrameCallback = TimerFrameCallback()
   private val idleFrameCallback = IdleFrameCallback()
@@ -65,6 +67,15 @@ public open class JavaTimerManager(
   init {
     reactApplicationContext.addLifecycleEventListener(this)
     HeadlessJsTaskContext.getInstance(reactApplicationContext).addTaskEventListener(this)
+    if (ReactNativeFeatureFlags.keepTimersRunningWhileHostPausedAndroid()) {
+      // The host may never resume (e.g. no React screen is shown), so start timers here.
+      UiThreadUtil.runOnUiThread {
+        if (!isDestroyed.get()) {
+          setChoreographerCallback()
+          maybeSetChoreographerIdleCallback()
+        }
+      }
+    }
   }
 
   override fun onHostPause() {
@@ -105,9 +116,20 @@ public open class JavaTimerManager(
   public open fun onInstanceDestroy() {
     HeadlessJsTaskContext.getInstance(reactApplicationContext).removeTaskEventListener(this)
     reactApplicationContext.removeLifecycleEventListener(this)
+    isDestroyed.set(true)
     clearFrameCallback()
     clearChoreographerIdleCallback()
   }
+
+  // Timers always stop once the instance is destroyed: its JS thread and runtime are gone, so
+  // headless tasks left active on its context can no longer run JS. With the flag, timers
+  // otherwise follow the instance lifetime like iOS, so JS work keeps progressing while no React
+  // screen is resumed.
+  private fun isStopped(): Boolean =
+      isDestroyed.get() ||
+          (!ReactNativeFeatureFlags.keepTimersRunningWhileHostPausedAndroid() &&
+              isPaused.get() &&
+              !isRunningTasks.get())
 
   @LegacyArchitecture
   private fun maybeSetChoreographerIdleCallback() {
@@ -120,7 +142,7 @@ public open class JavaTimerManager(
 
   @LegacyArchitecture
   private fun maybeIdleCallback() {
-    if (isPaused.get() && !isRunningTasks.get()) {
+    if (isStopped()) {
       clearFrameCallback()
     }
   }
@@ -136,8 +158,7 @@ public open class JavaTimerManager(
   }
 
   private fun clearFrameCallback() {
-    val headlessJsTaskContext = HeadlessJsTaskContext.getInstance(reactApplicationContext)
-    if (frameCallbackPosted && isPaused.get() && !headlessJsTaskContext.hasActiveTasks()) {
+    if (frameCallbackPosted && isStopped()) {
       reactChoreographer.removeFrameCallback(
           ReactChoreographer.CallbackType.TIMERS_EVENTS,
           timerFrameCallback,
@@ -286,7 +307,7 @@ public open class JavaTimerManager(
 
     /** Calls all timers that have expired since the last time this frame callback was called. */
     override fun doFrame(frameTimeNanos: Long) {
-      if (isPaused.get() && !isRunningTasks.get()) {
+      if (isStopped()) {
         return
       }
       val frameTimeMillis = frameTimeNanos / 1000000
@@ -318,7 +339,7 @@ public open class JavaTimerManager(
 
   private inner class IdleFrameCallback : Choreographer.FrameCallback {
     override fun doFrame(frameTimeNanos: Long) {
-      if (isPaused.get() && !isRunningTasks.get()) {
+      if (isStopped()) {
         return
       }
 

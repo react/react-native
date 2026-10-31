@@ -16,6 +16,7 @@
 #include <react/renderer/components/text/RawTextComponentDescriptor.h>
 #include <react/renderer/components/text/SelectableParagraphComponentDescriptor.h>
 #include <react/renderer/components/text/TextComponentDescriptor.h>
+#include <react/renderer/components/view/LayoutConformanceComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 
 namespace facebook::react {
@@ -27,6 +28,7 @@ inline ComponentRegistryFactory getDefaultComponentRegistryFactory()
     static auto providerRegistry = []() {
       auto providerRegistry = std::make_shared<ComponentDescriptorProviderRegistry>();
       providerRegistry->add(concreteComponentDescriptorProvider<ImageComponentDescriptor>());
+      providerRegistry->add(concreteComponentDescriptorProvider<LayoutConformanceComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<ParagraphComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<ScrollViewComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<RawTextComponentDescriptor>());

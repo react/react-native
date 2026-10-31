@@ -12,8 +12,6 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/NSDataBigString.h>
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Inspector.h>
-#import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBridgeModuleDecorator.h>
@@ -29,7 +27,6 @@
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTLogBox.h>
-#import <React/RCTModuleData.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTRedBox.h>
 #import <React/RCTSurfacePresenter.h>
@@ -329,7 +326,6 @@ using namespace facebook::react;
   bridgeProxy.jsCallInvoker = jsCallInvoker;
   bridgeProxy.performanceLogger = _performanceLogger;
   _bridgeProxy = bridgeProxy;
-  [RCTBridge setCurrentBridge:(RCTBridge *)bridgeProxy];
 
   // Set up TurboModules
   _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridgeProxy:bridgeProxy
@@ -556,7 +552,10 @@ using namespace facebook::react;
     return;
   }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   NSArray<NSString *> *modulesInOldArchMode = [getModulesLoadedWithOldArch() copy];
+#pragma clang diagnostic pop
   if (modulesInOldArchMode.count > 0) {
     NSMutableString *moduleList = [NSMutableString new];
     for (NSString *moduleName in modulesInOldArchMode) {

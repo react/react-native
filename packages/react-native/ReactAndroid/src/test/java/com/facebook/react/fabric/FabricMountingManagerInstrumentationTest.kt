@@ -252,7 +252,7 @@ class FabricMountingManagerInstrumentationTest {
   }
 
   private fun mountPaddedView(
-      fixTextLayoutOnPixelDensityChange: Boolean
+      fixTextLayoutOnPixelDensityChange: Boolean,
   ): Pair<FabricMountingManagerTestHelper, ReactViewGroup> {
     val fabricUIManager = createFabricUIManager(listOf(PaddingViewManager()))
     val helper = FabricMountingManagerTestHelper.create(fabricUIManager)
@@ -281,7 +281,7 @@ class FabricMountingManagerInstrumentationTest {
     ReactNativeFeatureFlagsCxxInterop.dangerouslyForceOverride(
         object : ReactNativeFeatureFlagsDefaults() {
           override fun enableMountingCoordinatorPullModelAndroid(): Boolean = true
-        }
+        },
     )
   }
 
@@ -501,7 +501,7 @@ class FabricMountingManagerInstrumentationTest {
           override fun enablePropsUpdateReconciliationAndroid(): Boolean = pullModel
 
           override fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = pullModel
-        }
+        },
     )
   }
 
@@ -580,6 +580,71 @@ class FabricMountingManagerInstrumentationTest {
             rootMeasureSpec,
         )
     return surfaceId to { fabricUIManager.stopSurface(surfaceId) }
+  }
+
+  @Test
+  fun native_fabricUIManagerContext_aliasUsesOwnedGlobalHandle() {
+    val fabricUIManager = createFabricUIManager()
+    registerBinding(fabricUIManager)
+
+    assertThat(FabricMountingManagerTestHelper.fabricUIManagerAliasUsesOwnedHandle(fabricUIManager))
+        .isTrue()
+    assertThat(
+            FabricMountingManagerTestHelper.readFabricUIManagerFromContext(
+                fabricUIManager,
+                useGlobalRef = false,
+                uninstall = false,
+            ),
+        )
+        .isSameAs(fabricUIManager)
+  }
+
+  @Test
+  fun native_fabricUIManagerContext_legacyCopiesLeaveAliasValid() {
+    val fabricUIManager = createFabricUIManager()
+    registerBinding(fabricUIManager)
+
+    repeat(64) {
+      assertThat(
+              FabricMountingManagerTestHelper.readFabricUIManagerFromContext(
+                  fabricUIManager,
+                  useGlobalRef = true,
+                  uninstall = false,
+              ),
+          )
+          .isSameAs(fabricUIManager)
+      assertThat(
+              FabricMountingManagerTestHelper.fabricUIManagerAliasUsesOwnedHandle(fabricUIManager),
+          )
+          .isTrue()
+      assertThat(
+              FabricMountingManagerTestHelper.readFabricUIManagerFromContext(
+                  fabricUIManager,
+                  useGlobalRef = false,
+                  uninstall = false,
+              ),
+          )
+          .isSameAs(fabricUIManager)
+    }
+  }
+
+  @Test
+  fun native_fabricUIManagerContext_readsSurviveUninstall() {
+    for (useGlobalRef in listOf(false, true)) {
+      repeat(8) {
+        val fabricUIManager = createFabricUIManager()
+        registerBinding(fabricUIManager)
+
+        assertThat(
+                FabricMountingManagerTestHelper.readFabricUIManagerFromContext(
+                    fabricUIManager,
+                    useGlobalRef = useGlobalRef,
+                    uninstall = true,
+                ),
+            )
+            .isSameAs(fabricUIManager)
+      }
+    }
   }
 
   @Test

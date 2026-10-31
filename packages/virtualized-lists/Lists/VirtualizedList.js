@@ -1482,6 +1482,7 @@ class VirtualizedList extends StateSafePureComponent<
   _hasWarned: {[string]: boolean} = {};
   _headerLength = 0;
   _hiPriInProgress: boolean = false; // flag to prevent infinite hiPri cell limit update
+  _hiPriUpdateId: number = 0;
   _indicesToKeys: Map<number, string> = new Map();
   _isAncestorSuppressed: boolean = false;
   _lastFocusedCellKey: ?string = null;
@@ -2094,7 +2095,12 @@ class VirtualizedList extends StateSafePureComponent<
         clearTimeout(this._updateCellsToRenderTimeoutID);
         this._updateCellsToRenderTimeoutID = null;
       }
-      this._updateCellsToRender();
+      const hiPriUpdateId = ++this._hiPriUpdateId;
+      this._updateCellsToRender(() => {
+        if (this._hiPriUpdateId === hiPriUpdateId) {
+          this._hiPriInProgress = false;
+        }
+      });
       return;
     } else {
       if (this._updateCellsToRenderTimeoutID == null) {
@@ -2200,7 +2206,7 @@ class VirtualizedList extends StateSafePureComponent<
     this.props.onMomentumScrollEnd && this.props.onMomentumScrollEnd(e);
   };
 
-  _updateCellsToRender = () => {
+  _updateCellsToRender = (onUpdateComplete?: () => void) => {
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     this._notifyCrossOrientationChildren();
 
@@ -2217,9 +2223,7 @@ class VirtualizedList extends StateSafePureComponent<
       this._listMetrics.getContentLength() > 0 &&
       VirtualizedList._computeCellsUpdate(this, this.props, this.state) == null
     ) {
-      // No update means no componentDidUpdate to reset this, which would
-      // push the next hiPri update onto the batching timer.
-      this._hiPriInProgress = false;
+      onUpdateComplete?.();
       return;
     }
 
@@ -2227,7 +2231,7 @@ class VirtualizedList extends StateSafePureComponent<
     this.setState<'cellsAroundViewport' | 'renderMask'>((state, props) => {
       this._hasPendingStateUpdate = false;
       return VirtualizedList._computeCellsUpdate(this, props, state);
-    });
+    }, onUpdateComplete);
   };
 
   _createViewToken = (

@@ -3,7 +3,7 @@
 # promptly, blocking render window updates. All prepends fired without waiting.
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

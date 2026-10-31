@@ -297,7 +297,7 @@ declare class rxjs$Subject<T>
   hasError: boolean;
   thrownError: any;
   constructor(): void;
-  static create: Function;
+  static create: any;
   lift<R>(operator: rxjs$Operator<T, R>): rxjs$Observable<R>;
   next(value?: T): void;
   error(err: any): void;

@@ -12,7 +12,6 @@
 
 #import "RCTAssert.h"
 #import "RCTFrameUpdate.h"
-#import "RCTProfile.h"
 
 #define RCTAssertRunLoop() \
   RCTAssert(_runLoop == [NSRunLoop currentRunLoop], @"This method must be called on the CADisplayLink run loop")
@@ -81,8 +80,6 @@
 {
   RCTAssertRunLoop();
 
-  RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, @"-[RCTDisplayLink _jsThreadUpdate:]", nil);
-
   // This always runs on the JS thread run loop, which is the queue the frame
   // update observer expects its callbacks on, so dispatch inline.
   RCTFrameUpdate *frameUpdate = [[RCTFrameUpdate alloc] initWithDisplayLink:displayLink];
@@ -91,10 +88,6 @@
   }
 
   [self updateJSDisplayLinkState];
-
-  RCTProfileImmediateEvent(RCTProfileTagAlways, @"JS Thread Tick", displayLink.timestamp, 'g');
-
-  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"objc_call");
 }
 
 - (void)updateJSDisplayLinkState

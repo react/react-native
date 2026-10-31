@@ -489,9 +489,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
         contentDescription.add(text.asString());
       }
     }
-    if (!contentDescription.isEmpty()) {
-      view.setContentDescription(TextUtils.join(", ", contentDescription));
-    }
+    view.setContentDescription(
+        contentDescription.isEmpty() ? null : TextUtils.join(", ", contentDescription));
   }
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_ACTIONS)
@@ -505,15 +504,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_VALUE)
   public void setAccessibilityValue(T view, ReadableMap accessibilityValue) {
-    if (accessibilityValue == null) {
-      view.setTag(R.id.accessibility_value, null);
-      view.setContentDescription(null);
-    } else {
-      view.setTag(R.id.accessibility_value, accessibilityValue);
-      if (accessibilityValue.hasKey("text")) {
-        updateViewContentDescription(view);
-      }
-    }
+    view.setTag(R.id.accessibility_value, accessibilityValue);
+    updateViewContentDescription(view);
   }
 
   @ReactProp(name = ViewProps.IMPORTANT_FOR_ACCESSIBILITY)

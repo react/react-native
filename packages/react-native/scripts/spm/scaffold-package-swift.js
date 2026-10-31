@@ -110,7 +110,9 @@ const {log, warn} = makeLogger('scaffold-package-swift');
 // under NDEBUG). Bumped so existing scaffolds regenerate with the defines.
 // v20: the platform floor is the app's iOS deployment target in string form
 // (the `.v15` enum cannot express a dependency minimum like 16.4).
-const SCAFFOLDER_VERSION = 20;
+// v21: `resources:` is emitted before `publicHeadersPath:`, the argument order
+// `.target(...)` requires (the reverse order fails to resolve).
+const SCAFFOLDER_VERSION = 21;
 const SCAFFOLDER_VERSION_LINE_RE = /^\/\/ AUTO-SCAFFOLDED-VERSION: (\d+)$/m;
 
 const AUTOGEN_MARKER =
@@ -778,7 +780,7 @@ let package = Package(
 ${packageDepsBlock}    targets: [
         .target(
             name: "${spec.swiftName}",${targetDepsLine}
-            path: ".",${sourcesLine}${publicHeadersLine}${resourcesLine}
+            path: ".",${sourcesLine}${resourcesLine}${publicHeadersLine}
             cSettings: ${cSettings},
             cxxSettings: ${cxxSettings},
             linkerSettings: [${linkerEntries.join(', ')}]

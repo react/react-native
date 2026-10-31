@@ -103,6 +103,55 @@ TEST(ViewPropsDiffTest, gradientColorHintEmitsNullColor) {
                       "position", nullptr)))))}});
 }
 
+// BaseViewManager.setViewState replaces the whole state: an absent `selected`
+// deselects the view and an absent `disabled` re-enables it. Props 2.0 sends an
+// unset `checked` as "none", which Java ignores.
+TEST(ViewPropsDiffTest, emitsTheWholeAccessibilityStateWhenOneMemberChanges) {
+  auto state = [](bool busy) {
+    return dynamic::object("selected", true)("disabled", true)("busy", busy);
+  };
+  auto sentState = [&](bool busy) {
+    return dynamic::object(
+        "accessibilityState", state(busy)("checked", "none"));
+  };
+  expectPayloads({
+      {dynamic::object("accessibilityState", state(false)), sentState(false)},
+      {dynamic::object("accessibilityState", state(true)), sentState(true)},
+  });
+}
+
+// React sends a removed prop as null on top of the previous props.
+// BaseViewManager clears the role only for null, and
+// AccessibilityRole.fromValue("") throws.
+TEST(ViewPropsDiffTest, removingAccessibilityRoleEmitsNull) {
+  expectPayloads({
+      {dynamic::object("accessibilityRole", "button")},
+      {dynamic::object("accessibilityRole", nullptr)},
+  });
+}
+
+// BaseViewManager falls back to accessibilityRole only for a null role.
+TEST(ViewPropsDiffTest, removingRoleEmitsNull) {
+  expectPayloads({
+      {dynamic::object("role", "button")},
+      {dynamic::object("role", nullptr)},
+  });
+}
+
+// An explicit role="none" overrides accessibilityRole.
+TEST(ViewPropsDiffTest, emitsAnExplicitRoleNone) {
+  expectPayloads(
+      {{dynamic::object("role", "none")("accessibilityRole", "button")}});
+}
+
+// BaseViewManager clears the value and the content description only for null.
+TEST(ViewPropsDiffTest, removingAccessibilityValueEmitsNull) {
+  expectPayloads({
+      {dynamic::object("accessibilityValue", dynamic::object("text", "50%"))},
+      {dynamic::object("accessibilityValue", nullptr)},
+  });
+}
+
 } // namespace facebook::react
 
 #endif

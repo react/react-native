@@ -69,12 +69,12 @@ SharedColor parsePlatformColor(
     if (!resourcePaths.empty()) {
       // Cache the (costly) JNI results. A cached nullopt is an explicit miss,
       // distinct from a path that resolves to transparent (ARGB 0).
-      static std::mutex getColorCacheMutex;
+      static constinit std::mutex getColorCacheMutex;
       static folly::EvictingCacheMap<size_t, std::optional<Color>>
           getColorCache(64);
 
       // Listen for appearance changes, which should invalidate the cache
-      static std::once_flag setupCacheInvalidation;
+      static constinit std::once_flag setupCacheInvalidation;
       std::call_once(
           setupCacheInvalidation,
           configurePlatformColorCacheInvalidationHook,
@@ -91,8 +91,8 @@ SharedColor parsePlatformColor(
         if (iterator != getColorCache.end()) {
           resolvedColor = iterator->second;
         } else {
-          const auto& fabricUIManager =
-              contextContainer.at<jni::global_ref<jobject>>("FabricUIManager");
+          auto fabricUIManager =
+              contextContainer.at<jni::alias_ref<jobject>>("FabricUIManager");
           // Boxed Integer: null is an explicit miss; a non-null value may be 0
           // (transparent black).
           static auto getColorFromJava =

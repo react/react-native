@@ -15,7 +15,7 @@
 namespace facebook::react {
 
 // NOLINTNEXTLINE(facebook-hte-CArray,modernize-avoid-c-arrays)
-constexpr const char LayoutConformanceShadowNodeComponentName[] = "LayoutConformance";
+extern const char LayoutConformanceShadowNodeComponentName[];
 
 class LayoutConformanceShadowNode final : public ConcreteShadowNode<
                                               LayoutConformanceShadowNodeComponentName,

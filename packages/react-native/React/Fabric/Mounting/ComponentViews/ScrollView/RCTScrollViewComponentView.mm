@@ -204,7 +204,9 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
   CGPoint absoluteViewOrigin = [self convertPoint:self.bounds.origin toView:nil];
   CGFloat scrollViewLowerY = isInverted ? absoluteViewOrigin.y : absoluteViewOrigin.y + self.bounds.size.height;
 
-  UIEdgeInsets newEdgeInsets = _scrollView.contentInset;
+  auto *enhancedScrollView = (RCTEnhancedScrollView *)_scrollView;
+  UIEdgeInsets newEdgeInsets =
+      enhancedScrollView.padsContentForSafeArea ? enhancedScrollView.baseContentInset : enhancedScrollView.contentInset;
   CGFloat inset = MAX(scrollViewLowerY - keyboardEndFrame.origin.y, 0);
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
   if (isInverted) {
@@ -257,7 +259,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
                         delay:0.0
                       options:animationOptionsWithCurve(curve)
                    animations:^{
-                     self->_scrollView.contentInset = newEdgeInsets;
+                     ((RCTEnhancedScrollView *)self->_scrollView).baseContentInset = newEdgeInsets;
                      self->_scrollView.verticalScrollIndicatorInsets = newEdgeInsets;
                      [self scrollTo:newContentOffset.x y:newContentOffset.y animated:NO];
                    }
@@ -345,6 +347,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   MAP_SCROLL_VIEW_PROP(bouncesZoom);
   MAP_SCROLL_VIEW_PROP(canCancelContentTouches);
   MAP_SCROLL_VIEW_PROP(centerContent);
+  MAP_SCROLL_VIEW_PROP(horizontal);
   // MAP_SCROLL_VIEW_PROP(automaticallyAdjustContentInsets);
   MAP_SCROLL_VIEW_PROP(decelerationRate);
   MAP_SCROLL_VIEW_PROP(directionalLockEnabled);
@@ -396,13 +399,15 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // When disabling centerContent, reset inset to prop value
   // (enabling is handled automatically by the setCenterContent: setter)
   if (oldScrollViewProps.centerContent && !newScrollViewProps.centerContent) {
-    _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+    ((RCTEnhancedScrollView *)_scrollView).baseContentInset =
+        RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
   }
 
   // Only apply contentInset from props if centerContent is disabled
   // When centerContent is enabled, the inset is calculated by centerContentIfNeeded
   if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset && !newScrollViewProps.centerContent) {
-    _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+    ((RCTEnhancedScrollView *)_scrollView).baseContentInset =
+        RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
   }
   if (oldScrollViewProps.contentOffset != newScrollViewProps.contentOffset) {
     _scrollView.contentOffset = RCTCGPointFromPoint(newScrollViewProps.contentOffset);
@@ -412,7 +417,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   auto *scrollView = (RCTEnhancedScrollView *)_scrollView;
   if (oldScrollViewProps.snapToAlignment != newScrollViewProps.snapToAlignment) {
-    scrollView.snapToAlignment = RCTNSStringFromString(toString(newScrollViewProps.snapToAlignment));
+    scrollView.snapToAlignment =
+        RCTNSStringFromString(toString(newScrollViewProps.snapToAlignment.value_or(ScrollViewSnapToAlignment::Start)));
   }
 
   scrollView.snapToStart = newScrollViewProps.snapToStart;
@@ -445,6 +451,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     }
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
+  scrollView.padsContentForSafeArea = newScrollViewProps.padsContentForSafeArea;
 
   MAP_SCROLL_VIEW_PROP(disableIntervalMomentum);
   MAP_SCROLL_VIEW_PROP(snapToInterval);
@@ -595,7 +602,9 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   auto metrics = ScrollViewEventEmitter::Metrics{};
   metrics.contentSize = RCTSizeFromCGSize(_scrollView.contentSize);
   metrics.contentOffset = RCTPointFromCGPoint(_scrollView.contentOffset);
-  metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(_scrollView.contentInset);
+  auto *scrollView = (RCTEnhancedScrollView *)_scrollView;
+  metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(
+      scrollView.padsContentForSafeArea ? scrollView.baseContentInset : scrollView.contentInset);
   metrics.containerSize = RCTSizeFromCGSize(_scrollView.bounds.size);
   metrics.zoomScale = _scrollView.zoomScale;
   metrics.timestamp = CACurrentMediaTime();
@@ -699,11 +708,12 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // Invalidate cached content size so that updateState: recalculates the
   // container frame after zoomScale reset (which may have mutated it in RTL).
   _contentSize = CGSizeZero;
-  _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(props.contentInset);
+  ((RCTEnhancedScrollView *)_scrollView).baseContentInset = RCTUIEdgeInsetsFromEdgeInsets(props.contentInset);
   // We set the default behavior to "never" so that iOS
   // doesn't do weird things to UIScrollView insets automatically
   // and keeps it as an opt-in behavior.
   _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+  ((RCTEnhancedScrollView *)_scrollView).padsContentForSafeArea = NO;
   _shouldUpdateContentInsetAdjustmentBehavior = YES;
   _automaticallyAdjustKeyboardInsets = NO;
   _isUserTriggeredScrolling = NO;
@@ -1069,23 +1079,78 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 
   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
-  int minIdx = props.maintainVisibleContentPosition.value().minIndexForVisible;
-  for (NSUInteger ii = minIdx; ii < _contentView.subviews.count; ++ii) {
-    // Find the first view that is partially or fully visible.
-    UIView *subview = _contentView.subviews[ii];
-    BOOL hasNewView = NO;
-    if (horizontal) {
-      hasNewView = subview.frame.origin.x + subview.frame.size.width > _scrollView.contentOffset.x;
-    } else {
-      hasNewView = subview.frame.origin.y + subview.frame.size.height > _scrollView.contentOffset.y;
-    }
-    if (hasNewView || ii == _contentView.subviews.count - 1) {
-      _prevFirstVisibleFrame = subview.frame;
-      _firstVisibleView = subview;
-      _firstVisibleViewTag = subview.tag;
+  int minIndex = props.maintainVisibleContentPosition.value().minIndexForVisible;
+  NSArray<UIView *> *subviews =
+      minIndex > 0 ? [self _sortedContentSubviewsWithHorizontal:horizontal] : _contentView.subviews;
+  if ((NSUInteger)minIndex >= subviews.count) {
+    return;
+  }
+
+  CGFloat currentScroll = horizontal ? _scrollView.contentOffset.x : _scrollView.contentOffset.y;
+  UIView *firstVisibleView = nil;
+  // We cannot assume that the views will be in position order because of things like z-index
+  // which will change the order of views in their parent. This means we need to iterate through
+  // the full children array and find the view with the smallest position that is bigger than
+  // the scroll position.
+  CGFloat firstVisibleViewPosition = CGFLOAT_MAX;
+  for (NSUInteger index = minIndex; index < subviews.count; ++index) {
+    UIView *subview = subviews[index];
+
+    // Compute the position of the end of the child
+    CGFloat position = horizontal ? subview.frame.origin.x + subview.frame.size.width
+                                  : subview.frame.origin.y + subview.frame.size.height;
+
+    // If we encounter a zero-sized view as the first subview, assume it's the anchor without
+    // checking anything else.
+    //
+    // This is the easiest way to accommodate LegendList without introducing new APIs. LegendList
+    // renders a zero-sized, absolutely positioned `ScrollAdjust` view as the first child of the
+    // scroll content. It sits at a large biased offset and moves by the amount the list wants
+    // the scroll position adjusted. Because its end position is past every other child, the
+    // smallest-end scan below would otherwise pick a stationary sibling and skip the adjustment.
+    // See:
+    // https://github.com/react/react-native/pull/57959#issuecomment-6341492122
+    // https://github.com/LegendApp/legend-list/blob/v3.7.0/src/components/ScrollAdjust.native.tsx#L15-L24
+    // https://github.com/LegendApp/legend-list/blob/v3.7.0/src/components/ListComponent.tsx#L246-L257
+    if (index == (NSUInteger)minIndex && CGSizeEqualToSize(subview.frame.size, CGSizeZero) &&
+        position > currentScroll) {
+      firstVisibleView = subview;
       break;
     }
+
+    // If the child is partially visible or this is the last child, select it as the anchor.
+    if ((position > currentScroll && position < firstVisibleViewPosition) ||
+        (firstVisibleView == nil && index == subviews.count - 1)) {
+      firstVisibleView = subview;
+      firstVisibleViewPosition = position;
+    }
   }
+
+  if (firstVisibleView == nil) {
+    return;
+  }
+
+  _prevFirstVisibleFrame = firstVisibleView.frame;
+  _firstVisibleView = firstVisibleView;
+  _firstVisibleViewTag = firstVisibleView.tag;
+}
+
+/// Returns scroll content subviews sorted by layout position along the scroll axis.
+///
+/// Call this only when minIndexForVisible > 0. In those cases, we need to skip in-order items, and
+/// sorting allows us to do that.
+- (NSArray<UIView *> *)_sortedContentSubviewsWithHorizontal:(BOOL)horizontal
+{
+  NSArray<UIView *> *subviews = _contentView.subviews;
+  return [subviews sortedArrayUsingComparator:^NSComparisonResult(UIView *a, UIView *b) {
+    CGFloat offsetA = horizontal ? CGRectGetMinX(a.frame) : CGRectGetMinY(a.frame);
+    CGFloat offsetB = horizontal ? CGRectGetMinX(b.frame) : CGRectGetMinY(b.frame);
+    if (offsetA != offsetB) {
+      return offsetA < offsetB ? NSOrderedAscending : NSOrderedDescending;
+    }
+    // Stable ordering for ties.
+    return [@([subviews indexOfObject:a]) compare:@([subviews indexOfObject:b])];
+  }];
 }
 
 - (void)_adjustForMaintainVisibleContentPosition
@@ -1120,7 +1185,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   std::optional<int> autoscrollThreshold = props.maintainVisibleContentPosition.value().autoscrollToTopThreshold;
   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
-  // TODO: detect and handle/ignore re-ordering
   if (horizontal) {
     CGFloat deltaX = _firstVisibleView.frame.origin.x - _prevFirstVisibleFrame.origin.x;
     if (ABS(deltaX) > 0.5) {

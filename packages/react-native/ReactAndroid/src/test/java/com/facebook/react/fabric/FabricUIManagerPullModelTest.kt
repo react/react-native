@@ -76,7 +76,7 @@ class FabricUIManagerPullModelTest {
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
     overrideFeatureFlags()
-    reactContext = ReactTestHelper.createCatalystContextForTest()
+    reactContext = ReactTestHelper.createTestReactApplicationContext()
     underTest =
         FabricUIManager(
             reactContext,

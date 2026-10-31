@@ -97,6 +97,7 @@ describe('Native Animated', () => {
       await create(<Animated.View ref={ref} style={{opacity}} />);
 
       expect(ref.current).not.toBeNull();
+      // $FlowFixMe[incompatible-type] Flow 0.337
       jest.spyOn(ref.current, 'setNativeProps');
 
       opacity.setValue(0.5);

@@ -27,7 +27,6 @@ RCT_MOCK_REF(RCTBlobManager, dispatch_async);
   [super setUp];
 
   _module = [RCTBlobManager new];
-  [_module setValue:nil forKey:@"bridge"];
   [_module initialize];
   NSInteger size = 120;
   _data = [NSMutableData dataWithCapacity:size];

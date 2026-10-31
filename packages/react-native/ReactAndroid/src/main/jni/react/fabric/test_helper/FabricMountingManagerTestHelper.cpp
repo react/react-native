@@ -79,6 +79,63 @@ std::vector<Tag> toTags(jni::alias_ref<jni::JArrayInt> tags) {
   return {region.get(), region.get() + tags->size()};
 }
 
+bool fabricUIManagerAliasUsesOwnedHandle(
+    [[maybe_unused]] jni::alias_ref<jclass> javaClass,
+    jni::alias_ref<JFabricUIManager::javaobject> javaUIManager) {
+  auto contextContainer =
+      javaUIManager->getBinding()->getScheduler()->getContextContainer();
+  auto owner = contextContainer->at<std::shared_ptr<jni::global_ref<jobject>>>(
+      "FabricUIManagerOwner");
+  auto alias = contextContainer->at<jni::alias_ref<jobject>>("FabricUIManager");
+  auto env = jni::Environment::current();
+  return alias.get() == owner->get() &&
+      env->GetObjectRefType(alias.get()) == JNIGlobalRefType &&
+      jni::isSameObject(alias.get(), javaUIManager.get());
+}
+
+jni::local_ref<JFabricUIManager::javaobject> readFabricUIManagerFromContext(
+    [[maybe_unused]] jni::alias_ref<jclass> javaClass,
+    jni::alias_ref<JFabricUIManager::javaobject> javaUIManager,
+    jboolean useGlobalRef,
+    jboolean uninstall) {
+  static const auto bindingField =
+      JFabricUIManager::javaClassStatic()
+          ->getField<FabricUIManagerBinding::javaobject>("mBinding");
+  static const auto unregister =
+      jni::findClassStatic("com/facebook/react/fabric/FabricUIManagerBinding")
+          ->getMethod<void()>("unregister");
+  auto javaBinding = javaUIManager->getFieldValue(bindingField);
+  auto contextContainer =
+      javaBinding->cthis()->getScheduler()->getContextContainer();
+  if (useGlobalRef != 0) {
+    auto global =
+        contextContainer->at<jni::global_ref<jobject>>("FabricUIManager");
+    if (uninstall != 0) {
+      std::weak_ptr<jni::global_ref<jobject>> owner =
+          contextContainer->at<std::shared_ptr<jni::global_ref<jobject>>>(
+              "FabricUIManagerOwner");
+      unregister(javaBinding);
+      contextContainer->erase("FabricUIManager");
+      contextContainer->erase("FabricUIManagerOwner");
+      if (!owner.expired()) {
+        jni::throwNewJavaException(
+            "java/lang/AssertionError",
+            "FabricUIManager owner survived teardown");
+      }
+      contextContainer.reset();
+    }
+    return jni::make_local(
+        jni::static_ref_cast<JFabricUIManager::javaobject>(
+            jni::alias_ref<jobject>(global)));
+  }
+  if (uninstall != 0) {
+    unregister(javaBinding);
+  }
+  auto alias = contextContainer->at<jni::alias_ref<jobject>>("FabricUIManager");
+  return jni::make_local(
+      jni::static_ref_cast<JFabricUIManager::javaobject>(alias));
+}
+
 } // namespace
 
 FabricMountingManagerTestHelper::FabricMountingManagerTestHelper(
@@ -402,6 +459,11 @@ FabricMountingManagerTestHelper::pulledDeleteTags() {
 
 void FabricMountingManagerTestHelper::registerNatives() {
   registerHybrid({
+      makeNativeMethod(
+          "fabricUIManagerAliasUsesOwnedHandle",
+          fabricUIManagerAliasUsesOwnedHandle),
+      makeNativeMethod(
+          "readFabricUIManagerFromContext", readFabricUIManagerFromContext),
       makeNativeMethod(
           "initHybrid", FabricMountingManagerTestHelper::initHybrid),
       makeNativeMethod(

@@ -137,7 +137,8 @@ typedef NSString * (^RCTDevMenuItemTitleBlock)(void);
  */
 @interface RCTBridge (RCTDevMenu)
 
-@property (nonatomic, readonly) RCTDevMenu *devMenu;
+@property (nonatomic, readonly) RCTDevMenu *devMenu __deprecated_msg(
+    "Access RCTDevMenu through the bridge proxy instead; this accessor will be removed.");
 
 @end
 

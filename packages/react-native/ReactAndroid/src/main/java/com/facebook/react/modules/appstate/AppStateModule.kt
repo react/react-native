@@ -62,7 +62,6 @@ internal class AppStateModule(reactContext: ReactApplicationContext) :
       Arguments.createMap().apply { putString("app_state", appState) }
 
   private fun sendEvent(eventName: String, data: Any?) {
-    val reactApplicationContext = reactApplicationContext ?: return
     // We don't gain anything interesting from logging here, and it's an extremely common
     // race condition for an AppState event to be triggered as the Catalyst instance is being
     // set up or torn down. So, just fail silently here.

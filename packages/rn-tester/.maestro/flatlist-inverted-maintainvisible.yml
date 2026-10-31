@@ -3,7 +3,7 @@
 # not logical order. Prepending shifts anchor view frame downward in both modes.
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

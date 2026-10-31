@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {DisplayMetrics} from '../../../packages/react-native/Libraries/Utilities/Dimensions';
 import type {HostPlatform} from './Constants';
 import type {
   FantomRenderedOutput,
@@ -22,7 +23,7 @@ import NativeFantom, {
 import * as Benchmark from './Benchmark';
 import {getConstants} from './Constants';
 import getFantomRenderedOutput from './getFantomRenderedOutput';
-import {LogBox} from 'react-native';
+import {Dimensions, LogBox} from 'react-native';
 import {
   getInternalInstanceHandleFromPublicInstance,
   getNodeFromPublicInstance,
@@ -43,6 +44,7 @@ export type RootConfig = {
   viewportWidth?: number,
   viewportHeight?: number,
   devicePixelRatio?: number,
+  fontScale?: number,
   viewportOffsetX?: number,
   viewportOffsetY?: number,
 };
@@ -63,6 +65,51 @@ export function getHostPlatform(): HostPlatform {
 const DEFAULT_VIEWPORT_WIDTH = 390;
 const DEFAULT_VIEWPORT_HEIGHT = 844;
 const DEFAULT_DEVICE_PIXEL_RATIO = 3;
+const DEFAULT_FONT_SCALE = 1;
+const activeRootDisplayMetrics = new Map<RootTag, DisplayMetrics>();
+
+function setDefaultDisplayMetrics(): void {
+  const displayMetrics = {
+    width: DEFAULT_VIEWPORT_WIDTH,
+    height: DEFAULT_VIEWPORT_HEIGHT,
+    scale: DEFAULT_DEVICE_PIXEL_RATIO,
+    fontScale: DEFAULT_FONT_SCALE,
+  };
+  Dimensions.set({window: displayMetrics, screen: displayMetrics});
+}
+
+setDefaultDisplayMetrics();
+
+function pushDimensions(
+  surfaceId: RootTag,
+  displayMetrics: DisplayMetrics,
+): void {
+  const previousDisplayMetrics = Dimensions.get('window');
+  activeRootDisplayMetrics.set(surfaceId, displayMetrics);
+  Dimensions.set({window: displayMetrics, screen: displayMetrics});
+  if (
+    activeRootDisplayMetrics.size > 1 &&
+    (previousDisplayMetrics.width !== displayMetrics.width ||
+      previousDisplayMetrics.height !== displayMetrics.height ||
+      previousDisplayMetrics.scale !== displayMetrics.scale ||
+      previousDisplayMetrics.fontScale !== displayMetrics.fontScale)
+  ) {
+    console.warn(
+      'Fantom.createRoot() updated global Dimensions while another active root has different display metrics. Dimensions and PixelRatio now reflect the new root.',
+      {existingRoot: previousDisplayMetrics, newRoot: displayMetrics},
+    );
+  }
+}
+
+function popDimensions(surfaceId: RootTag): void {
+  activeRootDisplayMetrics.delete(surfaceId);
+  const displayMetrics = Array.from(activeRootDisplayMetrics.values()).pop();
+  if (displayMetrics != null) {
+    Dimensions.set({window: displayMetrics, screen: displayMetrics});
+  } else {
+    setDefaultDisplayMetrics();
+  }
+}
 
 class Root {
   #surfaceId: RootTag;
@@ -71,6 +118,7 @@ class Root {
   #viewportOffsetX: number;
   #viewportOffsetY: number;
   #devicePixelRatio: number;
+  #fontScale: number;
   #document: ?Document;
 
   constructor(config?: RootConfig) {
@@ -78,6 +126,7 @@ class Root {
     this.#viewportHeight = config?.viewportHeight ?? DEFAULT_VIEWPORT_HEIGHT;
     this.#devicePixelRatio =
       config?.devicePixelRatio ?? DEFAULT_DEVICE_PIXEL_RATIO;
+    this.#fontScale = config?.fontScale ?? DEFAULT_FONT_SCALE;
     this.#viewportOffsetX = config?.viewportOffsetX ?? 0;
     this.#viewportOffsetY = config?.viewportOffsetY ?? 0;
 
@@ -85,9 +134,17 @@ class Root {
       this.#viewportWidth,
       this.#viewportHeight,
       this.#devicePixelRatio,
+      this.#fontScale,
       this.#viewportOffsetX,
       this.#viewportOffsetY,
     );
+
+    pushDimensions(this.#surfaceId, {
+      width: this.#viewportWidth,
+      height: this.#viewportHeight,
+      scale: this.#devicePixelRatio,
+      fontScale: this.#fontScale,
+    });
   }
 
   // $FlowExpectedError[unsafe-getters-setters]
@@ -128,6 +185,7 @@ class Root {
   destroy() {
     // TODO: check for leaks.
     NativeFantom.stopSurface(this.#surfaceId);
+    popDimensions(this.#surfaceId);
     NativeFantom.flushMessageQueue();
     this.#document = null;
   }

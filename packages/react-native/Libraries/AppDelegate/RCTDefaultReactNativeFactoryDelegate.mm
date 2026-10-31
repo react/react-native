@@ -6,6 +6,7 @@
  */
 
 #import "RCTDefaultReactNativeFactoryDelegate.h"
+#import <React/RCTRootView.h>
 #import <ReactCommon/RCTHost.h>
 #import "RCTAppSetupUtils.h"
 #import "RCTDependencyProvider.h"
@@ -25,13 +26,6 @@
 }
 
 @synthesize dependencyProvider;
-
-- (NSURL *_Nullable)sourceURLForBridge:(nonnull RCTBridge *)bridge
-{
-  [NSException raise:@"RCTBridgeDelegate::sourceURLForBridge not implemented"
-              format:@"Subclasses must implement a valid sourceURLForBridge method"];
-  return nil;
-}
 
 - (UIViewController *)createRootViewController
 {
@@ -54,10 +48,13 @@
 #endif
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)customizeRootView:(RCTRootView *)rootView
 {
   // Override point for customization after application launch.
 }
+#pragma clang diagnostic pop
 
 - (RCTColorSpace)defaultColorSpace
 {
@@ -111,11 +108,6 @@
 
 #pragma mark - RCTArchConfiguratorProtocol
 
-- (BOOL)newArchEnabled
-{
-  return YES;
-}
-
 - (Class)getModuleClassFromName:(const char *)name
 {
   return nullptr;
@@ -124,13 +116,6 @@
 - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
 {
   return nullptr;
-}
-
-- (void)loadSourceForBridge:(RCTBridge *)bridge
-                 onProgress:(RCTSourceLoadProgressBlock)onProgress
-                 onComplete:(RCTSourceLoadBlock)loadCallback
-{
-  [RCTJavaScriptLoader loadBundleAtURL:[self sourceURLForBridge:bridge] onProgress:onProgress onComplete:loadCallback];
 }
 
 @end

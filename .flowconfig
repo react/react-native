@@ -53,9 +53,6 @@ experimental.multi_platform=true
 experimental.multi_platform.extensions=.ios
 experimental.multi_platform.extensions=.android
 
-experimental.assertion_functions=true
-experimental.disable_invariant_special_casing=true
-
 munge_underscores=true
 
 module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/packages/react-native/index.js'
@@ -100,4 +97,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.336.0
+^0.337.0

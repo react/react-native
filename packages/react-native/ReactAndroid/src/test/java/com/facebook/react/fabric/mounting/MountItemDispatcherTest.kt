@@ -176,6 +176,8 @@ class MountItemDispatcherTest {
       didDispatchCount++
     }
 
+    override fun pullTransaction(surfaceId: Int) = Unit
+
     override fun onItemsQueued() = Unit
   }
 

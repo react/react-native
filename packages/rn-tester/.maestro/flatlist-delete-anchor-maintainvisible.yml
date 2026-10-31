@@ -2,7 +2,7 @@
 # When the anchor item (first visible) is deleted, MVCP should select a new anchor
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 - setOrientation: portrait

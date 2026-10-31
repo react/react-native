@@ -10,7 +10,6 @@
 #import <objc/runtime.h>
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
-#import <React/RCTBridge+Inspector.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTConstants.h>
@@ -127,7 +126,7 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 static RCTHandlerToken reloadToken;
 static RCTHandlerToken devMenuToken;
-static std::atomic<int> numInitializedModules{0};
+static constinit std::atomic<int> numInitializedModules{0};
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
@@ -551,21 +550,6 @@ RCT_EXPORT_MODULE()
 @end
 
 #endif // #if RCT_DEV_MENU
-
-@implementation RCTBridge (RCTDevSettings)
-
-- (RCTDevSettings *)devSettings
-{
-#if RCT_REMOTE_PROFILE
-  return [self moduleForClass:[RCTDevSettings class]];
-#elif RCT_DEV_MENU
-  return devSettingsMenuEnabled ? [self moduleForClass:[RCTDevSettings class]] : nil;
-#else
-  return nil;
-#endif
-}
-
-@end
 
 @implementation RCTBridgeProxy (RCTDevSettings)
 
