@@ -8,8 +8,11 @@
 #pragma once
 
 #include <react/runtime/PlatformTimerRegistry.h>
+
 #include <cstdint>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 namespace facebook::react {
@@ -33,7 +36,7 @@ namespace facebook::react {
  *
  * Firing a timer calls `TimerManager::callTimer`, which enqueues the JS
  * callback on the RuntimeScheduler; the caller is expected to run the work loop
- * afterwards to execute the callbacks.
+ * after each fired timer to execute its callback.
  *
  * All methods are expected to be called on the JS thread (Fantom is
  * single-threaded), so no locking is required.
@@ -58,13 +61,19 @@ class FantomTimerRegistry : public PlatformTimerRegistry {
   void setMockEnabled(bool enabled);
   bool isMockEnabled() const noexcept;
 
-  // Advances the virtual clock by `deltaMs`, firing every timer that becomes
-  // due (in due-time order), re-arming recurring timers along the way.
-  void advanceTimersByTime(double deltaMs);
+  // Advances the virtual clock to the earliest timer due within `deltaMs` and
+  // fires it, re-arming it if it is recurring. Returns the part of `deltaMs`
+  // left after that timer's due time, or -1 if no timer was due, in which case
+  // the clock has advanced by the whole `deltaMs`.
+  //
+  // It fires one timer per call so that the caller can run the work loop in
+  // between: a timer's callback then runs at its due time, before any later
+  // timer fires, and timers it schedules can fire within the same advance.
+  double advanceTimersToNextDue(double deltaMs);
 
-  // Fires all currently pending timers until none remain (bounded to avoid
-  // infinite loops with self-rescheduling/recurring timers).
-  void runAllTimers();
+  // Fires the earliest pending timer regardless of its due time, advancing the
+  // virtual clock to it. Returns false if no timer was pending.
+  bool runNextTimer();
 
   uint32_t getPendingTimerCount() const noexcept;
 
@@ -77,6 +86,8 @@ class FantomTimerRegistry : public PlatformTimerRegistry {
   };
 
   void scheduleTimer(uint32_t timerId, double delayMs, bool isRecurring);
+  std::optional<uint32_t> findNextTimer(double maxDueTimeMs) const;
+  void fireAndAdvanceTo(uint32_t timerId);
   void fireTimer(uint32_t timerId);
 
   std::weak_ptr<TimerManager> timerManager_;
