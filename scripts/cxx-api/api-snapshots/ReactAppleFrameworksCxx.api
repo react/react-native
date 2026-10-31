@@ -5742,6 +5742,7 @@ class facebook::react::ScrollViewState {
   public facebook::react::Point contentOffset;
   public facebook::react::Rect contentBoundingRect;
   public facebook::react::Size getContentSize() const;
+  public int scrollAwayPaddingBottom;
   public int scrollAwayPaddingTop;
 }
 

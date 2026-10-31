@@ -3601,6 +3601,7 @@ class facebook::react::ScrollViewState {
   public facebook::react::Rect contentBoundingRect;
   public facebook::react::Size getContentSize() const;
   public folly::dynamic getDynamic() const;
+  public int scrollAwayPaddingBottom;
   public int scrollAwayPaddingTop;
 }
 
