@@ -612,8 +612,9 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     if (__DEV__ && !this._hasWarned.flexWrap) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
-      const flatStyles = StyleSheet.flatten(this.props.contentContainerStyle);
+      const flatStyles = StyleSheet.flatten<StyleProp<ViewStyle>>(
+        this.props.contentContainerStyle,
+      );
       if (flatStyles != null && flatStyles.flexWrap === 'wrap') {
         console.warn(
           '`flexWrap: `wrap`` is not supported with the `VirtualizedList` components.' +
