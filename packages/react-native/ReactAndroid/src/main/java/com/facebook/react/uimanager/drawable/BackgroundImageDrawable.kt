@@ -16,6 +16,8 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import com.facebook.common.logging.FLog
+import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.FloatUtil
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
@@ -45,11 +47,13 @@ internal class BackgroundImageDrawable(
   private var backgroundImageClipPath: Path? = null
   private var backgroundPositioningArea: RectF? = null
   private var backgroundPaintingArea: RectF? = null
+  private val backgroundImageURLLoader = BackgroundImageURLLoader(context) { invalidateSelf() }
 
   var backgroundImageLayers: List<BackgroundImageLayer>? = null
     set(value) {
       if (field != value) {
         field = value
+        backgroundImageURLLoader.loadBackgroundImages(value.orEmpty())
         invalidateSelf()
       }
     }
@@ -79,7 +83,12 @@ internal class BackgroundImageDrawable(
     }
 
   private val backgroundPaint: Paint =
-      Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+      Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply { style = Paint.Style.FILL }
+
+  /** Called when the view is dropped. */
+  fun cancelBackgroundImageURLRequests() {
+    backgroundImageURLLoader.cancelRequests()
+  }
 
   override fun invalidateSelf() {
     needUpdatePath = true
@@ -111,7 +120,7 @@ internal class BackgroundImageDrawable(
   }
 
   override fun draw(canvas: Canvas) {
-    if (backgroundImageLayers == null || backgroundImageLayers?.isEmpty() == true) {
+    if (backgroundImageLayers.isNullOrEmpty()) {
       return
     }
 
@@ -140,13 +149,39 @@ internal class BackgroundImageDrawable(
         val position =
             backgroundPosition?.takeIf { it.isNotEmpty() }?.let { it.getOrNull(index % it.size) }
 
+        val uri = backgroundImageLayer.uri
+        val urlImage: BackgroundImageURLLoader.OrientedBitmap?
+        val (intrinsicWidth, intrinsicHeight) =
+            if (uri == null) {
+              urlImage = null
+              backgroundPositioningArea.width() to backgroundPositioningArea.height()
+            } else {
+              val image = backgroundImageURLLoader.imageForUri(uri)
+              if (image == null) {
+                continue
+              }
+              urlImage = image
+              // Asset (local require() assets) pass intrinsicWidth/Height in DIPs
+              // So use those dimensions and convert from dp to physical pixels.
+              val assetWidth = backgroundImageLayer.intrinsicWidth
+              val assetHeight = backgroundImageLayer.intrinsicHeight
+              if (assetWidth != null && assetHeight != null) {
+                assetWidth.dpToPx() to assetHeight.dpToPx()
+              } else {
+                // Plain url() images don't pass intrinsic width/height
+                // so take the decoded pixels as DIPs and convert
+                image.width.dpToPx() to image.height.dpToPx()
+              }
+            }
+
         // 2. Calculate the size of a single tile.
         val (tileWidth, tileHeight) =
             calculateBackgroundImageSize(
                 backgroundPositioningArea.width(),
                 backgroundPositioningArea.height(),
-                backgroundPositioningArea.width(),
-                backgroundPositioningArea.height(),
+                intrinsicWidth,
+                intrinsicHeight,
+                uri != null,
                 size,
                 repeat,
             )
@@ -155,8 +190,12 @@ internal class BackgroundImageDrawable(
           continue
         }
 
-        // 3. Set paint shader
-        backgroundPaint.setShader(backgroundImageLayer.getShader(tileWidth, tileHeight))
+        // 3. Set paint shader for gradients (URL images don't use shaders)
+        if (uri == null) {
+          backgroundPaint.setShader(backgroundImageLayer.getShader(tileWidth, tileHeight))
+        } else {
+          backgroundPaint.setShader(null)
+        }
 
         // 4. Calculate spacing, x and y tiles count and position for tiles
         var (initialX, initialY) = calculateBackgroundPosition(tileWidth, tileHeight, position)
@@ -248,18 +287,30 @@ internal class BackgroundImageDrawable(
         }
 
         // 5. draw the repeating tiles using translate
+        val urlImageMatrix = urlImage?.drawMatrix(tileWidth, tileHeight)
         var translateX = initialX
         var translateY: Float
-        repeat(xTilesCount) {
-          translateY = initialY
-          repeat(yTilesCount) {
-            canvas.save()
-            canvas.translate(translateX, translateY)
-            canvas.drawRect(0f, 0f, tileWidth, tileHeight, backgroundPaint)
-            canvas.restore()
-            translateY += tileHeight + ySpacing
+        val saveCount = canvas.saveCount
+        try {
+          repeat(xTilesCount) {
+            translateY = initialY
+            repeat(yTilesCount) {
+              canvas.save()
+              canvas.translate(translateX, translateY)
+              if (urlImage != null && urlImageMatrix != null) {
+                canvas.drawBitmap(urlImage.bitmap, urlImageMatrix, backgroundPaint)
+              } else {
+                canvas.drawRect(0f, 0f, tileWidth, tileHeight, backgroundPaint)
+              }
+              canvas.restore()
+              translateY += tileHeight + ySpacing
+            }
+            translateX += tileWidth + xSpacing
           }
-          translateX += tileWidth + xSpacing
+        } catch (e: RuntimeException) {
+          // Like `ReactImageView`: the canvas throws for a bitmap that is too large to draw.
+          canvas.restoreToCount(saveCount)
+          FLog.w(ReactConstants.TAG, e, "Could not draw background image: %s", uri)
         }
       }
     }
@@ -350,16 +401,37 @@ internal class BackgroundImageDrawable(
       containerHeight: Float,
       imageWidth: Float,
       imageHeight: Float,
+      hasIntrinsicRatio: Boolean,
       backgroundSize: BackgroundSize?,
       repeat: BackgroundRepeat?,
   ): Pair<Float, Float> {
     var finalWidth = imageWidth
     var finalHeight = imageHeight
+    // An `auto` dimension keeps the image's aspect ratio. Without a ratio (gradients), it stays at
+    // its intrinsic size.
+    val keepsRatio = hasIntrinsicRatio && imageWidth > 0 && imageHeight > 0
+    val ratio = if (keepsRatio) imageWidth / imageHeight else 0f
+    var xAuto = true
+    var yAuto = true
 
     if (backgroundSize is BackgroundSize.LengthPercentageAuto) {
       val w = backgroundSize.lengthPercentage.x
       val h = backgroundSize.lengthPercentage.y
-      if (w != null && h != null) {
+      xAuto = backgroundSize.lengthPercentage.isXAuto()
+      yAuto = backgroundSize.lengthPercentage.isYAuto()
+      if (keepsRatio) {
+        if (w != null) {
+          finalWidth = positionToPixels(w, containerWidth)
+        }
+        if (h != null) {
+          finalHeight = positionToPixels(h, containerHeight)
+        }
+        if (!xAuto && yAuto) {
+          finalHeight = finalWidth / ratio
+        } else if (xAuto && !yAuto) {
+          finalWidth = finalHeight * ratio
+        }
+      } else if (w != null && h != null) {
         finalWidth = positionToPixels(w, containerWidth)
         finalHeight = positionToPixels(h, containerHeight)
       }
@@ -367,20 +439,27 @@ internal class BackgroundImageDrawable(
 
     if (repeat?.x == BackgroundRepeatKeyword.Round && finalWidth > 0) {
       if (!FloatUtil.floatsEqual(containerWidth.rem(finalWidth), 0f)) {
-        val numRepeats = round(containerWidth / finalWidth)
-        if (numRepeats > 0) {
-          finalWidth = containerWidth / numRepeats
-        }
+        // CSS rounds to the nearest whole number of tiles, but at least one.
+        val numRepeats = maxOf(1f, round(containerWidth / finalWidth))
+        finalWidth = containerWidth / numRepeats
       }
     }
 
     if (repeat?.y == BackgroundRepeatKeyword.Round && finalHeight > 0) {
       if (!FloatUtil.floatsEqual(containerHeight.rem(finalHeight), 0f)) {
-        val numRepeats = round(containerHeight / finalHeight)
-        if (numRepeats > 0) {
-          finalHeight = containerHeight / numRepeats
-        }
+        // CSS rounds to the nearest whole number of tiles, but at least one.
+        val numRepeats = maxOf(1f, round(containerHeight / finalHeight))
+        finalHeight = containerHeight / numRepeats
       }
+    }
+
+    // With `round` on one axis only, an `auto` other axis is scaled again to restore the ratio.
+    val roundX = repeat?.x == BackgroundRepeatKeyword.Round
+    val roundY = repeat?.y == BackgroundRepeatKeyword.Round
+    if (keepsRatio && roundX && !roundY && yAuto) {
+      finalHeight = finalWidth / ratio
+    } else if (keepsRatio && roundY && !roundX && xAuto) {
+      finalWidth = finalHeight * ratio
     }
 
     return finalWidth to finalHeight

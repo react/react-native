@@ -88,6 +88,8 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   }
 
   override fun onDropViewInstance(view: ReactViewGroup) {
+    // Before `super`, which may recycle the view and drop its background.
+    BackgroundStyleApplicator.cancelBackgroundImageURLRequests(view)
     super.onDropViewInstance(view)
     view.cleanUpAxOrderListener()
   }
