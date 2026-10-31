@@ -10,7 +10,9 @@ package com.facebook.react.modules.core
 import android.net.Uri
 import com.facebook.fbreact.specs.NativeDeviceEventManagerSpec
 import com.facebook.proguard.annotations.DoNotStripAny
+import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.JavaScriptModule
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.buildReadableMap
@@ -19,9 +21,58 @@ import com.facebook.react.module.annotations.ReactModule
 /** Native module that handles device hardware events like hardware back presses. */
 @ReactModule(name = NativeDeviceEventManagerSpec.NAME)
 public open class DeviceEventManagerModule(
-    reactContext: ReactApplicationContext?,
-    backBtnHandler: DefaultHardwareBackBtnHandler?,
-) : NativeDeviceEventManagerSpec(reactContext) {
+  reactContext: ReactApplicationContext?,
+  backBtnHandler: DefaultHardwareBackBtnHandler?,
+) : NativeDeviceEventManagerSpec(reactContext), LifecycleEventListener {
+  @Volatile private var ownershipInvalidated = false
+  private val ownershipToken = Any()
+  private var coordinator: com.facebook.react.BackNavigationCoordinator? = null
+  private var nativeNavigationEnabled = false
+  private var hasJavaScriptHandlers = false
+
+  init {
+    reactContext?.addLifecycleEventListener(this)
+  }
+
+  private fun updateBackOwnership() {
+    if (ownershipInvalidated) return
+    val next =
+      (reactApplicationContext.currentActivity as? ReactActivity)?.backNavigationCoordinator
+    if (coordinator !== next) coordinator?.release(ownershipToken)
+    coordinator = next
+    next?.update(ownershipToken, nativeNavigationEnabled, hasJavaScriptHandlers)
+  }
+
+  override fun setNativeNavigationEnabled(enabled: Boolean, hasHandlers: Boolean) {
+    reactApplicationContext.runOnUiQueueThread {
+      if (ownershipInvalidated) return@runOnUiQueueThread
+      nativeNavigationEnabled = enabled
+      hasJavaScriptHandlers = hasHandlers
+      updateBackOwnership()
+    }
+  }
+
+  override fun onHostResume() {
+    updateBackOwnership()
+  }
+
+  override fun onHostPause(): Unit = Unit
+
+  override fun onHostDestroy() {
+    coordinator?.release(ownershipToken)
+    coordinator = null
+  }
+
+  override fun invalidate() {
+    ownershipInvalidated = true
+    reactApplicationContext.removeLifecycleEventListener(this)
+    reactApplicationContext.runOnUiQueueThread {
+      coordinator?.release(ownershipToken)
+      coordinator = null
+    }
+    super.invalidate()
+  }
+
   @DoNotStripAny
   public fun interface RCTDeviceEventEmitter : JavaScriptModule {
     public fun emit(eventName: String, data: Any?)
@@ -35,7 +86,7 @@ public open class DeviceEventManagerModule(
   /** Sends an event to the JS instance that the hardware back has been pressed. */
   public open fun emitHardwareBackPressed() {
     val reactApplicationContext: ReactApplicationContext? =
-        getReactApplicationContextIfActiveOrWarn()
+      getReactApplicationContextIfActiveOrWarn()
     val map = buildReadableMap { put("timeStamp", System.nanoTime() / 1_000_000.0) }
     reactApplicationContext?.emitDeviceEvent("hardwareBackPress", map)
   }
@@ -43,7 +94,7 @@ public open class DeviceEventManagerModule(
   /** Sends an event to the JS instance that a new intent was received. */
   public open fun emitNewIntentReceived(uri: Uri) {
     val reactApplicationContext: ReactApplicationContext? =
-        getReactApplicationContextIfActiveOrWarn()
+      getReactApplicationContextIfActiveOrWarn()
     val map = buildReadableMap { put("url", uri.toString()) }
     reactApplicationContext?.emitDeviceEvent("url", map)
   }

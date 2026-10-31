@@ -9,6 +9,7 @@ package com.facebook.react;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import androidx.activity.OnBackPressedCallback;
@@ -25,6 +26,23 @@ public abstract class ReactActivity extends AppCompatActivity
     implements DefaultHardwareBackBtnHandler, PermissionAwareActivity {
 
   private final ReactActivityDelegate mDelegate;
+  private final BackNavigationCoordinator mBackNavigationCoordinator =
+      new BackNavigationCoordinator();
+  private boolean mBackCallbackRegistered;
+
+  public final BackNavigationCoordinator getBackNavigationCoordinator() {
+    return mBackNavigationCoordinator;
+  }
+
+  private void updateBackOwnership() {
+    if (!mBackCallbackRegistered
+        && Build.VERSION.SDK_INT >= 33
+        && mBackNavigationCoordinator.isNativeNavigationEnabled()) {
+      getOnBackPressedDispatcher().addCallback(this, mBackPressedCallback);
+      mBackCallbackRegistered = true;
+    }
+    mBackPressedCallback.setEnabled(mBackNavigationCoordinator.isJavaScriptEnabled());
+  }
 
   // Due to enforced predictive back on targetSdk 36, 'onBackPressed()' is disabled by default.
   // Using a workaround to trigger it manually.
@@ -34,7 +52,7 @@ public abstract class ReactActivity extends AppCompatActivity
         public void handleOnBackPressed() {
           setEnabled(false);
           onBackPressed();
-          setEnabled(true);
+          updateBackOwnership();
         }
       };
 
@@ -60,9 +78,12 @@ public abstract class ReactActivity extends AppCompatActivity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     mDelegate.onCreate(savedInstanceState);
-    if (AndroidVersion.isAtLeastTargetSdk36(this)) {
+    if (!mBackCallbackRegistered && AndroidVersion.isAtLeastTargetSdk36(this)) {
       getOnBackPressedDispatcher().addCallback(this, mBackPressedCallback);
+      mBackCallbackRegistered = true;
     }
+    mBackNavigationCoordinator.addListener(this::updateBackOwnership);
+    updateBackOwnership();
   }
 
   @Override
@@ -124,10 +145,14 @@ public abstract class ReactActivity extends AppCompatActivity
     // Disabling callback so the fallback logic (finish activity) can run
     // as super.onBackPressed() will call all enabled callbacks in the dispatcher.
     mBackPressedCallback.setEnabled(false);
-    super.onBackPressed();
+    if (mBackNavigationCoordinator.isNativeNavigationEnabled()) {
+      mBackNavigationCoordinator.withNativeFallback(() -> super.onBackPressed());
+    } else {
+      super.onBackPressed();
+    }
     // Re-enable callback to ensure custom back handling works after activity resume
     // Without this, the callback remains disabled when the app returns from background
-    mBackPressedCallback.setEnabled(true);
+    updateBackOwnership();
   }
 
   @Override

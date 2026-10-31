@@ -34,10 +34,14 @@ export interface HardwareBackPressEvent {
  */
 export interface BackHandlerStatic {
   exitApp(): void;
+  setNativeNavigationEnabled(enabled: boolean): void;
   addEventListener(
     eventName: BackPressEventName,
     handler: (event: HardwareBackPressEvent) => boolean | null | undefined,
-  ): NativeEventSubscription;
+    options?: {nativeNavigationFallback?: boolean},
+  ): NativeEventSubscription & {
+    setNativeNavigationFallback(enabled: boolean): void;
+  };
 }
 
 export const BackHandler: BackHandlerStatic;
