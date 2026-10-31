@@ -74,6 +74,9 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
   // Filter
   std::vector<FilterFunction> filter{};
 
+  // Backdrop Filter
+  std::vector<FilterFunction> backdropFilter{};
+
   // Background Image
   std::vector<BackgroundImage> backgroundImage{};
 
