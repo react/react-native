@@ -44,6 +44,12 @@ import {AbortController} from './AbortController';
 const ABORTED_KEY: symbol = Symbol('aborted');
 const REASON_KEY: symbol = Symbol('reason');
 
+const dependentSignals: WeakMap<AbortSignal, Set<AbortSignal>> = new WeakMap();
+const sourceSignalRefs: WeakMap<
+  AbortSignal,
+  ReadonlyArray<WeakRef<AbortSignal>>,
+> = new WeakMap();
+
 /**
  * The signal class.
  * @see https://dom.spec.whatwg.org/#abortsignal
@@ -113,22 +119,37 @@ export class AbortSignal extends EventTarget {
       }
     }
 
-    // Third pass: none of the signals is aborted, so subscribe to all of them
-    // and abort the resulting signal when any of them aborts.
-    const controller = new AbortController();
-    const listeners = [];
-    const cleanup = () => listeners.forEach(unsubscribe => unsubscribe());
+    const resultSignal = createAbortSignal();
+    const resultSources: Set<AbortSignal> = new Set();
 
     for (let i = 0; i < signals.length; i++) {
       const signal = signals[i];
-      const onAbort = () => {
-        controller.abort(signal.reason);
-        cleanup();
-      };
-      signal.addEventListener('abort', onAbort);
-      listeners.push(() => signal.removeEventListener('abort', onAbort));
+      const sourceRefs = sourceSignalRefs.get(signal);
+      if (sourceRefs == null) {
+        resultSources.add(signal);
+      } else {
+        for (const sourceRef of sourceRefs) {
+          const sourceSignal = sourceRef.deref();
+          if (sourceSignal != null) {
+            resultSources.add(sourceSignal);
+          }
+        }
+      }
     }
-    return controller.signal;
+
+    const resultSourceRefs: Array<WeakRef<AbortSignal>> = [];
+    for (const sourceSignal of resultSources) {
+      let dependents = dependentSignals.get(sourceSignal);
+      if (dependents == null) {
+        dependents = new Set();
+        dependentSignals.set(sourceSignal, dependents);
+      }
+      dependents.add(resultSignal);
+      resultSourceRefs.push(new WeakRef(sourceSignal));
+    }
+    sourceSignalRefs.set(resultSignal, resultSourceRefs);
+
+    return resultSignal;
   }
 
   // $FlowExpectedError[unsupported-syntax]
@@ -201,7 +222,43 @@ export function abortSignal(
   signal[ABORTED_KEY] = true;
   // $FlowExpectedError[prop-missing]
   signal[REASON_KEY] = reason;
+
+  const dependentSignalsToAbort: Array<AbortSignal> = [];
+  const dependents = dependentSignals.get(signal);
+  if (dependents != null) {
+    dependentSignals.delete(signal);
+    for (const dependentSignal of dependents) {
+      // $FlowExpectedError[invalid-compare]
+      // $FlowExpectedError[prop-missing]
+      if (dependentSignal[ABORTED_KEY] === false) {
+        // $FlowExpectedError[prop-missing]
+        dependentSignal[ABORTED_KEY] = true;
+        // $FlowExpectedError[prop-missing]
+        dependentSignal[REASON_KEY] = reason;
+        unregisterDependentSignal(dependentSignal);
+        dependentSignalsToAbort.push(dependentSignal);
+      }
+    }
+  }
+
   dispatchTrustedEvent(signal, new Event('abort'));
+  for (const dependentSignal of dependentSignalsToAbort) {
+    dispatchTrustedEvent(dependentSignal, new Event('abort'));
+  }
+}
+
+function unregisterDependentSignal(dependentSignal: AbortSignal): void {
+  const sourceRefs = sourceSignalRefs.get(dependentSignal);
+  if (sourceRefs == null) {
+    return;
+  }
+  sourceSignalRefs.delete(dependentSignal);
+  for (const sourceRef of sourceRefs) {
+    const sourceSignal = sourceRef.deref();
+    if (sourceSignal != null) {
+      dependentSignals.get(sourceSignal)?.delete(dependentSignal);
+    }
+  }
 }
 
 // Properties should be enumerable.
