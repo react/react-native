@@ -568,6 +568,13 @@ static BOOL RCTIsAttributeEffectivelySame(
     NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes,
     const TextAttributes &baseTextAttributes)
 {
+  // The event emitter is React-internal metadata, not something UIKit shows, and a TextInput dispatches its events
+  // through its own emitter rather than through this attribute. Text typed into the field often carries no
+  // emitter while the state echoing it does, so comparing it reports a difference for identical text.
+  if ([attributeKey isEqualToString:RCTAttributedStringEventEmitterKey]) {
+    return YES;
+  }
+
   id attribute1 = attributes1[attributeKey] ?: insensitiveAttributes[attributeKey];
   id attribute2 = attributes2[attributeKey] ?: insensitiveAttributes[attributeKey];
 
