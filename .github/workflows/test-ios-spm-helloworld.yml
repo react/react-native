@@ -85,7 +85,7 @@ jobs:
       - name: Convert the app to SwiftPM
         shell: bash
         working-directory: ${{ env.APP_IOS_DIR }}
-        run: npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+        run: RN_STRICT_API=1 npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
       - name: Assert the app is on SwiftPM
         shell: bash
         working-directory: ${{ env.APP_IOS_DIR }}
