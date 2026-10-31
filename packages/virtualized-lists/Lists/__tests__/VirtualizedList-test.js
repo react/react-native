@@ -9,6 +9,7 @@
  */
 
 import VirtualizedList from '../VirtualizedList';
+import CellRenderer from '../VirtualizedListCellRenderer';
 import {format} from 'node:util';
 import * as React from 'react';
 import {createElement, createRef} from 'react';
@@ -1140,6 +1141,131 @@ describe('VirtualizedList', () => {
       {first: 13, last: 19, isSpacer: true},
     ]);
   });
+
+  it('uses the sticky wrapper layout for sticky header cells', async () => {
+    // Sticky headers at 0, 5 and 10. Every cell is 50dip tall.
+    const items = generateItemsStickyEveryN(15, 5);
+
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList initialNumToRender={15} {...baseItemProps(items)} />,
+      );
+    });
+
+    await act(() => {
+      simulateLayout(component, {
+        viewport: {width: 10, height: 100},
+        content: {width: 10, height: 750},
+      });
+      for (let i = 0; i < items.length; i++) {
+        // Sticky header cells measure themselves relative to their wrapper.
+        const y = items[i].sticky === true ? 0 : i * 50;
+        simulateCellLayout(component, items, i, {
+          width: 10,
+          height: 50,
+          x: 0,
+          y,
+        });
+      }
+    });
+
+    // The wrapper reports after the cell's own layout.
+    await act(() => {
+      simulateStickyHeaderWrapperLayout(component, items, 5, {
+        width: 10,
+        height: 50,
+        x: 0,
+        y: 250,
+      });
+    });
+    expect(getCellOffset(component, 5)).toBe(250);
+
+    // The wrapper reports before the cell's own layout.
+    await act(() => {
+      simulateStickyHeaderWrapperLayout(component, items, 10, {
+        width: 10,
+        height: 50,
+        x: 0,
+        y: 500,
+      });
+      simulateCellLayout(component, items, 10, {
+        width: 10,
+        height: 50,
+        x: 0,
+        y: 0,
+      });
+    });
+    expect(getCellOffset(component, 10)).toBe(500);
+
+    // Cells that are not sticky keep using their own layout.
+    expect(getCellOffset(component, 7)).toBe(350);
+  });
+
+  it('uses the cell layout again once a cell is no longer sticky', async () => {
+    const items = generateItemsStickyEveryN(10, 5);
+    const props = {initialNumToRender: 10, ...baseItemProps(items)};
+
+    let component;
+    await act(() => {
+      component = create(<VirtualizedList {...props} />);
+    });
+
+    await act(() => {
+      simulateLayout(component, {
+        viewport: {width: 10, height: 100},
+        content: {width: 10, height: 500},
+      });
+      simulateStickyHeaderWrapperLayout(component, items, 5, {
+        width: 10,
+        height: 50,
+        x: 0,
+        y: 250,
+      });
+    });
+    expect(getCellOffset(component, 5)).toBe(250);
+
+    await act(() => {
+      component.update(<VirtualizedList {...props} stickyHeaderIndices={[]} />);
+    });
+    expect(findCellRenderer(component, items, 5).props.onLayout).toBe(
+      undefined,
+    );
+
+    await act(() => {
+      simulateCellLayout(component, items, 5, {
+        width: 10,
+        height: 50,
+        x: 0,
+        y: 260,
+      });
+    });
+    expect(getCellOffset(component, 5)).toBe(260);
+  });
+
+  it('does not report items hidden behind a sticky list header', async () => {
+    // A 120dip header is pinned over items 0-4. Items 5-10 are fully visible.
+    expect(await viewableIndicesBelowStickyListHeader({})).toEqual([
+      5, 6, 7, 8, 9, 10,
+    ]);
+  });
+
+  it.each([
+    ['inverted', {inverted: true}],
+    ['invertStickyHeaders', {invertStickyHeaders: true}],
+    ['stickyHeaderHiddenOnScroll', {stickyHeaderHiddenOnScroll: true}],
+    [
+      'StickyHeaderComponent',
+      {StickyHeaderComponent: () => createElement('CustomStickyHeader')},
+    ],
+  ])(
+    'keeps the whole viewport when sticky headers are drawn elsewhere (%s)',
+    async (_name, props) => {
+      expect(await viewableIndicesBelowStickyListHeader(props)).toEqual([
+        4, 5, 6, 7, 8, 9, 10,
+      ]);
+    },
+  );
 });
 
 it('unmounts sticky headers moved below viewport', async () => {
@@ -3363,6 +3489,85 @@ function simulateCellLayout(component, items, itemIndex, dimensions) {
     cellKey,
     itemIndex,
   );
+}
+
+function findCellRenderer(component, items, itemIndex) {
+  const cellKey = VirtualizedList._keyExtractor(
+    items[itemIndex],
+    itemIndex,
+    component.getInstance().props,
+  );
+  return component.root.find(
+    node => node.type === CellRenderer && node.props.cellKey === cellKey,
+  );
+}
+
+// Mimics `ScrollViewStickyHeader`, which calls the cell element's `onLayout`
+// with the layout of its wrapper.
+function simulateStickyHeaderWrapperLayout(
+  component,
+  items,
+  itemIndex,
+  dimensions,
+) {
+  findCellRenderer(component, items, itemIndex).props.onLayout({
+    nativeEvent: {layout: dimensions, zoomScale: 1},
+  });
+}
+
+function getCellOffset(component, itemIndex) {
+  const instance = component.getInstance();
+  return instance.__getListMetrics().getCellMetrics(itemIndex, instance.props)
+    .offset;
+}
+
+// Renders thirty 80dip items below a sticky 120dip list header in a 600dip
+// viewport, scrolls to 400 and returns the indices reported as viewable.
+async function viewableIndicesBelowStickyListHeader(props) {
+  const items = generateItems(30);
+  const onViewableItemsChanged = jest.fn();
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        {...baseItemProps(items)}
+        ListHeaderComponent={() => createElement('Header')}
+        stickyHeaderIndices={[0]}
+        initialNumToRender={items.length}
+        viewabilityConfig={{itemVisiblePercentThreshold: 100}}
+        onViewableItemsChanged={onViewableItemsChanged}
+        {...props}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 600},
+      content: {width: 10, height: 120 + items.length * 80},
+    });
+    component.getInstance()._onLayoutHeader({
+      nativeEvent: {layout: {width: 10, height: 120, x: 0, y: 0}},
+    });
+    for (let i = 0; i < items.length; i++) {
+      simulateCellLayout(component, items, i, {
+        width: 10,
+        height: 80,
+        x: 0,
+        y: 120 + i * 80,
+      });
+    }
+    performAllBatches();
+  });
+
+  await act(() => {
+    simulateScroll(component, {x: 0, y: 400});
+    performAllBatches();
+  });
+
+  const lastCall = onViewableItemsChanged.mock.calls.at(-1)[0];
+  return lastCall.viewableItems.map(token => token.index);
 }
 
 function simulateScroll(component, position) {

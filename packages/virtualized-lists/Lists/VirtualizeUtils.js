@@ -243,6 +243,57 @@ export function computeWindowedRenderLimits(
   return {first, last};
 }
 
+/**
+ * Finds the sticky header pinned to the start of the viewport, and how much of
+ * the viewport it covers. This follows how `ScrollViewStickyHeader` positions
+ * headers that stick to the top: a header pins once the scroll offset reaches
+ * its start, and the next sticky header pushes it out.
+ */
+export function findPinnedStickyHeader(
+  stickyHeaderIndices: ReadonlyArray<number>,
+  getHeaderLayout: (
+    stickyIndex: number,
+  ) => ?Readonly<{offset: number, length: number, ...}>,
+  scrollOffset: number,
+): ?{stickyIndex: number, coveredLength: number} {
+  let pinnedIndex: ?number = null;
+  let pinnedOffset = 0;
+  let pinnedLength = 0;
+  let nextOffset: ?number = null;
+
+  for (const stickyIndex of stickyHeaderIndices) {
+    const layout = getHeaderLayout(stickyIndex);
+    if (layout == null) {
+      continue;
+    }
+    if (layout.offset <= scrollOffset) {
+      if (
+        pinnedIndex == null ||
+        layout.offset > pinnedOffset ||
+        (layout.offset === pinnedOffset && stickyIndex > pinnedIndex)
+      ) {
+        pinnedIndex = stickyIndex;
+        pinnedOffset = layout.offset;
+        pinnedLength = layout.length;
+      }
+    } else if (nextOffset == null || layout.offset < nextOffset) {
+      nextOffset = layout.offset;
+    }
+  }
+
+  if (pinnedIndex == null) {
+    return null;
+  }
+
+  // Without a next header, or when the next header starts inside this one,
+  // `ScrollViewStickyHeader` keeps the header pinned.
+  let coveredLength = pinnedLength;
+  if (nextOffset != null && nextOffset - pinnedLength >= pinnedOffset) {
+    coveredLength = Math.min(pinnedLength, nextOffset - scrollOffset);
+  }
+  return coveredLength > 0 ? {stickyIndex: pinnedIndex, coveredLength} : null;
+}
+
 export function keyExtractor(item: any, index: number): string {
   if (typeof item === 'object' && item?.key != null) {
     return item.key;

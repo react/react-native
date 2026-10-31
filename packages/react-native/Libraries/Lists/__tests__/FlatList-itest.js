@@ -584,6 +584,126 @@ describe('<FlatList>', () => {
       expect(viewableKeys).toContain('3');
     });
 
+    it('reports the items around sticky headers that are on screen', () => {
+      // Two groups, each one 50px sticky header followed by five 80px rows:
+      // header A at 0, rows A1-A5, header B at 450, rows B1-B5.
+      const data = ['A', 'B'].flatMap(group => [
+        {key: `header ${group}`, height: 50},
+        ...Array.from({length: 5}, (_, i) => ({
+          key: `${group}${i + 1}`,
+          height: 80,
+        })),
+      ]);
+      const root = Fantom.createRoot({
+        viewportWidth: 400,
+        viewportHeight: 600,
+      });
+      const onViewableItemsChanged = jest.fn();
+      const flatListRef = createRef<FlatList<{key: string, height: number}>>();
+      const timers = Fantom.installTimerMock();
+      try {
+        Fantom.runTask(() => {
+          root.render(
+            <FlatList
+              ref={flatListRef}
+              data={data}
+              renderItem={({item}) => (
+                <View style={{height: item.height}} collapsable={false} />
+              )}
+              stickyHeaderIndices={[0, 6]}
+              initialNumToRender={data.length}
+              viewabilityConfig={{itemVisiblePercentThreshold: 100}}
+              onViewableItemsChanged={onViewableItemsChanged}
+            />,
+          );
+        });
+
+        const scrollView = nullthrows(
+          nullthrows(flatListRef.current).getNativeScrollRef(),
+        );
+
+        // Header A is pinned over A4. Header B (at 450) and B1-B4 are fully on
+        // screen.
+        Fantom.scrollTo(scrollView, {x: 0, y: 254});
+        // Flush the render batches scheduled by cell layout events.
+        timers.runAllTimers();
+        Fantom.runWorkLoop();
+
+        const lastCall =
+          onViewableItemsChanged.mock.calls[
+            onViewableItemsChanged.mock.calls.length - 1
+          ][0];
+        const viewableKeys = lastCall.viewableItems.map(
+          (item: {key: string, ...}) => item.key,
+        );
+        expect(viewableKeys).toEqual([
+          'header A',
+          'A5',
+          'header B',
+          'B1',
+          'B2',
+          'B3',
+          'B4',
+        ]);
+      } finally {
+        timers.uninstall();
+      }
+    });
+
+    it('does not report items hidden behind a sticky ListHeaderComponent', () => {
+      const root = Fantom.createRoot({
+        viewportWidth: 400,
+        viewportHeight: 600,
+      });
+      const onViewableItemsChanged = jest.fn();
+      const flatListRef = createRef<FlatList<{key: string}>>();
+      const data = Array.from({length: 30}, (_, i) => ({key: String(i)}));
+      const timers = Fantom.installTimerMock();
+      try {
+        Fantom.runTask(() => {
+          root.render(
+            <FlatList
+              ref={flatListRef}
+              data={data}
+              ListHeaderComponent={
+                <View style={{height: 120}} collapsable={false} />
+              }
+              stickyHeaderIndices={[0]}
+              renderItem={() => (
+                <View style={{height: 80}} collapsable={false} />
+              )}
+              initialNumToRender={data.length}
+              viewabilityConfig={{itemVisiblePercentThreshold: 100}}
+              onViewableItemsChanged={onViewableItemsChanged}
+            />,
+          );
+        });
+
+        const scrollView = nullthrows(
+          nullthrows(flatListRef.current).getNativeScrollRef(),
+        );
+
+        // The 120px header is pinned over items 0-4.
+        Fantom.scrollTo(scrollView, {x: 0, y: 400});
+        // Flush render batches until layout settles.
+        do {
+          timers.runAllTimers();
+          Fantom.runWorkLoop();
+        } while (timers.getPendingTimerCount() > 0);
+
+        const lastCall =
+          onViewableItemsChanged.mock.calls[
+            onViewableItemsChanged.mock.calls.length - 1
+          ][0];
+        const viewableKeys = lastCall.viewableItems.map(
+          (item: {key: string, ...}) => item.key,
+        );
+        expect(viewableKeys).toEqual(['5', '6', '7', '8', '9', '10']);
+      } finally {
+        timers.uninstall();
+      }
+    });
+
     it('supports viewabilityConfigCallbackPairs', () => {
       const root = Fantom.createRoot({
         viewportWidth: 400,

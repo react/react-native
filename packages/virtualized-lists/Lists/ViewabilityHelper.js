@@ -25,6 +25,18 @@ export type ViewToken = {
   ...
 };
 
+/**
+ * A sticky header pinned to the start of the viewport. Content behind it is
+ * not visible.
+ */
+export type PinnedStickyHeader = Readonly<{
+  // Length of the start of the viewport that the header covers.
+  coveredLength: number,
+  // Index of the header when it is a list item, or null for
+  // `ListHeaderComponent`.
+  cellIndex: ?number,
+}>;
+
 export type ViewabilityConfigCallbackPair = {
   viewabilityConfig: ViewabilityConfig,
   onViewableItemsChanged: (info: {
@@ -115,6 +127,7 @@ class ViewabilityHelper {
       last: number,
       ...
     },
+    pinnedStickyHeader?: ?PinnedStickyHeader,
   ): Array<number> {
     const itemCount = props.getItemCount(props.data);
     const {itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold} =
@@ -134,6 +147,8 @@ class ViewabilityHelper {
       return viewableIndices;
     }
     let firstVisible = -1;
+    const viewportStart = Math.floor(pinnedStickyHeader?.coveredLength ?? 0);
+    const pinnedCellIndex = pinnedStickyHeader?.cellIndex;
     const {first, last} = renderRange || {first: 0, last: itemCount - 1};
     if (last >= itemCount) {
       console.warn(
@@ -143,6 +158,10 @@ class ViewabilityHelper {
       return [];
     }
     for (let idx = first; idx <= last; idx++) {
+      if (idx === pinnedCellIndex) {
+        // Checked below, where the header is drawn.
+        continue;
+      }
       const metrics = listMetrics.getCellMetrics(idx, props);
       if (!metrics) {
         continue;
@@ -158,6 +177,7 @@ class ViewabilityHelper {
             viewablePercentThreshold,
             top,
             bottom,
+            viewportStart,
             viewportHeight,
             metrics.length,
           )
@@ -166,6 +186,41 @@ class ViewabilityHelper {
         }
       } else if (firstVisible >= 0) {
         break;
+      }
+    }
+
+    if (
+      pinnedStickyHeader != null &&
+      pinnedCellIndex != null &&
+      pinnedCellIndex < itemCount
+    ) {
+      const metrics = listMetrics.getCellMetrics(pinnedCellIndex, props);
+      if (metrics) {
+        // The pinned header ends where the content it covers ends.
+        const top = Math.floor(
+          pinnedStickyHeader.coveredLength - metrics.length,
+        );
+        const bottom = Math.floor(top + metrics.length);
+        if (
+          _isViewable(
+            viewAreaMode,
+            viewablePercentThreshold,
+            top,
+            bottom,
+            0,
+            viewportHeight,
+            metrics.length,
+          )
+        ) {
+          let insertAt = 0;
+          while (
+            insertAt < viewableIndices.length &&
+            viewableIndices[insertAt] < pinnedCellIndex
+          ) {
+            insertAt++;
+          }
+          viewableIndices.splice(insertAt, 0, pinnedCellIndex);
+        }
       }
     }
     return viewableIndices;
@@ -199,6 +254,7 @@ class ViewabilityHelper {
     // Suppression bypasses the normal early returns so an empty result clears
     // items reported before an ancestor moved off screen.
     suppressViewableItems?: boolean,
+    pinnedStickyHeader?: ?PinnedStickyHeader,
   ): void {
     const updateGeneration = this._updateGeneration + 1;
     const itemCount = props.getItemCount(props.data);
@@ -229,6 +285,7 @@ class ViewabilityHelper {
         viewportHeight,
         listMetrics,
         renderRange,
+        pinnedStickyHeader,
       );
     }
     if (
@@ -340,13 +397,19 @@ function _isViewable(
   viewablePercentThreshold: number,
   top: number,
   bottom: number,
+  viewportStart: number,
   viewportHeight: number,
   itemLength: number,
 ): boolean {
-  if (_isEntirelyVisible(top, bottom, viewportHeight)) {
+  if (_isEntirelyVisible(top, bottom, viewportStart, viewportHeight)) {
     return true;
   } else {
-    const pixels = _getPixelsVisible(top, bottom, viewportHeight);
+    const pixels = _getPixelsVisible(
+      top,
+      bottom,
+      viewportStart,
+      viewportHeight,
+    );
     const percent =
       100 * (viewAreaMode ? pixels / viewportHeight : pixels / itemLength);
     return percent >= viewablePercentThreshold;
@@ -356,18 +419,21 @@ function _isViewable(
 function _getPixelsVisible(
   top: number,
   bottom: number,
+  viewportStart: number,
   viewportHeight: number,
 ): number {
-  const visibleHeight = Math.min(bottom, viewportHeight) - Math.max(top, 0);
+  const visibleHeight =
+    Math.min(bottom, viewportHeight) - Math.max(top, viewportStart);
   return Math.max(0, visibleHeight);
 }
 
 function _isEntirelyVisible(
   top: number,
   bottom: number,
+  viewportStart: number,
   viewportHeight: number,
 ): boolean {
-  return top >= 0 && bottom <= viewportHeight && bottom > top;
+  return top >= viewportStart && bottom <= viewportHeight && bottom > top;
 }
 
 export default ViewabilityHelper;

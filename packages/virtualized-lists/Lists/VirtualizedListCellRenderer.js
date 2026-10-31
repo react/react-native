@@ -40,6 +40,9 @@ export type Props<ItemT> = {
     index: number,
   ) => void,
   onCellFocusCapture?: (cellKey: string) => void,
+  // Not used by CellRenderer. A sticky header wrapper reads it from the cell
+  // element and calls it with the wrapper's layout.
+  onLayout?: (event: LayoutChangeEvent) => void,
   onUnmount: (cellKey: string) => void,
   onUpdateSeparators: (
     cellKeys: Array<?string>,
