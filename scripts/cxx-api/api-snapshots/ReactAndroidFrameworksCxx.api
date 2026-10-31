@@ -480,6 +480,7 @@ using facebook::react::AndroidSwipeRefreshLayoutComponentDescriptor = facebook::
 using facebook::react::AndroidSwipeRefreshLayoutShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::AndroidSwipeRefreshLayoutComponentName, facebook::react::AndroidSwipeRefreshLayoutProps, facebook::react::AndroidSwipeRefreshLayoutEventEmitter, facebook::react::AndroidSwipeRefreshLayoutState>;
 using facebook::react::AndroidSwipeRefreshLayoutState = facebook::react::StateData;
 using facebook::react::AnimationEndCallback = facebook::react::AsyncCallback<facebook::react::EndResult>;
+using facebook::react::AnimationFrontendId = uint32_t;
 using facebook::react::AnimationTimestamp = std::chrono::duration<double, std::milli>;
 using facebook::react::BackgroundExecutor = std::function<void(std::function<void()>&& callback)>;
 using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
@@ -1302,13 +1303,16 @@ class facebook::react::AnimationBackend : public facebook::react::UIManagerAnima
   public AnimationBackend(std::shared_ptr<facebook::react::AnimationChoreographer> animationChoreographer, std::shared_ptr<facebook::react::UIManager> uiManager);
   public using PauseCallback = std::function<void()>;
   public using ResumeCallback = std::function<void()>;
+  public virtual facebook::react::AnimationFrontendId registerFrontend(facebook::react::AnimationFrontend frontend) override;
   public virtual facebook::react::CallbackId start(const facebook::react::UIManagerAnimationBackend::Callback& callback) override;
   public virtual void clearRegistry(facebook::react::SurfaceId surfaceId) override;
   public virtual void clearRegistryOnSurfaceStop(facebook::react::SurfaceId surfaceId) override;
   public virtual void onAnimationFrame(facebook::react::AnimationTimestamp timestamp) override;
   public virtual void pushAnimationMutations(const facebook::react::UIManagerAnimationBackend::Callback& callback) override;
   public virtual void registerJSInvoker(std::shared_ptr<facebook::react::CallInvoker> jsInvoker) override;
+  public virtual void startFrontend(facebook::react::AnimationFrontendId frontendId) override;
   public virtual void stop(facebook::react::CallbackId callbackId) override;
+  public virtual void stopFrontend(facebook::react::AnimationFrontendId frontendId) override;
   public virtual void trigger() override;
   public void requestAsyncFlushForSurfaces(const std::set<facebook::react::SurfaceId>& surfaces);
   public void synchronouslyUpdateProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
@@ -4241,13 +4245,16 @@ class facebook::react::UIManager : public facebook::react::ShadowTreeDelegate {
 
 class facebook::react::UIManagerAnimationBackend {
   public using Callback = std::function<facebook::react::AnimationMutations(facebook::react::AnimationTimestamp)>;
+  public virtual facebook::react::AnimationFrontendId registerFrontend(facebook::react::AnimationFrontend frontend) = 0;
   public virtual facebook::react::CallbackId start(const facebook::react::UIManagerAnimationBackend::Callback& callback) = 0;
   public virtual void clearRegistry(facebook::react::SurfaceId surfaceId) = 0;
   public virtual void clearRegistryOnSurfaceStop(facebook::react::SurfaceId surfaceId) = 0;
   public virtual void onAnimationFrame(facebook::react::AnimationTimestamp timestamp) = 0;
   public virtual void pushAnimationMutations(const facebook::react::UIManagerAnimationBackend::Callback& callback) = 0;
   public virtual void registerJSInvoker(std::shared_ptr<facebook::react::CallInvoker> jsInvoker) = 0;
+  public virtual void startFrontend(facebook::react::AnimationFrontendId frontendId) = 0;
   public virtual void stop(facebook::react::CallbackId callbackId) = 0;
+  public virtual void stopFrontend(facebook::react::AnimationFrontendId frontendId) = 0;
   public virtual void trigger() = 0;
   public virtual ~UIManagerAnimationBackend() = default;
 }
@@ -5624,6 +5631,10 @@ struct facebook::react::AnimationConfig {
   public facebook::react::Float springDamping;
 }
 
+struct facebook::react::AnimationFrontend {
+  public std::function<facebook::react::AnimationMutations(facebook::react::AnimationTimestamp)> onAnimationFrame;
+}
+
 struct facebook::react::AnimationKeyFrame {
   public bool generateFinalSyntheticMutations;
   public bool invalidated;
@@ -6506,6 +6517,11 @@ struct facebook::react::Rect {
   public static facebook::react::Rect boundingRect(const facebook::react::Point& a, const facebook::react::Point& b, const facebook::react::Point& c, const facebook::react::Point& d) noexcept;
   public static facebook::react::Rect intersect(const facebook::react::Rect& rect1, const facebook::react::Rect& rect2);
   public void unionInPlace(const facebook::react::Rect& rect) noexcept;
+}
+
+struct facebook::react::RegisteredFrontend {
+  public bool started;
+  public facebook::react::AnimationFrontend frontend;
 }
 
 struct facebook::react::SchedulerToolbox {
