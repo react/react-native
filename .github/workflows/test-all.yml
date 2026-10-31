@@ -170,6 +170,17 @@ jobs:
           # test_ios_rntester_dynamic_frameworks).
           use-prebuilds: true
           flavor: ${{ matrix.flavor }}
+      - name: Test TextInput caret and selection behavior
+        if: ${{ matrix.flavor == 'Debug' && matrix.frameworks == false }}
+        run: |
+          xcodebuild test \
+            -workspace packages/rn-tester/RNTesterPods.xcworkspace \
+            -scheme RNTesterUnitTests \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath /tmp/RNTesterBuild \
+            -only-testing:RNTesterUnitTests/RCTUITextFieldTests
 
   test_e2e_ios_rntester:
     needs: test_ios_rntester

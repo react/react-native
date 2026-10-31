@@ -323,7 +323,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.defaultTextAttributes = defaultAttributes;
   }
 
-  if (newTextInputProps.selectionColor != oldTextInputProps.selectionColor) {
+  // A new backing view may have copied a transparent tint from a hidden caret.
+  if (newTextInputProps.selectionColor != oldTextInputProps.selectionColor ||
+      newTextInputProps.multiline != oldTextInputProps.multiline) {
     _backedTextInputView.tintColor = RCTUIColorFromSharedColor(newTextInputProps.selectionColor);
   }
 
