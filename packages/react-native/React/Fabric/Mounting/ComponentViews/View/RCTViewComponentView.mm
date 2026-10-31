@@ -710,6 +710,10 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   auto movedLayoutMetrics = layoutMetrics;
   movedLayoutMetrics.frame.origin = _layoutMetrics.frame.origin;
   BOOL const onlyMoved = movedLayoutMetrics == _layoutMetrics;
+  if ([self _observesSafeAreaInsets] && layoutMetrics.frame != _layoutMetrics.frame) {
+    [self setNeedsLayout];
+  }
+
   _layoutMetrics = layoutMetrics;
   if (!onlyMoved || _props->cursor == Cursor::Pointer) {
     _needsInvalidateLayer = YES;
@@ -763,6 +767,46 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
       ABS(lhs.right - rhs.right) <= threshold && ABS(lhs.bottom - rhs.bottom) <= threshold;
 }
 
+- (UIEdgeInsets)_safeAreaInsetsForEvent
+{
+  UIEdgeInsets insets = self.safeAreaInsets;
+  UIWindow *window = self.window;
+  if (window == nil) {
+    return insets;
+  }
+
+  CGRect bounds = [self convertRect:self.bounds toView:window];
+  CGRect windowBounds = window.bounds;
+  UIEdgeInsets windowInsets = window.safeAreaInsets;
+  CGRect safeBounds = UIEdgeInsetsInsetRect(windowBounds, windowInsets);
+  CGRect leftStrip = CGRectMake(
+      CGRectGetMinX(windowBounds), CGRectGetMinY(windowBounds), windowInsets.left, CGRectGetHeight(windowBounds));
+  CGRect topStrip = CGRectMake(
+      CGRectGetMinX(windowBounds), CGRectGetMinY(windowBounds), CGRectGetWidth(windowBounds), windowInsets.top);
+  CGRect rightStrip = CGRectMake(
+      CGRectGetMaxX(safeBounds), CGRectGetMinY(windowBounds), windowInsets.right, CGRectGetHeight(windowBounds));
+  CGRect bottomStrip = CGRectMake(
+      CGRectGetMinX(windowBounds), CGRectGetMaxY(safeBounds), CGRectGetWidth(windowBounds), windowInsets.bottom);
+  auto intersects = [bounds](CGRect strip) { return !CGRectIsEmpty(strip) && CGRectIntersectsRect(bounds, strip); };
+  if (intersects(leftStrip)) {
+    insets.left =
+        MAX(insets.left, MIN(CGRectGetWidth(bounds), MAX(0, CGRectGetMinX(safeBounds) - CGRectGetMinX(bounds))));
+  }
+  if (intersects(topStrip)) {
+    insets.top =
+        MAX(insets.top, MIN(CGRectGetHeight(bounds), MAX(0, CGRectGetMinY(safeBounds) - CGRectGetMinY(bounds))));
+  }
+  if (intersects(rightStrip)) {
+    insets.right =
+        MAX(insets.right, MIN(CGRectGetWidth(bounds), MAX(0, CGRectGetMaxX(bounds) - CGRectGetMaxX(safeBounds))));
+  }
+  if (intersects(bottomStrip)) {
+    insets.bottom =
+        MAX(insets.bottom, MIN(CGRectGetHeight(bounds), MAX(0, CGRectGetMaxY(bounds) - CGRectGetMaxY(safeBounds))));
+  }
+  return insets;
+}
+
 // The event is only ever emitted from `layoutSubviews`; everything that might
 // have changed the insets merely marks the view as needing layout. This defers
 // the emit out of arbitrary call contexts — in particular out of
@@ -779,7 +823,7 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
     return;
   }
 
-  UIEdgeInsets insets = self.safeAreaInsets;
+  UIEdgeInsets insets = [self _safeAreaInsetsForEvent];
   NSValue *lastSentSafeAreaInsets = [self _lastSentSafeAreaInsets];
   if (lastSentSafeAreaInsets != nil &&
       RCTEdgeInsetsEqualWithThreshold(insets, lastSentSafeAreaInsets.UIEdgeInsetsValue, 1.0 / RCTScreenScale())) {
