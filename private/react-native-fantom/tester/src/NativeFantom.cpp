@@ -22,6 +22,7 @@
 #include <jsi/instrumentation.h>
 #include "render/RenderFormatOptions.h"
 #include "render/RenderOutput.h"
+#include "render/TextLayout.h"
 
 namespace facebook::react {
 
@@ -112,6 +113,25 @@ std::string NativeFantom::getRenderedOutput(
   auto viewTree = appDelegate_.mountingManager_->getViewTree(surfaceId);
   return appDelegate_.mountingManager_->renderer()->render(
       viewTree, formatOptions);
+}
+
+void NativeFantom::registerAsset(
+    jsi::Runtime& /*runtime*/,
+    const std::string& uri,
+    const std::string& filePath) {
+  assetPaths_.insert_or_assign(uri, filePath);
+}
+
+void NativeFantom::registerFont(
+    jsi::Runtime& runtime,
+    const std::string& filePath) {
+  try {
+    const auto asset = assetPaths_.find(filePath);
+    facebook::react::registerFont(
+        asset == assetPaths_.end() ? filePath : asset->second);
+  } catch (const std::exception& error) {
+    throw jsi::JSError(runtime, error.what());
+  }
 }
 
 void NativeFantom::reportTestSuiteResultsJSON(

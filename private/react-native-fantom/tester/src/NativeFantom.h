@@ -15,6 +15,7 @@
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/graphics/Point.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace facebook::react {
@@ -101,6 +102,9 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
       SurfaceId surfaceId,
       NativeFantomGetRenderedOutputRenderFormatOptions options);
 
+  void registerAsset(jsi::Runtime &runtime, const std::string &uri, const std::string &filePath);
+  void registerFont(jsi::Runtime &runtime, const std::string &filePath);
+
   void reportTestSuiteResultsJSON(jsi::Runtime &runtime, const std::string &testSuiteResultsJSON);
 
   void enqueueNativeEvent(
@@ -149,6 +153,7 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
 
  private:
   TesterAppDelegate &appDelegate_;
+  std::unordered_map<std::string, std::string> assetPaths_;
   SurfaceId nextSurfaceId_ = 1;
 };
 

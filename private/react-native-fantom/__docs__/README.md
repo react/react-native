@@ -99,6 +99,11 @@ values. If another root is still alive and the new metrics differ from the
 current global dimensions, Fantom applies the new values and emits a warning.
 Call `root.destroy()` when a root is no longer needed.
 
+Each root also uses its `fontScale` for native text and text-input measurement,
+including line heights and wrapping. `allowFontScaling={false}` opts a component
+out, and `maxFontSizeMultiplier` caps its scale. Existing roots retain their own
+native font scale when a new root changes the global display metrics.
+
 For a full API reference, please see the [inline documentation](../src/index.js)
 defined for the methods in the `@react-native/fantom` [module](../src/index.js).
 
