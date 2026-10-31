@@ -18,8 +18,10 @@ import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.view.View
+import android.view.ViewOutlineProvider
 import android.widget.ImageView
 import androidx.annotation.ColorInt
+import com.facebook.react.R
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.uimanager.PixelUtil.dpToPx
@@ -466,6 +468,88 @@ public object BackgroundStyleApplicator {
   }
 
   /**
+   * Clips [view]'s content to its padding box when [clip] is true, like [clipToPaddingBox], and
+   * removes any clip applied by an earlier call when [clip] is false. Views call it on every draw,
+   * before drawing what the clip applies to.
+   *
+   * See [updatePaddingBoxOutlineClip]; when the outline clip does not apply, the canvas is clipped
+   * as [clipToPaddingBox] does.
+   */
+  @JvmStatic
+  public fun updatePaddingBoxClip(view: View, canvas: Canvas, clip: Boolean) {
+    if (!updatePaddingBoxOutlineClip(view, canvas, clip) && clip) {
+      clipToPaddingBox(view, canvas)
+    }
+  }
+
+  /**
+   * Clips [view] to its padding box with its outline ([View.setClipToOutline]) when [clip] is true
+   * and the outline can describe the padding box, and removes an outline clip set by an earlier
+   * call otherwise. Returns whether the outline clip is in effect; when it is not, the caller clips
+   * the canvas itself.
+   *
+   * Before Android 11, HWUI's Canvas.clipPath is not anti-aliased, so a rounded padding box clipped
+   * with it has stepped corners. On Android 9 and 10 the outline clip is anti-aliased and draws no
+   * offscreen layer, but describes only a round rect, so it is used when the padding box is one: a
+   * single circular radius, no border, and nothing drawn outside the bounds (box shadows, outline,
+   * a feedback ripple) for it to cut off. Any other padding box keeps the canvas clip: masking it
+   * with a layer, as [clipToPaddingBoxWithAntiAliasing] does for images, costs a frame's budget on
+   * these devices for a screen of bordered cards.
+   */
+  @JvmStatic
+  public fun updatePaddingBoxOutlineClip(view: View, canvas: Canvas, clip: Boolean): Boolean {
+    // The outline clip is a RenderNode property, so software drawing (e.g. view.draw into a
+    // bitmap) ignores it. Leave it for the next hardware draw: clearing it here would not re-record
+    // the display list it was recorded for.
+    if (!canvas.isHardwareAccelerated) {
+      return false
+    }
+    val ownsOutlineClip = view.getTag(R.id.padding_box_outline_clip) == true
+    val useOutlineClip = clip && canClipPaddingBoxWithOutline(view, ownsOutlineClip)
+    if (useOutlineClip && !ownsOutlineClip) {
+      view.setTag(R.id.padding_box_outline_clip, true)
+      view.clipToOutline = true
+    } else if (!useOutlineClip) {
+      clearPaddingBoxOutlineClip(view)
+    }
+    return useOutlineClip
+  }
+
+  /**
+   * Android 9 and 10 clip with a non-anti-aliased Canvas.clipPath. Earlier versions are left alone:
+   * their OpenGL renderer replaces, rather than intersects, an inherited round-rect outline clip,
+   * so nested rounded clips would escape their parent.
+   */
+  private fun usesOutlineForRoundedClip(): Boolean =
+      Build.VERSION.SDK_INT in Build.VERSION_CODES.P..Build.VERSION_CODES.Q
+
+  private fun canClipPaddingBoxWithOutline(view: View, ownsOutlineClip: Boolean): Boolean {
+    if (
+        !usesOutlineForRoundedClip() ||
+            !(ownsOutlineClip || !view.clipToOutline) ||
+            view.outlineProvider !== ViewOutlineProvider.BACKGROUND ||
+            view.getTag(R.id.filter) != null
+    ) {
+      return false
+    }
+
+    val composite = getCompositeBackgroundDrawable(view) ?: return false
+    // The outline clip also clips the view's own background, so a feedback ripple drawn there
+    // (bounded or borderless in place) would be cut where the canvas clip never cut it.
+    return composite.outerShadows.isEmpty() &&
+        composite.feedbackUnderlay == null &&
+        (composite.outline?.outlineWidth ?: 0f) == 0f &&
+        composite.getUniformBorderRadiusWithoutBorder() != null
+  }
+
+  private fun clearPaddingBoxOutlineClip(view: View) {
+    if (view.getTag(R.id.padding_box_outline_clip) == true) {
+      view.setTag(R.id.padding_box_outline_clip, null)
+      view.clipToOutline = false
+    }
+  }
+
+  /**
    * Populates [outRect] with the padding box rect of the view.
    *
    * The padding box is the area within the borders of the view. For views without a
@@ -544,10 +628,11 @@ public object BackgroundStyleApplicator {
           )
       paddingBoxPath.offset(drawingRect.left.toFloat(), drawingRect.top.toFloat())
 
-      // On Android 28 and below, use antialiased clipping with Porter-Duff compositing. On newer
-      // Android versions, use the standard clipPath.
+      // HWUI's clipPath is not anti-aliased before Android 11, so on Android 10 and below use
+      // antialiased clipping with Porter-Duff compositing. Newer versions use the standard
+      // clipPath.
       if (
-          Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+          Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q &&
               view.width > 0 &&
               view.height > 0 &&
               drawContent != null
@@ -634,6 +719,7 @@ public object BackgroundStyleApplicator {
    */
   @JvmStatic
   public fun reset(view: View) {
+    clearPaddingBoxOutlineClip(view)
     if (view.background is CompositeBackgroundDrawable) {
       view.background = (view.background as CompositeBackgroundDrawable).originalBackground
     }

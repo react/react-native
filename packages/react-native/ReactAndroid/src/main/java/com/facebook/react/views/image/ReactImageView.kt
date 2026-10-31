@@ -382,7 +382,7 @@ public class ReactImageView(
   public override fun hasOverlappingRendering(): Boolean = false
 
   public override fun onDraw(canvas: Canvas) {
-    BackgroundStyleApplicator.clipToPaddingBoxWithAntiAliasing(this, canvas) {
+    val drawImage = {
       try {
         super.onDraw(canvas)
       } catch (e: RuntimeException) {
@@ -394,6 +394,13 @@ public class ReactImageView(
           )
         }
       }
+    }
+    // On Android 9 and 10 an avatar-like padding box takes the outline clip, which needs no layer;
+    // anything else is clipped as before.
+    if (BackgroundStyleApplicator.updatePaddingBoxOutlineClip(this, canvas, true)) {
+      drawImage()
+    } else {
+      BackgroundStyleApplicator.clipToPaddingBoxWithAntiAliasing(this, canvas, drawImage)
     }
   }
 

@@ -283,9 +283,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
         setText(spanned);
       }
 
-      if (mOverflow != Overflow.VISIBLE) {
-        BackgroundStyleApplicator.clipToPaddingBox(this, canvas);
-      }
+      BackgroundStyleApplicator.updatePaddingBoxClip(this, canvas, mOverflow != Overflow.VISIBLE);
 
       if (spanned != null) {
         Layout layout = getLayout();

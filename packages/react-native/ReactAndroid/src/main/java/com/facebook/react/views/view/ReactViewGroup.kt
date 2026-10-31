@@ -38,7 +38,6 @@ import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.touch.OnInterceptTouchEventListener
 import com.facebook.react.touch.ReactHitSlopView
 import com.facebook.react.touch.ReactInterceptingViewGroup
-import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getPaddingBoxRect
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBackgroundColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderColor
@@ -46,6 +45,7 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderRadius
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderStyle
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderWidth
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setFeedbackUnderlay
+import com.facebook.react.uimanager.BackgroundStyleApplicator.updatePaddingBoxClip
 import com.facebook.react.uimanager.BlendModeHelper.needsIsolatedLayer
 import com.facebook.react.uimanager.HasElevatedDescendantCache
 import com.facebook.react.uimanager.LengthPercentage
@@ -990,9 +990,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override fun dispatchDraw(canvas: Canvas) {
-    if (_overflow != Overflow.VISIBLE || getTag(R.id.filter) != null) {
-      clipToPaddingBox(this, canvas)
-    }
+    updatePaddingBoxClip(this, canvas, _overflow != Overflow.VISIBLE || getTag(R.id.filter) != null)
     super.dispatchDraw(canvas)
   }
 
