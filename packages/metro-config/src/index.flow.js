@@ -42,7 +42,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     serializer: {
       // NOTE: Overridden in community-cli-plugin
       getModulesRunBeforeMainModule: () => [
-        require.resolve('react-native/setup-env'),
+        require.resolve('react-native/setup-env', {paths: [projectRoot]}),
       ],
       getPolyfills: () => require('@react-native/js-polyfills')(),
       isThirdPartyModule({path: modulePath}: Readonly<{path: string, ...}>) {
