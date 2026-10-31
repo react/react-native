@@ -343,7 +343,61 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     width: 24,
   },
+  typingInput: {
+    backgroundColor: '#ffffff',
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    color: '#1c1c1e',
+    fontSize: 16,
+    height: 36,
+    marginBottom: 6,
+    paddingHorizontal: 6,
+  },
+  typingLineHeight: {
+    lineHeight: 22,
+  },
 });
+
+// Type quickly into each empty field: every key must land, including the ones
+// typed while the field's text makes a round trip through React state
+// (react/react-native#58904). JS's copy of each value is shown below.
+function TypingRoundTripExample(): React.Node {
+  const [uncontrolled, setUncontrolled] = React.useState('');
+  const [controlled, setControlled] = React.useState('');
+  const [lineHeight, setLineHeight] = React.useState('');
+  const common = {
+    autoCapitalize: 'none' as const,
+    autoCorrect: false,
+    style: styles.typingInput,
+  };
+  return (
+    <View>
+      <TextInput
+        {...common}
+        testID="typing-uncontrolled"
+        style={[styles.typingInput, styles.typingLineHeight]}
+        defaultValue=""
+        onChangeText={setUncontrolled}
+      />
+      <TextInput
+        {...common}
+        testID="typing-controlled"
+        value={controlled}
+        onChangeText={setControlled}
+      />
+      <TextInput
+        {...common}
+        testID="typing-controlled-line-height"
+        style={[styles.typingInput, styles.typingLineHeight]}
+        value={lineHeight}
+        onChangeText={setLineHeight}
+      />
+      <RNTesterText testID="typing-js-values">
+        {[uncontrolled, controlled, lineHeight].join('|')}
+      </RNTesterText>
+    </View>
+  );
+}
 
 const textInputExamples: Array<RNTesterModuleExample> = [
   ...TextInputSharedExamples,
@@ -1014,6 +1068,13 @@ const textInputExamples: Array<RNTesterModuleExample> = [
           })}
         </View>
       );
+    },
+  },
+  {
+    title: 'Typing round trip',
+    name: 'typingRoundTrip',
+    render: function (): React.Node {
+      return <TypingRoundTripExample />;
     },
   },
   {
