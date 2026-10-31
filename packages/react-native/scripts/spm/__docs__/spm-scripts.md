@@ -370,7 +370,7 @@ value, so **members you added to it by hand are lost**.
 | `RN_DEPS_HEADERS_TARBALL_PATH`               | Local `ReactNativeDependenciesHeaders` tarball, used instead of the copy inside the dependencies tarball.                                                                                                                     |
 | `RCT_REACT_NATIVE_MAVEN_MIRROR_ENABLED`      | `false` or `0` turns off the React Native Maven mirror. The mirror is on by default and is tried before Maven Central.                                                                                                        |
 | `ENTERPRISE_REPOSITORY`                      | Maven repository URL. When set, it is the only repository consulted for releases; the snapshot fallback still uses Maven Central snapshots.                                                                                   |
-| `RN_SPM_REMOTE_URL`, `RN_SPM_REMOTE_VERSION` | Turn on remote-package mode — see [Remote-package mode](./spm-header-paths-contract.md#remote-package-mode).                                                                                                                  |
+| `RN_SPM_REMOTE_URL`, `RN_SPM_REMOTE_VERSION` | Reserved for the planned remote-package mode. Not supported. See [Remote-package mode (planned)](./spm-header-paths-contract.md#remote-package-mode-planned).                                                                 |
 | `RN_DEP_VERSION`                             | Version of the `ReactNativeDependencies` artifact, or `nightly`. Defaults to the React Native version.                                                                                                                        |
 | `HERMES_VERSION`                             | Version of the Hermes artifact, `nightly`, or `latest-v1`. Defaults to the locally pinned `hermes-compiler` version, else `latest-v1`.                                                                                        |
 
@@ -865,8 +865,10 @@ script branches on the exit code:
     [Community packages without a Package.swift](#community-packages-without-a-packageswift));
   - the autolinking config command fails (see
     [The autolinking config command is remembered](#the-autolinking-config-command-is-remembered));
-  - remote mode is on but no usable React Native version resolves (see
-    [Remote-package mode](./spm-header-paths-contract.md#remote-package-mode));
+  - `RN_SPM_REMOTE_URL`, or a persisted `url`, is set but no usable React Native
+    version resolves. This happens only in the unsupported, planned remote mode
+    (see
+    [Remote-package mode (planned)](./spm-header-paths-contract.md#remote-package-mode-planned));
   - The precompiled frameworks that autolinking plugins provide differ from the
     frameworks that the Xcode project links (see
     [Troubleshooting](#troubleshooting)). Sync writes the stamp and records the
@@ -883,5 +885,5 @@ script branches on the exit code:
 
 These errors have their own exit code because a transient sync hiccup should not
 break a build that could still succeed, while a missing manifest, an out-of-date
-project, a broken config command, or an unresolvable remote version should not
-pass silently.
+project, a broken config command, or an unresolvable remote version (planned
+remote mode) should not pass silently.

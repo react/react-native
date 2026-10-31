@@ -59,11 +59,15 @@ walk-up, no JSON, no `import Foundation`.
 | ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Autolinked aggregator    | `build/generated/autolinking/Package.swift`    | Neither: it has no inline targets, and references only its dependencies' packages (`packages/<Name>`, `libs/<Name>`, plugin packages) |
 | Local-module wrapper     | `build/generated/autolinking/packages/<Name>/` | `.package(path: "../../../../xcframeworks")` + `"../../../ios"` (only for `swiftpmConfig.modules` entries)                            |
-| Codegen template         | `build/generated/ios/Package.swift`            | `.package(path: "../../xcframeworks")` (or the remote url)                                                                            |
-| App target (pbxproj)     | `<App>.xcodeproj`                              | local `XCLocalSwiftPackageReference` (or `XCRemoteSwiftPackageReference` in remote mode)                                              |
-| Scaffolded community lib | `node_modules/<dep>/Package.swift`             | scaffold-time relative paths to the app's xcframeworks + codegen packages (or `.package(url:exact:)` in remote mode)                  |
+| Codegen template         | `build/generated/ios/Package.swift`            | `.package(path: "../../xcframeworks")`                                                                                                |
+| App target (pbxproj)     | `<App>.xcodeproj`                              | local `XCLocalSwiftPackageReference`                                                                                                  |
+| Scaffolded community lib | `node_modules/<dep>/Package.swift`             | scaffold-time relative paths to the app's xcframeworks + codegen packages                                                             |
 
-## Remote-package mode
+## Remote-package mode (planned)
+
+> **Planned, not supported.** The `RN_SPM_REMOTE_URL` code path exists, but it
+> is unsupported. Do not use it. Libraries and apps do not need a remote form.
+> The text below records the design intent.
 
 A **URL alone** turns remote mode on: `RN_SPM_REMOTE_URL`, or the persisted
 `url`. The whole app graph then uses a single remote React Native package
@@ -106,26 +110,39 @@ tooling never silently pins an unpublished tag.
 ## Hand-authored community library contract
 
 The tooling leaves untouched a library that ships its own `Package.swift` (no
-scaffolder or autolinker marker). That library needs only two things, and **no
-discovery code**:
+scaffolder or autolinker marker). That library needs one thing, and **no
+discovery code**. A second thing is optional:
 
-1. Depend on the React Native SPM package and its products — in remote mode
-   `.package(url: "<repo>", exact: "<version>")` +
-   `.product(name: "ReactHeaders", package: "<identity>")`,
-   `.product(name: "ReactNativeHeaders", package: "<identity>")`, and
-   `.product(name: "ReactNativeDependenciesHeaders", package: "<identity>")`,
-   where `<identity>` is the URL tail, lowercased, without `.git`. A scaffolded
-   manifest depends on the same React Native products. Libraries should declare
-   a version RANGE in production; the consuming app pins EXACT.
-2. Ship its own generated code: set `codegenConfig.includesGeneratedCode: true`
-   and generate with
+1. Depend on the React Native package and the app's codegen package by relative
+   path. SwiftPM reaches the library's manifest through React Native's
+   per-library link folder, `build/generated/autolinking/libs/<SwiftName>`,
+   named after the library's Swift name, not its npm name. The paths are
+   relative to that folder:
+   `.package(name: "ReactNative", path: "../../../../xcframeworks")` and
+   `.package(name: "React-GeneratedCode", path: "../../../ios")`. The target
+   then depends on `.product(name: "ReactHeaders", package: "ReactNative")`,
+   `.product(name: "ReactNativeHeaders", package: "ReactNative")`,
+   `.product(name: "ReactNativeDependenciesHeaders", package: "ReactNative")`,
+   and `.product(name: "ReactAppHeaders", package: "React-GeneratedCode")`. A
+   scaffolded manifest depends on the same products.
+2. Optionally, ship its own generated code. This suits a library that wants to
+   be self-contained. Set `codegenConfig.includesGeneratedCode: true` and
+   generate with
    `generate-codegen-artifacts.js --path . --targetPlatform ios --source library`.
    The output lands at `<outputDir>/build/generated/ios/ReactCodegen/`. The
    manifest reaches it with one safe `.headerSearchPath(...)` into the library's
    own tree. The app-side codegen then skips the library's spec, so there are no
    duplicate symbols.
 
-The library is then self-contained. It carries no app-layout knowledge and needs
-no per-app codegen headers from the consuming app.
-`@chrfalch/react-native-calculator` (a hand-authored Fabric/TurboModule library)
-proves this.
+This is how a hand-authored library links today. The folders these relative
+paths reach, `build/xcframeworks` and `build/generated/ios` under the app's
+`ios/` folder, are generated output: `spm` recreates them on each machine, and
+they are gitignored. The paths resolve only when SwiftPM reaches the library
+through its `libs/<SwiftName>` link folder, so the library cannot build on its
+own (for example, `swift build` in its own repository). Libraries depend on this
+layout today, so React Native will not change it without notice.
+
+The normal pattern is rule 1 alone: the library uses the app's generated code
+from `React-GeneratedCode`. A library that takes rule 2 carries its own
+generated code instead. `@chrfalch/react-native-calculator` (a hand-authored
+Fabric/TurboModule library) is an example of that option.
