@@ -128,6 +128,7 @@ const RNTesterApp = ({
         handleBackPress();
         return true;
       }
+      console.log('[PredictiveBack] hardwareBackPress at root (observer)');
       return false;
     };
 
@@ -135,7 +136,18 @@ const RNTesterApp = ({
       'hardwareBackPress',
       handleHardwareBackPress,
     );
-    return () => subscription.remove();
+    if (Platform.OS === 'android') {
+      // Consume back only when an example is open so hardware back pops it.
+      // On the root list, leave intercept off so the system back-to-home
+      // animation can run.
+      BackHandler.setInterceptEnabled(activeModuleKey != null);
+    }
+    return () => {
+      subscription.remove();
+      if (Platform.OS === 'android') {
+        BackHandler.setInterceptEnabled(false);
+      }
+    };
   }, [activeModuleKey, handleBackPress]);
 
   const handleModuleCardPress = useCallback(
@@ -280,12 +292,8 @@ const RNTesterApp = ({
     activeModuleExampleKey != null
       ? activeModule?.examples.find(e => e.name === activeModuleExampleKey)
       : null;
-  const title =
-    activeModuleTitle != null
-      ? activeModuleTitle
-      : screen === Screens.COMPONENTS
-        ? 'Components'
-        : 'APIs';
+  const listTitle = screen === Screens.COMPONENTS ? 'Components' : 'APIs';
+  const title = activeModuleTitle != null ? activeModuleTitle : listTitle;
 
   const BackButtonComponent: ?BackButton = customBackButton
     ? customBackButton
@@ -301,38 +309,38 @@ const RNTesterApp = ({
   // Hide chrome if we don't have much screen space and are showing UI for tests
   const shouldHideChrome = isScreenTiny && hadDeepLink;
 
-  const titleBar = shouldHideChrome ? null : (
-    <RNTTitleBar
-      title={title}
-      theme={theme}
-      documentationURL={activeModule?.documentationURL}>
-      {activeModule && BackButtonComponent ? (
-        <BackButtonComponent onBack={handleBackPress} />
-      ) : undefined}
-    </RNTTitleBar>
-  );
-
-  const content = (
-    <View
-      style={StyleSheet.compose(styles.container, {
-        backgroundColor: theme.GroupedBackgroundColor,
-      })}>
-      {activeModule != null ? (
-        <RNTesterModuleContainer
-          module={activeModule}
-          example={activeModuleExample}
-          onExampleCardPress={handleModuleExampleCardPress}
-        />
-      ) : (
-        <RNTesterModuleList
-          sections={activeExampleList}
-          handleModuleCardPress={handleModuleCardPress}
-        />
-      )}
-    </View>
-  );
-
   if (Platform.OS === 'ios') {
+    const titleBar = shouldHideChrome ? null : (
+      <RNTTitleBar
+        title={title}
+        theme={theme}
+        documentationURL={activeModule?.documentationURL}>
+        {activeModule && BackButtonComponent ? (
+          <BackButtonComponent onBack={handleBackPress} />
+        ) : undefined}
+      </RNTTitleBar>
+    );
+
+    const content = (
+      <View
+        style={StyleSheet.compose(styles.container, {
+          backgroundColor: theme.GroupedBackgroundColor,
+        })}>
+        {activeModule != null ? (
+          <RNTesterModuleContainer
+            module={activeModule}
+            example={activeModuleExample}
+            onExampleCardPress={handleModuleExampleCardPress}
+          />
+        ) : (
+          <RNTesterModuleList
+            sections={activeExampleList}
+            handleModuleCardPress={handleModuleCardPress}
+          />
+        )}
+      </View>
+    );
+
     return (
       <RNTesterThemeContext.Provider value={theme}>
         <RNTesterTabsIOS
@@ -369,20 +377,71 @@ const RNTesterApp = ({
     );
   }
 
-  return (
-    <RNTesterThemeContext.Provider value={theme}>
-      {Platform.OS === 'android' ? <StatusBar barStyle="dark-content" /> : null}
-      {titleBar}
-      {content}
+  const listPane = (
+    <>
+      {!shouldHideChrome && <RNTTitleBar title={listTitle} theme={theme} />}
+      <View
+        style={StyleSheet.compose(styles.container, {
+          backgroundColor: theme.GroupedBackgroundColor,
+        })}>
+        <RNTesterModuleList
+          sections={activeExampleList}
+          handleModuleCardPress={handleModuleCardPress}
+        />
+      </View>
       {!shouldHideChrome && (
         <View style={styles.bottomNavbar}>
           <RNTesterNavBar
             screen={screen || Screens.COMPONENTS}
-            isExamplePageOpen={!!activeModule}
+            isExamplePageOpen={false}
             handleNavBarPress={handleNavBarPress}
           />
         </View>
       )}
+    </>
+  );
+
+  const modulePane =
+    activeModule != null ? (
+      <>
+        {!shouldHideChrome && (
+          <RNTTitleBar
+            title={title}
+            theme={theme}
+            documentationURL={activeModule.documentationURL}>
+            {BackButtonComponent ? (
+              <BackButtonComponent onBack={handleBackPress} />
+            ) : undefined}
+          </RNTTitleBar>
+        )}
+        <View
+          style={StyleSheet.compose(styles.container, {
+            backgroundColor: theme.GroupedBackgroundColor,
+          })}>
+          <RNTesterModuleContainer
+            module={activeModule}
+            example={activeModuleExample}
+            onExampleCardPress={handleModuleExampleCardPress}
+          />
+        </View>
+        {!shouldHideChrome && (
+          <View style={styles.bottomNavbar}>
+            <RNTesterNavBar
+              screen={screen || Screens.COMPONENTS}
+              isExamplePageOpen={true}
+              handleNavBarPress={handleNavBarPress}
+            />
+          </View>
+        )}
+      </>
+    ) : null;
+
+  return (
+    <RNTesterThemeContext.Provider value={theme}>
+      {Platform.OS === 'android' ? <StatusBar barStyle="dark-content" /> : null}
+      <View style={styles.container}>
+        {modulePane != null ? modulePane : listPane}
+      </View>
       <ReportFullyDrawnView />
     </RNTesterThemeContext.Provider>
   );

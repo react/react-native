@@ -316,6 +316,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/PointerEvents/PointerEventsExample'),
     },
     {
+      key: 'PredictiveBackExample',
+      category: 'Android',
+      module: require('../examples/PredictiveBack/PredictiveBackExample'),
+    },
+    {
       key: 'RTLExample',
       category: 'Basic',
       module: require('../examples/RTL/RTLExample'),

@@ -51,6 +51,20 @@ type TBackHandler = {
     eventName: BackPressEventName,
     handler: BackPressHandler,
   ) => {remove: () => void, ...},
+  /**
+   * Android only. When true, React Native consumes the back gesture so
+   * BackHandler can pop an in-app screen. On Android 16+, progress is
+   * delivered to PredictiveBackAnimatedView and native PredictiveBackHandler
+   * plugins. When false, the system predictive-back animation can run;
+   * BackHandler still observes app-exit commit.
+   *
+   * Consuming is not reserving: React Native registers at the platform
+   * default priority, the same one AndroidX' FragmentManager uses, so the
+   * gesture goes to whichever enabled callback registered last. A library
+   * that needs the gesture for itself takes it by disabling React Native's
+   * consuming callback.
+   */
+  readonly setInterceptEnabled: (enabled: boolean) => void,
 };
 const BackHandler: TBackHandler = {
   /**
@@ -62,6 +76,14 @@ const BackHandler: TBackHandler = {
     }
 
     NativeDeviceEventManager.invokeDefaultBackPressHandler();
+  },
+
+  setInterceptEnabled: function (enabled: boolean): void {
+    if (!NativeDeviceEventManager) {
+      return;
+    }
+
+    NativeDeviceEventManager.setInterceptEnabled(enabled);
   },
 
   /**

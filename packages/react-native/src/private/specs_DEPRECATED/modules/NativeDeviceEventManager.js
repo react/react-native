@@ -14,6 +14,7 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 
 export interface Spec extends TurboModule {
   readonly invokeDefaultBackPressHandler: () => void;
+  readonly setInterceptEnabled: (enabled: boolean) => void;
 }
 
 export default TurboModuleRegistry.get<Spec>('DeviceEventManager') as ?Spec;

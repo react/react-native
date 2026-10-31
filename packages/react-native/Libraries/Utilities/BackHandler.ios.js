@@ -21,6 +21,7 @@ type TBackHandler = {
     eventName: BackPressEventName,
     handler: BackPressHandler,
   ): {remove: () => void, ...},
+  setInterceptEnabled(enabled: boolean): void,
 };
 
 const BackHandler: TBackHandler = {
@@ -30,6 +31,7 @@ const BackHandler: TBackHandler = {
       remove: emptyFunction,
     };
   },
+  setInterceptEnabled(_enabled: boolean): void {},
 };
 
 export default BackHandler;

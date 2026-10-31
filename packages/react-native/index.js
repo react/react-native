@@ -104,6 +104,10 @@ module.exports = {
   get Pressable() {
     return require('./Libraries/Components/Pressable/Pressable').default;
   },
+  get PredictiveBackAnimatedView() {
+    return require('./Libraries/Components/PredictiveBack/PredictiveBackAnimatedView')
+      .default;
+  },
   get ProgressBarAndroid() {
     warnOnce(
       'progress-bar-android-moved',

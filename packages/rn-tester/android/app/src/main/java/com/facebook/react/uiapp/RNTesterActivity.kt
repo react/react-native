@@ -63,6 +63,11 @@ internal open class RNTesterActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+    // Lets the system predictive-back animation run on the root list. JS
+    // BackHandler.setInterceptEnabled(true) turns on in-app predictive back
+    // when an example is open.
+    backPressedCallback.isEnabled = false
+
     fullyDrawnReporter.addReporter()
     maybeUpdateBackgroundColor()
 

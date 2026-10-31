@@ -10,6 +10,7 @@ package com.facebook.react.modules.core
 import android.net.Uri
 import com.facebook.fbreact.specs.NativeDeviceEventManagerSpec
 import com.facebook.proguard.annotations.DoNotStripAny
+import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.JavaScriptModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
@@ -57,6 +58,23 @@ public open class DeviceEventManagerModule(
     // the thread instances cannot be null, and scheduling on a thread after ReactApplicationContext
     // teardown is a noop.
     reactApplicationContext.runOnUiQueueThread(invokeDefaultBackPressRunnable)
+  }
+
+  /**
+   * Enables or disables in-app back interception.
+   *
+   * When enabled on Android 16+, RN registers a predictive-back animation callback that delivers
+   * progress to native handlers and [com.facebook.react.PredictiveBackProgressListener]. When
+   * disabled, the system handles the gesture and the navigation-observer still notifies JS on
+   * app-exit commit.
+   */
+  override fun setInterceptEnabled(enabled: Boolean) {
+    reactApplicationContext.runOnUiQueueThread {
+      val activity = reactApplicationContext.currentActivity
+      if (activity is ReactActivity) {
+        activity.setInterceptEnabled(enabled)
+      }
+    }
   }
 
   public companion object {

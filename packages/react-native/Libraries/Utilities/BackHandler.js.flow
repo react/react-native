@@ -28,6 +28,7 @@ type TBackHandler = {
     eventName: BackPressEventName,
     handler: (event: HardwareBackPressEvent) => ?boolean,
   ): {remove: () => void, ...},
+  setInterceptEnabled(enabled: boolean): void,
 };
 
 /**
