@@ -483,6 +483,180 @@ TEST(CSSColor, hwb_values) {
   EXPECT_TRUE(std::holds_alternative<std::monostate>(valueEndingWithComma));
 }
 
+namespace {
+
+void expectColor(std::string_view input, int r, int g, int b, int a) {
+  auto value = parseCSSProperty<CSSColor>(input);
+  ASSERT_TRUE(std::holds_alternative<CSSColor>(value)) << input;
+  EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).r), r) << input;
+  EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).g), g) << input;
+  EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).b), b) << input;
+  EXPECT_EQ(static_cast<int>(std::get<CSSColor>(value).a), a) << input;
+}
+
+void expectInvalid(std::string_view input) {
+  EXPECT_TRUE(
+      std::holds_alternative<std::monostate>(parseCSSProperty<CSSColor>(input)))
+      << input;
+}
+
+} // namespace
+
+// Expected values in the lab(), lch(), oklab(), and oklch() tests match the
+// CSS Color 4 reference conversions and gamut mapping, as implemented by the
+// ColorAide library (https://github.com/facelessuser/coloraide).
+
+TEST(CSSColor, oklch_values) {
+  expectColor("oklch(0.628 0.2577 29.23)", 255, 0, 0, 255);
+  expectColor("oklch(1 0 0)", 255, 255, 255, 255);
+  expectColor("oklch(0 0 0)", 0, 0, 0, 255);
+  expectColor("oklch(0.5 0 0)", 99, 99, 99, 255);
+
+  // Tailwind CSS v4 palette: blue-500, green-500, orange-500
+  expectColor("oklch(62.3% 0.214 259.815)", 43, 127, 255, 255);
+  expectColor("oklch(72.3% 0.219 149.579)", 0, 201, 80, 255);
+  expectColor("oklch(70.5% 0.213 47.604)", 255, 105, 0, 255);
+
+  // 100% lightness is 1, and 100% chroma is 0.4
+  expectColor("oklch(50% 50% 180)", 0, 119, 102, 255);
+
+  expectColor("OKLCH(0.7 0.1 30)", 213, 134, 121, 255);
+  expectColor("  oklch(   0.7   0.1 30   /0.5 )  ", 213, 134, 121, 128);
+}
+
+TEST(CSSColor, oklch_hue_values) {
+  expectColor("oklch(0.7 0.1 30)", 213, 134, 121, 255);
+  expectColor("oklch(0.7 0.1 30deg)", 213, 134, 121, 255);
+  expectColor("oklch(0.7 0.1 0.5236rad)", 213, 134, 121, 255);
+  expectColor("oklch(0.7 0.1 33.3333grad)", 213, 134, 121, 255);
+  expectColor("oklch(0.7 0.1 0.083333turn)", 213, 134, 121, 255);
+  expectColor("oklch(0.7 0.1 390)", 213, 134, 121, 255);
+  expectColor("oklch(0.7 0.1 -330)", 213, 134, 121, 255);
+
+  // Hue has no effect on an achromatic color
+  expectColor("oklch(0.5 0 180)", 99, 99, 99, 255);
+}
+
+TEST(CSSColor, oklab_values) {
+  expectColor("oklab(0.5 0.1 -0.1)", 129, 69, 154, 255);
+  expectColor("oklab(0.62796 0.22486 0.12585)", 255, 0, 0, 255);
+  expectColor("oklab(1 0 0)", 255, 255, 255, 255);
+
+  // 100% lightness is 1, and 100% of a and b is 0.4
+  expectColor("oklab(50% 25% -25%)", 129, 69, 154, 255);
+
+  expectColor("Oklab(0.5 0.1 -0.1 / 0.5)", 129, 69, 154, 128);
+}
+
+TEST(CSSColor, lab_values) {
+  expectColor("lab(50 0 0)", 119, 119, 119, 255);
+  expectColor("lab(100 0 0)", 255, 255, 255, 255);
+  expectColor("lab(0 0 0)", 0, 0, 0, 255);
+  expectColor("lab(54.29 80.8 69.89)", 255, 0, 0, 255);
+  expectColor("lab(50 40 30)", 187, 88, 70, 255);
+
+  // 100% lightness is 100, and 100% of a and b is 125
+  expectColor("lab(50% 40% 20%)", 199, 76, 80, 255);
+
+  expectColor("LAB(50 40 30)", 187, 88, 70, 255);
+}
+
+TEST(CSSColor, lch_values) {
+  expectColor("lch(50 0 0)", 119, 119, 119, 255);
+  expectColor("lch(54.29 106.84 40.85)", 255, 0, 0, 255);
+  expectColor("lch(50 60 120)", 84, 132, 4, 255);
+
+  // 100% lightness is 100, and 100% chroma is 150
+  expectColor("lch(50% 40% 90)", 137, 118, 0, 255);
+
+  expectColor("lch(50 60 120deg / 25%)", 84, 132, 4, 64);
+}
+
+TEST(CSSColor, lab_family_alpha_values) {
+  expectColor("oklch(0.7 0.1 30 / 0.5)", 213, 134, 121, 128);
+  expectColor("oklch(0.7 0.1 30 / 50%)", 213, 134, 121, 128);
+  expectColor("oklch(0.7 0.1 30 / 1.5)", 213, 134, 121, 255);
+  expectColor("oklch(0.7 0.1 30 / -0.5)", 213, 134, 121, 0);
+}
+
+TEST(CSSColor, lab_family_none_components) {
+  // A missing component resolves to zero
+  expectColor("oklch(none 0.1 30)", 0, 0, 0, 255);
+  expectColor("oklch(0.7 none 30)", 158, 158, 158, 255);
+  expectColor("oklch(0.5 0 none)", 99, 99, 99, 255);
+  expectColor("oklch(0.7 0.1 30 / none)", 213, 134, 121, 0);
+  expectColor("oklab(0.5 none none)", 99, 99, 99, 255);
+  expectColor("lab(50 none 30)", 132, 118, 67, 255);
+  expectColor("lch(50 60 none)", 206, 63, 122, 255);
+}
+
+TEST(CSSColor, lab_family_clamped_components) {
+  // Lightness is clamped to [0%, 100%]
+  expectColor("oklch(1.5 0.1 30)", 255, 255, 255, 255);
+  expectColor("oklch(150% 0.1 30)", 255, 255, 255, 255);
+  expectColor("oklch(-0.5 0.1 30)", 0, 0, 0, 255);
+  expectColor("lab(150 0 0)", 255, 255, 255, 255);
+  expectColor("lab(-10 0 0)", 0, 0, 0, 255);
+
+  // Negative chroma is clamped to zero
+  expectColor("oklch(0.5 -0.1 30)", 99, 99, 99, 255);
+  expectColor("lch(50 -60 120)", 119, 119, 119, 255);
+}
+
+TEST(CSSColor, lab_family_gamut_mapping) {
+  // Colors outside of sRGB reduce chroma until clipping is imperceptible,
+  // preserving lightness and hue. Clipping each channel on its own would
+  // instead give rgb(255, 0, 0) for this orange.
+  expectColor("oklab(0.7 0.4 0.4)", 255, 97, 0, 255);
+  expectColor("oklch(0.7 0.4 145)", 0, 195, 0, 255);
+  expectColor("oklch(0.9 0.3 100)", 255, 223, 0, 255);
+  expectColor("lab(50 150 -150)", 184, 100, 255, 255);
+  expectColor("lch(50 200 300)", 30, 143, 255, 255);
+
+  // Extreme chroma still converges
+  expectColor("oklch(0.5 10000000000 30)", 195, 0, 0, 255);
+  expectColor("lch(50 1000000 30)", 255, 255, 255, 255);
+}
+
+TEST(CSSColor, lab_family_invalid_values) {
+  // No legacy comma-separated syntax
+  expectInvalid("oklch(0.7, 0.1, 30)");
+  expectInvalid("oklab(0.5, 0.1, -0.1)");
+  expectInvalid("lab(50, 40, 30)");
+  expectInvalid("lch(50, 60, 120)");
+
+  // Wrong number of components
+  expectInvalid("oklch()");
+  expectInvalid("oklch(0.7)");
+  expectInvalid("oklch(0.7 0.1)");
+  expectInvalid("oklab(0.5 0.1)");
+  expectInvalid("lab(50 40)");
+  expectInvalid("oklch(0.7 0.1 30 / 0.5 0.5)");
+
+  // Alpha must follow a solidus
+  expectInvalid("oklch(0.7 0.1 30 0.5)");
+  expectInvalid("oklab(0.5 0.1 -0.1 0.5)");
+  expectInvalid("oklch(0.7 0.1 30 /)");
+
+  // Stray commas
+  expectInvalid("oklch(0.7 0.1 30,)");
+  expectInvalid("oklch(,0.7 0.1 30)");
+  expectInvalid("lab(50 40 30 / 0.5,)");
+
+  // Components of the wrong type
+  expectInvalid("oklch(30deg 0.1 30)");
+  expectInvalid("oklch(0.7 0.1deg 30)");
+  expectInvalid("oklch(0.7 0.1 30%)");
+  expectInvalid("oklch(0.7 0.1 auto)");
+  expectInvalid("oklch(0.7 0.1 30 / 30deg)");
+  expectInvalid("oklab(0.5 0.1 30deg)");
+  expectInvalid("lch(50 60deg 120)");
+  expectInvalid("lch(50 60 120%)");
+
+  // A hue which overflows when converted to degrees
+  expectInvalid("oklch(0.7 0.1 1e38rad)");
+}
+
 TEST(CSSColor, constexpr_values) {
   [[maybe_unused]] constexpr auto emptyValue = parseCSSProperty<CSSColor>("");
 
