@@ -16,6 +16,7 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {useCallback, useRef, useState} from 'react';
 import {
+  Modal,
   Platform,
   RefreshControl,
   ScrollView,
@@ -354,6 +355,15 @@ const examples: Array<RNTesterModuleExample> = [
     description: 'Adjust properties of content inside ScrollView.',
     render(): React.Node {
       return <ContentExample />;
+    },
+  },
+  {
+    title: '<ScrollView> Content Inset Adjustment Behavior\n',
+    description:
+      'How the safe area modifies the content area of a full screen ScrollView: along the scrollable axis it becomes content insets, across it the content container is padded.',
+    platform: 'ios',
+    render(): React.Node {
+      return <ContentInsetAdjustmentBehaviorExample />;
     },
   },
   {
@@ -1526,6 +1536,64 @@ const ContentExample = () => {
   );
 };
 
+const CONTENT_INSET_ADJUSTMENT_BEHAVIORS = [
+  'never',
+  'automatic',
+  'scrollableAxes',
+  'always',
+] as const;
+
+const FULL_SCREEN_ITEMS = [...Array(40)].map((_, i) => `Item ${i}`);
+
+const ContentInsetAdjustmentBehaviorExample = () => {
+  const [visible, setVisible] = useState(false);
+  const [horizontal, setHorizontal] = useState(false);
+  const [behavior, setBehavior] =
+    useState<(typeof CONTENT_INSET_ADJUSTMENT_BEHAVIORS)[number]>('automatic');
+  return (
+    <View>
+      <RNTesterText>
+        Opens a full screen ScrollView that extends under the system UI,
+        including the rail on iPhone Duo and the notch in landscape.
+      </RNTesterText>
+      <Button onPress={() => setVisible(true)} label="Open full screen" />
+      <Modal
+        animationType="slide"
+        presentationStyle="fullScreen"
+        supportedOrientations={['portrait', 'landscape']}
+        visible={visible}
+        onRequestClose={() => setVisible(false)}>
+        <ScrollView
+          horizontal={horizontal}
+          style={styles.fullScreenScrollView}
+          contentContainerStyle={styles.fullScreenContentContainer}
+          contentInsetAdjustmentBehavior={behavior}>
+          <View style={styles.fullScreenControls}>
+            <View style={styles.row}>
+              {CONTENT_INSET_ADJUSTMENT_BEHAVIORS.map(value => (
+                <Button
+                  key={value}
+                  active={value === behavior}
+                  onPress={() => setBehavior(value)}
+                  label={value}
+                />
+              ))}
+            </View>
+            <View style={styles.row}>
+              <Button
+                onPress={() => setHorizontal(!horizontal)}
+                label={horizontal ? 'horizontal' : 'vertical'}
+              />
+              <Button onPress={() => setVisible(false)} label="Close" />
+            </View>
+          </View>
+          {FULL_SCREEN_ITEMS.map(createItemRow)}
+        </ScrollView>
+      </Modal>
+    </View>
+  );
+};
+
 const BouncesExample = () => {
   const [bounces, setBounces] = useState(false);
   const [bouncesZoom, setBouncesZoom] = useState(false);
@@ -1758,6 +1826,16 @@ const styles = StyleSheet.create({
   },
   containerStyle: {
     backgroundColor: '#aae3b6',
+  },
+  fullScreenScrollView: {
+    backgroundColor: '#eeeeee',
+  },
+  fullScreenContentContainer: {
+    backgroundColor: '#aae3b6',
+  },
+  fullScreenControls: {
+    backgroundColor: '#eeeeee',
+    paddingVertical: 10,
   },
   rowTitle: {
     flex: 1,
