@@ -10,7 +10,6 @@
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
-import type {AccessibilityState} from '../View/ViewAccessibility';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
 
 import View from '../../Components/View/View';
@@ -222,13 +221,25 @@ class TouchableHighlightImpl extends React.Component<
     const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
       this.state.pressability.getEventHandlers();
 
-    const accessibilityState: ?AccessibilityState =
+    let _accessibilityState = {
+      busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
+      checked:
+        this.props['aria-checked'] ?? this.props.accessibilityState?.checked,
+      disabled:
+        this.props['aria-disabled'] ?? this.props.accessibilityState?.disabled,
+      expanded:
+        this.props['aria-expanded'] ?? this.props.accessibilityState?.expanded,
+      selected:
+        this.props['aria-selected'] ?? this.props.accessibilityState?.selected,
+    };
+
+    _accessibilityState =
       this.props.disabled != null
         ? {
-            ...this.props.accessibilityState,
+            ..._accessibilityState,
             disabled: this.props.disabled,
           }
-        : this.props.accessibilityState;
+        : _accessibilityState;
 
     const accessibilityValue = {
       max: this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
@@ -251,7 +262,8 @@ class TouchableHighlightImpl extends React.Component<
         accessibilityHint={this.props.accessibilityHint}
         accessibilityLanguage={this.props.accessibilityLanguage}
         accessibilityRole={this.props.accessibilityRole}
-        accessibilityState={accessibilityState}
+        role={this.props.role}
+        accessibilityState={_accessibilityState}
         accessibilityValue={accessibilityValue}
         accessibilityActions={this.props.accessibilityActions}
         onAccessibilityAction={this.props.onAccessibilityAction}
