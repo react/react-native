@@ -18,7 +18,6 @@ import android.text.TextUtils
 import android.text.util.Linkify
 import android.view.Gravity
 import com.facebook.common.logging.FLog
-import com.facebook.react.R
 import com.facebook.react.bridge.Dynamic
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
@@ -99,20 +98,7 @@ public constructor(
       val update = extraData as ReactTextUpdate
       val spanned: Spanned = update.text
       view.setText(update)
-
-      // If this text view contains any clickable spans, set a view tag and reset the accessibility
-      // delegate so that these can be picked up by the accessibility system.
-      val accessibilityLinks: ReactTextViewAccessibilityDelegate.AccessibilityLinks =
-          ReactTextViewAccessibilityDelegate.AccessibilityLinks(spanned)
-      view.setTag(
-          R.id.accessibility_links,
-          if (accessibilityLinks.size() > 0) accessibilityLinks else null,
-      )
-      ReactTextViewAccessibilityDelegate.resetDelegate(
-          view,
-          view.isFocusable,
-          view.importantForAccessibility,
-      )
+      ReactTextViewAccessibilityDelegate.updateAccessibilityLinks(view, spanned)
     }
   }
 
