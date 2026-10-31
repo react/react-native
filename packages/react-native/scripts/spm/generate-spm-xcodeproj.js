@@ -1776,6 +1776,8 @@ function injectSpmIntoPbxproj(
     syncPhaseUuid,
     'Sync SPM Autolinking',
     generatedScriptWrapper(SYNC_AUTOLINKING_SCRIPT_PATH),
+    // The script checks its own stamp and discovered inputs on every build.
+    {alwaysOutOfDate: true},
   );
   if (!text.includes(syncPhaseUuid)) {
     text = insertObjectsIntoSection(
@@ -1784,13 +1786,9 @@ function injectSpmIntoPbxproj(
       serializeEntry(syncEntry),
     );
   } else {
-    // Already injected on a prior run — the phase object owns these fields,
-    // so refresh them in place (same quoting used at creation) in case a
-    // project injected before the script moved to its own file still carries
-    // it inline, or one injected before shellPath moved to bash (see
-    // shellScriptPhase) still has the stale value. Byte-identical when neither
-    // did; field order and every other byte of the phase are untouched.
-    for (const key of ['shellScript', 'shellPath']) {
+    // Refresh generated fields in existing projects, including older phases
+    // with inline scripts, /bin/sh or dependency analysis enabled.
+    for (const key of ['shellScript', 'shellPath', 'alwaysOutOfDate']) {
       const current = findObjectByUuid(text, syncPhaseUuid);
       if (current != null) {
         text = setScalarField(text, current, key, syncEntry.fields[key]);

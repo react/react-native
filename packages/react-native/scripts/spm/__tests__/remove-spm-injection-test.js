@@ -18,6 +18,7 @@ const {
   readPinnedConfigCommand,
   removeSpmInjection,
 } = require('../generate-spm-xcodeproj');
+const {findField, findObjectByUuid} = require('../spm-pbxproj');
 const {isBalanced} = require('./pbxproj-oracles');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -1380,7 +1381,10 @@ describe('script-phases reconciliation on update', () => {
       reactNativeRoot: rnRoot,
       xcodeprojPath,
     });
-    expect(pbxprojOf(xcodeprojPath)).toContain('alwaysOutOfDate = 1;');
+    const uuid = readMarker(xcodeprojPath).scriptPhases[APP_CONFIG_PHASE.id];
+    const fieldOf = text =>
+      findField(text, findObjectByUuid(text, uuid), 'alwaysOutOfDate');
+    expect(fieldOf(pbxprojOf(xcodeprojPath))?.value).toBe('1');
 
     writeScriptPhases(appRoot, [{...APP_CONFIG_PHASE, alwaysOutOfDate: false}]);
     injectSpmIntoExistingXcodeproj({
@@ -1390,7 +1394,7 @@ describe('script-phases reconciliation on update', () => {
     });
 
     const after = pbxprojOf(xcodeprojPath);
-    expect(after).not.toContain('alwaysOutOfDate');
+    expect(fieldOf(after)).toBeNull();
     expect(after).toContain('Bundle Expo app.config');
 
     // …and back on again, stably (the field is re-added to an existing object,
@@ -1403,7 +1407,7 @@ describe('script-phases reconciliation on update', () => {
       xcodeprojPath,
     });
     const back = pbxprojOf(xcodeprojPath);
-    expect(back).toContain('alwaysOutOfDate = 1;');
+    expect(fieldOf(back)?.value).toBe('1');
     injectSpmIntoExistingXcodeproj({
       appRoot,
       reactNativeRoot: rnRoot,
