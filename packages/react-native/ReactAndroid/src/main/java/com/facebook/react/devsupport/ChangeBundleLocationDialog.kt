@@ -14,6 +14,7 @@ import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import com.facebook.react.R
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings
@@ -111,10 +112,13 @@ internal object ChangeBundleLocationDialog {
     layout.addView(applyChangesButton)
     layout.addView(cancelButton)
 
+    val scrollView = ScrollView(context)
+    scrollView.addView(layout)
+
     val dialog =
         AlertDialog.Builder(context)
             .setTitle(context.getString(R.string.catalyst_change_bundle_location))
-            .setView(layout)
+            .setView(scrollView)
             .create()
 
     applyChangesButton.setOnClickListener {
