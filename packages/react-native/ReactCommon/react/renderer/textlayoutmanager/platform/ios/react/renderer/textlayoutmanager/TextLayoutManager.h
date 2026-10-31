@@ -58,6 +58,16 @@ class TextLayoutManager {
       const Size &size) const;
 
   /*
+   * Lays `attributedString` out for a text view that draws it in a frame of
+   * `size`, so that the view's first draw does not lay it out again.
+   * Can be called from any thread.
+   */
+  void prepareForDrawing(
+      const AttributedString &attributedString,
+      const ParagraphAttributes &paragraphAttributes,
+      const Size &size) const;
+
+  /*
    * Returns an opaque pointer to platform-specific TextLayoutManager.
    * Is used on a native views layer to delegate text rendering to the manager.
    */

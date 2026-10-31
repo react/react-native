@@ -15,14 +15,74 @@
 #import <React/NSTextStorage+FontScaling.h>
 #import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/textlayoutmanager/TextMeasureCache.h>
 #import <react/renderer/textlayoutmanager/TextMeasurementRounding.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <react/utils/SimpleThreadSafeCache.h>
 
 using namespace facebook::react;
 
+namespace facebook::react {
+
+/*
+ * Identifies the text storage a text view draws: what it draws, and the size of
+ * the frame it draws it in. Two paragraphs that are equivalent this way draw
+ * the same, so they share a text storage. Equivalence is the one prepared text
+ * layouts use on Android: everything drawing looks at, and nothing that only
+ * matters for hit testing, such as a fragment's event emitter.
+ *
+ * The frame size is all a layout depends on: it is the size the view draws in,
+ * already rounded to the pixel grid by Yoga, so the pixel scale factor is not
+ * part of the key.
+ */
+class RCTPreparedTextLayoutKey final {
+ public:
+  AttributedString attributedString;
+  ParagraphAttributes paragraphAttributes;
+  Size size;
+
+  bool operator==(const RCTPreparedTextLayoutKey &rhs) const
+  {
+    return areAttributedStringsEquivalentDisplayWise(attributedString, rhs.attributedString) &&
+        paragraphAttributes == rhs.paragraphAttributes && size == rhs.size;
+  }
+};
+
+inline RCTPreparedTextLayoutKey RCTPreparedTextLayoutKeyFor(
+    const AttributedString &attributedString,
+    const ParagraphAttributes &paragraphAttributes,
+    CGSize size)
+{
+  return RCTPreparedTextLayoutKey{
+      .attributedString = attributedString,
+      .paragraphAttributes = paragraphAttributes,
+      .size = facebook::react::Size{
+          .width = static_cast<facebook::react::Float>(size.width),
+          .height = static_cast<facebook::react::Float>(size.height)}};
+}
+
+} // namespace facebook::react
+
+namespace std {
+
+template <>
+struct hash<facebook::react::RCTPreparedTextLayoutKey> {
+  size_t operator()(const facebook::react::RCTPreparedTextLayoutKey &key) const
+  {
+    return facebook::react::hash_combine(
+        facebook::react::attributedStringHashDisplayWise(key.attributedString), key.paragraphAttributes, key.size);
+  }
+};
+
+} // namespace std
+
 @implementation RCTTextLayoutManager {
   SimpleThreadSafeCache<AttributedString, std::shared_ptr<void>, 256> _cache;
+  /*
+   * Text laid out for the first draw of a text view. The text storage is the
+   * prepared layout: it owns the layout manager that holds the lines.
+   */
+  SimpleThreadSafeCache<RCTPreparedTextLayoutKey, std::shared_ptr<void>, 256> _preparedTextLayouts;
 }
 
 static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsizeMode)
@@ -128,15 +188,36 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return drawingFrame;
 }
 
+- (void)prepareAttributedStringForDrawing:(const AttributedString &)attributedString
+                      paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                     size:(CGSize)size
+{
+  if (attributedString.isEmpty() || size.width <= 0 || size.height <= 0) {
+    return;
+  }
+
+  // Laying the text out here holds the cache for the whole layout, which
+  // serializes preparations. Drawing only looks layouts up, so it never waits on
+  // this.
+  (void)_preparedTextLayouts.get(RCTPreparedTextLayoutKeyFor(attributedString, paragraphAttributes, size), [&]() {
+    NSAttributedString *nsAttributedString = [self _nsAttributedStringFromAttributedString:attributedString];
+    NSTextStorage *textStorage = [self _textStorageAndLayoutManagerWithAttributesString:nsAttributedString
+                                                                    paragraphAttributes:paragraphAttributes
+                                                                                   size:size];
+    NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+    [layoutManager ensureLayoutForTextContainer:layoutManager.textContainers.firstObject];
+    return wrapManagedObject(textStorage);
+  });
+}
+
 - (void)drawAttributedString:(const AttributedString &)attributedString
          paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                        frame:(CGRect)frame
            drawHighlightPath:(void (^_Nullable)(UIBezierPath *highlightPath))block
 {
-  NSTextStorage *textStorage = [self
-      _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
-                                   paragraphAttributes:paragraphAttributes
-                                                  size:frame.size];
+  NSTextStorage *textStorage = [self _textStorageForDrawingWithAttributedString:attributedString
+                                                            paragraphAttributes:paragraphAttributes
+                                                                           size:frame.size];
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
@@ -429,6 +510,29 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                             }];
 
   return maximumFontSize;
+}
+
+/*
+ * The text storage to draw `attributedString` with in a frame of `size`: the one
+ * prepared for exactly that, or a new one when none was prepared.
+ */
+- (NSTextStorage *)_textStorageForDrawingWithAttributedString:(const AttributedString &)attributedString
+                                          paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                                         size:(CGSize)size
+{
+  auto preparedTextLayout =
+      _preparedTextLayouts.get(RCTPreparedTextLayoutKeyFor(attributedString, paragraphAttributes, size));
+  NSTextStorage *textStorage = preparedTextLayout.has_value() ? unwrapManagedObject(*preparedTextLayout) : nil;
+  if (textStorage != nil) {
+    return textStorage;
+  }
+
+  // Not prepared: lay the text out here, as before. It is not added to the
+  // cache, so that drawing never holds it.
+  return [self
+      _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
+                                   paragraphAttributes:paragraphAttributes
+                                                  size:size];
 }
 
 - (NSTextStorage *)_textStorageAndLayoutManagerWithAttributesString:(NSAttributedString *)attributedString

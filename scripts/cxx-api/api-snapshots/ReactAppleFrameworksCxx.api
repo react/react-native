@@ -1885,6 +1885,7 @@ interface RCTTextLayoutManager : public NSObject {
   public virtual std::shared_ptr<const facebook::react::EventEmitter> getEventEmitterWithAttributeString:paragraphAttributes:frame:atPoint:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, CGPoint point);
   public virtual void drawAttributedString:paragraphAttributes:frame:drawHighlightPath:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, void(^)(UIBezierPath* highlightPath) block);
   public virtual void getRectWithAttributedString:paragraphAttributes:enumerateAttribute:frame:usingBlock:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, NSString* enumerateAttribute, CGRect frame, RCTTextLayoutFragmentEnumerationBlock block);
+  public virtual void prepareAttributedStringForDrawing:paragraphAttributes:size:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGSize size);
 }
 
 interface RCTTextSelection : public NSObject {
@@ -6164,6 +6165,7 @@ class facebook::react::TextLayoutManager {
   public facebook::react::TextLayoutManager& operator=(facebook::react::TextLayoutManager&&) = delete;
   public facebook::react::TextMeasurement measure(const facebook::react::AttributedStringBox& attributedStringBox, const facebook::react::ParagraphAttributes& paragraphAttributes, const facebook::react::TextLayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
   public std::shared_ptr<void> getNativeTextLayoutManager() const;
+  public void prepareForDrawing(const facebook::react::AttributedString& attributedString, const facebook::react::ParagraphAttributes& paragraphAttributes, const facebook::react::Size& size) const;
 }
 
 class facebook::react::TextMeasureCacheKey {
@@ -10275,8 +10277,10 @@ class facebook::react::detail::TextLayoutManagerExtended {
   public facebook::react::TextMeasurement measurePreparedLayout(const facebook::react::detail::TextLayoutManagerExtended::PreparedTextLayout& layout, const facebook::react::TextLayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
   public facebook::react::detail::TextLayoutManagerExtended::PreparedTextLayout prepareLayout(const facebook::react::AttributedString& attributedString, const facebook::react::ParagraphAttributes& paragraphAttributes, const facebook::react::TextLayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
   public static constexpr bool supportsLineMeasurement();
+  public static constexpr bool supportsPrepareForDrawing();
   public static constexpr bool supportsPreparedTextLayout();
   public using PreparedTextLayout = typename facebook::react::detail::PreparedTextLayoutT<TextLayoutManagerT>::type;
+  public void prepareForDrawing(const facebook::react::AttributedString& attributedString, const facebook::react::ParagraphAttributes& paragraphAttributes, const facebook::react::Size& size) const;
 }
 
 template <typename... T>
