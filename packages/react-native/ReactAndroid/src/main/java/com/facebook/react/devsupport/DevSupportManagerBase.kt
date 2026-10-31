@@ -32,7 +32,6 @@ import android.widget.ListAdapter
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.UiThread
-import androidx.core.util.Supplier
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.bridge.DefaultJSExceptionHandler
@@ -221,16 +220,7 @@ public abstract class DevSupportManagerBase(
       devLoadingViewManager = DefaultDevLoadingViewImplementation(reactInstanceDevHelper)
     }
     if (pausedInDebuggerOverlayManager == null) {
-      pausedInDebuggerOverlayManager =
-          PausedInDebuggerOverlayDialogManager(
-              Supplier {
-                val context = reactInstanceDevHelper.currentActivity
-                if (context == null || context.isFinishing) {
-                  return@Supplier null
-                }
-                context
-              },
-          )
+      pausedInDebuggerOverlayManager = DefaultPausedInDebuggerOverlayManager(reactInstanceDevHelper)
     }
     if (
         ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture() &&
