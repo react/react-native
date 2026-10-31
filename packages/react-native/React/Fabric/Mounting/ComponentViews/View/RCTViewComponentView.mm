@@ -33,6 +33,8 @@
 #import <react/renderer/components/view/accessibilityPropsConversions.h>
 #import <react/renderer/graphics/BlendMode.h>
 
+#import <React/RCTScrollViewComponentView.h>
+
 #ifdef RCT_DYNAMIC_FRAMEWORKS
 #import <React/RCTComponentViewFactory.h>
 #endif
@@ -105,6 +107,12 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 }
 #endif
 
+// Implemented in RCTScrollViewComponentView.mm.
+@interface RCTScrollViewComponentView (ClippingViews)
+- (void)_registerClippingView:(UIView *)view;
+- (void)_unregisterClippingView:(UIView *)view;
+@end
+
 @implementation RCTViewComponentView {
   UIColor *_backgroundColor;
   CALayer *_backgroundColorLayer;
@@ -117,6 +125,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
   NSMutableArray<UIView *> *_reactSubviews;
+  __weak RCTScrollViewComponentView *_clippingScrollView;
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   UIView *_containerView;
   BOOL _useCustomContainerView;
@@ -368,6 +377,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     if (_removeClippedSubviews != newViewProps.removeClippedSubviews) {
       _removeClippedSubviews = newViewProps.removeClippedSubviews;
       [self _updateRemoveClippedSubviewsState];
+      [self _updateClippingScrollView];
     }
   }
 
@@ -816,6 +826,26 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
   if ([self _observesSafeAreaInsets]) {
     [self setNeedsLayout];
   }
+  [self _updateClippingScrollView];
+}
+
+// A ScrollView walks its content for views with `removeClippedSubviews` on (see
+// `-[RCTScrollViewComponentView _remountChildren]`). Register this view with its nearest
+// ScrollView while it has the prop on and is in a window, so that the ScrollView can skip
+// the walk when it has no such views. A ScrollView doesn't register: the walk of an outer
+// ScrollView stops at it, and it clips its own content.
+- (void)_updateClippingScrollView
+{
+  BOOL needsClippingPass =
+      _removeClippedSubviews && self.window != nil && ![self isKindOfClass:[RCTScrollViewComponentView class]];
+  RCTScrollViewComponentView *scrollView =
+      needsClippingPass ? [RCTScrollViewComponentView findScrollViewComponentViewForView:self] : nil;
+  if (scrollView == _clippingScrollView) {
+    return;
+  }
+  [_clippingScrollView _unregisterClippingView:self];
+  [scrollView _registerClippingView:self];
+  _clippingScrollView = scrollView;
 }
 
 - (void)layoutSubviews
@@ -888,6 +918,7 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
   _eventEmitter.reset();
   _isJSResponder = NO;
   _removeClippedSubviews = NO;
+  [self _updateClippingScrollView];
   _reactSubviews = [NSMutableArray new];
   _layoutMetrics = EmptyLayoutMetrics;
 }
