@@ -70,6 +70,58 @@ static void mergeMutation(
   existing.hasLayoutUpdates |= incoming.hasLayoutUpdates;
 }
 
+// With enableCxxAnimatedDirectPathInBackend, the end-of-animation commit
+// writes the final values recorded for its surface.
+static std::unordered_map<Tag, FinalValues> takeFinalValues(
+    const std::weak_ptr<AnimatedPropsRegistry>& weakAnimatedPropsRegistry,
+    SurfaceId surfaceId) {
+  if (!ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend()) {
+    return {};
+  }
+  if (auto animatedPropsRegistry = weakAnimatedPropsRegistry.lock()) {
+    return animatedPropsRegistry->takeFinalValues(surfaceId);
+  }
+  return {};
+}
+
+static void writeFinalValues(
+    const std::unordered_map<Tag, FinalValues>& finalValues,
+    const RootShadowNode& oldRootShadowNode,
+    RootShadowNode::Unshared& newRootShadowNode) {
+  if (finalValues.empty()) {
+    return;
+  }
+  std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> families;
+  for (const auto& [_, values] : finalValues) {
+    families.insert(values.family);
+  }
+  auto cloned =
+      std::static_pointer_cast<RootShadowNode>(oldRootShadowNode.cloneMultiple(
+          families,
+          [&](const ShadowNode& shadowNode,
+              const ShadowNodeFragment& fragment) {
+            auto props = ShadowNodeFragment::propsPlaceholder();
+            if (auto it = finalValues.find(shadowNode.getTag());
+                it != finalValues.end() &&
+                families.contains(shadowNode.getFamilyShared())) {
+              PropsParserContext propsParserContext{
+                  shadowNode.getSurfaceId(), *shadowNode.getContextContainer()};
+              props = shadowNode.getComponentDescriptor().cloneProps(
+                  propsParserContext,
+                  shadowNode.getProps(),
+                  RawProps(it->second.props));
+            }
+            return shadowNode.clone(
+                {.props = props,
+                 .children = fragment.children,
+                 .state = shadowNode.getState(),
+                 .runtimeShadowNodeReference = true});
+          }));
+  if (cloned != nullptr) {
+    newRootShadowNode = std::move(cloned);
+  }
+}
+
 AnimationBackend::AnimationBackend(
     std::shared_ptr<AnimationChoreographer> animationChoreographer,
     std::shared_ptr<UIManager> uiManager)
@@ -151,35 +203,60 @@ void AnimationBackend::applySurfaceUpdates(
   requestAsyncFlushForSurfaces(asyncFlushSurfaces);
 }
 
-void AnimationBackend::applyMutations(std::vector<AnimationMutations> batches) {
+void AnimationBackend::applyMutations(std::vector<FrontendMutations> batches) {
   animatedPropsRegistry_->update(batches);
   std::unordered_map<SurfaceId, SurfaceUpdates> surfaceUpdates;
   std::set<SurfaceId> asyncFlushSurfaces;
-  for (auto& mutations : batches) {
-    unpackMutations(mutations, surfaceUpdates, asyncFlushSurfaces);
+  for (auto& batch : batches) {
+    unpackMutations(batch.mutations, surfaceUpdates, asyncFlushSurfaces);
   }
   applySurfaceUpdates(surfaceUpdates, asyncFlushSurfaces);
 }
 
 void AnimationBackend::onAnimationFrame(AnimationTimestamp timestamp) {
   std::vector<CallbackWithId> callbacksCopy;
+  std::vector<AnimationFrontend> startedFrontends;
 
   {
     std::lock_guard lock(mutex_);
     callbacksCopy = callbacks;
+    for (const auto& registered : frontends_) {
+      if (registered.started) {
+        startedFrontends.push_back(registered.frontend);
+      }
+    }
   }
 
   // Sized up front rather than grown: MSVC's std::set move isn't noexcept, so
   // growing a vector of AnimationMutations would try to copy move-only props.
-  std::vector<AnimationMutations> batches(callbacksCopy.size());
-  std::transform(
-      callbacksCopy.begin(),
-      callbacksCopy.end(),
-      batches.begin(),
-      [timestamp](const CallbackWithId& callbackWithId) {
-        return callbackWithId.callback(timestamp);
-      });
+  std::vector<FrontendMutations> batches(
+      callbacksCopy.size() + startedFrontends.size());
+  for (size_t i = 0; i < callbacksCopy.size(); i++) {
+    batches[i].mutations = callbacksCopy[i].callback(timestamp);
+  }
+  for (size_t i = 0; i < startedFrontends.size(); i++) {
+    auto& batch = batches[callbacksCopy.size() + i];
+    batch.commitDirectProps = startedFrontends[i].commitDirectProps;
+    batch.mutations = startedFrontends[i].onAnimationFrame(timestamp);
+  }
   applyMutations(std::move(batches));
+}
+
+void AnimationBackend::resumeFramesLocked() {
+  if (!isRenderCallbackStarted_) {
+    animationChoreographer_->resume();
+    isRenderCallbackStarted_ = true;
+  }
+}
+
+void AnimationBackend::pauseFramesIfIdleLocked() {
+  if (isRenderCallbackStarted_ && callbacks.empty() &&
+      std::none_of(frontends_.begin(), frontends_.end(), [](auto& frontend) {
+        return frontend.started;
+      })) {
+    animationChoreographer_->pause();
+    isRenderCallbackStarted_ = false;
+  }
 }
 
 CallbackId AnimationBackend::start(const Callback& callback) {
@@ -187,10 +264,7 @@ CallbackId AnimationBackend::start(const Callback& callback) {
 
   auto callbackId = nextCallbackId_++;
   callbacks.push_back({.callbackId = callbackId, .callback = callback});
-  if (!isRenderCallbackStarted_) {
-    animationChoreographer_->resume();
-    isRenderCallbackStarted_ = true;
-  }
+  resumeFramesLocked();
 
   return callbackId;
 }
@@ -206,10 +280,52 @@ void AnimationBackend::stop(CallbackId callbackId) {
   }
 
   callbacks.erase(it);
-  if (isRenderCallbackStarted_ && callbacks.empty()) {
-    animationChoreographer_->pause();
-    isRenderCallbackStarted_ = false;
+  pauseFramesIfIdleLocked();
+}
+
+AnimationFrontendId AnimationBackend::registerFrontend(
+    AnimationFrontend frontend) {
+  react_native_assert(
+      (frontend.commitDirectProps ||
+       ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend()) &&
+      "Only the direct path writes the final values of a frontend that does not commit its direct values");
+  std::lock_guard lock(mutex_);
+  frontends_.push_back({.frontend = std::move(frontend)});
+  return static_cast<AnimationFrontendId>(frontends_.size());
+}
+
+void AnimationBackend::startFrontend(AnimationFrontendId frontendId) {
+  std::lock_guard lock(mutex_);
+  auto& registered = frontends_.at(frontendId - 1);
+  if (registered.started || !registered.frontend.onAnimationFrame) {
+    return;
   }
+  registered.started = true;
+  resumeFramesLocked();
+}
+
+void AnimationBackend::stopFrontend(AnimationFrontendId frontendId) {
+  std::lock_guard lock(mutex_);
+  auto& registered = frontends_.at(frontendId - 1);
+  if (!registered.started) {
+    return;
+  }
+  registered.started = false;
+  pauseFramesIfIdleLocked();
+}
+
+void AnimationBackend::pushAnimationMutations(
+    AnimationFrontendId frontendId,
+    const Callback& callback) {
+  std::vector<FrontendMutations> batches(1);
+  {
+    std::lock_guard lock(mutex_);
+    batches[0].commitDirectProps =
+        frontends_.at(frontendId - 1).frontend.commitDirectProps;
+  }
+  auto timestamp = animationChoreographer_->now();
+  batches[0].mutations = callback(timestamp);
+  applyMutations(std::move(batches));
 }
 
 void AnimationBackend::trigger() {
@@ -218,8 +334,8 @@ void AnimationBackend::trigger() {
 
 void AnimationBackend::pushAnimationMutations(const Callback& callback) {
   auto timestamp = animationChoreographer_->now();
-  std::vector<AnimationMutations> batches(1);
-  batches[0] = callback(timestamp);
+  std::vector<FrontendMutations> batches(1);
+  batches[0].mutations = callback(timestamp);
   applyMutations(std::move(batches));
 }
 
@@ -290,43 +406,67 @@ void AnimationBackend::requestAsyncFlushForSurfaces(
       surfaces.empty() && "jsInvoker_ was not provided");
   std::weak_ptr<AnimatedPropsRegistry> weakAnimatedPropsRegistry =
       animatedPropsRegistry_;
+  // Like C++ Animated without the backend, one flush per surface is scheduled
+  // at a time. It writes the final values recorded by the time it runs.
+  bool flushOncePerSurface =
+      ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend();
   for (const auto& surfaceId : surfaces) {
+    if (flushOncePerSurface &&
+        !animatedPropsRegistry_->scheduleAsyncFlush(surfaceId)) {
+      continue;
+    }
     // perform an empty commit on the js thread, to force the commit hook to
     // push updated shadow nodes to react through RSNRU
-    jsInvoker_->invokeAsync(
-        [weakUIManager = uiManager_, surfaceId, weakAnimatedPropsRegistry]() {
-          auto uiManager = weakUIManager.lock();
-          if (!uiManager) {
-            return;
-          }
-          uiManager->getShadowTreeRegistry().visit(
-              surfaceId,
-              [weakAnimatedPropsRegistry](const ShadowTree& shadowTree) {
-                auto result = shadowTree.commit(
-                    [weakAnimatedPropsRegistry](
-                        const RootShadowNode& oldRootShadowNode) {
-                      return std::static_pointer_cast<RootShadowNode>(
+    jsInvoker_->invokeAsync([weakUIManager = uiManager_,
+                             surfaceId,
+                             weakAnimatedPropsRegistry]() {
+      if (auto animatedPropsRegistry = weakAnimatedPropsRegistry.lock();
+          animatedPropsRegistry &&
+          ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend()) {
+        animatedPropsRegistry->startAsyncFlush(surfaceId);
+      }
+      auto uiManager = weakUIManager.lock();
+      if (!uiManager) {
+        return;
+      }
+      uiManager->getShadowTreeRegistry().visit(
+          surfaceId, [weakAnimatedPropsRegistry](const ShadowTree& shadowTree) {
+            auto finalValues = takeFinalValues(
+                weakAnimatedPropsRegistry, shadowTree.getSurfaceId());
+            auto result = shadowTree.commit(
+                [&finalValues](const RootShadowNode& oldRootShadowNode) {
+                  auto newRootShadowNode =
+                      std::static_pointer_cast<RootShadowNode>(
                           oldRootShadowNode.ShadowNode::clone({}));
-                    },
-                    {.source = ShadowTreeCommitSource::AnimationEndSync});
-                // To clear the registry, the updates neeed to be propagated to
-                // React with RSNRU. Without
-                // updateRuntimeShadowNodeReferencesOnCommitThread this won't
-                // happen if we do any commits on the main thread, since the
-                // runtimeShadowNodeReference_ is not propagated to nodes cloned
-                // outside of the JS thread. So when the flag is disabled we
-                // keep the updates in the registry and we will reapply them in
-                // a commit hook triggered by a rerender.
-                if (result == ShadowTree::CommitStatus::Succeeded &&
-                    ReactNativeFeatureFlags::
-                        updateRuntimeShadowNodeReferencesOnCommitThread()) {
-                  if (auto animatedPropsRegistry =
-                          weakAnimatedPropsRegistry.lock()) {
-                    animatedPropsRegistry->clear(shadowTree.getSurfaceId());
-                  }
-                }
-              });
-        });
+                  writeFinalValues(
+                      finalValues, oldRootShadowNode, newRootShadowNode);
+                  return newRootShadowNode;
+                },
+                {.source = ShadowTreeCommitSource::AnimationEndSync});
+            if (auto animatedPropsRegistry = weakAnimatedPropsRegistry.lock();
+                animatedPropsRegistry && !finalValues.empty() &&
+                result != ShadowTree::CommitStatus::Succeeded) {
+              animatedPropsRegistry->restoreFinalValues(
+                  shadowTree.getSurfaceId(), std::move(finalValues));
+            }
+            // To clear the registry, the updates neeed to be propagated to
+            // React with RSNRU. Without
+            // updateRuntimeShadowNodeReferencesOnCommitThread this won't
+            // happen if we do any commits on the main thread, since the
+            // runtimeShadowNodeReference_ is not propagated to nodes cloned
+            // outside of the JS thread. So when the flag is disabled we
+            // keep the updates in the registry and we will reapply them in
+            // a commit hook triggered by a rerender.
+            if (result == ShadowTree::CommitStatus::Succeeded &&
+                ReactNativeFeatureFlags::
+                    updateRuntimeShadowNodeReferencesOnCommitThread()) {
+              if (auto animatedPropsRegistry =
+                      weakAnimatedPropsRegistry.lock()) {
+                animatedPropsRegistry->clear(shadowTree.getSurfaceId());
+              }
+            }
+          });
+    });
   }
 }
 

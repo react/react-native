@@ -555,11 +555,17 @@ void NativeAnimatedNodesManager::handleAnimatedEvent(
     // frames.
     if (useSharedAnimatedBackend_) {
       if (auto animationBackend = animationBackend_.lock()) {
+        AnimationFrontendId frontendId = 0;
+        {
+          std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
+          frontendId = animationFrontendIdLocked(*animationBackend);
+        }
         // Pass stepAnimations false so this push only propagates event values.
         // Frames step time-based drivers with the vsync time, which can be
         // earlier than this push's time, so stepping them here would move them
         // backward on the next frame.
         animationBackend->pushAnimationMutations(
+            frontendId,
             [this](AnimationTimestamp timestamp) -> AnimationMutations {
               return pullAnimationMutations(
                   timestamp, /* stepAnimations */ false);
@@ -609,23 +615,9 @@ void NativeAnimatedNodesManager::startRenderCallbackIfNeeded(bool isAsync) {
     if (!animationBackend) {
       return;
     }
-    // AnimationBackend::start registers the callback before returning the id.
-    // Keep registration and id publication in one critical section; otherwise a
-    // concurrent stop can observe no id and leave the registered callback
-    // orphaned in the backend.
     std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
-    if (animationBackendCallbackId_.has_value()) {
-      return;
-    }
-    auto weak = weak_from_this();
-    auto callbackId = animationBackend->start(
-        [weak](AnimationTimestamp timestamp) -> AnimationMutations {
-          if (auto self = weak.lock()) {
-            return self->pullAnimationMutations(timestamp);
-          }
-          return {};
-        });
-    animationBackendCallbackId_ = callbackId;
+    animationBackend->startFrontend(
+        animationFrontendIdLocked(*animationBackend));
   }
 }
 
@@ -651,22 +643,29 @@ void NativeAnimatedNodesManager::stopRenderCallbackIfNeeded(
 
   {
     auto animationBackend = animationBackend_.lock();
-    CallbackId callbackId = 0;
-    {
-      std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
-      if (!animationBackendCallbackId_.has_value()) {
-        return;
-      }
-      // Clear the published id while holding the same mutex that protects
-      // start registration. This makes a concurrent start either see an active
-      // callback or wait until this stop owns the callback id.
-      callbackId = *animationBackendCallbackId_;
-      animationBackendCallbackId_.reset();
-    }
-    if (animationBackend) {
-      animationBackend->stop(callbackId);
+    std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
+    if (animationBackend && animationFrontendId_.has_value()) {
+      animationBackend->stopFrontend(*animationFrontendId_);
     }
   }
+}
+
+AnimationFrontendId NativeAnimatedNodesManager::animationFrontendIdLocked(
+    UIManagerAnimationBackend& animationBackend) {
+  if (!animationFrontendId_.has_value()) {
+    animationFrontendId_ = animationBackend.registerFrontend(
+        {.commitDirectProps =
+             !ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend(),
+         .onAnimationFrame =
+             [weak = weak_from_this()](
+                 AnimationTimestamp timestamp) -> AnimationMutations {
+           if (auto self = weak.lock()) {
+             return self->pullAnimationMutations(timestamp);
+           }
+           return {};
+         }});
+  }
+  return *animationFrontendId_;
 }
 
 bool NativeAnimatedNodesManager::isAnimationUpdateNeeded() const noexcept {
@@ -1027,7 +1026,8 @@ void NativeAnimatedNodesManager::insertMutations(
 
     if (auto family = weakFamily.lock()) {
       propsBuilder.storeDynamic(update.second);
-      if (shouldRequestAsyncFlush_.contains(tag)) {
+      bool finished = shouldRequestAsyncFlush_.contains(tag);
+      if (finished) {
         mutations.asyncFlushSurfaces.insert(family->getSurfaceId());
       }
       mutations.batch.push_back(
@@ -1036,6 +1036,7 @@ void NativeAnimatedNodesManager::insertMutations(
               .family = family,
               .props = propsBuilder.get(),
               .hasLayoutUpdates = hasLayoutUpdates,
+              .finishesAnimation = finished,
           });
     }
   }

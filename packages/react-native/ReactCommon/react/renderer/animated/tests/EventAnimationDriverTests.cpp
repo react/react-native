@@ -22,6 +22,12 @@ class FakeAnimationBackend : public UIManagerAnimationBackend {
   AnimationTimestamp pushTimestamp{0};
 
   void onAnimationFrame(AnimationTimestamp /*timestamp*/) override {}
+  AnimationFrontendId registerFrontend(
+      AnimationFrontend /*frontend*/) override {
+    return 1;
+  }
+  void startFrontend(AnimationFrontendId /*frontendId*/) override {}
+  void stopFrontend(AnimationFrontendId /*frontendId*/) override {}
   CallbackId start(const Callback& /*callback*/) override {
     return 0;
   }
@@ -30,6 +36,11 @@ class FakeAnimationBackend : public UIManagerAnimationBackend {
   void clearRegistryOnSurfaceStop(SurfaceId /*surfaceId*/) override {}
   void trigger() override {}
   void pushAnimationMutations(const Callback& callback) override {
+    callback(pushTimestamp);
+  }
+  void pushAnimationMutations(
+      AnimationFrontendId /*frontendId*/,
+      const Callback& callback) override {
     callback(pushTimestamp);
   }
   void registerJSInvoker(std::shared_ptr<CallInvoker> /*jsInvoker*/) override {}

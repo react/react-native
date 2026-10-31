@@ -22,6 +22,8 @@ struct AnimationMutation {
   std::shared_ptr<const ShadowNodeFamily> family;
   AnimatedProps props;
   bool hasLayoutUpdates{false};
+  // The last value of an animation of this view.
+  bool finishesAnimation{false};
 };
 
 struct AnimationMutations {

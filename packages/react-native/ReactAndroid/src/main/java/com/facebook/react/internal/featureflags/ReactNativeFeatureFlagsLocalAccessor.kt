@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c305274be2fc6720b6c0eb75e78bd6b0>>
+ * @generated SignedSource<<d9391a3bef70fdab935a98b4f8affdb3>>
  */
 
 /**
@@ -45,6 +45,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableBridgelessArchitectureCache: Boolean? = null
   private var enableCppPropsIteratorSetterCache: Boolean? = null
   private var enableCustomFocusSearchOnClippedElementsAndroidCache: Boolean? = null
+  private var enableCxxAnimatedDirectPathInBackendCache: Boolean? = null
   private var enableDestroyShadowTreeRevisionAsyncCache: Boolean? = null
   private var enableDoubleMeasurementFixAndroidCache: Boolean? = null
   private var enableEagerRootViewAttachmentCache: Boolean? = null
@@ -328,6 +329,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableCustomFocusSearchOnClippedElementsAndroid()
       accessedFeatureFlags.add("enableCustomFocusSearchOnClippedElementsAndroid")
       enableCustomFocusSearchOnClippedElementsAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun enableCxxAnimatedDirectPathInBackend(): Boolean {
+    var cached = enableCxxAnimatedDirectPathInBackendCache
+    if (cached == null) {
+      cached = currentProvider.enableCxxAnimatedDirectPathInBackend()
+      accessedFeatureFlags.add("enableCxxAnimatedDirectPathInBackend")
+      enableCxxAnimatedDirectPathInBackendCache = cached
     }
     return cached
   }

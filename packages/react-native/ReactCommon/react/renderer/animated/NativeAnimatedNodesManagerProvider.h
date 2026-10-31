@@ -16,6 +16,7 @@
 namespace facebook::react {
 
 class AnimatedMountingOverrideDelegate;
+class UIManager;
 
 class NativeAnimatedNodesManagerProvider {
  public:
@@ -34,6 +35,8 @@ class NativeAnimatedNodesManagerProvider {
   std::shared_ptr<EventEmitterListener> getEventEmitterListener();
 
  private:
+  void addMountingOverrideDelegate(UIManager &uiManager);
+
   std::shared_ptr<NativeAnimatedNodesManager> nativeAnimatedNodesManager_;
 
   std::shared_ptr<EventEmitterListenerContainer> eventEmitterListenerContainer_;
