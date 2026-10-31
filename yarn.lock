@@ -3226,17 +3226,17 @@ bl@^4.1.0:
     readable-stream "^3.4.0"
 
 body-parser@^2.2.2:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-2.3.0.tgz#6d8662f4d8c336028b8ac9aa24251b0ca64ba437"
-  integrity sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-2.4.0.tgz#337a76249270f83e450ad385a9606ca3b4a75c06"
+  integrity sha512-Ifk1KcLrxaGt1occQagQNFNNOqRt1LFuehEnHHzB8Z6cRgIxRU1TBaiIsUiCdA+gy5PL7Y1IX31DNKkRmxtXjQ==
   dependencies:
     bytes "^3.1.2"
-    content-type "^2.0.0"
+    content-type "^2.1.0"
     debug "^4.4.3"
     http-errors "^2.0.1"
-    iconv-lite "^0.7.2"
+    iconv-lite "^0.7.3"
     on-finished "^2.4.1"
-    qs "^6.15.2"
+    qs "^6.16.1"
     raw-body "^3.0.2"
     type-is "^2.1.0"
 
@@ -3618,6 +3618,11 @@ content-type@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/content-type/-/content-type-2.0.0.tgz#2fb3ede69dffa0af78ca7c4ce7589680638b56df"
   integrity sha512-j/O/d7GcZCyNl7/hwZAb606rzqkyvaDctLmckbxLzHvFBzTJHuGEdodATcP3yIRoDrLHkIATJuvzbFlp/ki2cQ==
+
+content-type@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/content-type/-/content-type-2.1.0.tgz#d9389c43c0a8cf6a355db464d21e07092a40493a"
+  integrity sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag==
 
 convert-source-map@^2.0.0:
   version "2.0.0"
@@ -5378,7 +5383,14 @@ iconv-lite@^0.4.24:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
-iconv-lite@^0.7.2, iconv-lite@~0.7.0:
+iconv-lite@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.7.3.tgz#84ee12f963e7de50bc01a13e160a078b3b0f415f"
+  integrity sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==
+  dependencies:
+    safer-buffer ">= 2.1.2 < 3.0.0"
+
+iconv-lite@~0.7.0:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.7.2.tgz#d0bdeac3f12b4835b7359c2ad89c422a4d1cc72e"
   integrity sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==
@@ -7991,10 +8003,10 @@ pvutils@^1.1.3:
   resolved "https://registry.yarnpkg.com/pvutils/-/pvutils-1.1.5.tgz#84b0dea4a5d670249aa9800511804ee0b7c2809c"
   integrity sha512-KTqnxsgGiQ6ZAzZCVlJH5eOjSnvlyEgx1m8bkRJfOhmGRqfo5KLvmAlACQkrjEtOQ4B7wF9TdSLIs9O90MX9xA==
 
-qs@^6.15.2:
-  version "6.15.3"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.15.3.tgz#76852132a58ed5c7c0ef67e4441b9bb5d6061b3b"
-  integrity sha512-O9gl3zCl5h5blw1KGUzQKhA5oUXSl8rwUIM5o0S3nCXMliSvy5Dzx7/DJcI+SwgICv+IneSZwhBh1oSyEHA71A==
+qs@^6.16.1:
+  version "6.16.1"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.16.1.tgz#0643e17993e551759c85078e1f0bc4b9fe908020"
+  integrity sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg==
   dependencies:
     es-define-property "^1.0.1"
     side-channel "^1.1.1"
