@@ -9,6 +9,7 @@
 
 package com.facebook.react.fabric
 
+import android.view.ViewGroup
 import com.facebook.react.ReactRootView
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactTestHelper
@@ -194,5 +195,33 @@ class SurfaceMountingManagerTest {
 
     smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, true)
     assertThat(smm.getViewExists(42)).isTrue()
+  }
+
+  /**
+   * When a child is moved between parents (e.g. because an intermediate view is flattened or
+   * unflattened) while it is still being animated out of its previous parent, [ViewGroup] removes
+   * it from its children but keeps its parent pointer until the transition ends. addViewAt must
+   * still be able to insert it into the new parent.
+   */
+  @Test
+  fun addViewAt_reparentsViewThatIsTransitioningOutOfPreviousParent() {
+    val smm = startSurface()
+    smm.createView("RCTView", 10, JavaOnlyMap.of(), null, null, true)
+    smm.createView("RCTView", 12, JavaOnlyMap.of(), null, null, true)
+    smm.createView("RCTView", 42, JavaOnlyMap.of(), null, null, true)
+    smm.addViewAt(surfaceId, 10, 0)
+    smm.addViewAt(surfaceId, 12, 1)
+    smm.addViewAt(10, 42, 0)
+
+    val previousParent = smm.getView(10) as ViewGroup
+    val view = smm.getView(42)
+    previousParent.startViewTransition(view)
+    smm.removeViewAt(42, 10, 0)
+    assertThat(previousParent.indexOfChild(view)).isEqualTo(-1)
+    assertThat(view.parent).isSameAs(previousParent)
+
+    smm.addViewAt(12, 42, 0)
+
+    assertThat(view.parent).isSameAs(smm.getView(12))
   }
 }

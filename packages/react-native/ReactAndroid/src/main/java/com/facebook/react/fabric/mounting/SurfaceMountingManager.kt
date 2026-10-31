@@ -361,6 +361,12 @@ internal constructor(
       // View in the future.
       if (currParentView is ViewGroup) {
         currParentView.removeView(view)
+        // If the view is being animated out of its previous parent (e.g. by a LayoutTransition),
+        // ViewGroup has already dropped it from its children but keeps its parent pointer until
+        // the transition ends, so removeView above is a no-op. End the transition to detach it.
+        if (view.parent === currParentView) {
+          currParentView.endViewTransition(view)
+        }
       }
       erroneouslyReaddedReactTags.add(tag)
     }
