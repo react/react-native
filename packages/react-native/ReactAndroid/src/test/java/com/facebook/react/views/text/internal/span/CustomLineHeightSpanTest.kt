@@ -7,6 +7,7 @@
 
 package com.facebook.react.views.text.internal.span
 
+import android.annotation.SuppressLint
 import android.graphics.Paint
 import android.text.Layout
 import android.text.SpannableString
@@ -18,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
+@SuppressLint("NewApi")
 @RunWith(RobolectricTestRunner::class)
 class CustomLineHeightSpanTest {
 
@@ -75,14 +77,62 @@ class CustomLineHeightSpanTest {
     assertThat(layout.height).isEqualTo(24)
   }
 
-  private fun buildStaticLayout(text: String, lineHeight: Int): StaticLayout {
+  @Test
+  fun inlineViewTallerThanLineHeightGrowsLineBoxAroundTextAndView() {
+    val paint = TextPaint().apply { textSize = 24f }
+    val text = SpannableString("ab\uFFFC")
+    text.setSpan(CustomLineHeightSpan(24f), 0, 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    text.setSpan(
+        TextInlineViewPlaceholderSpan(reactTag = 1, width = 40, height = 40),
+        2,
+        3,
+        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
+    val fontMetrics = paint.fontMetricsInt
+    val leading = 24 - (-fontMetrics.ascent + fontMetrics.descent)
+    val textDescent = fontMetrics.descent + Math.floorDiv(leading, 2)
+
+    val layout =
+        StaticLayout.Builder.obtain(text, 0, text.length, paint, 400)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setIncludePad(true)
+            .setLineSpacing(0f, 1f)
+            .build()
+
+    assertThat(layout.lineCount).isEqualTo(1)
+    assertThat(layout.getLineBaseline(0) - layout.getLineTop(0)).isEqualTo(40)
+    assertThat(layout.getLineBottom(0) - layout.getLineBaseline(0)).isEqualTo(maxOf(textDescent, 0))
+  }
+
+  @Test
+  fun inlineViewShorterThanLineHeightKeepsLineHeight() {
+    val layout = buildStaticLayout("ab\uFFFC", lineHeight = 24, inlineViewHeight = 10)
+
+    assertThat(layout.lineCount).isEqualTo(1)
+    assertThat(layout.height).isEqualTo(24)
+  }
+
+  private fun buildStaticLayout(
+      text: String,
+      lineHeight: Int,
+      inlineViewHeight: Int? = null,
+  ): StaticLayout {
     val spannable = SpannableString(text)
+    val textEnd = if (inlineViewHeight == null) text.length else text.length - 1
     spannable.setSpan(
         CustomLineHeightSpan(lineHeight.toFloat()),
         0,
-        text.length,
+        textEnd,
         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
     )
+    if (inlineViewHeight != null) {
+      spannable.setSpan(
+          TextInlineViewPlaceholderSpan(reactTag = 1, width = 10, height = inlineViewHeight),
+          textEnd,
+          text.length,
+          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+      )
+    }
 
     return StaticLayout.Builder.obtain(
             spannable,
