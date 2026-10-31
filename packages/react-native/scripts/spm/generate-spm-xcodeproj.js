@@ -73,11 +73,12 @@ const path = require('node:path');
 
 /*:: import type {
   FlavoredFrameworkManifestEntry,
+  GitignoreRecord,
   PluginScriptPhase,
   XcframeworkSlice,
 } from './spm-types'; */
 
-const {log} = makeLogger('generate-spm-xcodeproj');
+const {log, warn} = makeLogger('generate-spm-xcodeproj');
 
 // Sidecar inside a USER-OWNED xcodeproj that SPM packages were injected into in
 // place. Records the host project's root UUID + every edit so `spm deinit`
@@ -2467,7 +2468,7 @@ function readScriptPhasesManifest(
  */
 function readMarker(
   xcodeprojPath /*: string */,
-) /*: ?{targetUuid?: ?string, generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, linkedFrameworks?: Array<{id: string, frameworkName: string}>, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: unknown, buildSettingChanges?: Array<BuildSettingChange>, xcconfig?: XcconfigRecord, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
+) /*: ?{targetUuid?: ?string, generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, linkedFrameworks?: Array<{id: string, frameworkName: string}>, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: unknown, buildSettingChanges?: Array<BuildSettingChange>, xcconfig?: XcconfigRecord, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, gitignore?: GitignoreRecord, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
     // $FlowFixMe[incompatible-return] JSON.parse returns any
@@ -2803,7 +2804,7 @@ function linkedReactNativeRoot(
  * when the project can't be safely edited (caller surfaces it; fail-loud).
  */
 function injectSpmIntoExistingXcodeproj(
-  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: ReadonlyArray<string>} */,
+  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: ReadonlyArray<string>, gitignoreAppended?: ?GitignoreRecord} */,
 ) /*: {status: 'injected', target: string} | {status: 'refused', reason: string} */ {
   const {appRoot, reactNativeRoot, xcodeprojPath} = opts;
   const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
@@ -2957,6 +2958,18 @@ function injectSpmIntoExistingXcodeproj(
   // the whole marker, this field with it.
   const configCommand = opts.configCommand ?? prevMarker?.configCommand ?? null;
 
+  // `add` passes the lines it appends to .gitignore; `update` passes none and
+  // keeps the record. Without one (an older marker), deinit leaves .gitignore
+  // untouched.
+  const appended = opts.gitignoreAppended;
+  const gitignore /*: ?GitignoreRecord */ =
+    appended == null
+      ? prevMarker?.gitignore
+      : {
+          created: prevMarker?.gitignore?.created === true || appended.created,
+          lines: [...(prevMarker?.gitignore?.lines ?? []), ...appended.lines],
+        };
+
   // Marker: idempotency signal + the exact, reversible record of every edit so
   // `deinit` (removeSpmInjection) can undo precisely what was added.
   writeIfChanged(
@@ -3004,6 +3017,7 @@ function injectSpmIntoExistingXcodeproj(
             schemeResult.status === 'created' ||
             prevMarker?.scheme?.created === true,
         },
+        gitignore,
       },
       null,
       2,
@@ -3281,6 +3295,7 @@ function removeSpmInjection(
     EMBED_FRAMEWORKS_SCRIPT_PATH,
   ]) {
     fs.rmSync(path.join(appRoot, relPath), {force: true});
+    removeEmptyDirsUpTo(path.dirname(path.join(appRoot, relPath)), appRoot);
   }
 
   // 3. Scheme: delete it if injection created it AND still owns its contents,
@@ -3314,6 +3329,26 @@ function removeSpmInjection(
   // 4. Drop the marker — the project is no longer SPM-injected.
   fs.rmSync(markerPath, {force: true});
   return {status: 'removed', target: marker.target};
+}
+
+// Never follows a symlink, which could lead outside `stopAt`. A failure only
+// warns: deinit has more to undo after this.
+function removeEmptyDirsUpTo(dir /*: string */, stopAt /*: string */) {
+  let current = dir;
+  try {
+    const root = fs.realpathSync(stopAt);
+    while (
+      fs.existsSync(current) &&
+      fs.lstatSync(current).isDirectory() &&
+      fs.realpathSync(current).startsWith(root + path.sep) &&
+      fs.readdirSync(current).length === 0
+    ) {
+      fs.rmdirSync(current);
+      current = path.dirname(current);
+    }
+  } catch (e) {
+    warn(`Could not remove the empty directory ${current}: ${e.message}`);
+  }
 }
 
 module.exports = {
