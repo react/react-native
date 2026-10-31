@@ -23,7 +23,6 @@
 #import "RCTInspectorUtils.h"
 #import "RCTJSThread.h"
 #import "RCTLog.h"
-#import "RCTPausedInDebuggerOverlayController.h"
 #import "RCTPerformanceLogger.h"
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
