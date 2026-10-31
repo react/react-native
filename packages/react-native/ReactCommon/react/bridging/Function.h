@@ -106,7 +106,9 @@ template <typename R, typename... Args>
 class SyncCallback<R(Args...)> {
  public:
   SyncCallback(jsi::Runtime &rt, jsi::Function function, std::shared_ptr<CallInvoker> jsInvoker)
-      : wrapper_(CallbackWrapper::createWeak(std::move(function), rt, std::move(jsInvoker)))
+      : wrapper_(CallbackWrapper::createWeak(std::move(function), rt, std::move(jsInvoker))),
+        collection_(&LongLivedObjectCollection::get(rt)),
+        wrapperPtr_(wrapper_.lock().get())
   {
   }
 
@@ -116,18 +118,30 @@ class SyncCallback<R(Args...)> {
   SyncCallback &operator=(const SyncCallback &) = delete;
 
   // Allow move
-  SyncCallback(SyncCallback &&other) noexcept : wrapper_(std::move(other.wrapper_)) {}
+  SyncCallback(SyncCallback &&other) noexcept
+      : wrapper_(std::move(other.wrapper_)),
+        collection_(std::exchange(other.collection_, nullptr)),
+        wrapperPtr_(std::exchange(other.wrapperPtr_, nullptr))
+  {
+  }
 
   SyncCallback &operator=(SyncCallback &&other) noexcept
   {
     wrapper_ = std::move(other.wrapper_);
+    collection_ = std::exchange(other.collection_, nullptr);
+    wrapperPtr_ = std::exchange(other.wrapperPtr_, nullptr);
     return *this;
   }
 
   ~SyncCallback()
   {
-    if (auto wrapper = wrapper_.lock()) {
-      wrapper->destroy();
+    // May run on any thread (e.g. the fbjni destructor thread). Locking wrapper_
+    // here could leave this thread with the last reference outside the
+    // collection's lock, racing with clear() during runtime teardown. Remove by
+    // address instead, so any release happens under that lock. expired() skips
+    // wrappers that clear() already released, whose address may be reused.
+    if (collection_ != nullptr && !wrapper_.expired()) {
+      collection_->remove(wrapperPtr_);
     }
   }
 
@@ -179,6 +193,11 @@ class SyncCallback<R(Args...)> {
 
   // Held weakly so lifetime is managed by LongLivedObjectCollection.
   std::weak_ptr<CallbackWrapper> wrapper_;
+  // Used by the destructor to release the wrapper without locking wrapper_.
+  // The collection outlives the runtime: LongLivedObjectCollection::get() never
+  // erases its entries.
+  LongLivedObjectCollection *collection_;
+  const LongLivedObject *wrapperPtr_;
 };
 
 template <typename... Args>
