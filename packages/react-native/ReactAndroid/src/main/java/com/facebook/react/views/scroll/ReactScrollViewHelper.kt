@@ -577,6 +577,8 @@ public object ReactScrollViewHelper {
       return null
     }
 
+    val contentView = host.getChildAt(0) ?: return null
+
     val uimanager =
         UIManagerHelper.getUIManager(host.context as ReactContext, UIManagerType.FABRIC)
             ?: return null
@@ -586,9 +588,8 @@ public object ReactScrollViewHelper {
             ?: return null
 
     val ancestorIdList =
-        uimanager
-            .getRelativeAncestorList(host.getChildAt(0).id, nextFocusableViewId)
-            ?.toMutableSet() ?: return null
+        uimanager.getRelativeAncestorList(contentView.id, nextFocusableViewId)?.toMutableSet()
+            ?: return null
 
     ancestorIdList.add(nextFocusableViewId)
 
