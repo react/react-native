@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 #include "render/RenderOutput.h"
+#include "render/TextLayout.h"
 
 namespace facebook::react {
 class IImageLoader;
@@ -47,6 +48,7 @@ class TesterMountingManager : public IMountingManager {
   }
 
   std::shared_ptr<FantomImageLoader> imageLoader_;
+  std::shared_ptr<FantomTextLayoutManager> textLayoutManager_;
 
   std::shared_ptr<IImageLoader> getImageLoader() noexcept override
   {

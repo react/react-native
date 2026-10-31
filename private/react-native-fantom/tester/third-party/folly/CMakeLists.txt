@@ -38,6 +38,9 @@ SET(folly_runtime_SRC
         folly/detail/Futex.cpp
         folly/detail/SplitStringSimd.cpp
         folly/detail/UniqueInstance.cpp
+        folly/detail/base64_detail/Base64Api.cpp
+        folly/detail/base64_detail/Base64SWAR.cpp
+        folly/detail/base64_detail/Base64_SSE4_2.cpp
         folly/hash/SpookyHashV2.cpp
         folly/io/IOBuf.cpp
         folly/json/dynamic.cpp
