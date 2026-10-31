@@ -9145,10 +9145,10 @@ class facebook::react::SyncCallback<R(Args...)> {
   public R operator()(Args... args) const;
   public SyncCallback(const facebook::react::SyncCallback&) = delete;
   public SyncCallback(facebook::jsi::Runtime& rt, facebook::jsi::Function function, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
-  public SyncCallback(facebook::react::SyncCallback&& other) noexcept;
+  public SyncCallback(facebook::react::SyncCallback&&) noexcept = default;
   public facebook::react::SyncCallback& operator=(const facebook::react::SyncCallback&) = delete;
-  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&& other) noexcept;
-  public ~SyncCallback();
+  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&&) noexcept = default;
+  public ~SyncCallback() = default;
 }
 
 template <typename R, typename... Args>
@@ -9191,6 +9191,26 @@ class facebook::react::ConcreteComponentDescriptor : public facebook::react::Com
 
 template <typename T, typename = void>
 struct facebook::react::Bridging {
+}
+
+template <typename T>
+class facebook::react::LongLivedObjectHandle {
+  public LongLivedObjectHandle() = default;
+  public LongLivedObjectHandle(const facebook::react::LongLivedObjectHandle&) = delete;
+  public LongLivedObjectHandle(facebook::jsi::Runtime& runtime, T value, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
+  public LongLivedObjectHandle(facebook::react::LongLivedObjectHandle&&) noexcept = default;
+  public bool expired() const noexcept;
+  public facebook::react::LongLivedObjectHandle& operator=(const facebook::react::LongLivedObjectHandle&) = delete;
+  public facebook::react::LongLivedObjectHandle& operator=(facebook::react::LongLivedObjectHandle&& other) noexcept;
+  public std::shared_ptr<facebook::react::CallInvoker> lockInvoker() const noexcept;
+  public std::shared_ptr<facebook::react::LongLivedObjectHandle::Holder> lockJSValue(facebook::jsi::Runtime&) const noexcept;
+  public void reset() noexcept;
+  public ~LongLivedObjectHandle();
+}
+
+struct facebook::react::LongLivedObjectHandle::Holder : public facebook::react::LongLivedObject {
+  public Holder(facebook::jsi::Runtime& runtime, T value);
+  public T value;
 }
 
 template <typename T>
@@ -10199,8 +10219,11 @@ template <typename CSSColor>
 std::optional<facebook::react::CSSColor> facebook::react::detail::parseModernHslFunction(facebook::react::CSSValueParser& parser);
 template <typename T, typename C>
 C facebook::react::detail::memberFunctionClass(T C::*);
+template <typename T>
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<T>, std::weak_ptr<facebook::react::CallInvoker>) = delete;
 template <typename... ComponentT>
 constexpr std::optional<float> facebook::react::detail::normalizeComponent(const std::variant<std::monostate, ComponentT...>& component, float baseValue);
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<facebook::react::LongLivedObject> object, std::weak_ptr<facebook::react::CallInvoker> jsInvoker) noexcept;
 
 class facebook::react::detail::OwnedBytesBuffer : public facebook::jsi::MutableBuffer {
   public OwnedBytesBuffer(std::vector<uint8_t> bytes) noexcept;

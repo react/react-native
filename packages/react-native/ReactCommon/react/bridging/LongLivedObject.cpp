@@ -6,6 +6,8 @@
  */
 
 #include "LongLivedObject.h"
+
+#include <ReactCommon/CallInvoker.h>
 #include <unordered_map>
 
 namespace facebook::react {
@@ -35,22 +37,31 @@ void LongLivedObjectCollection::add(std::shared_ptr<LongLivedObject> so) {
 }
 
 void LongLivedObjectCollection::remove(const LongLivedObject* o) {
-  std::scoped_lock lock(collectionMutex_);
-  // Empty owner: lookup-only alias, with no ownership or control block.
-  const std::shared_ptr<LongLivedObject> lookupKey{
-      std::shared_ptr<LongLivedObject>{}, const_cast<LongLivedObject*>(o)};
+  decltype(collection_)::node_type retired;
+  {
+    std::scoped_lock lock(collectionMutex_);
+    // Empty owner: lookup-only alias, with no ownership or control block.
+    const std::shared_ptr<LongLivedObject> lookupKey{
+        std::shared_ptr<LongLivedObject>{},
+        // Lookup never dereferences or mutates the object.
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        const_cast<LongLivedObject*>(o)};
 
-  // A shared_ptr hashes and compares by the pointer it stores, so a
-  // non-owning shared_ptr to `o` finds its entry without walking the set.
-  auto entry = collection_.find(lookupKey);
-  if (entry != collection_.end()) {
-    collection_.erase(entry);
+    // A shared_ptr hashes and compares by the pointer it stores, so a
+    // non-owning shared_ptr to `o` finds its entry without walking the set.
+    auto entry = collection_.find(lookupKey);
+    if (entry != collection_.end()) {
+      retired = collection_.extract(entry);
+    }
   }
 }
 
 void LongLivedObjectCollection::clear() {
-  std::scoped_lock lock(collectionMutex_);
-  collection_.clear();
+  decltype(collection_) retired;
+  {
+    std::scoped_lock lock(collectionMutex_);
+    retired.swap(collection_);
+  }
 }
 
 size_t LongLivedObjectCollection::size() const {
@@ -62,6 +73,24 @@ size_t LongLivedObjectCollection::size() const {
 
 void LongLivedObject::allowRelease() {
   LongLivedObjectCollection::get(runtime_).remove(this);
+}
+
+void detail::releaseLongLivedObjectOnJS(
+    std::weak_ptr<LongLivedObject> object,
+    std::weak_ptr<CallInvoker> jsInvoker) noexcept {
+  if (object.expired()) {
+    return;
+  }
+  if (auto invoker = jsInvoker.lock()) {
+    invoker->invokeAsync([object = std::move(object)](jsi::Runtime&) {
+      if (auto locked = object.lock()) {
+        locked->allowRelease();
+      }
+    });
+  }
+  // If dispatch is dropped, runtime cleanup releases the collection. Never
+  // fall back to acquiring or releasing a strong reference on the caller
+  // thread.
 }
 
 } // namespace facebook::react

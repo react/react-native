@@ -19,7 +19,10 @@ namespace facebook::react {
 
 class CallInvoker;
 
-// Helper for passing jsi::Function arg to other methods.
+/**
+ * @deprecated Use LongLivedObjectHandle<jsi::Function> instead.
+ * Access and release this legacy wrapper only on the JavaScript thread.
+ */
 class CallbackWrapper : public LongLivedObject {
  private:
   CallbackWrapper(jsi::Function &&callback, jsi::Runtime &runtime, std::shared_ptr<CallInvoker> jsInvoker)

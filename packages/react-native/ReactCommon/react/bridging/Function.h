@@ -10,7 +10,7 @@
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <react/bridging/Base.h>
-#include <react/bridging/CallbackWrapper.h>
+#include <react/bridging/CallbackWrapper.h> // Retain the legacy transitive include.
 
 #include <ReactCommon/CallInvoker.h>
 #include <ReactCommon/SchedulerPriority.h>
@@ -61,16 +61,18 @@ class AsyncCallback {
 
   void callWithArgs(std::optional<SchedulerPriority> priority, Args... args) const noexcept
   {
-    if (auto wrapper = callback_->wrapper_.lock()) {
-      auto fn = [callback = callback_,
+    auto callback = callback_;
+    if (auto jsInvoker = callback->function_.lockInvoker()) {
+      // The queued function owns the tuple; its lifetime is opaque to the analyzer.
+      // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
+      auto fn = [callback = std::move(callback),
                  argsPtr = std::make_shared<std::tuple<Args...>>(std::make_tuple(std::forward<Args>(args)...))](
                     jsi::Runtime &) { callback->apply(std::move(*argsPtr)); };
 
-      auto &jsInvoker = wrapper->jsInvoker();
       if (priority) {
-        jsInvoker.invokeAsync(*priority, std::move(fn));
+        jsInvoker->invokeAsync(*priority, std::move(fn));
       } else {
-        jsInvoker.invokeAsync(std::move(fn));
+        jsInvoker->invokeAsync(std::move(fn));
       }
     }
   }
@@ -79,57 +81,42 @@ class AsyncCallback {
       std::optional<SchedulerPriority> priority,
       std::function<void(jsi::Runtime &, jsi::Function &)> &&callImpl) const noexcept
   {
-    if (auto wrapper = callback_->wrapper_.lock()) {
-      // Capture callback_ and not wrapper_. If callback_ is deallocated or the
-      // JSVM is shutdown before the async task is scheduled, the underlying
-      // function will have been deallocated.
-      auto fn = [callback = callback_, callImpl = std::move(callImpl)](jsi::Runtime &rt) {
-        if (auto wrapper2 = callback->wrapper_.lock()) {
-          callImpl(rt, wrapper2->callback());
+    auto callback = callback_;
+    if (auto jsInvoker = callback->function_.lockInvoker()) {
+      // Retain native ownership until this task is destroyed, without retaining
+      // a JavaScript value while the task is queued or discarded.
+      auto fn = [callback = std::move(callback), callImpl = std::move(callImpl)](jsi::Runtime &) {
+        if (!callback->function_.expired()) {
+          auto &rt = *callback->runtime_;
+          if (auto function = callback->function_.lockJSValue(rt)) {
+            callImpl(rt, function->value);
+          }
         }
       };
 
-      auto &jsInvoker = wrapper->jsInvoker();
       if (priority) {
-        jsInvoker.invokeAsync(*priority, std::move(fn));
+        jsInvoker->invokeAsync(*priority, std::move(fn));
       } else {
-        jsInvoker.invokeAsync(std::move(fn));
+        jsInvoker->invokeAsync(std::move(fn));
       }
     }
   }
 };
 
-// You must ensure that when invoking this you're located on the JS thread, or
-// have exclusive control of the JS VM context. If you cannot ensure this, use
-// AsyncCallback instead.
+// Invoke only on the JavaScript thread. Use AsyncCallback from other threads.
 template <typename R, typename... Args>
 class SyncCallback<R(Args...)> {
  public:
   SyncCallback(jsi::Runtime &rt, jsi::Function function, std::shared_ptr<CallInvoker> jsInvoker)
-      : wrapper_(CallbackWrapper::createWeak(std::move(function), rt, std::move(jsInvoker)))
+      : runtime_(&rt), function_(rt, std::move(function), std::move(jsInvoker))
   {
   }
 
-  // Disallow copying, as we can no longer safely destroy the callback
-  // from the destructor if there's multiple copies
   SyncCallback(const SyncCallback &) = delete;
   SyncCallback &operator=(const SyncCallback &) = delete;
-
-  // Allow move
-  SyncCallback(SyncCallback &&other) noexcept : wrapper_(std::move(other.wrapper_)) {}
-
-  SyncCallback &operator=(SyncCallback &&other) noexcept
-  {
-    wrapper_ = std::move(other.wrapper_);
-    return *this;
-  }
-
-  ~SyncCallback()
-  {
-    if (auto wrapper = wrapper_.lock()) {
-      wrapper->destroy();
-    }
-  }
+  SyncCallback(SyncCallback &&) noexcept = default;
+  SyncCallback &operator=(SyncCallback &&) noexcept = default;
+  ~SyncCallback() = default;
 
   R operator()(Args... args) const
   {
@@ -138,11 +125,12 @@ class SyncCallback<R(Args...)> {
 
   R call(Args... args) const
   {
-    auto wrapper = wrapper_.lock();
+    auto jsInvoker = function_.lockInvoker();
+    auto function = jsInvoker ? function_.lockJSValue(*runtime_) : nullptr;
 
-    // If the wrapper has been deallocated, we can no longer provide a return
-    // value consistently, so our only option is to throw
-    if (!wrapper) {
+    // If the function has been deallocated, we can no longer provide a return
+    // value consistently, so our only option is to throw.
+    if (!function) {
       if constexpr (std::is_void_v<R>) {
         return;
       } else {
@@ -150,9 +138,10 @@ class SyncCallback<R(Args...)> {
       }
     }
 
-    auto &callback = wrapper->callback();
-    auto &rt = wrapper->runtime();
-    auto jsInvoker = wrapper->jsInvokerPtr();
+    // JavaScript can destroy this native callback during the call; use only
+    // the retained value and local runtime/invoker references afterward.
+    auto &callback = function->value;
+    auto &rt = *runtime_;
 
     if constexpr (std::is_void_v<R>) {
       callback.call(rt, bridging::toJs(rt, std::forward<Args>(args), jsInvoker)...);
@@ -177,8 +166,8 @@ class SyncCallback<R(Args...)> {
     return call(std::move(std::get<Index>(args))...);
   }
 
-  // Held weakly so lifetime is managed by LongLivedObjectCollection.
-  std::weak_ptr<CallbackWrapper> wrapper_;
+  jsi::Runtime *runtime_;
+  LongLivedObjectHandle<jsi::Function> function_;
 };
 
 template <typename... Args>
@@ -191,7 +180,7 @@ struct Bridging<AsyncCallback<Args...>> {
 
   static jsi::Function toJs(jsi::Runtime &rt, const AsyncCallback<Args...> &value)
   {
-    return value.callback_->function_.getFunction(rt);
+    return Bridging<SyncCallback<void(Args...)>>::toJs(rt, *value.callback_);
   }
 };
 
@@ -205,7 +194,10 @@ struct Bridging<SyncCallback<R(Args...)>> {
 
   static jsi::Function toJs(jsi::Runtime &rt, const SyncCallback<R(Args...)> &value)
   {
-    return value.function_.getFunction(rt);
+    if (auto function = value.function_.lockJSValue(rt)) {
+      return function->value.getFunction(rt);
+    }
+    throw jsi::JSError(rt, "Failed to get invalidated callback");
   }
 };
 

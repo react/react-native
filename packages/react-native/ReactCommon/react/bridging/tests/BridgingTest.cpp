@@ -5,8 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <barrier>
 #include <chrono>
+#include <condition_variable>
+#include <functional>
+#include <list>
+#include <memory>
+#include <mutex>
+#include <optional>
 #include <span>
+#include <thread>
 #include <utility>
 
 #include "BridgingTest.h"
@@ -1036,6 +1044,908 @@ TEST_F(BridgingTest, highResTimeStampTest) {
   EXPECT_EQ(1.0, bridging::toJs(rt, HighResDuration::fromNanoseconds(1e6)));
   EXPECT_EQ(
       1.000001, bridging::toJs(rt, HighResDuration::fromNanoseconds(1e6 + 1)));
+}
+
+namespace {
+
+template <typename T>
+constexpr bool canReleaseLongLivedObjectOnJS =
+    requires(std::weak_ptr<T> object, std::weak_ptr<CallInvoker> invoker) {
+      detail::releaseLongLivedObjectOnJS(std::move(object), std::move(invoker));
+    };
+
+static_assert(canReleaseLongLivedObjectOnJS<LongLivedObject>);
+static_assert(!canReleaseLongLivedObjectOnJS<
+              LongLivedObjectHandle<jsi::Function>::Holder>);
+
+// `TestCallInvoker` keeps its queue in a bare `std::list`, so it cannot be used
+// by the tests below, which schedule work from worker threads. Jobs are taken
+// out of the queue under the lock and run (and destroyed) outside it, so a
+// release scheduled while the queue drains is picked up by the same flush.
+class ConcurrentTestCallInvoker : public CallInvoker {
+ public:
+  explicit ConcurrentTestCallInvoker(jsi::Runtime& runtime)
+      : runtime_(runtime) {}
+
+  void invokeAsync(CallFunc&& func) noexcept override {
+    std::unique_lock lock(mutex_);
+    ++dispatchCount_;
+    dispatched_.notify_all();
+    gateOpened_.wait(lock, [this] { return gateOpen_; });
+    queue_.push_back(std::move(func));
+  }
+
+  void invokeAsync(SchedulerPriority priority, CallFunc&& func) noexcept
+      override {
+    {
+      std::scoped_lock lock(mutex_);
+      lastPriority_ = priority;
+    }
+    invokeAsync(std::move(func));
+  }
+
+  void invokeSync(CallFunc&& func) override {
+    func(runtime_);
+  }
+
+  void flushQueue() {
+    while (auto job = takeNextJob()) {
+      (*job)(runtime_);
+      job.reset();
+      runtime_.drainMicrotasks();
+    }
+  }
+
+  // Throws queued work away without running it, the way a JavaScript queue
+  // torn down at virtual machine shutdown would.
+  void discardQueue() {
+    while (auto job = takeNextJob()) {
+      job.reset();
+    }
+  }
+
+  size_t queueSize() {
+    std::scoped_lock lock(mutex_);
+    return queue_.size();
+  }
+
+  std::optional<SchedulerPriority> lastPriority() {
+    std::scoped_lock lock(mutex_);
+    return lastPriority_;
+  }
+
+  // Parks every dispatching thread inside `invokeAsync` until `openGate()`,
+  // which makes the window between "the callback is still alive" and "the task
+  // is queued" a deterministic point to interleave the JavaScript thread with.
+  void closeGate() {
+    std::scoped_lock lock(mutex_);
+    gateOpen_ = false;
+  }
+
+  void openGate() {
+    std::scoped_lock lock(mutex_);
+    gateOpen_ = true;
+    gateOpened_.notify_all();
+  }
+
+  void waitForDispatch(size_t count) {
+    std::unique_lock lock(mutex_);
+    dispatched_.wait(lock, [&] { return dispatchCount_ >= count; });
+  }
+
+  std::optional<CallFunc> takeNextJob() {
+    std::scoped_lock lock(mutex_);
+    if (queue_.empty()) {
+      return std::nullopt;
+    }
+    auto job = std::move(queue_.front());
+    queue_.pop_front();
+    return job;
+  }
+
+ private:
+  jsi::Runtime& runtime_;
+  std::mutex mutex_;
+  std::condition_variable gateOpened_;
+  std::condition_variable dispatched_;
+  std::list<CallFunc> queue_;
+  std::optional<SchedulerPriority> lastPriority_;
+  size_t dispatchCount_{0};
+  bool gateOpen_{true};
+};
+
+// Where and how often a value owned by a long lived object was destroyed.
+struct ReleaseRecord {
+  void record() {
+    std::scoped_lock lock(mutex);
+    ++count;
+    thread = std::this_thread::get_id();
+  }
+
+  int releaseCount() {
+    std::scoped_lock lock(mutex);
+    return count;
+  }
+
+  std::thread::id releaseThread() {
+    std::scoped_lock lock(mutex);
+    return thread;
+  }
+
+  std::mutex mutex;
+  int count{0};
+  std::thread::id thread{};
+};
+
+// A payload that reports its own destruction. Moving it hands the report over,
+// so a moved-from temporary never counts as a release.
+class ProbePayload {
+ public:
+  explicit ProbePayload(std::function<void()> onDestroy)
+      : onDestroy_(std::move(onDestroy)) {}
+
+  ProbePayload(ProbePayload&& other) noexcept
+      : onDestroy_(std::exchange(other.onDestroy_, nullptr)) {}
+
+  ProbePayload& operator=(ProbePayload&&) = delete;
+
+  ProbePayload(const ProbePayload&) = delete;
+  ProbePayload& operator=(const ProbePayload&) = delete;
+
+  ~ProbePayload() {
+    if (onDestroy_) {
+      onDestroy_();
+    }
+  }
+
+ private:
+  std::function<void()> onDestroy_;
+};
+
+ProbePayload recordingPayload(const std::shared_ptr<ReleaseRecord>& record) {
+  return ProbePayload([record] { record->record(); });
+}
+
+} // namespace
+
+TEST_F(BridgingTest, syncCallbackDestroyedOffJsThreadReleasesOnJsThread) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+
+  {
+    // Kept on the heap so that a cleanup job reaching back into the destroyed
+    // native owner is a use-after-free the sanitizers report, rather than a
+    // read of stack storage that is still mapped.
+    auto callback = std::make_unique<SyncCallback<void()>>(
+        rt, function("() => {}"), jsInvoker);
+    EXPECT_EQ(1, collection.size());
+
+    std::thread worker([&] { callback.reset(); });
+    worker.join();
+
+    // Dropping the last native owner away from the JavaScript thread must not
+    // reach into the collection: the function stays rooted until a JavaScript
+    // task releases it.
+    EXPECT_EQ(1, collection.size());
+  }
+
+  jsInvoker->flushQueue();
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, syncCallbackMoveAssignmentReleasesReplacedCallback) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+
+  {
+    SyncCallback<std::string()> callback(
+        rt, function("() => 'first'"), jsInvoker);
+
+    {
+      SyncCallback<std::string()> replacement(
+          rt, function("() => 'second'"), jsInvoker);
+      EXPECT_EQ(2, collection.size());
+
+      callback = std::move(replacement);
+
+      // On the JavaScript thread the replaced root goes immediately and no
+      // cleanup job is left behind.
+      EXPECT_EQ(1, collection.size());
+      EXPECT_EQ(0, jsInvoker->queueSize());
+      EXPECT_EQ("second"s, callback());
+    }
+
+    // Destroying the moved-from source must not release what it handed over.
+    EXPECT_EQ(1, collection.size());
+    EXPECT_EQ("second"s, callback());
+
+    // Assignment resets the destination before taking ownership, so self
+    // assignment has to be guarded.
+    auto& alias = callback;
+    callback = std::move(alias);
+    EXPECT_EQ(1, collection.size());
+    EXPECT_EQ("second"s, callback());
+  }
+
+  EXPECT_EQ(0, jsInvoker->queueSize());
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, asyncCallbackClearedDuringDispatchNeverCallsJs) {
+  enum class Path {
+    Arguments,
+    ArgumentsWithPriority,
+    Function,
+    FunctionWithPriority,
+  };
+
+  for (auto path :
+       {Path::Arguments,
+        Path::ArgumentsWithPriority,
+        Path::Function,
+        Path::FunctionWithPriority}) {
+    auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+    std::string output;
+    auto nativeFunc = std::function<void(std::string)>(
+        [&](auto str) { output = std::move(str); });
+
+    {
+      auto callback =
+          bridging::fromJs<AsyncCallback<decltype(nativeFunc), std::string>>(
+              rt, function("(func, str) => func(str)"), jsInvoker);
+
+      auto callImpl = [nativeFunc, jsInvoker](
+                          jsi::Runtime& runtime, jsi::Function& jsFunc) {
+        jsFunc.call(
+            runtime,
+            bridging::toJs(runtime, nativeFunc, jsInvoker),
+            bridging::toJs(runtime, "called", jsInvoker));
+      };
+
+      jsInvoker->closeGate();
+
+      std::thread worker([&] {
+        switch (path) {
+          case Path::Arguments:
+            callback(nativeFunc, "called");
+            break;
+          case Path::ArgumentsWithPriority:
+            callback.callWithPriority(
+                SchedulerPriority::IdlePriority, nativeFunc, "called");
+            break;
+          case Path::Function:
+            callback.call(callImpl);
+            break;
+          case Path::FunctionWithPriority:
+            callback.callWithPriority(
+                SchedulerPriority::IdlePriority, callImpl);
+            break;
+        }
+      });
+
+      // The dispatching thread is now parked inside the invoker, past the
+      // point where it found the callback alive.
+      jsInvoker->waitForDispatch(1);
+      LongLivedObjectCollection::get(rt).clear();
+      jsInvoker->openGate();
+      worker.join();
+
+      jsInvoker->flushQueue();
+      EXPECT_EQ(""s, output) << "dispatch path " << static_cast<int>(path);
+    }
+
+    jsInvoker->flushQueue();
+  }
+}
+
+TEST_F(BridgingTest, asyncCallbackDispatchAfterInvalidationEnqueuesNothing) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  std::string output;
+  auto nativeFunc = std::function<void(std::string)>(
+      [&](auto str) { output = std::move(str); });
+
+  {
+    auto callback =
+        bridging::fromJs<AsyncCallback<decltype(nativeFunc), std::string>>(
+            rt, function("(func, str) => func(str)"), jsInvoker);
+
+    auto callImpl = [nativeFunc, jsInvoker](
+                        jsi::Runtime& runtime, jsi::Function& jsFunc) {
+      jsFunc.call(
+          runtime,
+          bridging::toJs(runtime, nativeFunc, jsInvoker),
+          bridging::toJs(runtime, "called", jsInvoker));
+    };
+
+    LongLivedObjectCollection::get(rt).clear();
+
+    callback(nativeFunc, "called");
+    callback.callWithPriority(
+        SchedulerPriority::IdlePriority, nativeFunc, "called");
+    callback.call(callImpl);
+    callback.callWithPriority(SchedulerPriority::IdlePriority, callImpl);
+
+    EXPECT_EQ(0, jsInvoker->queueSize());
+  }
+
+  jsInvoker->flushQueue();
+  EXPECT_EQ(""s, output);
+}
+
+TEST_F(BridgingTest, asyncCallbackQueuedInvocationOutlivesItsOwner) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+  std::string output;
+  auto nativeFunc = std::function<void(std::string)>(
+      [&](auto str) { output = std::move(str); });
+
+  {
+    auto callback =
+        bridging::fromJs<AsyncCallback<decltype(nativeFunc), std::string>>(
+            rt, function("(func, str) => func(str)"), jsInvoker);
+    callback.callWithPriority(
+        SchedulerPriority::IdlePriority, nativeFunc, "late");
+  }
+
+  // The queued task owns the callback state, so dropping every public owner
+  // before it runs neither releases the function nor schedules a release.
+  EXPECT_EQ(SchedulerPriority::IdlePriority, jsInvoker->lastPriority());
+  EXPECT_EQ(1, jsInvoker->queueSize());
+  EXPECT_EQ(1, collection.size());
+
+  jsInvoker->flushQueue();
+  EXPECT_EQ("late"s, output);
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, asyncPromiseDroppedOffJsThreadReleasesOnJsThread) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+
+  {
+    auto promise = std::make_optional<AsyncPromise<int>>(rt, jsInvoker);
+    const auto rooted = collection.size();
+    EXPECT_GT(rooted, 0u);
+
+    std::thread worker([&] { promise.reset(); });
+    worker.join();
+
+    EXPECT_EQ(rooted, collection.size());
+  }
+
+  jsInvoker->flushQueue();
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, asyncPromiseSettlementSurvivesBeingDroppedOffJsThread) {
+  auto observe = function(
+      "(promise, obj) => {"
+      "  promise.then("
+      "    (res) => { obj.res = res; },"
+      "    (err) => { obj.err = err.message; }"
+      "  )"
+      "}");
+
+  for (bool rejects : {false, true}) {
+    auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+    auto output = jsi::Object(rt);
+
+    {
+      auto promise = std::make_optional<AsyncPromise<int>>(rt, jsInvoker);
+      observe.call(rt, bridging::toJs(rt, *promise, jsInvoker), output);
+
+      if (rejects) {
+        promise->reject("boom");
+      } else {
+        promise->resolve(42);
+      }
+
+      // Every public copy is dropped away from the JavaScript thread while
+      // the settlement is still queued.
+      std::thread worker([&] { promise.reset(); });
+      worker.join();
+    }
+
+    jsInvoker->flushQueue();
+
+    if (rejects) {
+      ASSERT_TRUE(output.getProperty(rt, "err").isString());
+      EXPECT_EQ("boom"s, output.getProperty(rt, "err").asString(rt).utf8(rt));
+    } else {
+      ASSERT_TRUE(output.getProperty(rt, "res").isNumber());
+      EXPECT_EQ(42, output.getProperty(rt, "res").asNumber());
+    }
+    EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
+  }
+}
+
+TEST_F(BridgingTest, asyncPromiseCopiesShareOneSettlement) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto observe = function(
+      "(promise, obj) => {"
+      "  obj.count = 0;"
+      "  promise.then("
+      "    (res) => { obj.count++; obj.res = res; },"
+      "    () => { obj.count++; obj.rejected = true; }"
+      "  )"
+      "}");
+  auto output = jsi::Object(rt);
+
+  {
+    auto promise = AsyncPromise<int>(rt, jsInvoker);
+    observe.call(rt, bridging::toJs(rt, promise, jsInvoker), output);
+
+    {
+      auto copy = promise;
+      copy.resolve(1);
+    }
+
+    // Dropping a copy leaves the shared state, and only the first settlement
+    // counts.
+    EXPECT_NO_THROW(promise.get(rt));
+    EXPECT_NO_THROW(promise.resolve(2));
+    EXPECT_NO_THROW(promise.reject("ignored"));
+  }
+
+  jsInvoker->flushQueue();
+
+  EXPECT_EQ(1, output.getProperty(rt, "count").asNumber());
+  EXPECT_EQ(1, output.getProperty(rt, "res").asNumber());
+  EXPECT_FALSE(output.hasProperty(rt, "rejected"));
+  EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
+}
+
+TEST_F(BridgingTest, asyncPromiseGetFailsAfterInvalidation) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+
+  {
+    auto promise = AsyncPromise<int>(rt, jsInvoker);
+    EXPECT_NO_THROW(promise.get(rt));
+
+    LongLivedObjectCollection::get(rt).clear();
+
+    EXPECT_JSI_THROW(promise.get(rt));
+    EXPECT_NO_THROW(promise.resolve(1));
+    EXPECT_NO_THROW(promise.reject("ignored"));
+    EXPECT_EQ(0, jsInvoker->queueSize());
+  }
+
+  jsInvoker->flushQueue();
+  EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
+}
+
+TEST_F(BridgingTest, longLivedObjectHandleReleasesPayloadOnJsThreadOnce) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+  auto record = std::make_shared<ReleaseRecord>();
+
+  {
+    LongLivedObjectHandle<ProbePayload> handle(
+        rt, recordingPayload(record), jsInvoker);
+    EXPECT_EQ(1, collection.size());
+
+    std::thread worker([&] {
+      handle.reset();
+      handle.reset();
+    });
+    worker.join();
+    EXPECT_EQ(1, jsInvoker->queueSize());
+
+    // The payload belongs to the collection, so nothing is destroyed on the
+    // worker thread however often the handle is reset.
+    EXPECT_EQ(0, record->releaseCount());
+    EXPECT_EQ(1, collection.size());
+  }
+
+  jsInvoker->flushQueue();
+
+  EXPECT_EQ(1, record->releaseCount());
+  EXPECT_EQ(std::this_thread::get_id(), record->releaseThread());
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, longLivedObjectHandleAccessExpiresWithItsRoot) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+
+  LongLivedObjectHandle<std::string> empty;
+  EXPECT_TRUE(empty.expired());
+  EXPECT_EQ(nullptr, empty.lockInvoker());
+  EXPECT_FALSE(static_cast<bool>(empty.lockJSValue(rt)));
+
+  {
+    LongLivedObjectHandle<std::string> handle(rt, "payload"s, jsInvoker);
+    EXPECT_FALSE(handle.expired());
+    EXPECT_EQ(
+        static_cast<CallInvoker*>(jsInvoker.get()), handle.lockInvoker().get());
+
+    {
+      auto locked = handle.lockJSValue(rt);
+      ASSERT_TRUE(locked);
+      locked->value += "!";
+    }
+
+    {
+      // The payload lives in the collection rather than in the handle, so the
+      // mutation is visible through a second lock.
+      auto locked = handle.lockJSValue(rt);
+      ASSERT_TRUE(locked);
+      EXPECT_EQ("payload!"s, locked->value);
+    }
+
+    LongLivedObjectCollection::get(rt).clear();
+
+    // An invoker retained elsewhere must not allow dispatch through an
+    // invalidated handle.
+    EXPECT_TRUE(handle.expired());
+    EXPECT_EQ(nullptr, handle.lockInvoker());
+    EXPECT_FALSE(static_cast<bool>(handle.lockJSValue(rt)));
+  }
+
+  jsInvoker->flushQueue();
+  EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
+}
+
+TEST_F(BridgingTest, longLivedObjectHandleDestroyedOnJsThreadReleasesInline) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+  auto record = std::make_shared<ReleaseRecord>();
+
+  {
+    LongLivedObjectHandle<ProbePayload> handle(
+        rt, recordingPayload(record), jsInvoker);
+    EXPECT_EQ(1, collection.size());
+
+    handle.reset();
+
+    // Released from the thread that built it, so the root and the value go
+    // inline and the queue never sees a cleanup job.
+    EXPECT_EQ(0, jsInvoker->queueSize());
+    EXPECT_EQ(1, record->releaseCount());
+    EXPECT_EQ(std::this_thread::get_id(), record->releaseThread());
+    EXPECT_EQ(0, collection.size());
+  }
+
+  // Destroying the emptied handle schedules nothing either.
+  EXPECT_EQ(0, jsInvoker->queueSize());
+  EXPECT_EQ(1, record->releaseCount());
+}
+
+TEST_F(BridgingTest, longLivedObjectHandleReleaseTaskHoldsNoStrongReference) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+  auto record = std::make_shared<ReleaseRecord>();
+
+  {
+    auto handle = std::make_optional<LongLivedObjectHandle<ProbePayload>>(
+        rt, recordingPayload(record), jsInvoker);
+
+    // Only a handle dropped away from the JavaScript thread leaves a queued
+    // cleanup job to inspect.
+    std::thread owner([&] { handle.reset(); });
+    owner.join();
+  }
+  EXPECT_EQ(1, jsInvoker->queueSize());
+
+  // A queue that is thrown away destroys its tasks on whichever thread tears
+  // it down, so a scheduled release must not own the payload.
+  std::thread worker([&] { jsInvoker->discardQueue(); });
+  worker.join();
+
+  EXPECT_EQ(0, record->releaseCount());
+  EXPECT_EQ(1, collection.size());
+
+  collection.clear();
+
+  EXPECT_EQ(1, record->releaseCount());
+  EXPECT_EQ(std::this_thread::get_id(), record->releaseThread());
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, longLivedObjectCollectionClearDestroysPayloadsUnlocked) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+  int reentrantClears = 0;
+
+  {
+    LongLivedObjectHandle<ProbePayload> handle(
+        rt,
+        ProbePayload([&] {
+          ++reentrantClears;
+          LongLivedObjectCollection::get(rt).clear();
+        }),
+        jsInvoker);
+
+    // A payload destructor is allowed to reach back into the collection, which
+    // it cannot do if clear() still holds the lock while destroying.
+    collection.clear();
+  }
+
+  EXPECT_EQ(1, reentrantClears);
+  EXPECT_EQ(0, collection.size());
+
+  jsInvoker->flushQueue();
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, asyncCallbackRuntimeDestroyedDuringDispatch) {
+  for (bool customCall : {false, true}) {
+    auto standaloneRuntime = hermes::makeHermesRuntime();
+    auto jsInvoker =
+        std::make_shared<ConcurrentTestCallInvoker>(*standaloneRuntime);
+    auto callback = std::make_optional<AsyncCallback<int>>(
+        *standaloneRuntime,
+        jsi::Function::createFromHostFunction(
+            *standaloneRuntime,
+            jsi::PropNameID::forAscii(*standaloneRuntime, "callback"),
+            1,
+            [](jsi::Runtime&, const jsi::Value&, const jsi::Value*, size_t) {
+              return jsi::Value::undefined();
+            }),
+        jsInvoker);
+
+    jsInvoker->closeGate();
+    std::thread worker([&] {
+      if (customCall) {
+        callback->call([](jsi::Runtime& runtime, jsi::Function& function) {
+          function.call(runtime, 1);
+        });
+      } else {
+        callback->call(1);
+      }
+    });
+
+    jsInvoker->waitForDispatch(1);
+    // A native-side strong reference would survive clear() while dispatch is
+    // parked; address sanitizer detects its invalidation after runtime
+    // disposal.
+    LongLivedObjectCollection::get(*standaloneRuntime).clear();
+    standaloneRuntime.reset();
+    jsInvoker->openGate();
+    worker.join();
+    EXPECT_EQ(1, jsInvoker->queueSize());
+
+    callback.reset();
+    std::thread discard([&] { jsInvoker->discardQueue(); });
+    discard.join();
+    EXPECT_EQ(0, jsInvoker->queueSize());
+  }
+}
+
+TEST_F(BridgingTest, callbackRoundTripPreservesFunctionIdentity) {
+  auto original = function("(value) => value + 1");
+  auto sync = bridging::fromJs<SyncCallback<int(int)>>(
+      rt, original.getFunction(rt), invoker);
+  auto async = bridging::fromJs<AsyncCallback<int>>(
+      rt, original.getFunction(rt), invoker);
+
+  EXPECT_TRUE(
+      jsi::Object::strictEquals(
+          rt, original, Bridging<decltype(sync)>::toJs(rt, sync)));
+  EXPECT_TRUE(
+      jsi::Object::strictEquals(
+          rt, original, Bridging<decltype(async)>::toJs(rt, async)));
+
+  LongLivedObjectCollection::get(rt).clear();
+  EXPECT_JSI_THROW(Bridging<decltype(sync)>::toJs(rt, sync));
+  EXPECT_JSI_THROW(Bridging<decltype(async)>::toJs(rt, async));
+}
+
+TEST_F(BridgingTest, longLivedObjectHandleRejectsMissingInvoker) {
+  EXPECT_JSI_THROW(
+      LongLivedObjectHandle<jsi::Object>(rt, jsi::Object(rt), nullptr));
+  EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
+}
+
+TEST_F(BridgingTest, syncCallbackMoveConstructionTransfersOwnership) {
+  {
+    auto source = std::make_optional<SyncCallback<std::string()>>(
+        rt, function("() => 'moved'"), invoker);
+    auto moved = std::move(*source);
+    source.reset();
+    flushQueue();
+    EXPECT_EQ(1, LongLivedObjectCollection::get(rt).size());
+    EXPECT_EQ("moved"s, moved());
+  }
+  flushQueue();
+  EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
+}
+
+TEST_F(BridgingTest, syncCallbackCanDestroyItsNativeOwnerDuringCall) {
+  // Heap allocated so that touching a member after the owner is gone is a
+  // use-after-free the sanitizers report, not a read of live stack storage.
+  std::unique_ptr<SyncCallback<int()>> callback;
+  auto destroyOwner = std::function<int()>([&] {
+    callback.reset();
+    return 42;
+  });
+  callback = std::make_unique<SyncCallback<int()>>(
+      rt, bridging::toJs(rt, destroyOwner, invoker), invoker);
+
+  EXPECT_EQ(42, callback->call());
+  EXPECT_EQ(nullptr, callback);
+  flushQueue();
+  EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
+}
+
+TEST_F(BridgingTest, longLivedObjectCollectionRemoveDestroysPayloadsUnlocked) {
+  struct ReentrantObject : LongLivedObject {
+    ReentrantObject(jsi::Runtime& runtime, int& releases)
+        : LongLivedObject(runtime), releases_(releases) {}
+
+    ~ReentrantObject() override {
+      ++releases_;
+      LongLivedObjectCollection::get(runtime_).clear();
+    }
+
+    int& releases_;
+  };
+
+  auto& collection = LongLivedObjectCollection::get(rt);
+  int releases = 0;
+  auto object = std::make_shared<ReentrantObject>(rt, releases);
+  auto address = object.get();
+  collection.add(std::move(object));
+  collection.remove(address);
+
+  EXPECT_EQ(1, releases);
+  EXPECT_EQ(0, collection.size());
+}
+
+TEST_F(BridgingTest, asyncCallbackInvalidationReleasesQueuedArguments) {
+  for (bool discard : {false, true}) {
+    auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+    auto lifetime = std::make_shared<int>(1);
+    std::weak_ptr<int> weakLifetime = lifetime;
+    auto argument =
+        std::function<void()>([lifetime] { EXPECT_EQ(1, *lifetime); });
+    auto callback = AsyncCallback<decltype(argument), std::string>(
+        rt, function("(callback, value) => callback()"), jsInvoker);
+
+    callback.callWithPriority(
+        SchedulerPriority::IdlePriority, argument, "queued");
+    argument = {};
+    lifetime.reset();
+    EXPECT_FALSE(weakLifetime.expired());
+    EXPECT_EQ(1, jsInvoker->queueSize());
+
+    LongLivedObjectCollection::get(rt).clear();
+    if (discard) {
+      std::thread worker([&] { jsInvoker->discardQueue(); });
+      worker.join();
+    } else {
+      jsInvoker->flushQueue();
+    }
+    EXPECT_TRUE(weakLifetime.expired());
+    EXPECT_EQ(0, jsInvoker->queueSize());
+  }
+}
+
+TEST_F(BridgingTest, longLivedObjectHandleDoesNotRetainInvoker) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  std::weak_ptr<CallInvoker> weakInvoker = jsInvoker;
+  auto record = std::make_shared<ReleaseRecord>();
+  LongLivedObjectHandle<ProbePayload> handle(
+      rt, recordingPayload(record), jsInvoker);
+
+  jsInvoker.reset();
+  EXPECT_TRUE(weakInvoker.expired());
+  EXPECT_FALSE(handle.expired());
+
+  std::thread worker([&] { handle.reset(); });
+  worker.join();
+  EXPECT_EQ(0, record->releaseCount());
+
+  LongLivedObjectCollection::get(rt).clear();
+  EXPECT_EQ(1, record->releaseCount());
+  EXPECT_EQ(std::this_thread::get_id(), record->releaseThread());
+}
+
+TEST_F(BridgingTest, asyncCallbackQueuedCallStopsWhenInvokerExpires) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  std::weak_ptr<CallInvoker> weakInvoker = jsInvoker;
+  int calls = 0;
+  auto nativeCallback = std::function<void()>([&] { ++calls; });
+  auto callback = AsyncCallback<decltype(nativeCallback)>(
+      rt, function("(callback) => callback()"), jsInvoker);
+  callback.call(nativeCallback);
+
+  auto queued = jsInvoker->takeNextJob();
+  ASSERT_TRUE(queued.has_value());
+  jsInvoker.reset();
+  ASSERT_TRUE(weakInvoker.expired());
+
+  EXPECT_NO_THROW((*queued)(rt));
+  EXPECT_EQ(0, calls);
+}
+
+TEST_F(BridgingTest, asyncCallbackQueuedCustomCallDoesNotRequireInvoker) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  std::weak_ptr<CallInvoker> weakInvoker = jsInvoker;
+  int calls = 0;
+  auto callback = AsyncCallback<>(rt, function("() => {}"), jsInvoker);
+  callback.call([&](jsi::Runtime&, jsi::Function&) { ++calls; });
+
+  auto queued = jsInvoker->takeNextJob();
+  ASSERT_TRUE(queued.has_value());
+  jsInvoker.reset();
+  ASSERT_TRUE(weakInvoker.expired());
+
+  (*queued)(rt);
+  EXPECT_EQ(1, calls);
+}
+
+TEST_F(BridgingTest, syncCallbackStopsWhenInvokerExpires) {
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  SyncCallback<int()> callback(rt, function("() => 42"), jsInvoker);
+
+  jsInvoker.reset();
+  EXPECT_THROW(callback.call(), std::runtime_error);
+}
+
+TEST_F(BridgingTest, asyncCallbackUsesItsStoredRuntime) {
+  auto otherRuntime = hermes::makeHermesRuntime();
+  for (bool customCall : {false, true}) {
+    auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+    int calls = 0;
+    auto nativeCallback = std::function<void()>([&] { ++calls; });
+    auto callback = AsyncCallback<decltype(nativeCallback)>(
+        rt, function("(callback) => callback()"), jsInvoker);
+
+    if (customCall) {
+      callback.call([&](jsi::Runtime& runtime, jsi::Function& function) {
+        EXPECT_EQ(&rt, &runtime);
+        function.call(
+            runtime, bridging::toJs(runtime, nativeCallback, jsInvoker));
+      });
+    } else {
+      callback.call(nativeCallback);
+    }
+
+    auto queued = jsInvoker->takeNextJob();
+    ASSERT_TRUE(queued.has_value());
+    (*queued)(*otherRuntime);
+    EXPECT_EQ(1, calls);
+  }
+}
+
+TEST_F(BridgingTest, longLivedObjectHandleResetRacesRuntimeCleanup) {
+  constexpr size_t iterations = 10000;
+  auto jsInvoker = std::make_shared<ConcurrentTestCallInvoker>(rt);
+  auto& collection = LongLivedObjectCollection::get(rt);
+  std::optional<LongLivedObjectHandle<ProbePayload>> handle;
+  std::barrier phase(2);
+
+  std::thread worker([&] {
+    for (size_t iteration = 0; iteration < iterations; ++iteration) {
+      phase.arrive_and_wait();
+      handle->reset();
+      phase.arrive_and_wait();
+    }
+  });
+
+  size_t wrongReleaseCount = 0;
+  size_t wrongReleaseThread = 0;
+  for (size_t iteration = 0; iteration < iterations; ++iteration) {
+    auto record = std::make_shared<ReleaseRecord>();
+    handle.emplace(rt, recordingPayload(record), jsInvoker);
+
+    // Repeatedly overlap teardown with native release to cover short-lived
+    // strong references hidden inside converting weak-pointer constructors.
+    phase.arrive_and_wait();
+    collection.clear();
+    phase.arrive_and_wait();
+
+    wrongReleaseCount += static_cast<size_t>(record->releaseCount() != 1);
+    wrongReleaseThread += static_cast<size_t>(
+        record->releaseThread() != std::this_thread::get_id());
+    jsInvoker->discardQueue();
+  }
+  worker.join();
+
+  EXPECT_EQ(0, wrongReleaseCount);
+  EXPECT_EQ(0, wrongReleaseThread);
+  EXPECT_EQ(0, collection.size());
+  EXPECT_EQ(0, jsInvoker->queueSize());
 }
 
 } // namespace facebook::react
