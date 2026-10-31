@@ -11,6 +11,7 @@
 #include <fbjni/fbjni.h>
 
 #include "InspectorNetworkRequestListener.h"
+#include "ScrollEventHelper.h"
 #include "TouchesHelper.h"
 #include "TransformHelper.h"
 
@@ -35,6 +36,7 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     FLAGS_minloglevel = 0;
 #endif
     InspectorNetworkRequestListener::registerNatives();
+    ScrollEventHelper::registerNatives();
     TouchesHelper::registerNatives();
     TransformHelper::registerNatives();
   });

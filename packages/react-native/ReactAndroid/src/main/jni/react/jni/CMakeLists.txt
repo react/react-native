@@ -32,6 +32,7 @@ add_library(
           OnLoad-common.cpp
           ReadableNativeArray.cpp
           ReadableNativeMap.cpp
+          ScrollEventHelper.cpp
           TouchesHelper.cpp
           TransformHelper.cpp
           WritableNativeArray.cpp

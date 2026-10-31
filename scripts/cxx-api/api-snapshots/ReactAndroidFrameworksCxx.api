@@ -3567,6 +3567,11 @@ class facebook::react::SchedulerDelegate {
   public virtual ~SchedulerDelegate() noexcept = default;
 }
 
+class facebook::react::ScrollEventHelper : public facebook::jni::JavaClass<facebook::react::ScrollEventHelper> {
+  public static constexpr auto * kJavaDescriptor;
+  public static void registerNatives();
+}
+
 class facebook::react::ScrollViewEventEmitter : public facebook::react::BaseViewEventEmitter {
   public using EndDragMetrics = facebook::react::ScrollEndDragEvent;
   public using Metrics = facebook::react::ScrollEvent;
