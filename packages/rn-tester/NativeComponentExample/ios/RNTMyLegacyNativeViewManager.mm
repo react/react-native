@@ -12,6 +12,8 @@
 #import "RNTMyNativeViewComponentView.h"
 #import "UIView+ColorOverlays.h"
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 @interface RNTMyLegacyNativeViewManager : RCTViewManager
 
 @end
@@ -86,3 +88,5 @@ RCT_EXPORT_METHOD(removeOverlays : (nonnull NSNumber *)reactTag)
   return @{@"PI" : @3.14};
 }
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

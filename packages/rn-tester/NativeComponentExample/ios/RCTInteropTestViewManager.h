@@ -7,8 +7,12 @@
 
 #import <React/RCTViewManager.h>
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface InteropTestViewManager : RCTViewManager
 @end
 NS_ASSUME_NONNULL_END
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
