@@ -995,8 +995,12 @@ class VirtualizedList extends StateSafePureComponent<
       const key = VirtualizedList._keyExtractor(item, ii, this.props);
 
       this._indicesToKeys.set(ii, key);
-      if (stickyIndicesFromProps?.has(ii + stickyOffset)) {
+      const isStickyHeader =
+        stickyIndicesFromProps?.has(ii + stickyOffset) === true;
+      if (isStickyHeader) {
         stickyHeaderIndices.push(cells.length);
+      } else {
+        this._stickyHeaderKeysLaidOutByWrapper.delete(key);
       }
 
       const shouldListenForLayout =
@@ -1024,6 +1028,14 @@ class VirtualizedList extends StateSafePureComponent<
           {...(shouldListenForLayout && {
             onCellLayout: this._onCellLayout,
           })}
+          // `ScrollViewStickyHeader` calls this with the layout of its wrapper,
+          // which is relative to the list content.
+          onLayout={
+            shouldListenForLayout && isStickyHeader
+              ? (event: LayoutChangeEvent) =>
+                  this._onStickyHeaderCellLayout(event, key, ii)
+              : undefined
+          }
         />,
       );
       prevCellKey = key;
@@ -1521,6 +1533,8 @@ class VirtualizedList extends StateSafePureComponent<
   _scrollRef: ?React.ElementRef<typeof ScrollView> = null;
   _sentStartForContentLength = 0;
   _sentEndForContentLength = 0;
+  // Sticky header cells whose position comes from their sticky wrapper.
+  _stickyHeaderKeysLaidOutByWrapper: Set<string> = new Set();
   _updateCellsToRenderTimeoutID: ?ReturnType<typeof setTimeout> = null;
   _viewabilityTuples: Array<ViewabilityHelperCallbackTuple> = [];
 
@@ -1583,6 +1597,28 @@ class VirtualizedList extends StateSafePureComponent<
     cellKey: string,
     cellIndex: number,
   ): void => {
+    // A sticky header cell measures itself relative to its sticky wrapper, so
+    // prefer the wrapper's layout once it has been reported.
+    if (this._stickyHeaderKeysLaidOutByWrapper.has(cellKey)) {
+      return;
+    }
+    this._handleCellLayout(e, cellKey, cellIndex);
+  };
+
+  _onStickyHeaderCellLayout = (
+    e: LayoutChangeEvent,
+    cellKey: string,
+    cellIndex: number,
+  ): void => {
+    this._stickyHeaderKeysLaidOutByWrapper.add(cellKey);
+    this._handleCellLayout(e, cellKey, cellIndex);
+  };
+
+  _handleCellLayout(
+    e: LayoutChangeEvent,
+    cellKey: string,
+    cellIndex: number,
+  ): void {
     const layoutHasChanged = this._listMetrics.notifyCellLayout({
       cellIndex,
       cellKey,
@@ -1598,7 +1634,7 @@ class VirtualizedList extends StateSafePureComponent<
     this._computeBlankness();
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     this._notifyCrossOrientationChildren();
-  };
+  }
 
   _onCellFocusCapture = (cellKey: string) => {
     this._lastFocusedCellKey = cellKey;
@@ -1612,6 +1648,7 @@ class VirtualizedList extends StateSafePureComponent<
 
   _onCellUnmount = (cellKey: string) => {
     delete this._cellRefs[cellKey];
+    this._stickyHeaderKeysLaidOutByWrapper.delete(cellKey);
     this._listMetrics.notifyCellUnmounted(cellKey);
   };
 

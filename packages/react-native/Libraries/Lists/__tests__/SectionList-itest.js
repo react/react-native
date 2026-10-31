@@ -16,7 +16,7 @@ import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import {SectionList, Text} from 'react-native';
+import {SectionList, Text, View} from 'react-native';
 
 type Item = {key: string};
 
@@ -149,6 +149,75 @@ describe('<SectionList>', () => {
           </rn-view>
         </rn-scrollView>,
       );
+    });
+
+    it('reports the next sticky section header and the items after it', () => {
+      // Two sections, each one 50px sticky header followed by five 80px rows:
+      // header A at 0, rows A1-A5, header B at 450, rows B1-B5.
+      const sections: Array<SectionBase<Item>> = ['A', 'B'].map(name => ({
+        key: name,
+        data: Array.from({length: 5}, (_, i) => ({key: `${name}${i + 1}`})),
+      }));
+      const root = Fantom.createRoot({
+        viewportWidth: 400,
+        viewportHeight: 600,
+      });
+      const onViewableItemsChanged = jest.fn();
+      const sectionListRef = createRef<SectionList<Item>>();
+      const timers = Fantom.installTimerMock();
+      try {
+        Fantom.runTask(() => {
+          root.render(
+            <SectionList
+              ref={sectionListRef}
+              stickySectionHeadersEnabled={true}
+              sections={sections}
+              renderItem={() => (
+                <View style={{height: 80}} collapsable={false} />
+              )}
+              renderSectionHeader={() => (
+                <View style={{height: 50}} collapsable={false} />
+              )}
+              initialNumToRender={20}
+              viewabilityConfig={{itemVisiblePercentThreshold: 100}}
+              onViewableItemsChanged={onViewableItemsChanged}
+            />,
+          );
+        });
+
+        const scrollView = nullthrows(
+          nullthrows(
+            nullthrows(sectionListRef.current).getScrollResponder(),
+          ).getNativeScrollRef(),
+        );
+
+        // Header A is pinned. Header B (at 450) and B1-B4 are fully on screen.
+        Fantom.scrollTo(scrollView, {x: 0, y: 254});
+        // Flush the render batches scheduled by cell layout events.
+        timers.runAllTimers();
+        Fantom.runWorkLoop();
+
+        const lastCall =
+          onViewableItemsChanged.mock.calls[
+            onViewableItemsChanged.mock.calls.length - 1
+          ][0];
+        const viewableLabels = lastCall.viewableItems.map(
+          (token: {
+            index: ?number,
+            item: Item,
+            section: {key: string, ...},
+            ...
+          }) =>
+            token.index == null
+              ? `header ${token.section.key}`
+              : token.item.key,
+        );
+        for (const label of ['header B', 'B1', 'B2', 'B3', 'B4']) {
+          expect(viewableLabels).toContain(label);
+        }
+      } finally {
+        timers.uninstall();
+      }
     });
   });
 
