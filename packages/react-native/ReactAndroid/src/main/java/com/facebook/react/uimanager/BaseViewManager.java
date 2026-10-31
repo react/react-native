@@ -140,6 +140,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
     view.setTag(R.id.use_hardware_layer, null);
     view.setTag(R.id.filter, null);
+    view.setTag(R.id.backdrop_filter, null);
     view.setTag(R.id.mix_blend_mode, null);
     LayerEffectsHelper.apply(view, null, null);
 
@@ -262,6 +263,14 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.FILTER, customType = "Filter")
   public void setFilter(@NonNull T view, @Nullable ReadableArray filter) {
     view.setTag(R.id.filter, filter);
+  }
+
+  @ReactProp(name = ViewProps.BACKDROP_FILTER, customType = "Filter")
+  public void setBackdropFilter(@NonNull T view, @Nullable ReadableArray backdropFilter) {
+    view.setTag(R.id.backdrop_filter, backdropFilter);
+    if (view.getParent() instanceof View) {
+      ((View) view.getParent()).invalidate();
+    }
   }
 
   @ReactProp(name = ViewProps.MIX_BLEND_MODE)
