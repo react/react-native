@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<674f975884ae746e067e614523f2bfc3>>
+ * @generated SignedSource<<39f76cb701cafc08a547b1f222ab9889>>
  * @flow strict
  * @noformat
  */
@@ -73,6 +73,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
   enableDoubleMeasurementFixAndroid: Getter<boolean>,
   enableEagerRootViewAttachment: Getter<boolean>,
+  enableEllipsizedTextTrimmingAndroid: Getter<boolean>,
   enableExclusivePropsUpdateAndroid: Getter<boolean>,
   enableFabricCommitBranching: Getter<boolean>,
   enableFabricCommitBranchingMergeOnMainThread: Getter<boolean>,
@@ -318,6 +319,10 @@ export const enableDoubleMeasurementFixAndroid: Getter<boolean> = createNativeFl
  * Feature flag to configure eager attachment of the root view/initialisation of the JS code.
  */
 export const enableEagerRootViewAttachment: Getter<boolean> = createNativeFlagGetter('enableEagerRootViewAttachment', false);
+/**
+ * Draws ellipsized text on Android without the text hidden after the ellipsis, so that it is not shaped again on every draw.
+ */
+export const enableEllipsizedTextTrimmingAndroid: Getter<boolean> = createNativeFlagGetter('enableEllipsizedTextTrimmingAndroid', false);
 /**
  * When enabled, Android will disable Props 1.5 raw value merging when Props 2.0 is available.
  */

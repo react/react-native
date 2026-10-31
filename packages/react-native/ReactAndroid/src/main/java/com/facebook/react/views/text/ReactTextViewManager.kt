@@ -215,7 +215,9 @@ public constructor(
       preparedLayout: PreparedLayout,
   ): ReactTextUpdate {
     val layout = preparedLayout.layout
-    val text = layout.text
+    // The TextView lays the text out again, so it needs the whole text, not the drawn text trimmed
+    // after an ellipsis.
+    val text = EllipsisTrimmedLayout.untrimmedText(layout)
     val spanned = if (text is Spannable) text else SpannableString(text)
     view.setSpanned(spanned)
     view.setPreparedLayout(preparedLayout)

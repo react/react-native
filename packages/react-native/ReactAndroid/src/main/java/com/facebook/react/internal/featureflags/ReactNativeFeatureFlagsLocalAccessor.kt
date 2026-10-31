@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c305274be2fc6720b6c0eb75e78bd6b0>>
+ * @generated SignedSource<<40431db1f1e82e88b4209490990137dd>>
  */
 
 /**
@@ -48,6 +48,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableDestroyShadowTreeRevisionAsyncCache: Boolean? = null
   private var enableDoubleMeasurementFixAndroidCache: Boolean? = null
   private var enableEagerRootViewAttachmentCache: Boolean? = null
+  private var enableEllipsizedTextTrimmingAndroidCache: Boolean? = null
   private var enableExclusivePropsUpdateAndroidCache: Boolean? = null
   private var enableFabricCommitBranchingCache: Boolean? = null
   private var enableFabricCommitBranchingMergeOnMainThreadCache: Boolean? = null
@@ -358,6 +359,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableEagerRootViewAttachment()
       accessedFeatureFlags.add("enableEagerRootViewAttachment")
       enableEagerRootViewAttachmentCache = cached
+    }
+    return cached
+  }
+
+  override fun enableEllipsizedTextTrimmingAndroid(): Boolean {
+    var cached = enableEllipsizedTextTrimmingAndroidCache
+    if (cached == null) {
+      cached = currentProvider.enableEllipsizedTextTrimmingAndroid()
+      accessedFeatureFlags.add("enableEllipsizedTextTrimmingAndroid")
+      enableEllipsizedTextTrimmingAndroidCache = cached
     }
     return cached
   }

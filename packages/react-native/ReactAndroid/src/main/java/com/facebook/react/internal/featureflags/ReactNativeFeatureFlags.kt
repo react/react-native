@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a89ede36c4631b7a7709899858a7f9c9>>
+ * @generated SignedSource<<2143f0faa5bbc2cc77e304adc3edf65c>>
  */
 
 /**
@@ -173,6 +173,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableEagerRootViewAttachment(): Boolean = accessor.enableEagerRootViewAttachment()
+
+  /**
+   * Draws ellipsized text on Android without the text hidden after the ellipsis, so that it is not shaped again on every draw.
+   */
+  @JvmStatic
+  public fun enableEllipsizedTextTrimmingAndroid(): Boolean = accessor.enableEllipsizedTextTrimmingAndroid()
 
   /**
    * When enabled, Android will disable Props 1.5 raw value merging when Props 2.0 is available.
