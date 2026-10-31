@@ -116,6 +116,7 @@ let mockNativeAccessibilityManagerIOS: {
 
 const ANDROID_RECOMMENDED_TIMEOUT = 6000;
 const mockIsHighTextContrastEnabled = jest.fn(onSuccess => onSuccess(true));
+const mockGetContrastLevel = jest.fn(onSuccess => onSuccess(0.5));
 const mockIsGrayscaleEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsInvertColorsEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsReduceMotionEnabled = jest.fn(onSuccess => onSuccess(true));
@@ -125,6 +126,10 @@ const mockGetRecommendedTimeoutMillis = jest.fn((originalTimeout, onSuccess) =>
   onSuccess(ANDROID_RECOMMENDED_TIMEOUT),
 );
 let mockNativeAccessibilityInfoAndroid: {
+  getContrastLevel: JestMockFn<
+    [onSuccess: (contrastLevel: number) => void],
+    void,
+  > | null,
   isHighTextContrastEnabled: JestMockFn<
     [onSuccess: (isHighTextContrastEnabled: boolean) => void],
     void,
@@ -154,6 +159,7 @@ let mockNativeAccessibilityInfoAndroid: {
     void,
   > | null,
 } = {
+  getContrastLevel: mockGetContrastLevel,
   isHighTextContrastEnabled: mockIsHighTextContrastEnabled,
   isGrayscaleEnabled: mockIsGrayscaleEnabled,
   isInvertColorsEnabled: mockIsInvertColorsEnabled,
@@ -760,6 +766,70 @@ describe('AccessibilityInfo', () => {
     });
   });
 
+  describe('getContrastLevel', () => {
+    describe('Android', () => {
+      it('should call getContrastLevel if available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        const contrastLevel = await AccessibilityInfo.getContrastLevel();
+
+        expect(mockGetContrastLevel).toHaveBeenCalled();
+        expect(contrastLevel).toBe(0.5);
+      });
+
+      it('should throw error if getContrastLevel is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        mockNativeAccessibilityInfoAndroid.getContrastLevel = null;
+
+        const result: unknown =
+          await AccessibilityInfo.getContrastLevel().catch(e => e);
+
+        invariant(
+          result instanceof Error,
+          'Expected getContrastLevel to reject',
+        );
+        expect(result.message).toEqual(
+          'NativeAccessibilityInfoAndroid.getContrastLevel is not available',
+        );
+      });
+
+      it('should throw error if NativeAccessibilityInfoAndroid is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        const nativeAccessibilityInfoModule = jest.requireMock(
+          '../NativeAccessibilityInfo',
+        );
+        nativeAccessibilityInfoModule.default = null;
+
+        const result: unknown =
+          await AccessibilityInfo.getContrastLevel().catch(e => e);
+
+        invariant(
+          result instanceof Error,
+          'Expected getContrastLevel to reject',
+        );
+        expect(result.message).toEqual(
+          'NativeAccessibilityInfoAndroid.getContrastLevel is not available',
+        );
+      });
+    });
+
+    describe('iOS', () => {
+      it('should return 0', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        const contrastLevel = await AccessibilityInfo.getContrastLevel();
+
+        expect(contrastLevel).toBe(0);
+      });
+    });
+  });
+
   describe('isHighTextContrastEnabled', () => {
     describe('Android', () => {
       it('should call isHighTextContrastEnabled if available', async () => {
@@ -860,6 +930,7 @@ describe('AccessibilityInfo', () => {
       mockNativeAccessibilityManagerIOS;
 
     mockNativeAccessibilityInfoAndroid = {
+      getContrastLevel: mockGetContrastLevel,
       isHighTextContrastEnabled: mockIsHighTextContrastEnabled,
       isGrayscaleEnabled: mockIsGrayscaleEnabled,
       isInvertColorsEnabled: mockIsInvertColorsEnabled,

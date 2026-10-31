@@ -1470,6 +1470,12 @@ AccessibilityInfo.isShowBordersEnabled().then(isEnabled =>
 AccessibilityInfo.addEventListener('showBordersChanged', isEnabled =>
   console.log(`AccessibilityInfo.showBordersChanged => ${isEnabled}`),
 );
+AccessibilityInfo.getContrastLevel().then((contrastLevel: number) =>
+  console.log(`AccessibilityInfo.getContrastLevel => ${contrastLevel}`),
+);
+AccessibilityInfo.addEventListener('contrastLevelChanged', (level: number) =>
+  console.log(`AccessibilityInfo.contrastLevelChanged => ${level}`),
+);
 AccessibilityInfo.isBoldTextEnabled().then(isEnabled =>
   console.log(`AccessibilityInfo.isBoldTextEnabled => ${isEnabled}`),
 );

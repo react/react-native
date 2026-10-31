@@ -24,6 +24,10 @@ const AccessibilityInfo = {
     $FlowFixMe,
     $FlowFixMe,
   >,
+  getContrastLevel: jest.fn(() => Promise.resolve(0)) as JestMockFn<
+    $FlowFixMe,
+    $FlowFixMe,
+  >,
   isBoldTextEnabled: jest.fn(() => Promise.resolve(false)) as JestMockFn<
     $FlowFixMe,
     $FlowFixMe,

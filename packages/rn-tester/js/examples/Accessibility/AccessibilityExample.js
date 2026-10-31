@@ -1577,6 +1577,7 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
           optionChecker={AccessibilityInfo.isScreenReaderEnabled}
           notification={'screenReaderChanged'}
         />
+        {isAndroid ? <ContrastLevelExample /> : null}
         {isAndroid ? null : (
           <>
             <DisplayOptionStatusExample
@@ -1609,6 +1610,54 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
       </View>
     );
   }
+}
+
+function ContrastLevelExample(): React.Node {
+  const [contrastLevel, setContrastLevel] = useState<string>('loading');
+  const [lastEvent, setLastEvent] = useState<?number>(null);
+  useEffect(() => {
+    // Set once an event arrives or the example unmounts, so that a slow starting read can't
+    // overwrite a newer value.
+    let ignoreStartingRead = false;
+    const listener = AccessibilityInfo.addEventListener(
+      'contrastLevelChanged',
+      level => {
+        ignoreStartingRead = true;
+        setLastEvent(level);
+        setContrastLevel(String(level));
+      },
+    );
+    // $FlowFixMe[unused-promise]
+    AccessibilityInfo.getContrastLevel()
+      .then(level => {
+        if (!ignoreStartingRead) {
+          setContrastLevel(String(level));
+        }
+      })
+      .catch((error: unknown) => {
+        if (!ignoreStartingRead) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          setContrastLevel(`Unavailable: ${message}`);
+        }
+      });
+    return function cleanup() {
+      ignoreStartingRead = true;
+      listener.remove();
+    };
+  }, []);
+  return (
+    <View>
+      <RNTesterText>
+        {'Contrast level is '}
+        {contrastLevel}.
+      </RNTesterText>
+      <RNTesterText>
+        {'Last contrastLevelChanged event: '}
+        {lastEvent ?? 'none'}.
+      </RNTesterText>
+    </View>
+  );
 }
 
 function DisplayOptionStatusExample({
