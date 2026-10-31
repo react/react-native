@@ -911,6 +911,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    skipNativePropsForViewManagerWithDelegateAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-21',
+        description:
+          'Skip native prop metadata generation on Android for view managers with custom delegates. Requires their components to use static view configs.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     skipUnchangedChildrenInDifferentiator: {
       defaultValue: false,
       metadata: {

@@ -46,7 +46,7 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode<?>>
 
   private static final String TAG = "ViewManager";
 
-  private @Nullable ViewManagerDelegate<T> mDelegate = null;
+  private volatile @Nullable ViewManagerDelegate<T> mDelegate = null;
 
   /**
    * For View recycling: we store a Stack of unused, dead Views. This is null by default, and when
@@ -113,6 +113,11 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode<?>>
    * <p>By default, this methods returns a generic {@link ViewManagerDelegate} which uses {@link
    * ViewManagerSetter} to apply property updates.
    *
+   * <p>When {@code skipNativePropsForViewManagerWithDelegateAndroid} is enabled, lazy delegate
+   * initialisation may also occur during native prop metadata generation on the JavaScript thread.
+   * The returned delegate is cached and shared with subsequent prop updates and commands. Overrides
+   * must be safe to initialise on either thread.
+   *
    * @return an instance of {@link ViewManagerDelegate} if the props of the view managed by this
    *     view manager should be set via this delegate
    */
@@ -131,8 +136,13 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode<?>>
   private ViewManagerDelegate<T> getOrCreateViewManagerDelegate() {
     ViewManagerDelegate<T> delegate = mDelegate;
     if (delegate == null) {
-      delegate = getDelegate();
-      mDelegate = delegate;
+      synchronized (this) {
+        delegate = mDelegate;
+        if (delegate == null) {
+          delegate = getDelegate();
+          mDelegate = delegate;
+        }
+      }
     }
     return delegate;
   }
@@ -402,10 +412,21 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode<?>>
   }
 
   /**
-   * Returns a {@link Map<String, String>} representing the native props of the view manager. The
-   * Map contains the names (key) and types (value) of the ViewManager's props.
+   * Returns a mutable {@link Map<String, String>} representing the native props of the view
+   * manager. The Map contains the names (key) and types (value) of the ViewManager's props.
+   *
+   * <p>When {@code skipNativePropsForViewManagerWithDelegateAndroid} is enabled, managers with a
+   * non-generic delegate return an empty map. Enable this only when those components use static
+   * view configs rather than deriving their valid attributes from native prop metadata.
    */
   public Map<String, String> getNativeProps() {
+    if (ReactNativeFeatureFlags.skipNativePropsForViewManagerWithDelegateAndroid()) {
+      ViewManagerDelegate<T> delegate = getOrCreateViewManagerDelegate();
+      if (delegate != null
+          && !(delegate instanceof ViewManagerPropertyUpdater.GenericViewManagerDelegate)) {
+        return new HashMap<>();
+      }
+    }
     if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE
         && ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
       // TODO: review if we need to check fabricInterop here
