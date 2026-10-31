@@ -23,6 +23,7 @@ import {createRef, useEffect, useRef, useState} from 'react';
 import {
   AccessibilityInfo,
   Alert,
+  AppState,
   Button,
   Image,
   ImageBackground,
@@ -1606,6 +1607,7 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
             />
           </>
         )}
+        <RecommendedTimeoutStatusExample />
       </View>
     );
   }
@@ -1642,6 +1644,41 @@ function DisplayOptionStatusExample({
         {optionName}
         {' is '}
         {statusEnabled ? 'enabled' : 'disabled'}.
+      </RNTesterText>
+    </View>
+  );
+}
+
+function RecommendedTimeoutStatusExample(): React.Node {
+  const [recommendedTimeout, setRecommendedTimeout] = useState<?number>(null);
+  useEffect(() => {
+    let isMounted = true;
+    // AccessibilityInfo has no event for the recommended timeout, so read it
+    // again whenever the app becomes active.
+    const read = () => {
+      // $FlowFixMe[unused-promise]
+      AccessibilityInfo.getRecommendedTimeoutMillis(4000).then(timeout => {
+        if (isMounted) {
+          setRecommendedTimeout(timeout);
+        }
+      });
+    };
+    read();
+    const appStateListener = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        read();
+      }
+    });
+    return function cleanup() {
+      isMounted = false;
+      appStateListener.remove();
+    };
+  }, []);
+  return (
+    <View>
+      <RNTesterText>
+        {'Recommended timeout for 4000 ms: '}
+        {recommendedTimeout == null ? 'loading' : `${recommendedTimeout} ms`}.
       </RNTesterText>
     </View>
   );

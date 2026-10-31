@@ -1470,6 +1470,9 @@ AccessibilityInfo.isShowBordersEnabled().then(isEnabled =>
 AccessibilityInfo.addEventListener('showBordersChanged', isEnabled =>
   console.log(`AccessibilityInfo.showBordersChanged => ${isEnabled}`),
 );
+AccessibilityInfo.getRecommendedTimeoutMillis(4000).then((timeout: number) =>
+  console.log(`AccessibilityInfo.getRecommendedTimeoutMillis => ${timeout}`),
+);
 AccessibilityInfo.isBoldTextEnabled().then(isEnabled =>
   console.log(`AccessibilityInfo.isBoldTextEnabled => ${isEnabled}`),
 );

@@ -22,6 +22,10 @@ const mockGetCurrentShowBordersState = jest.fn((onSuccess, onError) =>
 const mockGetCurrentBoldTextState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
+const IOS_RECOMMENDED_TIMEOUT = 15000;
+const mockGetRecommendedTimeoutMillisIOS = jest.fn(
+  (originalTimeout, onSuccess) => onSuccess(IOS_RECOMMENDED_TIMEOUT),
+);
 const mockGetCurrentGrayscaleState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
@@ -38,6 +42,10 @@ const mockGetCurrentVoiceOverState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
 let mockNativeAccessibilityManagerIOS: {
+  getRecommendedTimeoutMillis: JestMockFn<
+    [originalTimeout: number, onSuccess: (timeout: number) => void],
+    void,
+  > | null,
   getCurrentShowBordersState: JestMockFn<
     [
       onSuccess: (isShowBordersEnabled: boolean) => void,
@@ -102,6 +110,7 @@ let mockNativeAccessibilityManagerIOS: {
     void,
   > | null,
 } = {
+  getRecommendedTimeoutMillis: mockGetRecommendedTimeoutMillisIOS,
   getCurrentShowBordersState: mockGetCurrentShowBordersState,
   getCurrentPrefersCrossFadeTransitionsState:
     mockGetCurrentPrefersCrossFadeTransitionsState,
@@ -831,20 +840,63 @@ describe('AccessibilityInfo', () => {
     });
 
     describe('iOS', () => {
-      it('should return originalTimeout', async () => {
+      it('should return the native recommended timeout', async () => {
         /* $FlowFixMe[incompatible-type] */
         Platform.OS = 'ios';
 
         const recommendedTimeoutMillis =
           await AccessibilityInfo.getRecommendedTimeoutMillis(5000);
 
+        expect(mockGetRecommendedTimeoutMillisIOS).toHaveBeenCalledWith(
+          5000,
+          expect.any(Function),
+        );
+        expect(recommendedTimeoutMillis).toBe(IOS_RECOMMENDED_TIMEOUT);
+      });
+
+      it('should return originalTimeout if getRecommendedTimeoutMillis is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        mockNativeAccessibilityManagerIOS.getRecommendedTimeoutMillis = null;
+
+        const recommendedTimeoutMillis =
+          await AccessibilityInfo.getRecommendedTimeoutMillis(5000);
+
         expect(recommendedTimeoutMillis).toBe(5000);
+      });
+
+      it('should return originalTimeout if NativeAccessibilityManagerIOS is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        const nativeAccessibilityManagerModule = jest.requireMock(
+          '../NativeAccessibilityManager',
+        );
+        const originalModule = nativeAccessibilityManagerModule.default;
+        // The native method is present, so only the missing module can make
+        // getRecommendedTimeoutMillis skip it.
+        expect(originalModule.getRecommendedTimeoutMillis).toBe(
+          mockGetRecommendedTimeoutMillisIOS,
+        );
+        nativeAccessibilityManagerModule.default = null;
+
+        try {
+          const recommendedTimeoutMillis =
+            await AccessibilityInfo.getRecommendedTimeoutMillis(5000);
+
+          expect(mockGetRecommendedTimeoutMillisIOS).not.toHaveBeenCalled();
+          expect(recommendedTimeoutMillis).toBe(5000);
+        } finally {
+          nativeAccessibilityManagerModule.default = originalModule;
+        }
       });
     });
   });
 
   afterEach(() => {
     mockNativeAccessibilityManagerIOS = {
+      getRecommendedTimeoutMillis: mockGetRecommendedTimeoutMillisIOS,
       getCurrentShowBordersState: mockGetCurrentShowBordersState,
       getCurrentPrefersCrossFadeTransitionsState:
         mockGetCurrentPrefersCrossFadeTransitionsState,
