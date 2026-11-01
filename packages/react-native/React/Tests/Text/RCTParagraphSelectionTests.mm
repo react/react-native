@@ -128,6 +128,33 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 }
 
 /*
+ * A paragraph that paints with the attributes UIKit itself knows: a solid
+ * underline and strikethrough, a shadow and a background. `RCTAttributedTextUtils`
+ * maps these to the native attribute names, which the wavy fixture above never
+ * sets.
+ */
+- (AttributedString)nativelyPaintedAttributedString
+{
+  auto textAttributes = TextAttributes{};
+  textAttributes.foregroundColor = colorFromRGBA(255, 0, 0, 255);
+  textAttributes.backgroundColor = colorFromRGBA(255, 255, 0, 255);
+  textAttributes.fontSize = 20;
+  textAttributes.textDecorationLineType = TextDecorationLineType::UnderlineStrikethrough;
+  textAttributes.textDecorationStyle = TextDecorationStyle::Solid;
+  textAttributes.textShadowOffset = facebook::react::Size{2, 2};
+  textAttributes.textShadowRadius = 3;
+  textAttributes.textShadowColor = colorFromRGBA(0, 0, 255, 255);
+
+  auto fragment = AttributedString::Fragment{};
+  fragment.string = "Selectable solid decoration";
+  fragment.textAttributes = textAttributes;
+
+  auto attributedString = AttributedString{};
+  attributedString.appendFragment(std::move(fragment));
+  return attributedString;
+}
+
+/*
  * A paragraph whose single fragment carries a touch emitter, which is how a
  * nested pressable <Text> reaches `touchEventEmitterAtPoint:`.
  */
@@ -205,11 +232,17 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
  */
 - (RCTParagraphComponentView *)paragraphViewSelectable:(BOOL)selectable
 {
+  return [self paragraphViewSelectable:selectable attributedString:[self decoratedAttributedString]];
+}
+
+- (RCTParagraphComponentView *)paragraphViewSelectable:(BOOL)selectable
+                                      attributedString:(AttributedString)attributedString
+{
   RCTParagraphComponentView *view = [RCTParagraphComponentView new];
   view.frame = CGRectMake(0, 0, 320, 100);
 
   [view updateProps:[self propsWithSelectable:selectable] oldProps:nullptr];
-  [view updateState:[self stateWithAttributedString:[self decoratedAttributedString]] oldState:nil];
+  [view updateState:[self stateWithAttributedString:std::move(attributedString)] oldState:nil];
 
   auto layoutMetrics = LayoutMetrics{};
   layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
@@ -320,6 +353,52 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 
                              // Layout attributes stay, or the selection rects move.
                              XCTAssertNotNil(attributes[NSFontAttributeName], @"The font places the glyphs.");
+                           }];
+}
+
+/*
+ * The wavy fixture never sets the native underline, strikethrough and shadow
+ * attributes, so a nil assertion on them proves nothing. This fixture sets all
+ * of them, and the test first checks that the painted string holds them.
+ */
+- (void)testSelectionTextViewStripsTheNativePaintingAttributes
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES
+                                                 attributedString:[self nativelyPaintedAttributedString]];
+  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  XCTAssertNotNil(selectionTextView);
+
+  NSAttributedString *painted = view.attributedText;
+  NSAttributedString *laidOut = selectionTextView.textStorage;
+  XCTAssertGreaterThan(painted.length, 0u);
+  XCTAssertEqual(laidOut.length, painted.length);
+
+  NSRange range = NSMakeRange(0, painted.length);
+  [painted
+      enumerateAttributesInRange:range
+                         options:0
+                      usingBlock:^(NSDictionary<NSAttributedStringKey, id> *attributes, NSRange r, BOOL *stop) {
+                        XCTAssertNotEqualObjects(attributes[NSForegroundColorAttributeName], UIColor.clearColor);
+                        XCTAssertNotEqualObjects(attributes[NSBackgroundColorAttributeName], UIColor.clearColor);
+                        XCTAssertNotNil(attributes[NSBackgroundColorAttributeName]);
+                        XCTAssertEqualObjects(attributes[NSUnderlineStyleAttributeName], @(NSUnderlineStyleSingle));
+                        XCTAssertEqualObjects(attributes[NSStrikethroughStyleAttributeName], @(NSUnderlineStyleSingle));
+                        NSShadow *shadow = attributes[NSShadowAttributeName];
+                        XCTAssertNotNil(shadow, @"The fixture must paint a shadow, or the strip is not tested.");
+                        XCTAssertEqual(shadow.shadowBlurRadius, 3);
+                      }];
+
+  UIFont *paintedFont = [painted attribute:NSFontAttributeName atIndex:0 effectiveRange:nil];
+  [laidOut enumerateAttributesInRange:range
+                              options:0
+                           usingBlock:^(NSDictionary<NSAttributedStringKey, id> *attributes, NSRange r, BOOL *stop) {
+                             XCTAssertEqualObjects(attributes[NSForegroundColorAttributeName], UIColor.clearColor);
+                             XCTAssertEqualObjects(attributes[NSBackgroundColorAttributeName], UIColor.clearColor);
+                             XCTAssertNil(attributes[NSUnderlineStyleAttributeName]);
+                             XCTAssertNil(attributes[NSStrikethroughStyleAttributeName]);
+                             XCTAssertNil(attributes[NSShadowAttributeName]);
+                             XCTAssertEqualObjects(
+                                 attributes[NSFontAttributeName], paintedFont, @"The font must survive the strip.");
                            }];
 }
 
