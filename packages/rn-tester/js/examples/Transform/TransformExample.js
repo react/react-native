@@ -99,6 +99,44 @@ function TransformOriginExample() {
   );
 }
 
+function TransformOriginParsingExample() {
+  const cases: ReadonlyArray<{
+    origin: string,
+    expected: [string | number, string | number, string | number],
+  }> = [
+    {origin: '52.9% 88.2%', expected: ['52.9%', '88.2%', 0]},
+    {origin: '12.5px 67.5px', expected: [12.5, 67.5, 0]},
+    {origin: '-25% 125%', expected: ['-25%', '125%', 0]},
+    {origin: '-12.5px -7.5px', expected: [-12.5, -7.5, 0]},
+  ];
+
+  return (
+    <View
+      testID="transform-origin-decimal-negative"
+      style={styles.transformOriginParsingGrid}>
+      {cases.map(({origin, expected}) => (
+        <View key={origin} style={styles.transformOriginParsingCell}>
+          <View style={styles.transformOriginParsingStage}>
+            <View
+              style={[
+                styles.transformOriginParsingExpected,
+                {transformOrigin: expected},
+              ]}
+            />
+            <View
+              style={[
+                styles.transformOriginParsingActual,
+                {transformOrigin: origin},
+              ]}
+            />
+          </View>
+          <Text>{origin}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function Flip() {
   const [theta] = useState(new Animated.Value(45));
   const animate = () => {
@@ -476,6 +514,39 @@ const styles = StyleSheet.create({
     height: 100,
     transformOrigin: 'top left',
   },
+  transformOriginParsingGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+  },
+  transformOriginParsingCell: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  transformOriginParsingStage: {
+    width: 140,
+    height: 170,
+  },
+  transformOriginParsingExpected: {
+    position: 'absolute',
+    top: 40,
+    left: 40,
+    width: 60,
+    height: 60,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: 'black',
+    transform: [{rotate: '45deg'}],
+  },
+  transformOriginParsingActual: {
+    position: 'absolute',
+    top: 40,
+    left: 40,
+    width: 60,
+    height: 60,
+    backgroundColor: 'rgba(255, 105, 180, 0.6)',
+    transform: [{rotate: '45deg'}],
+  },
   translatePercentageView: {
     transform: 'translate(50%)',
     padding: 50,
@@ -682,6 +753,15 @@ exports.examples = [
     description: "transformOrigin: 'top left'",
     render(): React.Node {
       return <TransformOriginExample />;
+    },
+  },
+  {
+    title: 'Transform origin with decimal and negative values',
+    name: 'transform-origin-decimal-negative',
+    description:
+      'Each pink box sets transformOrigin as a string and should exactly cover the dashed outline, which sets the same origin as an array',
+    render(): React.Node {
+      return <TransformOriginParsingExample />;
     },
   },
   {

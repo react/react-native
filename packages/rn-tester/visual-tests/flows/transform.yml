@@ -56,3 +56,17 @@ appId: ${APP_ID}
     path: ${VISUAL_OUTPUT_DIR}/transform/string/default
     cropOn:
       id: 'transform-string'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TransformExample/transform-origin-decimal-negative
+- extendedWaitUntil:
+    visible:
+      id: 'transform-origin-decimal-negative'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/transform/origin-decimal-negative/default
+    cropOn:
+      id: 'transform-origin-decimal-negative'
