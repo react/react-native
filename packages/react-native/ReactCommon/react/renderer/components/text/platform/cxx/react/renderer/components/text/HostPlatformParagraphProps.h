@@ -10,7 +10,35 @@
 #include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <react/renderer/components/text/BaseParagraphProps.h>
+#include <react/renderer/components/text/primitives.h>
 
 namespace facebook::react {
-using HostPlatformParagraphProps = BaseParagraphProps;
+
+/*
+ * Props of <Paragraph> component.
+ * Most of the props are directly stored in composed `ParagraphAttributes`
+ * object.
+ */
+class HostPlatformParagraphProps : public BaseParagraphProps {
+ public:
+  HostPlatformParagraphProps() = default;
+  HostPlatformParagraphProps(
+      const PropsParserContext &context,
+      const HostPlatformParagraphProps &sourceProps,
+      const RawProps &rawProps);
+
+  void
+  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+
+#pragma mark - Props
+
+  DataDetectorType dataDetectorType{DataDetectorType::None};
+
+#pragma mark - DebugStringConvertible
+
+#if RN_DEBUG_STRING_CONVERTIBLE
+  SharedDebugStringConvertibleList getDebugProps() const override;
+#endif
+};
+
 } // namespace facebook::react

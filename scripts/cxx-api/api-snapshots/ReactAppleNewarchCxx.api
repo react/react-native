@@ -1430,6 +1430,7 @@ interface RCTObjectAnimatedNode : public RCTAnimatedNode {
 }
 
 interface RCTParagraphComponentAccessibilityProvider : public NSObject {
+  public @property (assign) RCTTextDataDetectorTypes dataDetectorTypes;
   public virtual BOOL isUpToDate:(facebook::react::AttributedString currentAttributedString);
   public virtual NSArray<UIAccessibilityElement*>* accessibilityElements();
   public virtual instancetype initWithString:layoutManager:paragraphAttributes:frame:view:(facebook::react::AttributedString attributedString, RCTTextLayoutManager* layoutManager, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, UIView* view);

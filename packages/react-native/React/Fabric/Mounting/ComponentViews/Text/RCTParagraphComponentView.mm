@@ -9,6 +9,7 @@
 #import "RCTParagraphComponentAccessibilityProvider.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #import <react/renderer/components/text/ParagraphProps.h>
@@ -44,19 +45,36 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   return NO;
 }
 
+static RCTTextDataDetectorTypes RCTTextDataDetectorTypesFromProp(DataDetectorType dataDetectorType)
+{
+  switch (dataDetectorType) {
+    case DataDetectorType::All:
+      return RCTTextDataDetectorTypePhoneNumber | RCTTextDataDetectorTypeLink | RCTTextDataDetectorTypeEmail;
+    case DataDetectorType::Email:
+      return RCTTextDataDetectorTypeEmail;
+    case DataDetectorType::Link:
+      return RCTTextDataDetectorTypeLink;
+    case DataDetectorType::None:
+      return RCTTextDataDetectorTypeNone;
+    case DataDetectorType::PhoneNumber:
+      return RCTTextDataDetectorTypePhoneNumber;
+  }
+}
+
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
 // can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
 @interface RCTParagraphTextView : UIView
 
 @property (nonatomic) ParagraphShadowNode::ConcreteState::Shared state;
 @property (nonatomic) ParagraphAttributes paragraphAttributes;
+@property (nonatomic) RCTTextDataDetectorTypes dataDetectorTypes;
 @property (nonatomic) LayoutMetrics layoutMetrics;
 @property (nonatomic) CGRect drawingFrame;
 
 @end
 
 #if !TARGET_OS_TV
-@interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
+@interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
 
@@ -68,8 +86,12 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 
 @implementation RCTParagraphComponentView {
   ParagraphAttributes _paragraphAttributes;
+  RCTTextDataDetectorTypes _dataDetectorTypes;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
+#if !TARGET_OS_TV
+  UITapGestureRecognizer *_detectedURLTapGestureRecognizer;
+#endif
   RCTParagraphTextView *_textView;
   CGRect _textLayoutFrame;
 }
@@ -131,6 +153,15 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 
   _paragraphAttributes = newParagraphProps.paragraphAttributes;
   _textView.paragraphAttributes = _paragraphAttributes;
+
+  RCTTextDataDetectorTypes dataDetectorTypes = RCTTextDataDetectorTypesFromProp(newParagraphProps.dataDetectorType);
+  if (dataDetectorTypes != _dataDetectorTypes) {
+    _dataDetectorTypes = dataDetectorTypes;
+    _textView.dataDetectorTypes = dataDetectorTypes;
+    _accessibilityProvider = nil;
+    [_textView setNeedsDisplay];
+    [self _updateDetectedURLTapGestureRecognizer];
+  }
 
   if (newParagraphProps.isSelectable != oldParagraphProps.isSelectable) {
     if (newParagraphProps.isSelectable) {
@@ -297,6 +328,7 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
                                                          paragraphAttributes:data.paragraphAttributes
                                                                        frame:frame
                                                                         view:self];
+      _accessibilityProvider.dataDetectorTypes = _dataDetectorTypes;
     }
   }
 
@@ -378,6 +410,72 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   assert(std::dynamic_pointer_cast<const TouchEventEmitter>(eventEmitter));
   return std::static_pointer_cast<const TouchEventEmitter>(eventEmitter);
 }
+
+#pragma mark - Detected URLs
+
+#if !TARGET_OS_TV
+- (void)_updateDetectedURLTapGestureRecognizer
+{
+  BOOL needsRecognizer = _dataDetectorTypes != RCTTextDataDetectorTypeNone;
+  if (needsRecognizer && _detectedURLTapGestureRecognizer == nil) {
+    _detectedURLTapGestureRecognizer =
+        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleDetectedURLTap:)];
+    _detectedURLTapGestureRecognizer.cancelsTouchesInView = NO;
+    _detectedURLTapGestureRecognizer.delegate = self;
+    [self addGestureRecognizer:_detectedURLTapGestureRecognizer];
+  } else if (!needsRecognizer && _detectedURLTapGestureRecognizer != nil) {
+    [self removeGestureRecognizer:_detectedURLTapGestureRecognizer];
+    _detectedURLTapGestureRecognizer = nil;
+  }
+}
+
+- (nullable NSURL *)_detectedURLAtPoint:(CGPoint)point
+{
+  if (!_textView.state) {
+    return nil;
+  }
+  const auto &stateData = _textView.state->getData();
+  auto textLayoutManager = stateData.layoutManager.lock();
+  if (!textLayoutManager) {
+    return nil;
+  }
+  RCTTextLayoutManager *nativeTextLayoutManager =
+      (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
+  return [nativeTextLayoutManager detectedURLWithAttributedString:stateData.attributedString
+                                              paragraphAttributes:_paragraphAttributes
+                                                dataDetectorTypes:_dataDetectorTypes
+                                                            frame:_textLayoutFrame
+                                                          atPoint:point];
+}
+
+- (void)_handleDetectedURLTap:(UITapGestureRecognizer *)gesture
+{
+  NSURL *url = [self _detectedURLAtPoint:[gesture locationInView:self]];
+  if (url != nil) {
+    [RCTSharedApplication() openURL:url options:@{} completionHandler:nil];
+  }
+}
+
+// Called when the tap is about to be recognized, so a touch that starts a scroll doesn't pay for this.
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+  if (gestureRecognizer != _detectedURLTapGestureRecognizer) {
+    return [super gestureRecognizerShouldBegin:gestureRecognizer];
+  }
+  return [self _detectedURLAtPoint:[gestureRecognizer locationInView:self]] != nil;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
+    shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+  // A long press on selectable text shows the context menu instead of opening the URL.
+  return otherGestureRecognizer == _longPressGestureRecognizer;
+}
+#else
+- (void)_updateDetectedURLTapGestureRecognizer
+{
+}
+#endif
 
 #pragma mark - Context Menu
 
@@ -504,6 +602,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 
   [nativeTextLayoutManager drawAttributedString:stateData.attributedString
                             paragraphAttributes:_paragraphAttributes
+                              dataDetectorTypes:_dataDetectorTypes
                                           frame:frame
                               drawHighlightPath:^(UIBezierPath *highlightPath) {
                                 if (highlightPath) {

@@ -15,6 +15,11 @@
 
 @interface RCTParagraphComponentAccessibilityProvider : NSObject
 
+/**
+ * The data that the provider adds link elements for. Set it before reading `accessibilityElements`.
+ */
+@property (nonatomic) RCTTextDataDetectorTypes dataDetectorTypes;
+
 - (instancetype)initWithString:(facebook::react::AttributedString)attributedString
                  layoutManager:(RCTTextLayoutManager *)layoutManager
            paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
