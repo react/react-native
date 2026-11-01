@@ -47,6 +47,7 @@ import com.facebook.react.util.AndroidVersion.VERSION_CODE_VANILLA_ICE_CREAM
 import com.facebook.react.views.text.internal.span.CustomLetterSpacingSpan
 import com.facebook.react.views.text.internal.span.CustomLineHeightSpan
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
+import com.facebook.react.views.text.internal.span.InlineViewHeights
 import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
 import com.facebook.react.views.text.internal.span.ReactBackgroundColorSpan
 import com.facebook.react.views.text.internal.span.ReactClickableSpan
@@ -309,6 +310,15 @@ internal object TextLayoutManager {
     // single spans, avoiding duplicate draws (e.g. multiple accent marks in HighlighterTextSpan).
     var pendingEffects: List<TextAttributeProps.TextEffectEntry> = emptyList()
     var pendingEffectStart = 0
+    val inlineViews by
+        lazy(LazyThreadSafetyMode.NONE) {
+          val hasInlineViews =
+              (0 until fragments.count).any { i ->
+                val fragment = fragments.getMapBuffer(i)
+                fragment.contains(FR_KEY_IS_ATTACHMENT) && fragment.getBoolean(FR_KEY_IS_ATTACHMENT)
+              }
+          if (hasInlineViews) InlineViewHeights() else null
+        }
 
     for (i in 0 until fragments.count) {
       val fragment = fragments.getMapBuffer(i)
@@ -438,7 +448,13 @@ internal object TextLayoutManager {
           )
         }
         if (!textAttributes.lineHeight.isNaN()) {
-          ops.add(SetSpanOperation(start, end, CustomLineHeightSpan(textAttributes.lineHeight)))
+          ops.add(
+              SetSpanOperation(
+                  start,
+                  end,
+                  CustomLineHeightSpan(textAttributes.lineHeight, inlineViews),
+              ),
+          )
         }
 
         if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
@@ -536,6 +552,7 @@ internal object TextLayoutManager {
     }
 
     val spannable = SpannableString(text)
+    val inlineViews = if (parsedFragments.any { it.isAttachment }) InlineViewHeights() else null
 
     // Track pending text effects to coalesce consecutive fragments with the same effects into
     // single spans, avoiding duplicate draws (e.g. multiple accent marks in HighlighterTextSpan).
@@ -675,7 +692,12 @@ internal object TextLayoutManager {
         }
 
         if (!fragment.props.lineHeight.isNaN()) {
-          spannable.setSpan(CustomLineHeightSpan(fragment.props.lineHeight), start, end, spanFlags)
+          spannable.setSpan(
+              CustomLineHeightSpan(fragment.props.lineHeight, inlineViews),
+              start,
+              end,
+              spanFlags,
+          )
         }
 
         if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
