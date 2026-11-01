@@ -14,7 +14,10 @@ import java.io.File
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
@@ -27,6 +30,13 @@ abstract class GeneratePackageListTask : DefaultTask() {
   @get:InputFile abstract val autolinkInputFile: RegularFileProperty
 
   @get:OutputDirectory abstract val generatedOutputDirectory: DirectoryProperty
+
+  /**
+   * The build type of the variant this task is generating for. Dependencies that restrict
+   * themselves to specific build types via `platforms.android.buildTypes` are only included when
+   * this build type is one of them. When unset, all dependencies are included.
+   */
+  @get:Optional @get:Input abstract val buildType: Property<String>
 
   @TaskAction
   fun taskAction() {
@@ -48,7 +58,7 @@ abstract class GeneratePackageListTask : DefaultTask() {
                 "RNGP - Autolinking: Could not find project.android.packageName in react-native config output! Could not autolink packages without this field.",
             )
 
-    val androidPackages = filterAndroidPackages(model)
+    val androidPackages = filterAndroidPackages(model, buildType.orNull)
     val packageClassInstance = composePackageInstance(packageName, androidPackages)
     val generatedFileContents = composeFileContent(packageClassInstance)
 
@@ -106,12 +116,20 @@ abstract class GeneratePackageListTask : DefaultTask() {
 
   internal fun filterAndroidPackages(
       model: ModelAutolinkingConfigJson?,
+      buildType: String? = null,
   ): Map<String, ModelAutolinkingDependenciesPlatformAndroidJson> {
     val packages = model?.dependencies?.values ?: emptyList()
     return packages
         .filter { it.platforms?.android != null }
         // The pure C++ dependencies won't have a .java/.kt file to import
         .filterNot { it.platforms?.android?.isPureCxxDependency == true }
+        // Dependencies that restrict themselves to specific build types are added to the
+        // matching `${buildType}Implementation` configurations only, so they are also only
+        // listed for the variants whose build type they declared.
+        .filter {
+          val dependencyBuildTypes = it.platforms?.android?.buildTypes ?: emptyList()
+          buildType == null || dependencyBuildTypes.isEmpty() || buildType in dependencyBuildTypes
+        }
         .associate { it.name to checkNotNull(it.platforms?.android) }
   }
 

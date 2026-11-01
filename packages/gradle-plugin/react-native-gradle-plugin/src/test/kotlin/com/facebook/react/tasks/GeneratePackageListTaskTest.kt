@@ -214,6 +214,164 @@ class GeneratePackageListTaskTest {
   }
 
   @Test
+  fun filterAndroidPackages_withMatchingBuildType_returnsIt() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val android =
+        ModelAutolinkingDependenciesPlatformAndroidJson(
+            sourceDir = "./a/directory/android",
+            packageImportPath = "import com.facebook.react.aPackage;",
+            packageInstance = "new APackage()",
+            buildTypes = listOf("debug"),
+        )
+
+    val result =
+        task.filterAndroidPackages(
+            ModelAutolinkingConfigJson(
+                reactNativeVersion = "1000.0.0",
+                dependencies =
+                    mapOf(
+                        "a-dependency" to
+                            ModelAutolinkingDependenciesJson(
+                                root = "./a/directory",
+                                name = "a-dependency",
+                                platforms =
+                                    ModelAutolinkingDependenciesPlatformJson(android = android),
+                            ),
+                    ),
+                project = null,
+            ),
+            "debug",
+        )
+    assertThat(result["a-dependency"]).isEqualTo(android)
+  }
+
+  @Test
+  fun filterAndroidPackages_withNonMatchingBuildType_returnsEmpty() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val android =
+        ModelAutolinkingDependenciesPlatformAndroidJson(
+            sourceDir = "./a/directory/android",
+            packageImportPath = "import com.facebook.react.aPackage;",
+            packageInstance = "new APackage()",
+            buildTypes = listOf("debug"),
+        )
+
+    val result =
+        task.filterAndroidPackages(
+            ModelAutolinkingConfigJson(
+                reactNativeVersion = "1000.0.0",
+                dependencies =
+                    mapOf(
+                        "a-dependency" to
+                            ModelAutolinkingDependenciesJson(
+                                root = "./a/directory",
+                                name = "a-dependency",
+                                platforms =
+                                    ModelAutolinkingDependenciesPlatformJson(android = android),
+                            ),
+                    ),
+                project = null,
+            ),
+            "release",
+        )
+    assertThat(result)
+        .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
+  }
+
+  @Test
+  fun filterAndroidPackages_withMultipleBuildTypes_returnsMatchingOnly() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val android =
+        ModelAutolinkingDependenciesPlatformAndroidJson(
+            sourceDir = "./a/directory/android",
+            packageImportPath = "import com.facebook.react.aPackage;",
+            packageInstance = "new APackage()",
+            buildTypes = listOf("debug", "staging"),
+        )
+
+    val result =
+        task.filterAndroidPackages(
+            ModelAutolinkingConfigJson(
+                reactNativeVersion = "1000.0.0",
+                dependencies =
+                    mapOf(
+                        "a-dependency" to
+                            ModelAutolinkingDependenciesJson(
+                                root = "./a/directory",
+                                name = "a-dependency",
+                                platforms =
+                                    ModelAutolinkingDependenciesPlatformJson(android = android),
+                            ),
+                    ),
+                project = null,
+            ),
+            "staging",
+        )
+    assertThat(result["a-dependency"]).isEqualTo(android)
+  }
+
+  @Test
+  fun filterAndroidPackages_withSharedDependency_returnsItForEveryBuildType() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val android =
+        ModelAutolinkingDependenciesPlatformAndroidJson(
+            sourceDir = "./a/directory/android",
+            packageImportPath = "import com.facebook.react.aPackage;",
+            packageInstance = "new APackage()",
+            buildTypes = emptyList(),
+        )
+    val model =
+        ModelAutolinkingConfigJson(
+            reactNativeVersion = "1000.0.0",
+            dependencies =
+                mapOf(
+                    "a-dependency" to
+                        ModelAutolinkingDependenciesJson(
+                            root = "./a/directory",
+                            name = "a-dependency",
+                            platforms = ModelAutolinkingDependenciesPlatformJson(android = android),
+                        ),
+                ),
+            project = null,
+        )
+
+    for (buildType in listOf("debug", "release", null)) {
+      assertThat(task.filterAndroidPackages(model, buildType)["a-dependency"]).isEqualTo(android)
+    }
+  }
+
+  @Test
+  fun filterAndroidPackages_withUnsetBuildType_returnsAll() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val android =
+        ModelAutolinkingDependenciesPlatformAndroidJson(
+            sourceDir = "./a/directory/android",
+            packageImportPath = "import com.facebook.react.aPackage;",
+            packageInstance = "new APackage()",
+            buildTypes = listOf("release"),
+        )
+
+    val result =
+        task.filterAndroidPackages(
+            ModelAutolinkingConfigJson(
+                reactNativeVersion = "1000.0.0",
+                dependencies =
+                    mapOf(
+                        "a-dependency" to
+                            ModelAutolinkingDependenciesJson(
+                                root = "./a/directory",
+                                name = "a-dependency",
+                                platforms =
+                                    ModelAutolinkingDependenciesPlatformJson(android = android),
+                            ),
+                    ),
+                project = null,
+            ),
+        )
+    assertThat(result["a-dependency"]).isEqualTo(android)
+  }
+
+  @Test
   fun composeFileContent_withNoPackages_returnsValidFile() {
     val task = createTestTask<GeneratePackageListTask>()
     val instance = task.composePackageInstance("com.facebook.react", emptyMap())

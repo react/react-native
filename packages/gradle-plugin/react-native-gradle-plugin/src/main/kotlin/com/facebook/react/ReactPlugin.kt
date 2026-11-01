@@ -349,8 +349,11 @@ class ReactPlugin : Plugin<Project> {
       extension: ReactExtension,
       rootExtension: PrivateReactExtension,
   ) {
+    // This folder intentionally doesn't reuse the previous generated/autolinking/src/main/java
+    // path: PackageList.java used to be generated there, so stale outputs from older React Native
+    // versions must never become part of the sources again.
     val generatedAutolinkingJavaDir: Provider<Directory> =
-        project.layout.buildDirectory.dir("generated/autolinking/src/main/java")
+        project.layout.buildDirectory.dir("generated/autolinking/src/common/java")
     val generatedAutolinkingJniDir: Provider<Directory> =
         project.layout.buildDirectory.dir("generated/autolinking/src/main/jni")
     val generatedPureCxxSourceDir: Provider<Directory> =
@@ -373,14 +376,14 @@ class ReactPlugin : Plugin<Project> {
 
     // We add a task called generateAutolinkingPackageList to do not clash with the existing task
     // called generatePackageList. This can to be renamed once we unlink the rn <-> cli
-    // dependency.
+    // dependency. This is only a lifecycle task aggregating the per-variant instances
+    // registered inside onVariants below: PackageList.java is generated per variant so that
+    // dependencies restricted to specific build types are only listed in the variants that
+    // have them on the compile classpath.
     val generatePackageListTask =
-        project.tasks.register(
-            "generateAutolinkingPackageList",
-            GeneratePackageListTask::class.java,
-        ) { task ->
-          task.autolinkInputFile.set(rootGeneratedAutolinkingFile)
-          task.generatedOutputDirectory.set(generatedAutolinkingJavaDir)
+        project.tasks.register("generateAutolinkingPackageList") { task ->
+          task.group = "react"
+          task.description = "Generates the PackageList.java file for every variant"
         }
 
     // We add a task called generateReactNativeEntryPoint to generate the React Native entry point.
@@ -418,12 +421,30 @@ class ReactPlugin : Plugin<Project> {
         .named("preBuild", Task::class.java)
         .dependsOn(generatePackageListTask, generateEntryPointTask)
 
-    // We tell Android Gradle Plugin that inside /build/generated/autolinking/src/main/java there
-    // are sources to be compiled as well.
+    // We tell Android Gradle Plugin that inside /build/generated/autolinking/src/common/java
+    // there are sources to be compiled as well. The entry point file is variant-agnostic and
+    // stays there, while the per-variant PackageList.java lives in its own source directory,
+    // added only to the variant it was generated for.
     project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java).apply {
       onVariants(selector().all()) { variant ->
         variant.sources.java?.addStaticSourceDirectory(
             generatedAutolinkingJavaDir.get().asFile.absolutePath,
+        )
+
+        val variantGeneratedAutolinkingJavaDir =
+            project.layout.buildDirectory.dir("generated/autolinking/src/${variant.name}/java")
+        val generateVariantPackageListTask =
+            project.tasks.register(
+                "generateAutolinkingPackageList${variant.name.replaceFirstChar(Char::uppercaseChar)}",
+                GeneratePackageListTask::class.java,
+            ) { task ->
+              task.autolinkInputFile.set(rootGeneratedAutolinkingFile)
+              task.generatedOutputDirectory.set(variantGeneratedAutolinkingJavaDir)
+              variant.buildType?.let { task.buildType.set(it) }
+            }
+        generatePackageListTask.configure { it.dependsOn(generateVariantPackageListTask) }
+        variant.sources.java?.addStaticSourceDirectory(
+            variantGeneratedAutolinkingJavaDir.get().asFile.absolutePath,
         )
       }
     }
