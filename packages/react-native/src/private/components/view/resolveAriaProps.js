@@ -30,6 +30,7 @@ export default function resolveAriaProps<T extends {...ViewProps, ...}>(
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
     'aria-live': ariaLive,
+    'aria-modal': ariaModal,
     'aria-selected': ariaSelected,
     'aria-valuemax': ariaValueMax,
     'aria-valuemin': ariaValueMin,
@@ -54,6 +55,10 @@ export default function resolveAriaProps<T extends {...ViewProps, ...}>(
   if (ariaLive !== undefined) {
     resolvedProps.accessibilityLiveRegion =
       ariaLive === 'off' ? 'none' : ariaLive;
+  }
+
+  if (ariaModal !== undefined) {
+    resolvedProps.accessibilityViewIsModal = ariaModal;
   }
 
   if (ariaHidden !== undefined) {
