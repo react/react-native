@@ -40,6 +40,7 @@ import kotlin.system.exitProcess
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
@@ -440,7 +441,9 @@ class ReactPlugin : Plugin<Project> {
             ) { task ->
               task.autolinkInputFile.set(rootGeneratedAutolinkingFile)
               task.generatedOutputDirectory.set(variantGeneratedAutolinkingJavaDir)
-              variant.buildType?.let { task.buildType.set(it) }
+              project.configurations.findByName("${variant.name}CompileClasspath")?.let {
+                task.applicableConfigurations.set(compileClasspathConfigurationNames(it))
+              }
             }
         generatePackageListTask.configure { it.dependsOn(generateVariantPackageListTask) }
         variant.sources.java?.addStaticSourceDirectory(
@@ -518,4 +521,24 @@ class ReactPlugin : Plugin<Project> {
           .map { char -> if (char.isLetterOrDigit()) char.toString() else "_${char.code}_" }
           .joinToString("")
           .replaceFirstChar { char -> char.titlecase() }
+
+  /**
+   * Returns the names of [configuration] plus every configuration it transitively extends from,
+   * i.e. the Gradle configurations whose dependencies land on this compile classpath.
+   */
+  private fun compileClasspathConfigurationNames(configuration: Configuration): Set<String> {
+    val names = mutableSetOf<String>()
+    val queue = ArrayDeque<Configuration>()
+    queue.add(configuration)
+    while (queue.isNotEmpty()) {
+      val current = queue.removeFirst()
+      names.add(current.name)
+      current.extendsFrom.forEach { parent ->
+        if (parent.name !in names) {
+          queue.add(parent)
+        }
+      }
+    }
+    return names
+  }
 }

@@ -214,7 +214,7 @@ class GeneratePackageListTaskTest {
   }
 
   @Test
-  fun filterAndroidPackages_withMatchingBuildType_returnsIt() {
+  fun filterAndroidPackages_withBuildTypeDependency_returnsItOnMatchingClassPath() {
     val task = createTestTask<GeneratePackageListTask>()
     val android =
         ModelAutolinkingDependenciesPlatformAndroidJson(
@@ -223,63 +223,19 @@ class GeneratePackageListTaskTest {
             packageInstance = "new APackage()",
             buildTypes = listOf("debug"),
         )
+    val model = autolinkingModelWithAndroid(android)
 
-    val result =
-        task.filterAndroidPackages(
-            ModelAutolinkingConfigJson(
-                reactNativeVersion = "1000.0.0",
-                dependencies =
-                    mapOf(
-                        "a-dependency" to
-                            ModelAutolinkingDependenciesJson(
-                                root = "./a/directory",
-                                name = "a-dependency",
-                                platforms =
-                                    ModelAutolinkingDependenciesPlatformJson(android = android),
-                            ),
-                    ),
-                project = null,
-            ),
-            "debug",
-        )
-    assertThat(result["a-dependency"]).isEqualTo(android)
-  }
-
-  @Test
-  fun filterAndroidPackages_withNonMatchingBuildType_returnsEmpty() {
-    val task = createTestTask<GeneratePackageListTask>()
-    val android =
-        ModelAutolinkingDependenciesPlatformAndroidJson(
-            sourceDir = "./a/directory/android",
-            packageImportPath = "import com.facebook.react.aPackage;",
-            packageInstance = "new APackage()",
-            buildTypes = listOf("debug"),
-        )
-
-    val result =
-        task.filterAndroidPackages(
-            ModelAutolinkingConfigJson(
-                reactNativeVersion = "1000.0.0",
-                dependencies =
-                    mapOf(
-                        "a-dependency" to
-                            ModelAutolinkingDependenciesJson(
-                                root = "./a/directory",
-                                name = "a-dependency",
-                                platforms =
-                                    ModelAutolinkingDependenciesPlatformJson(android = android),
-                            ),
-                    ),
-                project = null,
-            ),
-            "release",
-        )
-    assertThat(result)
+    assertThat(task.filterAndroidPackages(model, DEBUG_COMPILE_CLASSPATH)["a-dependency"])
+        .isEqualTo(android)
+    // A `buildTypes` dependency is not on the compile classpath of unrelated variants.
+    assertThat(task.filterAndroidPackages(model, RELEASE_COMPILE_CLASSPATH))
+        .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
+    assertThat(task.filterAndroidPackages(model, DEBUG_OPTIMIZED_COMPILE_CLASSPATH))
         .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
   }
 
   @Test
-  fun filterAndroidPackages_withMultipleBuildTypes_returnsMatchingOnly() {
+  fun filterAndroidPackages_withMultipleBuildTypes_returnsItForEachOne() {
     val task = createTestTask<GeneratePackageListTask>()
     val android =
         ModelAutolinkingDependenciesPlatformAndroidJson(
@@ -288,30 +244,22 @@ class GeneratePackageListTaskTest {
             packageInstance = "new APackage()",
             buildTypes = listOf("debug", "staging"),
         )
+    val model = autolinkingModelWithAndroid(android)
 
-    val result =
-        task.filterAndroidPackages(
-            ModelAutolinkingConfigJson(
-                reactNativeVersion = "1000.0.0",
-                dependencies =
-                    mapOf(
-                        "a-dependency" to
-                            ModelAutolinkingDependenciesJson(
-                                root = "./a/directory",
-                                name = "a-dependency",
-                                platforms =
-                                    ModelAutolinkingDependenciesPlatformJson(android = android),
-                            ),
-                    ),
-                project = null,
-            ),
-            "staging",
+    assertThat(task.filterAndroidPackages(model, DEBUG_COMPILE_CLASSPATH)["a-dependency"])
+        .isEqualTo(android)
+    assertThat(
+            task
+                .filterAndroidPackages(model, setOf("stagingImplementation", "implementation"))[
+                    "a-dependency"]
         )
-    assertThat(result["a-dependency"]).isEqualTo(android)
+        .isEqualTo(android)
+    assertThat(task.filterAndroidPackages(model, RELEASE_COMPILE_CLASSPATH))
+        .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
   }
 
   @Test
-  fun filterAndroidPackages_withSharedDependency_returnsItForEveryBuildType() {
+  fun filterAndroidPackages_withSharedDependency_returnsItForEveryVariant() {
     val task = createTestTask<GeneratePackageListTask>()
     val android =
         ModelAutolinkingDependenciesPlatformAndroidJson(
@@ -320,55 +268,88 @@ class GeneratePackageListTaskTest {
             packageInstance = "new APackage()",
             buildTypes = emptyList(),
         )
-    val model =
-        ModelAutolinkingConfigJson(
-            reactNativeVersion = "1000.0.0",
-            dependencies =
-                mapOf(
-                    "a-dependency" to
-                        ModelAutolinkingDependenciesJson(
-                            root = "./a/directory",
-                            name = "a-dependency",
-                            platforms = ModelAutolinkingDependenciesPlatformJson(android = android),
-                        ),
-                ),
-            project = null,
-        )
+    val model = autolinkingModelWithAndroid(android)
 
-    for (buildType in listOf("debug", "release", null)) {
-      assertThat(task.filterAndroidPackages(model, buildType)["a-dependency"]).isEqualTo(android)
+    for (classpath in
+        listOf(
+            DEBUG_COMPILE_CLASSPATH,
+            RELEASE_COMPILE_CLASSPATH,
+            DEBUG_OPTIMIZED_COMPILE_CLASSPATH,
+        )) {
+      assertThat(task.filterAndroidPackages(model, classpath)["a-dependency"]).isEqualTo(android)
     }
+    // An unset applicableConfigurations keeps the legacy include-all behavior.
+    assertThat(task.filterAndroidPackages(model, null)["a-dependency"]).isEqualTo(android)
+    assertThat(task.filterAndroidPackages(model)["a-dependency"]).isEqualTo(android)
   }
 
   @Test
-  fun filterAndroidPackages_withUnsetBuildType_returnsAll() {
+  fun filterAndroidPackages_withDependencyConfigurationOverride_matchesClasspath() {
     val task = createTestTask<GeneratePackageListTask>()
+    // `dependencyConfiguration` scopes the dependency just like `buildTypes` does:
+    // it lands only on the compile classpath of the matching variant.
     val android =
         ModelAutolinkingDependenciesPlatformAndroidJson(
             sourceDir = "./a/directory/android",
             packageImportPath = "import com.facebook.react.aPackage;",
             packageInstance = "new APackage()",
-            buildTypes = listOf("release"),
+            buildTypes = emptyList(),
+            dependencyConfiguration = "debugImplementation",
         )
+    val model = autolinkingModelWithAndroid(android)
 
-    val result =
-        task.filterAndroidPackages(
-            ModelAutolinkingConfigJson(
-                reactNativeVersion = "1000.0.0",
-                dependencies =
-                    mapOf(
-                        "a-dependency" to
-                            ModelAutolinkingDependenciesJson(
-                                root = "./a/directory",
-                                name = "a-dependency",
-                                platforms =
-                                    ModelAutolinkingDependenciesPlatformJson(android = android),
-                            ),
-                    ),
-                project = null,
-            ),
+    assertThat(task.filterAndroidPackages(model, DEBUG_COMPILE_CLASSPATH)["a-dependency"])
+        .isEqualTo(android)
+    assertThat(task.filterAndroidPackages(model, RELEASE_COMPILE_CLASSPATH))
+        .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
+    assertThat(task.filterAndroidPackages(model, DEBUG_OPTIMIZED_COMPILE_CLASSPATH))
+        .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
+  }
+
+  @Test
+  fun filterAndroidPackages_withDependencyConfigurationOverridingBuildTypes_isListedEverywhere() {
+    val task = createTestTask<GeneratePackageListTask>()
+    // When `dependencyConfiguration` is set it fully replaces the `${buildType}Implementation`
+    // derivation, so the dependency is on every variant's compile classpath.
+    val android =
+        ModelAutolinkingDependenciesPlatformAndroidJson(
+            sourceDir = "./a/directory/android",
+            packageImportPath = "import com.facebook.react.aPackage;",
+            packageInstance = "new APackage()",
+            buildTypes = listOf("debug"),
+            dependencyConfiguration = "implementation",
         )
-    assertThat(result["a-dependency"]).isEqualTo(android)
+    val model = autolinkingModelWithAndroid(android)
+
+    for (classpath in
+        listOf(
+            DEBUG_COMPILE_CLASSPATH,
+            RELEASE_COMPILE_CLASSPATH,
+            DEBUG_OPTIMIZED_COMPILE_CLASSPATH,
+        )) {
+      assertThat(task.filterAndroidPackages(model, classpath)["a-dependency"]).isEqualTo(android)
+    }
+  }
+
+  @Test
+  fun filterAndroidPackages_withConfigurationOutsideCompileClasspath_isNotListed() {
+    val task = createTestTask<GeneratePackageListTask>()
+    // A dependency in a configuration that is not on any variant's compile classpath (e.g.
+    // `kapt`, `runtimeOnly`, `testImplementation`) cannot be referenced by PackageList.
+    val android =
+        ModelAutolinkingDependenciesPlatformAndroidJson(
+            sourceDir = "./a/directory/android",
+            packageImportPath = "import com.facebook.react.aPackage;",
+            packageInstance = "new APackage()",
+            buildTypes = emptyList(),
+            dependencyConfiguration = "runtimeOnly",
+        )
+    val model = autolinkingModelWithAndroid(android)
+
+    assertThat(task.filterAndroidPackages(model, DEBUG_COMPILE_CLASSPATH))
+        .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
+    assertThat(task.filterAndroidPackages(model, RELEASE_COMPILE_CLASSPATH))
+        .isEqualTo(emptyMap<String, ModelAutolinkingDependenciesPlatformAndroidJson>())
   }
 
   @Test
@@ -547,4 +528,62 @@ class GeneratePackageListTaskTest {
                   cmakeListsPath = "./another/directory/CMakeLists.txt",
               ),
       )
+
+  private fun autolinkingModelWithAndroid(
+      android: ModelAutolinkingDependenciesPlatformAndroidJson
+  ): ModelAutolinkingConfigJson =
+      ModelAutolinkingConfigJson(
+          reactNativeVersion = "1000.0.0",
+          dependencies =
+              mapOf(
+                  "a-dependency" to
+                      ModelAutolinkingDependenciesJson(
+                          root = "./a/directory",
+                          name = "a-dependency",
+                          platforms = ModelAutolinkingDependenciesPlatformJson(android = android),
+                      )
+              ),
+          project = null,
+      )
+
+  private companion object {
+    // The configuration names AGP wires into each variant's `<variant>CompileClasspath`
+    // (transitively), as observed on a real app build.
+    val DEBUG_COMPILE_CLASSPATH =
+        setOf(
+            "debugCompileClasspath",
+            "debugCompileOnly",
+            "debugImplementation",
+            "debugCompileOnlyApi",
+            "debugApi",
+            "compileOnly",
+            "implementation",
+            "compileOnlyApi",
+            "api",
+        )
+    val RELEASE_COMPILE_CLASSPATH =
+        setOf(
+            "releaseCompileClasspath",
+            "releaseCompileOnly",
+            "releaseImplementation",
+            "releaseCompileOnlyApi",
+            "releaseApi",
+            "compileOnly",
+            "implementation",
+            "compileOnlyApi",
+            "api",
+        )
+    val DEBUG_OPTIMIZED_COMPILE_CLASSPATH =
+        setOf(
+            "debugOptimizedCompileClasspath",
+            "debugOptimizedCompileOnly",
+            "debugOptimizedImplementation",
+            "debugOptimizedCompileOnlyApi",
+            "debugOptimizedApi",
+            "compileOnly",
+            "implementation",
+            "compileOnlyApi",
+            "api",
+        )
+  }
 }

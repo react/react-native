@@ -7,6 +7,7 @@
 
 package com.facebook.react.tasks
 
+import com.facebook.react.ReactExtension
 import com.facebook.react.model.ModelAutolinkingConfigJson
 import com.facebook.react.model.ModelAutolinkingDependenciesPlatformAndroidJson
 import com.facebook.react.utils.JsonUtils
@@ -14,7 +15,7 @@ import java.io.File
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
@@ -32,11 +33,14 @@ abstract class GeneratePackageListTask : DefaultTask() {
   @get:OutputDirectory abstract val generatedOutputDirectory: DirectoryProperty
 
   /**
-   * The build type of the variant this task is generating for. Dependencies that restrict
-   * themselves to specific build types via `platforms.android.buildTypes` are only included when
-   * this build type is one of them. When unset, all dependencies are included.
+   * The names of the Gradle configurations on the compile classpath of the variant this task is
+   * generating for: the variant's `<variant>CompileClasspath` configuration plus everything it
+   * transitively extends from (e.g. `implementation`, `api`, `debugImplementation`,
+   * `<flavor>Implementation`). A dependency is only listed when at least one of the configurations
+   * it resolves to is present in this set, so the generated file only references packages that are
+   * actually on the variant's compile classpath. When unset, all dependencies are included.
    */
-  @get:Optional @get:Input abstract val buildType: Property<String>
+  @get:Optional @get:Input abstract val applicableConfigurations: SetProperty<String>
 
   @TaskAction
   fun taskAction() {
@@ -58,7 +62,7 @@ abstract class GeneratePackageListTask : DefaultTask() {
                 "RNGP - Autolinking: Could not find project.android.packageName in react-native config output! Could not autolink packages without this field.",
             )
 
-    val androidPackages = filterAndroidPackages(model, buildType.orNull)
+    val androidPackages = filterAndroidPackages(model, applicableConfigurations.orNull)
     val packageClassInstance = composePackageInstance(packageName, androidPackages)
     val generatedFileContents = composeFileContent(packageClassInstance)
 
@@ -116,19 +120,23 @@ abstract class GeneratePackageListTask : DefaultTask() {
 
   internal fun filterAndroidPackages(
       model: ModelAutolinkingConfigJson?,
-      buildType: String? = null,
+      applicableConfigurations: Set<String>? = null,
   ): Map<String, ModelAutolinkingDependenciesPlatformAndroidJson> {
     val packages = model?.dependencies?.values ?: emptyList()
     return packages
         .filter { it.platforms?.android != null }
         // The pure C++ dependencies won't have a .java/.kt file to import
         .filterNot { it.platforms?.android?.isPureCxxDependency == true }
-        // Dependencies that restrict themselves to specific build types are added to the
-        // matching `${buildType}Implementation` configurations only, so they are also only
-        // listed for the variants whose build type they declared.
+        // Each dependency resolves to one or more Gradle configurations (e.g. `implementation`,
+        // `debugImplementation` or a `dependencyConfiguration` override). It is only listed for
+        // a variant whose compile classpath contains one of those configurations — otherwise
+        // the generated file would reference a package that is not on the classpath.
         .filter {
-          val dependencyBuildTypes = it.platforms?.android?.buildTypes ?: emptyList()
-          buildType == null || dependencyBuildTypes.isEmpty() || buildType in dependencyBuildTypes
+          applicableConfigurations == null ||
+              ReactExtension.resolveGradleConfigurations(checkNotNull(it.platforms?.android)).any {
+                  configuration ->
+                configuration in applicableConfigurations
+              }
         }
         .associate { it.name to checkNotNull(it.platforms?.android) }
   }
