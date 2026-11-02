@@ -66,6 +66,34 @@ class BorderDrawableTest {
     assertThat(drawBorderPaint(drawable).pathEffect).isNull()
   }
 
+  @Test
+  fun unevenBorderColorsAreFilledAfterAUniformBorderColorWasDrawn() {
+    val drawable = createDrawable()
+    // A uniform color is drawn as a stroke.
+    assertThat(drawBorderPaint(drawable).style).isEqualTo(Paint.Style.STROKE)
+
+    drawable.setBorderColor(LogicalEdge.LEFT, Color.BLUE)
+
+    // Uneven colors are drawn as filled quadrilaterals.
+    assertThat(drawBorderPaint(drawable).style).isEqualTo(Paint.Style.FILL)
+  }
+
+  private fun createDrawable(): BorderDrawable {
+    val borderInsets = BorderInsets().apply { setBorderWidth(LogicalEdge.ALL, 8f) }
+    return BorderDrawable(
+            context = RuntimeEnvironment.getApplication(),
+            borderWidth = Spacing(0f),
+            borderRadius = null,
+            borderInsets = borderInsets,
+            borderStyle = null,
+        )
+        .apply {
+          setBounds(0, 0, 240, 120)
+          setBorderWidth(Spacing.ALL, 8f)
+          setBorderColor(LogicalEdge.ALL, Color.RED)
+        }
+  }
+
   private fun drawBorderPaint(drawable: BorderDrawable): Paint {
     val canvas = mock<Canvas>()
     drawable.draw(canvas)

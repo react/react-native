@@ -306,6 +306,7 @@ internal class BorderDrawable(
          * after drawing is done, we will re-enable it.
          */
         borderPaint.isAntiAlias = false
+        borderPaint.style = Paint.Style.FILL
         val width = bounds.width()
         val height = bounds.height()
         if (borderLeft > 0) {
