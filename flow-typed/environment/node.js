@@ -56,6 +56,7 @@ type buffer$ToJSONRet = {
   ...
 };
 
+// $FlowFixMe[incompatible-type]
 declare class Buffer extends Uint8Array {
   constructor(
     value: Array<number> | number | string | Buffer | ArrayBuffer,
@@ -71,6 +72,7 @@ declare class Buffer extends Uint8Array {
     sourceStart?: number,
     sourceEnd?: number,
   ): number;
+  // $FlowFixMe[incompatible-type]
   entries(): IteratorObject<[number, number]>;
   equals(otherBuffer: Buffer): boolean;
   fill(

@@ -218,18 +218,6 @@ void RCTSetTurboModuleInteropBridgeProxyLogLevel(RCTBridgeProxyLoggingLevel logL
 }
 
 @implementation RCTBridge
-- (instancetype)initWithDelegate:(id<RCTBridgeDelegate>)delegate launchOptions:(NSDictionary *)launchOptions
-{
-  return self;
-}
-
-- (instancetype)initWithBundleURL:(NSURL *)bundleURL
-                   moduleProvider:(__strong RCTBridgeModuleListProvider)block
-                    launchOptions:(NSDictionary *)launchOptions
-{
-  return self;
-}
-
 - (void)registerSegmentWithId:(NSUInteger)segmentId path:(NSString *)path
 {
 }

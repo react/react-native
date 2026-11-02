@@ -8,6 +8,9 @@
 #import <React/RCTAssert.h>
 #import <React/RCTViewComponentView.h>
 #import <XCTest/XCTest.h>
+#import <react/renderer/components/view/ViewProps.h>
+
+using namespace facebook::react;
 
 @interface RCTViewComponentViewUnmountTests : XCTestCase
 @end
@@ -81,6 +84,56 @@ static NSString *RCTUnmountAndReportAssert(
   XCTAssertNotNil(message);
   XCTAssertFalse([message containsString:@"out of bounds"]);
   XCTAssertNotEqualObjects(thrownName, NSRangeException);
+}
+
+// A recycled view can receive children before its own props are updated. If
+// the new owner is zero-sized, layer invalidation does not reconcile the old
+// clipping container. Unmount must do so before checking the child's parent.
+- (void)testUnmountReconcilesRecycledContainerAtZeroSize
+{
+  RCTViewComponentView *parent = [[RCTViewComponentView alloc] initWithFrame:CGRectZero];
+  auto clippingProps = std::make_shared<ViewProps>();
+  clippingProps->yogaStyle.setOverflow(facebook::yoga::Overflow::Hidden);
+  clippingProps->outlineWidth = 1;
+  [parent updateProps:clippingProps oldProps:parent.props];
+  [parent finalizeUpdates:RNComponentViewUpdateMaskAll];
+
+  RCTViewComponentView *previousChild = [RCTViewComponentView new];
+  [parent mountChildComponentView:previousChild index:0];
+  UIView *previousContainer = previousChild.superview;
+  XCTAssertNotEqual(previousContainer, parent);
+  XCTAssertNotNil(previousContainer);
+  [parent unmountChildComponentView:previousChild index:0];
+  [parent prepareForRecycle];
+
+  // Fabric mounts descendants before applying the recycled parent's new props.
+  RCTViewComponentView *child = [RCTViewComponentView new];
+  [parent mountChildComponentView:child index:0];
+  [parent updateProps:std::make_shared<ViewProps>() oldProps:parent.props];
+  [parent finalizeUpdates:RNComponentViewUpdateMaskAll];
+  XCTAssertTrue(CGSizeEqualToSize(parent.bounds.size, CGSizeZero));
+  XCTAssertEqual(child.superview, previousContainer);
+
+  NSString *message = nil;
+  NSString *thrownName = RCTUnmountAndReportAssert(parent, child, 0, &message);
+
+  XCTAssertNil(message, @"Container migration must precede the ownership check");
+  XCTAssertNil(thrownName);
+  XCTAssertNil(child.superview);
+  XCTAssertNil(previousContainer.superview, @"The stale container must be removed");
+}
+
+- (void)testUnmountStillReportsChildMountedUnderAnotherParent
+{
+  RCTViewComponentView *parent = [RCTViewComponentView new];
+  RCTViewComponentView *otherParent = [RCTViewComponentView new];
+  RCTViewComponentView *child = [RCTViewComponentView new];
+  [otherParent mountChildComponentView:child index:0];
+
+  NSString *message = nil;
+  RCTUnmountAndReportAssert(parent, child, 0, &message);
+
+  XCTAssertTrue([message containsString:@"mounted inside a different view"]);
 }
 
 @end
