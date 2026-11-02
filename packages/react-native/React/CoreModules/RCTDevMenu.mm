@@ -29,6 +29,36 @@
 
 NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification";
 
+// The bundler the app uses now, to prefill Configure Bundler: the host of the bundle URL, then the saved
+// jsLocation, then ip.txt (written by react-native-xcode.sh for devices), then localhost.
+static void RCTDevMenuGetCurrentBundler(NSURL *bundleURL, NSString **host, NSNumber **port)
+{
+  NSString *currentHost = bundleURL.host;
+  NSNumber *currentPort = bundleURL.port;
+  RCTBundleURLProvider *bundleURLProvider = [RCTBundleURLProvider sharedSettings];
+
+  NSString *jsLocation = bundleURLProvider.jsLocation;
+  if (currentHost.length == 0 && jsLocation.length > 0) {
+    NSString *jsLocationURLString = [jsLocation containsString:@"://"]
+        ? jsLocation
+        : [NSString stringWithFormat:@"%@://%@", bundleURLProvider.packagerScheme, jsLocation];
+    NSURLComponents *jsLocationComponents = [NSURLComponents componentsWithString:jsLocationURLString];
+    currentHost = jsLocationComponents.host;
+    currentPort = jsLocationComponents.port;
+  }
+
+  if (currentHost.length == 0) {
+    NSString *ipPath = [[NSBundle mainBundle] pathForResource:@"ip" ofType:@"txt"];
+    if (ipPath != nil) {
+      currentHost = [[NSString stringWithContentsOfFile:ipPath encoding:NSUTF8StringEncoding error:nil]
+          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    }
+  }
+
+  *host = currentHost.length > 0 ? currentHost : @"localhost";
+  *port = currentPort ?: @(RCT_METRO_PORT);
+}
+
 @implementation RCTDevMenuConfiguration
 - (instancetype)initWithDevMenuEnabled:(BOOL)devMenuEnabled
                    shakeGestureEnabled:(BOOL)shakeGestureEnabled
@@ -364,15 +394,21 @@ RCT_EXPORT_MODULE()
                       return @"Configure Bundler";
                     }
                     handler:^{
+                      NSString *currentHost = nil;
+                      NSNumber *currentPort = nil;
+                      RCTDevMenuGetCurrentBundler(bundleManager.bundleURL, &currentHost, &currentPort);
+
                       UIAlertController *alertController = [UIAlertController
                           alertControllerWithTitle:@"Configure Bundler"
                                            message:@"Provide a custom bundler address, port, and entrypoint."
                                     preferredStyle:UIAlertControllerStyleAlert];
                       [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
                         textField.placeholder = @"0.0.0.0";
+                        textField.text = currentHost;
                       }];
                       [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
                         textField.placeholder = @"8081";
+                        textField.text = currentPort.stringValue;
                       }];
                       [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
                         textField.placeholder = @"index";
