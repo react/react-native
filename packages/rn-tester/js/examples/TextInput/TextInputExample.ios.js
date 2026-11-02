@@ -20,7 +20,7 @@ import RNTesterText from '../../components/RNTesterText';
 import ExampleTextInput from './ExampleTextInput';
 import TextInputSharedExamples from './TextInputSharedExamples';
 import * as React from 'react';
-import {useRef} from 'react';
+import {useRef, useState} from 'react';
 import {
   Button,
   InputAccessoryView,
@@ -42,6 +42,39 @@ class WithLabel extends React.Component<$FlowFixMe> {
       </View>
     );
   }
+}
+
+function ControlledAutoExpandingExample(): React.Node {
+  const [text, setText] = useState('');
+  const [slowJS, setSlowJS] = useState(false);
+  return (
+    <View>
+      <WithLabel label="Busy JS thread">
+        <Switch value={slowJS} onValueChange={setSlowJS} />
+      </WithLabel>
+      <ExampleTextInput
+        multiline={true}
+        value={text}
+        onChangeText={value => {
+          if (slowJS) {
+            // Delays each render so that the next keystroke reaches native
+            // before React has committed the previous one.
+            const end = Date.now() + 150;
+            while (Date.now() < end) {}
+          }
+          setText(value);
+        }}
+        placeholder="height follows the controlled value"
+        style={[styles.multiline, styles.multilineExpandable]}
+        testID="controlled-auto-expanding-text-input"
+      />
+      <Button
+        title="Set three lines"
+        onPress={() => setText('one\ntwo\nthree')}
+      />
+      <Button title="Clear" onPress={() => setText('')} />
+    </View>
+  );
 }
 
 class TextInputAccessoryViewChangeTextExample extends React.Component<
@@ -793,6 +826,13 @@ const textInputExamples: Array<RNTesterModuleExample> = [
           />
         </View>
       );
+    },
+  },
+  {
+    title: 'Auto-expanding controlled',
+    name: 'autoExpandingControlled',
+    render: function (): React.Node {
+      return <ControlledAutoExpandingExample />;
     },
   },
   {
