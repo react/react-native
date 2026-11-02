@@ -25,6 +25,16 @@ using RCTTextLayoutFragmentEnumerationBlock =
     void (^)(CGRect fragmentRect, NSString *_Nonnull fragmentText, NSString *value);
 
 /**
+ * The kinds of data to make tappable, as chosen by the `dataDetectorType` prop of `Text`.
+ */
+typedef NS_OPTIONS(NSUInteger, RCTTextDataDetectorTypes) {
+  RCTTextDataDetectorTypeNone = 0,
+  RCTTextDataDetectorTypePhoneNumber = 1 << 0,
+  RCTTextDataDetectorTypeLink = 1 << 1,
+  RCTTextDataDetectorTypeEmail = 1 << 2,
+};
+
+/**
  * iOS-specific TextLayoutManager
  */
 @interface RCTTextLayoutManager : NSObject
@@ -44,6 +54,12 @@ using RCTTextLayoutFragmentEnumerationBlock =
                        frame:(CGRect)frame
            drawHighlightPath:(void (^_Nullable)(UIBezierPath *highlightPath))block;
 
+- (void)drawAttributedString:(const facebook::react::AttributedString &)attributedString
+         paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+           dataDetectorTypes:(RCTTextDataDetectorTypes)dataDetectorTypes
+                       frame:(CGRect)frame
+           drawHighlightPath:(void (^_Nullable)(UIBezierPath *highlightPath))block;
+
 - (facebook::react::LinesMeasurements)
     getLinesForAttributedString:(const facebook::react::AttributedString &)attributedString
             paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
@@ -55,8 +71,24 @@ using RCTTextLayoutFragmentEnumerationBlock =
                                  frame:(CGRect)frame
                                atPoint:(CGPoint)point;
 
+/**
+ * Returns the URL of the data detected at a point in the coordinates of `frame`'s parent, if any.
+ */
+- (nullable NSURL *)detectedURLWithAttributedString:(const facebook::react::AttributedString &)attributedString
+                                paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                  dataDetectorTypes:(RCTTextDataDetectorTypes)dataDetectorTypes
+                                              frame:(CGRect)frame
+                                            atPoint:(CGPoint)point;
+
 - (void)getRectWithAttributedString:(const facebook::react::AttributedString &)attributedString
                 paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                 enumerateAttribute:(NSString *)enumerateAttribute
+                              frame:(CGRect)frame
+                         usingBlock:(RCTTextLayoutFragmentEnumerationBlock)block;
+
+- (void)getRectWithAttributedString:(const facebook::react::AttributedString &)attributedString
+                paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                  dataDetectorTypes:(RCTTextDataDetectorTypes)dataDetectorTypes
                  enumerateAttribute:(NSString *)enumerateAttribute
                               frame:(CGRect)frame
                          usingBlock:(RCTTextLayoutFragmentEnumerationBlock)block;

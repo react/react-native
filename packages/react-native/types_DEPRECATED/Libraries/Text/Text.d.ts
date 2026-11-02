@@ -78,13 +78,6 @@ export interface TextPropsAndroid {
   textBreakStrategy?: 'simple' | 'highQuality' | 'balanced' | undefined;
 
   /**
-   * Determines the types of data converted to clickable URLs in the text element.
-   * By default no data types are detected.
-   */
-  dataDetectorType?:
-    null | 'phoneNumber' | 'link' | 'email' | 'none' | 'all' | undefined;
-
-  /**
    * Hyphenation strategy
    */
   android_hyphenationFrequency?: 'normal' | 'none' | 'full' | undefined;
@@ -106,6 +99,13 @@ export interface TextPropsAndroid {
 // https://reactnative.dev/docs/text#props
 export interface TextProps
   extends TextPropsIOS, TextPropsAndroid, AccessibilityProps {
+  /**
+   * Determines the types of data converted to clickable URLs in the text element.
+   * By default no data types are detected.
+   */
+  dataDetectorType?:
+    null | 'phoneNumber' | 'link' | 'email' | 'none' | 'all' | undefined;
+
   /**
    * Specifies whether fonts should scale to respect Text Size accessibility settings.
    * The default is `true`.

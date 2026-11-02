@@ -102,14 +102,6 @@ export type TextPropsAndroid = {
   selectionColor?: ?ColorValue,
 
   /**
-   * Types of data converted to clickable URLs in the text element.
-   *
-   * @default `'none'`
-   * @platform android
-   */
-  dataDetectorType?: ?('phoneNumber' | 'link' | 'email' | 'none' | 'all'),
-
-  /**
    * Text break strategy on Android.
    *
    * @default `'highQuality'`
@@ -127,6 +119,13 @@ export type TextPropsAndroid = {
 };
 
 type TextBaseProps = Readonly<{
+  /**
+   * Types of data converted to clickable URLs in the text element.
+   *
+   * @default `'none'`
+   */
+  dataDetectorType?: ?('phoneNumber' | 'link' | 'email' | 'none' | 'all'),
+
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,
 
   /**

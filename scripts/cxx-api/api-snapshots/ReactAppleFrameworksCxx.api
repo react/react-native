@@ -1473,6 +1473,7 @@ interface RCTObjectAnimatedNode : public RCTAnimatedNode {
 }
 
 interface RCTParagraphComponentAccessibilityProvider : public NSObject {
+  public @property (assign) RCTTextDataDetectorTypes dataDetectorTypes;
   public virtual BOOL isUpToDate:(facebook::react::AttributedString currentAttributedString);
   public virtual NSArray<UIAccessibilityElement*>* accessibilityElements();
   public virtual instancetype initWithString:layoutManager:paragraphAttributes:frame:view:(facebook::react::AttributedString attributedString, RCTTextLayoutManager* layoutManager, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, UIView* view);
@@ -1872,11 +1873,14 @@ interface RCTTextInputComponentView : public RCTViewComponentView {
 }
 
 interface RCTTextLayoutManager : public NSObject {
+  public virtual _Nullable NSURL* detectedURLWithAttributedString:paragraphAttributes:dataDetectorTypes:frame:atPoint:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, RCTTextDataDetectorTypes dataDetectorTypes, CGRect frame, CGPoint point);
   public virtual facebook::react::LinesMeasurements getLinesForAttributedString:paragraphAttributes:size:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGSize size);
   public virtual facebook::react::TextMeasurement measureAttributedString:paragraphAttributes:layoutContext:layoutConstraints:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, facebook::react::TextLayoutContext layoutContext, facebook::react::LayoutConstraints layoutConstraints);
   public virtual facebook::react::TextMeasurement measureNSAttributedString:paragraphAttributes:layoutContext:layoutConstraints:(NSAttributedString* attributedString, facebook::react::ParagraphAttributes paragraphAttributes, facebook::react::TextLayoutContext layoutContext, facebook::react::LayoutConstraints layoutConstraints);
   public virtual std::shared_ptr<const facebook::react::EventEmitter> getEventEmitterWithAttributeString:paragraphAttributes:frame:atPoint:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, CGPoint point);
+  public virtual void drawAttributedString:paragraphAttributes:dataDetectorTypes:frame:drawHighlightPath:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, RCTTextDataDetectorTypes dataDetectorTypes, CGRect frame, void(^)(UIBezierPath* highlightPath) block);
   public virtual void drawAttributedString:paragraphAttributes:frame:drawHighlightPath:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, void(^)(UIBezierPath* highlightPath) block);
+  public virtual void getRectWithAttributedString:paragraphAttributes:dataDetectorTypes:enumerateAttribute:frame:usingBlock:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, RCTTextDataDetectorTypes dataDetectorTypes, NSString* enumerateAttribute, CGRect frame, RCTTextLayoutFragmentEnumerationBlock block);
   public virtual void getRectWithAttributedString:paragraphAttributes:enumerateAttribute:frame:usingBlock:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, NSString* enumerateAttribute, CGRect frame, RCTTextLayoutFragmentEnumerationBlock block);
 }
 

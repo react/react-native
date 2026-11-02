@@ -21,6 +21,85 @@
 
 using namespace facebook::react;
 
+static NSString *const RCTDetectedURLAttributeName = @"RCTDetectedURL";
+
+static NSURL *_Nullable RCTPhoneURLFromNumber(NSString *number)
+{
+  // NSDataDetector appends an extension after `;` or `,`. Dial the number itself.
+  NSRange extension = [number rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@";,"]];
+  if (extension.location != NSNotFound) {
+    number = [number substringToIndex:extension.location];
+  }
+  NSCharacterSet *removed = [[NSCharacterSet characterSetWithCharactersInString:@"+0123456789"] invertedSet];
+  number = [[number componentsSeparatedByCharactersInSet:removed] componentsJoinedByString:@""];
+  return number.length > 0 ? [NSURL URLWithString:[@"tel:" stringByAppendingString:number]] : nil;
+}
+
+static NSURL *_Nullable RCTURLFromTextCheckingResult(NSTextCheckingResult *result, RCTTextDataDetectorTypes types)
+{
+  if (result.resultType == NSTextCheckingTypePhoneNumber) {
+    return (types & RCTTextDataDetectorTypePhoneNumber) != 0 ? RCTPhoneURLFromNumber(result.phoneNumber) : nil;
+  }
+  // NSDataDetector reports email addresses as mailto: links. It also matches any other scheme, which must not make
+  // text in the app open arbitrary deep links.
+  NSString *scheme = result.URL.scheme.lowercaseString;
+  if ([scheme isEqualToString:@"mailto"]) {
+    return (types & RCTTextDataDetectorTypeEmail) != 0 ? result.URL : nil;
+  }
+  if ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"]) {
+    return (types & RCTTextDataDetectorTypeLink) != 0 ? result.URL : nil;
+  }
+  return nil;
+}
+
+// Runs on the text that is displayed, after `textTransform`. The attributes don't change the layout, so measuring
+// doesn't need them.
+static void RCTApplyDataDetector(NSTextStorage *textStorage, RCTTextDataDetectorTypes types)
+{
+  if (types == RCTTextDataDetectorTypeNone || textStorage.length == 0) {
+    return;
+  }
+
+  static NSDataDetector *detector;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink | NSTextCheckingTypePhoneNumber error:NULL];
+  });
+
+  [textStorage beginEditing];
+  [detector enumerateMatchesInString:textStorage.string
+                             options:0
+                               range:NSMakeRange(0, textStorage.length)
+                          usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+                            NSURL *url = RCTURLFromTextCheckingResult(result, types);
+                            if (url == nil) {
+                              return;
+                            }
+                            [textStorage addAttributes:@{
+                              RCTDetectedURLAttributeName : url,
+                              NSForegroundColorAttributeName : UIColor.linkColor,
+                              NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle),
+                              RCTTextAttributesAccessibilityRoleAttributeName : @"link",
+                            }
+                                                 range:result.range];
+                          }];
+  [textStorage endEditing];
+}
+
+// Glyphs that a trailing ellipsis replaces are still laid out, so leave them out.
+static NSRange RCTVisibleGlyphRange(NSLayoutManager *layoutManager, NSTextContainer *textContainer)
+{
+  NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+  if (glyphRange.length == 0) {
+    return glyphRange;
+  }
+  NSRange truncatedRange = [layoutManager truncatedGlyphRangeInLineFragmentForGlyphAtIndex:NSMaxRange(glyphRange) - 1];
+  if (truncatedRange.location != NSNotFound) {
+    glyphRange.length = truncatedRange.location - glyphRange.location;
+  }
+  return glyphRange;
+}
+
 @implementation RCTTextLayoutManager {
   SimpleThreadSafeCache<AttributedString, std::shared_ptr<void>, 256> _cache;
 }
@@ -133,10 +212,24 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                        frame:(CGRect)frame
            drawHighlightPath:(void (^_Nullable)(UIBezierPath *highlightPath))block
 {
+  [self drawAttributedString:attributedString
+         paragraphAttributes:paragraphAttributes
+           dataDetectorTypes:RCTTextDataDetectorTypeNone
+                       frame:frame
+           drawHighlightPath:block];
+}
+
+- (void)drawAttributedString:(const AttributedString &)attributedString
+         paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+           dataDetectorTypes:(RCTTextDataDetectorTypes)dataDetectorTypes
+                       frame:(CGRect)frame
+           drawHighlightPath:(void (^_Nullable)(UIBezierPath *highlightPath))block
+{
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
                                                   size:frame.size];
+  RCTApplyDataDetector(textStorage, dataDetectorTypes);
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
@@ -497,8 +590,54 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return nil;
 }
 
+- (NSURL *)detectedURLWithAttributedString:(const AttributedString &)attributedString
+                       paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                         dataDetectorTypes:(RCTTextDataDetectorTypes)dataDetectorTypes
+                                     frame:(CGRect)frame
+                                   atPoint:(CGPoint)point
+{
+  NSTextStorage *textStorage = [self
+      _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
+                                   paragraphAttributes:paragraphAttributes
+                                                  size:frame.size];
+  if (textStorage.length == 0) {
+    return nil;
+  }
+  RCTApplyDataDetector(textStorage, dataDetectorTypes);
+
+  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+  CGPoint pointInContainer = CGPointMake(point.x - frame.origin.x, point.y - frame.origin.y);
+
+  // The glyph index is that of the nearest glyph, so check that the point is really on it.
+  NSUInteger glyphIndex = [layoutManager glyphIndexForPoint:pointInContainer inTextContainer:textContainer];
+  CGRect glyphRect = [layoutManager boundingRectForGlyphRange:NSMakeRange(glyphIndex, 1) inTextContainer:textContainer];
+  if (!CGRectContainsPoint(glyphRect, pointInContainer) ||
+      !NSLocationInRange(glyphIndex, RCTVisibleGlyphRange(layoutManager, textContainer))) {
+    return nil;
+  }
+  return [textStorage attribute:RCTDetectedURLAttributeName
+                        atIndex:[layoutManager characterIndexForGlyphAtIndex:glyphIndex]
+                 effectiveRange:NULL];
+}
+
 - (void)getRectWithAttributedString:(const AttributedString &)attributedString
                 paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                 enumerateAttribute:(NSString *)enumerateAttribute
+                              frame:(CGRect)frame
+                         usingBlock:(RCTTextLayoutFragmentEnumerationBlock)block
+{
+  [self getRectWithAttributedString:attributedString
+                paragraphAttributes:paragraphAttributes
+                  dataDetectorTypes:RCTTextDataDetectorTypeNone
+                 enumerateAttribute:enumerateAttribute
+                              frame:frame
+                         usingBlock:block];
+}
+
+- (void)getRectWithAttributedString:(const AttributedString &)attributedString
+                paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                  dataDetectorTypes:(RCTTextDataDetectorTypes)dataDetectorTypes
                  enumerateAttribute:(NSString *)enumerateAttribute
                               frame:(CGRect)frame
                          usingBlock:(RCTTextLayoutFragmentEnumerationBlock)block
@@ -507,12 +646,15 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
                                                   size:frame.size];
+  RCTApplyDataDetector(textStorage, dataDetectorTypes);
 
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
   [layoutManager ensureLayoutForTextContainer:textContainer];
 
-  NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+  NSRange glyphRange = dataDetectorTypes != RCTTextDataDetectorTypeNone
+      ? RCTVisibleGlyphRange(layoutManager, textContainer)
+      : [layoutManager glyphRangeForTextContainer:textContainer];
   NSRange characterRange = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:NULL];
 
   [textStorage enumerateAttribute:enumerateAttribute

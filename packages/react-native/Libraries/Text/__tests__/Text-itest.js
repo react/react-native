@@ -150,6 +150,48 @@ describe('<Text>', () => {
       });
     });
 
+    describe('dataDetectorType', () => {
+      (['all', 'email', 'link', 'phoneNumber'] as const).forEach(propVal => {
+        it(`can be set to "${propVal}"`, () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<Text dataDetectorType={propVal}>{TEST_TEXT}</Text>);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['dataDetectorType']}).toJSX(),
+          ).toEqual(
+            <rn-paragraph dataDetectorType={propVal}>{TEST_TEXT}</rn-paragraph>,
+          );
+        });
+      });
+
+      it(`can be set to "none"`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<Text dataDetectorType="none">{TEST_TEXT}</Text>);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['dataDetectorType']}).toJSX(),
+        ).toEqual(<rn-paragraph>{TEST_TEXT}</rn-paragraph>);
+      });
+
+      it(`has "none" as default`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<Text>{TEST_TEXT}</Text>);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['dataDetectorType']}).toJSX(),
+        ).toEqual(<rn-paragraph>{TEST_TEXT}</rn-paragraph>);
+      });
+    });
+
     describe('ellipsizeMode', () => {
       it(`has 'tail' as default on JS side`, () => {
         const root = Fantom.createRoot();

@@ -73,9 +73,15 @@ using namespace facebook::react;
 
   [elements addObject:firstElement];
 
+  // The rects below are relative to the text, which starts after the padding.
+  const CGPoint textOrigin = _frame.origin;
+  const CGPoint textOriginOnScreen = CGPointMake(
+      firstElement.accessibilityFrame.origin.x + textOrigin.x, firstElement.accessibilityFrame.origin.y + textOrigin.y);
+
   // add additional elements for those parts of text with embedded link so VoiceOver could specially recognize links
   [_layoutManager getRectWithAttributedString:_attributedString
                           paragraphAttributes:_paragraphAttributes
+                            dataDetectorTypes:_dataDetectorTypes
                            enumerateAttribute:RCTTextAttributesAccessibilityRoleAttributeName
                                         frame:_frame
                                    usingBlock:^(CGRect fragmentRect, NSString *_Nonnull fragmentText, NSString *value) {
@@ -86,6 +92,9 @@ using namespace facebook::react;
                                      if ([fragmentText isEqualToString:firstElement.accessibilityLabel]) {
                                        if ([value isEqualToString:@"link"]) {
                                          firstElement.accessibilityTraits |= UIAccessibilityTraitLink;
+                                         firstElement.accessibilityActivationPoint = CGPointMake(
+                                             textOriginOnScreen.x + CGRectGetMidX(fragmentRect),
+                                             textOriginOnScreen.y + CGRectGetMidY(fragmentRect));
                                        } else if ([value isEqualToString:@"button"]) {
                                          firstElement.accessibilityTraits |= UIAccessibilityTraitButton;
                                        }
@@ -110,7 +119,8 @@ using namespace facebook::react;
                                        numberOfButtons++;
                                      }
                                      element.accessibilityLabel = fragmentText;
-                                     element.frameInContainerSpace = fragmentRect;
+                                     element.frameInContainerSpace =
+                                         CGRectOffset(fragmentRect, textOrigin.x, textOrigin.y);
                                      [elements addObject:element];
                                    }];
 

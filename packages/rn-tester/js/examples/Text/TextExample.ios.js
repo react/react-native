@@ -861,6 +861,27 @@ const examples = [
     },
   },
   {
+    title: 'Data detectors',
+    name: 'dataDetectorType',
+    render: function (): React.Node {
+      return (
+        <View testID="text-data-detector">
+          <Text dataDetectorType="phoneNumber">Phone number: 123-123-1234</Text>
+          <Text dataDetectorType="link">Link: https://www.facebook.com</Text>
+          <Text dataDetectorType="email">Email: employee@facebook.com</Text>
+          <Text dataDetectorType="none">
+            Phone number: 123-123-1234 Link: https://www.facebook.com Email:
+            employee@facebook.com
+          </Text>
+          <Text dataDetectorType="all">
+            Phone number: 123-123-1234 Link: https://www.facebook.com Email:
+            employee@facebook.com
+          </Text>
+        </View>
+      );
+    },
+  },
+  {
     title: 'Text Decoration',
     name: 'textDecoration',
     render: function (): React.Node {
