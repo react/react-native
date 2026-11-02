@@ -11,6 +11,8 @@
 
 #include <React/View.h>
 
+#include <optional>
+#include <string>
 #include <utility>
 
 namespace facebook::react {
@@ -98,6 +100,8 @@ T get(const AnimatedPropBase &animatedProp)
 struct AnimatedProps {
   std::vector<std::unique_ptr<AnimatedPropBase>> props;
   std::unique_ptr<RawProps> rawProps;
+  // Written to the node's first RawText child. Always applied with a commit.
+  std::optional<std::string> text;
 };
 
 inline void cloneProp(BaseViewProps &viewProps, const AnimatedPropBase &animatedProp)
