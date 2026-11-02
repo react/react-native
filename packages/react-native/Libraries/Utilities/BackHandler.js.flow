@@ -24,10 +24,16 @@ export interface HardwareBackPressEvent {
 
 type TBackHandler = {
   exitApp(): void,
+  setNativeNavigationEnabled(enabled: boolean): void,
   addEventListener(
     eventName: BackPressEventName,
     handler: (event: HardwareBackPressEvent) => ?boolean,
-  ): {remove: () => void, ...},
+    options?: {nativeNavigationFallback?: boolean, ...},
+  ): {
+    remove: () => void,
+    setNativeNavigationFallback: (enabled: boolean) => void,
+    ...
+  },
 };
 
 /**

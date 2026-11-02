@@ -14,6 +14,10 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 
 export interface Spec extends TurboModule {
   readonly invokeDefaultBackPressHandler: () => void;
+  readonly setNativeNavigationEnabled: (
+    enabled: boolean,
+    hasJavaScriptHandlers: boolean,
+  ) => void;
 }
 
 export default TurboModuleRegistry.get<Spec>('DeviceEventManager') as ?Spec;
