@@ -86,34 +86,6 @@ RCT_EXTERN_C_END
 @interface RCTBridge : NSObject <RCTInvalidating>
 
 /**
- * Creates a new bridge with a custom RCTBridgeDelegate.
- *
- * All the interaction with the JavaScript context should be done using the bridge
- * instance of the RCTBridgeModules. Modules will be automatically instantiated
- * using the default constructor, but you can optionally pass in an array of
- * pre-initialized module instances if they require additional init parameters
- * or configuration.
- */
-- (instancetype)initWithDelegate:(id<RCTBridgeDelegate>)delegate
-                   launchOptions:(NSDictionary *)launchOptions
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-/**
- * DEPRECATED: Use initWithDelegate:launchOptions: instead
- *
- * The designated initializer. This creates a new bridge on top of the specified
- * executor. The bridge should then be used for all subsequent communication
- * with the JavaScript code running in the executor. Modules will be automatically
- * instantiated using the default constructor, but you can optionally pass in an
- * array of pre-initialized module instances if they require additional init
- * parameters or configuration.
- */
-- (instancetype)initWithBundleURL:(NSURL *)bundleURL
-                   moduleProvider:(RCTBridgeModuleListProvider)block
-                    launchOptions:(NSDictionary *)launchOptions
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-/**
  * This method registers the file path of an additional JS segment by its ID.
  *
  * @experimental

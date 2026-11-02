@@ -17,11 +17,6 @@ category RCTBridge(RCTImageLoader) {
   public @property (assign, readonly) RCTImageLoader* imageLoader;
 }
 
-category RCTBridge(RCTSurfacePresenterStub) {
-  public virtual id<RCTSurfacePresenterStub> surfacePresenter();
-  public virtual void setSurfacePresenter:(id<RCTSurfacePresenterStub> presenter);
-}
-
 category RCTBridge(RCTUIManager) {
   public @property (assign, readonly) RCTUIManager* uiManager;
 }
@@ -655,8 +650,6 @@ interface RCTBridge : public NSObject <RCTInvalidating> {
   public virtual id moduleForClass:(Class moduleClass);
   public virtual id moduleForName:(NSString* moduleName);
   public virtual id moduleForName:lazilyLoadIfNecessary:(NSString* moduleName, BOOL lazilyLoad);
-  public virtual instancetype initWithBundleURL:moduleProvider:launchOptions:(NSURL* bundleURL, RCTBridgeModuleListProvider block, NSDictionary* launchOptions);
-  public virtual instancetype initWithDelegate:launchOptions:(id<RCTBridgeDelegate> delegate, NSDictionary* launchOptions);
   public virtual void onFastRefresh();
   public virtual void registerSegmentWithId:path:(NSUInteger segmentId, NSString* path);
   public virtual void setRCTTurboModuleRegistry:(id<RCTTurboModuleRegistry> turboModuleRegistry);

@@ -25,7 +25,7 @@ function getLinkRanges(string: string): ReadonlyArray<Range> {
   const regex = /https?:\/\/[^\s$.?#].[^\s]*/gi;
   const matches = [];
 
-  let regexResult: RegExp$matchResult | null;
+  let regexResult: RegExpExecArray | null;
   while ((regexResult = regex.exec(string)) !== null) {
     if (regexResult != null) {
       matches.push({

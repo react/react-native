@@ -216,6 +216,7 @@ val buildFantomTester by
       dependsOn(configureFantomTester)
       workingDir(testerDir)
       inputs.files(testerBuildOutputFileTree)
+      outputs.upToDateWhen { false }
       commandLine(
           cmakeBinaryPath,
           "--build",
