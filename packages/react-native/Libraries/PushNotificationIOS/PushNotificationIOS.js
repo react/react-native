@@ -338,7 +338,7 @@ class PushNotificationIOS {
     invariant(
       NativePushNotificationManagerIOS,
       'PushNotificationManager is not available.',
-    );
+    );g
     NativePushNotificationManagerIOS.cancelLocalNotifications(userInfo);
   }
 
@@ -372,6 +372,12 @@ class PushNotificationIOS {
         type === 'localNotification',
       'PushNotificationIOS only supports `notification`, `register`, `registrationError`, and `localNotification` events',
     );
+    // Only one subscription per event type is tracked in `_notifHandlers`, so
+    // drop any previous one first. Otherwise it would be overwritten in the
+    // map, could no longer be removed via `removeEventListener`, and would
+    // leak while continuing to invoke its handler.
+    PushNotificationIOS.removeEventListener(type);
+
     let listener;
     if (type === 'notification') {
       listener = PushNotificationEmitter.addListener(
