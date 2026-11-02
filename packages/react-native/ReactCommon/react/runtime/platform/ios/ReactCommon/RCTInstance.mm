@@ -191,6 +191,9 @@ using namespace facebook::react;
   }
   // suspend shouldn't be called under _invalidationMutex: it notifies surface observers,
   // which can call callFunctionOnJSModule and deadlock on the same mutex.
+  // Queued rendering updates capture the scheduler's delegate by raw pointer.
+  // Keep it alive until the current JS task has drained those updates.
+  __block RCTScheduler *scheduler = _surfacePresenter.scheduler;
   [_surfacePresenter suspend];
   [_jsThreadManager dispatchToJSThread:^{
     /**
@@ -200,6 +203,7 @@ using namespace facebook::react;
     [self->_turboModuleManager invalidate];
 
     // Clean up all the Resources
+    scheduler = nil;
     self->_reactInstance = nullptr;
     self->_jsRuntimeFactory = nullptr;
     self->_appTMMDelegate = nil;
