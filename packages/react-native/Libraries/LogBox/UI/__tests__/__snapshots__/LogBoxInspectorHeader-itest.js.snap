@@ -1,10 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`LogBoxInspectorHeader should render both buttons for two total 1`] = `
-<React.Fragment>
-  <rn-view
-    backgroundColor="rgba(250, 186, 48, 1)"
-  />
+<rn-view
+  backgroundColor="rgba(250, 186, 48, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-view
     accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
@@ -66,14 +66,14 @@ exports[`LogBoxInspectorHeader should render both buttons for two total 1`] = `
       width="8"
     />
   </rn-view>
-</React.Fragment>
+</rn-view>
 `;
 
 exports[`LogBoxInspectorHeader should render no buttons for one total 1`] = `
-<React.Fragment>
-  <rn-view
-    backgroundColor="rgba(250, 186, 48, 1)"
-  />
+<rn-view
+  backgroundColor="rgba(250, 186, 48, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-view
     alignItems="center"
     aspectRatio="1"
@@ -109,14 +109,14 @@ exports[`LogBoxInspectorHeader should render no buttons for one total 1`] = `
     marginTop="5"
     nativeID="logbox_header_button_next"
   />
-</React.Fragment>
+</rn-view>
 `;
 
 exports[`LogBoxInspectorHeader should render syntax error header 1`] = `
-<React.Fragment>
-  <rn-view
-    backgroundColor="rgba(243, 83, 105, 1)"
-  />
+<rn-view
+  backgroundColor="rgba(243, 83, 105, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-paragraph
     allowFontScaling="true"
     ellipsizeMode="tail"
@@ -132,14 +132,14 @@ exports[`LogBoxInspectorHeader should render syntax error header 1`] = `
   >
     Failed to compile
   </rn-paragraph>
-</React.Fragment>
+</rn-view>
 `;
 
 exports[`LogBoxInspectorHeader should render two buttons for three or more total 1`] = `
-<React.Fragment>
-  <rn-view
-    backgroundColor="rgba(250, 186, 48, 1)"
-  />
+<rn-view
+  backgroundColor="rgba(250, 186, 48, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-view
     alignItems="center"
     aspectRatio="1"
@@ -175,5 +175,5 @@ exports[`LogBoxInspectorHeader should render two buttons for three or more total
     marginTop="5"
     nativeID="logbox_header_button_next"
   />
-</React.Fragment>
+</rn-view>
 `;
