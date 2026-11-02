@@ -8,6 +8,7 @@
 #include "NativeAnimatedNodesManagerProvider.h"
 
 #include <glog/logging.h>
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/animated/MergedValueDispatcher.h>
 #include <react/renderer/animated/internal/AnimatedMountingOverrideDelegate.h>
 #include <react/renderer/animated/internal/primitives.h>
@@ -104,29 +105,7 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
         std::make_shared<UIManagerNativeAnimatedDelegateImpl>(
             nativeAnimatedNodesManager_);
 
-    animatedMountingOverrideDelegate_ =
-        std::make_shared<AnimatedMountingOverrideDelegate>(
-            *nativeAnimatedNodesManager_, *scheduler);
-
-    // Register on existing surfaces
-    uiManager->getShadowTreeRegistry().enumerate(
-        [animatedMountingOverrideDelegate =
-             std::weak_ptr<const AnimatedMountingOverrideDelegate>(
-                 animatedMountingOverrideDelegate_)](
-            const ShadowTree& shadowTree, bool& /*stop*/) {
-          shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
-              animatedMountingOverrideDelegate);
-        });
-
-    // Register on surfaces started in the future
-    uiManager->addOnSurfaceStartCallback(
-        [animatedMountingOverrideDelegate =
-             std::weak_ptr<const AnimatedMountingOverrideDelegate>(
-                 animatedMountingOverrideDelegate_)](
-            const ShadowTree& shadowTree) {
-          shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
-              animatedMountingOverrideDelegate);
-        });
+    addMountingOverrideDelegate(*uiManager);
 
     uiManager->setNativeAnimatedDelegate(nativeAnimatedDelegate_);
   } else {
@@ -138,6 +117,10 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
 
     nativeAnimatedNodesManager_ =
         std::make_shared<NativeAnimatedNodesManager>(animationBackend);
+
+    if (ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend()) {
+      addMountingOverrideDelegate(*uiManager);
+    }
   }
 
   addEventEmitterListener(
@@ -162,6 +145,35 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
           }));
 
   return nativeAnimatedNodesManager_;
+}
+
+void NativeAnimatedNodesManagerProvider::addMountingOverrideDelegate(
+    UIManager& uiManager) {
+  // TODO: remove force casting.
+  auto* scheduler = (Scheduler*)uiManager.getDelegate();
+  animatedMountingOverrideDelegate_ =
+      std::make_shared<AnimatedMountingOverrideDelegate>(
+          *nativeAnimatedNodesManager_, *scheduler);
+
+  // Register on existing surfaces
+  uiManager.getShadowTreeRegistry().enumerate(
+      [animatedMountingOverrideDelegate =
+           std::weak_ptr<const AnimatedMountingOverrideDelegate>(
+               animatedMountingOverrideDelegate_)](
+          const ShadowTree& shadowTree, bool& /*stop*/) {
+        shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
+            animatedMountingOverrideDelegate);
+      });
+
+  // Register on surfaces started in the future
+  uiManager.addOnSurfaceStartCallback(
+      [animatedMountingOverrideDelegate =
+           std::weak_ptr<const AnimatedMountingOverrideDelegate>(
+               animatedMountingOverrideDelegate_)](
+          const ShadowTree& shadowTree) {
+        shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
+            animatedMountingOverrideDelegate);
+      });
 }
 
 void NativeAnimatedNodesManagerProvider::addEventEmitterListener(

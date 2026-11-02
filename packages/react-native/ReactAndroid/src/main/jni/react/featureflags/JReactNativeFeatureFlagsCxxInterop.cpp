@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<944781e7a547e601f0637869a3a3ec5e>>
+ * @generated SignedSource<<30b22c622145cb7664db5550e6d82440>>
  */
 
 /**
@@ -162,6 +162,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableCustomFocusSearchOnClippedElementsAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableCustomFocusSearchOnClippedElementsAndroid");
+    return method(javaProvider_);
+  }
+
+  bool enableCxxAnimatedDirectPathInBackend() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableCxxAnimatedDirectPathInBackend");
     return method(javaProvider_);
   }
 
@@ -730,6 +736,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableCustomFocusSearchOnClippedElement
   return ReactNativeFeatureFlags::enableCustomFocusSearchOnClippedElementsAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableCxxAnimatedDirectPathInBackend(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableCxxAnimatedDirectPathInBackend();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync();
@@ -1204,6 +1215,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableCustomFocusSearchOnClippedElementsAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableCustomFocusSearchOnClippedElementsAndroid),
+      makeNativeMethod(
+        "enableCxxAnimatedDirectPathInBackend",
+        JReactNativeFeatureFlagsCxxInterop::enableCxxAnimatedDirectPathInBackend),
       makeNativeMethod(
         "enableDestroyShadowTreeRevisionAsync",
         JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync),

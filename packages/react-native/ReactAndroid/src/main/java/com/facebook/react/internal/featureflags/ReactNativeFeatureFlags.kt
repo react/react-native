@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a89ede36c4631b7a7709899858a7f9c9>>
+ * @generated SignedSource<<e6a3e20f8cbff9506e51a3eef5652fe8>>
  */
 
 /**
@@ -155,6 +155,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableCustomFocusSearchOnClippedElementsAndroid(): Boolean = accessor.enableCustomFocusSearchOnClippedElementsAndroid()
+
+  /**
+   * With the shared animation backend, C++ Animated keeps its non-layout values out of React commits and commits the final values once per surface when animations end, as it does without the backend.
+   */
+  @JvmStatic
+  public fun enableCxxAnimatedDirectPathInBackend(): Boolean = accessor.enableCxxAnimatedDirectPathInBackend()
 
   /**
    * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.

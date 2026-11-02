@@ -29,20 +29,29 @@ class AnimatedPropsRegistryTest : public ::testing::Test {
     registry.initializeSurface(1);
   }
 
-  void update(AnimatedProps props) {
-    std::vector<AnimationMutations> batches(1);
-    batches[0].batch.push_back(
+  void update(
+      AnimatedProps props,
+      bool commitDirectProps = true,
+      bool finishesAnimation = false) {
+    std::vector<FrontendMutations> batches(1);
+    batches[0].commitDirectProps = commitDirectProps;
+    batches[0].mutations.batch.push_back(
         AnimationMutation{
             .tag = 10,
             .family = node->getFamilyShared(),
-            .props = std::move(props)});
+            .props = std::move(props),
+            .finishesAnimation = finishesAnimation});
     registry.update(batches);
   }
 
-  void updateRaw(folly::dynamic props) {
+  void updateRaw(
+      folly::dynamic props,
+      bool commitDirectProps = true,
+      bool finishesAnimation = false) {
     update(
-        {.props = {},
-         .rawProps = std::make_unique<RawProps>(std::move(props))});
+        {.props = {}, .rawProps = std::make_unique<RawProps>(std::move(props))},
+        commitDirectProps,
+        finishesAnimation);
   }
 
   void expectRawProps(const folly::dynamic& expected) {
@@ -53,6 +62,66 @@ class AnimatedPropsRegistryTest : public ::testing::Test {
     return *registry.getMap(1).second.at(10);
   }
 };
+
+TEST_F(AnimatedPropsRegistryTest, unsyncedUpdatesAreNotRecorded) {
+  updateRaw(folly::dynamic::object("opacity", 0.5), false);
+  auto [families, map] = registry.getMap(1);
+  EXPECT_TRUE(families.empty());
+  EXPECT_FALSE(map.contains(10));
+}
+
+TEST_F(AnimatedPropsRegistryTest, unsyncedFinalValuesAreKeptApart) {
+  updateRaw(folly::dynamic::object("opacity", 0.5), false);
+  updateRaw(folly::dynamic::object("opacity", 0.2), false, true);
+
+  auto [families, map] = registry.getMap(1);
+  EXPECT_TRUE(families.empty());
+  EXPECT_FALSE(map.contains(10));
+  auto finalValues = registry.takeFinalValues(1);
+  ASSERT_TRUE(finalValues.contains(10));
+  folly::dynamic expected = folly::dynamic::object("opacity", 0.2);
+  EXPECT_EQ(finalValues.at(10).props, expected);
+}
+
+TEST_F(AnimatedPropsRegistryTest, takenFinalValuesAreNotTakenAgain) {
+  updateRaw(folly::dynamic::object("opacity", 0.2), false, true);
+  registry.takeFinalValues(1);
+  updateRaw(folly::dynamic::object("width", 10), false, true);
+
+  auto finalValues = registry.takeFinalValues(1);
+  ASSERT_TRUE(finalValues.contains(10));
+  folly::dynamic expected = folly::dynamic::object("width", 10);
+  EXPECT_EQ(finalValues.at(10).props, expected);
+}
+
+TEST_F(AnimatedPropsRegistryTest, restoredFinalValuesYieldToNewerOnes) {
+  updateRaw(folly::dynamic::object("opacity", 0.2)("width", 10), false, true);
+  auto taken = registry.takeFinalValues(1);
+  updateRaw(folly::dynamic::object("opacity", 0.3), false, true);
+
+  registry.restoreFinalValues(1, std::move(taken));
+
+  auto finalValues = registry.takeFinalValues(1);
+  ASSERT_TRUE(finalValues.contains(10));
+  folly::dynamic expected = folly::dynamic::object("opacity", 0.3)("width", 10);
+  EXPECT_EQ(finalValues.at(10).props, expected);
+}
+
+TEST_F(AnimatedPropsRegistryTest, unsyncedUpdatesEraseOlderRecordedValues) {
+  updateRaw(folly::dynamic::object("opacity", 0.8)("width", 5));
+  snapshot();
+  updateRaw(folly::dynamic::object("opacity", 0.7));
+  updateRaw(folly::dynamic::object("opacity", 0.2), false);
+  expectRawProps(folly::dynamic::object("width", 5));
+}
+
+TEST_F(AnimatedPropsRegistryTest, laterSyncedUpdatesAreRecorded) {
+  updateRaw(folly::dynamic::object("opacity", 0.25));
+  snapshot();
+  updateRaw(folly::dynamic::object("opacity", 0.5), false);
+  updateRaw(folly::dynamic::object("opacity", 0.75));
+  expectRawProps(folly::dynamic::object("opacity", 0.75));
+}
 
 TEST_F(AnimatedPropsRegistryTest, rawUpdatesDoNotAllocateTypedProps) {
   for (int frame = 0; frame < 10; frame++) {
@@ -68,8 +137,8 @@ TEST_F(AnimatedPropsRegistryTest, updatePreservesInputForSynchronousMount) {
   folly::dynamic rawProps = folly::dynamic::object("opacity", 0.25)(
       "transform",
       folly::dynamic::array(folly::dynamic::object("translateX", 10)));
-  std::vector<AnimationMutations> batches(1);
-  batches[0].batch.push_back(
+  std::vector<FrontendMutations> batches(1);
+  batches[0].mutations.batch.push_back(
       AnimationMutation{
           .tag = 10,
           .family = node->getFamilyShared(),
@@ -77,7 +146,8 @@ TEST_F(AnimatedPropsRegistryTest, updatePreservesInputForSynchronousMount) {
               .props = {}, .rawProps = std::make_unique<RawProps>(rawProps)}});
   registry.update(batches);
   registry.update(batches);
-  EXPECT_EQ(batches[0].batch[0].props.rawProps->toDynamic(), rawProps);
+  EXPECT_EQ(
+      batches[0].mutations.batch[0].props.rawProps->toDynamic(), rawProps);
   EXPECT_EQ(*snapshot().rawProps, rawProps);
 }
 

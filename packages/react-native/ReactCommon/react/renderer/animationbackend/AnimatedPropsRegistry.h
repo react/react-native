@@ -26,9 +26,27 @@ struct PropsSnapshot {
   std::unique_ptr<folly::dynamic> rawProps;
 };
 
+// The last values of an animation whose direct values are not written into
+// React commits. Only the end-of-animation commit writes them.
+struct FinalValues {
+  std::shared_ptr<const ShadowNodeFamily> family;
+  folly::dynamic props;
+};
+
+// The mutations of one frame or event, with the `commitDirectProps` of the
+// frontend that produced them.
+struct FrontendMutations {
+  bool commitDirectProps{true};
+  AnimationMutations mutations;
+};
+
 struct SurfaceContext {
   std::unordered_map<Tag, std::unique_ptr<PropsSnapshot>> pendingMap, map;
   std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> pendingFamilies, families;
+  std::unordered_map<Tag, FinalValues> finalValues;
+  // Raw props written later without syncing with the commit hook, to be erased
+  // from `map` when it is next read under the lock.
+  std::unordered_map<Tag, std::unordered_set<std::string>> staleRawKeys;
 };
 
 using SnapshotMap = std::unordered_map<Tag, std::unique_ptr<PropsSnapshot>>;
@@ -41,14 +59,25 @@ void mergeAnimatedRawProps(folly::dynamic &target, const folly::dynamic &source)
 
 class AnimatedPropsRegistry {
  public:
-  void update(const std::vector<AnimationMutations> &batches);
+  void update(const std::vector<FrontendMutations> &batches);
   void initializeSurface(SurfaceId surfaceId);
   void clear(SurfaceId surfaceId);
   void clearOnSurfaceStop(SurfaceId surfaceId);
   std::pair<std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> &, SnapshotMap &> getMap(SurfaceId surfaceId);
+  std::unordered_map<Tag, FinalValues> takeFinalValues(SurfaceId surfaceId);
+  // Puts back final values that a commit did not write, under the ones recorded
+  // since they were taken.
+  void restoreFinalValues(SurfaceId surfaceId, std::unordered_map<Tag, FinalValues> finalValues);
+  // Returns false when an async flush of the surface is already scheduled.
+  bool scheduleAsyncFlush(SurfaceId surfaceId);
+  void startAsyncFlush(SurfaceId surfaceId);
 
  private:
+  // Erases the mutation's raw props from the recorded ones, which are older.
+  void forgetRawProps(SurfaceContext &surfaceContext, const AnimationMutation &mutation);
+
   std::unordered_map<SurfaceId, SurfaceContext> surfaceContexts_;
+  std::unordered_set<SurfaceId> scheduledAsyncFlushSurfaces_;
   std::mutex mutex_;
 };
 

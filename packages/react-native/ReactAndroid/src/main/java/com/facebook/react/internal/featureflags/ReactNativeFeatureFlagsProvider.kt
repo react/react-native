@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<da45e41e9a58711ee3b68a38965938fb>>
+ * @generated SignedSource<<e4b8bf98b7a7a845fd80820c668d969d>>
  */
 
 /**
@@ -64,6 +64,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableCppPropsIteratorSetter(): Boolean
 
   @DoNotStrip public fun enableCustomFocusSearchOnClippedElementsAndroid(): Boolean
+
+  @DoNotStrip public fun enableCxxAnimatedDirectPathInBackend(): Boolean
 
   @DoNotStrip public fun enableDestroyShadowTreeRevisionAsync(): Boolean
 
