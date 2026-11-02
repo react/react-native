@@ -397,8 +397,19 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_STATE)
   public void setViewState(@NonNull T view, @Nullable ReadableMap accessibilityState) {
+    if (accessibilityState != null
+        && accessibilityState.hasKey("disabled")
+        && !accessibilityState.isNull("disabled")) {
+      boolean disabled = accessibilityState.getBoolean("disabled");
+      view.setEnabled(!disabled);
+      view.setTag(R.id.accessibility_state_disabled, disabled);
+    } else {
+      if (Boolean.TRUE.equals(view.getTag(R.id.accessibility_state_disabled))) {
+        resetDisabledFromAccessibilityState(view);
+      }
+      view.setTag(R.id.accessibility_state_disabled, null);
+    }
     if (accessibilityState == null) {
-      resetDisabledFromAccessibilityState(view);
       return;
     }
     if (accessibilityState.hasKey("expanded")) {
@@ -420,13 +431,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       view.setSelected(false);
     }
     view.setTag(R.id.accessibility_state, accessibilityState);
-    if (accessibilityState.hasKey("disabled") && !accessibilityState.isNull("disabled")) {
-      boolean disabled = accessibilityState.getBoolean("disabled");
-      view.setEnabled(!disabled);
-      view.setTag(R.id.accessibility_state_disabled, disabled);
-    } else {
-      resetDisabledFromAccessibilityState(view);
-    }
 
     // For states which don't have corresponding methods in
     // AccessibilityNodeInfo, update the view's content description
@@ -452,12 +456,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     }
   }
 
-  private static void resetDisabledFromAccessibilityState(@NonNull View view) {
-    if (Boolean.TRUE.equals(view.getTag(R.id.accessibility_state_disabled))) {
-      view.setEnabled(true);
-    }
-    view.setTag(R.id.accessibility_state_disabled, null);
-  }
+  protected void resetDisabledFromAccessibilityState(@NonNull T view) {}
 
   private void updateViewContentDescription(@NonNull T view) {
     final String accessibilityLabel = (String) view.getTag(R.id.accessibility_label);
