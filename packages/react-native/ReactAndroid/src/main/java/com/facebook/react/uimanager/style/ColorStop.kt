@@ -7,12 +7,14 @@
 
 package com.facebook.react.uimanager.style
 
+import android.graphics.Color
 import androidx.core.graphics.ColorUtils
 import com.facebook.react.uimanager.FloatUtil
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.PixelUtil
 import kotlin.math.ln
+import kotlin.math.roundToInt
 
 /**
  * Represents a color stop in a gradient as specified by the user.
@@ -137,6 +139,93 @@ internal object ColorStopUtils {
     return processColorTransitionHints(fixedColorStops)
   }
 
+  /**
+   * Replaces color stops outside `[0, end]` with stops at the range boundaries.
+   *
+   * Stops outside the range still affect the colors inside it through interpolation, but are never
+   * painted directly. Android's gradient shaders pin them to the range instead, so each boundary
+   * gets the color the gradient would have at that point.
+   *
+   * @see <a href="https://drafts.csswg.org/css-images-4/#coloring-gradient-line">CSS Images Module
+   *   Level 4</a>
+   */
+  fun clipColorStops(
+      colorStops: List<ProcessedColorStop>,
+      end: Float = 1f,
+  ): List<ProcessedColorStop> {
+    val firstPosition = colorStops.firstOrNull()?.position ?: return colorStops
+    val lastPosition = colorStops.last().position ?: return colorStops
+    if (firstPosition >= 0f && lastPosition <= end) {
+      return colorStops
+    }
+
+    val firstInside = colorStops.indexOfFirst { (it.position ?: 0f) >= 0f }
+    val lastInside = colorStops.indexOfLast { (it.position ?: 0f) <= end }
+    if (firstInside == -1) {
+      val color = colorStops.last().color
+      return listOf(ProcessedColorStop(color, 0f), ProcessedColorStop(color, end))
+    }
+    if (lastInside == -1) {
+      val color = colorStops.first().color
+      return listOf(ProcessedColorStop(color, 0f), ProcessedColorStop(color, end))
+    }
+
+    val clippedColorStops = ArrayList<ProcessedColorStop>(colorStops.size)
+    if (firstInside > 0 && (colorStops[firstInside].position ?: 0f) > 0f) {
+      clippedColorStops.add(
+          ProcessedColorStop(colorAt(colorStops[firstInside - 1], colorStops[firstInside], 0f), 0f)
+      )
+    }
+    for (i in firstInside..lastInside) {
+      clippedColorStops.add(colorStops[i])
+    }
+    if (lastInside < colorStops.lastIndex && (colorStops[lastInside].position ?: 0f) < end) {
+      clippedColorStops.add(
+          ProcessedColorStop(colorAt(colorStops[lastInside], colorStops[lastInside + 1], end), end)
+      )
+    }
+    if (clippedColorStops.size == 1) {
+      clippedColorStops.add(ProcessedColorStop(clippedColorStops[0].color, end))
+    }
+    return clippedColorStops
+  }
+
+  private fun colorAt(
+      before: ProcessedColorStop,
+      after: ProcessedColorStop,
+      position: Float,
+  ): Int? {
+    val beforeColor = before.color ?: return after.color
+    val afterColor = after.color ?: return beforeColor
+    val beforePosition = before.position ?: return beforeColor
+    val afterPosition = after.position ?: return afterColor
+    return interpolateColor(
+        beforeColor,
+        afterColor,
+        (position - beforePosition) / (afterPosition - beforePosition),
+    )
+  }
+
+  // Interpolates with premultiplied alpha, as CSS and Android's gradient shaders do.
+  // Spec: https://drafts.csswg.org/css-color-4/#interpolation-alpha
+  private fun interpolateColor(from: Int, to: Int, weight: Float): Int {
+    val fromAlpha = Color.alpha(from) / 255f
+    val toAlpha = Color.alpha(to) / 255f
+    val alpha = fromAlpha + (toAlpha - fromAlpha) * weight
+    if (alpha <= 0f) {
+      return Color.TRANSPARENT
+    }
+    fun channel(fromChannel: Int, toChannel: Int): Int =
+        ((fromChannel * fromAlpha * (1f - weight) + toChannel * toAlpha * weight) / alpha)
+            .roundToInt()
+    return Color.argb(
+        (alpha * 255f).roundToInt(),
+        channel(Color.red(from), Color.red(to)),
+        channel(Color.green(from), Color.green(to)),
+        channel(Color.blue(from), Color.blue(to)),
+    )
+  }
+
   // Spec: https://drafts.csswg.org/css-images-4/#coloring-gradient-line (Refer transition hint
   // section)
   // Browsers add 9 intermediate color stops when a transition hint is present
@@ -244,7 +333,11 @@ internal object ColorStopUtils {
 
     return when (position.type) {
       LengthPercentageType.POINT ->
-          PixelUtil.toPixelFromDIP(position.resolve(0f)) / gradientLineLength
+          if (gradientLineLength > 0f) {
+            PixelUtil.toPixelFromDIP(position.resolve(0f)) / gradientLineLength
+          } else {
+            0f
+          }
 
       LengthPercentageType.PERCENT -> position.resolve(1f)
     }
