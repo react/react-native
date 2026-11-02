@@ -71,6 +71,18 @@ class PreparedLayoutTextViewClickableSpanTest {
     assertThat(span.clicks).isEqualTo(1)
   }
 
+  @Test
+  fun `a recycled view does not click spans of its previous text`() {
+    val span = CountingClickableSpan()
+    view.preparedLayout = preparedLayout(textWith(span))
+    tap()
+
+    view.recycleView()
+
+    assertThat(tap()).isFalse()
+    assertThat(span.clicks).isEqualTo(1)
+  }
+
   /** Sends a down and an up at the start of the text; returns whether the up was handled. */
   private fun tap(): Boolean {
     val time = SystemClock.uptimeMillis()

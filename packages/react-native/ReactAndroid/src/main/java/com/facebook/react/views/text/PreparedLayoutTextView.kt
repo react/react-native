@@ -110,6 +110,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     selectionColor = null
     lastFrameTimeNanos = 0L
     preparedLayout = null
+    hasClickableSpansCache = null
   }
 
   override fun onVisibilityChanged(changedView: View, visibility: Int) {
