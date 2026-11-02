@@ -8,6 +8,7 @@
  * @format
  */
 
+import CloseEvent from '../../../src/private/webapis/websockets/events/CloseEvent';
 import RCTDeviceEventEmitter from '../../EventEmitter/RCTDeviceEventEmitter';
 import NativeWebSocketModule from '../NativeWebSocketModule';
 import WebSocket from '../WebSocket';
@@ -20,21 +21,29 @@ describe('WebSocket connection failure', () => {
   it.each(['ws://localhost:0/', 'ws://localhost:4000/a|b'])(
     'dispatches error and abnormal close for a native rejection of %s',
     url => {
+      const connect = jest.spyOn(NativeWebSocketModule, 'connect');
       const socket = new WebSocket(url);
+      const socketId = connect.mock.calls[0][3];
       const events = [];
-      socket.onerror = () => events.push(['error', socket.readyState]);
-      socket.onclose = event =>
+      socket.onerror = () => {
+        events.push(['error', socket.readyState]);
+      };
+      socket.onclose = event => {
+        if (!(event instanceof CloseEvent)) {
+          throw new Error('Expected a CloseEvent');
+        }
         events.push(['close', socket.readyState, event.code, event.reason]);
+      };
 
       RCTDeviceEventEmitter.emit('websocketFailed', {
-        id: socket._socketId + 1,
+        id: socketId + 1,
         message: 'unrelated socket',
       });
       expect(events).toEqual([]);
       expect(socket.readyState).toBe(WebSocket.CONNECTING);
 
       RCTDeviceEventEmitter.emit('websocketFailed', {
-        id: socket._socketId,
+        id: socketId,
         message: 'Invalid WebSocket URL',
       });
 
@@ -44,7 +53,7 @@ describe('WebSocket connection failure', () => {
       ]);
 
       RCTDeviceEventEmitter.emit('websocketFailed', {
-        id: socket._socketId,
+        id: socketId,
         message: 'duplicate failure',
       });
       expect(events).toHaveLength(2);
