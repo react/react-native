@@ -214,6 +214,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableAliasedTextRoleInheritance: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-30',
+        description:
+          'When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) inherits neither.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableAndroidAutoOffscreenCompositingForElevation: {
       defaultValue: false,
       metadata: {
