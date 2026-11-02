@@ -11,17 +11,19 @@
 
 #if RCT_DEV_MENU
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef void (^RCTRedBox2ButtonPressHandler)(void);
 
 @interface RCTRedBox2Controller : UIViewController <RCTRedBox2Controlling, UITableViewDelegate, UITableViewDataSource>
 
-@property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
+@property (nonatomic, weak, nullable) id<RCTRedBoxControllerActionDelegate> actionDelegate;
 
-- (instancetype)initWithCustomButtonTitles:(NSArray<NSString *> *)customButtonTitles
-                      customButtonHandlers:(NSArray<RCTRedBox2ButtonPressHandler> *)customButtonHandlers;
+- (instancetype)initWithCustomButtonTitles:(nullable NSArray<NSString *> *)customButtonTitles
+                      customButtonHandlers:(nullable NSArray<RCTRedBox2ButtonPressHandler> *)customButtonHandlers;
 
 - (void)showErrorMessage:(NSString *)message
-               withStack:(NSArray<RCTJSStackFrame *> *)stack
+               withStack:(nullable NSArray<RCTJSStackFrame *> *)stack
                 isUpdate:(BOOL)isUpdate
              errorCookie:(int)errorCookie;
 
@@ -30,5 +32,7 @@ typedef void (^RCTRedBox2ButtonPressHandler)(void);
 
 - (void)dismiss;
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif
