@@ -844,8 +844,22 @@ public open class ReactViewGroup public constructor(context: Context?) :
     // fallback - should be transitioning or have no parent if the view was removed
     if (parent == null || transitioning) {
       return true
+    } else if (parent !== this) {
+      // The view's parent is a different ViewGroup. This can happen when Fabric
+      // merges multiple transactions and flushes a layout UPDATE for a tag whose
+      // DELETE+CREATE have not yet executed in the correct order (issue #59724).
+      // Treat the view as clipped (removed) rather than crashing, and log a soft
+      // exception so the anomaly is still surfaced in crash reporting.
+      logSoftException(
+          ReactSoftExceptionLogger.Categories.RVG_IS_VIEW_CLIPPED,
+          ReactNoCrashSoftException(
+              "isViewClipped: view parent is not this ReactViewGroup " +
+                  "(parent=${parent::class.java.simpleName}). " +
+                  "Treating as clipped to avoid crash (#59724).",
+          ),
+      )
+      return true
     } else {
-      check(parent === this)
       return false
     }
   }
