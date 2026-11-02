@@ -110,4 +110,33 @@ TEST(MountItemReorderingTest, mergedTransactionsRetainLifetimeBoundaries) {
   EXPECT_TRUE(requiresStrictMountItemOrder(transaction.getMutations()));
 }
 
+TEST(
+    MountItemReorderingTest,
+    selectsStrictOrderForRecreationBeforeLaterReparenting) {
+  auto child = viewWithTag(480);
+  auto sibling = viewWithTag(1712);
+  MountingTransaction transaction{
+      1,
+      1,
+      {ShadowViewMutation::RemoveMutation(10, child, 0),
+       ShadowViewMutation::DeleteMutation(child)},
+      TransactionTelemetry{}};
+  transaction.mergeWith(
+      MountingTransaction{
+          1,
+          2,
+          {ShadowViewMutation::CreateMutation(child),
+           ShadowViewMutation::InsertMutation(10, child, 0)},
+          TransactionTelemetry{}});
+
+  // A trailing delete would lose this child before a later batch moves it to
+  // index 0 and inserts its next sibling at index 1 in the destination parent.
+  EXPECT_TRUE(requiresStrictMountItemOrder(transaction.getMutations()));
+  EXPECT_FALSE(requiresStrictMountItemOrder(
+      {ShadowViewMutation::RemoveMutation(10, child, 0),
+       ShadowViewMutation::InsertMutation(482, child, 0),
+       ShadowViewMutation::CreateMutation(sibling),
+       ShadowViewMutation::InsertMutation(482, sibling, 1)}));
+}
+
 } // namespace facebook::react
