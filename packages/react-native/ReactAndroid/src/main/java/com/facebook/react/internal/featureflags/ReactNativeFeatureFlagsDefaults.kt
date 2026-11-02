@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a1368426dd823245c54b4312ae7b14e6>>
+ * @generated SignedSource<<4e94a0e5117a5f2a7291cd71db66eb3a>>
  */
 
 /**
@@ -58,6 +58,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = true
 
   override fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean = false
+
+  override fun enableAsyncSettingsManagerUpdatesIOS(): Boolean = false
 
   override fun enableBridgelessArchitecture(): Boolean = true
 
