@@ -156,13 +156,9 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
         ReactNativeFeatureFlags_DO_NOT_USE::enableAccumulatedUpdatesInRawPropsAndroid()) {
       // When exclusive props update is enabled, we only apply Props 1.5 processing
       // (raw props merging) when Props 2.0 is not available.
-      if (ReactNativeFeatureFlags_DO_NOT_USE::enablePropsUpdateReconciliationAndroid()) {
-        // Cast to base Props reference to safely call virtual method
-        const auto &baseProps = static_cast<const Props &>(*shadowNodeProps);
-        if (strcmp(ShadowNodeT::Name(), baseProps.getDiffPropsImplementationTarget()) == 0) {
-          // Props 2.0 supported for this component, Props 1.5 processing can be skipped
-          fallbackToDynamicRawPropsAccumulation = false;
-        }
+      if (isPropsDiffingEnabled(ShadowNodeT::Name(), static_cast<const Props &>(*shadowNodeProps))) {
+        // Props 2.0 supported for this component, Props 1.5 processing can be skipped
+        fallbackToDynamicRawPropsAccumulation = false;
       }
     }
     if (fallbackToDynamicRawPropsAccumulation) {

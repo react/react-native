@@ -31,6 +31,7 @@
 #include <array>
 #include <cfenv>
 #include <cmath>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -325,42 +326,45 @@ bool shouldDiffInsertPropsAgainstPreallocatedProps() {
       ReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid();
 }
 
-jni::local_ref<jobject> getProps(
+// Diffs the props of the last mounted ShadowTree against the props of the
+// latest committed ShadowTree. Only valid when `isPropsDiffingEnabled`.
+folly::dynamic computeDiffProps(
     const ShadowView& oldShadowView,
     const ShadowView& newShadowView) {
-  // We calculate the diffing between the props of the last mounted ShadowTree
-  // and the Props of the latest commited ShadowTree). ONLY for <View>
-  // components when the "enablePropsUpdateReconciliationAndroid" feature flag
-  // is enabled.
   auto* oldProps = oldShadowView.props.get();
   auto* newProps = newShadowView.props.get();
-  if ((ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid()) &&
-      strcmp(
-          newShadowView.componentName,
-          newProps->getDiffPropsImplementationTarget()) == 0) {
-    auto diff = newProps->getDiffProps(oldProps);
+  auto diff = newProps->getDiffProps(oldProps);
 
 #ifdef REACT_NATIVE_DEBUG
-    if (oldProps != nullptr) {
-      auto controlDiff =
-          diffDynamicProps(oldProps->rawProps, newProps->rawProps);
+  if (oldProps != nullptr) {
+    auto controlDiff = diffDynamicProps(oldProps->rawProps, newProps->rawProps);
 
-      for (const auto& [prop, value] : controlDiff.items()) {
-        if (diff.count(prop) == 0) {
-          // Skip layout-only props since they are not included in Props 2.0
-          if (!isLayoutOnlyProp(prop.asString())) {
-            LOG(ERROR) << "Props diff validation failed: Props 1.5 has prop '"
-                       << prop.asString()
-                       << "' = " << (value != nullptr ? value : "NULL")
-                       << " that Props 2.0 doesn't have for component "
-                       << newShadowView.componentName;
-          }
+    for (const auto& [prop, value] : controlDiff.items()) {
+      if (diff.count(prop) == 0) {
+        // Skip layout-only props since they are not included in Props 2.0
+        if (!isLayoutOnlyProp(prop.asString())) {
+          LOG(ERROR) << "Props diff validation failed: Props 1.5 has prop '"
+                     << prop.asString()
+                     << "' = " << (value != nullptr ? value : "NULL")
+                     << " that Props 2.0 doesn't have for component "
+                     << newShadowView.componentName;
         }
       }
     }
+  }
 #endif
 
-    return ReadableNativeMap::newObjectCxxArgs(std::move(diff));
+  return diff;
+}
+
+jni::local_ref<jobject> getProps(
+    const ShadowView& oldShadowView,
+    const ShadowView& newShadowView) {
+  auto* oldProps = oldShadowView.props.get();
+  auto* newProps = newShadowView.props.get();
+  if (isPropsDiffingEnabled(newShadowView.componentName, *newProps)) {
+    return ReadableNativeMap::newObjectCxxArgs(
+        computeDiffProps(oldShadowView, newShadowView));
   }
   if (ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid()) {
     if (oldProps == nullptr) {
@@ -371,6 +375,24 @@ jni::local_ref<jobject> getProps(
     }
   }
   return ReadableNativeMap::newObjectCxxArgs(newProps->rawProps);
+}
+
+// With props diffing, returns no item when there is nothing to update (e.g.
+// only layout props changed) so it is not sent to Java and applied as a no-op.
+std::optional<CppMountItem> makeUpdatePropsMountItem(
+    const ShadowView& oldShadowView,
+    const ShadowView& newShadowView) {
+  auto mountItem =
+      CppMountItem::UpdatePropsMountItem(oldShadowView, newShadowView);
+  if (isPropsDiffingEnabled(
+          newShadowView.componentName, *newShadowView.props)) {
+    auto diff = computeDiffProps(oldShadowView, newShadowView);
+    if (diff.empty()) {
+      return std::nullopt;
+    }
+    mountItem.diffProps = std::make_unique<folly::dynamic>(std::move(diff));
+  }
+  return mountItem;
 }
 
 struct InstructionBuffer {
@@ -483,11 +505,17 @@ inline void writeRemoveMountItem(
 
 inline void writeUpdatePropsMountItem(
     InstructionBuffer& buffer,
-    const CppMountItem& mountItem) {
+    CppMountItem& mountItem) {
   buffer.writeInt(mountItem.newChildShadowView.tag);
-  buffer.writeObject(
-      getProps(mountItem.oldChildShadowView, mountItem.newChildShadowView)
-          .get());
+  if (mountItem.diffProps != nullptr) {
+    buffer.writeObject(
+        ReadableNativeMap::newObjectCxxArgs(std::move(*mountItem.diffProps))
+            .get());
+  } else {
+    buffer.writeObject(
+        getProps(mountItem.oldChildShadowView, mountItem.newChildShadowView)
+            .get());
+  }
 }
 
 inline void writeUpdateStateMountItem(
@@ -687,11 +715,12 @@ void FabricMountingManager::executeMount(
             }
 
             if (oldChildShadowView.props != newChildShadowView.props) {
-              (maintainMutationOrder ? cppCommonMountItems
-                                     : cppUpdatePropsMountItems)
-                  .push_back(
-                      CppMountItem::UpdatePropsMountItem(
-                          oldChildShadowView, newChildShadowView));
+              if (auto mountItem = makeUpdatePropsMountItem(
+                      oldChildShadowView, newChildShadowView)) {
+                (maintainMutationOrder ? cppCommonMountItems
+                                       : cppUpdatePropsMountItems)
+                    .push_back(std::move(*mountItem));
+              }
             }
             if (oldChildShadowView.state != newChildShadowView.state) {
               (maintainMutationOrder ? cppCommonMountItems
@@ -772,22 +801,24 @@ void FabricMountingManager::executeMount(
               }
               if (shouldCreateView ||
                   !shouldDiffInsertPropsAgainstPreallocatedProps()) {
-                (maintainMutationOrder ? cppCommonMountItems
-                                       : cppUpdatePropsMountItems)
-                    .push_back(
-                        CppMountItem::UpdatePropsMountItem(
-                            {}, newChildShadowView));
+                if (auto mountItem =
+                        makeUpdatePropsMountItem({}, newChildShadowView)) {
+                  (maintainMutationOrder ? cppCommonMountItems
+                                         : cppUpdatePropsMountItems)
+                      .push_back(std::move(*mountItem));
+                }
               } else if (auto& preallocatedProps =
                              allocatedView->second.preallocatedProps;
                          preallocatedProps != nullptr) {
                 if (preallocatedProps != newChildShadowView.props) {
                   auto preallocatedShadowView = newChildShadowView;
                   preallocatedShadowView.props = preallocatedProps;
-                  (maintainMutationOrder ? cppCommonMountItems
-                                         : cppUpdatePropsMountItems)
-                      .push_back(
-                          CppMountItem::UpdatePropsMountItem(
-                              preallocatedShadowView, newChildShadowView));
+                  if (auto mountItem = makeUpdatePropsMountItem(
+                          preallocatedShadowView, newChildShadowView)) {
+                    (maintainMutationOrder ? cppCommonMountItems
+                                           : cppUpdatePropsMountItems)
+                        .push_back(std::move(*mountItem));
+                  }
                 }
                 preallocatedProps = nullptr;
               }
@@ -795,11 +826,12 @@ void FabricMountingManager::executeMount(
               if (shouldCreateView) {
                 LOG(ERROR) << "Emitting insert for unallocated view "
                            << newChildShadowView.tag;
-                (maintainMutationOrder ? cppCommonMountItems
-                                       : cppUpdatePropsMountItems)
-                    .push_back(
-                        CppMountItem::UpdatePropsMountItem(
-                            {}, newChildShadowView));
+                if (auto mountItem =
+                        makeUpdatePropsMountItem({}, newChildShadowView)) {
+                  (maintainMutationOrder ? cppCommonMountItems
+                                         : cppUpdatePropsMountItems)
+                      .push_back(std::move(*mountItem));
+                }
               }
             }
 
@@ -915,7 +947,7 @@ void FabricMountingManager::executeMount(
 
   // Fill in CREATE instructions.
   for (int i = 0; i < cppCommonMountItems.size(); i++) {
-    const auto& mountItem = cppCommonMountItems[i];
+    auto& mountItem = cppCommonMountItems[i];
     const auto& mountItemType = mountItem.type;
 
     // Get type here, and count forward how many items of this type are in a
@@ -973,7 +1005,7 @@ void FabricMountingManager::executeMount(
         buffer,
         CppMountItem::Type::UpdateProps,
         cppUpdatePropsMountItems.size());
-    for (const auto& mountItem : cppUpdatePropsMountItems) {
+    for (auto& mountItem : cppUpdatePropsMountItems) {
       writeUpdatePropsMountItem(buffer, mountItem);
     }
   }

@@ -152,6 +152,37 @@ TEST(ViewPropsDiffTest, removingAccessibilityValueEmitsNull) {
   });
 }
 
+// BaseViewManager re-applies the stored transform when only the origin changes.
+TEST(ViewPropsDiffTest, changingOnlyTransformOriginDoesNotResendTransform) {
+  auto origin = [](float x) {
+    TransformOrigin transformOrigin;
+    transformOrigin.xy[0] = ValueUnit(x, UnitType::Point);
+    return transformOrigin;
+  };
+  ViewProps oldProps;
+  oldProps.transform = Transform::Translate(10, 0, 0);
+  oldProps.transformOrigin = origin(1);
+  ViewProps newProps;
+  newProps.transform = oldProps.transform;
+  newProps.transformOrigin = origin(2);
+
+  auto diff = newProps.getDiffProps(&oldProps);
+
+  EXPECT_EQ(diff.count("transformOrigin"), 1);
+  EXPECT_EQ(diff.count("transform"), 0);
+}
+
+TEST(ViewPropsDiffTest, emitsOnlyTheChangedBorderRadiusCorner) {
+  ViewProps oldProps;
+  ViewProps newProps;
+  newProps.borderRadii.bottomRight = ValueUnit(4, UnitType::Point);
+
+  auto diff = newProps.getDiffProps(&oldProps);
+
+  ASSERT_EQ(diff.size(), 1);
+  EXPECT_DOUBLE_EQ(diff["borderBottomRightRadius"].asDouble(), 4);
+}
+
 } // namespace facebook::react
 
 #endif

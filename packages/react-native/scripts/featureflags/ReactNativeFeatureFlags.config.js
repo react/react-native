@@ -256,6 +256,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'stable',
     },
+    enableCoreComponentsPropsUpdateReconciliationAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-26',
+        description:
+          'When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView, TextInput). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     enableCppPropsIteratorSetter: {
       dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,

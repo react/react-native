@@ -13,6 +13,11 @@
 #include <react/renderer/core/DynamicPropsUtilities.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
 
+#include <algorithm>
+#include <array>
+#include <cstring>
+#include <string_view>
+
 namespace facebook::react {
 
 Props::Props(
@@ -58,6 +63,39 @@ void Props::initializeDynamicProps(
 
 ComponentName Props::getDiffPropsImplementationTarget() const {
   return "";
+}
+
+namespace {
+
+// Components whose hand-written props implement `getDiffProps`. Codegen
+// components are excluded: their native defaults are not guaranteed to match
+// the C++ defaults that props diffing relies on.
+bool isCoreComponentWithPropsDiffing(std::string_view componentName) {
+  static constexpr std::array<std::string_view, 8> kCoreComponents = {
+      "View",
+      "Paragraph",
+      "Text",
+      "RawText",
+      "TextEffect",
+      "Image",
+      "ScrollView",
+      "AndroidTextInput",
+  };
+  return std::find(
+             kCoreComponents.begin(), kCoreComponents.end(), componentName) !=
+      kCoreComponents.end();
+}
+
+} // namespace
+
+bool isPropsDiffingEnabled(ComponentName componentName, const Props& props) {
+  bool isEnabledForComponent =
+      ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid() ||
+      (ReactNativeFeatureFlags::
+           enableCoreComponentsPropsUpdateReconciliationAndroid() &&
+       isCoreComponentWithPropsDiffing(componentName));
+  return isEnabledForComponent &&
+      std::strcmp(componentName, props.getDiffPropsImplementationTarget()) == 0;
 }
 #endif
 
