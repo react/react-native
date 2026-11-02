@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<674f975884ae746e067e614523f2bfc3>>
+ * @generated SignedSource<<a6f46e83196b135d6bef1955812dfa12>>
  * @flow strict
  * @noformat
  */
@@ -129,6 +129,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   shouldPressibilityUseW3CPointerEventsForHover: Getter<boolean>,
   shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean>,
   skipActivityIdentityAssertionOnHostPause: Getter<boolean>,
+  skipNativePropsForViewManagerWithDelegateAndroid: Getter<boolean>,
   skipUnchangedChildrenInDifferentiator: Getter<boolean>,
   syncAndroidClipBoundsWithOverflow: Getter<boolean>,
   traceTurboModulePromiseRejectionsOnAndroid: Getter<boolean>,
@@ -542,6 +543,10 @@ export const shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean> = cr
  * Skip activity identity assertion in ReactHostImpl::onHostPause()
  */
 export const skipActivityIdentityAssertionOnHostPause: Getter<boolean> = createNativeFlagGetter('skipActivityIdentityAssertionOnHostPause', false);
+/**
+ * Skip native prop metadata generation on Android for view managers with custom delegates. Requires their components to use static view configs.
+ */
+export const skipNativePropsForViewManagerWithDelegateAndroid: Getter<boolean> = createNativeFlagGetter('skipNativePropsForViewManagerWithDelegateAndroid', false);
 /**
  * When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.
  */

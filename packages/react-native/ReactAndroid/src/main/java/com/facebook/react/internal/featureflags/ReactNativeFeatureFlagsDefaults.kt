@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a1368426dd823245c54b4312ae7b14e6>>
+ * @generated SignedSource<<09945e5bc899957424ce20441022830c>>
  */
 
 /**
@@ -182,6 +182,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean = false
 
   override fun skipActivityIdentityAssertionOnHostPause(): Boolean = false
+
+  override fun skipNativePropsForViewManagerWithDelegateAndroid(): Boolean = false
 
   override fun skipUnchangedChildrenInDifferentiator(): Boolean = false
 
