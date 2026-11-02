@@ -23,6 +23,7 @@ import com.facebook.react.modules.network.InspectorNetworkReporter
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.testutils.shadows.ShadowArguments
 import com.facebook.testutils.shadows.ShadowSoLoader
+import java.io.IOException
 import java.net.URI
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -117,14 +118,98 @@ class WebSocketModuleConnectionTest {
     assertConnectionFailed()
   }
 
-  private fun assertConnectionFailed() {
+  @Test
+  fun connectRejectsInvalidPortWithDevToolsRequestId() {
+    module.connect(
+        "ws://localhost:0/",
+        null,
+        JavaOnlyMap.of("unstable_devToolsRequestId", "devtools-request"),
+        7.0,
+    )
+
+    assertConnectionFailed(
+        listOf("created:devtools-request:ws://localhost:0/", "closed:devtools-request")
+    )
+  }
+
+  @Test
+  fun connectRejectsInvalidUriPathWithDevToolsRequestId() {
+    module.connect(
+        "ws://localhost:4000/a|b",
+        null,
+        JavaOnlyMap.of("unstable_devToolsRequestId", "devtools-request"),
+        7.0,
+    )
+
+    assertConnectionFailed(
+        listOf("created:devtools-request:ws://localhost:4000/a|b", "closed:devtools-request")
+    )
+  }
+
+  @Test
+  fun connectReportsCookieIOException() {
+    whenever(cookieHandlers.constructed().single().get(any(), any()))
+        .thenThrow(IOException("cookie store unavailable"))
+
+    module.connect("ws://localhost:4000/", null, null, 7.0)
+
+    assertConnectionFailed()
+  }
+
+  @Test
+  fun connectReportsCookieIOExceptionWithDevToolsRequestId() {
+    whenever(cookieHandlers.constructed().single().get(any(), any()))
+        .thenThrow(IOException("cookie store unavailable"))
+
+    module.connect(
+        "ws://localhost:4000/",
+        null,
+        JavaOnlyMap.of("unstable_devToolsRequestId", "devtools-request"),
+        7.0,
+    )
+
+    assertConnectionFailed(
+        listOf("created:devtools-request:ws://localhost:4000/", "closed:devtools-request")
+    )
+  }
+
+  @Test
+  fun connectDoesNotReportRejectedRequestWhenInspectorDisabled() {
+    ReactNativeFeatureFlags.dangerouslyReset()
+
+    module.connect(
+        "ws://localhost:0/",
+        null,
+        JavaOnlyMap.of("unstable_devToolsRequestId", "devtools-request"),
+        7.0,
+    )
+
+    assertConnectionFailed()
+  }
+
+  @Test
+  fun connectIgnoresInvalidDevToolsRequestId() {
+    module.connect(
+        "ws://localhost:0/",
+        null,
+        JavaOnlyMap.of("unstable_devToolsRequestId", 42),
+        7.0,
+    )
+
+    assertConnectionFailed()
+  }
+
+  private fun assertConnectionFailed(inspectorEvents: List<String> = emptyList()) {
     val params = argumentCaptor<ReadableMap>()
     verify(context).emitDeviceEvent(eq("websocketFailed"), params.capture())
     verify(context).emitDeviceEvent(any(), any())
     assertThat(params.firstValue.getInt("id")).isEqualTo(7)
     assertThat(params.firstValue.getString("message")).isNotBlank()
     verifyNoInteractions(client, builder)
-    assertThat(WebSocketConnectionInspectorShadow.events).isEmpty()
+    assertThat(WebSocketConnectionInspectorShadow.events).containsExactlyElementsOf(inspectorEvents)
+    val inspectorRequestIds = WebSocketModule::class.java.getDeclaredField("inspectorRequestIds")
+    inspectorRequestIds.isAccessible = true
+    assertThat(inspectorRequestIds.get(module) as Map<*, *>).isEmpty()
   }
 
   @Test
@@ -223,6 +308,12 @@ class WebSocketConnectionInspectorShadow {
     @Implementation
     fun reportWebSocketWillSendHandshakeRequest(requestId: String, headers: Map<String, String>) {
       events.add("handshake:$requestId:$headers")
+    }
+
+    @JvmStatic
+    @Implementation
+    fun reportWebSocketClosed(requestId: String) {
+      events.add("closed:$requestId")
     }
   }
 }

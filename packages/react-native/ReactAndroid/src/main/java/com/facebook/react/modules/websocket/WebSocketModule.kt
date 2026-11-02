@@ -105,6 +105,18 @@ public class WebSocketModule(context: ReactApplicationContext) :
       socketID: Double,
   ) {
     val id = socketID.toInt()
+    // Prefer the DevTools request ID created by the JS caller, which carries
+    // the request initiator stack trace for CDP reporting.
+    val devToolsRequestId =
+        if (
+            isInspectorNetworkReportingEnabled() &&
+                options?.hasKey("unstable_devToolsRequestId") == true &&
+                options.getType("unstable_devToolsRequestId") == ReadableType.String
+        ) {
+          options.getString("unstable_devToolsRequestId")
+        } else {
+          null
+        }
     val builder: Request.Builder
     val cookie: String?
     val defaultOrigin: String
@@ -113,6 +125,11 @@ public class WebSocketModule(context: ReactApplicationContext) :
       cookie = getCookie(url)
       defaultOrigin = getDefaultOrigin(url)
     } catch (e: IllegalArgumentException) {
+      if (devToolsRequestId != null) {
+        // Consume the saved JS initiator even though no transport will be created.
+        InspectorNetworkReporter.reportWebSocketCreated(devToolsRequestId, url)
+        InspectorNetworkReporter.reportWebSocketClosed(devToolsRequestId)
+      }
       notifyWebSocketFailed(id, e.message)
       return
     }
@@ -178,17 +195,6 @@ public class WebSocketModule(context: ReactApplicationContext) :
     val client = okHttpBuilder.build()
 
     if (isInspectorNetworkReportingEnabled()) {
-      // Prefer the DevTools request ID created by the JS caller, which carries
-      // the request initiator stack trace for CDP reporting.
-      val devToolsRequestId =
-          if (
-              options?.hasKey("unstable_devToolsRequestId") == true &&
-                  options.getType("unstable_devToolsRequestId") == ReadableType.String
-          ) {
-            options.getString("unstable_devToolsRequestId")
-          } else {
-            null
-          }
       val requestId = devToolsRequestId ?: UUID.randomUUID().toString()
       inspectorRequestIds[id] = requestId
       InspectorNetworkReporter.reportWebSocketCreated(requestId, url)
