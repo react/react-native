@@ -4910,10 +4910,10 @@ flow-api-translator@0.336.0:
     flow-transform "0.336.0"
     typescript "5.3.2"
 
-flow-bin@^0.337.0:
-  version "0.337.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.337.0.tgz#419252403924033308160351e95f723bcf42597c"
-  integrity sha512-rpr+WvY30RdXPNHbioErMM8tLKUOKJ8/neXPpsDYRBp9z7WDkl4bpTBUMZiqh9ozfdcDWEACBTXwIl94h/ZA0A==
+flow-bin@^0.338.0:
+  version "0.338.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.338.0.tgz#6c0ca72133b54d89681f13c0b742c1b6b01a51cd"
+  integrity sha512-Ksy1gAdQd8l3//HvNrL8J5A6h3yxSMqvKStokgRKXCXEqsq8apKY0yyupGrO3nYEimd2/xjlJBd2wFuBKpMzwA==
 
 flow-enums-runtime@^0.0.6:
   version "0.0.6"

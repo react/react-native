@@ -6,21 +6,6 @@
  */
 
 #import "RCTRootView.h"
-#import "RCTRootViewDelegate.h"
-
-#import <objc/runtime.h>
-
-#import "RCTAssert.h"
-#import "RCTConstants.h"
-#import "RCTKeyCommands.h"
-#import "RCTLog.h"
-#import "RCTPerformanceLogger.h"
-#import "RCTTouchHandler.h"
-#import "RCTUIManager.h"
-#import "RCTUIManagerUtils.h"
-#import "RCTUtils.h"
-#import "RCTView.h"
-#import "UIView+React.h"
 
 NSString *const RCTContentDidAppearNotification = @"RCTContentDidAppearNotification";
 

@@ -11,13 +11,11 @@
 #import <React/RCTUtils.h>
 #import "RCTJSRuntimeConfiguratorProtocol.h"
 
-@protocol RCTComponentViewFactoryComponentProvider;
 @protocol RCTTurboModuleManagerDelegate;
 @protocol RCTHostDelegate;
 @class RCTBridge;
 @class RCTHost;
 @class RCTRootView;
-@class RCTSurfacePresenterBridgeAdapter;
 @class RCTBundleConfiguration;
 @class RCTDevMenuConfiguration;
 

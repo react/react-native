@@ -8,7 +8,6 @@
 #import "RCTCxxUtils.h"
 
 #import <React/RCTUtils.h>
-#import <cxxreact/CxxNativeModule.h>
 #import <jsi/jsi.h>
 
 namespace facebook::react {
