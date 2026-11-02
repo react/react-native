@@ -8,6 +8,7 @@
 #include "sliceChildShadowNodeViewPairs.h"
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
+#include <optional>
 
 #include "ShadowViewNodePair.h"
 
@@ -144,6 +145,8 @@ void sliceChildShadowNodeViewPairsRecursively(
     Point layoutOffset,
     const ShadowNode& shadowNode,
     const CullingContext& cullingContext) {
+  const bool isViewCullingEnabled =
+      ReactNativeFeatureFlags::enableViewCulling();
   for (const auto& sharedChildShadowNode : shadowNode.getChildren()) {
     auto& childShadowNode = *sharedChildShadowNode;
     if (isHiddenWhenSlicing(childShadowNode)) {
@@ -151,7 +154,7 @@ void sliceChildShadowNodeViewPairsRecursively(
     }
     auto shadowView = ShadowView(childShadowNode);
 
-    if (ReactNativeFeatureFlags::enableViewCulling()) {
+    if (isViewCullingEnabled) {
       auto isViewCullable =
           !shadowView.traits.check(
               ShadowNodeTraits::Trait::Unstable_uncullableView) &&
@@ -181,8 +184,15 @@ void sliceChildShadowNodeViewPairsRecursively(
       }
     }
 
-    auto cullingContextCopy = cullingContext.adjustCullingContextIfNeeded(
-        {.shadowView = shadowView, .shadowNode = &childShadowNode});
+    // Without view culling, adjustCullingContextIfNeeded doesn't change the
+    // context, so skip the copy.
+    std::optional<CullingContext> adjustedCullingContext;
+    if (isViewCullingEnabled) {
+      adjustedCullingContext = cullingContext.adjustCullingContextIfNeeded(
+          {.shadowView = shadowView, .shadowNode = &childShadowNode});
+    }
+    const auto& childCullingContext =
+        adjustedCullingContext ? *adjustedCullingContext : cullingContext;
 
     auto childSlice = sliceChild(
         shadowNode, childShadowNode, std::move(shadowView), layoutOffset);
@@ -200,7 +210,7 @@ void sliceChildShadowNodeViewPairsRecursively(
           scope,
           childSlice.origin,
           childShadowNode,
-          cullingContextCopy);
+          childCullingContext);
     } else {
       size_t pairListSize = pairList.size();
       sliceChildShadowNodeViewPairsRecursively(
@@ -209,7 +219,7 @@ void sliceChildShadowNodeViewPairsRecursively(
           scope,
           childSlice.origin,
           childShadowNode,
-          cullingContextCopy);
+          childCullingContext);
     }
   }
 }
