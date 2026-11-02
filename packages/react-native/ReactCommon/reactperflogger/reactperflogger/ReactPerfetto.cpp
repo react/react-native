@@ -10,6 +10,7 @@
 #include "ReactPerfetto.h"
 
 #include <perfetto.h>
+#include <atomic>
 #include <unordered_map>
 
 #ifdef __APPLE__
@@ -48,8 +49,8 @@ void initializePerfetto() {
 
 static perfetto::Track createTrack(const std::string& trackName) {
   // Offset for custom perfetto tracks
-  static uint64_t trackId = 0x5F3759DF;
-  auto track = perfetto::Track(trackId++);
+  static std::atomic<uint64_t> trackId{0x5F3759DF};
+  auto track = perfetto::Track(trackId.fetch_add(1, std::memory_order_relaxed));
   auto desc = track.Serialize();
   desc.set_name(trackName);
   TrackEvent::SetTrackDescriptor(track, desc);

@@ -11,6 +11,7 @@
 #include <hermes/hermes.h>
 #include <perfetto.h>
 #include <iostream>
+#include <sstream>
 
 #include "HermesPerfettoDataSource.h"
 #include "ReactPerfetto.h"

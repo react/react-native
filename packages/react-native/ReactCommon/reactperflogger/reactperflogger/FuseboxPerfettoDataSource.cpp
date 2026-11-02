@@ -14,6 +14,7 @@
 #include <hermes/hermes.h>
 #include <perfetto.h>
 #include <iostream>
+#include <sstream>
 
 #include <reactperflogger/fusebox/FuseboxTracer.h>
 #include "FuseboxPerfettoDataSource.h"

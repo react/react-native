@@ -18,10 +18,19 @@
 #include <jsi/hermes-interfaces.h>
 #include <jsi/jsi.h>
 #include <react/runtime/ReactInstance.h>
+#include <reactperflogger/ReactPerfettoLogger.h>
+
+#if defined(WITH_PERFETTO)
+#include <jsinspector-modern/HostTarget.h>
+#include <reactperflogger/ReactPerfetto.h>
+#include <unordered_map>
+#include <vector>
+#endif
 
 using ::testing::_;
 using ::testing::HasSubstr;
 using ::testing::SaveArg;
+using ::testing::UnorderedElementsAre;
 
 namespace facebook::react {
 
@@ -122,6 +131,10 @@ class ReactInstanceTest : public ::testing::Test {
     return {};
   }
 
+  virtual jsinspector_modern::HostTarget* getParentInspectorTarget() {
+    return nullptr;
+  }
+
   void SetUp() override {
     auto runtime = std::make_unique<JSIRuntimeHolder>(
         hermes::makeHermesRuntime(makeRuntimeConfig()));
@@ -140,14 +153,15 @@ class ReactInstanceTest : public ::testing::Test {
         std::move(runtime),
         messageQueueThread_,
         timerManager_,
-        std::move(onJsError));
+        std::move(onJsError),
+        getParentInspectorTarget());
     timerManager_->setRuntimeExecutor(instance_->getBufferedRuntimeExecutor());
 
-    // ReactInstance construction defers registering the RuntimeScheduler as the
-    // Hermes IEventLoopControl onto the runtime executor, which enqueues a
-    // callback on messageQueueThread_. Drain it so each test starts from an
-    // empty queue and its step() bookkeeping is unaffected.
-    step();
+    // Drain deferred inspector setup and RuntimeScheduler registration so each
+    // test starts from an empty queue.
+    while (messageQueueThread_->size() > 0) {
+      step();
+    }
 
     // Install a C++ error handler
     errorHandler_ = std::make_shared<ErrorUtils>();
@@ -258,6 +272,328 @@ TEST_F(ReactInstanceTest, testBridgelessFlagIsSet) {
   auto val = eval("RN$Bridgeless === true");
   EXPECT_EQ(val.getBool(), true);
 }
+
+#if defined(WITH_PERFETTO)
+namespace {
+
+struct ConsoleTimeStampMeasure {
+  std::string label;
+  std::string track;
+  uint64_t start = 0;
+  uint64_t end = 0;
+  bool ended = false;
+  size_t endCount = 0;
+};
+
+std::vector<ConsoleTimeStampMeasure> readConsoleTimeStampMeasures(
+    const std::vector<char>& bytes) {
+  namespace proto = perfetto::protos::pbzero;
+  proto::Trace::Decoder trace(
+      reinterpret_cast<const uint8_t*>(bytes.data()), bytes.size());
+  std::unordered_map<uint64_t, std::string> tracks;
+  std::unordered_map<uint64_t, ConsoleTimeStampMeasure> measures;
+  for (auto it = trace.packet(); it; ++it) {
+    proto::TracePacket::Decoder packet(*it);
+    if (packet.has_track_descriptor()) {
+      proto::TrackDescriptor::Decoder descriptor(packet.track_descriptor());
+      tracks[descriptor.uuid()] = descriptor.name().ToStdString();
+    }
+    if (packet.has_track_event()) {
+      proto::TrackEvent::Decoder event(packet.track_event());
+      if (event.type() == proto::TrackEvent::TYPE_SLICE_BEGIN &&
+          event.has_name()) {
+        measures[event.track_uuid()] = {
+            event.name().ToStdString(), "", packet.timestamp(), 0, false};
+      } else if (event.type() == proto::TrackEvent::TYPE_SLICE_END) {
+        auto found = measures.find(event.track_uuid());
+        if (found != measures.end()) {
+          ++found->second.endCount;
+          found->second.end = packet.timestamp();
+          found->second.ended = true;
+        }
+      }
+    }
+  }
+  std::vector<ConsoleTimeStampMeasure> result;
+  for (auto& [uuid, measure] : measures) {
+    auto track = tracks.find(uuid);
+    if (track != tracks.end() &&
+        track->second.starts_with("# Web Performance")) {
+      EXPECT_EQ(measure.endCount, 1);
+      measure.track = track->second;
+      result.push_back(std::move(measure));
+    }
+  }
+  return result;
+}
+
+class ConsoleHostTargetDelegate
+    : public jsinspector_modern::HostTargetDelegate {
+ public:
+  jsinspector_modern::HostTargetMetadata getMetadata() override {
+    return {};
+  }
+  void onReload(const PageReloadRequest& /*request*/) override {}
+  void onSetPausedInDebuggerMessage(
+      const OverlaySetPausedInDebuggerMessageRequest& /*request*/) override {}
+};
+
+} // namespace
+
+class ReactInstancePerfettoTest : public ReactInstanceTest {
+ protected:
+  void startTracing(bool enableReactNative = true) {
+    perfetto::TracingInitArgs args;
+    args.backends = perfetto::kInProcessBackend;
+    args.use_monotonic_clock = true;
+    perfetto::Tracing::Initialize(args);
+    TrackEvent::Register();
+
+    perfetto::protos::gen::TrackEventConfig trackConfig;
+    trackConfig.add_disabled_categories("*");
+    trackConfig.set_disable_incremental_timestamps(true);
+    if (enableReactNative) {
+      trackConfig.add_enabled_categories("react-native");
+    }
+    perfetto::TraceConfig config;
+    config.add_buffers()->set_size_kb(1024);
+    auto* source = config.add_data_sources()->mutable_config();
+    source->set_name("track_event");
+    source->set_track_event_config_raw(trackConfig.SerializeAsString());
+    session_ = perfetto::Tracing::NewTrace(perfetto::kInProcessBackend);
+    session_->Setup(config);
+    session_->StartBlocking();
+    EXPECT_EQ(ReactPerfettoLogger::isTracing(), enableReactNative);
+  }
+
+  std::vector<ConsoleTimeStampMeasure> stopTracing() {
+    TrackEvent::Flush();
+    session_->StopBlocking();
+    auto bytes = session_->ReadTraceBlocking();
+    session_.reset();
+    return readConsoleTimeStampMeasures(bytes);
+  }
+
+  void TearDown() override {
+    if (session_) {
+      TrackEvent::Flush();
+      session_->StopBlocking();
+      session_.reset();
+    }
+    ReactInstanceTest::TearDown();
+  }
+
+ private:
+  std::unique_ptr<perfetto::TracingSession> session_;
+};
+
+TEST_F(
+    ReactInstancePerfettoTest,
+    testConsoleTimeStampIsInstalledBeforeBindingsAndSurvivesConsoleSpread) {
+  eval(
+      "globalThis.console = {custom: 42, log() { return this.custom; }}; globalThis.originalConsole = console;");
+  instance_->initializeRuntime({}, [](jsi::Runtime& runtime) {
+    auto console = runtime.global().getPropertyAsObject(runtime, "console");
+    EXPECT_TRUE(console.getPropertyAsFunction(runtime, "timeStamp")
+                    .isHostFunction(runtime));
+  });
+  step();
+  startTracing();
+  loadScript(R"(
+    globalThis.originalTimeStamp = console.timeStamp;
+    globalThis.console = {timeStamp() {}, ...console};
+    console.timeStamp('bundle');
+    globalThis.consolePreserved = console.custom === 42 &&
+      originalConsole.log() === 42 &&
+      console.timeStamp === originalTimeStamp;
+  )");
+  EXPECT_TRUE(eval("consolePreserved").getBool());
+  auto measures = stopTracing();
+  ASSERT_EQ(measures.size(), 1);
+  EXPECT_EQ(measures[0].label, "bundle");
+  EXPECT_EQ(measures[0].track, "# Web Performance");
+  EXPECT_TRUE(measures[0].ended);
+  EXPECT_EQ(measures[0].start, measures[0].end);
+}
+
+TEST_F(ReactInstancePerfettoTest, testConsoleTimeStampNumericAndDefaultTimes) {
+  initializeRuntimeWithScript("");
+  startTracing();
+  auto start = HighResTimeStamp::now().toDOMHighResTimeStamp();
+  auto end = start + 5;
+  runtime_->global().setProperty(*runtime_, "startTime", start);
+  runtime_->global().setProperty(*runtime_, "endTime", end);
+  runtime_->global().setProperty(*runtime_, "endOnlyTime", start + 60000);
+  auto before = highResTimeStampToPerfettoTraceTime(HighResTimeStamp::now());
+  EXPECT_TRUE(eval(R"((() => {
+    const stamp = console.timeStamp;
+    return stamp('default') === undefined &&
+      stamp.call(null, 'undefined', undefined, undefined) === undefined &&
+      stamp('numeric', startTime, endTime, 'track', 'group') === undefined &&
+      stamp('startOnly', startTime) === undefined &&
+      stamp('endOnly', undefined, endOnlyTime) === undefined;
+  })())")
+                  .getBool());
+  auto after = highResTimeStampToPerfettoTraceTime(HighResTimeStamp::now());
+  auto measures = stopTracing();
+  ASSERT_EQ(measures.size(), 5);
+  auto expectedStart = highResTimeStampToPerfettoTraceTime(
+      HighResTimeStamp::fromDOMHighResTimeStamp(start));
+  auto expectedEnd = highResTimeStampToPerfettoTraceTime(
+      HighResTimeStamp::fromDOMHighResTimeStamp(end));
+  auto expectedEndOnly = highResTimeStampToPerfettoTraceTime(
+      HighResTimeStamp::fromDOMHighResTimeStamp(start + 60000));
+  std::vector<std::string> labels;
+  for (const auto& measure : measures) {
+    labels.push_back(measure.label);
+    EXPECT_TRUE(measure.ended);
+    if (measure.label == "numeric") {
+      EXPECT_EQ(measure.start, expectedStart);
+      EXPECT_EQ(measure.end, expectedEnd);
+      EXPECT_EQ(measure.track, "# Web Performance: group | track");
+    } else if (measure.label == "startOnly") {
+      EXPECT_EQ(measure.start, expectedStart);
+      EXPECT_GE(measure.end, before);
+      EXPECT_LE(measure.end, after);
+    } else if (measure.label == "endOnly") {
+      EXPECT_GE(measure.start, before);
+      EXPECT_LE(measure.start, after);
+      EXPECT_EQ(measure.end, expectedEndOnly);
+    } else {
+      EXPECT_TRUE(measure.label == "default" || measure.label == "undefined");
+      EXPECT_GE(measure.start, before);
+      EXPECT_LE(measure.start, after);
+      EXPECT_EQ(measure.start, measure.end);
+    }
+  }
+  EXPECT_THAT(
+      labels,
+      UnorderedElementsAre(
+          "default", "undefined", "numeric", "startOnly", "endOnly"));
+}
+
+TEST_F(ReactInstancePerfettoTest, testConsoleTimeStampInactiveCategoryIsNoOp) {
+  initializeRuntimeWithScript("");
+  startTracing(false);
+  EXPECT_TRUE(eval(R"((() => {
+    let converted = false;
+    const value = {toString() { converted = true; throw new Error(); }};
+    console.timeStamp(value, value, value, value, value);
+    return console.timeStamp('inactive') === undefined && !converted;
+  })())")
+                  .getBool());
+  EXPECT_TRUE(stopTracing().empty());
+}
+
+TEST_F(ReactInstancePerfettoTest, testConsoleTimeStampRejectsInvalidInputs) {
+  initializeRuntimeWithScript("");
+  startTracing();
+  EXPECT_TRUE(eval(R"((() => {
+    let converted = false;
+    const value = {toString() { converted = true; throw new Error(); }};
+    const stamp = console.timeStamp;
+    const cases = [[], [value], [undefined], [42], [Symbol('label')],
+      ['named', 'start'], ['namedEnd', undefined, 'end'],
+      ['null', null], ['object', value], ['boolean', false],
+      ['nan', NaN], ['infinity', Infinity], ['negative', -1],
+      ['overflow', Number.MAX_VALUE], ['boundary', 9223372036854.775],
+      ['invalidEnd', undefined, NaN], ['reversed', 2, 1]];
+    return cases.every(args => stamp(...args) === undefined) && !converted;
+  })())")
+                  .getBool());
+  EXPECT_TRUE(stopTracing().empty());
+}
+
+TEST_F(
+    ReactInstancePerfettoTest,
+    testConsoleTimeStampPreservesExistingHandler) {
+  eval(R"(
+    globalThis.console = Object.create({timeStamp(...args) {
+      globalThis.receivedThis = this;
+      globalThis.receivedArgs = args;
+      return 42;
+    }});
+    globalThis.originalConsole = console;
+    globalThis.originalTimeStamp = console.timeStamp;
+  )");
+  initializeRuntimeWithScript("");
+  EXPECT_TRUE(
+      eval(
+          "console === originalConsole && console.timeStamp === originalTimeStamp")
+          .getBool());
+  startTracing();
+  EXPECT_EQ(
+      eval("console.timeStamp('custom', 1, 2, 'track', 'group')").getNumber(),
+      42);
+  EXPECT_TRUE(
+      eval(
+          "receivedThis === console && receivedArgs.join(',') === 'custom,1,2,track,group'")
+          .getBool());
+  EXPECT_TRUE(stopTracing().empty());
+}
+
+TEST_F(
+    ReactInstancePerfettoTest,
+    testConsoleTimeStampPreservesNonCallableSlot) {
+  eval(
+      "globalThis.console = {timeStamp: null, custom: 42}; globalThis.originalConsole = console;");
+  initializeRuntimeWithScript("");
+  EXPECT_TRUE(
+      eval(
+          "console === originalConsole && console.timeStamp === null && console.custom === 42")
+          .getBool());
+  expectNoError();
+}
+
+TEST_F(ReactInstancePerfettoTest, testConsoleTimeStampFrozenConsoleIsSafe) {
+  eval("globalThis.console = Object.freeze({custom: 42});");
+  initializeRuntimeWithScript("");
+  EXPECT_TRUE(eval("console.custom === 42 && console.timeStamp === undefined")
+                  .getBool());
+  expectNoError();
+}
+
+class ReactInstanceInspectorPerfettoTest : public ReactInstancePerfettoTest {
+ protected:
+  void SetUp() override {
+    parent_ = jsinspector_modern::HostTarget::create(
+        delegate_, [](std::function<void()> callback) { callback(); });
+    ReactInstancePerfettoTest::SetUp();
+  }
+
+  jsinspector_modern::HostTarget* getParentInspectorTarget() override {
+    return parent_.get();
+  }
+
+  void TearDown() override {
+    ReactInstancePerfettoTest::TearDown();
+    instance_->unregisterFromInspector();
+    instance_.reset();
+    parent_.reset();
+  }
+
+ private:
+  ConsoleHostTargetDelegate delegate_;
+  std::shared_ptr<jsinspector_modern::HostTarget> parent_;
+};
+
+TEST_F(
+    ReactInstanceInspectorPerfettoTest,
+    testConsoleTimeStampPreservesInspectorHandlerWithoutDuplicateEvents) {
+  eval("globalThis.inspectorTimeStamp = console.timeStamp;");
+  initializeRuntimeWithScript("");
+  EXPECT_TRUE(
+      eval(
+          "console.timeStamp === inspectorTimeStamp && typeof console.createTask === 'function'")
+          .getBool());
+  startTracing();
+  eval("console.timeStamp('inspector');");
+  auto measures = stopTracing();
+  ASSERT_EQ(measures.size(), 1);
+  EXPECT_EQ(measures[0].label, "inspector");
+  EXPECT_TRUE(measures[0].ended);
+}
+#endif
 
 TEST_F(ReactInstanceTest, testGlobalEvalWithSourceUrlIsInstalled) {
   auto before =

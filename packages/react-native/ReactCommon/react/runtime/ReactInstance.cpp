@@ -23,8 +23,11 @@
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
 #include <react/utils/jsi-utils.h>
+#include <reactperflogger/ReactPerfettoLogger.h>
+#include <cmath>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <utility>
 
 namespace facebook::react {
@@ -55,6 +58,86 @@ void setHermesEventLoopControl(
     setEventLoopControl->setEventLoopControl(eventLoopControl);
   }
 }
+
+#if defined(WITH_PERFETTO)
+std::optional<HighResTimeStamp> getConsoleTimeStampTime(
+    const jsi::Value* args,
+    size_t count,
+    size_t index,
+    HighResTimeStamp now) {
+  if (count <= index) {
+    return now;
+  }
+  const auto& value = args[index];
+  if (value.isNumber()) {
+    auto time = value.getNumber();
+    // Keep the nanosecond conversion within the range of int64_t.
+    if (!std::isfinite(time) || time < 0 ||
+        time >= HighResTimeStamp::max().toDOMHighResTimeStamp()) {
+      return std::nullopt;
+    }
+    return HighResTimeStamp::fromDOMHighResTimeStamp(time);
+  }
+  if (!value.isUndefined()) {
+    return std::nullopt;
+  }
+  return now;
+}
+
+void installPerfettoConsoleTimeStamp(jsi::Runtime& runtime) {
+  try {
+    auto consoleValue = runtime.global().getProperty(runtime, "console");
+    auto console = consoleValue.isObject() ? consoleValue.getObject(runtime)
+                                           : jsi::Object(runtime);
+    if (!console.getProperty(runtime, "timeStamp").isUndefined()) {
+      return;
+    }
+    console.setProperty(
+        runtime,
+        "timeStamp",
+        jsi::Function::createFromHostFunction(
+            runtime,
+            jsi::PropNameID::forAscii(runtime, "timeStamp"),
+            0,
+            [](jsi::Runtime& runtime,
+               const jsi::Value& /*thisValue*/,
+               const jsi::Value* args,
+               size_t count) {
+              if (!ReactPerfettoLogger::isTracing() || count == 0 ||
+                  !args[0].isString()) {
+                return jsi::Value::undefined();
+              }
+              try {
+                auto label = args[0].getString(runtime).utf8(runtime);
+                auto now = HighResTimeStamp::now();
+                auto start = getConsoleTimeStampTime(args, count, 1, now);
+                auto end = getConsoleTimeStampTime(args, count, 2, now);
+                if (!start || !end || *end < *start) {
+                  return jsi::Value::undefined();
+                }
+                std::optional<std::string> track;
+                std::optional<std::string> trackGroup;
+                if (count >= 4 && args[3].isString()) {
+                  track = args[3].getString(runtime).utf8(runtime);
+                }
+                if (count >= 5 && args[4].isString()) {
+                  trackGroup = args[4].getString(runtime).utf8(runtime);
+                }
+                ReactPerfettoLogger::measure(
+                    label, *start, *end, track, trackGroup);
+              } catch (...) {
+                // Observability must not interrupt application execution.
+              }
+              return jsi::Value::undefined();
+            }));
+    if (!consoleValue.isObject()) {
+      runtime.global().setProperty(runtime, "console", console);
+    }
+  } catch (...) {
+    // Hosts may supply a frozen console or throwing property accessors.
+  }
+}
+#endif
 
 std::string getSyntheticBundlePath(uint32_t bundleId) {
   std::array<char, 32> buffer{};
@@ -446,6 +529,12 @@ void ReactInstance::initializeRuntime(
         runtime, runtimeScheduler_);
 
     runtime_->unstable_initializeOnJsThread();
+
+#if defined(WITH_PERFETTO)
+    if (parentInspectorTarget_ == nullptr) {
+      installPerfettoConsoleTimeStamp(runtime);
+    }
+#endif
 
     defineReactInstanceFlags(runtime, options);
 
