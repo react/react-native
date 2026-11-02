@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2eb3f4a3dca013c51ad2913944855010>>
+ * @generated SignedSource<<e9aaf25a90cc58b0f05ce30c8c659813>>
  * @flow strict
  * @noformat
  */
@@ -86,6 +86,7 @@ export interface Spec extends TurboModule {
   readonly enableVirtualViewContainerStateExperimental?: () => boolean;
   readonly fixBorderlessRippleAndroid?: () => boolean;
   readonly fixMappingOfEventPrioritiesBetweenFabricAndReact?: () => boolean;
+  readonly fixMultilineContentJumpAndroid?: () => boolean;
   readonly fixTextLayoutOnPixelDensityChange?: () => boolean;
   readonly fixYogaFlexBasisFitContentInMainAxis?: () => boolean;
   readonly fuseboxAssertSingleHostState?: () => boolean;

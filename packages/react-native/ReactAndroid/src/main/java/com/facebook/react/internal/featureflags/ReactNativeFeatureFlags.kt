@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a89ede36c4631b7a7709899858a7f9c9>>
+ * @generated SignedSource<<d9fef00c3c0adfae4f4a91e35b5b29c9>>
  */
 
 /**
@@ -395,6 +395,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
+
+  /**
+   * Flushes TextInput state updates synchronously on Android when a multiline input changes line count, so the new height mounts in the same frame instead of the content jumping. Pairs with enableFollowUpMountItemDispatchAndroid for updates that happen during mount dispatch.
+   */
+  @JvmStatic
+  public fun fixMultilineContentJumpAndroid(): Boolean = accessor.fixMultilineContentJumpAndroid()
 
   /**
    * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.

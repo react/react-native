@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a1368426dd823245c54b4312ae7b14e6>>
+ * @generated SignedSource<<179b4a67b13046830313cca7338c924e>>
  */
 
 /**
@@ -144,6 +144,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun fixBorderlessRippleAndroid(): Boolean = false
 
   override fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = false
+
+  override fun fixMultilineContentJumpAndroid(): Boolean = false
 
   override fun fixTextLayoutOnPixelDensityChange(): Boolean = false
 

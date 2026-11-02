@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c305274be2fc6720b6c0eb75e78bd6b0>>
+ * @generated SignedSource<<704cb0047cf8240b635b1d632b128505>>
  */
 
 /**
@@ -85,6 +85,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableVirtualViewContainerStateExperimentalCache: Boolean? = null
   private var fixBorderlessRippleAndroidCache: Boolean? = null
   private var fixMappingOfEventPrioritiesBetweenFabricAndReactCache: Boolean? = null
+  private var fixMultilineContentJumpAndroidCache: Boolean? = null
   private var fixTextLayoutOnPixelDensityChangeCache: Boolean? = null
   private var fixYogaFlexBasisFitContentInMainAxisCache: Boolean? = null
   private var fuseboxAssertSingleHostStateCache: Boolean? = null
@@ -728,6 +729,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.fixMappingOfEventPrioritiesBetweenFabricAndReact()
       accessedFeatureFlags.add("fixMappingOfEventPrioritiesBetweenFabricAndReact")
       fixMappingOfEventPrioritiesBetweenFabricAndReactCache = cached
+    }
+    return cached
+  }
+
+  override fun fixMultilineContentJumpAndroid(): Boolean {
+    var cached = fixMultilineContentJumpAndroidCache
+    if (cached == null) {
+      cached = currentProvider.fixMultilineContentJumpAndroid()
+      accessedFeatureFlags.add("fixMultilineContentJumpAndroid")
+      fixMultilineContentJumpAndroidCache = cached
     }
     return cached
   }
