@@ -654,6 +654,18 @@ public object BackgroundStyleApplicator {
       view.background as? CompositeBackgroundDrawable
 
   private fun ensureBackgroundDrawable(view: View): BackgroundDrawable {
+    if (view.background !is CompositeBackgroundDrawable) {
+      // Create the composite with its background layer, instead of an empty one that is replaced
+      // right away.
+      val background = BackgroundDrawable(view.context)
+      view.background =
+          CompositeBackgroundDrawable(
+              context = view.context,
+              originalBackground = view.background,
+              background = background,
+          )
+      return background
+    }
     val compositeBackgroundDrawable = ensureCompositeBackgroundDrawable(view)
     var background = compositeBackgroundDrawable.background
 

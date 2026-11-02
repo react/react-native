@@ -7,8 +7,12 @@
 
 package com.facebook.react.uimanager
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.util.DisplayMetrics
 import android.view.View
+import com.facebook.react.uimanager.drawable.CompositeBackgroundDrawable
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -17,7 +21,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
-/** Tests for [BackgroundStyleApplicator] outline getters. */
+/** Tests for [BackgroundStyleApplicator]. */
 @RunWith(RobolectricTestRunner::class)
 class BackgroundStyleApplicatorTest {
 
@@ -41,5 +45,31 @@ class BackgroundStyleApplicatorTest {
 
     assertThat(BackgroundStyleApplicator.getOutlineWidth(view)).isEqualTo(6f)
     assertThat(BackgroundStyleApplicator.getOutlineOffset(view)).isEqualTo(16f)
+  }
+
+  @Test
+  fun setBackgroundColorSetsTheViewBackgroundOnce() {
+    val countingView = BackgroundCountingView()
+    val original = ColorDrawable(Color.GREEN)
+    countingView.background = original
+    countingView.backgroundSets = 0
+
+    BackgroundStyleApplicator.setBackgroundColor(countingView, Color.RED)
+
+    assertThat(countingView.backgroundSets).isEqualTo(1)
+    val composite = countingView.background as CompositeBackgroundDrawable
+    assertThat(composite.originalBackground).isSameAs(original)
+    assertThat(composite.background?.backgroundColor).isEqualTo(Color.RED)
+    assertThat(BackgroundStyleApplicator.getBackgroundColor(countingView)).isEqualTo(Color.RED)
+  }
+
+  private class BackgroundCountingView : View(RuntimeEnvironment.getApplication()) {
+    var backgroundSets = 0
+
+    @Deprecated("Deprecated in Java")
+    override fun setBackgroundDrawable(background: Drawable?) {
+      backgroundSets++
+      @Suppress("DEPRECATION") super.setBackgroundDrawable(background)
+    }
   }
 }
