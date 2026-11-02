@@ -336,15 +336,6 @@ using namespace facebook;
 }
 
 /**
- * RCTBridge (Inspector)
- */
-- (BOOL)inspectable
-{
-  [self logWarning:@"This method is not supported. Returning NO." cmd:_cmd];
-  return NO;
-}
-
-/**
  * RCTBridge (RCTUIManager)
  */
 - (RCTUIManager *)uiManager
