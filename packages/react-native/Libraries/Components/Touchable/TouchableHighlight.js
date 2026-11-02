@@ -10,6 +10,7 @@
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
+import type {AccessibilityState} from '../View/ViewAccessibility';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
 
 import View from '../../Components/View/View';
@@ -221,25 +222,39 @@ class TouchableHighlightImpl extends React.Component<
     const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
       this.state.pressability.getEventHandlers();
 
-    let _accessibilityState = {
-      busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
-      checked:
-        this.props['aria-checked'] ?? this.props.accessibilityState?.checked,
-      disabled:
-        this.props['aria-disabled'] ?? this.props.accessibilityState?.disabled,
-      expanded:
-        this.props['aria-expanded'] ?? this.props.accessibilityState?.expanded,
-      selected:
-        this.props['aria-selected'] ?? this.props.accessibilityState?.selected,
-    };
+    const {
+      accessibilityState,
+      'aria-busy': ariaBusy,
+      'aria-checked': ariaChecked,
+      'aria-disabled': ariaDisabled,
+      'aria-expanded': ariaExpanded,
+      'aria-selected': ariaSelected,
+    } = this.props;
 
-    _accessibilityState =
-      this.props.disabled != null
-        ? {
-            ..._accessibilityState,
-            disabled: this.props.disabled,
-          }
-        : _accessibilityState;
+    let _accessibilityState: ?AccessibilityState;
+    if (
+      accessibilityState != null ||
+      ariaBusy != null ||
+      ariaChecked != null ||
+      ariaDisabled != null ||
+      ariaExpanded != null ||
+      ariaSelected != null
+    ) {
+      _accessibilityState = {
+        busy: ariaBusy ?? accessibilityState?.busy,
+        checked: ariaChecked ?? accessibilityState?.checked,
+        disabled: ariaDisabled ?? accessibilityState?.disabled,
+        expanded: ariaExpanded ?? accessibilityState?.expanded,
+        selected: ariaSelected ?? accessibilityState?.selected,
+      };
+    }
+
+    if (this.props.disabled != null) {
+      _accessibilityState = {
+        ..._accessibilityState,
+        disabled: this.props.disabled,
+      };
+    }
 
     const accessibilityValue = {
       max: this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
