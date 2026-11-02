@@ -338,7 +338,7 @@ class PushNotificationIOS {
     invariant(
       NativePushNotificationManagerIOS,
       'PushNotificationManager is not available.',
-    );g
+    );
     NativePushNotificationManagerIOS.cancelLocalNotifications(userInfo);
   }
 
