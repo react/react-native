@@ -1489,7 +1489,7 @@ interface RCTReactNativeFactory : public NSObject {
 interface RCTReactTaggedView : public NSObject {
   protected NSInteger _tag;
   protected UIView* _view;
-  public virtual BOOL isEqual:(id other);
+  public virtual BOOL isEqual:(_Nullable id other);
   public virtual NSInteger tag();
   public virtual NSUInteger hash();
   public virtual _Nullable UIView* view();

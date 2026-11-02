@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol RCTRedBoxControllerActionDelegate <NSObject>
 
 - (void)redBoxController:(UIViewController *)redBoxController openStackFrameInEditor:(RCTJSStackFrame *)stackFrame;
-- (void)reloadFromRedBoxController:(UIViewController *)redBoxController;
+- (void)reloadFromRedBoxController:(nullable UIViewController *)redBoxController;
 - (void)loadExtraDataViewController;
 
 @end
