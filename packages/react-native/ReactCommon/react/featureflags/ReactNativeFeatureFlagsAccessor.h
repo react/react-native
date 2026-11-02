@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<17f41335dce7e5b45e7af2878c47d69b>>
+ * @generated SignedSource<<3e2072208128f8b2625baa83e0be078d>>
  */
 
 /**
@@ -66,6 +66,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableFollowUpMountItemDispatchAndroid();
   bool enableIOSCompressedTextFrameAdjustment();
   bool enableIOSTextBaselineOffsetPerLine();
+  bool enableIOSTextKit2();
   bool enableIOSViewClipToPaddingBox();
   bool enableImagePrefetchingAndroid();
   bool enableImageTransparentTintColor();
@@ -142,7 +143,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 97> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -176,6 +177,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableFollowUpMountItemDispatchAndroid_;
   std::atomic<std::optional<bool>> enableIOSCompressedTextFrameAdjustment_;
   std::atomic<std::optional<bool>> enableIOSTextBaselineOffsetPerLine_;
+  std::atomic<std::optional<bool>> enableIOSTextKit2_;
   std::atomic<std::optional<bool>> enableIOSViewClipToPaddingBox_;
   std::atomic<std::optional<bool>> enableImagePrefetchingAndroid_;
   std::atomic<std::optional<bool>> enableImageTransparentTintColor_;

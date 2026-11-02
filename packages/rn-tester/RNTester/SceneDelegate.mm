@@ -29,7 +29,24 @@
 #import <React/RCTDevMenu.h>
 #endif
 
+#import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/featureflags/ReactNativeFeatureFlagsOverridesOSSStable.h>
+
 static NSString *const kBundlePath = @"js/RNTesterApp.ios";
+static NSString *const kTextKit2EnabledKey = @"RCTTextKit2Enabled";
+
+namespace {
+
+// Lets RNTester switch Text between TextKit 1 and TextKit 2 with the `-RCTTextKit2Enabled YES|NO` launch argument.
+class RNTesterFeatureFlags : public facebook::react::ReactNativeFeatureFlagsOverridesOSSStable {
+ public:
+  bool enableIOSTextKit2() override
+  {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kTextKit2EnabledKey];
+  }
+};
+
+} // namespace
 
 @implementation SceneDelegate
 
@@ -57,6 +74,10 @@ static NSString *const kBundlePath = @"js/RNTesterApp.ios";
 #endif
 
   self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:self releaseLevel:[self releaseLevel]];
+
+  if ([[NSUserDefaults standardUserDefaults] objectForKey:kTextKit2EnabledKey] != nil) {
+    facebook::react::ReactNativeFeatureFlags::dangerouslyForceOverride(std::make_unique<RNTesterFeatureFlags>());
+  }
 
   auto *windowScene = (UIWindowScene *)scene;
   self.window = [[UIWindow alloc] initWithWindowScene:windowScene];

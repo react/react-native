@@ -29,6 +29,22 @@ using RCTTextLayoutFragmentEnumerationBlock =
  */
 @interface RCTTextLayoutManager : NSObject
 
+/**
+ * Lays out text with TextKit 2 when the `enableIOSTextKit2` feature flag is enabled, TextKit 1 otherwise.
+ */
+- (instancetype)init;
+
+/**
+ * Lays out text with TextKit 2 (`NSTextLayoutManager`) if `textKit2Enabled` is set and the OS supports it (iOS 16 or
+ * later), and with TextKit 1 (`NSLayoutManager`) otherwise.
+ */
+- (instancetype)initWithTextKit2Enabled:(BOOL)textKit2Enabled NS_DESIGNATED_INITIALIZER;
+
+/**
+ * Whether this instance lays out text with TextKit 2.
+ */
+@property (nonatomic, readonly) BOOL usesTextKit2;
+
 - (facebook::react::TextMeasurement)measureAttributedString:(const facebook::react::AttributedString &)attributedString
                                         paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                                               layoutContext:(facebook::react::TextLayoutContext)layoutContext

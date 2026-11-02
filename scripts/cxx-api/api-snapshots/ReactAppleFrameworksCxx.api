@@ -2,6 +2,7 @@
 
 category NSTextStorage(FontScaling) {
   public virtual void scaleFontSizeToFitSize:minimumFontSize:maximumFontSize:(CGSize size, CGFloat minimumFontSize, CGFloat maximumFontSize);
+  public virtual void scaleFontSizeToFitSize:minimumFontSize:maximumFontSize:measureUsingBlock:(CGSize size, CGFloat minimumFontSize, CGFloat maximumFontSize, NS_NOESCAPE CGSize(^)(BOOL* isTruncated) measureBlock);
   public virtual void scaleFontSizeWithRatio:minimumFontSize:maximumFontSize:(CGFloat ratio, CGFloat minimumFontSize, CGFloat maximumFontSize);
 }
 
@@ -1872,9 +1873,12 @@ interface RCTTextInputComponentView : public RCTViewComponentView {
 }
 
 interface RCTTextLayoutManager : public NSObject {
+  public @property (assign, readonly) BOOL usesTextKit2;
   public virtual facebook::react::LinesMeasurements getLinesForAttributedString:paragraphAttributes:size:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGSize size);
   public virtual facebook::react::TextMeasurement measureAttributedString:paragraphAttributes:layoutContext:layoutConstraints:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, facebook::react::TextLayoutContext layoutContext, facebook::react::LayoutConstraints layoutConstraints);
   public virtual facebook::react::TextMeasurement measureNSAttributedString:paragraphAttributes:layoutContext:layoutConstraints:(NSAttributedString* attributedString, facebook::react::ParagraphAttributes paragraphAttributes, facebook::react::TextLayoutContext layoutContext, facebook::react::LayoutConstraints layoutConstraints);
+  public virtual instancetype init();
+  public virtual instancetype initWithTextKit2Enabled:(BOOL textKit2Enabled);
   public virtual std::shared_ptr<const facebook::react::EventEmitter> getEventEmitterWithAttributeString:paragraphAttributes:frame:atPoint:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, CGPoint point);
   public virtual void drawAttributedString:paragraphAttributes:frame:drawHighlightPath:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, CGRect frame, void(^)(UIBezierPath* highlightPath) block);
   public virtual void getRectWithAttributedString:paragraphAttributes:enumerateAttribute:frame:usingBlock:(const facebook::react::AttributedString& attributedString, facebook::react::ParagraphAttributes paragraphAttributes, NSString* enumerateAttribute, CGRect frame, RCTTextLayoutFragmentEnumerationBlock block);

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a27136f5ae413f712c906f2e07152443>>
+ * @generated SignedSource<<e378c3da65bf570053c79b22c7e32ae6>>
  */
 
 /**
@@ -202,6 +202,11 @@ bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
 bool NativeReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine();
+}
+
+bool NativeReactNativeFeatureFlags::enableIOSTextKit2(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableIOSTextKit2();
 }
 
 bool NativeReactNativeFeatureFlags::enableIOSViewClipToPaddingBox(

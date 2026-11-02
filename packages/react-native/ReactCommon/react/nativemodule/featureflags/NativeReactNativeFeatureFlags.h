@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<90f271ea47f91e6a84979209b7b3d816>>
+ * @generated SignedSource<<ba38e0adad3e818a3f16457281a831ba>>
  */
 
 /**
@@ -101,6 +101,8 @@ class NativeReactNativeFeatureFlags
   bool enableIOSCompressedTextFrameAdjustment(jsi::Runtime& runtime);
 
   bool enableIOSTextBaselineOffsetPerLine(jsi::Runtime& runtime);
+
+  bool enableIOSTextKit2(jsi::Runtime& runtime);
 
   bool enableIOSViewClipToPaddingBox(jsi::Runtime& runtime);
 

@@ -17,4 +17,14 @@
                minimumFontSize:(CGFloat)minimumFontSize
                maximumFontSize:(CGFloat)maximumFontSize;
 
+/**
+ * Like `-scaleFontSizeToFitSize:minimumFontSize:maximumFontSize:`, for text storages that are not laid out by an
+ * attached `NSLayoutManager`. `measureBlock` lays out the text storage as it currently is and returns the size of the
+ * laid out text, setting `isTruncated` if the last line is truncated.
+ */
+- (void)scaleFontSizeToFitSize:(CGSize)size
+               minimumFontSize:(CGFloat)minimumFontSize
+               maximumFontSize:(CGFloat)maximumFontSize
+             measureUsingBlock:(NS_NOESCAPE CGSize (^)(BOOL *isTruncated))measureBlock;
+
 @end

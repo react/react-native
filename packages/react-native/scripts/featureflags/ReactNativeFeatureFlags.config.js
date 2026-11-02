@@ -396,6 +396,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableIOSTextKit2: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-19',
+        description:
+          'Lays out, measures and draws iOS Text with TextKit 2 (NSTextLayoutManager) instead of TextKit 1 (NSLayoutManager). Requires iOS 16 or later; older versions keep using TextKit 1.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableIOSViewClipToPaddingBox: {
       defaultValue: false,
       metadata: {

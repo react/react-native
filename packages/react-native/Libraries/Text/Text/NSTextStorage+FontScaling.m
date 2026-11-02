@@ -19,8 +19,31 @@ typedef NS_OPTIONS(NSInteger, RCTTextSizeComparisonOptions) {
                minimumFontSize:(CGFloat)minimumFontSize
                maximumFontSize:(CGFloat)maximumFontSize
 {
+  [self scaleFontSizeToFitSize:size
+               minimumFontSize:minimumFontSize
+               maximumFontSize:maximumFontSize
+             measureUsingBlock:^CGSize(BOOL *isTruncated) {
+               NSLayoutManager *layoutManager = self.layoutManagers.firstObject;
+               NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+
+               [layoutManager ensureLayoutForTextContainer:textContainer];
+
+               NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+               NSRange truncatedGlyphRange =
+                   [layoutManager truncatedGlyphRangeInLineFragmentForGlyphAtIndex:glyphRange.length - 1];
+               *isTruncated = truncatedGlyphRange.location != NSNotFound;
+
+               return [layoutManager usedRectForTextContainer:textContainer].size;
+             }];
+}
+
+- (void)scaleFontSizeToFitSize:(CGSize)size
+               minimumFontSize:(CGFloat)minimumFontSize
+               maximumFontSize:(CGFloat)maximumFontSize
+             measureUsingBlock:(NS_NOESCAPE CGSize (^)(BOOL *isTruncated))measureBlock
+{
   // Don't scale the font if it already fits
-  if ([self compareToSize:size thresholdRatio:0.01] & RCTTextSizeComparisonSmaller) {
+  if ([self compareToSize:size thresholdRatio:0.01 measureUsingBlock:measureBlock] & RCTTextSizeComparisonSmaller) {
     return;
   }
 
@@ -35,7 +58,9 @@ typedef NS_OPTIONS(NSInteger, RCTTextSizeComparisonOptions) {
   while (true) {
     [self scaleFontSizeWithRatio:ratio minimumFontSize:minimumFontSize maximumFontSize:maximumFontSize];
 
-    RCTTextSizeComparisonOptions comparison = [self compareToSize:size thresholdRatio:0.01];
+    RCTTextSizeComparisonOptions comparison = [self compareToSize:size
+                                                   thresholdRatio:0.01
+                                                measureUsingBlock:measureBlock];
 
     if ((comparison & RCTTextSizeComparisonWithinRange) && (comparison & RCTTextSizeComparisonSmaller)) {
       return;
@@ -61,11 +86,10 @@ typedef NS_OPTIONS(NSInteger, RCTTextSizeComparisonOptions) {
   }
 }
 
-- (RCTTextSizeComparisonOptions)compareToSize:(CGSize)size thresholdRatio:(CGFloat)thresholdRatio
+- (RCTTextSizeComparisonOptions)compareToSize:(CGSize)size
+                               thresholdRatio:(CGFloat)thresholdRatio
+                            measureUsingBlock:(NS_NOESCAPE CGSize (^)(BOOL *isTruncated))measureBlock
 {
-  NSLayoutManager *layoutManager = self.layoutManagers.firstObject;
-  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
-
   // A workaround for truncatedGlyphRangeInLineFragmentForGlyphAtIndex returning NSNotFound when text has only
   // one character and it gets truncated
   if ([self length] == 1) {
@@ -75,17 +99,13 @@ typedef NS_OPTIONS(NSInteger, RCTTextSizeComparisonOptions) {
     }
   }
 
-  [layoutManager ensureLayoutForTextContainer:textContainer];
-
   // Does it fit the text container?
-  NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
-  NSRange truncatedGlyphRange = [layoutManager truncatedGlyphRangeInLineFragmentForGlyphAtIndex:glyphRange.length - 1];
+  BOOL isTruncated = NO;
+  CGSize measuredSize = measureBlock(&isTruncated);
 
-  if (truncatedGlyphRange.location != NSNotFound) {
+  if (isTruncated) {
     return RCTTextSizeComparisonLarger;
   }
-
-  CGSize measuredSize = [layoutManager usedRectForTextContainer:textContainer].size;
 
   // Does it fit the size?
   BOOL fitsSize = size.width >= measuredSize.width && size.height >= measuredSize.height;

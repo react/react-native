@@ -2,6 +2,7 @@
 
 category NSTextStorage(FontScaling) {
   public virtual void scaleFontSizeToFitSize:minimumFontSize:maximumFontSize:(CGSize size, CGFloat minimumFontSize, CGFloat maximumFontSize);
+  public virtual void scaleFontSizeToFitSize:minimumFontSize:maximumFontSize:measureUsingBlock:(CGSize size, CGFloat minimumFontSize, CGFloat maximumFontSize, NS_NOESCAPE CGSize(^)(BOOL* isTruncated) measureBlock);
   public virtual void scaleFontSizeWithRatio:minimumFontSize:maximumFontSize:(CGFloat ratio, CGFloat minimumFontSize, CGFloat maximumFontSize);
 }
 
