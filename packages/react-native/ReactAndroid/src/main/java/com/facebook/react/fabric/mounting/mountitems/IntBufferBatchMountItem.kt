@@ -84,6 +84,14 @@ internal class IntBufferBatchMountItem(
     }
 
     beginMarkers("mountViews")
+    if (
+        ReactNativeFeatureFlags.enableDeferredViewCleanupAndroid() &&
+            !ReactNativeFeatureFlags.disableMountItemReorderingAndroid() &&
+            tryDeferPureViewUnmount(surfaceMountingManager)
+    ) {
+      endMarkers()
+      return
+    }
     var i = 0
     var j = 0
     while (i < intBufferLen) {
@@ -348,6 +356,64 @@ internal class IntBufferBatchMountItem(
 
       return ""
     }
+  }
+
+  // Prototype signal at the Android boundary. Accept only a whole REMOVE-then-DELETE batch;
+  // mixed transactions, reinsertion, and animation instructions keep their existing semantics.
+  private fun tryDeferPureViewUnmount(
+      surface: com.facebook.react.fabric.mounting.SurfaceMountingManager,
+  ): Boolean {
+    Systrace.beginSection(Systrace.TRACE_TAG_REACT, "FabricDeferredUnmount::parse")
+    val parsed: Pair<List<IntArray>, List<Int>>?
+    try {
+      parsed = parsePureViewUnmount()
+    } finally {
+      Systrace.endSection(Systrace.TRACE_TAG_REACT)
+    }
+    return parsed != null && surface.tryDeferPureViewUnmount(parsed.first, parsed.second)
+  }
+
+  private fun rejectPureViewUnmount(reason: String): Pair<List<IntArray>, List<Int>>? {
+    Systrace.beginSection(Systrace.TRACE_TAG_REACT, reason)
+    Systrace.endSection(Systrace.TRACE_TAG_REACT)
+    return null
+  }
+
+  private fun parsePureViewUnmount(): Pair<List<IntArray>, List<Int>>? {
+    if (objBufferLen != 0) return rejectPureViewUnmount("FabricDeferredUnmount::rejectObjectBuffer")
+    val removes = ArrayList<IntArray>()
+    val deletes = ArrayList<Int>()
+    var deleting = false
+    var index = 0
+    while (index < intBufferLen) {
+      val rawType = intBuffer[index++]
+      val type = rawType and INSTRUCTION_FLAG_MULTIPLE.inv()
+      val count =
+          if (rawType and INSTRUCTION_FLAG_MULTIPLE != 0) {
+            if (index >= intBufferLen)
+                return rejectPureViewUnmount("FabricDeferredUnmount::rejectMalformed")
+            intBuffer[index++]
+          } else 1
+      if (count <= 0 || count > 4096)
+          return rejectPureViewUnmount("FabricDeferredUnmount::rejectCount")
+      when (type) {
+        INSTRUCTION_REMOVE -> {
+          if (deleting || count > (intBufferLen - index) / 3 || removes.size + count > 4096)
+              return rejectPureViewUnmount("FabricDeferredUnmount::rejectRemovePhase")
+          repeat(count) {
+            removes.add(intArrayOf(intBuffer[index++], intBuffer[index++], intBuffer[index++]))
+          }
+        }
+        INSTRUCTION_DELETE -> {
+          deleting = true
+          if (count > intBufferLen - index || deletes.size + count > 4096)
+              return rejectPureViewUnmount("FabricDeferredUnmount::rejectCount")
+          repeat(count) { deletes.add(intBuffer[index++]) }
+        }
+        else -> return rejectPureViewUnmount("FabricDeferredUnmount::rejectMixedInstruction")
+      }
+    }
+    return removes to deletes
   }
 
   companion object {

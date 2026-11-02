@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6887b671526bc8a3b0678e3e45b4e3b4>>
+ * @generated SignedSource<<ef076bdb37bbe0cb18f1c846ae6fd353>>
  */
 
 /**
@@ -145,6 +145,11 @@ class ReactNativeFeatureFlags {
    * This enables the fabric implementation of focus search so that we can focus clipped elements
    */
   RN_EXPORT static bool enableCustomFocusSearchOnClippedElementsAndroid();
+
+  /**
+   * Experiment with retiring pure RCTView subtrees immediately and cleaning native descendants in bounded slices after drawing on Android
+   */
+  RN_EXPORT static bool enableDeferredViewCleanupAndroid();
 
   /**
    * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.

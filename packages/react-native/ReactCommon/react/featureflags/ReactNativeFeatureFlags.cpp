@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<56e127471f63e47798ec619e6fa56738>>
+ * @generated SignedSource<<8313677038bc76a8e656eee1532d60f1>>
  */
 
 /**
@@ -108,6 +108,10 @@ bool ReactNativeFeatureFlags::enableCppPropsIteratorSetter() {
 
 bool ReactNativeFeatureFlags::enableCustomFocusSearchOnClippedElementsAndroid() {
   return getAccessor().enableCustomFocusSearchOnClippedElementsAndroid();
+}
+
+bool ReactNativeFeatureFlags::enableDeferredViewCleanupAndroid() {
+  return getAccessor().enableDeferredViewCleanupAndroid();
 }
 
 bool ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync() {
