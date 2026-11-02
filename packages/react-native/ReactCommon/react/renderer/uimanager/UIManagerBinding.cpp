@@ -255,16 +255,15 @@ jsi::Value UIManagerBinding::get(
               return jsi::Value::undefined();
             }
 
-            auto node = valueFromShadowNode(
-                            runtime,
-                            uiManager->createNode(
-                                tagFromValue(arguments[0]),
-                                stringFromValue(runtime, arguments[1]),
-                                surfaceIdFromValue(runtime, arguments[2]),
-                                RawProps(runtime, arguments[3]),
-                                std::move(instanceHandle)),
-                            true)
-                            .getObject(runtime);
+            auto node = objectFromShadowNode(
+                runtime,
+                uiManager->createNode(
+                    tagFromValue(arguments[0]),
+                    stringFromValue(runtime, arguments[1]),
+                    surfaceIdFromValue(runtime, arguments[2]),
+                    RawProps(runtime, arguments[3]),
+                    std::move(instanceHandle)),
+                true);
             // The shadow node is freed only when the GC collects this object,
             // so tell the GC about the native memory it keeps alive. Without
             // this, unmounted shadow trees can pile up until the JS heap
@@ -357,7 +356,7 @@ jsi::Value UIManagerBinding::get(
           // rolled out
           // validateArgumentCount(runtime, methodName, paramCount, count);
 
-          return valueFromShadowNode(
+          return objectFromShadowNode(
               runtime,
               uiManager->cloneNode(
                   *Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
@@ -383,7 +382,7 @@ jsi::Value UIManagerBinding::get(
             size_t count) -> jsi::Value {
           validateArgumentCount(runtime, methodName, paramCount, count);
 
-          return valueFromShadowNode(
+          return objectFromShadowNode(
               runtime,
               uiManager->cloneNode(
                   *Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
@@ -411,7 +410,7 @@ jsi::Value UIManagerBinding::get(
           // validateArgumentCount(runtime, methodName, paramCount, count);
 
           bool hasChildrenArg = count == 3;
-          return valueFromShadowNode(
+          return objectFromShadowNode(
               runtime,
               uiManager->cloneNode(
                   *Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
@@ -838,7 +837,7 @@ jsi::Value UIManagerBinding::get(
             return jsi::Value::null();
           }
 
-          return valueFromShadowNode(runtime, shadowNode);
+          return objectFromShadowNode(runtime, shadowNode);
         });
   }
 
