@@ -16,6 +16,7 @@
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/textinput/BaseTextInputProps.h>
 #include <react/renderer/components/textinput/basePrimitives.h>
+#include <optional>
 #include <unordered_map>
 
 namespace facebook::react {
@@ -83,9 +84,9 @@ class AndroidTextInputProps final : public BaseTextInputProps {
   std::string inlineImageLeft{};
   int inlineImagePadding{0};
   std::string importantForAutofill{};
-  bool showSoftInputOnFocus{false};
-  bool autoCorrect{false};
-  bool allowFontScaling{false};
+  bool showSoftInputOnFocus{true};
+  std::optional<bool> autoCorrect{};
+  bool allowFontScaling{true};
   Float maxFontSizeMultiplier{0.0};
   std::string keyboardType{};
   std::string returnKeyType{};
