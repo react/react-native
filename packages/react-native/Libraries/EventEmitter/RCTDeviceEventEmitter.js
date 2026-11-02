@@ -10,7 +10,7 @@
 
 import type {IEventEmitter} from '../vendor/emitter/EventEmitter';
 
-import {trace} from '../Performance/Systrace';
+import {beginEvent, endEvent, isEnabled} from '../Performance/Systrace';
 import EventEmitter from '../vendor/emitter/EventEmitter';
 
 // FIXME: use typed events
@@ -24,17 +24,24 @@ type RCTDeviceEventDefinitions = {[name: string]: Array<any>};
  * NativeModules that emit events should instead subclass `NativeEventEmitter`.
  */
 class RCTDeviceEventEmitterImpl extends EventEmitter<RCTDeviceEventDefinitions> {
-  // Add systrace to RCTDeviceEventEmitter.emit method for debugging
+  // Add systrace to RCTDeviceEventEmitter.emit method for debugging.
+  // `beginEvent`/`endEvent` are used instead of `trace` so that no closures
+  // are allocated when tracing is disabled (the common case); `trace` always
+  // allocates a callback, which is costly on this hot path.
   emit<TEvent extends keyof RCTDeviceEventDefinitions>(
     eventType: TEvent,
     ...args: RCTDeviceEventDefinitions[TEvent]
   ): void {
-    trace(
-      () => `RCTDeviceEventEmitter.emit#${eventType}`,
-      () => {
+    if (isEnabled()) {
+      beginEvent(`RCTDeviceEventEmitter.emit#${eventType}`);
+      try {
         super.emit(eventType, ...args);
-      },
-    );
+      } finally {
+        endEvent();
+      }
+    } else {
+      super.emit(eventType, ...args);
+    }
   }
 }
 const RCTDeviceEventEmitter: IEventEmitter<RCTDeviceEventDefinitions> =

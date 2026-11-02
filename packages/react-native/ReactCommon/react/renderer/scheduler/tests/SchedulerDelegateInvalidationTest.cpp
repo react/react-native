@@ -34,6 +34,7 @@
 #include <ReactCommon/RuntimeExecutor.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
+#include <react/renderer/animationbackend/AnimatedPropsBuilder.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/components/root/RootProps.h>
@@ -586,6 +587,39 @@ TEST_F(
   // (still-alive) delegate.
   runOneEventLoopTick();
   EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 1);
+}
+
+TEST(SchedulerDelegateTest, animatedPropsUseExistingViewUpdatesByDefault) {
+  class PropsDelegate : public RecordingDelegate {
+   public:
+    std::unordered_map<Tag, folly::dynamic> received;
+
+    void schedulerShouldSynchronouslyUpdateViewOnUIThread(
+        Tag tag,
+        const folly::dynamic& props) override {
+      received.emplace(tag, props);
+    }
+  } delegate;
+
+  std::unordered_map<Tag, AnimatedProps> updates;
+  updates.emplace(
+      10,
+      AnimatedProps{
+          .props = {},
+          .rawProps = std::make_unique<RawProps>(
+              folly::dynamic::object("opacity", 0.25))});
+  AnimatedPropsBuilder builder;
+  builder.setOpacity(0.75);
+  updates.emplace(20, builder.get());
+
+  delegate.schedulerShouldSynchronouslyUpdateAnimatedProps(updates);
+
+  ASSERT_EQ(delegate.received.size(), 2);
+  folly::dynamic expectedRaw = folly::dynamic::object("opacity", 0.25);
+  folly::dynamic expectedTyped = folly::dynamic::object("opacity", 0.75);
+  EXPECT_EQ(delegate.received.at(10), expectedRaw);
+  EXPECT_EQ(delegate.received.at(20), expectedTyped);
+  EXPECT_EQ(updates.at(10).rawProps->toDynamic(), delegate.received.at(10));
 }
 
 } // namespace facebook::react

@@ -19,6 +19,7 @@ target_link_libraries(react_renderer_observers_intersection
       react_cxxstableapi
       react_debug
       react_renderer_core
+      react_renderer_css
       react_renderer_graphics
       react_renderer_mounting
       react_renderer_runtimescheduler

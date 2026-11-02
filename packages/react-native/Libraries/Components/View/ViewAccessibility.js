@@ -138,6 +138,11 @@ export type AccessibilityActionName =
    */
   | 'decrement'
   /**
+   * Generated when an accessibility service sets an adjustable component to a specific value.
+   * @platform android
+   */
+  | 'setProgress'
+  /**
    * Generated when a TalkBack user places accessibility focus on the component and double taps and holds one finger on the screen.
    * @platform android
    */
@@ -162,7 +167,7 @@ export type AccessibilityActionInfo = Readonly<{
 
 // The info included in the event sent to onAccessibilityAction
 export type AccessibilityActionEvent = NativeSyntheticEvent<
-  Readonly<{actionName: string, ...}>,
+  Readonly<{actionName: string, value?: number, ...}>,
 >;
 
 export type AccessibilityState = {
@@ -349,10 +354,7 @@ export type AccessibilityPropsIOS = Readonly<{
   accessibilityRespondsToUserInteraction?: ?boolean,
 }>;
 
-/** @build-types emit-as-interface react-native-web compatibility */
-export type AccessibilityProps = Readonly<{
-  ...AccessibilityPropsAndroid,
-  ...AccessibilityPropsIOS,
+type AccessibilityPropsCore = Readonly<{
   /**
    * When `true`, indicates that the view is an accessibility element.
    * By default, all the touchable elements are accessible.
@@ -433,4 +435,11 @@ export type AccessibilityProps = Readonly<{
    * See https://reactnative.dev/docs/view#aria-hidden
    */
   'aria-hidden'?: ?boolean,
+}>;
+
+/** @build-types emit-as-interface react-native-web compatibility */
+export type AccessibilityProps = Readonly<{
+  ...AccessibilityPropsAndroid,
+  ...AccessibilityPropsIOS,
+  ...AccessibilityPropsCore,
 }>;

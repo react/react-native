@@ -71,6 +71,7 @@ class XHRExampleOnTimeOut extends React.Component<any, any> {
       <TouchableHighlight
         style={styles.wrapper}
         // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+        // $FlowFixMe[invalid-tuple-arity]
         onPress={this.loadTimeOutRequest.bind(this)}>
         <View style={styles.button}>
           <Text>Make Time Out Request</Text>

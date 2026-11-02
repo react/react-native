@@ -9,8 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
 #include <react/renderer/components/text/RawTextProps.h>
-#include <react/renderer/core/ConcreteShadowNode.h>
 
 namespace facebook::react {
 

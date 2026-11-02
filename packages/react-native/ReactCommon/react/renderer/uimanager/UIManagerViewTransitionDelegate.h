@@ -9,10 +9,13 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/graphics/Float.h>
+#include <React/Graphics.h>
+#include <React/RendererCore.h>
+
 #include <functional>
+#include <memory>
 #include <optional>
+#include <string>
 
 namespace facebook::react {
 

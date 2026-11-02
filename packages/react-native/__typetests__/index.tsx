@@ -1464,6 +1464,12 @@ class AccessibilityTest extends React.Component {
   }
 }
 
+AccessibilityInfo.isShowBordersEnabled().then(isEnabled =>
+  console.log(`AccessibilityInfo.isShowBordersEnabled => ${isEnabled}`),
+);
+AccessibilityInfo.addEventListener('showBordersChanged', isEnabled =>
+  console.log(`AccessibilityInfo.showBordersChanged => ${isEnabled}`),
+);
 AccessibilityInfo.isBoldTextEnabled().then(isEnabled =>
   console.log(`AccessibilityInfo.isBoldTextEnabled => ${isEnabled}`),
 );

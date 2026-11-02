@@ -81,7 +81,7 @@ class Blob {
     return this._data;
   }
 
-  slice(start?: number, end?: number, contentType?: string = ''): Blob {
+  slice(start?: number = 0, end?: number, contentType?: string = ''): Blob {
     const BlobManager = require('./BlobManager').default;
     let {offset, size} = this.data;
 

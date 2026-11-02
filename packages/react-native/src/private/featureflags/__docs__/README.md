@@ -82,7 +82,7 @@ fun someMethod() {
 #### JavaScript
 
 ```javascript
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 if (ReactNativeFeatureFlags.enableNativeBehavior()) {
   // Native flag
@@ -138,7 +138,7 @@ fun overrideFeatureFlags() {
 #### JavaScript
 
 ```javascript
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 ReactNativeFeatureFlags.override({
   enableJSBehavior: () => true,

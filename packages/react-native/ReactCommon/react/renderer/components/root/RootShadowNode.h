@@ -11,10 +11,9 @@
 
 #include <memory>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/root/RootProps.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/core/LayoutContext.h>
-#include <react/renderer/core/PropsParserContext.h>
 
 namespace facebook::react {
 
@@ -35,7 +34,7 @@ class RootShadowNode final : public ConcreteViewShadowNode<RootComponentName, Ro
   using Shared = std::shared_ptr<const RootShadowNode>;
   using Unshared = std::shared_ptr<RootShadowNode>;
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::RootNodeKind);

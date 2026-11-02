@@ -2,7 +2,7 @@
 
 exports[`LogBoxButton should render Pressable and pass through props 1`] = `
 <rn-view
-  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
   accessible="true"
   backgroundColor="rgba(0, 0, 0, 1)"
 >

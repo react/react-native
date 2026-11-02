@@ -24,6 +24,8 @@ const preTransforms: Array<PreTransformFn> = [
   require('./transforms/flow/replaceRequiresWithImports'),
   require('./transforms/flow/replaceEmptyWithNever'),
   require('./transforms/flow/replaceStringishWithString'),
+  require('./transforms/flow/replaceLegacyFunctionWithFunction'),
+  require('./transforms/flow/replaceLegacyObjectWithObject'),
   require('./transforms/flow/replaceNullablePropertiesWithUndefined'),
   require('./transforms/flow/reattachDocComments'),
   require('./transforms/flow/ensureNoUnprefixedProps'),

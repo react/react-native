@@ -128,9 +128,9 @@ const _combineCallbacks = function (
 const maybeVectorAnim = function (
   value: AnimatedValue | AnimatedValueXY | AnimatedColor,
   // $FlowFixMe[unclear-type]
-  config: Object,
+  config: any,
   // $FlowFixMe[unclear-type]
-  anim: (value: AnimatedValue, config: Object) => CompositeAnimation,
+  anim: (value: AnimatedValue, config: any) => CompositeAnimation,
 ): ?CompositeAnimation {
   if (value instanceof AnimatedValueXY) {
     const configX = {...config};
@@ -559,12 +559,9 @@ const loopImpl = function (
 };
 
 function forkEventImpl(
-  // $FlowFixMe[unclear-type]
-  event: ?AnimatedEvent | ?Function,
-  // $FlowFixMe[unclear-type]
-  listener: Function,
-  // $FlowFixMe[unclear-type]
-): AnimatedEvent | Function {
+  event: ?AnimatedEvent | ?LegacyFunction,
+  listener: LegacyFunction,
+): AnimatedEvent | LegacyFunction {
   if (!event) {
     return listener;
   } else if (event instanceof AnimatedEvent) {
@@ -579,10 +576,8 @@ function forkEventImpl(
 }
 
 function unforkEventImpl(
-  // $FlowFixMe[unclear-type]
-  event: ?AnimatedEvent | ?Function,
-  // $FlowFixMe[unclear-type]
-  listener: Function,
+  event: ?AnimatedEvent | ?LegacyFunction,
+  listener: LegacyFunction,
 ): void {
   if (event && event instanceof AnimatedEvent) {
     event.__removeListener(listener);

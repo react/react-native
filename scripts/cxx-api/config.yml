@@ -45,6 +45,10 @@ platforms:
       newarch:
         definitions:
           RCT_REMOVE_LEGACY_ARCH: 1
+      frameworks:
+        visibility:
+          - public
+          - frameworks
   ReactAndroid:
     codegen:
       platform: android
@@ -78,6 +82,10 @@ platforms:
       newarch:
         definitions:
           RCT_REMOVE_LEGACY_ARCH: 1
+      frameworks:
+        visibility:
+          - public
+          - frameworks
   # ReactIOS?
   ReactApple:
     codegen:
@@ -118,3 +126,7 @@ platforms:
       newarch:
         definitions:
           RCT_REMOVE_LEGACY_ARCH: 1
+      frameworks:
+        visibility:
+          - public
+          - frameworks

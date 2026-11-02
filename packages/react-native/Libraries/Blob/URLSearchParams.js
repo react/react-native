@@ -78,12 +78,14 @@ export class URLSearchParams {
     this._searchParams.set(name, [value]);
   }
 
-  keys(): Iterator<string> {
+  keys(): IteratorObject<string> {
     return this._searchParams.keys();
   }
 
-  values(): Iterator<string> {
-    function* generateValues(params: Map<string, string[]>): Iterator<string> {
+  values(): IteratorObject<string> {
+    function* generateValues(
+      params: Map<string, string[]>,
+    ): IteratorObject<string> {
       for (const valueArray of params.values()) {
         for (const value of valueArray) {
           yield value;
@@ -96,7 +98,7 @@ export class URLSearchParams {
   entries(): Iterator<[string, string]> {
     function* generateEntries(
       params: Map<string, string[]>,
-    ): Iterator<[string, string]> {
+    ): IteratorObject<[string, string]> {
       for (const [key, values] of params) {
         for (const value of values) {
           yield [key, value];
@@ -119,12 +121,14 @@ export class URLSearchParams {
 
   sort(): void {
     this._searchParams = new Map(
-      [...this._searchParams.entries()].sort(([a], [b]) => a.localeCompare(b)),
+      [...this._searchParams.entries()].sort(([a], [b]) =>
+        a < b ? -1 : a > b ? 1 : 0,
+      ),
     );
   }
 
   // $FlowFixMe[unsupported-syntax]
-  [Symbol.iterator](): Iterator<[string, string]> {
+  [Symbol.iterator](): IteratorObject<[string, string]> {
     const entries: [string, string][] = [];
 
     for (const [key, values] of this._searchParams) {

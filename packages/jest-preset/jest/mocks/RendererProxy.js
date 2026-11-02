@@ -10,6 +10,7 @@
 
 // In tests, we can use the default version without dependency injection.
 
+// $FlowFixMe[cannot-resolve-module]
 import typeof * as TRendererImplementation from 'react-native/Libraries/ReactNative/RendererImplementation';
 
 const {

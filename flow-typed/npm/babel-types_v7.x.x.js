@@ -434,11 +434,10 @@ declare module "@babel/types" {
     end: ?number;
     loc: ?BabelNodeSourceLocation,
     type: "NewExpression";
-    callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier;
+    callee: BabelNodeExpression;
     arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
-    optional?: boolean;
-    typeArguments?: BabelNodeTypeParameterInstantiation;
-    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+    typeArguments?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
+    typeParameters: any;
   };
 
   declare type BabelNodeProgram = {
@@ -3284,7 +3283,7 @@ declare module "@babel/types" {
   declare export function regExpLiteral(pattern: string, flags?: string): BabelNodeRegExpLiteral;
   declare export function logicalExpression(operator: "||" | "&&" | "??", left: BabelNodeExpression, right: BabelNodeExpression): BabelNodeLogicalExpression;
   declare export function memberExpression(object: BabelNodeExpression | BabelNodeSuper, property: BabelNodeExpression | BabelNodeIdentifier | BabelNodePrivateName, computed?: boolean, optional?: boolean): BabelNodeMemberExpression;
-  declare export function newExpression(callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier, _arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>): BabelNodeNewExpression;
+  declare export function newExpression(callee: BabelNodeExpression, _arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>): BabelNodeNewExpression;
   declare export function program(body: Array<BabelNodeStatement>, directives?: Array<BabelNodeDirective>, sourceType?: "script" | "module", interpreter?: BabelNodeInterpreterDirective): BabelNodeProgram;
   declare export function objectExpression(properties: Array<BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeSpreadElement>): BabelNodeObjectExpression;
   declare export function objectMethod(kind?: "method" | "get" | "set", key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral, params: Array<BabelNodeFunctionParameter>, body: BabelNodeBlockStatement, computed?: boolean, generator?: boolean, async?: boolean): BabelNodeObjectMethod;
@@ -3571,7 +3570,7 @@ declare module "@babel/types" {
   declare export function isExportSpecifier(node: ?Object, opts?: ?Object): node is ExportSpecifier;
   declare export function isForOfStatement(node: ?Object, opts?: ?Object): node is ForOfStatement;
   declare export function isImportDeclaration(node: ?Object, opts?: ?Object): node is ImportDeclaration;
-  declare export function isImportDefaultSpecifier(node: ?Object, opts?: ?Object): node is ImportDefaultSpecifier;
+  declare export function isImportDefaultSpecifier(node: ?Object, opts?: ?any): node is ImportDefaultSpecifier;
   declare export function isImportNamespaceSpecifier(node: ?Object, opts?: ?Object): node is ImportNamespaceSpecifier;
   declare export function isImportSpecifier(node: ?Object, opts?: ?Object): node is ImportSpecifier;
   declare export function isImportExpression(node: ?Object, opts?: ?Object): node is ImportExpression;
@@ -3590,9 +3589,9 @@ declare module "@babel/types" {
   declare export function isExportNamespaceSpecifier(node: ?Object, opts?: ?Object): node is ExportNamespaceSpecifier;
   declare export function isOptionalMemberExpression(node: ?Object, opts?: ?Object): node is OptionalMemberExpression;
   declare export function isOptionalCallExpression(node: ?Object, opts?: ?Object): node is OptionalCallExpression;
-  declare export function isClassProperty(node: ?Object, opts?: ?Object): node is ClassProperty;
+  declare export function isClassProperty(node: ?any, opts?: ?Object): node is ClassProperty;
   declare export function isClassAccessorProperty(node: ?Object, opts?: ?Object): node is ClassAccessorProperty;
-  declare export function isClassPrivateProperty(node: ?Object, opts?: ?Object): node is ClassPrivateProperty;
+  declare export function isClassPrivateProperty(node: ?any, opts?: ?Object): node is ClassPrivateProperty;
   declare export function isClassPrivateMethod(node: ?Object, opts?: ?Object): node is ClassPrivateMethod;
   declare export function isPrivateName(node: ?Object, opts?: ?Object): node is PrivateName;
   declare export function isStaticBlock(node: ?Object, opts?: ?Object): node is StaticBlock;
@@ -3700,9 +3699,9 @@ declare module "@babel/types" {
   declare export function isTSQualifiedName(node: ?Object, opts?: ?Object): node is TSQualifiedName;
   declare export function isTSCallSignatureDeclaration(node: ?Object, opts?: ?Object): node is TSCallSignatureDeclaration;
   declare export function isTSConstructSignatureDeclaration(node: ?Object, opts?: ?Object): node is TSConstructSignatureDeclaration;
-  declare export function isTSPropertySignature(node: ?Object, opts?: ?Object): node is TSPropertySignature;
+  declare export function isTSPropertySignature(node: ?any, opts?: ?Object): node is TSPropertySignature;
   declare export function isTSMethodSignature(node: ?Object, opts?: ?Object): node is TSMethodSignature;
-  declare export function isTSIndexSignature(node: ?Object, opts?: ?Object): node is TSIndexSignature;
+  declare export function isTSIndexSignature(node: ?any, opts?: ?Object): node is TSIndexSignature;
   declare export function isTSAnyKeyword(node: ?Object, opts?: ?Object): node is TSAnyKeyword;
   declare export function isTSBooleanKeyword(node: ?Object, opts?: ?Object): node is TSBooleanKeyword;
   declare export function isTSBigIntKeyword(node: ?Object, opts?: ?Object): node is TSBigIntKeyword;
@@ -3748,7 +3747,7 @@ declare module "@babel/types" {
   declare export function isTSTypeAssertion(node: ?Object, opts?: ?Object): node is TSTypeAssertion;
   declare export function isTSEnumBody(node: ?Object, opts?: ?Object): node is TSEnumBody;
   declare export function isTSEnumDeclaration(node: ?Object, opts?: ?Object): node is TSEnumDeclaration;
-  declare export function isTSEnumMember(node: ?Object, opts?: ?Object): node is TSEnumMember;
+  declare export function isTSEnumMember(node: ?any, opts?: ?Object): node is TSEnumMember;
   declare export function isTSModuleDeclaration(node: ?Object, opts?: ?Object): node is TSModuleDeclaration;
   declare export function isTSModuleBlock(node: ?Object, opts?: ?Object): node is TSModuleBlock;
   declare export function isTSImportType(node: ?Object, opts?: ?Object): node is TSImportType;
@@ -3776,7 +3775,7 @@ declare module "@babel/types" {
   declare export function isExpressionWrapper(node: ?Object, opts?: ?Object): node is (ExpressionStatement | ParenthesizedExpression | TypeCastExpression);
   declare export function isFor(node: ?Object, opts?: ?Object): node is (ForInStatement | ForStatement | ForOfStatement);
   declare export function isForXStatement(node: ?Object, opts?: ?Object): node is (ForInStatement | ForOfStatement);
-  declare export function isFunction(node: ?Object, opts?: ?Object): node is (FunctionDeclaration | FunctionExpression | ObjectMethod | ArrowFunctionExpression | ClassMethod | ClassPrivateMethod);
+  declare export function isFunction(node: ?any, opts?: ?Object): node is (FunctionDeclaration | FunctionExpression | ObjectMethod | ArrowFunctionExpression | ClassMethod | ClassPrivateMethod);
   declare export function isFunctionParent(node: ?Object, opts?: ?Object): node is (FunctionDeclaration | FunctionExpression | ObjectMethod | ArrowFunctionExpression | ClassMethod | ClassPrivateMethod | StaticBlock | TSModuleBlock);
   declare export function isPureish(node: ?Object, opts?: ?Object): node is (FunctionDeclaration | FunctionExpression | StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | ArrowFunctionExpression | BigIntLiteral | DecimalLiteral);
   declare export function isDeclaration(node: ?Object, opts?: ?Object): node is (FunctionDeclaration | VariableDeclaration | ClassDeclaration | ExportAllDeclaration | ExportDefaultDeclaration | ExportNamedDeclaration | ImportDeclaration | DeclareClass | DeclareFunction | DeclareInterface | DeclareModule | DeclareModuleExports | DeclareTypeAlias | DeclareOpaqueType | DeclareVariable | DeclareExportDeclaration | DeclareExportAllDeclaration | InterfaceDeclaration | OpaqueType | TypeAlias | EnumDeclaration | TSDeclareFunction | TSInterfaceDeclaration | TSTypeAliasDeclaration | TSEnumDeclaration | TSModuleDeclaration | TSImportEqualsDeclaration);
@@ -3826,13 +3825,13 @@ declare module "@babel/types" {
   declare export function cloneNode<T>(n: T, deep?: boolean, withoutLoc?: boolean): T;
   declare export function cloneWithoutLoc<T>(n: T): T;
   declare type CommentTypeShorthand = 'leading' | 'inner' | 'trailing'
-  declare export function addComment<T: Node>(node: T, type: CommentTypeShorthand, content: string, line?: boolean): T
-  declare export function addComments<T: Node>(node: T, type: CommentTypeShorthand, comments: Array<Comment>): T
+  declare export function addComment<T extends Node>(node: T, type: CommentTypeShorthand, content: string, line?: boolean): T
+  declare export function addComments<T extends Node>(node: T, type: CommentTypeShorthand, comments: Array<Comment>): T
   declare export function inheritInnerComments(node: Node, parent: Node): void
   declare export function inheritLeadingComments(node: Node, parent: Node): void
-  declare export function inheritsComments<T: Node>(node: T, parent: Node): void
+  declare export function inheritsComments<T extends Node>(node: T, parent: Node): void
   declare export function inheritTrailingComments(node: Node, parent: Node): void
-  declare export function removeComments<T: Node>(node: T): T
+  declare export function removeComments<T extends Node>(node: T): T
   declare export function ensureBlock(node: BabelNode, key: string): BabelNodeBlockStatement
   declare export function toBindingIdentifierName(name?: ?string): string
   declare export function toBlock(node: BabelNodeStatement | BabelNodeExpression, parent?: BabelNodeFunction | null): BabelNodeBlockStatement
@@ -3844,7 +3843,7 @@ declare module "@babel/types" {
   declare export function valueToNode(value: any): BabelNodeExpression
   declare export function removeTypeDuplicates(types: Array<BabelNodeFlowType>): Array<BabelNodeFlowType>
   declare export function appendToMemberExpression(member: BabelNodeMemberExpression, append: BabelNode, computed?: boolean): BabelNodeMemberExpression
-  declare export function inherits<T: Node>(child: T, parent: BabelNode | null | void): T
+  declare export function inherits<T extends Node>(child: T, parent: BabelNode | null | void): T
   declare export function prependToMemberExpression(member: BabelNodeMemberExpression, prepend: BabelNodeExpression): BabelNodeMemberExpression
   declare export function removeProperties<T>(n: T, opts: ?{}): void;
   declare export function removePropertiesDeep<T>(n: T, opts: ?{}): T;
@@ -3880,7 +3879,7 @@ declare module "@babel/types" {
   declare export function isValidIdentifier(name: string): boolean
   declare export function isVar(node: BabelNode): node is VariableDeclaration
   declare export function matchesPattern(node: ?BabelNode, match: string | Array<string>, allowPartial?: boolean): boolean
-  declare export function validate(n: BabelNode, key: string, value: mixed): void;
+  declare export function validate(n: BabelNode, key: string, value: unknown): void;
   declare export type Node = BabelNode;
   declare export type CommentBlock = BabelNodeCommentBlock;
   declare export type CommentLine = BabelNodeCommentLine;

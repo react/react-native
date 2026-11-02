@@ -15,8 +15,8 @@
 
 #include <jsi/jsi.h>
 
-#include <ReactCommon/CallInvoker.h>
-#include <react/bridging/EventEmitter.h>
+#include <React/Bridging.h>
+#include <React/CallInvoker.h>
 
 namespace facebook::react {
 

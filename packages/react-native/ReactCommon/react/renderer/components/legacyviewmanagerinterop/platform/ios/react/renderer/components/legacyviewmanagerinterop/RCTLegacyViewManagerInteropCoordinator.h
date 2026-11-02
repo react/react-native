@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
 #import <Foundation/Foundation.h>
@@ -23,7 +25,6 @@ typedef void (^InterceptorBlock)(std::string eventName, folly::dynamic &&event);
 @interface RCTLegacyViewManagerInteropCoordinator : NSObject
 
 - (instancetype)initWithComponentData:(RCTComponentData *)componentData
-                               bridge:(nullable RCTBridge *)bridge
                           bridgeProxy:(nullable RCTBridgeProxy *)bridgeProxy
                 bridgelessInteropData:(RCTBridgeModuleDecorator *)bridgelessInteropData;
 

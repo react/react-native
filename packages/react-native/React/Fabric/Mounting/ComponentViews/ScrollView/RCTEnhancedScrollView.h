@@ -53,6 +53,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray<NSNumber *> *snapToOffsets;
 
 /*
+ * Whether this scroll view is mirrored by a `scaleY(-1)` transform, as inverted virtualized lists
+ * are. UIKit does not account for that transform when it positions iOS 26 scroll edge effects, so
+ * they have to be compensated for here.
+ */
+@property (nonatomic, assign) BOOL inverted;
+
+/*
+ * The content inset before the correction across the scrollable axis: what the props and the content centering
+ * give. While `padsContentForSafeArea` is set, `contentInset` carries it less whatever UIKit adds across that axis
+ * for the safe area.
+ */
+@property (nonatomic, assign) UIEdgeInsets baseContentInset;
+@property (nonatomic, assign) BOOL horizontal;
+
+/*
+ * Whether JavaScript pads the content container by the safe area across the scrollable axis. Defaults to NO.
+ */
+@property (nonatomic, assign) BOOL padsContentForSafeArea;
+
+/*
  * Makes `setContentOffset:` method no-op when given `block` is executed.
  * The block is being executed synchronously.
  */

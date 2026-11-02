@@ -60,10 +60,9 @@ class FabricMountingManagerTest : public ::testing::Test {
  * and to short-circuit a redundant Create mount item for the root view.
  *
  * Bug this catches: if a refactor stops registering the root surface tag
- * (e.g. switches to `unordered_set<Tag>{}` instead of
- * `unordered_set<Tag>({surfaceId})`), the root view would be re-created on
- * every commit. Without this assertion, that regression would only surface
- * via end-to-end Java tests.
+ * (e.g. starts each surface with an empty registry), the root view would be
+ * re-created on every commit. Without this assertion, that regression would
+ * only surface via end-to-end Java tests.
  */
 TEST_F(
     FabricMountingManagerTest,
@@ -79,7 +78,7 @@ TEST_F(
 /*
  * Verifies that `isViewAllocated` returns false for a surface that has not
  * been started. The contract is "false when the surface is unknown", not
- * "throw" or "abort"; `executeMount` and `preallocateShadowView` both rely
+ * "throw" or "abort"; `executeMount` and `drainPreallocateViewsQueue` both rely
  * on this to gracefully no-op when a surface has been stopped concurrently.
  */
 TEST_F(
@@ -98,7 +97,7 @@ TEST_F(
  * must return false for *any* tag on that surface, including the surface
  * tag itself (which `onSurfaceStart` had inserted).
  *
- * Bug this catches: if `onSurfaceStop` only `.clear()`-ed the inner set
+ * Bug this catches: if `onSurfaceStop` only `.clear()`-ed the inner map
  * instead of erasing the outer map entry, `executeMount`'s "surface was
  * stopped" log would never fire, masking commit-after-stop bugs.
  */
@@ -122,7 +121,7 @@ TEST_F(
  * the same process.
  *
  * Bug this catches: if a future change accidentally shared the
- * `unordered_set<Tag>` across surfaces (e.g. via a misplaced static), tags
+ * per-surface registry across surfaces (e.g. via a misplaced static), tags
  * from one surface would falsely appear as allocated on another, and
  * stopping any surface would purge unrelated surfaces' registries.
  */

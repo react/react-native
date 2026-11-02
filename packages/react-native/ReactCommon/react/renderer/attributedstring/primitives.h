@@ -9,14 +9,18 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <cstdint>
 #include <functional>
 #include <limits>
 
 namespace facebook::react {
 
-enum class FontStyle { Normal, Italic, Oblique };
+// We explicitly use the smallest size for each enum type in TextAttributes to
+// optimize memory used by each AttributedString fragment and text measurement
+// cache key. Usually this is 1 byte but some types have larger enum values.
+enum class FontStyle : uint8_t { Normal, Italic, Oblique };
 
-enum class FontWeight : int {
+enum class FontWeight : uint16_t {
   Weight100 = 100,
   UltraLight = 100,
   Weight200 = 200,
@@ -67,7 +71,7 @@ enum class FontVariant : int {
   StylisticTwenty = 1 << 25
 };
 
-enum class DynamicTypeRamp {
+enum class DynamicTypeRamp : uint8_t {
   Caption2,
   Caption1,
   Footnote,
@@ -99,7 +103,7 @@ enum class TextWidthMode {
   LongestLine,
 };
 
-enum class TextAlignment {
+enum class TextAlignment : uint8_t {
   Natural, // Indicates the default alignment for script.
   Left, // Visually left aligned.
   Center, // Visually centered.
@@ -116,14 +120,14 @@ enum class TextAlignmentVertical {
   Center,
 };
 
-enum class WritingDirection {
+enum class WritingDirection : uint8_t {
   Natural, // Determines direction using the Unicode Bidi Algorithm rules P2 and
            // P3.
   LeftToRight, // Left to right writing direction.
   RightToLeft // Right to left writing direction.
 };
 
-enum class LineBreakStrategy {
+enum class LineBreakStrategy : uint8_t {
   None, // Don't use any line break strategies
   PushOut, // Use the push out line break strategy.
   HangulWordPriority, // When specified, it prohibits breaking between Hangul
@@ -132,7 +136,7 @@ enum class LineBreakStrategy {
            // system uses for standard UI labels.
 };
 
-enum class LineBreakMode {
+enum class LineBreakMode : uint8_t {
   Word, // Wrap at word boundaries, default
   Char, // Wrap at character boundaries
   Clip, // Simply clip
@@ -141,11 +145,11 @@ enum class LineBreakMode {
   Tail // Truncate at tail of line: "abcd..."
 };
 
-enum class TextDecorationLineType { None, Underline, Strikethrough, UnderlineStrikethrough };
+enum class TextDecorationLineType : uint8_t { None, Underline, Strikethrough, UnderlineStrikethrough };
 
-enum class TextDecorationStyle { Solid, Double, Dotted, Dashed, Wavy };
+enum class TextDecorationStyle : uint8_t { Solid, Double, Dotted, Dashed, Wavy };
 
-enum class TextTransform {
+enum class TextTransform : uint8_t {
   None,
   Uppercase,
   Lowercase,
@@ -157,6 +161,26 @@ enum class HyphenationFrequency {
   None, // No hyphenation.
   Normal, // Less frequent hyphenation.
   Full // Standard amount of hyphenation.
+};
+
+/*
+ * Strictness of the line-breaking rules, as CSS `line-break`.
+ * Currently applied on Android only.
+ */
+enum class LineBreak {
+  Auto, // The platform's default rules.
+  Loose, // The least restrictive rules.
+  Normal, // The most common rules.
+  Strict // The most restrictive rules.
+};
+
+/*
+ * Word-based line breaking, as CSS `word-break`.
+ * Currently applied on Android only.
+ */
+enum class WordBreak {
+  Normal, // No word-based line breaking.
+  AutoPhrase // Break Japanese text at phrase boundaries.
 };
 
 } // namespace facebook::react

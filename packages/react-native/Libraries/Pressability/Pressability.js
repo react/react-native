@@ -371,12 +371,12 @@ let longPressDeactivationDistance = DEFAULT_LONG_PRESS_DEACTIVATION_DISTANCE;
 export default class Pressability {
   _config: PressabilityConfig;
   _eventHandlers: ?EventHandlers = null;
-  _hoverInDelayTimeout: ?TimeoutID = null;
-  _hoverOutDelayTimeout: ?TimeoutID = null;
+  _hoverInDelayTimeout: ?ReturnType<typeof setTimeout> = null;
+  _hoverOutDelayTimeout: ?ReturnType<typeof setTimeout> = null;
   _isHovered: boolean = false;
-  _longPressDelayTimeout: ?TimeoutID = null;
-  _pressDelayTimeout: ?TimeoutID = null;
-  _pressOutDelayTimeout: ?TimeoutID = null;
+  _longPressDelayTimeout: ?ReturnType<typeof setTimeout> = null;
+  _pressDelayTimeout: ?ReturnType<typeof setTimeout> = null;
+  _pressOutDelayTimeout: ?ReturnType<typeof setTimeout> = null;
   _responderID: ?number | HostInstance = null;
   _responderRegion: ?Readonly<{
     bottom: number,
@@ -563,11 +563,16 @@ export default class Pressability {
         onPointerEnter: undefined as void | (PointerEvent => void),
         onPointerLeave: undefined as void | (PointerEvent => void),
       };
-      const {onHoverIn, onHoverOut} = this._config;
-      if (onHoverIn != null) {
+      // Whether to attach these at all is necessarily decided once: their
+      // presence is what makes the host view listen for pointer enter/leave.
+      // The callbacks themselves are read from `this._config` at invocation,
+      // as every other handler here does, so that `configure` is observed.
+      const configAtCreation = this._config;
+      if (configAtCreation.onHoverIn != null) {
         hoverPointerEvents.onPointerEnter = (event: PointerEvent) => {
           this._isHovered = true;
           this._cancelHoverOutDelayTimeout();
+          const {onHoverIn} = this._config;
           if (onHoverIn != null) {
             const delayHoverIn = normalizeDelay(this._config.delayHoverIn);
             if (delayHoverIn > 0) {
@@ -581,11 +586,12 @@ export default class Pressability {
           }
         };
       }
-      if (onHoverOut != null) {
+      if (configAtCreation.onHoverOut != null) {
         hoverPointerEvents.onPointerLeave = (event: PointerEvent) => {
           if (this._isHovered) {
             this._isHovered = false;
             this._cancelHoverInDelayTimeout();
+            const {onHoverOut} = this._config;
             if (onHoverOut != null) {
               const delayHoverOut = normalizeDelay(this._config.delayHoverOut);
               if (delayHoverOut > 0) {

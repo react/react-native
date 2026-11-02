@@ -50,18 +50,15 @@ TaskDispatchThread::TaskDispatchThread(
 #else
   thread_ = std::thread(&TaskDispatchThread::loop, this);
 #endif
+  threadId_ = thread_.get_id();
 }
 
 TaskDispatchThread::~TaskDispatchThread() noexcept {
   quit();
-
-  if (thread_.joinable()) {
-    thread_.join();
-  }
 }
 
 bool TaskDispatchThread::isOnThread() noexcept {
-  return std::this_thread::get_id() == thread_.get_id();
+  return !loopStopped_ && std::this_thread::get_id() == threadId_;
 }
 
 bool TaskDispatchThread::isRunning() noexcept {
@@ -71,12 +68,13 @@ bool TaskDispatchThread::isRunning() noexcept {
 void TaskDispatchThread::runAsync(
     TaskFn&& task,
     std::chrono::milliseconds delayMs) noexcept {
+  auto ownedTask = std::make_unique<TaskFn>(std::move(task));
   std::lock_guard<std::mutex> guard(mutex_);
   if (!running_) {
     return;
   }
   auto dispatchTime = std::chrono::system_clock::now() + delayMs;
-  queue_.emplace(dispatchTime, std::move(task));
+  queue_.emplace(dispatchTime, std::move(ownedTask));
   loopCv_.notify_one();
 }
 
@@ -97,61 +95,62 @@ void TaskDispatchThread::runSync(TaskFn&& task) noexcept {
   promise->get_future().wait();
 }
 
-void TaskDispatchThread::quit() noexcept {
+void TaskDispatchThread::cancelPendingTasks() noexcept {
+  std::priority_queue<Task> discarded;
   {
-    /*
-      We should hold lock even when changing atomic variable to correctly
-      publish the modificatino to the waiting thread
-      from: https://en.cppreference.com/w/cpp/thread/condition_variable.html
-    */
-    std::unique_lock<std::mutex> lock(mutex_);
-    if (!running_.exchange(false)) {
-      return;
+    std::lock_guard<std::mutex> lock(mutex_);
+    queue_.swap(discarded);
+  }
+  loopCv_.notify_one();
+}
+
+void TaskDispatchThread::quit() noexcept {
+  const bool onThread = isOnThread();
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    running_ = false;
+  }
+  loopCv_.notify_one();
+  if (!onThread) {
+    {
+      std::lock_guard<std::mutex> lock(joinMutex_);
+      if (thread_.joinable()) {
+        thread_.join();
+      }
     }
   }
-
-  loopCv_.notify_one();
-  if (!isOnThread()) {
-    loopStoppedPromise_.get_future().wait();
-  }
+  cancelPendingTasks();
 }
 
 void TaskDispatchThread::loop() noexcept {
   if (!threadName_.empty()) {
     folly::setThreadName(threadName_);
   }
+  std::unique_lock<std::mutex> lock(mutex_);
   while (running_) {
-    std::unique_lock<std::mutex> lock(mutex_);
     loopCv_.wait(lock, [&]() { return !running_ || !queue_.empty(); });
-
-    while (!queue_.empty()) {
-      auto task = queue_.top();
-      auto now = std::chrono::system_clock::now();
-
-      if (running_) {
-        if (task.dispatchTime > now) {
-          // Wait until the scheduled task time, if delayed
-          loopCv_.wait_until(lock, task.dispatchTime);
-          continue;
-        }
-      } else {
-        // Shutting down, skip all the remaining tasks
-        queue_ = {};
-        break;
-      }
-
-      // We should check whether the task thread is still running at this
-      // point (which may not anymore be the case since the previous check)
-      if (running_) {
-        lock.unlock();
-        task.fn();
-        lock.lock();
-      }
-      queue_.pop();
+    if (!running_) {
+      break;
     }
+    const auto dispatchTime = queue_.top().dispatchTime;
+    if (dispatchTime > std::chrono::system_clock::now()) {
+      loopCv_.wait_until(lock, dispatchTime, [this, dispatchTime]() {
+        return !running_ || queue_.empty() ||
+            queue_.top().dispatchTime != dispatchTime;
+      });
+      continue;
+    }
+    {
+      auto fn = std::move(queue_.top().fn);
+      queue_.pop();
+      lock.unlock();
+      if (running_) {
+        (*fn)();
+      }
+    }
+    lock.lock();
   }
-
-  loopStoppedPromise_.set_value();
+  loopStopped_ = true;
 }
 
 } //  namespace facebook::react

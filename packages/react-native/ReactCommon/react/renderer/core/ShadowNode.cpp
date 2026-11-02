@@ -25,7 +25,8 @@ namespace facebook::react {
  * tree simultaneously. This thread_local flag allows enabling the updates for
  * chosen threads.
  */
-thread_local bool useRuntimeShadowNodeReferenceUpdateOnThread{false}; // NOLINT
+constinit thread_local bool useRuntimeShadowNodeReferenceUpdateOnThread{
+    false}; // NOLINT
 
 /* static */ void ShadowNode::setUseRuntimeShadowNodeReferenceUpdateOnThread(
     bool isEnabled) {
@@ -411,7 +412,7 @@ std::shared_ptr<ShadowNode> ShadowNode::cloneTree(
     childNode = parentNode.clone(
         {.children =
              std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>(
-                 children)});
+                 std::move(children))});
   }
 
   return std::const_pointer_cast<ShadowNode>(childNode);

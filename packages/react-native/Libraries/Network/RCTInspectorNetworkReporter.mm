@@ -148,7 +148,7 @@ static const NSMutableDictionary<NSString *, NSMutableString *> *responseBuffers
 #endif
 }
 
-+ (void)reportRequestFailed:(NSString *)requestId cancelled:(bool)cancelled
++ (void)reportRequestFailed:(NSString *)requestId cancelled:(BOOL)cancelled
 {
   NetworkReporter::getInstance().reportRequestFailed(requestId.UTF8String, cancelled);
 

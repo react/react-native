@@ -25,8 +25,7 @@ static const NSTimeInterval FRAME_LENGTH = 1.0 / 60.0;
 
 - (instancetype)init
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _timestamp = 1124.1234143251; // Random
   }
   return self;
@@ -50,8 +49,7 @@ static const NSTimeInterval FRAME_LENGTH = 1.0 / 60.0;
 
 - (instancetype)init
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _calls = [NSMutableArray new];
   }
   return self;
@@ -78,8 +76,7 @@ static const NSTimeInterval FRAME_LENGTH = 1.0 / 60.0;
 
 - (instancetype)initWithName:(NSString *)name viewTag:(NSNumber *)viewTag arguments:(NSArray *)arguments
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _eventName = name;
     _viewTag = viewTag;
     _arguments = arguments;

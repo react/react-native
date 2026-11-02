@@ -23,6 +23,7 @@ export default function setUpDefaultReactNativeEnvironment(
   require('./setUpDOM').default();
   require('./setUpPerformance').default();
   require('../../../Libraries/Core/polyfillPromise');
+  require('../../../Libraries/Core/polyfillArrayES2023Methods');
   require('../../../Libraries/Core/setUpTimers');
   if (__DEV__ && enableDeveloperTools) {
     require('../../../Libraries/Core/setUpReactDevTools');

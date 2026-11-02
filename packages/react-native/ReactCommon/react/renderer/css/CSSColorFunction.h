@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <algorithm>
 #include <cmath>
@@ -16,12 +16,12 @@
 #include <string_view>
 #include <tuple>
 
+#include <React/Utils.h>
 #include <react/renderer/css/CSSAngle.h>
 #include <react/renderer/css/CSSNumber.h>
 #include <react/renderer/css/CSSPercentage.h>
 #include <react/renderer/css/CSSValueParser.h>
 #include <react/utils/PackTraits.h>
-#include <react/utils/fnv1a.h>
 
 namespace facebook::react {
 
@@ -34,7 +34,7 @@ constexpr uint8_t clamp255Component(float f)
   // be rounded towards +∞.
   // https://www.w3.org/TR/css-color-4/#rgb-functions
   auto i = static_cast<int32_t>(f);
-  auto ceiled = f > i ? i + 1 : i;
+  auto ceiled = f > static_cast<float>(i) ? i + 1 : i;
   return static_cast<uint8_t>(std::clamp(ceiled, 0, 255));
 }
 

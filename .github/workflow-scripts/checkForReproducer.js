@@ -43,7 +43,7 @@ module.exports = async (github, context) => {
   const hasValidReproducer = entities.some(entity => {
     const hasPullRequestRepoLink = containsPattern(
       entity.body,
-      `https?:\/\/github\.com\/facebook\/react-native\/pull\/\d+\/?`,
+      `https?:\\/\\/github\\.com\\/(?:facebook|react)\\/react-native\\/pull\\/\\d+\\/?`,
     );
 
     const hasExpoSnackLink = containsPattern(

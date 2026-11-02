@@ -22,7 +22,7 @@ import type {TypeDeclarationMap} from '../../utils';
 const {getValueFromTypes} = require('../utils.js');
 
 // $FlowFixMe[unclear-type] there's no flowtype for ASTs
-type EventTypeAST = Object;
+type EventTypeAST = any;
 
 function buildCommandSchema(
   property: EventTypeAST,

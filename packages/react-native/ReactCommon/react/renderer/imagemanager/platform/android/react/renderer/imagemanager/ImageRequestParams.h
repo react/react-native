@@ -11,8 +11,7 @@
 
 #include <utility>
 
-#include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Float.h>
+#include <React/Graphics.h>
 #include <react/renderer/imagemanager/primitives.h>
 
 namespace facebook::react {

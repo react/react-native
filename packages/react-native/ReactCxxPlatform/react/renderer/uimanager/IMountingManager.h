@@ -7,8 +7,8 @@
 
 #pragma once
 
+#include <React/RendererCore.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
-#include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/mounting/MountingTransaction.h>
 #include <react/renderer/mounting/ShadowView.h>
 

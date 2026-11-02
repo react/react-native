@@ -555,7 +555,7 @@ bool layoutAbsoluteDescendants(
       // which are positioned relative to the current containing block instead
       // of their parent. "child" may not be dirty, or have new constraints, so
       // absolute positioning may be the first time during this layout pass that
-      // we need to mutate these descendents. Make sure the path of
+      // we need to mutate these descendants. Make sure the path of
       // nodes to them is mutable before positioning.
       child->cloneChildrenIfNeeded();
       const Direction childDirection =

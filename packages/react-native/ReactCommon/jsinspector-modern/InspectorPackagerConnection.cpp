@@ -167,11 +167,7 @@ void InspectorPackagerConnection::Impl::handleConnect(
     // be a no op (because the session is not added to
     // `inspectorSessionsByPage_`), so let's always notify the remote client
     // of the disconnection ourselves.
-    folly::dynamic disconnectPayload =
-        folly::dynamic::object("pageId", pageId)("sessionId", proxySessionId);
-    sendToPackager(
-        folly::dynamic::object("event", "disconnect")(
-            "payload", std::move(disconnectPayload)));
+    sendDisconnectToPackager(pageId, proxySessionId);
     return;
   }
   pageIt->second.emplace(
@@ -317,13 +313,18 @@ void InspectorPackagerConnection::Impl::didClose() {
 }
 
 void InspectorPackagerConnection::Impl::onPageRemoved(int pageId) {
-  auto pageIt = inspectorSessionsByPage_.find(std::to_string(pageId));
+  auto pageIdString = std::to_string(pageId);
+  auto pageIt = inspectorSessionsByPage_.find(pageIdString);
 
   while (pageIt != inspectorSessionsByPage_.end() && !pageIt->second.empty()) {
+    auto proxySessionId = pageIt->second.begin()->first;
     pageIt = disconnectSession({
         pageIt,
         pageIt->second.begin(),
     });
+    // RemoteConnection::onDisconnect() is a no op once the session is
+    // removed, so notify the remote client ourselves.
+    sendDisconnectToPackager(pageIdString, proxySessionId);
   }
 }
 
@@ -405,6 +406,16 @@ void InspectorPackagerConnection::Impl::sendToPackager(
   }
 
   webSocket_->send(folly::toJson(message));
+}
+
+void InspectorPackagerConnection::Impl::sendDisconnectToPackager(
+    const std::string& pageId,
+    const std::string& proxySessionId) {
+  sendToPackager(
+      folly::dynamic::object("event", "disconnect")(
+          "payload",
+          folly::dynamic::object("pageId", pageId)(
+              "sessionId", proxySessionId)));
 }
 
 void InspectorPackagerConnection::Impl::scheduleSendToPackager(

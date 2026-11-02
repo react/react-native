@@ -19,7 +19,7 @@ runs:
       run: node ./scripts/run-ci-javascript-tests.js --maxWorkers 2
     - name: Upload test results
       if: ${{ always() }}
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: test-js-results
         compression-level: 1

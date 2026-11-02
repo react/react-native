@@ -31,7 +31,6 @@
 #define RN_UMBRELLA_CONTEXT 1
 
 #include <ReactCommon/RuntimeExecutor.h>
-#include <ReactCommon/RuntimeExecutorSyncUIThreadUtils.h>
 
 #undef RN_UMBRELLA_CONTEXT
 #pragma pop_macro("RN_UMBRELLA_CONTEXT")

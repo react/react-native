@@ -342,7 +342,7 @@ test('percentage padding tracks an updated owner width', () => {
   );
 });
 
-test('gates native box sizing cache invalidation', () => {
+test('invalidates layout immediately when native box sizing changes', () => {
   const root = Fantom.createRoot({
     viewportHeight: 280,
     viewportWidth: 240,
@@ -398,17 +398,6 @@ test('gates native box sizing cache invalidation', () => {
     });
   });
   render(40);
-
-  const layoutAfterFirstRerender = {
-    leafWidth: nullthrows(leafRef.current).getBoundingClientRect().width,
-    scrollWidth: nullthrows(scrollRef.current).getBoundingClientRect().width,
-  };
-  expect(layoutAfterFirstRerender).toEqual({
-    leafWidth: 83,
-    scrollWidth: 83,
-  });
-
-  render(53);
 
   expect({
     leafWidth: nullthrows(leafRef.current).getBoundingClientRect().width,

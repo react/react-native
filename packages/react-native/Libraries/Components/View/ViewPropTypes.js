@@ -23,6 +23,7 @@ import type {
   LayoutRectangle,
   MouseEvent,
   PointerEvent,
+  SafeAreaInsetsChangeEvent,
 } from '../../Types/CoreEventTypes';
 import type {
   AccessibilityActionEvent,
@@ -62,6 +63,27 @@ type DirectEventProps = Readonly<{
    * See https://reactnative.dev/docs/view#onlayout
    */
   onLayout?: ?(event: LayoutChangeEvent) => unknown,
+
+  /**
+   * Invoked when this view's safe-area insets change, with:
+   *
+   * `{nativeEvent: {insets: {top, right, bottom, left}}}`
+   *
+   * `insets` measure how far the view extends into the unsafe area, in points
+   * on iOS and dp on Android, not display pixels. Content padding does not
+   * affect them.
+   *
+   * Android measures full rendered bounds when the combined transform is
+   * translation/scaling; partial clipping does not change them. Other transforms
+   * or unavailable geometry emit no update, not zeros.
+   *
+   * Dispatched synchronously so rendering updates apply in the same frame.
+   *
+   * @experimental
+   */
+  experimental_onSafeAreaInsetsChange?: ?(
+    event: SafeAreaInsetsChangeEvent,
+  ) => unknown,
 
   /**
    * When `accessible` is `true`, the system will invoke this function when the
@@ -306,14 +328,6 @@ export type ViewPropsAndroid = Readonly<{
   renderToHardwareTextureAndroid?: ?boolean,
 
   /**
-   * Whether to force the Android TV focus engine to move focus to this view.
-   *
-   * @platform android
-   * @deprecated Use `focusable` instead
-   */
-  hasTVPreferredFocus?: ?boolean,
-
-  /**
    * Designates the next view to receive focus when the user navigates down.
    * The value is the `nativeID` of the target view.
    *
@@ -389,14 +403,6 @@ export type TVViewPropsIOS = Readonly<{
    * @platform ios
    */
   isTVSelectable?: boolean,
-
-  /**
-   * *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
-   *
-   * @platform ios
-   * @deprecated Use `focusable` instead
-   */
-  hasTVPreferredFocus?: boolean,
 
   /**
    * *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.

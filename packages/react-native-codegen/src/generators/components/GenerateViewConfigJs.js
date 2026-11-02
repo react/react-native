@@ -53,15 +53,23 @@ ${imports}
 ${componentConfig}
 `;
 
-// We use this to add to a set. Need to make sure we aren't importing
-// this multiple times.
-const UIMANAGER_IMPORT = 'const {UIManager} = require("react-native")';
+function buildImport(source: string, imports: Set<string>): string {
+  if (imports.size === 0) {
+    return '';
+  }
+
+  return `const {${Array.from(imports).sort().join(', ')}} = require('${source}');`;
+}
 
 function expression(input: string) {
   return core.template.expression(input)();
 }
 
-function getReactDiffProcessValue(typeAnnotation: PropTypeAnnotation) {
+function getReactDiffProcessValue(
+  typeAnnotation: PropTypeAnnotation,
+  unstableImports: Set<string>,
+  reactNativeImports: Set<string>,
+) {
   switch (typeAnnotation.type) {
     case 'BooleanTypeAnnotation':
     case 'StringTypeAnnotation':
@@ -76,23 +84,19 @@ function getReactDiffProcessValue(typeAnnotation: PropTypeAnnotation) {
     case 'ReservedPropTypeAnnotation':
       switch (typeAnnotation.name) {
         case 'ColorPrimitive':
-          return expression(
-            "require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute",
-          );
+          unstableImports.add('colorAttribute');
+          return expression('colorAttribute');
         case 'ImageSourcePrimitive':
-          return expression(
-            "{ process: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/Image/resolveAssetSource')) }",
-          );
+          reactNativeImports.add('Image');
+          return expression('{process: Image.resolveAssetSource}');
         case 'ImageRequestPrimitive':
           throw new Error('ImageRequest should not be used in props');
         case 'PointPrimitive':
-          return expression(
-            "{ diff: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/pointsDiffer')) }",
-          );
+          unstableImports.add('pointsDiffer');
+          return expression('{diff: pointsDiffer}');
         case 'EdgeInsetsPrimitive':
-          return expression(
-            "{ diff: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/insetsDiffer')) }",
-          );
+          unstableImports.add('insetsDiffer');
+          return expression('{diff: insetsDiffer}');
         case 'DimensionPrimitive':
           return t.booleanLiteral(true);
         default:
@@ -105,9 +109,8 @@ function getReactDiffProcessValue(typeAnnotation: PropTypeAnnotation) {
       if (typeAnnotation.elementType.type === 'ReservedPropTypeAnnotation') {
         switch (typeAnnotation.elementType.name) {
           case 'ColorPrimitive':
-            return expression(
-              "{ process: ((req) => 'default' in req ? req.default : req)(require('react-native/Libraries/StyleSheet/processColorArray')) }",
-            );
+            unstableImports.add('processColorArray');
+            return expression('{process: processColorArray}');
           case 'ImageSourcePrimitive':
           case 'PointPrimitive':
           case 'EdgeInsetsPrimitive':
@@ -190,11 +193,11 @@ function normalizeInputEventName(name: string) {
 // Replicates the behavior of viewConfig in RCTComponentData.m
 function getValidAttributesForEvents(
   events: ReadonlyArray<EventTypeShape>,
-  imports: Set<string>,
+  unstableImports: Set<string>,
 ) {
-  imports.add(
-    "const {ConditionallyIgnoredEventHandlers} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');",
-  );
+  // Generated files can live outside the React Native package, so they cannot
+  // use a relative import for this implementation detail.
+  unstableImports.add('ConditionallyIgnoredEventHandlers');
 
   const validAttributes = t.objectExpression(
     events.map(eventType => {
@@ -253,7 +256,8 @@ function buildViewConfig(
   schema: SchemaType,
   componentName: string,
   component: ComponentShape,
-  imports: Set<string>,
+  unstableImports: Set<string>,
+  reactNativeImports: Set<string>,
 ) {
   const componentProps = component.props;
   const componentEvents = component.events;
@@ -263,10 +267,6 @@ function buildViewConfig(
       case 'ReactNativeBuiltInType':
         switch (extendProps.knownTypeName) {
           case 'ReactNativeCoreViewProps':
-            imports.add(
-              "const NativeComponentRegistry = require('react-native/Libraries/NativeComponent/NativeComponentRegistry');",
-            );
-
             return;
           default:
             extendProps.knownTypeName as empty;
@@ -282,11 +282,19 @@ function buildViewConfig(
     ...componentProps.map(schemaProp => {
       return t.objectProperty(
         t.identifier(schemaProp.name),
-        getReactDiffProcessValue(schemaProp.typeAnnotation),
+        getReactDiffProcessValue(
+          schemaProp.typeAnnotation,
+          unstableImports,
+          reactNativeImports,
+        ),
       );
     }),
     ...(componentEvents.length > 0
-      ? [t.spreadElement(getValidAttributesForEvents(componentEvents, imports))]
+      ? [
+          t.spreadElement(
+            getValidAttributesForEvents(componentEvents, unstableImports),
+          ),
+        ]
       : []),
   ]);
 
@@ -358,7 +366,7 @@ function buildCommands(
   schema: SchemaType,
   componentName: string,
   component: ComponentShape,
-  imports: Set<string>,
+  unstableImports: Set<string>,
 ) {
   const commands = component.commands;
 
@@ -366,9 +374,7 @@ function buildCommands(
     return null;
   }
 
-  imports.add(
-    'const {dispatchCommand} = require("react-native/Libraries/ReactNative/RendererProxy");',
-  );
+  unstableImports.add('dispatchCommand');
 
   const commandsObject = t.objectExpression(
     commands.map(command => {
@@ -404,7 +410,8 @@ module.exports = {
   generate(libraryName: string, schema: SchemaType): FilesOutput {
     try {
       const fileName = `${libraryName}NativeViewConfig.js`;
-      const imports: Set<string> = new Set();
+      const unstableImports: Set<string> = new Set();
+      const reactNativeImports: Set<string> = new Set();
 
       const moduleResults = Object.keys(schema.modules)
         .map(moduleName => {
@@ -420,8 +427,10 @@ module.exports = {
               const component = components[componentName];
 
               if (component.paperComponentNameDeprecated) {
-                imports.add(UIMANAGER_IMPORT);
+                reactNativeImports.add('UIManager');
               }
+
+              reactNativeImports.add('NativeComponentRegistry');
 
               const replacedTemplate = ComponentTemplate({
                 componentName,
@@ -440,7 +449,8 @@ module.exports = {
                   schema,
                   paperComponentName,
                   component,
-                  imports,
+                  unstableImports,
+                  reactNativeImports,
                 ),
               });
 
@@ -448,7 +458,7 @@ module.exports = {
                 schema,
                 paperComponentName,
                 component,
-                imports,
+                unstableImports,
               );
               if (commandsExport) {
                 replacedSourceRoot.body.push(commandsExport);
@@ -472,7 +482,15 @@ module.exports = {
 
       const replacedTemplate = FileTemplate({
         componentConfig: moduleResults,
-        imports: Array.from(imports).sort().join('\n'),
+        imports: [
+          buildImport('react-native', reactNativeImports),
+          buildImport(
+            'react-native/unstable-internals-do-not-use',
+            unstableImports,
+          ),
+        ]
+          .filter(Boolean)
+          .join('\n'),
       });
 
       return new Map([[fileName, replacedTemplate]]);

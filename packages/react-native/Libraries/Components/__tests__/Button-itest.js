@@ -77,7 +77,7 @@ describe('<Button>', () => {
         // This is necessary because `<Button>` doesn't provide a `<View>` ref
         // but an instance of `Touchable` that isn't a ReactNativeElement.
         const buttonViewNode = nullthrows(
-          root.document.documentElement.firstElementChild,
+          nullthrows(root.document.documentElement).firstElementChild,
         );
 
         Fantom.dispatchNativeEvent(buttonViewNode, 'click', {});
@@ -123,7 +123,7 @@ describe('<Button>', () => {
         // This is necessary because `<Button>` doesn't provide a `<View>` ref
         // but an instance of `Touchable` that isn't a ReactNativeElement.
         const buttonViewNode = nullthrows(
-          root.document.documentElement.firstElementChild,
+          nullthrows(root.document.documentElement).firstElementChild,
         );
 
         Fantom.dispatchNativeEvent(buttonViewNode, 'click', {});
@@ -152,7 +152,7 @@ describe('<Button>', () => {
         // This is necessary because `<Button>` doesn't provide a `<View>` ref
         // but an instance of `Touchable` that isn't a ReactNativeElement.
         const buttonViewNode = nullthrows(
-          root.document.documentElement.firstElementChild,
+          nullthrows(root.document.documentElement).firstElementChild,
         );
 
         Fantom.dispatchNativeEvent(buttonViewNode, 'click', {});
@@ -193,7 +193,7 @@ describe('<Button>', () => {
         // This is necessary because `<Button>` doesn't provide a `<View>` ref
         // but an instance of `Touchable` that isn't a ReactNativeElement.
         const buttonViewNode = nullthrows(
-          root.document.documentElement.firstElementChild,
+          nullthrows(root.document.documentElement).firstElementChild,
         );
 
         Fantom.dispatchNativeEvent(buttonViewNode, 'click', {});
@@ -235,7 +235,7 @@ describe('<Button>', () => {
         // This is necessary because `<Button>` doesn't provide a `<View>` ref
         // but an instance of `Touchable` that isn't a ReactNativeElement.
         const buttonViewNode = nullthrows(
-          root.document.documentElement.firstElementChild,
+          nullthrows(root.document.documentElement).firstElementChild,
         );
 
         Fantom.dispatchNativeEvent(buttonViewNode, 'click', {});

@@ -8,14 +8,14 @@
  * @format
  */
 
-import type {____ViewStyle_Internal} from './StyleSheetTypes';
+import type {ViewStyle} from './StyleSheetTypes';
 
-export default function splitLayoutProps(props: ?____ViewStyle_Internal): {
-  outer: ?____ViewStyle_Internal,
-  inner: ?____ViewStyle_Internal,
+export default function splitLayoutProps(props: ?ViewStyle): {
+  outer: ?ViewStyle,
+  inner: ?ViewStyle,
 } {
-  let outer: ?____ViewStyle_Internal = null;
-  let inner: ?____ViewStyle_Internal = null;
+  let outer: ?ViewStyle = null;
+  let inner: ?ViewStyle = null;
 
   if (props != null) {
     // $FlowFixMe[incompatible-exact] Will contain a subset of keys from `props`.

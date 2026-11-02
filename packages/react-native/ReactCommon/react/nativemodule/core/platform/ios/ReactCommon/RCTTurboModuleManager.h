@@ -7,13 +7,15 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <memory>
 
+#import <React/NativeModuleCore.h>
 #import <React/RCTBridgeModuleDecorator.h>
 #import <React/RCTDefines.h>
 #import <React/RCTTurboModuleRegistry.h>
-#import <ReactCommon/RuntimeExecutor.h>
-#import <ReactCommon/TurboModuleBinding.h>
+#import <React/RuntimeExecutor.h>
 
 #import "RCTTurboModule.h"
 
@@ -54,9 +56,6 @@
  * These modules shouldn't be TurboModule-compatible (i.e: they should not conform to RCTTurboModule).
  *
  * This method is only used by the TurboModule interop layer.
- *
- * It must match the signature of RCTBridgeDelegate extraModulesForBridge:
- * - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge;
  */
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
     __attribute((deprecated("Please make all native modules returned from this method TurboModule-compatible.")));

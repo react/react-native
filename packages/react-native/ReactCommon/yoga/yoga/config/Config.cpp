@@ -106,7 +106,8 @@ void Config::log(
     LogLevel logLevel,
     const char* format,
     va_list args) const {
-  logger_(this, node, unscopedEnum(logLevel), format, args);
+  const auto logger = logger_ != nullptr ? logger_ : getDefaultLogger();
+  logger(this, node, unscopedEnum(logLevel), format, args);
 }
 
 void Config::setCloneNodeCallback(YGCloneNodeFunc cloneNode) {
@@ -127,9 +128,11 @@ YGNodeRef Config::cloneNode(
   return clone;
 }
 
+#if defined(_WIN32)
 /*static*/ const Config& Config::getDefault() {
-  static Config config{getDefaultLogger()};
+  static constexpr Config config{nullptr};
   return config;
 }
+#endif
 
 } // namespace facebook::yoga

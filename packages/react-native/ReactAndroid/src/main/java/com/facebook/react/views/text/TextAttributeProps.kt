@@ -7,6 +7,8 @@
 
 package com.facebook.react.views.text
 
+import android.annotation.SuppressLint
+import android.graphics.text.LineBreakConfig
 import android.os.Build
 import android.text.Layout
 import android.text.TextUtils.TruncateAt
@@ -40,7 +42,8 @@ public class TextAttributeProps private constructor() {
           if (value == ReactConstants.UNSET.toFloat()) {
             Float.NaN
           } else {
-            if (allowFontScaling) toPixelFromSP(value) else toPixelFromDIP(value)
+            if (allowFontScaling) toPixelFromSP(value, maxFontSizeMultiplier)
+            else toPixelFromDIP(value)
           }
     }
 
@@ -80,6 +83,9 @@ public class TextAttributeProps private constructor() {
   private var fontSizeInput: Float = ReactConstants.UNSET.toFloat()
   private var lineHeightInput: Float = ReactConstants.UNSET.toFloat()
   private var letterSpacingInput: Float = Float.NaN
+
+  internal val isLetterSpacingSet: Boolean
+    get() = !letterSpacingInput.isNaN()
 
   // `ReactConstants.UNSET` is -1, same as `LayoutDirection.UNDEFINED` (which is a hidden symbol)
   public var layoutDirection: Int = ReactConstants.UNSET
@@ -169,7 +175,7 @@ public class TextAttributeProps private constructor() {
   public var letterSpacing: Float
     get() {
       val letterSpacingPixels =
-          if (allowFontScaling) toPixelFromSP(letterSpacingInput)
+          if (allowFontScaling) toPixelFromSP(letterSpacingInput, maxFontSizeMultiplier)
           else toPixelFromDIP(letterSpacingInput)
 
       require(fontSize > 0) { "FontSize should be a positive value. Current value: $fontSize" }
@@ -277,11 +283,7 @@ public class TextAttributeProps private constructor() {
     isUnderlineTextDecorationSet = false
     isLineThroughTextDecorationSet = false
     if (textDecorationLineString != null) {
-      for (textDecorationLineSubString in
-          textDecorationLineString
-              .split("-".toRegex())
-              .dropLastWhile { it.isEmpty() }
-              .toTypedArray()) {
+      for (textDecorationLineSubString in textDecorationLineString.split('-')) {
         if ("underline" == textDecorationLineSubString) {
           isUnderlineTextDecorationSet = true
         } else if ("strikethrough" == textDecorationLineSubString) {
@@ -606,6 +608,36 @@ public class TextAttributeProps private constructor() {
           "none" -> Layout.HYPHENATION_FREQUENCY_NONE
           "normal" -> Layout.HYPHENATION_FREQUENCY_NORMAL
           else -> Layout.HYPHENATION_FREQUENCY_FULL
+        }
+
+    // The LineBreakConfig constants are inlined at compile time, so reading them is safe below API
+    // 33. Callers apply the result only on API 33+.
+    // Maps CSS `line-break` values to LineBreakConfig.LINE_BREAK_STYLE_*.
+    @SuppressLint("InlinedApi")
+    internal fun getLineBreakStyle(lineBreak: String?): Int =
+        when (lineBreak) {
+          null,
+          "auto" -> LineBreakConfig.LINE_BREAK_STYLE_NONE
+          "loose" -> LineBreakConfig.LINE_BREAK_STYLE_LOOSE
+          "normal" -> LineBreakConfig.LINE_BREAK_STYLE_NORMAL
+          "strict" -> LineBreakConfig.LINE_BREAK_STYLE_STRICT
+          else -> {
+            FLog.w(ReactConstants.TAG, "Invalid lineBreak: $lineBreak")
+            LineBreakConfig.LINE_BREAK_STYLE_NONE
+          }
+        }
+
+    // Maps CSS `word-break` values to LineBreakConfig.LINE_BREAK_WORD_STYLE_*.
+    @SuppressLint("InlinedApi")
+    internal fun getLineBreakWordStyle(wordBreak: String?): Int =
+        when (wordBreak) {
+          null,
+          "normal" -> LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE
+          "auto-phrase" -> LineBreakConfig.LINE_BREAK_WORD_STYLE_PHRASE
+          else -> {
+            FLog.w(ReactConstants.TAG, "Invalid wordBreak: $wordBreak")
+            LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE
+          }
         }
 
     public fun getEllipsizeMode(ellipsizeMode: String?): TruncateAt? =

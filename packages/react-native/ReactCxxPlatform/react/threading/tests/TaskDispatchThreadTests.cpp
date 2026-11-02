@@ -10,6 +10,7 @@
 #include <atomic>
 #include <chrono>
 #include <future>
+#include <memory>
 #include <thread>
 
 namespace facebook::react {
@@ -216,4 +217,137 @@ TEST_F(TaskDispatchThreadTest, RunSyncDoesNotBlockWhenQuitCalledConcurrently) {
     localDispatcher.reset();
   }
 }
+
+TEST_F(TaskDispatchThreadTest, ExternalQuitJoinsEvenAfterWorkerRequestedQuit) {
+  std::promise<void> entered;
+  std::promise<void> release;
+  auto released = release.get_future();
+  dispatcher->runAsync([&]() {
+    dispatcher->quit();
+    entered.set_value();
+    released.wait();
+  });
+  auto ready = entered.get_future().wait_for(std::chrono::seconds(5));
+  if (ready != std::future_status::ready) {
+    release.set_value();
+    FAIL() << "Worker did not reach the shutdown barrier";
+  }
+
+  std::promise<void> joined;
+  auto joinedFuture = joined.get_future();
+  std::thread owner([&]() {
+    dispatcher->quit();
+    joined.set_value();
+  });
+  EXPECT_EQ(
+      joinedFuture.wait_for(std::chrono::seconds(1)),
+      std::future_status::timeout);
+  release.set_value();
+  owner.join();
+  EXPECT_EQ(
+      joinedFuture.wait_for(std::chrono::seconds(0)),
+      std::future_status::ready);
+  EXPECT_FALSE(dispatcher->isRunning());
+}
+
+TEST_F(TaskDispatchThreadTest, ConcurrentExternalQuitWaitsForInFlightCallback) {
+  std::promise<void> entered;
+  std::promise<void> release;
+  auto released = release.get_future();
+  std::atomic<bool> finished{false};
+  dispatcher->runAsync([&]() {
+    entered.set_value();
+    released.wait();
+    finished = true;
+  });
+  auto ready = entered.get_future().wait_for(std::chrono::seconds(5));
+  if (ready != std::future_status::ready) {
+    release.set_value();
+    FAIL() << "Worker did not reach the callback barrier";
+  }
+  std::promise<void> firstJoined;
+  std::promise<void> secondJoined;
+  auto firstFuture = firstJoined.get_future();
+  auto secondFuture = secondJoined.get_future();
+  std::thread first([&]() {
+    dispatcher->quit();
+    EXPECT_TRUE(finished);
+    firstJoined.set_value();
+  });
+  std::thread second([&]() {
+    dispatcher->quit();
+    EXPECT_TRUE(finished);
+    secondJoined.set_value();
+  });
+  EXPECT_EQ(
+      firstFuture.wait_for(std::chrono::seconds(1)),
+      std::future_status::timeout);
+  EXPECT_EQ(
+      secondFuture.wait_for(std::chrono::seconds(1)),
+      std::future_status::timeout);
+  release.set_value();
+  first.join();
+  second.join();
+  EXPECT_TRUE(finished);
+}
+
+TEST(
+    TaskDispatchThreadShutdownTest,
+    DiscardedCapturesAreReleasedAfterJoinWithoutQueueLock) {
+  class Dispatcher final : public TaskDispatchThread {
+   public:
+    bool queueMutexAvailable() {
+      std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
+      return lock.owns_lock();
+    }
+  } dispatcher;
+  bool released = false;
+  auto ownerThread = std::this_thread::get_id();
+  auto token = std::shared_ptr<void>(nullptr, [&](void*) {
+    EXPECT_TRUE(dispatcher.queueMutexAvailable());
+    EXPECT_EQ(std::this_thread::get_id(), ownerThread);
+    released = true;
+  });
+  dispatcher.runAsync([token]() {}, std::chrono::hours(1));
+  token.reset();
+
+  dispatcher.quit();
+
+  EXPECT_TRUE(released);
+}
+
+TEST_F(TaskDispatchThreadTest, DispatchDoesNotCopyCallbackOnWorker) {
+  struct State {
+    TaskDispatchThread* dispatcher{nullptr};
+    std::atomic<int> copiesOnWorker{0};
+    std::promise<void> ran;
+  };
+  struct CopyCountingTask {
+    std::shared_ptr<State> state;
+
+    explicit CopyCountingTask(std::shared_ptr<State> state)
+        : state(std::move(state)) {}
+
+    CopyCountingTask(const CopyCountingTask& other) noexcept
+        : state(other.state) {
+      if (state->dispatcher->isOnThread()) {
+        ++state->copiesOnWorker;
+      }
+    }
+
+    CopyCountingTask& operator=(const CopyCountingTask&) = default;
+
+    void operator()() {
+      state->ran.set_value();
+    }
+  };
+  auto state = std::make_shared<State>();
+  state->dispatcher = dispatcher.get();
+  auto ran = state->ran.get_future();
+  dispatcher->runAsync(CopyCountingTask(state));
+  ASSERT_EQ(ran.wait_for(std::chrono::seconds(5)), std::future_status::ready);
+  dispatcher->quit();
+  EXPECT_EQ(state->copiesOnWorker.load(), 0);
+}
+
 } // namespace facebook::react

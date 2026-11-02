@@ -25,6 +25,7 @@ target_link_libraries(jsinspector
         jsinspector_tracing
         react_cxxstableapi
         react_featureflags
+        react_timing
         runtimeexecutor
         reactperflogger
         react_utils

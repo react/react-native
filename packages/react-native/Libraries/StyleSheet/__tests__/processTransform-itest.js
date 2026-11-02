@@ -148,4 +148,35 @@ describe('processTransform', () => {
       );
     });
   });
+
+  describe('string parsing', () => {
+    it('should keep the percentage unit for translateX and translateY', () => {
+      expect(processTransform('translateX(10%)')).toEqual([
+        {translateX: '10%'},
+      ]);
+      expect(processTransform('translateY(-25.5%)')).toEqual([
+        {translateY: '-25.5%'},
+      ]);
+      expect(processTransform('translateX(10px)')).toEqual([{translateX: 10}]);
+    });
+
+    it('should keep the percentage unit for translate', () => {
+      expect(processTransform('translate(10%, 20px)')).toEqual([
+        {translate: ['10%', 20]},
+      ]);
+    });
+
+    it('should parse numbers without a leading zero', () => {
+      expect(processTransform('translateX(.5px)')).toEqual([{translateX: 0.5}]);
+      expect(processTransform('translateY(-.25px)')).toEqual([
+        {translateY: -0.25},
+      ]);
+      expect(processTransform('translate(.5px, .25px)')).toEqual([
+        {translate: [0.5, 0.25]},
+      ]);
+      expect(processTransform('matrix(.5, 0, 0, .5, 10, 20, 0, 0, 1)')).toEqual(
+        [{matrix: [0.5, 0, 0, 0.5, 10, 20, 0, 0, 1]}],
+      );
+    });
+  });
 });

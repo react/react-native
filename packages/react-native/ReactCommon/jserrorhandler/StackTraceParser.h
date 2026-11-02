@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
+#include <jserrorhandler/JsErrorHandler.h>
 #include <string>
 #include <vector>
-#include "JsErrorHandler.h"
 
 namespace facebook::react {
 

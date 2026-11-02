@@ -13,5 +13,5 @@ add_library(logger OBJECT ${logger_SRC})
 
 target_include_directories(logger PUBLIC .)
 
-target_link_libraries(logger glog)
+target_link_libraries(logger glog react_cxxstableapi)
 target_compile_reactnative_options(logger PRIVATE)

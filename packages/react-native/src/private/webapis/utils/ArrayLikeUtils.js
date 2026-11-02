@@ -23,7 +23,9 @@ export interface ArrayLike<T> extends Iterable<T> {
   readonly length: number;
 }
 
-export function* createValueIterator<T>(arrayLike: ArrayLike<T>): Iterator<T> {
+export function* createValueIterator<T>(
+  arrayLike: ArrayLike<T>,
+): IteratorObject<T> {
   for (let i = 0; i < arrayLike.length; i++) {
     yield arrayLike[i];
   }
@@ -31,7 +33,7 @@ export function* createValueIterator<T>(arrayLike: ArrayLike<T>): Iterator<T> {
 
 export function* createKeyIterator<T>(
   arrayLike: ArrayLike<T>,
-): Iterator<number> {
+): IteratorObject<number> {
   for (let i = 0; i < arrayLike.length; i++) {
     yield i;
   }
@@ -39,7 +41,7 @@ export function* createKeyIterator<T>(
 
 export function* createEntriesIterator<T>(
   arrayLike: ArrayLike<T>,
-): Iterator<[number, T]> {
+): IteratorObject<[number, T]> {
   for (let i = 0; i < arrayLike.length; i++) {
     yield [i, arrayLike[i]];
   }

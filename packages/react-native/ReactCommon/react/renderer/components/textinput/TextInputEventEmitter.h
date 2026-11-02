@@ -9,8 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/View.h>
 #include <react/renderer/attributedstring/AttributedString.h>
-#include <react/renderer/components/view/ViewEventEmitter.h>
 
 namespace facebook::react {
 

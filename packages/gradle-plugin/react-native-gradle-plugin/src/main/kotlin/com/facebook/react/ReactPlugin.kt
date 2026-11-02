@@ -29,6 +29,9 @@ import com.facebook.react.utils.DependencyUtils.readVersionAndGroupStrings
 import com.facebook.react.utils.JdkConfiguratorUtils.configureJavaToolChains
 import com.facebook.react.utils.JsonUtils
 import com.facebook.react.utils.NdkConfiguratorUtils.configureReactNativeNdk
+import com.facebook.react.utils.NdkConfiguratorUtils.configureStrictCxxApiForLibrary
+import com.facebook.react.utils.NdkConfiguratorUtils.configureStubPchGeneration
+import com.facebook.react.utils.ProjectUtils.isStrictCxxApiEnabled
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import com.facebook.react.utils.PropertyUtils
 import com.facebook.react.utils.findPackageJsonFile
@@ -99,6 +102,7 @@ class ReactPlugin : Plugin<Project> {
       }
 
       configureReactNativeNdk(project, extension)
+      configureStubPchGeneration(project)
       configureBuildConfigFieldsForApp(project, extension)
       configureDevServerLocation(project)
       configureBackwardCompatibilityReactMap(project)
@@ -134,6 +138,9 @@ class ReactPlugin : Plugin<Project> {
         subproject.pluginManager.withPlugin("com.android.library") {
           if (!subproject.state.executed) {
             configureNamespaceForLibraries(subproject)
+            if (project.isStrictCxxApiEnabled) {
+              configureStrictCxxApiForLibrary(subproject)
+            }
           }
         }
       }

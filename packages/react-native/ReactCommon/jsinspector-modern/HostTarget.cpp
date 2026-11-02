@@ -6,6 +6,7 @@
  */
 
 #include "HostTarget.h"
+#include "ExecutionContextManager.h"
 #include "HostAgent.h"
 #include "HostTargetTraceRecording.h"
 #include "HostTargetTracing.h"

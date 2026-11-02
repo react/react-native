@@ -9,9 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
 #include <react/renderer/components/iostextinput/primitives.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
 
 namespace facebook::react {
 

@@ -17,7 +17,6 @@
 #include "MethodCall.h"
 #include "NativeToJsBridge.h"
 #include "RAMBundleRegistry.h"
-#include "RecoverableError.h"
 #include "TraceSection.h"
 
 #include <folly/json.h>

@@ -12,8 +12,6 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/NSDataBigString.h>
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Inspector.h>
-#import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBridgeModuleDecorator.h>
@@ -29,7 +27,6 @@
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTLogBox.h>
-#import <React/RCTModuleData.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTRedBox.h>
 #import <React/RCTSurfacePresenter.h>
@@ -74,6 +71,7 @@ using namespace facebook::react;
   RCTDisplayLink *_displayLink;
   RCTTurboModuleManager *_turboModuleManager;
   RCTBridgeProxy *_bridgeProxy;
+  std::shared_ptr<CallInvoker> _jsCallInvoker;
   std::mutex _invalidationMutex;
   std::atomic<bool> _valid;
   RCTJSThreadManager *_jsThreadManager;
@@ -128,7 +126,9 @@ using namespace facebook::react;
     _bridgeModuleDecorator = [[RCTBridgeModuleDecorator alloc] initWithViewRegistry:[RCTViewRegistry new]
                                                                      moduleRegistry:moduleRegistry
                                                                       bundleManager:bundleManager
-                                                                  callableJSModules:[RCTCallableJSModules new]];
+                                                                  callableJSModules:[RCTCallableJSModules new]
+                                                                      launchOptions:launchOptions
+                                                                  performanceLogger:_performanceLogger];
     _devMenuConfigurationDecorator =
 #if RCT_DEV_MENU
         [[RCTDevMenuConfigurationDecorator alloc] initWithDevMenuConfiguration:devMenuConfiguration];
@@ -170,19 +170,27 @@ using namespace facebook::react;
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args
 {
-  if (_valid) {
-    _reactInstance->callFunctionOnModule(
-        [moduleName UTF8String], [method UTF8String], convertIdToFollyDynamic(args ? args : @[]));
+  // This is called from arbitrary threads, while -invalidate destroys _reactInstance on
+  // the JS thread, so checking _valid and dereferencing have to happen as one step.
+  std::lock_guard<std::mutex> lock(_invalidationMutex);
+  if (!_valid || !_reactInstance) {
+    return;
   }
+  _reactInstance->callFunctionOnModule(
+      [moduleName UTF8String] ?: "", [method UTF8String] ?: "", convertIdToFollyDynamic(args ? args : @[]));
 }
 
 - (void)invalidate
 {
-  std::lock_guard<std::mutex> lock(_invalidationMutex);
-  _valid = false;
-  if (_reactInstance) {
-    _reactInstance->unregisterFromInspector();
+  {
+    std::lock_guard<std::mutex> lock(_invalidationMutex);
+    _valid = false;
+    if (_reactInstance) {
+      _reactInstance->unregisterFromInspector();
+    }
   }
+  // suspend shouldn't be called under _invalidationMutex: it notifies surface observers,
+  // which can call callFunctionOnJSModule and deadlock on the same mutex.
   [_surfacePresenter suspend];
   [_jsThreadManager dispatchToJSThread:^{
     /**
@@ -205,6 +213,11 @@ using namespace facebook::react;
     // Terminate the JavaScript thread, so that no other work executes after this block.
     self->_jsThreadManager = nil;
   }];
+}
+
+- (std::shared_ptr<CallInvoker>)jsCallInvoker
+{
+  return _valid ? _jsCallInvoker : nullptr;
 }
 
 - (void)registerSegmentWithId:(NSNumber *)segmentId path:(NSString *)path
@@ -290,6 +303,7 @@ using namespace facebook::react;
   timerManager->setRuntimeExecutor(bufferedRuntimeExecutor);
 
   auto jsCallInvoker = _reactInstance->createJSCallInvoker();
+  _jsCallInvoker = jsCallInvoker;
   RCTBridgeProxy *bridgeProxy =
       [[RCTBridgeProxy alloc] initWithViewRegistry:_bridgeModuleDecorator.viewRegistry_DEPRECATED
           moduleRegistry:_bridgeModuleDecorator.moduleRegistry
@@ -312,7 +326,6 @@ using namespace facebook::react;
   bridgeProxy.jsCallInvoker = jsCallInvoker;
   bridgeProxy.performanceLogger = _performanceLogger;
   _bridgeProxy = bridgeProxy;
-  [RCTBridge setCurrentBridge:(RCTBridge *)bridgeProxy];
 
   // Set up TurboModules
   _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridgeProxy:bridgeProxy
@@ -539,7 +552,10 @@ using namespace facebook::react;
     return;
   }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   NSArray<NSString *> *modulesInOldArchMode = [getModulesLoadedWithOldArch() copy];
+#pragma clang diagnostic pop
   if (modulesInOldArchMode.count > 0) {
     NSMutableString *moduleList = [NSMutableString new];
     for (NSString *moduleName in modulesInOldArchMode) {

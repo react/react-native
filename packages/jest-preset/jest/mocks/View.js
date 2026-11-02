@@ -10,7 +10,7 @@
 
 import typeof * as TmockComponent from '../mockComponent';
 import typeof * as TMockNativeMethods from '../MockNativeMethods';
-import typeof TView from 'react-native/Libraries/Components/View/View';
+import typeof {View as TView} from 'react-native';
 
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;
@@ -18,6 +18,7 @@ const MockNativeMethods = jest.requireActual<TMockNativeMethods>(
   '../MockNativeMethods',
 ).default;
 
+// $FlowFixMe[incompatible-type]
 const View = mockComponent(
   'react-native/Libraries/Components/View/View',
   MockNativeMethods, // instanceMethods

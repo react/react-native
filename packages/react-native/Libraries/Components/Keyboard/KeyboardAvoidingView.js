@@ -26,10 +26,7 @@ import Keyboard from './Keyboard';
 import * as React from 'react';
 import {createRef} from 'react';
 
-/** @build-types emit-as-interface Uniwind compatibility */
-export type KeyboardAvoidingViewProps = Readonly<{
-  ...ViewProps,
-
+type KeyboardAvoidingViewPropsCore = Readonly<{
   /**
    * Specify how to react to the presence of the keyboard.
    */
@@ -54,6 +51,12 @@ export type KeyboardAvoidingViewProps = Readonly<{
    * @default `0`
    */
   keyboardVerticalOffset?: number,
+}>;
+
+/** @build-types emit-as-interface Uniwind compatibility */
+export type KeyboardAvoidingViewProps = Readonly<{
+  ...ViewProps,
+  ...KeyboardAvoidingViewPropsCore,
 }>;
 
 type KeyboardAvoidingViewState = {

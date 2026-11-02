@@ -23,8 +23,13 @@ const {apps, openApp} = open;
  * local machine.
  */
 const DefaultToolLauncher = {
-  launchDebuggerAppWindow: async (url: string): Promise<void> => {
-    if (process.env.NODE_ENV === 'test') {
+  launchDebuggerAppWindow: async (
+    url: string,
+    options?: Readonly<{
+      allowInTests?: boolean,
+    }>,
+  ): Promise<void> => {
+    if (process.env.NODE_ENV === 'test' && options?.allowInTests !== true) {
       assertMockedInTests();
     }
 

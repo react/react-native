@@ -15,7 +15,7 @@ interface ErrnoError extends Error {
   code?: string;
   dest?: string;
   errno?: string | number;
-  info?: Object;
+  info?: any;
   path?: string;
   port?: number;
   syscall?: string;
@@ -56,6 +56,7 @@ type buffer$ToJSONRet = {
   ...
 };
 
+// $FlowFixMe[incompatible-type]
 declare class Buffer extends Uint8Array {
   constructor(
     value: Array<number> | number | string | Buffer | ArrayBuffer,
@@ -71,7 +72,8 @@ declare class Buffer extends Uint8Array {
     sourceStart?: number,
     sourceEnd?: number,
   ): number;
-  entries(): Iterator<[number, number]>;
+  // $FlowFixMe[incompatible-type]
+  entries(): IteratorObject<[number, number]>;
   equals(otherBuffer: Buffer): boolean;
   fill(
     value: string | Buffer | number,
@@ -91,7 +93,7 @@ declare class Buffer extends Uint8Array {
     encoding?: buffer$Encoding,
   ): number;
   inspect(): string;
-  keys(): Iterator<number>;
+  keys(): IteratorObject<number>;
   lastIndexOf(
     value: string | Buffer | number,
     offsetOrEncoding?: number | buffer$Encoding,
@@ -121,7 +123,7 @@ declare class Buffer extends Uint8Array {
   swap64(): Buffer;
   toJSON(): buffer$ToJSONRet;
   toString(encoding?: buffer$Encoding, start?: number, end?: number): string;
-  values(): Iterator<number>;
+  values(): IteratorObject<number>;
   write(
     string: string,
     offset?: number,
@@ -181,14 +183,13 @@ declare class Buffer extends Uint8Array {
   static compare(buf1: Buffer, buf2: Buffer): number;
   static concat(list: Array<Buffer>, totalLength?: number): Buffer;
 
-  static from(value: Buffer): Buffer;
+  static from(value: ArrayLike<number> | Iterable<number>): Buffer;
   static from(value: string, encoding?: buffer$Encoding): Buffer;
   static from(
     value: ArrayBuffer | SharedArrayBuffer,
     byteOffset?: number,
     length?: number,
   ): Buffer;
-  static from(value: Iterable<number>): this;
   static isBuffer(obj: any): boolean;
   static isEncoding(encoding: string): boolean;
 }
@@ -214,7 +215,7 @@ declare module 'buffer' {
 
   declare function isAscii(input: Buffer | ArrayBuffer | $TypedArray): boolean;
 
-  declare function resolveObjectURL(id: string): Blob | void;
+  declare function resolveObjectURL(id: string): globalThis.Blob | void;
 
   declare var Buffer: Node$Buffer;
   declare var Blob: typeof globalThis.Blob;
@@ -732,9 +733,9 @@ declare module 'cluster' {
     isDead(): boolean;
     kill(signal?: string): void;
     send(
-      message: Object,
-      sendHandleOrCallback?: child_process$Handle | Function,
-      callback?: Function,
+      message: any,
+      sendHandleOrCallback?: child_process$Handle | any,
+      callback?: any,
     ): boolean;
   }
 
@@ -746,7 +747,7 @@ declare module 'cluster' {
     workers: {[id: number]: Worker};
 
     disconnect(callback?: () => void): void;
-    fork(env?: Object): Worker;
+    fork(env?: any): Worker;
     setupMaster(settings?: ClusterSettingsOpt): void;
   }
 
@@ -756,7 +757,7 @@ declare module 'cluster' {
 declare module 'console' {
   declare function assert(value: any, ...message: any): void;
   declare function dir(
-    obj: Object,
+    obj: any,
     options: {
       showHidden: boolean,
       depth: number,
@@ -775,7 +776,7 @@ declare module 'console' {
     constructor(stdout: stream$Writable, stdin?: stream$Writable): void;
     assert(value: any, ...message: any): void;
     dir(
-      obj: Object,
+      obj: any,
       options: {
         showHidden: boolean,
         depth: number,
@@ -1419,21 +1420,21 @@ declare class events$EventEmitter {
   static listenerCount(emitter: events$EventEmitter, event: string): number;
   static defaultMaxListeners: number;
 
-  addListener(event: string, listener: Function): this;
+  addListener(event: string, listener: any): this;
   emit(event: string, ...args: Array<any>): boolean;
   eventNames(): Array<string>;
-  listeners(event: string): Array<Function>;
+  listeners(event: string): Array<any>;
   listenerCount(event: string): number;
-  on(event: string, listener: Function): this;
-  once(event: string, listener: Function): this;
-  prependListener(event: string, listener: Function): this;
-  prependOnceListener(event: string, listener: Function): this;
+  on(event: string, listener: any): this;
+  once(event: string, listener: any): this;
+  prependListener(event: string, listener: any): this;
+  prependOnceListener(event: string, listener: any): this;
   removeAllListeners(event?: string): this;
-  removeListener(event: string, listener: Function): this;
-  off(event: string, listener: Function): this;
+  removeListener(event: string, listener: any): this;
+  off(event: string, listener: any): this;
   setMaxListeners(n: number): this;
   getMaxListeners(): number;
-  rawListeners(event: string): Array<Function>;
+  rawListeners(event: string): Array<any>;
 }
 
 declare module 'events' {
@@ -1449,13 +1450,13 @@ declare class domain$Domain extends events$EventEmitter {
   members: Array<any>;
 
   add(emitter: events$EventEmitter): void;
-  bind(callback: Function): Function;
+  bind(callback: any): any;
   dispose(): void;
   enter(): void;
   exit(): void;
-  intercept(callback: Function): Function;
+  intercept(callback: any): any;
   remove(emitter: events$EventEmitter): void;
-  run(fn: Function): void;
+  run(fn: any): void;
 }
 
 declare module 'domain' {
@@ -1618,10 +1619,10 @@ declare module 'fs' {
   declare function readlinkSync(path: string): string;
   declare function realpath(
     path: string,
-    cache?: Object,
+    cache?: any,
     callback?: (err: ?ErrnoError, resolvedPath: string) => void,
   ): void;
-  declare function realpathSync(path: string, cache?: Object): string;
+  declare function realpathSync(path: string, cache?: any): string;
   declare function unlink(
     path: string,
     callback?: (err: ?ErrnoError) => void,
@@ -2086,11 +2087,8 @@ declare module 'fs' {
     callback?: (err: ?ErrnoError) => void,
   ): void;
   declare function accessSync(path: string, mode?: number): void;
-  declare function createReadStream(path: string, options?: Object): ReadStream;
-  declare function createWriteStream(
-    path: string,
-    options?: Object,
-  ): WriteStream;
+  declare function createReadStream(path: string, options?: any): ReadStream;
+  declare function createWriteStream(path: string, options?: any): WriteStream;
   declare function fdatasync(
     fd: number,
     callback: (err: ?ErrnoError) => void,
@@ -2426,8 +2424,8 @@ declare module 'fs' {
       options?: GlobOptions<WithFileTypes>,
     ): Node$Conditional<
       WithFileTypes,
-      AsyncIterator<Dirent>,
-      AsyncIterator<string>,
+      AsyncIteratorObject<Dirent>,
+      AsyncIteratorObject<string>,
     >,
     lchmod(path: FSPromisePath, mode: number): Promise<void>,
     lchown(path: FSPromisePath, uid: number, guid: number): Promise<void>,
@@ -2537,7 +2535,7 @@ declare module 'fs' {
         maxQueue?: number,
         overflow?: 'ignore' | 'throw',
       }>,
-    ): AsyncIterator<{eventType: string, filename: ?string}>,
+    ): AsyncIteratorObject<{eventType: string, filename: ?string}>,
     write<T extends Buffer | Uint8Array>(
       filehandle: FileHandle,
       buffer: T,
@@ -2594,12 +2592,12 @@ declare class http$Agent<out SocketT = net$Socket> {
 declare class http$IncomingMessage<
   SocketT = net$Socket,
 > extends stream$Readable {
-  headers: Object;
+  headers: any;
   rawHeaders: Array<string>;
   httpVersion: string;
   method: string;
-  trailers: Object;
-  setTimeout(msecs: number, callback: Function): void;
+  trailers: any;
+  setTimeout(msecs: number, callback: any): void;
   socket: SocketT;
   statusCode: number;
   statusMessage: string;
@@ -2621,7 +2619,7 @@ declare class http$ClientRequest<
   setHeader(name: string, value: string | Array<string>): void;
   setNoDelay(noDelay?: boolean): void;
   setSocketKeepAlive(enable?: boolean, initialDelay?: number): void;
-  setTimeout(msecs: number, callback?: Function): void;
+  setTimeout(msecs: number, callback?: any): void;
   readonly socket: SocketT | null;
 }
 
@@ -2638,7 +2636,7 @@ declare class http$ServerResponse extends stream$Writable {
   removeHeader(name: string): void;
   sendDate: boolean;
   setHeader(name: string, value: string | Array<string>): void;
-  setTimeout(msecs: number, callback?: Function): http$ServerResponse;
+  setTimeout(msecs: number, callback?: any): http$ServerResponse;
   socket: net$Socket;
   statusCode: number;
   statusMessage: string;
@@ -2657,13 +2655,13 @@ declare class http$Server extends net$Server {
     port?: number,
     hostname?: string,
     backlog?: number,
-    callback?: Function,
+    callback?: any,
   ): this;
   // The following signatures are added to allow omitting intermediate arguments
-  listen(port?: number, backlog?: number, callback?: Function): this;
-  listen(port?: number, hostname?: string, callback?: Function): this;
-  listen(port?: number, callback?: Function): this;
-  listen(path: string, callback?: Function): this;
+  listen(port?: number, backlog?: number, callback?: any): this;
+  listen(port?: number, hostname?: string, callback?: any): this;
+  listen(port?: number, callback?: any): this;
+  listen(path: string, callback?: any): this;
   listen(
     handle: {
       port?: number,
@@ -2676,7 +2674,7 @@ declare class http$Server extends net$Server {
       ipv6Only?: boolean,
       ...
     },
-    callback?: Function,
+    callback?: any,
   ): this;
   listening: boolean;
   close(callback?: (error: ?Error) => unknown): this;
@@ -2685,7 +2683,7 @@ declare class http$Server extends net$Server {
   maxHeadersCount: number;
   keepAliveTimeout: number;
   headersTimeout: number;
-  setTimeout(msecs: number, callback: Function): this;
+  setTimeout(msecs: number, callback: any): this;
   timeout: number;
 }
 
@@ -2694,13 +2692,13 @@ declare class https$Server extends tls$Server {
     port?: number,
     hostname?: string,
     backlog?: number,
-    callback?: Function,
+    callback?: any,
   ): this;
   // The following signatures are added to allow omitting intermediate arguments
-  listen(port?: number, backlog?: number, callback?: Function): this;
-  listen(port?: number, hostname?: string, callback?: Function): this;
-  listen(port?: number, callback?: Function): this;
-  listen(path: string, callback?: Function): this;
+  listen(port?: number, backlog?: number, callback?: any): this;
+  listen(port?: number, hostname?: string, callback?: any): this;
+  listen(port?: number, callback?: any): this;
+  listen(path: string, callback?: any): this;
   listen(
     handle: {
       port?: number,
@@ -2713,14 +2711,14 @@ declare class https$Server extends tls$Server {
       ipv6Only?: boolean,
       ...
     },
-    callback?: Function,
+    callback?: any,
   ): this;
   close(callback?: (error: ?Error) => unknown): this;
   closeAllConnections(): void;
   closeIdleConnections(): void;
   keepAliveTimeout: number;
   headersTimeout: number;
-  setTimeout(msecs: number, callback: Function): this;
+  setTimeout(msecs: number, callback: any): this;
   timeout: number;
 }
 
@@ -2746,7 +2744,7 @@ type http$requestOptions = {
   agent?: boolean | http$Agent<net$Socket>,
   createConnection?: (
     options: net$connectOptions,
-    callback?: Function,
+    callback?: any,
   ) => net$Socket,
   ...
 };
@@ -2772,10 +2770,7 @@ declare module 'http' {
 
   declare class Server extends http$Server {}
   declare class Agent extends http$Agent<net$Socket> {
-    createConnection(
-      options: net$connectOptions,
-      callback?: Function,
-    ): net$Socket;
+    createConnection(options: net$connectOptions, callback?: any): net$Socket;
   }
   declare class ClientRequest extends http$ClientRequest<net$Socket> {}
   declare class IncomingMessage extends http$IncomingMessage<net$Socket> {}
@@ -2828,7 +2823,7 @@ type https$requestOptions = {
   agent?: boolean | http$Agent<tls$TLSSocket>,
   createConnection?: (
     options: tls$connectOptions,
-    callback?: Function,
+    callback?: any,
   ) => tls$TLSSocket,
   ...
 };
@@ -2893,7 +2888,7 @@ declare module 'module' {
 }
 
 declare class net$Socket extends stream$Duplex {
-  constructor(options?: Object): void;
+  constructor(options?: any): void;
   address(): net$Socket$address;
   bufferSize: number;
   bytesRead: number;
@@ -2905,7 +2900,7 @@ declare class net$Socket extends stream$Duplex {
     connectListener?: () => unknown,
   ): net$Socket;
   connect(port: number, connectListener?: () => unknown): net$Socket;
-  connect(options: Object, connectListener?: () => unknown): net$Socket;
+  connect(options: any, connectListener?: () => unknown): net$Socket;
   destroyed: boolean;
   end(
     chunkOrEncodingOrCallback?:
@@ -2924,7 +2919,7 @@ declare class net$Socket extends stream$Duplex {
   setEncoding(encoding?: string): this;
   setKeepAlive(enable?: boolean, initialDelay?: number): this;
   setNoDelay(noDelay?: boolean): this;
-  setTimeout(timeout: number, callback?: Function): this;
+  setTimeout(timeout: number, callback?: any): this;
   unref(): this;
   write(
     chunk: Buffer | Uint8Array | string,
@@ -2938,16 +2933,16 @@ declare class net$Server extends events$EventEmitter {
     port?: number,
     hostname?: string,
     backlog?: number,
-    callback?: Function,
+    callback?: any,
   ): net$Server;
-  listen(path: string, callback?: Function): net$Server;
-  listen(handle: Object, callback?: Function): net$Server;
+  listen(path: string, callback?: any): net$Server;
+  listen(handle: any, callback?: any): net$Server;
   listening: boolean;
-  close(callback?: Function): net$Server;
+  close(callback?: any): net$Server;
   address(): net$Socket$address;
   connections: number;
   maxConnections: number;
-  getConnections(callback: Function): void;
+  getConnections(callback: any): void;
   ref(): net$Server;
   unref(): net$Server;
 }
@@ -2960,7 +2955,7 @@ type net$connectOptions = {
   family?: number,
   lookup?: (
     domain: string,
-    options?: ?number | ?Object,
+    options?: ?number | ?any,
     callback?: (err: ?Error, address: string, family: number) => void,
   ) => unknown,
   path?: string,
@@ -3401,7 +3396,7 @@ declare module 'punycode' {
 
 declare module 'querystring' {
   declare function stringify(
-    obj: Object,
+    obj: any,
     separator?: string,
     equal?: string,
     options?: {encodeURIComponent?: (str: string) => string, ...},
@@ -3929,7 +3924,7 @@ declare module 'stream' {
 }
 
 declare class tty$ReadStream extends net$Socket {
-  constructor(fd: number, options?: Object): void;
+  constructor(fd: number, options?: any): void;
   isRaw: boolean;
   setRawMode(mode: boolean): void;
   isTTY: true;
@@ -4024,7 +4019,7 @@ type tls$connectOptions = {
   path?: string,
   lookup?: (
     domain: string,
-    options?: ?number | ?Object,
+    options?: ?number | ?any,
     callback?: (err: ?Error, address: string, family: number) => void,
   ) => unknown,
   requestOCSP?: boolean,
@@ -4110,7 +4105,7 @@ type tls$Certificate = {
 };
 
 declare class tls$TLSSocket extends net$Socket {
-  constructor(socket: net$Socket, options?: Object): void;
+  constructor(socket: net$Socket, options?: any): void;
   authorized: boolean;
   authorizationError: string | null;
   encrypted: true;
@@ -4135,7 +4130,7 @@ declare class tls$TLSSocket extends net$Socket {
   getPeerCertificate(detailed?: boolean): tls$Certificate | null;
   getSession(): ?Buffer;
   getTLSTicket(): Buffer | void;
-  renegotiate(options: Object, callback: Function): boolean | void;
+  renegotiate(options: any, callback: any): boolean | void;
   setMaxSendFragment(size: number): boolean;
 }
 
@@ -4144,12 +4139,12 @@ declare class tls$Server extends net$Server {
     port?: number,
     hostname?: string,
     backlog?: number,
-    callback?: Function,
+    callback?: any,
   ): tls$Server;
-  listen(path: string, callback?: Function): tls$Server;
-  listen(handle: Object, callback?: Function): tls$Server;
-  close(callback?: Function): tls$Server;
-  addContext(hostname: string, context: Object): void;
+  listen(path: string, callback?: any): tls$Server;
+  listen(handle: any, callback?: any): tls$Server;
+  close(callback?: any): tls$Server;
+  addContext(hostname: string, context: any): void;
   getTicketKeys(): Buffer;
   setTicketKeys(keys: Buffer): void;
 }
@@ -4165,14 +4160,14 @@ declare module 'tls' {
   declare function getCiphers(): Array<string>;
   declare function convertNPNProtocols(
     NPNProtocols: Array<string>,
-    out: Object,
+    out: any,
   ): void;
   declare function checkServerIdentity(
     servername: string,
     cert: string,
   ): Error | void;
-  declare function parseCertString(s: string): Object;
-  declare function createSecureContext(details: Object): Object;
+  declare function parseCertString(s: string): any;
+  declare function createSecureContext(details: any): any;
   declare var SecureContext: tls$SecureContext;
   declare var TLSSocket: typeof tls$TLSSocket;
   declare var Server: typeof tls$Server;
@@ -4185,21 +4180,21 @@ declare module 'tls' {
   ): tls$Server;
   declare function connect(
     options: tls$connectOptions,
-    callback?: Function,
+    callback?: any,
   ): tls$TLSSocket;
   declare function connect(
     port: number,
     host?: string,
     options?: tls$connectOptions,
-    callback?: Function,
+    callback?: any,
   ): tls$TLSSocket;
   declare function createSecurePair(
-    context?: Object,
+    context?: any,
     isServer?: boolean,
     requestCert?: boolean,
     rejectUnauthorized?: boolean,
-    options?: Object,
-  ): Object;
+    options?: any,
+  ): any;
 }
 
 type url$urlObject = {
@@ -4212,7 +4207,7 @@ type url$urlObject = {
   readonly host?: string | null,
   readonly pathname?: string | null,
   readonly search?: string | null,
-  readonly query?: Object | null,
+  readonly query?: any | null,
   readonly hash?: string | null,
   ...
 };
@@ -4278,7 +4273,7 @@ declare module 'timers/promises' {
     delay?: number,
     value?: T,
     options?: TimerOptions,
-  ): AsyncIterator<T>;
+  ): AsyncIteratorObject<T>;
 
   declare export var scheduler: Readonly<{
     wait(delay: number, options?: TimerOptions): Promise<void>,
@@ -4534,13 +4529,10 @@ declare module 'util' {
   declare function isRegExp(object: any): boolean;
   declare function isDate(object: any): boolean;
   declare function isError(object: any): boolean;
-  declare function inherits(
-    constructor: Function,
-    superConstructor: Function,
-  ): void;
-  declare function deprecate(f: Function, string: string): Function;
-  declare function promisify(f: Function): Function;
-  declare function callbackify(f: Function): Function;
+  declare function inherits(constructor: any, superConstructor: any): void;
+  declare function deprecate(f: any, string: string): any;
+  declare function promisify(f: any): any;
+  declare function callbackify(f: any): any;
   declare function stripVTControlCharacters(str: string): string;
 
   declare function parseArgs<
@@ -4826,7 +4818,7 @@ declare module 'vm' {
     code: string,
     params: string[],
     options: vm$CompileFunctionOptions,
-  ): Function;
+  ): any;
 }
 
 type zlib$options = {
@@ -5194,11 +5186,11 @@ declare module 'assert' {
     deepEqual(actual: any, expected: any, message?: string): void,
     notDeepEqual(actual: any, expected: any, message?: string): void,
     throws(
-      block: Function,
-      error?: Function | RegExp | ((err: any) => boolean),
+      block: any,
+      error?: any | RegExp | ((err: any) => boolean),
       message?: string,
     ): void,
-    doesNotThrow(block: Function, message?: string): void,
+    doesNotThrow(block: any, message?: string): void,
     ifError(value: any): void,
     AssertionError: typeof AssertionError,
     strict: AssertStrict,
@@ -5219,11 +5211,11 @@ declare module 'assert' {
     deepStrictEqual(actual: any, expected: any, message?: string): void,
     notDeepStrictEqual(actual: any, expected: any, message?: string): void,
     throws(
-      block: Function,
-      error?: Function | RegExp | ((err: any) => boolean),
+      block: any,
+      error?: any | RegExp | ((err: any) => boolean),
       message?: string,
     ): void,
-    doesNotThrow(block: Function, message?: string): void,
+    doesNotThrow(block: any, message?: string): void,
     ifError(value: any): void,
     AssertionError: typeof AssertionError,
     strict: AssertStrict,
@@ -5380,12 +5372,9 @@ declare module 'v8' {
    * @since v20.13.0
    * @experimental
    */
+  declare function queryObjects(ctor: any, options?: {format: 'count'}): number;
   declare function queryObjects(
-    ctor: Function,
-    options?: {format: 'count'},
-  ): number;
-  declare function queryObjects(
-    ctor: Function,
+    ctor: any,
     options: {format: 'summary'},
   ): Array<string>;
 
@@ -5396,7 +5385,7 @@ declare module 'v8' {
    */
   declare function getCppHeapStatistics(
     detailLevel?: 'brief' | 'detailed',
-  ): Object;
+  ): any;
 
   /**
    * Checks if a string's internal representation uses one byte per character (Latin-1/ISO-8859-1 encoding).
@@ -5561,9 +5550,9 @@ type repl$DefineCommandOptions = (...args: Array<any>) => void | {
   ...
 };
 
-declare class $SymbolReplModeMagic mixins Symbol {}
-declare class $SymbolReplModeSloppy mixins Symbol {}
-declare class $SymbolReplModeStrict mixins Symbol {}
+declare opaque type $SymbolReplModeMagic: symbol;
+declare opaque type $SymbolReplModeSloppy: symbol;
+declare opaque type $SymbolReplModeStrict: symbol;
 
 declare module 'repl' {
   declare var REPL_MODE_MAGIC: $SymbolReplModeMagic;
@@ -5582,7 +5571,7 @@ declare module 'repl' {
     input?: stream$Readable,
     output?: stream$Writable,
     terminal?: boolean,
-    eval?: Function,
+    eval?: any,
     useColors?: boolean,
     useGlobal?: boolean,
     ignoreUndefined?: boolean,
@@ -5604,7 +5593,7 @@ declare module 'inspector' {
 
   declare function close(): void;
   declare function url(): string | void;
-  declare var console: Object;
+  declare var console: any;
   declare function waitForDebugger(): void;
 
   declare class Session extends events$EventEmitter {
@@ -5612,7 +5601,7 @@ declare module 'inspector' {
     connect(): void;
     connectToMainThread(): void;
     disconnect(): void;
-    post(method: string, params?: Object, callback?: Function): void;
+    post(method: string, params?: any, callback?: any): void;
   }
 }
 
@@ -5630,7 +5619,7 @@ declare class Process extends events$EventEmitter {
   arch: string;
   argv: Array<string>;
   chdir(directory: string): void;
-  config: Object;
+  config: any;
   connected: boolean;
   cpuUsage(previousValue?: process$CPUUsage): process$CPUUsage;
   cwd(): string;
@@ -5669,7 +5658,7 @@ declare class Process extends events$EventEmitter {
   };
   initgroups?: (user: number | string, extra_group: number | string) => void;
   kill(pid: number, signal?: string | number): void;
-  mainModule: Object;
+  mainModule: any;
   memoryUsage: {
     (): {
       arrayBuffers: number,
@@ -5694,8 +5683,8 @@ declare class Process extends events$EventEmitter {
   };
   send?: (
     message: any,
-    sendHandleOrCallback?: net$Socket | net$Server | Function,
-    callback?: Function,
+    sendHandleOrCallback?: net$Socket | net$Server | any,
+    callback?: any,
   ) => void;
   setegid?: (id: number | string) => void;
   seteuid?: (id: number | string) => void;
@@ -5724,8 +5713,8 @@ declare var __dirname: string;
 declare function setImmediate(
   callback: (...args: Array<any>) => unknown,
   ...args: Array<any>
-): Object;
-declare function clearImmediate(immediateObject: any): Object;
+): any;
+declare function clearImmediate(immediateObject: any): any;
 
 declare module 'worker_threads' {
   declare var isMainThread: boolean;
@@ -5794,7 +5783,7 @@ declare module 'worker_threads' {
   }
 
   declare type WorkerOptions = {|
-    env?: Object,
+    env?: any,
     eval?: boolean,
     workerData?: any,
     stdin?: boolean,

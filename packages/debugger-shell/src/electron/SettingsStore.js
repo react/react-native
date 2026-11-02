@@ -30,7 +30,7 @@ type Options = Readonly<{
  * - Supports the Electron main process only.
  */
 export default class SettingsStore {
-  #defaultValues: Object = {};
+  #defaultValues: any = {};
   path: string;
 
   constructor(options: Options = {}) {

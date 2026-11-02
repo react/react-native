@@ -7,18 +7,16 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
 
 #include <string>
 #include <vector>
 
-#include <ReactCommon/TurboModule.h>
+#include <React/NativeModuleCore.h>
 #include <fbjni/fbjni.h>
 #include <jsi/jsi.h>
-
-#include "JavaTurboModule.h"
 
 namespace facebook::react {
 
@@ -42,7 +40,6 @@ class JSI_EXPORT JavaInteropTurboModule : public JavaTurboModule {
 
  private:
   std::vector<MethodDescriptor> methodDescriptors_;
-  std::vector<jmethodID> methodIDs_;
   jsi::Value constantsCache_;
 
   const jsi::Value &getConstants(jsi::Runtime &runtime);

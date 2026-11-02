@@ -85,13 +85,13 @@ runs:
       shell: bash
       run: ccache -s -v
     - name: Upload Maven Artifacts
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: maven-local
         path: /tmp/maven-local
     - name: Upload test results
       if: ${{ always() }}
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: build-android-results
         compression-level: 1
@@ -101,14 +101,14 @@ runs:
           packages/react-native/ReactAndroid/build/reports
     - name: Upload RNTester APK - hermes-debug
       if: ${{ always() }}
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: rntester-debug
         path: packages/rn-tester/android/app/build/outputs/apk/debug/
         compression-level: 0
     - name: Upload RNTester APK - hermes-release
       if: ${{ always() }}
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: rntester-release
         path: packages/rn-tester/android/app/build/outputs/apk/release/

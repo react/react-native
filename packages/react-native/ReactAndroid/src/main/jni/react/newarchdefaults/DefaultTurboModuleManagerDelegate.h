@@ -9,9 +9,8 @@
 #include <string>
 #include <vector>
 
+#include <React/NativeModuleCore.h>
 #include <ReactCommon/CxxReactPackage.h>
-#include <ReactCommon/JavaTurboModule.h>
-#include <ReactCommon/TurboModule.h>
 #include <ReactCommon/TurboModuleManagerDelegate.h>
 #include <fbjni/fbjni.h>
 

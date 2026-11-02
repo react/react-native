@@ -9,7 +9,7 @@
 
 #include "PlatformRunLoopObserver.h"
 
-#include <react/renderer/core/EventBeat.h>
+#include <React/RendererCore.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <memory>
 

@@ -36,12 +36,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-image
-            overflow="hidden"
-            resizeMode="cover"
-            source-scale="1"
-            source-type="remote"
-          />,
+          <rn-image overflow="hidden" source-scale="1" source-type="remote" />,
         );
 
         Fantom.runTask(() => {
@@ -49,12 +44,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput().toJSX()).toEqual(
-          <rn-image
-            overflow="hidden"
-            resizeMode="cover"
-            source-scale="1"
-            source-type="remote"
-          />,
+          <rn-image overflow="hidden" source-scale="1" source-type="remote" />,
         );
       });
     });
@@ -282,7 +272,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['resizeMode']}).toJSX()).toEqual(
-          <rn-image resizeMode="cover" />,
+          <rn-image />,
         );
       });
 
@@ -294,11 +284,11 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['resizeMode']}).toJSX()).toEqual(
-          <rn-image resizeMode="cover" />,
+          <rn-image />,
         );
       });
 
-      it('can be set to "stretch", which is the same as not setting it', () => {
+      it('can be set to "stretch"', () => {
         const root = Fantom.createRoot();
 
         Fantom.runTask(() => {
@@ -306,7 +296,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['resizeMode']}).toJSX()).toEqual(
-          <rn-image />,
+          <rn-image resizeMode="stretch" />,
         );
       });
 

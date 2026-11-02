@@ -22,9 +22,7 @@
 #import "RCTLayoutAnimation.h"
 #import "RCTLayoutAnimationGroup.h"
 #import "RCTLog.h"
-#import "RCTModuleData.h"
 #import "RCTModuleMethod.h"
-#import "RCTProfile.h"
 #import "RCTScrollableProtocol.h"
 #import "RCTShadowView.h"
 #import "RCTSurfaceRootShadowView.h"
@@ -222,15 +220,6 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
 
 @end
 
-@implementation RCTBridge (RCTUIManager)
-
-- (RCTUIManager *)uiManager
-{
-  return [self moduleForClass:[RCTUIManager class]];
-}
-
-@end
-
 UIView *RCTPaperViewOrCurrentView(UIView *view)
 {
   if ([view respondsToSelector:@selector(paperView)]) {
@@ -246,8 +235,7 @@ UIView *RCTPaperViewOrCurrentView(UIView *view)
 
 - (instancetype)initWithUIManager:(RCTUIManager *)uiManager andRegistry:(NSDictionary<NSNumber *, UIView *> *)registry
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _uiManager = uiManager;
     _registry = registry;
   }

@@ -34,6 +34,8 @@ export type CommonFeatureFlagConfig<
   // Indicates if this API should only be defined in JavaScript, only to
   // preserve backwards compatibility with existing native code temporarily.
   skipNativeAPI?: true,
+  // Whether this flag should be exposed by the public feature flags entrypoint.
+  dangerouslyExposeInPublicCppHeaders?: true,
 }>;
 
 export type CommonFeatureFlagList = Readonly<{

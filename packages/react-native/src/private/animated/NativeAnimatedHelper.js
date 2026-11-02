@@ -35,7 +35,7 @@ interface NativeAnimatedModuleSpec extends NativeAnimatedTurboModuleSpec {
   readonly connectAnimatedNodeToShadowNodeFamily?: (
     nodeTag: number,
     // $FlowExpectedError[unclear-type].
-    shadowNode: Object,
+    shadowNode: any,
   ) => void;
 }
 

@@ -83,6 +83,25 @@ type ViewabilityHelperCallbackTuple = {
   ...
 };
 
+type CrossOrientationChildRegistration = {
+  cellKey: string,
+  lastSuppressed: ?boolean,
+};
+
+type NestedChildRegistration = {
+  cellKey: string,
+  horizontal?: boolean,
+  ref: VirtualizedList,
+};
+
+type ParentRegistration = {
+  cellKey: string,
+  horizontal: boolean,
+  register: (childList: NestedChildRegistration) => void,
+  sameOrientation: boolean,
+  unregister: (childList: {ref: VirtualizedList}) => void,
+};
+
 type State = {
   renderMask: CellRenderMask,
   cellsAroundViewport: {first: number, last: number},
@@ -255,8 +274,7 @@ class VirtualizedList extends StateSafePureComponent<
       return;
     }
 
-    const {horizontal, rtl} = this._orientation();
-    if (horizontal && rtl && !this._listMetrics.hasContentLength()) {
+    if (this._isHorizontalRTL() && !this._listMetrics.hasContentLength()) {
       console.warn(
         'scrollToOffset may not be called in RTL before content is laid out',
       );
@@ -277,9 +295,7 @@ class VirtualizedList extends StateSafePureComponent<
       const cartOffset = this._listMetrics.cartesianOffset(
         offset + this._scrollMetrics.visibleLength,
       );
-      /* $FlowFixMe[constant-condition] Error discovered during Constant
-       * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
-      return horizontal ? {x: cartOffset} : {y: cartOffset};
+      return {x: cartOffset};
     } else {
       return horizontal ? {x: offset} : {y: offset};
     }
@@ -332,7 +348,7 @@ class VirtualizedList extends StateSafePureComponent<
     }
   }
 
-  setNativeProps(props: Object) {
+  setNativeProps(props: LegacyObject) {
     if (this._scrollRef) {
       this._scrollRef.setNativeProps(props);
     }
@@ -360,19 +376,162 @@ class VirtualizedList extends StateSafePureComponent<
     }
   };
 
-  _registerAsNestedChild = (childList: {
-    cellKey: string,
-    ref: VirtualizedList,
-  }): void => {
-    this._nestedChildLists.add(childList.ref, childList.cellKey);
-    if (this._hasInteracted) {
-      childList.ref.recordInteraction();
+  _registerAsNestedChild = (childList: NestedChildRegistration): void => {
+    if (
+      childList.horizontal == null ||
+      childList.horizontal === horizontalOrDefault(this.props.horizontal)
+    ) {
+      this._nestedChildLists.add(childList.ref, childList.cellKey);
+      if (this._hasInteracted) {
+        childList.ref.recordInteraction();
+      }
+      const suppressViewableItems = this._shouldSuppressViewableItems();
+      if (suppressViewableItems !== childList.ref._isAncestorSuppressed) {
+        childList.ref._onParentViewportChanged(suppressViewableItems);
+      }
+      return;
     }
+
+    let childLists = this._crossOrientationChildLists;
+    if (childLists == null) {
+      childLists = new Map();
+      this._crossOrientationChildLists = childLists;
+    }
+    const registration: CrossOrientationChildRegistration = {
+      cellKey: childList.cellKey,
+      lastSuppressed: null,
+    };
+    childLists.set(childList.ref, registration);
+    const suppressViewableItems =
+      this._getCellVisibilityByKey(childList.cellKey) === false;
+    this._updateChildSuppression(
+      registration,
+      childList.ref,
+      suppressViewableItems,
+    );
   };
 
   _unregisterAsNestedChild = (childList: {ref: VirtualizedList}): void => {
-    this._nestedChildLists.remove(childList.ref);
+    const childLists = this._crossOrientationChildLists;
+    if (childLists != null && childLists.delete(childList.ref)) {
+      if (childLists.size === 0) {
+        this._crossOrientationChildLists = null;
+      }
+    } else {
+      this._nestedChildLists.remove(childList.ref);
+    }
   };
+
+  _getCellVisibilityByKey = (
+    cellKey: string,
+    pendingScrollUpdateCount: number = this.state.pendingScrollUpdateCount,
+  ): ?boolean => {
+    if (this._shouldSuppressViewableItems() || pendingScrollUpdateCount > 0) {
+      return false;
+    }
+
+    const cell = this._cellRefs[cellKey];
+    if (cell == null) {
+      return null;
+    }
+
+    const index = cell.props.index;
+    const itemCount = this.props.getItemCount(this.props.data);
+    if (
+      index < 0 ||
+      index >= itemCount ||
+      VirtualizedList._getItemKey(this.props, index) !== cellKey
+    ) {
+      return false;
+    }
+
+    const cellMetrics = this._listMetrics.getCellMetrics(index, this.props);
+    if (cellMetrics == null) {
+      return false;
+    }
+
+    const {crossAxisLength, offset, visibleLength} = this._getScrollMetrics();
+    if (crossAxisLength <= 0 || visibleLength <= 0) {
+      return false;
+    }
+    const top = cellMetrics.offset - offset;
+    const bottom = top + cellMetrics.length;
+    return top < visibleLength && bottom > 0;
+  };
+
+  _onParentViewportChanged = (suppressViewableItems: boolean): void => {
+    this._isAncestorSuppressed = suppressViewableItems;
+    this._updateViewableItems(
+      this.props,
+      this.state.cellsAroundViewport,
+      suppressViewableItems,
+    );
+    this._nestedChildLists.forEach(child => {
+      child._onParentViewportChanged(suppressViewableItems);
+    });
+    this._notifyCrossOrientationChildren(suppressViewableItems);
+  };
+
+  _notifyCrossOrientationChildren(
+    ancestorSuppressed: boolean = false,
+    pendingScrollUpdateCount: number = this.state.pendingScrollUpdateCount,
+  ): void {
+    let firstError: null | {value: unknown} = null;
+    this._crossOrientationChildLists?.forEach((registration, child) => {
+      const suppressViewableItems =
+        ancestorSuppressed ||
+        this._getCellVisibilityByKey(
+          registration.cellKey,
+          pendingScrollUpdateCount,
+        ) === false;
+      try {
+        this._updateChildSuppression(
+          registration,
+          child,
+          suppressViewableItems,
+        );
+      } catch (error: unknown) {
+        if (firstError == null) {
+          firstError = {value: error};
+        }
+      }
+    });
+    if (firstError != null) {
+      throw firstError.value;
+    }
+  }
+
+  _updateChildSuppression(
+    registration: CrossOrientationChildRegistration,
+    child: VirtualizedList,
+    suppressViewableItems: boolean,
+  ): void {
+    if (registration.lastSuppressed === suppressViewableItems) {
+      return;
+    }
+    const previousSuppressed = registration.lastSuppressed;
+    registration.lastSuppressed = suppressViewableItems;
+    try {
+      child._onParentViewportChanged(suppressViewableItems);
+    } catch (error: unknown) {
+      registration.lastSuppressed = previousSuppressed;
+      throw error;
+    }
+  }
+
+  _shouldSuppressViewableItems(): boolean {
+    if (this._isAncestorSuppressed) {
+      return true;
+    }
+    const context = this.context;
+    if (context?.cellKey == null) {
+      return false;
+    }
+    if (!!context.horizontal === horizontalOrDefault(this.props.horizontal)) {
+      return false;
+    }
+    return context.getCellVisibilityByKey?.(context.cellKey) === false;
+  }
 
   state: State;
 
@@ -437,13 +596,6 @@ class VirtualizedList extends StateSafePureComponent<
       'VirtualizedList: The windowSize prop must be present and set to a value greater than 0.',
     );
 
-    invariant(
-      /* $FlowFixMe[constant-condition] Error discovered during Constant
-       * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
-      getItemCount,
-      'VirtualizedList: The "getItemCount" prop must be provided',
-    );
-
     const itemCount = getItemCount(data);
 
     if (
@@ -504,6 +656,41 @@ class VirtualizedList extends StateSafePureComponent<
   ): string {
     const item = props.getItem(props.data, index);
     return VirtualizedList._keyExtractor(item, index, props);
+  }
+
+  /**
+   * The render window and mask to move to from `state`, or null when they
+   * don't change. It reads nothing from the caller, only its arguments and the
+   * scroll and layout metrics of `list` as they are when it runs, so the
+   * `_updateCellsToRender` updater and the check before it compute the same
+   * result for the same state.
+   */
+  static _computeCellsUpdate(
+    list: VirtualizedList,
+    props: VirtualizedListProps,
+    state: State,
+  ): ?{
+    cellsAroundViewport: {first: number, last: number},
+    renderMask: CellRenderMask,
+  } {
+    const cellsAroundViewport = list._adjustCellsAroundViewport(
+      props,
+      state.cellsAroundViewport,
+      state.pendingScrollUpdateCount,
+    );
+    const renderMask = VirtualizedList._createRenderMask(
+      props,
+      cellsAroundViewport,
+      list._getNonViewportRenderRegions(props),
+    );
+    if (
+      cellsAroundViewport.first === state.cellsAroundViewport.first &&
+      cellsAroundViewport.last === state.cellsAroundViewport.last &&
+      renderMask.equals(state.renderMask)
+    ) {
+      return null;
+    }
+    return {cellsAroundViewport, renderMask};
   }
 
   static _createRenderMask(
@@ -696,19 +883,14 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   componentDidMount() {
-    if (this._isNestedWithSameOrientation()) {
-      this.context.registerAsNestedChild({
-        ref: this,
-        cellKey: this.context.cellKey,
-      });
-    }
+    this._reconcileParentRegistration();
   }
 
   componentWillUnmount() {
-    if (this._isNestedWithSameOrientation()) {
-      this.context.unregisterAsNestedChild({ref: this});
-    }
+    this._unregisterFromParent(false);
+    // $FlowFixMe[incompatible-type]
     clearTimeout(this._updateCellsToRenderTimeoutID);
+    this._updateCellsToRenderTimeoutID = null;
     this._viewabilityTuples.forEach(tuple => {
       tuple.viewabilityHelper.dispose();
     });
@@ -783,9 +965,9 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _pushCells(
-    cells: Array<Object>,
+    cells: Array<any>,
     stickyHeaderIndices: Array<number>,
-    stickyIndicesFromProps: Set<number>,
+    stickyIndicesFromProps: ?Set<number>,
     first: number,
     last: number,
     inversionStyle: StyleProp<ViewStyle>,
@@ -813,7 +995,7 @@ class VirtualizedList extends StateSafePureComponent<
       const key = VirtualizedList._keyExtractor(item, ii, this.props);
 
       this._indicesToKeys.set(ii, key);
-      if (stickyIndicesFromProps.has(ii + stickyOffset)) {
+      if (stickyIndicesFromProps?.has(ii + stickyOffset)) {
         stickyHeaderIndices.push(cells.length);
       }
 
@@ -869,7 +1051,7 @@ class VirtualizedList extends StateSafePureComponent<
     };
   }
 
-  _onUpdateSeparators = (keys: Array<?string>, newProps: Object) => {
+  _onUpdateSeparators = (keys: Array<?string>, newProps: any) => {
     keys.forEach(key => {
       const ref = key != null && this._cellRefs[key];
       ref && ref.updateSeparatorProps(newProps);
@@ -882,6 +1064,55 @@ class VirtualizedList extends StateSafePureComponent<
       nestedContext &&
       !!nestedContext.horizontal === horizontalOrDefault(this.props.horizontal)
     );
+  }
+
+  _reconcileParentRegistration(): void {
+    const context = this.context;
+    const cellKey = context?.cellKey;
+    if (context == null || cellKey == null) {
+      this._unregisterFromParent();
+      return;
+    }
+
+    const horizontal = horizontalOrDefault(this.props.horizontal);
+    const sameOrientation = !!context.horizontal === horizontal;
+    if (!sameOrientation && context.getCellVisibilityByKey == null) {
+      this._unregisterFromParent();
+      return;
+    }
+
+    const registration = this._parentRegistration;
+    if (
+      registration != null &&
+      registration.cellKey === cellKey &&
+      registration.horizontal === horizontal &&
+      registration.sameOrientation === sameOrientation &&
+      registration.register === context.registerAsNestedChild &&
+      registration.unregister === context.unregisterAsNestedChild
+    ) {
+      return;
+    }
+
+    this._unregisterFromParent(false);
+    context.registerAsNestedChild({ref: this, cellKey, horizontal});
+    this._parentRegistration = {
+      cellKey,
+      horizontal,
+      register: context.registerAsNestedChild,
+      sameOrientation,
+      unregister: context.unregisterAsNestedChild,
+    };
+  }
+
+  _unregisterFromParent(resetSuppression: boolean = true): void {
+    const registration = this._parentRegistration;
+    if (registration != null) {
+      this._parentRegistration = null;
+      registration.unregister({ref: this});
+    }
+    if (resetSuppression && this._isAncestorSuppressed) {
+      this._onParentViewportChanged(false);
+    }
   }
 
   _getSpacerKey = (isVertical: boolean): string =>
@@ -944,12 +1175,16 @@ class VirtualizedList extends StateSafePureComponent<
         : styles.verticallyInverted
       : null;
     const cells: Array<any | React.Node> = [];
-    const stickyIndicesFromProps = new Set(this.props.stickyHeaderIndices);
+    // Avoid allocating a Set on every render when no sticky headers are
+    // configured (the common case).
+    const stickyHeaderIndicesProp = this.props.stickyHeaderIndices;
+    const stickyIndicesFromProps =
+      stickyHeaderIndicesProp != null ? new Set(stickyHeaderIndicesProp) : null;
     const stickyHeaderIndices = [];
 
     // 1. Add cell for ListHeaderComponent
     if (ListHeaderComponent) {
-      if (stickyIndicesFromProps.has(0)) {
+      if (stickyIndicesFromProps?.has(0)) {
         stickyHeaderIndices.push(0);
       }
       const element = isValidElement(ListHeaderComponent) ? (
@@ -1146,6 +1381,10 @@ class VirtualizedList extends StateSafePureComponent<
           getOutermostParentListRef: this._getOutermostParentListRef,
           registerAsNestedChild: this._registerAsNestedChild,
           unregisterAsNestedChild: this._unregisterAsNestedChild,
+          getCellVisibilityByKey:
+            ReactNativeFeatureFlags.fixCrossOrientationNestedListViewability()
+              ? this._getCellVisibilityByKey
+              : undefined,
         }}>
         {cloneElement(
           (
@@ -1200,6 +1439,7 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   componentDidUpdate(prevProps: VirtualizedListProps) {
+    this._reconcileParentRegistration();
     const {data, extraData, getItemLayout} = this.props;
     if (data !== prevProps.data || extraData !== prevProps.extraData) {
       // clear the viewableIndices cache to also trigger
@@ -1242,11 +1482,21 @@ class VirtualizedList extends StateSafePureComponent<
   _hasWarned: {[string]: boolean} = {};
   _headerLength = 0;
   _hiPriInProgress: boolean = false; // flag to prevent infinite hiPri cell limit update
+  _hiPriUpdateId: number = 0;
   _indicesToKeys: Map<number, string> = new Map();
+  _isAncestorSuppressed: boolean = false;
   _lastFocusedCellKey: ?string = null;
   _nestedChildLists: ChildListCollection<VirtualizedList> =
     new ChildListCollection();
+  _crossOrientationChildLists: ?Map<
+    VirtualizedList,
+    CrossOrientationChildRegistration,
+  > = null;
+  _parentRegistration: ?ParentRegistration = null;
   _offsetFromParentVirtualizedList: number = 0;
+  // Whether a state update is queued that React hasn't processed yet. While
+  // one is, `this.state` is behind the state the next updater will see.
+  _hasPendingStateUpdate: boolean = false;
   _pendingViewabilityUpdate: boolean = false;
   _prevParentOffset: number = 0;
   _scrollMetrics: {
@@ -1271,7 +1521,7 @@ class VirtualizedList extends StateSafePureComponent<
   _scrollRef: ?React.ElementRef<typeof ScrollView> = null;
   _sentStartForContentLength = 0;
   _sentEndForContentLength = 0;
-  _updateCellsToRenderTimeoutID: ?TimeoutID = null;
+  _updateCellsToRenderTimeoutID: ?ReturnType<typeof setTimeout> = null;
   _viewabilityTuples: Array<ViewabilityHelperCallbackTuple> = [];
 
   _captureScrollRef = (ref: ?React.ElementRef<typeof ScrollView>) => {
@@ -1347,6 +1597,7 @@ class VirtualizedList extends StateSafePureComponent<
     this._triggerRemeasureForChildListsInCell(cellKey);
     this._computeBlankness();
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
+    this._notifyCrossOrientationChildren();
   };
 
   _onCellFocusCapture = (cellKey: string) => {
@@ -1407,6 +1658,7 @@ class VirtualizedList extends StateSafePureComponent<
             this._nestedChildLists.forEach(childList => {
               childList.measureLayoutRelativeToContainingList();
             });
+            this._notifyCrossOrientationChildren();
           }
         },
         error => {
@@ -1436,6 +1688,7 @@ class VirtualizedList extends StateSafePureComponent<
       this._scrollMetrics.visibleLength = this._selectLength(
         e.nativeEvent.layout,
       );
+      this._notifyCrossOrientationChildren();
     }
     this.props.onLayout && this.props.onLayout(e);
     this._scheduleCellsToRenderUpdate();
@@ -1548,7 +1801,11 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _selectOffset({x, y}: Readonly<{x: number, y: number, ...}>): number {
-    return this._orientation().horizontal ? x : y;
+    return horizontalOrDefault(this.props.horizontal) ? x : y;
+  }
+
+  _isHorizontalRTL(): boolean {
+    return horizontalOrDefault(this.props.horizontal) && I18nManager.isRTL;
   }
 
   _orientation(): ListOrientation {
@@ -1722,7 +1979,7 @@ class VirtualizedList extends StateSafePureComponent<
     this._onScroll(e);
   }
 
-  _onScroll = (e: Object) => {
+  _onScroll = (e: any) => {
     this._nestedChildLists.forEach(childList => {
       childList._onScroll(e);
     });
@@ -1785,9 +2042,14 @@ class VirtualizedList extends StateSafePureComponent<
       zoomScale,
     };
     if (this.state.pendingScrollUpdateCount > 0) {
-      this.setState<'pendingScrollUpdateCount'>({pendingScrollUpdateCount: 0});
+      this._hasPendingStateUpdate = true;
+      this.setState<'pendingScrollUpdateCount'>(() => {
+        this._hasPendingStateUpdate = false;
+        return {pendingScrollUpdateCount: 0};
+      });
     }
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
+    this._notifyCrossOrientationChildren(false, 0);
     if (!this.props) {
       return;
     }
@@ -1801,8 +2063,7 @@ class VirtualizedList extends StateSafePureComponent<
 
   _offsetFromScrollEvent(e: ScrollEvent): number {
     const {contentOffset, contentSize, layoutMeasurement} = e.nativeEvent;
-    const {horizontal, rtl} = this._orientation();
-    if (horizontal && rtl) {
+    if (this._isHorizontalRTL()) {
       return (
         this._selectLength(contentSize) -
         (this._selectOffset(contentOffset) +
@@ -1834,7 +2095,12 @@ class VirtualizedList extends StateSafePureComponent<
         clearTimeout(this._updateCellsToRenderTimeoutID);
         this._updateCellsToRenderTimeoutID = null;
       }
-      this._updateCellsToRender();
+      const hiPriUpdateId = ++this._hiPriUpdateId;
+      this._updateCellsToRender(() => {
+        if (this._hiPriUpdateId === hiPriUpdateId) {
+          this._hiPriInProgress = false;
+        }
+      });
       return;
     } else {
       if (this._updateCellsToRenderTimeoutID == null) {
@@ -1940,31 +2206,32 @@ class VirtualizedList extends StateSafePureComponent<
     this.props.onMomentumScrollEnd && this.props.onMomentumScrollEnd(e);
   };
 
-  _updateCellsToRender = () => {
+  _updateCellsToRender = (onUpdateComplete?: () => void) => {
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
+    this._notifyCrossOrientationChildren();
 
+    // This runs on every scroll event, and most of the time the window of
+    // rendered cells doesn't change. The updater below would then return null,
+    // but React would still schedule and run a render pass to find that out,
+    // so do the same computation here first. It only gives the same answer
+    // while no other update is pending (`this.state` would be behind) and once
+    // the list has been laid out (before that, layout callbacks arrive back to
+    // back and the updater would see metrics from after this call).
+    if (
+      !this._hasPendingStateUpdate &&
+      this._scrollMetrics.visibleLength > 0 &&
+      this._listMetrics.getContentLength() > 0 &&
+      VirtualizedList._computeCellsUpdate(this, this.props, this.state) == null
+    ) {
+      onUpdateComplete?.();
+      return;
+    }
+
+    this._hasPendingStateUpdate = true;
     this.setState<'cellsAroundViewport' | 'renderMask'>((state, props) => {
-      const cellsAroundViewport = this._adjustCellsAroundViewport(
-        props,
-        state.cellsAroundViewport,
-        state.pendingScrollUpdateCount,
-      );
-      const renderMask = VirtualizedList._createRenderMask(
-        props,
-        cellsAroundViewport,
-        this._getNonViewportRenderRegions(props),
-      );
-
-      if (
-        cellsAroundViewport.first === state.cellsAroundViewport.first &&
-        cellsAroundViewport.last === state.cellsAroundViewport.last &&
-        renderMask.equals(state.renderMask)
-      ) {
-        return null;
-      }
-
-      return {cellsAroundViewport, renderMask};
-    });
+      this._hasPendingStateUpdate = false;
+      return VirtualizedList._computeCellsUpdate(this, props, state);
+    }, onUpdateComplete);
   };
 
   _createViewToken = (
@@ -2051,16 +2318,22 @@ class VirtualizedList extends StateSafePureComponent<
   _updateViewableItems(
     props: CellMetricProps,
     cellsAroundViewport: {first: number, last: number},
+    suppressViewableItems?: boolean,
   ) {
     // If we have any pending scroll updates it means that the scroll metrics
     // are out of date and we should not call any of the visibility callbacks.
-    if (this.state.pendingScrollUpdateCount > 0) {
+    if (
+      suppressViewableItems !== true &&
+      this.state.pendingScrollUpdateCount > 0
+    ) {
       return;
     }
     const visibleLength =
       this._scrollMetrics.crossAxisLength > 0
         ? this._scrollMetrics.visibleLength
         : 0;
+    const shouldSuppressViewableItems =
+      suppressViewableItems ?? this._shouldSuppressViewableItems();
     this._viewabilityTuples.forEach(tuple => {
       tuple.viewabilityHelper.onUpdate(
         props,
@@ -2070,6 +2343,7 @@ class VirtualizedList extends StateSafePureComponent<
         this._createViewToken,
         tuple.onViewableItemsChanged,
         cellsAroundViewport,
+        shouldSuppressViewableItems,
       );
     });
   }

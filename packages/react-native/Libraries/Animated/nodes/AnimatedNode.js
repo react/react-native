@@ -228,7 +228,7 @@ export default class AnimatedNode {
   }
 
   // $FlowFixMe[unclear-type]
-  __getNativeConfig(): Object {
+  __getNativeConfig(): any {
     throw new Error(
       'This JS animated node type cannot be used as native animated node',
     );

@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
-#include <react/debug/react_native_assert.h>
+#include <React/Debug.h>
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>

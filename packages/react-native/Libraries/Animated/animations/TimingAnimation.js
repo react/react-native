@@ -68,8 +68,8 @@ export default class TimingAnimation extends Animation {
   _delay: number;
   _easing: (value: number) => number;
   _onUpdate: (value: number) => void;
-  _animationFrame: ?AnimationFrameID;
-  _timeout: ?TimeoutID;
+  _animationFrame: ?number;
+  _timeout: ?ReturnType<typeof setTimeout>;
   _platformConfig: ?PlatformConfig;
   _deferredStart: boolean;
 
@@ -171,12 +171,14 @@ export default class TimingAnimation extends Animation {
     );
     if (this.__active) {
       // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+      // $FlowFixMe[invalid-tuple-arity]
       this._animationFrame = requestAnimationFrame(this.onUpdate.bind(this));
     }
   }
 
   stop(): void {
     super.stop();
+    // $FlowFixMe[incompatible-type]
     clearTimeout(this._timeout);
     if (this._animationFrame != null) {
       global.cancelAnimationFrame(this._animationFrame);

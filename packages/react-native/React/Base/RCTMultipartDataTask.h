@@ -10,11 +10,13 @@
 #import <React/RCTDefines.h>
 #import <React/RCTMultipartStreamReader.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef void (^RCTMultipartDataTaskCallback)(
     NSInteger statusCode,
-    NSDictionary *headers,
-    NSData *content,
-    NSError *error,
+    NSDictionary *_Nullable headers,
+    NSData *_Nullable content,
+    NSError *_Nullable error,
     BOOL done);
 
 typedef NSURLRequest *_Nullable (^RCTMultipartDataTaskRequestInterceptor)(NSURLRequest *request);
@@ -23,14 +25,17 @@ typedef NSURLRequest *_Nullable (^RCTMultipartDataTaskRequestInterceptor)(NSURLR
  * requests before they are sent. Return a modified request to override, or nil
  * to use the original request unchanged.
  */
-RCT_EXTERN void RCTSetCustomMultipartDataTaskRequestInterceptor(RCTMultipartDataTaskRequestInterceptor /*interceptor*/);
+RCT_EXTERN void RCTSetCustomMultipartDataTaskRequestInterceptor(
+    RCTMultipartDataTaskRequestInterceptor _Nullable /*interceptor*/);
 
 @interface RCTMultipartDataTask : NSObject
 
 - (instancetype)initWithURL:(NSURL *)url
                 partHandler:(RCTMultipartDataTaskCallback)partHandler
-            progressHandler:(RCTMultipartProgressCallback)progressHandler;
+            progressHandler:(nullable RCTMultipartProgressCallback)progressHandler;
 
 - (void)startTask;
 
 @end
+
+NS_ASSUME_NONNULL_END

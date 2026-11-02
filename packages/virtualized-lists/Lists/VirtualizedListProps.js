@@ -28,7 +28,7 @@ export type Item = any;
 export type Separators = {
   highlight: () => void,
   unhighlight: () => void,
-  updateProps: (select: 'leading' | 'trailing', newProps: Object) => void,
+  updateProps: (select: 'leading' | 'trailing', newProps: LegacyObject) => void,
   ...
 };
 

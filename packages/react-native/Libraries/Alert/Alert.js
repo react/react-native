@@ -27,7 +27,7 @@ export type AlertButtonStyle = 'default' | 'cancel' | 'destructive';
 export type AlertButton = {
   text?: string,
   // $FlowFixMe[unclear-type]
-  onPress?: ?((value?: string) => any) | ?Function,
+  onPress?: ?((value?: string) => any) | ?LegacyFunction,
   isPreferred?: boolean,
   style?: AlertButtonStyle,
   ...

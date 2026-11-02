@@ -12,14 +12,15 @@
 const changelogRegex =
   /\[\s?(ANDROID|GENERAL|IOS|INTERNAL)\s?\]\s?\[\s?(BREAKING|ADDED|CHANGED|DEPRECATED|REMOVED|FIXED|SECURITY)\s?\]\s*?-?\s*?(.*)/i;
 
-const internalChangelogRegex = /\[\s?(INTERNAL)\s?\].*/gi;
+const internalChangelogRegex = /\[\s?(INTERNAL)\s?\].*/i;
 
-function validateChangelog(commitMsg) {
-  if (!commitMsg.toLowerCase().includes('changelog:')) {
+function validateChangelog(prBody) {
+  const hasChangelogHeading = /^##[ \t]+changelog[ \t]*\r?$/im.test(prBody);
+  if (!prBody.toLowerCase().includes('changelog:') && !hasChangelogHeading) {
     return 'missing';
   }
-  const hasValidChangelog = changelogRegex.test(commitMsg);
-  const hasValidInternalChangelog = internalChangelogRegex.test(commitMsg);
+  const hasValidChangelog = changelogRegex.test(prBody);
+  const hasValidInternalChangelog = internalChangelogRegex.test(prBody);
 
   if (hasValidChangelog || hasValidInternalChangelog) {
     return 'valid';

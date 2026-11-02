@@ -8,7 +8,6 @@
 #import <React/RCTSurfacePresenterStub.h>
 #import <React/RCTUIManager.h>
 
-#import "RCTBridge.h"
 #import "RCTBridgeModule.h"
 
 @implementation RCTViewRegistry {

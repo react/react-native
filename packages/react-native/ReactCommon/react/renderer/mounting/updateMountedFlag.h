@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
-#include <react/renderer/core/ShadowNode.h>
+#include <React/RendererCore.h>
 #include <react/renderer/mounting/ShadowTree.h>
 
 namespace facebook::react {

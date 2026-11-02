@@ -3,21 +3,17 @@
 appId: ${APP_ID}
 ---
 - launchApp
+- stopApp
+- openLink: rntester://example/ScrollViewMaintainVisibleContentPositionExample
+- runFlow: ./helpers/confirm-open-link.yml
 # Change to portrait
 - setOrientation: portrait
 - waitForAnimationToEnd:
     timeout: 3000
-# Find test
-- assertVisible: 'Components'
-- scrollUntilVisible:
-    element:
-      id: 'ScrollViewMaintainVisibleContentPositionExample'
-    direction: DOWN
-    speed: 80
-- tapOn:
-    id: 'ScrollViewMaintainVisibleContentPositionExample'
-- waitForAnimationToEnd:
-    timeout: 2000
+- extendedWaitUntil:
+    visible:
+      id: 'scroll-offset-display'
+    timeout: 120000
 # Disable threshold
 - tapOn:
     text: 'Threshold: OFF'

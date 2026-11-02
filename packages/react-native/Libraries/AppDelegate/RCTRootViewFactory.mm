@@ -229,14 +229,6 @@
       reinterpret_cast<facebook::react::JSRuntimeFactory *>(jsRuntimeFactory), &js_runtime_factory_destroy);
 }
 
-- (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
-{
-  if (_configuration.extraModulesForBridge != nil) {
-    return _configuration.extraModulesForBridge(bridge);
-  }
-  return nil;
-}
-
 - (NSURL *)bundleURL
 {
   return self->_configuration.bundleURLBlock();

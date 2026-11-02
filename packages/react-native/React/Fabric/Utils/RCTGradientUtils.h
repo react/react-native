@@ -6,7 +6,7 @@
  */
 
 #include <Foundation/Foundation.h>
-#include <react/renderer/graphics/ColorStop.h>
+#include <React/Graphics.h>
 #import <vector>
 
 NS_ASSUME_NONNULL_BEGIN

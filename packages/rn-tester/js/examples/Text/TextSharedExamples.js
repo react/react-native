@@ -9,12 +9,14 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {TextLayoutLine} from 'react-native/Libraries/Types/CoreEventTypes';
+import type {TextLayoutEvent} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
 import {useTheme} from '../../components/RNTesterTheme';
 import {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+
+type TextLayoutLine = TextLayoutEvent['nativeEvent']['lines'][number];
 
 function InlineView(props: {
   textAlign: 'auto' | 'left' | 'right' | 'center' | 'justify',
@@ -247,7 +249,7 @@ function LastLineClippingExample(): React.Node {
   // clipped by one physical pixel after layout rounding (issue #53450). The
   // border makes any clipping of the last line visible.
   return (
-    <View>
+    <View testID="last-line-clipping-example">
       {[11, 12, 13, 14, 15, 16, 17].map(fontSize => (
         <View
           key={fontSize}

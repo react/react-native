@@ -47,10 +47,9 @@
  *     non-modular framework headers; yoga + RCTDeprecation found
  *     empirically). Namespaces whose name is not a valid module identifier
  *     (e.g. jsinspector-modern) are exempt — they have no candidates today;
- *     planFromInventory FAILS CLOSED if that changes. `react/` is also exempt: its few
- *     objc-modular-candidates stay textual (as they already were inside
- *     React.framework) so no `react` module aliases the `React` framework
- *     module.
+ *     planFromInventory FAILS CLOSED if that changes. `react/` gets one
+ *     too, named ReactNativeHeaders_react so it cannot alias the `React`
+ *     framework module on a case-insensitive filesystem.
  * R6. Bare root aliases are servable only as `<React/X>` — bare angle forms
  *     (`#import <RCTAppDelegate.h>`) have no framework spelling. This is the
  *     accepted, measured consumer migration (~4 lines ecosystem-wide).
@@ -79,6 +78,30 @@
  *     one-line redirect shim (`#import <owner>`). Shims that are namespace-
  *     module members are fine: they import the owning module, so declarations
  *     stay single-owned.
+ * R12. A namespace module's OWN umbrella (ReactCommon/<ns...>/React/<Name>.h,
+ *     natural path React/<Name>.h) ships in ReactNativeHeaders — it is NOT
+ *     hoisted into React.framework by R1. ReactNativeHeaders is the LOWER
+ *     layer (React.framework imports it: RCTCallInvoker.h pulls
+ *     <ReactCommon/CallInvoker.h>), so a framework-owned umbrella turns every
+ *     `#include <React/X.h>` inside a lowercase-namespace header into an import
+ *     of module React and closes a cycle:
+ *       React -> ReactNativeHeaders_react -> React
+ *     Found empirically: react/timing/primitives.h -> <React/Debug.h>. Kept in
+ *     ReactNativeHeaders the same spelling still resolves — framework lookup
+ *     misses and clang falls back to the header search path — textually and
+ *     within one artifact, so no module edge is created. These umbrellas are
+ *     objc-blocked by construction (they re-export their module's C++
+ *     surface), so they were never R4 umbrella or R5 module members anyway.
+ * R13. The C++ stable API guards (react/cxxstableapi/*Guard.h) are
+ *     `textual header` members of their R5 module, as is every R5 member that
+ *     reaches one through unguarded includes. A guard decides at each
+ *     #include, from the includer's RN_BUILDING / RN_UMBRELLA_CONTEXT, whether
+ *     that include is allowed. A module member is instead compiled once, on
+ *     its own, with the consumer's -D macros and no includer at all, so under
+ *     RN_STRICT_API the guard fires against the module itself and every
+ *     `import React` fails to build. A textual member still belongs to the
+ *     module, so a framework module may include it (R5), but it is expanded
+ *     at each include site, where the guard sees its real includer.
  */
 
 const fs = require('node:fs');
@@ -110,6 +133,8 @@ export type HeadersSpecPlan = {
   umbrella: Array<string>,
   // R5: plain modules for ReactNativeHeaders' module.modulemap
   namespaceModules: {[ns: string]: Array<string>},
+  // R13: the namespaceModules members declared `textual header`.
+  textualNamespaceHeaders: Array<string>,
   // R10: per-namespace umbrella headers emitted into ReactNativeHeaders.
   namespaceUmbrellas: Array<{relPath: string, content: string}>,
   // R9: private headers added to the React module map (allowlist).
@@ -254,6 +279,39 @@ function isUmbrellaSafe(h /*: any */, rnRoot /*: string */) /*: boolean */ {
   }
 }
 
+// R13: natural-path prefix of the C++ stable API guard headers.
+const STABLE_API_GUARD_PREFIX = 'react/cxxstableapi/';
+
+// R13: the inventory headers that are a stable API guard or reach one through
+// unguarded includes — what compiling the header on its own in Objective-C
+// (a namespace module build) evaluates.
+function stableApiGuardedHeaders(manifest /*: any */) /*: Set<string> */ {
+  const includes /*: Map<string, Array<string>> */ = new Map();
+  for (const h of manifest.headers) {
+    includes.set(
+      h.naturalPath,
+      (h.includes?.internal ?? [])
+        .filter(i => !i.cxxGuarded)
+        .map(i => i.naturalPath),
+    );
+  }
+  const isGuard = (np /*: string */) => np.startsWith(STABLE_API_GUARD_PREFIX);
+  const guarded /*: Set<string> */ = new Set(
+    Array.from(includes.keys()).filter(isGuard),
+  );
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [np, deps] of includes) {
+      if (!guarded.has(np) && deps.some(d => isGuard(d) || guarded.has(d))) {
+        guarded.add(np);
+        changed = true;
+      }
+    }
+  }
+  return guarded;
+}
+
 // R10: per-namespace umbrella headers. Some consumers (e.g. Expo's
 // RCTAppDelegateUmbrella.h) probe
 // `<React_RCTAppDelegate/React_RCTAppDelegate-umbrella.h>` via __has_include.
@@ -280,6 +338,13 @@ function renderNamespaceUmbrella(
   return `#ifdef __OBJC__\n#import <UIKit/UIKit.h>\n#endif\n\n${imports}\n`;
 }
 
+// R12: a namespace module's own umbrella — physically nested inside the module
+// it re-exports (ReactCommon/react/debug/React/Debug.h), which is what tells it
+// apart from the ~310 genuine React.framework headers that also carry a
+// `React/` natural path but live under React/, Libraries/, ReactApple/, ...
+const NS_MODULE_UMBRELLA_RE /*: RegExp */ =
+  /^ReactCommon\/.+\/React\/[^/]+\.h$/;
+
 /**
  * Computes the full layout plan from the header inventory manifest
  * (build/header-inventory.json — regenerate with header-inventory.js).
@@ -298,6 +363,8 @@ function planFromInventory(
   const reactNativeHeaders /*: Array<SpecEntry> */ = [];
   const umbrella /*: Array<string> */ = [];
   const namespaceModules /*: {[string]: Array<string>} */ = {};
+  const textualNamespaceHeaders /*: Array<string> */ = [];
+  const guardedHeaders = stableApiGuardedHeaders(manifest);
   const collisions /*: Array<string> */ = [];
   const seen /*: Map<string, string> */ = new Map();
 
@@ -307,7 +374,13 @@ function planFromInventory(
     let bucketKey;
     let entryList;
     let relPath;
-    if (np.startsWith('React/')) {
+    if (np.startsWith('React/') && NS_MODULE_UMBRELLA_RE.test(source)) {
+      // R12: a namespace module's own umbrella stays in the LOWER layer, so
+      // including it from that namespace cannot create a React module edge.
+      relPath = np;
+      bucketKey = `ReactNativeHeaders/${relPath}`;
+      entryList = reactNativeHeaders;
+    } else if (np.startsWith('React/')) {
       relPath = np.slice(6); // R1: hoist React/ to the framework Headers root
       bucketKey = `React.framework/${relPath}`;
       entryList = react;
@@ -332,8 +405,13 @@ function planFromInventory(
     seen.set(bucketKey, source);
     entryList.push({relPath, source, naturalPath: np});
 
-    // R4: React umbrella membership.
-    if (np.startsWith('React/') && isUmbrellaSafe(h, root)) {
+    // R4: React umbrella membership. Only headers the framework actually ships
+    // (R12 umbrellas carry a React/ natural path but live in ReactNativeHeaders).
+    if (
+      entryList === react &&
+      np.startsWith('React/') &&
+      isUmbrellaSafe(h, root)
+    ) {
       umbrella.push(np);
     }
     // R5: namespace modules (only for ReactNativeHeaders namespaces). Every
@@ -346,6 +424,19 @@ function planFromInventory(
     if (entryList === reactNativeHeaders) {
       const ns = np.split('/')[0];
       if (isUmbrellaSafe(h, root)) {
+        // R12 assert: an R12-routed umbrella lands under the `React` namespace
+        // here, and renderNamespaceModuleMap only renames the lowercase `react`
+        // one — so its module would be named `React` and alias the framework
+        // module, reintroducing the cycle R12 exists to break. These umbrellas
+        // are objc-blocked today so they never reach this branch; fail closed
+        // if that ever changes.
+        if (ns === 'React') {
+          throw new Error(
+            `R12: '${np}' is a modular candidate in ReactNativeHeaders. Its ` +
+              `namespace module would be named 'React' and alias the React ` +
+              `framework module. Keep it out of the modular surface.`,
+          );
+        }
         // R5 exemption assert: a namespace whose name is not a valid module
         // identifier cannot get a module, so a modular-candidate header in it
         // would be silently non-modular — consumers importing it from a
@@ -364,6 +455,9 @@ function planFromInventory(
           namespaceModules[ns] = [];
         }
         namespaceModules[ns].push(np);
+        if (guardedHeaders.has(np)) {
+          textualNamespaceHeaders.push(np);
+        }
       }
     }
   }
@@ -372,6 +466,7 @@ function planFromInventory(
   for (const ns of Object.keys(namespaceModules)) {
     namespaceModules[ns].sort();
   }
+  textualNamespaceHeaders.sort();
 
   // R11: assign redirect shims for duplicate spellings of one source.
   // Owner precedence: the React/ form (module React / canonical textual home)
@@ -441,6 +536,7 @@ function planFromInventory(
     depsNamespaces: DEPS_NAMESPACES,
     umbrella,
     namespaceModules,
+    textualNamespaceHeaders,
     namespaceUmbrellas,
     privateReactHeaders: PRIVATE_REACT_HEADERS,
     collisions,
@@ -480,10 +576,13 @@ function renderUmbrellaHeader(umbrella /*: Array<string> */) /*: string */ {
  * modules, one per namespace with modular candidates — discovered implicitly
  * by clang via the auto-added header search path. Headers are referenced by
  * their path relative to the Headers root (= the modulemap's directory).
+ * Members in `textualHeaders` (R13) are declared `textual header`.
  */
 function renderNamespaceModuleMap(
   namespaceModules /*: {[string]: Array<string>} */,
+  textualHeaders /*: ReadonlyArray<string> */ = [],
 ) /*: string */ {
+  const textual = new Set(textualHeaders);
   // The module NAME is internal to clang's module graph (consumers never
   // `@import` these; they `#import <ns/...>` and clang maps the header to its
   // module). It only has to be unique and must not alias the `React` framework
@@ -494,7 +593,9 @@ function renderNamespaceModuleMap(
     ns === 'react' ? 'ReactNativeHeaders_react' : ns;
   const blocks = [];
   for (const ns of Object.keys(namespaceModules).sort()) {
-    const headerLines = namespaceModules[ns].map(hh => `  header "${hh}"`);
+    const headerLines = namespaceModules[ns].map(hh =>
+      textual.has(hh) ? `  textual header "${hh}"` : `  header "${hh}"`,
+    );
     // R10: the per-namespace umbrella is itself a module member, so importing
     // it stays modular (otherwise it re-trips -Wnon-modular-include inside the
     // consumer's framework module).

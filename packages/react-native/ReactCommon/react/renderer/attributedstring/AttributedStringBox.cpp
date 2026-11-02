@@ -23,6 +23,11 @@ AttributedStringBox::AttributedStringBox(const AttributedString& value)
       value_(std::make_shared<const AttributedString>(value)),
       opaquePointer_({}) {};
 
+AttributedStringBox::AttributedStringBox(AttributedString&& value)
+    : mode_(Mode::Value),
+      value_(std::make_shared<const AttributedString>(std::move(value))),
+      opaquePointer_({}) {};
+
 AttributedStringBox::AttributedStringBox(std::shared_ptr<void> opaquePointer)
     : mode_(Mode::OpaquePointer),
       value_({}),

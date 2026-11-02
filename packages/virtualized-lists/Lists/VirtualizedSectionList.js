@@ -431,8 +431,7 @@ class VirtualizedSectionList<
     if (updateHighlightFn != null) {
       this._updateHighlightMap[cellKey] = updateHighlightFn;
     } else {
-      // $FlowFixMe[prop-missing]
-      delete this._updateHighlightFor[cellKey];
+      delete this._updateHighlightMap[cellKey];
     }
   };
 
@@ -446,7 +445,7 @@ class VirtualizedSectionList<
 
   _getSeparatorComponent(
     index: number,
-    info?: ?Object,
+    info?: ?any,
     listItemCount: number,
   ): ?(React.ComponentType<any> | React.MixedElement) {
     info = info || this._subExtractor(index);
@@ -502,7 +501,7 @@ type ItemWithSeparatorProps<ItemT> = Readonly<{
   prevCellKey?: ?string,
   updateHighlightFor: (prevCellKey: string, value: boolean) => void,
   updatePropsFor: (prevCellKey: string, value: Object) => void,
-  renderItem: Function,
+  renderItem: any,
   inverted: boolean,
 }>;
 

@@ -31,11 +31,9 @@
 #undef RN_UMBRELLA_CONTEXT
 #define RN_UMBRELLA_CONTEXT 1
 
-#include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProvider.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
-#include <react/renderer/componentregistry/componentNameByReactViewName.h>
 
 #undef RN_UMBRELLA_CONTEXT
 #pragma pop_macro("RN_UMBRELLA_CONTEXT")

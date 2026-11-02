@@ -42,7 +42,7 @@ export default class DecayAnimation extends Animation {
   _deceleration: number;
   _velocity: number;
   _onUpdate: (value: number) => void;
-  _animationFrame: ?AnimationFrameID;
+  _animationFrame: ?number;
   _platformConfig: ?PlatformConfig;
 
   constructor(config: DecayAnimationConfigSingle) {
@@ -110,6 +110,7 @@ export default class DecayAnimation extends Animation {
     this._lastValue = value;
     if (this.__active) {
       // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+      // $FlowFixMe[invalid-tuple-arity]
       this._animationFrame = requestAnimationFrame(this.onUpdate.bind(this));
     }
   }

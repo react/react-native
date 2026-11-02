@@ -18,6 +18,8 @@ import ReactNativeFeatureFlagsDefaultsH from './templates/common-cxx/ReactNative
 import ReactNativeFeatureFlagsDynamicProviderH from './templates/common-cxx/ReactNativeFeatureFlagsDynamicProvider.h-template';
 import ReactNativeFeatureFlagsOverrides from './templates/common-cxx/ReactNativeFeatureFlagsOverridesOSS_Stage_.h-template';
 import ReactNativeFeatureFlagsProviderH from './templates/common-cxx/ReactNativeFeatureFlagsProvider.h-template';
+import ReactNativePublicFeatureFlagsCPP from './templates/common-cxx/ReactNativePublicFeatureFlags.cpp-template';
+import ReactNativePublicFeatureFlagsH from './templates/common-cxx/ReactNativePublicFeatureFlags.h-template';
 import path from 'node:path';
 
 export default function generateCommonCxxModules(
@@ -30,6 +32,10 @@ export default function generateCommonCxxModules(
       ReactNativeFeatureFlagsH(featureFlagDefinitions),
     [path.join(commonCxxPath, 'ReactNativeFeatureFlags.cpp')]:
       ReactNativeFeatureFlagsCPP(featureFlagDefinitions),
+    [path.join(commonCxxPath, 'ReactNativePublicFeatureFlags.h')]:
+      ReactNativePublicFeatureFlagsH(featureFlagDefinitions),
+    [path.join(commonCxxPath, 'ReactNativePublicFeatureFlags.cpp')]:
+      ReactNativePublicFeatureFlagsCPP(featureFlagDefinitions),
     [path.join(commonCxxPath, 'ReactNativeFeatureFlagsAccessor.h')]:
       ReactNativeFeatureFlagsAccessorH(featureFlagDefinitions),
     [path.join(commonCxxPath, 'ReactNativeFeatureFlagsAccessor.cpp')]:

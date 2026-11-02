@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 enum ReactNativeLogLevel {
   ReactNativeLogLevelInfo = 1,
   ReactNativeLogLevelWarning = 2,

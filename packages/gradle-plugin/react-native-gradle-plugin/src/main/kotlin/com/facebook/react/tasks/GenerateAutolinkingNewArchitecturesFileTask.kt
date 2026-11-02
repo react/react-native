@@ -70,6 +70,7 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
                 if(EXISTS "$nativeFolderPath")
                   add_subdirectory("$nativeFolderPath" ${libraryName}_autolinked_build)
                   list(APPEND AUTOLINKED_LIBRARIES $CODEGEN_LIB_PREFIX${libraryName})
+                  list(APPEND AUTOLINKED_CODEGEN_LIBRARIES $CODEGEN_LIB_PREFIX${libraryName})
                 else()
                   message(WARNING "React Native: Skipping autolinked library '$CODEGEN_LIB_PREFIX${libraryName}' because the source directory does not exist: $nativeFolderPath")
                 endif()
@@ -209,6 +210,7 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
         set(REACTNATIVE_MERGED_SO true)
 
         set(AUTOLINKED_LIBRARIES)
+        set(AUTOLINKED_CODEGEN_LIBRARIES)
 
         {{ libraryIncludes }}
         """
@@ -264,11 +266,10 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
 
         #pragma once
 
-        #include <ReactCommon/CallInvoker.h>
-        #include <ReactCommon/JavaTurboModule.h>
-        #include <ReactCommon/TurboModule.h>
+        #include <React/CallInvoker.h>
+        #include <React/ComponentRegistry.h>
+        #include <React/NativeModuleCore.h>
         #include <jsi/jsi.h>
-        #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 
         namespace facebook {
         namespace react {

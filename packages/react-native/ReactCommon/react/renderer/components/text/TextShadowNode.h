@@ -11,10 +11,10 @@
 
 #include <limits>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/text/BaseTextShadowNode.h>
 #include <react/renderer/components/text/TextProps.h>
-#include <react/renderer/components/view/ViewEventEmitter.h>
-#include <react/renderer/core/ConcreteShadowNode.h>
 
 namespace facebook::react {
 
@@ -25,7 +25,7 @@ using TextEventEmitter = TouchEventEmitter;
 class TextShadowNode : public ConcreteShadowNode<TextComponentName, ShadowNode, TextProps, TextEventEmitter>,
                        public BaseTextShadowNode {
  public:
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteShadowNode::BaseTraits();
 #ifdef ANDROID

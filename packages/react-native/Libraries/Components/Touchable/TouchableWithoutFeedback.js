@@ -36,92 +36,93 @@ export type TouchableWithoutFeedbackPropsAndroid = {
   touchSoundDisabled?: ?boolean,
 };
 
+type TouchableWithoutFeedbackPropsCore = {
+  children?: ?React.Node,
+  /**
+   * Delay in ms, from onPressIn, before onLongPress is called.
+   */
+  delayLongPress?: ?number,
+  /**
+   * Delay in ms, from the start of the touch, before onPressIn is called.
+   */
+  delayPressIn?: ?number,
+  /**
+   * Delay in ms, from the release of the touch, before onPressOut is called.
+   */
+  delayPressOut?: ?number,
+  /**
+   * If true, disable all interactions for this component.
+   */
+  disabled?: ?boolean,
+  /**
+   * Whether this View should be focusable with a non-touch input device,
+   * eg. receive focus with a hardware keyboard / TV remote.
+   */
+  focusable?: ?boolean,
+  /**
+   * This defines how far your touch can start away from the button.
+   * This is added to pressRetentionOffset when moving off of the button.
+   * NOTE The touch area never extends past the parent view bounds and
+   * the Z-index of sibling views always takes precedence if a touch hits
+   * two overlapping views.
+   */
+  hitSlop?: ?EdgeInsetsOrSizeProp,
+  /**
+   * Used to reference react managed views from native code.
+   */
+  id?: string,
+  importantForAccessibility?: ?('auto' | 'yes' | 'no' | 'no-hide-descendants'),
+  nativeID?: ?string,
+  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,
+  /**
+   * When `accessible` is true (which is the default) this may be called when
+   * the OS-specific concept of "blur" occurs, meaning the element lost focus.
+   * Some platforms may not have the concept of blur.
+   */
+  onBlur?: ?(event: BlurEvent) => unknown,
+  /**
+   * When `accessible` is true (which is the default) this may be called when
+   * the OS-specific concept of "focus" occurs. Some platforms may not have
+   * the concept of focus.
+   */
+  onFocus?: ?(event: FocusEvent) => unknown,
+  /**
+   * Invoked on mount and layout changes with
+   * {nativeEvent: {layout: {x, y, width, height}}}
+   */
+  onLayout?: ?(event: LayoutChangeEvent) => unknown,
+  onLongPress?: ?(event: GestureResponderEvent) => unknown,
+  /**
+   * Called when the touch is released,
+   * but not if cancelled (e.g. by a scroll that steals the responder lock).
+   */
+  onPress?: ?(event: GestureResponderEvent) => unknown,
+  onPressIn?: ?(event: GestureResponderEvent) => unknown,
+  onPressOut?: ?(event: GestureResponderEvent) => unknown,
+  /**
+   * When the scroll view is disabled, this defines how far your
+   * touch may move off of the button, before deactivating the button.
+   * Once deactivated, try moving it back and you'll see that the button
+   * is once again reactivated! Move it back and forth several times
+   * while the scroll view is disabled. Ensure you pass in a constant
+   * to reduce memory allocations.
+   */
+  pressRetentionOffset?: ?EdgeInsetsOrSizeProp,
+  rejectResponderTermination?: ?boolean,
+  /**
+   * Used to locate this view in end-to-end tests.
+   */
+  testID?: ?string,
+  /**
+   * //FIXME: not in doc but available in examples
+   */
+  style?: ?ViewStyleProp,
+};
+
 /** @build-types emit-as-interface Expo compatibility */
 export type TouchableWithoutFeedbackProps = Readonly<
-  {
-    children?: ?React.Node,
-    /**
-     * Delay in ms, from onPressIn, before onLongPress is called.
-     */
-    delayLongPress?: ?number,
-    /**
-     * Delay in ms, from the start of the touch, before onPressIn is called.
-     */
-    delayPressIn?: ?number,
-    /**
-     * Delay in ms, from the release of the touch, before onPressOut is called.
-     */
-    delayPressOut?: ?number,
-    /**
-     * If true, disable all interactions for this component.
-     */
-    disabled?: ?boolean,
-    /**
-     * Whether this View should be focusable with a non-touch input device,
-     * eg. receive focus with a hardware keyboard / TV remote.
-     */
-    focusable?: ?boolean,
-    /**
-     * This defines how far your touch can start away from the button.
-     * This is added to pressRetentionOffset when moving off of the button.
-     * NOTE The touch area never extends past the parent view bounds and
-     * the Z-index of sibling views always takes precedence if a touch hits
-     * two overlapping views.
-     */
-    hitSlop?: ?EdgeInsetsOrSizeProp,
-    /**
-     * Used to reference react managed views from native code.
-     */
-    id?: string,
-    importantForAccessibility?: ?(
-      'auto' | 'yes' | 'no' | 'no-hide-descendants'
-    ),
-    nativeID?: ?string,
-    onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,
-    /**
-     * When `accessible` is true (which is the default) this may be called when
-     * the OS-specific concept of "blur" occurs, meaning the element lost focus.
-     * Some platforms may not have the concept of blur.
-     */
-    onBlur?: ?(event: BlurEvent) => unknown,
-    /**
-     * When `accessible` is true (which is the default) this may be called when
-     * the OS-specific concept of "focus" occurs. Some platforms may not have
-     * the concept of focus.
-     */
-    onFocus?: ?(event: FocusEvent) => unknown,
-    /**
-     * Invoked on mount and layout changes with
-     * {nativeEvent: {layout: {x, y, width, height}}}
-     */
-    onLayout?: ?(event: LayoutChangeEvent) => unknown,
-    onLongPress?: ?(event: GestureResponderEvent) => unknown,
-    /**
-     * Called when the touch is released,
-     * but not if cancelled (e.g. by a scroll that steals the responder lock).
-     */
-    onPress?: ?(event: GestureResponderEvent) => unknown,
-    onPressIn?: ?(event: GestureResponderEvent) => unknown,
-    onPressOut?: ?(event: GestureResponderEvent) => unknown,
-    /**
-     * When the scroll view is disabled, this defines how far your
-     * touch may move off of the button, before deactivating the button.
-     * Once deactivated, try moving it back and you'll see that the button
-     * is once again reactivated! Move it back and forth several times
-     * while the scroll view is disabled. Ensure you pass in a constant
-     * to reduce memory allocations.
-     */
-    pressRetentionOffset?: ?EdgeInsetsOrSizeProp,
-    rejectResponderTermination?: ?boolean,
-    /**
-     * Used to locate this view in end-to-end tests.
-     */
-    testID?: ?string,
-    /**
-     * //FIXME: not in doc but available in examples
-     */
-    style?: ?ViewStyleProp,
-  } & TouchableWithoutFeedbackPropsAndroid &
+  TouchableWithoutFeedbackPropsCore &
+    TouchableWithoutFeedbackPropsAndroid &
     TouchableWithoutFeedbackPropsIOS &
     AccessibilityProps,
 >;

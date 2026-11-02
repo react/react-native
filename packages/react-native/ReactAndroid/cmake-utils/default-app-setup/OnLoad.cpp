@@ -30,9 +30,9 @@
 #include <DefaultComponentsRegistry.h>
 #include <DefaultTurboModuleManagerDelegate.h>
 #include <FBReactNativeSpec.h>
+#include <React/ComponentRegistry.h>
 #include <autolinking.h>
 #include <fbjni/fbjni.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 
 #ifdef REACT_NATIVE_APP_CODEGEN_HEADER
 #include REACT_NATIVE_APP_CODEGEN_HEADER
@@ -88,7 +88,7 @@ std::shared_ptr<TurboModule> javaModuleProvider(
   // if (module != nullptr) {
   //    return module;
   // }
-  // return rncore_ModuleProvider(name, params);
+  // return FBReactNativeSpec_ModuleProvider(name, params);
 
   // We link app local modules if available
 #ifdef REACT_NATIVE_APP_MODULE_PROVIDER

@@ -4,7 +4,7 @@ Python build pipeline for React Native's C++ (and Objective-C) API snapshots.
 
 ## Overview
 
-`scripts/cxx-api` generates human-readable snapshots of React Native's public C++ API surface. It uses [Doxygen](https://www.doxygen.nl/) to parse C/C++/Objective-C headers and a custom Python parser to produce a simplified, sorted representation of every public symbol.
+`scripts/cxx-api` generates human-readable snapshots of React Native's public C++ API surface. It uses [Doxygen](https://www.doxygen.nl/) to parse C/C++/Objective-C headers and a custom Python parser to produce a simplified, sorted representation of every public symbol. Symbols declared in headers that the C++ stable API classifies as private or "for frameworks" are left out by default (see [Tier filtering](#tier-filtering)).
 
 The pipeline produces one `.api` snapshot file per configured **API view × variant** combination:
 
@@ -16,8 +16,11 @@ The pipeline produces one `.api` snapshot file per configured **API view × vari
 | `ReactAndroidReleaseCxx.api` | Android-specific C++ API (release) |
 | `ReactAppleDebugCxx.api` | Apple-specific C++/Obj-C API (debug) |
 | `ReactAppleReleaseCxx.api` | Apple-specific C++/Obj-C API (release) |
+| `ReactCommonFrameworksCxx.api` | Platform-independent C++ API, including for-frameworks symbols |
+| `ReactAndroidFrameworksCxx.api` | Android-specific C++ API, including for-frameworks symbols |
+| `ReactAppleFrameworksCxx.api` | Apple-specific C++/Obj-C API, including for-frameworks symbols |
 
-For each view, debug and release variants are generated with different preprocessor definitions (e.g. `REACT_NATIVE_DEBUG` vs `NDEBUG`), since `#ifdef` guards in the source headers can produce a different public API surface per variant.
+For each view, debug and release variants are generated with different preprocessor definitions (e.g. `REACT_NATIVE_DEBUG` vs `NDEBUG`), since `#ifdef` guards in the source headers can produce a different public API surface per variant. The frameworks variant uses the view's base definitions and also includes symbols from "for frameworks" headers.
 
 Snapshot files are committed to the repo under `scripts/cxx-api/api-snapshots/`.
 
@@ -41,17 +44,44 @@ python -m scripts.cxx-api.parser --validate
 
 If any snapshot differs, a unified diff is printed and the process exits with a non-zero status. To fix a failing validation, regenerate the snapshots with `python -m scripts.cxx-api.parser` and commit the updated `.api` files.
 
+#### Log tier boundary breaks
+
+Pass `--log-boundary-breaks` (in either mode) to print every header whose includes cross a tier boundary, with the include chain that causes it:
+
+```sh
+python -m scripts.cxx-api.parser --validate --log-boundary-breaks
+```
+
 ## How it works
 
-The pipeline has two main stages:
+The pipeline has three main stages:
 
-### 1. Doxygen XML generation
+### 1. Tier classification
+
+Every header in a view's inputs is classified by the C++ stable API guard it includes:
+
+| Guard | Tier |
+|---|---|
+| `react/cxxstableapi/UmbrellaGuard.h` | public |
+| `react/cxxstableapi/FrameworksGuard.h` | for frameworks |
+| `react/cxxstableapi/PrivateGuard.h` | private |
+| none | unclassified |
+
+The headers' `#include`/`#import` directives are resolved into an include graph of the view.
+
+### 2. Doxygen XML generation
 
 Doxygen is configured via a generated config file (built from `.doxygen.config.template`) with the input directories, exclude patterns, and preprocessor definitions specified in `config.yml`. It outputs XML describing every symbol found in the headers.
 
-### 2. Snapshot parsing
+### 3. Snapshot parsing
 
-The Python parser (`parser/`) reads the Doxygen XML output and builds a scope tree of the public API surface. The tree is then serialized to a deterministically sorted, human-readable `.api` text format.
+The Python parser (`parser/`) reads the Doxygen XML output and builds a scope tree of the public API surface, leaving out symbols declared in skipped headers. The tree is then serialized to a deterministically sorted, human-readable `.api` text format.
+
+## Tier filtering
+
+Each view includes the tiers listed in its `visibility` config (`public`, `frameworks`, `private`), only `public` by default. A header in any other tier is skipped unless a header in an included tier reaches it, directly or through other includes: anything a public header includes is public in practice, whatever its own guard says. Unclassified headers are never skipped.
+
+A boundary break is a public header that reaches a for-frameworks or private header, or a for-frameworks header that reaches a private one. `--log-boundary-breaks` reports them at the edge where visibility drops.
 
 ## When to use it
 
@@ -73,7 +103,11 @@ All API views and their variants are defined in `config.yml`. Each view specifie
 | `definitions` | Preprocessor macros to define |
 | `variants` | Named build variants (e.g. debug/release) with extra definitions |
 | `codegen` | Optional codegen platform (`android`, `ios`) to generate TurboModule/Component headers before scanning |
-| `private_directories` | Directories whose headers are scanned (they may be transitively included) but should not contribute public symbols. If any public API entity is defined in a private directory, a warning is printed to help catch accidental API exposure. |
+| `exclude_symbols` | Regex patterns for symbols to skip |
+| `input_filter` | Whether to run Doxygen through the input filters in `parser/input_filters/` |
+| `visibility` | C++ stable API tiers to include (`public`, `frameworks`, `private`); defaults to `[public]`. See [Tier filtering](#tier-filtering) |
+
+`exclude_patterns` and `exclude_symbols` can also be set at the top level, in which case they apply to every view. A top-level `visibility` applies to every view that does not set its own, and a variant can set `visibility` to override its view's.
 
 ## Snapshot format
 

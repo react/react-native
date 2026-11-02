@@ -8,8 +8,7 @@
  * @format
  */
 
-// $FlowFixMe[unclear-type] unclear type of events
-type UnsafeEventObject = Object;
+type UnsafeEventObject = LegacyObject;
 
 export interface EventSubscription {
   remove(): void;
@@ -78,8 +77,7 @@ export default class EventEmitter<
   TEventToArgsMap extends Readonly<
     Record<string, ReadonlyArray<UnsafeEventObject>>,
   > = Readonly<Record<string, ReadonlyArray<UnsafeEventObject>>>,
-> implements IEventEmitter<TEventToArgsMap>
-{
+> implements IEventEmitter<TEventToArgsMap> {
   #registry: Registry<TEventToArgsMap>;
 
   constructor() {

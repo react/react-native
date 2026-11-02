@@ -47,6 +47,8 @@ const WS_CLOSURE_CODE = {
 // https://github.com/facebook/react-native-devtools-frontend/blob/3d17e0fd462dc698db34586697cce2371b25e0d3/front_end/ui/legacy/components/utils/TargetDetachedDialog.ts#L50-L64
 export const WS_CLOSE_REASON = {
   PAGE_NOT_FOUND: '[PAGE_NOT_FOUND] Debugger page not found',
+  PAGE_REMOVED:
+    '[PAGE_REMOVED] The React Native instance being debugged no longer exists. Relaunch DevTools to debug a new instance.',
   CONNECTION_LOST: '[CONNECTION_LOST] Connection lost to corresponding device',
   RECREATING_DEVICE: '[RECREATING_DEVICE] Recreating device connection',
   NEW_DEBUGGER_OPENED:
@@ -300,6 +302,9 @@ export default class Device {
         WS_CLOSE_REASON.RECREATING_DEVICE,
       );
     }
+
+    // Stop polling the previous connection before its state is replaced.
+    clearInterval(this.#pagesPollingIntervalId);
 
     this.#dangerouslyConstruct(deviceOptions);
 
@@ -603,8 +608,8 @@ export default class Device {
         }
       }
     } else if (message.event === 'disconnect') {
-      // Device sends disconnect events only when page is reloaded or
-      // if debugger socket was disconnected.
+      // Device sends disconnect events when a legacy page is reloaded, or when
+      // it ends or rejects a debugger session (e.g. the page was removed).
       const pageId = message.payload.pageId;
       const sessionId = message.payload.sessionId;
 
@@ -613,6 +618,19 @@ export default class Device {
       const page: ?Page = this.#pages.get(pageId);
 
       if (page != null && this.#pageHasCapability(page, 'nativePageReloads')) {
+        for (const [sid, debuggerConnection] of this.#debuggerConnections) {
+          if (
+            sessionId != null
+              ? sid === sessionId
+              : debuggerConnection.pageId === pageId
+          ) {
+            this.#debuggerConnections.delete(sid);
+            debuggerConnection.socket.close(
+              WS_CLOSURE_CODE.NORMAL,
+              WS_CLOSE_REASON.PAGE_REMOVED,
+            );
+          }
+        }
         return;
       }
 
@@ -953,6 +971,12 @@ export default class Device {
       case 'Debugger.setBreakpointByUrl':
         return this.#processDebuggerSetBreakpointByUrl(req, debuggerInfo);
       case 'Debugger.getScriptSource':
+        if (!this.#hasFetchableScriptSource(req.params.scriptId)) {
+          // Forward to the target, which is the only one that can still have
+          // the source - for instance for code the user typed into the
+          // DevTools console, which the target compiled without a URL.
+          return req;
+        }
         // Sends response to debugger via side-effect
         void this.#processDebuggerGetScriptSource(req, socket, debuggerInfo);
         return null;
@@ -1038,6 +1062,15 @@ export default class Device {
     return processedReq;
   }
 
+  /**
+   * Whether the proxy recorded an HTTP(S) source URL for a script, and can
+   * therefore serve its source itself by fetching that URL.
+   */
+  #hasFetchableScriptSource(scriptId: string): boolean {
+    const pathToSource = this.#scriptIdToSourcePathMapping.get(scriptId);
+    return pathToSource != null && this.#tryParseHTTPURL(pathToSource) != null;
+  }
+
   async #processDebuggerGetScriptSource(
     req: CDPRequest<'Debugger.getScriptSource'>,
     socket: WS,
@@ -1077,16 +1110,14 @@ export default class Device {
     const pathToSource = this.#scriptIdToSourcePathMapping.get(
       req.params.scriptId,
     );
+    const httpURL =
+      pathToSource != null ? this.#tryParseHTTPURL(pathToSource) : null;
+    invariant(
+      httpURL != null,
+      'processDebuggerGetScriptSource called for non-fetchable script',
+    );
 
     try {
-      const httpURL =
-        pathToSource == null ? null : this.#tryParseHTTPURL(pathToSource);
-      if (!httpURL) {
-        throw new Error(
-          `Can't parse requested URL ${pathToSource === undefined ? 'undefined' : JSON.stringify(pathToSource)}`,
-        );
-      }
-
       const text = await this.#fetchText(httpURL);
 
       sendSuccessResponse(text);

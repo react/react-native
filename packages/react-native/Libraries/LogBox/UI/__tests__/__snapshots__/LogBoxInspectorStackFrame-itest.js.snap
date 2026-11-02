@@ -2,7 +2,7 @@
 
 exports[`LogBoxInspectorStackFrame should render collapsed stack frame with dimmed text 1`] = `
 <rn-view
-  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
   accessible="true"
   flex="1"
   paddingHorizontal="10"
@@ -17,6 +17,7 @@ exports[`LogBoxInspectorStackFrame should render collapsed stack frame with dimm
     foregroundColor="rgba(255, 255, 255, 0.4)"
     includeFontPadding="false"
     lineHeight="18"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_stack_frame_text"
     overflow="hidden"
   >
@@ -31,6 +32,7 @@ exports[`LogBoxInspectorStackFrame should render collapsed stack frame with dimm
     foregroundColor="rgba(255, 255, 255, 0.4)"
     includeFontPadding="false"
     lineHeight="16"
+    maxFontSizeMultiplier="1.5"
     maximumNumberOfLines="1"
     overflow="hidden"
     paddingLeft="10"
@@ -42,7 +44,7 @@ exports[`LogBoxInspectorStackFrame should render collapsed stack frame with dimm
 
 exports[`LogBoxInspectorStackFrame should render stack frame 1`] = `
 <rn-view
-  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
   accessible="true"
   flex="1"
   paddingHorizontal="10"
@@ -57,6 +59,7 @@ exports[`LogBoxInspectorStackFrame should render stack frame 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="18"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_stack_frame_text"
     overflow="hidden"
   >
@@ -71,6 +74,7 @@ exports[`LogBoxInspectorStackFrame should render stack frame 1`] = `
     foregroundColor="rgba(255, 255, 255, 0.8)"
     includeFontPadding="false"
     lineHeight="16"
+    maxFontSizeMultiplier="1.5"
     maximumNumberOfLines="1"
     overflow="hidden"
     paddingLeft="10"
@@ -82,7 +86,7 @@ exports[`LogBoxInspectorStackFrame should render stack frame 1`] = `
 
 exports[`LogBoxInspectorStackFrame should render stack frame without press feedback 1`] = `
 <rn-view
-  accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+  accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
   accessible="true"
   flex="1"
   paddingHorizontal="10"
@@ -97,6 +101,7 @@ exports[`LogBoxInspectorStackFrame should render stack frame without press feedb
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="18"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_stack_frame_text"
     overflow="hidden"
   >
@@ -111,6 +116,7 @@ exports[`LogBoxInspectorStackFrame should render stack frame without press feedb
     foregroundColor="rgba(255, 255, 255, 0.8)"
     includeFontPadding="false"
     lineHeight="16"
+    maxFontSizeMultiplier="1.5"
     maximumNumberOfLines="1"
     overflow="hidden"
     paddingLeft="10"

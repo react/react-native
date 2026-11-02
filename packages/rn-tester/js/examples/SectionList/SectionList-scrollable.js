@@ -235,7 +235,7 @@ export component SectionList_scrollable() {
     if (logViewable) {
       console.log(
         'onViewableItemsChanged: ',
-        info.changed.map((v: Object) => ({
+        info.changed.map((v: any) => ({
           ...v,
           item: '...',
           section: v.section.key,

@@ -5,15 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <cmath>
+
 #import <UIKit/UIKit.h>
 
-#import <react/renderer/components/view/AccessibilityPrimitives.h>
-#import <react/renderer/components/view/primitives.h>
-#import <react/renderer/core/LayoutPrimitives.h>
-#import <react/renderer/graphics/Color.h>
+#import <React/Graphics.h>
+#import <React/RendererCore.h>
+#import <React/Timing.h>
+#import <React/View.h>
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
-#import <react/renderer/graphics/Transform.h>
-#import <react/timing/primitives.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -154,6 +154,12 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
 
 inline CATransform3D RCTCATransform3DFromTransformMatrix(const facebook::react::Transform &transformMatrix)
 {
+  // Core Animation needs a finite transform: a NaN in one hides the layer and can hide its siblings.
+  for (const auto value : transformMatrix.matrix) {
+    if (!std::isfinite(value)) {
+      return CATransform3DIdentity;
+    }
+  }
   return {
       (CGFloat)transformMatrix.matrix[0],
       (CGFloat)transformMatrix.matrix[1],

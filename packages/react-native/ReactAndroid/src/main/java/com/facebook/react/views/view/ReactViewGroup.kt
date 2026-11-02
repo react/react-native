@@ -189,6 +189,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     allChildrenCount = 0
     clippingRect = null
     hitSlopRect = null
+    axOrderList = null
     // pointerEvents setter reads _overflow, so _overflow must be assigned first.
     _overflow = Overflow.VISIBLE
     pointerEvents = PointerEvents.AUTO
@@ -1003,7 +1004,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
 
     var mixBlendMode: BlendMode? = null
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && needsIsolatedLayer(this)) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       mixBlendMode = child.getTag(R.id.mix_blend_mode) as? BlendMode
       if (mixBlendMode != null) {
         val p = Paint()

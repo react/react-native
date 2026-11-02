@@ -22,6 +22,8 @@ inline std::string toString(const LayoutDirection &layoutDirection)
       return "ltr";
     case LayoutDirection::RightToLeft:
       return "rtl";
+    default:
+      return "undefined";
   }
 }
 
@@ -34,6 +36,8 @@ inline int toInt(const LayoutDirection &layoutDirection)
       return 1;
     case LayoutDirection::RightToLeft:
       return 2;
+    default:
+      return 0;
   }
 }
 
@@ -48,6 +52,8 @@ inline int toInt(const DisplayType &displayType)
       return 2;
     case DisplayType::Grid:
       return 3;
+    default:
+      return 0;
   }
 }
 
@@ -62,6 +68,8 @@ inline std::string toString(const DisplayType &displayType)
       return "contents";
     case DisplayType::Grid:
       return "grid";
+    default:
+      return "none";
   }
 }
 

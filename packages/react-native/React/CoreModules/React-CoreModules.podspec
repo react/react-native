@@ -46,7 +46,7 @@ Pod::Spec.new do |s|
                                "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                "HEADER_SEARCH_PATHS" => header_search_paths.join(" ")
                              }
-  s.framework = "UIKit"
+  s.frameworks = ["UIKit", "Accessibility"]
   s.dependency "RCTTypeSafety", version
   s.dependency "React-Core/CoreModulesHeaders", version
   s.dependency "React-RCTImage", version

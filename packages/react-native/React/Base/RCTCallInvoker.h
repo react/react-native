@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #ifdef __cplusplus
-#import <ReactCommon/CallInvoker.h>
+#import <React/CallInvoker.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN

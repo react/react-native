@@ -37,9 +37,9 @@ public class ReactVirtualViewManager :
       ReactVirtualView(reactContext)
 
   @ReactProp(name = "initialHidden")
-  override fun setInitialHidden(view: ReactVirtualView, value: Boolean) {
+  override fun setInitialHidden(view: ReactVirtualView, value: Boolean?) {
     if (view.mode == null) {
-      view.mode = if (value) VirtualViewMode.Hidden else VirtualViewMode.Visible
+      view.mode = if (value == true) VirtualViewMode.Hidden else VirtualViewMode.Visible
     }
   }
 

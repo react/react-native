@@ -603,7 +603,7 @@ public open class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventLi
       try {
         @Suppress("UNCHECKED_CAST")
         return UIManagerModuleConstantsHelper.createConstants(
-            viewManagers as List<ViewManager<in Nothing, in Nothing>>,
+            viewManagers,
             customBubblingEvents as? MutableMap<String, Any>,
             customDirectEvents as? MutableMap<String, Any>,
         )
@@ -630,7 +630,7 @@ public open class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventLi
         @Suppress("UNCHECKED_CAST")
         val viewManagerConstants =
             UIManagerModuleConstantsHelper.createConstantsForViewManager(
-                viewManager as ViewManager<in Nothing, in Nothing>,
+                viewManager,
                 null,
                 null,
                 null,

@@ -15,6 +15,7 @@ exports[`LogBoxInspectorMessageHeader should not render "See More" if expanded 1
     foregroundColor="rgba(250, 186, 48, 1)"
     includeFontPadding="false"
     lineHeight="28"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_title_text"
     overflow="hidden"
   >
@@ -28,6 +29,7 @@ exports[`LogBoxInspectorMessageHeader should not render "See More" if expanded 1
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_contents_text"
     overflow="hidden"
     paddingBottom="10"
@@ -39,6 +41,7 @@ exports[`LogBoxInspectorMessageHeader should not render "See More" if expanded 1
       foregroundColor="rgba(255, 255, 255, 1)"
       layoutDirection="ltr"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
     >
       #############################################################################################################################################################################################################################################################################################################
     </rn-text>
@@ -61,6 +64,7 @@ exports[`LogBoxInspectorMessageHeader should not render See More button for shor
     foregroundColor="rgba(250, 186, 48, 1)"
     includeFontPadding="false"
     lineHeight="28"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_title_text"
     overflow="hidden"
   >
@@ -74,6 +78,7 @@ exports[`LogBoxInspectorMessageHeader should not render See More button for shor
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_contents_text"
     overflow="hidden"
     paddingBottom="10"
@@ -85,6 +90,7 @@ exports[`LogBoxInspectorMessageHeader should not render See More button for shor
       foregroundColor="rgba(255, 255, 255, 1)"
       layoutDirection="ltr"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
     >
       Short
     </rn-text>
@@ -107,6 +113,7 @@ exports[`LogBoxInspectorMessageHeader should render "See More" if collapsed 1`] 
     foregroundColor="rgba(250, 186, 48, 1)"
     includeFontPadding="false"
     lineHeight="28"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_title_text"
     overflow="hidden"
   >
@@ -120,6 +127,7 @@ exports[`LogBoxInspectorMessageHeader should render "See More" if collapsed 1`] 
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_contents_text"
     overflow="hidden"
     paddingBottom="10"
@@ -131,6 +139,7 @@ exports[`LogBoxInspectorMessageHeader should render "See More" if collapsed 1`] 
       foregroundColor="rgba(255, 255, 255, 1)"
       layoutDirection="ltr"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
     >
       ############################################################################################################################################################################################################################################################################################################
     </rn-text>
@@ -143,6 +152,7 @@ exports[`LogBoxInspectorMessageHeader should render "See More" if collapsed 1`] 
       isPressable="true"
       layoutDirection="ltr"
       lineHeight="12"
+      maxFontSizeMultiplier="1.5"
     >
       ... See More
     </rn-text>
@@ -165,6 +175,7 @@ exports[`LogBoxInspectorMessageHeader should render error 1`] = `
     foregroundColor="rgba(243, 83, 105, 1)"
     includeFontPadding="false"
     lineHeight="28"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_title_text"
     overflow="hidden"
   >
@@ -178,6 +189,7 @@ exports[`LogBoxInspectorMessageHeader should render error 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_contents_text"
     overflow="hidden"
     paddingBottom="10"
@@ -189,6 +201,7 @@ exports[`LogBoxInspectorMessageHeader should render error 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       layoutDirection="ltr"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
     >
       Some error message
     </rn-text>
@@ -211,6 +224,7 @@ exports[`LogBoxInspectorMessageHeader should render fatal 1`] = `
     foregroundColor="rgba(243, 83, 105, 1)"
     includeFontPadding="false"
     lineHeight="28"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_title_text"
     overflow="hidden"
   >
@@ -224,6 +238,7 @@ exports[`LogBoxInspectorMessageHeader should render fatal 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_contents_text"
     overflow="hidden"
     paddingBottom="10"
@@ -235,6 +250,7 @@ exports[`LogBoxInspectorMessageHeader should render fatal 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       layoutDirection="ltr"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
     >
       Some fatal message
     </rn-text>
@@ -257,6 +273,7 @@ exports[`LogBoxInspectorMessageHeader should render syntax error 1`] = `
     foregroundColor="rgba(243, 83, 105, 1)"
     includeFontPadding="false"
     lineHeight="28"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_title_text"
     overflow="hidden"
   >
@@ -270,6 +287,7 @@ exports[`LogBoxInspectorMessageHeader should render syntax error 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_message_contents_text"
     overflow="hidden"
     paddingBottom="10"
@@ -281,6 +299,7 @@ exports[`LogBoxInspectorMessageHeader should render syntax error 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       layoutDirection="ltr"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
     >
       Some syntax error message
     </rn-text>

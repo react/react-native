@@ -138,6 +138,61 @@ TEST_P(JSITest, StringLengthTest) {
   EXPECT_EQ(invalid.length(rt), 2);
 }
 
+TEST_P(JSITest, DecoratorForwardsStringLength) {
+  // Decorators should forward length(const String&) to the decorated runtime
+  // instead of falling back to the default Runtime::length, which copies the
+  // string via utf16() and bypasses the runtime's own implementation.
+  class Inner : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit Inner(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    size_t length(const String&) override {
+      ++lengthCalls;
+      return 42;
+    }
+
+    std::u16string utf16(const String& str) override {
+      ++utf16Calls;
+      return RuntimeDecorator::utf16(str);
+    }
+
+    int lengthCalls = 0;
+    int utf16Calls = 0;
+  };
+
+  class Outer : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit Outer(Runtime& rt) : RuntimeDecorator(rt) {}
+  };
+
+  struct Count {
+    void before() {
+      ++beforeCalls;
+    }
+    void after() {
+      ++afterCalls;
+    }
+    int beforeCalls = 0;
+    int afterCalls = 0;
+  };
+
+  Inner inner(rt);
+  String str = String::createFromAscii(inner, "hello");
+
+  Outer outer(inner);
+  EXPECT_EQ(str.length(outer), 42);
+  EXPECT_EQ(inner.lengthCalls, 1);
+  EXPECT_EQ(inner.utf16Calls, 0);
+
+  Count count;
+  WithRuntimeDecorator<Count> with(inner, count);
+  EXPECT_EQ(str.length(with), 42);
+  EXPECT_EQ(inner.lengthCalls, 2);
+  EXPECT_EQ(inner.utf16Calls, 0);
+  EXPECT_EQ(count.beforeCalls, 1);
+  EXPECT_EQ(count.afterCalls, 1);
+}
+
 TEST_P(JSITest, ObjectTest) {
   eval("x = {1:2, '3':4, 5:'six', 'seven':['eight', 'nine']}");
   Object x = rt.global().getPropertyAsObject(rt, "x");
@@ -1154,10 +1209,24 @@ TEST_P(JSITest, JSErrorsCanBeConstructedWithStack) {
 }
 
 TEST_P(JSITest, JSErrorDoesNotInfinitelyRecurse) {
-  Value globalError = rt.global().getProperty(rt, "Error");
-  rt.global().setProperty(rt, "Error", Value::undefined());
+  // JSError(rt, message) creates its value with createError. Use the default
+  // implementation, which calls the global Error constructor, so that removing
+  // it below makes creating the Error fail even if the runtime has a native
+  // createError.
+  class RD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit RD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    Value createError(const String& msg) override {
+      return Runtime::createError(msg);
+    }
+  };
+  RD drt(rt);
+
+  Value globalError = drt.global().getProperty(drt, "Error");
+  drt.global().setProperty(drt, "Error", Value::undefined());
   try {
-    rt.global().getPropertyAsFunction(rt, "NotAFunction");
+    drt.global().getPropertyAsFunction(drt, "NotAFunction");
     FAIL() << "expected exception";
   } catch (const JSError& ex) {
     EXPECT_EQ(
@@ -1180,14 +1249,14 @@ TEST_P(JSITest, JSErrorDoesNotInfinitelyRecurse) {
           "function (f) { try { f(); return 'undefined'; }"
           "catch (e) { return typeof e; } }")
           .call(
-              rt,
+              drt,
               Function::createFromHostFunction(
-                  rt, PropNameID::forAscii(rt, "fails"), 0, fails))
-          .getString(rt)
-          .utf8(rt),
+                  drt, PropNameID::forAscii(drt, "fails"), 0, fails))
+          .getString(drt)
+          .utf8(drt),
       "string");
 
-  rt.global().setProperty(rt, "Error", globalError);
+  drt.global().setProperty(drt, "Error", globalError);
 }
 
 TEST_P(JSITest, JSErrorStackOverflowHandling) {
@@ -1600,6 +1669,155 @@ TEST_P(JSITest, CreateErrorTest) {
   }
 }
 
+TEST_P(JSITest, JSErrorMessageTest) {
+  // JSError(rt, message) creates a new Error instance.
+  {
+    JSError e(rt, "native error");
+    EXPECT_EQ(e.getMessage(), "native error");
+    Object obj = e.value().getObject(rt);
+    EXPECT_TRUE(
+        rt.instanceOf(obj, rt.global().getPropertyAsFunction(rt, "Error")));
+    EXPECT_EQ(
+        obj.getProperty(rt, "message").getString(rt).utf8(rt), "native error");
+  }
+
+  // JSError(rt, message) creates its value with Runtime::createError, so a
+  // replaced global Error constructor is invoked exactly when createError
+  // invokes it (e.g. the default jsi::Runtime implementation does, runtimes
+  // with a native implementation do not).
+  eval(
+      "var OriginalError = Error;"
+      "var replacedErrorCalls = 0;"
+      "Error = function(message) {"
+      "  ++replacedErrorCalls;"
+      "  return new OriginalError(message);"
+      "};");
+  auto replacedErrorCalls = [&] {
+    return rt.global().getProperty(rt, "replacedErrorCalls").getNumber();
+  };
+
+  rt.createError(String::createFromAscii(rt, "probe"));
+  double callsPerCreateError = replacedErrorCalls();
+
+  JSError e(rt, "replaced");
+  EXPECT_EQ(replacedErrorCalls(), 2 * callsPerCreateError);
+  EXPECT_EQ(e.getMessage(), "replaced");
+  Object obj = e.value().getObject(rt);
+  EXPECT_TRUE(rt.instanceOf(
+      obj, rt.global().getPropertyAsFunction(rt, "OriginalError")));
+  EXPECT_EQ(obj.getProperty(rt, "message").getString(rt).utf8(rt), "replaced");
+}
+
+TEST_P(JSITest, DecoratorCreateErrorTest) {
+  // Counts the createError* calls that reach it, and forwards them to the
+  // underlying runtime.
+  class CountingRD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit CountingRD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    Value createError(const String& msg) override {
+      ++count;
+      return RuntimeDecorator::createError(msg);
+    }
+    Value createEvalError(const String& msg) override {
+      ++count;
+      return RuntimeDecorator::createEvalError(msg);
+    }
+    Value createRangeError(const String& msg) override {
+      ++count;
+      return RuntimeDecorator::createRangeError(msg);
+    }
+    Value createReferenceError(const String& msg) override {
+      ++count;
+      return RuntimeDecorator::createReferenceError(msg);
+    }
+    Value createSyntaxError(const String& msg) override {
+      ++count;
+      return RuntimeDecorator::createSyntaxError(msg);
+    }
+    Value createTypeError(const String& msg) override {
+      ++count;
+      return RuntimeDecorator::createTypeError(msg);
+    }
+    Value createURIError(const String& msg) override {
+      ++count;
+      return RuntimeDecorator::createURIError(msg);
+    }
+
+    int count = 0;
+  };
+
+  class RD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit RD(Runtime& rt) : RuntimeDecorator(rt) {}
+  };
+
+  struct Count {
+    void before() {
+      ++count;
+    }
+
+    int count = 0;
+  };
+
+  class CountRuntime : public WithRuntimeDecorator<Count> {
+   public:
+    explicit CountRuntime(Runtime& rt)
+        : WithRuntimeDecorator<Count>(rt, count_) {}
+
+    Count count_;
+  };
+
+  CountingRD counting(rt);
+  RD rd(counting);
+  CountRuntime crt(counting);
+
+  struct {
+    Value (Runtime::*create)(const String&);
+    const char* ctor;
+  } cases[] = {
+      {&Runtime::createError, "Error"},
+      {&Runtime::createEvalError, "EvalError"},
+      {&Runtime::createRangeError, "RangeError"},
+      {&Runtime::createReferenceError, "ReferenceError"},
+      {&Runtime::createSyntaxError, "SyntaxError"},
+      {&Runtime::createTypeError, "TypeError"},
+      {&Runtime::createURIError, "URIError"},
+  };
+
+  // Both decorators must forward createError* to the decorated runtime rather
+  // than fall back to the default implementation calling the global ctor.
+  for (const auto& c : cases) {
+    for (Runtime* drt :
+         {static_cast<Runtime*>(&rd), static_cast<Runtime*>(&crt)}) {
+      String msg = String::createFromAscii(*drt, "decorated");
+      int countBefore = counting.count;
+      int aroundBefore = crt.count_.count;
+      Value error = (drt->*c.create)(msg);
+      EXPECT_EQ(counting.count, countBefore + 1) << c.ctor;
+      if (drt == &crt) {
+        EXPECT_EQ(crt.count_.count, aroundBefore + 1) << c.ctor;
+      }
+
+      Object obj = error.getObject(*drt);
+      EXPECT_TRUE(drt->instanceOf(
+          obj, drt->global().getPropertyAsFunction(*drt, c.ctor)))
+          << c.ctor;
+      EXPECT_EQ(
+          obj.getProperty(*drt, "message").getString(*drt).utf8(*drt),
+          "decorated")
+          << c.ctor;
+    }
+  }
+
+  // JSError(rt, message) on a decorated runtime reaches the decorated
+  // runtime's createError.
+  int countBefore = counting.count;
+  JSError e(rd, "decorated JSError");
+  EXPECT_EQ(counting.count, countBefore + 1);
+  EXPECT_EQ(e.getMessage(), "decorated JSError");
+}
+
 TEST_P(JSITest, MicrotasksTest) {
   try {
     rt.global().setProperty(rt, "globalValue", String::createFromAscii(rt, ""));
@@ -1924,6 +2142,54 @@ TEST_P(JSITest, CreateFromUtf16Test) {
   rd.global().setProperty(rd, "loneSurrogate", jsString);
   auto cp = eval("loneSurrogate.charCodeAt(0)").getNumber();
   EXPECT_EQ(cp, 55357); // 0xD83D in decimal
+}
+
+TEST_P(JSITest, CreateValueFromJsonUtf8Test) {
+  uint8_t jsonText[] = "{\"a\": 1}";
+
+  // This Runtime Decorator is used to test the default createValueFromJsonUtf8
+  // implementation for VMs that do not provide their own implementation
+  class DefaultRD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit DefaultRD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    Value createValueFromJsonUtf8(const uint8_t* json, size_t length) override {
+      return Runtime::createValueFromJsonUtf8(json, length);
+    }
+  };
+
+  DefaultRD defaultRd(rt);
+  Object obj =
+      Value::createFromJsonUtf8(defaultRd, jsonText, sizeof(jsonText) - 1)
+          .getObject(defaultRd);
+  EXPECT_EQ(obj.getProperty(defaultRd, "a").getNumber(), 1);
+
+  // A RuntimeDecorator must forward createValueFromJsonUtf8 to the runtime it
+  // decorates, like every other method.
+  class CountingRD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit CountingRD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    Value createValueFromJsonUtf8(const uint8_t* json, size_t length) override {
+      ++count;
+      return plain().createValueFromJsonUtf8(json, length);
+    }
+
+    int count = 0;
+  };
+
+  // Overrides nothing, so it should forward everything to CountingRD.
+  class OuterRD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit OuterRD(Runtime& rt) : RuntimeDecorator(rt) {}
+  };
+
+  CountingRD counting(rt);
+  OuterRD outer(counting);
+  obj = outer.createValueFromJsonUtf8(jsonText, sizeof(jsonText) - 1)
+            .getObject(outer);
+  EXPECT_EQ(counting.count, 1);
+  EXPECT_EQ(obj.getProperty(outer, "a").getNumber(), 1);
 }
 
 TEST_P(JSITest, GetStringDataTest) {
@@ -2450,6 +2716,17 @@ TEST_P(JSITest, ArrayBufferDetachedTest) {
     EXPECT_FALSE(ab.detached(rd));
   } catch (const JSINativeException&) {
     // Runtime doesn't support ArrayBuffer.prototype.detached, skip the rest.
+    return;
+  }
+
+  // Skip the rest if the runtime has no way to detach an ArrayBuffer from JS.
+  bool canDetach =
+      eval(
+          "typeof buf.transfer === 'function' || "
+          "(typeof HermesInternal !== 'undefined' && "
+          " typeof HermesInternal.detachArrayBuffer === 'function')")
+          .getBool();
+  if (!canDetach) {
     return;
   }
 

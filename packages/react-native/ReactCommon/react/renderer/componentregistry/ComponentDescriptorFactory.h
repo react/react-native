@@ -7,15 +7,14 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <memory>
 
-#include <react/renderer/core/ComponentDescriptor.h>
-#include <react/renderer/core/EventDispatcher.h>
-#include <react/utils/ContextContainer.h>
+#include <React/RendererCore.h>
+#include <React/Utils.h>
 
-#include "ComponentDescriptorRegistry.h"
+#include <React/ComponentRegistry.h>
 
 namespace facebook::react {
 

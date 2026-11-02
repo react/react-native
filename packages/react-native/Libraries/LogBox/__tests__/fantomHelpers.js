@@ -8,9 +8,6 @@
  * @format
  */
 
-import type ReactNativeDocument from '../../../src/private/webapis/dom/nodes/ReactNativeDocument';
-import type ReadOnlyElement from '../../../src/private/webapis/dom/nodes/ReadOnlyElement';
-
 import AppContainer from '../../ReactNative/AppContainer';
 import LogBoxInspectorContainer from '../LogBoxInspectorContainer';
 import * as Fantom from '@react-native/fantom';
@@ -35,7 +32,7 @@ interface NotificationUI {
 }
 
 function findTextByIds(
-  node: ReadOnlyElement,
+  node: Element,
   id: string,
   text: Array<string> = [],
 ): Array<string> {
@@ -52,7 +49,7 @@ function findTextByIds(
 }
 
 // Finds the LogBox notification UI by searching for the text IDs.
-function findLogBoxNotificationUI(doc: ReactNativeDocument): NotificationUI {
+function findLogBoxNotificationUI(doc: Document): NotificationUI {
   return {
     count: doc.getElementById('logbox_notification_count_text')?.textContent,
     message: doc.getElementById('logbox_notification_message_text')
@@ -61,17 +58,18 @@ function findLogBoxNotificationUI(doc: ReactNativeDocument): NotificationUI {
 }
 
 // Finds the LogBox inspector UI by searching for the text IDs.
-function findLogBoxInspectorUI(doc: ReactNativeDocument): InspectorUI {
+function findLogBoxInspectorUI(doc: Document): InspectorUI {
+  const documentElement = nullthrows(doc.documentElement);
   return {
     header: doc.getElementById('logbox_header_title_text')?.textContent,
     title: doc.getElementById('logbox_message_title_text')?.textContent,
     message: doc.getElementById('logbox_message_contents_text')?.textContent,
     // codeFrames: undefined,
     componentStackFrames: findTextByIds(
-      doc.documentElement,
+      documentElement,
       'logbox_component_stack_frame_text',
     ),
-    stackFrames: getStackFrames(doc.documentElement),
+    stackFrames: getStackFrames(documentElement),
     isDismissable:
       doc.getElementById('logbox_dismissable_text')?.textContent == null,
   };
@@ -96,7 +94,7 @@ function findLogBoxInspectorUI(doc: ReactNativeDocument): InspectorUI {
 //   ManualConsoleError
 //
 // If there are no matches, we return all frames, to prevent false negatives.
-function getStackFrames(node: ReadOnlyElement): ?Array<string> {
+function getStackFrames(node: Element): ?Array<string> {
   const text = findTextByIds(node, 'logbox_stack_frame_text');
   const mockConsoleIndex = text.includes('MockConsoleErrorForTesting')
     ? text.indexOf('MockConsoleErrorForTesting') + 1

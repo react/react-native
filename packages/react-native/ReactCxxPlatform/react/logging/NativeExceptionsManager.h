@@ -8,9 +8,9 @@
 #pragma once
 
 #include <FBReactNativeSpec/FBReactNativeSpecJSI.h>
+#include <React/Bridging.h>
 #include <folly/dynamic.h>
 #include <jserrorhandler/JsErrorHandler.h>
-#include <react/bridging/Base.h>
 #include <optional>
 #include <string>
 #include <utility>

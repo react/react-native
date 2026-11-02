@@ -86,8 +86,8 @@ void EventQueue::onEnqueue() const {
   eventBeat_->request();
 }
 
-void EventQueue::experimental_flushSync() const {
-  eventBeat_->requestSynchronous();
+void EventQueue::experimental_flushSync(Tag tag) const {
+  eventBeat_->requestSynchronous(tag);
 }
 
 void EventQueue::onBeat(jsi::Runtime& runtime) const {

@@ -96,7 +96,7 @@ export default class AnimatedTransform extends AnimatedWithChildren {
 
   __getValueWithStaticTransforms(
     // $FlowFixMe[unclear-type]
-    staticTransforms: ReadonlyArray<Object>,
+    staticTransforms: ReadonlyArray<any>,
     // $FlowFixMe[unclear-type]
   ): ReadonlyArray<Object> {
     const values = [];

@@ -45,8 +45,7 @@ export type {EventSubscription, EmitterSubscription};
 /** @deprecated Use `EventSubscription` instead. */
 export type NativeEventSubscription = EventSubscription;
 
-// $FlowFixMe[unclear-type] unclear type of events
-type UnsafeNativeEventObject = Object;
+type UnsafeNativeEventObject = LegacyObject;
 
 /**
  * `NativeEventEmitter` is intended for use by Native Modules to emit events to

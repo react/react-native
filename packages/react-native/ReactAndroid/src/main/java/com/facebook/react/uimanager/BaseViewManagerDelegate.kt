@@ -7,6 +7,7 @@
 
 package com.facebook.react.uimanager
 
+import android.graphics.Color
 import android.view.View
 import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.Dynamic
@@ -89,7 +90,10 @@ public abstract class BaseViewManagerDelegate<
       ViewProps.MIX_BLEND_MODE -> mViewManager.setMixBlendMode(view, value as String?)
 
       ViewProps.SHADOW_COLOR ->
-          mViewManager.setShadowColor(view, ColorPropConverter.getColor(value, view.context, 0))
+          mViewManager.setShadowColor(
+              view,
+              ColorPropConverter.getColor(value, view.context, Color.BLACK),
+          )
 
       ViewProps.IMPORTANT_FOR_ACCESSIBILITY ->
           mViewManager.setImportantForAccessibility(view, value as String?)
@@ -113,18 +117,12 @@ public abstract class BaseViewManagerDelegate<
           )
 
       ViewProps.OUTLINE_OFFSET ->
-          mViewManager.setOutlineOffset(
-              view,
-              (value as Double?)?.toFloat() ?: YogaConstants.UNDEFINED,
-          )
+          mViewManager.setOutlineOffset(view, (value as Double?)?.toFloat() ?: 0.0f)
 
       ViewProps.OUTLINE_STYLE -> mViewManager.setOutlineStyle(view, value as String?)
 
       ViewProps.OUTLINE_WIDTH ->
-          mViewManager.setOutlineWidth(
-              view,
-              (value as Double?)?.toFloat() ?: YogaConstants.UNDEFINED,
-          )
+          mViewManager.setOutlineWidth(view, (value as Double?)?.toFloat() ?: 0.0f)
 
       ViewProps.RENDER_TO_HARDWARE_TEXTURE ->
           mViewManager.setRenderToHardwareTexture(view, value as Boolean? ?: false)
@@ -164,6 +162,8 @@ public abstract class BaseViewManagerDelegate<
           mViewManager.setPointerMoveCapture(view, value as Boolean? ?: false)
       ViewProps.ON_CLICK -> mViewManager.setClick(view, value as Boolean? ?: false)
       ViewProps.ON_CLICK_CAPTURE -> mViewManager.setClickCapture(view, value as Boolean? ?: false)
+      ViewProps.ON_SAFE_AREA_INSETS_CHANGE ->
+          mViewManager.setOnSafeAreaInsetsChange(view, value as Boolean? ?: false)
     }
   }
 

@@ -1,0 +1,86 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/wrap
+- extendedWaitUntil:
+    visible:
+      id: 'text-wrap'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/wrap/default
+    cropOn:
+      id: 'text-wrap'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/nested
+- extendedWaitUntil:
+    visible:
+      id: 'text-test-nested'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/nested/default
+    cropOn:
+      id: 'text-test-nested'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/ellipsizeMode
+- extendedWaitUntil:
+    visible:
+      id: 'text-ellipsize-mode'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/ellipsize-mode/default
+    cropOn:
+      id: 'text-ellipsize-mode'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/numberOfLines
+- extendedWaitUntil:
+    visible:
+      id: 'number-of-lines'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/number-of-lines/default
+    cropOn:
+      id: 'number-of-lines'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/textDecoration
+- extendedWaitUntil:
+    visible:
+      id: 'text-text-decoration'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/text-decoration/default
+    cropOn:
+      id: 'text-text-decoration'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/textAlign
+- extendedWaitUntil:
+    visible:
+      id: 'text-align-example'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/text-align/default
+    cropOn:
+      id: 'text-align-example'

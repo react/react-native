@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
-#include <react/debug/react_native_assert.h>
+#include <React/Debug.h>
 #include <react/renderer/core/ConcreteState.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
@@ -68,7 +68,7 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * A set of traits associated with a particular class.
    * Reimplement in subclasses to declare class-specific traits.
    */
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     return BaseShadowNodeT::BaseTraits();
   }

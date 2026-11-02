@@ -23,7 +23,7 @@ import com.facebook.react.packagerconnection.RequestHandler
  * The first create() method is for the Old Architecture flow and is deprecated and should not be
  * used anymore. The second create() method is for the New Architecture/Bridgeless flow.
  */
-internal class DefaultDevSupportManagerFactory : DevSupportManagerFactory {
+internal class DefaultDevSupportManagerFactory() : DevSupportManagerFactory {
 
   @Deprecated(
       "Use the other create() method with useDevSupport parameter for New Architecture. This method will be removed in a future release.",

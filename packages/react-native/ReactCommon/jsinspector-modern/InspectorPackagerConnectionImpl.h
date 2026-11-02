@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include "InspectorInterfaces.h"
 #include "InspectorPackagerConnection.h"
@@ -106,6 +106,7 @@ class InspectorPackagerConnection::Impl : public IWebSocketDelegate,
   void closeAllConnections();
   void disposeWebSocket();
   void sendToPackager(const folly::dynamic &message);
+  void sendDisconnectToPackager(const std::string &pageId, const std::string &proxySessionId);
 
   void abort(std::optional<int> posixCode, const std::string &message, const std::string &cause);
 

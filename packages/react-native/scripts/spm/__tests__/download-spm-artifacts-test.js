@@ -11,6 +11,7 @@
 'use strict';
 
 const {
+  download,
   exists,
   extractXCFramework,
   findFirst,
@@ -542,6 +543,125 @@ describe('exists', () => {
       throw new Error('network down');
     });
     expect(await exists('https://example/x.tar.gz')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// download — retries transient transport failures without masking client errors.
+// ---------------------------------------------------------------------------
+
+describe('download', () => {
+  let originalFetch;
+  let tempDir;
+  let warnSpy;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-download-'));
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    warnSpy.mockRestore();
+    fs.rmSync(tempDir, {recursive: true, force: true});
+  });
+
+  function downloadResponse(body, error, stall = false) {
+    const bytes = Buffer.from(body);
+    return {
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        get: name =>
+          name.toLowerCase() === 'content-length' ? String(bytes.length) : null,
+      },
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(bytes);
+          if (error != null) {
+            controller.error(error);
+          } else if (!stall) {
+            controller.close();
+          }
+        },
+      }),
+    };
+  }
+
+  it('retries a transient stream failure and replaces the partial download', async () => {
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        downloadResponse('partial', new Error('terminated')),
+      )
+      .mockResolvedValueOnce(downloadResponse('complete'));
+    const destination = path.join(tempDir, 'artifact.tar.gz');
+
+    const pending = download(
+      'https://example/artifact.tar.gz',
+      destination,
+      () => {},
+    );
+    await jest.advanceTimersByTimeAsync(1_500);
+    await pending;
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('retrying in 1000ms'),
+    );
+    expect(fs.readFileSync(destination, 'utf8')).toBe('complete');
+    expect(fs.existsSync(`${destination}.download`)).toBe(false);
+  });
+
+  it('retries when an otherwise healthy response stops making progress', async () => {
+    jest.useFakeTimers();
+    try {
+      globalThis.fetch = jest
+        .fn()
+        .mockResolvedValueOnce(downloadResponse('partial', null, true))
+        .mockResolvedValueOnce(downloadResponse('complete'));
+      const destination = path.join(tempDir, 'stalled.tar.gz');
+
+      const pending = download(
+        'https://example/stalled.tar.gz',
+        destination,
+        () => {},
+      );
+      await jest.advanceTimersByTimeAsync(61_500);
+      await pending;
+
+      expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('retrying in 1000ms'),
+      );
+      expect(fs.readFileSync(destination, 'utf8')).toBe('complete');
+      expect(fs.existsSync(`${destination}.download`)).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('does not retry a deterministic HTTP client error', async () => {
+    globalThis.fetch = jest.fn(async () => ({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      headers: {get: () => null},
+      body: null,
+    }));
+    const destination = path.join(tempDir, 'missing.tar.gz');
+
+    await expect(
+      download('https://example/missing.tar.gz', destination, () => {}),
+    ).rejects.toThrow(/HTTP 404/);
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(warnSpy).not.toHaveBeenCalled();
+    expect(fs.existsSync(destination)).toBe(false);
   });
 });
 

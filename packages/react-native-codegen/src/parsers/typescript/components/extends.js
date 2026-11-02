@@ -24,7 +24,7 @@ function isEvent(typeAnnotation: $FlowFixMe, parser: Parser): boolean {
 }
 
 // $FlowFixMe[unclear-type] TODO(T108222691): Use flow-types for @babel/parser
-type PropsAST = Object;
+type PropsAST = any;
 
 function categorizeProps(
   typeDefinition: ReadonlyArray<PropsAST>,

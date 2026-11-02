@@ -29,6 +29,13 @@ object PropertyUtils {
   const val EDGE_TO_EDGE_ENABLED = "edgeToEdgeEnabled"
   const val SCOPED_EDGE_TO_EDGE_ENABLED = "react.edgeToEdgeEnabled"
 
+  /**
+   * Public property that enforces the C++ stable API for the native code of the app and its
+   * libraries by defining RN_STRICT_API
+   */
+  const val STRICT_CXX_API_ENABLED = "strictCxxApiEnabled"
+  const val SCOPED_STRICT_CXX_API_ENABLED = "react.strictCxxApiEnabled"
+
   /** Public property that excludes jsctooling from core */
   const val USE_THIRD_PARTY_JSC = "useThirdPartyJSC"
   const val SCOPED_USE_THIRD_PARTY_JSC = "react.useThirdPartyJSC"
@@ -46,6 +53,13 @@ object PropertyUtils {
    */
   const val EXCLUSIVE_ENTEPRISE_REPOSITORY = "exclusiveEnterpriseRepository"
   const val SCOPED_EXCLUSIVE_ENTEPRISE_REPOSITORY = "react.exclusiveEnterpriseRepository"
+
+  /**
+   * Public property that controls whether `--reset-cache` is passed to Metro when bundling the JS
+   * for release builds. Default: true
+   */
+  const val RESET_METRO_CACHE_BEFORE_BUNDLING = "resetMetroCacheBeforeBundling"
+  const val SCOPED_RESET_METRO_CACHE_BEFORE_BUNDLING = "react.resetMetroCacheBeforeBundling"
 
   /** By default we include JitPack to avoid breaking user builds */
   internal const val INCLUDE_JITPACK_REPOSITORY_DEFAULT = true

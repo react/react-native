@@ -54,7 +54,7 @@ ${DO_NOT_MODIFY_COMMENT}
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <react/featureflags/${getParentClassName(ossReleaseStage)}.h>
 

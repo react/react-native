@@ -10,7 +10,7 @@
 
 import typeof * as TmockComponent from '../mockComponent';
 import typeof * as TMockNativeMethods from '../MockNativeMethods';
-import typeof TText from 'react-native/Libraries/Text/Text';
+import typeof {Text as TText} from 'react-native';
 
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;
@@ -18,6 +18,7 @@ const MockNativeMethods = jest.requireActual<TMockNativeMethods>(
   '../MockNativeMethods',
 ).default;
 
+// $FlowFixMe[incompatible-type]
 const Text = mockComponent(
   'react-native/Libraries/Text/Text',
   MockNativeMethods, // instanceMethods

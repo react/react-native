@@ -10,10 +10,7 @@
 
 'use strict';
 
-import type {
-  ViewabilityConfig,
-  ViewToken,
-} from 'react-native/Libraries/Lists/ViewabilityHelper';
+import type {ListViewToken, ViewabilityConfig} from 'react-native';
 
 import BaseFlatListExample from './BaseFlatListExample';
 import * as React from 'react';
@@ -32,9 +29,16 @@ export function FlatList_BaseOnViewableItemsChanged(props: {
   waitForInteraction?: ?boolean,
 }): React.Node {
   const {offScreen, horizontal, useScrollRefScroll, waitForInteraction} = props;
+  const exampleTestID = `flat-list-viewability-${
+    horizontal === true ? 'horizontal' : 'vertical'
+  }-${waitForInteraction === true ? 'wait' : 'no-wait'}`;
   const [output, setOutput] = useState('');
   const onViewableItemsChanged = useCallback(
-    (info: {changed: Array<ViewToken>, viewableItems: Array<ViewToken>, ...}) =>
+    (info: {
+      changed: Array<ListViewToken>,
+      viewableItems: Array<ListViewToken>,
+      ...
+    }) =>
       setOutput(
         info.viewableItems
           .filter(viewToken => viewToken.index != null && viewToken.isViewable)
@@ -65,6 +69,7 @@ export function FlatList_BaseOnViewableItemsChanged(props: {
     <BaseFlatListExample
       ref={ref}
       exampleProps={exampleProps}
+      exampleTestID={exampleTestID}
       onTest={onTest}
       testOutput={output}>
       {offScreen === true ? <View style={styles.offScreen} /> : null}

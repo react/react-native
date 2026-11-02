@@ -25,8 +25,8 @@ const spmCommand: Command = {
   name: 'spm [action]',
   description:
     'Set up or maintain Swift Package Manager support for the iOS/macOS app. ' +
-    'Actions: add, update, deinit, scaffold. With no action: add (or update ' +
-    'if SPM is already set up).',
+    'Actions: add, update, deinit, scaffold, sync. With no action: add (or ' +
+    'update if SPM is already set up).',
   options: [
     {
       name: '--version <string>',

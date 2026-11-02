@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/core/ReactPrimitives.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 

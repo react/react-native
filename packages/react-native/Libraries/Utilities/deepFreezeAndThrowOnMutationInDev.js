@@ -76,9 +76,7 @@ function deepFreezeAndThrowOnMutationInDev<T extends {...} | Array<unknown>>(
   return object;
 }
 
-/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
- * LTI update could not be added via codemod */
-function throwOnImmutableMutation(key: empty, value) {
+function throwOnImmutableMutation(key: empty, value: unknown) {
   throw Error(
     'You attempted to set the key `' +
       key +

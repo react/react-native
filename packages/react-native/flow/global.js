@@ -80,8 +80,10 @@ declare var global: {
   readonly RN$Bridgeless?: boolean,
 
   // setupDOM
+  readonly DOMException: typeof DOMException,
   readonly DOMRect: typeof DOMRect,
   readonly DOMRectReadOnly: typeof DOMRectReadOnly,
+  readonly structuredClone: typeof structuredClone,
 
   // Undeclared properties are implicitly `any`.
   [string | symbol]: any,

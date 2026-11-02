@@ -8,8 +8,8 @@
 #pragma once
 
 #include <cxxreact/MessageQueueThread.h>
-#include <glog/logging.h>
-#include <condition_variable>
+#include <memory>
+#include <mutex>
 #include <queue>
 
 namespace facebook::react {
@@ -24,12 +24,14 @@ class StubQueue : public MessageQueueThread {
 
   bool hasPendingCallbacks();
 
+  // Draining belongs to the single consumer thread.
   void flush();
 
  private:
-  void tick();
+  bool tick();
 
-  std::queue<std::function<void()>> callbackQueue_;
+  std::mutex mutex_;
+  std::queue<std::unique_ptr<std::function<void()>>> callbackQueue_;
 };
 
 } // namespace facebook::react

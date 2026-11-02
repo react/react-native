@@ -10,11 +10,14 @@ package com.facebook.react.uimanager.drawable
 import android.content.Context
 import android.graphics.Outline
 import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.DrawableWrapper
 import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.style.BorderInsets
 import com.facebook.react.uimanager.style.BorderRadiusStyle
@@ -164,6 +167,22 @@ internal class CompositeBackgroundDrawable(
     )
   }
 
+  fun withNewOriginalBackground(newOriginalBackground: Drawable?): CompositeBackgroundDrawable {
+    return CompositeBackgroundDrawable(
+        context,
+        newOriginalBackground,
+        outerShadows,
+        background,
+        backgroundImage,
+        border,
+        feedbackUnderlay,
+        innerShadows,
+        outline,
+        borderInsets,
+        borderRadius,
+    )
+  }
+
   fun withNewFeedbackUnderlay(newUnderlay: Drawable?): CompositeBackgroundDrawable {
     return CompositeBackgroundDrawable(
         context,
@@ -184,8 +203,6 @@ internal class CompositeBackgroundDrawable(
   elevation shadow. */
   override fun getOutline(outline: Outline) {
     if (borderRadius?.hasRoundedBorders() == true) {
-      val pathForOutline = Path()
-
       val computedBorderRadius =
           borderRadius?.resolve(
               layoutDirection,
@@ -196,9 +213,8 @@ internal class CompositeBackgroundDrawable(
 
       val computedBorderInsets = borderInsets?.resolve(layoutDirection, context)
 
-      computedBorderRadius?.let {
-        pathForOutline.addRoundRect(
-            RectF(bounds),
+      val radii =
+          computedBorderRadius?.let {
             floatArrayOf(
                 (it.topLeft.horizontal + (computedBorderInsets?.left ?: 0f)).dpToPx(),
                 (it.topLeft.vertical + (computedBorderInsets?.top ?: 0f)).dpToPx(),
@@ -208,10 +224,19 @@ internal class CompositeBackgroundDrawable(
                 (it.bottomRight.vertical + (computedBorderInsets?.bottom ?: 0f)).dpToPx(),
                 (it.bottomLeft.horizontal + (computedBorderInsets?.left ?: 0f)).dpToPx(),
                 (it.bottomLeft.vertical + (computedBorderInsets?.bottom ?: 0f)).dpToPx(),
-            ),
-            Path.Direction.CW,
-        )
+            )
+          }
+
+      // Four equal circular corners describe the same shape as the rounded path below, without
+      // building a path. Like the path, a radius larger than half the shorter side is reduced to
+      // it.
+      if (radii != null && radii.all { it == radii[0] }) {
+        outline.setRoundRect(bounds, minOf(radii[0], minOf(bounds.width(), bounds.height()) / 2f))
+        return
       }
+
+      val pathForOutline = Path()
+      radii?.let { pathForOutline.addRoundRect(RectF(bounds), it, Path.Direction.CW) }
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         outline.setPath(pathForOutline)
@@ -240,10 +265,32 @@ internal class CompositeBackgroundDrawable(
       background?.let { layers.add(it) }
       backgroundImage?.let { layers.add(it) }
       border?.let { layers.add(it) }
-      feedbackUnderlay?.let { layers.add(it) }
+      feedbackUnderlay?.let {
+        layers.add(
+            if (ReactNativeFeatureFlags.fixBorderlessRippleAndroid()) {
+              UnprojectedRippleWrapper(it)
+            } else {
+              it
+            }
+        )
+      }
       layers.addAll(innerShadows.asReversed())
       outline?.let { layers.add(it) }
       return layers.toTypedArray()
     }
   }
+}
+
+/**
+ * Wraps the feedback underlay so it is never reported as projected. LayerDrawable reports itself as
+ * projected if any layer is, so a borderless ripple in the feedback underlay would project the
+ * entire background, including the background color and borders, onto the nearest native ancestor's
+ * background. With view flattening, that ancestor may be painted under the view's flattened React
+ * parent, hiding the background and ripple. Ignore the underlay's projection; borderless ripples
+ * can still draw outside the view's bounds since React Native views don't clip their children.
+ */
+private class UnprojectedRippleWrapper(drawable: Drawable) : DrawableWrapper(drawable) {
+  override fun isProjected(): Boolean = false
+
+  override fun getDirtyBounds(): Rect = drawable?.dirtyBounds ?: super.getDirtyBounds()
 }

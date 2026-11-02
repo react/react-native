@@ -7,10 +7,12 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <memory>
+
+#include <React/RendererCore.h>
 #include <react/renderer/components/image/ImageShadowNode.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
 
 namespace facebook::react {
 

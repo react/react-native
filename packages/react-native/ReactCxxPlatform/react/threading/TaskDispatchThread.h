@@ -7,10 +7,12 @@
 
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -42,15 +44,18 @@ class TaskDispatchThread {
   /** Add task to the queue and wait until it has completed. */
   void runSync(TaskFn &&task) noexcept;
 
+  void cancelPendingTasks() noexcept;
+
   /** Shut down and clean up the thread. */
   void quit() noexcept;
 
  protected:
   struct Task {
     TimePoint dispatchTime;
-    TaskFn fn;
+    // Moving the callback must preserve the heap's deadline ordering key.
+    mutable std::unique_ptr<TaskFn> fn;
 
-    Task(TimePoint dispatchTime, TaskFn &&fn) : dispatchTime(dispatchTime), fn(std::move(fn)) {}
+    Task(TimePoint dispatchTime, std::unique_ptr<TaskFn> &&fn) : dispatchTime(dispatchTime), fn(std::move(fn)) {}
 
     bool operator<(const Task &other) const
     {
@@ -67,8 +72,10 @@ class TaskDispatchThread {
   std::atomic<bool> running_{true};
   std::string threadName_;
   std::thread thread_;
+  std::thread::id threadId_;
+  std::mutex joinMutex_;
 
-  std::promise<void> loopStoppedPromise_;
+  std::atomic<bool> loopStopped_{false};
 };
 
 } // namespace facebook::react

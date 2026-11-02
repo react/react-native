@@ -11,7 +11,6 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type AnimatedValue from 'react-native/Libraries/Animated/nodes/AnimatedValue';
 
 const React = require('react');
 const ReactNative = require('react-native');
@@ -21,7 +20,7 @@ const {StyleSheet, Text, View, Animated, Easing, TouchableOpacity, Dimensions} =
   ReactNative;
 
 class ScrollViewAnimatedExample extends Component<{...}> {
-  _scrollViewPos: AnimatedValue = new Animated.Value(0);
+  _scrollViewPos: Animated.Value = new Animated.Value(0);
 
   startAnimation: () => void = () => {
     this._scrollViewPos.setValue(0);

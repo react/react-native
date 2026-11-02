@@ -13,11 +13,11 @@ import * as React from 'react';
 import {useContext} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
 
-type ViewStyleProp = React.ElementConfig<typeof View>['style'];
+type ViewStyleProp = React.ComponentProps<typeof View>['style'];
 
 type Props = {
   value: boolean,
-  onValueChange: React.ElementConfig<typeof Switch>['onValueChange'],
+  onValueChange: React.ComponentProps<typeof Switch>['onValueChange'],
   style?: ?ViewStyleProp,
 };
 

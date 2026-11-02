@@ -74,7 +74,7 @@ internal class FpsView(reactContext: ReactContext) : FrameLayout(reactContext) {
   }
 
   /** Timer that runs every UPDATE_INTERVAL_MS ms and updates the currently displayed FPS. */
-  private inner class FPSMonitorRunnable : Runnable {
+  private inner class FPSMonitorRunnable() : Runnable {
     private var shouldStop = false
     private var totalFramesDropped = 0
     private var total4PlusFrameStutters = 0

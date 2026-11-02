@@ -8,11 +8,22 @@
 #import "TextLayoutManager.h"
 #import "RCTTextLayoutManager.h"
 
+#import <optional>
+
 #import <react/renderer/attributedstring/PlaceholderAttributedString.h>
 #import <react/renderer/telemetry/TransactionTelemetry.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 namespace facebook::react {
+
+// `ensurePlaceholderIfEmpty_DO_NOT_USE` returns a copy, so only call it for an empty string that needs one.
+static std::optional<AttributedString> placeholderIfEmpty(const AttributedString &attributedString)
+{
+  if (attributedString.isEmpty()) {
+    return ensurePlaceholderIfEmpty_DO_NOT_USE(attributedString);
+  }
+  return std::nullopt;
+}
 
 TextLayoutManager::TextLayoutManager(const std::shared_ptr<const ContextContainer> & /*contextContainer*/)
 {
@@ -37,8 +48,10 @@ TextMeasurement TextLayoutManager::measure(
 
   switch (attributedStringBox.getMode()) {
     case AttributedStringBox::Mode::Value: {
-      auto originalAtributedString = attributedStringBox.getValue();
-      auto attributedString = ensurePlaceholderIfEmpty_DO_NOT_USE(originalAtributedString);
+      const auto &originalAttributedString = attributedStringBox.getValue();
+      auto placeholderAttributedString = placeholderIfEmpty(originalAttributedString);
+      const auto &attributedString =
+          placeholderAttributedString ? *placeholderAttributedString : originalAttributedString;
 
       measurement = textMeasureCache_.get(
           {.attributedString = attributedString,
@@ -56,20 +69,24 @@ TextMeasurement TextLayoutManager::measure(
                                                             layoutContext:layoutContext
                                                         layoutConstraints:layoutConstraints];
 
-            // TODO(D63303709): We compensate for the placeholder character
-            // being used to represent empty string. iOS TextLayoutManager
-            // should instead measure using `baseTextAttributes` of the
-            // `AttributedString`.
-            if (originalAtributedString.isEmpty()) {
-              measurement.size.width = 0;
-            }
-
             if (telemetry) {
               telemetry->didMeasureText();
             }
 
             return measurement;
           });
+
+      // TODO(D63303709): We compensate for the placeholder character
+      // being used to represent empty string. iOS TextLayoutManager
+      // should instead measure using `baseTextAttributes` of the
+      // `AttributedString`.
+      //
+      // This must happen outside of the cached value: the cache key is built
+      // from the placeholder, so an empty string shares its entry with a real
+      // string equal to the placeholder.
+      if (originalAttributedString.isEmpty()) {
+        measurement.size.width = 0;
+      }
       break;
     }
 
@@ -106,7 +123,9 @@ LinesMeasurements TextLayoutManager::measureLines(
     const Size &size) const
 {
   react_native_assert(attributedStringBox.getMode() == AttributedStringBox::Mode::Value);
-  auto attributedString = ensurePlaceholderIfEmpty_DO_NOT_USE(attributedStringBox.getValue());
+  const auto &originalAttributedString = attributedStringBox.getValue();
+  auto placeholderAttributedString = placeholderIfEmpty(originalAttributedString);
+  const auto &attributedString = placeholderAttributedString ? *placeholderAttributedString : originalAttributedString;
 
   RCTTextLayoutManager *textLayoutManager = (RCTTextLayoutManager *)unwrapManagedObject(nativeTextLayoutManager_);
 

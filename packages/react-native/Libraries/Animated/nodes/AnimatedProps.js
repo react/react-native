@@ -120,7 +120,7 @@ export default class AnimatedProps extends AnimatedNode {
   }
 
   // $FlowFixMe[unclear-type]
-  __getValue(): Object {
+  __getValue(): any {
     const props: {[string]: unknown} = {};
 
     const keys = Object.keys(this._props);
@@ -146,7 +146,7 @@ export default class AnimatedProps extends AnimatedNode {
    * created by this `AnimatedProps` instance.
    */
   // $FlowFixMe[unclear-type]
-  __getValueWithStaticProps(staticProps: Object): Object {
+  __getValueWithStaticProps(staticProps: any): any {
     const props: {[string]: unknown} = {...staticProps};
 
     const keys = Object.keys(staticProps);

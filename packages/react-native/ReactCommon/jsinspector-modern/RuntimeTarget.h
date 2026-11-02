@@ -18,7 +18,7 @@
 #include "StackTrace.h"
 #include "WeakList.h"
 
-#include <ReactCommon/RuntimeExecutor.h>
+#include <React/RuntimeExecutor.h>
 #include <jsinspector-modern/tracing/RuntimeSamplingProfile.h>
 #include <jsinspector-modern/tracing/TraceRecordingState.h>
 

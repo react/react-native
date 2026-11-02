@@ -45,7 +45,7 @@ const FileTemplate = ({
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/${libraryName}/Props.h>
 ${imports}
 
@@ -176,11 +176,7 @@ module.exports = {
     headerPrefix?: string,
   ): FilesOutput {
     const fileName = 'Tests.cpp';
-    const allImports = new Set([
-      '#include <react/renderer/core/propsConversions.h>',
-      '#include <react/renderer/core/RawProps.h>',
-      '#include <react/renderer/core/RawPropsParser.h>',
-    ]);
+    const allImports = new Set<string>();
 
     const componentTests = Object.keys(schema.modules)
       .map(moduleName => {

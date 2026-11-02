@@ -10,11 +10,21 @@
 
 import * as React from 'react';
 import {Image, StyleSheet, TouchableOpacity} from 'react-native';
-import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser';
+import {getDevServer} from 'react-native/unstable-internals-do-not-use';
 
 type Props = Readonly<{
   documentationURL: string,
 }>;
+
+function openURLInBrowser(url: string): void {
+  void fetch(getDevServer().url + 'open-url', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({url}),
+  });
+}
 
 const RNTesterDocumentationURL = ({documentationURL}: Props): React.Node => (
   <TouchableOpacity

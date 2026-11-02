@@ -27,13 +27,8 @@ extern NSString *const RCTAccessibilityManagerDidUpdateMultiplierNotification; /
 @property (nonatomic, assign) BOOL isDarkerSystemColorsEnabled;
 @property (nonatomic, assign) BOOL prefersCrossFadeTransitions;
 @property (nonatomic, assign) BOOL isReduceTransparencyEnabled;
+@property (nonatomic, assign) BOOL isShowBordersEnabled;
 @property (nonatomic, assign) BOOL isVoiceOverEnabled;
-
-@end
-
-@interface RCTBridge (RCTAccessibilityManager)
-
-@property (nonatomic, readonly) RCTAccessibilityManager *accessibilityManager;
 
 @end
 

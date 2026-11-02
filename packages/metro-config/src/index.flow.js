@@ -10,32 +10,13 @@
 
 import type {ConfigT, InputConfigT} from 'metro-config';
 
+import INTERNAL_CALLSITES_PATTERNS from './internalCallsites.json';
 import {getDefaultConfig as getBaseConfig, mergeConfig} from 'metro-config';
 
 export type {MetroConfig} from 'metro-config';
 
 const INTERNAL_CALLSITES_REGEX = new RegExp(
-  [
-    '/Libraries/BatchedBridge/MessageQueue\\.js$',
-    '/Libraries/Core/.+\\.js$',
-    '/Libraries/LogBox/.+\\.js$',
-    '/Libraries/Network/.+\\.js$',
-    '/Libraries/Pressability/.+\\.js$',
-    '/Libraries/Renderer/implementations/.+\\.js$',
-    '/Libraries/Utilities/.+\\.js$',
-    '/Libraries/vendor/.+\\.js$',
-    '/Libraries/WebSocket/.+\\.js$',
-    '/src/private/renderer/errorhandling/.+\\.js$',
-    '/metro-runtime/.+\\.js$',
-    '/node_modules/@babel/runtime/.+\\.js$',
-    '/node_modules/@react-native/js-polyfills/.+\\.js$',
-    '/node_modules/invariant/.+\\.js$',
-    '/node_modules/react-devtools-core/.+\\.js$',
-    '/node_modules/react-native/index.js$',
-    '/node_modules/react-refresh/.+\\.js$',
-    '/node_modules/scheduler/.+\\.js$',
-    '^\\[native code\\]$',
-  ]
+  INTERNAL_CALLSITES_PATTERNS
     // Make patterns work with both Windows and POSIX paths.
     .map(pathPattern => pathPattern.replaceAll('/', '[/\\\\]'))
     .join('|'),

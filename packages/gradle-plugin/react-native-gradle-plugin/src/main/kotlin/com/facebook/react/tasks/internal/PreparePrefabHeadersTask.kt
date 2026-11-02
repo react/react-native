@@ -12,10 +12,14 @@ import java.io.File
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileSystemOperations
+import org.gradle.api.file.FileTree
 import org.gradle.api.file.RegularFile
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
@@ -35,44 +39,64 @@ abstract class PreparePrefabHeadersTask : DefaultTask() {
 
   @get:OutputDirectory abstract val outputDir: DirectoryProperty
 
+  @get:InputFiles
+  val headers: FileCollection
+    get() =
+        objects
+            .fileCollection()
+            .from(
+                input.map { entries ->
+                  entries.flatMap { (_, pathToPrefixCouples) ->
+                    pathToPrefixCouples.map { (headerPath, _) -> headersUnder(headerPath) }
+                  }
+                }
+            )
+
   @get:Inject abstract val fs: FileSystemOperations
+
+  @get:Inject abstract val objects: ObjectFactory
 
   @TaskAction
   fun taskAction() {
     input.get().forEach { (libraryName, pathToPrefixCouples) ->
       val outputFolder: RegularFile = outputDir.file(libraryName).get()
+      fs.delete { deleteSpec -> deleteSpec.delete(outputFolder) }
       pathToPrefixCouples.forEach { (headerPath, headerPrefix) ->
         fs.copy { copySpec ->
-          copySpec.from(headerPath)
-          copySpec.include("**/*.h")
-          copySpec.exclude("**/*.cpp")
-          copySpec.exclude("**/*.txt")
-          // We don't want to copy all the boost headers as they are 250Mb+
-          copySpec.include("boost/config.hpp")
-          copySpec.include("boost/config/**/*.hpp")
-          copySpec.include("boost/core/*.hpp")
-          copySpec.include("boost/detail/workaround.hpp")
-          copySpec.include("boost/operators.hpp")
-          copySpec.include("boost/preprocessor/**/*.hpp")
-          // Headers needed for exposing rrc_text and rrc_textinput
-          copySpec.include("boost/container_hash/**/*.hpp")
-          copySpec.include("boost/detail/**/*.hpp")
-          copySpec.include("boost/intrusive/**/*.hpp")
-          copySpec.include("boost/iterator/**/*.hpp")
-          copySpec.include("boost/move/**/*.hpp")
-          copySpec.include("boost/mpl/**/*.hpp")
-          copySpec.include("boost/mp11/**/*.hpp")
-          copySpec.include("boost/describe/**/*.hpp")
-          copySpec.include("boost/type_traits/**/*.hpp")
-          copySpec.include("boost/utility/**/*.hpp")
-          copySpec.include("boost/assert.hpp")
-          copySpec.include("boost/static_assert.hpp")
-          copySpec.include("boost/cstdint.hpp")
-          copySpec.include("boost/utility.hpp")
-          copySpec.include("boost/version.hpp")
+          copySpec.from(headersUnder(headerPath))
           copySpec.into(File(outputFolder.asFile, headerPrefix))
         }
       }
     }
   }
+
+  private fun headersUnder(headerPath: String): FileTree =
+      objects.fileTree().from(headerPath).matching { patterns ->
+        patterns.include("**/*.h")
+        patterns.exclude("**/*.cpp")
+        patterns.exclude("**/*.txt")
+        // We don't want to copy all the boost headers as they are 250Mb+
+        patterns.include("boost/config.hpp")
+        patterns.include("boost/config/**/*.hpp")
+        patterns.include("boost/core/*.hpp")
+        patterns.include("boost/detail/workaround.hpp")
+        patterns.include("boost/operators.hpp")
+        patterns.include("boost/preprocessor/**/*.hpp")
+        // Headers needed for exposing rrc_text and rrc_textinput
+        patterns.include("boost/container_hash/**/*.hpp")
+        patterns.include("boost/detail/**/*.hpp")
+        patterns.include("boost/intrusive/**/*.hpp")
+        patterns.include("boost/iterator/**/*.hpp")
+        patterns.include("boost/move/**/*.hpp")
+        patterns.include("boost/mpl/**/*.hpp")
+        patterns.include("boost/mp11/**/*.hpp")
+        patterns.include("boost/describe/**/*.hpp")
+        patterns.include("boost/type_traits/**/*.hpp")
+        patterns.include("boost/utility/**/*.hpp")
+        patterns.include("boost/assert.hpp")
+        patterns.include("boost/static_assert.hpp")
+        patterns.include("boost/cstdint.hpp")
+        patterns.include("boost/utility.hpp")
+        patterns.include("boost/version.hpp")
+      }
 }

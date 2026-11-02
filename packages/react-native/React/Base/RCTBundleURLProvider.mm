@@ -39,8 +39,7 @@ static const NSTimeInterval kRCTPackagerStatusRequestTimeoutGraceTime = 2;
 
 - (instancetype)init
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     [self _setDefaults];
   }
   return self;
@@ -268,7 +267,10 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
   NSString *location = [self jsLocation];
 #if RCT_DEV_MENU
   NSString *scheme = [self packagerScheme];
-  if ([location length] && ![RCTBundleURLProvider isPackagerRunning:location scheme:scheme]) {
+  // A location saved in the defaults can be stale, so one whose packager does not answer gives way to a guessed host.
+  // A location passed as a launch argument is this launch's instruction, so it is used however late /status answers.
+  if ([location length] > 0 && [self launchArgumentJsLocation] == nil &&
+      ![RCTBundleURLProvider isPackagerRunning:location scheme:scheme]) {
     location = nil;
   }
 #endif
@@ -554,6 +556,14 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
 {
   return [[NSUserDefaults standardUserDefaults] stringForKey:kRCTJsLocationKey];
 }
+
+#if RCT_DEV_MENU
+// The jsLocation passed as a launch argument (-RCT_jsLocation value), leaving out any value the app saved
+- (NSString *)launchArgumentJsLocation
+{
+  return [[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][kRCTJsLocationKey];
+}
+#endif
 
 - (NSString *)packagerScheme
 {

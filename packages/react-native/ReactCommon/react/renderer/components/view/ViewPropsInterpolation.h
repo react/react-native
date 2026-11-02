@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/graphics/Transform.h>

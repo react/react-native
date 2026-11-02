@@ -204,6 +204,42 @@ class PreparePrefabHeadersTaskTest {
     assertThat(File(outputDir, "sample_library/boost/anothermodule/wedontuse.hpp")).doesNotExist()
   }
 
+  @Test
+  fun preparePrefabHeadersTask_declaresTheHeadersItCopiesAsInputs() {
+    val header = File(tempFolder.root, "input/hello.h").apply { createNewPathAndFile() }
+    File(tempFolder.root, "input/hello.cpp").createNewPathAndFile()
+
+    val project = createProject(projectDir = tempFolder.root)
+    val task =
+        createTestTask<PreparePrefabHeadersTask>(project = project) {
+          it.outputDir.set(tempFolder.newFolder("output"))
+          it.input.set(listOf(PrefabPreprocessingEntry("sample_library", "input/" to "")))
+        }
+
+    assertThat(task.inputs.files.files).containsExactly(header)
+  }
+
+  @Test
+  fun preparePrefabHeadersTask_withARemovedHeader_removesItsCopy() {
+    val outputDir = tempFolder.newFolder("output")
+    val removedHeader = File(tempFolder.root, "input/removed.h").apply { createNewPathAndFile() }
+    File(tempFolder.root, "input/kept.h").createNewPathAndFile()
+
+    val project = createProject(projectDir = tempFolder.root)
+    val task =
+        createTestTask<PreparePrefabHeadersTask>(project = project) {
+          it.outputDir.set(outputDir)
+          it.input.set(listOf(PrefabPreprocessingEntry("sample_library", "input/" to "")))
+        }
+
+    task.taskAction()
+    removedHeader.delete()
+    task.taskAction()
+
+    assertThat(File(outputDir, "sample_library/removed.h")).doesNotExist()
+    assertThat(File(outputDir, "sample_library/kept.h")).exists()
+  }
+
   private fun File.createNewPathAndFile() {
     parentFile.mkdirs()
     createNewFile()

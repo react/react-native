@@ -35,6 +35,8 @@ eslintTester.run('../no-deep-imports', rule, {
     "require('react-native/setup-env');",
     "import {BatchedBridge} from 'react-native/react-private-interface';",
     "require('react-native/react-private-interface');",
+    "import {version} from 'react-native/package.json';",
+    "require('react-native/package.json');",
   ],
   invalid: [
     {

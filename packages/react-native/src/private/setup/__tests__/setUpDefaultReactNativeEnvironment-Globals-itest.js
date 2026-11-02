@@ -109,6 +109,32 @@ describe('setUpDefaultReactNativeEnvironment (globals)', () => {
   });
 
   describe('Web APIs', () => {
+    describe('Structured data', () => {
+      it('should provide DOMException', () => {
+        const exception = new DOMException('message', 'DataCloneError');
+        expect(exception).toBeInstanceOf(Error);
+        expect(exception.name).toBe('DataCloneError');
+        expect(exception.code).toBe(DOMException.DATA_CLONE_ERR);
+      });
+
+      it('should provide structuredClone', () => {
+        const value = {nested: {value: 1}};
+        const clone = structuredClone(value);
+
+        expect(clone).toEqual(value);
+        expect(clone).not.toBe(value);
+        expect(clone.nested).not.toBe(value.nested);
+
+        let error: unknown;
+        try {
+          structuredClone(Symbol());
+        } catch (thrownError: unknown) {
+          error = thrownError;
+        }
+        expect(error).toBeInstanceOf(DOMException);
+      });
+    });
+
     describe('DOM', () => {
       it('should provide Node', () => {
         expect(typeof Node).toBe('function');

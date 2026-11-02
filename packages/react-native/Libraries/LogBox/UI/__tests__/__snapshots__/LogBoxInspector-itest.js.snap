@@ -10,7 +10,7 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
     backgroundColor="rgba(243, 83, 105, 1)"
   />
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     alignItems="center"
     aspectRatio="1"
@@ -24,7 +24,6 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -42,13 +41,14 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_header_title_text"
     overflow="hidden"
   >
     Log 3 of 3
   </rn-paragraph>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     alignItems="center"
     aspectRatio="1"
@@ -62,7 +62,6 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -85,6 +84,7 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
       foregroundColor="rgba(243, 83, 105, 1)"
       includeFontPadding="false"
       lineHeight="28"
+      maxFontSizeMultiplier="1.5"
       nativeID="logbox_message_title_text"
       overflow="hidden"
     >
@@ -98,6 +98,7 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       nativeID="logbox_message_contents_text"
       overflow="hidden"
       paddingBottom="10"
@@ -109,6 +110,7 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         layoutDirection="ltr"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
       >
         Some kind of message (third)
       </rn-text>
@@ -128,7 +130,7 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
     flexDirection="row"
   >
     <rn-view
-      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
       accessible="true"
       nativeID="logbox_footer_button_dismiss"
     >
@@ -139,13 +141,14 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         includeFontPadding="false"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
         overflow="hidden"
       >
         Dismiss
       </rn-paragraph>
     </rn-view>
     <rn-view
-      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
       accessible="true"
       nativeID="logbox_footer_button_minimize"
     >
@@ -156,13 +159,14 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         includeFontPadding="false"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
         overflow="hidden"
       >
         Minimize
       </rn-paragraph>
     </rn-view>
     <rn-view
-      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
       accessible="true"
       nativeID="logbox_footer_button_copy"
     >
@@ -173,6 +177,7 @@ exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         includeFontPadding="false"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
         overflow="hidden"
       >
         Copy
@@ -194,7 +199,7 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
     backgroundColor="rgba(250, 186, 48, 1)"
   />
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     alignItems="center"
     aspectRatio="1"
@@ -208,7 +213,6 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -226,13 +230,14 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
     foregroundColor="rgba(255, 255, 255, 1)"
     includeFontPadding="false"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_header_title_text"
     overflow="hidden"
   >
     Log 1 of 3
   </rn-paragraph>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     alignItems="center"
     aspectRatio="1"
@@ -246,7 +251,6 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
     <rn-image
       height="14"
       overflow="hidden"
-      resizeMode="cover"
       source-scale="1"
       source-size="{16, 28}"
       source-type="local"
@@ -269,6 +273,7 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
       foregroundColor="rgba(250, 186, 48, 1)"
       includeFontPadding="false"
       lineHeight="28"
+      maxFontSizeMultiplier="1.5"
       nativeID="logbox_message_title_text"
       overflow="hidden"
     >
@@ -282,6 +287,7 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       nativeID="logbox_message_contents_text"
       overflow="hidden"
       paddingBottom="10"
@@ -293,6 +299,7 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         layoutDirection="ltr"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
       >
         Some kind of message (first)
       </rn-text>
@@ -312,7 +319,7 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
     flexDirection="row"
   >
     <rn-view
-      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
       accessible="true"
       nativeID="logbox_footer_button_dismiss"
     >
@@ -323,13 +330,14 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         includeFontPadding="false"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
         overflow="hidden"
       >
         Dismiss
       </rn-paragraph>
     </rn-view>
     <rn-view
-      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
       accessible="true"
       nativeID="logbox_footer_button_minimize"
     >
@@ -340,13 +348,14 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         includeFontPadding="false"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
         overflow="hidden"
       >
         Minimize
       </rn-paragraph>
     </rn-view>
     <rn-view
-      accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
       accessible="true"
       nativeID="logbox_footer_button_copy"
     >
@@ -357,6 +366,7 @@ exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
         foregroundColor="rgba(255, 255, 255, 1)"
         includeFontPadding="false"
         lineHeight="20"
+        maxFontSizeMultiplier="1.5"
         overflow="hidden"
       >
         Copy

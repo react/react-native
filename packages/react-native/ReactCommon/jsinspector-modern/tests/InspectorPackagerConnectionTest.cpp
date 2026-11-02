@@ -238,6 +238,7 @@ TEST_F(InspectorPackagerConnectionTest, TestSendReceiveEvents) {
   localConnections_[0]->getRemoteConnection().onDisconnect();
 
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
 }
 
@@ -323,6 +324,7 @@ TEST_F(InspectorPackagerConnectionTest, TestSendReceiveEventsToMultiplePages) {
 
   for (int i = 0; i < kNumPages; ++i) {
     EXPECT_CALL(*localConnections_[i], disconnect()).RetiresOnSaturation();
+    expectDisconnectSentToPackager(pageIds[i]);
     getInspectorInstance().removePage(pageIds[i]);
   }
 }
@@ -366,6 +368,7 @@ TEST_F(InspectorPackagerConnectionTest, TestSendEventToAllConnections) {
   })");
 
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
 }
 
@@ -898,10 +901,51 @@ TEST_F(InspectorPackagerConnectionTest, TestDestroyConnectionOnPageRemoved) {
           toJson(std::to_string(pageId))));
   EXPECT_TRUE(localConnections_[0]);
 
-  // Remove the page.
+  // Remove the page. The packager is notified so it can close the frontend.
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
   EXPECT_FALSE(localConnections_[0]);
+}
+
+TEST_F(
+    InspectorPackagerConnectionTestAsync,
+    TestPageRemovedSendsSingleDisconnectWhenTargetCallsOnDisconnect) {
+  // Configure gmock to expect calls in a specific order.
+  InSequence mockCallsMustBeInSequence;
+
+  packagerConnection_->connect();
+  auto pageId = getInspectorInstance().addPage(
+      "mock-description",
+      "mock-vm",
+      localConnections_
+          .lazily_make_unique<std::unique_ptr<IRemoteConnection>>());
+
+  // Connect to the page.
+  webSockets_[0]->getDelegate().didReceiveMessage(
+      fmt::format(
+          R"({{
+          "event": "connect",
+          "payload": {{
+            "pageId": {0}
+          }}
+        }})",
+          toJson(std::to_string(pageId))));
+  ASSERT_TRUE(localConnections_[0]);
+
+  // Like HostTarget, call onDisconnect() on the remote connection once the
+  // local connection is disconnected.
+  auto remoteConnection =
+      localConnections_[0]->dangerouslyReleaseRemoteConnection();
+
+  EXPECT_CALL(*localConnections_[0], disconnect())
+      .WillOnce([&remoteConnection] { remoteConnection->onDisconnect(); })
+      .RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
+  getInspectorInstance().removePage(pageId);
+
+  // The disconnect scheduled by onDisconnect() is not sent a second time.
+  asyncExecutor_.run();
 }
 
 TEST_F(
@@ -937,6 +981,7 @@ TEST_F(
                                                           })");
 
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
 
   packagerConnection_.reset();
@@ -1027,6 +1072,7 @@ TEST_F(
 
   // Clean up.
   EXPECT_CALL(*localConnections_[1], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
 }
 
@@ -1133,6 +1179,7 @@ TEST_F(
 
   // Clean up.
   EXPECT_CALL(*localConnections_[1], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
 }
 
@@ -1278,6 +1325,7 @@ TEST_F(InspectorPackagerConnectionTest, TestRejectedPageConnection) {
               })")));
 
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
 }
 

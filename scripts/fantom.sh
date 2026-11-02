@@ -33,8 +33,11 @@ for arg in "$@"; do
   esac
 done
 
-if [[ -n "$FANTOM_RUN_BENCHMARKS" ]]; then
+if [[ -n "$FANTOM_RUN_BENCHMARKS" || -n "$FANTOM_DEBUG_JS" ]]; then
   ARGS+=("--runInBand")
 fi
 
-yarn jest --config private/react-native-fantom/config/jest.config.js "${ARGS[@]}"
+yarn jest \
+  --config private/react-native-fantom/config/jest.config.js \
+  --testSequencer '<rootDir>/private/react-native-fantom/config/FantomTestSequencer.js' \
+  "${ARGS[@]}"

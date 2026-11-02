@@ -7,9 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
-#import <react/renderer/graphics/BackgroundPosition.h>
-#import <react/renderer/graphics/BackgroundRepeat.h>
-#import <react/renderer/graphics/BackgroundSize.h>
+#import <React/Graphics.h>
 
 @interface RCTBackgroundImageUtils : NSObject
 

@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 // flow-typed version: f7c859e705/yargs_v17.x.x/flow_>=v0.104.x
 
 declare module 'yargs' {
@@ -96,7 +103,7 @@ declare module 'yargs' {
       builder?:
         | {[key: string]: Options, ...}
         | ((yargsInstance: Yargs) => unknown),
-      handler?: Function,
+      handler?: any,
     ): this;
     command(
       cmd: string | Array<string>,

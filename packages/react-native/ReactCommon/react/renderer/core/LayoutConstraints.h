@@ -11,9 +11,9 @@
 
 #include <limits>
 
+#include <React/Graphics.h>
+#include <React/Utils.h>
 #include <react/renderer/core/LayoutPrimitives.h>
-#include <react/renderer/graphics/Size.h>
-#include <react/utils/hash_combine.h>
 
 namespace facebook::react {
 

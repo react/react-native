@@ -185,7 +185,10 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
 
       {
         name: 'imagemanager',
-        headerPatterns: ['react/renderer/imagemanager/*.h'],
+        headerPatterns: [
+          'react/renderer/imagemanager/*.h',
+          'react/renderer/imagemanager/platform/ios/react/renderer/imagemanager/ImageRequestParams.h',
+        ],
         headerDir: 'react/renderer/imagemanager',
       },
 
@@ -332,23 +335,6 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
     name: 'React-jsinspectortracing',
     headerPatterns: ['*.h'],
     headerDir: 'jsinspector-modern/tracing',
-  },
-  'ReactCommon/react/featureflags/React-featureflags.podspec': {
-    name: 'React-featureflags',
-    headerPatterns: [],
-    headerDir: '',
-    subSpecs: [
-      {
-        name: 'featureflags',
-        headerPatterns: ['*.h'],
-        headerDir: 'react/featureflags',
-      },
-      {
-        name: 'featureflagsUmbrella',
-        headerPatterns: ['React/*.h'],
-        headerDir: 'React',
-      },
-    ],
   },
   'React/React-RCTFabric.podspec': {
     name: 'React-RCTFabric',
@@ -563,6 +549,18 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
     ],
   },
+  'ReactCommon/react/renderer/graphics/React-graphics.podspec': {
+    name: 'React-graphics',
+    headerPatterns: ['*.h', 'platform/ios/**/*.h'],
+    headerDir: 'react/renderer/graphics',
+    subSpecs: [
+      {
+        name: 'graphicsUmbrella',
+        headerPatterns: ['React/*.h'],
+        headerDir: 'React',
+      },
+    ],
+  },
   'React-Core.podspec': {
     name: 'React-Core',
     headerPatterns: [],
@@ -656,11 +654,6 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         name: 'css',
         headerPatterns: ['*.h'],
         headerDir: 'react/renderer/css',
-      },
-      {
-        name: 'cssUmbrella',
-        headerPatterns: ['React/*.h'],
-        headerDir: 'React',
       },
     ],
   },

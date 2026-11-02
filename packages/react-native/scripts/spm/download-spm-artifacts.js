@@ -640,16 +640,26 @@ function createProgressDisplay(
 type ProgressCallback = (label: string, downloaded: number, total: number, speed: number, done: boolean, elapsed: number) => void;
 */
 
-async function download(
+const DOWNLOAD_MAX_ATTEMPTS = 3;
+const DOWNLOAD_RETRY_BASE_DELAY_MS = 1000;
+const DOWNLOAD_IDLE_TIMEOUT_MS = 60_000;
+
+function isRetryableDownloadError(error /*: Error */) /*: boolean */ {
+  // Client errors are deterministic except for request timeout / rate limiting.
+  // Network and stream errors do not carry an HTTP prefix and are safe to retry.
+  const httpStatus = /^HTTP (\d{3})\b/.exec(error.message)?.[1];
+  if (httpStatus == null) {
+    return true;
+  }
+  const status = Number(httpStatus);
+  return status === 408 || status === 429 || status >= 500;
+}
+
+async function downloadOnce(
   url /*: string */,
   destPath /*: string */,
   onProgress /*:: ?: ProgressCallback */,
 ) /*: Promise<void> */ {
-  if (fs.existsSync(destPath)) {
-    log(`  Already cached: ${path.basename(destPath)}`);
-    return;
-  }
-
   const tmpPath = destPath + '.download';
   try {
     // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
@@ -662,6 +672,7 @@ async function download(
     let downloadedBytes = 0;
     let lastPrintTime = Date.now();
     let lastPrintBytes = 0;
+    let lastDataTime = Date.now();
     const startTime = Date.now();
 
     const fileStream = fs.createWriteStream(tmpPath);
@@ -719,14 +730,25 @@ async function download(
       await new Promise((resolve, reject) => {
         let progressInterval;
         try {
-          progressInterval = setInterval(() => reportProgress(), 500);
+          progressInterval = setInterval(() => {
+            reportProgress();
+            if (Date.now() - lastDataTime >= DOWNLOAD_IDLE_TIMEOUT_MS) {
+              nodeReadable.destroy(
+                new Error(
+                  `Download made no progress for ${DOWNLOAD_IDLE_TIMEOUT_MS / 1000}s: ${url}`,
+                ),
+              );
+            }
+          }, 500);
 
           nodeReadable
             .on('data', chunk => {
               downloadedBytes += chunk.length;
+              lastDataTime = Date.now();
             })
             .on('error', err => {
               clearInterval(progressInterval);
+              fileStream.destroy();
               reject(err);
             })
             .pipe(fileStream)
@@ -737,10 +759,13 @@ async function download(
             })
             .on('error', err => {
               clearInterval(progressInterval);
+              nodeReadable.destroy();
               reject(err);
             });
         } catch (err) {
           if (progressInterval != null) clearInterval(progressInterval);
+          nodeReadable.destroy();
+          fileStream.destroy();
           reject(err);
         }
       });
@@ -753,13 +778,44 @@ async function download(
 
     fs.renameSync(tmpPath, destPath);
   } catch (err) {
-    // Clean up partial .download temp file on failure
+    // Clean up partial .download temp file on failure.
     try {
       fs.unlinkSync(tmpPath);
     } catch {
       // temp file may not exist yet
     }
     throw err;
+  }
+}
+
+async function download(
+  url /*: string */,
+  destPath /*: string */,
+  onProgress /*:: ?: ProgressCallback */,
+) /*: Promise<void> */ {
+  if (fs.existsSync(destPath)) {
+    log(`  Already cached: ${path.basename(destPath)}`);
+    return;
+  }
+
+  for (let attempt = 1; attempt <= DOWNLOAD_MAX_ATTEMPTS; attempt++) {
+    try {
+      await downloadOnce(url, destPath, onProgress);
+      return;
+    } catch (error) {
+      if (
+        attempt === DOWNLOAD_MAX_ATTEMPTS ||
+        !isRetryableDownloadError(error)
+      ) {
+        throw error;
+      }
+      const delayMs = DOWNLOAD_RETRY_BASE_DELAY_MS * attempt;
+      warn(
+        `  Download failed (${error.message}); retrying in ${delayMs}ms ` +
+          `(attempt ${attempt + 1}/${DOWNLOAD_MAX_ATTEMPTS})`,
+      );
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
   }
 }
 
@@ -1544,6 +1600,7 @@ module.exports = {
   resolveLatestV1Version,
   resolveRNCoreArtifact,
   resolveRNDepsArtifact,
+  download,
   exists,
   formatBytes,
   formatSpeed,

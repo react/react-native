@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/components/view/BaseViewProps.h>
+#include <React/View.h>
 
 #include <utility>
 

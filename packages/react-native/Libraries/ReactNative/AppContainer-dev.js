@@ -27,7 +27,7 @@ import {RootTagContext, createRootTag} from './RootTag';
 import * as React from 'react';
 import {useRef} from 'react';
 
-const {useEffect, useState, useCallback} = React;
+const {useEffect, useState} = React;
 
 const reactDevToolsHook: ReactDevToolsGlobalHook = (window as $FlowFixMe)
   .__REACT_DEVTOOLS_GLOBAL_HOOK__;
@@ -51,7 +51,6 @@ type ExternalInspection = {
 
 type InspectorDeferredProps = {
   inspectedViewRef: InspectedViewRef,
-  onInspectedViewRerenderRequest: () => void,
   reactDevToolsAgent?: ReactDevToolsAgent,
   devMenuInspectorOpen: boolean,
   externalInspection: ExternalInspection,
@@ -59,7 +58,6 @@ type InspectorDeferredProps = {
 
 const InspectorDeferred = ({
   inspectedViewRef,
-  onInspectedViewRerenderRequest,
   reactDevToolsAgent,
   devMenuInspectorOpen,
   externalInspection,
@@ -72,7 +70,6 @@ const InspectorDeferred = ({
   return (
     <Inspector
       inspectedViewRef={inspectedViewRef}
-      onRequestRerenderApp={onInspectedViewRerenderRequest}
       reactDevToolsAgent={reactDevToolsAgent}
       devMenuInspectorOpen={devMenuInspectorOpen}
       externalInspection={externalInspection}
@@ -118,7 +115,6 @@ const AppContainer = ({
     debuggingOverlayRef,
   );
 
-  const [key, setKey] = useState(0);
   const [shouldRenderInspector, setShouldRenderInspector] = useState(false);
   const [reactDevToolsAgent, setReactDevToolsAgent] =
     useState<ReactDevToolsAgent | void>(reactDevToolsHook?.reactDevtoolsAgent);
@@ -157,7 +153,6 @@ const AppContainer = ({
     <View
       collapsable={reactDevToolsAgent == null && !shouldRenderInspector}
       pointerEvents="box-none"
-      key={key}
       style={rootViewStyle || styles.container}
       ref={innerViewRef}>
       {children}
@@ -171,11 +166,6 @@ const AppContainer = ({
       </WrapperComponent>
     );
   }
-
-  const onInspectedViewRerenderRequest = useCallback(
-    () => setKey(k => k + 1),
-    [],
-  );
 
   return (
     <RootTagContext.Provider value={createRootTag(rootTag)}>
@@ -198,7 +188,6 @@ const AppContainer = ({
           externalInspection.externalInspectingEnabled) && (
           <InspectorDeferred
             inspectedViewRef={innerViewRef}
-            onInspectedViewRerenderRequest={onInspectedViewRerenderRequest}
             reactDevToolsAgent={reactDevToolsAgent}
             devMenuInspectorOpen={shouldRenderInspector}
             externalInspection={externalInspection}

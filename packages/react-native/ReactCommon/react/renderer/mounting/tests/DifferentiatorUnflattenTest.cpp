@@ -15,30 +15,9 @@
 #include <react/renderer/element/Element.h>
 #include <react/renderer/element/testUtils.h>
 #include <react/renderer/mounting/Differentiator.h>
-#include <react/renderer/mounting/ShadowViewMutation.h>
 #include <react/renderer/mounting/stubs/stubs.h>
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
-#include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
-
 namespace facebook::react {
-
-namespace {
-
-class TestFlagsWithUnflattenFix : public ReactNativeFeatureFlagsDefaults {
- public:
-  explicit TestFlagsWithUnflattenFix(bool enabled) : enabled_(enabled) {}
-
-  bool fixDifferentiatorParentTagForUnflattenCase() override {
-    return enabled_;
-  }
-
- private:
-  bool enabled_;
-};
-
-} // namespace
-
 // Exercises the unflatten-unflatten branch in
 // calculateShadowViewMutationsFlattener (Differentiator.cpp), where multiple
 // levels of nested views simultaneously transition from flattened to concrete.
@@ -102,10 +81,6 @@ class DifferentiatorUnflattenTest : public ::testing::Test {
         buildStubViewTreeWithoutUsingDifferentiator(*currentRootShadowNode_);
   }
 
-  void TearDown() override {
-    ReactNativeFeatureFlags::dangerouslyReset();
-  }
-
   void mutateViewShadowNodeProps_(
       const std::shared_ptr<ViewShadowNode>& node,
       std::function<void(ViewProps& props)> callback) {
@@ -133,14 +108,6 @@ class DifferentiatorUnflattenTest : public ::testing::Test {
     callback(currentStubViewTree_);
   }
 
-  ShadowViewMutation::List calculateMutations_() {
-    rootShadowNode_->layoutIfNeeded();
-    auto mutations =
-        calculateShadowViewMutations(*currentRootShadowNode_, *rootShadowNode_);
-    currentRootShadowNode_ = rootShadowNode_;
-    return mutations;
-  }
-
   void applyUnflattenSetup_() {
     mutateViewShadowNodeProps_(
         nodeD_, [](ViewProps& props) { props.backgroundColor = blackColor(); });
@@ -162,40 +129,9 @@ class DifferentiatorUnflattenTest : public ::testing::Test {
   }
 };
 
-// Without the fix, the UPDATE mutation for D (tag 5) carries the wrong
-// parentTag: an intermediate node's tag instead of Root's tag (1) where D is
-// currently mounted. This test verifies the bug by inspecting the mutation list
-// directly.
-TEST_F(
-    DifferentiatorUnflattenTest,
-    withoutFix_updateMutationHasWrongParentTag) {
-  ReactNativeFeatureFlags::dangerouslyForceOverride(
-      std::make_unique<TestFlagsWithUnflattenFix>(false));
-
-  applyUnflattenSetup_();
-
-  auto mutations = calculateMutations_();
-
-  const ShadowViewMutation* updateForD = nullptr;
-  for (const auto& mutation : mutations) {
-    if (mutation.type == ShadowViewMutation::Update &&
-        mutation.newChildShadowView.tag == 5) {
-      updateForD = &mutation;
-      break;
-    }
-  }
-
-  ASSERT_NE(updateForD, nullptr) << "Expected an UPDATE mutation for tag 5 (D)";
-  EXPECT_NE(updateForD->parentTag, 1)
-      << "Without fix, UPDATE for D should carry wrong parentTag (not Root)";
-}
-
-// With the fix, the UPDATE mutation for D correctly references Root's tag (1)
-// as parentTag, and StubViewTree::mutate() succeeds without assertion failure.
-TEST_F(DifferentiatorUnflattenTest, withFix_updateMutationHasCorrectParentTag) {
-  ReactNativeFeatureFlags::dangerouslyForceOverride(
-      std::make_unique<TestFlagsWithUnflattenFix>(true));
-
+// The UPDATE mutation for D correctly references Root's tag (1) as parentTag,
+// and StubViewTree::mutate() succeeds without assertion failure.
+TEST_F(DifferentiatorUnflattenTest, updateMutationHasCorrectParentTag) {
   applyUnflattenSetup_();
 
   testViewTree_([](const StubViewTree& viewTree) {

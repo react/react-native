@@ -12,12 +12,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ALL_PROP/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -178,12 +175,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_GEN/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -344,12 +338,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_OBJECT_GEN/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -510,13 +501,10 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ARRAY_PROPS/Props.h>
+#include <React/Image.h>
 #include <React/View.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
 
 using namespace facebook::react;
 
@@ -547,11 +535,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -582,11 +568,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_GEN/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -617,11 +601,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_OBJECT_GEN/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -652,13 +634,10 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_GEN/Props.h>
+#include <React/Image.h>
 #include <React/View.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
 
 using namespace facebook::react;
 
@@ -689,13 +668,10 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_OBJECT_GEN/Props.h>
+#include <React/Image.h>
 #include <React/View.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
 
 using namespace facebook::react;
 
@@ -726,11 +702,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/BOOLEAN_PROP/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -774,11 +748,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/COLOR_PROP/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -822,11 +794,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/COMMANDS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -857,11 +827,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/COMMANDS_AND_PROPS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -905,12 +873,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/DIMENSION_PROP/Props.h>
 #include <React/View.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
 
 using namespace facebook::react;
 
@@ -941,11 +906,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/DOUBLE_PROPS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -976,11 +939,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/EVENT_NESTED_OBJECT_PROPS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1024,11 +985,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/EVENT_PROPS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1072,11 +1031,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/EVENTS_WITH_PAPER_NAME/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1107,11 +1064,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/EXCLUDE_ANDROID/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1142,11 +1097,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/EXCLUDE_ANDROID_IOS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1177,11 +1130,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/EXCLUDE_IOS_TWO_COMPONENTS_DIFFERENT_FILES/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1238,11 +1189,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/FLOAT_PROPS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1351,12 +1300,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/IMAGE_PROP/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -1400,11 +1346,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/INSETS_PROP/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1435,11 +1379,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/INT32_ENUM_PROP/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1470,11 +1412,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/INTEGER_PROPS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1505,11 +1445,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/INTERFACE_ONLY/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1553,12 +1491,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/MIXED_PROP/Props.h>
 #include <folly/dynamic.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
 
 using namespace facebook::react;
 
@@ -1589,12 +1524,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/MULTI_NATIVE_PROP/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -1677,11 +1609,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/NO_PROPS_NO_EVENTS/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1712,12 +1642,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/OBJECT_PROPS/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -1748,12 +1675,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_GEN/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -1784,12 +1708,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_OBJECT_GEN/Props.h>
-#include <react/renderer/components/image/conversions.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/Image.h>
 
 using namespace facebook::react;
 
@@ -1820,11 +1741,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/POINT_PROP/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1868,11 +1787,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/STRING_ENUM_PROP/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -1942,11 +1859,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/STRING_PROP/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -2003,11 +1918,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/TWO_COMPONENTS_DIFFERENT_FILES/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 
@@ -2077,11 +1990,9 @@ Map {
  * */
 
 #include <gtest/gtest.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
 #include <react/renderer/components/TWO_COMPONENTS_SAME_FILE/Props.h>
-#include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsParser.h>
-#include <react/renderer/core/propsConversions.h>
+
 
 using namespace facebook::react;
 

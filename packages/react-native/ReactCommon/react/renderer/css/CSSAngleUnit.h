@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <cmath>
 #include <cstdint>
 #include <optional>
 #include <string_view>
 
-#include <react/utils/fnv1a.h>
+#include <React/Utils.h>
 
 namespace facebook::react {
 

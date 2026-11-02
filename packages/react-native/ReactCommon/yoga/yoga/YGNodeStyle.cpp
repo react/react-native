@@ -152,7 +152,16 @@ YGOverflow YGNodeStyleGetOverflow(const YGNodeConstRef node) {
 }
 
 void YGNodeStyleSetDisplay(const YGNodeRef node, const YGDisplay display) {
+  const bool wasContents =
+      resolveRef(node)->style().display() == Display::Contents;
   updateStyle<&Style::display, &Style::setDisplay>(node, scopedEnum(display));
+
+  // The owner caches how many of its children use display: contents, so it
+  // has to be recomputed when an attached child switches to or from it.
+  auto owner = resolveRef(node)->getOwner();
+  if (owner != nullptr && wasContents != (display == YGDisplayContents)) {
+    owner->setChildren(owner->getChildren());
+  }
 }
 
 YGDisplay YGNodeStyleGetDisplay(const YGNodeConstRef node) {

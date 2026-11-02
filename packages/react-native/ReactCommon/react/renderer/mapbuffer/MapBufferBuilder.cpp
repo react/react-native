@@ -6,7 +6,13 @@
  */
 
 #include "MapBufferBuilder.h"
+
+#include <glog/logging.h>
+
 #include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <utility>
 
 namespace facebook::react {
 
@@ -40,7 +46,7 @@ void MapBufferBuilder::storeKeyValue(
   if (valueSize > MAX_BUCKET_VALUE_SIZE) {
     LOG(ERROR) << "Error: size of value must be <= MAX_VALUE_SIZE. ValueSize: "
                << valueSize;
-    abort();
+    std::abort();
   }
 
   uint64_t data = 0;

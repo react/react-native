@@ -6,7 +6,7 @@
  */
 
 #ifdef __cplusplus
-#import <ReactCommon/CallInvoker.h>
+#import <React/CallInvoker.h>
 #endif
 
 #import "RCTBridgeProxy.h"

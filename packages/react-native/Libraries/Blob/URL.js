@@ -81,8 +81,7 @@ export class URL {
   // $FlowFixMe[missing-local-annot]
   constructor(url: string, base?: string | URL) {
     let baseUrl = null;
-    // $FlowFixMe[sketchy-null-string]
-    if (!base || validateBaseUrl(url)) {
+    if (base == null || base === '' || validateBaseUrl(url)) {
       this._url = url;
       if (this._url.includes('#')) {
         const split = this._url.split('#');

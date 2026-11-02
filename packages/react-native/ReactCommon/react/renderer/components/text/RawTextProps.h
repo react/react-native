@@ -11,9 +11,8 @@
 
 #include <memory>
 
-#include <react/renderer/core/Props.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
+#include <React/RendererCore.h>
+#include <React/RendererDebug.h>
 
 namespace facebook::react {
 

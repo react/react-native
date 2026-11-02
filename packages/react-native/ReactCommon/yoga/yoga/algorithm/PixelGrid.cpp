@@ -10,18 +10,29 @@
 #include <yoga/algorithm/PixelGrid.h>
 #include <yoga/numeric/Comparison.h>
 
+#include <cmath>
+
 namespace facebook::yoga {
 
-float roundValueToPixelGrid(
+namespace {
+
+double roundValueToPixelGridDouble(
     const double value,
     const double pointScaleFactor,
     const bool forceCeil,
     const bool forceFloor) {
   double scaledValue = value * pointScaleFactor;
-  // We want to calculate `fractial` such that `floor(scaledValue) = scaledValue
-  // - fractial`.
-  double fractial = fmod(scaledValue, 1.0);
-  if (fractial < 0) {
+  // We want to calculate `fractional` such that `floor(scaledValue) =
+  // scaledValue
+  // - fractional`.
+  //
+  // `copysign(x - trunc(x), x)` is bit-identical to `fmod(x, 1.0)` for every
+  // double (including -0.0, infinities and NaN) but avoids the libm `fmod`
+  // loop, which is slow on some platforms (e.g. Android's bionic). This
+  // function runs six times per node on every layout pass.
+  double fractional =
+      std::copysign(scaledValue - std::trunc(scaledValue), scaledValue);
+  if (fractional < 0) {
     // This branch is for handling negative numbers for `value`.
     //
     // Regarding `floor` and `ceil`. Note that for a number x, `floor(x) <= x <=
@@ -31,35 +42,46 @@ float roundValueToPixelGrid(
     //
     // Regarding `fmodf`. For fractional negative numbers, `fmodf` returns a
     // negative number. For example, `fmodf(-2.2) = -0.2`. However, we want
-    // `fractial` to be the number such that subtracting it from `value` will
+    // `fractional` to be the number such that subtracting it from `value` will
     // give us `floor(value)`. In the case of negative numbers, adding 1 to
     // `fmodf(value)` gives us this. Let's continue the example from above:
-    //   - fractial = fmodf(-2.2) = -0.2
-    //   - Add 1 to the fraction: fractial2 = fractial + 1 = -0.2 + 1 = 0.8
-    //   - Finding the `floor`: -2.2 - fractial2 = -2.2 - 0.8 = -3
-    ++fractial;
+    //   - fractional = fmodf(-2.2) = -0.2
+    //   - Add 1 to the fraction: fractional2 = fractional + 1 = -0.2 + 1 = 0.8
+    //   - Finding the `floor`: -2.2 - fractional2 = -2.2 - 0.8 = -3
+    ++fractional;
   }
-  if (yoga::inexactEquals(fractial, 0)) {
+  if (yoga::inexactEquals(fractional, 0)) {
     // First we check if the value is already rounded
-    scaledValue = scaledValue - fractial;
-  } else if (yoga::inexactEquals(fractial, 1.0)) {
-    scaledValue = scaledValue - fractial + 1.0;
+    scaledValue = scaledValue - fractional;
+  } else if (yoga::inexactEquals(fractional, 1.0)) {
+    scaledValue = scaledValue - fractional + 1.0;
   } else if (forceCeil) {
     // Next we check if we need to use forced rounding
-    scaledValue = scaledValue - fractial + 1.0;
+    scaledValue = scaledValue - fractional + 1.0;
   } else if (forceFloor) {
-    scaledValue = scaledValue - fractial;
+    scaledValue = scaledValue - fractional;
   } else {
     // Finally we just round the value
-    scaledValue = scaledValue - fractial +
-        (!std::isnan(fractial) &&
-                 (fractial > 0.5 || yoga::inexactEquals(fractial, 0.5))
+    scaledValue = scaledValue - fractional +
+        (!std::isnan(fractional) &&
+                 (fractional > 0.5 || yoga::inexactEquals(fractional, 0.5))
              ? 1.0
              : 0.0);
   }
   return (std::isnan(scaledValue) || std::isnan(pointScaleFactor))
       ? YGUndefined
-      : (float)(scaledValue / pointScaleFactor);
+      : scaledValue / pointScaleFactor;
+}
+
+} // namespace
+
+float roundValueToPixelGrid(
+    const double value,
+    const double pointScaleFactor,
+    const bool forceCeil,
+    const bool forceFloor) {
+  return static_cast<float>(roundValueToPixelGridDouble(
+      value, pointScaleFactor, forceCeil, forceFloor));
 }
 
 void roundLayoutResultsToPixelGrid(
@@ -98,9 +120,9 @@ void roundLayoutResultsToPixelGrid(
     // whole number, we don't have any fraction To verify if the result is close
     // to whole number we want to check both floor and ceil numbers
 
-    const double scaledNodeWith = nodeWidth * pointScaleFactor;
+    const double scaledNodeWidth = nodeWidth * pointScaleFactor;
     const bool hasFractionalWidth =
-        !yoga::inexactEquals(round(scaledNodeWith), scaledNodeWith);
+        !yoga::inexactEquals(round(scaledNodeWidth), scaledNodeWidth);
 
     const double scaledNodeHeight = nodeHeight * pointScaleFactor;
     const bool hasFractionalHeight =
@@ -108,23 +130,32 @@ void roundLayoutResultsToPixelGrid(
 
     node->getLayout().setDimension(
         Dimension::Width,
-        roundValueToPixelGrid(
-            absoluteNodeRight,
-            pointScaleFactor,
-            (textRounding && hasFractionalWidth),
-            (textRounding && !hasFractionalWidth)) -
-            roundValueToPixelGrid(
-                absoluteNodeLeft, pointScaleFactor, false, textRounding));
+        textRounding && !hasFractionalWidth
+            ? static_cast<float>(round(scaledNodeWidth) / pointScaleFactor)
+            : static_cast<float>(
+                  roundValueToPixelGridDouble(
+                      absoluteNodeRight,
+                      pointScaleFactor,
+                      textRounding,
+                      false) -
+                  roundValueToPixelGridDouble(
+                      absoluteNodeLeft,
+                      pointScaleFactor,
+                      false,
+                      textRounding)));
 
     node->getLayout().setDimension(
         Dimension::Height,
-        roundValueToPixelGrid(
-            absoluteNodeBottom,
-            pointScaleFactor,
-            (textRounding && hasFractionalHeight),
-            (textRounding && !hasFractionalHeight)) -
-            roundValueToPixelGrid(
-                absoluteNodeTop, pointScaleFactor, false, textRounding));
+        textRounding && !hasFractionalHeight
+            ? static_cast<float>(round(scaledNodeHeight) / pointScaleFactor)
+            : static_cast<float>(
+                  roundValueToPixelGridDouble(
+                      absoluteNodeBottom,
+                      pointScaleFactor,
+                      textRounding,
+                      false) -
+                  roundValueToPixelGridDouble(
+                      absoluteNodeTop, pointScaleFactor, false, textRounding)));
   }
 
   for (yoga::Node* child : node->getChildren()) {

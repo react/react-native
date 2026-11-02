@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/PrivateGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <exception>
 #include <functional>

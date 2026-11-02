@@ -21,7 +21,8 @@ target_link_libraries(jsitooling
         folly_runtime
         glog
         jsi
-        react_cxxstableapi)
+        react_cxxstableapi
+        react_timing)
 
 target_compile_reactnative_options(jsitooling PRIVATE)
 target_compile_options(jsitooling PRIVATE -Wpedantic)

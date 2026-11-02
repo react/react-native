@@ -7,7 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-#import <FBReactNativeSpec/FBReactNativeSpec.h>
+#if __has_include(<ReactCodegen/AppSpecs.h>)
+#import <ReactCodegen/AppSpecs.h>
+#else
+#import <AppSpecs/AppSpecs.h>
+#endif
 
 /**
  * Sample iOS-specific impl of a TurboModule, conforming to the spec protocol.

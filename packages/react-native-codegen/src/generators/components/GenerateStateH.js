@@ -33,7 +33,7 @@ const FileTemplate = ({
  */
 #pragma once
 
-#include <react/renderer/core/StateData.h>
+#include <React/RendererCore.h>
 #ifdef RN_SERIALIZABLE_STATE
 #include <folly/dynamic.h>
 #endif

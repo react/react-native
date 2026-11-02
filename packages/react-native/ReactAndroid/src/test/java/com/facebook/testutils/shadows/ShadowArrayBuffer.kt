@@ -34,7 +34,7 @@ open class ShadowArrayBuffer {
     /** Simulates the native peer revoking a borrow when the call frame that lent the bytes ends. */
     @JvmStatic
     fun invalidate(arrayBuffer: ArrayBuffer) {
-      (Shadow.extract(arrayBuffer) as ShadowArrayBuffer).bytesValid = false
+      Shadow.extract<ShadowArrayBuffer>(arrayBuffer).bytesValid = false
     }
   }
 }

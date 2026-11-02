@@ -17,6 +17,9 @@ import android.view.View
 import android.view.Window
 import android.view.WindowInsets
 import androidx.annotation.RequiresApi
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowNativeLoader
 import com.facebook.testutils.shadows.ShadowNativeMap
 import com.facebook.testutils.shadows.ShadowReadableNativeMap
@@ -52,6 +55,7 @@ class DisplayMetricsHolderTest {
 
   @Before
   fun setUp() {
+    ReactNativeFeatureFlagsForTests.setUp()
     context = RuntimeEnvironment.getApplication()
     displayMetrics = context.resources.displayMetrics
     DisplayMetricsHolder.setScreenDisplayMetrics(null)
@@ -60,6 +64,7 @@ class DisplayMetricsHolderTest {
   @After
   fun tearDown() {
     DisplayMetricsHolder.setScreenDisplayMetrics(null)
+    ReactNativeFeatureFlags.dangerouslyReset()
   }
 
   @Test(expected = IllegalStateException::class)
@@ -143,6 +148,41 @@ class DisplayMetricsHolderTest {
   }
 
   @Test
+  fun initDisplayMetrics_withWindowDensityFlag_usesTheWindowDensity() {
+    overrideWindowDensityFlag(true)
+    setWindowDensityTo400Dpi()
+
+    DisplayMetricsHolder.initDisplayMetrics(context)
+
+    val screenMetrics = DisplayMetricsHolder.getScreenDisplayMetrics()
+    assertThat(screenMetrics.density).isEqualTo(2.5f)
+    assertThat(screenMetrics.densityDpi).isEqualTo(DisplayMetrics.DENSITY_400)
+    assertThat(PixelUtil.toDIPFromPixel(PixelUtil.toPixelFromSP(16f))).isEqualTo(16f)
+  }
+
+  @Test
+  fun initDisplayMetrics_withoutWindowDensityFlag_usesTheDisplayDensity() {
+    DisplayMetricsHolder.initDisplayMetrics(context)
+    val displayDensityDpi = DisplayMetricsHolder.getScreenDisplayMetrics().densityDpi
+    overrideWindowDensityFlag(false)
+    setWindowDensityTo400Dpi()
+
+    DisplayMetricsHolder.initDisplayMetrics(context)
+
+    assertThat(DisplayMetricsHolder.getScreenDisplayMetrics().densityDpi)
+        .isEqualTo(displayDensityDpi)
+        .isNotEqualTo(DisplayMetrics.DENSITY_400)
+  }
+
+  @Test
+  fun initDisplayMetrics_withMatchingDensities_doesNotReadFeatureFlags() {
+    DisplayMetricsHolder.initDisplayMetrics(context)
+    overrideWindowDensityFlag(true)
+
+    assertThat(ReactNativeFeatureFlags.useWindowDensityForDisplayMetricsAndroid()).isTrue()
+  }
+
+  @Test
   fun initDisplayMetrics_doesNotCrashWithNonVisualContext() {
     val mockContext: Context = mock()
     val mockResources: android.content.res.Resources = mock()
@@ -163,5 +203,20 @@ class DisplayMetricsHolderTest {
 
     // Metrics should still be set from resource display metrics
     assertThat(DisplayMetricsHolder.getScreenDisplayMetrics()).isNotNull()
+  }
+
+  private fun overrideWindowDensityFlag(enabled: Boolean) {
+    ReactNativeFeatureFlags.override(
+        object : ReactNativeFeatureFlagsDefaults() {
+          override fun useWindowDensityForDisplayMetricsAndroid(): Boolean = enabled
+        },
+    )
+  }
+
+  private fun setWindowDensityTo400Dpi() {
+    val resourceMetrics = context.resources.displayMetrics
+    resourceMetrics.density = 2.5f
+    resourceMetrics.densityDpi = DisplayMetrics.DENSITY_400
+    resourceMetrics.scaledDensity = 2.5f
   }
 }

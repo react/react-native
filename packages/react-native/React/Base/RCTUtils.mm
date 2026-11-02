@@ -13,6 +13,7 @@
 #import <objc/runtime.h>
 #import <zlib.h>
 #import <atomic>
+#import <cmath>
 #import <vector>
 
 #import <UIKit/UIKit.h>
@@ -385,7 +386,7 @@ UIDeviceOrientation RCTDeviceOrientation(void)
 
 CGSize RCTScreenSize(void)
 {
-  static std::atomic<CGSize> cachedSize;
+  static constinit std::atomic<CGSize> cachedSize;
   __block CGSize size = cachedSize.load(std::memory_order_relaxed);
 
   if (CGSizeEqualToSize(size, CGSizeZero)) {
@@ -437,20 +438,20 @@ CGSize RCTSwitchSize(void)
 CGFloat RCTRoundPixelValue(CGFloat value)
 {
   CGFloat scale = RCTScreenScale();
-  return round(value * scale) / scale;
+  return std::round(value * scale) / scale;
 }
 
 CGFloat RCTCeilPixelValue(CGFloat value)
 {
   CGFloat scale = RCTScreenScale();
-  return ceil(value * scale) / scale;
+  return std::ceil(value * scale) / scale;
 }
 
 CGSize RCTSizeInPixels(CGSize pointSize, CGFloat scale)
 {
   return (CGSize){
-      ceil(pointSize.width * scale),
-      ceil(pointSize.height * scale),
+      std::ceil(pointSize.width * scale),
+      std::ceil(pointSize.height * scale),
   };
 }
 

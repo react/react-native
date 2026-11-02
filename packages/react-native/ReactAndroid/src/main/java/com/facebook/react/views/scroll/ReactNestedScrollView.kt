@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2f9a2ea0c223b08d9d1ea4517fd9671b>>
+ * @generated SignedSource<<5d7adbc00208fc9995b1c3e69c677a38>>
  */
 
 /**
@@ -565,6 +565,14 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override fun shouldDelayChildPressedState(): Boolean =
       hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
+  override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+    if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+      // Defensive cleanup for new gesture
+      stopNestedScroll()
+    }
+    return super.dispatchTouchEvent(ev)
+  }
+
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false
     if (!PointerEvents.canChildrenBeTouchTarget(pointerEvents)) return true
@@ -598,7 +606,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
     velocityHelper.calculateVelocity(ev)
     val action = ev.actionMasked
-    if (action == MotionEvent.ACTION_UP && dragging) {
+    if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) && dragging) {
       ReactScrollViewHelper.updateFabricScrollState(this)
       val velocityX = velocityHelper.xVelocity
       val velocityY = velocityHelper.yVelocity
@@ -644,7 +652,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
           }
           postTouchRunnable = Runnable {
             postTouchRunnable = null
-            var velocityY = (-vScroll.sign).toInt()
+            var velocityY = (if (isVerticallyInverted()) vScroll.sign else -vScroll.sign).toInt()
             if (disableIntervalMomentum) {
               velocityY = 0
             }
@@ -660,6 +668,20 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     }
 
     return super.dispatchGenericMotionEvent(ev)
+  }
+
+  override fun onGenericMotionEvent(ev: MotionEvent): Boolean {
+    if (ev.actionMasked != MotionEvent.ACTION_SCROLL || !isVerticallyInverted()) {
+      return super.onGenericMotionEvent(ev)
+    }
+    // Android maps pointer coordinates through view transforms but not scroll axis values, so wheel
+    // and joystick input would otherwise scroll a vertically inverted view backwards.
+    val invertedEvent = obtainWithInvertedVerticalScroll(ev)
+    return try {
+      super.onGenericMotionEvent(invertedEvent)
+    } finally {
+      invertedEvent.recycle()
+    }
   }
 
   override fun executeKeyEvent(event: KeyEvent): Boolean {
@@ -1321,4 +1343,46 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
   override fun getFlingExtrapolatedDistance(velocity: Int): Int =
       ReactScrollViewHelper.predictFinalScrollPosition(this, 0, velocity, 0, getMaxScrollY()).y
+}
+
+/** Whether transforms on this view or its ancestors flip it vertically on screen. */
+private fun View.isVerticallyInverted(): Boolean {
+  val down = floatArrayOf(0f, 1f)
+  var view: View? = this
+  while (view != null) {
+    view.matrix.mapVectors(down)
+    view = view.parent as? View
+  }
+  return down[1] < 0
+}
+
+/** Copies [event] with its vertical scroll axis negated. The caller must recycle the copy. */
+private fun obtainWithInvertedVerticalScroll(event: MotionEvent): MotionEvent {
+  val properties =
+      Array(event.pointerCount) { i ->
+        MotionEvent.PointerProperties().also { event.getPointerProperties(i, it) }
+      }
+  val coords =
+      Array(event.pointerCount) { i ->
+        MotionEvent.PointerCoords().apply {
+          event.getPointerCoords(i, this)
+          setAxisValue(MotionEvent.AXIS_VSCROLL, -getAxisValue(MotionEvent.AXIS_VSCROLL))
+        }
+      }
+  return MotionEvent.obtain(
+      event.downTime,
+      event.eventTime,
+      event.action,
+      event.pointerCount,
+      properties,
+      coords,
+      event.metaState,
+      event.buttonState,
+      event.xPrecision,
+      event.yPrecision,
+      event.deviceId,
+      event.edgeFlags,
+      event.source,
+      event.flags,
+  )
 }

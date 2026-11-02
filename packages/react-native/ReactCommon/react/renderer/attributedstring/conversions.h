@@ -9,28 +9,21 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/debug/react_native_expect.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <React/Debug.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
+#include <react/featureflags/ReactNativePublicFeatureFlags.h>
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/attributedstring/TextAttributes.h>
-#include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/attributedstring/primitives.h>
-#include <react/renderer/components/view/accessibilityPropsConversions.h>
-#include <react/renderer/core/LayoutableShadowNode.h>
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/core/conversions.h>
-#include <react/renderer/core/graphicsConversions.h>
-#include <react/renderer/core/propsConversions.h>
 #include <react/renderer/css/CSSFontVariant.h>
 #include <react/renderer/css/CSSValueParser.h>
 #include <unordered_map>
 
 #ifdef RN_SERIALIZABLE_STATE
+#include <React/MapBuffer.h>
 #include <folly/json.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
-#include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
 #include <glog/logging.h>
@@ -517,7 +510,7 @@ inline void parseUnprocessedFontVariant(const PropsParserContext &context, const
 
 inline void fromRawValue(const PropsParserContext &context, const RawValue &value, FontVariant &result)
 {
-  if (ReactNativeFeatureFlags::enableNativeCSSParsing()) {
+  if (ReactNativeFeatureFlags_DO_NOT_USE::enableNativeCSSParsing()) {
     parseUnprocessedFontVariant(context, value, result);
   } else {
     parseProcessedFontVariant(context, value, result);
@@ -1041,6 +1034,88 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   result = HyphenationFrequency::None;
 }
 
+inline std::string toString(const LineBreak &lineBreak)
+{
+  switch (lineBreak) {
+    case LineBreak::Auto:
+      return "auto";
+    case LineBreak::Loose:
+      return "loose";
+    case LineBreak::Normal:
+      return "normal";
+    case LineBreak::Strict:
+      return "strict";
+  }
+
+  LOG(ERROR) << "Unsupported LineBreak value";
+  react_native_expect(false);
+  return "auto";
+}
+
+inline void fromRawValue(const PropsParserContext &context, const RawValue &value, LineBreak &result)
+{
+  react_native_expect(value.hasType<std::string>());
+  if (value.hasType<std::string>()) {
+    auto string = (std::string)value;
+    if (string == "auto") {
+      result = LineBreak::Auto;
+    } else if (string == "loose") {
+      result = LineBreak::Loose;
+    } else if (string == "normal") {
+      result = LineBreak::Normal;
+    } else if (string == "strict") {
+      result = LineBreak::Strict;
+    } else {
+      // sane default
+      LOG(ERROR) << "Unsupported LineBreak value: " << string;
+      react_native_expect(false);
+      result = LineBreak::Auto;
+    }
+    return;
+  }
+
+  LOG(ERROR) << "Unsupported LineBreak type";
+  react_native_expect(false);
+  result = LineBreak::Auto;
+}
+
+inline std::string toString(const WordBreak &wordBreak)
+{
+  switch (wordBreak) {
+    case WordBreak::Normal:
+      return "normal";
+    case WordBreak::AutoPhrase:
+      return "auto-phrase";
+  }
+
+  LOG(ERROR) << "Unsupported WordBreak value";
+  react_native_expect(false);
+  return "normal";
+}
+
+inline void fromRawValue(const PropsParserContext &context, const RawValue &value, WordBreak &result)
+{
+  react_native_expect(value.hasType<std::string>());
+  if (value.hasType<std::string>()) {
+    auto string = (std::string)value;
+    if (string == "normal") {
+      result = WordBreak::Normal;
+    } else if (string == "auto-phrase") {
+      result = WordBreak::AutoPhrase;
+    } else {
+      // sane default
+      LOG(ERROR) << "Unsupported WordBreak value: " << string;
+      react_native_expect(false);
+      result = WordBreak::Normal;
+    }
+    return;
+  }
+
+  LOG(ERROR) << "Unsupported WordBreak type";
+  react_native_expect(false);
+  result = WordBreak::Normal;
+}
+
 inline ParagraphAttributes convertRawProp(
     const PropsParserContext &context,
     const RawProps &rawProps,
@@ -1103,6 +1178,10 @@ inline ParagraphAttributes convertRawProp(
       "android_hyphenationFrequency",
       sourceParagraphAttributes.android_hyphenationFrequency,
       defaultParagraphAttributes.android_hyphenationFrequency);
+  paragraphAttributes.lineBreak = convertRawProp(
+      context, rawProps, "lineBreak", sourceParagraphAttributes.lineBreak, defaultParagraphAttributes.lineBreak);
+  paragraphAttributes.wordBreak = convertRawProp(
+      context, rawProps, "wordBreak", sourceParagraphAttributes.wordBreak, defaultParagraphAttributes.wordBreak);
   paragraphAttributes.textAlignVertical = convertRawProp(
       context,
       rawProps,
@@ -1196,6 +1275,9 @@ constexpr static MapBuffer::Key PA_KEY_HYPHENATION_FREQUENCY = 5;
 constexpr static MapBuffer::Key PA_KEY_MINIMUM_FONT_SIZE = 6;
 constexpr static MapBuffer::Key PA_KEY_TEXT_ALIGN_VERTICAL = 8;
 constexpr static MapBuffer::Key PA_KEY_TEXT_WIDTH_MODE = 9;
+constexpr static MapBuffer::Key PA_KEY_MINIMUM_FONT_SCALE = 10;
+constexpr static MapBuffer::Key PA_KEY_LINE_BREAK = 11;
+constexpr static MapBuffer::Key PA_KEY_WORD_BREAK = 12;
 
 inline MapBuffer toMapBuffer(const ParagraphAttributes &paragraphAttributes)
 {
@@ -1207,10 +1289,13 @@ inline MapBuffer toMapBuffer(const ParagraphAttributes &paragraphAttributes)
   builder.putBool(PA_KEY_ADJUST_FONT_SIZE_TO_FIT, paragraphAttributes.adjustsFontSizeToFit);
   builder.putBool(PA_KEY_INCLUDE_FONT_PADDING, paragraphAttributes.includeFontPadding);
   builder.putString(PA_KEY_HYPHENATION_FREQUENCY, toString(paragraphAttributes.android_hyphenationFrequency));
+  builder.putString(PA_KEY_LINE_BREAK, toString(paragraphAttributes.lineBreak));
+  builder.putString(PA_KEY_WORD_BREAK, toString(paragraphAttributes.wordBreak));
   if (paragraphAttributes.textAlignVertical.has_value()) {
     builder.putString(PA_KEY_TEXT_ALIGN_VERTICAL, toString(*paragraphAttributes.textAlignVertical));
   }
   builder.putDouble(PA_KEY_MINIMUM_FONT_SIZE, paragraphAttributes.minimumFontSize);
+  builder.putDouble(PA_KEY_MINIMUM_FONT_SCALE, paragraphAttributes.minimumFontScale);
 
   return builder.build();
 }

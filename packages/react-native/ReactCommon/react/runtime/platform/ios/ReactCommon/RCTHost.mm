@@ -466,6 +466,12 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
   [_instance callFunctionOnJSModule:moduleName method:method args:args];
 }
 
+- (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker
+{
+  RCTInstance *instance = _instance;
+  return instance ? instance.jsCallInvoker : nullptr;
+}
+
 #pragma mark - RCTReloadListener
 
 - (void)didReceiveReloadCommand

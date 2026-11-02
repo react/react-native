@@ -48,7 +48,7 @@ void ImageFetcher::flushImageRequests() {
   }
 
   auto fabricUIManager_ =
-      contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
+      contextContainer_->at<jni::alias_ref<jobject>>("FabricUIManager");
   static auto prefetchResources =
       fabricUIManager_->getClass()
           ->getMethod<void(

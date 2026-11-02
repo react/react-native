@@ -24,8 +24,8 @@ export default function LogBoxNotificationDismissButton(props: {
       <LogBoxButton
         id={props.id}
         backgroundColor={{
-          default: LogBoxStyle.getTextColor(0.3),
-          pressed: LogBoxStyle.getTextColor(0.5),
+          default: LogBoxStyle.getTextColor(0.15),
+          pressed: LogBoxStyle.getTextColor(0.3),
         }}
         hitSlop={{
           top: 12,
@@ -64,6 +64,6 @@ const styles = StyleSheet.create({
   image: {
     height: 8,
     width: 8,
-    tintColor: LogBoxStyle.getBackgroundColor(1),
+    tintColor: LogBoxStyle.getTextColor(0.8),
   },
 });

@@ -122,6 +122,10 @@ def use_react_native! (
   # layers are still supported. Both will default to 1 in a future React Native release.
   ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] == '1' ? '1' : '0'
   ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] == '1' ? '1' : '0'
+  # Enforcing the C++ stable API is opt-in.
+  ENV['RN_STRICT_API'] = ENV['RN_STRICT_API'] == '1' ? '1' : '0'
+  # Silences the stable API's "for frameworks" warning.
+  ENV['RN_ALLOW_FRAMEWORKS'] = ENV['RN_ALLOW_FRAMEWORKS'] == '1' ? '1' : '0'
 
   ReactNativePodsUtils.check_minimum_required_xcode()
 
@@ -397,8 +401,11 @@ end
 # - url: The URL of the Swift Package Manager dependency
 # - requirement: The version requirement of the Swift Package Manager dependency (eg. ` {kind: 'upToNextMajorVersion', minimumVersion: '5.9.1'},`)
 # - products: The product/target of the Swift Package Manager dependency (eg. AlamofireDynamic)
-def spm_dependency(spec, url:, requirement:, products:)
-  SPM.dependency(spec, url: url, requirement: requirement, products: products)
+# - embed_frameworks: The names of the dynamic frameworks the products load, including those of the packages they depend
+#   on, embedded in the app (eg. Sentry for the Sentry-Dynamic product; MapboxCommon, MapboxCoreMaps and Turf for
+#   MapboxMaps). Defaults to the product names. A name that matches no framework is not reported
+def spm_dependency(spec, url:, requirement:, products:, embed_frameworks: products)
+  SPM.dependency(spec, url: url, requirement: requirement, products: products, embed_frameworks: embed_frameworks)
 end
 
 # It returns the default flags.
@@ -628,10 +635,13 @@ def react_native_post_install(
     build_rncore_from_source: ReactNativeCoreUtils.build_rncore_from_source()
   )
 
+  ReactNativePodsUtils.set_strict_cxx_api_flags(installer)
+
   ReactNativePodsUtils.set_ccache_compiler_and_linker_build_settings(installer, react_native_path, ccache_enabled)
   ReactNativePodsUtils.updateOSDeploymentTarget(installer)
   ReactNativePodsUtils.set_dynamic_frameworks_flags(installer)
   ReactNativePodsUtils.add_ndebug_flag_to_pods_in_release(installer)
+  ReactNativePodsUtils.set_optimization_level_for_react_native_pods(installer, react_native_path)
 
   if !ReactNativeCoreUtils.build_rncore_from_source()
     # The Xcode-26 SWIFT_ENABLE_EXPLICIT_MODULES=NO workaround (#53457) is removed:

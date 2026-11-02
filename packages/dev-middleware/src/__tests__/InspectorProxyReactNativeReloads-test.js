@@ -8,6 +8,7 @@
  * @format
  */
 
+import {WS_CLOSE_REASON} from '../inspector-proxy/Device';
 import {fetchJson} from './FetchUtils';
 import {createDebuggerMock} from './InspectorDebuggerUtils';
 import {createDeviceMock} from './InspectorDeviceUtils';
@@ -400,6 +401,52 @@ describe('inspector proxy React Native reloads', () => {
       device.close();
     }
   });
+
+  test.each([
+    ['with', true],
+    ['without', false],
+  ])(
+    "device disconnect event %s session ID closes the debugger connection when target has 'nativePageReloads' capability flag",
+    async (_, includeSessionId) => {
+      const {device, debugger_, sessionId} = await createAndConnectTarget(
+        serverRef,
+        autoCleanup.signal,
+        {
+          app: 'bar-app',
+          id: 'page1',
+          title: 'bar-title',
+          vm: 'bar-vm',
+          capabilities: {
+            nativePageReloads: true,
+          },
+        },
+      );
+      const debuggerClosed = new Promise<{code: number, reason: string}>(
+        resolve =>
+          debugger_.socket.once('close', (code: number, reason: Buffer) =>
+            resolve({code, reason: reason.toString()}),
+          ),
+      );
+
+      try {
+        device.send({
+          event: 'disconnect',
+          payload: {
+            pageId: 'page1',
+            ...(includeSessionId ? {sessionId} : {}),
+          },
+        });
+        expect(await debuggerClosed).toEqual({
+          code: 1000,
+          reason: WS_CLOSE_REASON.PAGE_REMOVED,
+        });
+        expect(debugger_.handle).not.toBeCalledWith({method: 'reload'});
+      } finally {
+        device.close();
+        debugger_.close();
+      }
+    },
+  );
 
   test("disabled when target has 'nativePageReloads' capability flag", async () => {
     let device1;

@@ -10,34 +10,50 @@
 package com.facebook.react.uimanager
 
 import android.os.Bundle
+import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.facebook.react.R
-import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
+import com.facebook.react.bridge.UIManager
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.common.UIManagerType
+import com.facebook.react.uimanager.events.Event
+import com.facebook.react.uimanager.events.EventDispatcher
+import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
-@Config(shadows = [ShadowArguments::class])
+@Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class ReactAccessibilityDelegateTest {
   private lateinit var view: ReactViewGroup
-  private lateinit var reactContext: BridgeReactContext
+  private lateinit var reactContext: ReactApplicationContext
   private lateinit var themedReactContext: ThemedReactContext
   private lateinit var accessibilityDelegate: ReactAccessibilityDelegate
 
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    reactContext = BridgeReactContext(RuntimeEnvironment.getApplication())
+    reactContext = spy(createTestReactApplicationContext())
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     view = ReactViewGroup(themedReactContext).apply { id = 100 }
     accessibilityDelegate = ReactAccessibilityDelegate(view, false, 0)
@@ -232,6 +248,59 @@ class ReactAccessibilityDelegateTest {
   }
 
   @Test
+  fun testPerformAccessibilityAction_setProgressAction_isExposedAndHandled() {
+    val accessibilityActions = JavaOnlyArray()
+    val action = JavaOnlyMap().apply { putString("name", "setProgress") }
+    accessibilityActions.pushMap(action)
+    view.setTag(R.id.accessibility_actions, accessibilityActions)
+
+    val nodeInfo = AccessibilityNodeInfoCompat.obtain()
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, nodeInfo)
+
+    assertThat(nodeInfo.actionList.map { it.id })
+        .contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_PROGRESS.id)
+
+    val args =
+        Bundle().apply { putFloat(AccessibilityNodeInfoCompat.ACTION_ARGUMENT_PROGRESS_VALUE, 42f) }
+    val eventDispatcher = mock<EventDispatcher>()
+    val uiManager = mock<UIManager>()
+    whenever(uiManager.eventDispatcher).thenReturn(eventDispatcher)
+    val uiManagerHelper = mockStatic(UIManagerHelper::class.java)
+    try {
+      doReturn(true).whenever(reactContext).hasActiveReactInstance()
+      uiManagerHelper
+          .`when`<UIManager?> {
+            UIManagerHelper.getUIManager(themedReactContext, UIManagerType.FABRIC)
+          }
+          .thenReturn(uiManager)
+
+      val result =
+          accessibilityDelegate.performAccessibilityAction(
+              view,
+              AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_PROGRESS.id,
+              args,
+          )
+
+      assertThat(result).isTrue()
+      val eventCaptor = argumentCaptor<Event<*>>()
+      verify(eventDispatcher).dispatchEvent(eventCaptor.capture())
+      val eventEmitter = mock<RCTEventEmitter>()
+      eventCaptor.firstValue.dispatch(eventEmitter)
+      val eventDataCaptor = argumentCaptor<WritableMap>()
+      verify(eventEmitter)
+          .receiveEvent(
+              eq(view.id),
+              eq(ReactAccessibilityDelegate.TOP_ACCESSIBILITY_ACTION_EVENT),
+              eventDataCaptor.capture(),
+          )
+      assertThat(eventDataCaptor.firstValue.getString("actionName")).isEqualTo("setProgress")
+      assertThat(eventDataCaptor.firstValue.getDouble("value")).isEqualTo(42.0)
+    } finally {
+      uiManagerHelper.close()
+    }
+  }
+
+  @Test
   fun testPerformAccessibilityAction_adjustableRoleWithTextValue_doesNotScheduleEvent() {
     val accessibilityActions = JavaOnlyArray()
     val action = JavaOnlyMap().apply { putString("name", "increment") }
@@ -354,6 +423,13 @@ class ReactAccessibilityDelegateTest {
     assertThat(role).isEqualTo(ReactAccessibilityDelegate.AccessibilityRole.TABBAR)
     assertThat(ReactAccessibilityDelegate.AccessibilityRole.getValue(role))
         .isEqualTo("android.view.View")
+  }
+
+  @Test
+  fun testAccessibilityRole_fromValue_invalidRole_returnsNone() {
+    val role = ReactAccessibilityDelegate.AccessibilityRole.fromValue("invalid-role")
+
+    assertThat(role).isEqualTo(ReactAccessibilityDelegate.AccessibilityRole.NONE)
   }
 
   @Test

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a4a8fa0d7080a4706e396b69a8495d41>>
+ * @generated SignedSource<<35e8175277baa31d135d802ef5a5e6f1>>
  */
 
 /**
@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <react/featureflags/ReactNativeFeatureFlagsProvider.h>
 
@@ -45,7 +45,19 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return true;
   }
 
+  bool deferTextInputTruncationIOS() override {
+    return false;
+  }
+
   bool disableEarlyViewCommandExecution() override {
+    return false;
+  }
+
+  bool disableIdleEventDispatchFrameCallbackRearmAndroid() override {
+    return false;
+  }
+
+  bool disableIdleMountItemFrameCallbackRearmAndroid() override {
     return false;
   }
 
@@ -82,14 +94,14 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
+    return true;
+  }
+
+  bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
     return false;
   }
 
   bool enableBridgelessArchitecture() override {
-    return true;
-  }
-
-  bool enableBufferedCallInvoker() override {
     return true;
   }
 
@@ -121,6 +133,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableFabricCommitBranchingMergeOnMainThread() override {
+    return false;
+  }
+
   bool enableFabricLogs() override {
     return false;
   }
@@ -129,8 +145,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    return true;
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    return false;
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -201,8 +217,12 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enablePreparedTextLayout() override {
+  bool enablePreallocatedPropsDiffOnInsertAndroid() override {
     return false;
+  }
+
+  bool enablePreparedTextLayout() override {
+    return true;
   }
 
   bool enablePropsUpdateReconciliationAndroid() override {
@@ -245,11 +265,15 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool fixDifferentiatorParentTagForUnflattenCase() override {
-    return true;
+  bool fixBorderlessRippleAndroid() override {
+    return false;
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
+    return false;
+  }
+
+  bool fixTextLayoutOnPixelDensityChange() override {
     return false;
   }
 
@@ -277,6 +301,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool keepTimersRunningWhileHostPausedAndroid() override {
+    return false;
+  }
+
   bool optimizedAnimatedPropUpdates() override {
     return false;
   }
@@ -294,7 +322,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   double preparedTextCacheSize() override {
-    return 200.0;
+    return 1000.0;
   }
 
   bool preventShadowTreeCommitExhaustion() override {
@@ -318,6 +346,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool skipActivityIdentityAssertionOnHostPause() override {
+    return false;
+  }
+
+  bool skipUnchangedChildrenInDifferentiator() override {
     return false;
   }
 
@@ -362,6 +394,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool useTurboModuleInterop() override {
+    return false;
+  }
+
+  bool useWindowDensityForDisplayMetricsAndroid() override {
     return false;
   }
 

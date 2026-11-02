@@ -153,7 +153,7 @@ function buildDiffUrl(oldVersion: string, newVersion: string) {
  * Returns the most recent React Native version available to upgrade to.
  */
 async function getLatestRnDiffPurgeVersion(): Promise<LatestVersions | void> {
-  const options: RequestOptions = {
+  const options: RequestInit = {
     // https://developer.github.com/v3/#user-agent-required
     headers: {'User-Agent': '@react-native/community-cli-plugin'} as Headers,
   };

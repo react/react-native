@@ -78,8 +78,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
 
 - (instancetype)initWithScrollView:(RCTScrollViewComponentView *)scrollView
 {
-  self = [super init];
-  if (self != nil) {
+  if (self = [super init]) {
     _virtualViews = [NSMutableSet set];
     _emptyRect = CGRectZero;
     _prerenderRect = CGRectZero;
@@ -143,7 +142,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
   NSArray<id<RCTVirtualViewProtocol>> *virtualViewsIt =
       (virtualView != nullptr) ? @[ virtualView ] : [_virtualViews allObjects];
 
-  for (id<RCTVirtualViewProtocol> vv = nullptr in virtualViewsIt) {
+  for (id<RCTVirtualViewProtocol> vv in virtualViewsIt) {
     CGRect rect = [vv containerRelativeRect:scrollView];
 
     RCTVirtualViewMode mode = RCTVirtualViewModeHidden;

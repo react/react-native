@@ -82,13 +82,13 @@ internal class ReactTextViewAccessibilityDelegate(
 
     if (span is ReactClickableSpan && hostView is TextView) {
       span.isKeyboardFocused = hasFocus
-      span.focusBgColor = (hostView as TextView).highlightColor
+      span.focusBgColor = hostView.highlightColor
       hostView.invalidate()
     } else if (hostView is PreparedLayoutTextView) {
       if (hasFocus) {
-        (hostView as PreparedLayoutTextView).setSelection(link.start, link.end)
+        hostView.setSelection(link.start, link.end)
       } else {
-        (hostView as PreparedLayoutTextView).clearSelection()
+        hostView.clearSelection()
       }
     }
   }
@@ -155,11 +155,11 @@ internal class ReactTextViewAccessibilityDelegate(
 
   private fun getLayoutFromHost(): Layout? {
     return if (hostView is PreparedLayoutTextView) {
-      (hostView as PreparedLayoutTextView).preparedLayout?.layout
-    } else if (hostView is ReactTextView && (hostView as ReactTextView).preparedLayout != null) {
-      (hostView as ReactTextView).preparedLayout?.layout
+      hostView.preparedLayout?.layout
+    } else if (hostView is ReactTextView && hostView.preparedLayout != null) {
+      hostView.preparedLayout?.layout
     } else if (hostView is TextView) {
-      (hostView as TextView).layout
+      hostView.layout
     } else {
       null
     }

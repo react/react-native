@@ -227,7 +227,7 @@ function getLocalImports(
       typeAnnotation.type === 'ArrayTypeAnnotation' &&
       typeAnnotation.elementType.type === 'ObjectTypeAnnotation'
     ) {
-      imports.add('#include <react/renderer/core/propsConversions.h>');
+      imports.add('#include <React/RendererCore.h>');
       const objectProps = typeAnnotation.elementType.properties;
       // $FlowFixMe[incompatible-type] the type is guaranteed to be ObjectTypeAnnotation<PropTypeAnnotation>
       const objectImports = getImports(objectProps);
@@ -240,7 +240,7 @@ function getLocalImports(
     }
 
     if (typeAnnotation.type === 'ObjectTypeAnnotation') {
-      imports.add('#include <react/renderer/core/propsConversions.h>');
+      imports.add('#include <React/RendererCore.h>');
       const objectImports = getImports(typeAnnotation.properties);
       const localImports = getLocalImports(typeAnnotation.properties);
       // $FlowFixMe[method-unbinding] added when improving typing for this parameters

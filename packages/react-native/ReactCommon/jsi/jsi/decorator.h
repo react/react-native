@@ -148,6 +148,31 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
   Instrumentation& instrumentation() override {
     return *this;
   }
+  Value createValueFromJsonUtf8(const uint8_t* json, size_t length) override {
+    return plain_.createValueFromJsonUtf8(json, length);
+  }
+
+  Value createError(const String& msg) override {
+    return plain().createError(msg);
+  }
+  Value createEvalError(const String& msg) override {
+    return plain().createEvalError(msg);
+  }
+  Value createRangeError(const String& msg) override {
+    return plain().createRangeError(msg);
+  }
+  Value createReferenceError(const String& msg) override {
+    return plain().createReferenceError(msg);
+  }
+  Value createSyntaxError(const String& msg) override {
+    return plain().createSyntaxError(msg);
+  }
+  Value createTypeError(const String& msg) override {
+    return plain().createTypeError(msg);
+  }
+  Value createURIError(const String& msg) override {
+    return plain().createURIError(msg);
+  }
 
  protected:
   // plain is generally going to be a reference to an object managed
@@ -241,6 +266,10 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
   }
   std::u16string utf16(const PropNameID& sym) override {
     return plain_.utf16(sym);
+  }
+
+  size_t length(const String& str) override {
+    return plain_.length(str);
   }
 
   void getStringData(
@@ -702,6 +731,35 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
     return RD::isInspectable();
   }
 
+  Value createError(const String& msg) override {
+    Around around{with_};
+    return RD::createError(msg);
+  }
+  Value createEvalError(const String& msg) override {
+    Around around{with_};
+    return RD::createEvalError(msg);
+  }
+  Value createRangeError(const String& msg) override {
+    Around around{with_};
+    return RD::createRangeError(msg);
+  }
+  Value createReferenceError(const String& msg) override {
+    Around around{with_};
+    return RD::createReferenceError(msg);
+  }
+  Value createSyntaxError(const String& msg) override {
+    Around around{with_};
+    return RD::createSyntaxError(msg);
+  }
+  Value createTypeError(const String& msg) override {
+    Around around{with_};
+    return RD::createTypeError(msg);
+  }
+  Value createURIError(const String& msg) override {
+    Around around{with_};
+    return RD::createURIError(msg);
+  }
+
   // The jsi:: prefix is necessary because MSVC compiler complains C2247:
   // Instrumentation is not accessible because RuntimeDecorator uses private
   // to inherit from Instrumentation.
@@ -820,6 +878,11 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
   std::u16string utf16(const PropNameID& sym) override {
     Around around{with_};
     return RD::utf16(sym);
+  }
+
+  size_t length(const String& str) override {
+    Around around{with_};
+    return RD::length(str);
   }
 
   void getStringData(
@@ -996,6 +1059,7 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
   }
   ArrayBuffer createArrayBuffer(
       std::shared_ptr<MutableBuffer> buffer) override {
+    Around around{with_};
     return RD::createArrayBuffer(std::move(buffer));
   }
   size_t size(const Array& a) override {

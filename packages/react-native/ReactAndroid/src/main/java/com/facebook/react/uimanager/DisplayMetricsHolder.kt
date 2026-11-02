@@ -14,6 +14,7 @@ import android.util.DisplayMetrics
 import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 
 /**
@@ -60,6 +61,13 @@ public object DisplayMetricsHolder {
     } catch (_: Exception) {
       // Non-visual contexts (e.g. Application) may throw on API 30+.
       // Falls back to resource display metrics copied via setTo() above.
+    }
+    if (
+        displayMetrics.densityDpi != screenDisplayMetrics.densityDpi &&
+            ReactNativeFeatureFlags.useWindowDensityForDisplayMetricsAndroid()
+    ) {
+      screenDisplayMetrics.density = displayMetrics.density
+      screenDisplayMetrics.densityDpi = displayMetrics.densityDpi
     }
     // Preserve fontScale from the configuration because getRealMetrics() returns
     // physical display metrics without the system font scale setting.

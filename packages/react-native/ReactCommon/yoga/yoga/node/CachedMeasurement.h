@@ -25,6 +25,9 @@ struct CachedMeasurement {
   float computedWidth{-1};
   float computedHeight{-1};
 
+  float ownerWidth{-1};
+  float ownerHeight{-1};
+
   bool operator==(CachedMeasurement measurement) const {
     bool isEqual = widthSizingMode == measurement.widthSizingMode &&
         heightSizingMode == measurement.heightSizingMode;
@@ -44,6 +47,14 @@ struct CachedMeasurement {
     if (!yoga::isUndefined(computedHeight) ||
         !yoga::isUndefined(measurement.computedHeight)) {
       isEqual = isEqual && computedHeight == measurement.computedHeight;
+    }
+    if (!yoga::isUndefined(ownerWidth) ||
+        !yoga::isUndefined(measurement.ownerWidth)) {
+      isEqual = isEqual && ownerWidth == measurement.ownerWidth;
+    }
+    if (!yoga::isUndefined(ownerHeight) ||
+        !yoga::isUndefined(measurement.ownerHeight)) {
+      isEqual = isEqual && ownerHeight == measurement.ownerHeight;
     }
 
     return isEqual;

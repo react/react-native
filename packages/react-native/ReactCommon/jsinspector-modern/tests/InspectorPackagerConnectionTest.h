@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "FollyDynamicMatchers.h"
 #include "InspectorMocks.h"
 #include "UniquePtrFactory.h"
 
@@ -79,6 +80,22 @@ class InspectorPackagerConnectionTestBase : public testing::Test {
       }
     }
     ::testing::Test::TearDown();
+  }
+
+  /**
+   * Expects a `disconnect` event for the given page and session to be sent
+   * over webSockets_[0].
+   */
+  void expectDisconnectSentToPackager(int pageId, const std::string &sessionId = "")
+  {
+    EXPECT_CALL(
+        *webSockets_[0],
+        send(JsonParsed(
+            testing::AllOf(
+                AtJsonPtr("/event", testing::Eq("disconnect")),
+                AtJsonPtr("/payload/pageId", testing::Eq(std::to_string(pageId))),
+                AtJsonPtr("/payload/sessionId", testing::Eq(sessionId))))))
+        .RetiresOnSaturation();
   }
 
   MockInspectorPackagerConnectionDelegate *packagerConnectionDelegate()

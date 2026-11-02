@@ -7,11 +7,13 @@
 
 #include "FabricMountingManager.h"
 
+#include "AnimatedPropBufferEncoder.h"
 #include "EventEmitterWrapper.h"
 #include "MountItem.h"
 #include "StateWrapperImpl.h"
 
 #include <cxxreact/TraceSection.h>
+#include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/jni/ReadableNativeArray.h>
 #include <react/jni/ReadableNativeMap.h>
@@ -26,8 +28,10 @@
 #include <glog/logging.h>
 
 #include <algorithm>
+#include <array>
 #include <cfenv>
 #include <cmath>
+#include <string_view>
 #include <vector>
 
 namespace facebook::react {
@@ -45,7 +49,11 @@ FabricMountingManager::~FabricMountingManager() {
 void FabricMountingManager::onSurfaceStart(SurfaceId surfaceId) {
   std::lock_guard lock(allocatedViewsMutex_);
   allocatedViewRegistry_.emplace(
-      surfaceId, std::unordered_set<Tag>({surfaceId}));
+      surfaceId,
+      std::unordered_map<Tag, AllocatedView>{
+          {surfaceId,
+           {.preallocatedProps = nullptr,
+            .state = AllocatedViewState::Mounted}}});
 }
 
 void FabricMountingManager::onSurfaceStop(SurfaceId surfaceId) {
@@ -75,7 +83,7 @@ namespace {
 // List of layout-only props extracted from ViewProps.kt used to filter out
 // component props from Props 1.5 to validate the Props 2.0 output
 inline bool isLayoutOnlyProp(const std::string& propName) {
-  static const std::vector<std::string> layoutOnlyProps = {
+  static constexpr std::array<std::string_view, 46> layoutOnlyProps = {
       // Flexbox Alignment
       "alignItems",
       "alignSelf",
@@ -140,8 +148,10 @@ inline bool isLayoutOnlyProp(const std::string& propName) {
       // Other
       "collapsable",
   };
-  return std::find(layoutOnlyProps.begin(), layoutOnlyProps.end(), propName) !=
-      layoutOnlyProps.end();
+  return std::find(
+             layoutOnlyProps.begin(),
+             layoutOnlyProps.end(),
+             std::string_view{propName}) != layoutOnlyProps.end();
 }
 #endif
 
@@ -310,6 +320,11 @@ inline float scale(Float value, Float pointScaleFactor) {
   return result;
 }
 
+bool shouldDiffInsertPropsAgainstPreallocatedProps() {
+  return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid() &&
+      ReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid();
+}
+
 jni::local_ref<jobject> getProps(
     const ShadowView& oldShadowView,
     const ShadowView& newShadowView) {
@@ -359,22 +374,23 @@ jni::local_ref<jobject> getProps(
 }
 
 struct InstructionBuffer {
-  JNIEnv* env;
-  jintArray ints;
+  InstructionBuffer(int intsSize, int objectsSize)
+      : objects(jni::JArrayClass<jobject>::newArray(objectsSize)) {
+    ints.reserve(intsSize);
+  }
+
+  std::vector<jint> ints;
   jni::local_ref<jni::JArrayClass<jobject>> objects;
 
-  int intsPosition = 0;
   int objectsPosition = 0;
 
   inline void writeInt(int value) {
-    env->SetIntArrayRegion(ints, intsPosition, 1, &value);
-    intsPosition += 1;
+    ints.push_back(value);
   }
 
   template <size_t N>
   inline void writeIntArray(const std::array<int, N>& buffer) {
-    env->SetIntArrayRegion(ints, intsPosition, N, buffer.data());
-    intsPosition += N;
+    ints.insert(ints.end(), buffer.begin(), buffer.end());
   }
 
   inline void writeObject(jobject obj) {
@@ -591,6 +607,8 @@ void FabricMountingManager::executeMount(
 
   bool maintainMutationOrder =
       ReactNativeFeatureFlags::disableMountItemReorderingAndroid();
+  bool updateViewsOnDensityChange =
+      ReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange();
 
   auto revisionNumber = telemetry.getRevisionNumber();
 
@@ -607,12 +625,12 @@ void FabricMountingManager::executeMount(
     std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
 
     auto allocatedViewsIterator = allocatedViewRegistry_.find(surfaceId);
-    auto defaultAllocatedViews = std::unordered_set<Tag>{};
+    auto defaultAllocatedViews = std::unordered_map<Tag, AllocatedView>{};
     // Do not remove `defaultAllocatedViews` or initialize
-    // `std::unordered_set<Tag>{}` inline in below ternary expression - if falsy
-    // operand is a value type, the compiler will decide the expression to be a
-    // value type, an unnecessary (sometimes expensive) copy will happen as a
-    // result.
+    // `std::unordered_map<Tag, AllocatedView>{}` inline in below ternary
+    // expression - if falsy operand is a value type, the compiler will decide
+    // the expression to be a value type, an unnecessary (sometimes expensive)
+    // copy will happen as a result.
     auto& allocatedViewTags =
         allocatedViewsIterator != allocatedViewRegistry_.end()
         ? allocatedViewsIterator->second
@@ -632,13 +650,18 @@ void FabricMountingManager::executeMount(
       bool isVirtual = mutation.mutatedViewIsVirtual();
       switch (mutationType) {
         case ShadowViewMutation::Create: {
-          bool shouldCreateView =
-              !allocatedViewTags.contains(newChildShadowView.tag);
+          auto [allocatedView, shouldCreateView] =
+              allocatedViewTags.try_emplace(
+                  newChildShadowView.tag,
+                  AllocatedView{
+                      .preallocatedProps = nullptr,
+                      .state = AllocatedViewState::Mounted});
 
           if (shouldCreateView) {
             cppCommonMountItems.push_back(
                 CppMountItem::CreateMountItem(newChildShadowView));
-            allocatedViewTags.insert(newChildShadowView.tag);
+          } else {
+            allocatedView->second.state = AllocatedViewState::Mounted;
           }
           break;
         }
@@ -680,12 +703,19 @@ void FabricMountingManager::executeMount(
                       CppMountItem::UpdateStateMountItem(newChildShadowView));
             }
 
+            bool pointScaleChanged = updateViewsOnDensityChange &&
+                oldChildShadowView.layoutMetrics.pointScaleFactor !=
+                    newChildShadowView.layoutMetrics.pointScaleFactor;
+
             // Padding: padding mountItems must be executed before layout props
             // are updated in the view. This is necessary to ensure that events
             // (resulting from layout changes) are dispatched with the correct
             // padding information.
             if (oldChildShadowView.layoutMetrics.contentInsets !=
-                newChildShadowView.layoutMetrics.contentInsets) {
+                    newChildShadowView.layoutMetrics.contentInsets ||
+                (pointScaleChanged &&
+                 newChildShadowView.layoutMetrics.contentInsets !=
+                     EdgeInsets::ZERO)) {
               (maintainMutationOrder ? cppCommonMountItems
                                      : cppUpdatePaddingMountItems)
                   .push_back(
@@ -705,8 +735,11 @@ void FabricMountingManager::executeMount(
             // children of the current view. The layout of current view may not
             // change, and we separate this part from layout mount items to not
             // pack too much data there.
-            if ((oldChildShadowView.layoutMetrics.overflowInset !=
-                 newChildShadowView.layoutMetrics.overflowInset)) {
+            if (oldChildShadowView.layoutMetrics.overflowInset !=
+                    newChildShadowView.layoutMetrics.overflowInset ||
+                (pointScaleChanged &&
+                 newChildShadowView.layoutMetrics.overflowInset !=
+                     EdgeInsets::ZERO)) {
               (maintainMutationOrder ? cppCommonMountItems
                                      : cppUpdateOverflowInsetMountItems)
                   .push_back(
@@ -732,19 +765,35 @@ void FabricMountingManager::executeMount(
                 CppMountItem::InsertMountItem(
                     parentTag, newChildShadowView, index));
 
-            bool shouldCreateView =
-                !allocatedViewTags.contains(newChildShadowView.tag);
+            auto allocatedView = allocatedViewTags.find(newChildShadowView.tag);
+            bool shouldCreateView = allocatedView == allocatedViewTags.end();
             if (ReactNativeFeatureFlags::
                     enableAccumulatedUpdatesInRawPropsAndroid()) {
               if (shouldCreateView) {
                 LOG(ERROR) << "Emitting insert for unallocated view "
                            << newChildShadowView.tag;
               }
-              (maintainMutationOrder ? cppCommonMountItems
-                                     : cppUpdatePropsMountItems)
-                  .push_back(
-                      CppMountItem::UpdatePropsMountItem(
-                          {}, newChildShadowView));
+              if (shouldCreateView ||
+                  !shouldDiffInsertPropsAgainstPreallocatedProps()) {
+                (maintainMutationOrder ? cppCommonMountItems
+                                       : cppUpdatePropsMountItems)
+                    .push_back(
+                        CppMountItem::UpdatePropsMountItem(
+                            {}, newChildShadowView));
+              } else if (auto& preallocatedProps =
+                             allocatedView->second.preallocatedProps;
+                         preallocatedProps != nullptr) {
+                if (preallocatedProps != newChildShadowView.props) {
+                  auto preallocatedShadowView = newChildShadowView;
+                  preallocatedShadowView.props = preallocatedProps;
+                  (maintainMutationOrder ? cppCommonMountItems
+                                         : cppUpdatePropsMountItems)
+                      .push_back(
+                          CppMountItem::UpdatePropsMountItem(
+                              preallocatedShadowView, newChildShadowView));
+                }
+                preallocatedProps = nullptr;
+              }
             } else {
               if (shouldCreateView) {
                 LOG(ERROR) << "Emitting insert for unallocated view "
@@ -862,11 +911,7 @@ void FabricMountingManager::executeMount(
 
   // Allocate the intBuffer and object array, now that we know exact sizes
   // necessary
-  InstructionBuffer buffer = {
-      .env = env,
-      .ints = env->NewIntArray(batchMountItemIntsSize),
-      .objects = jni::JArrayClass<jobject>::newArray(batchMountItemObjectsSize),
-  };
+  InstructionBuffer buffer(batchMountItemIntsSize, batchMountItemObjectsSize);
 
   // Fill in arrays
   int prevMountItemType = -1;
@@ -996,6 +1041,13 @@ void FabricMountingManager::executeMount(
     }
   }
 
+  // Copy the ints to Java in a single JNI call, rather than one per write
+  react_native_assert(
+      static_cast<int>(buffer.ints.size()) == batchMountItemIntsSize);
+  jintArray ints = env->NewIntArray(static_cast<jsize>(buffer.ints.size()));
+  env->SetIntArrayRegion(
+      ints, 0, static_cast<jsize>(buffer.ints.size()), buffer.ints.data());
+
   static auto createMountItemsIntBufferBatchContainer =
       JFabricUIManager::javaClassStatic()
           ->getMethod<jni::alias_ref<JMountItem>(
@@ -1006,7 +1058,7 @@ void FabricMountingManager::executeMount(
       surfaceId,
       // If there are no items, we pass a nullptr instead of passing the
       // object through the JNI
-      batchMountItemIntsSize > 0 ? buffer.ints : nullptr,
+      batchMountItemIntsSize > 0 ? ints : nullptr,
       batchMountItemObjectsSize > 0 ? buffer.objects.get() : nullptr,
       revisionNumber);
 
@@ -1026,19 +1078,46 @@ void FabricMountingManager::executeMount(
       telemetry.getAffectedLayoutNodesCount(),
       static_cast<jboolean>(synchronous));
 
-  env->DeleteLocalRef(buffer.ints);
+  env->DeleteLocalRef(ints);
 }
 
 void FabricMountingManager::drainPreallocateViewsQueue() {
+  std::vector<QueuedView> queuedViews;
   std::vector<ShadowView> shadowViews;
 
   {
     std::lock_guard lock(preallocateMutex_);
-    std::swap(shadowViews, preallocatedViewsQueue_);
+    std::swap(queuedViews, preallocatedViewsQueue_);
+  }
+
+  bool pullModel =
+      ReactNativeFeatureFlags::enableMountingCoordinatorPullModelAndroid();
+  {
+    std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
+    for (auto& [shadowView, family] : queuedViews) {
+      if (pullModel && family.expired()) {
+        continue;
+      }
+      auto allocatedViewsIterator =
+          allocatedViewRegistry_.find(shadowView.surfaceId);
+      if (allocatedViewsIterator != allocatedViewRegistry_.end() &&
+          allocatedViewsIterator->second
+              .emplace(
+                  shadowView.tag,
+                  AllocatedView{
+                      .preallocatedProps =
+                          shouldDiffInsertPropsAgainstPreallocatedProps()
+                          ? shadowView.props
+                          : nullptr,
+                      .state = AllocatedViewState::Preallocated})
+              .second) {
+        shadowViews.push_back(std::move(shadowView));
+      }
+    }
   }
 
   for (const auto& shadowView : shadowViews) {
-    preallocateShadowView(shadowView);
+    preallocateRegisteredView(shadowView);
   }
 }
 
@@ -1046,6 +1125,12 @@ void FabricMountingManager::destroyUnmountedShadowNode(
     const ShadowNodeFamily& family) {
   auto tag = family.getTag();
   auto surfaceId = family.getSurfaceId();
+  bool pullModel =
+      ReactNativeFeatureFlags::enableMountingCoordinatorPullModelAndroid();
+
+  if (!pullModel && family.hasBeenMounted()) {
+    return;
+  }
 
   // Remove from allocatedViewRegistry so that executeMount does not skip
   // the Create mount item for this tag. Without this, if the view was
@@ -1056,7 +1141,20 @@ void FabricMountingManager::destroyUnmountedShadowNode(
   {
     std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
     auto allocatedViewsIterator = allocatedViewRegistry_.find(surfaceId);
-    if (allocatedViewsIterator != allocatedViewRegistry_.end()) {
+    if (pullModel) {
+      if (allocatedViewsIterator == allocatedViewRegistry_.end()) {
+        return;
+      }
+      auto allocatedView = allocatedViewsIterator->second.find(tag);
+      // In the pull model, a committed family can have a preallocated view that
+      // no mount created (its Create and Delete were never pulled), and a
+      // mounted view's family can be destroyed before its Delete is pulled.
+      if (allocatedView == allocatedViewsIterator->second.end() ||
+          allocatedView->second.state != AllocatedViewState::Preallocated) {
+        return;
+      }
+      allocatedViewsIterator->second.erase(allocatedView);
+    } else if (allocatedViewsIterator != allocatedViewRegistry_.end()) {
       allocatedViewsIterator->second.erase(tag);
     }
   }
@@ -1087,27 +1185,15 @@ void FabricMountingManager::maybePreallocateShadowNode(
 
   {
     std::lock_guard lock(preallocateMutex_);
-    preallocatedViewsQueue_.push_back(std::move(shadowView));
+    preallocatedViewsQueue_.push_back(
+        {.shadowView = std::move(shadowView),
+         .family = shadowNode.getFamilyShared()});
   }
 }
 
-void FabricMountingManager::preallocateShadowView(
+void FabricMountingManager::preallocateRegisteredView(
     const ShadowView& shadowView) {
-  TraceSection section("FabricMountingManager::preallocateShadowView");
-
-  {
-    std::lock_guard lock(allocatedViewsMutex_);
-    auto allocatedViewsIterator =
-        allocatedViewRegistry_.find(shadowView.surfaceId);
-    if (allocatedViewsIterator == allocatedViewRegistry_.end()) {
-      return;
-    }
-    const auto [_, inserted] =
-        allocatedViewsIterator->second.insert(shadowView.tag);
-    if (!inserted) {
-      return;
-    }
-  }
+  TraceSection section("FabricMountingManager::preallocateRegisteredView");
 
   bool isLayoutableShadowNode = shadowView.layoutMetrics != EmptyLayoutMetrics;
 
@@ -1239,6 +1325,34 @@ void FabricMountingManager::synchronouslyUpdateViewOnUIThread(
   auto propsMap = reinterpret_cast<ReadableMap::javaobject>(
       ReadableNativeMap::newObjectCxxArgs(props).release());
   synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap);
+}
+
+void FabricMountingManager::synchronouslyUpdateAnimatedProps(
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  TraceSection s(
+      "FabricMountingManager::synchronouslyUpdateAnimatedProps",
+      "viewCount",
+      updates.size());
+  static auto synchronouslyUpdateViewBatchJNI =
+      JFabricUIManager::javaClassStatic()
+          ->getMethod<void(jintArray, jdoubleArray, jni::jtypeArray<jobject>)>(
+              "synchronouslyUpdateViewBatch");
+  auto buffer = encodeAnimatedProps(updates);
+  auto ints = jni::JArrayInt::newArray(buffer.ints.size());
+  ints->setRegion(
+      0, static_cast<jsize>(buffer.ints.size()), buffer.ints.data());
+  auto doubles = jni::JArrayDouble::newArray(buffer.doubles.size());
+  doubles->setRegion(
+      0, static_cast<jsize>(buffer.doubles.size()), buffer.doubles.data());
+  auto rawProps = jni::JArrayClass<jobject>::newArray(buffer.rawProps.size());
+  for (size_t i = 0; i < buffer.rawProps.size(); i++) {
+    rawProps->setElement(
+        i,
+        ReadableNativeMap::newObjectCxxArgs(std::move(buffer.rawProps[i]))
+            .get());
+  }
+  synchronouslyUpdateViewBatchJNI(
+      javaUIManager_, ints.get(), doubles.get(), rawProps.get());
 }
 
 void FabricMountingManager::captureViewSnapshot(Tag tag, SurfaceId surfaceId) {

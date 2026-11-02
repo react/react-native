@@ -34,10 +34,10 @@ function extractNativeModuleName(filename: string): string {
 export type ParserErrorCapturer = <T>(fn: () => T) => ?T;
 
 // $FlowFixMe[unclear-type] there's no flowtype for ASTs
-export type PropAST = Object;
+export type PropAST = any;
 
 // $FlowFixMe[unclear-type] there's no flowtype for ASTs
-export type ASTNode = Object;
+export type ASTNode = any;
 
 function createParserErrorCapturer(): [
   Array<ParserError>,

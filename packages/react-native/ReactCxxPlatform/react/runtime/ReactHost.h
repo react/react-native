@@ -9,8 +9,8 @@
 
 #include "ReactInstanceConfig.h"
 
-#include <ReactCommon/CallInvoker.h>
-#include <ReactCommon/TurboModule.h>
+#include <React/CallInvoker.h>
+#include <React/NativeModuleCore.h>
 #include <cxxreact/MessageQueueThread.h>
 #include <react/logging/DefaultLogger.h>
 #include <react/nativemodule/JavaScriptModule.h>

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <ReactCommon/CallInvoker.h>
+#include <React/CallInvoker.h>
 #include <fbjni/fbjni.h>
 #include <memory>
 

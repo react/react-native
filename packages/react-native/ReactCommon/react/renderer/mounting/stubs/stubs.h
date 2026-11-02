@@ -9,7 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/core/ShadowNode.h>
+#include <React/RendererCore.h>
 #include <react/renderer/mounting/stubs/StubView.h>
 #include <react/renderer/mounting/stubs/StubViewTree.h>
 

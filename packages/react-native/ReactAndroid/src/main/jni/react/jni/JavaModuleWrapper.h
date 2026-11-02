@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <cxxreact/NativeModule.h>
 #include <fbjni/fbjni.h>
 #include <optional>

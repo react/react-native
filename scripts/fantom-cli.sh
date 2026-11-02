@@ -6,6 +6,30 @@
 
 set -e
 
+case "${1:-}" in
+  -h|--help)
+    cat <<'EOF'
+Usage: yarn fantom-cli [options] [script.js]
+
+Run JavaScript with Hermes inside the Fantom runtime.
+With no arguments, start an interactive REPL.
+
+Options:
+  -h, --help          Show this help and exit.
+  -e, --eval <code>   Evaluate JavaScript and exit.
+
+Examples:
+  yarn fantom-cli
+  yarn fantom-cli -e 'console.log(1 + 1)'
+  yarn fantom-cli path/to/script.js
+
+Script paths must be inside the React Native repository.
+The REPL provides React, ReactNative, and Fantom as globals. Use Ctrl-D to exit.
+EOF
+    exit 0
+    ;;
+esac
+
 if [[ -f "BUCK" && -z "$FANTOM_FORCE_OSS_BUILD" ]]; then
   export JS_DIR='..'
 else

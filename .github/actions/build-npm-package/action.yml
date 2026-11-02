@@ -19,14 +19,14 @@ runs:
       run: git config --global --add safe.directory '*'
     - name: Download ReactNativeDependencies
       if: ${{ inputs.skip-apple-prebuilts != 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         pattern: ReactNativeDependencies*
         path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts
         merge-multiple: true
     - name: Download ReactCore artifacts
       if: ${{ inputs.skip-apple-prebuilts != 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         pattern: ReactCore*
         path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts
@@ -35,7 +35,7 @@ runs:
     # ReactNativeDependencies* pattern above; ReactNativeHeaders* needs its own.
     - name: Download ReactNativeHeaders artifacts
       if: ${{ inputs.skip-apple-prebuilts != 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         pattern: ReactNativeHeaders*
         path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts
@@ -77,7 +77,7 @@ runs:
         fi
         node ./scripts/releases-ci/publish-npm.js -t ${{ inputs.release-type }}
     - name: Upload npm logs
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       with:
         name: npm-logs
         path: ~/.npm/_logs
@@ -92,7 +92,7 @@ runs:
 
         echo "$FILENAME" > build/react-native-package-version
     - name: Upload release package
-      uses: actions/upload-artifact@v6
+      uses: ./.github/actions/upload-artifact
       if: ${{ inputs.release-type == 'dry-run' }}
       with:
         name: react-native-package

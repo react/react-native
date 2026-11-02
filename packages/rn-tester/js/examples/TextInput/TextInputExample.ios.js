@@ -22,7 +22,6 @@ import TextInputSharedExamples from './TextInputSharedExamples';
 import * as React from 'react';
 import {useRef} from 'react';
 import {
-  Alert,
   Button,
   InputAccessoryView,
   StyleSheet,
@@ -571,25 +570,6 @@ const textInputExamples: Array<RNTesterModuleExample> = [
               multiline={true}
             />
           </WithLabel>
-        </View>
-      );
-    },
-  },
-  {
-    title: 'Multiline blur on submit',
-    render: function (): React.Node {
-      return (
-        <View>
-          <ExampleTextInput
-            style={styles.multiline}
-            placeholder="blurOnSubmit = true"
-            returnKeyType="next"
-            blurOnSubmit={true}
-            multiline={true}
-            onSubmitEditing={event =>
-              Alert.alert('Alert', event.nativeEvent.text)
-            }
-          />
         </View>
       );
     },

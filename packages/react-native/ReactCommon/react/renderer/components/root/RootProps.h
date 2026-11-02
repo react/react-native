@@ -9,12 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <memory>
-
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/LayoutConstraints.h>
-#include <react/renderer/core/LayoutContext.h>
-#include <react/renderer/core/PropsParserContext.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 
 namespace facebook::react {
 

@@ -8,9 +8,13 @@
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
 #import <Foundation/Foundation.h>
-#import <react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h>
+#import <UIKit/UIKit.h>
+#include <folly/dynamic.h>
+#include <string>
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class RCTLegacyViewManagerInteropCoordinator;
 
 @interface RCTLegacyViewManagerInteropCoordinatorAdapter : NSObject
 

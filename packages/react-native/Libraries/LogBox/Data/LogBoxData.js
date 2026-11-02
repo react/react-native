@@ -476,7 +476,7 @@ export function withSubscription(
     }
 
     _subscription: ?Subscription;
-    _updateStateOnMountTimeoutId: ?TimeoutID;
+    _updateStateOnMountTimeoutId: ?ReturnType<typeof setTimeout>;
 
     state: LogBoxStateSubscriptionState = {
       hasError: false,

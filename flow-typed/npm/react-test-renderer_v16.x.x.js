@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 // Type definitions for react-test-renderer 16.x.x
 // Ported from: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react-test-renderer
 
@@ -78,7 +85,7 @@ declare module 'react-test-renderer/shallow' {
   declare export default class ShallowRenderer {
     static createRenderer(): ShallowRenderer;
     getMountedInstance(): ReactTestInstance;
-    getRenderOutput<E: React.MixedElement>(): E;
+    getRenderOutput<E extends React.MixedElement>(): E;
     getRenderOutput(): React.MixedElement;
     render(element: React.MixedElement, context?: any): void;
     unmount(): void;

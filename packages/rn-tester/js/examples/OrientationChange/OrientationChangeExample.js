@@ -23,7 +23,7 @@ const OrientationChangeExample = (): React.Node => {
   });
 
   useEffect(() => {
-    const onOrientationChange = (orientation: Object) => {
+    const onOrientationChange = (orientation: any) => {
       setState({
         currentOrientation: orientation.name,
         orientationDegrees: orientation.rotationDegrees,

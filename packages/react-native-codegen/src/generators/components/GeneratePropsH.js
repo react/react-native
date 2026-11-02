@@ -561,8 +561,7 @@ function getExtendsImports(
 ): Set<string> {
   const imports: Set<string> = new Set();
 
-  imports.add('#include <react/renderer/core/PropsParserContext.h>');
-  imports.add('#include <react/renderer/debug/DebugStringConvertible.h>');
+  imports.add('#include <React/RendererCore.h>');
 
   extendsProps.forEach(extendProps => {
     switch (extendProps.type) {

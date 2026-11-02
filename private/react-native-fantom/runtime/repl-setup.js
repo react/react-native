@@ -364,7 +364,7 @@ function reportJSON(message: interface {}): void {
   }
   // Force the import of the native module to be lazy.
   const NativeFantom =
-    require('react-native/src/private/testing/fantom/specs/NativeFantom').default;
+    require('../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom').default;
   NativeFantom.reportTestSuiteResultsJSON(json);
 }
 

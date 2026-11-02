@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include "TraceEvent.h"
 
+#include <React/Timing.h>
 #include <jsinspector-modern/tracing/FrameTimingSequence.h>
-#include <react/timing/primitives.h>
 
 #include <cstdint>
 #include <utility>

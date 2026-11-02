@@ -89,11 +89,6 @@ static NSString *const kBundlePath = @"js/RNTesterApp.ios";
   [RCTLinkingManager scene:scene continueUserActivity:userActivity];
 }
 
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  return [self bundleURL];
-}
-
 - (NSURL *)bundleURL
 {
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];
@@ -123,6 +118,9 @@ static NSString *const kBundlePath = @"js/RNTesterApp.ios";
   NSMutableDictionary *dict = [super thirdPartyFabricComponents].mutableCopy;
   if (!dict[@"RNTMyNativeView"]) {
     dict[@"RNTMyNativeView"] = NSClassFromString(@"RNTMyNativeViewComponentView");
+  }
+  if (!dict[@"RNTesterTabsIOS"]) {
+    dict[@"RNTesterTabsIOS"] = NSClassFromString(@"RNTesterTabsIOSComponentView");
   }
   if (!dict[@"SampleNativeComponent"]) {
     dict[@"SampleNativeComponent"] = NSClassFromString(@"RCTSampleNativeComponentComponentView");

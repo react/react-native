@@ -28,6 +28,7 @@
 #import <React/RCTUtils.h>
 #import <ReactCommon/CxxTurboModuleUtils.h>
 #import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
+#import <ReactCommon/TurboModuleBinding.h>
 #import <ReactCommon/TurboModulePerfLogger.h>
 
 using namespace facebook;
@@ -41,7 +42,7 @@ static char kAssociatedMethodQueueKey;
 namespace {
 int32_t getUniqueId()
 {
-  static std::atomic<int32_t> counter{0};
+  static constinit std::atomic<int32_t> counter{0};
   return counter++;
 }
 

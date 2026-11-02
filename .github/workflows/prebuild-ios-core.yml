@@ -60,7 +60,7 @@ jobs:
             node ./scripts/releases/set-rn-artifacts-version.js --build-type "${{ inputs.version-type }}"
           fi
       - name: Download ReactNativeDependencies
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
           path: /tmp/third-party/
@@ -96,12 +96,12 @@ jobs:
           cd packages/react-native
           node scripts/ios-prebuild -b -f "${{ matrix.flavor }}" -p "${{ matrix.slice }}"
       - name: Upload headers
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-ios-core-headers-${{ matrix.flavor }}-${{ matrix.slice }}
           path: packages/react-native/.build/headers
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}
           path: |
@@ -145,21 +145,21 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Download slice artifacts
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           pattern: prebuild-ios-core-slice-${{ matrix.flavor }}-*
           path: packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
           merge-multiple: true
       - name: Download headers
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           pattern: prebuild-ios-core-headers-${{ matrix.flavor }}-*
           path: packages/react-native/.build/headers
           merge-multiple: true
       - name: Download ReactNativeDependencies
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
           path: /tmp/third-party/
@@ -245,17 +245,17 @@ jobs:
           cp packages/react-native/.build/output/xcframeworks/${{matrix.flavor}}/ReactNativeHeaders.xcframework.tar.gz \
             packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
       - name: Upload XCFramework Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.xcframework.tar.gz
       - name: Upload dSYM Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactCore${{ matrix.flavor }}.framework.dSYM.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
       - name: Upload ReactNativeHeaders XCFramework Artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: ReactNativeHeaders${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz

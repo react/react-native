@@ -19,9 +19,23 @@
   static dispatch_once_t nativeComponentsToken;
 
   dispatch_once(&nativeComponentsToken, ^{
-    thirdPartyComponents = @{
+    NSDictionary<NSString *, NSString *> * componentMapping = @{
 {thirdPartyComponentsMapping}
     };
+
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithCapacity:componentMapping.count];
+
+    for (NSString *key in componentMapping) {
+      // Nil for a library this target does not link (an app extension, macOS).
+      Class klass = NSClassFromString(componentMapping[key]);
+      if (!klass) {
+        continue;
+      }
+
+      [dict setObject:klass forKey:key];
+    }
+
+    thirdPartyComponents = dict;
   });
 
   return thirdPartyComponents;

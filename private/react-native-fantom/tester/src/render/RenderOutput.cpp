@@ -50,7 +50,10 @@ folly::dynamic RenderOutput::renderView(
   folly::dynamic props = folly::dynamic::object;
 #endif
 
-  if (std::string_view(view.componentName) == "Paragraph") {
+  // SelectableParagraph shares ParagraphState with Paragraph; render its text
+  // the same way so selectable text stays observable in test output.
+  if (std::string_view(view.componentName) == "Paragraph" ||
+      std::string_view(view.componentName) == "SelectableParagraph") {
     const auto& state =
         static_cast<const ConcreteState<ParagraphState>&>(*view.state);
     element["children"] =

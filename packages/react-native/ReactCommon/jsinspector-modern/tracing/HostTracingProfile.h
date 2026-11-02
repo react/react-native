@@ -13,7 +13,7 @@
 #include "InstanceTracingProfile.h"
 #include "RuntimeSamplingProfile.h"
 
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 
 #include <vector>
 

@@ -9,12 +9,20 @@
  */
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
+import type {SafeAreaInsetsChangeEvent} from '../../Types/CoreEventTypes';
 import type {ViewProps} from './ViewPropTypes';
 
 import TextAncestorContext from '../../Text/TextAncestorContext';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
 import {use} from 'react';
+
+const warnOnRepeatedSafeAreaInsetsChanges: (
+  onSafeAreaInsetsChange: (event: SafeAreaInsetsChangeEvent) => unknown,
+) => (event: SafeAreaInsetsChangeEvent) => unknown = __DEV__
+  ? require('../../../src/private/components/view/warnOnRepeatedSafeAreaInsetsChanges')
+      .default
+  : onSafeAreaInsetsChange => onSafeAreaInsetsChange;
 
 export type ViewInstance = HostInstance;
 
@@ -42,6 +50,7 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
     'aria-live': ariaLive,
+    'aria-modal': ariaModal,
     'aria-selected': ariaSelected,
     'aria-valuemax': ariaValueMax,
     'aria-valuemin': ariaValueMin,
@@ -66,6 +75,10 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
   if (ariaLive !== undefined) {
     resolvedProps.accessibilityLiveRegion =
       ariaLive === 'off' ? 'none' : ariaLive;
+  }
+
+  if (ariaModal !== undefined) {
+    resolvedProps.accessibilityViewIsModal = ariaModal;
   }
 
   if (ariaHidden !== undefined) {
@@ -113,6 +126,15 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
       now: ariaValueNow ?? accessibilityValue?.now,
       text: ariaValueText ?? accessibilityValue?.text,
     };
+  }
+
+  if (__DEV__) {
+    const onSafeAreaInsetsChange =
+      resolvedProps.experimental_onSafeAreaInsetsChange;
+    if (onSafeAreaInsetsChange != null) {
+      resolvedProps.experimental_onSafeAreaInsetsChange =
+        warnOnRepeatedSafeAreaInsetsChanges(onSafeAreaInsetsChange);
+    }
   }
 
   const actualView =

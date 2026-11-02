@@ -9,9 +9,9 @@
 
 #import <UIKit/UIKit.h>
 
+#import <React/RendererCore.h>
 #import <react/renderer/attributedstring/AttributedString.h>
 #import <react/renderer/attributedstring/ParagraphAttributes.h>
-#import <react/renderer/core/LayoutConstraints.h>
 #import <react/renderer/textlayoutmanager/TextLayoutContext.h>
 #import <react/renderer/textlayoutmanager/TextMeasureCache.h>
 
@@ -29,7 +29,7 @@ using RCTTextLayoutFragmentEnumerationBlock =
  */
 @interface RCTTextLayoutManager : NSObject
 
-- (facebook::react::TextMeasurement)measureAttributedString:(facebook::react::AttributedString)attributedString
+- (facebook::react::TextMeasurement)measureAttributedString:(const facebook::react::AttributedString &)attributedString
                                         paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                                               layoutContext:(facebook::react::TextLayoutContext)layoutContext
                                           layoutConstraints:(facebook::react::LayoutConstraints)layoutConstraints;
@@ -39,23 +39,23 @@ using RCTTextLayoutFragmentEnumerationBlock =
                                                 layoutContext:(facebook::react::TextLayoutContext)layoutContext
                                             layoutConstraints:(facebook::react::LayoutConstraints)layoutConstraints;
 
-- (void)drawAttributedString:(facebook::react::AttributedString)attributedString
+- (void)drawAttributedString:(const facebook::react::AttributedString &)attributedString
          paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                        frame:(CGRect)frame
            drawHighlightPath:(void (^_Nullable)(UIBezierPath *highlightPath))block;
 
-- (facebook::react::LinesMeasurements)getLinesForAttributedString:(facebook::react::AttributedString)attributedString
-                                              paragraphAttributes:
-                                                  (facebook::react::ParagraphAttributes)paragraphAttributes
-                                                             size:(CGSize)size;
+- (facebook::react::LinesMeasurements)
+    getLinesForAttributedString:(const facebook::react::AttributedString &)attributedString
+            paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                           size:(CGSize)size;
 
 - (std::shared_ptr<const facebook::react::EventEmitter>)
-    getEventEmitterWithAttributeString:(facebook::react::AttributedString)attributedString
+    getEventEmitterWithAttributeString:(const facebook::react::AttributedString &)attributedString
                    paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                                  frame:(CGRect)frame
                                atPoint:(CGPoint)point;
 
-- (void)getRectWithAttributedString:(facebook::react::AttributedString)attributedString
+- (void)getRectWithAttributedString:(const facebook::react::AttributedString &)attributedString
                 paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                  enumerateAttribute:(NSString *)enumerateAttribute
                               frame:(CGRect)frame

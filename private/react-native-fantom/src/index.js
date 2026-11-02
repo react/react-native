@@ -8,39 +8,43 @@
  * @format
  */
 
+import type {DisplayMetrics} from '../../../packages/react-native/Libraries/Utilities/Dimensions';
 import type {HostPlatform} from './Constants';
 import type {
   FantomRenderedOutput,
   RenderOutputConfig,
 } from './getFantomRenderedOutput';
 import type {MixedElement} from 'react';
-import type {RootTag} from 'react-native';
-import type ReactNativeDocument from 'react-native/src/private/webapis/dom/nodes/ReactNativeDocument';
+import type {HostInstance, RootTag} from 'react-native';
 
+import NativeFantom, {
+  NativeEventCategory,
+} from '../../../packages/react-native/src/private/testing/fantom/specs/NativeFantom';
 import * as Benchmark from './Benchmark';
 import {getConstants} from './Constants';
 import getFantomRenderedOutput from './getFantomRenderedOutput';
-import {LogBox} from 'react-native';
-import ErrorUtils from 'react-native/Libraries/vendor/core/ErrorUtils';
-import NativeFantom, {
-  NativeEventCategory,
-} from 'react-native/src/private/testing/fantom/specs/NativeFantom';
+import {Dimensions, LogBox} from 'react-native';
 import {
-  getInstanceHandle,
-  getNativeNodeReference,
-} from 'react-native/src/private/webapis/dom/nodes/internals/NodeInternals';
-import ReadOnlyNode from 'react-native/src/private/webapis/dom/nodes/ReadOnlyNode';
+  getInternalInstanceHandleFromPublicInstance,
+  getNodeFromPublicInstance,
+} from 'react-native/react-private-interface';
 
 const nativeRuntimeScheduler = global.nativeRuntimeScheduler;
 const {unstable_scheduleCallback, unstable_ImmediatePriority} =
   nativeRuntimeScheduler;
+const ErrorUtils = global.ErrorUtils;
 
-type NodeOrRef = ReadOnlyNode | Readonly<{current: ?ReadOnlyNode}>;
+interface NodeLike {
+  readonly nodeType: number;
+}
+
+type NodeOrRef = NodeLike | Readonly<{current: ?NodeLike}>;
 
 export type RootConfig = {
   viewportWidth?: number,
   viewportHeight?: number,
   devicePixelRatio?: number,
+  fontScale?: number,
   viewportOffsetX?: number,
   viewportOffsetY?: number,
 };
@@ -61,6 +65,51 @@ export function getHostPlatform(): HostPlatform {
 const DEFAULT_VIEWPORT_WIDTH = 390;
 const DEFAULT_VIEWPORT_HEIGHT = 844;
 const DEFAULT_DEVICE_PIXEL_RATIO = 3;
+const DEFAULT_FONT_SCALE = 1;
+const activeRootDisplayMetrics = new Map<RootTag, DisplayMetrics>();
+
+function setDefaultDisplayMetrics(): void {
+  const displayMetrics = {
+    width: DEFAULT_VIEWPORT_WIDTH,
+    height: DEFAULT_VIEWPORT_HEIGHT,
+    scale: DEFAULT_DEVICE_PIXEL_RATIO,
+    fontScale: DEFAULT_FONT_SCALE,
+  };
+  Dimensions.set({window: displayMetrics, screen: displayMetrics});
+}
+
+setDefaultDisplayMetrics();
+
+function pushDimensions(
+  surfaceId: RootTag,
+  displayMetrics: DisplayMetrics,
+): void {
+  const previousDisplayMetrics = Dimensions.get('window');
+  activeRootDisplayMetrics.set(surfaceId, displayMetrics);
+  Dimensions.set({window: displayMetrics, screen: displayMetrics});
+  if (
+    activeRootDisplayMetrics.size > 1 &&
+    (previousDisplayMetrics.width !== displayMetrics.width ||
+      previousDisplayMetrics.height !== displayMetrics.height ||
+      previousDisplayMetrics.scale !== displayMetrics.scale ||
+      previousDisplayMetrics.fontScale !== displayMetrics.fontScale)
+  ) {
+    console.warn(
+      'Fantom.createRoot() updated global Dimensions while another active root has different display metrics. Dimensions and PixelRatio now reflect the new root.',
+      {existingRoot: previousDisplayMetrics, newRoot: displayMetrics},
+    );
+  }
+}
+
+function popDimensions(surfaceId: RootTag): void {
+  activeRootDisplayMetrics.delete(surfaceId);
+  const displayMetrics = Array.from(activeRootDisplayMetrics.values()).pop();
+  if (displayMetrics != null) {
+    Dimensions.set({window: displayMetrics, screen: displayMetrics});
+  } else {
+    setDefaultDisplayMetrics();
+  }
+}
 
 class Root {
   #surfaceId: RootTag;
@@ -69,13 +118,15 @@ class Root {
   #viewportOffsetX: number;
   #viewportOffsetY: number;
   #devicePixelRatio: number;
-  #document: ?ReactNativeDocument;
+  #fontScale: number;
+  #document: ?Document;
 
   constructor(config?: RootConfig) {
     this.#viewportWidth = config?.viewportWidth ?? DEFAULT_VIEWPORT_WIDTH;
     this.#viewportHeight = config?.viewportHeight ?? DEFAULT_VIEWPORT_HEIGHT;
     this.#devicePixelRatio =
       config?.devicePixelRatio ?? DEFAULT_DEVICE_PIXEL_RATIO;
+    this.#fontScale = config?.fontScale ?? DEFAULT_FONT_SCALE;
     this.#viewportOffsetX = config?.viewportOffsetX ?? 0;
     this.#viewportOffsetY = config?.viewportOffsetY ?? 0;
 
@@ -83,13 +134,21 @@ class Root {
       this.#viewportWidth,
       this.#viewportHeight,
       this.#devicePixelRatio,
+      this.#fontScale,
       this.#viewportOffsetX,
       this.#viewportOffsetY,
     );
+
+    pushDimensions(this.#surfaceId, {
+      width: this.#viewportWidth,
+      height: this.#viewportHeight,
+      scale: this.#devicePixelRatio,
+      fontScale: this.#fontScale,
+    });
   }
 
   // $FlowExpectedError[unsafe-getters-setters]
-  get document(): ReactNativeDocument {
+  get document(): Document {
     if (this.#document == null) {
       throw new Error(
         'Cannot get `document` from root because it has not been rendered.',
@@ -106,19 +165,16 @@ class Root {
       );
     }
 
-    // Require Fabric lazily to prevent it from running InitializeCore before the test
+    // Require the renderer lazily to prevent it from running InitializeCore before the test
     // has a change to do its environment setup.
-    const ReactFabric =
-      require('react-native/Libraries/Renderer/shims/ReactFabric').default;
+    const {Renderer} = require('react-native/unstable-internals-do-not-use');
 
-    // $FlowExpectedError[incompatible-type]
-    const surfaceIdIsNumber = this.#surfaceId as number;
-    ReactFabric.render(element, surfaceIdIsNumber, null, true);
+    Renderer.renderElement({element, rootTag: this.#surfaceId});
 
     if (this.#document == null) {
       this.#document =
         // $FlowExpectedError[incompatible-type] We know that `getPublicInstanceFromRootTag` returns `ReactNativeDocument | null` in Fantom.
-        ReactFabric.getPublicInstanceFromRootTag(surfaceIdIsNumber);
+        Renderer.getPublicInstanceFromRootTag(this.#surfaceId);
     }
   }
 
@@ -129,6 +185,7 @@ class Root {
   destroy() {
     // TODO: check for leaks.
     NativeFantom.stopSurface(this.#surfaceId);
+    popDimensions(this.#surfaceId);
     NativeFantom.flushMessageQueue();
     this.#document = null;
   }
@@ -146,7 +203,7 @@ class Root {
 
 export type {Root};
 
-export {NativeEventCategory} from 'react-native/src/private/testing/fantom/specs/NativeFantom';
+export {NativeEventCategory};
 
 const DEFAULT_TASK_PRIORITY = unstable_ImmediatePriority;
 
@@ -258,7 +315,7 @@ export function unstable_getDirectManipulationProps(
   [string]: unknown,
 }> {
   const node = getNode(nodeOrRef);
-  const shadowNode = getNativeNodeReference(node);
+  const shadowNode = getNodeFromPublicInstance(node);
   return NativeFantom.getDirectManipulationProps(shadowNode);
 }
 
@@ -266,7 +323,7 @@ export function unstable_getFabricUpdateProps(nodeOrRef: NodeOrRef): Readonly<{
   [string]: unknown,
 }> {
   const node = getNode(nodeOrRef);
-  const shadowNode = getNativeNodeReference(node);
+  const shadowNode = getNodeFromPublicInstance(node);
   return NativeFantom.getFabricUpdateProps(shadowNode);
 }
 
@@ -280,7 +337,7 @@ export function getDefinedEventHandlers(
   nodeOrRef: NodeOrRef,
 ): ReadonlyArray<string> {
   const node = getNode(nodeOrRef);
-  const instanceHandle = getInstanceHandle(node);
+  const instanceHandle = getInternalInstanceHandleFromPublicInstance(node);
   if (typeof instanceHandle !== 'object' || instanceHandle == null) {
     return [];
   }
@@ -479,7 +536,7 @@ export function enqueueNativeEvent(
   options?: Readonly<{category?: NativeEventCategory, isUnique?: boolean}>,
 ) {
   const node = getNode(nodeOrRef);
-  const shadowNode = getNativeNodeReference(node);
+  const shadowNode = getNodeFromPublicInstance(node);
   NativeFantom.enqueueNativeEvent(
     shadowNode,
     type,
@@ -573,7 +630,7 @@ export function enqueueScrollEvent(
   options: ScrollEventOptions,
 ) {
   const node = getNode(nodeOrRef);
-  const shadowNode = getNativeNodeReference(node);
+  const shadowNode = getNodeFromPublicInstance(node);
   NativeFantom.enqueueScrollEvent(shadowNode, options);
 }
 
@@ -647,7 +704,7 @@ export function enqueueModalSizeUpdate(
   size: Readonly<{width: number, height: number}>,
 ) {
   const node = getNode(nodeOrRef);
-  const shadowNode = getNativeNodeReference(node);
+  const shadowNode = getNodeFromPublicInstance(node);
   NativeFantom.enqueueModalSizeUpdate(shadowNode, size.width, size.height);
 }
 
@@ -669,7 +726,7 @@ export function createShadowNodeReferenceCounter(
   nodeOrRef: NodeOrRef,
 ): () => number {
   const node = getNode(nodeOrRef);
-  const shadowNode = getNativeNodeReference(node);
+  const shadowNode = getNodeFromPublicInstance(node);
   return NativeFantom.createShadowNodeReferenceCounter(shadowNode);
 }
 
@@ -683,7 +740,7 @@ export function createShadowNodeRevisionGetter(
   nodeOrRef: NodeOrRef,
 ): () => ?number {
   const node = getNode(nodeOrRef);
-  const shadowNode = getNativeNodeReference(node);
+  const shadowNode = getNodeFromPublicInstance(node);
   return NativeFantom.createShadowNodeRevisionGetter(shadowNode);
 }
 
@@ -748,14 +805,21 @@ function runLogBoxCheck() {
   }
 }
 
-function getNode(nodeOrRef: NodeOrRef): ReadOnlyNode {
-  if (nodeOrRef instanceof ReadOnlyNode) {
-    return nodeOrRef;
-  } else if (nodeOrRef.current != null) {
-    return nodeOrRef.current;
+function getNode(nodeOrRef: NodeOrRef): HostInstance {
+  let node: ?NodeLike;
+  if ('nodeType' in nodeOrRef) {
+    node = nodeOrRef;
   } else {
+    node = nodeOrRef.current;
+  }
+
+  if (node == null) {
     throw new TypeError('Could not get node from ref');
   }
+
+  // $FlowFixMe[incompatible-type] React Native's global nodes are backed by HostInstance.
+  const hostInstance: HostInstance = node;
+  return hostInstance;
 }
 
 global.__FANTOM_PACKAGE_LOADED__ = true;

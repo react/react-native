@@ -234,7 +234,7 @@ internal class CxxInspectorPackagerConnection(
       SoLoader.loadLibrary("react_devsupportjni")
     }
 
-    @VisibleForTesting internal const val MAX_QUEUE_SIZE = 16L * 1024 * 1024 // 16MiB
+    @VisibleForTesting internal const val MAX_QUEUE_SIZE: Long = 16L * 1024 * 1024 // 16MiB
 
     @JvmStatic
     private external fun initHybrid(

@@ -14,6 +14,8 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.util.DisplayMetrics
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowNativeLoader
 import com.facebook.testutils.shadows.ShadowSoLoader
 import kotlin.math.abs
@@ -36,6 +38,7 @@ class PixelUtilTest {
 
   @Before
   fun setUp() {
+    ReactNativeFeatureFlagsForTests.setUp()
     context = RuntimeEnvironment.getApplication()
     DisplayMetricsHolder.setScreenDisplayMetrics(null)
   }
@@ -43,6 +46,7 @@ class PixelUtilTest {
   @After
   fun tearDown() {
     DisplayMetricsHolder.setScreenDisplayMetrics(null)
+    ReactNativeFeatureFlags.dangerouslyReset()
   }
 
   @Test

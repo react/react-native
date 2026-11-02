@@ -155,6 +155,14 @@ class AdjustingFontSize extends React.Component<
         </RNTesterText>
 
         <RNTesterText
+          numberOfLines={1}
+          adjustsFontSizeToFit={true}
+          minimumFontScale={0.5}
+          style={{fontSize: 40, marginVertical: 6}}>
+          Can limit how small the text becomes with minimumFontScale
+        </RNTesterText>
+
+        <RNTesterText
           adjustsFontSizeToFit={true}
           numberOfLines={1}
           style={{fontSize: 30, marginVertical: 6}}>
@@ -523,6 +531,18 @@ function MaxFontSizeMultiplierExample(props: {}): React.Node {
       <Text allowFontScaling={true} maxFontSizeMultiplier={1}>
         <Text maxFontSizeMultiplier={0}>Ignore inherited max (no max)</Text>
       </Text>
+      <Text
+        allowFontScaling={true}
+        maxFontSizeMultiplier={1}
+        style={{
+          marginTop: 10,
+          lineHeight: 20,
+          letterSpacing: 1,
+          backgroundColor: 'lightgray',
+        }}>
+        lineHeight and letterSpacing are capped too (max 1x): these lines keep
+        the same spacing at any system font size
+      </Text>
     </View>
   );
 }
@@ -583,6 +603,38 @@ function HyphenationExample(props: {}): React.Node {
         <RNTesterText style={{color: 'red'}}>Full: </RNTesterText>
         WillHaveAHyphenWhenBreakingForNewLine
       </RNTesterText>
+    </>
+  );
+}
+
+const LINE_BREAK_SAMPLE =
+  'キャッシュをチェックしてショートカットからコンピューターのメモリーをクリーンアップします。';
+
+function LineBreakExample(props: {}): React.Node {
+  // Each paragraph has a background so that a mismatch between the measured
+  // height and the drawn lines is visible. Requires Android 13 (API 33).
+  return (
+    <>
+      {(['auto', 'loose', 'normal', 'strict'] as const).map(lineBreak => (
+        <View key={lineBreak} style={{marginBottom: 8}}>
+          <RNTesterText style={{color: 'red'}}>
+            lineBreak="{lineBreak}"
+          </RNTesterText>
+          <RNTesterText lineBreak={lineBreak} style={styles.lineBreakSample}>
+            {LINE_BREAK_SAMPLE}
+          </RNTesterText>
+        </View>
+      ))}
+      {(['normal', 'auto-phrase'] as const).map(wordBreak => (
+        <View key={wordBreak} style={{marginBottom: 8}}>
+          <RNTesterText style={{color: 'red'}}>
+            wordBreak="{wordBreak}"
+          </RNTesterText>
+          <RNTesterText wordBreak={wordBreak} style={styles.lineBreakSample}>
+            {LINE_BREAK_SAMPLE}
+          </RNTesterText>
+        </View>
+      ))}
     </>
   );
 }
@@ -1440,6 +1492,13 @@ const examples = [
     },
   },
   {
+    title: 'Line break (lineBreak, wordBreak)',
+    name: 'lineBreak',
+    render(): React.Node {
+      return <LineBreakExample />;
+    },
+  },
+  {
     title: 'Padding',
     name: 'padding',
     render(): React.Node {
@@ -1922,6 +1981,11 @@ const styles = StyleSheet.create({
   },
   wrappedText: {
     maxWidth: 300,
+  },
+  lineBreakSample: {
+    backgroundColor: '#eee',
+    fontSize: 16,
+    width: 150,
   },
 });
 

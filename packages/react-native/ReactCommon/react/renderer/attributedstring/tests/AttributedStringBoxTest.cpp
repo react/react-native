@@ -30,6 +30,18 @@ TEST(AttributedStringBoxTest, testValueConstructor) {
   EXPECT_EQ(attributedStringBox.getValue(), attributedString);
 }
 
+TEST(AttributedStringBoxTest, testValueMoveConstructor) {
+  auto attributedString = AttributedString{};
+  auto fragment = AttributedString::Fragment{};
+  fragment.string = "test string";
+  attributedString.appendFragment(std::move(fragment));
+  auto expectedAttributedString = attributedString;
+  auto attributedStringBox = AttributedStringBox{std::move(attributedString)};
+
+  EXPECT_EQ(attributedStringBox.getMode(), AttributedStringBox::Mode::Value);
+  EXPECT_EQ(attributedStringBox.getValue(), expectedAttributedString);
+}
+
 TEST(AttributedStringBoxTest, testOpaquePointerConstructor) {
   auto string = std::make_shared<std::string>("test string");
   auto attributedStringBox = AttributedStringBox{string};

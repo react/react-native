@@ -9,11 +9,12 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/scrollview/primitives.h>
-#include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/core/PropsParserContext.h>
 
 #include <optional>
+#include <vector>
 
 namespace facebook::react {
 
@@ -40,7 +41,13 @@ class BaseScrollViewProps : public ViewProps {
   bool automaticallyAdjustContentInsets{};
   bool automaticallyAdjustsScrollIndicatorInsets{true};
   bool automaticallyAdjustKeyboardInsets{false};
-  Float decelerationRate{0.998f};
+#ifdef ANDROID
+  // ReactScrollView's initial rate.
+  static constexpr Float kDefaultDecelerationRate = 0.985f;
+#else
+  static constexpr Float kDefaultDecelerationRate = 0.998f;
+#endif
+  Float decelerationRate{kDefaultDecelerationRate};
   Float endDraggingSensitivityMultiplier{1};
   bool directionalLockEnabled{};
   ScrollViewIndicatorStyle indicatorStyle{};
@@ -56,13 +63,14 @@ class BaseScrollViewProps : public ViewProps {
   bool showsVerticalScrollIndicator{true};
   bool persistentScrollbar{false};
   bool horizontal{false};
+  bool padsContentForSafeArea{false};
   Float scrollEventThrottle{};
   Float zoomScale{1.0f};
   EdgeInsets contentInset{};
   Point contentOffset{};
   EdgeInsets scrollIndicatorInsets{};
   Float snapToInterval{};
-  ScrollViewSnapToAlignment snapToAlignment{};
+  std::optional<ScrollViewSnapToAlignment> snapToAlignment{};
   bool disableIntervalMomentum{false};
   std::vector<Float> snapToOffsets{};
   bool snapToStart{true};

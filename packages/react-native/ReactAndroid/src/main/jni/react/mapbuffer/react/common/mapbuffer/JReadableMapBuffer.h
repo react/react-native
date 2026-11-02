@@ -7,9 +7,9 @@
 
 #pragma once
 
+#include <React/Debug.h>
+#include <React/MapBuffer.h>
 #include <fbjni/fbjni.h>
-#include <react/debug/react_native_assert.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
 
 #include <fbjni/ByteBuffer.h>
 

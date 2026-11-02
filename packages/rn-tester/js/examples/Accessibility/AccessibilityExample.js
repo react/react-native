@@ -1251,13 +1251,13 @@ class FakeSliderExampleForAccessibilityValue extends React.Component<
 }
 
 class AnnounceForAccessibility extends React.Component<{}> {
-  _handleOnPress = (): TimeoutID =>
+  _handleOnPress = (): ReturnType<typeof setTimeout> =>
     setTimeout(
       () => AccessibilityInfo.announceForAccessibility('Announcement Test'),
       1000,
     );
 
-  _handleOnPressQueued = (): TimeoutID =>
+  _handleOnPressQueued = (): ReturnType<typeof setTimeout> =>
     setTimeout(
       () =>
         AccessibilityInfo.announceForAccessibilityWithOptions(
@@ -1593,6 +1593,11 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
               optionName={'Invert Colors'}
               optionChecker={AccessibilityInfo.isInvertColorsEnabled}
               notification={'invertColorsChanged'}
+            />
+            <DisplayOptionStatusExample
+              optionName={'Show Borders'}
+              optionChecker={AccessibilityInfo.isShowBordersEnabled}
+              notification={'showBordersChanged'}
             />
             <DisplayOptionStatusExample
               optionName={'Reduce Transparency'}

@@ -57,6 +57,18 @@ TEST(
   EXPECT_FALSE(withNaN == withFinite);
 }
 
+// minimumFontScale defaults to NaN, meaning "unset"; an instance with a scale
+// must compare unequal to one without.
+TEST(
+    ParagraphAttributesTest,
+    testOperatorEqualsNaNVsFiniteMinimumFontScaleComparesUnequal) {
+  ParagraphAttributes unset{};
+  ParagraphAttributes withScale{};
+  withScale.minimumFontScale = 0.5f;
+
+  EXPECT_FALSE(unset == withScale);
+}
+
 // textAlignVertical is a std::optional; operator== must treat "unset" and
 // "set" as distinct, independent of the wrapped value.
 TEST(
@@ -79,6 +91,40 @@ TEST(ParagraphAttributesTest, testOperatorEqualsIncludesTextWidthMode) {
 
 TEST(ParagraphAttributesTest, testAutoTextWidthModeSerializesAsAuto) {
   EXPECT_EQ(toString(TextWidthMode::Auto), "auto");
+}
+
+TEST(ParagraphAttributesTest, testOperatorEqualsIncludesLineBreakAndWordBreak) {
+  ParagraphAttributes defaults{};
+  ParagraphAttributes strict{};
+  strict.lineBreak = LineBreak::Strict;
+  ParagraphAttributes phrase{};
+  phrase.wordBreak = WordBreak::AutoPhrase;
+
+  EXPECT_FALSE(defaults == strict);
+  EXPECT_FALSE(defaults == phrase);
+  EXPECT_NE(
+      std::hash<ParagraphAttributes>{}(defaults),
+      std::hash<ParagraphAttributes>{}(strict));
+}
+
+TEST(
+    ParagraphAttributesTest,
+    testLineBreakAndWordBreakDefaultToCssInitialValues) {
+  ParagraphAttributes defaults{};
+
+  EXPECT_EQ(defaults.lineBreak, LineBreak::Auto);
+  EXPECT_EQ(defaults.wordBreak, WordBreak::Normal);
+}
+
+// The Android TextLayoutManager parses these strings, so they must match the
+// values accepted from JavaScript.
+TEST(ParagraphAttributesTest, testLineBreakAndWordBreakSerializeToPropValues) {
+  EXPECT_EQ(toString(LineBreak::Auto), "auto");
+  EXPECT_EQ(toString(LineBreak::Loose), "loose");
+  EXPECT_EQ(toString(LineBreak::Normal), "normal");
+  EXPECT_EQ(toString(LineBreak::Strict), "strict");
+  EXPECT_EQ(toString(WordBreak::Normal), "normal");
+  EXPECT_EQ(toString(WordBreak::AutoPhrase), "auto-phrase");
 }
 
 } // namespace facebook::react

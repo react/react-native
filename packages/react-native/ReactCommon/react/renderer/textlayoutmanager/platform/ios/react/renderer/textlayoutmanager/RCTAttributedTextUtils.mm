@@ -205,7 +205,8 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
   }
 
-  if (textAttributes.backgroundColor || !isnan(textAttributes.opacity)) {
+  // A clear background draws nothing, but TextKit still computes and fills its rects on every draw.
+  if (textAttributes.backgroundColor && textAttributes.backgroundColor != clearColor()) {
     attributes[NSBackgroundColorAttributeName] = RCTEffectiveBackgroundColorFromTextAttributes(textAttributes);
   }
 
@@ -217,8 +218,8 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   // Paragraph Style
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
-  const bool isRTL = textAttributes.layoutDirection == LayoutDirection::RightToLeft;
-  if (textAttributes.alignment.has_value() || isRTL) {
+  if (textAttributes.alignment.has_value() || textAttributes.layoutDirection.has_value()) {
+    const bool isRTL = textAttributes.layoutDirection == LayoutDirection::RightToLeft;
     TextAlignment textAlignment =
         RCTResolveTextAlignment(textAttributes.alignment.value_or(TextAlignment::Natural), isRTL);
 
@@ -405,6 +406,9 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
     const AttributedString::Fragment &fragment,
     UIImage *placeholderImage)
 {
+  NSString *string;
+  NSMutableDictionary<NSAttributedStringKey, id> *attributes;
+
   if (fragment.isAttachment()) {
     auto layoutMetrics = fragment.parentShadowView.layoutMetrics;
     CGRect bounds = {
@@ -415,41 +419,28 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
     attachment.image = placeholderImage;
     attachment.bounds = bounds;
 
-    return [[NSMutableAttributedString attributedStringWithAttachment:attachment] mutableCopy];
+    string = [NSString stringWithFormat:@"%C", (unichar)NSAttachmentCharacter];
+    attributes = [NSMutableDictionary dictionaryWithObject:attachment forKey:NSAttachmentAttributeName];
   } else {
     NSString *decoded = [[NSString alloc] initWithBytes:fragment.string.data()
                                                  length:fragment.string.size()
                                                encoding:NSUTF8StringEncoding];
-    NSString *string = decoded != nil ? decoded : @"";
+    string = decoded != nil ? decoded : @"";
 
     if (fragment.textAttributes.textTransform.has_value()) {
       auto textTransform = fragment.textAttributes.textTransform.value();
       string = RCTNSStringFromStringApplyingTextTransform(string, textTransform);
     }
 
-    return [[NSMutableAttributedString alloc]
-        initWithString:string
-            attributes:RCTNSTextAttributesFromTextAttributes(fragment.textAttributes)];
+    attributes = RCTNSTextAttributesFromTextAttributes(fragment.textAttributes);
   }
-}
 
-static NSMutableAttributedString *RCTNSAttributedStringFragmentWithAttributesFromFragment(
-    const AttributedString::Fragment &fragment,
-    UIImage *placeholderImage)
-{
-  auto nsAttributedStringFragment = RCTNSAttributedStringFragmentFromFragment(fragment, placeholderImage);
-
+  // Set with the initial attributes; adding it afterwards would re-split the runs.
   if (fragment.parentShadowView.componentHandle) {
-    auto eventEmitterWrapper = RCTWrapEventEmitter(fragment.parentShadowView.eventEmitter);
-
-    NSDictionary<NSAttributedStringKey, id> *additionalTextAttributes =
-        @{RCTAttributedStringEventEmitterKey : eventEmitterWrapper};
-
-    [nsAttributedStringFragment addAttributes:additionalTextAttributes
-                                        range:NSMakeRange(0, nsAttributedStringFragment.length)];
+    attributes[RCTAttributedStringEventEmitterKey] = RCTWrapEventEmitter(fragment.parentShadowView.eventEmitter);
   }
 
-  return nsAttributedStringFragment;
+  return [[NSMutableAttributedString alloc] initWithString:string attributes:attributes];
 }
 
 NSAttributedString *RCTNSAttributedStringFromAttributedString(const AttributedString &attributedString)
@@ -464,9 +455,9 @@ NSAttributedString *RCTNSAttributedStringFromAttributedString(const AttributedSt
 
   [nsAttributedString beginEditing];
 
-  for (auto fragment : attributedString.getFragments()) {
+  for (const auto &fragment : attributedString.getFragments()) {
     NSMutableAttributedString *nsAttributedStringFragment =
-        RCTNSAttributedStringFragmentWithAttributesFromFragment(fragment, placeholderImage);
+        RCTNSAttributedStringFragmentFromFragment(fragment, placeholderImage);
 
     [nsAttributedString appendAttributedString:nsAttributedStringFragment];
   }

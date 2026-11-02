@@ -137,8 +137,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
       }
     }
 
-    // Ignore key commands (except escape) when there's an active responder
-    if (!firstResponder) {
+    // When there's an active responder, ignore key commands that don't use a
+    // shortcut modifier (Command/Control/Option) so that typing into a focused
+    // view (e.g. a text field) isn't intercepted. Shift and Caps Lock don't
+    // count here since they're part of normal text input. Commands with a
+    // shortcut modifier (e.g. Cmd+D to open the Dev Menu) should still fire.
+    UIKeyModifierFlags shortcutModifiers = UIKeyModifierCommand | UIKeyModifierControl | UIKeyModifierAlternate;
+    if (!firstResponder || (modifierFlags & shortcutModifiers) != 0) {
       [self RCT_handleKeyCommand:modifiedInput flags:modifierFlags];
     }
   }

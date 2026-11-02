@@ -7,16 +7,15 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <react/renderer/components/view/LayoutConformanceProps.h>
-#include <react/renderer/components/view/YogaLayoutableShadowNode.h>
 
 namespace facebook::react {
 
 // NOLINTNEXTLINE(facebook-hte-CArray,modernize-avoid-c-arrays)
-constexpr const char LayoutConformanceShadowNodeComponentName[] = "LayoutConformance";
+extern const char LayoutConformanceShadowNodeComponentName[];
 
 class LayoutConformanceShadowNode final : public ConcreteShadowNode<
                                               LayoutConformanceShadowNodeComponentName,

@@ -50,7 +50,12 @@ let package = Package(
             path: "ReactCodegen",
             exclude: ["ReactCodegen.podspec"],
             publicHeadersPath: ".",
-            cSettings: [.headerSearchPath("headers")],
+            // Release builds at -O2 to match CocoaPods and Android; Xcode defaults
+            // Release to -Os. cSettings covers .m sources, cxxSettings .mm/.cpp.
+            cSettings: [
+                .headerSearchPath("headers"),
+                .unsafeFlags(["-O2"], .when(configuration: .release)),
+            ],
             // DEBUG/NDEBUG match the prebuilt React.framework's config-gated C++
             // ABI: NDEBUG (Release) strips DebugStringConvertible's vtable and
             // shifts the ShadowNode layout that codegen'd Props inherit, so this
@@ -61,6 +66,11 @@ let package = Package(
                 .headerSearchPath("headers"),
                 .define("DEBUG", .when(configuration: .debug)),
                 .define("NDEBUG", .when(configuration: .release)),
+                // Generated code: nobody can act on a C++ stable API "for
+                // frameworks" warning here. Libraries are held to the API in
+                // their own packages.
+                .define("RN_ALLOW_FRAMEWORKS"),
+                .unsafeFlags(["-O2"], .when(configuration: .release)),
             ],
             linkerSettings: [
                 .linkedFramework("Foundation")
@@ -72,13 +82,20 @@ let package = Package(
             path: "ReactAppDependencyProvider",
             exclude: ["ReactAppDependencyProvider.podspec"],
             publicHeadersPath: ".",
-            cSettings: [.headerSearchPath(".."), .headerSearchPath("headers")],
+            cSettings: [
+                .headerSearchPath(".."),
+                .headerSearchPath("headers"),
+                .unsafeFlags(["-O2"], .when(configuration: .release)),
+            ],
             cxxSettings: [
                 .headerSearchPath(".."),
                 .headerSearchPath("headers"),
                 // Match the prebuilt React.framework NDEBUG-gated C++ ABI (see above).
                 .define("DEBUG", .when(configuration: .debug)),
                 .define("NDEBUG", .when(configuration: .release)),
+                // Generated code (see ReactCodegen above).
+                .define("RN_ALLOW_FRAMEWORKS"),
+                .unsafeFlags(["-O2"], .when(configuration: .release)),
             ],
             linkerSettings: [
                 .linkedFramework("Foundation")

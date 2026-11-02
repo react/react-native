@@ -10,6 +10,7 @@
 #include <yoga/algorithm/BoundAxis.h>
 #include <yoga/algorithm/FlexDirection.h>
 #include <yoga/algorithm/FlexLine.h>
+#include <yoga/numeric/Comparison.h>
 
 namespace facebook::yoga {
 
@@ -74,12 +75,26 @@ FlexLine calculateFlexLine(
             ownerWidth)
             .unwrap();
 
+    const float requiredMainDim = sizeConsumedIncludingMinConstraint +
+        flexBasisWithMinAndMaxConstraints + childMarginMainAxis +
+        childLeadingGapMainAxis;
+
     // If this is a multi-line flow and this item pushes us over the available
     // size, we've hit the end of the current line. Break out of the loop and
     // lay out the current line.
-    if (sizeConsumedIncludingMinConstraint + flexBasisWithMinAndMaxConstraints +
-                childMarginMainAxis + childLeadingGapMainAxis >
-            availableInnerMainDim &&
+    //
+    // The overflow test is tolerant of the same epsilon the measurement cache
+    // uses when it decides a cached measurement "still fits" (see
+    // oldSizeIsMaxContentAndStillFits in Cache.cpp). A content-sized wrap
+    // container adds padding and border to the max-content sum to size itself
+    // and then subtracts them again to recover availableInnerMainDim, and in
+    // float32 that round-trip can land a few ulps low. The cache accepts a
+    // basis up to the epsilon wider than the space now available and hands
+    // back the max-content measurement unchanged; without the same tolerance
+    // here, that basis reads as overflow and the line breaks, leaving the
+    // container sized for one line with its items laid out on two.
+    if (requiredMainDim > availableInnerMainDim &&
+        !yoga::inexactEquals(requiredMainDim, availableInnerMainDim) &&
         isNodeFlexWrap && !itemsInFlow.empty()) {
       break;
     }

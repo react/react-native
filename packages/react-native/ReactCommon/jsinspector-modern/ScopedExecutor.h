@@ -9,6 +9,7 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/Utils.h>
 #include <react/utils/OnScopeExit.h>
 #include <cassert>
 #include <functional>

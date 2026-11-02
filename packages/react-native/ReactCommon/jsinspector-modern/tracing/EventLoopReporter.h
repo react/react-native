@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <react/cxxstableapi/FrameworksGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #if defined(REACT_NATIVE_DEBUGGER_ENABLED)
-#include <react/timing/primitives.h>
+#include <React/Timing.h>
 #endif
 
 namespace facebook::react::jsinspector_modern::tracing {

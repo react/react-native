@@ -673,13 +673,6 @@ void UIManager::shadowTreeDidFinishReactCommit(
   }
 }
 
-void UIManager::shadowTreeDidPromoteReactRevision(
-    const ShadowTree& shadowTree) const {
-  if (delegate_ != nullptr) {
-    delegate_->uiManagerDidPromoteReactRevision(shadowTree);
-  }
-}
-
 void UIManager::shadowTreeDidCommit(
     const ShadowTree& shadowTree,
     const RootShadowNode::Shared& rootShadowNode,
@@ -773,6 +766,13 @@ void UIManager::synchronouslyUpdateViewOnUIThread(
     const folly::dynamic& props) {
   if (delegate_ != nullptr) {
     delegate_->uiManagerShouldSynchronouslyUpdateViewOnUIThread(tag, props);
+  }
+}
+
+void UIManager::synchronouslyUpdateAnimatedProps(
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  if (delegate_ != nullptr) {
+    delegate_->uiManagerShouldSynchronouslyUpdateAnimatedProps(updates);
   }
 }
 

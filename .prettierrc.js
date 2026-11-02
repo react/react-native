@@ -23,7 +23,7 @@ module.exports = {
       },
     },
     {
-      files: ['*.js', '*.js.flow'],
+      files: ['*.js', '*.js.flow', '*.json.flow'],
       options: {
         parser: 'flow',
       },

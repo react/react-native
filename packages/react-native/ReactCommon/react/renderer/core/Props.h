@@ -9,16 +9,16 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <React/RendererDebug.h>
 #include <react/renderer/core/PropsMacros.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/Sealable.h>
-#include <react/renderer/debug/DebugStringConvertible.h>
 
 #ifdef ANDROID
+#include <React/MapBuffer.h>
 #include <folly/dynamic.h>
-#include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
 namespace facebook::react {

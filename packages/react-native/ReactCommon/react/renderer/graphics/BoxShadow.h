@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/graphics/Color.h>
 #include <react/renderer/graphics/Float.h>
 
@@ -30,7 +32,9 @@ struct BoxShadow {
     result["offsetY"] = offsetY;
     result["blurRadius"] = blurRadius;
     result["spreadDistance"] = spreadDistance;
-    result["color"] = *color;
+    if (color) {
+      result["color"] = *color;
+    }
     result["inset"] = inset;
     return result;
   }

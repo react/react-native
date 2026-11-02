@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 
 import yaml
 
+from .tiers import DEFAULT_TIERS, parse_tier, Tier
+
 
 @dataclass
 class ApiViewVariant:
@@ -22,6 +24,7 @@ class ApiViewVariant:
 
     name: str
     definitions: dict[str, str | int] = field(default_factory=dict)
+    visibility: frozenset[Tier] = DEFAULT_TIERS
 
 
 @dataclass
@@ -39,6 +42,15 @@ class ApiViewSnapshotConfig:
     codegen_platform: str | None = None
     input_filter: bool = False
     exclude_symbols: list[str] = field(default_factory=list)
+    visibility: frozenset[Tier] = DEFAULT_TIERS
+
+
+def _parse_visibility(
+    names: list[str] | None, default: frozenset[Tier]
+) -> frozenset[Tier]:
+    if names is None:
+        return default
+    return frozenset(parse_tier(name) for name in names)
 
 
 def parse_config(
@@ -51,6 +63,8 @@ def parse_config(
     The config must contain:
       - An optional top-level ``exclude_patterns`` list that is prepended to
         every platform's own ``exclude_patterns``.
+      - An optional top-level ``visibility`` list of C++ stable API tiers,
+        used by platforms that do not set their own. Defaults to ``[public]``.
       - A ``platforms`` mapping whose values are per-platform view configs.
 
     Args:
@@ -62,6 +76,7 @@ def parse_config(
     """
     global_exclude_patterns: list[str] = raw_config.get("exclude_patterns") or []
     global_exclude_symbols: list[str] = raw_config.get("exclude_symbols") or []
+    global_visibility = _parse_visibility(raw_config.get("visibility"), DEFAULT_TIERS)
     platforms: dict = raw_config.get("platforms") or {}
 
     snapshot_configs = []
@@ -95,12 +110,16 @@ def parse_config(
                 merged_symbols.append(symbol)
                 seen_symbols.add(symbol)
         exclude_symbols = merged_symbols
+        visibility = _parse_visibility(view_config.get("visibility"), global_visibility)
 
         raw_variants = view_config.get("variants") or {}
         variants = [
             ApiViewVariant(
                 name=variant_name,
                 definitions=variant_config.get("definitions") or {},
+                visibility=_parse_visibility(
+                    variant_config.get("visibility"), visibility
+                ),
             )
             for variant_name, variant_config in raw_variants.items()
         ]
@@ -115,6 +134,7 @@ def parse_config(
                     codegen_platform=codegen_platform,
                     input_filter=input_filter,
                     exclude_symbols=exclude_symbols,
+                    visibility=visibility,
                 )
             )
         else:
@@ -130,6 +150,7 @@ def parse_config(
                         codegen_platform=codegen_platform,
                         input_filter=input_filter,
                         exclude_symbols=exclude_symbols,
+                        visibility=variant.visibility,
                     )
                 )
 

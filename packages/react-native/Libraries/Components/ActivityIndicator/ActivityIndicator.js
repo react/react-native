@@ -38,11 +38,7 @@ type ActivityIndicatorIOSProps = Readonly<{
   hidesWhenStopped?: ?boolean,
 }>;
 
-/** @build-types emit-as-interface Uniwind compatibility */
-export type ActivityIndicatorProps = Readonly<{
-  ...ViewProps,
-  ...ActivityIndicatorIOSProps,
-
+type ActivityIndicatorPropsCore = Readonly<{
   /**
    * Whether to show the indicator (`true`) or hide it (`false`).
    */
@@ -65,6 +61,13 @@ export type ActivityIndicatorProps = Readonly<{
    * @type {@platform android} number
    */
   size?: ?IndicatorSize,
+}>;
+
+/** @build-types emit-as-interface Uniwind compatibility */
+export type ActivityIndicatorProps = Readonly<{
+  ...ViewProps,
+  ...ActivityIndicatorIOSProps,
+  ...ActivityIndicatorPropsCore,
 }>;
 
 /**

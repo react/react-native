@@ -76,6 +76,22 @@ export type LayoutChangeEvent = NativeSyntheticEvent<
   }>,
 >;
 
+export type SafeAreaInsets = Readonly<{
+  top: number,
+  right: number,
+  bottom: number,
+  left: number,
+}>;
+
+export type SafeAreaInsetsChangeEvent = NativeSyntheticEvent<
+  Readonly<{
+    /**
+     * Inset measurements in points (iOS) or dp (Android), not display pixels.
+     */
+    insets: SafeAreaInsets,
+  }>,
+>;
+
 /**
  * @deprecated Use `TextLayoutEvent` instead.
  */

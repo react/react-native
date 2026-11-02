@@ -29,8 +29,7 @@ export type ExceptionData = {
   stack: Array<StackFrame>,
   id: number,
   isFatal: boolean,
-  // flowlint-next-line unclear-type:off
-  extraData?: Object,
+  extraData?: LegacyObject,
   ...
 };
 export interface Spec extends TurboModule {

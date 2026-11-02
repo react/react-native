@@ -266,11 +266,11 @@ function buildEventSchema(
 }
 
 // $FlowFixMe[unclear-type] there's no flowtype for ASTs
-type EventTypeAST = Object;
+type EventTypeAST = any;
 
 type TypeMap = {
   // $FlowFixMe[unclear-type] there's no flowtype for ASTs
-  [string]: Object,
+  [string]: any,
   ...
 };
 

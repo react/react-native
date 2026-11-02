@@ -119,7 +119,7 @@ const ScrollViewStickyHeader: component(
   );
 
   const haveReceivedInitialZeroTranslateY = useRef<boolean>(true);
-  const translateYDebounceTimer = useRef<?TimeoutID>(null);
+  const translateYDebounceTimer = useRef<?ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
     if (translateY !== 0 && translateY != null) {

@@ -63,13 +63,27 @@ void ShadowNodeFamily::setMounted() {
   hasBeenMounted_ = true;
 }
 
+bool ShadowNodeFamily::hasBeenMounted() const {
+  return hasBeenMounted_;
+}
+
 const ComponentDescriptor& ShadowNodeFamily::getComponentDescriptor() const {
   return componentDescriptor_;
 }
 
+void ShadowNodeFamily::onFamilyDestroyed(
+    std::function<void(const ShadowNodeFamily& family)> callback) {
+  onFamilyDestroyedCallback_ = std::move(callback);
+}
+
 void ShadowNodeFamily::onUnmountedFamilyDestroyed(
     std::function<void(const ShadowNodeFamily& family)> callback) {
-  onUnmountedFamilyDestroyedCallback_ = std::move(callback);
+  onFamilyDestroyed(
+      [callback = std::move(callback)](const ShadowNodeFamily& family) {
+        if (!family.hasBeenMounted()) {
+          callback(family);
+        }
+      });
 }
 
 Tag ShadowNodeFamily::getTag() const {
@@ -94,8 +108,8 @@ void ShadowNodeFamily::setInstanceHandle(
 }
 
 ShadowNodeFamily::~ShadowNodeFamily() {
-  if (!hasBeenMounted_ && onUnmountedFamilyDestroyedCallback_ != nullptr) {
-    onUnmountedFamilyDestroyedCallback_(*this);
+  if (onFamilyDestroyedCallback_ != nullptr) {
+    onFamilyDestroyedCallback_(*this);
   }
 }
 

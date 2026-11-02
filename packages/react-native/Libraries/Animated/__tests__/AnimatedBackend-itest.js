@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags useSharedAnimatedBackend:true updateRuntimeShadowNodeReferencesOnCommitThread:*
+ * @fantom_flags useSharedAnimatedBackend:true updateRuntimeShadowNodeReferencesOnCommitThread:* optimizedAnimatedPropUpdates:*
  * @flow strict-local
  * @format
  */
@@ -17,7 +17,7 @@ import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {Component, createRef, memo, useEffect, useMemo, useState} from 'react';
-import {Animated, View, useAnimatedValue} from 'react-native';
+import {Animated, Easing, View, useAnimatedValue} from 'react-native';
 
 // marginLeft (and the other margin props) are only on the native animated
 // allowlist when the shared backend is enabled. This verifies the prop is
@@ -75,6 +75,196 @@ test('animate marginLeft layout prop', () => {
   expect(root.getRenderedOutput({props: ['marginLeft']}).toJSX()).toEqual(
     <rn-view marginLeft="100" />,
   );
+});
+
+test('non-layout props stay on the direct path while another view animates layout', () => {
+  const movingRef = createRef<HostInstance>();
+
+  let _translateX;
+  let _translateXAnimation;
+  let _siblingHeight;
+  let _siblingHeightAnimation;
+
+  function MyApp() {
+    const translateX = useAnimatedValue(0);
+    const siblingHeight = useAnimatedValue(10);
+    _translateX = translateX;
+    _siblingHeight = siblingHeight;
+    return (
+      <View collapsable={false}>
+        <Animated.View
+          ref={movingRef}
+          style={{width: 100, height: 100, transform: [{translateX}]}}
+        />
+        <Animated.View style={{width: 100, height: siblingHeight}} />
+      </View>
+    );
+  }
+
+  const root = Fantom.createRoot();
+
+  Fantom.runTask(() => {
+    root.render(<MyApp />);
+  });
+
+  Fantom.runTask(() => {
+    _translateXAnimation = Animated.timing(_translateX, {
+      toValue: 100,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+    _siblingHeightAnimation = Animated.timing(_siblingHeight, {
+      toValue: 110,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  Fantom.unstable_produceFramesForDuration(100);
+
+  // The sibling's height went through a commit; the transform did not.
+  expect(root.getRenderedOutput({props: ['height']}).toJSX()).toEqual(
+    <rn-view>
+      <rn-view key={0} height="100" />
+      <rn-view key={1} height="60" />
+    </rn-view>,
+  );
+  expect(
+    Fantom.unstable_getDirectManipulationProps(nullthrows(movingRef.current))
+      .transform,
+  ).toEqual([{translateX: 50}]);
+
+  Fantom.runTask(() => {
+    _translateXAnimation?.stop();
+    _siblingHeightAnimation?.stop();
+  });
+});
+
+test('direct-path props survive a re-render while another view animates layout', () => {
+  let _opacity;
+  let _opacityAnimation;
+  let _siblingHeight;
+  let _siblingHeightAnimation;
+  let _setWidth;
+
+  function MyApp() {
+    const opacity = useAnimatedValue(0);
+    const siblingHeight = useAnimatedValue(10);
+    const [width, setWidth] = useState(100);
+    _opacity = opacity;
+    _siblingHeight = siblingHeight;
+    _setWidth = setWidth;
+    return (
+      <View collapsable={false}>
+        <Animated.View style={{width, height: 100, opacity}} />
+        <Animated.View style={{width: 100, height: siblingHeight}} />
+      </View>
+    );
+  }
+
+  const root = Fantom.createRoot();
+
+  Fantom.runTask(() => {
+    root.render(<MyApp />);
+  });
+
+  Fantom.runTask(() => {
+    _opacityAnimation = Animated.timing(_opacity, {
+      toValue: 0.5,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+    _siblingHeightAnimation = Animated.timing(_siblingHeight, {
+      toValue: 110,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  Fantom.unstable_produceFramesForDuration(500);
+
+  Fantom.runTask(() => {
+    _setWidth(150);
+  });
+
+  expect(
+    root.getRenderedOutput({props: ['opacity', 'width', 'height']}).toJSX(),
+  ).toEqual(
+    <rn-view>
+      <rn-view key={0} opacity="0.25" width="150" height="100" />
+      <rn-view key={1} width="100" height="60" />
+    </rn-view>,
+  );
+
+  Fantom.runTask(() => {
+    _opacityAnimation?.stop();
+    _siblingHeightAnimation?.stop();
+  });
+});
+
+test('a view keeps writing its props directly after it starts animating layout', () => {
+  const viewRef = createRef<HostInstance>();
+
+  let _opacity;
+  let _opacityAnimation;
+  let _height;
+  let _heightAnimation;
+
+  function MyApp() {
+    const opacity = useAnimatedValue(0);
+    const height = useAnimatedValue(10);
+    _opacity = opacity;
+    _height = height;
+    return (
+      <Animated.View ref={viewRef} style={{width: 100, height, opacity}} />
+    );
+  }
+
+  const root = Fantom.createRoot();
+
+  Fantom.runTask(() => {
+    root.render(<MyApp />);
+  });
+
+  const viewElement = nullthrows(viewRef.current);
+
+  Fantom.runTask(() => {
+    _opacityAnimation = Animated.timing(_opacity, {
+      toValue: 0.5,
+      duration: 1000,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  Fantom.unstable_produceFramesForDuration(500);
+
+  expect(
+    Fantom.unstable_getDirectManipulationProps(viewElement).opacity,
+  ).toBeCloseTo(0.25, 0.001);
+
+  Fantom.runTask(() => {
+    _heightAnimation = Animated.timing(_height, {
+      toValue: 110,
+      duration: 1000,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  Fantom.unstable_produceFramesForDuration(250);
+
+  expect(root.getRenderedOutput({props: ['height']}).toJSX()).toEqual(
+    <rn-view height="35" />,
+  );
+  expect(
+    Fantom.unstable_getDirectManipulationProps(viewElement).opacity,
+  ).toBeCloseTo(0.375, 0.001);
+
+  Fantom.runTask(() => {
+    _opacityAnimation?.stop();
+    _heightAnimation?.stop();
+  });
 });
 
 test('animated opacity', () => {
@@ -721,4 +911,104 @@ test('animate width with memo and rerender (js sync test)', () => {
   expect(root.getRenderedOutput({props: ['width']}).toJSX()).toEqual(
     <rn-view width="200" />,
   );
+});
+
+// A native scroll event pushes its values outside the frame loop. It must not
+// step running time-based animations: frames step them with the frame time, so
+// stepping them at the push's own time as well would move them whenever the
+// two times differ.
+test('native scroll event does not step a running timing animation', () => {
+  const scrollViewRef = createRef<HostInstance>();
+  const viewRef = createRef<HostInstance>();
+  const scrollFollowerRef = createRef<HostInstance>();
+  let _translateX;
+
+  component MyApp() {
+    const scrollY = useAnimatedValue(0);
+    const translateX = useAnimatedValue(0);
+    _translateX = translateX;
+    return (
+      <View style={{flex: 1}}>
+        <Animated.View
+          ref={viewRef}
+          style={{width: 10, height: 10, transform: [{translateX}]}}
+        />
+        <Animated.View
+          ref={scrollFollowerRef}
+          style={{width: 10, height: 10, transform: [{translateY: scrollY}]}}
+        />
+        <Animated.ScrollView
+          ref={scrollViewRef}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: scrollY}}}],
+            {useNativeDriver: true},
+          )}>
+          <View style={{height: 1000, width: 100}} />
+        </Animated.ScrollView>
+      </View>
+    );
+  }
+
+  // Stamp pushes far later than the frame clock, as on device, where a push
+  // between frames runs later than the next frame's vsync time.
+  const mockClock = Fantom.installHighResTimeStampMock();
+  mockClock.setTime(1e12);
+  let animation;
+  try {
+    const root = Fantom.createRoot();
+    Fantom.runTask(() => {
+      root.render(<MyApp />);
+    });
+    const scrollViewElement = nullthrows(scrollViewRef.current);
+    const viewElement = nullthrows(viewRef.current);
+    const scrollFollowerElement = nullthrows(scrollFollowerRef.current);
+
+    const getTransformValue = (element: HostInstance, key: string): number => {
+      const transform =
+        Fantom.unstable_getDirectManipulationProps(element).transform;
+      const first = Array.isArray(transform) ? transform[0] : null;
+      if (
+        first == null ||
+        typeof first !== 'object' ||
+        typeof first[key] !== 'number'
+      ) {
+        throw new Error(`Expected a numeric ${key} transform`);
+      }
+      return first[key];
+    };
+    const getTranslateX = (): number =>
+      getTransformValue(viewElement, 'translateX');
+
+    Fantom.runTask(() => {
+      animation = Animated.timing(nullthrows(_translateX), {
+        toValue: 100,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      });
+      animation.start();
+    });
+    Fantom.unstable_produceFramesForDuration(500);
+
+    const beforeScroll = getTranslateX();
+    expect(beforeScroll).toBeGreaterThan(0);
+    expect(beforeScroll).toBeLessThan(100);
+
+    Fantom.scrollTo(scrollViewElement, {x: 0, y: 10});
+    // The scroll event reached the native graph...
+    expect(getTransformValue(scrollFollowerElement, 'translateY')).toBe(10);
+    // ...and left the running timing animation where the frames put it.
+    expect(getTranslateX()).toBe(beforeScroll);
+
+    Fantom.unstable_produceFramesForDuration(100);
+    expect(getTranslateX()).toBeGreaterThan(beforeScroll);
+    expect(getTranslateX()).toBeLessThan(100);
+  } finally {
+    Fantom.runTask(() => {
+      animation?.stop();
+    });
+    // Flush the work queued by stopping the animation.
+    Fantom.runWorkLoop();
+    mockClock.uninstall();
+  }
 });

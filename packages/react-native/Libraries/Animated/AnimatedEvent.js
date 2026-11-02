@@ -156,7 +156,7 @@ function validateMapping(argMapping: ReadonlyArray<?Mapping>, args: any) {
 export class AnimatedEvent {
   _argMapping: ReadonlyArray<?Mapping>;
   // $FlowFixMe[unclear-type]
-  _listeners: Array<Function> = [];
+  _listeners: Array<any> = [];
   _attachedEvent: ?{detach: () => void, ...};
   __isNative: boolean;
   __platformConfig: ?PlatformConfig;

@@ -9,9 +9,13 @@ package com.facebook.react.views.view
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.BlendMode
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import com.facebook.react.R
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
@@ -65,6 +69,32 @@ class ReactViewGroupTest {
     repeat(10) { rvg.addViewWithSubviewClippingEnabled(TestView(context, 90), 10) }
     rvg.updateClippingRect()
     assertThat(rvg.childCount).isEqualTo(20)
+  }
+
+  @Test
+  fun `mix blend mode - drawing a child reads no sibling's blend mode`() {
+    fun blendModeReadsPerChild(childCount: Int): Int {
+      val rvg = ReactViewGroup(context)
+      val children = List(childCount) { BlendModeReadCountingView(context) }
+      children.forEach { rvg.addView(it) }
+      rvg.layout(0, 0, 100, 100)
+      rvg.draw(Canvas())
+      return children.maxOf { it.blendModeReads }
+    }
+
+    assertThat(blendModeReadsPerChild(20)).isEqualTo(blendModeReadsPerChild(2))
+  }
+
+  @Test
+  fun `mix blend mode - a child with a blend mode draws into a layer with that blend mode`() {
+    val rvg = ReactViewGroup(context)
+    rvg.addView(View(context))
+    rvg.addView(View(context).apply { setTag(R.id.mix_blend_mode, BlendMode.MULTIPLY) })
+    rvg.addView(View(context))
+    rvg.layout(0, 0, 100, 100)
+    val canvas = LayerRecordingCanvas()
+    rvg.draw(canvas)
+    assertThat(canvas.layerBlendModes).containsExactly(null, BlendMode.MULTIPLY)
   }
 
   @Test
@@ -293,4 +323,24 @@ class TestView(context: Context, yPos: Int) : View(context) {
 
 class TestParent(context: Context) : ViewGroup(context) {
   override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) = Unit
+}
+
+private class BlendModeReadCountingView(context: Context) : View(context) {
+  var blendModeReads = 0
+
+  override fun getTag(key: Int): Any? {
+    if (key == R.id.mix_blend_mode) {
+      blendModeReads++
+    }
+    return super.getTag(key)
+  }
+}
+
+private class LayerRecordingCanvas : Canvas() {
+  val layerBlendModes = mutableListOf<BlendMode?>()
+
+  override fun saveLayer(left: Float, top: Float, right: Float, bottom: Float, paint: Paint?): Int {
+    layerBlendModes.add(paint?.blendMode)
+    return super.saveLayer(left, top, right, bottom, paint)
+  }
 }

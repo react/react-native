@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <react/cxxstableapi/PrivateGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
 #include <react/renderer/components/root/RootShadowNode.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <cstdint>
 #include <string>
 #include <vector>

@@ -13,7 +13,6 @@
 
 #if !TARGET_OS_TV
 
-#import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUIManager.h>
@@ -33,8 +32,7 @@ using namespace facebook::react;
 
 - (instancetype)init
 {
-  self = [super init];
-  if (self != nullptr) {
+  if (self = [super init]) {
     _alertControllers = [NSMutableArray new];
   }
   return self;

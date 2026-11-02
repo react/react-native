@@ -12,7 +12,7 @@ file(GLOB react_renderer_componentregistry_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_renderer_componentregistry OBJECT ${react_renderer_componentregistry_SRC})
 
 target_include_directories(react_renderer_componentregistry PUBLIC ${REACT_COMMON_DIR})
-target_include_directories(react_renderer_componentregistry INTERFACE ${REACT_COMMON_DIR}/react/renderer/componentregistry)
+target_include_directories(react_renderer_componentregistry PUBLIC ${REACT_COMMON_DIR}/react/renderer/componentregistry)
 
 target_link_libraries(react_renderer_componentregistry
         folly_runtime

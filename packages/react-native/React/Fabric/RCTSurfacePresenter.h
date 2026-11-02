@@ -10,9 +10,9 @@
 #import <React/RCTPrimitives.h>
 #import <React/RCTSurfacePresenterStub.h>
 #import <React/RCTSurfaceStage.h>
-#import <ReactCommon/RuntimeExecutor.h>
+#import <React/RuntimeExecutor.h>
+#import <React/Utils.h>
 #import <react/renderer/scheduler/SurfaceHandler.h>
-#import <react/utils/ContextContainer.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -74,7 +74,8 @@ NS_ASSUME_NONNULL_BEGIN
  * Deprecated.
  * Use `RCTMountingTransactionObserverCoordinator` instead.
  */
-- (void)addObserver:(id<RCTSurfacePresenterObserver>)observer;
+- (void)addObserver:(id<RCTSurfacePresenterObserver>)observer
+    __deprecated_msg("Use RCTMountingTransactionObserverCoordinator instead.");
 - (void)removeObserver:(id<RCTSurfacePresenterObserver>)observer;
 
 /*

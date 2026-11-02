@@ -13,9 +13,9 @@
 
 #pragma once
 
+#include <React/Debug.h>
+#include <React/RendererCore.h>
 #include <folly/dynamic.h>
-#include <react/debug/flags.h>
-#include <react/renderer/core/ReactPrimitives.h>
 
 namespace facebook::react {
 

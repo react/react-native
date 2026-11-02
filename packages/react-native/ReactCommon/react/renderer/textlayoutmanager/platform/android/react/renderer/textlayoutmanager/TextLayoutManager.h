@@ -9,14 +9,15 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/Utils.h>
 #include <react/jni/SafeReleaseJniRef.h>
 #include <react/renderer/attributedstring/AttributedStringBox.h>
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
-#include <react/renderer/core/LayoutConstraints.h>
 #include <react/renderer/textlayoutmanager/JPreparedLayout.h>
 #include <react/renderer/textlayoutmanager/TextLayoutContext.h>
 #include <react/renderer/textlayoutmanager/TextMeasureCache.h>
-#include <react/utils/ContextContainer.h>
+#include <react/utils/SimpleThreadSafeCache.h>
 
 #include <fbjni/fbjni.h>
 #include <memory>
@@ -31,7 +32,31 @@ class TextLayoutManager;
  */
 class TextLayoutManager {
  public:
-  using PreparedTextLayout = SafeReleaseJniRef<jni::global_ref<JPreparedLayout>>;
+  /*
+   * A prepared layout's Java object. Copies share one JNI global reference, so
+   * returning a cached layout or storing it in state doesn't create another.
+   */
+  class PreparedTextLayout {
+   public:
+    PreparedTextLayout() = default;
+    explicit PreparedTextLayout(jni::global_ref<JPreparedLayout> ref)
+        : ref_(std::make_shared<const SafeReleaseJniRef<jni::global_ref<JPreparedLayout>>>(std::move(ref)))
+    {
+    }
+
+    JPreparedLayout::javaobject get() const
+    {
+      return ref_ ? ref_->get() : nullptr;
+    }
+
+    explicit operator bool() const noexcept
+    {
+      return ref_ && *ref_;
+    }
+
+   private:
+    std::shared_ptr<const SafeReleaseJniRef<jni::global_ref<JPreparedLayout>>> ref_;
+  };
 
   TextLayoutManager(const std::shared_ptr<const ContextContainer> &contextContainer);
 

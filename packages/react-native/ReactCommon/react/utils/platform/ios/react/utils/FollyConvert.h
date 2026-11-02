@@ -5,6 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#pragma once
+
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <Foundation/Foundation.h>
 
 #include <folly/dynamic.h>

@@ -9,12 +9,11 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/scrollview/ScrollViewEventEmitter.h>
 #include <react/renderer/components/scrollview/ScrollViewProps.h>
 #include <react/renderer/components/scrollview/ScrollViewState.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/core/LayoutContext.h>
-#include <react/renderer/core/ShadowNodeFamily.h>
 
 namespace facebook::react {
 

@@ -15,7 +15,6 @@
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/animations/conversions.h>
 #include <react/renderer/animations/utils.h>
-#include <react/renderer/components/image/ImageProps.h>
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/components/view/ViewPropsInterpolation.h>
 #include <react/renderer/core/ComponentDescriptor.h>

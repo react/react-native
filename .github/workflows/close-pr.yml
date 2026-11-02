@@ -26,7 +26,7 @@ jobs:
             // Looking at the commit message, checks which PR number, if any, was closed by this commit
             const getClosedPrIfExists = (commit) => {
               if(!commit || !commit.message) return;
-              const prClosingRegex = /Closes https:\/\/github.com\/facebook\/react-native\/pull\/([0-9]+)|Pull Request resolved: https:\/\/github.com\/facebook\/react-native\/pull\/([0-9]+)/;
+              const prClosingRegex = /Closes https:\/\/github.com\/(?:facebook|react)\/react-native\/pull\/([0-9]+)|Pull Request resolved: https:\/\/github.com\/(?:facebook|react)\/react-native\/pull\/([0-9]+)/;
               const prClosingMatch = commit.message.match(prClosingRegex);
               if(!prClosingMatch || (!prClosingMatch[1] && ! prClosingMatch[2])) return;
               return prClosingMatch[1] ?? prClosingMatch[2];

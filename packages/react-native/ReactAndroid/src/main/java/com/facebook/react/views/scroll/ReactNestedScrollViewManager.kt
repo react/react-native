@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<cc2b79daa48993203e35cb663b733ccc>>
+ * @generated SignedSource<<acbc1716191446a5c496c66dfa368b52>>
  */
 
 /**
@@ -255,9 +255,20 @@ constructor(private val fpsListener: FpsListener? = null) :
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
+  )
+  fun setBorderRadius(view: ReactNestedScrollView?, index: Int, rawBorderRadius: Dynamic) {
+    if (view != null) {
+      val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+      setBorderRadius(view, BorderRadiusProp.entries[index], borderRadius)
+    }
+  }
+
+  @Deprecated(
+      "Don't use setBorderRadius(view, index, Float) as it was deprecated in React Native 0.88.0.",
   )
   fun setBorderRadius(view: ReactNestedScrollView?, index: Int, borderRadius: Float) {
+    // Direct body: DynamicFromObject(Float).asDouble() throws, and setFromDynamic
+    // would not map NaN back to null like the original Float path did.
     if (view != null) {
       val radius =
           if (borderRadius.isNaN()) null
@@ -450,15 +461,17 @@ constructor(private val fpsListener: FpsListener? = null) :
   companion object {
     const val REACT_CLASS: String = "RCTScrollView"
 
-    fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> = mapOf(
-        getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
-        getJSEventName(ScrollEventType.BEGIN_DRAG) to
-            mapOf("registrationName" to "onScrollBeginDrag"),
-        getJSEventName(ScrollEventType.END_DRAG) to mapOf("registrationName" to "onScrollEndDrag"),
-        getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
-            mapOf("registrationName" to "onMomentumScrollBegin"),
-        getJSEventName(ScrollEventType.MOMENTUM_END) to
-            mapOf("registrationName" to "onMomentumScrollEnd"),
-    )
+    fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> =
+        mapOf(
+            getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
+            getJSEventName(ScrollEventType.BEGIN_DRAG) to
+                mapOf("registrationName" to "onScrollBeginDrag"),
+            getJSEventName(ScrollEventType.END_DRAG) to
+                mapOf("registrationName" to "onScrollEndDrag"),
+            getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
+                mapOf("registrationName" to "onMomentumScrollBegin"),
+            getJSEventName(ScrollEventType.MOMENTUM_END) to
+                mapOf("registrationName" to "onMomentumScrollEnd"),
+        )
   }
 }

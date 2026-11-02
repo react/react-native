@@ -29,7 +29,13 @@ internal class ReactAndroidHWInputDeviceHelper {
         (eventKeyAction == KeyEvent.ACTION_UP || eventKeyAction == KeyEvent.ACTION_DOWN) &&
             KEY_EVENTS_ACTIONS.containsKey(eventKeyCode)
     ) {
-      dispatchEvent(context, KEY_EVENTS_ACTIONS[eventKeyCode], lastFocusedViewId, eventKeyAction)
+      dispatchEvent(
+          context,
+          KEY_EVENTS_ACTIONS[eventKeyCode],
+          lastFocusedViewId,
+          eventKeyAction,
+          ev.eventTime,
+      )
     }
   }
 
@@ -58,11 +64,15 @@ internal class ReactAndroidHWInputDeviceHelper {
       eventType: String?,
       targetViewId: Int,
       eventKeyAction: Int = -1,
+      eventTime: Long = NO_EVENT_TIME,
   ) {
     val event: WritableMap =
         WritableNativeMap().apply {
           putString("eventType", eventType)
           putInt("eventKeyAction", eventKeyAction)
+          if (eventTime != NO_EVENT_TIME) {
+            putDouble("eventTime", eventTime.toDouble())
+          }
           if (targetViewId != View.NO_ID) {
             putInt("tag", targetViewId)
           }
@@ -71,6 +81,8 @@ internal class ReactAndroidHWInputDeviceHelper {
   }
 
   private companion object {
+    private const val NO_EVENT_TIME: Long = -1
+
     /**
      * Contains a mapping between handled KeyEvents and the corresponding navigation event that
      * should be fired when the KeyEvent is received.

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/debug/flags.h>
+#include <React/Debug.h>
 #include <functional>
 #include <memory>
 #include <string>

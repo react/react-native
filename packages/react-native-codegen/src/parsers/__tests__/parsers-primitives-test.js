@@ -1902,6 +1902,26 @@ describe('emitUnion', () => {
       });
     });
 
+    describe("when 'typeAnnotation.id.name' is 'LegacyObject'", () => {
+      const typeAnnotation = {
+        typeParameters: {
+          params: [1, 2],
+          type: 'GenericObjectTypeAnnotation',
+        },
+        id: {
+          name: 'LegacyObject',
+        },
+      };
+      const expected = {
+        type: 'GenericObjectTypeAnnotation',
+      };
+      const result = emitCommonTypesForUnitTest(typeAnnotation, false);
+
+      it("returns 'GenericObjectTypeAnnotation'", () => {
+        expect(result).toEqual(expected);
+      });
+    });
+
     describe("when 'typeAnnotation.id.name' is 'Object'", () => {
       const typeAnnotation = {
         typeParameters: {

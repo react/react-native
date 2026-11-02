@@ -29,8 +29,8 @@ function roundKilo(value: number): number {
   return Math.round(value / 1000);
 }
 
-class XHRExampleDownload extends React.Component<{...}, Object> {
-  state: Object = {
+class XHRExampleDownload extends React.Component<{...}, any> {
+  state: any = {
     downloading: false,
     // set by onreadystatechange
     contentLength: 1,

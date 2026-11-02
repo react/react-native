@@ -285,7 +285,7 @@ describe('<TouchableHighlight>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
         );
       });
 
@@ -303,7 +303,7 @@ describe('<TouchableHighlight>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
         );
       });
 
@@ -323,7 +323,7 @@ describe('<TouchableHighlight>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-view accessibilityState="{disabled:true,selected:false,checked:Checked,busy:false,expanded:null}" />,
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:Checked,busy:false,expanded:null}" />,
         );
       });
 
@@ -343,7 +343,7 @@ describe('<TouchableHighlight>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
         );
       });
 
@@ -367,7 +367,7 @@ describe('<TouchableHighlight>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
         );
 
         const element = nullthrows(elementRef.current);

@@ -9,10 +9,10 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <jsi/jsi.h>
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 
-#include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
-#include <react/renderer/core/RawValue.h>
+#include <jsi/jsi.h>
 
 namespace facebook::react {
 

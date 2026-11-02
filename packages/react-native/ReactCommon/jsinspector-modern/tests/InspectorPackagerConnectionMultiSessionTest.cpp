@@ -111,6 +111,8 @@ TEST_F(
   mockCallsMustBeInSequence.reset();
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
   EXPECT_CALL(*localConnections_[1], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId, "session-1");
+  expectDisconnectSentToPackager(pageId, "session-2");
   getInspectorInstance().removePage(pageId);
 }
 
@@ -193,6 +195,8 @@ TEST_F(
   mockCallsMustBeInSequence.reset();
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
   EXPECT_CALL(*localConnections_[1], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId, "session-1");
+  expectDisconnectSentToPackager(pageId, "session-2");
   getInspectorInstance().removePage(pageId);
 }
 
@@ -269,6 +273,7 @@ TEST_F(InspectorPackagerConnectionMultiSessionTest, TestDisconnectBySessionId) {
 
   // Clean up
   EXPECT_CALL(*localConnections_[1], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId, "session-2");
   getInspectorInstance().removePage(pageId);
 }
 
@@ -323,6 +328,7 @@ TEST_F(
   localConnections_[0]->getRemoteConnection().onDisconnect();
 
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId, "my-session");
   getInspectorInstance().removePage(pageId);
 }
 
@@ -493,13 +499,17 @@ TEST_F(
           toJson(std::to_string(pageId))));
   ASSERT_TRUE(localConnections_[2]);
 
-  // Remove the page - all sessions should be disconnected.
-  // This is not guaranteed to be in order, so tear down our InSequence guard.
+  // Remove the page - all sessions should be disconnected and reported to the
+  // packager. This is not guaranteed to be in order, so tear down our
+  // InSequence guard.
   mockCallsMustBeInSequence.reset();
 
   EXPECT_CALL(*localConnections_[0], disconnect());
   EXPECT_CALL(*localConnections_[1], disconnect());
   EXPECT_CALL(*localConnections_[2], disconnect());
+  expectDisconnectSentToPackager(pageId, "session-1");
+  expectDisconnectSentToPackager(pageId, "session-2");
+  expectDisconnectSentToPackager(pageId, "session-3");
   getInspectorInstance().removePage(pageId);
 
   EXPECT_FALSE(localConnections_[0]);
@@ -592,6 +602,8 @@ TEST_F(
   mockCallsMustBeInSequence.reset();
   EXPECT_CALL(*localConnections_[0], disconnect()).RetiresOnSaturation();
   EXPECT_CALL(*localConnections_[1], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
+  expectDisconnectSentToPackager(pageId, "session-1");
   getInspectorInstance().removePage(pageId);
 }
 
@@ -686,6 +698,7 @@ TEST_F(
 
   // Clean up
   EXPECT_CALL(*localConnections_[2], disconnect()).RetiresOnSaturation();
+  expectDisconnectSentToPackager(pageId);
   getInspectorInstance().removePage(pageId);
 }
 

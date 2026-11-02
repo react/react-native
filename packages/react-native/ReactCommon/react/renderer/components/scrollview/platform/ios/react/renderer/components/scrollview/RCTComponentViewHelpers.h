@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #import <Foundation/Foundation.h>
 #import <React/RCTDefines.h>
 #import <React/RCTLog.h>

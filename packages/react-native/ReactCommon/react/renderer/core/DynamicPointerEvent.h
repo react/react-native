@@ -7,12 +7,11 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/RendererCore.h>
 #include <folly/dynamic.h>
 #include <react/renderer/core/DynamicEventPayload.h>
-#include <react/renderer/core/EventPayload.h>
-#include <react/renderer/core/ReactPrimitives.h>
 
 namespace facebook::react {
 

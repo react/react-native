@@ -45,8 +45,7 @@ const HeaderFileTemplate = ({
 
 #pragma once
 
-#include <ReactCommon/JavaTurboModule.h>
-#include <ReactCommon/TurboModule.h>
+#include <React/NativeModuleCore.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {

@@ -14,6 +14,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.TextPaint
+import android.text.TextUtils
 import android.text.style.ReplacementSpan
 import android.util.TypedValue
 import android.view.Gravity
@@ -21,8 +23,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
+import com.facebook.react.bridge.JavaOnlyArray
+import com.facebook.react.bridge.JavaOnlyMap
+import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -31,6 +39,96 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class ReactTextViewTest {
+
+  @Before
+  fun setUp() {
+    DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(RuntimeEnvironment.getApplication())
+  }
+
+  @After
+  fun tearDown() {
+    DisplayMetricsHolder.setScreenDisplayMetrics(null)
+  }
+
+  @Test
+  fun tailEllipsisUsesBaseTextAttributeMetrics() {
+    val attributes =
+        textAttributes(
+            "fontFamily",
+            "serif",
+            "fontSize",
+            32.0,
+            "letterSpacing",
+            1.5,
+            "fontVariant",
+            JavaOnlyArray.of("small-caps"),
+        )
+    val expectedPaint = paintWithAttributes(attributes)
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.setNumberOfLines(1)
+    view.setEllipsizeLocation(TextUtils.TruncateAt.END)
+    view.setText(
+        textUpdate(SpannableString("Search files in a very long directory name"), attributes)
+    )
+    view.updateView()
+    view.measure(
+        View.MeasureSpec.makeMeasureSpec(40, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(60, View.MeasureSpec.EXACTLY),
+    )
+    view.layout(0, 0, 40, 60)
+
+    val paint = checkNotNull(view.layout).paint
+    assertThat(view.ellipsize).isEqualTo(TextUtils.TruncateAt.END)
+    assertThat(paint.typeface).isEqualTo(expectedPaint.typeface)
+    assertThat(paint.textSize).isEqualTo(expectedPaint.textSize)
+    assertThat(paint.letterSpacing).isEqualTo(expectedPaint.letterSpacing)
+    assertThat(paint.fontFeatureSettings).isEqualTo("'smcp'")
+    assertThat(paint.measureText("…")).isEqualTo(expectedPaint.measureText("…"))
+  }
+
+  @Test
+  fun baseTextAttributesDoNotLeakAcrossUpdatesOrRecycling() {
+    val text = SpannableString("Text")
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    val defaultTextSize = view.textSize
+    val custom =
+        textAttributes(
+            "fontFamily",
+            "serif",
+            "fontSize",
+            32.0,
+            "letterSpacing",
+            1.5,
+            "fontVariant",
+            JavaOnlyArray.of("small-caps"),
+        )
+
+    view.setText(textUpdate(text, custom))
+    assertThat(view.paint.typeface).isNotNull
+    assertThat(view.textSize).isNotEqualTo(defaultTextSize)
+
+    view.setText(textUpdate(text, textAttributes()))
+    assertDefaultPaint(view, defaultTextSize)
+
+    view.setText(textUpdate(text, custom))
+    view.recycleView()
+    assertDefaultPaint(view, defaultTextSize)
+  }
+
+  @Test
+  fun baseTextAttributesPreserveViewFontSizeAndLetterSpacingWhenUnset() {
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.setFontSize(32f)
+    view.letterSpacing = 1.5f
+    val expectedTextSize = view.textSize
+    val expectedLetterSpacing = view.letterSpacing
+
+    view.setText(textUpdate(SpannableString("Text"), textAttributes("fontFamily", "serif")))
+
+    assertThat(view.paint.typeface).isNotNull
+    assertThat(view.textSize).isEqualTo(expectedTextSize)
+    assertThat(view.letterSpacing).isEqualTo(expectedLetterSpacing)
+  }
 
   @Test
   fun drawsGlyphInkOutsideLineHeightWhenOverflowIsVisible() {
@@ -70,7 +168,7 @@ class ReactTextViewTest {
             ViewGroup.LayoutParams.WRAP_CONTENT,
         )
     view.setTextColor(Color.BLACK)
-    view.setMinimumFontSize(4f)
+    view.setMinimumFontScale(0.1f)
     view.setNumberOfLines(0)
     view.setAdjustFontSizeToFit(true)
     view.setSpanned(text)
@@ -85,6 +183,46 @@ class ReactTextViewTest {
     val fontSizeWhenShort = largestAbsoluteSizeSpan(text)
 
     assertThat(fontSizeWhenShort).isLessThan(fontSizeWhenTall)
+  }
+
+  @Test
+  fun adjustsFontSizeToFitGrowsBackWhenContainerHeightGrows() {
+    val width = 200
+    val tallHeight = 200
+    val shortHeight = 20
+    val largeFontSize = 40
+
+    val text = SpannableString("Hello")
+    text.setSpan(
+        ReactAbsoluteSizeSpan(largeFontSize),
+        0,
+        text.length,
+        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
+
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.layoutParams =
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+    view.setTextColor(Color.BLACK)
+    view.setMinimumFontScale(0.1f)
+    view.setNumberOfLines(0)
+    view.setAdjustFontSizeToFit(true)
+    view.setSpanned(text)
+    view.text = text
+
+    layoutAndDraw(view, width, shortHeight)
+    val fontSizeWhenShort = largestAbsoluteSizeSpan(text)
+
+    // Growing the container without a new text update must fit the text again starting from its
+    // original font size, not from the size it was already shrunk to.
+    layoutAndDraw(view, width, tallHeight)
+    val fontSizeWhenTall = largestAbsoluteSizeSpan(text)
+
+    assertThat(fontSizeWhenShort).isLessThan(largeFontSize)
+    assertThat(fontSizeWhenTall).isEqualTo(largeFontSize)
   }
 
   @Test
@@ -120,6 +258,29 @@ class ReactTextViewTest {
 
   private fun largestAbsoluteSizeSpan(text: Spanned): Int =
       text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java).maxOfOrNull { it.size } ?: 0
+
+  private fun textAttributes(vararg keysAndValues: Any): TextAttributeProps =
+      TextAttributeProps.fromReadableMap(ReactStylesDiffMap(JavaOnlyMap.of(*keysAndValues)))
+
+  private fun paintWithAttributes(attributes: TextAttributeProps): TextPaint =
+      TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply {
+        TextLayoutManager.updateTextPaint(
+            this,
+            attributes,
+            RuntimeEnvironment.getApplication().assets,
+            0,
+        )
+      }
+
+  private fun textUpdate(text: Spanned, attributes: TextAttributeProps): ReactTextUpdate =
+      ReactTextUpdate(text, -1, Gravity.START, 0, 0, attributes)
+
+  private fun assertDefaultPaint(view: ReactTextView, defaultTextSize: Float) {
+    assertThat(view.paint.typeface).isNull()
+    assertThat(view.textSize).isEqualTo(defaultTextSize)
+    assertThat(view.letterSpacing).isEqualTo(0f)
+    assertThat(view.paint.fontFeatureSettings).isNull()
+  }
 
   private fun drawReactTextViewWithOverflow(overflow: String?): Bitmap {
     return drawReactTextViewWithOverflow(overflow, lineHeight = 24, viewHeight = 24, gravity = null)

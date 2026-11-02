@@ -8,7 +8,7 @@
 #pragma once
 
 #include <FBReactNativeSpec/FBReactNativeSpecJSI.h>
-#include <react/bridging/Promise.h>
+#include <React/Bridging.h>
 #include <memory>
 #include <string>
 #include <utility>

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <type_traits>
@@ -341,6 +342,22 @@ class YG_EXPORT Style {
                                                : FloatOptional{0.0});
   }
 
+  // Percentage margins and paddings resolve against the owner's width on both
+  // axes, and a percentage size or size bound against the owner's size on its
+  // own axis.
+  bool resolvesAgainstOwnerWidth() const {
+    return anyIsPercent(margin_) || anyIsPercent(padding_) ||
+        dimensions_[yoga::to_underlying(Dimension::Width)].isPercent() ||
+        minDimensions_[yoga::to_underlying(Dimension::Width)].isPercent() ||
+        maxDimensions_[yoga::to_underlying(Dimension::Width)].isPercent();
+  }
+
+  bool resolvesAgainstOwnerHeight() const {
+    return dimensions_[yoga::to_underlying(Dimension::Height)].isPercent() ||
+        minDimensions_[yoga::to_underlying(Dimension::Height)].isPercent() ||
+        maxDimensions_[yoga::to_underlying(Dimension::Height)].isPercent();
+  }
+
   FloatOptional aspectRatio() const {
     return pool_.getNumber(aspectRatio_);
   }
@@ -653,6 +670,7 @@ class YG_EXPORT Style {
         alignItems_ == other.alignItems_ && alignSelf_ == other.alignSelf_ &&
         positionType_ == other.positionType_ && flexWrap_ == other.flexWrap_ &&
         overflow_ == other.overflow_ && display_ == other.display_ &&
+        boxSizing_ == other.boxSizing_ &&
         numbersEqual(flex_, pool_, other.flex_, other.pool_) &&
         numbersEqual(flexGrow_, pool_, other.flexGrow_, other.pool_) &&
         numbersEqual(flexShrink_, pool_, other.flexShrink_, other.pool_) &&
@@ -675,6 +693,15 @@ class YG_EXPORT Style {
   using Dimensions = std::array<StyleValueHandle, ordinalCount<Dimension>()>;
   using Edges = std::array<StyleValueHandle, ordinalCount<Edge>()>;
   using Gutters = std::array<StyleValueHandle, ordinalCount<Gutter>()>;
+
+  template <size_t N>
+  static inline bool anyIsPercent(
+      const std::array<StyleValueHandle, N>& handles) {
+    return std::any_of(
+        handles.begin(), handles.end(), [](const StyleValueHandle& handle) {
+          return handle.isPercent();
+        });
+  }
 
   static inline bool numbersEqual(
       const StyleValueHandle& lhsHandle,

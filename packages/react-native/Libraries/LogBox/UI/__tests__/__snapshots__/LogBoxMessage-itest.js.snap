@@ -7,6 +7,7 @@ exports[`LogBoxMessage Should handle multiple links 1`] = `
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1.5"
   overflow="hidden"
 >
   <rn-text
@@ -15,6 +16,7 @@ exports[`LogBoxMessage Should handle multiple links 1`] = `
     isHighlighted="false"
     isPressable="true"
     layoutDirection="ltr"
+    maxFontSizeMultiplier="1.5"
     textDecorationLineType="underline"
   >
     https://reactnative.dev
@@ -22,6 +24,7 @@ exports[`LogBoxMessage Should handle multiple links 1`] = `
   <rn-text
     allowFontScaling="true"
     layoutDirection="ltr"
+    maxFontSizeMultiplier="1.5"
   >
      and 
   </rn-text>
@@ -31,6 +34,7 @@ exports[`LogBoxMessage Should handle multiple links 1`] = `
     isHighlighted="false"
     isPressable="true"
     layoutDirection="ltr"
+    maxFontSizeMultiplier="1.5"
     textDecorationLineType="underline"
   >
     https://react.dev
@@ -45,6 +49,7 @@ exports[`LogBoxMessage Should handle truncated links 1`] = `
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1.5"
   overflow="hidden"
 >
   <rn-text
@@ -53,6 +58,7 @@ exports[`LogBoxMessage Should handle truncated links 1`] = `
     isHighlighted="false"
     isPressable="true"
     layoutDirection="ltr"
+    maxFontSizeMultiplier="1.5"
     textDecorationLineType="underline"
   >
     https://reactnative.dev
@@ -60,6 +66,7 @@ exports[`LogBoxMessage Should handle truncated links 1`] = `
   <rn-text
     allowFontScaling="true"
     layoutDirection="ltr"
+    maxFontSizeMultiplier="1.5"
   >
      and https:/
   </rn-text>
@@ -73,6 +80,7 @@ exports[`LogBoxMessage Should make links tappable 1`] = `
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1.5"
   overflow="hidden"
 >
   <rn-text
@@ -81,6 +89,7 @@ exports[`LogBoxMessage Should make links tappable 1`] = `
     isHighlighted="false"
     isPressable="true"
     layoutDirection="ltr"
+    maxFontSizeMultiplier="1.5"
     textDecorationLineType="underline"
   >
     https://reactnative.dev
@@ -96,6 +105,7 @@ exports[`LogBoxMessage Should strip "TransformError " without breaking substitut
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     normal 
@@ -106,6 +116,7 @@ exports[`LogBoxMessage Should strip "TransformError " without breaking substitut
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     substitution
@@ -116,6 +127,7 @@ exports[`LogBoxMessage Should strip "TransformError " without breaking substitut
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
      normal
@@ -130,6 +142,7 @@ exports[`LogBoxMessage should render a plaintext message and clean the content 1
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1"
   overflow="hidden"
 >
   This should not start with Error:
@@ -143,6 +156,7 @@ exports[`LogBoxMessage should render a plaintext message with no substitutions 1
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1"
   overflow="hidden"
 >
   normal substitution normal
@@ -156,6 +170,7 @@ exports[`LogBoxMessage should render message 1`] = `
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1.5"
   overflow="hidden"
 >
   Some kind of message
@@ -169,6 +184,7 @@ exports[`LogBoxMessage should render message truncated to 6 chars 1`] = `
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1.5"
   overflow="hidden"
 >
   Some 
@@ -183,6 +199,7 @@ exports[`LogBoxMessage should render message with substitution 1`] = `
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     normal 
@@ -193,6 +210,7 @@ exports[`LogBoxMessage should render message with substitution 1`] = `
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     substitution
@@ -203,6 +221,7 @@ exports[`LogBoxMessage should render message with substitution 1`] = `
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
      normal
@@ -217,6 +236,7 @@ exports[`LogBoxMessage should render message with substitution, truncating the f
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1.5"
   overflow="hidden"
 >
   nor
@@ -231,6 +251,7 @@ exports[`LogBoxMessage should render message with substitution, truncating the s
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     normal 
@@ -241,6 +262,7 @@ exports[`LogBoxMessage should render message with substitution, truncating the s
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     substi
@@ -256,6 +278,7 @@ exports[`LogBoxMessage should render message with substitution, truncating the t
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     normal 
@@ -266,6 +289,7 @@ exports[`LogBoxMessage should render message with substitution, truncating the t
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     substitution
@@ -276,6 +300,7 @@ exports[`LogBoxMessage should render message with substitution, truncating the t
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
      no
@@ -290,6 +315,7 @@ exports[`LogBoxMessage should render the whole message when maxLength = message 
   fontSize="NaN"
   fontSizeMultiplier="NaN"
   foregroundColor="rgba(0, 0, 0, 0)"
+  maxFontSizeMultiplier="1.5"
   overflow="hidden"
 >
   Some kind of message
@@ -304,6 +330,7 @@ exports[`LogBoxMessage should render the whole message with substitutions when m
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     normal 
@@ -314,6 +341,7 @@ exports[`LogBoxMessage should render the whole message with substitutions when m
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
     substitution
@@ -324,6 +352,7 @@ exports[`LogBoxMessage should render the whole message with substitutions when m
     fontSize="NaN"
     fontSizeMultiplier="NaN"
     foregroundColor="rgba(0, 0, 0, 0)"
+    maxFontSizeMultiplier="1.5"
     overflow="hidden"
   >
      normal

@@ -9,13 +9,14 @@
 #import "RCTAccessibilityManager+Internal.h"
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
-#import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTUIManager.h>
 
 #import "CoreModulesPlugins.h"
+
+#import <Accessibility/Accessibility.h>
 
 NSString *const RCTAccessibilityManagerDidUpdateMultiplierNotification =
     @"RCTAccessibilityManagerDidUpdateMultiplierNotification";
@@ -26,6 +27,39 @@ NSString *const RCTAccessibilityManagerDidUpdateMultiplierNotification =
 @property (nonatomic, assign) CGFloat multiplier;
 
 @end
+
+// Show Borders was called Button Shapes before iOS 26.1, where UIKit deprecated
+// its API in favor of the Accessibility framework. Early iOS 26.1 betas can lack
+// the new symbols even though they pass the version availability check.
+static BOOL RCTIsShowBordersEnabled()
+{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260100
+  if (@available(iOS 26.1, *)) {
+    if (AXShowBordersEnabled != nullptr && &AXShowBordersEnabledStatusDidChangeNotification != nullptr) {
+      return AXShowBordersEnabled();
+    }
+  }
+#endif
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  return UIAccessibilityButtonShapesEnabled();
+#pragma clang diagnostic pop
+}
+
+static NSNotificationName RCTShowBordersStatusDidChangeNotification()
+{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260100
+  if (@available(iOS 26.1, *)) {
+    if (AXShowBordersEnabled != nullptr && &AXShowBordersEnabledStatusDidChangeNotification != nullptr) {
+      return AXShowBordersEnabledStatusDidChangeNotification;
+    }
+  }
+#endif
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  return UIAccessibilityButtonShapesEnabledStatusDidChangeNotification;
+#pragma clang diagnostic pop
+}
 
 @implementation RCTAccessibilityManager
 
@@ -92,6 +126,11 @@ RCT_EXPORT_MODULE()
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(showBordersStatusDidChange:)
+                                                 name:RCTShowBordersStatusDidChangeNotification()
+                                               object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(voiceVoiceOverStatusDidChange:)
                                                  name:UIAccessibilityVoiceOverStatusDidChangeNotification
                                                object:nil];
@@ -103,6 +142,7 @@ RCT_EXPORT_MODULE()
     _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled();
     _isDarkerSystemColorsEnabled = UIAccessibilityDarkerSystemColorsEnabled();
     _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
+    _isShowBordersEnabled = RCTIsShowBordersEnabled();
     _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
   }
   return self;
@@ -203,6 +243,19 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"reduceTransparencyChanged"
                                                                           body:@(_isReduceTransparencyEnabled)];
+#pragma clang diagnostic pop
+  }
+}
+
+- (void)showBordersStatusDidChange:(__unused NSNotification *)notification
+{
+  BOOL newShowBordersEnabled = RCTIsShowBordersEnabled();
+  if (_isShowBordersEnabled != newShowBordersEnabled) {
+    _isShowBordersEnabled = newShowBordersEnabled;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"showBordersChanged"
+                                                                          body:@(_isShowBordersEnabled)];
 #pragma clang diagnostic pop
   }
 }
@@ -411,6 +464,11 @@ static void setMultipliers(
   onSuccess(@[ @(_isReduceTransparencyEnabled) ]);
 }
 
+- (void)getCurrentShowBordersState:(RCTResponseSenderBlock)onSuccess onError:(__unused RCTResponseSenderBlock)onError
+{
+  onSuccess(@[ @(_isShowBordersEnabled) ]);
+}
+
 - (void)getCurrentVoiceOverState:(RCTResponseSenderBlock)onSuccess onError:(__unused RCTResponseSenderBlock)onError
 {
   onSuccess(@[ @(_isVoiceOverEnabled) ]);
@@ -429,15 +487,6 @@ void RCTAccessibilityManagerSetIsVoiceOverEnabled(
     BOOL isVoiceOverEnabled)
 {
   [accessibilityManager _setIsVoiceOverEnabled:isVoiceOverEnabled];
-}
-
-@end
-
-@implementation RCTBridge (RCTAccessibilityManager)
-
-- (RCTAccessibilityManager *)accessibilityManager
-{
-  return [self moduleForClass:[RCTAccessibilityManager class]];
 }
 
 @end

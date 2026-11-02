@@ -28,6 +28,8 @@ target_link_libraries(react_renderer_animated
       react_renderer_uimanager
       react_renderer_scheduler
       react_renderer_animationbackend
+      react_bridging
+      react_nativemodule_core
       glog
       folly_runtime
 )

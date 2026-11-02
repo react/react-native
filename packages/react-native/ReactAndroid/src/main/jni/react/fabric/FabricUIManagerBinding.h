@@ -115,6 +115,8 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void schedulerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) override;
 
+  void schedulerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<Tag, AnimatedProps> &updates) override;
+
   void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) override;
 
   void schedulerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) override;
@@ -164,6 +166,12 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   // Track pending transactions, one per surfaceId
   std::mutex pendingTransactionsMutex_;
   std::vector<MountingTransaction> pendingTransactions_;
+
+  // Pull model: keeps the coordinator that reported a surface's commit alive
+  // until the UI thread handles the pull, as iOS does by capturing it in the
+  // block it dispatches to the main queue. Java only gets the surface id.
+  std::mutex pullableMountingCoordinatorsMutex_;
+  std::unordered_map<SurfaceId, std::shared_ptr<const MountingCoordinator>> pullableMountingCoordinators_;
 
   float pointScaleFactor_ = 1;
 

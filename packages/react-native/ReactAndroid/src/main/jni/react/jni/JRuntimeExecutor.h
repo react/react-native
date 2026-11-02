@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <ReactCommon/RuntimeExecutor.h>
+#include <React/RuntimeExecutor.h>
 #include <fbjni/fbjni.h>
 
 namespace facebook::react {

@@ -18,7 +18,7 @@ import {
   elementsThatOverlapOffsets,
   newRangeCount,
 } from '../VirtualizeUtils';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 describe('newRangeCount', function () {
   it('handles subset', function () {

@@ -23,7 +23,7 @@ const {parseTopLevelType} = require('../parseTopLevelType');
 const {getPrimitiveTypeAnnotation} = require('./componentsUtils');
 
 // $FlowFixMe[unclear-type] there's no flowtype for ASTs
-type EventTypeAST = Object;
+type EventTypeAST = any;
 
 function buildCommandSchemaInternal(
   name: string,

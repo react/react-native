@@ -39,7 +39,7 @@ const FileTemplate = ({
 
 ${IncludeTemplate({headerPrefix, file: 'ShadowNodes.h'})}
 #include <React/ComponentRegistry.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 

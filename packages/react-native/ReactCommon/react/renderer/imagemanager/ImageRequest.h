@@ -9,12 +9,12 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <React/Utils.h>
 #include <react/renderer/imagemanager/ImageResponse.h>
 #include <react/renderer/imagemanager/ImageResponseObserver.h>
 #include <react/renderer/imagemanager/ImageResponseObserverCoordinator.h>
 #include <react/renderer/imagemanager/ImageTelemetry.h>
 #include <react/renderer/imagemanager/primitives.h>
-#include <react/utils/SharedFunction.h>
 
 namespace facebook::react {
 

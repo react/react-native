@@ -16,6 +16,7 @@ packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModul
 **/*.windows.js
 
 **/node_modules/resolve/test/resolver/malformed_package_json/package.json
+**/node_modules/invariant/**
 
 ; Checked-in build output
 packages/debugger-frontend/dist/**
@@ -39,6 +40,8 @@ flow-typed/
 packages/react-native/flow/
 
 [options]
+builtin_lib=core-only
+
 emoji=true
 
 format.bracket_spacing=false
@@ -94,4 +97,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.331.0
+^0.338.0

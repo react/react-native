@@ -34,6 +34,7 @@ class FakeUIManager : UIManager, UIBlockViewResolver {
     error("Not yet implemented")
   }
 
+  @Deprecated("")
   override fun <T : View?> startSurface(
       rootView: T,
       moduleName: String,
@@ -44,6 +45,7 @@ class FakeUIManager : UIManager, UIBlockViewResolver {
     error("Not yet implemented")
   }
 
+  @Deprecated("")
   override fun stopSurface(surfaceId: Int) {
     error("Not yet implemented")
   }

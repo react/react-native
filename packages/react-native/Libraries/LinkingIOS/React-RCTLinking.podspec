@@ -49,5 +49,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "ReactCommon", :subspec => "turbomodule/core", :additional_framework_paths => ["react/nativemodule/core"])
   add_dependency(s, "React-NativeModulesApple", :additional_framework_paths => ["build/generated/ios"])
 
+  add_rn_third_party_dependencies(s)
+
   mark_as_react_native_build(s)
 end

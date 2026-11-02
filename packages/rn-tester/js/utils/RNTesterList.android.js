@@ -82,6 +82,10 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/RefreshControl/RefreshControlExample'),
   },
   {
+    key: 'SafeAreaInsetsExample',
+    module: require('../examples/SafeAreaInsets/SafeAreaInsetsExample'),
+  },
+  {
     key: 'ScrollViewExample',
     category: 'Basic',
     module: require('../examples/ScrollView/ScrollViewExample'),
@@ -205,6 +209,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       key: 'ContentURLAndroid',
       category: 'Android',
       module: require('../examples/ContentURLAndroid/ContentURLAndroid'),
+    },
+    {
+      key: 'PhotoPickerAndroid',
+      category: 'Android',
+      module: require('../examples/PhotoPickerAndroid/PhotoPickerAndroid'),
     },
     {
       key: 'URLExample',

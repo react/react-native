@@ -82,6 +82,7 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
       double viewportWidth,
       double viewportHeight,
       double devicePixelRatio,
+      double fontScale,
       double viewportOffsetX,
       double viewportOffsetY);
 

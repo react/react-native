@@ -13,8 +13,7 @@
 
 - (instancetype)initWithErrorMessage:(NSString *)errorMessage stack:(NSArray<RCTJSStackFrame *> *)stack
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _errorMessage = [errorMessage copy];
     _stack = [stack copy];
   }

@@ -7,14 +7,13 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <string>
 
+#include <React/Bridging.h>
+#include <React/NativeModuleCore.h>
 #include <jsi/jsi.h>
-#include <react/bridging/LongLivedObject.h>
-
-#include <ReactCommon/TurboModule.h>
 
 namespace facebook::react {
 

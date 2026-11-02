@@ -7,9 +7,9 @@
 
 #pragma once
 
+#include <React/RuntimeExecutor.h>
 #include <ReactCommon/CallInvokerHolder.h>
 #include <ReactCommon/NativeMethodCallInvokerHolder.h>
-#include <ReactCommon/RuntimeExecutor.h>
 #include <fbjni/fbjni.h>
 #include <jni.h>
 #include <jsi/jsi.h>

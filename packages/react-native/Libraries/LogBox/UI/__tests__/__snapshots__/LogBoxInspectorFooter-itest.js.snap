@@ -14,6 +14,7 @@ exports[`LogBoxInspectorFooter should render no buttons and a message for syntax
     foregroundColor="rgba(255, 255, 255, 0.6)"
     height="48"
     lineHeight="20"
+    maxFontSizeMultiplier="1.5"
     nativeID="logbox_dismissable_text"
     overflow="hidden"
     paddingBottom="50"
@@ -31,7 +32,7 @@ exports[`LogBoxInspectorFooter should render two buttons for error 1`] = `
   flexDirection="row"
 >
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_dismiss"
   >
@@ -42,13 +43,14 @@ exports[`LogBoxInspectorFooter should render two buttons for error 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Dismiss
     </rn-paragraph>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_minimize"
   >
@@ -59,13 +61,14 @@ exports[`LogBoxInspectorFooter should render two buttons for error 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Minimize
     </rn-paragraph>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_copy"
   >
@@ -76,6 +79,7 @@ exports[`LogBoxInspectorFooter should render two buttons for error 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Copy
@@ -90,7 +94,7 @@ exports[`LogBoxInspectorFooter should render two buttons for fatal 1`] = `
   flexDirection="row"
 >
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_dismiss"
   >
@@ -101,13 +105,14 @@ exports[`LogBoxInspectorFooter should render two buttons for fatal 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Dismiss
     </rn-paragraph>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_minimize"
   >
@@ -118,13 +123,14 @@ exports[`LogBoxInspectorFooter should render two buttons for fatal 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Minimize
     </rn-paragraph>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_copy"
   >
@@ -135,6 +141,7 @@ exports[`LogBoxInspectorFooter should render two buttons for fatal 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Copy
@@ -149,7 +156,7 @@ exports[`LogBoxInspectorFooter should render two buttons for warning 1`] = `
   flexDirection="row"
 >
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_dismiss"
   >
@@ -160,13 +167,14 @@ exports[`LogBoxInspectorFooter should render two buttons for warning 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Dismiss
     </rn-paragraph>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_minimize"
   >
@@ -177,13 +185,14 @@ exports[`LogBoxInspectorFooter should render two buttons for warning 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Minimize
     </rn-paragraph>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
     nativeID="logbox_footer_button_copy"
   >
@@ -194,6 +203,7 @@ exports[`LogBoxInspectorFooter should render two buttons for warning 1`] = `
       foregroundColor="rgba(255, 255, 255, 1)"
       includeFontPadding="false"
       lineHeight="20"
+      maxFontSizeMultiplier="1.5"
       overflow="hidden"
     >
       Copy

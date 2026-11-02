@@ -29,7 +29,7 @@ internal class VirtualViewModeChangeEvent(
   override fun getEventName(): String = "modeChange"
 
   @VisibleForTesting
-  override fun getEventData(): WritableMap {
+  protected override fun getEventData(): WritableMap {
     return Arguments.createMap().apply {
       putInt("mode", mode.value)
       putMap("targetRect", targetRectAsMap)
@@ -37,7 +37,7 @@ internal class VirtualViewModeChangeEvent(
     }
   }
 
-  override fun experimental_isSynchronous(): Boolean = synchronous
+  protected override fun experimental_isSynchronous(): Boolean = synchronous
 }
 
 private fun Rect.toReadableMap(): ReadableMap =

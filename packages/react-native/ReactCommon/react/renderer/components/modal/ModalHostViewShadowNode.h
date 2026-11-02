@@ -9,10 +9,10 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/View.h>
 #include <react/renderer/components/FBReactNativeSpec/EventEmitters.h>
 #include <react/renderer/components/FBReactNativeSpec/Props.h>
 #include <react/renderer/components/modal/ModalHostViewState.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
 namespace facebook::react {
 
@@ -29,7 +29,7 @@ class ModalHostViewShadowNode final : public ConcreteViewShadowNode<
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::RootNodeKind);

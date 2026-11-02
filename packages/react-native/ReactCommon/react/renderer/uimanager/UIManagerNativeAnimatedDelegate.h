@@ -9,11 +9,6 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <jsi/jsi.h>
-
-#include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
-#include <react/renderer/core/RawValue.h>
-
 namespace facebook::react {
 
 class UIManagerNativeAnimatedDelegate {

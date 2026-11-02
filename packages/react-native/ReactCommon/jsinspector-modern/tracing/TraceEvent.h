@@ -9,8 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <React/Timing.h>
 #include <jsinspector-modern/tracing/TracingCategory.h>
-#include <react/timing/primitives.h>
 
 #include <folly/dynamic.h>
 

@@ -9,8 +9,8 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <ReactCommon/RuntimeExecutor.h>
-#include <ReactCommon/SchedulerPriority.h>
+#include <React/CallInvoker.h>
+#include <React/RuntimeExecutor.h>
 #include <jsi/jsi.h>
 #include <atomic>
 #include <memory>

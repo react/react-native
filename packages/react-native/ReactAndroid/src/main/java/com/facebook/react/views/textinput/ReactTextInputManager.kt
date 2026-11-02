@@ -758,7 +758,7 @@ public open class ReactTextInputManager public constructor() :
     } else if (KEYBOARD_TYPE_VISIBLE_PASSWORD.equals(keyboardType, ignoreCase = true)) {
       // This will supersede secureTextEntry={false}. If it doesn't, due to the way
       //  the flags work out, the underlying field will end up a URI-type field.
-      flagsToSet = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+      flagsToSet = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
     } else if (KEYBOARD_TYPE_URI.equals(keyboardType, ignoreCase = true)) {
       flagsToSet = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
     }
@@ -807,15 +807,21 @@ public open class ReactTextInputManager public constructor() :
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
+  )
+  public fun setBorderRadius(view: ReactEditText, index: Int, rawBorderRadius: Dynamic) {
+    val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+    setBorderRadius(view, BorderRadiusProp.entries[index], borderRadius)
+  }
+
+  @Deprecated(
+      "Don't use setBorderRadius(view, index, Float) as it was deprecated in React Native 0.88.0.",
   )
   public fun setBorderRadius(view: ReactEditText, index: Int, borderRadius: Float) {
+    // Direct body: DynamicFromObject(Float).asDouble() throws, and setFromDynamic
+    // would not map NaN back to null like the original Float path did.
     val radius =
-        if (borderRadius.isNaN()) {
-          null
-        } else {
-          LengthPercentage(borderRadius, LengthPercentageType.POINT)
-        }
+        if (borderRadius.isNaN()) null
+        else LengthPercentage(borderRadius, LengthPercentageType.POINT)
     setBorderRadius(view, BorderRadiusProp.entries[index], radius)
   }
 

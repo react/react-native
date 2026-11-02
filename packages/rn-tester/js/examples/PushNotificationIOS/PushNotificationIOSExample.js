@@ -15,8 +15,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useCallback, useState} from 'react';
-import {Button, StyleSheet, View} from 'react-native';
-import PushNotificationIOS from 'react-native/Libraries/PushNotificationIOS/PushNotificationIOS';
+import {Button, PushNotificationIOS, StyleSheet, View} from 'react-native';
 
 // Fires setApplicationIconBadgeNumber many times back-to-back.
 const RAPID_FIRE_COUNT = 50;

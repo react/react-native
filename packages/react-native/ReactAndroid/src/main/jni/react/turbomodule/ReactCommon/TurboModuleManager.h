@@ -12,11 +12,10 @@
 #include <memory>
 #include <unordered_map>
 
+#include <React/NativeModuleCore.h>
+#include <React/RuntimeExecutor.h>
 #include <ReactCommon/CallInvokerHolder.h>
-#include <ReactCommon/JavaTurboModule.h>
 #include <ReactCommon/NativeMethodCallInvokerHolder.h>
-#include <ReactCommon/RuntimeExecutor.h>
-#include <ReactCommon/TurboModule.h>
 #include <ReactCommon/TurboModuleManagerDelegate.h>
 #include <react/jni/JRuntimeExecutor.h>
 

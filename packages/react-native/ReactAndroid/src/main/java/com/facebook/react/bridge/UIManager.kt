@@ -16,14 +16,29 @@ import com.facebook.react.uimanager.events.EventDispatcher
 
 @OptIn(UnstableReactNativeAPI::class)
 public interface UIManager : PerformanceCounter {
-  /** Registers a new root view. @Deprecated call startSurface instead */
+  /**
+   * Registers a new root view.
+   *
+   * @deprecated Use `ReactHost.createSurface(...)` and `ReactSurface.start()` instead.
+   */
   @UiThread
   @ThreadConfined(ThreadConfined.UI)
-  @Deprecated("")
+  @Deprecated(
+      "This legacy surface API will be removed in a future release. " +
+          "Use ReactHost.createSurface(...) and ReactSurface.start() instead."
+  )
   public fun <T : View> addRootView(rootView: T, initialProps: WritableMap?): Int
 
-  /** Registers a new root view with width and height. */
+  /**
+   * Registers a new root view with width and height.
+   *
+   * @deprecated Use `ReactHost.createSurface(...)` and `ReactSurface.start()` instead.
+   */
   @AnyThread
+  @Deprecated(
+      "This legacy surface API will be removed in a future release. " +
+          "Use ReactHost.createSurface(...) and ReactSurface.start() instead."
+  )
   public fun <T : View?> startSurface(
       rootView: T,
       moduleName: String,
@@ -35,8 +50,14 @@ public interface UIManager : PerformanceCounter {
   /**
    * Stop a surface from running in JS and clears up native memory usage. Assumes that the native
    * View hierarchy has already been cleaned up. Fabric-only.
+   *
+   * @deprecated Use `ReactSurface.stop()` instead.
    */
-  @AnyThread public fun stopSurface(surfaceId: Int)
+  @AnyThread
+  @Deprecated(
+      "This legacy surface API will be removed in a future release. Use ReactSurface.stop() instead."
+  )
+  public fun stopSurface(surfaceId: Int)
 
   /**
    * Updates the layout specs of the RootShadowNode based on the Measure specs received by

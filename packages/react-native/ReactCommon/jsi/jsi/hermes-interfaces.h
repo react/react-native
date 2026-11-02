@@ -35,8 +35,8 @@ class Debugger;
 struct IEventLoopControl {
   /// `scheduleTask` is a function used by the caller (the Runtime) to schedule
   /// some \p task. The scheduled task may perform VM operations. Thus, the
-  /// integrator must only run the tasks when it had exclusive access to the
-  /// Runtime.
+  /// integrator must only run the tasks when the Runtime is alive and it has
+  /// exclusive access to it.
   virtual void scheduleTask(const std::function<void()>& task) = 0;
   /// Used by the caller (the Runtime) to register a new source that can
   /// schedule new work via `scheduleTask`. This method return an uint64

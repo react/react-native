@@ -35,7 +35,7 @@
 
 namespace facebook::yoga {
 
-std::atomic<uint32_t> gCurrentGenerationCount(0);
+constinit std::atomic<uint32_t> gCurrentGenerationCount(0);
 
 static bool hasAutoHorizontalMargin(const Style& style) {
   for (const auto direction : {Direction::LTR, Direction::RTL}) {
@@ -850,15 +850,19 @@ static float computeFlexBasisForChildren(
 // Container-level recursion does no layout writes (no positions, no
 // alignment, no flex distribution); only the descendant leaf measure
 // callbacks observe state changes (the same ones a normal layout pass
-// would invoke). Roughly equivalent to FlexLayout's dedicated
-// `computeMinContentSize` cost: one measure call per leaf + linear walk
-// per container.
+// would invoke).
+//
+// Results are memoized per node and axis for the current layout generation
+// (see `LayoutResults::minContent`): each leaf's measure callback runs at
+// most once per axis per layout, and each container is walked once per
+// distinct `ownerWidth`.
 static float computeMinContentMainSize(
     yoga::Node* const node,
     const FlexDirection requestedAxis,
     const Direction ownerDirection,
     const float ownerWidth,
-    const float ownerHeight) {
+    const float ownerHeight,
+    const uint32_t generationCount) {
   const bool wantRow = isRow(requestedAxis);
 
   // 1. Static value wins for any node (leaf or container). Short-circuits
@@ -872,22 +876,29 @@ static float computeMinContentMainSize(
     return staticMin.unwrap();
   }
 
+  LayoutResults& layout = node->getLayout();
+  const auto axisIndex = yoga::to_underlying(dimension(requestedAxis));
+
   if (node->hasMeasureFunc()) {
-    // 2. Dynamic min-content callback if set (for Primitives whose
-    // min-content depends on state). Otherwise fall back to the regular
-    // measure function with `AtMost 0`, which text measurers naturally
-    // answer with longest-word width.
-    const YGSize size = node->hasMinContentMeasureFunc()
-        ? node->measureMinContent(
-              wantRow ? 0.0f : YGUndefined,
-              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
-              wantRow ? YGUndefined : 0.0f,
-              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost)
-        : node->measure(
-              wantRow ? 0.0f : YGUndefined,
-              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
-              wantRow ? YGUndefined : 0.0f,
-              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
+    if (layout.minContentGeneration[axisIndex] != generationCount) {
+      // 2. Dynamic min-content callback if set (for Primitives whose
+      // min-content depends on state). Otherwise fall back to the regular
+      // measure function with `AtMost 0`, which text measurers naturally
+      // answer with longest-word width.
+      const YGSize size = node->hasMinContentMeasureFunc()
+          ? node->measureMinContent(
+                wantRow ? 0.0f : YGUndefined,
+                wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+                wantRow ? YGUndefined : 0.0f,
+                wantRow ? MeasureMode::Undefined : MeasureMode::AtMost)
+          : node->measure(
+                wantRow ? 0.0f : YGUndefined,
+                wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+                wantRow ? YGUndefined : 0.0f,
+                wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
+      layout.minContent[axisIndex] = wantRow ? size.width : size.height;
+      layout.minContentGeneration[axisIndex] = generationCount;
+    }
     // Add the leaf's own padding and border, like the container branch below.
     const Direction leafDirection = node->resolveDirection(ownerDirection);
     const float paddingAndBorder =
@@ -895,11 +906,16 @@ static float computeMinContentMainSize(
             requestedAxis, leafDirection, ownerWidth) +
         node->style().computeFlexEndPaddingAndBorder(
             requestedAxis, leafDirection, ownerWidth);
-    return (wantRow ? size.width : size.height) + paddingAndBorder;
+    return layout.minContent[axisIndex] + paddingAndBorder;
   }
 
   if (node->getChildCount() == 0) {
     return 0.0f;
+  }
+
+  if (layout.minContentGeneration[axisIndex] == generationCount &&
+      yoga::inexactEquals(layout.minContentOwnerWidth[axisIndex], ownerWidth)) {
+    return layout.minContent[axisIndex];
   }
 
   const Direction direction = node->resolveDirection(ownerDirection);
@@ -919,11 +935,21 @@ static float computeMinContentMainSize(
     }
 
     float childMain = computeMinContentMainSize(
-        child, nodeMainAxis, direction, ownerWidth, ownerHeight);
+        child,
+        nodeMainAxis,
+        direction,
+        ownerWidth,
+        ownerHeight,
+        generationCount);
     childMain += child->style().computeMarginForAxis(nodeMainAxis, ownerWidth);
 
     float childCross = computeMinContentMainSize(
-        child, nodeCrossAxis, direction, ownerWidth, ownerHeight);
+        child,
+        nodeCrossAxis,
+        direction,
+        ownerWidth,
+        ownerHeight,
+        generationCount);
     childCross +=
         child->style().computeMarginForAxis(nodeCrossAxis, ownerWidth);
 
@@ -943,7 +969,11 @@ static float computeMinContentMainSize(
   const bool nodeMainIsRow = isRow(nodeMainAxis);
   const float widthMin = nodeMainIsRow ? mainTotal : crossMax;
   const float heightMin = nodeMainIsRow ? crossMax : mainTotal;
-  return wantRow ? widthMin : heightMin;
+  const float minContent = wantRow ? widthMin : heightMin;
+  layout.minContent[axisIndex] = minContent;
+  layout.minContentOwnerWidth[axisIndex] = ownerWidth;
+  layout.minContentGeneration[axisIndex] = generationCount;
+  return minContent;
 }
 
 // Computes the CSS Flexbox §4.5 automatic minimum main-axis size for
@@ -962,7 +992,8 @@ static FloatOptional computeAutoMinMainSize(
     const Direction direction,
     const float ownerMainAxisSize,
     const float ownerWidth,
-    const float ownerHeight) {
+    const float ownerHeight,
+    const uint32_t generationCount) {
   if (child->hasErrata(Errata::MinSizeUndefinedInsteadOfAuto)) {
     return FloatOptional{};
   }
@@ -1007,7 +1038,7 @@ static FloatOptional computeAutoMinMainSize(
 
   // Content size suggestion: probe via min-content recursion.
   const FloatOptional contentMain = FloatOptional{computeMinContentMainSize(
-      child, mainAxis, direction, ownerWidth, ownerHeight)};
+      child, mainAxis, direction, ownerWidth, ownerHeight, generationCount)};
 
   // Combine per §4.5: floor = min(content, specified) when specified is
   // definite; otherwise floor = min(content, transferred) when transferred
@@ -1107,12 +1138,16 @@ static float distributeFreeSpaceSecondPass(
         // Use a relative epsilon guard instead of exact equality: after the
         // first pass removes all constrained items,
         // totalFlexShrinkScaledFactors may be near-zero rather than exactly 0
-        // due to floating-point cancellation.  Dividing by a near-zero value
+        // due to floating-point cancellation. Dividing by a near-zero value
         // produces a gigantic childSize that overwhelms the min/max clamp.
+        // A positive total is always such a residual: with non-negative
+        // flexShrink a real total is never positive
+        // (https://github.com/react/yoga/issues/2038).
         const float shrinkFactorMagnitude =
             std::abs(flexLine.layout.totalFlexShrinkScaledFactors);
         if (yoga::isDefined(flexLine.layout.totalFlexShrinkScaledFactors) &&
-            shrinkFactorMagnitude < 1e-6f) {
+            (shrinkFactorMagnitude < 1e-6f ||
+             flexLine.layout.totalFlexShrinkScaledFactors > 0)) {
           childSize = childFlexBasis + flexShrinkScaledFactor;
         } else {
           childSize = childFlexBasis +
@@ -1263,9 +1298,9 @@ static float distributeFreeSpaceSecondPass(
   return deltaFreeSpace;
 }
 
-// It distributes the free space to the flexible items.For those flexible items
-// whose min and max constraints are triggered, those flex item's clamped size
-// is removed from the remaingfreespace.
+// It distributes the free space to the flexible items. For those flexible items
+// whose min and max constraints are triggered, that flex item's clamped size
+// is removed from the remainingFreeSpace.
 static void distributeFreeSpaceFirstPass(
     yoga::Node* const node,
     FlexLine& flexLine,
@@ -1432,7 +1467,8 @@ static void resolveFlexibleLength(
               direction,
               mainAxisOwnerSize,
               availableInnerWidth,
-              availableInnerHeight);
+              availableInnerHeight,
+              generationCount);
     }
   } else {
     for (auto currentLineChild : flexLine.itemsInFlow) {
@@ -2672,6 +2708,19 @@ static void calculateLayoutImpl(
 //  Input parameters are the same as calculateLayoutImpl (see above)
 //  Return parameter is true if layout was performed, false if skipped
 //
+// A cached result holds only for the owner size it was computed against when
+// the node's style resolves a percentage against that size.
+static bool isCachedForOwnerSize(
+    const yoga::Node* const node,
+    const CachedMeasurement& cachedMeasurement,
+    const float ownerWidth,
+    const float ownerHeight) {
+  return (!node->style().resolvesAgainstOwnerWidth() ||
+          yoga::inexactEquals(cachedMeasurement.ownerWidth, ownerWidth)) &&
+      (!node->style().resolvesAgainstOwnerHeight() ||
+       yoga::inexactEquals(cachedMeasurement.ownerHeight, ownerHeight));
+}
+
 bool calculateLayoutInternal(
     yoga::Node* const node,
     const float availableWidth,
@@ -2704,6 +2753,8 @@ bool calculateLayoutInternal(
     layout->cachedLayout.heightSizingMode = SizingMode::MaxContent;
     layout->cachedLayout.computedWidth = -1;
     layout->cachedLayout.computedHeight = -1;
+    layout->cachedLayout.ownerWidth = -1;
+    layout->cachedLayout.ownerHeight = -1;
   }
 
   CachedMeasurement* cachedResults = nullptr;
@@ -2736,7 +2787,9 @@ bool calculateLayoutInternal(
             layout->cachedLayout.computedHeight,
             marginAxisRow,
             marginAxisColumn,
-            node->getConfig())) {
+            node->getConfig()) &&
+        isCachedForOwnerSize(
+            node, layout->cachedLayout, ownerWidth, ownerHeight)) {
       cachedResults = &layout->cachedLayout;
     } else {
       // Try to use the measurement cache.
@@ -2754,7 +2807,9 @@ bool calculateLayoutInternal(
                 layout->cachedMeasurements[i].computedHeight,
                 marginAxisRow,
                 marginAxisColumn,
-                node->getConfig())) {
+                node->getConfig()) &&
+            isCachedForOwnerSize(
+                node, layout->cachedMeasurements[i], ownerWidth, ownerHeight)) {
           cachedResults = &layout->cachedMeasurements[i];
           break;
         }
@@ -2766,7 +2821,9 @@ bool calculateLayoutInternal(
         yoga::inexactEquals(
             layout->cachedLayout.availableHeight, availableHeight) &&
         layout->cachedLayout.widthSizingMode == widthSizingMode &&
-        layout->cachedLayout.heightSizingMode == heightSizingMode) {
+        layout->cachedLayout.heightSizingMode == heightSizingMode &&
+        isCachedForOwnerSize(
+            node, layout->cachedLayout, ownerWidth, ownerHeight)) {
       cachedResults = &layout->cachedLayout;
     }
   } else {
@@ -2776,7 +2833,9 @@ bool calculateLayoutInternal(
           yoga::inexactEquals(
               layout->cachedMeasurements[i].availableHeight, availableHeight) &&
           layout->cachedMeasurements[i].widthSizingMode == widthSizingMode &&
-          layout->cachedMeasurements[i].heightSizingMode == heightSizingMode) {
+          layout->cachedMeasurements[i].heightSizingMode == heightSizingMode &&
+          isCachedForOwnerSize(
+              node, layout->cachedMeasurements[i], ownerWidth, ownerHeight)) {
         cachedResults = &layout->cachedMeasurements[i];
         break;
       }
@@ -2839,6 +2898,8 @@ bool calculateLayoutInternal(
           layout->measuredDimension(Dimension::Width);
       newCacheEntry->computedHeight =
           layout->measuredDimension(Dimension::Height);
+      newCacheEntry->ownerWidth = ownerWidth;
+      newCacheEntry->ownerHeight = ownerHeight;
     }
   }
 

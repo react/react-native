@@ -667,6 +667,7 @@ function emitCommonTypes(
     Double: emitDouble,
     Float: emitFloat,
     UnsafeObject: emitGenericObject,
+    LegacyObject: emitGenericObject,
     Object: emitGenericObject,
     $Partial: emitPartial,
     Partial: emitPartial,

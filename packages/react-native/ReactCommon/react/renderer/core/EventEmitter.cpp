@@ -7,6 +7,8 @@
 
 #include "EventEmitter.h"
 
+#include <react/renderer/core/ShadowNodeFamily.h>
+
 #include <cxxreact/TraceSection.h>
 #include <folly/dynamic.h>
 #include <jsi/jsi.h>
@@ -42,9 +44,7 @@ std::mutex& EventEmitter::DispatchMutex() {
 }
 
 ValueFactory EventEmitter::defaultPayloadFactory() {
-  static auto payloadFactory =
-      ValueFactory{[](jsi::Runtime& runtime) { return jsi::Object(runtime); }};
-  return payloadFactory;
+  return [](jsi::Runtime& runtime) { return jsi::Object(runtime); };
 }
 
 EventEmitter::EventEmitter(
@@ -232,6 +232,13 @@ void EventEmitter::setEnabled(bool enabled) {
 void EventEmitter::setShadowNodeFamily(
     std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily) {
   shadowNodeFamily_ = std::move(shadowNodeFamily);
+}
+
+Tag EventEmitter::getTag() const {
+  if (auto family = shadowNodeFamily_.lock()) {
+    return family->getTag();
+  }
+  return kNoTag;
 }
 
 const SharedEventTarget& EventEmitter::getEventTarget() const {

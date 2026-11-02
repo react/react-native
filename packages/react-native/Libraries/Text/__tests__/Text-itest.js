@@ -323,7 +323,9 @@ describe('<Text>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['selectable']}).toJSX()).toEqual(
-          <rn-paragraph selectable={'true'}>{TEST_TEXT}</rn-paragraph>,
+          <rn-selectableParagraph selectable={'true'}>
+            {TEST_TEXT}
+          </rn-selectableParagraph>,
         );
       });
 
@@ -609,7 +611,7 @@ describe('<Text>', () => {
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(
-          <rn-paragraph accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}">
+          <rn-paragraph accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}">
             {TEST_TEXT}
           </rn-paragraph>,
         );
@@ -628,6 +630,22 @@ describe('<Text>', () => {
             .toJSX(),
         ).toEqual(
           <rn-paragraph importantForAccessibility="no-hide-descendants" />,
+        );
+      });
+    });
+
+    describe('aria-live', () => {
+      it('is mapped to accessibilityLiveRegion', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(<Text aria-live="polite">{TEST_TEXT}</Text>);
+        });
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLiveRegion']}).toJSX(),
+        ).toEqual(
+          <rn-paragraph accessibilityLiveRegion="polite">
+            {TEST_TEXT}
+          </rn-paragraph>,
         );
       });
     });
@@ -818,7 +836,7 @@ describe('<Text>', () => {
       expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
         .toMatchInlineSnapshot(`
         <rn-paragraph
-          accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}"
+          accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}"
         >
           the text
         </rn-paragraph>

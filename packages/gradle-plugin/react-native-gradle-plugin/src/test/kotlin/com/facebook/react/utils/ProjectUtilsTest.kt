@@ -15,7 +15,9 @@ import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
 import com.facebook.react.utils.ProjectUtils.isNewArchEnabled
+import com.facebook.react.utils.ProjectUtils.isStrictCxxApiEnabled
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
+import com.facebook.react.utils.ProjectUtils.shouldResetMetroCacheBeforeBundling
 import java.io.File
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
@@ -113,6 +115,94 @@ class ProjectUtilsTest {
     val project = createProject()
     project.extensions.extraProperties.set("edgeToEdgeEnabled", "¯\\_(ツ)_/¯")
     assertThat(project.isEdgeToEdgeEnabled).isFalse()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_returnsTrueByDefault() {
+    assertThat(createProject().shouldResetMetroCacheBeforeBundling).isTrue()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_withDisabledViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("resetMetroCacheBeforeBundling", "false")
+    assertThat(project.shouldResetMetroCacheBeforeBundling).isFalse()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_withEnabledViaProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("resetMetroCacheBeforeBundling", "true")
+    assertThat(project.shouldResetMetroCacheBeforeBundling).isTrue()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_withInvalidViaProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("resetMetroCacheBeforeBundling", "¯\\_(ツ)_/¯")
+    assertThat(project.shouldResetMetroCacheBeforeBundling).isTrue()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_withDisabledViaScopedProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.resetMetroCacheBeforeBundling", "false")
+    assertThat(project.shouldResetMetroCacheBeforeBundling).isFalse()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_withEnabledViaScopedProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.resetMetroCacheBeforeBundling", "true")
+    assertThat(project.shouldResetMetroCacheBeforeBundling).isTrue()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_withInvalidViaScopedProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.resetMetroCacheBeforeBundling", "¯\\_(ツ)_/¯")
+    assertThat(project.shouldResetMetroCacheBeforeBundling).isTrue()
+  }
+
+  @Test
+  fun shouldResetMetroCacheBeforeBundling_withBothProperties_scopedPropertyWins() {
+    val project = createProject()
+    project.extensions.extraProperties.set("resetMetroCacheBeforeBundling", "true")
+    project.extensions.extraProperties.set("react.resetMetroCacheBeforeBundling", "false")
+    assertThat(project.shouldResetMetroCacheBeforeBundling).isFalse()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_returnsFalseByDefault() {
+    assertThat(createProject().isStrictCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withEnabledViaProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("strictCxxApiEnabled", "true")
+    assertThat(project.isStrictCxxApiEnabled).isTrue()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withEnabledViaScopedProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.strictCxxApiEnabled", "true")
+    assertThat(project.isStrictCxxApiEnabled).isTrue()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withDisabledViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("strictCxxApiEnabled", "false")
+    assertThat(project.isStrictCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isStrictCxxApiEnabled_withInvalidViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("strictCxxApiEnabled", "¯\\_(ツ)_/¯")
+    assertThat(project.isStrictCxxApiEnabled).isFalse()
   }
 
   @Test

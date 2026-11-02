@@ -276,7 +276,7 @@ function renderSmallSwitchOption(
   );
 }
 
-function PlainInput(props: Object): React.Node {
+function PlainInput(props: any): React.Node {
   return (
     <TextInput
       autoCapitalize="none"

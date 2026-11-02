@@ -16,11 +16,18 @@
 
 export {default as AppContainer} from '../Libraries/ReactNative/AppContainer';
 export {default as AssetSourceResolver} from '../Libraries/Image/AssetSourceResolver';
+export {colorAttribute} from '../Libraries/Components/View/ReactNativeStyleAttributes';
+export {ConditionallyIgnoredEventHandlers} from '../Libraries/NativeComponent/ViewConfigIgnore';
 export {customDirectEventTypes} from '../Libraries/Renderer/shims/ReactNativeViewConfigRegistry';
 export {default as DevLoadingView} from '../Libraries/Utilities/DevLoadingView';
+export {dispatchCommand} from '../Libraries/ReactNative/RendererProxy';
 export {default as getDevServer} from '../Libraries/Core/Devtools/getDevServer';
 export {default as HMRClient} from '../Libraries/Utilities/HMRClient';
 export {default as NativeExceptionsManager} from '../Libraries/Core/NativeExceptionsManager';
 export {default as NativeRedBox} from '../Libraries/NativeModules/specs/NativeRedBox';
 export {default as NativeSourceCode} from '../Libraries/NativeModules/specs/NativeSourceCode';
 export {PressabilityDebugView} from '../Libraries/Pressability/PressabilityDebug';
+export {default as insetsDiffer} from '../Libraries/Utilities/differ/insetsDiffer';
+export {default as pointsDiffer} from '../Libraries/Utilities/differ/pointsDiffer';
+export {default as processColorArray} from '../Libraries/StyleSheet/processColorArray';
+export * as Renderer from '../Libraries/ReactNative/RendererProxy';

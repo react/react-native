@@ -32,7 +32,7 @@ import java.io.File
  * A dummy implementation of [DevSupportManager] to be used in production mode where development
  * features aren't needed.
  */
-public open class ReleaseDevSupportManager : DevSupportManager {
+public open class ReleaseDevSupportManager() : DevSupportManager {
 
   private val defaultJSExceptionHandler: JSExceptionHandler = DefaultJSExceptionHandler()
 

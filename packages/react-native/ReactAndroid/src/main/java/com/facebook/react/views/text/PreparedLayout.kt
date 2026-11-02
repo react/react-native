@@ -22,4 +22,10 @@ internal class PreparedLayout(
     val reactTags: IntArray,
     val textBreakStrategy: Int,
     val justificationMode: Int,
+    val baseTextAttributes: TextAttributeProps,
+    // The full, un-ellipsized logical text. Required (no default) because when the layout is
+    // ellipsized `layout.text` is an Android `Ellipsizer` whose `toString()` is only the on-screen
+    // (truncated) text; every caller must consciously supply the complete string so accessibility
+    // and view-hierarchy consumers never fall back to the truncated text.
+    val sourceText: CharSequence,
 )

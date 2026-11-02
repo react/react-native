@@ -8,10 +8,10 @@
  * @format
  */
 
+import NativeCPUTime from '../../../packages/react-native/src/private/testing/fantom/specs/NativeCPUTime';
 import {reportBenchmarkResult} from '../runtime/setup';
 import {getConstants} from './index';
 import nullthrows from 'nullthrows';
-import NativeCPUTime from 'react-native/src/private/testing/fantom/specs/NativeCPUTime';
 import {
   Bench,
   type BenchOptions,

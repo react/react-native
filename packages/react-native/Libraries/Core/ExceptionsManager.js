@@ -77,7 +77,7 @@ function reportException(
   }
 
   // $FlowFixMe[unclear-type]
-  const extraData: Object = {
+  const extraData: any = {
     // $FlowFixMe[incompatible-use] we can't define a type with a Symbol-keyed field in flow
     ...e[decoratedExtraDataKey],
     jsEngine: e.jsEngine,

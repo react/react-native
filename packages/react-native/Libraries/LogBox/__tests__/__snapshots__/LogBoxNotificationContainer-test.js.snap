@@ -4,8 +4,10 @@ exports[`LogBoxNotificationContainer should render both an error and warning not
 <SafeAreaView
   style={
     Object {
+      "alignItems": "center",
       "bottom": 20,
       "left": 10,
+      "pointerEvents": "box-none",
       "position": "absolute",
       "right": 10,
     }
@@ -14,9 +16,11 @@ exports[`LogBoxNotificationContainer should render both an error and warning not
   <View
     style={
       Object {
-        "borderRadius": 8,
+        "borderRadius": 12,
         "marginBottom": 5,
+        "maxWidth": 600,
         "overflow": "hidden",
+        "width": "100%",
       }
     }
   >
@@ -59,9 +63,11 @@ exports[`LogBoxNotificationContainer should render both an error and warning not
   <View
     style={
       Object {
-        "borderRadius": 8,
+        "borderRadius": 12,
         "marginBottom": 5,
+        "maxWidth": 600,
         "overflow": "hidden",
+        "width": "100%",
       }
     }
   >
@@ -116,8 +122,10 @@ exports[`LogBoxNotificationContainer should render the latest error notification
 <SafeAreaView
   style={
     Object {
+      "alignItems": "center",
       "bottom": 20,
       "left": 10,
+      "pointerEvents": "box-none",
       "position": "absolute",
       "right": 10,
     }
@@ -126,9 +134,11 @@ exports[`LogBoxNotificationContainer should render the latest error notification
   <View
     style={
       Object {
-        "borderRadius": 8,
+        "borderRadius": 12,
         "marginBottom": 5,
+        "maxWidth": 600,
         "overflow": "hidden",
+        "width": "100%",
       }
     }
   >
@@ -175,8 +185,10 @@ exports[`LogBoxNotificationContainer should render the latest warning notificati
 <SafeAreaView
   style={
     Object {
+      "alignItems": "center",
       "bottom": 20,
       "left": 10,
+      "pointerEvents": "box-none",
       "position": "absolute",
       "right": 10,
     }
@@ -185,9 +197,11 @@ exports[`LogBoxNotificationContainer should render the latest warning notificati
   <View
     style={
       Object {
-        "borderRadius": 8,
+        "borderRadius": 12,
         "marginBottom": 5,
+        "maxWidth": 600,
         "overflow": "hidden",
+        "width": "100%",
       }
     }
   >

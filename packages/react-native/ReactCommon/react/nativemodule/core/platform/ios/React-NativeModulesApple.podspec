@@ -37,6 +37,7 @@ Pod::Spec.new do |s|
     s.source_files = podspec_sources("ReactCommon/**/*.{mm,cpp,h}", "ReactCommon/**/*.{h}")
 
     s.dependency "ReactCommon/turbomodule/core"
+    s.dependency "ReactCommon/turbomodule/coreUmbrella"
     s.dependency "React-bridging"
     s.dependency "React-callinvoker"
     s.dependency "React-Core"

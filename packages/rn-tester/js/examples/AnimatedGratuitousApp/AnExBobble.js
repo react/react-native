@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function computeNewSelected(gestureState: Object): ?number {
+function computeNewSelected(gestureState: any): ?number {
   const {dx, dy} = gestureState;
   let minDist = Infinity;
   let newSelected = null;

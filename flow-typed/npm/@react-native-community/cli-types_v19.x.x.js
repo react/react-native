@@ -35,7 +35,7 @@ declare module '@react-native-community/cli-types' {
       name: string,
       version: string,
     },
-    func: CommandFunction<Object>,
+    func: CommandFunction<any>,
     options?: Array<CommandOption<(ctx: Config) => OptionValue>>,
   };
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5c7271fe5fcdd90f61a5a07772b820e5>>
+ * @generated SignedSource<<ce1f3ba8d99493c855b95ce9929716ac>>
  */
 
 /**
@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 #include <react/featureflags/ReactNativeFeatureFlagsOverridesOSSCanary.h>
 
@@ -28,6 +28,14 @@ namespace facebook::react {
 class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatureFlagsOverridesOSSCanary {
  public:
     ReactNativeFeatureFlagsOverridesOSSExperimental() = default;
+
+  bool disableIdleEventDispatchFrameCallbackRearmAndroid() override {
+    return true;
+  }
+
+  bool disableIdleMountItemFrameCallbackRearmAndroid() override {
+    return true;
+  }
 
   bool enableFlexboxAutoMinSizeInStrictMode() override {
     return true;

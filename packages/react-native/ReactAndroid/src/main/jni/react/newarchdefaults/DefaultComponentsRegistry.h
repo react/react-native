@@ -7,13 +7,13 @@
 
 #pragma once
 
+#include <React/ComponentRegistry.h>
+#include <React/RendererCore.h>
 #include <fbjni/fbjni.h>
-#include <react/fabric/ComponentFactory.h>
-#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
-#include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
-#include <react/renderer/core/ConcreteComponentDescriptor.h>
 
 namespace facebook::react {
+
+class ComponentFactory;
 
 class DefaultComponentsRegistry : public facebook::jni::JavaClass<DefaultComponentsRegistry> {
  public:

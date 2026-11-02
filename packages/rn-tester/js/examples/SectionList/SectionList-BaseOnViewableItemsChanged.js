@@ -8,10 +8,7 @@
  * @format
  */
 
-import type {
-  ViewabilityConfig,
-  ViewToken,
-} from 'react-native/Libraries/Lists/ViewabilityHelper';
+import type {ListViewToken, ViewabilityConfig} from 'react-native';
 
 import SectionListBaseExample from './SectionListBaseExample';
 import * as React from 'react';
@@ -30,6 +27,9 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
   waitForInteraction?: ?boolean,
 }): React.Node {
   const {offScreen, horizontal, useScrollRefScroll, waitForInteraction} = props;
+  const exampleTestID = `section-list-viewability-${
+    horizontal === true ? 'horizontal' : 'vertical'
+  }-${waitForInteraction === true ? 'wait' : 'no-wait'}`;
   const [output, setOutput] = useState('');
   const viewabilityConfig: ViewabilityConfig = {
     ...BASE_VIEWABILITY_CONFIG,
@@ -37,8 +37,8 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
   };
   const exampleProps = {
     onViewableItemsChanged: (info: {
-      changed: Array<ViewToken>,
-      viewableItems: Array<ViewToken>,
+      changed: Array<ListViewToken>,
+      viewableItems: Array<ListViewToken>,
       ...
     }) =>
       setOutput(
@@ -62,6 +62,7 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
     <SectionListBaseExample
       ref={ref}
       exampleProps={exampleProps}
+      exampleTestID={exampleTestID}
       onTest={onTest}
       testOutput={output}>
       {offScreen === true ? <View style={styles.offScreen} /> : null}

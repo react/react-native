@@ -71,7 +71,7 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
             return
           }
       var accessibilityCollectionItem: ReadableMap? =
-          nextChild.getTag(R.id.accessibility_collection_item) as ReadableMap
+          nextChild.getTag(R.id.accessibility_collection_item) as? ReadableMap
 
       if (nextChild !is ViewGroup) {
         return

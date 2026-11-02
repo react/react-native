@@ -139,7 +139,7 @@ function generateRCTThirdPartyComponents(
     .flatMap(library => {
       const components = componentsInLibraries[library];
       return components.map(({componentName, className}) => {
-        return `\t\t@"${componentName}": NSClassFromString(@"${className}"), // ${library}`;
+        return `\t\t@"${componentName}": @"${className}", // ${library}`;
       });
     })
     .join('\n');

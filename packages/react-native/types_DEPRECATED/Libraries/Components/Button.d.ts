@@ -16,7 +16,6 @@ export interface ButtonProps extends Pick<
   TouchableNativeFeedbackProps & TouchableOpacityProps,
   | 'accessibilityLabel'
   | 'accessibilityState'
-  | 'hasTVPreferredFocus'
   | 'nextFocusDown'
   | 'nextFocusForward'
   | 'nextFocusLeft'

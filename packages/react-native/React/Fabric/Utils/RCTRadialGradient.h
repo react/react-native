@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <React/View.h>
 #import <UIKit/UIKit.h>
-#import <react/renderer/components/view/ViewProps.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

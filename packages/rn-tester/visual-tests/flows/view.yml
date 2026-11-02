@@ -1,0 +1,66 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ViewExample/opacity
+- extendedWaitUntil:
+    visible:
+      id: 'view-test-opacity'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/view/opacity/default
+    cropOn:
+      id: 'view-test-opacity'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ViewExample/overflow
+- extendedWaitUntil:
+    visible:
+      id: 'view-test-overflow'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/view/overflow/default
+    cropOn:
+      id: 'view-test-overflow'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ViewExample/flexgap
+- extendedWaitUntil:
+    visible:
+      id: 'view-test-flexgap'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/view/flexgap/default
+    cropOn:
+      id: 'view-test-flexgap'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ViewExample/z-index
+- extendedWaitUntil:
+    visible:
+      id: 'z-index-button'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/view/z-index/default
+    cropOn:
+      id: 'z-index-button'
+- tapOn:
+    id: 'z-index-button'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/view/z-index/reordered
+    cropOn:
+      id: 'z-index-button'

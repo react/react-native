@@ -180,7 +180,7 @@ BaseViewProps::BaseViewProps(
           rawProps,
           "shadowOffset",
           sourceProps.shadowOffset,
-          {})),
+          Size{0, -3})),
       shadowOpacity(convertRawProp(
           context,
           rawProps,
@@ -192,7 +192,7 @@ BaseViewProps::BaseViewProps(
           rawProps,
           "shadowRadius",
           sourceProps.shadowRadius,
-          {})),
+          (Float)3)),
       cursor(
           convertRawProp(context, rawProps, "cursor", sourceProps.cursor, {})),
       boxShadow(convertRawProp(
@@ -303,6 +303,12 @@ BaseViewProps::BaseViewProps(
           "onLayout",
           sourceProps.onLayout,
           {})),
+      onSafeAreaInsetsChange(convertRawProp(
+          context,
+          rawProps,
+          "experimental_onSafeAreaInsetsChange",
+          sourceProps.onSafeAreaInsetsChange,
+          {})),
       events(convertRawProp(context, rawProps, sourceProps.events, {})),
       collapsable(convertRawProp(
           context,
@@ -373,6 +379,8 @@ void BaseViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(isolation);
     RAW_SET_PROP_SWITCH_CASE_BASIC(hitSlop);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onLayout);
+    RAW_SET_PROP_SWITCH_CASE(
+        onSafeAreaInsetsChange, "experimental_onSafeAreaInsetsChange");
     RAW_SET_PROP_SWITCH_CASE_BASIC(collapsable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(collapsableChildren);
     RAW_SET_PROP_SWITCH_CASE_BASIC(removeClippedSubviews);
@@ -609,6 +617,10 @@ SharedDebugStringConvertibleList BaseViewProps::getDebugProps() const {
               "backgroundImage",
               backgroundImage,
               defaultBaseViewProps.backgroundImage),
+          debugStringConvertibleItem(
+              "experimental_onSafeAreaInsetsChange",
+              onSafeAreaInsetsChange,
+              defaultBaseViewProps.onSafeAreaInsetsChange),
       };
 }
 #endif

@@ -14,6 +14,7 @@
 #include <react/renderer/core/EventLogger.h>
 #include <react/renderer/core/EventQueue.h>
 #include <react/renderer/core/EventQueueProcessor.h>
+#include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/StatePipe.h>
 #include <react/renderer/core/StateUpdate.h>
 #include <memory>
@@ -46,7 +47,7 @@ class EventDispatcher {
   /*
    * Experimental API exposed to support EventEmitter::experimental_flushSync.
    */
-  void experimental_flushSync() const;
+  void experimental_flushSync(Tag tag) const;
 
   /*
    * Dispatches a raw event with asynchronous batched priority. Before the

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/renderer/graphics/Color.h>
+#include <React/Graphics.h>
 #include <functional>
 #include <string>
 

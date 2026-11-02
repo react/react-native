@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #warning Deprecated: use <jserrorhandler/ErrorUtils.h> instead.
 
 #include <jserrorhandler/ErrorUtils.h>

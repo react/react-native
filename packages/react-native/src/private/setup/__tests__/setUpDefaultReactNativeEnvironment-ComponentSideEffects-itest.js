@@ -24,12 +24,10 @@ describe('setUpReactNativeEnvironment (components side-effects)', () => {
 
     // $FlowExpectedError[prop-missing]
     const viewModuleId = require.resolveWeak(
-      'react-native/Libraries/Components/View/View',
+      '../../../../Libraries/Components/View/View',
     );
     // $FlowExpectedError[prop-missing]
-    const textModuleId = require.resolveWeak(
-      'react-native/Libraries/Text/Text',
-    );
+    const textModuleId = require.resolveWeak('../../../../Libraries/Text/Text');
     // $FlowExpectedError[prop-missing]
     const metroModules = require.getModules();
     const viewModule = metroModules.get(viewModuleId);

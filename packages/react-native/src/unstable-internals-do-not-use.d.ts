@@ -14,6 +14,8 @@
 // ----------------------------------------------------------------------------
 
 import type * as React from 'react';
+import type {ColorValue} from '../types_generated/Libraries/StyleSheet/StyleSheet';
+import type {ProcessedColorValue} from '../types_generated/Libraries/StyleSheet/processColor';
 
 // #region AppContainer
 
@@ -63,6 +65,17 @@ export class AssetSourceResolver {
   fromSource(source: string): ResolvedAssetSource;
   static pickScale(scales: number[], deviceScale?: number): number;
 }
+
+// #endregion
+// #region ConditionallyIgnoredEventHandlers
+
+/**
+ * Marks generated event-handler view-config attributes as conditionally
+ * ignored on platforms that do not synthesize them from native view managers.
+ */
+export function ConditionallyIgnoredEventHandlers<
+  T extends Readonly<Record<string, true>>,
+>(value: T): T | undefined;
 
 // #endregion
 // #region customDirectEventTypes
@@ -210,5 +223,44 @@ interface PressabilityDebugViewProps {
 
 /** Debug overlay that visualizes press targets when enabled via the Inspector. */
 export const PressabilityDebugView: React.ComponentType<PressabilityDebugViewProps>;
+
+// #endregion
+// #region Renderer
+
+/** Renderer APIs used by generated Codegen modules. */
+export * as Renderer from '../types_generated/Libraries/ReactNative/RendererImplementation';
+export {dispatchCommand} from '../types_generated/Libraries/ReactNative/RendererImplementation';
+
+// #endregion
+// #region Codegen view config helpers
+
+export const colorAttribute:
+  | true
+  | Readonly<{
+      process: typeof import('../types_generated/Libraries/StyleSheet/processColor').default;
+    }>;
+
+export function processColorArray(
+  colors: ReadonlyArray<ColorValue> | null | undefined,
+): ReadonlyArray<ProcessedColorValue> | null;
+
+type Point = {
+  x: number | null | undefined;
+  y: number | null | undefined;
+};
+
+export function pointsDiffer(
+  one: Point | null | undefined,
+  two: Point | null | undefined,
+): boolean;
+
+type EdgeInsets = {
+  top: number | null | undefined;
+  left: number | null | undefined;
+  right: number | null | undefined;
+  bottom: number | null | undefined;
+};
+
+export function insetsDiffer(one: EdgeInsets, two: EdgeInsets): boolean;
 
 // #endregion

@@ -10,7 +10,11 @@
 namespace facebook::react {
 
 void StubQueue::runOnQueue(std::function<void()>&& func) {
-  callbackQueue_.push(func);
+  auto callback = std::make_unique<std::function<void()>>(std::move(func));
+  {
+    std::lock_guard lock(mutex_);
+    callbackQueue_.push(std::move(callback));
+  }
 }
 
 void StubQueue::runOnQueueSync(std::function<void()>&& runnable) {
@@ -23,23 +27,29 @@ void StubQueue::quitSynchronous() {
 }
 
 void StubQueue::flush() {
-  while (!callbackQueue_.empty()) {
-    tick();
+  while (tick()) {
   }
 }
 
 bool StubQueue::hasPendingCallbacks() {
+  std::lock_guard lock(mutex_);
   return !callbackQueue_.empty();
 }
 
-void StubQueue::tick() {
-  if (!callbackQueue_.empty()) {
-    auto callback = callbackQueue_.front();
-    callbackQueue_.pop();
-    if (callback) {
-      callback();
+bool StubQueue::tick() {
+  std::unique_ptr<std::function<void()>> callback;
+  {
+    std::lock_guard lock(mutex_);
+    if (callbackQueue_.empty()) {
+      return false;
     }
+    callback = std::move(callbackQueue_.front());
+    callbackQueue_.pop();
   }
+  if (*callback) {
+    (*callback)();
+  }
+  return true;
 }
 
 } // namespace facebook::react

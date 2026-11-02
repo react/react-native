@@ -79,7 +79,7 @@ jobs:
         run: yarn cxx-api-validate --output-dir /tmp/cxx-api-snapshots
       - name: Upload C++ API snapshots
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: cxx-api-snapshots
           path: /tmp/cxx-api-snapshots/

@@ -9,12 +9,19 @@
 
 #include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/renderer/core/ReactPrimitives.h>
-#include <react/renderer/core/ShadowNode.h>
+#include <React/RendererCore.h>
+
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/mounting/ShadowTree.h>
 
 namespace facebook::react {
+
+struct AnimatedProps;
 
 /*
  * Abstract class for UIManager's delegate.
@@ -67,6 +74,12 @@ class UIManagerDelegate {
   virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) = 0;
 
   /*
+   * Synchronous update of animated props for many views at once.
+   */
+  virtual void uiManagerShouldSynchronouslyUpdateAnimatedProps(
+      const std::unordered_map<Tag, AnimatedProps> &updates) = 0;
+
+  /*
    * Called after updateShadowTree is invoked.
    */
   virtual void uiManagerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) = 0;
@@ -90,11 +103,6 @@ class UIManagerDelegate {
    * Called after a new React revision of the shadow tree is committed.
    */
   virtual void uiManagerDidFinishReactCommit(const ShadowTree &shadowTree) = 0;
-
-  /*
-   * Called after a React revision of the shadow tree is promoted to be merged.
-   */
-  virtual void uiManagerDidPromoteReactRevision(const ShadowTree &shadowTree) = 0;
 
   using OnSurfaceStartCallback = std::function<void(const ShadowTree &shadowTree)>;
   virtual void uiManagerShouldAddOnSurfaceStartCallback(OnSurfaceStartCallback &&callback) = 0;

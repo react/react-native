@@ -7,10 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
+#import <React/ComponentRegistry.h>
 #import <React/RCTComponentViewDescriptor.h>
 #import <React/RCTComponentViewProtocol.h>
 #import <jsi/jsi.h>
-#import <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -16,8 +16,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <react/debug/flags.h>
-#include <react/debug/react_native_assert.h>
+#include <React/Debug.h>
 
 namespace facebook::react {
 

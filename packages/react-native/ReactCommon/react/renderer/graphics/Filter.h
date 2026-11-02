@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/graphics/Color.h>
 #include <react/renderer/graphics/Float.h>
 
@@ -100,7 +102,9 @@ struct DropShadowParams {
     result["offsetX"] = offsetX;
     result["offsetY"] = offsetY;
     result["standardDeviation"] = standardDeviation;
-    result["color"] = *color;
+    if (color) {
+      result["color"] = *color;
+    }
     return result;
   }
 #endif

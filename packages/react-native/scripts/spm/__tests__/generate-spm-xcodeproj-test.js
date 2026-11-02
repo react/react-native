@@ -15,12 +15,15 @@ const {
   buildEmbedFrameworksScript,
   buildSchemePreActionScript,
   buildSyncAutolinkingScript,
+  ensureStubPackages,
   flavorForBuildConfiguration,
   frameworkConditionalSettings,
+  generateReactNativeXcconfig,
   generateXcscheme,
   readScriptPhasesManifest,
 } = require('../generate-spm-xcodeproj');
-const {execFileSync} = require('node:child_process');
+const {DOMParser} = require('@xmldom/xmldom');
+const {execFileSync, spawnSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -137,6 +140,40 @@ describe('scheme pre-action', () => {
     expect(result).toContain('&lt;');
   });
 
+  function parsedSyncScript(xml) {
+    return new DOMParser()
+      .parseFromString(xml, 'text/xml')
+      .getElementsByTagName('ActionContent')[0]
+      .getAttribute('scriptText');
+  }
+
+  const MULTILINE_SCRIPT = 'set -e\n\tif [ "$A" ]; then\r\n  a && b < c\nfi';
+
+  it('keeps line breaks and tabs when an XML parser reads the script', () => {
+    const result = generateXcscheme(
+      'MyApp',
+      'TARGET_UUID',
+      'MyApp',
+      MULTILINE_SCRIPT,
+    );
+    expect(parsedSyncScript(result)).toBe(MULTILINE_SCRIPT);
+  });
+
+  it('encodes line breaks when it refreshes a script written with raw ones', () => {
+    const legacy = generateXcscheme(
+      'MyApp',
+      'TARGET_UUID',
+      'MyApp',
+      'OLD',
+    ).replace('scriptText = "OLD"', 'scriptText = "old\n# line 2"');
+    const updated = addPreActionToScheme(
+      legacy,
+      'TARGET_UUID',
+      MULTILINE_SCRIPT,
+    );
+    expect(parsedSyncScript(updated)).toBe(MULTILINE_SCRIPT);
+  });
+
   it('refreshes stale script text and is idempotent', () => {
     const first = generateXcscheme(
       'MyApp',
@@ -234,6 +271,281 @@ describe('sync scripts', () => {
     );
   });
 
+  // Xcode writes per-user scheme state into <watched dir>/.swiftpm/ on every
+  // IDE build. Counting that as a change made every IDE build re-sync.
+  describe('the watched-directory staleness probe', () => {
+    // Runs the generated `find` in isolation, with $P/$STAMP bound as the
+    // build phase binds them.
+    function probe(watchedDir, stampFile) {
+      const findCommand = /\$\((find "\$P"[^()]*)\)/.exec(script)?.[1];
+      expect(findCommand).toBeDefined();
+      return execFileSync(
+        '/bin/bash',
+        [
+          '-c',
+          `set -euo pipefail\nP="$1"\nSTAMP="$2"\n${String(findCommand)}\n`,
+          'probe',
+          watchedDir,
+          stampFile,
+        ],
+        {encoding: 'utf8'},
+      );
+    }
+
+    let root;
+    let watchedDir;
+    let stampFile;
+    let schemeState;
+    let source;
+
+    beforeEach(() => {
+      root = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-sync-stale-'));
+      watchedDir = path.join(root, 'node_modules', 'react-native-foo');
+      schemeState = path.join(
+        watchedDir,
+        '.swiftpm/xcode/xcuserdata/someone.xcuserdatad/xcschemes/xcschememanagement.plist',
+      );
+      source = path.join(watchedDir, 'Foo.swift');
+      fs.mkdirSync(path.dirname(schemeState), {recursive: true});
+      fs.writeFileSync(schemeState, '<plist/>\n');
+      fs.writeFileSync(source, '// src\n');
+      // The stamp is written after the tree, so nothing is newer until a test
+      // makes it so.
+      stampFile = path.join(root, '.spm-sync-stamp');
+      fs.writeFileSync(stampFile, '');
+    });
+
+    afterEach(() => {
+      fs.rmSync(root, {recursive: true, force: true});
+    });
+
+    const touch = file => {
+      const future = new Date(Date.now() + 10_000);
+      fs.utimesSync(file, future, future);
+    };
+
+    it('ignores Xcode-owned state under .swiftpm', () => {
+      touch(schemeState);
+      expect(probe(watchedDir, stampFile)).toBe('');
+    });
+
+    it('still reports a changed source file', () => {
+      touch(source);
+      expect(probe(watchedDir, stampFile).trim()).toBe(source);
+    });
+  });
+
+  it('re-syncs when a path listed as absent appears', () => {
+    const loop = /^ABSENT_FILE=[\s\S]*?^fi$/m.exec(script)?.[0];
+    expect(loop).toBeDefined();
+    const probe = srcRoot =>
+      execFileSync(
+        '/bin/bash',
+        [
+          '-c',
+          `set -euo pipefail\nSRCROOT="$1"\nSTALE=0\n${String(loop)}\necho "$STALE"\n`,
+          'probe',
+          srcRoot,
+        ],
+        {encoding: 'utf8'},
+      ).trim();
+
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-sync-absent-'));
+    try {
+      const autolinkDir = path.join(root, 'build/generated/autolinking');
+      fs.mkdirSync(autolinkDir, {recursive: true});
+      const watched = path.join(root, 'precompiled');
+      fs.mkdirSync(watched);
+      expect(probe(root)).toBe('0');
+
+      fs.writeFileSync(
+        path.join(autolinkDir, '.spm-sync-watch-absent'),
+        `${watched}\n`,
+      );
+      expect(probe(root)).toBe('1');
+
+      fs.rmdirSync(watched);
+      expect(probe(root)).toBe('0');
+    } finally {
+      fs.rmSync(root, {recursive: true, force: true});
+    }
+  });
+
+  describe('stale inputs and a recorded plugin framework mismatch', () => {
+    const MISMATCH =
+      'error: The Xcode project links ExpoCore.framework, but no autolinking plugin provides it on this machine.';
+
+    let root;
+    let srcRoot;
+    let xcodeprojPath;
+    let generatedDir;
+    let fakeNode;
+    let rnDir;
+    let syncLog;
+
+    // Does to the generated dir what a real sync does: on a mismatch it prints
+    // the errors, records them, refreshes the stamp, and exits 2.
+    const FAKE_NODE = `#!/bin/bash
+if [ "$1" = "--print" ]; then
+  echo "$FAKE_RN_DIR"
+  exit 0
+fi
+echo sync >> "$FAKE_SYNC_LOG"
+DIR="$SRCROOT/build/generated/autolinking"
+date > "$DIR/.spm-sync-stamp"
+if [ -n "$FAKE_MISMATCH" ]; then
+  echo "$FAKE_MISMATCH" >&2
+  echo "$FAKE_MISMATCH" > "$DIR/.spm-plugin-mismatch"
+  exit 2
+fi
+rm -f "$DIR/.spm-plugin-mismatch"
+`;
+
+    const setTime = (file, secondsFromNow) => {
+      const time = Date.now() / 1000 + secondsFromNow;
+      fs.utimesSync(file, time, time);
+    };
+
+    beforeEach(() => {
+      root = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-sync-mismatch-'));
+      srcRoot = path.join(root, 'app');
+      xcodeprojPath = path.join(srcRoot, 'MyApp.xcodeproj');
+      generatedDir = path.join(srcRoot, 'build', 'generated', 'autolinking');
+      rnDir = path.join(root, 'react-native');
+      fs.mkdirSync(xcodeprojPath, {recursive: true});
+      fs.mkdirSync(generatedDir, {recursive: true});
+      fs.mkdirSync(path.join(rnDir, 'scripts'), {recursive: true});
+      fs.writeFileSync(path.join(rnDir, 'scripts', 'setup-apple-spm.js'), '');
+      fs.writeFileSync(path.join(srcRoot, 'package.json'), '{}\n');
+      fs.writeFileSync(path.join(xcodeprojPath, '.spm-injected.json'), '{}\n');
+      fs.writeFileSync(
+        path.join(generatedDir, '.spm-plugin-flavored-frameworks.json'),
+        '[]\n',
+      );
+      for (const file of [
+        path.join(srcRoot, 'package.json'),
+        path.join(xcodeprojPath, '.spm-injected.json'),
+        path.join(generatedDir, '.spm-plugin-flavored-frameworks.json'),
+      ]) {
+        setTime(file, -100);
+      }
+      fakeNode = path.join(root, 'node');
+      fs.writeFileSync(fakeNode, FAKE_NODE, {mode: 0o755});
+      syncLog = path.join(root, 'syncs.log');
+    });
+
+    afterEach(() => {
+      fs.rmSync(root, {recursive: true, force: true});
+    });
+
+    function build({mismatch}) {
+      fs.writeFileSync(syncLog, '');
+      const result = spawnSync('/bin/bash', ['-c', script], {
+        encoding: 'utf8',
+        env: {
+          PATH: process.env.PATH,
+          SRCROOT: srcRoot,
+          PROJECT_FILE_PATH: xcodeprojPath,
+          NODE_BINARY: fakeNode,
+          FAKE_RN_DIR: rnDir,
+          FAKE_SYNC_LOG: syncLog,
+          FAKE_MISMATCH: mismatch ? MISMATCH : '',
+        },
+      });
+      const output = result.stdout + result.stderr;
+      return {
+        status: result.status,
+        errors: output.split(MISMATCH).length - 1,
+        syncs: fs.readFileSync(syncLog, 'utf8').split('sync').length - 1,
+      };
+    }
+
+    function writeStamp(secondsFromNow) {
+      const stamp = path.join(generatedDir, '.spm-sync-stamp');
+      fs.writeFileSync(stamp, 'earlier sync\n');
+      setTime(stamp, secondsFromNow);
+    }
+
+    it('syncs when the marker is newer than the stamp', () => {
+      writeStamp(-50);
+      setTime(path.join(xcodeprojPath, '.spm-injected.json'), -10);
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 1,
+      });
+    });
+
+    it('does not sync when only project.pbxproj is newer than the stamp', () => {
+      writeStamp(-50);
+      const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
+      fs.writeFileSync(pbxprojPath, '// !$*UTF8*$!\n');
+      setTime(pbxprojPath, -10);
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 0,
+      });
+    });
+
+    it('passes the next build after the recovery sync clears the mismatch', () => {
+      build({mismatch: true});
+      // `npx react-native spm sync`, run after precompiling the framework.
+      spawnSync(fakeNode, ['setup-apple-spm.js', 'sync'], {
+        env: {SRCROOT: srcRoot, FAKE_SYNC_LOG: syncLog, FAKE_MISMATCH: ''},
+      });
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 0,
+      });
+    });
+
+    it('fails the first build and prints the errors once', () => {
+      expect(build({mismatch: true})).toEqual({
+        status: 1,
+        errors: 1,
+        syncs: 1,
+      });
+    });
+
+    it('fails later builds with the recorded errors without re-running sync', () => {
+      build({mismatch: true});
+      expect(build({mismatch: true})).toEqual({
+        status: 1,
+        errors: 1,
+        syncs: 0,
+      });
+    });
+
+    it.each([
+      [
+        'the marker changes',
+        () => path.join(xcodeprojPath, '.spm-injected.json'),
+      ],
+      [
+        'spm update rewrites the plugin manifest',
+        () => path.join(generatedDir, '.spm-plugin-flavored-frameworks.json'),
+      ],
+      ['a dependency input changes', () => path.join(srcRoot, 'package.json')],
+    ])('re-runs sync when %s', (_, changedFile) => {
+      build({mismatch: true});
+      setTime(path.join(generatedDir, '.spm-sync-stamp'), -50);
+      setTime(path.join(generatedDir, '.spm-plugin-mismatch'), -50);
+      setTime(changedFile(), -10);
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 1,
+      });
+      expect(build({mismatch: false})).toEqual({
+        status: 0,
+        errors: 0,
+        syncs: 0,
+      });
+    });
+  });
+
   it('is deterministic, shared with the pre-action, and valid POSIX shell', () => {
     expect(buildSyncAutolinkingScript(baked)).toBe(script);
     expect(buildSchemePreActionScript(baked)).toBe(script);
@@ -291,6 +603,127 @@ describe('configuration-driven framework settings', () => {
     expect(serialized).toContain(
       'RN_SPM_REACT_FRAMEWORK[sdk=iphonesimulator*][arch=x86_64]',
     );
+  });
+});
+
+describe('generateReactNativeXcconfig', () => {
+  const DEVICE_ONLY = {...FRAMEWORK, slices: [FRAMEWORK.slices[0]]};
+
+  it('writes every setting the app target needs, extending inherited lists', () => {
+    expect(
+      generateReactNativeXcconfig(
+        ['Debug', 'Release'],
+        '../node_modules/react-native',
+        [DEVICE_ONLY],
+        [],
+      ),
+    ).toBe(
+      `// Generated by React Native on every \`spm add\` and \`spm update\`.
+// Do not edit: changes are overwritten.
+
+CLANG_CXX_LANGUAGE_STANDARD = c++20
+REACT_NATIVE_PATH = $(SRCROOT)/../node_modules/react-native
+
+HEADER_SEARCH_PATHS = $(inherited) "$(SRCROOT)/build/generated/autolinking/headers"
+OTHER_LDFLAGS = $(inherited) -ObjC "$(RN_SPM_REACT_BINARY)"
+FRAMEWORK_SEARCH_PATHS = $(inherited) "$(RN_SPM_REACT_SEARCH_PATH)"
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks
+
+RN_SPM_FLAVOR = release
+RN_SPM_FLAVOR[config=Debug] = debug
+SWIFT_ACTIVE_COMPILATION_CONDITIONS[config=Debug] = $(inherited) DEBUG
+RN_SPM_FLAVOR[config=Release] = release
+
+RN_SPM_REACT_FRAMEWORK[sdk=iphoneos*] = $(SRCROOT)/build/xcframeworks/$(RN_SPM_FLAVOR)/React.xcframework/ios-arm64/React.framework
+RN_SPM_REACT_BINARY[sdk=iphoneos*] = $(SRCROOT)/build/xcframeworks/$(RN_SPM_FLAVOR)/React.xcframework/ios-arm64/React.framework/React
+RN_SPM_REACT_SEARCH_PATH[sdk=iphoneos*] = $(SRCROOT)/build/xcframeworks/$(RN_SPM_FLAVOR)/React.xcframework/ios-arm64
+`,
+    );
+  });
+
+  it('anchors REACT_NATIVE_PATH on SRCROOT itself when react-native sits there', () => {
+    expect(
+      generateReactNativeXcconfig(['Debug'], '', [FRAMEWORK], []),
+    ).toContain('\nREACT_NATIVE_PATH = $(SRCROOT)\n');
+  });
+
+  it("conditions the flavor on the project's own configuration names", () => {
+    const xcconfig = generateReactNativeXcconfig(
+      ['Development', 'Staging'],
+      '../node_modules/react-native',
+      [FRAMEWORK],
+      [],
+    );
+    expect(xcconfig).toContain('RN_SPM_FLAVOR[config=Development] = debug\n');
+    expect(xcconfig).toContain(
+      'SWIFT_ACTIVE_COMPILATION_CONDITIONS[config=Development] = $(inherited) DEBUG\n',
+    );
+    expect(xcconfig).toContain('RN_SPM_FLAVOR[config=Staging] = release\n');
+    expect(xcconfig).not.toContain(
+      'SWIFT_ACTIVE_COMPILATION_CONDITIONS[config=Staging]',
+    );
+    expect(xcconfig).not.toMatch(/\[config=(Debug|Release)\]/);
+  });
+
+  // A configuration duplicated in Xcode keeps the base reference but has no
+  // line of its own until the next sync, and an unset flavor would resolve
+  // every framework path to nothing.
+  it('falls back to the release flavor for a configuration it does not list', () => {
+    const lines = generateReactNativeXcconfig(
+      ['Debug', 'Release'],
+      '../node_modules/react-native',
+      [FRAMEWORK],
+      [],
+    ).split('\n');
+    const fallback = lines.indexOf('RN_SPM_FLAVOR = release');
+    expect(fallback).toBeGreaterThan(-1);
+    expect(fallback).toBeLessThan(
+      lines.findIndex(line => line.startsWith('RN_SPM_FLAVOR[config=')),
+    );
+    expect(
+      lines.some(line =>
+        line.startsWith('SWIFT_ACTIVE_COMPILATION_CONDITIONS ='),
+      ),
+    ).toBe(false);
+  });
+
+  it('writes no plist quoting around conditional keys or path values', () => {
+    const xcconfig = generateReactNativeXcconfig(
+      ['Debug'],
+      '../node_modules/react-native',
+      [FRAMEWORK],
+      [],
+    );
+    expect(xcconfig).toContain(
+      '\nRN_SPM_REACT_BINARY[sdk=iphonesimulator*] = $(SRCROOT)/',
+    );
+    expect(xcconfig).toContain('\nRN_SPM_REACT_SEARCH_PATH[sdk=macosx*] = ');
+    expect(xcconfig).not.toMatch(/^"/m);
+    expect(xcconfig).not.toContain('= "$(SRCROOT)/build/xcframeworks');
+  });
+
+  it('defines the opted-in C++ stable API macros for every configuration', () => {
+    const xcconfig = generateReactNativeXcconfig(
+      ['Debug', 'Release'],
+      '../node_modules/react-native',
+      [FRAMEWORK],
+      ['RN_STRICT_API', 'RN_ALLOW_FRAMEWORKS'],
+    );
+    expect(xcconfig).toContain(
+      '\nGCC_PREPROCESSOR_DEFINITIONS = $(inherited) RN_STRICT_API RN_ALLOW_FRAMEWORKS\n',
+    );
+    expect(xcconfig).not.toContain('GCC_PREPROCESSOR_DEFINITIONS[');
+  });
+
+  it('writes no GCC_PREPROCESSOR_DEFINITIONS without an opted-in macro', () => {
+    expect(
+      generateReactNativeXcconfig(
+        ['Debug', 'Release'],
+        '../node_modules/react-native',
+        [FRAMEWORK],
+        [],
+      ),
+    ).not.toContain('GCC_PREPROCESSOR_DEFINITIONS');
   });
 });
 
@@ -489,5 +922,54 @@ describe('readScriptPhasesManifest', () => {
       },
       {id: 'b', name: 'B', script: 'echo', position: 'end'},
     ]);
+  });
+});
+
+describe('ensureStubPackages', () => {
+  const {REACT_CODEGEN_PRODUCTS} = require('../spm-utils');
+  let appRoot;
+  let logSpy;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-stub-packages-'));
+    logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    logSpy.mockRestore();
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  const codegenManifestPath = () =>
+    path.join(appRoot, 'build', 'generated', 'ios', 'Package.swift');
+
+  it('declares every codegen product exactly once in the codegen stub', () => {
+    ensureStubPackages(appRoot);
+    const manifest = fs.readFileSync(codegenManifestPath(), 'utf8');
+
+    const products = [
+      'ReactCodegen',
+      'ReactAppDependencyProvider',
+      ...REACT_CODEGEN_PRODUCTS,
+    ];
+    const declarationCounts = Object.fromEntries(
+      products.map(product => [
+        product,
+        manifest.split(`.library(name: "${product}"`).length - 1,
+      ]),
+    );
+
+    expect(declarationCounts).toEqual(
+      Object.fromEntries(products.map(product => [product, 1])),
+    );
+  });
+
+  it('leaves an existing codegen Package.swift untouched', () => {
+    const existing = '// swift-tools-version: 5.9\n// real codegen output\n';
+    fs.mkdirSync(path.dirname(codegenManifestPath()), {recursive: true});
+    fs.writeFileSync(codegenManifestPath(), existing, 'utf8');
+
+    ensureStubPackages(appRoot);
+
+    expect(fs.readFileSync(codegenManifestPath(), 'utf8')).toBe(existing);
   });
 });

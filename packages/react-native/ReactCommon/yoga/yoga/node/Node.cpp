@@ -315,7 +315,7 @@ void Node::setPosition(
     const Direction direction,
     const float ownerWidth,
     const float ownerHeight) {
-  /* Root nodes should be always layouted as LTR, so we don't return negative
+  /* Root nodes should always be laid out as LTR, so we don't return negative
    * values. */
   const Direction directionRespectingRoot =
       owner_ != nullptr ? direction : Direction::LTR;

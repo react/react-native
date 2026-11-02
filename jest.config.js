@@ -32,6 +32,8 @@ module.exports = {
       '<rootDir>/packages/react-native/src/react-private-interface.js',
     '^react-native/setup-env$':
       '<rootDir>/packages/react-native/src/setup-env.js',
+    '^react-native/unstable-internals-do-not-use$':
+      '<rootDir>/packages/react-native/src/unstable-internals-do-not-use.js',
   },
   setupFiles: ['./packages/jest-preset/jest/local-setup.js'],
   fakeTimers: {

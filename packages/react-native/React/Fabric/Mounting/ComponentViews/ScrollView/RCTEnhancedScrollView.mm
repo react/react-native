@@ -51,6 +51,28 @@
   return self;
 }
 
+- (void)setInverted:(BOOL)inverted
+{
+  if (_inverted == inverted) {
+    return;
+  }
+  _inverted = inverted;
+
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 /* __IPHONE_26_0 */
+  if (@available(iOS 26.0, *)) {
+    // UIKit positions the scroll edge effects in this scroll view's own coordinate space, and the
+    // `scaleY(-1)` mirror turns that space upside down, so neither effect lands where it belongs.
+    // Against a navigation bar, `topEdgeEffect` darkens the lower half of the screen rather than
+    // the content passing under the bar; against a bottom bar, `bottomEdgeEffect` dims the whole
+    // screen. Neither produces anything useful at any scroll position while mirrored, so both are
+    // hidden. The bars cannot be given correct effects from here, because UIKit has no notion of
+    // the transform.
+    self.topEdgeEffect.hidden = inverted;
+    self.bottomEdgeEffect.hidden = inverted;
+  }
+#endif
+}
+
 - (void)preserveContentOffsetWithBlock:(void (^)())block
 {
   if (!block) {
@@ -89,7 +111,80 @@
   if (contentSize.height < boundsSize.height) {
     top = (boundsSize.height - contentSize.height) * 0.5f;
   }
-  self.contentInset = UIEdgeInsetsMake(top, left, top, left);
+  self.baseContentInset = UIEdgeInsetsMake(top, left, top, left);
+}
+
+- (void)setBaseContentInset:(UIEdgeInsets)baseContentInset
+{
+  _baseContentInset = baseContentInset;
+  if (_padsContentForSafeArea) {
+    [self applyBaseContentInset];
+  } else {
+    self.contentInset = baseContentInset;
+  }
+}
+
+- (void)setHorizontal:(BOOL)horizontal
+{
+  _horizontal = horizontal;
+  if (_padsContentForSafeArea) {
+    [self applyBaseContentInset];
+  }
+}
+
+- (void)setPadsContentForSafeArea:(BOOL)padsContentForSafeArea
+{
+  if (_padsContentForSafeArea == padsContentForSafeArea) {
+    return;
+  }
+  _padsContentForSafeArea = padsContentForSafeArea;
+  [self applyBaseContentInset];
+}
+
+- (void)adjustedContentInsetDidChange
+{
+  [super adjustedContentInsetDidChange];
+  if (_padsContentForSafeArea) {
+    [self applyBaseContentInset];
+  }
+}
+
+/*
+ * Applies `baseContentInset`, less what UIKit adds across the scrollable axis for the safe area while the content is
+ * padded for it. `ScrollView` lays the content out clear of the system UI rather than scrolling it under; the
+ * content inset would apply the safe area a second time.
+ */
+- (void)applyBaseContentInset
+{
+  UIEdgeInsets contentInset = _baseContentInset;
+  if (_padsContentForSafeArea) {
+    UIEdgeInsets adjusted = self.adjustedContentInset;
+    UIEdgeInsets current = self.contentInset;
+    if (_horizontal) {
+      contentInset.top -= adjusted.top - current.top;
+      contentInset.bottom -= adjusted.bottom - current.bottom;
+    } else {
+      contentInset.left -= adjusted.left - current.left;
+      contentInset.right -= adjusted.right - current.right;
+    }
+  }
+  if (UIEdgeInsetsEqualToEdgeInsets(contentInset, self.contentInset)) {
+    return;
+  }
+  // Content pinned to the leading edge across the scrollable axis stays pinned, as UIKit keeps it when it changes the
+  // adjusted content inset itself.
+  UIEdgeInsets before = self.adjustedContentInset;
+  self.contentInset = contentInset;
+  UIEdgeInsets after = self.adjustedContentInset;
+  CGPoint contentOffset = self.contentOffset;
+  if (_horizontal && contentOffset.y <= -before.top) {
+    contentOffset.y = -after.top;
+  } else if (!_horizontal && contentOffset.x <= -before.left) {
+    contentOffset.x = -after.left;
+  }
+  if (!CGPointEqualToPoint(contentOffset, self.contentOffset)) {
+    self.contentOffset = contentOffset;
+  }
 }
 
 - (void)setContentOffset:(CGPoint)contentOffset

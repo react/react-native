@@ -466,7 +466,7 @@ declare module '@babel/core' {
     constructor(descriptor: UnloadedDescriptor): ConfigItem;
   }
 
-  declare export type EntryTarget = string | {...} | Function;
+  declare export type EntryTarget = string | {...} | any;
   declare export type EntryOptions = {...} | false | void;
   declare export type PluginEntry =
     | EntryTarget

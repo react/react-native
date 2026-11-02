@@ -7,15 +7,16 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
+#include <memory>
+
+#include <React/ImageManager.h>
+#include <React/RendererCore.h>
+#include <React/View.h>
 #include <react/renderer/components/image/ImageEventEmitter.h>
 #include <react/renderer/components/image/ImageProps.h>
 #include <react/renderer/components/image/ImageState.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/core/ShadowNodeFamily.h>
-#include <react/renderer/imagemanager/ImageManager.h>
-#include <react/renderer/imagemanager/primitives.h>
 
 namespace facebook::react {
 
@@ -29,7 +30,7 @@ class ImageShadowNode final
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);

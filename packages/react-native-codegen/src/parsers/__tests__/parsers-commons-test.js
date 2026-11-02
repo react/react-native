@@ -10,27 +10,15 @@
 
 'use-strict';
 
-import type {ParserType} from '../errors';
+// The buildSchema tests spy on `getConfigType`, which parsers-commons reads when
+// it loads, so it's wrapped before any module that uses it is required.
+jest.mock('../utils', () => {
+  const actual = jest.requireActual<Utils>('../utils');
+  return {...actual, getConfigType: jest.fn(actual.getConfigType)};
+});
 
-import {FlowParser} from '../flow/parser';
-import {MockedParser} from '../parserMock';
-import {
-  assertGenericTypeAnnotationHasExactlyOneTypeParameter,
-  buildSchema,
-  buildSchemaFromConfigType,
-  createComponentConfig,
-  getCommandOptions,
-  getCommandTypeNameAndOptionsExpression,
-  getOptions,
-  getTypeResolutionStatus,
-  handleGenericTypeAnnotation,
-  isObjectProperty,
-  parseModuleName,
-  parseObjectProperty,
-  propertyNames,
-  unwrapNullable,
-  wrapNullable,
-} from '../parsers-commons';
+import type {ParserType} from '../errors';
+import typeof * as Utils from '../utils';
 
 const {
   IncorrectModuleRegistryCallArgumentTypeParserError,
@@ -46,6 +34,25 @@ const {
 } = require('../errors');
 const {buildComponentSchema} = require('../flow/components');
 const {flowTranslateTypeAnnotation} = require('../flow/modules/index');
+const {FlowParser} = require('../flow/parser');
+const {MockedParser} = require('../parserMock');
+const {
+  assertGenericTypeAnnotationHasExactlyOneTypeParameter,
+  buildSchema,
+  buildSchemaFromConfigType,
+  createComponentConfig,
+  getCommandOptions,
+  getCommandTypeNameAndOptionsExpression,
+  getOptions,
+  getTypeResolutionStatus,
+  handleGenericTypeAnnotation,
+  isObjectProperty,
+  parseModuleName,
+  parseObjectProperty,
+  propertyNames,
+  unwrapNullable,
+  wrapNullable,
+} = require('../parsers-commons');
 const {buildModuleSchema} = require('../parsers-commons.js');
 const {Visitor} = require('../parsers-primitives');
 const {wrapComponentSchema} = require('../schema.js');
@@ -665,7 +672,7 @@ describe('buildSchemaFromConfigType', () => {
 });
 
 describe('buildSchema', () => {
-  const getConfigTypeSpy = jest.spyOn(require('../utils'), 'getConfigType');
+  const getConfigTypeSpy = require('../utils').getConfigType;
 
   describe('when there is no codegenNativeComponent and no TurboModule', () => {
     const contents = '';
@@ -801,8 +808,7 @@ describe('buildSchema', () => {
 
   describe('when there is a TurboModule', () => {
     const contents = `
-      import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-      import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+      import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
       export interface Spec extends TurboModule {
         +getArray: (a: Array<any>) => Array<string>;
@@ -1094,8 +1100,7 @@ describe('buildModuleSchema', () => {
   const [, tryParse] = createParserErrorCapturer();
   const language = flowParser.language();
   const NATIVE_MODULE = `
-  import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-    import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+  import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
     export interface Spec extends TurboModule {
       +getArray: (a: Array<any>) => Array<string>;
@@ -1144,8 +1149,7 @@ describe('buildModuleSchema', () => {
   describe('throwIfMoreThanOneModuleInterfaceParser', () => {
     it('should throw an error if mulitple module interfaces are found', () => {
       const contents = `
-      import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-        import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+      import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
         export interface Spec extends TurboModule {
           +getBool: (arg: boolean) => boolean;      }
@@ -1194,8 +1198,7 @@ describe('buildModuleSchema', () => {
   describe('throwIfModuleInterfaceIsMisnamed', () => {
     it('should throw an error if module interface is misnamed', () => {
       const contents = `
-      import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
-        import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+      import {TurboModuleRegistry, type TurboModule} from 'react-native';
 
         export interface MisnamedSpec extends TurboModule {
           +getArray: (a: Array<any>) => Array<string>;

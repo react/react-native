@@ -40,9 +40,6 @@ class DummyShadowTreeDelegate : public ShadowTreeDelegate {
 
   void shadowTreeDidFinishReactCommit(
       const ShadowTree& /*shadowTree*/) const override {}
-
-  void shadowTreeDidPromoteReactRevision(
-      const ShadowTree& /*shadowTree*/) const override {}
 };
 
 namespace {

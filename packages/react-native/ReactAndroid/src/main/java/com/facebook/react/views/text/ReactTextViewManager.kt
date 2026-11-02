@@ -19,6 +19,7 @@ import android.text.util.Linkify
 import android.view.Gravity
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
+import com.facebook.react.bridge.Dynamic
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.mapbuffer.MapBuffer
@@ -170,7 +171,19 @@ public constructor(
 
     val minimumFontSize: Float =
         paragraphAttributes.getDouble(TextLayoutManager.PA_KEY_MINIMUM_FONT_SIZE).toFloat()
-    view.setMinimumFontSize(minimumFontSize)
+    @Suppress("DEPRECATION") view.setMinimumFontSize(minimumFontSize)
+    val minimumFontScale: Float =
+        if (paragraphAttributes.contains(TextLayoutManager.PA_KEY_MINIMUM_FONT_SCALE))
+            paragraphAttributes.getDouble(TextLayoutManager.PA_KEY_MINIMUM_FONT_SCALE).toFloat()
+        else Float.NaN
+    view.setMinimumFontScale(minimumFontScale)
+
+    view.setEllipsizeLocation(
+        TextAttributeProps.getEllipsizeMode(
+            paragraphAttributes.getString(TextLayoutManager.PA_KEY_ELLIPSIZE_MODE),
+        ),
+    )
+    view.updateView()
 
     // Clear any stale PreparedLayout from a previous update
     view.setPreparedLayout(null)
@@ -188,6 +201,9 @@ public constructor(
         TextLayoutManager.getTextGravity(attributedString, spanned),
         textBreakStrategy,
         TextAttributeProps.getJustificationMode(props, currentJustificationMode),
+        TextAttributeProps.fromMapBuffer(
+            attributedString.getMapBuffer(TextLayoutManager.AS_KEY_BASE_ATTRIBUTES),
+        ),
     )
   }
 
@@ -217,6 +233,7 @@ public constructor(
         textAlign,
         preparedLayout.textBreakStrategy,
         preparedLayout.justificationMode,
+        preparedLayout.baseTextAttributes,
     )
   }
 
@@ -326,6 +343,20 @@ public constructor(
     }
   }
 
+  @ReactProp(name = "lineBreak")
+  public fun setLineBreak(view: ReactTextView, lineBreak: String?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      view.lineBreakStyle = TextAttributeProps.getLineBreakStyle(lineBreak)
+    }
+  }
+
+  @ReactProp(name = "wordBreak")
+  public fun setWordBreak(view: ReactTextView, wordBreak: String?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      view.lineBreakWordStyle = TextAttributeProps.getLineBreakWordStyle(wordBreak)
+    }
+  }
+
   @ReactPropGroup(
       names =
           [
@@ -335,15 +366,21 @@ public constructor(
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
+  )
+  public fun setBorderRadius(view: ReactTextView, index: Int, rawBorderRadius: Dynamic) {
+    val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+    BackgroundStyleApplicator.setBorderRadius(view, BorderRadiusProp.values()[index], borderRadius)
+  }
+
+  @Deprecated(
+      "Don't use setBorderRadius(view, index, Float) as it was deprecated in React Native 0.88.0.",
   )
   public fun setBorderRadius(view: ReactTextView, index: Int, borderRadius: Float) {
+    // Direct body: DynamicFromObject(Float).asDouble() throws, and setFromDynamic
+    // would not map NaN back to null like the original Float path did.
     val radius =
-        if (borderRadius.isNaN()) {
-          null
-        } else {
-          LengthPercentage(borderRadius, LengthPercentageType.POINT)
-        }
+        if (borderRadius.isNaN()) null
+        else LengthPercentage(borderRadius, LengthPercentageType.POINT)
     BackgroundStyleApplicator.setBorderRadius(view, BorderRadiusProp.values()[index], radius)
   }
 

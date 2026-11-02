@@ -7,11 +7,12 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
 #include <optional>
 #include <variant>
 
+#include <React/Utils.h>
 #include <react/renderer/css/CSSAngle.h>
 #include <react/renderer/css/CSSColor.h>
 #include <react/renderer/css/CSSCompoundDataType.h>
@@ -21,8 +22,6 @@
 #include <react/renderer/css/CSSList.h>
 #include <react/renderer/css/CSSPercentage.h>
 #include <react/renderer/css/CSSValueParser.h>
-#include <react/utils/TemplateStringLiteral.h>
-#include <react/utils/fnv1a.h>
 #include <react/utils/iequals.h>
 
 namespace facebook::react {

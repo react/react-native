@@ -27,7 +27,7 @@ ${DO_NOT_MODIFY_COMMENT}
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/PrivateGuard.h>
 
 namespace facebook::react {
 

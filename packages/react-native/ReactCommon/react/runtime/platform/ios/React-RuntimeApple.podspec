@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   resolve_use_frameworks(s, header_mappings_dir: "./", module_name: "React_RuntimeApple")
 
   s.dependency "React-jsiexecutor"
-  s.dependency "React-cxxreact"
+  add_dependency(s, "React-cxxreact")
   s.dependency "React-callinvoker"
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   s.dependency "React-runtimescheduler"

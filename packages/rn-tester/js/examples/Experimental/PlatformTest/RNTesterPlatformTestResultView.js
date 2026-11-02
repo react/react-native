@@ -13,7 +13,6 @@ import type {
   PlatformTestResultStatus,
 } from './RNTesterPlatformTestTypes';
 import type {ListRenderItemInfo, TextStyle} from 'react-native';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import RNTesterPlatformTestMinimizedResultView from './RNTesterPlatformTestMinimizedResultView';
 import RNTesterPlatformTestResultsText from './RNTesterPlatformTestResultsText';
@@ -33,6 +32,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 const DISPLAY_STATUS_MAPPING: {[PlatformTestResultStatus]: string} = {
   PASS: 'Pass',

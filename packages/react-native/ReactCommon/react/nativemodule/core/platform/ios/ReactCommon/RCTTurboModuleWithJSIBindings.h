@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #ifdef __cplusplus
-#include <ReactCommon/CallInvoker.h>
+#include <React/CallInvoker.h>
 #include <jsi/jsi.h>
 #endif
 

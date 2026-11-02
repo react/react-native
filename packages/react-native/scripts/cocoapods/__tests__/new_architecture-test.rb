@@ -23,6 +23,7 @@ class NewArchitectureTests < Test::Unit::TestCase
         Pod::UI.reset()
         FileMock.reset()
         ENV["RCT_NEW_ARCH_ENABLED"] = nil
+        ENV["USE_FRAMEWORKS"] = nil
         NewArchitectureHelper.reset()
     end
 
@@ -129,7 +130,7 @@ class NewArchitectureTests < Test::Unit::TestCase
         NewArchitectureHelper.install_modules_dependencies(spec, true, '2024.10.14.00')
 
         # Assert
-        assert_equal("-DRCT_NEW_ARCH_ENABLED=1", spec.compiler_flags)
+        assert_equal("-DRCT_NEW_ARCH_ENABLED=1 -DFOLLY_CFG_NO_COROUTINES=1", spec.compiler_flags)
         assert_equal(
             [
                 "\"$(PODS_ROOT)/Headers/Private/Yoga\"",
@@ -180,6 +181,16 @@ class NewArchitectureTests < Test::Unit::TestCase
         )
     end
 
+    def test_installModulesDependencies_whenUseFrameworks_addsReactBridgingSearchPath
+        spec = SpecMock.new
+        ENV["USE_FRAMEWORKS"] = "dynamic"
+
+        NewArchitectureHelper.install_modules_dependencies(spec, true, '2024.10.14.00')
+
+        header_search_paths = Array(spec.pod_target_xcconfig["HEADER_SEARCH_PATHS"]).join(" ")
+        assert(header_search_paths.include?("${PODS_CONFIGURATION_BUILD_DIR}/React-bridging/React_bridging.framework/Headers"))
+    end
+
     def test_installModulesDependencies_whenNewArchDisabledAndSearchPathsAndCompilerFlagsArePresent_itInstallDependenciesAndPreserveOtherSettings
         #  Arrange
         spec = SpecMock.new
@@ -195,6 +206,7 @@ class NewArchitectureTests < Test::Unit::TestCase
 
         # Assert
         assert_equal("#{NewArchitectureHelper.folly_compiler_flags}", Helpers::Constants.folly_config[:compiler_flags])
+        assert_equal("-DFOLLY_CFG_NO_COROUTINES=1", spec.compiler_flags)
         assert_equal([*other_flags_arr, '"$(PODS_ROOT)/Headers/Private/Yoga"', '$(PODS_ROOT)/glog', '$(PODS_ROOT)/boost', '$(PODS_ROOT)/DoubleConversion', '$(PODS_ROOT)/fast_float/include', '$(PODS_ROOT)/fmt/include', '$(PODS_ROOT)/SocketRocket', '$(PODS_ROOT)/RCT-Folly'], spec.pod_target_xcconfig["HEADER_SEARCH_PATHS"])
         assert_equal("c++20", spec.pod_target_xcconfig["CLANG_CXX_LANGUAGE_STANDARD"])
         assert_equal(

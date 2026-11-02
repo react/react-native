@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <react/cxxstableapi/UmbrellaGuard.h>
+#include <react/cxxstableapi/FrameworksGuard.h>
 
-#include <react/utils/toLower.h>
+#include <React/Utils.h>
 #include <string_view>
 
 namespace facebook::react {

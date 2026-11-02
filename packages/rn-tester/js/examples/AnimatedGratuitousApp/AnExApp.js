@@ -121,7 +121,7 @@ class Circle extends React.Component<any, any> {
         },
       };
     }
-    const animatedStyle: Object = {
+    const animatedStyle: any = {
       shadowOpacity: this.state.pop, // no need for interpolation            (step2d: uncomment)
       transform: [
         {

@@ -13,14 +13,12 @@
 #include <mutex>
 #include <shared_mutex>
 
+#include <React/RendererCore.h>
+#include <React/Utils.h>
 #include <react/renderer/components/root/RootShadowNode.h>
-#include <react/renderer/core/LayoutConstraints.h>
-#include <react/renderer/core/ReactPrimitives.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 #include <react/renderer/mounting/ShadowTreeRevision.h>
-#include <react/utils/ContextContainer.h>
 #include "MountingOverrideDelegate.h"
 
 namespace facebook::react {
@@ -148,9 +146,9 @@ class ShadowTree final {
 
   /**
    * Promotes the current React revision to be merged into the main branch of the
-   * ShadowTree.
+   * ShadowTree. Returns `true` if a revision was promoted.
    */
-  void promoteReactRevision() const;
+  bool promoteReactRevision() const;
 
   /**
    * Commits the currently promoted React revision to the "main" branch of the

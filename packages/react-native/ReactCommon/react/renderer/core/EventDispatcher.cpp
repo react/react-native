@@ -37,8 +37,8 @@ void EventDispatcher::dispatchEvent(RawEvent&& rawEvent) const {
   eventQueue_.enqueueEvent(std::move(rawEvent));
 }
 
-void EventDispatcher::experimental_flushSync() const {
-  eventQueue_.experimental_flushSync();
+void EventDispatcher::experimental_flushSync(Tag tag) const {
+  eventQueue_.experimental_flushSync(tag);
 }
 
 void EventDispatcher::dispatchStateUpdate(

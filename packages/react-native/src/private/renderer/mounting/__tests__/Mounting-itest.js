@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @fantom_flags enableFabricCommitBranching:*
+ * @fantom_flags skipUnchangedChildrenInDifferentiator:*
  * @flow strict-local
  * @format
  */
@@ -16,7 +17,7 @@ import type {HostInstance} from 'react-native';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
-import {View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 
 describe('ViewFlattening', () => {
   /**
@@ -445,6 +446,200 @@ describe('ViewFlattening', () => {
         backgroundColor="rgba(255, 255, 255, 0.498039)"
       />,
     );
+  });
+
+  test('#58647: child with negative zIndex is kept when its parent flattens and its grandparent unflattens', () => {
+    const root = Fantom.createRoot();
+
+    function render(opacityOnGrandparent: boolean) {
+      Fantom.runTask(() => {
+        root.render(
+          <View nativeID="Q" style={{opacity: 0.5}}>
+            <View style={opacityOnGrandparent ? {opacity: 0.5} : null}>
+              <View style={opacityOnGrandparent ? null : {opacity: 0.5}}>
+                <View nativeID="A" />
+                <View nativeID="K" style={{zIndex: -1}} />
+                <View nativeID="B" />
+              </View>
+            </View>
+          </View>,
+        );
+      });
+    }
+
+    const expectedOutput = (
+      <rn-view nativeID="Q">
+        <rn-view>
+          <rn-view key="0" nativeID="K" />
+          <rn-view key="1" nativeID="A" />
+          <rn-view key="2" nativeID="B" />
+        </rn-view>
+      </rn-view>
+    );
+
+    render(false);
+    root.takeMountingManagerLogs();
+
+    render(true);
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Remove {type: "View", parentNativeID: "Q", index: 0, nativeID: (N/A)}',
+      'Remove {type: "View", parentNativeID: (N/A), index: 2, nativeID: "B"}',
+      'Remove {type: "View", parentNativeID: (N/A), index: 1, nativeID: "A"}',
+      'Remove {type: "View", parentNativeID: (N/A), index: 0, nativeID: "K"}',
+      'Delete {type: "View", nativeID: (N/A)}',
+      'Create {type: "View", nativeID: (N/A)}',
+      'Insert {type: "View", parentNativeID: "Q", index: 0, nativeID: (N/A)}',
+      'Insert {type: "View", parentNativeID: (N/A), index: 0, nativeID: "K"}',
+      'Insert {type: "View", parentNativeID: (N/A), index: 1, nativeID: "A"}',
+      'Insert {type: "View", parentNativeID: (N/A), index: 2, nativeID: "B"}',
+    ]);
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      expectedOutput,
+    );
+
+    render(false);
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Remove {type: "View", parentNativeID: (N/A), index: 2, nativeID: "B"}',
+      'Remove {type: "View", parentNativeID: (N/A), index: 1, nativeID: "A"}',
+      'Remove {type: "View", parentNativeID: (N/A), index: 0, nativeID: "K"}',
+      'Remove {type: "View", parentNativeID: "Q", index: 0, nativeID: (N/A)}',
+      'Delete {type: "View", nativeID: (N/A)}',
+      'Create {type: "View", nativeID: (N/A)}',
+      'Insert {type: "View", parentNativeID: (N/A), index: 0, nativeID: "K"}',
+      'Insert {type: "View", parentNativeID: (N/A), index: 1, nativeID: "A"}',
+      'Insert {type: "View", parentNativeID: (N/A), index: 2, nativeID: "B"}',
+      'Insert {type: "View", parentNativeID: "Q", index: 0, nativeID: (N/A)}',
+    ]);
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      expectedOutput,
+    );
+  });
+});
+
+describe('unchanged children', () => {
+  // Rendered once and never again, so its shadow node is the same in every
+  // later revision of the tree.
+  const Unchanged = React.memo(function Unchanged(props: {nativeID: string}) {
+    return <View nativeID={props.nativeID} style={{width: 10, height: 10}} />;
+  });
+
+  test('only the changed child of a node is updated', () => {
+    const root = Fantom.createRoot();
+    const render = (width: number) =>
+      Fantom.runTask(() => {
+        root.render(
+          <View nativeID="parent">
+            <Unchanged nativeID="A" />
+            <View nativeID="changed" style={{width, height: 10}} />
+            <Unchanged nativeID="B" />
+          </View>,
+        );
+      });
+
+    render(10);
+    root.takeMountingManagerLogs();
+
+    render(20);
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Update {type: "View", nativeID: "changed"}',
+    ]);
+  });
+
+  test('an unchanged child of a flattened view that moves is updated', () => {
+    const root = Fantom.createRoot();
+    const render = (marginTop: number) =>
+      Fantom.runTask(() => {
+        root.render(
+          <View nativeID="parent">
+            <View style={{marginTop}}>
+              <Unchanged nativeID="A" />
+            </View>
+          </View>,
+        );
+      });
+
+    render(0);
+    root.takeMountingManagerLogs();
+
+    // The parent grows by the margin, and A moves with the flattened view it
+    // is hoisted out of, so it is updated although its node is unchanged.
+    render(20);
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Update {type: "View", nativeID: "parent"}',
+      'Update {type: "View", nativeID: "A"}',
+    ]);
+  });
+
+  test('an unchanged child of a scroll view is not updated when it scrolls', () => {
+    const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 100});
+    const scrollViewRef = React.createRef<HostInstance>();
+
+    Fantom.runTask(() => {
+      root.render(
+        <View nativeID="parent">
+          <Unchanged nativeID="A" />
+          <ScrollView nativeID="scrollView" ref={scrollViewRef}>
+            <View nativeID="content" style={{height: 1000}} />
+          </ScrollView>
+          <Unchanged nativeID="B" />
+        </View>,
+      );
+    });
+    root.takeMountingManagerLogs();
+
+    Fantom.scrollTo(nullthrows(scrollViewRef.current), {x: 0, y: 20});
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Update {type: "ScrollView", nativeID: "scrollView"}',
+    ]);
+  });
+
+  test('a child added next to unchanged children is inserted', () => {
+    const root = Fantom.createRoot();
+    const render = (showAdded: boolean) =>
+      Fantom.runTask(() => {
+        root.render(
+          <View nativeID="parent">
+            <Unchanged nativeID="A" />
+            {showAdded ? <View nativeID="added" /> : null}
+            <Unchanged nativeID="B" />
+          </View>,
+        );
+      });
+
+    render(false);
+    root.takeMountingManagerLogs();
+
+    render(true);
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Create {type: "View", nativeID: "added"}',
+      'Insert {type: "View", parentNativeID: "parent", index: 1, nativeID: "added"}',
+    ]);
+  });
+
+  test('a child whose zIndex changes next to unchanged children is reordered', () => {
+    const root = Fantom.createRoot();
+    const render = (zIndex: number) =>
+      Fantom.runTask(() => {
+        root.render(
+          <View nativeID="parent">
+            <View nativeID="changed" style={{width: 10, height: 10, zIndex}} />
+            <Unchanged nativeID="A" />
+            <Unchanged nativeID="B" />
+          </View>,
+        );
+      });
+
+    render(0);
+    root.takeMountingManagerLogs();
+
+    render(1);
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Update {type: "View", nativeID: "changed"}',
+      'Remove {type: "View", parentNativeID: "parent", index: 2, nativeID: "B"}',
+      'Remove {type: "View", parentNativeID: "parent", index: 1, nativeID: "A"}',
+      'Insert {type: "View", parentNativeID: "parent", index: 0, nativeID: "A"}',
+      'Insert {type: "View", parentNativeID: "parent", index: 1, nativeID: "B"}',
+    ]);
   });
 });
 

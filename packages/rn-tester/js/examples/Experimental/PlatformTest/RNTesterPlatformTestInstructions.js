@@ -8,10 +8,10 @@
  * @format
  */
 
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-
 import * as React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+
+type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
 type Props = Readonly<{
   instructions?: ReadonlyArray<string>,
