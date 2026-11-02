@@ -212,6 +212,9 @@ export default function processBackgroundImage(
       } else if (bgImage.type === 'conic-gradient') {
         let from = DEFAULT_CONIC_FROM;
         if (bgImage.from != null) {
+          if (typeof bgImage.from !== 'string') {
+            return [];
+          }
           const parsedFrom = getAngleInDegrees(bgImage.from, true);
           if (parsedFrom == null) {
             return [];
@@ -670,6 +673,16 @@ function parseRadialGradientCSSString(
   };
 }
 
+// Unlike background-position, <position> has no three-value form.
+// https://drafts.csswg.org/css-values-4/#position
+function parseConicPosition(input: string): ?RadialGradientPosition {
+  if (input.trim().split(/\s+/).length === 3) {
+    return null;
+  }
+  const parsedPositions = processBackgroundPosition(input);
+  return parsedPositions.length === 1 ? parsedPositions[0] : null;
+}
+
 function parseConicGradientCSSString(
   gradientContent: string,
 ): ConicGradientBackgroundImage | null {
@@ -696,18 +709,18 @@ function parseConicGradientCSSString(
     hasPrelude = true;
 
     if (match[2] != null) {
-      const parsedPositions = processBackgroundPosition(match[2]);
-      if (parsedPositions.length !== 1) {
+      const parsedPosition = parseConicPosition(match[2]);
+      if (parsedPosition == null) {
         return null;
       }
-      position = parsedPositions[0];
+      position = parsedPosition;
     }
   } else if (firstPart.startsWith('at ')) {
-    const parsedPositions = processBackgroundPosition(firstPart.slice(3));
-    if (parsedPositions.length !== 1) {
+    const parsedPosition = parseConicPosition(firstPart.slice(3));
+    if (parsedPosition == null) {
       return null;
     }
-    position = parsedPositions[0];
+    position = parsedPosition;
     hasPrelude = true;
   }
 
