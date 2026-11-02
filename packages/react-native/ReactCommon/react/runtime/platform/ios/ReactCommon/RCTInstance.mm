@@ -12,7 +12,6 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/NSDataBigString.h>
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Inspector.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBridgeModuleDecorator.h>
