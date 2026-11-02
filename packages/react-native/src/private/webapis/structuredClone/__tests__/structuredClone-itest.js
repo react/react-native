@@ -104,6 +104,7 @@ describe('structuredClone', () => {
     const bigintValue = Object(1n);
     const bigintClone = structuredClone(bigintValue);
     expect(bigintClone).not.toBe(bigintValue);
+    // $FlowFixMe[incompatible-type]
     expect(bigintClone).toBeInstanceOf(BigInt);
     expect(bigintClone.valueOf()).toBe(1n);
   });

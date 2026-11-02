@@ -607,6 +607,38 @@ function HyphenationExample(props: {}): React.Node {
   );
 }
 
+const LINE_BREAK_SAMPLE =
+  'キャッシュをチェックしてショートカットからコンピューターのメモリーをクリーンアップします。';
+
+function LineBreakExample(props: {}): React.Node {
+  // Each paragraph has a background so that a mismatch between the measured
+  // height and the drawn lines is visible. Requires Android 13 (API 33).
+  return (
+    <>
+      {(['auto', 'loose', 'normal', 'strict'] as const).map(lineBreak => (
+        <View key={lineBreak} style={{marginBottom: 8}}>
+          <RNTesterText style={{color: 'red'}}>
+            lineBreak="{lineBreak}"
+          </RNTesterText>
+          <RNTesterText lineBreak={lineBreak} style={styles.lineBreakSample}>
+            {LINE_BREAK_SAMPLE}
+          </RNTesterText>
+        </View>
+      ))}
+      {(['normal', 'auto-phrase'] as const).map(wordBreak => (
+        <View key={wordBreak} style={{marginBottom: 8}}>
+          <RNTesterText style={{color: 'red'}}>
+            wordBreak="{wordBreak}"
+          </RNTesterText>
+          <RNTesterText wordBreak={wordBreak} style={styles.lineBreakSample}>
+            {LINE_BREAK_SAMPLE}
+          </RNTesterText>
+        </View>
+      ))}
+    </>
+  );
+}
+
 function FontWeightExample(props: {}): React.Node {
   return (
     <View testID="text-font-weight">
@@ -1460,6 +1492,13 @@ const examples = [
     },
   },
   {
+    title: 'Line break (lineBreak, wordBreak)',
+    name: 'lineBreak',
+    render(): React.Node {
+      return <LineBreakExample />;
+    },
+  },
+  {
     title: 'Padding',
     name: 'padding',
     render(): React.Node {
@@ -1942,6 +1981,11 @@ const styles = StyleSheet.create({
   },
   wrappedText: {
     maxWidth: 300,
+  },
+  lineBreakSample: {
+    backgroundColor: '#eee',
+    fontSize: 16,
+    width: 150,
   },
 });
 

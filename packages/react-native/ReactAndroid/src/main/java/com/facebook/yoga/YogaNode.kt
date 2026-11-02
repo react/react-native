@@ -228,6 +228,17 @@ public abstract class YogaNode : YogaProps {
 
   abstract override fun setMeasureFunction(measureFunction: YogaMeasureFunction?)
 
+  /**
+   * Sets the node type, which selects how layout is rounded to the pixel grid: a
+   * [YogaNodeType.TEXT] node's fractional size is rounded up and its position down, so its content
+   * is not truncated. [setMeasureFunction] sets it ([YogaNodeType.TEXT] for a function,
+   * [YogaNodeType.DEFAULT] for null), so call this after it.
+   *
+   * Does nothing by default, so a subclass built against an earlier [YogaNode] keeps working, with
+   * the rounding [setMeasureFunction] selected.
+   */
+  public open fun setNodeType(nodeType: YogaNodeType) {}
+
   abstract override fun setMinContentMeasureFunction(measureFunction: YogaMeasureFunction?)
 
   abstract override fun setMinContentWidth(minContentWidth: Float)

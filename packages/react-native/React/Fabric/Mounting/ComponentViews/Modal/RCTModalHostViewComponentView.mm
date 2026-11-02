@@ -7,7 +7,6 @@
 
 #import "RCTModalHostViewComponentView.h"
 
-#import <React/RCTBridge+Private.h>
 #import <React/UIView+React.h>
 #import <react/renderer/components/FBReactNativeSpec/EventEmitters.h>
 #import <react/renderer/components/FBReactNativeSpec/Props.h>

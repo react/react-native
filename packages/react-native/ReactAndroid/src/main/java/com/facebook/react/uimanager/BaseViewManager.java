@@ -7,6 +7,8 @@
 
 package com.facebook.react.uimanager;
 
+import static com.facebook.react.uimanager.internal.FloatPropertySanitizer.sanitizeFloatPropertyValue;
+
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -298,7 +300,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ELEVATION)
   public void setElevation(@NonNull T view, float elevation) {
-    float px = PixelUtil.toPixelFromDIP(elevation);
+    float px = sanitizeFloatPropertyValue(PixelUtil.toPixelFromDIP(elevation));
     boolean wasElevated = view.getElevation() > 0f;
     ViewCompat.setElevation(view, px);
     if (wasElevated != (px > 0f)) {
@@ -487,9 +489,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
         contentDescription.add(text.asString());
       }
     }
-    if (!contentDescription.isEmpty()) {
-      view.setContentDescription(TextUtils.join(", ", contentDescription));
-    }
+    view.setContentDescription(
+        contentDescription.isEmpty() ? null : TextUtils.join(", ", contentDescription));
   }
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_ACTIONS)
@@ -503,15 +504,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_VALUE)
   public void setAccessibilityValue(T view, ReadableMap accessibilityValue) {
-    if (accessibilityValue == null) {
-      view.setTag(R.id.accessibility_value, null);
-      view.setContentDescription(null);
-    } else {
-      view.setTag(R.id.accessibility_value, accessibilityValue);
-      if (accessibilityValue.hasKey("text")) {
-        updateViewContentDescription(view);
-      }
-    }
+    view.setTag(R.id.accessibility_value, accessibilityValue);
+    updateViewContentDescription(view);
   }
 
   @ReactProp(name = ViewProps.IMPORTANT_FOR_ACCESSIBILITY)
@@ -553,13 +547,13 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @Deprecated
   @ReactProp(name = ViewProps.SCALE_X, defaultFloat = 1f)
   public void setScaleX(@NonNull T view, float scaleX) {
-    view.setScaleX(scaleX);
+    view.setScaleX(sanitizeFloatPropertyValue(scaleX));
   }
 
   @Deprecated
   @ReactProp(name = ViewProps.SCALE_Y, defaultFloat = 1f)
   public void setScaleY(@NonNull T view, float scaleY) {
-    view.setScaleY(scaleY);
+    view.setScaleY(sanitizeFloatPropertyValue(scaleY));
   }
 
   @Deprecated
@@ -717,29 +711,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     }
     view.setAnimationMatrix(null);
     view.setTag(R.id.skew_animation_matrix, null);
-  }
-
-  /**
-   * Prior to Android P things like setScaleX() allowed passing float values that were bogus such as
-   * Float.NaN. If the app is targeting Android P or later then passing these values will result in
-   * an exception being thrown. Since JS might still send Float.NaN, we want to keep the code
-   * backward compatible and continue using the fallback value if an invalid float is passed.
-   */
-  private static float sanitizeFloatPropertyValue(float value) {
-    if (value >= -Float.MAX_VALUE && value <= Float.MAX_VALUE) {
-      return value;
-    }
-    if (value < -Float.MAX_VALUE || value == Float.NEGATIVE_INFINITY) {
-      return -Float.MAX_VALUE;
-    }
-    if (value > Float.MAX_VALUE || value == Float.POSITIVE_INFINITY) {
-      return Float.MAX_VALUE;
-    }
-    if (Float.isNaN(value)) {
-      return 0;
-    }
-    // Shouldn't be possible to reach this point.
-    throw new IllegalStateException("Invalid float property value: " + value);
   }
 
   protected void updateViewAccessibility(@NonNull T view) {

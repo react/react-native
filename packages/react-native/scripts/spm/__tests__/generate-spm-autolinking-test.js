@@ -2386,4 +2386,47 @@ describe('autolinkingDepToSpmTarget', () => {
       ),
     ).toThrow(/expandSpmDependencies/);
   });
+
+  // Every npm dep is self-managed or reported missing, so nothing would
+  // consume header search paths read from its podspec — and the read can
+  // spawn `pod ipc spec`.
+  it('does not read the podspec of a dep that declares HEADER_SEARCH_PATHS', () => {
+    const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-hsp-'));
+    try {
+      fs.writeFileSync(
+        path.join(sourceDir, 'Consumer.podspec'),
+        "Pod::Spec.new do |s|\n  s.name = 'Consumer'\n" +
+          "  s.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '\"$(PODS_TARGET_SRCROOT)/common/cpp\"' }\nend\n",
+      );
+      const readPodspecCached = jest.fn(() => ({
+        headerSearchPaths: ['$(PODS_TARGET_SRCROOT)/common/cpp'],
+      }));
+      let isolated;
+      jest.isolateModules(() => {
+        jest.doMock('../read-podspec', () => ({
+          ...jest.requireActual('../read-podspec'),
+          readPodspecCached,
+        }));
+        isolated = require('../generate-spm-autolinking');
+      });
+
+      const target = isolated.autolinkingDepToSpmTarget(
+        'react-native-consumer',
+        {
+          name: 'react-native-consumer',
+          root: sourceDir,
+          platforms: {ios: {sourceDir}},
+          swiftName: 'ReactNativeConsumer',
+        },
+        '/out',
+        new Map(),
+      );
+
+      expect(readPodspecCached).not.toHaveBeenCalled();
+      expect(target).not.toHaveProperty('headerSearchPaths');
+    } finally {
+      jest.dontMock('../read-podspec');
+      fs.rmSync(sourceDir, {recursive: true, force: true});
+    }
+  });
 });

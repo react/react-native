@@ -52,4 +52,26 @@ std::vector<ShadowViewNodePair *> sliceChildShadowNodeViewPairs(
     Point layoutOffset,
     const CullingContext &cullingContext);
 
+/*
+ * Slices the children of two revisions of a node side by side, like two calls
+ * to `sliceChildShadowNodeViewPairs`, but leaves out each child that is the
+ * same `ShadowNode` in both revisions at the same offset. Such a child and its
+ * flattened descendants give equal pairs in both lists, which the differ
+ * matches without a mutation, so the mutations computed from the shorter lists
+ * are the same.
+ *
+ * Returns false if the revisions differ in a way that can change the order or
+ * the kind of the pairs (child count, tags, flattening, position type, order
+ * index, visibility or `ChildrenFormStackingContext`), or if view culling is
+ * enabled. The lists are then unspecified and the caller has to slice both
+ * revisions in full.
+ */
+bool sliceChangedChildShadowNodeViewPairs(
+    const ShadowViewNodePair &oldShadowNodePair,
+    const ShadowViewNodePair &newShadowNodePair,
+    ViewNodePairScope &viewNodePairScope,
+    bool allowFlattened,
+    std::vector<ShadowViewNodePair *> &oldPairList,
+    std::vector<ShadowViewNodePair *> &newPairList);
+
 } // namespace facebook::react

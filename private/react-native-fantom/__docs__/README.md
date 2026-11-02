@@ -92,6 +92,13 @@ describe('My feature', () => {
 });
 ```
 
+Creating a root sets global `Dimensions` for both `window` and `screen` from its
+`viewportWidth`, `viewportHeight`, `devicePixelRatio`, and optional `fontScale`
+(default `1`). `useWindowDimensions()` and `PixelRatio` report the new root's
+values. If another root is still alive and the new metrics differ from the
+current global dimensions, Fantom applies the new values and emits a warning.
+Call `root.destroy()` when a root is no longer needed.
+
 For a full API reference, please see the [inline documentation](../src/index.js)
 defined for the methods in the `@react-native/fantom` [module](../src/index.js).
 

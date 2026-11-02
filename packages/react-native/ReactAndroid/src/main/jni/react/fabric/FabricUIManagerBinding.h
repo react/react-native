@@ -167,6 +167,12 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   std::mutex pendingTransactionsMutex_;
   std::vector<MountingTransaction> pendingTransactions_;
 
+  // Pull model: keeps the coordinator that reported a surface's commit alive
+  // until the UI thread handles the pull, as iOS does by capturing it in the
+  // block it dispatches to the main queue. Java only gets the surface id.
+  std::mutex pullableMountingCoordinatorsMutex_;
+  std::unordered_map<SurfaceId, std::shared_ptr<const MountingCoordinator>> pullableMountingCoordinators_;
+
   float pointScaleFactor_ = 1;
 
   bool enableFabricLogs_{false};

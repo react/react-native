@@ -72,7 +72,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: packages/react-native/third-party/.build/Build/Products
-          key: v3-ios-dependencies-slice-folder-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js') }}
+          key: v3-ios-dependencies-slice-folder-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/build.js') }}
       - name: Setup xcode
         if: steps.restore-slice-folder.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-xcode
@@ -81,7 +81,7 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Restore workspace
         if: steps.restore-slice-folder.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ios-prebuilds-workspace
           path: packages/react-native/third-party/
@@ -101,7 +101,7 @@ jobs:
         uses: actions/cache/save@v5
         if: ${{ github.ref == 'refs/heads/main' }} # To avoid that the cache explode
         with:
-          key: v3-ios-dependencies-slice-folder-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js') }}
+          key: v3-ios-dependencies-slice-folder-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/build.js') }}
           enableCrossOsArchive: true
           path: |
             packages/react-native/third-party/.build/Build/Products
@@ -130,20 +130,20 @@ jobs:
         with:
           path: |
             packages/react-native/third-party/
-          key: v5-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/compose-framework.js', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js') }}
+          key: v5-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/build.js', 'scripts/releases/ios-prebuild/compose-framework.js', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js') }}
       # If cache hit, we already have our binary. We don't need to do anything.
       - name: Yarn Install
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
       - name: Restore workspace
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: ios-prebuilds-workspace
           path: packages/react-native/third-party/
       - name: Download slices
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           pattern: prebuild-slice-${{ matrix.flavor }}-*
           path: packages/react-native/third-party/.build/Build/Products
@@ -204,4 +204,4 @@ jobs:
             packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
             packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
             packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.framework.dSYM.tar.gz
-          key: v5-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/compose-framework.js', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js') }}
+          key: v5-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/build.js', 'scripts/releases/ios-prebuild/compose-framework.js', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js') }}

@@ -486,6 +486,7 @@ export type {
   NativeTouchEvent,
   NativeUIEvent,
   ResponderSyntheticEvent,
+  SafeAreaInsets,
   SafeAreaInsetsChangeEvent,
   ScrollEvent,
   TargetedEvent,

@@ -56,6 +56,7 @@ type buffer$ToJSONRet = {
   ...
 };
 
+// $FlowFixMe[incompatible-type]
 declare class Buffer extends Uint8Array {
   constructor(
     value: Array<number> | number | string | Buffer | ArrayBuffer,
@@ -71,6 +72,7 @@ declare class Buffer extends Uint8Array {
     sourceStart?: number,
     sourceEnd?: number,
   ): number;
+  // $FlowFixMe[incompatible-type]
   entries(): IteratorObject<[number, number]>;
   equals(otherBuffer: Buffer): boolean;
   fill(
@@ -2422,8 +2424,8 @@ declare module 'fs' {
       options?: GlobOptions<WithFileTypes>,
     ): Node$Conditional<
       WithFileTypes,
-      AsyncIterator<Dirent>,
-      AsyncIterator<string>,
+      AsyncIteratorObject<Dirent>,
+      AsyncIteratorObject<string>,
     >,
     lchmod(path: FSPromisePath, mode: number): Promise<void>,
     lchown(path: FSPromisePath, uid: number, guid: number): Promise<void>,
@@ -2533,7 +2535,7 @@ declare module 'fs' {
         maxQueue?: number,
         overflow?: 'ignore' | 'throw',
       }>,
-    ): AsyncIterator<{eventType: string, filename: ?string}>,
+    ): AsyncIteratorObject<{eventType: string, filename: ?string}>,
     write<T extends Buffer | Uint8Array>(
       filehandle: FileHandle,
       buffer: T,
@@ -4271,7 +4273,7 @@ declare module 'timers/promises' {
     delay?: number,
     value?: T,
     options?: TimerOptions,
-  ): AsyncIterator<T>;
+  ): AsyncIteratorObject<T>;
 
   declare export var scheduler: Readonly<{
     wait(delay: number, options?: TimerOptions): Promise<void>,

@@ -35,7 +35,7 @@
 
 namespace facebook::yoga {
 
-std::atomic<uint32_t> gCurrentGenerationCount(0);
+constinit std::atomic<uint32_t> gCurrentGenerationCount(0);
 
 static bool hasAutoHorizontalMargin(const Style& style) {
   for (const auto direction : {Direction::LTR, Direction::RTL}) {

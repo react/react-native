@@ -110,11 +110,6 @@ class RNTesterFeatureFlags : public facebook::react::ReactNativeFeatureFlagsOver
   [RCTLinkingManager scene:scene continueUserActivity:userActivity];
 }
 
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  return [self bundleURL];
-}
-
 - (NSURL *)bundleURL
 {
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];

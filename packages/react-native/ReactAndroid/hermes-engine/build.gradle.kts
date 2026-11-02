@@ -104,7 +104,7 @@ val downloadHermes by
     tasks.registering(Download::class) {
       src(
           providers.provider {
-            "https://github.com/facebook/hermes/tarball/${hermesVersionProvider.get()}"
+            "https://github.com/meta/hermes/tarball/${hermesVersionProvider.get()}"
           },
       )
       onlyIfModified(true)
@@ -119,13 +119,8 @@ val unzipHermes by
     tasks.registering(Copy::class) {
       dependsOn(downloadHermes)
       from(tarTree(downloadHermesDest)) {
-        eachFile {
-          // We flatten the unzip as the tarball contains a `facebook-hermes-<SHA>`
-          // folder at the top level.
-          if (this.path.startsWith("facebook-hermes-")) {
-            this.path = this.path.substringAfter("/")
-          }
-        }
+        eachFile { path = path.substringAfter("/") }
+        includeEmptyDirs = false
       }
       into(hermesDir)
     }

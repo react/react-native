@@ -30,7 +30,7 @@ runs:
     - name: Run yarn install again, with the correct hermes version
       uses: ./.github/actions/yarn-install
     - name: Download ReactNativeDependencies
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         name: ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/third-party
@@ -38,7 +38,7 @@ runs:
       shell: bash
       run: ls -lR /tmp/third-party
     - name: Download React Native Prebuilds
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         name: ReactCore${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/ReactCore

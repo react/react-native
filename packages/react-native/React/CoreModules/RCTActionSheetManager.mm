@@ -13,7 +13,6 @@
 
 #if !TARGET_OS_TV
 
-#import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUIManager.h>

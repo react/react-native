@@ -33,12 +33,6 @@ RCT_EXTERN void RCTSetCustomSRWebSocketProvider(SRWebSocketProvider provider);
 
 @end
 
-@interface RCTBridge (RCTWebSocketModule)
-
-- (RCTWebSocketModule *)webSocketModule;
-
-@end
-
 @interface RCTBridgeProxy (RCTWebSocketModule)
 
 - (RCTWebSocketModule *)webSocketModule;

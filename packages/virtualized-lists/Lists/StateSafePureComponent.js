@@ -74,7 +74,7 @@ export default class StateSafePureComponent<
       get() {
         invariant(
           !that._inAsyncStateUpdate,
-          '"this.state" should not be acceessed during state updates',
+          '"this.state" should not be accessed during state updates',
         );
         return state;
       },

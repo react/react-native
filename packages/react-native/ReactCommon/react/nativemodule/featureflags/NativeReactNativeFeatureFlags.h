@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<69d34615a3e06c984f24fd71ebdd17ff>>
+ * @generated SignedSource<<ba38e0adad3e818a3f16457281a831ba>>
  */
 
 /**
@@ -45,6 +45,8 @@ class NativeReactNativeFeatureFlags
   bool cxxNativeAnimatedEnabled(jsi::Runtime& runtime);
 
   bool defaultTextToOverflowHidden(jsi::Runtime& runtime);
+
+  bool deferTextInputTruncationIOS(jsi::Runtime& runtime);
 
   bool disableEarlyViewCommandExecution(jsi::Runtime& runtime);
 
@@ -94,7 +96,7 @@ class NativeReactNativeFeatureFlags
 
   bool enableFlexboxAutoMinSizeInStrictMode(jsi::Runtime& runtime);
 
-  bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
+  bool enableFollowUpMountItemDispatchAndroid(jsi::Runtime& runtime);
 
   bool enableIOSCompressedTextFrameAdjustment(jsi::Runtime& runtime);
 
@@ -174,6 +176,8 @@ class NativeReactNativeFeatureFlags
 
   bool fuseboxWebSocketEventsEnabled(jsi::Runtime& runtime);
 
+  bool keepTimersRunningWhileHostPausedAndroid(jsi::Runtime& runtime);
+
   bool optimizedAnimatedPropUpdates(jsi::Runtime& runtime);
 
   bool overrideBySynchronousMountPropsAtMountingAndroid(jsi::Runtime& runtime);
@@ -195,6 +199,8 @@ class NativeReactNativeFeatureFlags
   bool shouldTriggerResponderTransferOnScrollAndroid(jsi::Runtime& runtime);
 
   bool skipActivityIdentityAssertionOnHostPause(jsi::Runtime& runtime);
+
+  bool skipUnchangedChildrenInDifferentiator(jsi::Runtime& runtime);
 
   bool syncAndroidClipBoundsWithOverflow(jsi::Runtime& runtime);
 

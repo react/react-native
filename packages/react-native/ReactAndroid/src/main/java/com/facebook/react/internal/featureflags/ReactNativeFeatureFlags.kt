@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<aae7dd747a706926dad5a4e95b1a2f38>>
+ * @generated SignedSource<<1533b7302f2495bde0fddd77c9e5def4>>
  */
 
 /**
@@ -53,6 +53,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun defaultTextToOverflowHidden(): Boolean = accessor.defaultTextToOverflowHidden()
+
+  /**
+   * When enabled, iOS TextInput applies edits that JS transforms (e.g. maxLength truncation) incrementally after the UIKit text change delegate call returns, avoiding synchronous text and selection rewrites that can deadlock UIKeyboardTaskQueue.
+   */
+  @JvmStatic
+  public fun deferTextInputTruncationIOS(): Boolean = accessor.deferTextInputTruncationIOS()
 
   /**
    * Dispatch view commands in mount item order.
@@ -199,10 +205,10 @@ public object ReactNativeFeatureFlags {
   public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = accessor.enableFlexboxAutoMinSizeInStrictMode()
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
    */
   @JvmStatic
-  public fun enableFontScaleChangesUpdatingLayout(): Boolean = accessor.enableFontScaleChangesUpdatingLayout()
+  public fun enableFollowUpMountItemDispatchAndroid(): Boolean = accessor.enableFollowUpMountItemDispatchAndroid()
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
@@ -295,7 +301,7 @@ public object ReactNativeFeatureFlags {
   public fun enableModuleArgumentNSNullConversionIOS(): Boolean = accessor.enableModuleArgumentNSNullConversionIOS()
 
   /**
-   * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
+   * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself at its next mount dispatch, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
    */
   @JvmStatic
   public fun enableMountingCoordinatorPullModelAndroid(): Boolean = accessor.enableMountingCoordinatorPullModelAndroid()
@@ -439,6 +445,12 @@ public object ReactNativeFeatureFlags {
   public fun fuseboxWebSocketEventsEnabled(): Boolean = accessor.fuseboxWebSocketEventsEnabled()
 
   /**
+   * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+   */
+  @JvmStatic
+  public fun keepTimersRunningWhileHostPausedAndroid(): Boolean = accessor.keepTimersRunningWhileHostPausedAndroid()
+
+  /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
    */
   @JvmStatic
@@ -503,6 +515,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun skipActivityIdentityAssertionOnHostPause(): Boolean = accessor.skipActivityIdentityAssertionOnHostPause()
+
+  /**
+   * When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.
+   */
+  @JvmStatic
+  public fun skipUnchangedChildrenInDifferentiator(): Boolean = accessor.skipUnchangedChildrenInDifferentiator()
 
   /**
    * Override getClipBounds on Android views to return the padding box when overflow is hidden

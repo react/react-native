@@ -1,5 +1,47 @@
 # Changelog
 
+## v0.88.1
+
+### Added
+
+- **JSI:** Forward createValueFromJsonUtf8 in RuntimeDecorator ([b5eec4e4f3](https://github.com/react/react-native/commit/b5eec4e4f3d76fe0f407a5666d0ffdb5eb218b57) by [@mrousavy](https://github.com/mrousavy))
+- **JSI:** Run the With hooks around WithRuntimeDecorator::createArrayBuffer ([82def6ea4c](https://github.com/react/react-native/commit/82def6ea4c67b5b803da2c777d8eff16919d0a23) by [@mrousavy](https://github.com/mrousavy))
+- **JSI:** Forward String::length in RuntimeDecorator and WithRuntimeDecorator ([be567d270c](https://github.com/react/react-native/commit/be567d270ca860a57bc30449f9a34df5b751059c) by [@mrousavy](https://github.com/mrousavy))
+- **Yoga:** Fix flex shrink explosion when the shrink total is a positive float residual ([24a3be5f99](https://github.com/react/react-native/commit/24a3be5f99be002fc5b19b05647cb241a7435df1) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+
+#### iOS specific
+
+- **SwiftPM:** the build stops with a clear error when precompiled plugin frameworks and the Xcode project disagree, and the error says what to run. ([a920e5db46](https://github.com/react/react-native/commit/a920e5db46876daa4defc3a75fbb11f636c1f0ce) by [@chrfalch](https://github.com/chrfalch))
+
+### Changed
+
+- **JSI:** Use createError in JSError and forward it in RuntimeDecorator ([0cca3a1f77](https://github.com/react/react-native/commit/0cca3a1f77216f815854769659dcba9965d3b12e) by [@mrousavy](https://github.com/mrousavy))
+
+#### iOS specific
+- **Build:** Compile React Native's C/C++/Objective-C code with `-O2` instead of `-Os` in Release, and Yoga and glog with `-O2` in all builds, to match Android ([60c817e925](https://github.com/react/react-native/commit/60c817e9256abaea212ebd826d18043d4f1c5109) by [@chrfalch](https://github.com/chrfalch))
+- **SwiftPM:** `spm add` and `spm update` write React Native's build settings to `ReactNativeSPM/ReactNativeSPM.xcconfig` and its build scripts to `ReactNativeSPM/Scripts/`, so a version bump no longer changes `project.pbxproj`. A configuration that uses its own xcconfig must now `#include` the generated file, and a target setting that hides React Native's value must add `$(inherited)`. `spm` prints the exact fix in both cases. ([cd89e98949](https://github.com/react/react-native/commit/cd89e98949d1471c801a2ee40be676f73bceeec2) by [@chrfalch](https://github.com/chrfalch))
+- **Text:**  Text without a background color no longer draws a transparent background ([0bd33261d1](https://github.com/react/react-native/commit/0bd33261d1e519f319c3225247879273c5a2a709) by [@hryhoriiK97](https://github.com/hryhoriiK97))
+ 
+### Fixed
+
+- **LogBox**: Fix bottom notification appearance/touch targets on iPhone Duo ([88a8bd23e8](https://github.com/react/react-native/commit/88a8bd23e8744b1cdc5618f7c985eafbb835ff93) by [@huntie](https://github.com/huntie))
+- **Yoga:** Keep the measured pixel size of text nodes when rounding to the pixel grid ([fd5392494f](https://github.com/react/react-native/commit/fd5392494fc547e049c933203953aeedd437175d) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+
+#### Android specific
+
+- **Text:** Fix text measured with the wrong width when `fontVariationSettings` are re-applied to a reused `Paint` ([96518a8fb9](https://github.com/react/react-native/commit/96518a8fb9b380422ff428e44e7602977a8ec1dd) by [@jkadamczyk](https://github.com/jkadamczyk))
+- **Text:** Skip empty and fully hidden text decoration ranges ([dbd5b3b770](https://github.com/react/react-native/commit/dbd5b3b770039b86cf8c538cb52eb860717d0e88) by [@Abbondanzo](https://github.com/Abbondanzo))
+- **Text:** Fix crash drawing text decoration (underline/strikethrough) when a nested Text's span extends past a numberOfLines-truncated layout ([ca8504b1ca](https://github.com/react/react-native/commit/ca8504b1caa9f79152cc14fcc6c0d7e46ada2633) by [@lazerg](https://github.com/lazerg))
+
+#### iOS specific
+
+- **Image:** Image no longer shows the image of a previous source after its native view is recycled ([53bf98bf40](https://github.com/react/react-native/commit/53bf98bf40713fad1bbe00a652d2aabce8b91eb1) by [@mattijsf](https://github.com/mattijsf))
+- **SafeArea:** Fix views with a filter having their content offset by the safe area insets ([fea820fa9b](https://github.com/react/react-native/commit/fea820fa9bd08f966169ef519e0ee074f5953dbb) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+- **StatusBar:** `StatusBar` style and visibility work on iOS 27 for apps built with the iOS 27 SDK when `UIViewControllerBasedStatusBarAppearance` is `YES`. Custom root view controllers must return the `RCTStatusBarAppearance` values. ([bd08dafc98](https://github.com/react/react-native/commit/bd08dafc98776a02e9b89c685d0475c48b6fd1b3) by [@alanjhughes](https://github.com/alanjhughes))
+- **SwiftPM:** a project set up with skipped codegen no longer fails package resolution on `ReactAppHeaders` ([e3aa9a1e19](https://github.com/react/react-native/commit/e3aa9a1e19734f58908be383103d5c4ce8bb9865) by [@chrfalch](https://github.com/chrfalch))
+- **SwiftPM:** the build-time sync now runs again when a watched path that did not exist at the last sync appears. ([c89f4120ac](https://github.com/react/react-native/commit/c89f4120ac78f9808d2e15b9f46120636d59ded7) by [@chrfalch](https://github.com/chrfalch))
+- **SwiftPM:** keep line breaks in the scheme pre-action script so that the "Sync SPM Autolinking" pre-action runs. Run `npx react-native spm update` once to rewrite an existing scheme. ([b8df948fd4](https://github.com/react/react-native/commit/b8df948fd4d22b3832c3e6319288232103cce700) by [@chrfalch](https://github.com/chrfalch))
+
 ## v0.88.0
 
 ### Added

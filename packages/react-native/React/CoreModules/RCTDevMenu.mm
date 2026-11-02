@@ -119,7 +119,6 @@ typedef void (^RCTDevMenuAlertActionHandler)(UIAlertAction *action);
   NSMutableArray<RCTDevMenuItem *> *_extraMenuItems;
 }
 
-@synthesize bridge = _bridge;
 @synthesize moduleRegistry = _moduleRegistry;
 @synthesize callableJSModules = _callableJSModules;
 @synthesize bundleManager = _bundleManager;
@@ -616,19 +615,6 @@ RCT_EXPORT_MODULE()
 @end
 
 #endif
-
-@implementation RCTBridge (RCTDevMenu)
-
-- (RCTDevMenu *)devMenu
-{
-#if RCT_DEV_MENU
-  return [self moduleForClass:[RCTDevMenu class]];
-#else
-  return nil;
-#endif
-}
-
-@end
 
 @implementation RCTBridgeProxy (RCTDevMenu)
 

@@ -93,7 +93,7 @@ runs:
         fi
     - name: Download ReactNativeDependencies
       if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         name: ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/third-party/
@@ -103,7 +103,7 @@ runs:
       run: ls -lR /tmp/third-party
     - name: Download React Native Prebuilds
       if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         name: ReactCore${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/ReactCore

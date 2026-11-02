@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<074d3690279f3661f0c43f0499f642ac>>
+ * @generated SignedSource<<73819e561e8cdb153268cc7d7026b56f>>
  */
 
 /**
@@ -30,6 +30,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun cxxNativeAnimatedEnabled(): Boolean
 
   @DoNotStrip public fun defaultTextToOverflowHidden(): Boolean
+
+  @DoNotStrip public fun deferTextInputTruncationIOS(): Boolean
 
   @DoNotStrip public fun disableEarlyViewCommandExecution(): Boolean
 
@@ -79,7 +81,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
-  @DoNotStrip public fun enableFontScaleChangesUpdatingLayout(): Boolean
+  @DoNotStrip public fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip public fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
@@ -159,6 +161,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun fuseboxWebSocketEventsEnabled(): Boolean
 
+  @DoNotStrip public fun keepTimersRunningWhileHostPausedAndroid(): Boolean
+
   @DoNotStrip public fun optimizedAnimatedPropUpdates(): Boolean
 
   @DoNotStrip public fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean
@@ -180,6 +184,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean
 
   @DoNotStrip public fun skipActivityIdentityAssertionOnHostPause(): Boolean
+
+  @DoNotStrip public fun skipUnchangedChildrenInDifferentiator(): Boolean
 
   @DoNotStrip public fun syncAndroidClipBoundsWithOverflow(): Boolean
 

@@ -3,6 +3,9 @@ require "../../../packages/react-native/scripts/cocoapods/autolinking.rb"
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+# Build with the C++ stable API enforced. Run `RN_STRICT_API=0 pod install` to opt out.
+ENV['RN_STRICT_API'] ||= '1'
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green

@@ -43,16 +43,16 @@ JavaScript CI is the `lint`, `test_js`, and `build_js_types` jobs in [`.github/w
 
 The formatting command uses pinned npm packages for Kotlin and Java and installs pinned Ruff through Python. To format every language, install a JDK with Java 17 or newer, Python 3 with pip, and a Swift 6.3 or newer toolchain in addition to Node and Yarn. Each language wrapper checks its own requirements and prints installation guidance when something is missing; `yarn format` then skips that language and continues formatting the others. Swift formatting accepts either `swift-format` or `swift format` from the installed toolchain.
 
-### Verification: Running RNTester
-
-Needed only for changes that have to be seen running, such as user interface behavior.
-
-`yarn start` serves [RNTester](packages/rn-tester/README.md) over Metro at `http://localhost:8081`; `yarn android` builds and installs it on Android. Check the bundler with `curl "http://localhost:8081/js/RNTesterApp.bundle?platform=ios&dev=true"`.
-
 ## Gotchas
 
 - `yarn install` dirties the working tree: a `preinstall` hook (`scripts/try-set-hermes-compiler-prebuilt.js`) resolves the `hermes-compiler` placeholder in `packages/react-native/package.json` (`0.0.0` → a real version) and touches `yarn.lock`. Expected — do not commit it.
 - Metro cannot bundle until codegen is built once — `yarn --cwd packages/react-native-codegen build`. Without it, bundling fails with `Cannot find module '@react-native/codegen/lib/parsers/flow/parser'`. Every other package runs from source — `yarn build` is not needed for development (see [`scripts/build/README.md`](scripts/build/README.md)).
+
+## Verification: Running RNTester
+
+Needed only for changes that have to be seen running, such as user interface behavior.
+
+`yarn start` serves [RNTester](packages/rn-tester/README.md) over Metro at `http://localhost:8081`; `yarn android` builds and installs it on Android. Check the bundler with `curl "http://localhost:8081/js/RNTesterApp.bundle?platform=ios&dev=true"`.
 
 ## Generated code
 
@@ -63,6 +63,14 @@ Never hand-edit generated output — change the source and regenerate. CI valida
 - JavaScript sources are typed with Flow, and the public API is exported from `packages/react-native/index.js`. TypeScript types are generated from those sources, and `packages/react-native/ReactNativeApi.d.ts` is a committed snapshot of that API — run `yarn build-types` to regenerate both whenever the public API changes, then `yarn test-generated-typescript` to type-check the result.
 - The public native API is snapshotted as well: C++ under `scripts/cxx-api` (`yarn cxx-api-build`), and Android in `packages/react-native/ReactAndroid/api/ReactAndroid.api`.
 - `CHANGELOG.md` is compiled at release time from pull request descriptions.
+
+## Flow types for npm packages
+
+`node_modules` is a `[declarations]` path in `.flowconfig`: Flow reads a package's own Flow types when it ships them (`metro` does), and otherwise the import is untyped, which `@flow strict` and `strict-local` files reject with `untyped-import`. A package used from Flow source for the first time needs a libdef in `flow-typed/npm/`, which overrides anything in `node_modules`:
+
+- Name it `<package>_v<major>.x.x.js` for the major in `package.json`, under `@<scope>/` for a scoped package.
+- Copy the shape of a neighbor: the license header, `@flow strict`, and `declare module '<package>' { … }` with `declare module.exports` or `declare export`. Declare only the surface the repo calls, typed as the package documents it, never `any`.
+- Check with `yarn flow-check`, and drop the libdef with the last use of the package.
 
 ## Contributing guidelines
 

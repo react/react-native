@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<710e3219e8ad9f87c71f74c53587d938>>
+ * @generated SignedSource<<17d8a2411dcd92711b4dc00ed16e0254>>
  */
 
 /**
@@ -43,6 +43,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
 
   bool defaultTextToOverflowHidden() override {
     return true;
+  }
+
+  bool deferTextInputTruncationIOS() override {
+    return false;
   }
 
   bool disableEarlyViewCommandExecution() override {
@@ -90,7 +94,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
-    return false;
+    return true;
   }
 
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
@@ -141,8 +145,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    return true;
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    return false;
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -222,7 +226,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enablePreparedTextLayout() override {
-    return false;
+    return true;
   }
 
   bool enablePropsUpdateReconciliationAndroid() override {
@@ -301,6 +305,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool keepTimersRunningWhileHostPausedAndroid() override {
+    return false;
+  }
+
   bool optimizedAnimatedPropUpdates() override {
     return false;
   }
@@ -318,7 +326,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   double preparedTextCacheSize() override {
-    return 200.0;
+    return 1000.0;
   }
 
   bool preventShadowTreeCommitExhaustion() override {
@@ -342,6 +350,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool skipActivityIdentityAssertionOnHostPause() override {
+    return false;
+  }
+
+  bool skipUnchangedChildrenInDifferentiator() override {
     return false;
   }
 

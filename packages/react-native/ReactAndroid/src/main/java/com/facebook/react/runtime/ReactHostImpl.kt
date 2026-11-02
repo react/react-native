@@ -733,15 +733,13 @@ public class ReactHostImpl(
   override fun onConfigurationChanged(context: Context) {
     val currentReactContext = this.currentReactContext
     if (currentReactContext != null) {
-      if (ReactNativeFeatureFlags.enableFontScaleChangesUpdatingLayout()) {
-        val previousFontScale = PixelUtil.toPixelFromSP(1.0)
-        DisplayMetricsHolder.initDisplayMetrics(currentReactContext)
-        val newFontScale = PixelUtil.toPixelFromSP(1.0)
+      val previousFontScale = PixelUtil.toPixelFromSP(1.0)
+      DisplayMetricsHolder.initDisplayMetrics(currentReactContext)
+      val newFontScale = PixelUtil.toPixelFromSP(1.0)
 
-        if (previousFontScale != newFontScale) {
-          synchronized(attachedSurfaces) {
-            attachedSurfaces.forEach { surface -> surface.view?.requestLayout() }
-          }
+      if (previousFontScale != newFontScale) {
+        synchronized(attachedSurfaces) {
+          attachedSurfaces.forEach { surface -> surface.view?.requestLayout() }
         }
       }
 
@@ -1109,7 +1107,7 @@ public class ReactHostImpl(
          * Native is reloading, it seems reasonable to assume that: (1) We must have navigated to a
          * React Native screen in the past, or (2) We must be on a React Native screen.
          */
-        if (isReloading && !isManagerResumed) {
+        if (isReloading && !isManagerResumed && currentActivity != null) {
           reactLifecycleStateManager.moveToOnHostResume(reactContext, currentActivity)
         } else {
           /**

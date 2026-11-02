@@ -1,0 +1,166 @@
+# Untrusted half of RNTester visual regression testing. Called from Test All
+# once the RNTester Release build for a platform is ready, it captures the
+# visual flows on one canonical device and uploads the PNGs plus a manifest as
+# an artifact. It has no secrets and no storage access: comparison and
+# publication happen in visual-compare-rntester.yml, which runs from the
+# default branch when Test All completes.
+name: Visual Capture RNTester
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: 'The platform to capture, either android or ios'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  MAESTRO_VERSION: 2.6.1
+  VISUAL_FLOWS: packages/rn-tester/visual-tests/flows
+  VISUAL_OUTPUT_DIR: /tmp/visual-capture
+  VISUAL_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  capture_android:
+    if: inputs.platform == 'android'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # The manifest records HEAD^1, the commit this capture is based on.
+          fetch-depth: 2
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Install Maestro
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Download RNTester APK
+        uses: actions/download-artifact@v7
+        with:
+          name: rntester-release
+          path: /tmp/rntester-android
+      - name: Capture
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          # Pins screen size and density, which the action otherwise leaves
+          # to the AVD defaults.
+          profile: pixel_7
+          # Emulator 37.2.12. Its version can change rendering, so it's
+          # pinned and is part of the environment key.
+          emulator-build: '16428233'
+          ram-size: '8192M'
+          heap-size: '4096M'
+          disk-size: '10G'
+          cores: '4'
+          disable-animations: true
+          avd-name: visual_emulator
+          script: |
+            adb shell settings put system font_scale 1.0
+            # Pixel Launcher often stops responding during boot, and its dialog
+            # covers the app and anything captured beneath it. The setting
+            # suppresses new dialogs, and stopping the launcher dismisses one
+            # that's already showing.
+            adb shell settings put global hide_error_dialogs 1
+            adb shell am force-stop "$(adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME | tail -1 | cut -d/ -f1 | tr -d '\r')"
+            mkdir -p "$VISUAL_OUTPUT_DIR"
+            node .github/workflow-scripts/visual/capture.js android /tmp/rntester-android/app-arm64-v8a-release.apk com.facebook.react.uiapp "$VISUAL_FLOWS" "$VISUAL_OUTPUT_DIR"
+            node .github/workflow-scripts/visual/manifest.js android "$VISUAL_OUTPUT_DIR" "$VISUAL_OUTPUT_DIR/manifest.json"
+      - name: Upload captures
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: visual-capture-android
+          path: ${{ env.VISUAL_OUTPUT_DIR }}
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload Maestro logs
+        if: always()
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: visual-maestro-logs-android
+          path: |
+            ~/.maestro/tests
+            visual-capture-report-*.xml
+          if-no-files-found: ignore
+
+  capture_ios:
+    if: inputs.platform == 'ios'
+    runs-on: macos-26
+    env:
+      DEVICE_MODEL: iPhone-17-Pro
+      DEVICE_OS: iOS-26-2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # The manifest records HEAD^1, the commit this capture is based on.
+          fetch-depth: 2
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          brew tap facebook/fb
+          brew install facebook/fb/idb-companion
+      - name: Download RNTester app
+        uses: actions/download-artifact@v7
+        with:
+          name: RNTesterApp-NewArch-Release
+          path: /tmp/RNTesterBuild/RNTester.app
+      - name: Boot and configure simulator
+        id: simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | jq -r --arg runtime "com.apple.CoreSimulator.SimRuntime.$DEVICE_OS" --arg name "${DEVICE_MODEL//-/ }" '.devices[$runtime][] | select(.name == $name) | .udid' | head -1)
+          if [[ -z "$UDID" ]]; then
+            echo "::error::No $DEVICE_MODEL simulator on $DEVICE_OS"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID"
+          xcrun simctl ui "$UDID" appearance light
+          xcrun simctl ui "$UDID" content_size large
+          xcrun simctl spawn "$UDID" defaults write -g AppleLocale en_US
+          xcrun simctl spawn "$UDID" defaults write -g AppleLanguages -array en
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+      - name: Capture
+        run: |
+          mkdir -p "$VISUAL_OUTPUT_DIR"
+          node .github/workflow-scripts/visual/capture.js ios /tmp/RNTesterBuild/RNTester.app com.meta.RNTester.localDevelopment "$VISUAL_FLOWS" "$VISUAL_OUTPUT_DIR" "${{ steps.simulator.outputs.udid }}"
+          node .github/workflow-scripts/visual/manifest.js ios "$VISUAL_OUTPUT_DIR" "$VISUAL_OUTPUT_DIR/manifest.json" "${{ steps.simulator.outputs.udid }}"
+      - name: Upload captures
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: visual-capture-ios
+          path: ${{ env.VISUAL_OUTPUT_DIR }}
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload Maestro logs
+        if: always()
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: visual-maestro-logs-ios
+          path: |
+            ~/.maestro/tests
+            visual-capture-report-*.xml
+          if-no-files-found: ignore

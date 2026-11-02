@@ -90,13 +90,6 @@ export type SpmTarget = {
   // .js/.podspec/.md siblings, etc. can never sneak in. Null/empty means
   // fall back to SPM's default scan of target.path.
   sources?: ?Array<string>,
-  // Header search paths declared by the dep's podspec
-  // (pod_target_xcconfig HEADER_SEARCH_PATHS), already substituted relative
-  // to the dep's source dir. Path-style includes like
-  // `<react/renderer/components/safeareacontext/X.h>` resolve through these.
-  // Emitted as `.headerSearchPath(...)` directives in the target's
-  // cSettings / cxxSettings.
-  headerSearchPaths?: ?Array<string>,
 };
 
 // Routing metadata kept alongside an SpmTarget in main(). Lives in a wrapper
@@ -377,13 +370,6 @@ export type SynthPackageSpec = {
   // supply absolute paths (tests). Production uses siblingSynthAbsolutePaths.
   siblingPackageBaseRelative?: string,
   siblingSynthAbsolutePaths?: {[swiftName: string]: string},
-  // Header search paths from the dep's podspec `pod_target_xcconfig`
-  // HEADER_SEARCH_PATHS, with `$(PODS_TARGET_SRCROOT)` substituted and the
-  // synth wrapper's `root/` prefix applied. Emitted as `.headerSearchPath()`
-  // directives on cSettings / cxxSettings so path-style includes like
-  // `<react/renderer/components/safeareacontext/X.h>` resolve through the
-  // dep's own `common/cpp/` subtree.
-  headerSearchPaths?: ?Array<string>,
   iosDeploymentTarget?: ?string,
   // React Native C++ stable API macros defined in the synth target.
   cxxApiDefines?: ReadonlyArray<string>,

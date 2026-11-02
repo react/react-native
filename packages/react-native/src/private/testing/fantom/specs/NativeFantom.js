@@ -78,6 +78,7 @@ interface Spec extends TurboModule {
     viewportWidth: number,
     viewportHeight: number,
     devicePixelRatio: number,
+    fontScale: number,
     viewportOffsetX?: number,
     viewportOffsetY?: number,
   ) => RootTag;

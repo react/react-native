@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<39f216d172695fdbe82fa717d06c876f>>
+ * @generated SignedSource<<5a693b0689f3907708afa10b68f24871>>
  */
 
 /**
@@ -31,6 +31,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun defaultTextToOverflowHidden(): Boolean = true
 
+  override fun deferTextInputTruncationIOS(): Boolean = false
+
   override fun disableEarlyViewCommandExecution(): Boolean = false
 
   override fun disableIdleEventDispatchFrameCallbackRearmAndroid(): Boolean = false
@@ -53,7 +55,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = false
 
-  override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
+  override fun enableAndroidTextMeasurementOptimizations(): Boolean = true
 
   override fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean = false
 
@@ -79,7 +81,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = false
 
-  override fun enableFontScaleChangesUpdatingLayout(): Boolean = true
+  override fun enableFollowUpMountItemDispatchAndroid(): Boolean = false
 
   override fun enableIOSCompressedTextFrameAdjustment(): Boolean = false
 
@@ -119,7 +121,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = false
 
-  override fun enablePreparedTextLayout(): Boolean = false
+  override fun enablePreparedTextLayout(): Boolean = true
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
 
@@ -159,6 +161,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxWebSocketEventsEnabled(): Boolean = false
 
+  override fun keepTimersRunningWhileHostPausedAndroid(): Boolean = false
+
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 
   override fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean = true
@@ -167,7 +171,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun perfMonitorV2Enabled(): Boolean = false
 
-  override fun preparedTextCacheSize(): Double = 200.0
+  override fun preparedTextCacheSize(): Double = 1000.0
 
   override fun preventShadowTreeCommitExhaustion(): Boolean = false
 
@@ -180,6 +184,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean = false
 
   override fun skipActivityIdentityAssertionOnHostPause(): Boolean = false
+
+  override fun skipUnchangedChildrenInDifferentiator(): Boolean = false
 
   override fun syncAndroidClipBoundsWithOverflow(): Boolean = false
 

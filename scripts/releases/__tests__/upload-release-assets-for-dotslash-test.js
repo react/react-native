@@ -10,6 +10,10 @@
 
 'use strict';
 
+// @octokit/rest is ESM-only, which Jest can't load, and these tests pass their
+// own client.
+jest.mock('@octokit/rest', () => ({Octokit: jest.fn()}));
+
 const {
   getReleaseAssetMap,
   uploadReleaseAssetsForDotSlashFile,

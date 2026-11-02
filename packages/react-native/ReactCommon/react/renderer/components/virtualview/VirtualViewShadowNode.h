@@ -25,7 +25,7 @@ class VirtualViewShadowNode final
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     // <VirtualView> has a side effect: it listens to scroll events.

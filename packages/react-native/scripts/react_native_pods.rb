@@ -641,6 +641,7 @@ def react_native_post_install(
   ReactNativePodsUtils.updateOSDeploymentTarget(installer)
   ReactNativePodsUtils.set_dynamic_frameworks_flags(installer)
   ReactNativePodsUtils.add_ndebug_flag_to_pods_in_release(installer)
+  ReactNativePodsUtils.set_optimization_level_for_react_native_pods(installer, react_native_path)
 
   if !ReactNativeCoreUtils.build_rncore_from_source()
     # The Xcode-26 SWIFT_ENABLE_EXPLICIT_MODULES=NO workaround (#53457) is removed:

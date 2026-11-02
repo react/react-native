@@ -14,6 +14,17 @@
 
 namespace facebook::react {
 
+namespace {
+
+// Same as `a == b`. Props constructors pass the same string literal for a key
+// on every parse, so `a` usually points to the characters stored for that key
+// when the parser was prepared; comparing the pointers first skips `memcmp`.
+inline bool keysEqual(std::string_view a, std::string_view b) noexcept {
+  return a.data() == b.data() ? a.size() == b.size() : a == b;
+}
+
+} // namespace
+
 // During parser initialization, Props structs are used to parse
 // "fake"/empty objects, and `at` is called repeatedly which tells us
 // which props are accessed during parsing, and in which order.
@@ -81,7 +92,7 @@ const RawValue* RawPropsParser::at(
 #endif
       rawProps.keyIndexCursor_ = 0;
     }
-  } while (key != keys_[rawProps.keyIndexCursor_]);
+  } while (!keysEqual(key, keys_[rawProps.keyIndexCursor_]));
 
   auto valueIndex = rawProps.keyIndexToValueIndex_[rawProps.keyIndexCursor_];
   return valueIndex == kRawPropsValueIndexEmpty ? nullptr

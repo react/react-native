@@ -25,7 +25,8 @@ namespace facebook::react {
  * tree simultaneously. This thread_local flag allows enabling the updates for
  * chosen threads.
  */
-thread_local bool useRuntimeShadowNodeReferenceUpdateOnThread{false}; // NOLINT
+constinit thread_local bool useRuntimeShadowNodeReferenceUpdateOnThread{
+    false}; // NOLINT
 
 /* static */ void ShadowNode::setUseRuntimeShadowNodeReferenceUpdateOnThread(
     bool isEnabled) {

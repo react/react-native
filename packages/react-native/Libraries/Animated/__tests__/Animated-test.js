@@ -12,13 +12,13 @@ import * as React from 'react';
 
 const {PlatformColor} = require('../../StyleSheet/PlatformColorValueTypes');
 let Animated = require('../Animated').default;
-const AnimatedProps = require('../nodes/AnimatedProps').default;
-const {
+let AnimatedProps = require('../nodes/AnimatedProps').default;
+let {
   create,
   unmount,
   update,
 } = require('@react-native/jest-preset/jest/renderer');
-const TestRenderer = require('react-test-renderer');
+let TestRenderer = require('react-test-renderer');
 
 // WORKAROUND: `jest.runAllTicks` skips tasks scheduled w/ `queueMicrotask`.
 function mockQueueMicrotask() {
@@ -37,6 +37,16 @@ function mockQueueMicrotask() {
 describe('Animated', () => {
   beforeEach(() => {
     jest.resetModules();
+    // Reload after the reset, so that Animated and the renderer share a copy
+    // of React.
+    Animated = require('../Animated').default;
+    AnimatedProps = require('../nodes/AnimatedProps').default;
+    ({
+      create,
+      unmount,
+      update,
+    } = require('@react-native/jest-preset/jest/renderer'));
+    TestRenderer = require('react-test-renderer');
   });
 
   mockQueueMicrotask();

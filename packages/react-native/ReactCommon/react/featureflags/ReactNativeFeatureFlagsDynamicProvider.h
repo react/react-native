@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d36869521d1c3dd2ea8a43c21e8892d6>>
+ * @generated SignedSource<<e025e583cfcbe18fea678c7db9fe7621>>
  */
 
 /**
@@ -81,6 +81,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::defaultTextToOverflowHidden();
+  }
+
+  bool deferTextInputTruncationIOS() override {
+    auto value = values_["deferTextInputTruncationIOS"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::deferTextInputTruncationIOS();
   }
 
   bool disableEarlyViewCommandExecution() override {
@@ -299,13 +308,13 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableFlexboxAutoMinSizeInStrictMode();
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    auto value = values_["enableFontScaleChangesUpdatingLayout"];
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    auto value = values_["enableFollowUpMountItemDispatchAndroid"];
     if (!value.isNull()) {
       return value.getBool();
     }
 
-    return ReactNativeFeatureFlagsDefaults::enableFontScaleChangesUpdatingLayout();
+    return ReactNativeFeatureFlagsDefaults::enableFollowUpMountItemDispatchAndroid();
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -659,6 +668,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::fuseboxWebSocketEventsEnabled();
   }
 
+  bool keepTimersRunningWhileHostPausedAndroid() override {
+    auto value = values_["keepTimersRunningWhileHostPausedAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::keepTimersRunningWhileHostPausedAndroid();
+  }
+
   bool optimizedAnimatedPropUpdates() override {
     auto value = values_["optimizedAnimatedPropUpdates"];
     if (!value.isNull()) {
@@ -756,6 +774,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::skipActivityIdentityAssertionOnHostPause();
+  }
+
+  bool skipUnchangedChildrenInDifferentiator() override {
+    auto value = values_["skipUnchangedChildrenInDifferentiator"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::skipUnchangedChildrenInDifferentiator();
   }
 
   bool syncAndroidClipBoundsWithOverflow() override {

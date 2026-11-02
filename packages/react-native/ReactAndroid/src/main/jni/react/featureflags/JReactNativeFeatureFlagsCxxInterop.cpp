@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a7be59fb76794ceaf822bb348217fab5>>
+ * @generated SignedSource<<5280f1f326c4cc2257dc75440a47a57c>>
  */
 
 /**
@@ -60,6 +60,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool defaultTextToOverflowHidden() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("defaultTextToOverflowHidden");
+    return method(javaProvider_);
+  }
+
+  bool deferTextInputTruncationIOS() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("deferTextInputTruncationIOS");
     return method(javaProvider_);
   }
 
@@ -207,9 +213,9 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
+  bool enableFollowUpMountItemDispatchAndroid() override {
     static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableFontScaleChangesUpdatingLayout");
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableFollowUpMountItemDispatchAndroid");
     return method(javaProvider_);
   }
 
@@ -447,6 +453,12 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
+  bool keepTimersRunningWhileHostPausedAndroid() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("keepTimersRunningWhileHostPausedAndroid");
+    return method(javaProvider_);
+  }
+
   bool optimizedAnimatedPropUpdates() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("optimizedAnimatedPropUpdates");
@@ -510,6 +522,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool skipActivityIdentityAssertionOnHostPause() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("skipActivityIdentityAssertionOnHostPause");
+    return method(javaProvider_);
+  }
+
+  bool skipUnchangedChildrenInDifferentiator() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("skipUnchangedChildrenInDifferentiator");
     return method(javaProvider_);
   }
 
@@ -633,6 +651,11 @@ bool JReactNativeFeatureFlagsCxxInterop::defaultTextToOverflowHidden(
   return ReactNativeFeatureFlags::defaultTextToOverflowHidden();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::deferTextInputTruncationIOS(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::deferTextInputTruncationIOS();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::disableEarlyViewCommandExecution(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::disableEarlyViewCommandExecution();
@@ -753,9 +776,9 @@ bool JReactNativeFeatureFlagsCxxInterop::enableFlexboxAutoMinSizeInStrictMode(
   return ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::enableFontScaleChangesUpdatingLayout(
+bool JReactNativeFeatureFlagsCxxInterop::enableFollowUpMountItemDispatchAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+  return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::enableIOSCompressedTextFrameAdjustment(
@@ -953,6 +976,11 @@ bool JReactNativeFeatureFlagsCxxInterop::fuseboxWebSocketEventsEnabled(
   return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::keepTimersRunningWhileHostPausedAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::optimizedAnimatedPropUpdates();
@@ -1006,6 +1034,11 @@ bool JReactNativeFeatureFlagsCxxInterop::shouldTriggerResponderTransferOnScrollA
 bool JReactNativeFeatureFlagsCxxInterop::skipActivityIdentityAssertionOnHostPause(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause();
+}
+
+bool JReactNativeFeatureFlagsCxxInterop::skipUnchangedChildrenInDifferentiator(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::syncAndroidClipBoundsWithOverflow(
@@ -1132,6 +1165,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "defaultTextToOverflowHidden",
         JReactNativeFeatureFlagsCxxInterop::defaultTextToOverflowHidden),
       makeNativeMethod(
+        "deferTextInputTruncationIOS",
+        JReactNativeFeatureFlagsCxxInterop::deferTextInputTruncationIOS),
+      makeNativeMethod(
         "disableEarlyViewCommandExecution",
         JReactNativeFeatureFlagsCxxInterop::disableEarlyViewCommandExecution),
       makeNativeMethod(
@@ -1204,8 +1240,8 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableFlexboxAutoMinSizeInStrictMode",
         JReactNativeFeatureFlagsCxxInterop::enableFlexboxAutoMinSizeInStrictMode),
       makeNativeMethod(
-        "enableFontScaleChangesUpdatingLayout",
-        JReactNativeFeatureFlagsCxxInterop::enableFontScaleChangesUpdatingLayout),
+        "enableFollowUpMountItemDispatchAndroid",
+        JReactNativeFeatureFlagsCxxInterop::enableFollowUpMountItemDispatchAndroid),
       makeNativeMethod(
         "enableIOSCompressedTextFrameAdjustment",
         JReactNativeFeatureFlagsCxxInterop::enableIOSCompressedTextFrameAdjustment),
@@ -1324,6 +1360,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "fuseboxWebSocketEventsEnabled",
         JReactNativeFeatureFlagsCxxInterop::fuseboxWebSocketEventsEnabled),
       makeNativeMethod(
+        "keepTimersRunningWhileHostPausedAndroid",
+        JReactNativeFeatureFlagsCxxInterop::keepTimersRunningWhileHostPausedAndroid),
+      makeNativeMethod(
         "optimizedAnimatedPropUpdates",
         JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates),
       makeNativeMethod(
@@ -1356,6 +1395,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "skipActivityIdentityAssertionOnHostPause",
         JReactNativeFeatureFlagsCxxInterop::skipActivityIdentityAssertionOnHostPause),
+      makeNativeMethod(
+        "skipUnchangedChildrenInDifferentiator",
+        JReactNativeFeatureFlagsCxxInterop::skipUnchangedChildrenInDifferentiator),
       makeNativeMethod(
         "syncAndroidClipBoundsWithOverflow",
         JReactNativeFeatureFlagsCxxInterop::syncAndroidClipBoundsWithOverflow),

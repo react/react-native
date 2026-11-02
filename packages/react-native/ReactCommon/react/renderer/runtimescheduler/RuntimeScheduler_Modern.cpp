@@ -153,7 +153,7 @@ void RuntimeScheduler_Modern::executeNowOnTheSameThread(
     RawCallback&& callback) {
   TraceSection s("RuntimeScheduler::executeNowOnTheSameThread");
 
-  static thread_local jsi::Runtime* runtimePtr = nullptr;
+  static constinit thread_local jsi::Runtime* runtimePtr = nullptr;
 
   auto currentTime = now_();
   auto priority = SchedulerPriority::ImmediatePriority;
@@ -504,9 +504,11 @@ void RuntimeScheduler_Modern::handleTaskError(
 }
 
 void RuntimeScheduler_Modern::clearQueues() {
+  // Destroyed after the lock is released: task destructors may schedule work.
+  decltype(taskQueue_) drainedTasks;
   {
     std::unique_lock lock(schedulingMutex_);
-    taskQueue_ = {};
+    drainedTasks.swap(taskQueue_);
     isEventLoopScheduled_ = false;
   }
 

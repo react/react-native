@@ -11,6 +11,7 @@ import android.content.res.AssetManager
 import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.text.LineBreakConfig
 import android.os.Build
 import android.text.BoringLayout
 import android.text.Layout
@@ -99,6 +100,8 @@ internal object TextLayoutManager {
   const val PA_KEY_TEXT_ALIGN_VERTICAL: Int = 8
   const val PA_KEY_TEXT_WIDTH_MODE: Int = 9
   const val PA_KEY_MINIMUM_FONT_SCALE: Int = 10
+  const val PA_KEY_LINE_BREAK: Int = 11
+  const val PA_KEY_WORD_BREAK: Int = 12
 
   private val TAG: String = TextLayoutManager::class.java.simpleName
 
@@ -850,6 +853,8 @@ internal object TextLayoutManager {
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
       alignment: Layout.Alignment,
       justificationMode: Int,
       ellipsizeMode: TextUtils.TruncateAt?,
@@ -897,7 +902,12 @@ internal object TextLayoutManager {
             }
           }
         }
-    val enableStartOverhang = widthYogaMeasureMode == YogaMeasureMode.EXACTLY
+    // Bounds-based width is limited to text with RTL characters. An EXACTLY width usually comes
+    // from an earlier advance-based AT_MOST measurement, and LTR glyph bounds that are wider than
+    // their advances (some OEM fonts) would make a single line overflow that width and ellipsize.
+    val enableStartOverhang =
+        widthYogaMeasureMode == YogaMeasureMode.EXACTLY &&
+            TextDirectionHeuristics.ANYRTL_LTR.isRtl(text, 0, text.length)
     val layout =
         buildLayout(
             text,
@@ -905,6 +915,8 @@ internal object TextLayoutManager {
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
             alignment,
             justificationMode,
             ellipsizeMode,
@@ -912,6 +924,26 @@ internal object TextLayoutManager {
             paint,
             enableStartOverhang,
         )
+
+    // Android 15/16 leak RTL line bounds into later LTR lines, shifting the whole drawing right.
+    if (enableStartOverhang && hasMixedParagraphDirections(layout)) {
+      return buildLayout(
+          text,
+          layoutWidth,
+          includeFontPadding,
+          textBreakStrategy,
+          hyphenationFrequency,
+          lineBreakStyle,
+          lineBreakWordStyle,
+          alignment,
+          justificationMode,
+          ellipsizeMode,
+          maxNumberOfLines,
+          paint,
+          enableStartOverhang,
+          shiftDrawingOffsetForStartOverhang = false,
+      )
+    }
 
     // Layout.draw shifts negative (left-side) overhang, but RTL line starts can overflow to the
     // right. Reserve that ink inside an EXACT layout without changing the width reported to Yoga.
@@ -923,6 +955,8 @@ internal object TextLayoutManager {
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
             alignment,
             justificationMode,
             ellipsizeMode,
@@ -951,6 +985,15 @@ internal object TextLayoutManager {
   }
 
   @VisibleForTesting
+  internal fun hasMixedParagraphDirections(layout: Layout): Boolean {
+    if (Build.VERSION.SDK_INT < VERSION_CODE_VANILLA_ICE_CREAM || layout.lineCount == 0) {
+      return false
+    }
+    val firstDirection = layout.getParagraphDirection(0)
+    return (1 until layout.lineCount).any { layout.getParagraphDirection(it) != firstDirection }
+  }
+
+  @VisibleForTesting
   internal fun getRtlRightOverhang(layout: Layout): Int {
     if (
         Build.VERSION.SDK_INT < VERSION_CODE_VANILLA_ICE_CREAM ||
@@ -973,12 +1016,15 @@ internal object TextLayoutManager {
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
       alignment: Layout.Alignment,
       justificationMode: Int,
       ellipsizeMode: TextUtils.TruncateAt?,
       maxNumberOfLines: Int,
       paint: TextPaint,
       enableStartOverhang: Boolean,
+      shiftDrawingOffsetForStartOverhang: Boolean = enableStartOverhang,
   ): Layout {
     val builder =
         StaticLayout.Builder.obtain(text, 0, text.length, paint, layoutWidth)
@@ -1000,12 +1046,27 @@ internal object TextLayoutManager {
       builder.setUseLineSpacingFromFallbacks(true)
     }
 
+    // Leave the platform default in place unless a style was requested, so text without these props
+    // lays out exactly as before.
+    if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            (lineBreakStyle != LineBreakConfig.LINE_BREAK_STYLE_NONE ||
+                lineBreakWordStyle != LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE)
+    ) {
+      builder.setLineBreakConfig(
+          LineBreakConfig.Builder()
+              .setLineBreakStyle(lineBreakStyle)
+              .setLineBreakWordStyle(lineBreakWordStyle)
+              .build()
+      )
+    }
+
     // Android shifts negative (left-side) start overhang itself. RTL start overhang is on the
     // right, so createLayout reserves that space in a second pass while preserving the EXACT Yoga
     // measurement returned to the caller.
     if (Build.VERSION.SDK_INT >= VERSION_CODE_VANILLA_ICE_CREAM) {
       setUseBoundsForWidth(builder, enableStartOverhang)
-      setShiftDrawingOffsetForStartOverhang(builder, enableStartOverhang)
+      setShiftDrawingOffsetForStartOverhang(builder, shiftDrawingOffsetForStartOverhang)
     }
 
     return builder.build()
@@ -1107,6 +1168,7 @@ internal object TextLayoutManager {
       fontWeightAdjustment: Int,
   ): TextPaint {
     val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG)
+    paint.density = DisplayMetricsHolder.getScreenDisplayMetrics().density
     updateTextPaint(paint, baseTextAttributes, assets, fontWeightAdjustment)
     return paint
   }
@@ -1179,6 +1241,18 @@ internal object TextLayoutManager {
         TextAttributeProps.getHyphenationFrequency(
             paragraphAttributes.getString(PA_KEY_HYPHENATION_FREQUENCY),
         )
+    val lineBreakStyle =
+        TextAttributeProps.getLineBreakStyle(
+            if (paragraphAttributes.contains(PA_KEY_LINE_BREAK))
+                paragraphAttributes.getString(PA_KEY_LINE_BREAK)
+            else null,
+        )
+    val lineBreakWordStyle =
+        TextAttributeProps.getLineBreakWordStyle(
+            if (paragraphAttributes.contains(PA_KEY_WORD_BREAK))
+                paragraphAttributes.getString(PA_KEY_WORD_BREAK)
+            else null,
+        )
     val adjustFontSizeToFit =
         if (paragraphAttributes.contains(PA_KEY_ADJUST_FONT_SIZE_TO_FIT))
             paragraphAttributes.getBoolean(PA_KEY_ADJUST_FONT_SIZE_TO_FIT)
@@ -1221,6 +1295,8 @@ internal object TextLayoutManager {
           includeFontPadding,
           textBreakStrategy,
           hyphenationFrequency,
+          lineBreakStyle,
+          lineBreakWordStyle,
           alignment,
           justificationMode,
           paint,
@@ -1236,6 +1312,8 @@ internal object TextLayoutManager {
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
             alignment,
             justificationMode,
             ellipsizeMode,
@@ -1259,6 +1337,8 @@ internal object TextLayoutManager {
                 includeFontPadding,
                 textBreakStrategy,
                 hyphenationFrequency,
+                lineBreakStyle,
+                lineBreakWordStyle,
                 alignment,
                 justificationMode,
                 ellipsizeMode,
@@ -1384,6 +1464,8 @@ internal object TextLayoutManager {
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
       alignment: Layout.Alignment,
       justificationMode: Int,
       paint: TextPaint,
@@ -1448,6 +1530,8 @@ internal object TextLayoutManager {
               includeFontPadding,
               textBreakStrategy,
               hyphenationFrequency,
+              lineBreakStyle,
+              lineBreakWordStyle,
               alignment,
               justificationMode,
               null,

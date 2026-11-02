@@ -24,7 +24,7 @@ internal class ReactTextInputEndEditingEvent(
 
   override fun canCoalesce(): Boolean = false
 
-  override fun getEventData(): WritableMap {
+  protected override fun getEventData(): WritableMap {
     return Arguments.createMap().apply {
       putInt("target", viewTag)
       putString("text", text)

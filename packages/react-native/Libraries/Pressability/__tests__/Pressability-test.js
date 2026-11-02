@@ -8,8 +8,11 @@
  * @format
  */
 
-import type {GestureResponderEvent} from '../../Types/CoreEventTypes';
-import type {PressabilityConfig} from '../Pressability';
+import type {
+  GestureResponderEvent,
+  PointerEvent,
+} from '../../Types/CoreEventTypes';
+import type {EventHandlers, PressabilityConfig} from '../Pressability';
 
 const UIManager = require('../../ReactNative/UIManager').default;
 const Platform = require('../../Utilities/Platform').default;
@@ -140,6 +143,60 @@ const createMockMouseEvent = (registrationName: string) => {
     pageX: 0,
     pageY: 0,
     timestamp: 1075881600000,
+  };
+
+  return {
+    bubbles: null,
+    cancelable: null,
+    currentTarget: 42,
+    defaultPrevented: null,
+    dispatchConfig: {
+      registrationName,
+    },
+    eventPhase: null,
+    preventDefault: jest.fn(() => undefined),
+    isDefaultPrevented: jest.fn(() => false),
+    stopPropagation: jest.fn(() => undefined),
+    isPropagationStopped: jest.fn(() => false),
+    isTrusted: null,
+    nativeEvent,
+    persist: jest.fn(),
+    target: null,
+    timeStamp: 1075881600000,
+    type: null,
+  };
+};
+
+const createMockPointerEvent = (registrationName: string): PointerEvent => {
+  const nativeEvent = {
+    altKey: false,
+    button: 0,
+    buttons: 0,
+    clientX: 0,
+    clientY: 0,
+    ctrlKey: false,
+    detail: 0,
+    height: 1,
+    isPrimary: true,
+    metaKey: false,
+    offsetX: 0,
+    offsetY: 0,
+    pageX: 0,
+    pageY: 0,
+    pointerId: 1,
+    pointerType: 'mouse',
+    pressure: 0,
+    relatedTarget: null,
+    screenX: 0,
+    screenY: 0,
+    shiftKey: false,
+    tangentialPressure: 0,
+    tiltX: 0,
+    tiltY: 0,
+    twist: 0,
+    width: 1,
+    x: 0,
+    y: 0,
   };
 
   return {
@@ -980,6 +1037,144 @@ describe('Pressability', () => {
         jest.advanceTimersByTime(630); // 1000 - 500 (onPressIn activation, already advanced before) + DEFAULT_MIN_PRESS_DURATION
         expect(config.onPressOut).toBeCalled();
       });
+    });
+  });
+
+  // The host view is given the handler object `getEventHandlers` built at
+  // mount; `configure` then replaces the config on every subsequent render.
+  // A handler that closes over its callback instead of reading `this._config`
+  // therefore keeps calling the mount-time closure for the life of the view,
+  // which on Android is the only path hover can take.
+  describe('hover with W3C pointer events', () => {
+    function requirePressabilityWithW3CHover() {
+      jest.doMock(
+        '../../../src/private/featureflags/specs/NativeReactNativeFeatureFlags',
+        () => ({
+          __esModule: true,
+          default: {
+            shouldPressibilityUseW3CPointerEventsForHover: () => true,
+          },
+        }),
+      );
+      return require('../Pressability').default;
+    }
+
+    // Mirrors a React render closure: each render produces a new callback
+    // that has captured that render's state value.
+    function configForRender(
+      isReady: boolean,
+      observed: Array<boolean>,
+    ): PressabilityConfig {
+      return {
+        onHoverIn: () => {
+          observed.push(isReady);
+        },
+        onHoverOut: () => {
+          observed.push(isReady);
+        },
+      };
+    }
+
+    // `onPointerEnter`/`onPointerLeave` are optional on `EventHandlers`.
+    function dispatchPointerEnter(handlers: EventHandlers): void {
+      const {onPointerEnter} = handlers;
+      invariant(
+        typeof onPointerEnter === 'function',
+        'Expected to find "onPointerEnter" function',
+      );
+      onPointerEnter(createMockPointerEvent('onPointerEnter'));
+    }
+
+    function dispatchPointerLeave(handlers: EventHandlers): void {
+      const {onPointerLeave} = handlers;
+      invariant(
+        typeof onPointerLeave === 'function',
+        'Expected to find "onPointerLeave" function',
+      );
+      onPointerLeave(createMockPointerEvent('onPointerLeave'));
+    }
+
+    it('gives the host view the same handlers across reconfigures', () => {
+      const PressabilityWithW3CHover = requirePressabilityWithW3CHover();
+      const observed: Array<boolean> = [];
+      const pressability = new PressabilityWithW3CHover(
+        configForRender(false, observed),
+      );
+      const mountHandlers = pressability.getEventHandlers();
+
+      pressability.configure(configForRender(true, observed));
+
+      expect(pressability.getEventHandlers().onPointerEnter).toBe(
+        mountHandlers.onPointerEnter,
+      );
+      expect(pressability.getEventHandlers().onPointerLeave).toBe(
+        mountHandlers.onPointerLeave,
+      );
+    });
+
+    it('calls the current `onHoverIn`, not the one captured at mount', () => {
+      const PressabilityWithW3CHover = requirePressabilityWithW3CHover();
+      const observed: Array<boolean> = [];
+      const pressability = new PressabilityWithW3CHover(
+        configForRender(false, observed),
+      );
+      const mountHandlers = pressability.getEventHandlers();
+
+      pressability.configure(configForRender(true, observed));
+      dispatchPointerEnter(mountHandlers);
+
+      expect(observed).toEqual([true]);
+    });
+
+    it('calls the current `onHoverOut`, not the one captured at mount', () => {
+      const PressabilityWithW3CHover = requirePressabilityWithW3CHover();
+      const observed: Array<boolean> = [];
+      const pressability = new PressabilityWithW3CHover(
+        configForRender(false, observed),
+      );
+      const mountHandlers = pressability.getEventHandlers();
+
+      dispatchPointerEnter(mountHandlers);
+      observed.length = 0;
+
+      pressability.configure(configForRender(true, observed));
+      dispatchPointerLeave(mountHandlers);
+
+      expect(observed).toEqual([true]);
+    });
+
+    it('calls the current `onHoverIn` after `delayHoverIn`', () => {
+      const PressabilityWithW3CHover = requirePressabilityWithW3CHover();
+      const observed: Array<boolean> = [];
+      const pressability = new PressabilityWithW3CHover({
+        ...configForRender(false, observed),
+        delayHoverIn: 100,
+      });
+      const mountHandlers = pressability.getEventHandlers();
+
+      pressability.configure({
+        ...configForRender(true, observed),
+        delayHoverIn: 100,
+      });
+      dispatchPointerEnter(mountHandlers);
+      jest.advanceTimersByTime(100);
+
+      expect(observed).toEqual([true]);
+    });
+
+    it('calls nothing after `reset`', () => {
+      const PressabilityWithW3CHover = requirePressabilityWithW3CHover();
+      const observed: Array<boolean> = [];
+      const pressability = new PressabilityWithW3CHover(
+        configForRender(false, observed),
+      );
+      const mountHandlers = pressability.getEventHandlers();
+
+      pressability.reset();
+      dispatchPointerEnter(mountHandlers);
+      dispatchPointerLeave(mountHandlers);
+
+      expect(observed).toEqual([]);
     });
   });
 

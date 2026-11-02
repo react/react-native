@@ -8,11 +8,6 @@
  * @format
  */
 
-const {
-  getTagsFromCommitMessage,
-  publishUpdatedPackages,
-} = require('../publish-updated-packages');
-
 const getPackagesMock = jest.fn();
 const execSync = jest.fn();
 const execMock = jest.fn();
@@ -23,6 +18,11 @@ jest.mock('shelljs', () => ({exec: execMock}));
 jest.mock('../../shared/monorepoUtils', () => ({
   getPackages: getPackagesMock,
 }));
+
+const {
+  getTagsFromCommitMessage,
+  publishUpdatedPackages,
+} = require('../publish-updated-packages');
 // $FlowFixMe[cannot-write]
 global.fetch = fetchMock;
 

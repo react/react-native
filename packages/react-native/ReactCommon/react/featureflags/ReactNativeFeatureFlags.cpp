@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b469b879fd0ddd37abb76b32f1ebc3f6>>
+ * @generated SignedSource<<d97d87c7be2aa57f9356f8662a183e6e>>
  */
 
 /**
@@ -23,7 +23,7 @@ namespace facebook::react {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
-std::unique_ptr<ReactNativeFeatureFlagsAccessor> accessor_;
+constinit std::unique_ptr<ReactNativeFeatureFlagsAccessor> accessor_;
 #pragma GCC diagnostic pop
 
 bool ReactNativeFeatureFlags::commonTestFlag() {
@@ -40,6 +40,10 @@ bool ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() {
 
 bool ReactNativeFeatureFlags::defaultTextToOverflowHidden() {
   return getAccessor().defaultTextToOverflowHidden();
+}
+
+bool ReactNativeFeatureFlags::deferTextInputTruncationIOS() {
+  return getAccessor().deferTextInputTruncationIOS();
 }
 
 bool ReactNativeFeatureFlags::disableEarlyViewCommandExecution() {
@@ -138,8 +142,8 @@ bool ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode() {
   return getAccessor().enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() {
-  return getAccessor().enableFontScaleChangesUpdatingLayout();
+bool ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid() {
+  return getAccessor().enableFollowUpMountItemDispatchAndroid();
 }
 
 bool ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() {
@@ -298,6 +302,10 @@ bool ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled() {
   return getAccessor().fuseboxWebSocketEventsEnabled();
 }
 
+bool ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid() {
+  return getAccessor().keepTimersRunningWhileHostPausedAndroid();
+}
+
 bool ReactNativeFeatureFlags::optimizedAnimatedPropUpdates() {
   return getAccessor().optimizedAnimatedPropUpdates();
 }
@@ -340,6 +348,10 @@ bool ReactNativeFeatureFlags::shouldTriggerResponderTransferOnScrollAndroid() {
 
 bool ReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause() {
   return getAccessor().skipActivityIdentityAssertionOnHostPause();
+}
+
+bool ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator() {
+  return getAccessor().skipUnchangedChildrenInDifferentiator();
 }
 
 bool ReactNativeFeatureFlags::syncAndroidClipBoundsWithOverflow() {

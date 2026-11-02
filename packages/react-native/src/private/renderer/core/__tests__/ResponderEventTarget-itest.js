@@ -132,6 +132,61 @@ describe('Responder System', () => {
     expect(onResponderRelease).toHaveBeenCalledTimes(1);
   });
 
+  it('releases the responder when the touched view unmounts before the touch ends', () => {
+    const root = Fantom.createRoot();
+    const firstRef = React.createRef<React.ElementRef<typeof View>>();
+    const secondRef = React.createRef<React.ElementRef<typeof View>>();
+    const onFirstResponderGrant = jest.fn();
+    const onSecondResponderGrant = jest.fn();
+
+    Fantom.runTask(() => {
+      root.render(
+        <View
+          key="first"
+          ref={firstRef}
+          onStartShouldSetResponder={() => true}
+          onResponderGrant={onFirstResponderGrant}
+        />,
+      );
+    });
+
+    Fantom.dispatchNativeEvent(firstRef, 'onTouchStart', touchStart(), {
+      category: Fantom.NativeEventCategory.Discrete,
+    });
+
+    expect(onFirstResponderGrant).toHaveBeenCalledTimes(1);
+
+    // Queue the touch end without flushing it, then unmount the view, so the
+    // event reaches JS without a target.
+    Fantom.enqueueNativeEvent(firstRef, 'onTouchEnd', touchEnd(), {
+      category: Fantom.NativeEventCategory.Discrete,
+    });
+
+    Fantom.runTask(() => {
+      root.render(
+        <View
+          key="second"
+          ref={secondRef}
+          onStartShouldSetResponder={() => true}
+          onResponderGrant={onSecondResponderGrant}
+        />,
+      );
+    });
+
+    Fantom.flushAllNativeEvents();
+
+    // The responder was released, so the next touch is granted
+    Fantom.dispatchNativeEvent(secondRef, 'onTouchStart', touchStart(), {
+      category: Fantom.NativeEventCategory.Discrete,
+    });
+
+    expect(onSecondResponderGrant).toHaveBeenCalledTimes(1);
+
+    Fantom.dispatchNativeEvent(secondRef, 'onTouchEnd', touchEnd(), {
+      category: Fantom.NativeEventCategory.Discrete,
+    });
+  });
+
   it('dispatches responderTerminate on touch cancel', () => {
     const root = Fantom.createRoot();
     const ref = React.createRef<React.ElementRef<typeof View>>();

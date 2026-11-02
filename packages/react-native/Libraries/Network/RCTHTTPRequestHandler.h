@@ -8,12 +8,14 @@
 #import <React/RCTInvalidating.h>
 #import <React/RCTURLRequestHandler.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NSURLSessionConfiguration *_Nullable (^NSURLSessionConfigurationProvider)(void);
 /**
  *  The block provided via this function will provide the NSURLSessionConfiguration for all HTTP requests made by the
  * app.
  */
-RCT_EXTERN void RCTSetCustomNSURLSessionConfigurationProvider(NSURLSessionConfigurationProvider /*provider*/);
+RCT_EXTERN void RCTSetCustomNSURLSessionConfigurationProvider(NSURLSessionConfigurationProvider _Nullable /*provider*/);
 
 typedef NSURLRequest *_Nullable (^RCTHTTPRequestInterceptor)(NSURLRequest *request);
 /**
@@ -21,7 +23,7 @@ typedef NSURLRequest *_Nullable (^RCTHTTPRequestInterceptor)(NSURLRequest *reque
  * they are sent. Return a modified request to override, or nil to use the
  * original request unchanged.
  */
-RCT_EXTERN void RCTSetCustomHTTPRequestInterceptor(RCTHTTPRequestInterceptor /*interceptor*/);
+RCT_EXTERN void RCTSetCustomHTTPRequestInterceptor(RCTHTTPRequestInterceptor _Nullable /*interceptor*/);
 
 /**
  * This is the default RCTURLRequestHandler implementation for HTTP requests.
@@ -29,3 +31,5 @@ RCT_EXTERN void RCTSetCustomHTTPRequestInterceptor(RCTHTTPRequestInterceptor /*i
 @interface RCTHTTPRequestHandler : NSObject <RCTURLRequestHandler, RCTInvalidating>
 
 @end
+
+NS_ASSUME_NONNULL_END

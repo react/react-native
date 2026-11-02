@@ -238,7 +238,7 @@ class WebSocket extends EventTarget {
   _registerEvents(): void {
     this._subscriptions = [
       this._eventEmitter.addListener('websocketMessage', ev => {
-        if (ev.id !== this._socketId) {
+        if (ev.id !== this._socketId || this.readyState !== this.OPEN) {
           return;
         }
         let data: Blob | BlobData | ArrayBuffer | string = ev.data;

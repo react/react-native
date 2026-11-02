@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<432678103ed00404892a32355743d484>>
+ * @generated SignedSource<<ed428b9b8babee32712680cfa4940dc7>>
  * @flow strict
  * @noformat
  */
@@ -53,6 +53,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   cdpInteractionMetricsEnabled: Getter<boolean>,
   cxxNativeAnimatedEnabled: Getter<boolean>,
   defaultTextToOverflowHidden: Getter<boolean>,
+  deferTextInputTruncationIOS: Getter<boolean>,
   disableEarlyViewCommandExecution: Getter<boolean>,
   disableIdleEventDispatchFrameCallbackRearmAndroid: Getter<boolean>,
   disableIdleMountItemFrameCallbackRearmAndroid: Getter<boolean>,
@@ -77,7 +78,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFabricCommitBranchingMergeOnMainThread: Getter<boolean>,
   enableFabricLogs: Getter<boolean>,
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
-  enableFontScaleChangesUpdatingLayout: Getter<boolean>,
+  enableFollowUpMountItemDispatchAndroid: Getter<boolean>,
   enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSTextKit2: Getter<boolean>,
@@ -117,6 +118,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   fuseboxFrameRecordingEnabled: Getter<boolean>,
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
   fuseboxWebSocketEventsEnabled: Getter<boolean>,
+  keepTimersRunningWhileHostPausedAndroid: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
   overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean>,
   perfIssuesEnabled: Getter<boolean>,
@@ -128,6 +130,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   shouldPressibilityUseW3CPointerEventsForHover: Getter<boolean>,
   shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean>,
   skipActivityIdentityAssertionOnHostPause: Getter<boolean>,
+  skipUnchangedChildrenInDifferentiator: Getter<boolean>,
   syncAndroidClipBoundsWithOverflow: Getter<boolean>,
   traceTurboModulePromiseRejectionsOnAndroid: Getter<boolean>,
   updateRuntimeShadowNodeReferencesOnCommit: Getter<boolean>,
@@ -237,6 +240,10 @@ export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter(
  */
 export const defaultTextToOverflowHidden: Getter<boolean> = createNativeFlagGetter('defaultTextToOverflowHidden', true);
 /**
+ * When enabled, iOS TextInput applies edits that JS transforms (e.g. maxLength truncation) incrementally after the UIKit text change delegate call returns, avoiding synchronous text and selection rewrites that can deadlock UIKeyboardTaskQueue.
+ */
+export const deferTextInputTruncationIOS: Getter<boolean> = createNativeFlagGetter('deferTextInputTruncationIOS', false);
+/**
  * Dispatch view commands in mount item order.
  */
 export const disableEarlyViewCommandExecution: Getter<boolean> = createNativeFlagGetter('disableEarlyViewCommandExecution', false);
@@ -283,7 +290,7 @@ export const enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean> 
 /**
  * Enables various optimizations throughout the path of measuring text on Android.
  */
-export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = createNativeFlagGetter('enableAndroidTextMeasurementOptimizations', false);
+export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = createNativeFlagGetter('enableAndroidTextMeasurementOptimizations', true);
 /**
  * Runs multi-source image disk-cache checks asynchronously on Android.
  */
@@ -333,9 +340,9 @@ export const enableFabricLogs: Getter<boolean> = createNativeFlagGetter('enableF
  */
 export const enableFlexboxAutoMinSizeInStrictMode: Getter<boolean> = createNativeFlagGetter('enableFlexboxAutoMinSizeInStrictMode', false);
 /**
- * Enables font scale changes updating layout for measurable nodes.
+ * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
  */
-export const enableFontScaleChangesUpdatingLayout: Getter<boolean> = createNativeFlagGetter('enableFontScaleChangesUpdatingLayout', true);
+export const enableFollowUpMountItemDispatchAndroid: Getter<boolean> = createNativeFlagGetter('enableFollowUpMountItemDispatchAndroid', false);
 /**
  * Adjusts iOS Text drawing frames for compressed explicit line heights.
  */
@@ -397,7 +404,7 @@ export const enableLayoutAnimationsOnIOS: Getter<boolean> = createNativeFlagGett
  */
 export const enableModuleArgumentNSNullConversionIOS: Getter<boolean> = createNativeFlagGetter('enableModuleArgumentNSNullConversionIOS', false);
 /**
- * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
+ * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself at its next mount dispatch, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
  */
 export const enableMountingCoordinatorPullModelAndroid: Getter<boolean> = createNativeFlagGetter('enableMountingCoordinatorPullModelAndroid', false);
 /**
@@ -415,7 +422,7 @@ export const enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean> = creat
 /**
  * Enables caching text layout artifacts for later reuse
  */
-export const enablePreparedTextLayout: Getter<boolean> = createNativeFlagGetter('enablePreparedTextLayout', false);
+export const enablePreparedTextLayout: Getter<boolean> = createNativeFlagGetter('enablePreparedTextLayout', true);
 /**
  * When enabled, Android will receive prop updates based on the differences between the last rendered shadow node and the last committed shadow node.
  */
@@ -493,6 +500,10 @@ export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlag
  */
 export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
 /**
+ * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+ */
+export const keepTimersRunningWhileHostPausedAndroid: Getter<boolean> = createNativeFlagGetter('keepTimersRunningWhileHostPausedAndroid', false);
+/**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
  */
 export const optimizedAnimatedPropUpdates: Getter<boolean> = createNativeFlagGetter('optimizedAnimatedPropUpdates', false);
@@ -511,7 +522,7 @@ export const perfMonitorV2Enabled: Getter<boolean> = createNativeFlagGetter('per
 /**
  * Number cached PreparedLayouts in TextLayoutManager cache
  */
-export const preparedTextCacheSize: Getter<number> = createNativeFlagGetter('preparedTextCacheSize', 200);
+export const preparedTextCacheSize: Getter<number> = createNativeFlagGetter('preparedTextCacheSize', 1000);
 /**
  * Enables a new mechanism in ShadowTree to prevent problems caused by multiple threads trying to commit concurrently. If a thread tries to commit a few times unsuccessfully, it will acquire a lock and try again.
  */
@@ -536,6 +547,10 @@ export const shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean> = cr
  * Skip activity identity assertion in ReactHostImpl::onHostPause()
  */
 export const skipActivityIdentityAssertionOnHostPause: Getter<boolean> = createNativeFlagGetter('skipActivityIdentityAssertionOnHostPause', false);
+/**
+ * When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.
+ */
+export const skipUnchangedChildrenInDifferentiator: Getter<boolean> = createNativeFlagGetter('skipUnchangedChildrenInDifferentiator', false);
 /**
  * Override getClipBounds on Android views to return the padding box when overflow is hidden
  */

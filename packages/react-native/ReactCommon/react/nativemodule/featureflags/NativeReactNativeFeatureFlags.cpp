@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0fe9327863b07c41f72b3c13b1f3b937>>
+ * @generated SignedSource<<e378c3da65bf570053c79b22c7e32ae6>>
  */
 
 /**
@@ -62,6 +62,11 @@ bool NativeReactNativeFeatureFlags::cxxNativeAnimatedEnabled(
 bool NativeReactNativeFeatureFlags::defaultTextToOverflowHidden(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::defaultTextToOverflowHidden();
+}
+
+bool NativeReactNativeFeatureFlags::deferTextInputTruncationIOS(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::deferTextInputTruncationIOS();
 }
 
 bool NativeReactNativeFeatureFlags::disableEarlyViewCommandExecution(
@@ -184,9 +189,9 @@ bool NativeReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode(
   return ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
+bool NativeReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid(
     jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+  return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
@@ -384,6 +389,11 @@ bool NativeReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled(
   return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
 }
 
+bool NativeReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid();
+}
+
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::optimizedAnimatedPropUpdates();
@@ -437,6 +447,11 @@ bool NativeReactNativeFeatureFlags::shouldTriggerResponderTransferOnScrollAndroi
 bool NativeReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause();
+}
+
+bool NativeReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator();
 }
 
 bool NativeReactNativeFeatureFlags::syncAndroidClipBoundsWithOverflow(
