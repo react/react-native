@@ -335,6 +335,7 @@ internal constructor(
       logViewHierarchy(parentView, false)
     }
 
+    endViewTransitionIfRemovedFromParent(view)
     val currParentView = view.parent
     if (currParentView != null) {
       val actualParentId = if (currParentView is ViewGroup) currParentView.id else View.NO_ID
@@ -392,6 +393,17 @@ internal constructor(
         FLog.e(TAG, "addViewAt: [$tag] -> [$parentTag] idx: $index AFTER")
         logViewHierarchy(parentView, false)
       }
+    }
+  }
+
+  /**
+   * Ends a [ViewGroup.startViewTransition] hold that keeps [view] attached to a parent which no
+   * longer lists it as a child.
+   */
+  private fun endViewTransitionIfRemovedFromParent(view: View) {
+    val parent = view.parent
+    if (parent is ViewGroup && parent.indexOfChild(view) == -1) {
+      parent.endViewTransition(view)
     }
   }
 
