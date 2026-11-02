@@ -1,0 +1,6 @@
+
+# SPM – auto-generated at build time (do not commit)
+Package.resolved
+build/generated/
+build/xcframeworks/
+.build/

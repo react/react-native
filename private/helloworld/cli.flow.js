@@ -9,12 +9,11 @@
  */
 
 import {run} from './lib/cli';
-import {getExistingPath, pauseWatchman} from './lib/filesystem';
+import {pauseWatchman} from './lib/filesystem';
 import {
   bootSimulator,
   getSimulatorDetails,
   getXcodeBuildSettings,
-  hasPodInstalled,
   launchApp,
   launchSimulator,
 } from './lib/ios';
@@ -34,47 +33,27 @@ const cwd = {
   root: __dirname,
 };
 
-const possibleHermescPaths = [
-  // OSS checkout
-  'destroot/bin/hermesc',
-  // internal
-  'build_host_hermesc/bin/hermesc',
-];
-
-type BootstrapOptions = {
-  arch: 'old' | 'new',
-  jsvm: 'hermes' | 'jsc',
-  frameworks?: 'static' | 'dynamic',
-};
+// A SwiftPM app has no Pods/hermes-engine. Like react-native-xcode.sh, use the
+// hermesc of the hermes-compiler package that react-native depends on.
+const getHermesConfig = () => ({
+  path: path.dirname(
+    require.resolve('hermes-compiler/package.json', {
+      paths: [path.dirname(require.resolve('react-native/package.json'))],
+    }),
+  ),
+  hermesc: 'hermesc/osx-bin/hermesc',
+});
 
 bootstrap
   .command('ios')
   .description('Bootstrap iOS')
-  .addOption(
-    new Option('--arch <arch>', "Choose React Native's architecture")
-      .choices(['new', 'old'])
-      .default('new'),
-  )
-  .addOption(
-    new Option(
-      '--frameworks <linkage>',
-      'Use frameworks instead of static libraries',
-    )
-      .choices(['static', 'dynamic'])
-      .default(undefined),
-  )
-  .addOption(
-    new Option('--jsvm <vm>', 'Choose VM used on device')
-      .choices(['jsc', 'hermes'])
-      .default('hermes'),
-  )
-  .action(async ({jsvm, arch, frameworks}: BootstrapOptions) => {
+  .action(async () => {
     await run(
-      apple.bootstrap({
+      apple.bootstrapSwiftPM({
         cwd: cwd.ios,
-        frameworks,
-        hermes: jsvm === 'hermes',
-        newArchitecture: arch === 'new',
+        // Build with the C++ stable API enforced.
+        // Run with RN_STRICT_API=0 to opt out.
+        env: {RN_STRICT_API: process.env.RN_STRICT_API ?? '1'},
       }),
     );
   });
@@ -177,10 +156,11 @@ build
     await pauseWatchman(async () => {
       await run(
         apple.build({
-          isWorkspace: true,
-          name: 'HelloWorld.xcworkspace',
+          isWorkspace: false,
+          name: 'HelloWorld.xcodeproj',
           mode,
           scheme: 'HelloWorld',
+          dependencyManager: 'swiftpm',
           cwd: cwd.ios,
           env: {
             SKIP_BUNDLING: 'true',
@@ -205,8 +185,8 @@ bundle
   .action(async ({prod, watch}: BundleOptions) => {
     const mode = prod ? 'Release' : 'Debug';
 
-    const isHermesInstalled = hasPodInstalled(cwd.ios, 'hermes-engine');
     const settings = await getBuildSettings(mode);
+    const hermes = getHermesConfig();
 
     // Metro: src -> js
     const jsBundlePath = path.join(settings.bundleBuildDir, 'main.jsbundle.js');
@@ -215,18 +195,6 @@ bundle
       settings.bundleResourceDir,
       'main.jsbundle',
     );
-
-    // Validate only after initial build, as hermesc may not be prebuilt
-    const hermesFolder = path.join(cwd.ios, 'Pods/hermes-engine');
-    const hermesc = getExistingPath(hermesFolder, possibleHermescPaths);
-
-    if (hermesc == null && isHermesInstalled) {
-      throw new Error(
-        `Unable to find hermesc at:\n-${possibleHermescPaths
-          .map(line => ' - ' + line)
-          .join('\n')}`,
-      );
-    }
 
     const bundler = watch
       ? app.bundle({
@@ -240,11 +208,8 @@ bundle
           outputSourceMap: settings.bundleResourceDir,
           outputBundle: binaryBundlePath,
           dev: !prod,
-          jsvm: isHermesInstalled ? 'hermes' : 'jsc',
-          hermes: {
-            path: hermesFolder,
-            hermesc: hermesc ?? '',
-          },
+          jsvm: 'hermes',
+          hermes,
           callback: metroProcess => {
             const readline = require('node:readline');
             readline.emitKeypressEvents(process.stdin);
@@ -267,11 +232,8 @@ bundle
           outputSourceMap: settings.bundleResourceDir,
           outputBundle: binaryBundlePath,
           dev: !prod,
-          jsvm: isHermesInstalled ? 'hermes' : 'jsc',
-          hermes: {
-            path: hermesFolder,
-            hermesc: hermesc ?? '',
-          },
+          jsvm: 'hermes',
+          hermes,
         });
 
     // JS Bundle

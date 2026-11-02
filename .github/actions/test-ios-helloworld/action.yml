@@ -1,12 +1,6 @@
 name: test-ios-helloworld
 description: Test iOS Hello World
 inputs:
-  use-frameworks:
-    description: Whether to build with dynamic frameworks.
-    default: false
-  ruby-version:
-    description: The version of ruby that must be used
-    default: 2.6.10
   flavor:
     description: The flavor of the build. Must be one of "Debug", "Release".
     default: Debug
@@ -19,46 +13,21 @@ runs:
       uses: ./.github/actions/setup-node
     - name: Run yarn install
       uses: ./.github/actions/yarn-install
-    - name: Setup ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ inputs.ruby-version }}
     - name: Set Hermes prebuilt version
       shell: bash
       run: |
         node ./scripts/releases/use-hermes-prebuilt.js
     - name: Run yarn install again, with the correct hermes version
       uses: ./.github/actions/yarn-install
-    - name: Download ReactNativeDependencies
-      uses: ./.github/actions/download-artifact
+    - name: Download the XCFrameworks built in this run
+      uses: ./.github/actions/setup-spm-artifacts
       with:
-        name: ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz
-        path: /tmp/third-party
-    - name: Print third-party folder
+        working-directory: private/helloworld/ios
+    # RN_STRICT_API=1 keeps the C++ stable API enforced, as `yarn bootstrap ios` does.
+    - name: Set up the Swift packages
       shell: bash
-      run: ls -lR /tmp/third-party
-    - name: Download React Native Prebuilds
-      uses: ./.github/actions/download-artifact
-      with:
-        name: ReactCore${{ inputs.flavor }}.xcframework.tar.gz
-        path: /tmp/ReactCore
-    - name: Print ReactCore folder
-      shell: bash
-      run: ls -lR /tmp/ReactCore
-    - name: Install iOS dependencies - Configuration ${{ inputs.flavor }};
-      shell: bash
-      run: |
-        cd private/helloworld
-        args=()
-
-        if [[ "${{ inputs.use-frameworks }}" == "true" ]]; then
-          args+=(--frameworks dynamic)
-        fi
-
-        export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz"
-        export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ inputs.flavor }}.xcframework.tar.gz"
-
-        yarn bootstrap ios "${args[@]}" | cat
+      working-directory: private/helloworld/ios
+      run: RN_STRICT_API=1 npx react-native spm update --artifacts /tmp/spm-artifacts --download skip
 
     - name: Run Helloworld tests
       shell: bash

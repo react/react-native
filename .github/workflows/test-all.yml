@@ -113,62 +113,20 @@ jobs:
     secrets: inherit
     needs: [prebuild_apple_dependencies]
 
-  test_ios_rntester_ruby_3_2_0:
-    runs-on: macos-15
-    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Run it
-        uses: ./.github/actions/test-ios-rntester
-        with:
-          ruby-version: '3.2.0'
-          flavor: Debug
-
-  test_ios_rntester_dynamic_frameworks:
-    runs-on: macos-15-large
-    needs: check_code_changes
-    if: |
-      needs.check_code_changes.outputs.any_code_change == 'true' &&
-      needs.check_code_changes.outputs.should_test_ios == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [Debug, Release]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Run it
-        uses: ./.github/actions/test-ios-rntester
-        with:
-          flavor: ${{ matrix.flavor }}
-          use-frameworks: true
-          run-unit-tests: false # tests for dynamic frameworks are already run in the test_ios_rntester job; this is to just a test build from source (no prebuilds)
-
   test_ios_rntester:
     runs-on: macos-15-large
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         flavor: [Debug, Release]
-        frameworks: [false, true]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Run it
         uses: ./.github/actions/test-ios-rntester
         with:
-          use-frameworks: ${{ matrix.frameworks }}
-          # Consume the prebuilt artifacts in the dynamic-frameworks cells too:
-          # prebuilt + use_frameworks is the config of the 2026-07-03
-          # SocketRocket dual-copy regression, previously covered by no lane
-          # (source-built dynamic frameworks stay covered by
-          # test_ios_rntester_dynamic_frameworks).
-          use-prebuilds: true
           flavor: ${{ matrix.flavor }}
 
   test_e2e_ios_rntester:
@@ -223,28 +181,6 @@ jobs:
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
       fail-on-error: true
-    secrets: inherit
-
-  test_ios_spm_rntester:
-    needs:
-      [
-        prebuild_apple_dependencies,
-        prebuild_react_native_core,
-        check_code_changes,
-      ]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
-    uses: ./.github/workflows/test-ios-spm-rntester.yml
-    secrets: inherit
-
-  test_ios_spm_helloworld:
-    needs:
-      [
-        prebuild_apple_dependencies,
-        prebuild_react_native_core,
-        check_code_changes,
-      ]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
-    uses: ./.github/workflows/test-ios-spm-helloworld.yml
     secrets: inherit
 
   test_ios_spm_newapp:
@@ -490,21 +426,6 @@ jobs:
           path: ./private/helloworld/android/app/build/outputs/apk/
           compression-level: 0
 
-  test_ios_helloworld_with_ruby_3_2_0:
-    runs-on: macos-15
-    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
-    env:
-      PROJECT_NAME: iOSTemplateProject
-      YARN_ENABLE_IMMUTABLE_INSTALLS: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - uses: ./.github/actions/test-ios-helloworld
-        with:
-          ruby-version: 3.2.0
-          flavor: Debug
-
   test_ios_helloworld:
     runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
@@ -512,11 +433,6 @@ jobs:
     strategy:
       matrix:
         flavor: [Debug, Release]
-        use_frameworks: [false, true]
-        exclude:
-          # This config is tested with Ruby 3.2.0. Let's not double test it.
-          - flavor: Debug
-            use_frameworks: false
     env:
       PROJECT_NAME: iOSTemplateProject
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
@@ -526,7 +442,6 @@ jobs:
       - uses: ./.github/actions/test-ios-helloworld
         with:
           flavor: ${{ matrix.flavor }}
-          use-frameworks: ${{ matrix.use_frameworks }}
 
   lint:
     runs-on: ubuntu-latest

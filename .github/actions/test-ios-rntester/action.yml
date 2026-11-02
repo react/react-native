@@ -1,9 +1,6 @@
 name: test-ios-rntester
 description: Test iOS RNTester
 inputs:
-  ruby-version:
-    description: The version of ruby that must be used
-    default: 2.6.10
   run-unit-tests:
     description: whether unit tests should run or not.
     default: false
@@ -14,19 +11,6 @@ inputs:
     description: Whether we want to run E2E tests or not
     required: false
     default: false
-  use-frameworks:
-    description: Whether we have to build with Dynamic Frameworks.
-    required: false
-    default: false
-  use-prebuilds:
-    description: >-
-      Whether to consume the prebuilt ReactCore/ReactNativeDependencies
-      artifacts. 'auto' (default) keeps the historical coupling: prebuilds for
-      static, source for dynamic frameworks. Pass 'true' with
-      use-frameworks:true for the prebuilt + dynamic-frameworks lane (the
-      config of the 2026-07-03 SocketRocket dual-copy regression).
-    required: false
-    default: auto
 
 runs:
   using: composite
@@ -37,31 +21,6 @@ runs:
       uses: ./.github/actions/setup-node
     - name: Run yarn
       uses: ./.github/actions/yarn-install
-    - name: Setup ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ inputs.ruby-version }}
-        bundler: none
-    - name: Install Bundler
-      shell: bash
-      run: |
-        BUNDLER_VERSION="$(awk '/BUNDLED WITH/{getline; print $1}' Gemfile.lock)"
-        if [ -z "$BUNDLER_VERSION" ]; then
-          echo "Could not determine Bundler version from Gemfile.lock." >&2
-          exit 1
-        fi
-        for attempt in 1 2 3; do
-          echo "Attempt $attempt of 3"
-          if gem install bundler --version "$BUNDLER_VERSION" --no-document; then
-            exit 0
-          fi
-          if [ "$attempt" -lt 3 ]; then
-            echo "Attempt $attempt failed. Retrying..."
-            sleep "$((attempt * 10))"
-          fi
-        done
-        echo "All 3 attempts failed."
-        exit 1
     - name: Set Hermes prebuilt version
       shell: bash
       run: |
@@ -71,77 +30,73 @@ runs:
     - name: Prepare IOS Tests
       if: ${{ inputs.run-unit-tests == 'true' }}
       uses: ./.github/actions/prepare-ios-tests
-    - name: Resolve prebuilds mode
-      id: prebuilds
-      shell: bash
-      run: |
-        if [[ "${{ inputs.use-prebuilds }}" == "auto" ]]; then
-          # Historical coupling: prebuilds for static, source for dynamic frameworks.
-          if [[ "${{ inputs.use-frameworks }}" == "true" ]]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          fi
-        elif [[ "${{ inputs.use-prebuilds }}" == "true" ]]; then
-          echo "enabled=true" >> "$GITHUB_OUTPUT"
-        elif [[ "${{ inputs.use-prebuilds }}" == "false" ]]; then
-          echo "enabled=false" >> "$GITHUB_OUTPUT"
-        else
-          # Don't silently treat a typo as 'disabled' — surface it.
-          echo "::warning::Unexpected use-prebuilds value '${{ inputs.use-prebuilds }}' (expected auto/true/false); treating as disabled."
-          echo "enabled=false" >> "$GITHUB_OUTPUT"
-        fi
-    - name: Download ReactNativeDependencies
-      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
-      uses: ./.github/actions/download-artifact
+    - name: Download the XCFrameworks built in this run
+      uses: ./.github/actions/setup-spm-artifacts
       with:
-        name: ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz
-        path: /tmp/third-party/
-    - name: Print third-party folder
-      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
+        working-directory: packages/rn-tester
+    # RNTester is a CocoaPods project in git, so developers can build React
+    # Native from source. CI converts it to SwiftPM on every run.
+    - name: Ensure CocoaPods (`spm add --deintegrate` shells out to `pod`)
       shell: bash
-      run: ls -lR /tmp/third-party
-    - name: Download React Native Prebuilds
-      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
-      uses: ./.github/actions/download-artifact
-      with:
-        name: ReactCore${{ inputs.flavor }}.xcframework.tar.gz
-        path: /tmp/ReactCore
-    - name: Print ReactCore folder
-      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
+      run: pod --version || sudo gem install cocoapods --no-document
+    # react-native-test-library ships only a podspec; scaffold writes its
+    # Package.swift.
+    - name: Scaffold Package.swift manifests for community dependencies
       shell: bash
-      run: ls -lR /tmp/ReactCore
-    - name: Install CocoaPods dependencies
+      working-directory: packages/rn-tester
+      run: npx react-native spm scaffold --artifacts /tmp/spm-artifacts --download skip || true
+    - name: Convert RNTester to SwiftPM
       shell: bash
+      working-directory: packages/rn-tester
       run: |
-        if [[ ${{ inputs.use-frameworks }} == "true" ]]; then
-          export USE_FRAMEWORKS=dynamic
+        # pod deintegrate fails on non-ASCII strings without a UTF-8 locale.
+        LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 RN_STRICT_API=1 \
+          npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+    - name: Assert RNTester is on SwiftPM
+      shell: bash
+      working-directory: packages/rn-tester
+      run: |
+        if [[ ! -f RNTesterPods.xcodeproj/.spm-injected.json ]]; then
+          echo "::error::spm add did not inject SwiftPM: RNTesterPods.xcodeproj/.spm-injected.json is missing"
+          exit 1
         fi
-        if [[ "${{ steps.prebuilds.outputs.enabled }}" == "true" ]]; then
-          export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz"
-          export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ inputs.flavor }}.xcframework.tar.gz"
+        if [[ -f Podfile ]] && grep -q 'use_react_native!' Podfile; then
+          echo "::error::spm add --deintegrate left use_react_native! in the Podfile"
+          exit 1
         fi
-
-        cd packages/rn-tester
-
-        bundle install
-        bundle exec pod update hermes-engine --no-repo-update
+        echo "SwiftPM injected in place; Podfile de-integrated."
     - name: Build RNTester
       shell: bash
       run: |
         xcodebuild \
           -scheme "RNTester" \
-          -workspace packages/rn-tester/RNTesterPods.xcworkspace \
+          -project packages/rn-tester/RNTesterPods.xcodeproj \
           -configuration "${{ inputs.flavor }}" \
           -sdk "iphonesimulator" \
           -destination "generic/platform=iOS Simulator" \
           -derivedDataPath "/tmp/RNTesterBuild"
 
-          echo "Print path to *.app file"
-          APP_PATH=$(find "/tmp/RNTesterBuild" -type d -name "*.app")
-
-          echo "App found at $APP_PATH"
-          echo "app-path=$APP_PATH" >> $GITHUB_ENV
+        APP_PATH="/tmp/RNTesterBuild/Build/Products/${{ inputs.flavor }}-iphonesimulator/RNTester.app"
+        echo "App found at $APP_PATH"
+        echo "app-path=$APP_PATH" >> $GITHUB_ENV
+    - name: Check the embedded React.framework flavor
+      shell: bash
+      run: |
+        BINARY="${{ env.app-path }}/Frameworks/React.framework/React"
+        if [[ ! -f "$BINARY" ]]; then
+          echo "::error::No embedded React.framework binary at $BINARY"
+          exit 1
+        fi
+        COUNT=$(nm "$BINARY" | grep -c getDebugProps || true)
+        echo "getDebugProps symbols in $BINARY: $COUNT"
+        if [[ "${{ inputs.flavor }}" == 'Debug' && "$COUNT" -eq 0 ]]; then
+          echo "::error::Debug build embeds a Release React.framework (expected getDebugProps symbols, found none)"
+          exit 1
+        fi
+        if [[ "${{ inputs.flavor }}" == 'Release' && "$COUNT" -ne 0 ]]; then
+          echo "::error::Release build embeds a Debug React.framework ($COUNT getDebugProps symbols, expected none)"
+          exit 1
+        fi
     - name: 'Run Tests: iOS Unit and Integration Tests'
       if: ${{ inputs.run-unit-tests == 'true' }}
       shell: bash
@@ -158,10 +113,9 @@ runs:
       uses: ./.github/actions/upload-artifact
       if: ${{ inputs.run-unit-tests == 'true' }}
       with:
-        name: xcresults-${{ inputs.flavor }}-${{ inputs.use-frameworks == 'true' && 'dynamic-frameworks' || 'static-libraries' }}-Ruby${{ inputs.ruby-version }}
+        name: xcresults-${{ inputs.flavor }}
         path: /Users/runner/Library/Developer/Xcode/xcresults.tar.gz
     - name: Upload RNTester App
-      if: ${{ inputs.use-frameworks == 'false' && inputs.ruby-version == '2.6.10' }} # This is needed to avoid conflicts with the artifacts
       uses: ./.github/actions/upload-artifact
       with:
         name: RNTesterApp-NewArch-${{ inputs.flavor }}
@@ -170,5 +124,5 @@ runs:
       if: ${{ inputs.run-unit-tests == 'true' }}
       uses: ./.github/actions/upload-artifact
       with:
-        name: test-results-${{ inputs.flavor }}-${{ inputs.use-frameworks == 'true' && 'dynamic-frameworks' || 'static-libraries' }}-Ruby${{ inputs.ruby-version }}
+        name: test-results-${{ inputs.flavor }}
         path: ./reports/junit

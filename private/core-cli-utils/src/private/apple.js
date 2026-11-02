@@ -27,14 +27,22 @@ type AppleBuildOptions = {
   mode: AppleBuildMode,
   scheme?: string,
   destination: 'device' | 'simulator' | string,
+  // How the project gets its native dependencies. Defaults to 'cocoapods'.
+  dependencyManager?: AppleDependencyManager,
   ...AppleOptions,
 };
+
+type AppleDependencyManager = 'cocoapods' | 'swiftpm';
 
 type AppleBootstrapOption = {
   // Enabled by default
   hermes: boolean,
   newArchitecture: boolean,
   frameworks?: 'static' | 'dynamic',
+  ...AppleOptions,
+};
+
+type AppleSwiftPMBootstrapOption = {
   ...AppleOptions,
 };
 
@@ -78,6 +86,28 @@ const FIRST = 1,
   FOURTH = 4,
   FIFTH = 5;
 
+// The Swift packages `react-native spm` generates, which Xcode resolves before
+// it runs any build phase.
+const SWIFT_PACKAGE_DIRS = [
+  'build/xcframeworks',
+  'build/generated/autolinking',
+  'build/generated/ios',
+];
+
+function assertReadable(cwd /*: string */, files /*: ReadonlyArray<string> */) {
+  for (const file of files) {
+    try {
+      fs.accessSync(
+        path.join(cwd, file),
+        /* eslint-disable-next-line no-bitwise */
+        fs.constants.F_OK | fs.constants.R_OK,
+      );
+    } catch (e /*: unknown */) {
+      throw new Error('Please run: yarn run bootstrap ios: ' + String(e));
+    }
+  }
+}
+
 function getNodePackagePath(packageName /*: string */) /*: string */ {
   // $FlowFixMe[prop-missing] type definition is incomplete
   return require.resolve(packageName, {cwd: [process.cwd(), ...module.paths]});
@@ -92,9 +122,14 @@ type BootstrapTasks = {
   installDependencies: Task<ExecaPromise>,
 };
 
+type SwiftPMBootstrapTasks = {
+  cleanupBuildFolder: Task<void>,
+  installDependencies: Task<ExecaPromise>,
+};
+
 type BuildTasks = {
   validate: Task<void>,
-  hasPodsInstalled: Task<void>,
+  hasDependenciesInstalled: Task<void>,
   build: Task<ExecaPromise>,
 };
 
@@ -158,6 +193,29 @@ const tasks = {
     }),
   }),
 
+  // 1. Or set up an Xcode project that uses SwiftPM instead of CocoaPods
+  bootstrapSwiftPM: (
+    options /*: AppleSwiftPMBootstrapOption */,
+  ) /*: SwiftPMBootstrapTasks */ => ({
+    cleanupBuildFolder: task(FIRST, 'Cleanup build folder', () => {
+      execa.sync('rm', ['-rf', 'build'], {
+        cwd: options.cwd,
+      });
+    }),
+    installDependencies: task(SECOND, 'Set up the Swift packages', () => {
+      const reactNativePath = path.dirname(getNodePackagePath('react-native'));
+      const setupScript = path.join(
+        reactNativePath,
+        'scripts',
+        'setup-apple-spm.js',
+      );
+      return execa('node', [setupScript, 'update'], {
+        cwd: options.cwd,
+        env: options.env,
+      });
+    }),
+  }),
+
   // 2. Build the iOS app using a setup environment
   build: (
     options /*: AppleBuildOptions */,
@@ -170,23 +228,21 @@ const tasks = {
         assertDependencies(isOnPath('xcodebuild', 'Xcode Commandline Tools'));
       },
     ),
-    hasPodsInstalled: task(FIRST, 'Check Pods are installed', () => {
-      for (const file of ['Podfile.lock', 'Pods']) {
-        try {
-          fs.accessSync(
-            path.join(options.cwd, file),
-            /* eslint-disable-next-line no-bitwise */
-            fs.constants.F_OK | fs.constants.R_OK,
-          );
-        } catch (e /*: unknown */) {
-          throw new Error('Please run: yarn run bootstrap ios: ' + String(e));
+    hasDependenciesInstalled: task(
+      FIRST,
+      'Check the native dependencies are installed',
+      () => {
+        if (options.dependencyManager === 'swiftpm') {
+          assertReadable(options.cwd, SWIFT_PACKAGE_DIRS);
+          return;
         }
-      }
-      checkPodfileInSyncWithManifest(
-        path.join(options.cwd, 'Podfile.lock'),
-        path.join(options.cwd, 'Pods/Manifest.lock'),
-      );
-    }),
+        assertReadable(options.cwd, ['Podfile.lock', 'Pods']);
+        checkPodfileInSyncWithManifest(
+          path.join(options.cwd, 'Podfile.lock'),
+          path.join(options.cwd, 'Pods/Manifest.lock'),
+        );
+      },
+    ),
     build: task(SECOND, 'build an app artifact', () => {
       const _args = [
         options.isWorkspace ? '-workspace' : '-project',

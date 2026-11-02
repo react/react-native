@@ -107,7 +107,6 @@ package-lock.json
 
 # Ruby Gems (Bundler)
 /packages/react-native/vendor
-/private/helloworld/vendor
 .ruby-version
 /**/.ruby-version
 vendor/

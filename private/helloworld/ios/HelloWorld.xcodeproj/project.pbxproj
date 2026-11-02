@@ -11,10 +11,14 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		6EA01F72FAC10D00AECACF94 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0EC7AB76F90EED035707BA4E /* PrivacyInfo.xcprivacy */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		C5E681697D864CB241D83EFA /* libPods-HelloWorld-HelloWorldTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A8E5ECDA77F0C61C263AE4C /* libPods-HelloWorld-HelloWorldTests.a */; };
 		CDA0ED1A2D0B2D810079F561 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA0ED192D0B2D810079F561 /* AppDelegate.swift */; };
 		CDA0ED1B2D0B2D810079F562 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA0ED1C2D0B2D810079F562 /* SceneDelegate.swift */; };
-		F139D3B2B0DB3E81C6EC8497 /* libPods-HelloWorld.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E4454510AD252A40B7E239F /* libPods-HelloWorld.a */; };
+		94F7C9B714A718310DA6BE9C /* ReactHeaders in Frameworks */ = {isa = PBXBuildFile; productRef = 512EBECF5434FD7A6AF7C967 /* ReactHeaders */;};
+		17CA21E30A8FFCB9D0FC1E35 /* ReactNativeHeaders in Frameworks */ = {isa = PBXBuildFile; productRef = 920F69A9DF98D37C8308D020 /* ReactNativeHeaders */;};
+		69A7AB74931112BD2779B631 /* ReactNativeDependenciesHeaders in Frameworks */ = {isa = PBXBuildFile; productRef = 8332BE36B9C49BD2E49347C1 /* ReactNativeDependenciesHeaders */;};
+		D6BD17EA9023C9F39246B71F /* Autolinked in Frameworks */ = {isa = PBXBuildFile; productRef = 3AFDEFB917B01458307FDE0A /* Autolinked */;};
+		3F1E298E4A2D7CA403A328B5 /* ReactCodegen in Frameworks */ = {isa = PBXBuildFile; productRef = 947DD5EF3BE079FB7F5AFF87 /* ReactCodegen */;};
+		50A8621D202A6CFB97E2C1B5 /* ReactAppDependencyProvider in Frameworks */ = {isa = PBXBuildFile; productRef = F3857EDDA38AFC0011322D6D /* ReactAppDependencyProvider */;};
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,16 +40,16 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = HelloWorld/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = HelloWorld/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = HelloWorld/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		3B4392A12AC88292D35C810B /* Pods-HelloWorld.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorld.debug.xcconfig"; path = "Target Support Files/Pods-HelloWorld/Pods-HelloWorld.debug.xcconfig"; sourceTree = "<group>"; };
-		3E4454510AD252A40B7E239F /* libPods-HelloWorld.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HelloWorld.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5709B34CF0A7D63546082F79 /* Pods-HelloWorld.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorld.release.xcconfig"; path = "Target Support Files/Pods-HelloWorld/Pods-HelloWorld.release.xcconfig"; sourceTree = "<group>"; };
-		5B7EB9410499542E8C5724F5 /* Pods-HelloWorld-HelloWorldTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorld-HelloWorldTests.debug.xcconfig"; path = "Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests.debug.xcconfig"; sourceTree = "<group>"; };
-		7A8E5ECDA77F0C61C263AE4C /* libPods-HelloWorld-HelloWorldTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HelloWorld-HelloWorldTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = HelloWorld/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		89C6BE57DB24E9ADA2F236DE /* Pods-HelloWorld-HelloWorldTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloWorld-HelloWorldTests.release.xcconfig"; path = "Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests.release.xcconfig"; sourceTree = "<group>"; };
 		CDA0ED192D0B2D810079F561 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = HelloWorld/AppDelegate.swift; sourceTree = "<group>"; };
 		CDA0ED1C2D0B2D810079F562 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = HelloWorld/SceneDelegate.swift; sourceTree = "<group>"; };
-		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		074F3370C5D61C114F081477 /* ReactNativeSPM.xcconfig */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.xcconfig;
+			name = ReactNativeSPM.xcconfig;
+			path = ReactNativeSPM/ReactNativeSPM.xcconfig;
+			sourceTree = SOURCE_ROOT;
+		};
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,7 +57,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C5E681697D864CB241D83EFA /* libPods-HelloWorld-HelloWorldTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,7 +64,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F139D3B2B0DB3E81C6EC8497 /* libPods-HelloWorld.a in Frameworks */,
+				94F7C9B714A718310DA6BE9C /* ReactHeaders in Frameworks */,
+				17CA21E30A8FFCB9D0FC1E35 /* ReactNativeHeaders in Frameworks */,
+				69A7AB74931112BD2779B631 /* ReactNativeDependenciesHeaders in Frameworks */,
+				D6BD17EA9023C9F39246B71F /* Autolinked in Frameworks */,
+				3F1E298E4A2D7CA403A328B5 /* ReactCodegen in Frameworks */,
+				50A8621D202A6CFB97E2C1B5 /* ReactAppDependencyProvider in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,9 +110,6 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				3E4454510AD252A40B7E239F /* libPods-HelloWorld.a */,
-				7A8E5ECDA77F0C61C263AE4C /* libPods-HelloWorld-HelloWorldTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -124,7 +129,7 @@
 				00E356EF1AD99517003FC87E /* HelloWorldTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				074F3370C5D61C114F081477 /* ReactNativeSPM.xcconfig */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -140,17 +145,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				3B4392A12AC88292D35C810B /* Pods-HelloWorld.debug.xcconfig */,
-				5709B34CF0A7D63546082F79 /* Pods-HelloWorld.release.xcconfig */,
-				5B7EB9410499542E8C5724F5 /* Pods-HelloWorld-HelloWorldTests.debug.xcconfig */,
-				89C6BE57DB24E9ADA2F236DE /* Pods-HelloWorld-HelloWorldTests.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -158,12 +152,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "HelloWorldTests" */;
 			buildPhases = (
-				A55EABD7B0C7F3A422A6CC61 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				F6A41C54EA430FDDC6A6ED99 /* [CP] Copy Pods Resources */,
-				A44ED3CC3037C88F69E3AF15 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -176,16 +167,23 @@
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		13B07F861A680F5B00A75B9A /* HelloWorld */ = {
+			packageProductDependencies = (
+				512EBECF5434FD7A6AF7C967 /* ReactHeaders */,
+				920F69A9DF98D37C8308D020 /* ReactNativeHeaders */,
+				8332BE36B9C49BD2E49347C1 /* ReactNativeDependenciesHeaders */,
+				3AFDEFB917B01458307FDE0A /* Autolinked */,
+				947DD5EF3BE079FB7F5AFF87 /* ReactCodegen */,
+				F3857EDDA38AFC0011322D6D /* ReactAppDependencyProvider */,
+			);
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "HelloWorld" */;
 			buildPhases = (
-				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				658A88AFBFD620F8BC6F91BA /* Sync SPM Autolinking */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
+				B174F870C259554596A4373B /* Embed React Native Flavored Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
-				D32CB2BA406E97DB62F51C6B /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -200,6 +198,11 @@
 
 /* Begin PBXProject section */
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
+			packageReferences = (
+				27BDE9D743CB351F53154525 /* XCLocalSwiftPackageReference "build/xcframeworks" */,
+				C2FECF1430FDAAE3BF355839 /* XCLocalSwiftPackageReference "build/generated/autolinking" */,
+				A700952B9A737913514EB28F /* XCLocalSwiftPackageReference "build/generated/ios" */,
+			);
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1210;
@@ -270,24 +273,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nexport CONFIG_JSON=$(sed -e \"s|HELLOWORLD_PATH|$(realpath \"${SRCROOT}/../\")|g\" -e \"s|REACT_NATIVE_PATH|$(realpath \"${REACT_NATIVE_PATH}\")|g\" \"${SRCROOT}/../.react-native.config\")\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		A44ED3CC3037C88F69E3AF15 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		A55EABD7B0C7F3A422A6CC61 /* [CP] Check Pods Manifest.lock */ = {
+		658A88AFBFD620F8BC6F91BA /* Sync SPM Autolinking */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -295,21 +281,17 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
 			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "Sync SPM Autolinking";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HelloWorld-HelloWorldTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
+			shellPath = /bin/bash;
+			shellScript = "SCRIPT=\"$SRCROOT/ReactNativeSPM/Scripts/sync-autolinking.sh\"\nif [ ! -f \"$SCRIPT\" ]; then\n  echo \"error: $SCRIPT is missing. Run 'npx react-native spm update' to generate it.\"\n  exit 1\nfi\nexec /bin/bash \"$SCRIPT\"";
 		};
-		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
+		B174F870C259554596A4373B /* Embed React Native Flavored Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -317,70 +299,23 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
+				"$(SRCROOT)/build/xcframeworks/.artifact-stamp",
+				"$(SRCROOT)/ReactNativeSPM/Scripts/embed-flavored-frameworks.sh",
+				"$(RN_SPM_REACT_FRAMEWORK)",
+				"$(RN_SPM_REACT_NATIVE_DEPENDENCIES_FRAMEWORK)",
+				"$(RN_SPM_HERMES_FRAMEWORK)",
 			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "Embed React Native Flavored Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HelloWorld-checkManifestLockResult.txt",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/React.framework",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/ReactNativeDependencies.framework",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/hermesvm.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D32CB2BA406E97DB62F51C6B /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld/Pods-HelloWorld-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld/Pods-HelloWorld-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HelloWorld/Pods-HelloWorld-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld/Pods-HelloWorld-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld/Pods-HelloWorld-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HelloWorld/Pods-HelloWorld-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F6A41C54EA430FDDC6A6ED99 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HelloWorld-HelloWorldTests/Pods-HelloWorld-HelloWorldTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellPath = /bin/bash;
+			shellScript = "SCRIPT=\"$SRCROOT/ReactNativeSPM/Scripts/embed-flavored-frameworks.sh\"\nif [ ! -f \"$SCRIPT\" ]; then\n  echo \"error: $SCRIPT is missing. Run 'npx react-native spm update' to generate it.\"\n  exit 1\nfi\nexec /bin/bash \"$SCRIPT\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -415,7 +350,6 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5B7EB9410499542E8C5724F5 /* Pods-HelloWorld-HelloWorldTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -443,7 +377,6 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 89C6BE57DB24E9ADA2F236DE /* Pods-HelloWorld-HelloWorldTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -468,7 +401,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-HelloWorld.debug.xcconfig */;
+			baseConfigurationReference = 074F3370C5D61C114F081477 /* ReactNativeSPM.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -487,7 +420,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = HelloWorld;
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../../packages/react-native";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -496,7 +428,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-HelloWorld.release.xcconfig */;
+			baseConfigurationReference = 074F3370C5D61C114F081477 /* ReactNativeSPM.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -514,7 +446,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = HelloWorld;
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../../packages/react-native";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -737,6 +668,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+/* Begin XCLocalSwiftPackageReference section */
+		27BDE9D743CB351F53154525 /* XCLocalSwiftPackageReference "build/xcframeworks" */ = {isa = XCLocalSwiftPackageReference; relativePath = build/xcframeworks;};
+		C2FECF1430FDAAE3BF355839 /* XCLocalSwiftPackageReference "build/generated/autolinking" */ = {isa = XCLocalSwiftPackageReference; relativePath = build/generated/autolinking;};
+		A700952B9A737913514EB28F /* XCLocalSwiftPackageReference "build/generated/ios" */ = {isa = XCLocalSwiftPackageReference; relativePath = build/generated/ios;};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		512EBECF5434FD7A6AF7C967 /* ReactHeaders */ = {isa = XCSwiftPackageProductDependency; package = 27BDE9D743CB351F53154525 /* XCLocalSwiftPackageReference "build/xcframeworks" */; productName = ReactHeaders;};
+		920F69A9DF98D37C8308D020 /* ReactNativeHeaders */ = {isa = XCSwiftPackageProductDependency; package = 27BDE9D743CB351F53154525 /* XCLocalSwiftPackageReference "build/xcframeworks" */; productName = ReactNativeHeaders;};
+		8332BE36B9C49BD2E49347C1 /* ReactNativeDependenciesHeaders */ = {isa = XCSwiftPackageProductDependency; package = 27BDE9D743CB351F53154525 /* XCLocalSwiftPackageReference "build/xcframeworks" */; productName = ReactNativeDependenciesHeaders;};
+		3AFDEFB917B01458307FDE0A /* Autolinked */ = {isa = XCSwiftPackageProductDependency; package = C2FECF1430FDAAE3BF355839 /* XCLocalSwiftPackageReference "build/generated/autolinking" */; productName = Autolinked;};
+		947DD5EF3BE079FB7F5AFF87 /* ReactCodegen */ = {isa = XCSwiftPackageProductDependency; package = A700952B9A737913514EB28F /* XCLocalSwiftPackageReference "build/generated/ios" */; productName = ReactCodegen;};
+		F3857EDDA38AFC0011322D6D /* ReactAppDependencyProvider */ = {isa = XCSwiftPackageProductDependency; package = A700952B9A737913514EB28F /* XCLocalSwiftPackageReference "build/generated/ios" */; productName = ReactAppDependencyProvider;};
+/* End XCSwiftPackageProductDependency section */
+
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }

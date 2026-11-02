@@ -12,8 +12,6 @@ import type {XcodeBuildSettings} from './xcode';
 import type {Result} from 'execa';
 
 import execa from 'execa';
-import fs from 'node:fs';
-import path from 'node:path';
 
 export type IOSDevice = {
   lastBootedAt: Date,
@@ -133,8 +131,8 @@ export function getXcodeBuildSettings(
   const {stdout} = execa.sync(
     'xcodebuild',
     [
-      '-workspace',
-      'HelloWorld.xcworkspace',
+      '-project',
+      'HelloWorld.xcodeproj',
       '-scheme',
       'HelloWorld',
       '-configuration',
@@ -147,11 +145,4 @@ export function getXcodeBuildSettings(
     {cwd: iosProjectFolder},
   );
   return JSON.parse(stdout);
-}
-
-export function hasPodInstalled(iosPath: string, pkg: string): boolean {
-  const containsPackage = new RegExp(`\n  - ${pkg} \\(.+\\):?\n`);
-  return containsPackage.test(
-    fs.readFileSync(path.join(iosPath, 'Podfile.lock'), 'utf8'),
-  );
 }
