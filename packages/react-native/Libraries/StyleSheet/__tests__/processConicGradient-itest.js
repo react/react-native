@@ -38,6 +38,38 @@ describe('conic gradient processing', () => {
     });
   }
 
+  for (const position of [
+    'right 10px top',
+    'top 20px left',
+    'left bottom 10%',
+    'center top 25%',
+    'right 25% center',
+    'top 25% center',
+    'right\t10px\n top',
+  ]) {
+    for (const from of ['', 'from 90deg ']) {
+      const input = `conic-gradient(${from}at ${position}, red, blue)`;
+      it(`rejects three-value position in ${input}`, () => {
+        expect(processBackgroundImage(input)).toEqual([]);
+      });
+    }
+  }
+
+  for (const from of [0, 90]) {
+    it(`rejects numeric object angle ${from} without throwing`, () => {
+      expect(
+        // $FlowFixMe[incompatible-type] - exercise an angle from an untyped caller.
+        processBackgroundImage([
+          {
+            type: 'conic-gradient',
+            from,
+            colorStops: [{color: 'red'}, {color: 'blue'}],
+          },
+        ]),
+      ).toEqual([]);
+    });
+  }
+
   for (const [angle, degrees] of [
     ['0', 0],
     ['-0deg', 0],

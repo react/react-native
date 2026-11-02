@@ -47,6 +47,7 @@ describe('conic gradient native props', () => {
     object: RadialGradientPosition,
     expected: string,
   }> = [
+    {css: 'left top', object: {left: '0%', top: '0%'}, expected: '0% 0%'},
     {css: 'center', object: {left: '50%', top: '50%'}, expected: '50% 50%'},
     {
       css: 'top center',
@@ -140,6 +141,22 @@ describe('conic gradient native props', () => {
         `[conic-gradient(from 0deg at ${expected} , ${serializedColors})]`,
       );
     });
+  }
+
+  for (const position of [
+    'right 10px top',
+    'top 20px left',
+    'left bottom 10%',
+    'center top 25%',
+    'right 25% center',
+    'top 25% center',
+  ]) {
+    for (const from of ['', 'from 90deg ']) {
+      const input = `conic-gradient(${from}at ${position}, red, blue)`;
+      it(`rejects three-value position in ${input}`, () => {
+        expect(mountedBackgroundImage(input)).toBeUndefined();
+      });
+    }
   }
 
   for (const {position, expected} of [
