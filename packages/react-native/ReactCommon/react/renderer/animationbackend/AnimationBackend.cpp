@@ -22,6 +22,10 @@ namespace facebook::react {
 static inline Props::Shared cloneProps(
     AnimatedProps& animatedProps,
     const ShadowNode& shadowNode) {
+  if (!animatedProps.rawProps && animatedProps.props.empty()) {
+    return ShadowNodeFragment::propsPlaceholder();
+  }
+
   PropsParserContext propsParserContext{
       shadowNode.getSurfaceId(), *shadowNode.getContextContainer()};
   Props::Shared newProps;
@@ -66,6 +70,9 @@ static void mergeMutation(
     } else {
       props.rawProps = std::move(incoming.props.rawProps);
     }
+  }
+  if (incoming.props.text) {
+    props.text = std::move(incoming.props.text);
   }
   existing.hasLayoutUpdates |= incoming.hasLayoutUpdates;
 }
@@ -126,7 +133,7 @@ void AnimationBackend::applySurfaceUpdates(
     SurfaceUpdates layoutUpdates;
     std::unordered_map<Tag, AnimatedProps> directProps;
     for (auto& [tag, mutation] : updates) {
-      if (mutation.hasLayoutUpdates) {
+      if (mutation.hasLayoutUpdates || mutation.props.text) {
         layoutUpdates.emplace(tag, std::move(mutation));
       } else {
         directProps.emplace(tag, std::move(mutation.props));
@@ -134,11 +141,14 @@ void AnimationBackend::applySurfaceUpdates(
     }
     if (!layoutUpdates.empty()) {
       // A platform may re-apply a view's earlier direct writes when mounting
-      // it, so committed views are written directly too.
+      // it, so committed views are written directly too. A mutation that only
+      // carries text has nothing to write directly.
       if (auto uiManager = uiManager_.lock()) {
         for (const auto& [tag, mutation] : layoutUpdates) {
-          uiManager->synchronouslyUpdateViewOnUIThread(
-              tag, animationbackend::packAnimatedProps(mutation.props));
+          auto props = animationbackend::packAnimatedProps(mutation.props);
+          if (!props.empty()) {
+            uiManager->synchronouslyUpdateViewOnUIThread(tag, props);
+          }
         }
       }
       commitUpdates(surfaceId, layoutUpdates);
@@ -249,15 +259,20 @@ void AnimationBackend::commitUpdates(
                           const ShadowNode& shadowNode,
                           const ShadowNodeFragment& fragment) {
                         auto newProps = ShadowNodeFragment::propsPlaceholder();
+                        auto children = fragment.children;
                         if (surfaceFamilies.contains(
                                 shadowNode.getFamilyShared())) {
                           auto& animatedProps =
                               surfaceUpdates.at(shadowNode.getTag()).props;
                           newProps = cloneProps(animatedProps, shadowNode);
+                          if (animatedProps.text) {
+                            children = childrenWithText(
+                                shadowNode, fragment, *animatedProps.text);
+                          }
                         }
                         return shadowNode.clone(
                             {.props = newProps,
-                             .children = fragment.children,
+                             .children = children,
                              .state = shadowNode.getState()});
                       }));
             },

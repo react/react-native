@@ -61,6 +61,13 @@ hold a vector of `AnimatedProp` (a new C++ structure) for a select subset of the
 usual `ViewProps`. These can be applied to the cloned props in a more efficient
 way.
 
+`AnimatedProps` can also hold `text`, which replaces the string of the first
+`RawText` child of a `Text` or `Paragraph` node. Text is always applied with a
+commit. React replaces a `RawText` whenever the string it renders changes, and
+the replacement no longer has the animated text once the registry has been
+cleared, so a frontend should keep rendering the same string after the first
+render.
+
 ### AnimationBackendCommitHook
 
 This component is responsible for keeping animation updates synchronized with
