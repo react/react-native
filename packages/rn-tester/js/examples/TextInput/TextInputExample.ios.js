@@ -59,7 +59,7 @@ function ControlledAutoExpandingExample(): React.Node {
           if (slowJS) {
             // Delays each render so that the next keystroke reaches native
             // before React has committed the previous one.
-            const end = Date.now() + 150;
+            const end = Date.now() + 40;
             while (Date.now() < end) {}
           }
           setText(value);
