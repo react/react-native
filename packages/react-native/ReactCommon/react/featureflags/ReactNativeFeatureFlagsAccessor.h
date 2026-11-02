@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<17f41335dce7e5b45e7af2878c47d69b>>
+ * @generated SignedSource<<79bb8472da45801e02e72035097631a1>>
  */
 
 /**
@@ -82,6 +82,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableMutationObserverByDefault();
   bool enableNativeCSSParsing();
   bool enablePreallocatedPropsDiffOnInsertAndroid();
+  bool enablePremountItemsBetweenFramesAndroid();
   bool enablePreparedTextLayout();
   bool enablePropsUpdateReconciliationAndroid();
   bool enableResizeObserverByDefault();
@@ -142,7 +143,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 97> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -192,6 +193,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableMutationObserverByDefault_;
   std::atomic<std::optional<bool>> enableNativeCSSParsing_;
   std::atomic<std::optional<bool>> enablePreallocatedPropsDiffOnInsertAndroid_;
+  std::atomic<std::optional<bool>> enablePremountItemsBetweenFramesAndroid_;
   std::atomic<std::optional<bool>> enablePreparedTextLayout_;
   std::atomic<std::optional<bool>> enablePropsUpdateReconciliationAndroid_;
   std::atomic<std::optional<bool>> enableResizeObserverByDefault_;

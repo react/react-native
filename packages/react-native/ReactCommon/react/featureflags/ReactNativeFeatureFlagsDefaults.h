@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<35e8175277baa31d135d802ef5a5e6f1>>
+ * @generated SignedSource<<36ad8eaccc0eae7173b537fe018e6cbe>>
  */
 
 /**
@@ -218,6 +218,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enablePreallocatedPropsDiffOnInsertAndroid() override {
+    return false;
+  }
+
+  bool enablePremountItemsBetweenFramesAndroid() override {
     return false;
   }
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a1368426dd823245c54b4312ae7b14e6>>
+ * @generated SignedSource<<8fe44041094a8f515b3ad2d0b61a02d9>>
  */
 
 /**
@@ -118,6 +118,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableNativeCSSParsing(): Boolean = false
 
   override fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = false
+
+  override fun enablePremountItemsBetweenFramesAndroid(): Boolean = false
 
   override fun enablePreparedTextLayout(): Boolean = true
 
