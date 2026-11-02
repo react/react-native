@@ -12,6 +12,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <React/Debug.h>
@@ -39,6 +40,20 @@ class LayoutableShadowNode : public ShadowNode {
 
   LayoutableShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
 
+  /*
+   * Supplies transforms that take precedence over `getTransform()` when
+   * computing layout metrics or hit-testing. The committed ShadowTree does not
+   * know about transforms that were applied to the mounted views directly
+   * (e.g. by native-driven animations, which skip the commit), so the layout
+   * queries would otherwise disagree with what is on the screen. A provider
+   * returns `std::nullopt` for nodes it has no override for.
+   */
+  class TransformOverrideProvider {
+   public:
+    virtual ~TransformOverrideProvider() = default;
+    virtual std::optional<Transform> getTransformOverride(const LayoutableShadowNode &shadowNode) const = 0;
+  };
+
   struct LayoutInspectingPolicy {
     bool includeTransform{true};
     bool includeViewportOffset{false};
@@ -48,6 +63,9 @@ class LayoutableShadowNode : public ShadowNode {
     // the spec clips ancestors *until* the root, then intersects with the
     // rootMargin-expanded root intersection rectangle.
     bool clipSpecifiedAncestor{true};
+    // Optional source of transforms that override `getTransform()` of the
+    // inspected nodes (see `TransformOverrideProvider`). Not owned.
+    const TransformOverrideProvider *transformOverrideProvider{nullptr};
   };
 
   using UnsharedList = std::vector<LayoutableShadowNode *>;
@@ -150,6 +168,14 @@ class LayoutableShadowNode : public ShadowNode {
    * parameter.
    */
   static std::shared_ptr<const ShadowNode> findNodeAtPoint(const std::shared_ptr<const ShadowNode> &node, Point point);
+
+  /*
+   * Returns the transform of `shadowNode`, taking `transformOverrideProvider`
+   * (optional) into account.
+   */
+  static Transform resolveTransform(
+      const LayoutableShadowNode &shadowNode,
+      const TransformOverrideProvider *transformOverrideProvider);
 
   /*
    * Clean or Dirty layout state:

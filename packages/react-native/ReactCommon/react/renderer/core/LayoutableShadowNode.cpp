@@ -46,7 +46,8 @@ LayoutMetrics LayoutableShadowNode::computeLayoutMetricsFromRoot(
       return EmptyLayoutMetrics;
     }
     if (policy.includeTransform) {
-      layoutMetrics.frame = layoutMetrics.frame * rootNode.getTransform();
+      layoutMetrics.frame = layoutMetrics.frame *
+          resolveTransform(rootNode, policy.transformOverrideProvider);
     }
     return layoutMetrics;
   }
@@ -69,7 +70,8 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
       return EmptyLayoutMetrics;
     }
     if (policy.includeTransform) {
-      layoutMetrics.frame = layoutMetrics.frame * ancestorNode.getTransform();
+      layoutMetrics.frame = layoutMetrics.frame *
+          resolveTransform(ancestorNode, policy.transformOverrideProvider);
     }
     layoutMetrics.frame.origin = {.x = 0, .y = 0};
     return layoutMetrics;
@@ -165,11 +167,14 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
     // Move frame to the coordinate space of the current node.
     resultFrame.origin += currentFrame.origin;
 
+    auto currentTransform =
+        resolveTransform(*currentShadowNode, policy.transformOverrideProvider);
+
     if (shouldApplyTransformation) {
       // If a node has a transform, we need to use the center of that node as
       // the origin of the transform when transforming its children (which
       // affects the result of transforms like `scale` and `rotate`).
-      resultFrame = currentShadowNode->getTransform().applyWithCenter(
+      resultFrame = currentTransform.applyWithCenter(
           resultFrame, currentFrame.getCenter());
     }
 
@@ -184,8 +189,8 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
     if (policy.enableOverflowClipping &&
         (i != size - 1 || policy.clipSpecifiedAncestor)) {
       auto overflowInset = currentShadowNode->getLayoutMetrics().overflowInset;
-      auto overflowRect = insetBy(
-          currentFrame * currentShadowNode->getTransform(), overflowInset);
+      auto overflowRect =
+          insetBy(currentFrame * currentTransform, overflowInset);
       resultFrame = Rect::intersect(resultFrame, overflowRect);
       if (resultFrame.size.width == 0 && resultFrame.size.height == 0) {
         return EmptyLayoutMetrics;
@@ -214,6 +219,18 @@ void LayoutableShadowNode::setLayoutMetrics(LayoutMetrics layoutMetrics) {
 
 Transform LayoutableShadowNode::getTransform() const {
   return Transform::Identity();
+}
+
+Transform LayoutableShadowNode::resolveTransform(
+    const LayoutableShadowNode& shadowNode,
+    const TransformOverrideProvider* transformOverrideProvider) {
+  if (transformOverrideProvider != nullptr) {
+    if (auto transformOverride =
+            transformOverrideProvider->getTransformOverride(shadowNode)) {
+      return *transformOverride;
+    }
+  }
+  return shadowNode.getTransform();
 }
 
 Point LayoutableShadowNode::getContentOriginOffset(

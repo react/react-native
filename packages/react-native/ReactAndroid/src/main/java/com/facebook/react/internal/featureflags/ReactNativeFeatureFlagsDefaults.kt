@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a1368426dd823245c54b4312ae7b14e6>>
+ * @generated SignedSource<<8b2e167a9022cc009a7cd2ff0d4093b9>>
  */
 
 /**
@@ -126,6 +126,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableResizeObserverByDefault(): Boolean = false
 
   override fun enableSwiftUIBasedFilters(): Boolean = false
+
+  override fun enableSynchronousTransformOverlay(): Boolean = false
 
   override fun enableViewCulling(): Boolean = false
 

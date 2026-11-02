@@ -273,7 +273,9 @@ std::string getTextContent(
 DOMRect getBoundingClientRect(
     const RootShadowNode::Shared& currentRevision,
     const ShadowNode& shadowNode,
-    bool includeTransform) {
+    bool includeTransform,
+    const LayoutableShadowNode::TransformOverrideProvider*
+        transformOverrideProvider) {
   auto shadowNodeInCurrentRevision =
       getShadowNodeInRevision(currentRevision, shadowNode);
   if (shadowNodeInCurrentRevision == nullptr) {
@@ -283,7 +285,9 @@ DOMRect getBoundingClientRect(
   auto layoutMetrics = getLayoutMetricsFromRoot(
       *currentRevision,
       shadowNode,
-      {.includeTransform = includeTransform, .includeViewportOffset = true});
+      {.includeTransform = includeTransform,
+       .includeViewportOffset = true,
+       .transformOverrideProvider = transformOverrideProvider});
 
   if (layoutMetrics == EmptyLayoutMetrics) {
     return DOMRect{};
@@ -491,7 +495,9 @@ std::string getTagName(const ShadowNode& shadowNode) {
 
 RNMeasureRect measure(
     const RootShadowNode::Shared& currentRevision,
-    const ShadowNode& shadowNode) {
+    const ShadowNode& shadowNode,
+    const LayoutableShadowNode::TransformOverrideProvider*
+        transformOverrideProvider) {
   auto shadowNodeInCurrentRevision =
       getShadowNodeInRevision(currentRevision, shadowNode);
   if (shadowNodeInCurrentRevision == nullptr) {
@@ -501,7 +507,9 @@ RNMeasureRect measure(
   auto layoutMetrics = getLayoutMetricsFromRoot(
       *currentRevision,
       *shadowNodeInCurrentRevision,
-      {.includeTransform = true, .includeViewportOffset = false});
+      {.includeTransform = true,
+       .includeViewportOffset = false,
+       .transformOverrideProvider = transformOverrideProvider});
 
   if (layoutMetrics == EmptyLayoutMetrics) {
     return RNMeasureRect{};
@@ -526,7 +534,9 @@ RNMeasureRect measure(
 
 DOMRect measureInWindow(
     const RootShadowNode::Shared& currentRevision,
-    const ShadowNode& shadowNode) {
+    const ShadowNode& shadowNode,
+    const LayoutableShadowNode::TransformOverrideProvider*
+        transformOverrideProvider) {
   auto shadowNodeInCurrentRevision =
       getShadowNodeInRevision(currentRevision, shadowNode);
   if (shadowNodeInCurrentRevision == nullptr) {
@@ -536,7 +546,9 @@ DOMRect measureInWindow(
   auto layoutMetrics = getLayoutMetricsFromRoot(
       *currentRevision,
       *shadowNodeInCurrentRevision,
-      {.includeTransform = true, .includeViewportOffset = true});
+      {.includeTransform = true,
+       .includeViewportOffset = true,
+       .transformOverrideProvider = transformOverrideProvider});
 
   if (layoutMetrics == EmptyLayoutMetrics) {
     return DOMRect{};

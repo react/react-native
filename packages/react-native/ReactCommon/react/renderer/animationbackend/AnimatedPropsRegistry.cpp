@@ -134,4 +134,21 @@ void AnimatedPropsRegistry::clearOnSurfaceStop(SurfaceId surfaceId) {
   surfaceContexts_.erase(surfaceId);
 }
 
+std::vector<Tag> AnimatedPropsRegistry::getTags(SurfaceId surfaceId) {
+  auto lock = std::lock_guard(mutex_);
+  auto tags = std::vector<Tag>{};
+  if (auto it = surfaceContexts_.find(surfaceId);
+      it != surfaceContexts_.end()) {
+    auto& surfaceContext = it->second;
+    tags.reserve(surfaceContext.map.size() + surfaceContext.pendingMap.size());
+    for (const auto& [tag, snapshot] : surfaceContext.map) {
+      tags.push_back(tag);
+    }
+    for (const auto& [tag, snapshot] : surfaceContext.pendingMap) {
+      tags.push_back(tag);
+    }
+  }
+  return tags;
+}
+
 } // namespace facebook::react

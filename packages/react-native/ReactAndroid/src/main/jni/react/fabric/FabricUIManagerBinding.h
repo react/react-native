@@ -70,6 +70,8 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void startSurface(jint surfaceId, jni::alias_ref<jstring> moduleName, NativeMap *initialProps);
 
+  void recordSynchronousTransform(jint reactTag, NativeMap *transformProps);
+
   void startSurfaceWithConstraints(
       jint surfaceId,
       jni::alias_ref<jstring> moduleName,

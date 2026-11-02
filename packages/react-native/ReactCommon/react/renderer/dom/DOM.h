@@ -83,10 +83,14 @@ uint_fast16_t compareDocumentPosition(
 
 std::string getTextContent(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
 
+// `transformOverrideProvider` (optional, not owned) supplies transforms that
+// were applied to the mounted views without a commit, see
+// `LayoutableShadowNode::TransformOverrideProvider`.
 DOMRect getBoundingClientRect(
     const RootShadowNode::Shared &currentRevision,
     const ShadowNode &shadowNode,
-    bool includeTransform);
+    bool includeTransform,
+    const LayoutableShadowNode::TransformOverrideProvider *transformOverrideProvider = nullptr);
 
 DOMOffset getOffset(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
 
@@ -102,9 +106,15 @@ std::string getTagName(const ShadowNode &shadowNode);
 
 // Non-standard methods from React Native
 
-RNMeasureRect measure(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+RNMeasureRect measure(
+    const RootShadowNode::Shared &currentRevision,
+    const ShadowNode &shadowNode,
+    const LayoutableShadowNode::TransformOverrideProvider *transformOverrideProvider = nullptr);
 
-DOMRect measureInWindow(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+DOMRect measureInWindow(
+    const RootShadowNode::Shared &currentRevision,
+    const ShadowNode &shadowNode,
+    const LayoutableShadowNode::TransformOverrideProvider *transformOverrideProvider = nullptr);
 
 // This method returns an optional to signal to go through the error callback
 // instead of going through the success callback with an empty DOMRect.

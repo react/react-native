@@ -79,6 +79,13 @@ internal class FabricUIManagerBinding : HybridClassBase() {
 
   external fun driveCxxAnimations()
 
+  /**
+   * Records the `transform` / `transformOrigin` of a synchronous view update in UIManager, so that
+   * layout queries (measure, etc.) match the mounted view. `transformProps` must only contain those
+   * keys and is consumed by the call.
+   */
+  external fun recordSynchronousTransform(reactTag: Int, transformProps: NativeMap)
+
   external fun driveAnimationBackend(frameTimeNanos: Long)
 
   external fun drainPreallocateViewsQueue()

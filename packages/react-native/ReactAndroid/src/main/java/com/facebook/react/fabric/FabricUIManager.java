@@ -34,6 +34,7 @@ import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.proguard.annotations.DoNotStripAny;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ColorPropConverter;
 import com.facebook.react.bridge.GuardedRunnable;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -832,6 +833,8 @@ public class FabricUIManager
 
     MountItem synchronousMountItem = new SynchronousMountItem(reactTag, props);
 
+    recordSynchronousTransform(reactTag, props);
+
     // If the reactTag exists, we assume that it might at the end of the next
     // batch of MountItems. Otherwise, we try to execute immediately.
     if (!mMountingManager.getViewExists(reactTag)) {
@@ -854,6 +857,23 @@ public class FabricUIManager
 
     ReactMarker.logFabricMarker(
         ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END, null, commitNumber);
+  }
+
+  /**
+   * Lets UIManager know about the `transform` / `transformOrigin` of a synchronous update, so that
+   * layout queries (measure, measureInWindow, etc.) describe the mounted view rather than the
+   * committed ShadowTree, which the synchronous path bypasses. See `SynchronousTransformOverlay`.
+   */
+  private void recordSynchronousTransform(final int reactTag, final ReadableMap props) {
+    if (mBinding == null || !ReactNativeFeatureFlags.enableSynchronousTransformOverlay()) {
+      return;
+    }
+    if (!props.hasKey("transform") && !props.hasKey("transformOrigin")) {
+      return;
+    }
+    // `props` is either a JavaOnlyMap (legacy Animated) or a ReadableNativeMap that the mount
+    // item still needs, so a fresh NativeMap is handed to C++ (it is consumed by the call).
+    mBinding.recordSynchronousTransform(reactTag, Arguments.makeNativeMap(props.toHashMap()));
   }
 
   /** Called from C++ via JNI with a batch encoded by AnimatedPropBufferEncoder.cpp. */

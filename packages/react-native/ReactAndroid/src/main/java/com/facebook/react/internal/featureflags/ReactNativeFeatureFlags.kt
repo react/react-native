@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a89ede36c4631b7a7709899858a7f9c9>>
+ * @generated SignedSource<<6394b2f1569b795b117d2afea8fdd4d8>>
  */
 
 /**
@@ -341,6 +341,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableSwiftUIBasedFilters(): Boolean = accessor.enableSwiftUIBasedFilters()
+
+  /**
+   * When enabled, transforms applied to views synchronously on the UI thread (e.g. by native-driven animations, without a ShadowTree commit) are recorded in UIManager and taken into account by layout queries (measure, measureInWindow, getBoundingClientRect), so that they match the mounted views.
+   */
+  @JvmStatic
+  public fun enableSynchronousTransformOverlay(): Boolean = accessor.enableSynchronousTransformOverlay()
 
   /**
    * Enables View Culling: as soon as a view goes off screen, it can be reused anywhere in the UI and pieced together with other items to create new UI elements.

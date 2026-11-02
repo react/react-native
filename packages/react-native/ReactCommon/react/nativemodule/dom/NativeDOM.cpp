@@ -276,7 +276,10 @@ NativeDOM::getBoundingClientRect(
   }
 
   auto domRect = dom::getBoundingClientRect(
-      currentRevision, *shadowNode, includeTransform);
+      currentRevision,
+      *shadowNode,
+      includeTransform,
+      getUIManagerFromRuntime(rt).getTransformOverrideProvider());
 
   return std::tuple{domRect.x, domRect.y, domRect.width, domRect.height};
 }
@@ -421,7 +424,10 @@ void NativeDOM::measure(
     return;
   }
 
-  auto measureRect = dom::measure(currentRevision, *shadowNode);
+  auto measureRect = dom::measure(
+      currentRevision,
+      *shadowNode,
+      getUIManagerFromRuntime(rt).getTransformOverrideProvider());
 
   callback(
       measureRect.x,
@@ -443,7 +449,10 @@ void NativeDOM::measureInWindow(
     return;
   }
 
-  auto rect = dom::measureInWindow(currentRevision, *shadowNode);
+  auto rect = dom::measureInWindow(
+      currentRevision,
+      *shadowNode,
+      getUIManagerFromRuntime(rt).getTransformOverrideProvider());
   callback(rect.x, rect.y, rect.width, rect.height);
 }
 
