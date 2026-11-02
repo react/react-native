@@ -84,13 +84,11 @@ export function resolveIntersection(
         continue;
       }
 
-      // $FlowExpectedError[sketchy-null-bool] Missing prop is the same as false
-      if (!prop.optional) {
+      if (prop.optional !== true) {
         requiredKeys.add(key);
       }
 
-      // $FlowExpectedError[sketchy-null-bool] Missing prop is the same as false
-      if (!prop.readonly) {
+      if (prop.readonly !== true) {
         mutableKeys.add(key);
       }
 
