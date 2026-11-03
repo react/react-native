@@ -367,7 +367,9 @@ class ColorStopTest {
     assertThat(clipped.last().position).isEqualTo(0.65f)
   }
 
-  // Mirrors WPT css/css-images/normalization-linear.html and normalization-radial.html.
+  // From WPT: linear-gradient(green -50%, blue -50%) and radial-gradient(green -50%, blue -50%).
+  // https://github.com/web-platform-tests/wpt/blob/master/css/css-images/normalization-linear.html
+  // https://github.com/web-platform-tests/wpt/blob/master/css/css-images/normalization-radial.html
   @Test
   fun testCoincidentStopsBelowRangeRenderLastColor() {
     val fixed =
@@ -383,7 +385,8 @@ class ColorStopTest {
         .containsExactly(Color.BLUE, Color.BLUE)
   }
 
-  // Mirrors WPT css/css-images/normalization-linear-2.html.
+  // From WPT: linear-gradient(blue 150%, red 150%).
+  // https://github.com/web-platform-tests/wpt/blob/master/css/css-images/normalization-linear-2.html
   @Test
   fun testCoincidentStopsAboveRangeRenderFirstColor() {
     val fixed =
@@ -399,8 +402,9 @@ class ColorStopTest {
         .containsExactly(Color.BLUE, Color.BLUE)
   }
 
-  // Mirrors WPT css/css-images/normalization-radial-2.html: radial gradients keep stops past the
-  // ending shape, and grow the radius to fit them.
+  // From WPT: radial-gradient(blue 150%, red 150%). Radial gradients keep stops past the ending
+  // shape, and grow the radius to fit them.
+  // https://github.com/web-platform-tests/wpt/blob/master/css/css-images/normalization-radial-2.html
   @Test
   fun testClipColorStopsKeepsStopsUpToCustomEnd() {
     val colorStops =
