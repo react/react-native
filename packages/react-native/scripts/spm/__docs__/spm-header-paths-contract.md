@@ -168,5 +168,4 @@ option set, the hardcoded paths do not resolve.
 
 The normal pattern is rules 1 and 2 alone: the library uses the app's generated
 code from `React-GeneratedCode`. A library that takes rule 3 carries its own
-generated code instead. `@chrfalch/react-native-calculator` (a hand-authored
-Fabric/TurboModule library) is an example of that option.
+generated code instead.
