@@ -5,6 +5,7 @@
     "compiler": {
       "overrideTsconfig": {
         "$schema": "http://json.schemastore.org/tsconfig",
+        "files": ["${typegen_directory}/globals.d.ts"],
         "compilerOptions": {
           "lib": ["es2020"],
           "types": [],
