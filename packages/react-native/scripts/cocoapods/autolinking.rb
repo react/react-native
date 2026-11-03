@@ -208,5 +208,6 @@ $default_command = ['node', '-e', "process.argv=['', '', 'config'];require('@rea
 # - config_command: the command to run to get the application's current config, e.g. ['npx', '@react-native-community/cli', 'config'],
 #                   you can override this if you'd like to avoid the dependency. e.g. ['cat', 'your_config.json']
 def use_native_modules!(config_command = $default_command)
+  ReactNativePodsUtils.error_if_spm_injected
   return link_native_modules!(list_native_modules!(config_command))
 end

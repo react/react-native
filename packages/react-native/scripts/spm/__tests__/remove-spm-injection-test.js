@@ -567,6 +567,83 @@ describe('removeSpmInjection — the surgical inverse of add', () => {
     expect(pbxprojOf(xcodeprojPath)).toBe(before);
   });
 
+  it('removes the ReactNativeSPM directories its file removal leaves empty', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+
+    expect(fs.existsSync(path.join(appRoot, 'ReactNativeSPM'))).toBe(false);
+  });
+
+  it('keeps a ReactNativeSPM directory that still holds a file of the user', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    const userScript = path.join(appRoot, 'ReactNativeSPM', 'Scripts', 'my.sh');
+    fs.writeFileSync(userScript, 'echo mine\n', 'utf8');
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+
+    expect(fs.readFileSync(userScript, 'utf8')).toBe('echo mine\n');
+    expect(
+      generatedFileContents(appRoot).map(content => content != null),
+    ).toEqual(GENERATED_FILES.map(() => false));
+  });
+
+  it('prunes no directory outside the app through a symlinked ReactNativeSPM', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-outside-'));
+    scaffoldedAppRoots.push(outside);
+    fs.mkdirSync(path.join(outside, 'Scripts'));
+    fs.symlinkSync(outside, path.join(appRoot, 'ReactNativeSPM'), 'dir');
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+
+    removeSpmInjection({appRoot, xcodeprojPath});
+
+    expect(fs.statSync(path.join(outside, 'Scripts')).isDirectory()).toBe(true);
+    expect(
+      fs.lstatSync(path.join(appRoot, 'ReactNativeSPM')).isSymbolicLink(),
+    ).toBe(true);
+  });
+
+  it('warns and carries on when an empty directory cannot be removed', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const rmdirSpy = jest.spyOn(fs, 'rmdirSync').mockImplementation(() => {
+      throw new Error('EACCES: permission denied');
+    });
+
+    try {
+      expect(removeSpmInjection({appRoot, xcodeprojPath}).status).toBe(
+        'removed',
+      );
+      expect(fs.existsSync(path.join(xcodeprojPath, SPM_INJECTED_MARKER))).toBe(
+        false,
+      );
+      expect(warnSpy.mock.calls.join('\n')).toContain('EACCES');
+    } finally {
+      rmdirSpy.mockRestore();
+      warnSpy.mockRestore();
+    }
+  });
+
   it('round-trips WITH a generated-sources manifest (add then deinit is byte-identical)', () => {
     const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
     writeManifest(appRoot, [PROVIDER_REL]);
@@ -1853,5 +1930,70 @@ describe("a list setting of the project's own that keeps $(inherited)", () => {
     const after = pbxprojOf(xcodeprojPath);
     expect(after).toContain(EDITED);
     expect(after).not.toContain(SCALAR);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// gitignore — the marker field recording exactly what `spm add` wrote to the
+// app's .gitignore, so `deinit` (setup-apple-spm.js) undoes only that.
+// ---------------------------------------------------------------------------
+describe('gitignore marker field', () => {
+  const RECORD = {created: true, lines: ['# SPM', 'Package.resolved']};
+
+  it('records the .gitignore record add passes in', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      gitignoreAppended: RECORD,
+    });
+    expect(readMarker(xcodeprojPath).gitignore).toEqual(RECORD);
+  });
+
+  it('preserves the record on a later run that passes none (update)', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      gitignoreAppended: RECORD,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath).gitignore).toEqual(RECORD);
+  });
+
+  it('extends the record with the lines a later add appended', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      gitignoreAppended: RECORD,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      gitignoreAppended: {created: false, lines: ['# SPM', '.build/']},
+    });
+    expect(readMarker(xcodeprojPath).gitignore).toEqual({
+      created: true,
+      lines: ['# SPM', 'Package.resolved', '# SPM', '.build/'],
+    });
+  });
+
+  it('writes no record when add never passed one', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath)).not.toHaveProperty('gitignore');
   });
 });
