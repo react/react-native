@@ -2154,6 +2154,7 @@ function addPreActionToScheme(
     const stiMatch = openTag.match(/shellToInvoke\s*=\s*"/);
     if (stiMatch != null) {
       const stiValueStart =
+        // $FlowFixMe[unsafe-addition]
         contentOpenIdx + stiMatch.index + stiMatch[0].length;
       const stiValueEnd = xmlWithScript.indexOf('"', stiValueStart);
       xmlWithScript =
