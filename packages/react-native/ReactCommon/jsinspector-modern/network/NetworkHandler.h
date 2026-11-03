@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <list>
+#include <map>
 #include <mutex>
 #include <string>
 #include <tuple>
