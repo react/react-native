@@ -70,7 +70,7 @@ internal class BackgroundDrawable(
 
   override fun setAlpha(alpha: Int) {
     val paintAlpha = (((alpha / 255f) * (Color.alpha(backgroundColor) / 255f)) * 255f).roundToInt()
-    paintColor = (paintAlpha shl 24) or (paintColor and 0x00FFFFFF)
+    paintColor = (paintAlpha shl 24) or (backgroundColor and 0x00FFFFFF)
     invalidateSelf()
   }
 
