@@ -16,6 +16,7 @@ import com.facebook.react.fabric.mounting.MountingManager
 import com.facebook.react.fabric.mounting.MountingManager.MountItemExecutor
 import com.facebook.react.fabric.mounting.SurfaceMountingManager
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.uimanager.ViewManagerRegistry
@@ -25,6 +26,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -222,5 +225,42 @@ class SurfaceMountingManagerTest {
     assertThat(smm.getViewExists(42)).isTrue()
 
     smm.updatePadding(42, 0, 0, 0, 0)
+  }
+
+  /** Same as above, for removeViewAt when the parent's ViewState has no View. */
+  @Test
+  fun removeViewAt_doesNotThrowWhenParentViewStateHasNoView() {
+    val smm = startSurface()
+
+    // isLayoutable = false: a ViewState is registered, but no Android View is created for it.
+    smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, false)
+    assertThat(smm.getViewExists(42)).isTrue()
+
+    smm.removeViewAt(43, 42, 0)
+  }
+
+  /** Same as above, for updateState. */
+  @Test
+  fun updateState_doesNotThrowWhenViewStateHasNoView() {
+    val smm = startSurface()
+
+    // isLayoutable = false: a ViewState is registered, but no View or ViewManager is set on it.
+    smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, false)
+    assertThat(smm.getViewExists(42)).isTrue()
+
+    smm.updateState(42, null)
+  }
+
+  /** The early return in updateState must still free the replaced state wrapper. */
+  @Test
+  fun updateState_destroysPreviousStateWhenViewStateHasNoView() {
+    val smm = startSurface()
+    smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, false)
+
+    val first = mock<StateWrapper>()
+    smm.updateState(42, first)
+    smm.updateState(42, mock())
+
+    verify(first).destroyState()
   }
 }

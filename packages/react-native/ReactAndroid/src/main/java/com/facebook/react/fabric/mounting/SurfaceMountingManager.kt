@@ -425,7 +425,13 @@ internal constructor(
     }
 
     val parentView = parentViewState.view
-    checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
+    if (parentView == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("ViewState has no view for tag: [$parentTag] for removeViewAt"),
+      )
+      return
+    }
     if (parentView !is ViewGroup) {
       ReactSoftExceptionLogger.logSoftException(
           TAG,
@@ -968,9 +974,16 @@ internal constructor(
     val prevStateWrapper = viewState.stateWrapper
     viewState.stateWrapper = stateWrapper
 
-    val viewManager =
-        checkNotNull(viewState.viewManager) { "Unable to find ViewManager for tag: $reactTag" }
-    val view = checkNotNull(viewState.view)
+    val viewManager = viewState.viewManager
+    val view = viewState.view
+    if (viewManager == null || view == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("ViewState has no view for tag: [$reactTag] for updateState"),
+      )
+      prevStateWrapper?.destroyState()
+      return
+    }
 
     val extraData = viewManager.updateState(view, viewState.currentProps, stateWrapper)
     if (extraData != null) {
