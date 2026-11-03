@@ -142,12 +142,13 @@ internal object ColorStopUtils {
   /**
    * Replaces color stops outside `[0, end]` with stops at the range boundaries.
    *
-   * Stops outside the range still affect the colors inside it through interpolation, but are never
-   * painted directly. Android's gradient shaders pin them to the range instead, so each boundary
-   * gets the color the gradient would have at that point.
+   * Per the spec, stops outside the range are "never directly consulted for rendering", but "can
+   * affect the color of color-stops within the rendered region through interpolation". Android's
+   * gradient shaders pin them to the range instead, so each boundary gets the color the gradient
+   * would have at that point.
    *
-   * @see <a href="https://drafts.csswg.org/css-images-4/#coloring-gradient-line">CSS Images Module
-   *   Level 4</a>
+   * @see <a href="https://drafts.csswg.org/css-images-4/#conic-color-stops">CSS Images Module Level
+   *   4</a>
    */
   fun clipColorStops(
       colorStops: List<ProcessedColorStop>,

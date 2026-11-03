@@ -361,9 +361,10 @@ static std::vector<ProcessedColorStop> processColorTransitionHints(const std::ve
   return processColorTransitionHints(fixedColorStops);
 }
 
-// Spec: https://drafts.csswg.org/css-images-4/#coloring-gradient-line
-// Color stops outside [0, end] still affect the colors inside it through interpolation, but are never painted
-// directly, so they are replaced by stops at the range boundaries, colored as the gradient would be at that point.
+// Spec: https://drafts.csswg.org/css-images-4/#conic-color-stops
+// Color stops outside [0, end] are "never directly consulted for rendering", but "can affect the color of
+// color-stops within the rendered region through interpolation". So they are replaced by stops at the range
+// boundaries, colored as the gradient would be at that point.
 + (std::vector<ProcessedColorStop>)clipColorStops:(const std::vector<ProcessedColorStop> &)colorStops end:(Float)end
 {
   if (colorStops.empty() ||
