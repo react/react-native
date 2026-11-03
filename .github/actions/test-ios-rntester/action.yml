@@ -60,11 +60,11 @@ runs:
           echo "::error::spm add did not inject SwiftPM: RNTesterPods.xcodeproj/.spm-injected.json is missing"
           exit 1
         fi
-        if [[ -f Podfile ]] && grep -q 'use_react_native!' Podfile; then
-          echo "::error::spm add --deintegrate left use_react_native! in the Podfile"
+        if grep -q 'Pods-' RNTesterPods.xcodeproj/project.pbxproj; then
+          echo "::error::spm add --deintegrate left CocoaPods references in RNTesterPods.xcodeproj"
           exit 1
         fi
-        echo "SwiftPM injected in place; Podfile de-integrated."
+        echo "SwiftPM injected in place; CocoaPods de-integrated."
     - name: Build RNTester
       shell: bash
       run: |
