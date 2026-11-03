@@ -11,6 +11,10 @@ import * as React from 'react';
 
 import {
   Animated,
+  AnimatedFlatList,
+  AnimatedImage,
+  AnimatedSectionList,
+  AnimatedView,
   View,
   NativeSyntheticEvent,
   NativeScrollEvent,
@@ -163,11 +167,11 @@ function TestAnimatedAPI() {
     listener,
   });
 
-  const AnimatedView = Animated.createAnimatedComponent(View);
+  const AnimatedCreatedView = Animated.createAnimatedComponent(View);
   const ref = React.useRef<React.ComponentRef<typeof View>>(null);
   return (
     <View ref={ref}>
-      <Animated.View
+      <AnimatedView
         ref={ref}
         style={[
           position.getLayout(),
@@ -176,17 +180,17 @@ function TestAnimatedAPI() {
           },
         ]}
       />
-      <AnimatedView ref={ref} style={{top: 3}}>
+      <AnimatedCreatedView ref={ref} style={{top: 3}}>
         i has children
-      </AnimatedView>
+      </AnimatedCreatedView>
       <AnimatedComp ref={AnimatedCompRef} width={v1} />
       <ForwardComp ref={ForwardCompRef} width={1} />
       <AnimatedForwardComp ref={AnimatedForwardCompRef} width={10} />
-      <Animated.Image
+      <AnimatedImage
         style={{transform: position.getTranslateTransform()}}
         source={{uri: 'https://picsum.photos/200'}}
       />
-      <Animated.View
+      <AnimatedView
         testID="expect-type-animated-view"
         style={{opacity: v1}}
         onLayout={event => {
@@ -197,7 +201,7 @@ function TestAnimatedAPI() {
         }}
       />
       ;
-      <Animated.FlatList
+      <AnimatedFlatList
         testID="expect-type-animated-flatlist"
         style={{opacity: v1}}
         data={[1] as ReadonlyArray<number>}
@@ -207,7 +211,7 @@ function TestAnimatedAPI() {
         }}
       />
       ;
-      <Animated.SectionList
+      <AnimatedSectionList
         testID="expect-type-animated-sectionlist"
         style={{opacity: v1}}
         sections={
@@ -230,7 +234,7 @@ function TestAnimatedAPI() {
       />
       ;
       {/* @ts-expect-error the transform object must contain only one key-value pair */}
-      <Animated.View style={{transform: [{scale: 1, translateX: 20}]}} />;
+      <AnimatedView style={{transform: [{scale: 1, translateX: 20}]}} />;
     </View>
   );
 }
