@@ -886,7 +886,14 @@ internal constructor(
       return
     }
 
-    val viewToUpdate = checkNotNull(viewState.view) { "Unable to find View for tag: $reactTag" }
+    val viewToUpdate = viewState.view
+    if (viewToUpdate == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("ViewState has no view for tag: [$reactTag] for updatePadding"),
+      )
+      return
+    }
     val viewManager =
         checkNotNull(viewState.viewManager) { "Unable to find ViewManager for view: $viewState" }
 
@@ -922,7 +929,15 @@ internal constructor(
     }
 
     val viewToUpdate = viewState.view
-    checkNotNull(viewToUpdate) { "Unable to find View for tag: $reactTag" }
+    if (viewToUpdate == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "ViewState has no view for tag: [$reactTag] for updateOverflowInset",
+          ),
+      )
+      return
+    }
 
     if (viewToUpdate is ReactOverflowViewWithInset) {
       (viewToUpdate as ReactOverflowViewWithInset).setOverflowInset(

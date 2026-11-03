@@ -195,4 +195,32 @@ class SurfaceMountingManagerTest {
     smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, true)
     assertThat(smm.getViewExists(42)).isTrue()
   }
+
+  /**
+   * A ViewState can exist without an Android View (createViewUnsafe only creates one when the node
+   * is layoutable). updateOverflowInset on such a tag used to throw and tear down the surface; it
+   * should log a soft exception and return, as the missing-viewState branch already does.
+   */
+  @Test
+  fun updateOverflowInset_doesNotThrowWhenViewStateHasNoView() {
+    val smm = startSurface()
+
+    // isLayoutable = false: a ViewState is registered, but no Android View is created for it.
+    smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, false)
+    assertThat(smm.getViewExists(42)).isTrue()
+
+    smm.updateOverflowInset(42, 0, 0, 0, 0)
+  }
+
+  /** Same as above, for updatePadding. */
+  @Test
+  fun updatePadding_doesNotThrowWhenViewStateHasNoView() {
+    val smm = startSurface()
+
+    // isLayoutable = false: a ViewState is registered, but no Android View is created for it.
+    smm.preallocateView("RCTView", 42, JavaOnlyMap.of(), null, false)
+    assertThat(smm.getViewExists(42)).isTrue()
+
+    smm.updatePadding(42, 0, 0, 0, 0)
+  }
 }
