@@ -13,6 +13,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /*
+ * Mirrors `facebook::react::TextAlignmentVertical` (kept private to avoid
+ * exposing C++ types from this ObjC header). Keep the integer values in
+ * sync with `enum class TextAlignmentVertical` in
+ * `ReactCommon/react/renderer/attributedstring/primitives.h`.
+ */
+typedef NS_ENUM(NSInteger, RCTUITextViewTextAlignmentVertical) {
+  RCTUITextViewTextAlignmentVerticalAuto = 0,
+  RCTUITextViewTextAlignmentVerticalTop,
+  RCTUITextViewTextAlignmentVerticalBottom,
+  RCTUITextViewTextAlignmentVerticalCenter,
+};
+
+/*
  * Just regular UITextView... but much better!
  */
 @interface RCTUITextView : UITextView <RCTBackedTextInputViewProtocol>
@@ -35,6 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UITextFieldViewMode clearButtonMode;
 
 @property (nonatomic, assign) BOOL caretHidden;
+
+/*
+ * Block-axis alignment of the text within the host view's bounds, mirroring
+ * Android's `textAlignVertical`. Applied via `contentInset.top` so a short
+ * multiline value can sit centered or pushed to the bottom of a tall fixed
+ * frame. Defaults to `Auto` (top-aligned, current behavior).
+ */
+@property (nonatomic, assign) RCTUITextViewTextAlignmentVertical textAlignVertical;
 
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewButtonLabel;
