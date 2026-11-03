@@ -260,6 +260,12 @@ export type {
 export {default as Alert} from './Libraries/Alert/Alert';
 
 export {default as Animated} from './Libraries/Animated/Animated';
+export {default as AnimatedFlatList} from './Libraries/Animated/components/AnimatedFlatList';
+export {default as AnimatedImage} from './Libraries/Animated/components/AnimatedImage';
+export {default as AnimatedScrollView} from './Libraries/Animated/components/AnimatedScrollView';
+export {default as AnimatedSectionList} from './Libraries/Animated/components/AnimatedSectionList';
+export {default as AnimatedText} from './Libraries/Animated/components/AnimatedText';
+export {default as AnimatedView} from './Libraries/Animated/components/AnimatedView';
 
 export * as Appearance from './Libraries/Utilities/Appearance';
 
