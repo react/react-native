@@ -110,8 +110,8 @@ tooling never silently pins an unpublished tag.
 ## Hand-authored community library contract
 
 The tooling leaves untouched a library that ships its own `Package.swift` (no
-scaffolder or autolinker marker). That library needs one thing, and **no
-discovery code**. A second thing is optional:
+scaffolder or autolinker marker). That library needs two things, and **no
+discovery code**. A third thing is optional:
 
 1. Depend on the React Native package and the app's codegen package by relative
    path. SwiftPM reaches the library's manifest through React Native's
@@ -125,7 +125,13 @@ discovery code**. A second thing is optional:
    `.product(name: "ReactNativeDependenciesHeaders", package: "ReactNative")`,
    and `.product(name: "ReactAppHeaders", package: "React-GeneratedCode")`. A
    scaffolded manifest depends on the same products.
-2. Optionally, ship its own generated code. This suits a library that wants to
+2. Define `RCT_NEW_ARCH_ENABLED=1` in both `cSettings` and `cxxSettings` of each
+   target: `.define("RCT_NEW_ARCH_ENABLED", to: "1")`. SwiftPM mode supports
+   only the New Architecture, and nothing else sets this define for a SwiftPM
+   target. Without it, the preprocessor drops all code behind
+   `#ifdef RCT_NEW_ARCH_ENABLED`. Keep those `#ifdef` gates in the sources: the
+   same sources still build under CocoaPods.
+3. Optionally, ship its own generated code. This suits a library that wants to
    be self-contained. Set `codegenConfig.includesGeneratedCode: true` and
    generate with
    `generate-codegen-artifacts.js --path . --targetPlatform ios --source library`.
@@ -142,7 +148,7 @@ through its `libs/<SwiftName>` link folder, so the library cannot build on its
 own (for example, `swift build` in its own repository). Libraries depend on this
 layout today, so React Native will not change it without notice.
 
-The normal pattern is rule 1 alone: the library uses the app's generated code
-from `React-GeneratedCode`. A library that takes rule 2 carries its own
+The normal pattern is rules 1 and 2 alone: the library uses the app's generated
+code from `React-GeneratedCode`. A library that takes rule 3 carries its own
 generated code instead. `@chrfalch/react-native-calculator` (a hand-authored
 Fabric/TurboModule library) is an example of that option.
