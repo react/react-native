@@ -21,13 +21,17 @@ class RCTIdentifierPool {
 
   int dequeue()
   {
-    while (true) {
+    for (size_t i = 0; i < size; i++) {
       if (!usage[lastIndex]) {
         usage[lastIndex] = true;
         return lastIndex;
       }
       lastIndex = (lastIndex + 1) % size;
     }
+    // All identifiers are in use. Reuse one instead of looping forever.
+    int index = lastIndex;
+    lastIndex = (lastIndex + 1) % size;
+    return index;
   }
 
   void reset()
@@ -39,7 +43,7 @@ class RCTIdentifierPool {
 
  private:
   std::bitset<size> usage;
-  int lastIndex;
+  int lastIndex{0};
 };
 
 } // namespace facebook::react

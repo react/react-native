@@ -197,6 +197,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 - (void)_registerTouches:(NSSet<UITouch *> *)touches
 {
   for (UITouch *touch in touches) {
+    if (_activeTouches.find(touch) != _activeTouches.end()) {
+      RCTLogWarn(@"Inconsistency between local and UIKit touch registries");
+      continue;
+    }
+
     auto activeTouch = CreateTouchWithUITouch(touch, _rootComponentView, _viewOriginOffset);
     activeTouch.touch.identifier = _identifierPool.dequeue();
     _activeTouches.emplace(touch, activeTouch);
@@ -374,8 +379,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 
     // Force-unregistering all the touches.
     _activeTouches.clear();
-    _identifierPool.reset();
   }
+
+  _identifierPool.reset();
 }
 
 - (BOOL)canPreventGestureRecognizer:(__unused UIGestureRecognizer *)preventedGestureRecognizer
