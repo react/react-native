@@ -39,6 +39,15 @@ using RCTTextLayoutFragmentEnumerationBlock =
                                                 layoutContext:(facebook::react::TextLayoutContext)layoutContext
                                             layoutConstraints:(facebook::react::LayoutConstraints)layoutConstraints;
 
+/**
+ * Lays `attributedString` out for a text view that draws it in a frame of `size`,
+ * so that the draw does not lay it out again.
+ * Can be called from any thread.
+ */
+- (void)prepareAttributedStringForDrawing:(const facebook::react::AttributedString &)attributedString
+                      paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                     size:(CGSize)size;
+
 - (void)drawAttributedString:(const facebook::react::AttributedString &)attributedString
          paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                        frame:(CGRect)frame

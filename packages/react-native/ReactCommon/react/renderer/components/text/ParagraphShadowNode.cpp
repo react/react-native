@@ -249,6 +249,14 @@ void ParagraphShadowNode::updateStateIfNeeded(const Content& content) {
     return;
   }
 
+  if constexpr (TextLayoutManagerExtended::supportsPrepareForDrawing()) {
+    // The text view lays its text out on the main thread the first time it
+    // draws. Lay it out here instead, for the frame that draw uses.
+    TextLayoutManagerExtended(*textLayoutManager_)
+        .prepareForDrawing(
+            content.attributedString, content.paragraphAttributes, layoutSize);
+  }
+
   setStateData(
       ParagraphState{
           .attributedString = content.attributedString,

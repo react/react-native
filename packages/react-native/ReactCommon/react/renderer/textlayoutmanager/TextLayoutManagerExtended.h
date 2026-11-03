@@ -71,6 +71,15 @@ class TextLayoutManagerExtended {
     return TextLayoutManagerWithPreparedTextLayout<TextLayoutManagerT>;
   }
 
+  static constexpr bool supportsPrepareForDrawing()
+  {
+    return requires(
+        const TextLayoutManagerT &textLayoutManager,
+        AttributedString attributedString,
+        ParagraphAttributes paragraphAttributes,
+        Size size) { textLayoutManager.prepareForDrawing(attributedString, paragraphAttributes, size); };
+  }
+
   using PreparedTextLayout = typename PreparedTextLayoutT<TextLayoutManagerT>::type;
 
   TextLayoutManagerExtended(const TextLayoutManagerT &textLayoutManager) : textLayoutManager_(textLayoutManager) {}
@@ -96,6 +105,18 @@ class TextLayoutManagerExtended {
       return textLayoutManager_.prepareLayout(attributedString, paragraphAttributes, layoutContext, layoutConstraints);
     }
     LOG(FATAL) << "Platform TextLayoutManager does not support prepareLayout";
+  }
+
+  void prepareForDrawing(
+      const AttributedString &attributedString,
+      const ParagraphAttributes &paragraphAttributes,
+      const Size &size) const
+  {
+    if constexpr (supportsPrepareForDrawing()) {
+      textLayoutManager_.prepareForDrawing(attributedString, paragraphAttributes, size);
+    } else {
+      LOG(FATAL) << "Platform TextLayoutManager does not support prepareForDrawing";
+    }
   }
 
   TextMeasurement measurePreparedLayout(

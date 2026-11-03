@@ -5669,8 +5669,10 @@ class facebook::react::detail::TextLayoutManagerExtended {
   public facebook::react::TextMeasurement measurePreparedLayout(const facebook::react::detail::TextLayoutManagerExtended::PreparedTextLayout& layout, const facebook::react::TextLayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
   public facebook::react::detail::TextLayoutManagerExtended::PreparedTextLayout prepareLayout(const facebook::react::AttributedString& attributedString, const facebook::react::ParagraphAttributes& paragraphAttributes, const facebook::react::TextLayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
   public static constexpr bool supportsLineMeasurement();
+  public static constexpr bool supportsPrepareForDrawing();
   public static constexpr bool supportsPreparedTextLayout();
   public using PreparedTextLayout = typename facebook::react::detail::PreparedTextLayoutT<TextLayoutManagerT>::type;
+  public void prepareForDrawing(const facebook::react::AttributedString& attributedString, const facebook::react::ParagraphAttributes& paragraphAttributes, const facebook::react::Size& size) const;
 }
 
 template <typename... T>

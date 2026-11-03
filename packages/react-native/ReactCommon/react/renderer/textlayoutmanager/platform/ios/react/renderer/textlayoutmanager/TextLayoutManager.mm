@@ -117,6 +117,18 @@ TextMeasurement TextLayoutManager::measure(
   return measurement;
 }
 
+void TextLayoutManager::prepareForDrawing(
+    const AttributedString &attributedString,
+    const ParagraphAttributes &paragraphAttributes,
+    const Size &size) const
+{
+  RCTTextLayoutManager *textLayoutManager = (RCTTextLayoutManager *)unwrapManagedObject(nativeTextLayoutManager_);
+
+  [textLayoutManager prepareAttributedStringForDrawing:attributedString
+                                   paragraphAttributes:paragraphAttributes
+                                                  size:CGSizeMake(size.width, size.height)];
+}
+
 LinesMeasurements TextLayoutManager::measureLines(
     const AttributedStringBox &attributedStringBox,
     const ParagraphAttributes &paragraphAttributes,
