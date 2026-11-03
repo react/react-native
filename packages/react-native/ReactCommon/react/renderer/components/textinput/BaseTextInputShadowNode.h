@@ -157,7 +157,7 @@ class BaseTextInputShadowNode
     const auto &stateData = BaseShadowNode::getStateData();
     const auto &reactTreeAttributedString = getAttributedString(layoutContext);
 
-    if (stateData.reactTreeAttributedString.isContentEqual(reactTreeAttributedString)) {
+    if (!shouldAdoptReactTreeAttributedString(stateData, reactTreeAttributedString)) {
       return;
     }
 
@@ -168,6 +168,20 @@ class BaseTextInputShadowNode
             reactTreeAttributedString,
             props.paragraphAttributes,
             props.mostRecentEventCount});
+  }
+
+  /*
+   * The state takes the React tree's text only when that text changed and
+   * React has seen every native edit the state already holds. A render that
+   * started before the latest keystroke carries an older event count; adopting
+   * its text would drop that keystroke from the state the input is measured by.
+   */
+  bool shouldAdoptReactTreeAttributedString(
+      const StateDataT &stateData,
+      const AttributedString &reactTreeAttributedString) const
+  {
+    return !stateData.reactTreeAttributedString.isContentEqual(reactTreeAttributedString) &&
+        BaseShadowNode::getConcreteProps().mostRecentEventCount >= stateData.mostRecentEventCount;
   }
 
   /*
@@ -204,6 +218,15 @@ class BaseTextInputShadowNode
             layoutContext.fontSizeMultiplier;
     if (meaningfulState) {
       const auto &stateData = BaseShadowNode::getStateData();
+      // Yoga measures before `layout()` runs `updateStateIfNeeded`, so text
+      // that pass is about to adopt has to be measured here already.
+      auto reactTreeAttributedString = getAttributedString(layoutContext);
+      if (shouldAdoptReactTreeAttributedString(stateData, reactTreeAttributedString)) {
+        if (reactTreeAttributedString.isEmpty()) {
+          reactTreeAttributedString = getPlaceholderAttributedString(layoutContext);
+        }
+        return AttributedStringBox{reactTreeAttributedString};
+      }
       auto attributedStringBox = stateData.attributedStringBox;
       if (attributedStringBox.getMode() == AttributedStringBox::Mode::OpaquePointer ||
           !attributedStringBox.getValue().isEmpty()) {
