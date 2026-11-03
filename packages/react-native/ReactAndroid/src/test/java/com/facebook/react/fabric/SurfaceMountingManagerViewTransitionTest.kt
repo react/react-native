@@ -33,9 +33,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Tests for [SurfaceMountingManager.addViewAt] with views that a parent holds with
- * [ViewGroup.startViewTransition] after their removal, as React Native Screens does for the content
- * of a removed screen.
+ * Tests for [SurfaceMountingManager.addViewAt] with views that a parent still holds with
+ * [ViewGroup.startViewTransition] after their removal.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [ShadowSoLoader::class])
