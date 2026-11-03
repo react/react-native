@@ -129,19 +129,34 @@ runs:
     - name: Build RNTester
       shell: bash
       run: |
-        xcodebuild \
-          -scheme "RNTester" \
-          -workspace packages/rn-tester/RNTesterPods.xcworkspace \
-          -configuration "${{ inputs.flavor }}" \
-          -sdk "iphonesimulator" \
-          -destination "generic/platform=iOS Simulator" \
-          -derivedDataPath "/tmp/RNTesterBuild"
+        build_rntester() {
+          local log_file="$1"
+          xcodebuild \
+            -scheme "RNTester" \
+            -workspace packages/rn-tester/RNTesterPods.xcworkspace \
+            -configuration "${{ inputs.flavor }}" \
+            -sdk "iphonesimulator" \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "/tmp/RNTesterBuild" 2>&1 | tee "$log_file"
+        }
 
-          echo "Print path to *.app file"
-          APP_PATH=$(find "/tmp/RNTesterBuild" -type d -name "*.app")
+        build_log="$(mktemp)"
+        if build_rntester "$build_log"; then
+          :
+        elif grep -Fq "clang: error: unable to execute command: Segmentation fault: 11" "$build_log" && \
+          grep -Fq "clang: error: clang frontend command failed due to signal" "$build_log"; then
+          echo "::warning::Apple clang frontend crashed; retrying RNTester build once."
+          rm -rf "/tmp/RNTesterBuild"
+          build_rntester "${build_log}.retry"
+        else
+          exit 1
+        fi
 
-          echo "App found at $APP_PATH"
-          echo "app-path=$APP_PATH" >> $GITHUB_ENV
+        echo "Print path to *.app file"
+        APP_PATH=$(find "/tmp/RNTesterBuild" -type d -name "*.app")
+
+        echo "App found at $APP_PATH"
+        echo "app-path=$APP_PATH" >> $GITHUB_ENV
     - name: 'Run Tests: iOS Unit and Integration Tests'
       if: ${{ inputs.run-unit-tests == 'true' }}
       shell: bash
