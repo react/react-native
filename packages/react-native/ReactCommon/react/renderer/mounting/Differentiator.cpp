@@ -11,6 +11,7 @@
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <algorithm>
+#include <optional>
 #include <unordered_map>
 #include "internal/CullingContext.h"
 #include "internal/ShadowViewNodePair.h"
@@ -897,6 +898,9 @@ void calculateShadowViewMutations(
     return;
   }
 
+  const bool isViewCullingEnabled =
+      ReactNativeFeatureFlags::enableViewCulling();
+
   size_t index = 0;
 
   // Lists of mutations
@@ -946,10 +950,20 @@ void calculateShadowViewMutations(
               oldChildPair.shadowView, newChildPair.shadowView, parentTag));
     }
 
-    auto adjustedOldCullingContext =
-        oldCullingContext.adjustCullingContextIfNeeded(oldChildPair);
-    auto adjustedNewCullingContext =
-        newCullingContext.adjustCullingContextIfNeeded(newChildPair);
+    // Without view culling, adjustCullingContextIfNeeded doesn't change the
+    // contexts, so skip the copies.
+    std::optional<CullingContext> adjustedOld;
+    std::optional<CullingContext> adjustedNew;
+    if (isViewCullingEnabled) {
+      adjustedOld =
+          oldCullingContext.adjustCullingContextIfNeeded(oldChildPair);
+      adjustedNew =
+          newCullingContext.adjustCullingContextIfNeeded(newChildPair);
+    }
+    const auto& adjustedOldCullingContext =
+        adjustedOld ? *adjustedOld : oldCullingContext;
+    const auto& adjustedNewCullingContext =
+        adjustedNew ? *adjustedNew : newCullingContext;
 
     // Recursively update tree if ShadowNode pointers are not equal
     if (!oldChildPair.flattened &&

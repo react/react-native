@@ -14,6 +14,7 @@
 #import <react/renderer/textlayoutmanager/RCTFontUtils.h>
 
 #include <react/renderer/attributedstring/conversions.h>
+#include <react/renderer/core/EventEmitter.h>
 #include <react/renderer/core/RawValue.h>
 
 #include <array>
@@ -242,6 +243,76 @@ static NSDictionary<NSNumber *, NSNumber *> *FontVariationsFromSettings(std::opt
   XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
       attributedString1, attributedString2, insensitiveAttributes, TextAttributes{}));
   XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
+}
+
+- (void)testSamenessOfDifferentEventEmitters
+{
+  // The emitter is metadata a TextInput never dispatches through, so even a different one is not a difference.
+  auto eventEmitter1 = std::make_shared<const EventEmitter>(nullptr, EventDispatcher::Weak{});
+  auto eventEmitter2 = std::make_shared<const EventEmitter>(nullptr, EventDispatcher::Weak{});
+
+  NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString1 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+  [attributedString1 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(eventEmitter1)
+                            range:NSMakeRange(0, 12)];
+
+  NSMutableAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString2 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+  [attributedString2 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(eventEmitter2)
+                            range:NSMakeRange(0, 12)];
+
+  NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes = @{};
+
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString1, attributedString2, insensitiveAttributes, TextAttributes{}));
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
+}
+
+- (void)testSamenessOfMissingEventEmitter
+{
+  // Text typed into a field carries no event emitter; the state echoing it does.
+  auto eventEmitter = std::make_shared<const EventEmitter>(nullptr, EventDispatcher::Weak{});
+
+  NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString1 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+  [attributedString1 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(eventEmitter)
+                            range:NSMakeRange(0, 12)];
+
+  NSMutableAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString2 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 5)];
+
+  NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes = @{};
+
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString1, attributedString2, insensitiveAttributes, TextAttributes{}));
+  XCTAssertTrue(RCTIsAttributedStringEffectivelySame(
+      attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
+}
+
+- (void)testDifferenceOfOtherAttributesNextToEventEmitter
+{
+  // Ignoring the event emitter must not hide a real difference in the same run.
+  auto eventEmitter = std::make_shared<const EventEmitter>(nullptr, EventDispatcher::Weak{});
+
+  NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString1 addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, 12)];
+  [attributedString1 addAttribute:RCTAttributedStringEventEmitterKey
+                            value:RCTWrapEventEmitter(eventEmitter)
+                            range:NSMakeRange(0, 12)];
+
+  NSMutableAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithString:@"Hello world!"];
+  [attributedString2 addAttribute:NSForegroundColorAttributeName value:[UIColor blueColor] range:NSMakeRange(0, 12)];
+
+  NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes = @{};
+
+  XCTAssertFalse(RCTIsAttributedStringEffectivelySame(
+      attributedString1, attributedString2, insensitiveAttributes, TextAttributes{}));
+  XCTAssertFalse(RCTIsAttributedStringEffectivelySame(
       attributedString2, attributedString1, insensitiveAttributes, TextAttributes{}));
 }
 
