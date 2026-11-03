@@ -124,16 +124,31 @@ discovery code**. A third thing is optional:
    `.product(name: "ReactNativeHeaders", package: "ReactNative")`,
    `.product(name: "ReactNativeDependenciesHeaders", package: "ReactNative")`,
    and `.product(name: "ReactAppHeaders", package: "React-GeneratedCode")`. A
-   scaffolded manifest depends on the same products.
-2. Define `RCT_NEW_ARCH_ENABLED=1` in both `cSettings` and `cxxSettings` of each
-   target: `.define("RCT_NEW_ARCH_ENABLED", to: "1")`. SwiftPM mode supports
-   only the New Architecture, and nothing else sets this define for a SwiftPM
-   target. Without it, the preprocessor drops all code behind
+   scaffolded manifest depends on the same products. `React-GeneratedCode`
+   declares `.iOS(.v15)`, so the library must declare `.iOS(.v15)` or higher.
+2. Set the React Native defines on each target. SwiftPM mode supports only the
+   New Architecture, and nothing sets `RCT_NEW_ARCH_ENABLED` for a hand-authored
+   manifest. Without it, the preprocessor drops all code behind
    `#ifdef RCT_NEW_ARCH_ENABLED`. Keep those `#ifdef` gates in the sources: the
-   same sources still build under CocoaPods.
-3. Optionally, ship its own generated code. This suits a library that wants to
-   be self-contained. Set `codegenConfig.includesGeneratedCode: true` and
-   generate with
+   same sources still build under CocoaPods. C++ and Objective-C++ sources also
+   need the config-gated `DEBUG` and `NDEBUG` defines that React Native's own
+   targets get. Without `NDEBUG` in Release, the `DebugStringConvertible` vtable
+   and the `ShadowNode` layout differ from the prebuilt React framework, and the
+   link fails. A library with Swift sources sets the define in `swiftSettings`
+   too, as CocoaPods does through `OTHER_SWIFT_FLAGS`:
+
+   ```swift
+   cSettings: [.define("RCT_NEW_ARCH_ENABLED", to: "1")],
+   cxxSettings: [
+       .define("RCT_NEW_ARCH_ENABLED", to: "1"),
+       .define("DEBUG", .when(configuration: .debug)),
+       .define("NDEBUG", .when(configuration: .release)),
+   ],
+   swiftSettings: [.define("RCT_NEW_ARCH_ENABLED")],
+   ```
+
+3. Optionally, ship its own generated code. Set
+   `codegenConfig.includesGeneratedCode: true` and generate with
    `generate-codegen-artifacts.js --path . --targetPlatform ios --source library`.
    The output lands at `<outputDir>/build/generated/ios/ReactCodegen/`. The
    manifest reaches it with one safe `.headerSearchPath(...)` into the library's
@@ -145,8 +160,11 @@ paths reach, `build/xcframeworks` and `build/generated/ios` under the app's
 `ios/` folder, are generated output: `spm` recreates them on each machine, and
 they are gitignored. The paths resolve only when SwiftPM reaches the library
 through its `libs/<SwiftName>` link folder, so the library cannot build on its
-own (for example, `swift build` in its own repository). Libraries depend on this
-layout today, so React Native will not change it without notice.
+own (for example, `swift build` in its own repository). The relative paths
+`../../../ios` and `../../../../xcframeworks` assume the default layout. Two
+options of `generate-spm-autolinking.js` change it: `--output` moves the link
+folder, and `--xcframeworks-path` moves the React Native package. With either
+option set, the hardcoded paths do not resolve.
 
 The normal pattern is rules 1 and 2 alone: the library uses the app's generated
 code from `React-GeneratedCode`. A library that takes rule 3 carries its own

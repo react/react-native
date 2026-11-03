@@ -322,9 +322,11 @@ react: {
 }
 ```
 
-- Today `packageRef` always has the local `path` shape. Handle the
-  `url`+`version` shape too, because remote mode is planned and `context.react`
-  exists so that plugins keep working when it arrives.
+- `packageRef` has the local `path` shape by default. It has the `url`+`version`
+  shape when remote settings are present: `RN_SPM_REMOTE_URL`, or a `url`
+  persisted in `spm-remote.json`. Remote mode is planned, not supported, but
+  plugins must handle both shapes.
+- `context.react` can be `null` (see the table above). Check it before use.
 - `packageRef.path` is **absolute**, so it is correct in any subdirectory of
   `outputDir` the plugin writes its manifest into. The generated manifests are
   gitignored and regenerated every sync, so this has no portability cost.
