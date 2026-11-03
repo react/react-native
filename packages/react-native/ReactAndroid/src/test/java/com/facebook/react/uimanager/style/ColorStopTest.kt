@@ -348,6 +348,26 @@ class ColorStopTest {
   }
 
   @Test
+  fun testInfinitePositionsAreClampedBeforeClipping() {
+    val fixed =
+        ColorStopUtils.getFixedColorStops(
+            listOf(
+                ColorStop(
+                    Color.RED,
+                    LengthPercentage(Float.NEGATIVE_INFINITY, LengthPercentageType.PERCENT),
+                ),
+                ColorStop(Color.BLUE, LengthPercentage(50f, LengthPercentageType.PERCENT)),
+            ),
+            100f,
+        )
+    val clipped = ColorStopUtils.clipColorStops(fixed)
+
+    assertThat(fixed.map { it.position }).allMatch { it != null && it.isFinite() }
+    assertThat(clipped.map { it.color }).containsExactly(Color.BLUE, Color.BLUE)
+    assertThat(clipped.map { it.position }).containsExactly(0f, 0.5f)
+  }
+
+  @Test
   fun testTransitionHintsAreExpandedBeforeClipping() {
     val fixed =
         ColorStopUtils.getFixedColorStops(

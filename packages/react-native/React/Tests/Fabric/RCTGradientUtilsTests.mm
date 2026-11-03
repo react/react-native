@@ -177,6 +177,21 @@ static NSString *describeStops(const std::vector<ProcessedColorStop> &colorStops
   RCTAssertColorStop(clipped[1], rgba(37, 0, 218, 223), 1);
 }
 
+- (void)testInfinitePositionsAreClampedBeforeClipping
+{
+  auto fixed = [RCTGradientUtils
+      getFixedColorStops:{{_red, ValueUnit(-INFINITY, UnitType::Percent)}, {_blue, ValueUnit(50, UnitType::Percent)}}
+      gradientLineLength:100];
+  auto clipped = [self clip:fixed];
+
+  for (const auto &colorStop : fixed) {
+    XCTAssertTrue(std::isfinite(colorStop.position.value_or(NAN)), @"%@", describeStops(fixed));
+  }
+  XCTAssertEqual(clipped.size(), 2, @"%@", describeStops(clipped));
+  RCTAssertColorStop(clipped[0], _blue, 0);
+  RCTAssertColorStop(clipped[1], _blue, 0.5);
+}
+
 - (void)testTransitionHintsAreExpandedBeforeClipping
 {
   auto fixed = [RCTGradientUtils getFixedColorStops:{{_red, ValueUnit(-30, UnitType::Percent)},

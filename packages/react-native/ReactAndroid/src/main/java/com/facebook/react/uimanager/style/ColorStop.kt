@@ -332,6 +332,7 @@ internal object ColorStopUtils {
       return null
     }
 
+    // Like Blink, clamp to finite values so that interpolation never divides infinity by infinity.
     return when (position.type) {
       LengthPercentageType.POINT ->
           if (gradientLineLength > 0f) {
@@ -341,6 +342,6 @@ internal object ColorStopUtils {
           }
 
       LengthPercentageType.PERCENT -> position.resolve(1f)
-    }
+    }.coerceIn(-Float.MAX_VALUE, Float.MAX_VALUE)
   }
 }

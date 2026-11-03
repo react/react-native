@@ -11,6 +11,7 @@
 #import <react/utils/FloatComparison.h>
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <optional>
 #import <vector>
 
@@ -145,14 +146,20 @@ CGSize calculateMultipliers(CGSize bounds)
 
 } // namespace
 
+// Like Blink, clamp to finite values so that interpolation never divides infinity by infinity.
+static Float clampToFinite(Float position)
+{
+  return std::clamp<Float>(position, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+}
+
 static std::optional<Float> resolveColorStopPosition(ValueUnit position, CGFloat gradientLineLength)
 {
   if (position.unit == UnitType::Point) {
-    return gradientLineLength > 0 ? position.resolve(0.0f) / gradientLineLength : 0;
+    return clampToFinite(gradientLineLength > 0 ? position.resolve(0.0f) / gradientLineLength : 0);
   }
 
   if (position.unit == UnitType::Percent) {
-    return position.resolve(1.0f);
+    return clampToFinite(position.resolve(1.0f));
   }
 
   return std::nullopt;
