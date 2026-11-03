@@ -237,14 +237,6 @@ export default function TouchableWithoutFeedback(
     }
   }
 
-  let _accessibilityState = {
-    busy: props['aria-busy'] ?? props.accessibilityState?.busy,
-    checked: props['aria-checked'] ?? props.accessibilityState?.checked,
-    disabled: props['aria-disabled'] ?? props.accessibilityState?.disabled,
-    expanded: props['aria-expanded'] ?? props.accessibilityState?.expanded,
-    selected: props['aria-selected'] ?? props.accessibilityState?.selected,
-  };
-
   // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
   // adopting `Pressability`, so preserve that behavior.
   const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} = eventHandlers;
@@ -252,13 +244,6 @@ export default function TouchableWithoutFeedback(
   const elementProps: {[string]: unknown, ...} = {
     ...eventHandlersWithoutBlurAndFocus,
     accessible: props.accessible !== false,
-    accessibilityState:
-      props.disabled != null
-        ? {
-            ..._accessibilityState,
-            disabled: props.disabled,
-          }
-        : _accessibilityState,
     focusable:
       props.focusable !== false &&
       props.onPress !== undefined &&
@@ -274,6 +259,27 @@ export default function TouchableWithoutFeedback(
       ariaLive === 'off' ? 'none' : (ariaLive ?? props.accessibilityLiveRegion),
     nativeID: props.id ?? props.nativeID,
   };
+
+  if (
+    props.accessibilityState != null ||
+    props['aria-busy'] != null ||
+    props['aria-checked'] != null ||
+    props['aria-disabled'] != null ||
+    props['aria-expanded'] != null ||
+    props['aria-selected'] != null ||
+    props.disabled != null
+  ) {
+    elementProps.accessibilityState = {
+      busy: props['aria-busy'] ?? props.accessibilityState?.busy,
+      checked: props['aria-checked'] ?? props.accessibilityState?.checked,
+      disabled:
+        props.disabled ??
+        props['aria-disabled'] ??
+        props.accessibilityState?.disabled,
+      expanded: props['aria-expanded'] ?? props.accessibilityState?.expanded,
+      selected: props['aria-selected'] ?? props.accessibilityState?.selected,
+    };
+  }
 
   for (const prop of PASSTHROUGH_PROPS) {
     if (props[prop] !== undefined) {

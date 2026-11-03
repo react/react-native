@@ -235,7 +235,7 @@ function Pressable({
     style,
     testOnly_pressed,
     unstable_pressDelay,
-    ...restProps
+    ...otherProps
   } = props;
 
   const viewRef = useRef<PressableInstance | null>(null);
@@ -248,17 +248,6 @@ function Pressable({
   const shouldUpdatePressed =
     typeof children === 'function' || typeof style === 'function';
 
-  let _accessibilityState = {
-    busy: ariaBusy ?? accessibilityState?.busy,
-    checked: ariaChecked ?? accessibilityState?.checked,
-    disabled: ariaDisabled ?? accessibilityState?.disabled,
-    expanded: ariaExpanded ?? accessibilityState?.expanded,
-    selected: ariaSelected ?? accessibilityState?.selected,
-  };
-
-  _accessibilityState =
-    disabled != null ? {..._accessibilityState, disabled} : _accessibilityState;
-
   const accessibilityValue = {
     max: props['aria-valuemax'] ?? props.accessibilityValue?.max,
     min: props['aria-valuemin'] ?? props.accessibilityValue?.min,
@@ -270,19 +259,35 @@ function Pressable({
     ariaLive === 'off' ? 'none' : (ariaLive ?? props.accessibilityLiveRegion);
 
   const accessibilityLabel = ariaLabel ?? props.accessibilityLabel;
-  const restPropsWithDefaults: React.ComponentProps<typeof View> = {
-    ...restProps,
+  const restProps: {...React.ComponentProps<typeof View>} = {
+    ...otherProps,
     ...android_rippleConfig?.viewProps,
     accessible: accessible !== false,
     accessibilityViewIsModal:
-      restProps['aria-modal'] ?? restProps.accessibilityViewIsModal,
+      otherProps['aria-modal'] ?? otherProps.accessibilityViewIsModal,
     accessibilityLiveRegion,
     accessibilityLabel,
-    accessibilityState: _accessibilityState,
     focusable: focusable !== false,
     accessibilityValue,
     hitSlop,
   };
+  if (
+    accessibilityState != null ||
+    ariaBusy != null ||
+    ariaChecked != null ||
+    ariaDisabled != null ||
+    ariaExpanded != null ||
+    ariaSelected != null ||
+    disabled != null
+  ) {
+    restProps.accessibilityState = {
+      busy: ariaBusy ?? accessibilityState?.busy,
+      checked: ariaChecked ?? accessibilityState?.checked,
+      disabled: disabled ?? ariaDisabled ?? accessibilityState?.disabled,
+      expanded: ariaExpanded ?? accessibilityState?.expanded,
+      selected: ariaSelected ?? accessibilityState?.selected,
+    };
+  }
 
   const config = useMemo(
     () => ({
@@ -357,7 +362,7 @@ function Pressable({
 
   return (
     <View
-      {...restPropsWithDefaults}
+      {...restProps}
       {...eventHandlers}
       ref={mergedRef}
       style={typeof style === 'function' ? style({pressed}) : style}
