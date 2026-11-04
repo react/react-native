@@ -31,8 +31,8 @@ function didAllAssertionsPass(
 function constructAsyncTestHook(
   addTestResult: (newResult: PlatformTestResult) => void,
   updateAsyncTestStatuses: (
-    (
-      Readonly<{[string]: AsyncTestStatus}>,
+    v: (
+      v: Readonly<{[string]: AsyncTestStatus}>,
     ) => Readonly<{[string]: AsyncTestStatus}>,
   ) => void,
   runTestCase: (

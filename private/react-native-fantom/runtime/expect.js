@@ -600,6 +600,7 @@ Expect.prototype.lastCalledWith = Expect.prototype.toHaveBeenLastCalledWith;
  * unsoundness in flow */
 Expect.prototype.nthCalledWith = Expect.prototype.toHaveBeenNthCalledWith;
 
-const expect: unknown => Expect = (received: unknown) => new Expect(received);
+const expect: (v: unknown) => Expect = (received: unknown) =>
+  new Expect(received);
 
 export default expect;

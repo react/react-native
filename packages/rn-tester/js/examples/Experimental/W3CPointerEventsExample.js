@@ -32,7 +32,7 @@ import * as React from 'react';
 import {useState} from 'react';
 import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
 
-function AbsoluteChildExample({log}: {log: string => void}) {
+function AbsoluteChildExample({log}: {log: (v: string) => void}) {
   return (
     <View style={styles.absoluteExampleContainer}>
       <EventfulView
@@ -58,7 +58,7 @@ function AbsoluteChildExample({log}: {log: string => void}) {
   );
 }
 
-function RelativeChildExample({log}: {log: string => void}) {
+function RelativeChildExample({log}: {log: (v: string) => void}) {
   return (
     <>
       <EventfulView
@@ -104,7 +104,7 @@ function RelativeChildExample({log}: {log: string => void}) {
 function PointerEventScaffolding({
   Example,
 }: {
-  Example: component(log: (string) => void),
+  Example: component(log: (v: string) => void),
 }) {
   const [eventsLog, setEventsLog] = useState('');
   const clear = () => setEventsLog('');

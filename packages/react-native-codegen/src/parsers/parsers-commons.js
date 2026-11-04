@@ -649,7 +649,7 @@ function buildSchema(
     parser: Parser,
     translateTypeAnnotation: $FlowFixMe,
   ) => NativeModuleSchema,
-  Visitor: ({isComponent: boolean, isModule: boolean}) => {
+  Visitor: (v: {isComponent: boolean, isModule: boolean}) => {
     [type: string]: (node: $FlowFixMe) => void,
   },
   parser: Parser,

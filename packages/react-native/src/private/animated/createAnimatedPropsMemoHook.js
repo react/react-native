@@ -48,7 +48,7 @@ type $ReadOnlyCompositeKeyComponent =
   | Readonly<{[string]: $ReadOnlyCompositeKeyComponent}>;
 
 type AnimatedPropsMemoHook = (
-  () => AnimatedProps,
+  v0: () => AnimatedProps,
   props: Readonly<{[string]: unknown}>,
 ) => AnimatedProps;
 

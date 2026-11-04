@@ -95,8 +95,8 @@ declare type $HermesInternalType = {
     options: ?{
       whitelist?: ?Array<unknown>,
       allRejections?: ?boolean,
-      onUnhandled?: ?(number, unknown) => void,
-      onHandled?: ?(number, unknown) => void,
+      onUnhandled?: ?(v0: number, v1: unknown) => void,
+      onHandled?: ?(v0: number, v1: unknown) => void,
     },
   ) => void,
 

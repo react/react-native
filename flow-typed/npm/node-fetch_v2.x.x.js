@@ -60,7 +60,8 @@ declare module 'node-fetch' {
     signal?: AbortSignal | null,
 
     // node-fetch extensions
-    agent?: (URL => http.Agent | https.Agent) | http.Agent | https.Agent | null,
+    agent?:
+      ((v: URL) => http.Agent | https.Agent) | http.Agent | https.Agent | null,
     compress?: boolean,
     follow?: number,
     size?: number,

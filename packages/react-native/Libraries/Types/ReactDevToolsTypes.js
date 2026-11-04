@@ -36,7 +36,7 @@ export type ReactDevToolsAgent = {
   stopInspectingNative(value: boolean): void,
   addListener<Event extends keyof ReactDevToolsAgentEvents>(
     event: Event,
-    listener: (...ReactDevToolsAgentEvents[Event]) => void,
+    listener: (...rest: ReactDevToolsAgentEvents[Event]) => void,
   ): void,
   removeListener(
     event: keyof ReactDevToolsAgentEvents,
@@ -45,8 +45,8 @@ export type ReactDevToolsAgent = {
 };
 
 export type ReactDevToolsGlobalHook = {
-  on: (eventName: string, (agent: ReactDevToolsAgent) => void) => void,
-  off: (eventName: string, (agent: ReactDevToolsAgent) => void) => void,
+  on: (eventName: string, v1: (agent: ReactDevToolsAgent) => void) => void,
+  off: (eventName: string, v1: (agent: ReactDevToolsAgent) => void) => void,
   reactDevtoolsAgent?: ReactDevToolsAgent,
   resolveRNStyle?: unknown,
   nativeStyleEditorValidAttributes?: Array<string>,

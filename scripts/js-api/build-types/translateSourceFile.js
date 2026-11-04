@@ -17,7 +17,7 @@ const applyBabelTransformsSeq = require('./utils/applyBabelTransformsSeq');
 const translate = require('flow-api-translator');
 const {parse, print} = require('flow-transform');
 
-type PreTransformFn = ParseResult => Promise<TransformASTResult>;
+type PreTransformFn = (v: ParseResult) => Promise<TransformASTResult>;
 
 const preTransforms: Array<PreTransformFn> = [
   require('./transforms/flow/stripPrivateProperties'),
