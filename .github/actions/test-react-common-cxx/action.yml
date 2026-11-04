@@ -1,0 +1,45 @@
+name: Test ReactCommon C++
+inputs:
+  gradle-cache-encryption-key:
+    description: 'The encryption key needed to store the Gradle Configuration cache'
+
+runs:
+  using: composite
+  steps:
+    # The tests use C++20 features newer than the image's clang 14, such as
+    # std::source_location and parenthesised aggregate initialisation.
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y git cmake openssl libssl-dev curl gnupg
+        codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+        curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
+        echo "deb http://apt.llvm.org/$codename/ llvm-toolchain-$codename-18 main" | sudo tee /etc/apt/sources.list.d/llvm-18.list
+        sudo apt update
+        sudo apt install -y clang-18
+    - name: Setup git safe folders
+      shell: bash
+      run: git config --global --add safe.directory '*'
+    - name: Setup node.js
+      uses: ./.github/actions/setup-node
+    - name: Install node dependencies
+      uses: ./.github/actions/yarn-install
+    - name: Setup gradle
+      uses: ./.github/actions/setup-gradle
+      with:
+        cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
+    - name: Run ReactCommon C++ tests
+      shell: bash
+      run: ./gradlew :private:react-native-fantom:testReactCommon
+      env:
+        CC: clang-18
+        CXX: clang++-18
+    - name: Upload test results
+      if: ${{ always() }}
+      uses: ./.github/actions/upload-artifact
+      with:
+        name: test-react-common-cxx-results
+        compression-level: 1
+        if-no-files-found: ignore
+        path: private/react-native-fantom/build/reports
