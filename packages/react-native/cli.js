@@ -14,6 +14,10 @@
 // $FlowFixMe[untyped-import]
 const {name} = require('./package.json');
 const {styleText} = require('node:util');
+const {satisfies} = require('semver');
+
+const COMMUNITY_CLI_PACKAGE = '@react-native-community/cli';
+const COMMUNITY_CLI_RANGE = '>=21.0.0-alpha.1';
 
 const deprecated = () => {
   throw new Error(
@@ -21,12 +25,16 @@ const deprecated = () => {
   );
 };
 
-function findCommunityCli(startDir /*: string */ = process.cwd()) {
+function resolveFromProject(request /*: string */) {
   // With isolated node_modules (eg pnpm), we won't be able to find
   // `@react-native-community/cli` starting from the `react-native` directory.
   // Instead, we should use the project root, which we assume to be the cwd.
-  const options /*: {paths?: Array<string>, ...} */ = {paths: [startDir]};
-  const rncli = require.resolve('@react-native-community/cli', options);
+  const options /*: {paths?: Array<string>, ...} */ = {paths: [process.cwd()]};
+  return require.resolve(request, options);
+}
+
+function findCommunityCli() {
+  const rncli = resolveFromProject(COMMUNITY_CLI_PACKAGE);
   // $FlowFixMe[unsupported-syntax]
   return require(rncli);
 }
@@ -49,14 +57,14 @@ let cli /*: Readonly<{
   run: deprecated,
 };
 
-function warnWithExplicitDependency(version /*: string */ = '*') {
+function warnWithExplicitDependency(message /*: string */) {
   console.warn(`
-${styleText('yellow', '⚠')}️ ${styleText(['dim'], 'react-native')} depends on ${styleText('dim', '@react-native-community/cli')} for cli commands. To fix update your ${styleText(['dim'], 'package.json')} to include:
+${styleText('yellow', '⚠')}️ ${message} Update your ${styleText(['dim'], 'package.json')} to include:
 
 ${styleText(
   ['white', 'bold'],
   `  "devDependencies": {
-    "@react-native-community/cli": "latest",
+    "${COMMUNITY_CLI_PACKAGE}": "${COMMUNITY_CLI_RANGE}"
   }
 `,
 )}
@@ -66,10 +74,23 @@ ${styleText(
 
 function main() {
   try {
-    return findCommunityCli().run(name);
+    const communityCli = findCommunityCli();
+    const manifestPath = resolveFromProject(
+      `${COMMUNITY_CLI_PACKAGE}/package.json`,
+    );
+    // $FlowFixMe[unsupported-syntax]
+    const {version} = require(manifestPath);
+    if (!satisfies(version, COMMUNITY_CLI_RANGE, {includePrerelease: true})) {
+      warnWithExplicitDependency(
+        `react-native found ${COMMUNITY_CLI_PACKAGE}@${version}, but requires ${COMMUNITY_CLI_RANGE} for CLI commands.`,
+      );
+    }
+    return communityCli.run(name);
   } catch (e) {
     if (isMissingCliDependency(e)) {
-      warnWithExplicitDependency();
+      warnWithExplicitDependency(
+        `react-native depends on ${COMMUNITY_CLI_PACKAGE} for CLI commands.`,
+      );
       process.exit(1);
     }
     throw e;

@@ -44,7 +44,7 @@
     "metro-resolver": "^0.87.2"
   },
   "peerDependencies": {
-    "@react-native-community/cli": ">=21.0.0-0",
+    "@react-native-community/cli": "*",
     "@react-native/metro-config": "0.87.0-main"
   },
   "peerDependenciesMeta": {
