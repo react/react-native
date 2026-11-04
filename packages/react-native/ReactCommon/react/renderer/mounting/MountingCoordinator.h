@@ -110,6 +110,7 @@ class MountingCoordinator final {
    */
  private:
   friend class ShadowTree;
+  friend class MountingCoordinatorTest;
 
   void push(ShadowTreeRevision revision) const;
 
