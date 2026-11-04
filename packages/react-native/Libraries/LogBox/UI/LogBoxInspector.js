@@ -8,8 +8,12 @@
  * @format
  */
 
+import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
+import type {SafeAreaInsetsChangeEvent} from '../../Types/CoreEventTypes';
+
 import Keyboard from '../../Components/Keyboard/Keyboard';
 import View from '../../Components/View/View';
+import I18nManager from '../../ReactNative/I18nManager';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import BackHandler from '../../Utilities/BackHandler';
 import * as LogBoxData from '../Data/LogBoxData';
@@ -19,7 +23,7 @@ import LogBoxInspectorFooter from './LogBoxInspectorFooter';
 import LogBoxInspectorHeader from './LogBoxInspectorHeader';
 import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
-import {useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 type Props = Readonly<{
   onDismiss: () => void,
@@ -55,6 +59,21 @@ export default function LogBoxInspector(props: Props): React.Node {
   useEffect(() => {
     Keyboard.dismiss();
   }, []);
+
+  const [safeAreaPadding, setSafeAreaPadding] = useState<?ViewStyleProp>(null);
+  const handleSafeAreaInsetsChange = useCallback(
+    (event: SafeAreaInsetsChangeEvent) => {
+      const {left, right} = event.nativeEvent.insets;
+      // Insets are physical edges; undo the left/right swap Yoga applies in RTL.
+      const {isRTL, doLeftAndRightSwapInRTL} = I18nManager.getConstants();
+      const swap = isRTL && doLeftAndRightSwapInRTL;
+      setSafeAreaPadding({
+        paddingLeft: swap ? right : left,
+        paddingRight: swap ? left : right,
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     if (log == null) {
@@ -123,14 +142,21 @@ export default function LogBoxInspector(props: Props): React.Node {
   }
 
   return (
-    <View id="logbox_inspector" style={styles.root}>
+    <View
+      id="logbox_inspector"
+      style={styles.root}
+      experimental_onSafeAreaInsetsChange={handleSafeAreaInsetsChange}>
       <LogBoxInspectorHeader
         onSelectIndex={props.onChangeSelectedIndex}
         selectedIndex={selectedIndex}
         total={logs.length}
         level={log.level}
       />
-      <LogBoxInspectorBody log={log} onRetry={_handleRetry} />
+      <LogBoxInspectorBody
+        log={log}
+        onRetry={_handleRetry}
+        safeAreaPadding={safeAreaPadding}
+      />
       <LogBoxInspectorFooter
         onDismiss={props.onDismiss}
         onMinimize={props.onMinimize}

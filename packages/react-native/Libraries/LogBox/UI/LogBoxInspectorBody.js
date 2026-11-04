@@ -8,7 +8,10 @@
  * @format
  */
 
+import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
+
 import ScrollView from '../../Components/ScrollView/ScrollView';
+import View from '../../Components/View/View';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import LogBoxLog from '../Data/LogBoxLog';
 import LogBoxInspectorCodeFrame from './LogBoxInspectorCodeFrame';
@@ -30,6 +33,7 @@ const headerTitleMap = {
 export default function LogBoxInspectorBody(props: {
   log: LogBoxLog,
   onRetry: () => void,
+  safeAreaPadding?: ?ViewStyleProp,
 }): React.Node {
   const [collapsed, setCollapsed] = useState(true);
 
@@ -50,14 +54,20 @@ export default function LogBoxInspectorBody(props: {
           message={props.log.message}
           level={props.log.level}
           title={headerTitle}
+          style={props.safeAreaPadding}
         />
         <ScrollView style={styles.scrollBody}>
-          <LogBoxInspectorCodeFrame
-            codeFrame={props.log.codeFrame}
-            componentCodeFrame={props.log.componentCodeFrame}
-          />
-          <LogBoxInspectorReactFrames log={props.log} />
-          <LogBoxInspectorStackFrames log={props.log} onRetry={props.onRetry} />
+          <View style={props.safeAreaPadding}>
+            <LogBoxInspectorCodeFrame
+              codeFrame={props.log.codeFrame}
+              componentCodeFrame={props.log.componentCodeFrame}
+            />
+            <LogBoxInspectorReactFrames log={props.log} />
+            <LogBoxInspectorStackFrames
+              log={props.log}
+              onRetry={props.onRetry}
+            />
+          </View>
         </ScrollView>
       </>
     );
@@ -70,13 +80,16 @@ export default function LogBoxInspectorBody(props: {
         message={props.log.message}
         level={props.log.level}
         title={headerTitle}
+        style={props.safeAreaPadding}
       />
-      <LogBoxInspectorCodeFrame
-        codeFrame={props.log.codeFrame}
-        componentCodeFrame={props.log.componentCodeFrame}
-      />
-      <LogBoxInspectorReactFrames log={props.log} />
-      <LogBoxInspectorStackFrames log={props.log} onRetry={props.onRetry} />
+      <View style={props.safeAreaPadding}>
+        <LogBoxInspectorCodeFrame
+          codeFrame={props.log.codeFrame}
+          componentCodeFrame={props.log.componentCodeFrame}
+        />
+        <LogBoxInspectorReactFrames log={props.log} />
+        <LogBoxInspectorStackFrames log={props.log} onRetry={props.onRetry} />
+      </View>
     </ScrollView>
   );
 }
