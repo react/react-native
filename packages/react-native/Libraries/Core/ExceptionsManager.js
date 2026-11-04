@@ -163,6 +163,7 @@ function handleException(e: unknown, isFatal: boolean) {
       // Unfortunately there is no way to figure out the stacktrace in this
       // case, so if you ended up here trying to trace an error, look for
       // `throw '<error message>'` somewhere in your codebase.
+      // $FlowFixMe[incompatible-type]
       error = new SyntheticError(e);
     }
     try {
