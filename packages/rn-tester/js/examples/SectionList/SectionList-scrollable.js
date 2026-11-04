@@ -205,7 +205,7 @@ export component SectionList_scrollable() {
   }
 
   const setItemPress = (item: Item) => {
-    if (isNaN(item.key)) {
+    if (isNaN(Number(item.key))) {
       return;
     }
     const index = Number(item.key);

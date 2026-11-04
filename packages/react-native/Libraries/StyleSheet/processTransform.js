@@ -152,7 +152,7 @@ const _getKeyAndValueFromCSSTransform: (
       };
 
     default:
-      return {key, value: !isNaN(args) ? Number(args) : args};
+      return {key, value: !isNaN(Number(args)) ? Number(args) : args};
   }
 };
 
