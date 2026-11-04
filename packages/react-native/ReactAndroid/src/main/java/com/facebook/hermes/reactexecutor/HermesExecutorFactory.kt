@@ -25,7 +25,17 @@ public class HermesExecutorFactory : JavaScriptExecutorFactory {
     this.debuggerName = debuggerName
   }
 
-  override fun create(): JavaScriptExecutor = HermesExecutor(enableDebugger, debuggerName)
+  /**
+   * Compatibility factory for the unsupported legacy Hermes executor.
+   *
+   * @throws UnsupportedOperationException when creating an executor; use the New Architecture
+   *   runtime instead.
+   */
+  override fun create(): JavaScriptExecutor {
+    throw UnsupportedOperationException(
+        "HermesExecutorFactory is no longer supported. Use the New Architecture runtime instead.",
+    )
+  }
 
   override fun startSamplingProfiler() {
     enable()
