@@ -48,14 +48,14 @@ function cleanupEntry(name: string, key: ?string): RegistryEntry {
 }
 
 function mockEffectRegistry(): {
-  mockEffect: string => React.RefSetter<HostInstance>,
-  mockEffectThatThrows: string => React.RefSetter<HostInstance>,
-  mockEffectWithoutCleanup: string => React.RefSetter<HostInstance>,
+  mockEffect: (v: string) => React.RefSetter<HostInstance>,
+  mockEffectThatThrows: (v: string) => React.RefSetter<HostInstance>,
+  mockEffectWithoutCleanup: (v: string) => React.RefSetter<HostInstance>,
   registry: Array<RegistryEntry>,
 } {
   const registry: Array<RegistryEntry> = [];
   return {
-    mockEffect(name: string): (?HostInstance) => () => void {
+    mockEffect(name: string): (v: ?HostInstance) => () => void {
       return instance => {
         const key = keyOf(instance);
         registry.push(effectEntry(name, key));
@@ -64,7 +64,7 @@ function mockEffectRegistry(): {
         };
       };
     },
-    mockEffectThatThrows(name: string): (?HostInstance) => void {
+    mockEffectThatThrows(name: string): (v: ?HostInstance) => void {
       return instance => {
         const key = keyOf(instance);
         registry.push(effectEntry(name, key));
@@ -73,7 +73,7 @@ function mockEffectRegistry(): {
         }
       };
     },
-    mockEffectWithoutCleanup(name: string): (?HostInstance) => void {
+    mockEffectWithoutCleanup(name: string): (v: ?HostInstance) => void {
       return instance => {
         const key = keyOf(instance);
         registry.push(effectEntry(name, key));

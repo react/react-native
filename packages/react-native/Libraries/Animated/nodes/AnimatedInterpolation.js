@@ -469,7 +469,7 @@ export default class AnimatedInterpolation<
     }
   }
 
-  _getInterpolation(): number => OutputT {
+  _getInterpolation(): (v: number) => OutputT {
     if (!this._interpolation) {
       const config = this._config;
       if (config.outputRange && typeof config.outputRange[0] === 'string') {

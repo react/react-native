@@ -29,7 +29,9 @@ import {useMemo} from 'react';
 
 type Nullable = void | null;
 type Primitive = string | number | boolean | symbol | void;
-type Builtin = (...ReadonlyArray<empty>) => unknown | Date | Error | RegExp;
+type Builtin = (
+  ...rest: ReadonlyArray<empty>
+) => unknown | Date | Error | RegExp;
 type ComponentProps<T> =
   T extends React.ComponentType<infer Props> ? Props : empty;
 

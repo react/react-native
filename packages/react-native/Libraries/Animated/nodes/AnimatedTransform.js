@@ -176,7 +176,7 @@ export default class AnimatedTransform extends AnimatedWithChildren {
 
 function mapTransforms<T>(
   transforms: ReadonlyArray<Transform<>>,
-  mapFunction: AnimatedNode => T,
+  mapFunction: (v: AnimatedNode) => T,
 ): ReadonlyArray<Transform<T>> {
   return transforms.map(transform => {
     const result: Transform<T> = {};

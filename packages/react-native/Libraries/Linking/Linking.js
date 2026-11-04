@@ -31,7 +31,7 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
    */
   addEventListener<K extends keyof LinkingEventDefinitions>(
     eventType: K,
-    listener: (...LinkingEventDefinitions[K]) => unknown,
+    listener: (...rest: LinkingEventDefinitions[K]) => unknown,
   ): EventSubscription {
     return this.addListener(eventType, listener);
   }

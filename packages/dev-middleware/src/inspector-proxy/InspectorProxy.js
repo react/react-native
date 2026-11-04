@@ -205,7 +205,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
   processRequest(
     request: IncomingMessage,
     response: ServerResponse,
-    next: (?Error) => unknown,
+    next: (v: ?Error) => unknown,
   ) {
     const pathname = new URL(request.url, 'http://example.com').pathname;
     if (

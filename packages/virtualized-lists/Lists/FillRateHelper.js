@@ -31,7 +31,7 @@ class Info {
 
 const DEBUG = false;
 
-let _listeners: Array<(Info) => void> = [];
+let _listeners: Array<(v: Info) => void> = [];
 let _minSampleCount = 10;
 /* $FlowFixMe[constant-condition] Error discovered during Constant Condition
  * roll out. See https://fburl.com/workplace/1v97vimq. */
@@ -53,7 +53,7 @@ class FillRateHelper {
   _mostlyBlankStartTime: ?number = null;
   _samplesStartTime: ?number = null;
 
-  static addListener(callback: FillRateInfo => void): {
+  static addListener(callback: (v: FillRateInfo) => void): {
     remove: () => void,
     ...
   } {

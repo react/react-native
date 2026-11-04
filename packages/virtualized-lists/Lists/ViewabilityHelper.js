@@ -185,7 +185,7 @@ class ViewabilityHelper {
       isViewable: boolean,
       props: CellMetricProps,
     ) => ViewToken,
-    onViewableItemsChanged: ({
+    onViewableItemsChanged: (v: {
       viewableItems: Array<ViewToken>,
       changed: Array<ViewToken>,
       ...
@@ -290,7 +290,7 @@ class ViewabilityHelper {
   _onUpdateSync(
     props: CellMetricProps,
     viewableIndicesToCheck: Array<number>,
-    onViewableItemsChanged: ({
+    onViewableItemsChanged: (v: {
       changed: Array<ViewToken>,
       viewableItems: Array<ViewToken>,
       ...

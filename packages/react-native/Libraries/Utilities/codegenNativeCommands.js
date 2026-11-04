@@ -17,7 +17,7 @@ type NativeCommandsOptions<T = string> = Readonly<{
 }>;
 
 declare function castCommandObject<T extends interface {}>(commandObj: {
-  [keyof T]: (...ReadonlyArray<unknown>) => void,
+  [keyof T]: (...rest: ReadonlyArray<unknown>) => void,
 }): T;
 function castCommandObject(commandObj: interface {}) {
   return commandObj;
@@ -26,7 +26,7 @@ function castCommandObject(commandObj: interface {}) {
 function codegenNativeCommands<T extends interface {}>(
   options: NativeCommandsOptions<keyof T & string>,
 ): T {
-  const commandObj: {[keyof T]: (...ReadonlyArray<unknown>) => void} = {};
+  const commandObj: {[keyof T]: (...rest: ReadonlyArray<unknown>) => void} = {};
 
   options.supportedCommands.forEach(command => {
     commandObj[command] = (

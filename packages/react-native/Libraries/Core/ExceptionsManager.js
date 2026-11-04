@@ -17,7 +17,7 @@ export class SyntheticError extends Error {
   name: string = '';
 }
 
-type ExceptionDecorator = ExceptionData => ExceptionData;
+type ExceptionDecorator = (v: ExceptionData) => ExceptionData;
 
 let userExceptionDecorator: ?ExceptionDecorator;
 let inUserExceptionDecorator = false;
