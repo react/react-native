@@ -51,8 +51,6 @@ target_link_libraries(
         rrc_legacyviewmanagerinterop
         react_utils
         reactnativejni
-        rrc_image
-        rrc_modal
         rrc_root
         rrc_scrollview
         rrc_unimplementedview
