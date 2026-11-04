@@ -206,13 +206,13 @@ function printTouchBank(): string {
   return printed;
 }
 
-let instrumentationCallback: ?(string, TouchEvent) => void;
+let instrumentationCallback: ?(v0: string, v1: TouchEvent) => void;
 
 const ResponderTouchHistoryStore = {
   /**
    * Registers a listener which can be used to instrument every touch event.
    */
-  instrument(callback: (string, TouchEvent) => void): void {
+  instrument(callback: (v0: string, v1: TouchEvent) => void): void {
     instrumentationCallback = callback;
   },
 

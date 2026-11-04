@@ -245,13 +245,13 @@ export function mkEvent(id: string, eventName: EventName): EventOccurrence {
 
 export type EventTrackerProps = Readonly<{
   eventsRef?: {current: Array<EventOccurrence>},
-  onAnyEvent?: (EventOccurrence, PointerEvent) => void,
+  onAnyEvent?: (v0: EventOccurrence, v1: PointerEvent) => void,
   eventsToTrack: Array<EventName>,
   id: string,
   ...ViewProps,
 }>;
 
-type HandlerFunction = PointerEvent => void;
+type HandlerFunction = (v: PointerEvent) => void;
 
 export function EventTracker(props: EventTrackerProps): React.MixedElement {
   const {eventsToTrack, eventsRef, id, style, onAnyEvent, ...viewProps} = props;

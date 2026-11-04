@@ -33,7 +33,7 @@ export default function EventfulView(props: {
   onMoveCapture?: boolean,
   onCancel?: boolean,
   onCancelCapture?: boolean,
-  log: string => void,
+  log: (v: string) => void,
   ...ViewProps,
 }): React.Node {
   const ref = useRef<?React.ElementRef<typeof View>>();

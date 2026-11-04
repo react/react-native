@@ -119,8 +119,8 @@ declare class DOMStringList {
   @@iterator(): Iterator<string>;
   readonly [key: number]: string;
   readonly length: number;
-  item(number): string | null;
-  contains(string): boolean;
+  item(v: number): string | null;
+  contains(v: string): boolean;
 }
 
 declare class DOMError {

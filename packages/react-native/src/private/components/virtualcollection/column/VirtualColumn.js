@@ -32,7 +32,7 @@ component VirtualColumnLayout(
 const VirtualColumn: component<out TItem extends Item>(
   children: (item: TItem, key: string) => React.Node,
   items: VirtualCollection<TItem>,
-  itemToKey?: (TItem) => string,
+  itemToKey?: (v: TItem) => string,
   removeClippedSubviews?: boolean,
   testID?: ?string,
 ) = createVirtualCollectionView(VirtualColumnLayout, VirtualColumnGenerator);

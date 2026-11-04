@@ -12,7 +12,7 @@
 let _inGuard = 0;
 
 type ErrorHandler = (error: unknown, isFatal: boolean) => void;
-type Fn<Args, Return> = (...Args) => Return;
+type Fn<Args, Return> = (...rest: Args) => Return;
 
 /**
  * This is the error handler that is called when we encounter an exception
@@ -98,7 +98,7 @@ const ErrorUtils = {
     fun: Fn<TArgs, TOut>,
     name?: ?string,
     context?: ?unknown,
-  ): ?(...TArgs) => ?TOut {
+  ): ?(...rest: TArgs) => ?TOut {
     // TODO: (moti) T48204753 Make sure this warning is never hit and remove it - types
     // should be sufficient.
     if (typeof fun !== 'function') {

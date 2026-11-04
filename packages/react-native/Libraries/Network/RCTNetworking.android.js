@@ -51,7 +51,7 @@ const emitter = new NativeEventEmitter<RCTNetworkingEventDefinitions>(
 const RCTNetworking = {
   addListener<K extends keyof RCTNetworkingEventDefinitions>(
     eventType: K,
-    listener: (...RCTNetworkingEventDefinitions[K]) => unknown,
+    listener: (...rest: RCTNetworkingEventDefinitions[K]) => unknown,
     context?: unknown,
   ): EventSubscription {
     return emitter.addListener(eventType, listener, context);
