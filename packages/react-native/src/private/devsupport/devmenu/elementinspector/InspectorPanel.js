@@ -33,7 +33,7 @@ type Props = Readonly<{
   setTouchTargeting: (val: boolean) => void,
   hierarchy?: ?ElementsHierarchy,
   selection?: ?number,
-  setSelection: number => unknown,
+  setSelection: (v: number) => unknown,
   inspected?: ?InspectedElement,
 }>;
 

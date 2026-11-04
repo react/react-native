@@ -368,7 +368,7 @@ function Pressable({
   );
 }
 
-function usePressState(forcePressed: boolean): [boolean, (boolean) => void] {
+function usePressState(forcePressed: boolean): [boolean, (v: boolean) => void] {
   const [pressed, setPressed] = useState(false);
   return [pressed || forcePressed, setPressed];
 }

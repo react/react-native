@@ -48,7 +48,7 @@ const TextInputForm = () => {
   );
 };
 
-const CloseButton = (props: {setModalOpen: boolean => void}) => {
+const CloseButton = (props: {setModalOpen: (v: boolean) => void}) => {
   return (
     <Pressable
       onPress={() => props.setModalOpen(false)}
@@ -74,7 +74,7 @@ const BEHAVIOR_DESCRIPTIONS: {[KeyboardAvoidingBehavior]: string} = {
 
 const BehaviorPicker = (props: {
   behavior: KeyboardAvoidingBehavior,
-  setBehavior: KeyboardAvoidingBehavior => void,
+  setBehavior: (v: KeyboardAvoidingBehavior) => void,
 }) => {
   return (
     <View>

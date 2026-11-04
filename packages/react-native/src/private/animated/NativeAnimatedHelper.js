@@ -119,7 +119,7 @@ function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
     methodNames.push('connectAnimatedNodeToShadowNodeFamily');
   }
   const nativeOperations: {
-    [Values<typeof methodNames>]: (...ReadonlyArray<unknown>) => void,
+    [Values<typeof methodNames>]: (...rest: ReadonlyArray<unknown>) => void,
   } = {};
   if (isSingleOpBatching) {
     for (let ii = 0, length = methodNames.length; ii < length; ii++) {

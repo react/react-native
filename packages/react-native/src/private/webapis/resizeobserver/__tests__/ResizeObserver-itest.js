@@ -2050,7 +2050,7 @@ describe('ResizeObserver', () => {
   describe('state updates scheduled from callbacks', () => {
     it('should process a state update scheduled from a callback in a separate task, after the callback returns', () => {
       const nodeRef = createRef<HostInstance>();
-      const setWidthRef: {current: ?(number) => void} = {current: null};
+      const setWidthRef: {current: ?(v: number) => void} = {current: null};
       const events: Array<string> = [];
       const root = Fantom.createRoot();
 
@@ -2102,7 +2102,7 @@ describe('ResizeObserver', () => {
     // about. This is the gap that prevents same-frame reactions.
     it('should not apply a state update before the callback that scheduled it returns', () => {
       const nodeRef = createRef<HostInstance>();
-      const setWidthRef: {current: ?(number) => void} = {current: null};
+      const setWidthRef: {current: ?(v: number) => void} = {current: null};
       const root = Fantom.createRoot();
       let widthMeasuredAfterSetState = -1;
 
@@ -2137,10 +2137,11 @@ describe('ResizeObserver', () => {
     // calls produce one re-render and therefore one follow-up observation.
     it('should batch multiple state updates from a single callback into one re-render', () => {
       const nodeRef = createRef<HostInstance>();
-      const setSizeRef: {current: ?({width: number, height: number}) => void} =
-        {
-          current: null,
-        };
+      const setSizeRef: {
+        current: ?(v: {width: number, height: number}) => void,
+      } = {
+        current: null,
+      };
       const root = Fantom.createRoot();
       let renderCount = 0;
 
@@ -2188,8 +2189,8 @@ describe('ResizeObserver', () => {
     it('should batch state updates scheduled from different observer callbacks', () => {
       const nodeARef = createRef<HostInstance>();
       const nodeBRef = createRef<HostInstance>();
-      const setWidthARef: {current: ?(number) => void} = {current: null};
-      const setWidthBRef: {current: ?(number) => void} = {current: null};
+      const setWidthARef: {current: ?(v: number) => void} = {current: null};
+      const setWidthBRef: {current: ?(v: number) => void} = {current: null};
       const root = Fantom.createRoot();
       let renderCount = 0;
 
