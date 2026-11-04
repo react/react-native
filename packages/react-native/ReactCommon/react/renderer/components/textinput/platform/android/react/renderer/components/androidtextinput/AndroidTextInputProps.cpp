@@ -446,23 +446,23 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
   }
 
   if (placeholderTextColor != oldProps->placeholderTextColor) {
-    result["placeholderTextColor"] = *placeholderTextColor;
+    result["placeholderTextColor"] = colorOrNull(placeholderTextColor);
   }
 
   if (cursorColor != oldProps->cursorColor) {
-    result["cursorColor"] = *cursorColor;
+    result["cursorColor"] = colorOrNull(cursorColor);
   }
 
   if (selectionColor != oldProps->selectionColor) {
-    result["selectionColor"] = *selectionColor;
+    result["selectionColor"] = colorOrNull(selectionColor);
   }
 
   if (selectionHandleColor != oldProps->selectionHandleColor) {
-    result["selectionHandleColor"] = *selectionHandleColor;
+    result["selectionHandleColor"] = colorOrNull(selectionHandleColor);
   }
 
   if (underlineColorAndroid != oldProps->underlineColorAndroid) {
-    result["underlineColorAndroid"] = *underlineColorAndroid;
+    result["underlineColorAndroid"] = colorOrNull(underlineColorAndroid);
   }
 
   if (maxLength != oldProps->maxLength) {
@@ -589,7 +589,7 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
   }
 
   if (textShadowColor != oldProps->textShadowColor) {
-    result["textShadowColor"] = *textShadowColor;
+    result["textShadowColor"] = colorOrNull(textShadowColor);
   }
 
   if (textShadowRadius != oldProps->textShadowRadius) {
