@@ -13,15 +13,40 @@
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 
 import hotdog from '../../assets/hotdog.jpg';
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
+import {useState} from 'react';
 import {
   DynamicColorIOS,
   Image,
   Platform,
   PlatformColor,
+  Pressable,
   StyleSheet,
   View,
 } from 'react-native';
+
+function BorderColorChangeExample(): React.Node {
+  const [perSide, setPerSide] = useState(false);
+  return (
+    <Pressable
+      testID="border-color-change-button"
+      onPress={() => setPerSide(value => !value)}>
+      <RNTesterText>
+        {perSide ? 'Per-side colors' : 'One color'} (tap to change)
+      </RNTesterText>
+      <View testID="border-test-color-change" style={{padding: 10}}>
+        <View
+          style={[
+            styles.box,
+            {borderWidth: 10},
+            perSide ? styles.border2 : {borderColor: 'black'},
+          ]}
+        />
+      </View>
+    </Pressable>
+  );
+}
 
 const styles = StyleSheet.create({
   box: {
@@ -598,6 +623,15 @@ export default {
             </View>
           </View>
         );
+      },
+    },
+    {
+      title: 'Changing to per-side colors',
+      name: 'color-change',
+      description:
+        'A border that changes from one color to per-side colors stays inside the view',
+      render: function (): React.Node {
+        return <BorderColorChangeExample />;
       },
     },
     {
