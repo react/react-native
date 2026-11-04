@@ -34,6 +34,12 @@ hasValue(const RawProps& rawProps, bool defaultValue, const char* name) {
   return false;
 }
 
+// Some ReactTextInputManager setters treat an empty string differently from
+// null, which is what raw props send for a removed prop.
+static folly::dynamic stringOrNull(const std::string& value) {
+  return value.empty() ? folly::dynamic(nullptr) : folly::dynamic(value);
+}
+
 // ReactTextInputManager resets a color to the platform default for null, while
 // 0 is transparent.
 static folly::dynamic colorOrNull(const SharedColor& color) {
@@ -516,11 +522,11 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
 
   // Android text input props
   if (autoComplete != oldProps->autoComplete) {
-    result["autoComplete"] = autoComplete;
+    result["autoComplete"] = stringOrNull(autoComplete);
   }
 
   if (returnKeyLabel != oldProps->returnKeyLabel) {
-    result["returnKeyLabel"] = returnKeyLabel;
+    result["returnKeyLabel"] = stringOrNull(returnKeyLabel);
   }
 
   if (numberOfLines != oldProps->numberOfLines) {
@@ -636,7 +642,7 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
   }
 
   if (textAlign != oldProps->textAlign) {
-    result["textAlign"] = textAlign;
+    result["textAlign"] = stringOrNull(textAlign);
   }
 
   if (includeFontPadding != oldProps->includeFontPadding) {
