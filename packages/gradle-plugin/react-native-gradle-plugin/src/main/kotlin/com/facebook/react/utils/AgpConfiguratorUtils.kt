@@ -51,6 +51,16 @@ internal object AgpConfiguratorUtils {
     project.pluginManager.withPlugin("com.android.application", action)
   }
 
+  fun configureInstallOptionsForApp(project: Project) {
+    val action =
+        Action<AppliedPlugin> {
+          project.extensions
+              .getByType(ApplicationAndroidComponentsExtension::class.java)
+              .finalizeDsl { ext -> ext.installation.installOptions += "-d" }
+        }
+    project.pluginManager.withPlugin("com.android.application", action)
+  }
+
   fun configureBuildConfigFieldsForApp(project: Project, extension: ReactExtension) {
     val action =
         Action<AppliedPlugin> {

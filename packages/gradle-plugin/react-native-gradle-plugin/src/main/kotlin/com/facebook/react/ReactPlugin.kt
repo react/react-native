@@ -21,6 +21,7 @@ import com.facebook.react.utils.AgpConfiguratorUtils.configureBuildConfigFieldsF
 import com.facebook.react.utils.AgpConfiguratorUtils.configureBuildConfigFieldsForLibraries
 import com.facebook.react.utils.AgpConfiguratorUtils.configureBuildTypesForApp
 import com.facebook.react.utils.AgpConfiguratorUtils.configureDevServerLocation
+import com.facebook.react.utils.AgpConfiguratorUtils.configureInstallOptionsForApp
 import com.facebook.react.utils.AgpConfiguratorUtils.configureNamespaceForLibraries
 import com.facebook.react.utils.BackwardCompatUtils.configureBackwardCompatibilityReactMap
 import com.facebook.react.utils.DependencyUtils.configureDependencies
@@ -117,6 +118,7 @@ class ReactPlugin : Plugin<Project> {
       configureCodegen(project, extension, rootExtension, isLibrary = false)
       configureResources(project, extension)
       configureBuildTypesForApp(project)
+      configureInstallOptionsForApp(project)
 
       // Apply the namespace fallback to every Android library in the build, including third-party
       // libraries that don't apply the `com.facebook.react` plugin and still rely on the manifest
