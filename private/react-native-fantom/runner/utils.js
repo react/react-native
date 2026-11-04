@@ -268,16 +268,18 @@ export function getDebugInfoFromCommandResult(
       ? 'succeeded'
       : `failed (status code: ${commandResult.status ?? '(empty)'}${maybeSignal})`;
 
+  const commandLine = `Command ${resultByStatus}: ${commandResult.originalCommand}`;
+  const stdout = commandResult.stdout;
+  const stderr = commandResult.stderr;
+
   const logLines = [
-    `Command ${resultByStatus}: ${commandResult.originalCommand}`,
+    commandLine,
     '',
     'stdout:',
-    // $FlowExpectedError[sketchy-null-string]
-    commandResult.stdout || '(empty)',
+    stdout == null || stdout === '' ? '(empty)' : stdout,
     '',
     'stderr:',
-    // $FlowExpectedError[sketchy-null-string]
-    commandResult.stderr || '(empty)',
+    stderr == null || stderr === '' ? '(empty)' : stderr,
   ];
 
   if (commandResult.error) {

@@ -297,8 +297,6 @@ export type {
 export type {BackPressEventName} from './Libraries/Utilities/BackHandler';
 export {default as BackHandler} from './Libraries/Utilities/BackHandler';
 
-export {default as Clipboard} from './Libraries/Components/Clipboard/Clipboard';
-
 export {default as codegenNativeComponent} from './Libraries/Utilities/codegenNativeComponent';
 export {default as codegenNativeCommands} from './Libraries/Utilities/codegenNativeCommands';
 

@@ -402,7 +402,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   if (string == \\"top\\") { result = EnumPropNativeComponentViewAlignment::Top; return; }
   if (string == \\"center\\") { result = EnumPropNativeComponentViewAlignment::Center; return; }
   if (string == \\"bottom-right\\") { result = EnumPropNativeComponentViewAlignment::BottomRight; return; }
-  abort();
+  result = EnumPropNativeComponentViewAlignment::Center;
 }
 
 static inline std::string toString(const EnumPropNativeComponentViewAlignment &value) {
@@ -439,7 +439,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = EnumPropNativeComponentViewIntervals::Intervals60;
       return;
     default:
-      abort();
+      result = EnumPropNativeComponentViewIntervals::Intervals0;
   }
 }
 
@@ -902,7 +902,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   auto string = (std::string)value;
   if (string == \\"small\\") { result = ObjectPropsNativeComponentStringEnumProp::Small; return; }
   if (string == \\"large\\") { result = ObjectPropsNativeComponentStringEnumProp::Large; return; }
-  abort();
+  result = ObjectPropsNativeComponentStringEnumProp::Small;
 }
 
 static inline std::string toString(const ObjectPropsNativeComponentStringEnumProp &value) {
@@ -932,7 +932,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = ObjectPropsNativeComponentIntEnumProp::IntEnumProp1;
       return;
     default:
-      abort();
+      result = ObjectPropsNativeComponentIntEnumProp::IntEnumProp0;
   }
 }
 
