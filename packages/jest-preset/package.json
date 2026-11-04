@@ -1,6 +1,6 @@
 {
   "name": "@react-native/jest-preset",
-  "version": "0.87.0-main",
+  "version": "0.89.0-rc.0",
   "description": "Jest preset for React Native apps",
   "keywords": [
     "jest",
@@ -30,7 +30,7 @@
   "dependencies": {
     "@babel/runtime": "^7.25.0",
     "@jest/create-cache-key-function": "^29.7.0",
-    "@react-native/js-polyfills": "0.87.0-main",
+    "@react-native/js-polyfills": "0.89.0-rc.0",
     "babel-jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
     "regenerator-runtime": "^0.13.2"
@@ -38,6 +38,6 @@
   "peerDependencies": {
     "@babel/core": "^7.25.2",
     "react": "^19.2.3",
-    "react-native": "1000.0.0"
+    "react-native": "0.89.0-rc.0"
   }
 }
