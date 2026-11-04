@@ -35,7 +35,9 @@ function BorderColorChangeExample(): React.Node {
       <RNTesterText>
         {perSide ? 'Per-side colors' : 'One color'} (tap to change)
       </RNTesterText>
-      <View testID="border-test-color-change" style={{padding: 10}}>
+      <View
+        testID="border-test-color-change"
+        style={{alignSelf: 'flex-start', padding: 10}}>
         <View
           style={[
             styles.box,
