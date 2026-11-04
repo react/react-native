@@ -50,6 +50,7 @@ fmt="12.1.0"
 folly="2024.11.18.00"
 glog="0.3.5"
 gflags="2.2.0"
+googletest="1.18.0"
 nlohmannjson="3.12.0"
 
 [libraries]
