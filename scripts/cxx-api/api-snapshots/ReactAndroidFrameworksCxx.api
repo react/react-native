@@ -1202,6 +1202,7 @@ class facebook::react::AndroidTextInputProps : public facebook::react::BaseTextI
   public folly::dynamic getDynamic() const;
   public int inlineImagePadding;
   public int numberOfLines;
+  public std::optional<std::vector<std::string>> fontVariant;
   public std::string autoComplete;
   public std::string fontFamily;
   public std::string fontStyle;
