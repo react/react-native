@@ -335,7 +335,11 @@ internal constructor(
       logViewHierarchy(parentView, false)
     }
 
-    val currParentView = view.parent
+    var currParentView = view.parent
+    if (currParentView is ViewGroup && currParentView.indexOfChild(view) == -1) {
+      currParentView.endViewTransition(view)
+      currParentView = view.parent
+    }
     if (currParentView != null) {
       val actualParentId = if (currParentView is ViewGroup) currParentView.id else View.NO_ID
       ReactSoftExceptionLogger.logSoftException(
