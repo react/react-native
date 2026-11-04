@@ -55,6 +55,18 @@ TEST(AndroidTextInputPropsDiffTest, removedColorsAreSentAsNull) {
   }
 }
 
+// 0 is the default of the flat field, and a font size of 0 hides the
+// placeholder and new text.
+TEST(AndroidTextInputPropsDiffTest, removedFontSizeIsSentAsNull) {
+  using folly::dynamic;
+  expectPayloadsMatchRawProps<AndroidTextInputProps>({
+      {dynamic::object("fontSize", 20)},
+      {dynamic::object("fontSize", 0)},
+      {dynamic::object("fontSize", 20)},
+      {dynamic::object("fontSize", nullptr)},
+  });
+}
+
 } // namespace facebook::react
 
 #endif

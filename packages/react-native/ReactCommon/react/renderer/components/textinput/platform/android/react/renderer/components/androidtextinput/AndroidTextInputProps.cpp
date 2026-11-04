@@ -11,6 +11,7 @@
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/utils/FloatComparison.h>
+#include <cmath>
 
 namespace facebook::react {
 
@@ -625,8 +626,11 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
     result["letterSpacing"] = letterSpacing;
   }
 
-  if (fontSize != oldProps->fontSize) {
-    result["fontSize"] = fontSize;
+  if (!floatEquality(
+          textAttributes.fontSize, oldProps->textAttributes.fontSize)) {
+    result["fontSize"] = std::isnan(textAttributes.fontSize)
+        ? folly::dynamic(nullptr)
+        : textAttributes.fontSize;
   }
 
   if (textAlign != oldProps->textAlign) {
