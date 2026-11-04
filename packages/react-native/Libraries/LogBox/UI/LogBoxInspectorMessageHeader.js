@@ -11,6 +11,7 @@
 import type {LogLevel} from '../Data/LogBoxLog';
 import type {Message} from '../Data/parseLogBoxLog';
 
+import SafeAreaView from '../../../src/private/components/safeareaview/SafeAreaView_INTERNAL_DO_NOT_USE';
 import View from '../../Components/View/View';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
@@ -42,7 +43,7 @@ component LogBoxInspectorMessageHeader(
   }
 
   return (
-    <View style={messageStyles.body}>
+    <SafeAreaView style={messageStyles.body}>
       <View style={messageStyles.heading}>
         <Text
           maxFontSizeMultiplier={1.5}
@@ -62,7 +63,7 @@ component LogBoxInspectorMessageHeader(
         />
         {renderShowMore()}
       </Text>
-    </View>
+    </SafeAreaView>
   );
 }
 
