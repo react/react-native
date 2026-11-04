@@ -331,6 +331,27 @@ jobs:
       fail-on-error: true
     secrets: inherit
 
+  test_react_common_cxx:
+    runs-on: 8-core-ubuntu
+    needs: [check_code_changes, lint]
+    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Test ReactCommon C++
+        uses: ./.github/actions/test-react-common-cxx
+        with:
+          gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
   build_android:
     runs-on: 8-core-ubuntu
     needs: [set_release_type, check_code_changes]
