@@ -15,6 +15,7 @@
 #include <folly/dynamic.h>
 #include <jsinspector-modern/cdp/CdpJson.h>
 
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <utility>

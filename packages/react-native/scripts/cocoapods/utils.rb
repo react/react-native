@@ -316,6 +316,24 @@ class ReactNativePodsUtils
         end
     end
 
+    # Stops `pod install` on an app that `npx react-native spm add` converted to
+    # Swift Package Manager. Codegen would rewrite the app's generated
+    # Package.swift, and Xcode resolves packages before any build phase can
+    # report it, so this has to run before React Native writes any file.
+    # prepare_react_native_project!, use_native_modules! and use_react_native!
+    # all call it, because a Podfile need not call the first.
+    def self.error_if_spm_injected
+        podfile_dir = Pod::Config.instance.installation_root.to_s
+        xcodeproj = Dir.glob('*.xcodeproj', base: podfile_dir).sort.find do |name|
+            File.exist?(File.join(podfile_dir, name, '.spm-injected.json'))
+        end
+        return if xcodeproj.nil?
+
+        raise Pod::Informative, "This app uses Swift Package Manager for React Native " +
+            "(#{xcodeproj} has .spm-injected.json), so `pod install` would break the Xcode project. " +
+            "To go back to CocoaPods, run `npx react-native spm deinit` first, then `pod install`."
+    end
+
     # It examines the target_definition property and sets the appropriate value for
     # ENV['USE_FRAMEWORKS'] variable.
     #

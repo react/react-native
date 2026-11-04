@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * It creates the RootViewController.
- * By default, it creates a new instance of a `UIViewController`.
+ * By default, it creates a view controller that returns the `RCTStatusBarAppearance` values.
  * You can override it to provide your own initial ViewController.
  *
  * @return: an instance of `UIViewController`.

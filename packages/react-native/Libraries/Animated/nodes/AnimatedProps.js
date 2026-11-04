@@ -268,6 +268,9 @@ export default class AnimatedProps extends AnimatedNode {
     if (this._target?.instance === instance) {
       return;
     }
+    if (this.__isNative && this._target != null) {
+      this.#disconnectAnimatedView(this._target);
+    }
     const target = (this._target = {instance, connectedViewTag: null});
     if (this.__isNative) {
       this.#connectAnimatedView(target);

@@ -118,6 +118,7 @@ declare class Buffer extends Uint8Array {
   readUIntBE(offset: number, byteLength: number, noAssert?: boolean): number;
   readUIntLE(offset: number, byteLength: number, noAssert?: boolean): number;
   slice(start?: number, end?: number): this;
+  subarray(start?: number, end?: number): this;
   swap16(): Buffer;
   swap32(): Buffer;
   swap64(): Buffer;
