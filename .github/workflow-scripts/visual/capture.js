@@ -12,9 +12,12 @@
  * Captures every visual flow in one Maestro invocation, so the JVM and
  * driver startup (around two minutes on an iOS simulator) is paid once per
  * job rather than once per flow. Flows that fail are rerun, and only those,
- * on later attempts.
+ * on later attempts. Screenshots that then differ from the baseline, or
+ * have none, are retaken once (see retake.js).
  */
 
+const {readAndroidEnvironment, readIosEnvironment} = require('./manifest');
+const {retakeScreenshots} = require('./retake');
 const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -28,7 +31,10 @@ node capture.js <platform> <app_path> <app_id> <flows_dir> <output_dir> [ios_udi
 
 Installs the app, then runs every flow in <flows_dir> in one Maestro
 invocation, writing screenshots under <output_dir>. Failed flows are retried
-up to ${DEFAULT_ATTEMPTS} attempts in total (VISUAL_CAPTURE_ATTEMPTS).
+up to ${DEFAULT_ATTEMPTS} attempts in total (VISUAL_CAPTURE_ATTEMPTS). With
+VISUAL_PUBLIC_BASE_URL set, screenshots that differ from the baseline or have
+none are retaken once, and the IDs of new screenshots whose two captures
+differ are written as a JSON array to VISUAL_UNSTABLE_PATH.
 `;
 
 /** The flows directly inside `flowsDir`, sorted. Helpers live elsewhere. */
@@ -140,7 +146,7 @@ function writeSummary(lines) {
   }
 }
 
-function main(args = process.argv.slice(2)) {
+async function main(args = process.argv.slice(2)) {
   const [platform, appPath, appId, flowsDir, outputDir, udid] = args;
   if (
     !['android', 'ios'].includes(platform) ||
@@ -193,6 +199,46 @@ function main(args = process.argv.slice(2)) {
     summary.push('', `Failed after ${attempts} attempt(s):`);
     summary.push(...pending.map(flow => `- \`${flow}\``));
   }
+
+  const publicBaseUrl = process.env.VISUAL_PUBLIC_BASE_URL;
+  if (publicBaseUrl != null && publicBaseUrl !== '') {
+    try {
+      const {unstable, lines} = await retakeScreenshots({
+        platform,
+        environment:
+          platform === 'android'
+            ? readAndroidEnvironment()
+            : readIosEnvironment(udid),
+        flows: allFlows,
+        outputDir,
+        publicBaseUrl,
+        runFlows: (flows, retakeDir) =>
+          runAttempt(
+            maestroArgs({
+              flows,
+              appId,
+              outputDir: retakeDir,
+              reportPath: path.resolve('visual-capture-report-retake.xml'),
+              udid,
+              attempt: attempts + 1,
+            }),
+          ),
+      });
+      if (lines.length > 0) {
+        summary.push('', ...lines);
+      }
+      if (process.env.VISUAL_UNSTABLE_PATH) {
+        fs.writeFileSync(
+          process.env.VISUAL_UNSTABLE_PATH,
+          `${JSON.stringify(unstable)}\n`,
+        );
+      }
+    } catch (error) {
+      // The original screenshots are still valid, so compare goes ahead
+      // with them.
+      console.warn('Retaking screenshots failed:', error);
+    }
+  }
   writeSummary(summary);
   if (pending.length > 0) {
     process.exitCode = 1;
@@ -200,7 +246,10 @@ function main(args = process.argv.slice(2)) {
 }
 
 if (require.main === module) {
-  main();
+  main().catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }
 
 module.exports = {collectFlows, failedFlowsFromJUnit, maestroArgs};

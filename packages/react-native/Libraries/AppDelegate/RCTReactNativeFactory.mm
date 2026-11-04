@@ -295,13 +295,6 @@ static NSDictionary *RCTConvertConnectionOptionsToLaunchOptions(UISceneConnectio
     [weakSelf.delegate customizeRootView:(RCTRootView *)rootView];
   };
 
-  if ([self.delegate respondsToSelector:@selector(extraModulesForBridge:)]) {
-    configuration.extraModulesForBridge = ^NSArray<id<RCTBridgeModule>> *_Nonnull(RCTBridge *_Nonnull bridge)
-    {
-      return [weakSelf.delegate extraModulesForBridge:bridge];
-    };
-  }
-
   configuration.jsRuntimeConfiguratorDelegate = self;
 
   return [[RCTRootViewFactory alloc] initWithTurboModuleDelegate:self hostDelegate:self configuration:configuration];

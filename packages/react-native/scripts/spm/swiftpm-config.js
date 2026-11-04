@@ -11,6 +11,7 @@
 'use strict';
 
 const {isValidSwiftName, makeLogger} = require('./spm-utils');
+const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -100,6 +101,20 @@ function declaredFields(
     : SWIFTPM_FIELDS.filter(field => config[field] !== undefined);
 }
 
+// util.isDeepStrictEqual is missing from the Flow library definitions.
+function sameField(
+  a /*: ?{readonly [string]: unknown} */,
+  b /*: ?{readonly [string]: unknown} */,
+  field /*: string */,
+) /*: boolean */ {
+  try {
+    assert.deepStrictEqual(a?.[field], b?.[field]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function stringList(value /*: unknown */) /*: Array<string> */ {
   return Array.isArray(value) ? value.filter(v => typeof v === 'string') : [];
 }
@@ -155,8 +170,14 @@ function readSwiftpmConfig(
   }
   const deprecated = objectField(rnConfig, 'spm');
   const deprecatedFields = declaredFields(deprecated);
-  if (deprecatedFields.length > 0) {
-    reportDeprecation(root, deprecatedFields);
+  // A library that supports React Native versions reading only the `spm`
+  // block must declare a field in both places, so an identical copy is not
+  // something it can act on.
+  const unmirroredFields = deprecatedFields.filter(
+    field => !sameField(fromPackageJson, deprecated, field),
+  );
+  if (unmirroredFields.length > 0) {
+    reportDeprecation(root, unmirroredFields);
   }
   if (fromPackageJson == null) {
     return deprecatedFields.length > 0 ? deprecated : null;

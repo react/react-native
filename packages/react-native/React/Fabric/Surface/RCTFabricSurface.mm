@@ -300,17 +300,6 @@ using namespace facebook::react;
   return *_surfaceHandler;
 }
 
-#pragma mark - Deprecated
-
-- (instancetype)initWithBridge:(RCTBridge *)bridge
-                    moduleName:(NSString *)moduleName
-             initialProperties:(NSDictionary *)initialProperties
-{
-  return [self initWithSurfacePresenter:bridge.surfacePresenter
-                             moduleName:moduleName
-                      initialProperties:initialProperties];
-}
-
 - (NSNumber *)rootViewTag
 {
   return @(_surfaceHandler->getSurfaceId());

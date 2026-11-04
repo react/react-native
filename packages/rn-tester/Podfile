@@ -64,13 +64,7 @@ end
 
 target 'RNTesterUnitTests' do
   pods('RNTesterUnitTests')
-  pod 'React-RCTTest', :path => "./RCTTest"
   pod 'OCMock', '~> 3.9.1'
-end
-
-target 'RNTesterIntegrationTests' do
-  pods('RNTesterIntegrationTests')
-  pod 'React-RCTTest', :path => "./RCTTest"
 end
 
 post_install do |installer|

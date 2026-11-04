@@ -560,9 +560,15 @@ void YogaLayoutableShadowNode::configureYogaTree(
 }
 
 YGErrata YogaLayoutableShadowNode::resolveErrata(YGErrata defaultErrata) const {
-  if (auto layoutConformanceNode =
-          dynamic_cast<const LayoutConformanceShadowNode*>(this)) {
-    switch (layoutConformanceNode->getConcreteProps().mode) {
+  // This runs for every child on every layout, and almost no node is a
+  // LayoutConformance node, so a failing `dynamic_cast` would be the common
+  // case. The class is final and its component name is defined once, in
+  // LayoutConformanceShadowNode.cpp, so comparing component handles is
+  // equivalent.
+  if (getComponentHandle() == LayoutConformanceShadowNode::Handle()) {
+    const auto& layoutConformanceNode =
+        static_cast<const LayoutConformanceShadowNode&>(*this);
+    switch (layoutConformanceNode.getConcreteProps().mode) {
       case LayoutConformance::Strict:
         // CSS Flexbox §4.5 automatic minimum sizing is the spec-compliant
         // behaviour, so strict conformance should adopt it — but its probe
@@ -829,7 +835,12 @@ Rect YogaLayoutableShadowNode::getContentBounds() const {
 
     auto layoutMetricsWithOverflowInset = childNode.getLayoutMetrics();
     if (layoutMetricsWithOverflowInset.displayType != DisplayType::None) {
-      auto viewChildNode = dynamic_cast<const ViewShadowNode*>(&childNode);
+      // ViewShadowNode is final, so comparing component handles is equivalent
+      // to a `dynamic_cast`, without its cost for every non-View child.
+      auto viewChildNode =
+          childNode.getComponentHandle() == ViewShadowNode::Handle()
+          ? static_cast<const ViewShadowNode*>(&childNode)
+          : nullptr;
       auto hitSlop = viewChildNode != nullptr
           ? viewChildNode->getConcreteProps().hitSlop
           : EdgeInsets{};
@@ -951,8 +962,8 @@ float YogaLayoutableShadowNode::yogaNodeBaselineCallbackConnector(
 
 YogaLayoutableShadowNode& YogaLayoutableShadowNode::shadowNodeFromContext(
     YGNodeConstRef yogaNode) {
-  return dynamic_cast<YogaLayoutableShadowNode&>(
-      *static_cast<ShadowNode*>(YGNodeGetContext(yogaNode)));
+  // The context is only set by the constructors of this class, to `this`.
+  return *static_cast<YogaLayoutableShadowNode*>(YGNodeGetContext(yogaNode));
 }
 
 yoga::Config& YogaLayoutableShadowNode::initializeYogaConfig(

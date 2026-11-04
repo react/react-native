@@ -27,6 +27,27 @@
 
 namespace facebook::react {
 
+TEST(ViewTest, constexprBaseTraits) {
+  constexpr auto viewTraits = ViewShadowNode::BaseTraits();
+  constexpr auto rootTraits = RootShadowNode::BaseTraits();
+  constexpr auto modalTraits = ModalHostViewShadowNode::BaseTraits();
+
+  static_assert(viewTraits.check(ShadowNodeTraits::Trait::ViewKind));
+  static_assert(rootTraits.check(ShadowNodeTraits::Trait::RootNodeKind));
+  static_assert(modalTraits.check(ShadowNodeTraits::Trait::RootNodeKind));
+  static_assert(
+      modalTraits.check(ShadowNodeTraits::Trait::Unstable_uncullableView));
+
+  EXPECT_EQ(
+      rootTraits.get(),
+      ShadowNodeTraits::Trait(
+          viewTraits.get() | ShadowNodeTraits::Trait::RootNodeKind));
+  EXPECT_EQ(
+      modalTraits.get(),
+      ShadowNodeTraits::Trait(
+          rootTraits.get() | ShadowNodeTraits::Trait::Unstable_uncullableView));
+}
+
 class YogaDirtyFlagTest : public ::testing::Test {
  protected:
   ComponentBuilder builder_;

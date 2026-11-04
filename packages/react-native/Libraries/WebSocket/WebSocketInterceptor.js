@@ -45,7 +45,9 @@ const WebSocketInterceptor = {
    * - `'reason'` - The reason explaining why the connection was closed,
    * - `'socketId'` - The id of the socket.
    */
-  setCloseCallback(callback: ?(number | null, string | null, number) => void) {
+  setCloseCallback(
+    callback: ?(v0: number | null, v1: string | null, v2: number) => void,
+  ) {
     closeCallback = callback;
   },
 
@@ -55,7 +57,7 @@ const WebSocketInterceptor = {
    * - `'data'` - The data sent,
    * - `'socketId'` - The id of the socket.
    */
-  setSendCallback(callback: ?(string | ArrayBuffer, number) => void) {
+  setSendCallback(callback: ?(v0: string | ArrayBuffer, v1: number) => void) {
     sendCallback = callback;
   },
 
@@ -68,7 +70,12 @@ const WebSocketInterceptor = {
    * - `'socketId'` - The id of the socket.
    */
   setConnectCallback(
-    callback: ?(string, Array<string> | null, Array<string>, number) => void,
+    callback: ?(
+      v0: string,
+      v1: Array<string> | null,
+      v2: Array<string>,
+      v3: number,
+    ) => void,
   ) {
     connectCallback = callback;
   },
@@ -78,7 +85,7 @@ const WebSocketInterceptor = {
    * The callback is invoked with the following parameters:
    * - `'socketId'` - The id of the socket.
    */
-  setOnOpenCallback(callback: ?(number) => void) {
+  setOnOpenCallback(callback: ?(v: number) => void) {
     onOpenCallback = callback;
   },
 
@@ -88,7 +95,9 @@ const WebSocketInterceptor = {
    * - `'data'` - The data received,
    * - `'socketId'` - The id of the socket.
    */
-  setOnMessageCallback(callback: ?(string | ArrayBuffer, number) => void) {
+  setOnMessageCallback(
+    callback: ?(v0: string | ArrayBuffer, v1: number) => void,
+  ) {
     onMessageCallback = callback;
   },
 
@@ -98,7 +107,7 @@ const WebSocketInterceptor = {
    * - `'message'` - The error message,
    * - `'socketId'` - The id of the socket.
    */
-  setOnErrorCallback(callback: ?({message: string}, number) => void) {
+  setOnErrorCallback(callback: ?(v0: {message: string}, v1: number) => void) {
     onErrorCallback = callback;
   },
 
@@ -110,7 +119,7 @@ const WebSocketInterceptor = {
    * - `'socketId'` - The id of the socket.
    */
   setOnCloseCallback(
-    callback: ?({code: number, reason: ?string}, number) => void,
+    callback: ?(v0: {code: number, reason: ?string}, v1: number) => void,
   ) {
     onCloseCallback = callback;
   },

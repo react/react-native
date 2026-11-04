@@ -14,7 +14,7 @@ import HMRClient from '../../Utilities/HMRClient';
 import getDevServer from './getDevServer';
 
 declare var global: {
-  globalEvalWithSourceUrl?: (string, string) => unknown,
+  globalEvalWithSourceUrl?: (v0: string, v1: string) => unknown,
   __BUNDLE_LOADER_REPORTER__?: {
     onStart: (url: string | URL) => void,
     onSuccess: (url: string | URL) => void,

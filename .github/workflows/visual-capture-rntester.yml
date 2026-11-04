@@ -22,6 +22,11 @@ env:
   VISUAL_FLOWS: packages/rn-tester/visual-tests/flows
   VISUAL_OUTPUT_DIR: /tmp/visual-capture
   VISUAL_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  # Read-only, to retake screenshots that differ from the baseline.
+  VISUAL_PUBLIC_BASE_URL: ${{ vars.VISUAL_PUBLIC_BASE_URL }}
+  # New screenshots whose two captures differ, for manifest.js. Outside the
+  # output directory, so it isn't uploaded.
+  VISUAL_UNSTABLE_PATH: /tmp/visual-unstable.json
 
 jobs:
   capture_android:
@@ -31,8 +36,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          # The manifest records HEAD^1, the commit this capture is based on.
-          fetch-depth: 2
+          # The manifest records HEAD^1, the commit this capture is based on,
+          # and retakes look for a baseline up to 20 commits before it.
+          fetch-depth: 21
       - name: Setup node.js
         uses: ./.github/actions/setup-node
       - name: Set up JDK 17
@@ -108,8 +114,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          # The manifest records HEAD^1, the commit this capture is based on.
-          fetch-depth: 2
+          # The manifest records HEAD^1, the commit this capture is based on,
+          # and retakes look for a baseline up to 20 commits before it.
+          fetch-depth: 21
       - name: Setup node.js
         uses: ./.github/actions/setup-node
       - name: Set up JDK 17

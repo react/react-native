@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<39f76cb701cafc08a547b1f222ab9889>>
+ * @generated SignedSource<<47086b4e1ea40f431cfc1d4f6f750c86>>
  * @flow strict
  * @noformat
  */
@@ -498,7 +498,7 @@ export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlag
 /**
  * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
  */
-export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
+export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', true);
 /**
  * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
  */

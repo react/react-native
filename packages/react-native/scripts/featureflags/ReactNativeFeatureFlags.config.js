@@ -783,7 +783,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'stable',
     },
     fuseboxWebSocketEventsEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-07-11',
         description:
@@ -791,7 +791,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     keepTimersRunningWhileHostPausedAndroid: {
       defaultValue: false,

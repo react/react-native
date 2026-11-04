@@ -50,7 +50,7 @@ fmt="12.1.0"
 folly="2024.11.18.00"
 glog="0.3.5"
 gflags="2.2.0"
-nlohmannjson="3.11.2"
+nlohmannjson="3.12.0"
 
 [libraries]
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }

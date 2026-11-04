@@ -185,7 +185,7 @@ class ViewabilityHelper {
       isViewable: boolean,
       props: CellMetricProps,
     ) => ViewToken,
-    onViewableItemsChanged: ({
+    onViewableItemsChanged: (v: {
       viewableItems: Array<ViewToken>,
       changed: Array<ViewToken>,
       ...
@@ -290,7 +290,7 @@ class ViewabilityHelper {
   _onUpdateSync(
     props: CellMetricProps,
     viewableIndicesToCheck: Array<number>,
-    onViewableItemsChanged: ({
+    onViewableItemsChanged: (v: {
       changed: Array<ViewToken>,
       viewableItems: Array<ViewToken>,
       ...
@@ -301,10 +301,6 @@ class ViewabilityHelper {
       props: CellMetricProps,
     ) => ViewToken,
   ) {
-    // Filter out indices that have gone out of view since this call was scheduled.
-    viewableIndicesToCheck = viewableIndicesToCheck.filter(ii =>
-      this._viewableIndices.includes(ii),
-    );
     const prevItems = this._viewableItems;
     const nextItems = new Map(
       viewableIndicesToCheck.map(ii => {

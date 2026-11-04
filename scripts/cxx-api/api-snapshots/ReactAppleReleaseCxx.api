@@ -5,21 +5,8 @@ category NSTextStorage(FontScaling) {
   public virtual void scaleFontSizeWithRatio:minimumFontSize:maximumFontSize:(CGFloat ratio, CGFloat minimumFontSize, CGFloat maximumFontSize);
 }
 
-category RCTBridge(Inspector) {
-  public @property (assign, readonly) BOOL inspectable;
-  public @property (assign, readonly) facebook::react::jsinspector_modern::HostTarget* inspectorTarget;
-}
-
-category RCTBridge(RCTAccessibilityManager) {
-  public @property (assign, readonly) RCTAccessibilityManager* accessibilityManager;
-}
-
 category RCTBridge(RCTDevMenu) {
   public @property (assign, readonly) RCTDevMenu* devMenu;
-}
-
-category RCTBridge(RCTDevSettings) {
-  public @property (assign, readonly) RCTDevSettings* devSettings;
 }
 
 category RCTBridge(RCTEventDispatcher) {
@@ -30,25 +17,8 @@ category RCTBridge(RCTImageLoader) {
   public @property (assign, readonly) RCTImageLoader* imageLoader;
 }
 
-category RCTBridge(RCTImageStoreManager) {
-  public @property (assign, readonly) RCTImageStoreManager* imageStoreManager;
-}
-
-category RCTBridge(RCTNetworking) {
-  public @property (assign, readonly) RCTNetworking* networking;
-}
-
-category RCTBridge(RCTSurfacePresenterStub) {
-  public virtual id<RCTSurfacePresenterStub> surfacePresenter();
-  public virtual void setSurfacePresenter:(id<RCTSurfacePresenterStub> presenter);
-}
-
 category RCTBridge(RCTUIManager) {
   public @property (assign, readonly) RCTUIManager* uiManager;
-}
-
-category RCTBridge(RCTWebSocketModule) {
-  public virtual RCTWebSocketModule* webSocketModule();
 }
 
 category RCTBridgeProxy(Cxx) {
@@ -672,28 +642,16 @@ interface RCTBlobManager : public NSObject <RCTBridgeModule, RCTURLRequestHandle
 interface RCTBridge : public NSObject <RCTInvalidating> {
   public @property (assign, readonly) BOOL loading;
   public @property (assign, readonly) BOOL valid;
-  public @property (copy, readonly) NSArray<Class>* moduleClasses;
   public @property (copy, readonly) NSDictionary* launchOptions;
   public @property (strong) Class executorClass;
   public @property (strong, readonly) NSURL* bundleURL;
   public @property (strong, readonly) RCTPerformanceLogger* performanceLogger;
-  public @property (weak, readonly) id<RCTBridgeDelegate> delegate;
-  public virtual BOOL isBatchActive();
-  public virtual BOOL moduleIsInitialized:(Class moduleClass);
-  public virtual NSArray* modulesConformingToProtocol:(Protocol* protocol);
   public virtual RCTBridgeModuleDecorator* bridgeModuleDecorator();
   public virtual id moduleForClass:(Class moduleClass);
   public virtual id moduleForName:(NSString* moduleName);
   public virtual id moduleForName:lazilyLoadIfNecessary:(NSString* moduleName, BOOL lazilyLoad);
-  public virtual instancetype initWithBundleURL:moduleProvider:launchOptions:(NSURL* bundleURL, RCTBridgeModuleListProvider block, NSDictionary* launchOptions);
-  public virtual instancetype initWithDelegate:launchOptions:(id<RCTBridgeDelegate> delegate, NSDictionary* launchOptions);
-  public virtual void enqueueJSCall:args:(NSString* moduleDotMethod, NSArray* args);
-  public virtual void enqueueJSCall:method:args:completion:(NSString* module, NSString* method, NSArray* args, dispatch_block_t completion);
   public virtual void onFastRefresh();
   public virtual void registerSegmentWithId:path:(NSUInteger segmentId, NSString* path);
-  public virtual void reload();
-  public virtual void reloadWithReason:(NSString* reason);
-  public virtual void requestReload();
   public virtual void setRCTTurboModuleRegistry:(id<RCTTurboModuleRegistry> turboModuleRegistry);
 }
 
@@ -1610,7 +1568,6 @@ interface RCTRootViewFactoryConfiguration : public NSObject {
   public @property (assign) RCTCustomizeRootViewBlock customizeRootView;
   public @property (assign) RCTExtraLazyModuleClassesForBridge extraLazyModuleClassesForBridge;
   public @property (assign) RCTExtraModulesForBridgeBlock extraModulesForBridge;
-  public @property (assign) RCTLoadSourceForBridgeBlock loadSourceForBridge;
   public @property (assign) RCTLoadSourceForBridgeWithProgressBlock loadSourceForBridgeWithProgress;
   public @property (assign) RCTSourceURLForBridgeBlock sourceURLForBridge;
   public @property (weak) id<RCTJSRuntimeConfiguratorProtocol> jsRuntimeConfiguratorDelegate;
@@ -1750,6 +1707,14 @@ interface RCTSourceCode : public NSObject <RCTBridgeModule> {
 }
 
 interface RCTSpringAnimation : public NSObject <RCTAnimationDriver> {
+}
+
+interface RCTStatusBarAppearance : public NSObject {
+  public @property (assign, readonly) BOOL hidden;
+  public @property (assign, readonly) UIStatusBarAnimation updateAnimation;
+  public @property (assign, readonly) UIStatusBarStyle style;
+  public virtual static void setHidden:withAnimation:(BOOL hidden, UIStatusBarAnimation animation);
+  public virtual static void setStyle:animated:(UIStatusBarStyle style, BOOL animated);
 }
 
 interface RCTStatusBarManager : public RCTEventEmitter {
@@ -2598,10 +2563,6 @@ protocol RCTCustomRefreshControlProtocol {
   public @property (assign, readonly) BOOL refreshing;
   public @property (copy) RCTDirectEventBlock onRefresh;
   public @property (weak) UIScrollView* scrollView;
-}
-
-protocol RCTCxxBridgeDelegate : public RCTBridgeDelegate {
-  public virtual std::unique_ptr<facebook::react::JSExecutorFactory> jsExecutorFactoryForBridge:(RCTBridge* bridge);
 }
 
 protocol RCTDebuggingOverlayViewProtocol : public NSObject {
@@ -4477,7 +4438,7 @@ class facebook::react::ShadowNode : public facebook::react::Sealable, public fac
   public int getOrderIndex() const;
   public static bool getUseRuntimeShadowNodeReferenceUpdateOnThread();
   public static bool sameFamily(const facebook::react::ShadowNode& first, const facebook::react::ShadowNode& second);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static std::shared_ptr<const std::vector<std::shared_ptr<const facebook::react::ShadowNode>>> emptySharedShadowNodeSharedList();
   public static void setUseRuntimeShadowNodeReferenceUpdateOnThread(bool isEnabled);
   public std::shared_ptr<const facebook::react::ContextContainer> getContextContainer() const;
@@ -4525,10 +4486,10 @@ class facebook::react::ShadowNodeFamily : public facebook::jsi::NativeState {
 }
 
 class facebook::react::ShadowNodeTraits {
-  public bool check(facebook::react::ShadowNodeTraits::Trait traits) const;
-  public facebook::react::ShadowNodeTraits::Trait get() const;
-  public void set(facebook::react::ShadowNodeTraits::Trait trait);
-  public void unset(facebook::react::ShadowNodeTraits::Trait trait);
+  public constexpr bool check(facebook::react::ShadowNodeTraits::Trait traits) const;
+  public constexpr facebook::react::ShadowNodeTraits::Trait get() const;
+  public constexpr void set(facebook::react::ShadowNodeTraits::Trait trait);
+  public constexpr void unset(facebook::react::ShadowNodeTraits::Trait trait);
 }
 
 enum facebook::react::ShadowNodeTraits::Trait : int32_t {
@@ -5690,7 +5651,7 @@ template <const char* concreteComponentName, typename ViewPropsT = facebook::rea
 class facebook::react::ConcreteViewShadowNode : public facebook::react::ConcreteShadowNode<concreteComponentName, facebook::react::YogaLayoutableShadowNode, ViewPropsT, ViewEventEmitterT, StateDataT> {
   public ConcreteViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ConcreteViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public using BaseShadowNode = facebook::react::ConcreteShadowNode<concreteComponentName, facebook::react::YogaLayoutableShadowNode, ViewPropsT, ViewEventEmitterT, StateDataT>;
   public using ConcreteViewProps = ViewPropsT;
   public virtual bool canBeTouchTarget() const override;
@@ -5707,12 +5668,12 @@ class facebook::react::ConcreteShadowNode : public BaseShadowNodeT {
   public const facebook::react::ConcreteShadowNode::ConcreteStateData& getStateData() const;
   public const std::shared_ptr<const facebook::react::ConcreteShadowNode::ConcreteProps>& getConcreteSharedProps() const;
   public static const facebook::react::ConcreteShadowNode::SharedConcreteProps& defaultSharedProps();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static facebook::react::ComponentHandle Handle();
   public static facebook::react::ComponentName Name();
   public static facebook::react::ConcreteShadowNode::ConcreteStateData initialStateData(const facebook::react::Props::Shared&, const facebook::react::ShadowNodeFamily::Shared&, const facebook::react::ComponentDescriptor&);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::Props::Shared& baseProps);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::Props::Shared& baseProps = nullptr);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
   public using ConcreteEventEmitter = EventEmitterT;
   public using ConcreteProps = PropsT;
   public using ConcreteState = facebook::react::ConcreteState<StateDataT>;

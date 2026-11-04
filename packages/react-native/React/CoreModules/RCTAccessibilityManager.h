@@ -32,12 +32,6 @@ extern NSString *const RCTAccessibilityManagerDidUpdateMultiplierNotification; /
 
 @end
 
-@interface RCTBridge (RCTAccessibilityManager)
-
-@property (nonatomic, readonly) RCTAccessibilityManager *accessibilityManager;
-
-@end
-
 @interface RCTBridgeProxy (RCTAccessibilityManager)
 
 @property (nonatomic, readonly) RCTAccessibilityManager *accessibilityManager;

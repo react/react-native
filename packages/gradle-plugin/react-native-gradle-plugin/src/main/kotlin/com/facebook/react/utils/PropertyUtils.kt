@@ -54,6 +54,13 @@ object PropertyUtils {
   const val EXCLUSIVE_ENTEPRISE_REPOSITORY = "exclusiveEnterpriseRepository"
   const val SCOPED_EXCLUSIVE_ENTEPRISE_REPOSITORY = "react.exclusiveEnterpriseRepository"
 
+  /**
+   * Public property that controls whether `--reset-cache` is passed to Metro when bundling the JS
+   * for release builds. Default: true
+   */
+  const val RESET_METRO_CACHE_BEFORE_BUNDLING = "resetMetroCacheBeforeBundling"
+  const val SCOPED_RESET_METRO_CACHE_BEFORE_BUNDLING = "react.resetMetroCacheBeforeBundling"
+
   /** By default we include JitPack to avoid breaking user builds */
   internal const val INCLUDE_JITPACK_REPOSITORY_DEFAULT = true
 

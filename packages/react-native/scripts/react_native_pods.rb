@@ -47,6 +47,8 @@ end
 # This function prepares the project for React Native, before processing
 # all the target exposed by the framework.
 def prepare_react_native_project!
+  ReactNativePodsUtils.error_if_spm_injected
+
   # Temporary solution to suppress duplicated GUID error & master specs repo warning.
   # Can be removed once we move to generate files outside pod install.
   install! 'cocoapods', :deterministic_uuids => false, :warn_for_unused_master_specs_repo => false
@@ -96,6 +98,7 @@ def use_react_native! (
   config_file_dir: '',
   privacy_file_aggregation_enabled: true
 )
+  ReactNativePodsUtils.error_if_spm_injected
   error_if_try_to_use_jsc_from_core()
   warn_if_new_arch_disabled()
 

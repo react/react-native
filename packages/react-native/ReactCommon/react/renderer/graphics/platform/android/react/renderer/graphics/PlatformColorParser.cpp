@@ -91,8 +91,8 @@ SharedColor parsePlatformColor(
         if (iterator != getColorCache.end()) {
           resolvedColor = iterator->second;
         } else {
-          const auto& fabricUIManager =
-              contextContainer.at<jni::global_ref<jobject>>("FabricUIManager");
+          auto fabricUIManager =
+              contextContainer.at<jni::alias_ref<jobject>>("FabricUIManager");
           // Boxed Integer: null is an explicit miss; a non-null value may be 0
           // (transparent black).
           static auto getColorFromJava =

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f4116b8dd7007419ae26d8a8467820b5>>
+ * @generated SignedSource<<b6b9bd0540639760e7c196f360e5a16f>>
  */
 
 /**
@@ -302,7 +302,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxWebSocketEventsEnabled() override {
-    return false;
+    return true;
   }
 
   bool keepTimersRunningWhileHostPausedAndroid() override {

@@ -56,7 +56,6 @@ module.exports = new Set([
   'AppState',
   'AsyncStorage',
   'BackHandler',
-  'Clipboard',
   'DeviceInfo',
   'Dimensions',
   'Easing',
