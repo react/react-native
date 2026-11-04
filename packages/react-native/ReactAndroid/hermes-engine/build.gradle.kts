@@ -99,7 +99,11 @@ val prefabHeadersDir = File("$buildDir/prefab-headers")
 // CMake reads the backslashes of a Windows path as escape sequences, so we pass forward slashes.
 val jsiDir = File(reactNativeRootDir, "ReactCommon/jsi")
 
-val downloadHermesDest = File(downloadsDir, "hermes.tar.gz")
+// Naming the tarball after the Hermes version lets `downloadsDir` hold more than one Hermes
+// version, like it already does for the other third-party sources. Release tags are
+// `hermes-v<version>`, so that prefix is stripped to keep the name at `hermes-<version>.tar.gz`.
+val hermesTarballName = "hermes-${hermesVersionProvider.get().removePrefix("hermes-v")}.tar.gz"
+val downloadHermesDest = File(downloadsDir, hermesTarballName)
 val downloadHermes by
     tasks.registering(Download::class) {
       src(

@@ -9,7 +9,7 @@
  */
 
 const {compareCapture, compareImages, policyFor} = require('../visual/compare');
-const {resolveContext} = require('../visual/compare-run');
+const {resolveContext, stageBaseline} = require('../visual/compare-run');
 const {buildManifest, sha256} = require('../visual/manifest');
 const {readPngDimensions} = require('../visual/png');
 const {validateCapture} = require('../visual/validate');
@@ -115,6 +115,26 @@ describe('visual comparison', () => {
         JSON.stringify(manifest),
       );
       expect(() => validateCapture(directory)).toThrow('path must be');
+    });
+
+    test.each([
+      [true, null],
+      [false, 'unstable must be true or absent'],
+      ['yes', 'unstable must be true or absent'],
+    ])('validates unstable: %p', (unstable, error) => {
+      const manifest = writeCapture(directory, {
+        'text/width-mode/default': makePng(4, 4),
+      });
+      manifest.images[0].unstable = unstable;
+      fs.writeFileSync(
+        path.join(directory, 'manifest.json'),
+        JSON.stringify(manifest),
+      );
+      if (error == null) {
+        expect(validateCapture(directory)).toEqual(manifest);
+      } else {
+        expect(() => validateCapture(directory)).toThrow(error);
+      }
     });
 
     test('rejects duplicates, mismatched hashes and unlisted files', () => {
@@ -258,6 +278,39 @@ describe('visual comparison', () => {
         ['a/a/removed', 'removed'],
         ['a/a/same', 'unchanged'],
       ]);
+    });
+  });
+
+  describe('stageBaseline', () => {
+    test('leaves out unstable screenshots', () => {
+      const captureDir = path.join(directory, 'capture');
+      const outDir = path.join(directory, 'out');
+      const manifest = writeCapture(captureDir, {
+        'text/stable/default': makePng(4, 4),
+        'text/unstable/default': makePng(4, 4),
+      });
+      manifest.images[1].unstable = true;
+      stageBaseline({outDir, captureDir, manifest, sha: SHA_A});
+      const prefix = `baselines/${manifest.environmentKey}/${SHA_A}`;
+      const staged = JSON.parse(
+        fs.readFileSync(
+          path.join(outDir, 'baseline-manifests', prefix, 'manifest.json'),
+          'utf8',
+        ),
+      );
+      expect(staged.images.map(image => image.id)).toEqual([
+        'text/stable/default',
+      ]);
+      expect(
+        fs.existsSync(
+          path.join(
+            outDir,
+            'baseline-images',
+            prefix,
+            'text/unstable/default.png',
+          ),
+        ),
+      ).toBe(false);
     });
   });
 

@@ -221,6 +221,26 @@ module.exports = {
   get Animated() {
     return require('./Libraries/Animated/Animated').default;
   },
+  get AnimatedFlatList() {
+    return require('./Libraries/Animated/components/AnimatedFlatList').default;
+  },
+  get AnimatedImage() {
+    return require('./Libraries/Animated/components/AnimatedImage').default;
+  },
+  get AnimatedScrollView() {
+    return require('./Libraries/Animated/components/AnimatedScrollView')
+      .default;
+  },
+  get AnimatedSectionList() {
+    return require('./Libraries/Animated/components/AnimatedSectionList')
+      .default;
+  },
+  get AnimatedText() {
+    return require('./Libraries/Animated/components/AnimatedText').default;
+  },
+  get AnimatedView() {
+    return require('./Libraries/Animated/components/AnimatedView').default;
+  },
   get Appearance() {
     return require('./Libraries/Utilities/Appearance');
   },

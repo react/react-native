@@ -157,7 +157,9 @@ class BaseTextInputShadowNode
     const auto &stateData = BaseShadowNode::getStateData();
     const auto &reactTreeAttributedString = getAttributedString(layoutContext);
 
-    if (stateData.reactTreeAttributedString.isContentEqual(reactTreeAttributedString)) {
+    if (stateData.reactTreeAttributedString.isContentEqual(reactTreeAttributedString) &&
+        stateData.reactTreeAttributedString.getBaseTextAttributes() ==
+            reactTreeAttributedString.getBaseTextAttributes()) {
       return;
     }
 

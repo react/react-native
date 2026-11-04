@@ -230,11 +230,6 @@ const getPreset = (src, options, babel) => {
     firstPartyPlugins.push([require('../plugin-warn-on-deep-imports.js')]);
   }
 
-  if (dev && !options.useTransformReactJSXExperimental) {
-    extraPlugins.push([require('@babel/plugin-transform-react-jsx-source')]);
-    extraPlugins.push([require('@babel/plugin-transform-react-jsx-self')]);
-  }
-
   if (enableBabelRuntime !== false) {
     // A string value pins a specific runtime version to optimize output.
     const isVersion = typeof enableBabelRuntime === 'string';

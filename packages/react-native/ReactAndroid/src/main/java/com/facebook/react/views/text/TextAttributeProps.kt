@@ -283,11 +283,7 @@ public class TextAttributeProps private constructor() {
     isUnderlineTextDecorationSet = false
     isLineThroughTextDecorationSet = false
     if (textDecorationLineString != null) {
-      for (textDecorationLineSubString in
-          textDecorationLineString
-              .split("-".toRegex())
-              .dropLastWhile { it.isEmpty() }
-              .toTypedArray()) {
+      for (textDecorationLineSubString in textDecorationLineString.split('-')) {
         if ("underline" == textDecorationLineSubString) {
           isUnderlineTextDecorationSet = true
         } else if ("strikethrough" == textDecorationLineSubString) {

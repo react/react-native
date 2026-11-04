@@ -663,15 +663,50 @@ static bool measureNodeWithFixedSize(
   return false;
 }
 
+static bool isLayoutZeroedOutRecursively(const yoga::Node* const node) {
+  if (!node->getHasNewLayout()) {
+    return false;
+  }
+  // `configVersion` only validates the layout cache, which is empty after
+  // zeroing out. Embedders set it again when they give a cloned node a config.
+  LayoutResults zeroedOutLayout;
+  zeroedOutLayout.setDimension(Dimension::Width, 0);
+  zeroedOutLayout.setDimension(Dimension::Height, 0);
+  zeroedOutLayout.configVersion = node->getLayout().configVersion;
+  if (!(node->getLayout() == zeroedOutLayout)) {
+    return false;
+  }
+  for (const auto child : node->getChildren()) {
+    if (!isLayoutZeroedOutRecursively(child)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void zeroOutLayoutRecursively(yoga::Node* const node) {
   node->getLayout() = {};
   node->setLayoutDimension(0, Dimension::Width);
   node->setLayoutDimension(0, Dimension::Height);
   node->setHasNewLayout(true);
 
-  node->cloneChildrenIfNeeded();
-  for (const auto child : node->getChildren()) {
-    zeroOutLayoutRecursively(child);
+  // A display: none subtree is zeroed out on every layout pass of its parent.
+  // Most of it is usually still zeroed out from an earlier pass, but owned by
+  // an earlier tree, so cloning it to zero it out again changes nothing. Only
+  // clone the children, and recurse, when part of the subtree needs it.
+  //
+  // This relies on the embedder leaving `hasNewLayout` set under display: none
+  // nodes. Children that are skipped keep their owner from the earlier tree.
+  bool didCloneChildren = false;
+  for (size_t i = 0; i < node->getChildCount(); i++) {
+    if (isLayoutZeroedOutRecursively(node->getChild(i))) {
+      continue;
+    }
+    if (!didCloneChildren) {
+      node->cloneChildrenIfNeeded();
+      didCloneChildren = true;
+    }
+    zeroOutLayoutRecursively(node->getChild(i));
   }
 }
 

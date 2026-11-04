@@ -2203,6 +2203,11 @@ class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformV
   public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
 }
 
+class facebook::react::ScrollEventHelper : public facebook::jni::JavaClass<facebook::react::ScrollEventHelper> {
+  public static constexpr auto * kJavaDescriptor;
+  public static void registerNatives();
+}
+
 class facebook::react::Sealable {
   public Sealable();
   public Sealable(const facebook::react::Sealable& other);
