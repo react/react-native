@@ -80,8 +80,10 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 #if !TARGET_OS_TV
   RCTSelectableTextView *_selectableTextView;
   RCTTextLayoutManager *_selectionLayoutManager;
+  ParagraphShadowNode::ConcreteState::Shared _selectionRenderedState;
   NSAttributedString *_selectionRenderedText;
   CGSize _selectionRenderedSize;
+  ParagraphAttributes _selectionRenderedParagraphAttributes;
   BOOL _selectableTextViewNeedsUpdate;
 #endif
 }
@@ -152,6 +154,16 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
     }
   }
 
+#if !TARGET_OS_TV
+  // The selection text view lays the text out with these attributes. A change
+  // of them alone computes no new frame, so nothing else marks the view dirty.
+  if (newParagraphProps.isSelectable &&
+      newParagraphProps.paragraphAttributes != oldParagraphProps.paragraphAttributes &&
+      ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    _selectableTextViewNeedsUpdate = YES;
+  }
+#endif
+
   [super updateProps:props oldProps:oldProps];
 }
 
@@ -221,10 +233,10 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 #if !TARGET_OS_TV
   // `updateProps:` runs before the state and the layout of the same mutation,
   // and a change of `selectable` alone computes no frames. So the text view is
-  // built here, after all of the mutation, from the drawing frame computed last.
-  if (_selectableTextViewNeedsUpdate) {
-    _selectableTextViewNeedsUpdate = NO;
-    [self updateSelectableTextViewWithDrawingFrame:_textLayoutFrame];
+  // updated here, once, after all of the mutation. A text view that does not
+  // exist yet waits for the first touch.
+  if (_selectableTextView != nil) {
+    [self updateSelectableTextViewIfNeeded];
   }
 #endif
 }
@@ -277,12 +289,8 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   _textView.drawingFrame = CGRectOffset(drawingFrame, -textViewFrame.origin.x, -textViewFrame.origin.y);
 
 #if !TARGET_OS_TV
-  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
-  if (paragraphProps.isSelectable && ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
-    // `drawingFrame` is the frame `RCTParagraphTextView` draws the glyphs into,
-    // compression adjustment included. The selection must use the same frame,
-    // or the selection rects sit away from the glyphs they select.
-    [self updateSelectableTextViewWithDrawingFrame:drawingFrame];
+  if ([self isPartialTextSelectionEnabled]) {
+    _selectableTextViewNeedsUpdate = YES;
   }
 #endif
 }
@@ -551,22 +559,119 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   _selectionLayoutManager = nil;
 }
 
+- (BOOL)isPartialTextSelectionEnabled
+{
+  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
+  return paragraphProps.isSelectable && ReactNativeFeatureFlags::enableIOSPartialTextSelection();
+}
+
+/*
+ * The selection text view is built on the first touch that lands on the
+ * paragraph, and not on mount. Most selectable paragraphs are never selected,
+ * and each text view holds a TextKit stack of its own.
+ *
+ * The text view sits right below the glyphs, and so above the inline views of
+ * the paragraph. The inline views must still get their touches first, as they
+ * do without the text view. The text view then takes only the touches that
+ * the paragraph itself takes: none with `pointerEvents="box-none"`, and all on
+ * the text with `pointerEvents="box-only"`.
+ */
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+  UIView *hitView = [super hitTest:point withEvent:event];
+  if (![self isPartialTextSelectionEnabled]) {
+    return hitView;
+  }
+
+  if (hitView == self) {
+    [self updateSelectableTextViewIfNeeded];
+    return [self hitTestSelectableTextView:point withEvent:event] ?: self;
+  }
+
+  if (_selectableTextView != nil && [hitView isDescendantOfView:_selectableTextView]) {
+    UIView *inlineHitView = [self hitTestInlineViews:point withEvent:event];
+    if (inlineHitView != nil) {
+      return inlineHitView;
+    }
+    return _props->pointerEvents == PointerEventsMode::BoxNone ? nil : hitView;
+  }
+
+  return hitView;
+}
+
+- (UIView *)hitTestSelectableTextView:(CGPoint)point withEvent:(UIEvent *)event
+{
+  if (_selectableTextView == nil) {
+    return nil;
+  }
+  return [_selectableTextView hitTest:[_selectableTextView convertPoint:point fromView:self] withEvent:event];
+}
+
+- (UIView *)hitTestInlineViews:(CGPoint)point withEvent:(UIEvent *)event
+{
+  for (UIView *subview in [_selectableTextView.superview.subviews reverseObjectEnumerator]) {
+    if (subview == _selectableTextView || subview == _textView) {
+      continue;
+    }
+    UIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event];
+    if (hitView != nil) {
+      return hitView;
+    }
+  }
+  return nil;
+}
+
 - (void)removeSelectableTextView
 {
   [_selectableTextView removeFromSuperview];
   _selectableTextView = nil;
+  _selectionRenderedState = nullptr;
   _selectionRenderedText = nil;
   _selectionRenderedSize = CGSizeZero;
+  _selectionRenderedParagraphAttributes = ParagraphAttributes{};
+}
+
+- (void)updateSelectableTextViewIfNeeded
+{
+  if (!_selectableTextViewNeedsUpdate) {
+    return;
+  }
+  _selectableTextViewNeedsUpdate = NO;
+  // `_textLayoutFrame` is the frame `RCTParagraphTextView` draws the glyphs
+  // into, compression adjustment included. The selection must use the same
+  // frame, or the selection rects sit away from the glyphs they select.
+  [self updateSelectableTextViewWithDrawingFrame:_textLayoutFrame];
 }
 
 /*
  * A `UITextView` binds its text container at initialisation, so the selectable
- * text view is rebuilt only when the text or the available size changes.
+ * text view is rebuilt only when the text, the available size or the paragraph
+ * attributes that configure the container change.
  */
 - (void)updateSelectableTextViewWithDrawingFrame:(CGRect)drawingFrame
 {
-  NSAttributedString *attributedText = self.attributedText;
-  if (attributedText.length == 0 || CGRectIsEmpty(drawingFrame)) {
+  const auto &state = _textView.state;
+  if (!state || CGRectIsEmpty(drawingFrame)) {
+    [self removeSelectableTextView];
+    return;
+  }
+
+  // A relayout of unchanged text is the most frequent update, and it needs no
+  // conversion of the text. The content comparison does not look at the layout
+  // metrics that size the attachments, so a paragraph with attachments always
+  // takes the full comparison.
+  const auto &attributedString = state->getData().attributedString;
+  if (_selectableTextView != nil && _selectionRenderedState &&
+      CGSizeEqualToSize(drawingFrame.size, _selectionRenderedSize) &&
+      _paragraphAttributes == _selectionRenderedParagraphAttributes &&
+      !RCTAttributedStringHasAttachments(attributedString) &&
+      attributedString.isContentEqual(_selectionRenderedState->getData().attributedString)) {
+    _selectableTextView.frame = drawingFrame;
+    return;
+  }
+
+  NSAttributedString *attributedText = RCTNSAttributedStringFromAttributedString(attributedString);
+  if (attributedText.length == 0) {
     [self removeSelectableTextView];
     return;
   }
@@ -578,7 +683,8 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   NSAttributedString *layoutText = RCTUnpaintedAttributedString(attributedText);
 
   BOOL needsRebuild = _selectableTextView == nil || ![layoutText isEqualToAttributedString:_selectionRenderedText] ||
-      !CGSizeEqualToSize(drawingFrame.size, _selectionRenderedSize);
+      !CGSizeEqualToSize(drawingFrame.size, _selectionRenderedSize) ||
+      _paragraphAttributes != _selectionRenderedParagraphAttributes;
 
   if (needsRebuild) {
     if (_selectionLayoutManager == nil) {
@@ -603,8 +709,10 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 
     _selectionRenderedText = [layoutText copy];
     _selectionRenderedSize = drawingFrame.size;
+    _selectionRenderedParagraphAttributes = _paragraphAttributes;
   }
 
+  _selectionRenderedState = state;
   _selectableTextView.frame = drawingFrame;
   _selectableTextView.sourceAttributedText = attributedText;
 }

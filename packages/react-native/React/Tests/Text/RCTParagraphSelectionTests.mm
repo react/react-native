@@ -39,6 +39,31 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   bool partialTextSelection_;
 };
 
+@interface RCTParagraphComponentView (RCTParagraphSelectionTests)
+
+- (void)updateSelectableTextViewWithDrawingFrame:(CGRect)drawingFrame;
+
+@end
+
+/*
+ * A paragraph view that counts the updates of its selection text view.
+ */
+@interface RCTParagraphSelectionCountingView : RCTParagraphComponentView
+
+@property (nonatomic) NSUInteger selectionTextViewUpdateCount;
+
+@end
+
+@implementation RCTParagraphSelectionCountingView
+
+- (void)updateSelectableTextViewWithDrawingFrame:(CGRect)drawingFrame
+{
+  self.selectionTextViewUpdateCount++;
+  [super updateSelectableTextViewWithDrawingFrame:drawingFrame];
+}
+
+@end
+
 /*
  * A native parent with an edit-menu action of its own.
  */
@@ -226,9 +251,30 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 }
 
 /*
+ * A selectable paragraph that truncates to one line. Changing the ellipsize
+ * mode changes only the props, and so computes no new frame.
+ */
+- (Props::Shared)selectablePropsWithEllipsizeMode:(EllipsizeMode)ellipsizeMode
+{
+  auto props = std::make_shared<ParagraphProps>();
+  props->isSelectable = true;
+  props->paragraphAttributes.maximumNumberOfLines = 1;
+  props->paragraphAttributes.ellipsizeMode = ellipsizeMode;
+  return props;
+}
+
+- (Props::Shared)selectablePropsWithPointerEvents:(PointerEventsMode)pointerEvents
+{
+  auto props = std::make_shared<ParagraphProps>();
+  props->isSelectable = true;
+  props->pointerEvents = pointerEvents;
+  return props;
+}
+
+/*
  * Builds a paragraph view with the update calls that `RCTMountingManager` makes
- * for an insert. The view gets no event emitter and no parent.
- * `finalizeUpdates:` creates the selection text view, so every test needs it.
+ * for an insert. The view gets no event emitter and no parent. The selection
+ * text view waits for the first touch; see `selectionTextViewAfterTouchIn:`.
  */
 - (RCTParagraphComponentView *)paragraphViewSelectable:(BOOL)selectable
 {
@@ -238,10 +284,17 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (RCTParagraphComponentView *)paragraphViewSelectable:(BOOL)selectable
                                       attributedString:(AttributedString)attributedString
 {
+  return [self paragraphViewWithProps:[self propsWithSelectable:selectable]
+                     attributedString:std::move(attributedString)];
+}
+
+- (RCTParagraphComponentView *)paragraphViewWithProps:(Props::Shared)props
+                                     attributedString:(AttributedString)attributedString
+{
   RCTParagraphComponentView *view = [RCTParagraphComponentView new];
   view.frame = CGRectMake(0, 0, 320, 100);
 
-  [view updateProps:[self propsWithSelectable:selectable] oldProps:nullptr];
+  [view updateProps:props oldProps:nullptr];
   [view updateState:[self stateWithAttributedString:std::move(attributedString)] oldState:nil];
 
   auto layoutMetrics = LayoutMetrics{};
@@ -260,6 +313,28 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
     }
   }
   return nil;
+}
+
+/*
+ * UIKit hit-tests the views under a finger before it delivers the touch, and
+ * the paragraph builds its selection text view in that hit test.
+ */
+- (UITextView *)selectionTextViewAfterTouchIn:(RCTParagraphComponentView *)view
+{
+  [view hitTest:CGPointMake(20, 10) withEvent:nil];
+  return [self selectionTextViewIn:view];
+}
+
+/*
+ * An inline view, such as a <View> nested in a <Text>, inside the text frame.
+ * The paragraph mounts it below the drawn glyphs, as it mounts every child.
+ */
+- (UIView *)mountInlineViewIn:(RCTParagraphComponentView *)view
+{
+  RCTViewComponentView *inlineView = [RCTViewComponentView new];
+  inlineView.frame = CGRectMake(200, 40, 50, 30);
+  [view mountChildComponentView:inlineView index:0];
+  return inlineView;
 }
 
 - (UILongPressGestureRecognizer *)longPressRecognizerIn:(UIView *)view
@@ -315,7 +390,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testSelectionTextViewSitsBelowTheDrawnParagraph
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
 
   XCTAssertNotNil(selectionTextView, @"A selectable paragraph must have a selection text view.");
 
@@ -334,7 +409,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testSelectionTextViewLaysOutButDoesNotPaint
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView);
 
   NSAttributedString *laidOut = selectionTextView.textStorage;
@@ -365,7 +440,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES
                                                  attributedString:[self nativelyPaintedAttributedString]];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView);
 
   NSAttributedString *painted = view.attributedText;
@@ -409,7 +484,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testStrippedTextKeepsTheSameCharacters
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView);
 
   XCTAssertEqualObjects(
@@ -428,7 +503,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testCopyWritesPaintedRichTextForTheSelectedRange
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView);
 
   UIPasteboard *pasteboard = UIPasteboard.generalPasteboard;
@@ -478,30 +553,32 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:NO];
 
-  XCTAssertNil([self selectionTextViewIn:view], @"A paragraph that is not selectable must gain no extra view.");
+  XCTAssertNil(
+      [self selectionTextViewAfterTouchIn:view], @"A paragraph that is not selectable must gain no extra view.");
   XCTAssertFalse(view.contentView.hidden);
 }
 
 - (void)testTurningSelectableOffRemovesTheSelectionTextView
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  XCTAssertNotNil([self selectionTextViewIn:view]);
+  XCTAssertNotNil([self selectionTextViewAfterTouchIn:view]);
 
   [view updateProps:[self propsWithSelectable:NO] oldProps:[self propsWithSelectable:YES]];
   [view finalizeUpdates:RNComponentViewUpdateMaskProps];
 
-  XCTAssertNil([self selectionTextViewIn:view], @"Turning selection off must remove the text view.");
+  XCTAssertNil([self selectionTextViewAfterTouchIn:view], @"Turning selection off must remove the text view.");
   XCTAssertFalse(view.contentView.hidden, @"The paragraph must still draw itself.");
 }
 
 /*
  * A change of `selectable` alone is a props update, and `finalizeUpdates:`
- * computes no frames for it. The text view must still come back without a
- * later change of the text or the layout.
+ * computes no frames for it. The text view must still come back on the next
+ * touch without a later change of the text or the layout.
  */
 - (void)testTurningSelectableBackOnRestoresTheSelectionTextView
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  XCTAssertNotNil([self selectionTextViewAfterTouchIn:view]);
 
   [view updateProps:[self propsWithSelectable:NO] oldProps:[self propsWithSelectable:YES]];
   [view finalizeUpdates:RNComponentViewUpdateMaskProps];
@@ -510,30 +587,145 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   [view updateProps:[self propsWithSelectable:YES] oldProps:[self propsWithSelectable:NO]];
   [view finalizeUpdates:RNComponentViewUpdateMaskProps];
 
-  XCTAssertNotNil([self selectionTextViewIn:view], @"Turning selection on again must rebuild the text view.");
+  XCTAssertNotNil(
+      [self selectionTextViewAfterTouchIn:view], @"Turning selection on again must build the text view on a touch.");
 }
 
 /*
  * One mutation can turn `selectable` on and change the text. `updateProps:`
- * runs before `updateState:`, so a text view built there holds the old text
- * and is built again a moment later.
+ * runs before `updateState:`, so a text view built there would hold the old
+ * text.
  */
-- (void)testTurningSelectableOnWithNewTextBuildsOnceFromTheNewText
+- (void)testTurningSelectableOnWithNewTextBuildsFromTheNewText
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:NO];
 
   [view updateProps:[self propsWithSelectable:YES] oldProps:[self propsWithSelectable:NO]];
-  XCTAssertNil([self selectionTextViewIn:view], @"The text view must wait for the rest of the mutation.");
-
   [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"The new paragraph"]] oldState:nil];
   [view finalizeUpdates:RNComponentViewUpdateMaskProps | RNComponentViewUpdateMaskState];
 
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView);
   XCTAssertEqual(
       selectionTextView.textStorage.length,
       [@"The new paragraph" length],
       @"The text view must hold the text of the same mutation.");
+}
+
+/*
+ * The text container is configured from the paragraph attributes: the line
+ * limit, the ellipsize mode and the font scaling. A change of them alone is a
+ * props-only update, which computes no new frame, so the rebuild check must
+ * look at the attributes and `updateProps:` must schedule the update.
+ */
+- (void)testChangingEllipsizeModeRebuildsTheSelectionTextView
+{
+  RCTParagraphComponentView *view =
+      [self paragraphViewWithProps:[self selectablePropsWithEllipsizeMode:EllipsizeMode::Head]
+                  attributedString:[self decoratedAttributedString]];
+  UITextView *before = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(before);
+  XCTAssertEqual(before.textContainer.lineBreakMode, NSLineBreakByTruncatingHead);
+
+  [view updateProps:[self selectablePropsWithEllipsizeMode:EllipsizeMode::Tail]
+           oldProps:[self selectablePropsWithEllipsizeMode:EllipsizeMode::Head]];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+  UITextView *after = [self selectionTextViewIn:view];
+  XCTAssertNotNil(after);
+  XCTAssertNotEqual(after, before, @"A new ellipsize mode needs a new text container.");
+  XCTAssertEqual(after.textContainer.lineBreakMode, NSLineBreakByTruncatingTail);
+}
+
+- (void)testPropsUpdateWithTheSameAttributesKeepsTheSelectionTextView
+{
+  RCTParagraphComponentView *view =
+      [self paragraphViewWithProps:[self selectablePropsWithEllipsizeMode:EllipsizeMode::Tail]
+                  attributedString:[self decoratedAttributedString]];
+  UITextView *before = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(before);
+
+  [view updateProps:[self selectablePropsWithEllipsizeMode:EllipsizeMode::Tail]
+           oldProps:[self selectablePropsWithEllipsizeMode:EllipsizeMode::Tail]];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+  XCTAssertEqual([self selectionTextViewIn:view], before, @"Unchanged attributes must not rebuild the text view.");
+}
+
+#pragma mark - The text view waits for a touch
+
+/*
+ * Most selectable paragraphs are never selected. The text view and its TextKit
+ * stack must cost nothing until a finger lands on the paragraph.
+ */
+- (void)testSelectableParagraphBuildsNoSelectionTextViewBeforeATouch
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  XCTAssertNil([self selectionTextViewIn:view], @"Mounting must not build the selection text view.");
+
+  [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"A different paragraph"]]
+           oldState:nil];
+  [view finalizeUpdates:RNComponentViewUpdateMaskState];
+  XCTAssertNil([self selectionTextViewIn:view], @"An update before the first touch must not build it either.");
+
+  UIView *hitView = [view hitTest:CGPointMake(20, 10) withEvent:nil];
+  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  XCTAssertNotNil(selectionTextView, @"The first touch must build the selection text view.");
+  XCTAssertTrue([hitView isDescendantOfView:selectionTextView], @"The touch that builds the text view must go to it.");
+  XCTAssertEqual(selectionTextView.textStorage.length, [@"A different paragraph" length]);
+}
+
+/*
+ * One mutation can change the props, the state and the layout of a paragraph
+ * together. The text view must be updated once for the whole mutation, and not
+ * once for each part of it.
+ */
+- (void)testOneMutationUpdatesTheSelectionTextViewOnce
+{
+  RCTParagraphSelectionCountingView *view = [RCTParagraphSelectionCountingView new];
+  view.frame = CGRectMake(0, 0, 320, 100);
+  [view updateProps:[self propsWithSelectable:YES] oldProps:nullptr];
+  [view updateState:[self stateWithAttributedString:[self decoratedAttributedString]] oldState:nil];
+  auto layoutMetrics = LayoutMetrics{};
+  layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
+  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:{}];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
+  XCTAssertEqual(view.selectionTextViewUpdateCount, 0u, @"Mounting must not update a text view that does not exist.");
+
+  XCTAssertNotNil([self selectionTextViewAfterTouchIn:view]);
+  [view hitTest:CGPointMake(20, 10) withEvent:nil];
+  XCTAssertEqual(view.selectionTextViewUpdateCount, 1u, @"A second touch must not update the text view again.");
+
+  [view updateProps:[self selectablePropsWithEllipsizeMode:EllipsizeMode::Tail]
+           oldProps:[self propsWithSelectable:YES]];
+  [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"A different paragraph"]]
+           oldState:nil];
+  auto movedLayoutMetrics = layoutMetrics;
+  movedLayoutMetrics.frame.origin = facebook::react::Point{0, 20};
+  [view updateLayoutMetrics:movedLayoutMetrics oldLayoutMetrics:layoutMetrics];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
+
+  XCTAssertEqual(view.selectionTextViewUpdateCount, 2u, @"One mutation must update the text view once.");
+}
+
+/*
+ * A relayout of unchanged text is the most frequent update of a paragraph. It
+ * must keep the text view and must not convert the text again.
+ */
+- (void)testRelayoutOfUnchangedTextConvertsNoText
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  UITextView *before = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(before);
+  id convertedText = [before valueForKey:@"sourceAttributedText"];
+  XCTAssertNotNil(convertedText);
+
+  [view updateState:[self stateWithAttributedString:[self decoratedAttributedString]] oldState:nil];
+  [view finalizeUpdates:RNComponentViewUpdateMaskState];
+
+  XCTAssertEqual([self selectionTextViewIn:view], before);
+  XCTAssertEqual(
+      [before valueForKey:@"sourceAttributedText"], convertedText, @"Unchanged text must not be converted again.");
 }
 
 #pragma mark - Recycling
@@ -545,7 +737,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testRecyclingRemovesTheSelectionTextView
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  XCTAssertNotNil([self selectionTextViewIn:view]);
+  XCTAssertNotNil([self selectionTextViewAfterTouchIn:view]);
 
   [view prepareForRecycle];
 
@@ -564,7 +756,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   [view prepareForRecycle];
   [self mountRecycledView:view selectable:YES text:"The next paragraph"];
 
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView, @"A recycled selectable paragraph must get a selection text view again.");
   XCTAssertEqual(
       selectionTextView.textStorage.length,
@@ -583,7 +775,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testHighlightOnlyUpdateKeepsTheSameSelectionTextView
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  UITextView *before = [self selectionTextViewIn:view];
+  UITextView *before = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(before);
 
   [view updateState:[self stateWithAttributedString:[self decoratedAttributedStringHighlighted:YES]] oldState:nil];
@@ -600,14 +792,16 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testTextChangeRebuildsTheSelectionTextView
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  UITextView *before = [self selectionTextViewIn:view];
+  UITextView *before = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(before);
 
   [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"A different paragraph"]]
            oldState:nil];
   [view finalizeUpdates:RNComponentViewUpdateMaskState];
 
-  XCTAssertNotEqual([self selectionTextViewIn:view], before, @"New text must rebuild the selection text view.");
+  UITextView *after = [self selectionTextViewIn:view];
+  XCTAssertNotNil(after, @"A text view that exists must follow the text without a new touch.");
+  XCTAssertNotEqual(after, before, @"New text must rebuild the selection text view.");
 }
 
 #pragma mark - A showing selection owns the touch
@@ -622,7 +816,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 {
   auto eventEmitter = std::make_shared<TouchEventEmitter>(nullptr, EventDispatcher::Weak{});
   RCTParagraphComponentView *view = [self paragraphViewWithEventEmitter:eventEmitter];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView);
 
   selectionTextView.selectedRange = NSMakeRange(0, 5);
@@ -640,7 +834,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 {
   auto eventEmitter = std::make_shared<TouchEventEmitter>(nullptr, EventDispatcher::Weak{});
   RCTParagraphComponentView *view = [self paragraphViewWithEventEmitter:eventEmitter];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
   XCTAssertNotNil(selectionTextView);
 
   selectionTextView.selectedRange = NSMakeRange(0, 0);
@@ -649,6 +843,89 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
       (const void *)[(id<RCTTouchableComponentViewProtocol>)view touchEventEmitterAtPoint:CGPointMake(100, 10)].get(),
       (const void *)eventEmitter.get(),
       @"With nothing selected, a press must still reach the pressable text.");
+}
+
+#pragma mark - Inline views and pointerEvents
+
+/*
+ * The selection text view sits right below the glyphs, and so above the inline
+ * views. A touch on an inline view must still reach it: before the text view
+ * exists, after it exists, and after it is built again.
+ */
+- (void)testATouchOnAnInlineViewGoesToTheInlineView
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  UIView *inlineView = [self mountInlineViewIn:view];
+  CGPoint onInlineView = CGPointMake(225, 55);
+
+  XCTAssertEqual([view hitTest:onInlineView withEvent:nil], inlineView);
+
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(selectionTextView);
+  XCTAssertTrue(
+      CGRectContainsPoint(selectionTextView.frame, onInlineView),
+      @"The text view must cover the inline view, or this test proves nothing.");
+  XCTAssertGreaterThan([view.subviews indexOfObject:selectionTextView], [view.subviews indexOfObject:inlineView]);
+  XCTAssertEqual([view hitTest:onInlineView withEvent:nil], inlineView, @"The text view must not take the touch.");
+
+  [view updateState:[self stateWithAttributedString:[self attributedStringWithText:"A different paragraph"]]
+           oldState:nil];
+  [view finalizeUpdates:RNComponentViewUpdateMaskState];
+  XCTAssertNotEqual([self selectionTextViewIn:view], selectionTextView);
+  XCTAssertEqual(
+      [view hitTest:onInlineView withEvent:nil], inlineView, @"A rebuilt text view must not take the touch either.");
+}
+
+/*
+ * With `pointerEvents="box-none"` the paragraph takes no touches, and only its
+ * inline views do. The selection text view is a part of the paragraph.
+ */
+- (void)testBoxNoneParagraphTakesNoTouchOnTheText
+{
+  RCTParagraphComponentView *view =
+      [self paragraphViewWithProps:[self selectablePropsWithPointerEvents:PointerEventsMode::BoxNone]
+                  attributedString:[self decoratedAttributedString]];
+  UIView *inlineView = [self mountInlineViewIn:view];
+
+  XCTAssertNil([view hitTest:CGPointMake(20, 10) withEvent:nil]);
+  XCTAssertNil([self selectionTextViewIn:view], @"A paragraph that takes no touch must not build the text view.");
+  XCTAssertEqual([view hitTest:CGPointMake(225, 55) withEvent:nil], inlineView);
+}
+
+- (void)testSwitchingToBoxNoneTakesTheTouchesFromTheSelectionTextView
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  UIView *inlineView = [self mountInlineViewIn:view];
+  XCTAssertNotNil([self selectionTextViewAfterTouchIn:view]);
+
+  [view updateProps:[self selectablePropsWithPointerEvents:PointerEventsMode::BoxNone]
+           oldProps:[self propsWithSelectable:YES]];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+  XCTAssertNil([view hitTest:CGPointMake(20, 10) withEvent:nil], @"The existing text view must not take the touch.");
+  XCTAssertEqual([view hitTest:CGPointMake(225, 55) withEvent:nil], inlineView);
+}
+
+/*
+ * With `pointerEvents="box-only"` the paragraph takes every touch, and its
+ * inline views take none. Without the flag, the long press sits on the
+ * paragraph itself, so the text can be selected in this mode. It still can.
+ */
+- (void)testBoxOnlyParagraphStillSelects
+{
+  RCTParagraphComponentView *view =
+      [self paragraphViewWithProps:[self selectablePropsWithPointerEvents:PointerEventsMode::BoxOnly]
+                  attributedString:[self decoratedAttributedString]];
+  UIView *inlineView = [self mountInlineViewIn:view];
+
+  UIView *hitView = [view hitTest:CGPointMake(20, 10) withEvent:nil];
+  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  XCTAssertNotNil(selectionTextView);
+  XCTAssertTrue([hitView isDescendantOfView:selectionTextView], @"The text must still be selectable.");
+
+  UIView *inlineHitView = [view hitTest:CGPointMake(225, 55) withEvent:nil];
+  XCTAssertNotNil(inlineHitView);
+  XCTAssertFalse([inlineHitView isDescendantOfView:inlineView], @"An inline view must take no touch.");
 }
 
 #pragma mark - Accessibility
@@ -661,7 +938,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 - (void)testSelectionTextViewIsHiddenFromAccessibility
 {
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
-  UITextView *selectionTextView = [self selectionTextViewIn:view];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
 
   XCTAssertNotNil(selectionTextView);
   XCTAssertTrue(selectionTextView.accessibilityElementsHidden, @"The text view must not be read by VoiceOver.");
@@ -712,7 +989,8 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   [self setPartialTextSelectionEnabled:NO];
   RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
 
-  XCTAssertNil([self selectionTextViewIn:view], @"Without the flag, a paragraph must gain no selection text view.");
+  XCTAssertNil(
+      [self selectionTextViewAfterTouchIn:view], @"Without the flag, a paragraph must gain no selection text view.");
   XCTAssertNotNil([self longPressRecognizerIn:view], @"Without the flag, a long press must show the menu.");
   if (@available(iOS 16.0, *)) {
     XCTAssertNotNil([self editMenuInteractionIn:view]);
@@ -749,7 +1027,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   [self mountRecycledView:view selectable:YES text:"The next paragraph"];
 
   XCTAssertNotNil([self longPressRecognizerIn:view], @"A recycled selectable paragraph must keep its long press.");
-  XCTAssertNil([self selectionTextViewIn:view]);
+  XCTAssertNil([self selectionTextViewAfterTouchIn:view]);
 }
 
 @end
