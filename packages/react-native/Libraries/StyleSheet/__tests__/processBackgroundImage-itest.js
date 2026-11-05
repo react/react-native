@@ -353,6 +353,20 @@ describe('processBackgroundImage', () => {
     expect(result).toEqual([]);
   });
 
+  it('should return empty array for non-finite color stop positions', () => {
+    expect(processBackgroundImage('linear-gradient(red NaN%, blue)')).toEqual(
+      [],
+    );
+    expect(
+      processBackgroundImage([
+        {
+          type: 'linear-gradient' as const,
+          colorStops: [{color: 'red', positions: ['NaN%']}, {color: 'blue'}],
+        },
+      ]),
+    ).toEqual([]);
+  });
+
   it('should process unitless zero color stop position', () => {
     const input = 'linear-gradient(red 0, blue 100%)';
     const result = processBackgroundImage(input);
