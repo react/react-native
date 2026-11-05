@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @fantom_mode *
+ * @fantom_disable_coverage
  * @flow strict-local
  * @format
  */
