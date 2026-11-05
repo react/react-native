@@ -30,7 +30,7 @@ export function polyfillObjectProperty<T>(
   name: string,
   getValue: () => T,
 ): void {
-  const descriptor = Object.getOwnPropertyDescriptor<$FlowFixMe>(object, name);
+  const descriptor = Object.getOwnPropertyDescriptor(object, name);
   if (__DEV__ && descriptor) {
     const backupName = `original${name[0].toUpperCase()}${name.slice(1)}`;
     Object.defineProperty(object, backupName, descriptor);
