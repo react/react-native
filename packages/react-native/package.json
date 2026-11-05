@@ -141,10 +141,14 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
+    "@react-native-community/cli": ">=21.0.0-alpha.1",
     "@types/react": "^19.1.1",
     "react": "^19.3.0"
   },
   "peerDependenciesMeta": {
+    "@react-native-community/cli": {
+      "optional": true
+    },
     "@types/react": {
       "optional": true
     }

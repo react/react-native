@@ -12,12 +12,12 @@
 'use strict';
 
 // $FlowFixMe[untyped-import]
-const {name} = require('./package.json');
+const {name, peerDependencies} = require('./package.json');
 const {styleText} = require('node:util');
 const {satisfies} = require('semver');
 
 const COMMUNITY_CLI_PACKAGE = '@react-native-community/cli';
-const COMMUNITY_CLI_RANGE = '>=21.0.0-alpha.1';
+const COMMUNITY_CLI_RANGE = peerDependencies[COMMUNITY_CLI_PACKAGE];
 
 const deprecated = () => {
   throw new Error(
