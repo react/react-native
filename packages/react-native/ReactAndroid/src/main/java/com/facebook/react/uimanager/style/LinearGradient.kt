@@ -207,7 +207,7 @@ internal class LinearGradient(val direction: Direction, val colorStops: List<Col
     }
 
     val slope = tan(Math.toRadians((90 - adjustedAngle))).toFloat()
-    val perpendicularSlope = -1 / slope
+    val perpendicularSlope = -1f / slope
 
     val halfHeight = height / 2
     val halfWidth = width / 2
