@@ -130,11 +130,14 @@ export function getXcodeBuildSettings(
   iosProjectFolder: string,
   mode: 'Release' | 'Debug',
 ): XcodeBuildSettings[] {
+  const container =
+    getDependencyManager(iosProjectFolder) === 'swiftpm'
+      ? ['-project', 'HelloWorld.xcodeproj']
+      : ['-workspace', 'HelloWorld.xcworkspace'];
   const {stdout} = execa.sync(
     'xcodebuild',
     [
-      '-workspace',
-      'HelloWorld.xcworkspace',
+      ...container,
       '-scheme',
       'HelloWorld',
       '-configuration',
@@ -147,6 +150,16 @@ export function getXcodeBuildSettings(
     {cwd: iosProjectFolder},
   );
   return JSON.parse(stdout);
+}
+
+// HelloWorld is a CocoaPods app in git. `react-native spm add` converts it to
+// SwiftPM, as CI does, and leaves this marker in the Xcode project.
+export function getDependencyManager(iosPath: string): 'cocoapods' | 'swiftpm' {
+  return fs.existsSync(
+    path.join(iosPath, 'HelloWorld.xcodeproj', '.spm-injected.json'),
+  )
+    ? 'swiftpm'
+    : 'cocoapods';
 }
 
 export function hasPodInstalled(iosPath: string, pkg: string): boolean {
