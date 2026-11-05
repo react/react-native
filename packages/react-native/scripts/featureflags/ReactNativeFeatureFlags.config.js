@@ -261,7 +261,7 @@ const definitions: FeatureFlagDefinitions = {
       metadata: {
         dateAdded: '2026-10-26',
         description:
-          'When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.',
+          'When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView, TextInput). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

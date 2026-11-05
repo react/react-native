@@ -71,7 +71,7 @@ namespace {
 // components are excluded: their native defaults are not guaranteed to match
 // the C++ defaults that props diffing relies on.
 bool isCoreComponentWithPropsDiffing(std::string_view componentName) {
-  static constexpr std::array<std::string_view, 7> kCoreComponents = {
+  static constexpr std::array<std::string_view, 8> kCoreComponents = {
       "View",
       "Paragraph",
       "Text",
@@ -79,6 +79,7 @@ bool isCoreComponentWithPropsDiffing(std::string_view componentName) {
       "TextEffect",
       "Image",
       "ScrollView",
+      "AndroidTextInput",
   };
   return std::find(
              kCoreComponents.begin(), kCoreComponents.end(), componentName) !=

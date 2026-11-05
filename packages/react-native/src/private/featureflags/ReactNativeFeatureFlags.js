@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c424b1c2a874590f92b2ad90525530c8>>
+ * @generated SignedSource<<77b92cb5ac8078aa3e73de72c7319169>>
  * @flow strict
  * @noformat
  */
@@ -300,7 +300,7 @@ export const enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>
  */
 export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', true);
 /**
- * When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.
+ * When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView, TextInput). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.
  */
 export const enableCoreComponentsPropsUpdateReconciliationAndroid: Getter<boolean> = createNativeFlagGetter('enableCoreComponentsPropsUpdateReconciliationAndroid', false);
 /**

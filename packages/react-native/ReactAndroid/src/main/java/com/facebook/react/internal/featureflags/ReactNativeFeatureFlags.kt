@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4630b5fe0cd8c2dd206179019b8a4ea3>>
+ * @generated SignedSource<<4004d8650ddb3d1bc9afb9c5c72fa191>>
  */
 
 /**
@@ -145,7 +145,7 @@ public object ReactNativeFeatureFlags {
   public fun enableBridgelessArchitecture(): Boolean = accessor.enableBridgelessArchitecture()
 
   /**
-   * When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.
+   * When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView, TextInput). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.
    */
   @JvmStatic
   public fun enableCoreComponentsPropsUpdateReconciliationAndroid(): Boolean = accessor.enableCoreComponentsPropsUpdateReconciliationAndroid()
