@@ -287,10 +287,7 @@ function processColorStops(
       const position = allowAngularPositions
         ? parseColorStopPosition(positions[0], true)
         : positions[0];
-      if (
-        typeof position !== 'number' &&
-        (typeof position !== 'string' || !position.endsWith('%'))
-      ) {
+      if (!isValidColorStopPosition(position)) {
         return null;
       }
       processedColorStops.push({
@@ -308,10 +305,7 @@ function processColorStops(
           const position = allowAngularPositions
             ? parseColorStopPosition(rawPosition, true)
             : rawPosition;
-          if (
-            typeof position !== 'number' &&
-            (typeof position !== 'string' || !position.endsWith('%'))
-          ) {
+          if (!isValidColorStopPosition(position)) {
             return null;
           }
           processedColorStops.push({
