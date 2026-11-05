@@ -20,6 +20,7 @@
 - **New Architecture**: Remove `DefaultNewArchitectureEntryPoint.bridgelessEnabled` and the deprecated three-argument `load(turboModulesEnabled, fabricEnabled, bridgelessEnabled)` overload; bridgeless is always enabled in the New Architecture ([9b18b951ea](https://github.com/react/react-native/commit/9b18b951ea1fac8ef585c13e070e95739f7d0f1e) by [@christophpurrer](https://github.com/christophpurrer))
 - **New Architecture**: Remove `DefaultNewArchitectureEntryPoint.fabricEnabled`, `turboModulesEnabled`, `concurrentReactEnabled` and `isConfigurationValid` ([ca2e11af51](https://github.com/react/react-native/commit/ca2e11af51280611fe4740b8b472f4b29a826a7b) by [@christophpurrer](https://github.com/christophpurrer))
 - **Text**: Add `lineBreak` and `wordBreak` props to `Text` (CSS `line-break` / `word-break`) for strict/loose line breaking and phrase-based breaking on Android 13+ ([f736393946](https://github.com/react/react-native/commit/f7363939465e03f61016c5b872a45e99fe49ee85) by [@iray-tno](https://github.com/iray-tno))
+- **TurboModules**: Libraries that ship pre-generated JNI codegen fail to build until they regenerate it with 0.89's codegen: the `JavaTurboModule::invokeJavaMethod` overload with a `cachedMethodID` argument is deprecated, and codegen CMake builds with `-Werror`. ([f78bdd4aea](https://github.com/react/react-native/commit/f78bdd4aea8fde1eaaf2024ea210ff2188876f51) by [@hryhoriiK97](https://github.com/hryhoriiK97))
 
 #### iOS specific
 
@@ -27,6 +28,7 @@
 - **CocoaPods**: Install `React-cxxreact` headers under `cxxreact/` inside its framework when `USE_FRAMEWORKS` is enabled. Pods that include `<cxxreact/...>` without calling `install_modules_dependencies` must add `React_cxxreact.framework/Headers` to `HEADER_SEARCH_PATHS`. ([0a92baec87](https://github.com/react/react-native/commit/0a92baec8775f43b9bdc39540e894f1af486916c) by [@j-piasecki](https://github.com/j-piasecki))
 - **New Architecture**: Remove the deprecated `bridgelessEnabled` property and the deprecated `initWithBundleURLBlock:newArchEnabled:turboModuleEnabled:bridgelessEnabled:` / `initWithBundleURL:newArchEnabled:turboModuleEnabled:bridgelessEnabled:` initializers from `RCTRootViewFactoryConfiguration`; bridgeless is always enabled ([2a9eca81b8](https://github.com/react/react-native/commit/2a9eca81b8d05142a59f4e41fc40e87813668016) by [@christophpurrer](https://github.com/christophpurrer))
 - **TurboModules**: `+moduleName` is now optional on `RCTBridgeModule` instead of required, so a TurboModule resolved via a module provider need not declare it ([373385efc9](https://github.com/react/react-native/commit/373385efc934b3e2246afaf73d2c4c4afa6120e3) by [@christophpurrer](https://github.com/christophpurrer))
+- **TurboModules**: `RCTBridgeModule.h` now has nullability annotations. `constantsToExport` is nonnull, so a Swift override declared `-> [AnyHashable : Any]!` no longer compiles: declare it `-> [AnyHashable : Any]`. Module and view registry lookups, `methodsToExport`, promise resolve and reject arguments and weak module properties such as `bridge` are now `nullable`. ([08f96fefe4](https://github.com/react/react-native/commit/08f96fefe474037351ee66fe9f911f95aaf466f3) by generatedunixname1608173377072046)
 
 ### Added
 
@@ -125,13 +127,10 @@
 - **SwiftPM**: `spm add` and `spm update` write React Native's build settings to `ReactNativeSPM/ReactNativeSPM.xcconfig` and its build scripts to `ReactNativeSPM/Scripts/`, so a version bump no longer changes `project.pbxproj`. A configuration that uses its own xcconfig must now `#include` the generated file, and a target setting that hides React Native's value must add `$(inherited)`. `spm` prints the exact fix in both cases. ([6a2c7c2734](https://github.com/react/react-native/commit/6a2c7c27342d16cab93e398f950ad5b5565d2942) by [@chrfalch](https://github.com/chrfalch))
 - **Text**: Build a paragraph's NSAttributedString without copying each text fragment or re-attributing its runs ([7fc58f2192](https://github.com/react/react-native/commit/7fc58f2192f1920bea56f448a14e12bc7de0c980) by [@hryhoriiK97](https://github.com/hryhoriiK97))
 - **Text**: Pass `AttributedString` by const reference in `RCTTextLayoutManager` and add a move constructor for `AttributedStringBox`. ([0ffaff80a3](https://github.com/react/react-native/commit/0ffaff80a3b03b657c8f99da18959360bb1db581) by [@dheerajkoppu](https://github.com/dheerajkoppu))
-- **TurboModules**: Add nullability annotations to `RCTBridgeModule.h`. Module registry and view registry lookups, `methodsToExport`, promise resolve/reject arguments, and weak module properties such as `bridge` and `moduleRegistry` are now `nullable`. `methodQueue` is now nonnull, so Swift overrides must be declared as `DispatchQueue` rather than `DispatchQueue!`. ([08f96fefe4](https://github.com/react/react-native/commit/08f96fefe474037351ee66fe9f911f95aaf466f3) by generatedunixname1608173377072046)
 - **TurboModules**: Look up each TurboModule method's signature once instead of on every call ([1d1fade902](https://github.com/react/react-native/commit/1d1fade90235e0533d5bb24c50ec3ae2b42194fa) by [@hryhoriiK97](https://github.com/hryhoriiK97))
 - **TurboModules**: Strings passed from JS to native modules convert faster ([ed15270c6c](https://github.com/react/react-native/commit/ed15270c6c76b5256a258de94bff0e05161b6ddf) by [@hryhoriiK97](https://github.com/hryhoriiK97))
 
 ### Deprecated
-
-- **TurboModules**: `JavaTurboModule::invokeJavaMethod` with a `cachedMethodID` argument; use the overload without it ([f78bdd4aea](https://github.com/react/react-native/commit/f78bdd4aea8fde1eaaf2024ea210ff2188876f51) by [@hryhoriiK97](https://github.com/hryhoriiK97))
 
 #### Android specific
 
