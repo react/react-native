@@ -23,6 +23,16 @@
 
 namespace facebook::react {
 
+namespace {
+
+// Native memory that the JS object returned by `createNode` keeps alive: the
+// shadow node with its props, family and event emitter. A View with a few
+// style props takes about 2.4 KB on Android (measured with heapprofd), a bit
+// less on iOS, which doesn't keep the props as `folly::dynamic`.
+constexpr size_t kCreatedShadowNodeNativeMemory = 2048;
+
+} // namespace
+
 void UIManagerBinding::createAndInstallIfNeeded(
     jsi::Runtime& runtime,
     const std::shared_ptr<UIManager>& uiManager) {
@@ -245,7 +255,7 @@ jsi::Value UIManagerBinding::get(
               return jsi::Value::undefined();
             }
 
-            return valueFromShadowNode(
+            auto node = objectFromShadowNode(
                 runtime,
                 uiManager->createNode(
                     tagFromValue(arguments[0]),
@@ -254,6 +264,13 @@ jsi::Value UIManagerBinding::get(
                     RawProps(runtime, arguments[3]),
                     std::move(instanceHandle)),
                 true);
+            // The shadow node is freed only when the GC collects this object,
+            // so tell the GC about the native memory it keeps alive. Without
+            // this, unmounted shadow trees can pile up until the JS heap
+            // itself grows enough for a full collection.
+            node.setExternalMemoryPressure(
+                runtime, kCreatedShadowNodeNativeMemory);
+            return node;
           } catch (const std::logic_error& ex) {
             LOG(FATAL) << "logic_error in createNode: " << ex.what();
           }
@@ -339,7 +356,7 @@ jsi::Value UIManagerBinding::get(
           // rolled out
           // validateArgumentCount(runtime, methodName, paramCount, count);
 
-          return valueFromShadowNode(
+          return objectFromShadowNode(
               runtime,
               uiManager->cloneNode(
                   *Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
@@ -365,7 +382,7 @@ jsi::Value UIManagerBinding::get(
             size_t count) -> jsi::Value {
           validateArgumentCount(runtime, methodName, paramCount, count);
 
-          return valueFromShadowNode(
+          return objectFromShadowNode(
               runtime,
               uiManager->cloneNode(
                   *Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
@@ -393,7 +410,7 @@ jsi::Value UIManagerBinding::get(
           // validateArgumentCount(runtime, methodName, paramCount, count);
 
           bool hasChildrenArg = count == 3;
-          return valueFromShadowNode(
+          return objectFromShadowNode(
               runtime,
               uiManager->cloneNode(
                   *Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
@@ -820,7 +837,7 @@ jsi::Value UIManagerBinding::get(
             return jsi::Value::null();
           }
 
-          return valueFromShadowNode(runtime, shadowNode);
+          return objectFromShadowNode(runtime, shadowNode);
         });
   }
 
