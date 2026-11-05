@@ -11,6 +11,7 @@
 'use strict';
 
 const Platform = require('../../Utilities/Platform').default;
+const RCTNetworking = require('../RCTNetworking').default;
 const XMLHttpRequest = require('../XMLHttpRequest').default;
 
 jest.unmock('../../Utilities/Platform');
@@ -73,6 +74,86 @@ describe('XMLHttpRequest', function () {
     xhr.addEventListener('readystatechange', handleReadyStateChange);
 
     jest.clearAllMocks();
+  });
+
+  describe('asynchronous request creation', () => {
+    let callbacks: Array<(requestId: number) => void>;
+    let abortRequest: JestMockFn<$FlowFixMe, void>;
+
+    beforeEach(() => {
+      callbacks = [];
+      jest.spyOn(RCTNetworking, 'sendRequest').mockImplementation((...args) => {
+        callbacks.push(args[8]);
+      });
+      abortRequest = jest.spyOn(RCTNetworking, 'abortRequest');
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('cancels a request whose ID arrives after abort', () => {
+      xhr.open('GET', 'https://example.com/aborted');
+      xhr.send();
+      xhr.abort();
+
+      expect(abortRequest).not.toHaveBeenCalled();
+      callbacks[0](100);
+
+      expect(abortRequest).toHaveBeenCalledTimes(1);
+      expect(abortRequest).toHaveBeenCalledWith(100);
+      xhr.__didReceiveData(100, 'stale response');
+      xhr.__didCompleteResponse(100, null);
+      expect(xhr.readyState).toBe(xhr.UNSENT);
+      expect(xhr.response).toBe('');
+      expect(handleLoad).not.toHaveBeenCalled();
+    });
+
+    it.each([true, false])(
+      'preserves a replacement request when its ID arrives first: %s',
+      replacementFirst => {
+        xhr.open('POST', 'https://example.com/aborted');
+        xhr.send('old body');
+        xhr.abort();
+        xhr.open('GET', 'https://example.com/replacement');
+        xhr.send();
+
+        if (replacementFirst) {
+          callbacks[1](200);
+          callbacks[0](100);
+        } else {
+          callbacks[0](100);
+          callbacks[1](200);
+        }
+
+        expect(abortRequest).toHaveBeenCalledTimes(1);
+        expect(abortRequest).toHaveBeenCalledWith(100);
+        xhr.__didReceiveResponse(100, 500, {});
+        xhr.__didReceiveData(100, 'stale response');
+        xhr.__didCompleteResponse(100, null);
+        expect(xhr.readyState).toBe(xhr.OPENED);
+        expect(xhr.status).toBe(0);
+        expect(handleLoad).not.toHaveBeenCalled();
+
+        xhr.__didReceiveResponse(200, 200, {});
+        xhr.__didReceiveData(200, 'replacement response');
+        xhr.__didCompleteResponse(200, null);
+        expect(xhr.readyState).toBe(xhr.DONE);
+        expect(xhr.status).toBe(200);
+        expect(xhr.response).toBe('replacement response');
+        expect(handleLoad).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it('cancels an already created request only once', () => {
+      xhr.open('GET', 'https://example.com/aborted');
+      xhr.send();
+      callbacks[0](100);
+      xhr.abort();
+
+      expect(abortRequest).toHaveBeenCalledTimes(1);
+      expect(abortRequest).toHaveBeenCalledWith(100);
+    });
   });
 
   it('should transition readyState correctly', function () {
