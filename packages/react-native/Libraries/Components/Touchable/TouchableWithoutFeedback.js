@@ -150,6 +150,7 @@ const PASSTHROUGH_PROPS = [
   'onBlur',
   'onFocus',
   'onLayout',
+  'role',
   'testID',
 ] as const;
 
@@ -279,6 +280,11 @@ export default function TouchableWithoutFeedback(
     if (props[prop] !== undefined) {
       elementProps[prop] = props[prop];
     }
+  }
+
+  const accessibilityLabel = props['aria-label'] ?? props.accessibilityLabel;
+  if (accessibilityLabel !== undefined) {
+    elementProps.accessibilityLabel = accessibilityLabel;
   }
 
   // $FlowFixMe[incompatible-type]
