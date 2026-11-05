@@ -11,7 +11,7 @@
 // For the complete list:
 //
 // xcodebuild \
-//  -project HelloWorld.xcodeproj \
+//  -workspace HelloWorld.xcworkspace \
 //  -scheme HelloWorld \
 //  -configuration Debug \
 //  -sdk iphonesimulator \

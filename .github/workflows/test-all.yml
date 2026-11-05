@@ -129,6 +129,20 @@ jobs:
         with:
           flavor: ${{ matrix.flavor }}
 
+  # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
+  test_ios_rntester_cocoapods:
+    runs-on: macos-15-large
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Run it
+        uses: ./.github/actions/test-ios-rntester
+        with:
+          flavor: Debug
+          dependency-manager: cocoapods
+
   test_e2e_ios_rntester:
     needs: test_ios_rntester
     if: ${{ needs.test_ios_rntester.result == 'success' }}
@@ -442,6 +456,22 @@ jobs:
       - uses: ./.github/actions/test-ios-helloworld
         with:
           flavor: ${{ matrix.flavor }}
+
+  # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
+  test_ios_helloworld_cocoapods:
+    runs-on: macos-15
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
+    env:
+      PROJECT_NAME: iOSTemplateProject
+      YARN_ENABLE_IMMUTABLE_INSTALLS: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: ./.github/actions/test-ios-helloworld
+        with:
+          flavor: Debug
+          dependency-manager: cocoapods
 
   lint:
     runs-on: ubuntu-latest

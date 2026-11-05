@@ -42,10 +42,6 @@ type AppleBootstrapOption = {
   ...AppleOptions,
 };
 
-type AppleSwiftPMBootstrapOption = {
-  ...AppleOptions,
-};
-
 type AppleInstallApp = {
   // Install the app on a simulator or device, typically this is the description from
   // `xcrun simctl list devices`
@@ -94,7 +90,11 @@ const SWIFT_PACKAGE_DIRS = [
   'build/generated/ios',
 ];
 
-function assertReadable(cwd /*: string */, files /*: ReadonlyArray<string> */) {
+function assertReadable(
+  cwd /*: string */,
+  files /*: ReadonlyArray<string> */,
+  fix /*: string */,
+) {
   for (const file of files) {
     try {
       fs.accessSync(
@@ -103,7 +103,7 @@ function assertReadable(cwd /*: string */, files /*: ReadonlyArray<string> */) {
         fs.constants.F_OK | fs.constants.R_OK,
       );
     } catch (e /*: unknown */) {
-      throw new Error('Please run: yarn run bootstrap ios: ' + String(e));
+      throw new Error(`Please run: ${fix}: ` + String(e));
     }
   }
 }
@@ -119,11 +119,6 @@ type BootstrapTasks = {
   runCodegen: Task<void>,
   validate: Task<void>,
   installRubyGems: Task<ExecaPromise>,
-  installDependencies: Task<ExecaPromise>,
-};
-
-type SwiftPMBootstrapTasks = {
-  cleanupBuildFolder: Task<void>,
   installDependencies: Task<ExecaPromise>,
 };
 
@@ -193,29 +188,6 @@ const tasks = {
     }),
   }),
 
-  // 1. Or set up an Xcode project that uses SwiftPM instead of CocoaPods
-  bootstrapSwiftPM: (
-    options /*: AppleSwiftPMBootstrapOption */,
-  ) /*: SwiftPMBootstrapTasks */ => ({
-    cleanupBuildFolder: task(FIRST, 'Cleanup build folder', () => {
-      execa.sync('rm', ['-rf', 'build'], {
-        cwd: options.cwd,
-      });
-    }),
-    installDependencies: task(SECOND, 'Set up the Swift packages', () => {
-      const reactNativePath = path.dirname(getNodePackagePath('react-native'));
-      const setupScript = path.join(
-        reactNativePath,
-        'scripts',
-        'setup-apple-spm.js',
-      );
-      return execa('node', [setupScript, 'update'], {
-        cwd: options.cwd,
-        env: options.env,
-      });
-    }),
-  }),
-
   // 2. Build the iOS app using a setup environment
   build: (
     options /*: AppleBuildOptions */,
@@ -233,10 +205,18 @@ const tasks = {
       'Check the native dependencies are installed',
       () => {
         if (options.dependencyManager === 'swiftpm') {
-          assertReadable(options.cwd, SWIFT_PACKAGE_DIRS);
+          assertReadable(
+            options.cwd,
+            SWIFT_PACKAGE_DIRS,
+            'npx react-native spm update',
+          );
           return;
         }
-        assertReadable(options.cwd, ['Podfile.lock', 'Pods']);
+        assertReadable(
+          options.cwd,
+          ['Podfile.lock', 'Pods'],
+          'yarn run bootstrap ios',
+        );
         checkPodfileInSyncWithManifest(
           path.join(options.cwd, 'Podfile.lock'),
           path.join(options.cwd, 'Pods/Manifest.lock'),

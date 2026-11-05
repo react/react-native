@@ -9,11 +9,13 @@
  */
 
 import {run} from './lib/cli';
-import {pauseWatchman} from './lib/filesystem';
+import {getExistingPath, pauseWatchman} from './lib/filesystem';
 import {
   bootSimulator,
+  getDependencyManager,
   getSimulatorDetails,
   getXcodeBuildSettings,
+  hasPodInstalled,
   launchApp,
   launchSimulator,
 } from './lib/ios';
@@ -33,27 +35,47 @@ const cwd = {
   root: __dirname,
 };
 
-// A SwiftPM app has no Pods/hermes-engine. Like react-native-xcode.sh, use the
-// hermesc of the hermes-compiler package that react-native depends on.
-const getHermesConfig = () => ({
-  path: path.dirname(
-    require.resolve('hermes-compiler/package.json', {
-      paths: [path.dirname(require.resolve('react-native/package.json'))],
-    }),
-  ),
-  hermesc: 'hermesc/osx-bin/hermesc',
-});
+const possibleHermescPaths = [
+  // OSS checkout
+  'destroot/bin/hermesc',
+  // internal
+  'build_host_hermesc/bin/hermesc',
+];
+
+type BootstrapOptions = {
+  arch: 'old' | 'new',
+  jsvm: 'hermes' | 'jsc',
+  frameworks?: 'static' | 'dynamic',
+};
 
 bootstrap
   .command('ios')
   .description('Bootstrap iOS')
-  .action(async () => {
+  .addOption(
+    new Option('--arch <arch>', "Choose React Native's architecture")
+      .choices(['new', 'old'])
+      .default('new'),
+  )
+  .addOption(
+    new Option(
+      '--frameworks <linkage>',
+      'Use frameworks instead of static libraries',
+    )
+      .choices(['static', 'dynamic'])
+      .default(undefined),
+  )
+  .addOption(
+    new Option('--jsvm <vm>', 'Choose VM used on device')
+      .choices(['jsc', 'hermes'])
+      .default('hermes'),
+  )
+  .action(async ({jsvm, arch, frameworks}: BootstrapOptions) => {
     await run(
-      apple.bootstrapSwiftPM({
+      apple.bootstrap({
         cwd: cwd.ios,
-        // Build with the C++ stable API enforced.
-        // Run with RN_STRICT_API=0 to opt out.
-        env: {RN_STRICT_API: process.env.RN_STRICT_API ?? '1'},
+        frameworks,
+        hermes: jsvm === 'hermes',
+        newArchitecture: arch === 'new',
       }),
     );
   });
@@ -153,14 +175,17 @@ build
         break;
     }
 
+    const dependencyManager = getDependencyManager(cwd.ios);
+    const isWorkspace = dependencyManager === 'cocoapods';
+
     await pauseWatchman(async () => {
       await run(
         apple.build({
-          isWorkspace: false,
-          name: 'HelloWorld.xcodeproj',
+          isWorkspace,
+          name: isWorkspace ? 'HelloWorld.xcworkspace' : 'HelloWorld.xcodeproj',
           mode,
           scheme: 'HelloWorld',
-          dependencyManager: 'swiftpm',
+          dependencyManager,
           cwd: cwd.ios,
           env: {
             SKIP_BUNDLING: 'true',
@@ -170,6 +195,46 @@ build
       );
     });
   });
+
+const getJSVMConfig = (): {
+  jsvm: 'hermes' | 'jsc',
+  hermes: {path: string, hermesc: string},
+} => {
+  if (getDependencyManager(cwd.ios) === 'swiftpm') {
+    // A SwiftPM app has no Pods/hermes-engine. Like react-native-xcode.sh, use
+    // the hermesc of the hermes-compiler package that react-native depends on.
+    return {
+      jsvm: 'hermes',
+      hermes: {
+        path: path.dirname(
+          require.resolve('hermes-compiler/package.json', {
+            paths: [path.dirname(require.resolve('react-native/package.json'))],
+          }),
+        ),
+        hermesc: 'hermesc/osx-bin/hermesc',
+      },
+    };
+  }
+
+  const isHermesInstalled = hasPodInstalled(cwd.ios, 'hermes-engine');
+
+  // Validate only after initial build, as hermesc may not be prebuilt
+  const hermesFolder = path.join(cwd.ios, 'Pods/hermes-engine');
+  const hermesc = getExistingPath(hermesFolder, possibleHermescPaths);
+
+  if (hermesc == null && isHermesInstalled) {
+    throw new Error(
+      `Unable to find hermesc at:\n-${possibleHermescPaths
+        .map(line => ' - ' + line)
+        .join('\n')}`,
+    );
+  }
+
+  return {
+    jsvm: isHermesInstalled ? 'hermes' : 'jsc',
+    hermes: {path: hermesFolder, hermesc: hermesc ?? ''},
+  };
+};
 
 type BundleOptions = {
   prod: boolean,
@@ -186,7 +251,7 @@ bundle
     const mode = prod ? 'Release' : 'Debug';
 
     const settings = await getBuildSettings(mode);
-    const hermes = getHermesConfig();
+    const {jsvm, hermes} = getJSVMConfig();
 
     // Metro: src -> js
     const jsBundlePath = path.join(settings.bundleBuildDir, 'main.jsbundle.js');
@@ -208,7 +273,7 @@ bundle
           outputSourceMap: settings.bundleResourceDir,
           outputBundle: binaryBundlePath,
           dev: !prod,
-          jsvm: 'hermes',
+          jsvm,
           hermes,
           callback: metroProcess => {
             const readline = require('node:readline');
@@ -232,7 +297,7 @@ bundle
           outputSourceMap: settings.bundleResourceDir,
           outputBundle: binaryBundlePath,
           dev: !prod,
-          jsvm: 'hermes',
+          jsvm,
           hermes,
         });
 

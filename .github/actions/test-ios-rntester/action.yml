@@ -11,6 +11,9 @@ inputs:
     description: Whether we want to run E2E tests or not
     required: false
     default: false
+  dependency-manager:
+    description: 'How the app gets its native dependencies: swiftpm or cocoapods'
+    default: swiftpm
 
 runs:
   using: composite
@@ -30,29 +33,77 @@ runs:
     - name: Prepare IOS Tests
       if: ${{ inputs.run-unit-tests == 'true' }}
       uses: ./.github/actions/prepare-ios-tests
+    - name: Setup ruby
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6.10
+        bundler: none
+    - name: Install Bundler
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      shell: bash
+      run: |
+        BUNDLER_VERSION="$(awk '/BUNDLED WITH/{getline; print $1}' Gemfile.lock)"
+        if [ -z "$BUNDLER_VERSION" ]; then
+          echo "Could not determine Bundler version from Gemfile.lock." >&2
+          exit 1
+        fi
+        for attempt in 1 2 3; do
+          echo "Attempt $attempt of 3"
+          if gem install bundler --version "$BUNDLER_VERSION" --no-document; then
+            exit 0
+          fi
+          if [ "$attempt" -lt 3 ]; then
+            echo "Attempt $attempt failed. Retrying..."
+            sleep "$((attempt * 10))"
+          fi
+        done
+        echo "All 3 attempts failed."
+        exit 1
+    - name: Download ReactNativeDependencies
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      uses: ./.github/actions/download-artifact
+      with:
+        name: ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz
+        path: /tmp/third-party/
+    - name: Download React Native Prebuilds
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      uses: ./.github/actions/download-artifact
+      with:
+        name: ReactCore${{ inputs.flavor }}.xcframework.tar.gz
+        path: /tmp/ReactCore
+    - name: Install CocoaPods dependencies
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      shell: bash
+      run: |
+        export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz"
+        export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ inputs.flavor }}.xcframework.tar.gz"
+
+        cd packages/rn-tester
+
+        bundle install
+        bundle exec pod update hermes-engine --no-repo-update
     - name: Download the XCFrameworks built in this run
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
       uses: ./.github/actions/setup-spm-artifacts
       with:
         working-directory: packages/rn-tester
     # RNTester is a CocoaPods project in git, so developers can build React
     # Native from source. CI converts it to SwiftPM on every run.
-    - name: Ensure CocoaPods (`spm add --deintegrate` shells out to `pod`)
-      shell: bash
-      run: pod --version || sudo gem install cocoapods --no-document
     # react-native-test-library ships only a podspec; scaffold writes its
     # Package.swift.
     - name: Scaffold Package.swift manifests for community dependencies
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
       shell: bash
       working-directory: packages/rn-tester
       run: npx react-native spm scaffold --artifacts /tmp/spm-artifacts --download skip || true
     - name: Convert RNTester to SwiftPM
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
       shell: bash
       working-directory: packages/rn-tester
-      run: |
-        # pod deintegrate fails on non-ASCII strings without a UTF-8 locale.
-        LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 RN_STRICT_API=1 \
-          npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+      run: RN_STRICT_API=1 npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
     - name: Assert RNTester is on SwiftPM
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
       shell: bash
       working-directory: packages/rn-tester
       run: |
@@ -68,9 +119,14 @@ runs:
     - name: Build RNTester
       shell: bash
       run: |
+        if [[ "${{ inputs.dependency-manager }}" == "cocoapods" ]]; then
+          container=(-workspace packages/rn-tester/RNTesterPods.xcworkspace)
+        else
+          container=(-project packages/rn-tester/RNTesterPods.xcodeproj)
+        fi
         xcodebuild \
           -scheme "RNTester" \
-          -project packages/rn-tester/RNTesterPods.xcodeproj \
+          "${container[@]}" \
           -configuration "${{ inputs.flavor }}" \
           -sdk "iphonesimulator" \
           -destination "generic/platform=iOS Simulator" \
@@ -80,6 +136,7 @@ runs:
         echo "App found at $APP_PATH"
         echo "app-path=$APP_PATH" >> $GITHUB_ENV
     - name: Check the embedded React.framework flavor
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
       shell: bash
       run: |
         BINARY="${{ env.app-path }}/Frameworks/React.framework/React"
@@ -111,17 +168,18 @@ runs:
         tar -zcvf xcresults.tar.gz "/tmp/RNTesterTestResults"
     - name: Upload artifact
       uses: ./.github/actions/upload-artifact
-      if: ${{ inputs.run-unit-tests == 'true' }}
+      if: ${{ inputs.run-unit-tests == 'true' && inputs.dependency-manager == 'swiftpm' }}
       with:
         name: xcresults-${{ inputs.flavor }}
         path: /Users/runner/Library/Developer/Xcode/xcresults.tar.gz
     - name: Upload RNTester App
+      if: ${{ inputs.dependency-manager == 'swiftpm' }} # The e2e tests download this artifact; one upload per name
       uses: ./.github/actions/upload-artifact
       with:
         name: RNTesterApp-NewArch-${{ inputs.flavor }}
         path: ${{ env.app-path }}
     - name: Store test results
-      if: ${{ inputs.run-unit-tests == 'true' }}
+      if: ${{ inputs.run-unit-tests == 'true' && inputs.dependency-manager == 'swiftpm' }}
       uses: ./.github/actions/upload-artifact
       with:
         name: test-results-${{ inputs.flavor }}
