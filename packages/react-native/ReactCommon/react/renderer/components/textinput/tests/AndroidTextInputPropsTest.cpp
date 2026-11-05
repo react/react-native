@@ -20,6 +20,46 @@ TEST(AndroidTextInputPropsTest, diffPropsTargetMatchesComponentName) {
       AndroidTextInputShadowNode::Name());
 }
 
+// Values equal to the C++ default are not sent on creation, so the C++ default
+// has to match the state of a newly created native view.
+TEST(AndroidTextInputPropsTest, diffSendsValuesThatDifferFromNativeDefaults) {
+  AndroidTextInputProps props;
+  props.showSoftInputOnFocus = false;
+  props.allowFontScaling = false;
+  props.autoCorrect = false;
+
+  auto diff = props.getDiffProps(nullptr);
+
+  EXPECT_EQ(diff["showSoftInputOnFocus"], false);
+  EXPECT_EQ(diff["allowFontScaling"], false);
+  EXPECT_EQ(diff["autoCorrect"], false);
+}
+
+TEST(AndroidTextInputPropsTest, diffOfDefaultPropsIsEmpty) {
+  EXPECT_TRUE(AndroidTextInputProps().getDiffProps(nullptr).empty());
+}
+
+TEST(AndroidTextInputPropsTest, removedAutoCorrectIsSentAsNull) {
+  AndroidTextInputProps oldProps;
+  oldProps.autoCorrect = false;
+
+  auto diff = AndroidTextInputProps().getDiffProps(&oldProps);
+
+  ASSERT_EQ(diff.count("autoCorrect"), 1);
+  EXPECT_TRUE(diff["autoCorrect"].isNull());
+}
+
+// `includeFontPadding` is sent from the paragraph attributes only, whose
+// default matches the native default.
+TEST(AndroidTextInputPropsTest, removedIncludeFontPaddingIsNotSentAsFalse) {
+  AndroidTextInputProps oldProps;
+  oldProps.includeFontPadding = true;
+
+  auto diff = AndroidTextInputProps().getDiffProps(&oldProps);
+
+  EXPECT_EQ(diff.count("includeFontPadding"), 0);
+}
+
 } // namespace facebook::react
 
 #endif
