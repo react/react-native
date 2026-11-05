@@ -490,6 +490,7 @@ YGDirection facebook::react::yogaDirectionFromLayoutDirection(facebook::react::L
 bool facebook::react::areBorderRadiiCircular(const facebook::react::BorderRadii& borderRadii);
 bool facebook::react::hostPlatformColorIsColorMeaningful(facebook::react::Color color) noexcept;
 bool facebook::react::isColorMeaningful(const facebook::react::SharedColor& color) noexcept;
+bool facebook::react::isPropsDiffingEnabled(facebook::react::ComponentName componentName, const facebook::react::Props& props);
 bool facebook::react::isZero(facebook::react::Float n);
 constexpr auto facebook::react::to_underlying(auto e) noexcept;
 constexpr char facebook::react::toLower(char c);
