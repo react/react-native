@@ -1814,6 +1814,13 @@ const examples = [
     },
   },
   {
+    title: 'Inline view with small font scale',
+    name: 'inlineViewsSmallFontScale',
+    render(): React.Node {
+      return <TextInlineView.SmallFontScale />;
+    },
+  },
+  {
     title: 'Relayout inline image',
     name: 'relayoutInlineImage',
     render(): React.Node {
