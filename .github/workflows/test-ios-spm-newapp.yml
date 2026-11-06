@@ -46,6 +46,14 @@ jobs:
         uses: ./.github/actions/setup-spm-artifacts
         with:
           working-directory: ${{ env.APP_IOS_DIR }}
+      # The `spm deinit` round trip runs in the Debug cell only: it does not
+      # depend on the flavor.
+      - name: Record HelloWorld before SwiftPM
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        run: |
+          ./.github/workflow-scripts/assert-spm-deinit.sh record "$APP_IOS_DIR"
+          cp -R "$APP_IOS_DIR" "$RUNNER_TEMP/ios-before-spm"
       # HelloWorld is a CocoaPods project in git. CI converts it to SwiftPM on every run.
       - name: Convert HelloWorld to SwiftPM
         shell: bash
@@ -100,3 +108,47 @@ jobs:
             echo "::error::Release build embeds a Debug React.framework ($COUNT getDebugProps symbols, expected none)"
             exit 1
           fi
+      - name: Take HelloWorld back to CocoaPods
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: npx react-native spm deinit
+      # Informational only. Expected differences include the CocoaPods
+      # references and the .xcworkspace, which `pod install` restores, and the
+      # JavaScriptCore.framework reference and empty Pods group, which deinit
+      # does not restore on purpose.
+      - name: Show what changed since before SwiftPM
+        if: ${{ !cancelled() && matrix.flavor == 'Debug' }}
+        shell: bash
+        run: diff -r -x build "$RUNNER_TEMP/ios-before-spm" "$APP_IOS_DIR" || true
+      - name: Check that only the CocoaPods files are left
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        run: ./.github/workflow-scripts/assert-spm-deinit.sh check "$APP_IOS_DIR" "$XCODE_PROJECT" "$PODFILE_SHA256" "$GITIGNORE_SHA256"
+      - name: Setup ruby
+        if: matrix.flavor == 'Debug'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6.10
+      # The tarballs are the Debug ones that setup-spm-artifacts downloaded.
+      - name: Install the CocoaPods dependencies
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        working-directory: private/helloworld
+        run: |
+          export RCT_USE_LOCAL_RN_DEP=/tmp/deps-debug/ReactNativeDependenciesDebug.xcframework.tar.gz
+          export RCT_TESTONLY_RNCORE_TARBALL_PATH=/tmp/rc-debug/ReactCoreDebug.xcframework.tar.gz
+          yarn bootstrap ios | cat
+      - name: Build ${{ env.XCODE_SCHEME }} with CocoaPods (Debug)
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: |
+          xcodebuild \
+            -workspace "${XCODE_PROJECT%.xcodeproj}.xcworkspace" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/cocoapods-e2e-dd \
+            build
