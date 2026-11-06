@@ -144,6 +144,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   private val onScrollDispatchHelper = OnScrollDispatchHelper()
   private val scroller: OverScroller? = getOverScrollerFromParent()
   private val velocityHelper = VelocityHelper()
+  private val stableTouchCoordinatesHelper = StableTouchCoordinatesHelper(this)
   private val tempRect = Rect()
   private val defaultFlingAnimator: ValueAnimator = ObjectAnimator.ofInt(this, "scrollX", 0, 0)
 
@@ -667,7 +668,9 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     if (!PointerEvents.canChildrenBeTouchTarget(pointerEvents)) return true
 
     try {
-      if (super.onInterceptTouchEvent(ev)) {
+      if (
+          stableTouchCoordinatesHelper.withStableCoordinates(ev) { super.onInterceptTouchEvent(it) }
+      ) {
         handleInterceptedTouchEvent(ev)
         return true
       }
@@ -746,7 +749,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     // We do not accept the touch event if this view is not supposed to receive it.
     if (!PointerEvents.canBeTouchTarget(pointerEvents)) return false
 
-    velocityHelper.calculateVelocity(ev)
+    stableTouchCoordinatesHelper.withStableCoordinates(ev) { velocityHelper.calculateVelocity(it) }
     val action = ev.actionMasked
     if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) && dragging) {
       ReactScrollViewHelper.updateFabricScrollState(this)
@@ -768,7 +771,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     }
 
     return try {
-      super.onTouchEvent(ev)
+      stableTouchCoordinatesHelper.withStableCoordinates(ev) { super.onTouchEvent(it) }
     } catch (e: IllegalArgumentException) {
       // Log and ignore the error. This seems to be a bug in the android SDK and
       // this is the commonly accepted workaround.
