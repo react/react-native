@@ -58,6 +58,7 @@ export type ScrollViewNativeProps = Readonly<{
   onScrollToTop?: (event: ScrollEvent) => void,
   overScrollMode?: ?('auto' | 'always' | 'never'),
   pagingEnabled?: ?boolean,
+  padsContentForSafeArea?: ?boolean,
   persistentScrollbar?: ?boolean,
   pinchGestureEnabled?: ?boolean,
   scrollEnabled?: ?boolean,
