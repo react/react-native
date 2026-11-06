@@ -707,6 +707,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    fixTextInlineViewLineHeight: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-20',
+        description:
+          'Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'canary',
+    },
     fixTextLayoutOnPixelDensityChange: {
       defaultValue: false,
       metadata: {
