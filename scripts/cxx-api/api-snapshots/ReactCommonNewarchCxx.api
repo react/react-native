@@ -80,7 +80,7 @@ static const facebook::react::LayoutMetrics facebook::react::EmptyLayoutMetrics;
 static const facebook::react::TelemetryTimePoint facebook::react::kTelemetryUndefinedTimePoint;
 static constexpr auto facebook::react::kPropNameLengthHardCap;
 static constexpr facebook::react::RawPropsValueIndex facebook::react::kRawPropsValueIndexEmpty;
-using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
+using facebook::react::BackgroundImage = std::variant<facebook::react::ConicGradient, facebook::react::LinearGradient, facebook::react::RadialGradient>;
 using facebook::react::BackgroundSize = std::variant<facebook::react::BackgroundSizeKeyword, facebook::react::BackgroundSizeLengthPercentage>;
 using facebook::react::BorderColors = facebook::react::RectangleEdges<facebook::react::SharedColor>;
 using facebook::react::BorderCurves = facebook::react::RectangleCorners<facebook::react::BorderCurve>;
@@ -1768,6 +1768,13 @@ struct facebook::react::ColorStop {
   public bool operator==(const facebook::react::ColorStop& other) const = default;
   public facebook::react::SharedColor color;
   public facebook::react::ValueUnit position;
+}
+
+struct facebook::react::ConicGradient {
+  public Float from;
+  public bool operator==(const facebook::react::ConicGradient& other) const = default;
+  public facebook::react::RadialGradientPosition position;
+  public std::vector<facebook::react::ColorStop> colorStops;
 }
 
 struct facebook::react::CornerRadii {
