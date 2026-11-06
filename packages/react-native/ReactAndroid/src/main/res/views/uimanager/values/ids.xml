@@ -80,6 +80,9 @@
   <!-- tag is used to store graphical filter effects to apply to the view -->
   <item type="id" name="filter"/>
 
+  <!-- tag is set while BackgroundStyleApplicator clips the view's padding box with its outline -->
+  <item type="id" name="padding_box_outline_clip"/>
+
   <!-- tag is used to store mixBlendMode effects to apply to the view -->
   <item type="id" name="mix_blend_mode"/>
 

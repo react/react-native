@@ -59,7 +59,6 @@ import com.facebook.react.common.assets.ReactFontManager
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
-import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBackgroundColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBorderColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBackgroundColor
@@ -67,6 +66,7 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderRadius
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderStyle
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderWidth
+import com.facebook.react.uimanager.BackgroundStyleApplicator.updatePaddingBoxClip
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
@@ -1270,9 +1270,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   }
 
   public override fun onDraw(canvas: Canvas) {
-    if (overflow != Overflow.VISIBLE) {
-      clipToPaddingBox(this, canvas)
-    }
+    updatePaddingBoxClip(this, canvas, overflow != Overflow.VISIBLE)
 
     val spanned = text as? Spanned
     if (spanned != null) {
