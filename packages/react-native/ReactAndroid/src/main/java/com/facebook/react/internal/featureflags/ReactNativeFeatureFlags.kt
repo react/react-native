@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6b457b1b41a17fa2065720edc82939e3>>
+ * @generated SignedSource<<34a4beae0933f13de477fdf344bb2c8a>>
  */
 
 /**
@@ -293,6 +293,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableLayoutAnimationsOnIOS(): Boolean = accessor.enableLayoutAnimationsOnIOS()
+
+  /**
+   * When enabled, UIManager.getConstants() in bridgeless mode on Android returns only the view manager names. JS gets the constants of each view manager on first use.
+   */
+  @JvmStatic
+  public fun enableLazyViewManagerConstantsAndroid(): Boolean = accessor.enableLazyViewManagerConstantsAndroid()
 
   /**
    * Enable NSNull conversion when handling module arguments on iOS

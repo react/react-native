@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b57563a16ffc6bd7de85d3e2305ffaab>>
+ * @generated SignedSource<<fd2b761d5a01aae40d421a6d4ddb597c>>
  * @flow strict
  * @noformat
  */
@@ -93,6 +93,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableKeyEvents: Getter<boolean>,
   enableLayoutAnimationsOnAndroid: Getter<boolean>,
   enableLayoutAnimationsOnIOS: Getter<boolean>,
+  enableLazyViewManagerConstantsAndroid: Getter<boolean>,
   enableModuleArgumentNSNullConversionIOS: Getter<boolean>,
   enableMountingCoordinatorPullModelAndroid: Getter<boolean>,
   enableMutationObserverByDefault: Getter<boolean>,
@@ -399,6 +400,10 @@ export const enableLayoutAnimationsOnAndroid: Getter<boolean> = createNativeFlag
  * When enabled, LayoutAnimations API will animate state changes on iOS.
  */
 export const enableLayoutAnimationsOnIOS: Getter<boolean> = createNativeFlagGetter('enableLayoutAnimationsOnIOS', true);
+/**
+ * When enabled, UIManager.getConstants() in bridgeless mode on Android returns only the view manager names. JS gets the constants of each view manager on first use.
+ */
+export const enableLazyViewManagerConstantsAndroid: Getter<boolean> = createNativeFlagGetter('enableLazyViewManagerConstantsAndroid', false);
 /**
  * Enable NSNull conversion when handling module arguments on iOS
  */
