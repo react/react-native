@@ -501,6 +501,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableLazyViewManagerConstantsAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-07',
+        description:
+          'When enabled, UIManager.getConstants() in bridgeless mode on Android returns only the view manager names. JS gets the constants of each view manager on first use.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableModuleArgumentNSNullConversionIOS: {
       defaultValue: false,
       metadata: {

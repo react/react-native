@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<cd218b84f81cb128569351055afcceeb>>
+ * @generated SignedSource<<059dc18c264140153faa21f2812f9044>>
  */
 
 /**
@@ -252,6 +252,11 @@ bool NativeReactNativeFeatureFlags::enableLayoutAnimationsOnAndroid(
 bool NativeReactNativeFeatureFlags::enableLayoutAnimationsOnIOS(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableLayoutAnimationsOnIOS();
+}
+
+bool NativeReactNativeFeatureFlags::enableLazyViewManagerConstantsAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableLazyViewManagerConstantsAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS(
