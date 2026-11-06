@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3e619f92c56f90a6ff3eea0c48d027a7>>
+ * @generated SignedSource<<ac000f660a625bde26b6779e788e063c>>
  */
 
 /**
@@ -432,6 +432,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableLayoutAnimationsOnIOS();
+  }
+
+  bool enableLazyViewManagerConstantsAndroid() override {
+    auto value = values_["enableLazyViewManagerConstantsAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableLazyViewManagerConstantsAndroid();
   }
 
   bool enableModuleArgumentNSNullConversionIOS() override {
