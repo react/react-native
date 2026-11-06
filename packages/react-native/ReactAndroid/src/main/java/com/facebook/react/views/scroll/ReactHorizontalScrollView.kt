@@ -156,9 +156,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   // Private state
   private var activelyScrolling = false
   private var clippingRect: Rect? = null
-  private var _overflow: Overflow =
-      if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
-      else Overflow.SCROLL
+  private var _overflow: Overflow = ReactScrollViewHelper.getDefaultOverflow()
   private var dragging = false
   private var pagingEnabled = false
   private var postTouchRunnable: Runnable? = null
@@ -262,9 +260,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     _virtualViewContainerState = null
     activelyScrolling = false
     clippingRect = null
-    _overflow =
-        if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
-        else Overflow.SCROLL
+    _overflow = ReactScrollViewHelper.getDefaultOverflow()
     dragging = false
     pagingEnabled = false
     postTouchRunnable = null
@@ -425,11 +421,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
         if (overflow == null) {
           Overflow.SCROLL
         } else {
-          Overflow.fromString(
-              overflow,
-              if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
-              else Overflow.SCROLL,
-          )
+          Overflow.fromString(overflow, ReactScrollViewHelper.getDefaultOverflow())
         }
     ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
     invalidate()

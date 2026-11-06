@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<368361a1c35df89a29ec93fa18761f79>>
+ * @generated SignedSource<<77b92cb5ac8078aa3e73de72c7319169>>
  * @flow strict
  * @noformat
  */
@@ -68,6 +68,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
+  enableCoreComponentsPropsUpdateReconciliationAndroid: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
@@ -298,6 +299,10 @@ export const enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>
  * Feature flag to enable the new bridgeless architecture.
  */
 export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', true);
+/**
+ * When enabled, Android receives prop updates based on props diffing only for core components with hand-written props (View, Text, Image, ScrollView, TextInput). Other components keep receiving raw props unless `enablePropsUpdateReconciliationAndroid` is enabled.
+ */
+export const enableCoreComponentsPropsUpdateReconciliationAndroid: Getter<boolean> = createNativeFlagGetter('enableCoreComponentsPropsUpdateReconciliationAndroid', false);
 /**
  * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
  */

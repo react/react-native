@@ -75,15 +75,15 @@ AndroidTextInputProps::AndroidTextInputProps(
       showSoftInputOnFocus(convertRawProp(context, rawProps,
           "showSoftInputOnFocus",
           sourceProps.showSoftInputOnFocus,
-          {false})),
+          {true})),
       autoCorrect(convertRawProp(context, rawProps,
           "autoCorrect",
           sourceProps.autoCorrect,
-          {false})),
+          {})),
       allowFontScaling(convertRawProp(context, rawProps,
           "allowFontScaling",
           sourceProps.allowFontScaling,
-          {false})),
+          {true})),
       maxFontSizeMultiplier(convertRawProp(context, rawProps,
           "maxFontSizeMultiplier",
           sourceProps.maxFontSizeMultiplier,
@@ -290,7 +290,8 @@ folly::dynamic AndroidTextInputProps::getDynamic() const {
   props["importantForAutofill"] = importantForAutofill;
   props["showSoftInputOnFocus"] = showSoftInputOnFocus;
   props["autoCapitalize"] = autoCapitalize;
-  props["autoCorrect"] = autoCorrect;
+  props["autoCorrect"] =
+      autoCorrect.has_value() ? folly::dynamic(*autoCorrect) : nullptr;
   props["autoFocus"] = autoFocus;
   props["allowFontScaling"] = allowFontScaling;
   props["maxFontSizeMultiplier"] = maxFontSizeMultiplier;
@@ -354,7 +355,7 @@ SharedDebugStringConvertibleList AndroidTextInputProps::getDebugProps() const {
 #endif
 
 ComponentName AndroidTextInputProps::getDiffPropsImplementationTarget() const {
-  return "TextInput";
+  return "AndroidTextInput";
 }
 
 folly::dynamic AndroidTextInputProps::getDiffProps(
@@ -500,16 +501,8 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
     result["returnKeyLabel"] = returnKeyLabel;
   }
 
-  if (numberOfLines != oldProps->numberOfLines) {
-    result["numberOfLines"] = numberOfLines;
-  }
-
   if (disableFullscreenUI != oldProps->disableFullscreenUI) {
     result["disableFullscreenUI"] = disableFullscreenUI;
-  }
-
-  if (textBreakStrategy != oldProps->textBreakStrategy) {
-    result["textBreakStrategy"] = textBreakStrategy;
   }
 
   if (inlineImageLeft != oldProps->inlineImageLeft) {
@@ -529,7 +522,8 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
   }
 
   if (autoCorrect != oldProps->autoCorrect) {
-    result["autoCorrect"] = autoCorrect;
+    result["autoCorrect"] =
+        autoCorrect.has_value() ? folly::dynamic(*autoCorrect) : nullptr;
   }
 
   if (allowFontScaling != oldProps->allowFontScaling) {
@@ -606,10 +600,6 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
 
   if (textAlign != oldProps->textAlign) {
     result["textAlign"] = textAlign;
-  }
-
-  if (includeFontPadding != oldProps->includeFontPadding) {
-    result["includeFontPadding"] = includeFontPadding;
   }
 
   if (fontWeight != oldProps->fontWeight) {
