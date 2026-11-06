@@ -182,10 +182,14 @@ export interface AccessibilityInfoStatic {
   ): void;
 
   /**
-   * Gets the timeout in millisecond that the user needs.
-   * This value is set in "Time to take action (Accessibility timeout)" of "Accessibility" settings.
+   * Gets the timeout in milliseconds that the user needs, given the timeout
+   * the app would otherwise use.
    *
-   * @platform android
+   * On Android 10 (API 29) and later, this value is set in "Time to take
+   * action (Accessibility timeout)" of "Accessibility" settings; earlier
+   * versions resolve to `originalTimeout`. iOS has no such setting, so React
+   * Native allows three times `originalTimeout` while Switch Control is
+   * running, and `originalTimeout` otherwise.
    */
   getRecommendedTimeoutMillis: (originalTimeout: number) => Promise<number>;
   sendAccessibilityEvent: (
