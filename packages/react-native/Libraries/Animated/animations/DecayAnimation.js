@@ -110,6 +110,7 @@ export default class DecayAnimation extends Animation {
     this._lastValue = value;
     if (this.__active) {
       // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+      // $FlowFixMe[invalid-tuple-arity]
       this._animationFrame = requestAnimationFrame(this.onUpdate.bind(this));
     }
   }

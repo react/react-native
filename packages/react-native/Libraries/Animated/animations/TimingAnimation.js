@@ -171,6 +171,7 @@ export default class TimingAnimation extends Animation {
     );
     if (this.__active) {
       // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+      // $FlowFixMe[invalid-tuple-arity]
       this._animationFrame = requestAnimationFrame(this.onUpdate.bind(this));
     }
   }

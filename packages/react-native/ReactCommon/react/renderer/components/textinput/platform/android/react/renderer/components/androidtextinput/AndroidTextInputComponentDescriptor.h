@@ -44,8 +44,7 @@ class AndroidTextInputComponentDescriptor final : public ConcreteComponentDescri
     if (surfaceIdToThemePaddingMap_.find(surfaceId) != surfaceIdToThemePaddingMap_.end()) {
       theme = surfaceIdToThemePaddingMap_[surfaceId];
     } else {
-      const jni::global_ref<jobject> &fabricUIManager =
-          contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
+      auto fabricUIManager = contextContainer_->at<jni::alias_ref<jobject>>("FabricUIManager");
 
       auto env = jni::Environment::current();
       auto defaultTextInputPaddingArray = env->NewFloatArray(4);

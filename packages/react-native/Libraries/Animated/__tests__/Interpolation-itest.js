@@ -21,7 +21,7 @@ import AnimatedInterpolation from '../nodes/AnimatedInterpolation';
 
 function createInterpolation<T extends InterpolationConfigSupportedOutputType>(
   config: InterpolationConfigType<T>,
-): number => T {
+): (v: number) => T {
   let parentValue = null;
   const interpolation = new AnimatedInterpolation(
     // $FlowFixMe[incompatible-type]
@@ -331,6 +331,20 @@ describe('Interpolation', () => {
     expect(interpolation(0)).toBe('translate(0px, -10.5px)');
     expect(interpolation(0.5)).toBe('translate(10px, -0.25px)');
     expect(interpolation(1)).toBe('translate(20px, 10px)');
+  });
+
+  it('should keep the rest of a string range that contains a color', () => {
+    const interpolation = createInterpolation({
+      inputRange: [0, 1],
+      outputRange: [
+        'inset 0 0 0 1px rgba(124, 58, 237, 1)',
+        'inset 0 0 0 3px rgba(124, 58, 237, 0.5)',
+      ],
+    });
+
+    expect(interpolation(0)).toBe('inset 0 0 0 1px rgba(124, 58, 237, 1)');
+    expect(interpolation(0.5)).toBe('inset 0 0 0 2px rgba(124, 58, 237, 0.75)');
+    expect(interpolation(1)).toBe('inset 0 0 0 3px rgba(124, 58, 237, 0.5)');
   });
 
   it('should crash when chaining an interpolation that returns a string', () => {

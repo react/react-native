@@ -67,7 +67,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 
   // `role` wins over the legacy `accessibilityRole` when both are set, matching
   // how the traits themselves are resolved.
-  if (props.role != Role::None) {
+  if (props.role.value_or(Role::None) != Role::None) {
     static const std::unordered_set<Role> interactiveRoles{
         Role::Button,
         Role::Checkbox,
@@ -82,7 +82,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
         Role::Switch,
         Role::Tab,
         Role::Treeitem};
-    return interactiveRoles.contains(props.role);
+    return interactiveRoles.contains(*props.role);
   }
 
   static const std::unordered_set<std::string_view> interactiveAccessibilityRoles{
@@ -243,6 +243,9 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   if (_removeClippedSubviews) {
     [_reactSubviews removeObjectAtIndex:index];
   } else {
+    // This getter can migrate children from a recycled clipping container.
+    // Reconcile before reading superview, even when assertions are disabled.
+    [[maybe_unused]] UIView *containerView = self.currentContainerView;
     RCTAssert(
         childComponentView.superview != nil,
         @"Attempt to unmount a view which is not mounted. (parent: %@, child: %@, index: %@)",
@@ -250,14 +253,14 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         childComponentView,
         @(index));
     RCTAssert(
-        childComponentView.superview == self.currentContainerView,
+        childComponentView.superview == containerView,
         @"Attempt to unmount a view which is mounted inside a different view. (parent: %@, child: %@, index: %@, existing parent: %@)",
         self,
         childComponentView,
         @(index),
         @([childComponentView.superview tag]));
 #ifndef NS_BLOCK_ASSERTIONS
-    NSArray<UIView *> *containerSubviews = self.currentContainerView.subviews;
+    NSArray<UIView *> *containerSubviews = containerView.subviews;
     BOOL isIndexInBounds = index >= 0 && (NSUInteger)index < containerSubviews.count;
     RCTAssert(
         isIndexInBounds && [containerSubviews objectAtIndex:index] == childComponentView,
@@ -355,7 +358,10 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   if (oldViewProps.opacity != newViewProps.opacity &&
       ![_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"opacity"]) {
     self.layer.opacity = (float)newViewProps.opacity;
-    needsInvalidateLayer = YES;
+    // `invalidateLayer` only reads the opacity to combine it with `filter`.
+    if (!newViewProps.filter.empty()) {
+      needsInvalidateLayer = YES;
+    }
   }
 
   // Disable `removeClippedSubviews` when Fabric View Culling is enabled.
@@ -458,7 +464,8 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // `border`
   if (oldViewProps.borderStyles != newViewProps.borderStyles || oldViewProps.borderRadii != newViewProps.borderRadii ||
-      oldViewProps.borderColors != newViewProps.borderColors) {
+      oldViewProps.borderColors != newViewProps.borderColors ||
+      oldViewProps.borderCurves != newViewProps.borderCurves) {
     needsInvalidateLayer = YES;
   }
 
@@ -700,8 +707,16 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   // the oldLayoutMetrics parameter (which comes from the shadow tree).
   auto previousFrameSize = _layoutMetrics.frame.size;
 
+  // A relayout that only moves the view leaves everything `invalidateLayer`
+  // derives unchanged, since it works in the view's own coordinates. The hover
+  // shape is the exception: iOS evaluates it in the superview's space.
+  auto movedLayoutMetrics = layoutMetrics;
+  movedLayoutMetrics.frame.origin = _layoutMetrics.frame.origin;
+  BOOL const onlyMoved = movedLayoutMetrics == _layoutMetrics;
   _layoutMetrics = layoutMetrics;
-  _needsInvalidateLayer = YES;
+  if (!onlyMoved || _props->cursor == Cursor::Pointer) {
+    _needsInvalidateLayer = YES;
+  }
 
   _borderLayer.frame = self.layer.bounds;
 
@@ -1678,8 +1693,9 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
   }
 
   NSMutableArray *valueComponents = [NSMutableArray new];
-  NSString *roleString = (props.role != Role::None) ? [NSString stringWithUTF8String:toString(props.role).c_str()]
-                                                    : [NSString stringWithUTF8String:props.accessibilityRole.c_str()];
+  NSString *roleString = (props.role.value_or(Role::None) != Role::None)
+      ? [NSString stringWithUTF8String:toString(*props.role).c_str()]
+      : [NSString stringWithUTF8String:props.accessibilityRole.c_str()];
 
   // In iOS, checkbox and radio buttons aren't recognized as traits. However,
   // because our apps use checkbox and radio buttons often, we should announce

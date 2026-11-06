@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8515730d520413f75f9ea5d01c1e8e6d>>
+ * @generated SignedSource<<e8a2096cee73a029293468260dfc51eb>>
  */
 
 /**
@@ -23,7 +23,7 @@ namespace facebook::react {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
-std::unique_ptr<ReactNativeFeatureFlagsAccessor> accessor_;
+constinit std::unique_ptr<ReactNativeFeatureFlagsAccessor> accessor_;
 #pragma GCC diagnostic pop
 
 bool ReactNativeFeatureFlags::commonTestFlag() {
@@ -40,6 +40,10 @@ bool ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() {
 
 bool ReactNativeFeatureFlags::defaultTextToOverflowHidden() {
   return getAccessor().defaultTextToOverflowHidden();
+}
+
+bool ReactNativeFeatureFlags::deferTextInputTruncationIOS() {
+  return getAccessor().deferTextInputTruncationIOS();
 }
 
 bool ReactNativeFeatureFlags::disableEarlyViewCommandExecution() {
@@ -138,8 +142,8 @@ bool ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode() {
   return getAccessor().enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() {
-  return getAccessor().enableFontScaleChangesUpdatingLayout();
+bool ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid() {
+  return getAccessor().enableFollowUpMountItemDispatchAndroid();
 }
 
 bool ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() {
@@ -172,6 +176,10 @@ bool ReactNativeFeatureFlags::enableImperativeEvents() {
 
 bool ReactNativeFeatureFlags::enableImperativeFocus() {
   return getAccessor().enableImperativeFocus();
+}
+
+bool ReactNativeFeatureFlags::enableInteractableResponderViews() {
+  return getAccessor().enableInteractableResponderViews();
 }
 
 bool ReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS() {
@@ -298,6 +306,10 @@ bool ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled() {
   return getAccessor().fuseboxWebSocketEventsEnabled();
 }
 
+bool ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid() {
+  return getAccessor().keepTimersRunningWhileHostPausedAndroid();
+}
+
 bool ReactNativeFeatureFlags::optimizedAnimatedPropUpdates() {
   return getAccessor().optimizedAnimatedPropUpdates();
 }
@@ -340,6 +352,10 @@ bool ReactNativeFeatureFlags::shouldTriggerResponderTransferOnScrollAndroid() {
 
 bool ReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause() {
   return getAccessor().skipActivityIdentityAssertionOnHostPause();
+}
+
+bool ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator() {
+  return getAccessor().skipUnchangedChildrenInDifferentiator();
 }
 
 bool ReactNativeFeatureFlags::syncAndroidClipBoundsWithOverflow() {

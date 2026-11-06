@@ -16,6 +16,9 @@ const mockGetCurrentPrefersCrossFadeTransitionsState = jest.fn(
 const mockGetCurrentDarkerSystemColorsState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
+const mockGetCurrentShowBordersState = jest.fn((onSuccess, onError) =>
+  onSuccess(true),
+);
 const mockGetCurrentBoldTextState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
@@ -35,6 +38,13 @@ const mockGetCurrentVoiceOverState = jest.fn((onSuccess, onError) =>
   onSuccess(true),
 );
 let mockNativeAccessibilityManagerIOS: {
+  getCurrentShowBordersState: JestMockFn<
+    [
+      onSuccess: (isShowBordersEnabled: boolean) => void,
+      onError: (error: Error) => void,
+    ],
+    void,
+  > | null,
   getCurrentPrefersCrossFadeTransitionsState: JestMockFn<
     [
       onSuccess: (prefersCrossFadeTransitions: boolean) => void,
@@ -92,6 +102,7 @@ let mockNativeAccessibilityManagerIOS: {
     void,
   > | null,
 } = {
+  getCurrentShowBordersState: mockGetCurrentShowBordersState,
   getCurrentPrefersCrossFadeTransitionsState:
     mockGetCurrentPrefersCrossFadeTransitionsState,
   getCurrentDarkerSystemColorsState: mockGetCurrentDarkerSystemColorsState,
@@ -660,6 +671,49 @@ describe('AccessibilityInfo', () => {
     });
   });
 
+  describe('isShowBordersEnabled', () => {
+    describe('Android', () => {
+      it('should return immediately', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        const result = await AccessibilityInfo.isShowBordersEnabled();
+
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('iOS', () => {
+      it('should call getCurrentShowBordersState if available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        const result = await AccessibilityInfo.isShowBordersEnabled();
+
+        expect(mockGetCurrentShowBordersState).toHaveBeenCalled();
+        expect(result).toBe(true);
+      });
+
+      it('should throw error if getCurrentShowBordersState is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        mockNativeAccessibilityManagerIOS.getCurrentShowBordersState = null;
+
+        const result: unknown =
+          await AccessibilityInfo.isShowBordersEnabled().catch(e => e);
+
+        invariant(
+          result instanceof Error,
+          'Expected isShowBordersEnabled to reject',
+        );
+        expect(result.message).toEqual(
+          'NativeAccessibilityManagerIOS.getCurrentShowBordersState is not available',
+        );
+      });
+    });
+  });
+
   describe('isDarkerSystemColorsEnabled', () => {
     describe('Android', () => {
       it('should return immediately', async () => {
@@ -791,6 +845,7 @@ describe('AccessibilityInfo', () => {
 
   afterEach(() => {
     mockNativeAccessibilityManagerIOS = {
+      getCurrentShowBordersState: mockGetCurrentShowBordersState,
       getCurrentPrefersCrossFadeTransitionsState:
         mockGetCurrentPrefersCrossFadeTransitionsState,
       getCurrentDarkerSystemColorsState: mockGetCurrentDarkerSystemColorsState,

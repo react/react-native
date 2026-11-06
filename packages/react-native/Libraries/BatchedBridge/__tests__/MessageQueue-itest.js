@@ -140,7 +140,7 @@ describe('MessageQueue', () => {
   it('should not initialize lazily registered module before it was used for the first time', () => {
     const dummyModule = {},
       name = 'modulesName';
-    const factory = jest.fn(() => dummyModule) as (void) => interface {};
+    const factory = jest.fn(() => dummyModule) as (v: void) => interface {};
     queue.registerLazyCallableModule(name, factory);
     expect(factory).not.toHaveBeenCalled();
   });
@@ -148,7 +148,7 @@ describe('MessageQueue', () => {
   it('should initialize lazily registered module only once', () => {
     const dummyModule = {},
       name = 'modulesName';
-    const factory = jest.fn(() => dummyModule) as (void) => interface {};
+    const factory = jest.fn(() => dummyModule) as (v: void) => interface {};
     queue.registerLazyCallableModule(name, factory);
     queue.getCallableModule(name);
     queue.getCallableModule(name);
@@ -160,7 +160,7 @@ describe('MessageQueue', () => {
       dummy: function () {},
     };
     const name = 'emptyModuleName';
-    const factory = jest.fn(() => dummyModule) as (void) => interface {};
+    const factory = jest.fn(() => dummyModule) as (v: void) => interface {};
     // $FlowFixMe[cannot-write]
     queue.__shouldPauseOnThrow = jest.fn(() => false);
     queue.registerLazyCallableModule(name, factory);
@@ -173,7 +173,7 @@ describe('MessageQueue', () => {
       dummy: function () {},
     };
     const name = 'emptyModuleName';
-    const factory = jest.fn(() => dummyModule) as (void) => interface {};
+    const factory = jest.fn(() => dummyModule) as (v: void) => interface {};
     // $FlowFixMe[cannot-write]
     queue.__shouldPauseOnThrow = jest.fn(() => true);
     queue.registerLazyCallableModule(name, factory);

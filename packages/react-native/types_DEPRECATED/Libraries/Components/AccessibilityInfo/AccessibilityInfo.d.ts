@@ -26,7 +26,9 @@ type AccessibilityChangeEventName =
   | 'reduceMotionChanged'
   /** iOS only */
   | 'reduceTransparencyChanged'
-  | 'screenReaderChanged';
+  | 'screenReaderChanged'
+  /** iOS only */
+  | 'showBordersChanged';
 
 type AccessibilityChangeEvent = boolean;
 
@@ -85,6 +87,13 @@ export interface AccessibilityInfoStatic {
    * @platform android
    */
   isHighTextContrastEnabled: () => Promise<boolean>;
+
+  /**
+   * Query whether Show Borders (called Button Shapes before iOS 26.1) is currently enabled.
+   *
+   * @platform ios
+   */
+  isShowBordersEnabled: () => Promise<boolean>;
 
   /**
    * Query whether darker system colors is currently enabled.

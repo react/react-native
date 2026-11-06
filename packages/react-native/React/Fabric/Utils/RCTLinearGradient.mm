@@ -36,8 +36,9 @@ using namespace facebook::react;
   CGFloat dx = endPoint.x - startPoint.x;
   CGFloat dy = endPoint.y - startPoint.y;
   CGFloat gradientLineLength = sqrt(dx * dx + dy * dy);
-  const auto colorStops = [RCTGradientUtils getFixedColorStops:gradient.colorStops
-                                            gradientLineLength:gradientLineLength];
+  const auto fixedColorStops = [RCTGradientUtils getFixedColorStops:gradient.colorStops
+                                                 gradientLineLength:gradientLineLength];
+  const auto colorStops = [RCTGradientUtils clipColorStops:fixedColorStops end:1];
   NSMutableArray<id> *colors = [NSMutableArray array];
   NSMutableArray<NSNumber *> *locations = [NSMutableArray array];
   CGPoint relativeStartPoint = CGPointMake(startPoint.x / size.width, startPoint.y / size.height);

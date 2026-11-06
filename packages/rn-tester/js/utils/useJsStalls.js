@@ -67,8 +67,7 @@ const useJsStalls = (): ({
       onStall: ({busyTime}) =>
         setStallsState(state => {
           // If previous interval was cleared
-          // $FlowFixMe[sketchy-null-number]
-          if (!state.stallIntervalId) {
+          if (!Boolean(state.stallIntervalId)) {
             return state;
           }
 

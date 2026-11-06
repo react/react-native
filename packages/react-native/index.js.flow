@@ -260,6 +260,12 @@ export type {
 export {default as Alert} from './Libraries/Alert/Alert';
 
 export {default as Animated} from './Libraries/Animated/Animated';
+export {default as AnimatedFlatList} from './Libraries/Animated/components/AnimatedFlatList';
+export {default as AnimatedImage} from './Libraries/Animated/components/AnimatedImage';
+export {default as AnimatedScrollView} from './Libraries/Animated/components/AnimatedScrollView';
+export {default as AnimatedSectionList} from './Libraries/Animated/components/AnimatedSectionList';
+export {default as AnimatedText} from './Libraries/Animated/components/AnimatedText';
+export {default as AnimatedView} from './Libraries/Animated/components/AnimatedView';
 
 export * as Appearance from './Libraries/Utilities/Appearance';
 
@@ -290,8 +296,6 @@ export type {
 
 export type {BackPressEventName} from './Libraries/Utilities/BackHandler';
 export {default as BackHandler} from './Libraries/Utilities/BackHandler';
-
-export {default as Clipboard} from './Libraries/Components/Clipboard/Clipboard';
 
 export {default as codegenNativeComponent} from './Libraries/Utilities/codegenNativeComponent';
 export {default as codegenNativeCommands} from './Libraries/Utilities/codegenNativeCommands';
@@ -459,6 +463,7 @@ export type {
   EventHandlers as PressabilityEventHandlers,
 } from './Libraries/Pressability/Pressability';
 export {default as usePressability} from './Libraries/Pressability/usePressability';
+export {default as useAppState} from './Libraries/AppState/useAppState';
 export {default as useColorScheme} from './Libraries/Utilities/useColorScheme';
 export {default as useWindowDimensions} from './Libraries/Utilities/useWindowDimensions';
 export {default as UTFSequence} from './Libraries/UTFSequence';
@@ -485,6 +490,7 @@ export type {
   NativeTouchEvent,
   NativeUIEvent,
   ResponderSyntheticEvent,
+  SafeAreaInsets,
   SafeAreaInsetsChangeEvent,
   ScrollEvent,
   TargetedEvent,

@@ -21,7 +21,7 @@ internal class ReactTextInputSelectionEvent(
 ) : Event<ReactTextInputSelectionEvent>(surfaceId, viewId) {
   override fun getEventName(): String = EVENT_NAME
 
-  override fun getEventData(): WritableMap {
+  protected override fun getEventData(): WritableMap {
     val selectionData = buildReadableMap {
       put("start", selectionStart)
       put("end", selectionEnd)

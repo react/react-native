@@ -12,7 +12,6 @@
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTAppearance.h>
-#import <React/RCTBridge.h>
 #import <React/RCTConstants.h>
 #import <React/RCTConvert.h>
 #import <React/RCTDefines.h>
@@ -35,6 +34,7 @@ using namespace facebook::react;
   UIButton *_dismissButton;
   NSDate *_showDate;
   BOOL _hiding;
+  BOOL _invalidated;
   dispatch_block_t _initialMessageBlock;
 }
 
@@ -57,6 +57,20 @@ RCT_EXPORT_MODULE()
                                                object:nil];
   }
   return self;
+}
+
+- (void)invalidate
+{
+  RCTExecuteOnMainQueue(^{
+    self->_invalidated = YES;
+    // The delayed message retains this module, so dealloc cannot cancel it when the host is invalidated.
+    [self clearInitialMessageDelay];
+    self->_window.hidden = YES;
+    self->_window = nil;
+    self->_container = nil;
+    self->_label = nil;
+    self->_dismissButton = nil;
+  });
 }
 
 - (void)dealloc
@@ -127,7 +141,7 @@ RCT_EXPORT_MODULE()
   }
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    if (RCTRunningInTestEnvironment()) {
+    if (self->_invalidated || [self isRunningInTestEnvironment]) {
       return;
     }
 
@@ -322,6 +336,11 @@ RCT_EXPORT_MODULE()
 
   NSString *message = [NSString stringWithFormat:@"Connect to %@ to develop JavaScript.", RCT_PACKAGER_NAME];
   [self showMessage:message color:color backgroundColor:backgroundColor dismissButton:false];
+}
+
+- (BOOL)isRunningInTestEnvironment
+{
+  return RCTRunningInTestEnvironment();
 }
 
 - (BOOL)isDarkModeEnabled

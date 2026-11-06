@@ -19,6 +19,6 @@ open class ShadowNativeArray {
 
   companion object {
     fun getContents(array: NativeArray): List<Any?> =
-        (Shadow.extract(array) as ShadowNativeArray).backingArray.toArrayList()
+        Shadow.extract<ShadowNativeArray>(array).backingArray.toArrayList()
   }
 }

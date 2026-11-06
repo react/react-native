@@ -18,7 +18,7 @@ const int kInstanceKey = 1;
 }
 
 void JReactMarker::setLogPerfMarkerIfNeeded() {
-  static std::once_flag flag{};
+  static constinit std::once_flag flag{};
   std::call_once(flag, []() {
     ReactMarker::logTaggedMarkerImpl = JReactMarker::logPerfMarker;
   });

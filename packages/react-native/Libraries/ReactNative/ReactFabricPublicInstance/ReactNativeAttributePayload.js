@@ -24,10 +24,10 @@ const emptyObject = {};
  * across modules, I've kept them isolated to this module.
  */
 
-type NestedNode = Array<NestedNode> | {[string]: unknown};
+type NestedNode = Array<NestedNode> | {[key: string]: unknown};
 
 // Tracks removed keys
-let removedKeys: {[string]: boolean} | null = null;
+let removedKeys: {[key: string]: boolean} | null = null;
 let removedKeyCount = 0;
 
 const deepDifferOptions = {
@@ -45,7 +45,7 @@ function defaultDiffer(prevProp: unknown, nextProp: unknown): boolean {
 }
 
 function restoreDeletedValuesInNestedArray(
-  updatePayload: {[string]: unknown},
+  updatePayload: {[key: string]: unknown},
   node: NestedNode,
   validAttributes: AttributeConfiguration,
 ) {
@@ -104,11 +104,11 @@ function restoreDeletedValuesInNestedArray(
 }
 
 function diffNestedArrayProperty(
-  updatePayloadInput: null | {[string]: unknown},
+  updatePayloadInput: null | {[key: string]: unknown},
   prevArray: Array<NestedNode>,
   nextArray: Array<NestedNode>,
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   let updatePayload = updatePayloadInput;
   const minLength =
     prevArray.length < nextArray.length ? prevArray.length : nextArray.length;
@@ -143,11 +143,11 @@ function diffNestedArrayProperty(
 }
 
 function diffNestedProperty(
-  updatePayload: null | {[string]: unknown},
+  updatePayload: null | {[key: string]: unknown},
   prevProp: NestedNode,
   nextProp: NestedNode,
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   if (!updatePayload && prevProp === nextProp) {
     // If no properties have been added, then we can bail out quickly on object
     // equality.
@@ -204,10 +204,10 @@ function diffNestedProperty(
  * adds a null sentinel to the updatePayload, for each prop key.
  */
 function clearNestedProperty(
-  updatePayloadInput: null | {[string]: unknown},
+  updatePayloadInput: null | {[key: string]: unknown},
   prevProp: NestedNode,
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   let updatePayload = updatePayloadInput;
   if (!prevProp) {
     return updatePayload;
@@ -236,11 +236,11 @@ function clearNestedProperty(
  * anything changed.
  */
 function diffProperties(
-  updatePayloadInput: null | {[string]: unknown},
-  prevProps: {[string]: unknown},
-  nextProps: {[string]: unknown},
+  updatePayloadInput: null | {[key: string]: unknown},
+  prevProps: {[key: string]: unknown},
+  nextProps: {[key: string]: unknown},
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   let updatePayload = updatePayloadInput;
   let attributeConfig;
   let nextProp: unknown;
@@ -317,7 +317,7 @@ function diffProperties(
       // case: !Object is the default case
       if (defaultDiffer(prevProp, nextProp)) {
         // a normal leaf has changed
-        (updatePayload || (updatePayload = {} as {[string]: unknown}))[
+        (updatePayload || (updatePayload = {} as {[key: string]: unknown}))[
           propKey
         ] = nextProp;
       }
@@ -337,7 +337,7 @@ function diffProperties(
             ? // $FlowFixMe[incompatible-use] found when upgrading Flow
               attributeConfig.process(nextProp)
             : nextProp;
-        (updatePayload || (updatePayload = {} as {[string]: unknown}))[
+        (updatePayload || (updatePayload = {} as {[key: string]: unknown}))[
           propKey
         ] = nextValue;
       }
@@ -398,10 +398,11 @@ function diffProperties(
     ) {
       // case: CustomAttributeConfiguration | !Object
       // Flag the leaf property for removal by sending a sentinel.
-      (updatePayload || (updatePayload = {} as {[string]: unknown}))[propKey] =
-        null;
+      (updatePayload || (updatePayload = {} as {[key: string]: unknown}))[
+        propKey
+      ] = null;
       if (!removedKeys) {
-        removedKeys = {} as {[string]: boolean};
+        removedKeys = {} as {[key: string]: boolean};
       }
       if (!removedKeys[propKey]) {
         removedKeys[propKey] = true;
@@ -424,10 +425,10 @@ function diffProperties(
 }
 
 function addNestedProperty(
-  payloadInput: null | {[string]: unknown},
+  payloadInput: null | {[key: string]: unknown},
   props: NestedNode,
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   let payload = payloadInput;
   // Flatten nested style props.
   if (Array.isArray(props)) {
@@ -478,7 +479,7 @@ function addNestedProperty(
 
     if (newValue !== undefined) {
       if (!payload) {
-        payload = {} as {[string]: unknown};
+        payload = {} as {[key: string]: unknown};
       }
       payload[propKey] = newValue;
       continue;
@@ -500,25 +501,25 @@ function addNestedProperty(
  * to the payload for each valid key.
  */
 function clearProperties(
-  updatePayload: null | {[string]: unknown},
-  prevProps: {[string]: unknown},
+  updatePayload: null | {[key: string]: unknown},
+  prevProps: {[key: string]: unknown},
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   return diffProperties(updatePayload, prevProps, emptyObject, validAttributes);
 }
 
 export function create(
   props: NestedNode,
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   return addNestedProperty(null, props, validAttributes);
 }
 
 export function diff(
-  prevProps: {[string]: unknown},
-  nextProps: {[string]: unknown},
+  prevProps: {[key: string]: unknown},
+  nextProps: {[key: string]: unknown},
   validAttributes: AttributeConfiguration,
-): null | {[string]: unknown} {
+): null | {[key: string]: unknown} {
   return diffProperties(
     null, // updatePayload
     prevProps,

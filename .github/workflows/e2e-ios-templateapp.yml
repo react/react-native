@@ -2,6 +2,7 @@ name: E2E iOS Template App
 
 permissions:
   contents: read
+  actions: read
 
 on:
   workflow_call:
@@ -17,6 +18,9 @@ on:
 jobs:
   build:
     runs-on: macos-26-large
+    outputs:
+      failure-debug: ${{ steps.report-status.outputs.failure-debug }}
+      failure-release: ${{ steps.report-status.outputs.failure-release }}
     strategy:
       fail-fast: false
       matrix:
@@ -28,10 +32,6 @@ jobs:
         uses: ./.github/actions/setup-node
       - name: Run yarn
         uses: ./.github/actions/yarn-install
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6.10
       - name: Download React Native Package
         uses: ./.github/actions/download-artifact
         with:
@@ -39,28 +39,12 @@ jobs:
           path: /tmp/react-native-tmp
       - name: Print /tmp folder
         run: ls -lR /tmp/react-native-tmp
-      - name: Download ReactNativeDependencies
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/third-party
-      - name: Print third-party folder
-        shell: bash
-        run: ls -lR /tmp/third-party
-      - name: Download React Native Prebuilds
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/ReactCore
-      - name: Print ReactCore folder
-        shell: bash
-        run: ls -lR /tmp/ReactCore
       - name: Configure git
         shell: bash
         run: |
           git config --global user.email "react-native-bot@meta.com"
           git config --global user.name "React Native Bot"
-      - name: Build the app
+      - name: Create the app
         run: |
           REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
           echo "React Native tgs is $REACT_NATIVE_PKG"
@@ -73,19 +57,19 @@ jobs:
           fi
 
           node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
-
-          cd /tmp/RNTestProject/ios
-          bundle install
-          NEW_ARCH_ENABLED=1
-
-          export RCT_USE_LOCAL_RN_DEP=/tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          # Disable prebuilds for now, as they are causing issues with E2E tests for 0.82-stable branch
-          export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ matrix.flavor }}.xcframework.tar.gz"
-          RCT_NEW_ARCH_ENABLED=$NEW_ARCH_ENABLED bundle exec pod install
-
+      - name: Download the XCFrameworks built in this run
+        uses: ./.github/actions/setup-spm-artifacts
+        with:
+          working-directory: /tmp/RNTestProject/ios
+      - name: Convert the app to SwiftPM
+        working-directory: /tmp/RNTestProject/ios
+        run: RN_STRICT_API=1 npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+      - name: Build the app
+        working-directory: /tmp/RNTestProject/ios
+        run: |
           xcodebuild \
             -scheme "RNTestProject" \
-            -workspace RNTestProject.xcworkspace \
+            -project RNTestProject.xcodeproj \
             -configuration "${{ matrix.flavor }}" \
             -sdk "iphonesimulator" \
             -destination "generic/platform=iOS Simulator" \
@@ -96,12 +80,31 @@ jobs:
           name: RNTestProject-${{ matrix.flavor }}
           overwrite: true
           path: /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app
+      - name: Report status
+        id: report-status
+        if: always()
+        uses: actions/github-script@v8
+        env:
+          STEP_RESULTS: ${{ toJSON(steps) }}
+          JOB_STATUS: ${{ job.status }}
+          TEST_FLAVOR: ${{ matrix.flavor }}
+        with:
+          script: |
+            const {recordJobFailure} = require('./.github/workflow-scripts/report-test-results');
+            await recordJobFailure({github, context, core,
+              steps: JSON.parse(process.env.STEP_RESULTS),
+              flavor: process.env.TEST_FLAVOR,
+              runnerName: process.env.RUNNER_NAME,
+              jobStatus: process.env.JOB_STATUS,
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});
 
   test:
     needs: build
     runs-on: macos-26-large
     outputs:
       status: ${{ steps.report-status.outputs.status }}
+      failure-debug: ${{ steps.report-status.outputs.failure-debug }}
+      failure-release: ${{ steps.report-status.outputs.failure-release }}
     strategy:
       fail-fast: false
       matrix:
@@ -159,8 +162,21 @@ jobs:
           working-directory: /tmp/RNTestProject
       - name: Report status
         id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
+        if: always()
+        uses: actions/github-script@v8
+        env:
+          STEP_RESULTS: ${{ toJSON(steps) }}
+          JOB_STATUS: ${{ job.status }}
+          TEST_FLAVOR: ${{ matrix.flavor }}
+        with:
+          script: |
+            const {recordJobFailure} = require('./.github/workflow-scripts/report-test-results');
+            await recordJobFailure({github, context, core,
+              steps: JSON.parse(process.env.STEP_RESULTS),
+              flavor: process.env.TEST_FLAVOR,
+              runnerName: process.env.RUNNER_NAME,
+              jobStatus: process.env.JOB_STATUS,
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});
 
   report:
     needs: [build, test]
@@ -169,15 +185,18 @@ jobs:
     outputs:
       status: ${{ steps.check.outputs.status }}
     steps:
-      - id: check
-        run: |
-          if [[ "${{ needs.build.result }}" != "success" ||
-                "${{ needs.test.result }}" != "success" ||
-                "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
-          fi
-      - name: Fail if needed
-        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
-        run: exit 1
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Report failed jobs
+        id: check
+        uses: actions/github-script@v8
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+          FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+        with:
+          script: |
+            const {reportTestResults} = require('./.github/workflow-scripts/report-test-results');
+            await reportTestResults({context, core,
+              needs: JSON.parse(process.env.JOB_RESULTS),
+              failOnError: process.env.FAIL_ON_ERROR === 'true',
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});

@@ -50,6 +50,7 @@ const {
   assertPluginFrameworksLinked,
 } = require('./generate-spm-xcodeproj');
 const {
+  CXX_API_DEFINES,
   RemoteVersionError,
   buildPerAppHeaderTree,
   findProjectRoot,
@@ -97,12 +98,21 @@ async function main(
       type: 'string',
       describe: 'Platform floor forwarded to the autolinker',
     })
+    .option('cxx-api-define', {
+      type: 'string',
+      array: true,
+      choices: [...CXX_API_DEFINES],
+      default: [],
+      describe:
+        "React Native C++ stable API macro to define in the app's spm.modules and codegen packages (repeatable)",
+    })
     .help()
     .parseSync();
 
   const appRoot = path.resolve(parsed['app-root']);
   const reactNativeRoot = path.resolve(parsed['react-native-root']);
   const projectRoot = deps.findProjectRoot(appRoot);
+  const cxxApiDefines /*: Array<string> */ = parsed['cxx-api-define'];
 
   // The caller (setup-apple-spm.js) already generated autolinking.json before
   // invoking this script, so codegen reuses it here.
@@ -127,7 +137,12 @@ async function main(
   // build/generated/ios/Package.swift — breaking every subsequent Xcode
   // "Resolve Package Graph". Installing it immediately after codegen means a
   // later throw can never leave that broken manifest in place.
-  deps.installSpmCodegenTemplate(appRoot, reactNativeRoot, {log});
+  deps.installSpmCodegenTemplate(
+    appRoot,
+    reactNativeRoot,
+    {log},
+    {cxxApiDefines},
+  );
 
   log('Re-generating build/generated/autolinking/Package.swift...');
   const autolinkingArgv = [
@@ -139,6 +154,9 @@ async function main(
   const iosDeploymentTarget = parsed['ios-deployment-target'];
   if (iosDeploymentTarget != null) {
     autolinkingArgv.push('--ios-deployment-target', iosDeploymentTarget);
+  }
+  for (const name of cxxApiDefines) {
+    autolinkingArgv.push('--cxx-api-define', name);
   }
   deps.generateAutolinking(autolinkingArgv);
   const autolinkingDir = path.join(

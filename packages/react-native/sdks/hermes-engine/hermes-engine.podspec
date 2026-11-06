@@ -56,7 +56,8 @@ Pod::Spec.new do |spec|
   if HermesEngineSourceType::isPrebuilt(source_type) then
 
     spec.subspec 'Pre-built' do |ss|
-      ss.preserve_paths = ["destroot/bin/*"].concat(["**/*.{h,c,cpp}"])
+      # Keep the configuration marker when CocoaPods cleans an unchanged pod.
+      ss.preserve_paths = ["destroot/bin/*", ".last_build_configuration"].concat(["**/*.{h,c,cpp}"])
       ss.source_files = ["destroot/include/hermes/**/*.h", "destroot/include/jsi/hermes.h"]
       ss.header_mappings_dir = "destroot/include"
       ss.ios.vendored_frameworks = "destroot/Library/Frameworks/universal/hermesvm.xcframework"

@@ -18,9 +18,20 @@ import org.robolectric.annotation.Implements
 @Implements(className = "com.facebook.react.fabric.FabricUIManagerBinding")
 class ShadowFabricUIManagerBinding {
   val pulledSurfaceIds: MutableList<Int> = mutableListOf()
+  val reportedMountSurfaceIds: MutableList<Int> = mutableListOf()
+  /** Stands in for the C++ pull and mount. */
+  var onPull: (surfaceId: Int) -> Unit = {}
 
   @Implementation
   fun pullAndExecuteTransaction(surfaceId: Int) {
     pulledSurfaceIds.add(surfaceId)
+    onPull(surfaceId)
   }
+
+  @Implementation
+  fun reportMount(surfaceId: Int) {
+    reportedMountSurfaceIds.add(surfaceId)
+  }
+
+  @Implementation fun drainPreallocateViewsQueue() = Unit
 }

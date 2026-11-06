@@ -283,6 +283,25 @@ describe('generateSynthPackageSwift', () => {
     );
   });
 
+  it('defines its C++ API macros once each, next to the config-gated ABI defines', () => {
+    expect(generateSynthPackageSwift(baseSpec())).not.toMatch(
+      /RN_(STRICT_API|ALLOW_FRAMEWORKS)/,
+    );
+    const result = generateSynthPackageSwift(
+      baseSpec({
+        cxxApiDefines: [
+          'RN_STRICT_API',
+          'RN_ALLOW_FRAMEWORKS',
+          'RN_ALLOW_FRAMEWORKS',
+        ],
+      }),
+    );
+    expect(result).toMatch(
+      /cxxSettings: \[[^\]]*\.define\("NDEBUG", \.when\(configuration: \.release\)\), \.define\("RN_STRICT_API"\), \.define\("RN_ALLOW_FRAMEWORKS"\)[,\]]/,
+    );
+    expect(result.match(/\.define\("RN_ALLOW_FRAMEWORKS"\)/g)).toHaveLength(1);
+  });
+
   it('depends on ReactNative via a fixed relative path (default synth depth)', () => {
     const result = generateSynthPackageSwift(baseSpec({hasReactDep: true}));
     expect(result).toContain(
@@ -537,6 +556,27 @@ describe('main() — --ios-deployment-target', () => {
     );
     return {appRoot, rnRoot, autolinkDir};
   }
+
+  it("defines the app's C++ API macros (--cxx-api-define) in the synth manifest", () => {
+    const {appRoot, rnRoot, autolinkDir} = buildApp();
+    main([
+      '--app-root',
+      appRoot,
+      '--react-native-root',
+      rnRoot,
+      '--cxx-api-define',
+      'RN_STRICT_API',
+      '--cxx-api-define',
+      'RN_ALLOW_FRAMEWORKS',
+    ]);
+    const synth = fs.readFileSync(
+      path.join(autolinkDir, 'packages', 'MyNativeModule', 'Package.swift'),
+      'utf8',
+    );
+    expect(synth).toMatch(
+      /cxxSettings: \[[^\]]*\.define\("RN_STRICT_API"\), \.define\("RN_ALLOW_FRAMEWORKS"\)/,
+    );
+  });
 
   it('sanitizes the flag into both the aggregator and the synth manifest', () => {
     const {appRoot, rnRoot, autolinkDir} = buildApp();
@@ -2345,5 +2385,48 @@ describe('autolinkingDepToSpmTarget', () => {
         new Map(),
       ),
     ).toThrow(/expandSpmDependencies/);
+  });
+
+  // Every npm dep is self-managed or reported missing, so nothing would
+  // consume header search paths read from its podspec — and the read can
+  // spawn `pod ipc spec`.
+  it('does not read the podspec of a dep that declares HEADER_SEARCH_PATHS', () => {
+    const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-hsp-'));
+    try {
+      fs.writeFileSync(
+        path.join(sourceDir, 'Consumer.podspec'),
+        "Pod::Spec.new do |s|\n  s.name = 'Consumer'\n" +
+          "  s.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '\"$(PODS_TARGET_SRCROOT)/common/cpp\"' }\nend\n",
+      );
+      const readPodspecCached = jest.fn(() => ({
+        headerSearchPaths: ['$(PODS_TARGET_SRCROOT)/common/cpp'],
+      }));
+      let isolated;
+      jest.isolateModules(() => {
+        jest.doMock('../read-podspec', () => ({
+          ...jest.requireActual('../read-podspec'),
+          readPodspecCached,
+        }));
+        isolated = require('../generate-spm-autolinking');
+      });
+
+      const target = isolated.autolinkingDepToSpmTarget(
+        'react-native-consumer',
+        {
+          name: 'react-native-consumer',
+          root: sourceDir,
+          platforms: {ios: {sourceDir}},
+          swiftName: 'ReactNativeConsumer',
+        },
+        '/out',
+        new Map(),
+      );
+
+      expect(readPodspecCached).not.toHaveBeenCalled();
+      expect(target).not.toHaveProperty('headerSearchPaths');
+    } finally {
+      jest.dontMock('../read-podspec');
+      fs.rmSync(sourceDir, {recursive: true, force: true});
+    }
   });
 });

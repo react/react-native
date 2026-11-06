@@ -608,6 +608,46 @@ function buildPerAppHeaderTree(
   return {path: outDir, virtualPaths: new Set(linker.seen.keys())};
 }
 
+// React Native's C++ stable API opt-ins. Each macro is enabled by the env var
+// of the same name (=1) at `spm add`/`update`, and defined for the app's own
+// code (app target, spm.modules, app codegen); libraries build with their own
+// Package.swift settings. RN_STRICT_API arms the react/cxxstableapi guards;
+// RN_ALLOW_FRAMEWORKS silences their "for frameworks" warning.
+const CXX_API_DEFINES /*: ReadonlyArray<string> */ = [
+  'RN_STRICT_API',
+  'RN_ALLOW_FRAMEWORKS',
+];
+
+// The codegen template's C++ targets carry the config-gated DEBUG/NDEBUG
+// defines; the app's C++ API defines are added after each NDEBUG entry so every
+// C++ target in the package gets them.
+const NDEBUG_DEFINE_LINE_RE =
+  /^([ \t]*)\.define\("NDEBUG", \.when\(configuration: \.release\)\),$/gm;
+
+function withCxxApiDefines(
+  content /*: string */,
+  cxxApiDefines /*: ReadonlyArray<string> */,
+  logger /*: {log: (msg: string) => void} */,
+) /*: string */ {
+  // The template already defines RN_ALLOW_FRAMEWORKS for its generated code.
+  const missing = cxxApiDefines.filter(
+    name => !content.includes(`.define("${name}")`),
+  );
+  if (missing.length === 0) {
+    return content;
+  }
+  const updated = content.replace(NDEBUG_DEFINE_LINE_RE, (line, indent) =>
+    [line, ...missing.map(name => `${indent}.define("${name}"),`)].join('\n'),
+  );
+  if (updated === content) {
+    logger.log(
+      'warning: no NDEBUG define found in the SPM codegen template — ' +
+        `${missing.join(', ')} NOT added to build/generated/ios/Package.swift.`,
+    );
+  }
+  return updated;
+}
+
 /**
  * Runs React Native codegen and installs the SPM Package.swift template
  * into build/generated/ios/. Used by both setup-apple-spm.js and
@@ -629,6 +669,7 @@ function installSpmCodegenTemplate(
   appRoot /*: string */,
   reactNativeRoot /*: string */,
   logger /*: {log: (msg: string) => void} */ = {log() {}},
+  opts /*: {cxxApiDefines?: ReadonlyArray<string>} */ = {},
 ) /*: void */ {
   const spmTemplate = path.join(
     reactNativeRoot,
@@ -672,6 +713,7 @@ function installSpmCodegenTemplate(
       .split(`package: "${REACT_NATIVE_PACKAGE_NAME}")`)
       .join(`package: "${remote.identity}")`);
   }
+  content = withCxxApiDefines(content, opts.cxxApiDefines ?? [], logger);
   fs.writeFileSync(codegenPkgSwift, content, 'utf8');
   logger.log(
     'Installed SPM codegen template' + (remote != null ? ' (remote mode)' : ''),
@@ -683,7 +725,7 @@ function runCodegenAndInstallTemplate(
   appRoot /*: string */,
   reactNativeRoot /*: string */,
   logger /*: {log: (msg: string) => void} */ = {log() {}},
-  opts /*: {installTemplate?: boolean} */ = {},
+  opts /*: {installTemplate?: boolean, cxxApiDefines?: ReadonlyArray<string>} */ = {},
 ) /*: void */ {
   const codegenScript = path.join(
     reactNativeRoot,
@@ -704,7 +746,9 @@ function runCodegenAndInstallTemplate(
   // themselves once the symlinks are final; they pass installTemplate: false to
   // avoid a wasted write that the later install would immediately supersede.
   if (opts.installTemplate !== false) {
-    installSpmCodegenTemplate(appRoot, reactNativeRoot, logger);
+    installSpmCodegenTemplate(appRoot, reactNativeRoot, logger, {
+      cxxApiDefines: opts.cxxApiDefines,
+    });
   }
 }
 
@@ -750,6 +794,7 @@ function isValidScriptPhaseName(value /*: unknown */) /*: boolean */ {
 }
 
 module.exports = {
+  CXX_API_DEFINES,
   REACT_NATIVE_PACKAGE_NAME,
   REACT_CODEGEN_PACKAGE_NAME,
   AUTOLINKED_PACKAGE_NAME,

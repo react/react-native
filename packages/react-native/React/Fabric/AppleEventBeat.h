@@ -14,7 +14,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include <React/RendererCore.h>
-#include <ReactCommon/RuntimeExecutor.h>
+#include <React/RuntimeExecutor.h>
 #include <react/utils/RunLoopObserver.h>
 
 @class RCTEventBeatFlusherLayer;

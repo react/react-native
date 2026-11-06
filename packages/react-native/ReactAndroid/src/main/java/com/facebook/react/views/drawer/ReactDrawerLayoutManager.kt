@@ -25,6 +25,7 @@ import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.EventDispatcher
+import com.facebook.react.uimanager.internal.FloatPropertySanitizer
 import com.facebook.react.viewmanagers.AndroidDrawerLayoutManagerDelegate
 import com.facebook.react.viewmanagers.AndroidDrawerLayoutManagerInterface
 import com.facebook.react.views.drawer.events.DrawerClosedEvent
@@ -142,7 +143,7 @@ public class ReactDrawerLayoutManager :
   public override fun setStatusBarBackgroundColor(view: ReactDrawerLayout, value: Int?): Unit = Unit
 
   public override fun setElevation(view: ReactDrawerLayout, elevation: Float) {
-    view.drawerElevation = elevation.dpToPx()
+    view.drawerElevation = FloatPropertySanitizer.sanitizeFloatPropertyValue(elevation.dpToPx())
   }
 
   public override fun needsCustomLayoutForChildren(): Boolean {

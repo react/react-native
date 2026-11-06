@@ -47,22 +47,16 @@ describe('Maestro Android runner', () => {
   });
 
   it('excludes flows with matching tags', () => {
-    const releaseOnlyFlow = path.join(
-      temporaryDirectory,
-      'android-release-only.yml',
-    );
+    const releaseOnlyFlow = path.join(temporaryDirectory, 'release-only.yml');
     const regularFlow = path.join(temporaryDirectory, 'regular.yml');
     fs.writeFileSync(
       releaseOnlyFlow,
-      'appId: x\ntags:\n  - android-release-only\n---\n- launchApp\n',
+      'appId: x\ntags:\n  - release-only\n---\n- launchApp\n',
     );
     fs.writeFileSync(regularFlow, 'appId: x\n---\n- launchApp\n');
 
     expect(
-      filterFlowsByTags(
-        [releaseOnlyFlow, regularFlow],
-        ['android-release-only'],
-      ),
+      filterFlowsByTags([releaseOnlyFlow, regularFlow], ['release-only']),
     ).toEqual([regularFlow]);
   });
 

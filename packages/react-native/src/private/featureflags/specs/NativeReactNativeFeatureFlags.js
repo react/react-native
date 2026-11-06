@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a52c9dada98c53c22d389f5dcfb569b2>>
+ * @generated SignedSource<<99eeacf4cf479e38e71a167d693210c7>>
  * @flow strict
  * @noformat
  */
@@ -29,6 +29,7 @@ export interface Spec extends TurboModule {
   readonly cdpInteractionMetricsEnabled?: () => boolean;
   readonly cxxNativeAnimatedEnabled?: () => boolean;
   readonly defaultTextToOverflowHidden?: () => boolean;
+  readonly deferTextInputTruncationIOS?: () => boolean;
   readonly disableEarlyViewCommandExecution?: () => boolean;
   readonly disableIdleEventDispatchFrameCallbackRearmAndroid?: () => boolean;
   readonly disableIdleMountItemFrameCallbackRearmAndroid?: () => boolean;
@@ -53,7 +54,7 @@ export interface Spec extends TurboModule {
   readonly enableFabricCommitBranchingMergeOnMainThread?: () => boolean;
   readonly enableFabricLogs?: () => boolean;
   readonly enableFlexboxAutoMinSizeInStrictMode?: () => boolean;
-  readonly enableFontScaleChangesUpdatingLayout?: () => boolean;
+  readonly enableFollowUpMountItemDispatchAndroid?: () => boolean;
   readonly enableIOSCompressedTextFrameAdjustment?: () => boolean;
   readonly enableIOSTextBaselineOffsetPerLine?: () => boolean;
   readonly enableIOSViewClipToPaddingBox?: () => boolean;
@@ -62,6 +63,7 @@ export interface Spec extends TurboModule {
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
   readonly enableImperativeEvents?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
+  readonly enableInteractableResponderViews?: () => boolean;
   readonly enableInteropViewManagerClassLookUpOptimizationIOS?: () => boolean;
   readonly enableIntersectionObserverByDefault?: () => boolean;
   readonly enableKeyEvents?: () => boolean;
@@ -93,6 +95,7 @@ export interface Spec extends TurboModule {
   readonly fuseboxFrameRecordingEnabled?: () => boolean;
   readonly fuseboxScreenshotCaptureEnabled?: () => boolean;
   readonly fuseboxWebSocketEventsEnabled?: () => boolean;
+  readonly keepTimersRunningWhileHostPausedAndroid?: () => boolean;
   readonly optimizedAnimatedPropUpdates?: () => boolean;
   readonly overrideBySynchronousMountPropsAtMountingAndroid?: () => boolean;
   readonly perfIssuesEnabled?: () => boolean;
@@ -104,6 +107,7 @@ export interface Spec extends TurboModule {
   readonly shouldPressibilityUseW3CPointerEventsForHover?: () => boolean;
   readonly shouldTriggerResponderTransferOnScrollAndroid?: () => boolean;
   readonly skipActivityIdentityAssertionOnHostPause?: () => boolean;
+  readonly skipUnchangedChildrenInDifferentiator?: () => boolean;
   readonly syncAndroidClipBoundsWithOverflow?: () => boolean;
   readonly traceTurboModulePromiseRejectionsOnAndroid?: () => boolean;
   readonly updateRuntimeShadowNodeReferencesOnCommit?: () => boolean;

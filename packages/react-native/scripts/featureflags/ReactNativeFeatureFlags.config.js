@@ -93,6 +93,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    deferTextInputTruncationIOS: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-09',
+        description:
+          'When enabled, iOS TextInput applies edits that JS transforms (e.g. maxLength truncation) incrementally after the UIKit text change delegate call returns, avoiding synchronous text and selection rewrites that can deadlock UIKeyboardTaskQueue.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     disableEarlyViewCommandExecution: {
       defaultValue: false,
       metadata: {
@@ -215,7 +226,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableAndroidTextMeasurementOptimizations: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-07-01',
         description:
@@ -352,12 +363,12 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'experimental',
     },
-    enableFontScaleChangesUpdatingLayout: {
-      defaultValue: true,
+    enableFollowUpMountItemDispatchAndroid: {
+      defaultValue: false,
       metadata: {
-        dateAdded: '2025-04-07',
+        dateAdded: '2026-09-29',
         description:
-          'Enables font scale changes updating layout for measurable nodes.',
+          'When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -449,6 +460,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableInteractableResponderViews: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-08-07',
+        description:
+          'Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableInteropViewManagerClassLookUpOptimizationIOS: {
       defaultValue: false,
       metadata: {
@@ -528,7 +550,7 @@ const definitions: FeatureFlagDefinitions = {
       metadata: {
         dateAdded: '2026-07-14',
         description:
-          'When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.',
+          'When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself at its next mount dispatch, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -567,7 +589,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enablePreparedTextLayout: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-05-01',
         description: 'Enables caching text layout artifacts for later reuse',
@@ -772,7 +794,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'stable',
     },
     fuseboxWebSocketEventsEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-07-11',
         description:
@@ -780,7 +802,18 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
+    },
+    keepTimersRunningWhileHostPausedAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-22',
+        description:
+          'Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
     },
     optimizedAnimatedPropUpdates: {
       defaultValue: false,
@@ -827,10 +860,10 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     preparedTextCacheSize: {
-      defaultValue: 200,
+      defaultValue: 1000,
       metadata: {
         description: 'Number cached PreparedLayouts in TextLayoutManager cache',
-        expectedReleaseValue: 200,
+        expectedReleaseValue: 1000,
         purpose: 'operational',
       },
       ossReleaseStage: 'none',
@@ -895,6 +928,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-07-15',
         description:
           'Skip activity identity assertion in ReactHostImpl::onHostPause()',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    skipUnchangedChildrenInDifferentiator: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-20',
+        description:
+          'When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -1124,16 +1168,6 @@ const definitions: FeatureFlagDefinitions = {
           'Use the deferred cell render update mechanism for focus change in FlatList.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableImperativeEvents_DEPRECATED: {
-      defaultValue: false,
-      metadata: {
-        description:
-          'Deprecated in favor of the common flag with the same name, which is the one that can be configured by OSS release stage. This is only kept so JS bundles delivered to older native builds, where the common flag is unavailable, can still enable the feature.',
-        expectedReleaseValue: true,
-        purpose: 'release',
       },
       ossReleaseStage: 'none',
     },

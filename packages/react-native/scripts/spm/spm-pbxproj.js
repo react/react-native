@@ -87,7 +87,7 @@ function uuidComment(comment /*: ?string */) /*: string */ {
  * entries into an existing project.
  */
 function serializeEntry(
-  entry /*: {readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [string]: string}, ...} */,
+  entry /*: {readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [key: string]: string}, ...} */,
 ) /*: string */ {
   let out = `\t\t${entry.uuid}${uuidComment(entry.comment)} = {`;
   const fieldKeys = Object.keys(entry.fields);
@@ -530,21 +530,26 @@ function addArrayStringValues(
 }
 
 /**
- * Add a scalar field after the object's `{` only when ABSENT (never clobbers a
- * value the user already set). Returns text unchanged if the key exists.
+ * Add a scalar field only when ABSENT (never clobbers a value the user already
+ * set). Returns text unchanged if the key exists. Lands right after the field
+ * named `after` when the object has one, else after the object's `{`.
  */
 function ensureScalarField(
   text /*: string */,
   obj /*: BodyRange */,
   key /*: string */,
   value /*: string */,
+  options /*: {after?: string} */ = {},
 ) /*: string */ {
   if (findField(text, obj, key) != null) {
     return text;
   }
   const fieldIndent = detectFieldIndent(text, obj);
   const block = `\n${fieldIndent}${key} = ${value};`;
-  return text.slice(0, obj.bodyOpen + 1) + block + text.slice(obj.bodyOpen + 1);
+  const anchor =
+    options.after != null ? findField(text, obj, options.after) : null;
+  const at = anchor != null ? anchor.tokenEnd + 1 : obj.bodyOpen + 1;
+  return text.slice(0, at) + block + text.slice(at);
 }
 
 /**

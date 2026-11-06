@@ -140,6 +140,16 @@ folly::dynamic HostPlatformParagraphProps::getDiffProps(
         toString(paragraphAttributes.android_hyphenationFrequency);
   }
 
+  if (paragraphAttributes.lineBreak !=
+      oldProps->paragraphAttributes.lineBreak) {
+    result["lineBreak"] = toString(paragraphAttributes.lineBreak);
+  }
+
+  if (paragraphAttributes.wordBreak !=
+      oldProps->paragraphAttributes.wordBreak) {
+    result["wordBreak"] = toString(paragraphAttributes.wordBreak);
+  }
+
   if (paragraphAttributes.textAlignVertical !=
       oldProps->paragraphAttributes.textAlignVertical) {
     result["textAlignVertical"] =

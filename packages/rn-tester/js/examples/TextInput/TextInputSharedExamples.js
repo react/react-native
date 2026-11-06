@@ -505,6 +505,7 @@ class SelectionExample extends React.Component<
           </RNTesterText>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
            * parameters */}
+          {/* $FlowFixMe[invalid-tuple-arity] */}
           <RNTesterText onPress={this.placeAtRandom.bind(this)}>
             Place at Random
           </RNTesterText>
@@ -516,6 +517,7 @@ class SelectionExample extends React.Component<
           </RNTesterText>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
            * parameters */}
+          {/* $FlowFixMe[invalid-tuple-arity] */}
           <RNTesterText onPress={this.selectRandom.bind(this)}>
             Select Random
           </RNTesterText>
@@ -1186,6 +1188,20 @@ module.exports = [
             </Text>
             generic generic generic
           </AutogrowingTextInputExample>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Auto-expanding (uncontrolled)',
+    render: function (): React.Node {
+      return (
+        <View>
+          <ExampleTextInput
+            placeholder="height should grow up to 10 lines"
+            multiline={true}
+            numberOfLines={10}
+          />
         </View>
       );
     },

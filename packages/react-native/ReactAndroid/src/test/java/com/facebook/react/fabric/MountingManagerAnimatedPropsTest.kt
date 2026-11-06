@@ -54,7 +54,7 @@ class MountingManagerAnimatedPropsTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val reactContext = ReactTestHelper.createCatalystContextForTest()
+    val reactContext = ReactTestHelper.createTestReactApplicationContext()
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     mountingManager =
         MountingManager(ViewManagerRegistry(listOf<ViewManager<*, *>>(ReactViewManager())), {})

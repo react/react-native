@@ -50,7 +50,7 @@ function genModule(
     return {name: moduleName};
   }
 
-  const module: {[string]: unknown} = {};
+  const module: {[key: string]: unknown} = {};
   methods &&
     methods.forEach((methodName, methodID) => {
       const isPromise =

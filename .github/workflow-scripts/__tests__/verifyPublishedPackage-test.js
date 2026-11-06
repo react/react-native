@@ -7,8 +7,6 @@
  * @format
  */
 
-const {verifyPublishedPackage} = require('../verifyPublishedPackage');
-
 const mockRun = jest.fn();
 const mockSleep = jest.fn();
 const mockGetNpmPackageInfo = jest.fn();
@@ -22,6 +20,8 @@ jest.mock('../utils.js', () => ({
   sleep: mockSleep,
   getNpmPackageInfo: mockGetNpmPackageInfo,
 }));
+
+const {verifyPublishedPackage} = require('../verifyPublishedPackage');
 
 describe('#verifyPublishedPackage', () => {
   beforeEach(jest.clearAllMocks);

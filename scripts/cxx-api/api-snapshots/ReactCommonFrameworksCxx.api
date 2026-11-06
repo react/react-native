@@ -73,6 +73,7 @@ struct facebook::hermes::ISetEventLoopControl : public facebook::jsi::ICast {
 
 const char facebook::react::ImageComponentName[];
 const char facebook::react::ImageManagerKey[];
+const char facebook::react::LayoutConformanceShadowNodeComponentName[];
 const char facebook::react::ModalHostViewComponentName[];
 const char facebook::react::ParagraphComponentName[];
 const char facebook::react::RawTextComponentName[];
@@ -83,7 +84,6 @@ const char facebook::react::TextComponentName[];
 const char facebook::react::ViewComponentName[];
 const facebook::react::EventTag facebook::react::EMPTY_EVENT_TAG;
 constexpr auto facebook::react::kSimpleThreadSafeCacheSizeCap;
-constexpr char facebook::react::LayoutConformanceShadowNodeComponentName[];
 constexpr char* const facebook::react::TextLayoutManagerKey;
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
 constexpr facebook::react::Tag facebook::react::kNoTag;
@@ -375,6 +375,7 @@ std::string facebook::react::toString(const facebook::react::ImageResizeMode& va
 std::string facebook::react::toString(const facebook::react::ImageSource& value);
 std::string facebook::react::toString(const facebook::react::ImportantForAccessibility& importantForAccessibility);
 std::string facebook::react::toString(const facebook::react::LayoutDirection& layoutDirection);
+std::string facebook::react::toString(const facebook::react::LineBreak& lineBreak);
 std::string facebook::react::toString(const facebook::react::LineBreakMode& lineBreakMode);
 std::string facebook::react::toString(const facebook::react::LineBreakStrategy& lineBreakStrategy);
 std::string facebook::react::toString(const facebook::react::Role& role);
@@ -387,6 +388,7 @@ std::string facebook::react::toString(const facebook::react::TextDecorationLineT
 std::string facebook::react::toString(const facebook::react::TextDecorationStyle& textDecorationStyle);
 std::string facebook::react::toString(const facebook::react::TextTransform& textTransform);
 std::string facebook::react::toString(const facebook::react::TextWidthMode& textWidthMode);
+std::string facebook::react::toString(const facebook::react::WordBreak& wordBreak);
 std::string facebook::react::toString(const facebook::react::WritingDirection& writingDirection);
 std::string facebook::react::toString(double doubleValue, char suffix);
 std::string facebook::react::toString(facebook::react::AccessibilityLiveRegion accessibilityLiveRegion);
@@ -463,6 +465,7 @@ void facebook::react::fromRawValue(const facebook::react::PropsParserContext& co
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::FontWeight& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::HyphenationFrequency& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::ImportantForAccessibility& result);
+void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::LineBreak& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::LineBreakStrategy& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::OutlineStyle& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::PointerEventsMode& result);
@@ -479,6 +482,7 @@ void facebook::react::fromRawValue(const facebook::react::PropsParserContext& co
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::TextTransform& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::Transform& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::TransformOrigin& result);
+void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::WordBreak& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::WritingDirection& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::Align& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::Direction& result);
@@ -566,8 +570,8 @@ class facebook::react::AccessibilityProps {
   public facebook::react::AccessibilityTraits accessibilityTraits;
   public facebook::react::AccessibilityValue accessibilityValue;
   public facebook::react::ImportantForAccessibility importantForAccessibility;
-  public facebook::react::Role role;
   public std::optional<facebook::react::AccessibilityState> accessibilityState;
+  public std::optional<facebook::react::Role> role;
   public std::string accessibilityHint;
   public std::string accessibilityLabel;
   public std::string accessibilityLanguage;
@@ -760,6 +764,7 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public bool disableIntervalMomentum;
   public bool horizontal;
   public bool isInvertedVirtualizedList;
+  public bool padsContentForSafeArea;
   public bool pagingEnabled;
   public bool persistentScrollbar;
   public bool pinchGestureEnabled;
@@ -776,8 +781,9 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public facebook::react::Point contentOffset;
   public facebook::react::ScrollViewIndicatorStyle indicatorStyle;
   public facebook::react::ScrollViewKeyboardDismissMode keyboardDismissMode;
-  public facebook::react::ScrollViewSnapToAlignment snapToAlignment;
+  public static constexpr Float kDefaultDecelerationRate;
   public std::optional<facebook::react::ScrollViewMaintainVisibleContentPosition> maintainVisibleContentPosition;
+  public std::optional<facebook::react::ScrollViewSnapToAlignment> snapToAlignment;
   public std::vector<Float> snapToOffsets;
   public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
 }
@@ -1343,8 +1349,8 @@ class facebook::react::ImageResponseObserverCoordinator {
 class facebook::react::ImageShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ImageComponentName, facebook::react::ImageProps, facebook::react::ImageEventEmitter, facebook::react::ImageState> {
   public ImageShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ImageShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static facebook::react::ImageState initialStateData(const facebook::react::Props::Shared& props, const facebook::react::ShadowNodeFamily::Shared&, const facebook::react::ComponentDescriptor& componentDescriptor);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
   public virtual void layout(facebook::react::LayoutContext layoutContext) override;
   public void setImageManager(const std::shared_ptr<facebook::react::ImageManager>& imageManager);
 }
@@ -1523,6 +1529,7 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public virtual bool canBeTouchTarget() const;
   public virtual bool canChildrenBeTouchTarget() const;
   public virtual bool getIsLayoutClean() const = 0;
+  public virtual const facebook::react::LayoutableShadowNode* asLayoutable() const override;
   public virtual facebook::react::Point getContentOriginOffset(bool includeTransform) const;
   public virtual facebook::react::Size measure(const facebook::react::LayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
   public virtual facebook::react::Size measureContent(const facebook::react::LayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
@@ -1645,7 +1652,7 @@ class facebook::react::ModalHostViewComponentDescriptor : public facebook::react
 class facebook::react::ModalHostViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ModalHostViewComponentName, ModalHostViewProps, ModalHostViewEventEmitter, facebook::react::ModalHostViewState> {
   public ModalHostViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ModalHostViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
 }
 
 class facebook::react::ModalHostViewState {
@@ -1697,8 +1704,8 @@ class facebook::react::NativeAnimatedNodesManager : public std::enable_shared_fr
   public bool hasManagedProps() const noexcept;
   public bool isOnRenderThread() const noexcept;
   public bool useSharedAnimatedBackend() const noexcept;
-  public facebook::react::AnimationMutations onAnimationFrameForBackend(facebook::react::AnimatedPropsBuilder& propsBuilder, facebook::react::AnimationTimestamp timestamp);
-  public facebook::react::AnimationMutations pullAnimationMutations(facebook::react::AnimationTimestamp timestamp);
+  public facebook::react::AnimationMutations onAnimationFrameForBackend(facebook::react::AnimatedPropsBuilder& propsBuilder, facebook::react::AnimationTimestamp timestamp, bool stepAnimations = true);
+  public facebook::react::AnimationMutations pullAnimationMutations(facebook::react::AnimationTimestamp timestamp, bool stepAnimations = true);
   public facebook::react::NativeAnimatedNodesManager& operator=(const facebook::react::NativeAnimatedNodesManager&) = delete;
   public facebook::react::NativeAnimatedNodesManager& operator=(facebook::react::NativeAnimatedNodesManager&&) = delete;
   public folly::dynamic getManagedProps(facebook::react::Tag tag) const noexcept;
@@ -1807,8 +1814,10 @@ class facebook::react::ParagraphAttributes : public facebook::react::DebugString
   public bool operator==(const facebook::react::ParagraphAttributes& rhs) const;
   public facebook::react::EllipsizeMode ellipsizeMode;
   public facebook::react::HyphenationFrequency android_hyphenationFrequency;
+  public facebook::react::LineBreak lineBreak;
   public facebook::react::TextBreakStrategy textBreakStrategy;
   public facebook::react::TextWidthMode textWidthMode;
+  public facebook::react::WordBreak wordBreak;
   public int maximumNumberOfLines;
   public std::optional<facebook::react::TextAlignmentVertical> textAlignVertical;
 }
@@ -1825,7 +1834,7 @@ class facebook::react::ParagraphShadowNode : public facebook::react::ConcreteVie
   protected virtual bool shouldNewRevisionDirtyMeasurement(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment) const override;
   public ParagraphShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ParagraphShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public virtual Float baseline(const facebook::react::LayoutContext& layoutContext, facebook::react::Size size) const override;
   public virtual facebook::react::Size measureContent(const facebook::react::LayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const override;
   public virtual void layout(facebook::react::LayoutContext layoutContext) override;
@@ -1986,7 +1995,7 @@ class facebook::react::RootShadowNode : public facebook::react::ConcreteViewShad
   public RootShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
   public bool layoutIfNeeded(std::vector<const facebook::react::LayoutableShadowNode*>* affectedNodes = {});
   public facebook::react::RootShadowNode::Unshared clone(const facebook::react::PropsParserContext& propsParserContext, const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext) const;
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public using Shared = std::shared_ptr<const facebook::react::RootShadowNode>;
   public using Unshared = std::shared_ptr<facebook::react::RootShadowNode>;
   public virtual facebook::react::Transform getTransform() const override;
@@ -2222,7 +2231,7 @@ class facebook::react::ShadowNode : public facebook::react::Sealable, public fac
   public int getOrderIndex() const;
   public static bool getUseRuntimeShadowNodeReferenceUpdateOnThread();
   public static bool sameFamily(const facebook::react::ShadowNode& first, const facebook::react::ShadowNode& second);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static std::shared_ptr<const std::vector<std::shared_ptr<const facebook::react::ShadowNode>>> emptySharedShadowNodeSharedList();
   public static void setUseRuntimeShadowNodeReferenceUpdateOnThread(bool isEnabled);
   public std::shared_ptr<const facebook::react::ContextContainer> getContextContainer() const;
@@ -2230,6 +2239,7 @@ class facebook::react::ShadowNode : public facebook::react::Sealable, public fac
   public std::shared_ptr<facebook::react::ShadowNode> cloneMultiple(const std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>>& familiesToUpdate, const std::function<std::shared_ptr<facebook::react::ShadowNode>(const facebook::react::ShadowNode& oldShadowNode, const facebook::react::ShadowNodeFragment& fragment)>& callback) const;
   public std::shared_ptr<facebook::react::ShadowNode> cloneTree(const facebook::react::ShadowNodeFamily& shadowNodeFamily, const std::function<std::shared_ptr<facebook::react::ShadowNode>(const facebook::react::ShadowNode& oldShadowNode)>& callback) const;
   public using AncestorList = std::vector<std::pair<std::reference_wrapper<const facebook::react::ShadowNode>, int>>;
+  public virtual const facebook::react::LayoutableShadowNode* asLayoutable() const;
   public virtual void appendChild(const std::shared_ptr<const facebook::react::ShadowNode>& child);
   public virtual void completeClone(const facebook::react::ShadowNode&, const facebook::react::ShadowNodeFragment&);
   public virtual void replaceChild(const facebook::react::ShadowNode& oldChild, const std::shared_ptr<const facebook::react::ShadowNode>& newChild, size_t suggestedIndex = std::numeric_limits<size_t>::max());
@@ -2269,10 +2279,10 @@ class facebook::react::ShadowNodeFamily : public facebook::jsi::NativeState {
 }
 
 class facebook::react::ShadowNodeTraits {
-  public bool check(facebook::react::ShadowNodeTraits::Trait traits) const;
-  public facebook::react::ShadowNodeTraits::Trait get() const;
-  public void set(facebook::react::ShadowNodeTraits::Trait trait);
-  public void unset(facebook::react::ShadowNodeTraits::Trait trait);
+  public constexpr bool check(facebook::react::ShadowNodeTraits::Trait traits) const;
+  public constexpr facebook::react::ShadowNodeTraits::Trait get() const;
+  public constexpr void set(facebook::react::ShadowNodeTraits::Trait trait);
+  public constexpr void unset(facebook::react::ShadowNodeTraits::Trait trait);
 }
 
 enum facebook::react::ShadowNodeTraits::Trait : int32_t {
@@ -2553,7 +2563,7 @@ class facebook::react::TextProps : public facebook::react::Props, public faceboo
 }
 
 class facebook::react::TextShadowNode : public facebook::react::ConcreteShadowNode<facebook::react::TextComponentName, facebook::react::ShadowNode, facebook::react::TextProps, facebook::react::TextEventEmitter>, public facebook::react::BaseTextShadowNode {
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
 }
 
 class facebook::react::TimerManager {
@@ -3513,6 +3523,13 @@ enum facebook::react::LayoutDirection {
   Undefined,
 }
 
+enum facebook::react::LineBreak {
+  Auto,
+  Loose,
+  Normal,
+  Strict,
+}
+
 enum facebook::react::LineBreakMode : uint8_t {
   Char,
   Clip,
@@ -3828,6 +3845,11 @@ enum facebook::react::UnitType {
   Percent,
   Point,
   Undefined,
+}
+
+enum facebook::react::WordBreak {
+  AutoPhrase,
+  Normal,
 }
 
 enum facebook::react::WritingDirection : uint8_t {
@@ -4942,7 +4964,7 @@ template <const char* concreteComponentName, typename ViewPropsT = facebook::rea
 class facebook::react::ConcreteViewShadowNode : public facebook::react::ConcreteShadowNode<concreteComponentName, facebook::react::YogaLayoutableShadowNode, ViewPropsT, ViewEventEmitterT, StateDataT> {
   public ConcreteViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ConcreteViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public using BaseShadowNode = facebook::react::ConcreteShadowNode<concreteComponentName, facebook::react::YogaLayoutableShadowNode, ViewPropsT, ViewEventEmitterT, StateDataT>;
   public using ConcreteViewProps = ViewPropsT;
   public virtual bool canBeTouchTarget() const override;
@@ -4959,7 +4981,7 @@ class facebook::react::BaseTextInputShadowNode : public facebook::react::Concret
   protected virtual void layout(facebook::react::LayoutContext layoutContext) override;
   public BaseTextInputShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public BaseTextInputShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public using BaseShadowNode = facebook::react::ConcreteViewShadowNode<concreteComponentName, ViewPropsT, ViewEventEmitterT, StateDataT>;
   public void setTextLayoutManager(std::shared_ptr<const TextLayoutManager> textLayoutManager);
 }
@@ -4973,12 +4995,12 @@ class facebook::react::ConcreteShadowNode : public BaseShadowNodeT {
   public const facebook::react::ConcreteShadowNode::ConcreteStateData& getStateData() const;
   public const std::shared_ptr<const facebook::react::ConcreteShadowNode::ConcreteProps>& getConcreteSharedProps() const;
   public static const facebook::react::ConcreteShadowNode::SharedConcreteProps& defaultSharedProps();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static facebook::react::ComponentHandle Handle();
   public static facebook::react::ComponentName Name();
   public static facebook::react::ConcreteShadowNode::ConcreteStateData initialStateData(const facebook::react::Props::Shared&, const facebook::react::ShadowNodeFamily::Shared&, const facebook::react::ComponentDescriptor&);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::Props::Shared& baseProps);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::Props::Shared& baseProps = nullptr);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
   public using ConcreteEventEmitter = EventEmitterT;
   public using ConcreteProps = PropsT;
   public using ConcreteState = facebook::react::ConcreteState<StateDataT>;
@@ -8123,13 +8145,13 @@ constexpr bool facebook::yoga::operator>=(facebook::yoga::FloatOptional lhs, fac
 constexpr facebook::yoga::FloatOptional facebook::yoga::operator+(facebook::yoga::FloatOptional lhs, facebook::yoga::FloatOptional rhs);
 
 class facebook::yoga::Config : public YGConfig {
-  public Config(YGLogger logger);
   public YGNodeRef cloneNode(YGNodeConstRef node, YGNodeConstRef owner, size_t childIndex) const;
   public bool hasErrata(facebook::yoga::Errata errata) const;
   public bool useWebDefaults() const;
+  public constexpr Config(YGLogger logger);
   public facebook::yoga::Errata getErrata() const;
   public float getPointScaleFactor() const;
-  public static const facebook::yoga::Config& getDefault();
+  public static constexpr const facebook::yoga::Config& getDefault();
   public uint32_t getVersion() const noexcept;
   public void addErrata(facebook::yoga::Errata errata);
   public void log(const facebook::yoga::Node* node, facebook::yoga::LogLevel logLevel, const char* format, va_list args) const;
@@ -8260,6 +8282,8 @@ class facebook::yoga::Style {
   public bool isInlineStartPositionAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool isInlineStartPositionDefined(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool operator==(const facebook::yoga::Style& other) const;
+  public bool resolvesAgainstOwnerHeight() const;
+  public bool resolvesAgainstOwnerWidth() const;
   public bool verticalInsetsDefined() const;
   public const facebook::yoga::GridLine& gridColumnEnd() const;
   public const facebook::yoga::GridLine& gridColumnStart() const;
@@ -8622,6 +8646,8 @@ struct facebook::yoga::CachedMeasurement {
   public float availableWidth;
   public float computedHeight;
   public float computedWidth;
+  public float ownerHeight;
+  public float ownerWidth;
 }
 
 struct facebook::yoga::Event {
@@ -8771,6 +8797,9 @@ struct facebook::yoga::LayoutResults {
   public float rawDimension(facebook::yoga::Dimension axis) const;
   public static constexpr int32_t MaxCachedMeasurements;
   public std::array<facebook::yoga::CachedMeasurement, facebook::yoga::LayoutResults::MaxCachedMeasurements> cachedMeasurements;
+  public std::array<float, 2> minContent;
+  public std::array<float, 2> minContentOwnerWidth;
+  public std::array<uint32_t, 2> minContentGeneration;
   public uint32_t computedFlexBasisGeneration;
   public uint32_t configVersion;
   public uint32_t generationCount;

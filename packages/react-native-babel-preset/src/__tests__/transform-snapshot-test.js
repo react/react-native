@@ -158,7 +158,7 @@ const testConfigs = [
 
 function transformCode(
   code: string,
-  options: {[string]: unknown},
+  options: {[key: string]: unknown},
 ): string | null {
   const result = babel.transformSync(code, {
     babelrc: false,
@@ -173,7 +173,7 @@ function transformCode(
 
 function transformCodeWithSourceOptimization(
   code: string,
-  options: {[string]: unknown},
+  options: {[key: string]: unknown},
 ): string | null {
   const config = preset.getPreset(code, options);
   const result = babel.transformSync(code, {
@@ -208,7 +208,10 @@ function ensureDirectoryExists(dir: string): void {
   }
 }
 
-function makeHeader(description: string, options: {[string]: unknown}): string {
+function makeHeader(
+  description: string,
+  options: {[key: string]: unknown},
+): string {
   return `/**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -354,22 +357,47 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).toContain('_wrapAsyncGenerator');
     });
 
-    it('handles optional chaining', () => {
+    it('preserves optional chaining in dev with hermes-stable profile', () => {
       const code = `const x = obj?.a?.b?.c;`;
       const result = transformCode(code, {
         dev: true,
         unstable_transformProfile: 'hermes-stable',
       });
-      expect(result).not.toContain('?.');
+      expect(result).toContain('obj?.a?.b?.c');
     });
 
-    it('handles nullish coalescing', () => {
+    it('preserves nullish coalescing in dev with hermes-stable profile', () => {
       const code = `const x = a ?? b;`;
       const result = transformCode(code, {
         dev: true,
         unstable_transformProfile: 'hermes-stable',
       });
-      expect(result).not.toContain('??');
+      expect(result).toContain('a ?? b');
+    });
+
+    it('preserves generators, for-of and optional catch binding in dev without Babel runtime', () => {
+      const code = `
+        function* gen() {
+          try {
+            yield 1;
+          } catch {
+            yield 2;
+          }
+        }
+        for (const x of gen()) {
+          console.log(x);
+        }
+      `;
+      const result = transformCode(code, {
+        dev: true,
+        unstable_transformProfile: 'hermes-stable',
+        enableBabelRuntime: false,
+      });
+      expect(result).toContain('function* gen()');
+      expect(result).toContain('x of gen()');
+      expect(result).toContain('catch {');
+      expect(result).not.toContain('_regenerator');
+      expect(result).not.toContain('_createForOfIteratorHelperLoose');
     });
 
     it('handles flow enums', () => {
@@ -442,7 +470,9 @@ describe('react-native-babel-preset transform snapshots', () => {
     it('handles destructuring with defaults', () => {
       const code = `const {a, b = 10, ...rest} = obj;`;
       const result = transformCode(code, {dev: false});
-      expect(result).toContain('_objectWithoutProperties');
+      expect(result).toContain('b = 10');
+      expect(result).toContain('...rest');
+      expect(result).not.toContain('_objectWithoutProperties');
     });
 
     it('handles JSX transformation', () => {
@@ -637,13 +667,16 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).not.toContain('_slicedToArray');
     });
 
-    it('transforms destructuring without unstable_preserveDestructuring', () => {
+    it('transforms destructuring when unstable_preserveDestructuring is false', () => {
       const code = `
         const {a, b, ...rest} = obj;
       `;
       const result = transformCode(code, {
         dev: false,
         unstable_transformProfile: 'hermes-stable',
+        customTransformOptions: {
+          unstable_preserveDestructuring: false,
+        },
       });
       expect(result).toContain('_objectWithoutProperties');
     });

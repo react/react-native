@@ -21,6 +21,7 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.annotations.ReactPropGroup
 import com.facebook.yoga.YogaValue
 import java.lang.reflect.Method
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * This class is responsible for holding view manager property setters and is used in a process of
@@ -29,7 +30,8 @@ import java.lang.reflect.Method
 @Suppress("DEPRECATION") // ReactShadowNode is @Deprecated but still required by this cache.
 internal object ViewManagersPropertyCache {
 
-  private val CLASS_PROPS_CACHE: MutableMap<Class<*>, Map<String, PropSetter>> = HashMap()
+  // Used from the JS thread (view configs) and the UI thread (prop updates).
+  private val CLASS_PROPS_CACHE: MutableMap<Class<*>, Map<String, PropSetter>> = ConcurrentHashMap()
   private val EMPTY_PROPS_MAP: MutableMap<String, PropSetter> = HashMap()
 
   @JvmStatic

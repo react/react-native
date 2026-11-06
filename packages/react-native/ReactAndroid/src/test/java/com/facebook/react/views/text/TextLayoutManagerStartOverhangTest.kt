@@ -9,7 +9,7 @@ package com.facebook.react.views.text
 
 import android.annotation.SuppressLint
 import android.graphics.RectF
-import android.text.BoringLayout
+import android.graphics.text.LineBreakConfig
 import android.text.Layout
 import android.text.SpannableString
 import android.text.TextPaint
@@ -44,6 +44,29 @@ class TextLayoutManagerStartOverhangTest {
 
     assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isFalse()
     assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `EXACTLY mode keeps advance based width measurement for LTR text`() {
+    val layout =
+        createLayout(
+            YogaMeasureMode.EXACTLY,
+            text = SpannableString("Just listed"),
+            ellipsizeMode = TextUtils.TruncateAt.END,
+            maxNumberOfLines = 1,
+        )
+
+    assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isFalse()
+    assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `EXACTLY mode enables start overhang support for mixed LTR and RTL text`() {
+    val layout = createLayout(YogaMeasureMode.EXACTLY, text = SpannableString("Hello שלום"))
+
+    assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isTrue()
   }
 
   @Test
@@ -117,6 +140,52 @@ class TextLayoutManagerStartOverhangTest {
   }
 
   @Test
+  @Config(sdk = [35])
+  fun `mixed paragraph directions disable the start overhang drawing shift`() {
+    // The blank line between the RTL paragraphs has no strong character, so it is laid out LTR.
+    val layout =
+        createLayout(
+            YogaMeasureMode.EXACTLY,
+            text = SpannableString("שלום\n\nעולם"),
+            maxNumberOfLines = 0,
+        )
+
+    assertThat(TextLayoutManager.hasMixedParagraphDirections(layout)).isTrue()
+    assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isTrue()
+    assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `mixed paragraph directions support requested line breaking styles`() {
+    val layout =
+        createLayout(
+            YogaMeasureMode.EXACTLY,
+            text = SpannableString("שלום\n\nעולם"),
+            maxNumberOfLines = 0,
+            lineBreakStyle = LineBreakConfig.LINE_BREAK_STYLE_STRICT,
+            lineBreakWordStyle = LineBreakConfig.LINE_BREAK_WORD_STYLE_PHRASE,
+        )
+
+    assertThat(TextLayoutManager.hasMixedParagraphDirections(layout)).isTrue()
+    assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `single paragraph direction keeps the start overhang drawing shift`() {
+    val layout =
+        createLayout(
+            YogaMeasureMode.EXACTLY,
+            text = SpannableString("שלום\nעולם"),
+            maxNumberOfLines = 0,
+        )
+
+    assertThat(TextLayoutManager.hasMixedParagraphDirections(layout)).isFalse()
+    assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isTrue()
+  }
+
+  @Test
   @Config(sdk = [34])
   fun `EXACTLY mode remains supported before Android 15`() {
     val layout = createLayout(YogaMeasureMode.EXACTLY)
@@ -132,43 +201,25 @@ class TextLayoutManagerStartOverhangTest {
       ellipsizeMode: TextUtils.TruncateAt? = null,
       maxNumberOfLines: Int = 2,
       paint: TextPaint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 26f },
-  ): Layout {
-    val method =
-        TextLayoutManager::class
-            .java
-            .getDeclaredMethod(
-                "createLayout",
-                android.text.Spannable::class.java,
-                BoringLayout.Metrics::class.java,
-                java.lang.Float.TYPE,
-                YogaMeasureMode::class.java,
-                java.lang.Boolean.TYPE,
-                java.lang.Integer.TYPE,
-                java.lang.Integer.TYPE,
-                Layout.Alignment::class.java,
-                java.lang.Integer.TYPE,
-                TextUtils.TruncateAt::class.java,
-                java.lang.Integer.TYPE,
-                TextPaint::class.java,
-            )
-            .apply { isAccessible = true }
-
-    return method.invoke(
-        TextLayoutManager,
-        text,
-        null,
-        layoutWidth,
-        widthMode,
-        /* includeFontPadding = */ false,
-        /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
-        /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
-        Layout.Alignment.ALIGN_NORMAL,
-        /* justificationMode = */ 0,
-        /* ellipsizeMode = */ ellipsizeMode,
-        /* maxNumberOfLines = */ maxNumberOfLines,
-        paint,
-    ) as Layout
-  }
+      lineBreakStyle: Int = LineBreakConfig.LINE_BREAK_STYLE_NONE,
+      lineBreakWordStyle: Int = LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE,
+  ): Layout =
+      TextLayoutManager.createLayout(
+          text,
+          /* boring = */ null,
+          layoutWidth,
+          widthMode,
+          /* includeFontPadding = */ false,
+          /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
+          /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
+          lineBreakStyle,
+          lineBreakWordStyle,
+          Layout.Alignment.ALIGN_NORMAL,
+          /* justificationMode = */ 0,
+          /* ellipsizeMode = */ ellipsizeMode,
+          /* maxNumberOfLines = */ maxNumberOfLines,
+          paint,
+      )
 
   private fun getBooleanLayoutProperty(layout: Layout, methodName: String): Boolean =
       layout.javaClass.getMethod(methodName).invoke(layout) as Boolean

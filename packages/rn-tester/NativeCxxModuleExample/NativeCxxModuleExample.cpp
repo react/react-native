@@ -6,8 +6,8 @@
  */
 
 #include "NativeCxxModuleExample.h"
-#include <react/bridging/ArrayBuffer.h>
-#include <react/debug/react_native_assert.h>
+#include <React/Bridging.h>
+#include <React/Debug.h>
 #include <iomanip>
 #include <numeric>
 #include <ostream>

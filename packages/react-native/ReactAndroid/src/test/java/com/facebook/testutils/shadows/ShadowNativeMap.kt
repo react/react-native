@@ -41,6 +41,6 @@ open class ShadowNativeMap {
 
   companion object {
     fun getContents(map: NativeMap): Map<String, Any?> =
-        (Shadow.extract(map) as ShadowNativeMap).backingMap.toHashMap()
+        Shadow.extract<ShadowNativeMap>(map).backingMap.toHashMap()
   }
 }

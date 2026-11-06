@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import <React/RCTBridge.h>
 #import <React/RCTImageCache.h>
 #import <React/RCTImageDataDecoder.h>
 #import <React/RCTImageURLLoader.h>

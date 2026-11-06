@@ -84,6 +84,7 @@ describe('sync-spm-autolinking main', () => {
       appRoot,
       rnRoot,
       expect.any(Object),
+      {cxxApiDefines: []},
     );
     expect(deps.generateAutolinking).toHaveBeenCalledWith([
       '--app-root',
@@ -113,6 +114,27 @@ describe('sync-spm-autolinking main', () => {
     const withoutFlag = makeDeps();
     await run(withoutFlag);
     expect(withoutFlag.generateAutolinking).toHaveBeenCalledWith(baseArgv());
+  });
+
+  it('forwards --cxx-api-define to the codegen template and the autolinker', async () => {
+    const deps = makeDeps();
+    const defineArgs = [
+      '--cxx-api-define',
+      'RN_STRICT_API',
+      '--cxx-api-define',
+      'RN_ALLOW_FRAMEWORKS',
+    ];
+    await main([...baseArgv(), ...defineArgs], deps);
+    expect(deps.installSpmCodegenTemplate).toHaveBeenCalledWith(
+      appRoot,
+      rnRoot,
+      expect.any(Object),
+      {cxxApiDefines: ['RN_STRICT_API', 'RN_ALLOW_FRAMEWORKS']},
+    );
+    expect(deps.generateAutolinking).toHaveBeenCalledWith([
+      ...baseArgv(),
+      ...defineArgs,
+    ]);
   });
 
   it('continues with existing output when codegen fails', async () => {

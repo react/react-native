@@ -39,7 +39,7 @@ function getCDPLogPrefix(destination: CDPMessageDestination): string {
 
 export default class CdpDebugLogging {
   #cdpMessagesLoggingBatchingFn: {
-    [CDPMessageDestination]: (message: string) => void,
+    [key: CDPMessageDestination]: (message: string) => void,
   } = {
     DebuggerToProxy: () => {},
     ProxyToDebugger: () => {},
@@ -55,7 +55,7 @@ export default class CdpDebugLogging {
 
   #initializeThrottledCDPMessageLogging(): void {
     const batchingCounters: {
-      [CDPMessageDestination]: {count: number, size: number},
+      [key: CDPMessageDestination]: {count: number, size: number},
     } = {
       DebuggerToProxy: {count: 0, size: 0},
       ProxyToDebugger: {count: 0, size: 0},

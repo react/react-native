@@ -11,6 +11,7 @@
 
 #include <cassert>
 #include <list>
+#include <map>
 #include <mutex>
 #include <utility>
 

@@ -48,7 +48,7 @@ const TextInputForm = () => {
   );
 };
 
-const CloseButton = (props: {setModalOpen: boolean => void}) => {
+const CloseButton = (props: {setModalOpen: (v: boolean) => void}) => {
   return (
     <Pressable
       onPress={() => props.setModalOpen(false)}
@@ -66,7 +66,7 @@ const BEHAVIORS: Array<KeyboardAvoidingBehavior> = [
   'height',
 ];
 
-const BEHAVIOR_DESCRIPTIONS: {[KeyboardAvoidingBehavior]: string} = {
+const BEHAVIOR_DESCRIPTIONS: {[key: KeyboardAvoidingBehavior]: string} = {
   padding: 'Sets bottom padding equal to the keyboard overlap.',
   position: 'Offsets the content container up by the keyboard overlap.',
   height: 'Shrinks the view height by the keyboard overlap.',
@@ -74,7 +74,7 @@ const BEHAVIOR_DESCRIPTIONS: {[KeyboardAvoidingBehavior]: string} = {
 
 const BehaviorPicker = (props: {
   behavior: KeyboardAvoidingBehavior,
-  setBehavior: KeyboardAvoidingBehavior => void,
+  setBehavior: (v: KeyboardAvoidingBehavior) => void,
 }) => {
   return (
     <View>

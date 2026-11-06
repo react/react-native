@@ -72,7 +72,7 @@ class FabricMountingManager final {
 
   /*
    * Pull model: notify Java that a transaction is available for `surfaceId` so
-   * the UI thread can pull it via a PullTransactionMountItem.
+   * the UI thread pulls it at its next mount dispatch.
    */
   void onTransactionAvailable(SurfaceId surfaceId);
 

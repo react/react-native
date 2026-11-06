@@ -9,8 +9,7 @@
  */
 
 #include "Props.h"
-#include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/core/propsConversions.h>
+#include <React/RendererCore.h>
 
 namespace facebook::react {
 

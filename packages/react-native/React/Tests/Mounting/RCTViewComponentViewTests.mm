@@ -204,6 +204,39 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   XCTAssertNil([view hitTest:CGPointMake(50, 50) withEvent:nil]);
 }
 
+#pragma mark - non-finite transforms
+
+static RCTViewComponentView *makeViewWithTransform(const Transform &transform)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto props = std::make_shared<ViewProps>();
+  props->transform = transform;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  return view;
+}
+
+- (void)testFiniteTransformIsApplied
+{
+  RCTViewComponentView *view = makeViewWithTransform(Transform::Translate(5, 10, 0));
+
+  XCTAssertEqual(view.layer.transform.m41, 5.0);
+  XCTAssertEqual(view.layer.transform.m42, 10.0);
+}
+
+- (void)testTransformWithNaNIsNotApplied
+{
+  RCTViewComponentView *view = makeViewWithTransform(Transform::Translate(NAN, 10, 0));
+
+  XCTAssertTrue(CATransform3DIsIdentity(view.layer.transform));
+}
+
+- (void)testTransformWithInfinityIsNotApplied
+{
+  RCTViewComponentView *view = makeViewWithTransform(Transform::Scale(INFINITY, 1, 1));
+
+  XCTAssertTrue(CATransform3DIsIdentity(view.layer.transform));
+}
+
 #pragma mark - Full Keyboard Access focusability
 
 static RCTViewComponentView *makeViewWithRole(bool accessible, const std::string &accessibilityRole)

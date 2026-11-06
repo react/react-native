@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import <React/RCTBridge.h>
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTInitializing.h>
 /**

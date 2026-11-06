@@ -52,18 +52,15 @@ Map {
 namespace facebook::react {
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getArrayBuffer(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ArrayBufferKind, \\"getArrayBuffer\\", \\"()Lcom/facebook/react/bridge/ArrayBuffer;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ArrayBufferKind, \\"getArrayBuffer\\", \\"()Lcom/facebook/react/bridge/ArrayBuffer;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_voidArrayBuffer(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidArrayBuffer\\", \\"(Lcom/facebook/react/bridge/ArrayBuffer;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidArrayBuffer\\", \\"(Lcom/facebook/react/bridge/ArrayBuffer;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_voidNullableArrayBuffer(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidNullableArrayBuffer\\", \\"(Lcom/facebook/react/bridge/ArrayBuffer;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidNullableArrayBuffer\\", \\"(Lcom/facebook/react/bridge/ArrayBuffer;)V\\", args, count);
 }
 
 NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)
@@ -130,38 +127,31 @@ Map {
 namespace facebook::react {
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_difficult(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"difficult\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)Lcom/facebook/react/bridge/WritableMap;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"difficult\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)Lcom/facebook/react/bridge/WritableMap;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_optionals(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"optionals\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"optionals\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_optionalMethod(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"optionalMethod\\", \\"(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Callback;Lcom/facebook/react/bridge/ReadableArray;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"optionalMethod\\", \\"(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Callback;Lcom/facebook/react/bridge/ReadableArray;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getArrays(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"getArrays\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"getArrays\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getNullableObject(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getNullableObject\\", \\"()Lcom/facebook/react/bridge/WritableMap;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getNullableObject\\", \\"()Lcom/facebook/react/bridge/WritableMap;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getNullableGenericObject(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getNullableGenericObject\\", \\"()Lcom/facebook/react/bridge/WritableMap;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getNullableGenericObject\\", \\"()Lcom/facebook/react/bridge/WritableMap;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getNullableArray(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ArrayKind, \\"getNullableArray\\", \\"()Lcom/facebook/react/bridge/WritableArray;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ArrayKind, \\"getNullableArray\\", \\"()Lcom/facebook/react/bridge/WritableArray;\\", args, count);
 }
 
 NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)
@@ -267,8 +257,7 @@ Map {
 namespace facebook::react {
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_voidFunc(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count);
 }
 
 NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)
@@ -317,8 +306,7 @@ namespace facebook::react {
 
 
 static facebook::jsi::Value __hostFunction_AliasTurboModuleSpecJSI_cropImage(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"cropImage\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"cropImage\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count);
 }
 
 AliasTurboModuleSpecJSI::AliasTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)
@@ -357,18 +345,15 @@ namespace facebook::react {
 
 
 static facebook::jsi::Value __hostFunction_NativeCameraRollManagerSpecJSI_getPhotos(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"getPhotos\\", \\"(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"getPhotos\\", \\"(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeCameraRollManagerSpecJSI_saveToCameraRoll(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"saveToCameraRoll\\", \\"(Ljava/lang/String;Ljava/lang/String;Lcom/facebook/react/bridge/Promise;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"saveToCameraRoll\\", \\"(Ljava/lang/String;Ljava/lang/String;Lcom/facebook/react/bridge/Promise;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeCameraRollManagerSpecJSI_deletePhotos(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"deletePhotos\\", \\"(Lcom/facebook/react/bridge/ReadableArray;Lcom/facebook/react/bridge/Promise;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"deletePhotos\\", \\"(Lcom/facebook/react/bridge/ReadableArray;Lcom/facebook/react/bridge/Promise;)V\\", args, count);
 }
 
 NativeCameraRollManagerSpecJSI::NativeCameraRollManagerSpecJSI(const JavaTurboModule::InitParams &params)
@@ -378,28 +363,23 @@ NativeCameraRollManagerSpecJSI::NativeCameraRollManagerSpecJSI(const JavaTurboMo
   methodMap_[\\"deletePhotos\\"] = MethodMetadata {1, __hostFunction_NativeCameraRollManagerSpecJSI_deletePhotos};
 }
 static facebook::jsi::Value __hostFunction_NativeExceptionsManagerSpecJSI_reportFatalException(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"reportFatalException\\", \\"(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;D)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"reportFatalException\\", \\"(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;D)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeExceptionsManagerSpecJSI_reportSoftException(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"reportSoftException\\", \\"(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;D)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"reportSoftException\\", \\"(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;D)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeExceptionsManagerSpecJSI_reportException(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"reportException\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"reportException\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeExceptionsManagerSpecJSI_updateExceptionMessage(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"updateExceptionMessage\\", \\"(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;D)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"updateExceptionMessage\\", \\"(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;D)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeExceptionsManagerSpecJSI_dismissRedbox(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"dismissRedbox\\", \\"()V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"dismissRedbox\\", \\"()V\\", args, count);
 }
 
 NativeExceptionsManagerSpecJSI::NativeExceptionsManagerSpecJSI(const JavaTurboModule::InitParams &params)
@@ -443,73 +423,59 @@ Map {
 namespace facebook::react {
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getConstants(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getConstants\\", \\"()Ljava/util/Map;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getConstants\\", \\"()Ljava/util/Map;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_voidFunc(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getBool(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, BooleanKind, \\"getBool\\", \\"(Z)Z\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, BooleanKind, \\"getBool\\", \\"(Z)Z\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getNumber(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, NumberKind, \\"getNumber\\", \\"(D)D\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, NumberKind, \\"getNumber\\", \\"(D)D\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getString(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, \\"getString\\", \\"(Ljava/lang/String;)Ljava/lang/String;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, \\"getString\\", \\"(Ljava/lang/String;)Ljava/lang/String;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getArray(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ArrayKind, \\"getArray\\", \\"(Lcom/facebook/react/bridge/ReadableArray;)Lcom/facebook/react/bridge/WritableArray;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ArrayKind, \\"getArray\\", \\"(Lcom/facebook/react/bridge/ReadableArray;)Lcom/facebook/react/bridge/WritableArray;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getObject(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getObject\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)Lcom/facebook/react/bridge/WritableMap;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getObject\\", \\"(Lcom/facebook/react/bridge/ReadableMap;)Lcom/facebook/react/bridge/WritableMap;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getRootTag(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, NumberKind, \\"getRootTag\\", \\"(D)D\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, NumberKind, \\"getRootTag\\", \\"(D)D\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getValue(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getValue\\", \\"(DLjava/lang/String;Lcom/facebook/react/bridge/ReadableMap;)Lcom/facebook/react/bridge/WritableMap;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getValue\\", \\"(DLjava/lang/String;Lcom/facebook/react/bridge/ReadableMap;)Lcom/facebook/react/bridge/WritableMap;\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getEnumReturn(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, NumberKind, \\"getEnumReturn\\", \\"()D\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, NumberKind, \\"getEnumReturn\\", \\"()D\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getValueWithCallback(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"getValueWithCallback\\", \\"(Lcom/facebook/react/bridge/Callback;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"getValueWithCallback\\", \\"(Lcom/facebook/react/bridge/Callback;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getValueWithPromise(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"getValueWithPromise\\", \\"(ZLcom/facebook/react/bridge/Promise;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"getValueWithPromise\\", \\"(ZLcom/facebook/react/bridge/Promise;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getValueWithOptionalArg(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"getValueWithOptionalArg\\", \\"(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, \\"getValueWithOptionalArg\\", \\"(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V\\", args, count);
 }
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getEnums(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, \\"getEnums\\", \\"(DLjava/lang/String;)Ljava/lang/String;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, \\"getEnums\\", \\"(DLjava/lang/String;)Ljava/lang/String;\\", args, count);
 }
 
 NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)
@@ -559,8 +525,7 @@ Map {
 namespace facebook::react {
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getStringLiteral(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, \\"getStringLiteral\\", \\"(Ljava/lang/String;)Ljava/lang/String;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, \\"getStringLiteral\\", \\"(Ljava/lang/String;)Ljava/lang/String;\\", args, count);
 }
 
 NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)
@@ -599,8 +564,7 @@ Map {
 namespace facebook::react {
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_voidFunc(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count);
 }
 
 NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)
@@ -610,8 +574,7 @@ NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboMo
 
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModule2SpecJSI_voidFunc(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, \\"voidFunc\\", \\"()V\\", args, count);
 }
 
 NativeSampleTurboModule2SpecJSI::NativeSampleTurboModule2SpecJSI(const JavaTurboModule::InitParams &params)
@@ -651,8 +614,7 @@ Map {
 namespace facebook::react {
 
 static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getUnion(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
-  static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getUnion\\", \\"(DDLcom/facebook/react/bridge/ReadableMap;Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/ReadableMap;\\", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, \\"getUnion\\", \\"(DDLcom/facebook/react/bridge/ReadableMap;Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/ReadableMap;\\", args, count);
 }
 
 NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const JavaTurboModule::InitParams &params)

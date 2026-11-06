@@ -10,11 +10,18 @@
 
 'use strict';
 
+// headers-xcframework reads `execFileSync` when it loads, so it's mocked before
+// the module is required.
+const mockExecFileSync = jest.fn();
+jest.mock('node:child_process', () => ({
+  ...jest.requireActual('node:child_process'),
+  execFileSync: mockExecFileSync,
+}));
+
 const {
   buildDepsHeadersXcframework,
   stubSlicesFromXcframework,
 } = require('../headers-xcframework');
-const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -67,9 +74,9 @@ describe('stubSlicesFromXcframework', () => {
   // SupportedPlatform/Variant -> key mapping and the unknown-slice guard can be
   // tested without a real xcframework or macOS tooling.
   const mockPlist = (obj /*: unknown */) =>
-    jest
-      .spyOn(childProcess, 'execFileSync')
-      .mockReturnValue(Buffer.from(JSON.stringify(obj) ?? '', 'utf8'));
+    mockExecFileSync.mockReturnValue(
+      Buffer.from(JSON.stringify(obj) ?? '', 'utf8'),
+    );
 
   afterEach(() => {
     jest.restoreAllMocks();

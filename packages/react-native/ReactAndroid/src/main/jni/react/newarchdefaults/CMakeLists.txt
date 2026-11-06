@@ -29,6 +29,19 @@ target_link_libraries(react_newarchdefaults
         react_nativemodule_featureflags
         react_nativemodule_microtasks
         react_nativemodule_idlecallbacks
+        react_renderer_attributedstring
+        react_renderer_componentregistry
+        react_renderer_textlayoutmanager
+        rrc_image
+        rrc_modal
+        rrc_progressbar
+        rrc_safeareaview
+        rrc_scrollview
+        rrc_switch
+        rrc_text
+        rrc_textinput
+        rrc_unimplementedview
+        rrc_view
         jsi)
 
 target_compile_reactnative_options(react_newarchdefaults PRIVATE)

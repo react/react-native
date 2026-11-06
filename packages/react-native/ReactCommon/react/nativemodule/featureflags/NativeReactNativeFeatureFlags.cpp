@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<059dc18c264140153faa21f2812f9044>>
+ * @generated SignedSource<<39021cf7bb7f81a2d7a083b5d04348cb>>
  */
 
 /**
@@ -62,6 +62,11 @@ bool NativeReactNativeFeatureFlags::cxxNativeAnimatedEnabled(
 bool NativeReactNativeFeatureFlags::defaultTextToOverflowHidden(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::defaultTextToOverflowHidden();
+}
+
+bool NativeReactNativeFeatureFlags::deferTextInputTruncationIOS(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::deferTextInputTruncationIOS();
 }
 
 bool NativeReactNativeFeatureFlags::disableEarlyViewCommandExecution(
@@ -184,9 +189,9 @@ bool NativeReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode(
   return ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
+bool NativeReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid(
     jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+  return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
@@ -227,6 +232,11 @@ bool NativeReactNativeFeatureFlags::enableImperativeEvents(
 bool NativeReactNativeFeatureFlags::enableImperativeFocus(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeFocus();
+}
+
+bool NativeReactNativeFeatureFlags::enableInteractableResponderViews(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableInteractableResponderViews();
 }
 
 bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS(
@@ -384,6 +394,11 @@ bool NativeReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled(
   return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
 }
 
+bool NativeReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid();
+}
+
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::optimizedAnimatedPropUpdates();
@@ -437,6 +452,11 @@ bool NativeReactNativeFeatureFlags::shouldTriggerResponderTransferOnScrollAndroi
 bool NativeReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause();
+}
+
+bool NativeReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator();
 }
 
 bool NativeReactNativeFeatureFlags::syncAndroidClipBoundsWithOverflow(

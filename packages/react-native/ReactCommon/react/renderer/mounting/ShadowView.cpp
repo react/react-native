@@ -13,8 +13,7 @@
 namespace facebook::react {
 
 static LayoutMetrics layoutMetricsFromShadowNode(const ShadowNode& shadowNode) {
-  auto layoutableShadowNode =
-      dynamic_cast<const LayoutableShadowNode*>(&shadowNode);
+  auto layoutableShadowNode = shadowNode.asLayoutable();
   return layoutableShadowNode != nullptr
       ? layoutableShadowNode->getLayoutMetrics()
       : EmptyLayoutMetrics;

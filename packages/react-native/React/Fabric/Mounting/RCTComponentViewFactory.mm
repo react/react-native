@@ -19,6 +19,7 @@
 #import <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #import <react/renderer/componentregistry/componentNameByReactViewName.h>
 #import <react/renderer/componentregistry/native/NativeComponentRegistryBinding.h>
+#import <react/renderer/components/text/SelectableParagraphComponentDescriptor.h>
 #import <react/renderer/components/view/LayoutConformanceComponentDescriptor.h>
 #import <react/renderer/core/PropsParserContext.h>
 #import <react/renderer/core/ReactPrimitives.h>
@@ -46,6 +47,18 @@
 
 using namespace facebook;
 using namespace facebook::react;
+
+@interface RCTSelectableParagraphComponentView : RCTParagraphComponentView
+@end
+
+@implementation RCTSelectableParagraphComponentView
+
++ (ComponentDescriptorProvider)componentDescriptorProvider
+{
+  return concreteComponentDescriptorProvider<SelectableParagraphComponentDescriptor>();
+}
+
+@end
 
 @interface RCTComponentViewFactory ()
 - (void)_registerComponentIfPossible:(const std::string &)name;
@@ -85,6 +98,7 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
     componentViewFactory = [RCTComponentViewFactory new];
     [componentViewFactory registerComponentViewClass:[RCTRootComponentView class]];
     [componentViewFactory registerComponentViewClass:[RCTParagraphComponentView class]];
+    [componentViewFactory registerComponentViewClass:[RCTSelectableParagraphComponentView class]];
     componentViewFactory->_providerRegistry.add(
         concreteComponentDescriptorProvider<LayoutConformanceComponentDescriptor>());
 

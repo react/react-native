@@ -17,6 +17,7 @@ import {format, plugins} from 'pretty-format';
 const stringify = (data: unknown): string =>
   format(data, {min: true, plugins: [plugins.ReactElement]});
 
+// $FlowFixMe[incompatible-type]
 class ErrorWithCustomBlame extends Error {
   // Initially 5 to ignore all the frames from Babel helpers to instantiate this
   // custom error class.
@@ -48,6 +49,7 @@ class ErrorWithCustomBlame extends Error {
       // $FlowExpectedError[incompatible-type]
       delete this.stack;
 
+      // $FlowFixMe[incompatible-use]
       const lines = originalStack.split('\n');
       const index = lines.findIndex(line =>
         /at (.*) \((.*):(\d+):(\d+)\)/.test(line),
@@ -70,6 +72,7 @@ class ErrorWithCustomBlame extends Error {
     // In this case we're inheriting the error and we don't know if the stack
     // contains helpers that we need to ignore.
     errorWithCustomBlame.#ignoredFrameCount = 0;
+    // $FlowFixMe[incompatible-type]
     errorWithCustomBlame.stack = error.stack;
     return errorWithCustomBlame;
   }
@@ -600,6 +603,7 @@ Expect.prototype.lastCalledWith = Expect.prototype.toHaveBeenLastCalledWith;
  * unsoundness in flow */
 Expect.prototype.nthCalledWith = Expect.prototype.toHaveBeenNthCalledWith;
 
-const expect: unknown => Expect = (received: unknown) => new Expect(received);
+const expect: (v: unknown) => Expect = (received: unknown) =>
+  new Expect(received);
 
 export default expect;

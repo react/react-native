@@ -32,7 +32,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 /*::
-type RawSpec = {[string]: unknown};
+type RawSpec = {[key: string]: unknown};
 */
 
 // ---------------------------------------------------------------------------
@@ -138,6 +138,7 @@ function runPodIpcSpec(podspecPath /*: string */) /*: RawSpec | null */ {
   const lastLineBrace = stdout.lastIndexOf('\n}');
   const end =
     lastLineBrace >= 0 ? lastLineBrace + 2 : stdout.lastIndexOf('}') + 1;
+  // $FlowFixMe[invalid-compare]
   if (start < 0 || end <= start) {
     console.warn(
       '[read-podspec] pod ipc spec produced no line-anchored JSON object; ' +

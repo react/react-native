@@ -2354,12 +2354,6 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon
     - SocketRocket
-  - React-RCTTest (1000.0.0):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-Core (= 1000.0.0)
@@ -2775,7 +2769,6 @@ DEPENDENCIES:
   - React-RCTPushNotification (from `../react-native/Libraries/PushNotificationIOS`)
   - React-RCTRuntime (from `../react-native/React/Runtime`)
   - React-RCTSettings (from `../react-native/Libraries/Settings`)
-  - React-RCTTest (from `./RCTTest`)
   - React-RCTText (from `../react-native/Libraries/Text`)
   - React-RCTVibration (from `../react-native/Libraries/Vibration`)
   - React-rendererconsistency (from `../react-native/ReactCommon/react/renderer/consistency`)
@@ -2940,8 +2933,6 @@ EXTERNAL SOURCES:
     :path: "../react-native/React/Runtime"
   React-RCTSettings:
     :path: "../react-native/Libraries/Settings"
-  React-RCTTest:
-    :path: "./RCTTest"
   React-RCTText:
     :path: "../react-native/Libraries/Text"
   React-RCTVibration:
@@ -3054,7 +3045,6 @@ SPEC CHECKSUMS:
   React-RCTPushNotification: 49c1acca24d107235c15a61af9ed856ef9e4c956
   React-RCTRuntime: feb1d8054fd1128af1622a6ec477ed5585dd01cc
   React-RCTSettings: a932ad87f8dc6601deb45220a9bfa7da4a44df03
-  React-RCTTest: 35876bf3e89cbbb357d52292f0e525996e5ce60c
   React-RCTText: 16b0e933027bd04a5fc594461cb7691cd7eaaa56
   React-RCTVibration: fa7447c8f2435d18eb07e507e088c77cc6dbf61c
   React-rendererconsistency: 7953edf876fa2626cfe7513f8a96dcb87e4be3ae

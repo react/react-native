@@ -29,7 +29,7 @@ type EventRecordingListener = JestMockFn<[Event], void> & {
 };
 
 function createListener(
-  implementation?: Event => void,
+  implementation?: (v: Event) => void,
 ): EventRecordingListener {
   // $FlowExpectedError[incompatible-type]
   const listener: EventRecordingListener = jest.fn((event: Event) => {

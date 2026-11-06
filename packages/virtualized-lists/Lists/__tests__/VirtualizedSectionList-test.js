@@ -22,7 +22,7 @@ function removeOwner(obj: unknown): unknown {
   if (obj === null || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(removeOwner);
 
-  const result: {[string]: unknown} = {};
+  const result: {[key: string]: unknown} = {};
   for (const key of Object.keys(obj)) {
     if (key === '_owner') continue;
     result[key] = removeOwner(obj[key]);

@@ -8,11 +8,11 @@
 package com.facebook.react.views.text
 
 import android.annotation.SuppressLint
+import android.graphics.text.LineBreakConfig
 import android.text.BoringLayout
 import android.text.Layout
 import android.text.SpannableString
 import android.text.TextPaint
-import android.text.TextUtils
 import com.facebook.yoga.YogaMeasureMode
 import kotlin.math.ceil
 import org.assertj.core.api.Assertions.assertThat
@@ -78,9 +78,8 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
   }
 
   /**
-   * Invokes the private TextLayoutManager.createLayout via reflection. We can't call it directly
-   * because it's `private` (friend_paths only opens up `internal`). Default values mirror what
-   * measureText() passes in the production path for a plain single-paragraph label.
+   * Default values mirror what measureText() passes in the production path for a plain
+   * single-paragraph label.
    *
    * BREAK_STRATEGY_HIGH_QUALITY and HYPHENATION_FREQUENCY_NONE are API 23+ constants. The test runs
    * only on Robolectric (JVM), never on a device, so the inlined integer values are safe.
@@ -90,42 +89,21 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
       text: SpannableString,
       width: Float,
       paint: TextPaint,
-  ): Layout {
-    val boring: BoringLayout.Metrics? = BoringLayout.isBoring(text, paint)
-    val method =
-        TextLayoutManager::class
-            .java
-            .getDeclaredMethod(
-                "createLayout",
-                android.text.Spannable::class.java,
-                BoringLayout.Metrics::class.java,
-                java.lang.Float.TYPE,
-                YogaMeasureMode::class.java,
-                java.lang.Boolean.TYPE,
-                java.lang.Integer.TYPE,
-                java.lang.Integer.TYPE,
-                Layout.Alignment::class.java,
-                java.lang.Integer.TYPE,
-                TextUtils.TruncateAt::class.java,
-                java.lang.Integer.TYPE,
-                TextPaint::class.java,
-            )
-            .apply { isAccessible = true }
-
-    return method.invoke(
-        TextLayoutManager,
-        text,
-        boring,
-        width,
-        YogaMeasureMode.EXACTLY,
-        /* includeFontPadding = */ false,
-        /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
-        /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
-        Layout.Alignment.ALIGN_NORMAL,
-        /* justificationMode = */ 0,
-        /* ellipsizeMode = */ null,
-        /* maxNumberOfLines = */ 2,
-        paint,
-    ) as Layout
-  }
+  ): Layout =
+      TextLayoutManager.createLayout(
+          text,
+          BoringLayout.isBoring(text, paint),
+          width,
+          YogaMeasureMode.EXACTLY,
+          /* includeFontPadding = */ false,
+          /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
+          /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
+          /* lineBreakStyle = */ LineBreakConfig.LINE_BREAK_STYLE_NONE,
+          /* lineBreakWordStyle = */ LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE,
+          Layout.Alignment.ALIGN_NORMAL,
+          /* justificationMode = */ 0,
+          /* ellipsizeMode = */ null,
+          /* maxNumberOfLines = */ 2,
+          paint,
+      )
 }

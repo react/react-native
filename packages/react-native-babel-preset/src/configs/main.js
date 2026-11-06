@@ -116,16 +116,6 @@ const getPreset = (src, options, babel) => {
     transformProfile === 'hermes-stable' ||
     transformProfile === 'hermes-canary';
 
-  // We enable regenerator in Hermes V1 dev builds for the time being because
-  // Hermes V1 doesn't yet fully support debugging native generators.
-  // (e.g. - it's not possible to inspect local variables when paused in a
-  // generator).
-  //
-  // Use native generators in release mode because it has already yielded perf
-  // wins. The next release of Hermes V1 will close this gap, so this won't
-  // be permanent.
-  const enableRegenerator = isHermesProfile && dev;
-
   // Preserve class syntax and related features for Hermes V1 profiles.
   const preserveClasses = isHermesProfile;
 
@@ -147,9 +137,17 @@ const getPreset = (src, options, babel) => {
     options.customTransformOptions?.unstable_preserveBlockScoping,
   );
 
-  // Preserve destructuring syntax if the experiment is enabled.
+  // `enableBabelRuntime` (a boolean toggle or a string @babel/runtime version to
+  // pin) and `babelRuntimeModuleName` (the module helpers are imported from) may
+  // be provided via options or, for programmatic callers such as Metro, via
+  // Babel caller data. Options take precedence over caller data, consistent with
+  // the other options resolved here.
+  const enableBabelRuntime =
+    options.enableBabelRuntime ?? babel?.caller(getEnableBabelRuntime) ?? true;
+
+  // Preserve destructuring syntax by default, as Hermes supports it natively.
   const preserveDestructuring = TRUE_VALS.has(
-    options.customTransformOptions?.unstable_preserveDestructuring,
+    options.customTransformOptions?.unstable_preserveDestructuring ?? true,
   );
 
   const isNull = src == null;
@@ -207,12 +205,6 @@ const getPreset = (src, options, babel) => {
   extraPlugins.push([
     require('@babel/plugin-transform-named-capturing-groups-regex'),
   ]);
-  // Needed for regenerator
-  if (enableRegenerator) {
-    extraPlugins.push([
-      require('@babel/plugin-transform-optional-catch-binding'),
-    ]);
-  }
 
   if (!preserveDestructuring) {
     extraPlugins.push([
@@ -233,48 +225,10 @@ const getPreset = (src, options, babel) => {
   ) {
     extraPlugins.push([require('@babel/plugin-transform-react-display-name')]);
   }
-  // This is also needed for regenerator
-  if (enableRegenerator && (isNull || src.indexOf('?.') !== -1)) {
-    extraPlugins.push([
-      require('@babel/plugin-transform-optional-chaining'),
-      {loose: true},
-    ]);
-  }
-  // This is also needed for regenerator
-  if (enableRegenerator && (isNull || src.indexOf('??') !== -1)) {
-    extraPlugins.push([
-      require('@babel/plugin-transform-nullish-coalescing-operator'),
-      {loose: true},
-    ]);
-  }
 
   if (dev && !options.disableDeepImportWarnings) {
     firstPartyPlugins.push([require('../plugin-warn-on-deep-imports.js')]);
   }
-
-  if (dev && !options.useTransformReactJSXExperimental) {
-    extraPlugins.push([require('@babel/plugin-transform-react-jsx-source')]);
-    extraPlugins.push([require('@babel/plugin-transform-react-jsx-self')]);
-  }
-
-  if (
-    enableRegenerator &&
-    (isNull || (src.indexOf('for') !== -1 && src.indexOf('of') !== -1))
-  ) {
-    // Needed for regenerator
-    extraPlugins.push([
-      require('@babel/plugin-transform-for-of'),
-      {loose: true},
-    ]);
-  }
-
-  // `enableBabelRuntime` (a boolean toggle or a string @babel/runtime version to
-  // pin) and `babelRuntimeModuleName` (the module helpers are imported from) may
-  // be provided via options or, for programmatic callers such as Metro, via
-  // Babel caller data. Options take precedence over caller data, consistent with
-  // the other options resolved here.
-  const enableBabelRuntime =
-    options.enableBabelRuntime ?? babel?.caller(getEnableBabelRuntime) ?? true;
 
   if (enableBabelRuntime !== false) {
     // A string value pins a specific runtime version to optimize output.
@@ -288,15 +242,13 @@ const getPreset = (src, options, babel) => {
       require('@babel/plugin-transform-runtime'),
       {
         helpers: true,
-        regenerator: enableRegenerator,
+        regenerator: false,
         ...(isVersion && {version: enableBabelRuntime}),
         ...(babelRuntimeModuleName != null && {
           moduleName: babelRuntimeModuleName,
         }),
       },
     ]);
-  } else if (enableRegenerator) {
-    extraPlugins.push([require('@babel/plugin-transform-regenerator')]);
   }
 
   return {
@@ -337,7 +289,9 @@ const getPreset = (src, options, babel) => {
           [require('@babel/plugin-syntax-dynamic-import')],
           [require('@babel/plugin-syntax-export-default-from')],
           ...passthroughSyntaxPlugins,
-          [require('@babel/plugin-transform-unicode-regex')],
+          ...(isHermesProfile
+            ? [[require('@babel/plugin-transform-unicode-property-regex')]]
+            : [[require('@babel/plugin-transform-unicode-regex')]]),
         ],
       },
       {

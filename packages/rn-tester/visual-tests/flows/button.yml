@@ -1,0 +1,58 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ButtonExample/default-styling
+- extendedWaitUntil:
+    visible:
+      id: 'example-container'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/button/default-styling/default
+    cropOn:
+      id: 'example-container'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ButtonExample/disabled
+- extendedWaitUntil:
+    visible:
+      id: 'example-container'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/button/disabled/default
+    cropOn:
+      id: 'example-container'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ButtonExample/color-red
+- extendedWaitUntil:
+    visible:
+      id: 'example-container'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/button/color-red/default
+    cropOn:
+      id: 'example-container'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ButtonExample/two-buttons-flexbox
+- extendedWaitUntil:
+    visible:
+      id: 'example-container'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/button/two-buttons-flexbox/default
+    cropOn:
+      id: 'example-container'

@@ -208,11 +208,11 @@ internal data class BorderRadiusStyle(
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 bottomLeft =
-                    (endEnd ?: bottomStart ?: bottomLeft ?: uniform)?.let {
+                    (endEnd ?: bottomEnd ?: bottomLeft ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 bottomRight =
-                    (endStart ?: bottomEnd ?: bottomRight ?: uniform)?.let {
+                    (endStart ?: bottomStart ?: bottomRight ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 width = width,

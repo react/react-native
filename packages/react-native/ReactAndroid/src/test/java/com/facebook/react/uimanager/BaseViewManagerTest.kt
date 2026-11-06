@@ -9,6 +9,7 @@
 
 package com.facebook.react.uimanager
 
+import android.util.DisplayMetrics
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.accessibility.AccessibilityNodeInfo
@@ -124,6 +125,31 @@ class BaseViewManagerTest {
     Assertions.assertThat(view.isEnabled).isFalse()
     viewManager.setViewState(view, null)
     Assertions.assertThat(view.isEnabled).isFalse()
+  }
+
+  @Test
+  fun testAccessibilityValueWithoutTextRemovesThePreviousText() {
+    viewManager.setAccessibilityLabel(view, "Country")
+    viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
+    Assertions.assertThat(view.contentDescription).isEqualTo("Country, Ukraine")
+
+    viewManager.setAccessibilityValue(view, JavaOnlyMap())
+    Assertions.assertThat(view.contentDescription).isEqualTo("Country")
+  }
+
+  @Test
+  fun testAccessibilityValueNullKeepsTheLabel() {
+    viewManager.setAccessibilityLabel(view, "Country")
+    viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
+    viewManager.setAccessibilityValue(view, null)
+    Assertions.assertThat(view.contentDescription).isEqualTo("Country")
+  }
+
+  @Test
+  fun testAccessibilityValueNullClearsAValueOnlyDescription() {
+    viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
+    viewManager.setAccessibilityValue(view, null)
+    Assertions.assertThat(view.contentDescription).isNull()
   }
 
   @Test
@@ -319,6 +345,78 @@ class BaseViewManagerTest {
 
     Assertions.assertThat(recycled.getTag(R.id.accessibility_order_parent)).isNull()
     Assertions.assertThat(recycled.getTag(R.id.original_focusability)).isNull()
+  }
+
+  @Test
+  fun testNaNElevationLeavesTheViewUnelevated() {
+    val unelevated = createView(JavaOnlyMap.of(ViewProps.ELEVATION, Double.NaN))
+
+    Assertions.assertThat(unelevated.elevation).isEqualTo(0f)
+  }
+
+  @Test
+  fun testInfiniteElevationTakesTheLargestFiniteElevation() {
+    val raised = createView(JavaOnlyMap.of(ViewProps.ELEVATION, Double.POSITIVE_INFINITY))
+
+    Assertions.assertThat(raised.elevation).isEqualTo(Float.MAX_VALUE)
+  }
+
+  @Test
+  fun testNegativeInfiniteElevationTakesTheLowestFiniteElevation() {
+    val lowered = createView(JavaOnlyMap.of(ViewProps.ELEVATION, Double.NEGATIVE_INFINITY))
+
+    Assertions.assertThat(lowered.elevation).isEqualTo(-Float.MAX_VALUE)
+  }
+
+  @Test
+  fun testElevationPastTheLargestFloatTakesTheLargestFiniteElevation() {
+    val raised = createView(JavaOnlyMap.of(ViewProps.ELEVATION, 1e39))
+
+    Assertions.assertThat(raised.elevation).isEqualTo(Float.MAX_VALUE)
+  }
+
+  @Test
+  fun testElevationPastTheLargestFloatInPixelsTakesTheLargestFiniteElevation() {
+    DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics().apply { density = 3f })
+
+    viewManager.setElevation(view, Float.MAX_VALUE)
+
+    Assertions.assertThat(view.elevation).isEqualTo(Float.MAX_VALUE)
+  }
+
+  @Test
+  fun testNaNScaleTakesTheFrameworksFallback() {
+    val scaled =
+        createView(JavaOnlyMap.of(ViewProps.SCALE_X, Double.NaN, ViewProps.SCALE_Y, Double.NaN))
+
+    Assertions.assertThat(scaled.scaleX).isEqualTo(0f)
+    Assertions.assertThat(scaled.scaleY).isEqualTo(0f)
+  }
+
+  @Test
+  fun testInfiniteScaleTakesTheLargestFiniteScale() {
+    val scaled =
+        createView(
+            JavaOnlyMap.of(
+                ViewProps.SCALE_X,
+                Double.POSITIVE_INFINITY,
+                ViewProps.SCALE_Y,
+                Double.POSITIVE_INFINITY,
+            )
+        )
+
+    Assertions.assertThat(scaled.scaleX).isEqualTo(Float.MAX_VALUE)
+    Assertions.assertThat(scaled.scaleY).isEqualTo(Float.MAX_VALUE)
+  }
+
+  @Test
+  fun testNaNElevationAfterAFiniteOneLeavesTheViewUnelevated() {
+    viewManager.setElevation(view, 4f)
+    Assertions.assertThat(view.elevation).isEqualTo(PixelUtil.toPixelFromDIP(4f))
+
+    viewManager.setElevation(view, Float.NaN)
+
+    Assertions.assertThat(view.elevation).isEqualTo(0f)
   }
 
   private fun recycleView(

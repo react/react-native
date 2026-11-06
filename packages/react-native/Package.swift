@@ -71,7 +71,9 @@ let yoga = RNTarget(
   name: .yoga,
   path: "ReactCommon/yoga",
   excludedPaths: ["test"],
-  publicHeadersPath: "yoga"
+  publicHeadersPath: "yoga",
+  // Android builds Yoga at -O2 in every build type, Debug included, so match it.
+  defines: [.unsafeFlags(["-O2"])]
 )
 
 // React-oscompat.podspec
@@ -416,6 +418,7 @@ let reactCoreRCTWebsocket = RNTarget(
 let reactCoreModules = RNTarget(
   name: .reactCoreModules,
   path: "React/CoreModules",
+  linkedFrameworks: ["Accessibility"],
   excludedPaths: ["PlatformStubs/RCTStatusBarManager.mm"],
   dependencies: [.reactNativeDependencies, .jsi, .yoga, .reactTurboModuleCore, .reactFeatureFlags]
 )
@@ -451,7 +454,6 @@ let reactCore = RNTarget(
   path: "React",
   searchPaths: [
     "React/I18n",
-    "React/Profiler",
     "ReactCommon/react/runtime/platform/ios", // explicit header search path to break circular dependency. RCTHost imports `RCTDefines.h` in ReactCore, ReacCore needs to import RCTHost
   ],
   linkedFrameworks: ["CoreServices"],
@@ -562,7 +564,7 @@ let reactFabricText = RNTarget(
 let reactFabricTextInput = RNTarget(
   name: .reactFabricTextInput,
   path: "ReactCommon/react/renderer/components/textinput",
-  excludedPaths: ["platform/android", "platform/macos"],
+  excludedPaths: ["tests", "platform/android", "platform/macos"],
   dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging, .reactFabricTextLayoutManager, .reactImageManagerApple],
   sources: [".", "platform/ios"]
 )

@@ -42,14 +42,8 @@ function shouldReplaceHermesConfiguration(configuration) {
     }
   }
 
-  // Assumption: if there is no stored last build, we assume that it was build for debug.
-  if (!fileExists && configuration === 'Debug') {
-    console.log(
-      'No previous build detected, but Debug Configuration. No need to replace Hermes engine',
-    );
-    return false;
-  }
-
+  // The binary may outlive its marker, so a missing marker does not imply Debug.
+  // Restore the requested configuration instead of assuming what is installed.
   return true;
 }
 

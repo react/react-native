@@ -22,6 +22,7 @@ class Runtime;
 using RuntimeFactory = std::function<std::shared_ptr<Runtime>()>;
 
 std::vector<RuntimeFactory> runtimeGenerators();
+std::vector<RuntimeFactory> runtimeGeneratorsWithSandBox();
 
 class JSITestBase : public ::testing::TestWithParam<RuntimeFactory> {
  public:

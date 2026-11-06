@@ -249,7 +249,7 @@ function LastLineClippingExample(): React.Node {
   // clipped by one physical pixel after layout rounding (issue #53450). The
   // border makes any clipping of the last line visible.
   return (
-    <View>
+    <View testID="last-line-clipping-example">
       {[11, 12, 13, 14, 15, 16, 17].map(fontSize => (
         <View
           key={fontSize}

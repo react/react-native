@@ -469,7 +469,9 @@ export type ScrollViewPropsAndroid = Readonly<{
 }>;
 
 type StickyHeaderComponentType = component(
-  ref?: React.RefSetter<Readonly<interface {setNextHeaderY: number => void}>>,
+  ref?: React.RefSetter<
+    Readonly<interface {setNextHeaderY: (v: number) => void}>,
+  >,
   ...ScrollViewStickyHeaderProps
 );
 
@@ -1586,8 +1588,8 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       // then the second tap goes to the actual interior view)
       const {keyboardShouldPersistTaps} = this.props;
       const keyboardNeverPersistTaps =
-        // $FlowFixMe[sketchy-null-bool]
-        !keyboardShouldPersistTaps || keyboardShouldPersistTaps === 'never';
+        keyboardShouldPersistTaps == null ||
+        keyboardShouldPersistTaps === 'never';
 
       if (typeof e.target === 'number') {
         if (__DEV__) {
@@ -1669,8 +1671,8 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
 
     const {keyboardShouldPersistTaps} = this.props;
     const keyboardNeverPersistsTaps =
-      // $FlowFixMe[sketchy-null-bool]
-      !keyboardShouldPersistTaps || keyboardShouldPersistTaps === 'never';
+      keyboardShouldPersistTaps == null ||
+      keyboardShouldPersistTaps === 'never';
 
     // Dismiss the keyboard now if we didn't become responder in capture phase
     // to eat presses, but still want to dismiss on interaction.
@@ -1986,8 +1988,8 @@ const styles = StyleSheet.create({
 
 type RefForwarder<TNativeInstance, TPublicInstance> = {
   getForwardingRef: (
-    ?React.RefSetter<TPublicInstance>,
-  ) => (TNativeInstance | null) => void,
+    v: ?React.RefSetter<TPublicInstance>,
+  ) => (v: TNativeInstance | null) => void,
   nativeInstance: TNativeInstance | null,
   publicInstance: TPublicInstance | null,
 };
@@ -1997,7 +1999,7 @@ type RefForwarder<TNativeInstance, TPublicInstance> = {
  * once `ScrollView` is reimplemented as a functional component.
  */
 function createRefForwarder<TNativeInstance, TPublicInstance>(
-  mutator: TNativeInstance => TPublicInstance,
+  mutator: (v: TNativeInstance) => TPublicInstance,
 ): RefForwarder<TNativeInstance, TPublicInstance> {
   const state: RefForwarder<TNativeInstance, TPublicInstance> = {
     getForwardingRef: memoize(forwardedRef => {

@@ -42,7 +42,7 @@ export type VirtualCollectionViewComponent<TLayoutProps extends {...}> =
   component<out TItem extends Item>(
     children: (item: TItem, key: string) => React.Node,
     items: VirtualCollection<TItem>,
-    itemToKey?: (TItem) => string,
+    itemToKey?: (v: TItem) => string,
     removeClippedSubviews?: boolean,
     testID?: ?string,
     ...TLayoutProps
@@ -89,7 +89,7 @@ export function createVirtualCollectionView<TLayoutProps extends {...}>(
   component VirtualCollectionView<out TItem extends Item>(
     children: (item: TItem, key: string) => React.Node,
     items: VirtualCollection<TItem>,
-    itemToKey: TItem => string = defaultItemToKey,
+    itemToKey: (v: TItem) => string = defaultItemToKey,
     removeClippedSubviews: boolean = false,
     testID?: ?string,
     ...layoutProps: TLayoutProps
@@ -203,14 +203,14 @@ export function createVirtualCollectionView<TLayoutProps extends {...}>(
 }
 
 hook useMemoCallback<TInput extends interface {}, TOutput>(
-  callback: TInput => TOutput,
-): TInput => TOutput {
+  callback: (v: TInput) => TOutput,
+): (v: TInput) => TOutput {
   return useMemo(() => memoize(callback), [callback]);
 }
 
 function memoize<TInput extends interface {}, TOutput>(
-  callback: TInput => TOutput,
-): TInput => TOutput {
+  callback: (v: TInput) => TOutput,
+): (v: TInput) => TOutput {
   const cache = new WeakMap<TInput, TOutput>();
   return (input: TInput) => {
     let output = cache.get(input);

@@ -353,6 +353,36 @@ describe('processBackgroundImage', () => {
     expect(result).toEqual([]);
   });
 
+  it('should return empty array for non-finite color stop positions', () => {
+    expect(processBackgroundImage('linear-gradient(red NaN%, blue)')).toEqual(
+      [],
+    );
+    expect(
+      processBackgroundImage([
+        {
+          type: 'linear-gradient' as const,
+          colorStops: [{color: 'red', positions: ['NaN%']}, {color: 'blue'}],
+        },
+      ]),
+    ).toEqual([]);
+  });
+
+  it('should process unitless zero color stop position', () => {
+    const input = 'linear-gradient(red 0, blue 100%)';
+    const result = processBackgroundImage(input);
+    expect(result[0].colorStops).toEqual([
+      {color: processColor('red'), position: 0},
+      {color: processColor('blue'), position: '100%'},
+    ]);
+  });
+
+  it('should return empty array if one of multiple gradients is invalid', () => {
+    const input =
+      'linear-gradient(red, blue), linear-gradient(notacolor, blue)';
+    const result = processBackgroundImage(input);
+    expect(result).toEqual([]);
+  });
+
   it('should process an array of style objects', () => {
     const input: ReadonlyArray<BackgroundImageValue> | string = [
       {

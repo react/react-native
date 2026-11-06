@@ -88,7 +88,7 @@ std::shared_ptr<TurboModule> javaModuleProvider(
   // if (module != nullptr) {
   //    return module;
   // }
-  // return rncore_ModuleProvider(name, params);
+  // return FBReactNativeSpec_ModuleProvider(name, params);
 
   // We link app local modules if available
 #ifdef REACT_NATIVE_APP_MODULE_PROVIDER

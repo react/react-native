@@ -31,7 +31,7 @@ namespace facebook::react {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
-std::unique_ptr<ReactNativeFeatureFlagsAccessor> accessor_;
+constinit std::unique_ptr<ReactNativeFeatureFlagsAccessor> accessor_;
 #pragma GCC diagnostic pop
 
 ${Object.entries(definitions.common)

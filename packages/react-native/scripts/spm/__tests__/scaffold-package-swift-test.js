@@ -853,6 +853,33 @@ end
     expect(content).toContain(SCAFFOLDER_MARKER);
   });
 
+  it('emits resources before publicHeadersPath, the order SwiftPM requires', () => {
+    fs.mkdirSync(path.join(depRoot, 'ios'));
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Foo.h'), '');
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native-foo.podspec'),
+      `
+Pod::Spec.new do |s|
+  s.name = "react-native-foo"
+  s.version = "1.0"
+  s.source_files = "ios/**/*.{h,m,mm}"
+  s.resources = ["ios/Foo.bundle"]
+  s.dependency "React-Core"
+end
+`,
+    );
+    scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    const content = fs.readFileSync(
+      path.join(depRoot, 'Package.swift'),
+      'utf8',
+    );
+    const resourcesAt = content.indexOf('resources: [.copy("ios/Foo.bundle")]');
+    const publicHeadersAt = content.indexOf('publicHeadersPath: "ios"');
+    expect(resourcesAt).toBeGreaterThan(-1);
+    expect(publicHeadersAt).toBeGreaterThan(-1);
+    expect(resourcesAt).toBeLessThan(publicHeadersAt);
+  });
+
   it('skips (does not write) a mixed-language dep — Swift + ObjC(++) cannot share one SPM target', () => {
     // react-native-screens shape: a single source glob mixing .swift and .mm.
     const podspecPath = path.join(depRoot, 'react-native-foo.podspec');
@@ -1542,7 +1569,7 @@ describe('SCAFFOLDER_VERSION', () => {
   });
 
   it('is at the version the current emitter output requires', () => {
-    expect(SCAFFOLDER_VERSION).toBe(20);
+    expect(SCAFFOLDER_VERSION).toBe(21);
   });
 
   it('emitter writes the current version to the file', () => {

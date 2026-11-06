@@ -25,7 +25,7 @@ static void hermesFatalHandler(const std::string& reason) {
   __android_log_assert(nullptr, "Hermes", "%s", reason.c_str());
 }
 
-static std::once_flag flag;
+static constinit std::once_flag flag;
 
 static ::hermes::vm::RuntimeConfig makeRuntimeConfig(jlong heapSizeMB) {
   namespace vm = ::hermes::vm;

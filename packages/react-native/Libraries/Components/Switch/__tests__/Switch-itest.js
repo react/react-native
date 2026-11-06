@@ -46,6 +46,30 @@ describe('Switch', () => {
     );
   });
 
+  it('lets disabled override accessibilityState.disabled', () => {
+    const root = render(
+      <Switch
+        value={false}
+        disabled={false}
+        accessibilityState={{disabled: true, busy: true}}
+      />,
+    );
+
+    expect(
+      root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+    ).toEqual(
+      <rn-androidSwitch accessibilityState="{disabled:false,selected:null,checked:None,busy:true,expanded:null}" />,
+    );
+  });
+
+  it('does not set accessibilityState when disabled is not set', () => {
+    const root = render(<Switch value={false} />);
+
+    expect(
+      root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+    ).toEqual(<rn-androidSwitch />);
+  });
+
   it('renders with track and thumb color props applied', () => {
     // Exercises the color-resolution path; the mounted switch still renders as
     // the native switch host.

@@ -290,19 +290,7 @@ jobs:
             const version = "${{ github.ref_name }}";
             await verifyArtifactsAreOnMaven(version);
 
-  # ─── Release-only: changelog, podfile bump, draft release ────────
-  generate_changelog:
-    needs: [determine_mode, publish_react_native]
-    # always() + explicit result checks: run for a successful release publish
-    # even when skipped upstream jobs would trip the implicit success() gate.
-    if: |
-      always() &&
-      needs.determine_mode.result == 'success' &&
-      needs.publish_react_native.result == 'success' &&
-      needs.determine_mode.outputs.mode == 'release'
-    uses: ./.github/workflows/generate-changelog.yml
-    secrets: inherit
-
+  # ─── Release-only: podfile bump, draft release ────────
   bump_podfile_lock:
     needs: [determine_mode, publish_react_native]
     # always() + explicit result checks: run for a successful release publish
@@ -316,13 +304,13 @@ jobs:
     secrets: inherit
 
   create_draft_release:
-    needs: [determine_mode, generate_changelog, set_hermes_version]
+    needs: [determine_mode, publish_react_native, set_hermes_version]
     # always() + explicit result checks: run for a successful release even when
     # skipped upstream jobs would trip the implicit success() gate.
     if: |
       always() &&
       needs.determine_mode.result == 'success' &&
-      needs.generate_changelog.result == 'success' &&
+      needs.publish_react_native.result == 'success' &&
       needs.set_hermes_version.result == 'success' &&
       needs.determine_mode.outputs.mode == 'release'
     uses: ./.github/workflows/create-draft-release.yml

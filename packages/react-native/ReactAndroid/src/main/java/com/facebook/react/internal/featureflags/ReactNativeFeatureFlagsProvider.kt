@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4fd05e749b9e133b1ac4a2cad4c467b0>>
+ * @generated SignedSource<<8a0dcd5fddadda04dfb4b161e9cdf86a>>
  */
 
 /**
@@ -30,6 +30,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun cxxNativeAnimatedEnabled(): Boolean
 
   @DoNotStrip public fun defaultTextToOverflowHidden(): Boolean
+
+  @DoNotStrip public fun deferTextInputTruncationIOS(): Boolean
 
   @DoNotStrip public fun disableEarlyViewCommandExecution(): Boolean
 
@@ -79,7 +81,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
-  @DoNotStrip public fun enableFontScaleChangesUpdatingLayout(): Boolean
+  @DoNotStrip public fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip public fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
@@ -96,6 +98,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip public fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip public fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -159,6 +163,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun fuseboxWebSocketEventsEnabled(): Boolean
 
+  @DoNotStrip public fun keepTimersRunningWhileHostPausedAndroid(): Boolean
+
   @DoNotStrip public fun optimizedAnimatedPropUpdates(): Boolean
 
   @DoNotStrip public fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean
@@ -180,6 +186,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean
 
   @DoNotStrip public fun skipActivityIdentityAssertionOnHostPause(): Boolean
+
+  @DoNotStrip public fun skipUnchangedChildrenInDifferentiator(): Boolean
 
   @DoNotStrip public fun syncAndroidClipBoundsWithOverflow(): Boolean
 

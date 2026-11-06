@@ -40,7 +40,6 @@ exports.processUser = processUser;
 exports.safeJsonParse = safeJsonParse;
 exports.sumPairs = sumPairs;
 var _setPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/setPrototypeOf"));
-var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
@@ -55,7 +54,6 @@ var _react = _interopRequireWildcard(require("react"));
 var React = _react;
 var _jsxRuntime = require("react/jsx-runtime");
 var _dataUtils = require("./data-utils");
-var _jsxFileName = "/absolute/path/to/input.js";
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _wrapRegExp() { _wrapRegExp = function (e, r) { return new BabelRegExp(e, void 0, r); }; var e = RegExp.prototype, r = new WeakMap(); function BabelRegExp(e, t, p) { var o = RegExp(e, t); return r.set(o, p || r.get(e)), (0, _setPrototypeOf2.default)(o, BabelRegExp.prototype); } function buildGroups(e, t) { var p = r.get(t); return Object.keys(p).reduce(function (r, t) { var o = p[t]; if ("number" == typeof o) r[t] = e[o];else { for (var i = 0; void 0 === e[o[i]] && i + 1 < o.length;) i++; r[t] = e[o[i]]; } return r; }, Object.create(null)); } return (0, _inherits2.default)(BabelRegExp, RegExp), BabelRegExp.prototype.exec = function (r) { var t = e.exec.call(this, r); if (t) { t.groups = buildGroups(t, this); var p = t.indices; p && (p.groups = buildGroups(p, this)); } return t; }, BabelRegExp.prototype[Symbol.replace] = function (t, p) { if ("string" == typeof p) { var o = r.get(this); return e[Symbol.replace].call(this, t, p.replace(/\$<([^>]+)(>|$)/g, function (e, r, t) { if ("" === t) return e; var p = o[r]; return Array.isArray(p) ? "$" + p.join("$") : "number" == typeof p ? "$" + p : ""; })); } if ("function" == typeof p) { var i = this; return e[Symbol.replace].call(this, t, function () { var e = arguments; return "object" != typeof e[e.length - 1] && (e = [].slice.call(e)).push(buildGroups(e, i)), p.apply(this, e); }); } return e[Symbol.replace].call(this, t, p); }, _wrapRegExp.apply(this, arguments); }
 function _callSuper(t, o, e) { return o = (0, _getPrototypeOf2.default)(o), (0, _possibleConstructorReturn2.default)(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], (0, _getPrototypeOf2.default)(t).constructor) : o.apply(t, e)); }
@@ -183,8 +181,9 @@ function processUser({
   age = 18,
   ...rest
 }) {
-  var _rest$city = rest.city,
-    city = _rest$city === void 0 ? 'Unknown' : _rest$city;
+  var {
+    city = 'Unknown'
+  } = rest;
   return `${name} (${age}) from ${city}`;
 }
 function mergeConfigs(base, ...overrides) {
@@ -198,10 +197,7 @@ function mergeConfigs(base, ...overrides) {
 }
 function sumPairs(pairs) {
   var total = 0;
-  for (var _ref of pairs) {
-    var _ref2 = (0, _slicedToArray2.default)(_ref, 2);
-    var a = _ref2[0];
-    var b = _ref2[1];
+  for (var [a, b] of pairs) {
     total += a + b;
   }
   return total;
@@ -263,14 +259,8 @@ var LegacyComponent = exports.LegacyComponent = React.createClass({
 function ModernComponent({
   initialCount = 0
 }) {
-  var _useState = (0, _react.useState)(initialCount),
-    _useState2 = (0, _slicedToArray2.default)(_useState, 2),
-    count = _useState2[0],
-    setCount = _useState2[1];
-  var _useState3 = (0, _react.useState)(Status.Active),
-    _useState4 = (0, _slicedToArray2.default)(_useState3, 2),
-    status = _useState4[0],
-    setStatus = _useState4[1];
+  var [count, setCount] = (0, _react.useState)(initialCount);
+  var [status, setStatus] = (0, _react.useState)(Status.Active);
   (0, _react.useEffect)(() => {
     var timer = setInterval(() => {
       setCount(c => c + 1);
@@ -288,12 +278,12 @@ function ModernComponent({
     return _handleAsyncClick.apply(this, arguments);
   }
   var handleClick = function () {
-    var _ref3 = (0, _asyncToGenerator2.default)(function* () {
+    var _ref = (0, _asyncToGenerator2.default)(function* () {
       yield handleAsyncClick();
       setStatus(Status.Pending);
     });
     return function handleClick() {
-      return _ref3.apply(this, arguments);
+      return _ref.apply(this, arguments);
     };
   }();
   return (0, _jsxRuntime.jsxs)("div", {

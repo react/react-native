@@ -101,7 +101,7 @@ function generateSetter(
   propertyName: string,
   propertyParts: ReadonlyArray<string>,
   usingEvent: boolean,
-  valueMapper: string => string = value => value,
+  valueMapper: (v: string) => string = value => value,
 ) {
   const eventChain = usingEvent
     ? `event.${[...propertyParts, propertyName].join('.')}`
@@ -141,7 +141,7 @@ function setValueAtIndex(
   propertyName: string,
   indexVariable: string,
   loopLocalVariable: string,
-  mappingFunction: string => string = value => value,
+  mappingFunction: (v: string) => string = value => value,
 ) {
   return `${propertyName}.setValueAtIndex(runtime, ${indexVariable}++, ${mappingFunction(
     loopLocalVariable,

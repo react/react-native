@@ -11,6 +11,7 @@ import com.facebook.react.tasks.internal.*
 import com.facebook.react.tasks.internal.utils.*
 import de.undercouch.gradle.tasks.download.Download
 import java.nio.file.Paths
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -95,6 +96,10 @@ val preparePrefab by
                       Pair("../ReactCommon/hermes/inspector-modern/", "hermes/inspector-modern/"),
                       // fabricjni
                       Pair("src/main/jni/react/fabric", "react/fabric/"),
+                      Pair(
+                          "src/main/jni/react/newarchdefaults/CoreComponentsRegistry.h",
+                          "react/fabric/",
+                      ),
                       // uimanagerjni
                       Pair("src/main/jni/react/uimanager", "react/uimanager/"),
                       // glog
@@ -232,7 +237,7 @@ val preparePrefab by
                       Pair("../ReactCommon/callinvoker/", ""),
                       Pair("../ReactCommon/callinvoker/React/", "React/"),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
-                      // Exported because the public cxxreact/ErrorUtils.h includes it
+                      // Exported because the deprecated cxxreact/ErrorUtils.h shim includes it
                       Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
                       Pair("../ReactCommon/react/bridging/React/", "React/"),
@@ -571,8 +576,8 @@ android {
 
   kotlin {
     compilerOptions {
-      // Using '-Xjvm-default=all' to generate default java methods for interfaces
-      freeCompilerArgs = listOf("-Xjvm-default=all")
+      // Generate default java methods for interfaces
+      jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
       // Using -PenableWarningsAsErrors=true prop to enable allWarningsAsErrors
       allWarningsAsErrors = enableWarningsAsErrors()
     }

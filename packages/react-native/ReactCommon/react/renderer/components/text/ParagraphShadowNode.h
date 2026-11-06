@@ -40,7 +40,7 @@ class ParagraphShadowNode
 
   ParagraphShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
@@ -96,6 +96,15 @@ class ParagraphShadowNode
   const Content &getContent(const LayoutContext &layoutContext) const;
 
   /*
+   * Drops the content and the layouts measured for it if the content was built
+   * for another font size multiplier or layout direction (it may have been
+   * carried over from a previous revision).
+   */
+  void dropContentBuiltForAnotherContext(const LayoutContext &layoutContext) const;
+
+  LayoutDirection resolvedLayoutDirection() const;
+
+  /*
    * Builds and returns a `Content` object with given `layoutConstraints`.
    */
   Content getContentWithMeasuredAttachments(
@@ -110,16 +119,17 @@ class ParagraphShadowNode
   void updateStateIfNeeded(const Content &content, const MeasuredPreparedTextLayout &layout);
 
   /*
-   * Creates a `State` object (with `AttributedText` and
-   * `TextLayoutManager`) if needed.
+   * Creates a `State` object (with `AttributedText`, `TextLayoutManager` and,
+   * outside of Android, the size of the content frame) if needed.
    */
   void updateStateIfNeeded(const Content &content);
 
   /**
    * Returns any previously prepared layout, generated for measurement, which
-   * may be used, given the currently assigned layout to the ShadowNode
+   * may be used, given the currently assigned layout to the ShadowNode and
+   * the current pixel density
    */
-  MeasuredPreparedTextLayout *findUsableLayout();
+  const MeasuredPreparedTextLayout *findUsableLayout(Float pointScaleFactor);
 
   /**
    * Returns the final measure of the content frame, before layout rounding
@@ -135,9 +145,11 @@ class ParagraphShadowNode
 
   /*
    * Intermediate layout results generated during measurement, that may be
-   * reused by the platform.
+   * reused by the platform. Layouts are immutable once measured, so a clone
+   * shares them instead of copying them (on Android, copying one creates a
+   * JNI global reference).
    */
-  mutable std::vector<MeasuredPreparedTextLayout> measuredLayouts_;
+  mutable std::vector<std::shared_ptr<const MeasuredPreparedTextLayout>> measuredLayouts_;
 };
 
 } // namespace facebook::react

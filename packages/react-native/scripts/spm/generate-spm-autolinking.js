@@ -71,9 +71,10 @@ const {
   MIN_IOS_VERSION_SUPPORTED,
   sanitizeIosDeploymentTarget,
 } = require('./ios-deployment-target');
-const {findPodspecs, readPodspecCached} = require('./read-podspec');
+const {findPodspecs} = require('./read-podspec');
 const {
   AUTOLINKED_PACKAGE_NAME,
+  CXX_API_DEFINES,
   REACT_CODEGEN_PACKAGE_NAME,
   REACT_CODEGEN_PRODUCTS,
   REACT_NATIVE_PACKAGE_NAME,
@@ -218,6 +219,14 @@ function parseArgs(argv /*: Array<string> */) /*: AutolinkingArgs */ {
       type: 'string',
       describe: `Platform floor of the generated manifests (default: ${MIN_IOS_VERSION_SUPPORTED})`,
     })
+    .option('cxx-api-define', {
+      type: 'string',
+      array: true,
+      choices: [...CXX_API_DEFINES],
+      default: [],
+      describe:
+        "React Native C++ stable API macro to define in the app's spm.modules packages (repeatable)",
+    })
     .usage(
       'Usage: $0 [options]\n\nGenerates autolinked/Package.swift for SPM autolinking.',
     )
@@ -233,6 +242,7 @@ function parseArgs(argv /*: Array<string> */) /*: AutolinkingArgs */ {
     iosDeploymentTarget: sanitizeIosDeploymentTarget(
       parsed['ios-deployment-target'],
     ),
+    cxxApiDefines: parsed['cxx-api-define'],
   };
 }
 
@@ -427,6 +437,17 @@ const REACT_CXX_CONFIG_DEFINES = [
   '.define("DEBUG", .when(configuration: .debug))',
   '.define("NDEBUG", .when(configuration: .release))',
 ];
+
+// The config-gated defines plus the React Native C++ stable API macros the app
+// opted into (CXX_API_DEFINES).
+function reactCxxDefines(
+  cxxApiDefines /*: ReadonlyArray<string> */ = [],
+) /*: Array<string> */ {
+  return [
+    ...REACT_CXX_CONFIG_DEFINES,
+    ...Array.from(new Set(cxxApiDefines)).map(name => `.define("${name}")`),
+  ];
+}
 
 // Marker the autolinker stamps onto every synth Package.swift it writes.
 // Files lacking this marker are treated as user-managed (self-managed) and
@@ -802,58 +823,6 @@ function expandSpmSourceGlobs(
 }
 
 /**
- * Converts an autolinking.json dependency to an SPM target spec.
- * Returns null if the dependency doesn't have iOS support.
- *
- * `swiftNameByNpm` maps each autolinked dep's npm name to its resolved Swift
- * name (populated by expandSpmDependencies from the dep's podspec and
- * `spm.name`). Every name this function emits comes from there — see
- * requireSwiftName.
- */
-/**
- * Read the dep's podspec (if any) and extract its declared
- * `pod_target_xcconfig` HEADER_SEARCH_PATHS, substituted relative to the dep
- * source dir. Returns paths suitable for an SPM `.headerSearchPath()`
- * directive whose target.path is the dep root (entries are NOT yet prefixed
- * with the synth wrapper's `root/` — the emission site adds that prefix
- * because the wrapper's target.path is `.`, not the source dir).
- *
- * Without these, path-style angle includes like
- * `<react/renderer/components/safeareacontext/X.h>` (used by
- * react-native-safe-area-context, reanimated, screens, etc.) fail to resolve
- * because the headers live under the dep's `common/cpp/` rather than under
- * the framework-imported xcframework headers.
- */
-function extractPodspecHeaderSearchPaths(
-  sourceDir /*: string */,
-) /*: Array<string> */ {
-  const podspecPath /*: ?string */ = findPodspecs(sourceDir)[0];
-  if (podspecPath == null) return [];
-
-  let model;
-  try {
-    model = readPodspecCached(podspecPath);
-  } catch {
-    return [];
-  }
-
-  const out /*: Array<string> */ = [];
-  for (const raw of model.headerSearchPaths) {
-    const substituted = raw
-      .replace(/\$\(PODS_TARGET_SRCROOT\)/g, '.')
-      .replace(/\$\{PODS_TARGET_SRCROOT\}/g, '.');
-    // Drop entries still containing unresolved Xcode tokens — emitting them
-    // verbatim would surface as clang "no such file" failures.
-    if (/\$[({]/.test(substituted)) continue;
-    const cleaned = substituted.replace(/^\.\//, '').replace(/^\//, '');
-    if (cleaned.length > 0 && !out.includes(cleaned)) {
-      out.push(cleaned);
-    }
-  }
-  return out;
-}
-
-/**
  * The Swift name expandSpmDependencies resolved for `npmName`, or a hard error:
  * re-deriving one here would emit a reference nothing in the graph matches.
  */
@@ -869,6 +838,15 @@ function requireSwiftName(
   return resolved;
 }
 
+/**
+ * Converts an autolinking.json dependency to an SPM target spec.
+ * Returns null if the dependency doesn't have iOS support.
+ *
+ * `swiftNameByNpm` maps each autolinked dep's npm name to its resolved Swift
+ * name (populated by expandSpmDependencies from the dep's podspec and
+ * `spm.name`). Every name this function emits comes from there — see
+ * requireSwiftName.
+ */
 function autolinkingDepToSpmTarget(
   depName /*: string */,
   dep /*: AutolinkedDep */,
@@ -903,8 +881,6 @@ function autolinkingDepToSpmTarget(
       ? spmDeps.map(n => requireSwiftName(n, swiftNameByNpm.get(n)))
       : undefined;
 
-  const headerSearchPaths = extractPodspecHeaderSearchPaths(sourceDir);
-
   return {
     name: targetName,
     path: relSourcePath,
@@ -912,8 +888,6 @@ function autolinkingDepToSpmTarget(
     publicHeadersPath: inferPublicHeadersPath(sourceDir),
     resources,
     spmTargetDependencies,
-    headerSearchPaths:
-      headerSearchPaths.length > 0 ? headerSearchPaths : undefined,
   };
 }
 
@@ -1015,7 +989,7 @@ function generateAutolinkedPackageSwift(
             name: "${t.name}",
             dependencies: [${reactProductDeps()}],
             path: "${t.path}",${excludeLine}${publicHeadersLine}${resourcesLine}
-            cxxSettings: [${REACT_CXX_CONFIG_DEFINES.join(', ')}],
+            cxxSettings: [${reactCxxDefines().join(', ')}],
             linkerSettings: [.linkedFramework("UIKit"), .linkedFramework("Foundation"), .linkedFramework("CoreGraphics")]
         )`;
   });
@@ -1123,19 +1097,13 @@ function generateSynthPackageSwift(spec /*: SynthPackageSpec */) /*: string */ {
   const exclude /*: Array<string> */ = spec.exclude ?? [];
   const sources /*: ?Array<string> */ = spec.sources;
   const publicHeadersPath /*: ?string */ = spec.publicHeadersPath ?? null;
-  // Per-dep header search paths from the podspec's
-  // pod_target_xcconfig HEADER_SEARCH_PATHS — already prefixed by the caller
-  // with the synth wrapper's `root/` so they resolve relative to target.path.
-  // Emitted as `.headerSearchPath()` directives, which SPM accepts on
-  // cSettings / cxxSettings without needing absolute paths.
-  const headerSearchPaths /*: Array<string> */ = spec.headerSearchPaths ?? [];
   const spmDependencies /*: Array<{swiftName: string}> */ =
     spec.spmDependencies ?? [];
   const hasReactDep /*: boolean */ = spec.hasReactDep !== false;
   const resources /*: ?Array<string> */ = spec.resources;
   const isDynamic /*: boolean */ = spec.isDynamic !== false;
   const targetPath /*: string */ = spec.targetPath ?? `Sources/${swiftName}`;
-  const siblingSynthAbsolutePaths /*: {[string]: string} */ =
+  const siblingSynthAbsolutePaths /*: {[key: string]: string} */ =
     spec.siblingSynthAbsolutePaths ?? {};
   const iosDeploymentTarget /*: string */ =
     spec.iosDeploymentTarget ?? MIN_IOS_VERSION_SUPPORTED;
@@ -1212,22 +1180,11 @@ function generateSynthPackageSwift(spec /*: SynthPackageSpec */) /*: string */ {
     packageDeps.length > 0
       ? `    dependencies: [\n        ${packageDeps.join(',\n        ')},\n    ],\n`
       : '';
-  // `.headerSearchPath(...)` entries from the podspec — first-class
-  // directives keep SPM's diagnostics meaningful (clang reports the
-  // dep-relative path on miss). React headers need no paths at all.
-  const headerSearchPathList = headerSearchPaths.map(
-    p => `.headerSearchPath("${p}")`,
-  );
-  const cSettingsLine =
-    headerSearchPathList.length > 0
-      ? `\n            cSettings: [${headerSearchPathList.join(', ')}],`
-      : '';
-  // ALWAYS emit the config-gated C++ defines (even with no header paths): a
-  // Fabric C++ target must compile with the same NDEBUG state as the prebuilt
-  // React.framework, else DebugStringConvertible's vtable / ShadowNode layout
-  // diverges and a Release build fails to link. Mirrors Package.swift.
-  const cxxEntries = [...REACT_CXX_CONFIG_DEFINES, ...headerSearchPathList];
-  const cxxSettingsLine = `\n            cxxSettings: [${cxxEntries.join(', ')}],`;
+  // ALWAYS emit the config-gated C++ defines: a Fabric C++ target must
+  // compile with the same NDEBUG state as the prebuilt React.framework, else
+  // DebugStringConvertible's vtable / ShadowNode layout diverges and a
+  // Release build fails to link. Mirrors Package.swift.
+  const cxxSettingsLine = `\n            cxxSettings: [${reactCxxDefines(spec.cxxApiDefines).join(', ')}],`;
 
   return `// swift-tools-version: 6.0
 // AUTO-GENERATED by scripts/generate-spm-autolinking.js – do not edit manually.
@@ -1245,7 +1202,7 @@ ${packageDepsBlock}    targets: [
         .target(
             name: "${swiftName}",
             dependencies: [${targetDeps.join(', ')}],
-            path: "${targetPath}",${excludeLine}${sourcesLine}${publicHeadersLine}${resourcesLine}${cSettingsLine}${cxxSettingsLine}
+            path: "${targetPath}",${excludeLine}${sourcesLine}${publicHeadersLine}${resourcesLine}${cxxSettingsLine}
             linkerSettings: [.linkedFramework("UIKit"), .linkedFramework("Foundation"), .linkedFramework("CoreGraphics")]
         ),
     ],
@@ -1622,7 +1579,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   // source dir for self-managed ones. SPM identity stays unique either way
   // (wrapper basename = SwiftName; self-managed manifests declare the same
   // package name).
-  const siblingPackagePaths /*: {[string]: string} */ = {};
+  const siblingPackagePaths /*: {[key: string]: string} */ = {};
   for (const [name, wrapper] of wrapperDirs.entries()) {
     siblingPackagePaths[name] = wrapper;
   }
@@ -1672,7 +1629,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         .map(e => e.slice(0, -1)),
     );
 
-    const siblingSynthAbsolutePaths /*: {[string]: string} */ = {};
+    const siblingSynthAbsolutePaths /*: {[key: string]: string} */ = {};
     for (const sibling of target.spmTargetDependencies ?? []) {
       const sibPath = siblingPackagePaths[sibling];
       if (sibPath != null) {
@@ -1705,15 +1662,6 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
     const prefixedSources /*: ?Array<string> */ =
       rawSources.length > 0 ? rawSources.map(withRoot) : null;
 
-    // Podspec HEADER_SEARCH_PATHS were captured relative to the dep's source
-    // dir. The wrapper exposes the source dir under `root/` (target.path is
-    // `.`, the wrapper dir), so each entry must be prefixed with `root/` so
-    // clang sees the real subtree.
-    const prefixedHeaderSearchPaths /*: ?Array<string> */ =
-      target.headerSearchPaths != null && target.headerSearchPaths.length > 0
-        ? target.headerSearchPaths.map(withRoot)
-        : null;
-
     const synthContent = generateSynthPackageSwift({
       swiftName: target.name,
       iosDeploymentTarget: args.iosDeploymentTarget,
@@ -1725,11 +1673,11 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
       // header farm at <outputDir>/headers is folded into it).
       publicHeadersPath: 'include',
       resources: prefixedResources,
-      headerSearchPaths: prefixedHeaderSearchPaths,
       spmDependencies: (target.spmTargetDependencies ?? []).map(swiftName => ({
         swiftName,
       })),
       hasReactDep,
+      cxxApiDefines: args.cxxApiDefines,
       // Relative paths from the synth dir (<outputDir>/packages/<Name>) to the
       // app's React xcframeworks + codegen packages. Computed here because the
       // synth's depth is fixed and it is regenerated every run — no runtime

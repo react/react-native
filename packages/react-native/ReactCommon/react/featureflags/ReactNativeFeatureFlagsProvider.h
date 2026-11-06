@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4629fe206ec10f49806ec29de3b60f45>>
+ * @generated SignedSource<<a13cce4ef26d76ccac2bde4ae4ade87e>>
  */
 
 /**
@@ -31,6 +31,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool cdpInteractionMetricsEnabled() = 0;
   virtual bool cxxNativeAnimatedEnabled() = 0;
   virtual bool defaultTextToOverflowHidden() = 0;
+  virtual bool deferTextInputTruncationIOS() = 0;
   virtual bool disableEarlyViewCommandExecution() = 0;
   virtual bool disableIdleEventDispatchFrameCallbackRearmAndroid() = 0;
   virtual bool disableIdleMountItemFrameCallbackRearmAndroid() = 0;
@@ -55,7 +56,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableFabricCommitBranchingMergeOnMainThread() = 0;
   virtual bool enableFabricLogs() = 0;
   virtual bool enableFlexboxAutoMinSizeInStrictMode() = 0;
-  virtual bool enableFontScaleChangesUpdatingLayout() = 0;
+  virtual bool enableFollowUpMountItemDispatchAndroid() = 0;
   virtual bool enableIOSCompressedTextFrameAdjustment() = 0;
   virtual bool enableIOSTextBaselineOffsetPerLine() = 0;
   virtual bool enableIOSViewClipToPaddingBox() = 0;
@@ -64,6 +65,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableImmediateUpdateModeForContentOffsetChanges() = 0;
   virtual bool enableImperativeEvents() = 0;
   virtual bool enableImperativeFocus() = 0;
+  virtual bool enableInteractableResponderViews() = 0;
   virtual bool enableInteropViewManagerClassLookUpOptimizationIOS() = 0;
   virtual bool enableIntersectionObserverByDefault() = 0;
   virtual bool enableKeyEvents() = 0;
@@ -95,6 +97,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool fuseboxFrameRecordingEnabled() = 0;
   virtual bool fuseboxScreenshotCaptureEnabled() = 0;
   virtual bool fuseboxWebSocketEventsEnabled() = 0;
+  virtual bool keepTimersRunningWhileHostPausedAndroid() = 0;
   virtual bool optimizedAnimatedPropUpdates() = 0;
   virtual bool overrideBySynchronousMountPropsAtMountingAndroid() = 0;
   virtual bool perfIssuesEnabled() = 0;
@@ -106,6 +109,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool shouldPressibilityUseW3CPointerEventsForHover() = 0;
   virtual bool shouldTriggerResponderTransferOnScrollAndroid() = 0;
   virtual bool skipActivityIdentityAssertionOnHostPause() = 0;
+  virtual bool skipUnchangedChildrenInDifferentiator() = 0;
   virtual bool syncAndroidClipBoundsWithOverflow() = 0;
   virtual bool traceTurboModulePromiseRejectionsOnAndroid() = 0;
   virtual bool updateRuntimeShadowNodeReferencesOnCommit() = 0;

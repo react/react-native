@@ -11,6 +11,8 @@
 
 #include <react/utils/Uuid.h>
 
+#include <algorithm>
+
 using namespace facebook::jsi;
 using namespace std::string_literals;
 
@@ -44,8 +46,16 @@ void RuntimeTarget::installNetworkReporterAPI() {
   auto jsiCreateDevToolsRequestId = [selfWeak = weak_from_this()](
                                         Runtime& runtime,
                                         const Value& /*thisVal*/,
-                                        const Value* /*args*/,
-                                        size_t /*count*/) -> Value {
+                                        const Value* args,
+                                        size_t count) -> Value {
+    // Optional `framesToSkip` argument: the number of leading JS call frames
+    // that belong to the calling API's own implementation (e.g. the `WebSocket`
+    // constructor), which are omitted from the recorded initiator stack so
+    // that its top frame is the code that invoked the API.
+    size_t framesToSkip = 0;
+    if (count > 0 && args[0].isNumber()) {
+      framesToSkip = static_cast<size_t>(std::max(0.0, args[0].asNumber()));
+    }
     std::optional<std::string> devToolsRequestId;
     tryExecuteSync(selfWeak, [&](RuntimeTarget& self) {
       devToolsRequestId = self.createNetworkRequestId();
@@ -58,6 +68,15 @@ void RuntimeTarget::installNetworkReporterAPI() {
         auto stackTrace = self.delegate_.captureStackTrace(runtime);
         auto cdpStackTrace = self.delegate_.serializeStackTrace(*stackTrace);
         if (cdpStackTrace) {
+          if (framesToSkip > 0) {
+            if (auto* callFrames = cdpStackTrace->get_ptr("callFrames");
+                callFrames != nullptr && callFrames->isArray()) {
+              callFrames->erase(
+                  callFrames->begin(),
+                  callFrames->begin() +
+                      std::min(framesToSkip, callFrames->size()));
+            }
+          }
           NetworkHandler::getInstance().recordRequestInitiatorStack(
               *devToolsRequestId, std::move(*cdpStackTrace));
         }
@@ -81,7 +100,7 @@ void RuntimeTarget::installNetworkReporterAPI() {
         Function::createFromHostFunction(
             runtime,
             PropNameID::forAscii(runtime, "createDevToolsRequestId"),
-            0,
+            1,
             jsiCreateDevToolsRequestId));
     networkReporterApi = objectFreeze(runtime, std::move(networkReporterApi));
     globalObj.setProperty(runtime, "__NETWORK_REPORTER__", networkReporterApi);

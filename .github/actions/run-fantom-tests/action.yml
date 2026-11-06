@@ -15,7 +15,7 @@ runs:
     - name: Install node dependencies
       uses: ./.github/actions/yarn-install
     - name: Download Fantom Runner binary
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         name: fantom-runner-binary
         path: private/react-native-fantom/build/tester

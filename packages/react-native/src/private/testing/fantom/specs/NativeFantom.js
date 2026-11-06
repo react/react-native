@@ -78,6 +78,7 @@ interface Spec extends TurboModule {
     viewportWidth: number,
     viewportHeight: number,
     devicePixelRatio: number,
+    fontScale: number,
     viewportOffsetX?: number,
     viewportOffsetY?: number,
   ) => RootTag;
@@ -102,10 +103,10 @@ interface Spec extends TurboModule {
   getDirectManipulationProps: (
     shadowNode: unknown /* ShadowNode */,
   ) => Readonly<{
-    [string]: unknown,
+    [key: string]: unknown,
   }>;
   getFabricUpdateProps: (shadowNode: unknown /* ShadowNode */) => Readonly<{
-    [string]: unknown,
+    [key: string]: unknown,
   }>;
   flushMessageQueue: () => void;
   flushEventQueue: () => void;

@@ -31,6 +31,17 @@ static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
 
 using namespace facebook::react;
 
+@protocol RCTBackedTextInputViewPendingEdit <NSObject>
+- (void)rct_invalidatePendingTextInputEdit;
+- (void)rct_enqueueTextInputEditWithRange:(NSRange)range replacementText:(NSString *)replacementText;
+@end
+
+@interface RCTUITextField (PendingTextInputEdit) <RCTBackedTextInputViewPendingEdit>
+@end
+
+@interface RCTUITextView (PendingTextInputEdit) <RCTBackedTextInputViewPendingEdit>
+@end
+
 @interface RCTTextInputComponentView () <
     RCTBackedTextInputDelegate,
     RCTTextInputViewProtocol
@@ -39,13 +50,16 @@ using namespace facebook::react;
     UIDropInteractionDelegate
 #endif
     >
+
+- (BOOL)enqueueMaxLengthCorrectionIfNeeded;
+
 @end
 
 static NSSet<NSNumber *> *returnKeyTypesSet;
 
 @implementation RCTTextInputComponentView {
   TextInputShadowNode::ConcreteState::Shared _state;
-  UIView<RCTBackedTextInputViewProtocol> *_backedTextInputView;
+  UIView<RCTBackedTextInputViewProtocol, RCTBackedTextInputViewPendingEdit> *_backedTextInputView;
   NSUInteger _mostRecentEventCount;
   NSAttributedString *_lastStringStateWasUpdatedWith;
 
@@ -140,9 +154,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   [super traitCollectionDidChange:previousTraitCollection];
 
-  if (facebook::react::ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() &&
-      UITraitCollection.currentTraitCollection.preferredContentSizeCategory !=
-          previousTraitCollection.preferredContentSizeCategory) {
+  if (UITraitCollection.currentTraitCollection.preferredContentSizeCategory !=
+      previousTraitCollection.preferredContentSizeCategory) {
     const auto &newTextInputProps = static_cast<const TextInputProps &>(*_props);
     _backedTextInputView.defaultTextAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
@@ -166,7 +179,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   } else {
     // Focus on text selection frame
     focusRect = selection.rect;
-    BOOL isMultiline = [_backedTextInputView isKindOfClass:[UITextView class]];
+    BOOL isMultiline = _props ? static_cast<const TextInputProps &>(*_props).multiline
+                              : [_backedTextInputView isKindOfClass:[UITextView class]];
     if (!isMultiline) {
       focusRect.size.height += kSingleLineKeyboardBottomOffset;
     }
@@ -361,8 +375,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 
   if (_mostRecentEventCount == _state->getData().mostRecentEventCount) {
+    NSAttributedString *attributedString = RCTNSAttributedStringFromAttributedStringBox(data.attributedStringBox);
+    if (![attributedString.string isEqualToString:_backedTextInputView.attributedText.string]) {
+      [_backedTextInputView rct_invalidatePendingTextInputEdit];
+    }
     _comingFromJS = YES;
-    [self _setAttributedString:RCTNSAttributedStringFromAttributedStringBox(data.attributedStringBox)];
+    [self _setAttributedString:attributedString];
     _comingFromJS = NO;
   }
 }
@@ -386,6 +404,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)prepareForRecycle
 {
   [super prepareForRecycle];
+  [_backedTextInputView rct_invalidatePendingTextInputEdit];
   _state.reset();
   _backedTextInputView.attributedText = nil;
   _mostRecentEventCount = 0;
@@ -466,6 +485,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     }
   }
 
+  if (facebook::react::ReactNativeFeatureFlags::deferTextInputTruncationIOS() &&
+      _backedTextInputView.markedTextRange != nil) {
+    return text;
+  }
+
   if (props.maxLength < std::numeric_limits<int>::max()) {
     NSInteger allowedLength = props.maxLength - _backedTextInputView.attributedText.string.length + range.length;
 
@@ -493,9 +517,40 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   return YES;
 }
 
+- (BOOL)enqueueMaxLengthCorrectionIfNeeded
+{
+  if (!facebook::react::ReactNativeFeatureFlags::deferTextInputTruncationIOS() ||
+      _backedTextInputView.markedTextRange != nil) {
+    return NO;
+  }
+
+  const auto &props = static_cast<const TextInputProps &>(*_props);
+  NSString *text = _backedTextInputView.attributedText.string;
+  if (props.maxLength < 0 || text.length <= static_cast<NSUInteger>(props.maxLength)) {
+    return NO;
+  }
+
+  auto truncationLocation = static_cast<NSUInteger>(props.maxLength);
+  if (truncationLocation > 0) {
+    NSRange characterRange = [text rangeOfComposedCharacterSequenceAtIndex:truncationLocation - 1];
+    if (NSMaxRange(characterRange) > truncationLocation) {
+      truncationLocation = characterRange.location;
+    }
+  }
+
+  [_backedTextInputView
+      rct_enqueueTextInputEditWithRange:NSMakeRange(truncationLocation, text.length - truncationLocation)
+                        replacementText:@""];
+  return YES;
+}
+
 - (void)textInputDidChange
 {
   if (_comingFromJS) {
+    return;
+  }
+
+  if ([self enqueueMaxLengthCorrectionIfNeeded]) {
     return;
   }
 
@@ -515,6 +570,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)textInputDidChangeSelection
 {
   if (_comingFromJS) {
+    return;
+  }
+
+  if ([self enqueueMaxLengthCorrectionIfNeeded]) {
     return;
   }
 
@@ -595,6 +654,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (_mostRecentEventCount != eventCount) {
     return;
   }
+  [_backedTextInputView rct_invalidatePendingTextInputEdit];
   _comingFromJS = YES;
   if (value && ![value isEqualToString:_backedTextInputView.attributedText.string]) {
     NSAttributedString *attributedString =
@@ -796,19 +856,26 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
   _backedTextInputView.attributedText = attributedString;
-  // Updating the UITextView attributedText, for example changing the lineHeight, the color or adding
-  // a new paragraph with \n, causes the cursor to move to the end of the Text and scroll.
-  // This is fixed by restoring the cursor position and scrolling to that position (iOS issue 652653).
-  // Maintaining a cursor position relative to the end of the old text.
-  NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
-                                                        toPosition:selectedRange.start];
-  NSInteger offsetFromEnd = oldTextLength - offsetStart;
-  NSInteger newOffset = attributedString.string.length - offsetFromEnd;
-  UITextPosition *position = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument
-                                                                 offset:newOffset];
-  [_backedTextInputView setSelectedTextRange:[_backedTextInputView textRangeFromPosition:position toPosition:position]
-                              notifyDelegate:YES];
-  [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
+  // A single-line input that is not being edited has no cursor to keep: UIKit places one when editing begins.
+  // Restoring it anyway makes UIKit scroll the field editor to it when the text doesn't fit, and the editor keeps
+  // that offset after the text fits again, so text typed later in this view (also after recycling) is drawn too high.
+  BOOL isMultiline = _props ? static_cast<const TextInputProps &>(*_props).multiline
+                            : [_backedTextInputView isKindOfClass:[UITextView class]];
+  if (isMultiline || _backedTextInputView.isFirstResponder) {
+    // Updating the UITextView attributedText, for example changing the lineHeight, the color or adding
+    // a new paragraph with \n, causes the cursor to move to the end of the Text and scroll.
+    // This is fixed by restoring the cursor position and scrolling to that position (iOS issue 652653).
+    // Maintaining a cursor position relative to the end of the old text.
+    NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
+                                                          toPosition:selectedRange.start];
+    NSInteger offsetFromEnd = oldTextLength - offsetStart;
+    NSInteger newOffset = attributedString.string.length - offsetFromEnd;
+    UITextPosition *position = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument
+                                                                   offset:newOffset];
+    [_backedTextInputView setSelectedTextRange:[_backedTextInputView textRangeFromPosition:position toPosition:position]
+                                notifyDelegate:YES];
+    [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
+  }
 
   // A zero-length selection range can cause the caret position to change on iOS,
   // and we have already updated the caret position, so we can safely ignore caret changing in this place.
@@ -846,7 +913,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)_setMultiline:(BOOL)multiline
 {
   [_backedTextInputView removeFromSuperview];
-  UIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
+  UIView<RCTBackedTextInputViewProtocol, RCTBackedTextInputViewPendingEdit> *backedTextInputView =
+      multiline ? [RCTUITextView new] : [RCTUITextField new];
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
   _backedTextInputView = backedTextInputView;

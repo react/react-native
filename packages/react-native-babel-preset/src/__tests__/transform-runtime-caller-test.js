@@ -18,7 +18,7 @@ const MOCK_FILENAME = '/absolute/path/to/input.js';
 
 function transformWithCaller(
   code: string,
-  options: {[string]: unknown},
+  options: {[key: string]: unknown},
   caller: {
     enableBabelRuntime?: boolean | string,
     babelRuntimeModuleName?: string,
@@ -41,7 +41,10 @@ describe('babel runtime caller options', () => {
     const code = 'const {a, ...rest} = obj;';
     const result = transformWithCaller(
       code,
-      {dev: false},
+      {
+        dev: false,
+        customTransformOptions: {unstable_preserveDestructuring: false},
+      },
       {babelRuntimeModuleName: '@react-native/babel-runtime'},
     );
     expect(result).toContain(
@@ -54,7 +57,11 @@ describe('babel runtime caller options', () => {
     const code = 'const {a, ...rest} = obj;';
     const result = transformWithCaller(
       code,
-      {dev: false, babelRuntimeModuleName: '@from/options'},
+      {
+        dev: false,
+        babelRuntimeModuleName: '@from/options',
+        customTransformOptions: {unstable_preserveDestructuring: false},
+      },
       {babelRuntimeModuleName: '@from/caller'},
     );
     expect(result).toContain('@from/options/helpers/objectWithoutProperties');
@@ -108,7 +115,10 @@ describe('babel runtime caller options', () => {
     const code = 'const {a, ...rest} = obj;';
     const result = transformWithCaller(
       code,
-      {dev: false},
+      {
+        dev: false,
+        customTransformOptions: {unstable_preserveDestructuring: false},
+      },
       {
         enableBabelRuntime: false,
         babelRuntimeModuleName: '@react-native/babel-runtime',
@@ -122,7 +132,11 @@ describe('babel runtime caller options', () => {
     const code = 'const {a, ...rest} = obj;';
     const result = transformWithCaller(
       code,
-      {dev: false, enableBabelRuntime: false},
+      {
+        dev: false,
+        enableBabelRuntime: false,
+        customTransformOptions: {unstable_preserveDestructuring: false},
+      },
       {enableBabelRuntime: '7.25.0'},
     );
     expect(result).not.toContain('@babel/runtime/helpers');

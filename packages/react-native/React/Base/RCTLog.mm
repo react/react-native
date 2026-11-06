@@ -13,8 +13,7 @@
 #import <os/log.h>
 
 #import "RCTAssert.h"
-#import "RCTBridge+Private.h"
-#import "RCTBridge.h"
+#import "RCTBridgeModule.h"
 #import "RCTDefines.h"
 #import "RCTRedBoxSetEnabled.h"
 #import "RCTUtils.h"

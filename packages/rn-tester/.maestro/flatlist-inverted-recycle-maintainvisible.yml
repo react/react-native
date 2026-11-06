@@ -4,7 +4,7 @@
 # In inverted mode, items display in reverse order but MVCP delta behavior is the same
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

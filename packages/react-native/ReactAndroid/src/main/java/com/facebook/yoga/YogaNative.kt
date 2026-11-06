@@ -311,6 +311,8 @@ public object YogaNative {
   @JvmStatic
   public external fun jni_YGNodeSetHasMeasureFuncJNI(nativePointer: Long, hasMeasureFunc: Boolean)
 
+  @JvmStatic public external fun jni_YGNodeSetNodeTypeJNI(nativePointer: Long, nodeType: Int)
+
   @JvmStatic
   public external fun jni_YGNodeSetHasMinContentMeasureFuncJNI(
       nativePointer: Long,

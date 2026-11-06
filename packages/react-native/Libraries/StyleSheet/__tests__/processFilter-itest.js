@@ -166,8 +166,14 @@ function testStandardFilter(filter: string): void {
 
   testNumericFilter(filter, value, [expected]);
   testNumericFilter(filter, -value, []);
-  testUnitFilter(filter, value, 'px', [expected]);
+  testUnitFilter(filter, value, 'px', []);
   testUnitFilter(filter, value, '%', [percentExpected]);
+
+  it('string ' + filter + '()', () => {
+    expect(processFilter(filter + '()')).toEqual([
+      createFilterPrimitive(filter, 1),
+    ]);
+  });
 }
 
 function testNumericFilter(
