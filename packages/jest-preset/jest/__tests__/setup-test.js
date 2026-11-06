@@ -8,6 +8,8 @@
  * @format
  */
 
+import * as React from 'react';
+
 const NativeExceptionsManager = jest.requireMock(
   'react-native/Libraries/Core/NativeExceptionsManager',
 ).default;
@@ -53,4 +55,29 @@ test('native component mocks work with a partial react-native mock', () => {
       jest.requireActual<unknown>('../mocks/ScrollView');
     }).not.toThrow();
   });
+});
+
+test('reportError is defined so React does not mistake this for a DOM', () => {
+  // `window` is aliased to `global`, so React only avoids constructing and
+  // dispatching a DOM `ErrorEvent` (which this environment cannot do) when
+  // `reportError` is available.
+  // $FlowFixMe[prop-missing] - `reportError` is not in Flow's global defs.
+  expect(typeof global.reportError).toBe('function');
+});
+
+test('an error thrown in a transition is reported unchanged', () => {
+  const error = new Error('Original error');
+  const handler = jest.fn();
+
+  process.on('uncaughtException', handler);
+
+  try {
+    React.startTransition(() => {
+      throw error;
+    });
+  } finally {
+    process.off('uncaughtException', handler);
+  }
+
+  expect(handler).toHaveBeenCalledWith(error);
 });
