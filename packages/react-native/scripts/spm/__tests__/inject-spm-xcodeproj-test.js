@@ -17,7 +17,13 @@ const {
   injectSpmIntoPbxproj,
   planInjection,
 } = require('../generate-spm-xcodeproj');
-const {findField, findObjectByUuid, quoteIfNeeded} = require('../spm-pbxproj');
+const {
+  findField,
+  findObjectByUuid,
+  quoteIfNeeded,
+  removeField,
+  setScalarField,
+} = require('../spm-pbxproj');
 const {isBalanced} = require('./pbxproj-oracles');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -85,12 +91,16 @@ const XCCONFIG_PATH = 'ReactNativeSPM/ReactNativeSPM.xcconfig';
 const SYNC_SCRIPT_PATH = 'ReactNativeSPM/Scripts/sync-autolinking.sh';
 const EMBED_SCRIPT_PATH = 'ReactNativeSPM/Scripts/embed-flavored-frameworks.sh';
 
-// The raw (still plist-quoted) shellScript value of the phase labelled `label`.
-function shellScriptOf(text, label) {
+function scriptPhaseOf(text, label) {
   const uuid = new RegExp(`([0-9A-F]{24}) /\\* ${label} \\*/ = \\{`).exec(
     text,
   )[1];
-  return findField(text, findObjectByUuid(text, uuid), 'shellScript').value;
+  return findObjectByUuid(text, uuid);
+}
+
+// The raw (still plist-quoted) shellScript value of the phase labelled `label`.
+function shellScriptOf(text, label) {
+  return findField(text, scriptPhaseOf(text, label), 'shellScript').value;
 }
 
 const RN_PATH = '../node_modules/react-native';
@@ -658,7 +668,35 @@ describe('injectSpmIntoPbxproj — Tier 2 (build settings + phase)', () => {
     const sourcesIdx = text.indexOf('Sources */,');
     expect(syncIdx).toBeGreaterThan(-1);
     expect(syncIdx).toBeLessThan(sourcesIdx);
+    expect(
+      findField(
+        text,
+        scriptPhaseOf(text, 'Sync SPM Autolinking'),
+        'alwaysOutOfDate',
+      )?.value,
+    ).toBe('1');
   });
+
+  it.each([null, '0'])(
+    'marks an existing sync phase with alwaysOutOfDate=%s as always running',
+    previousValue => {
+      const {text} = inject(PLAIN);
+      const phase = scriptPhaseOf(text, 'Sync SPM Autolinking');
+      const before =
+        previousValue == null
+          ? removeField(text, phase, 'alwaysOutOfDate')
+          : setScalarField(text, phase, 'alwaysOutOfDate', previousValue);
+      const {text: updated} = inject(before);
+      expect(
+        findField(
+          updated,
+          scriptPhaseOf(updated, 'Sync SPM Autolinking'),
+          'alwaysOutOfDate',
+        )?.value,
+      ).toBe('1');
+      expect(inject(updated).text).toBe(updated);
+    },
+  );
 
   // The script bodies change whenever React Native's do, so they live in
   // generated files; the phase only carries a wrapper that never changes.
@@ -994,16 +1032,18 @@ describe('injectSpmIntoPbxproj — Tier 4 (plugin script phases)', () => {
   });
 
   it('emits an unquoted alwaysOutOfDate = 1 only when the phase asks for it', () => {
-    const withFlag = inject(
+    const {text: withFlag, scriptPhaseUuids} = inject(
       PLAIN,
       null,
       null,
       [],
       [{...APP_CONFIG_PHASE, alwaysOutOfDate: true}],
-    ).text;
-    expect(withFlag).toContain('alwaysOutOfDate = 1;');
+    );
+    const uuid = scriptPhaseUuids[APP_CONFIG_PHASE.id];
+    const phase = findObjectByUuid(withFlag, uuid);
+    expect(findField(withFlag, phase, 'alwaysOutOfDate')?.value).toBe('1');
     // Xcode writes it immediately after `isa` — match that to avoid churn.
-    expect(withFlag).toContain(
+    expect(withFlag.slice(phase.bodyOpen, phase.bodyClose)).toContain(
       'isa = PBXShellScriptBuildPhase;\n\t\t\talwaysOutOfDate = 1;',
     );
 
@@ -1011,9 +1051,10 @@ describe('injectSpmIntoPbxproj — Tier 4 (plugin script phases)', () => {
       APP_CONFIG_PHASE,
       {...APP_CONFIG_PHASE, alwaysOutOfDate: false},
     ]) {
-      expect(inject(PLAIN, null, null, [], [phase]).text).not.toContain(
-        'alwaysOutOfDate',
-      );
+      const {text} = inject(PLAIN, null, null, [], [phase]);
+      expect(
+        findField(text, findObjectByUuid(text, uuid), 'alwaysOutOfDate'),
+      ).toBeNull();
     }
   });
 
