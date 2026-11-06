@@ -128,6 +128,17 @@ jobs:
         uses: ./.github/actions/test-ios-rntester
         with:
           flavor: ${{ matrix.flavor }}
+      - name: Test TextInput caret and selection behavior
+        if: ${{ matrix.flavor == 'Debug' && matrix.frameworks == false }}
+        run: |
+          xcodebuild test \
+            -workspace packages/rn-tester/RNTesterPods.xcworkspace \
+            -scheme RNTesterUnitTests \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath /tmp/RNTesterBuild \
+            -only-testing:RNTesterUnitTests/RCTUITextFieldTests
 
   # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
   test_ios_rntester_cocoapods:
