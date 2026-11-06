@@ -1125,7 +1125,7 @@ AnimationMutations NativeAnimatedNodesManager::pullAnimationMutations(
     mutations =
         onAnimationFrameForBackend(propsBuilder, timestamp, stepAnimations);
 
-    if (mutations.batch.empty()) {
+    if (mutations.batch.empty() && isEventAnimationInProgress_) {
       // The last animation tick didn't result in any changes to the UI.
       // It is safe to assume any event animation that was in progress has
       // completed.
@@ -1220,7 +1220,7 @@ void NativeAnimatedNodesManager::onRender() {
     auto timestamp = static_cast<double>(microseconds) / 1000.0;
     auto containsChange = onAnimationFrame(timestamp);
 
-    if (!containsChange) {
+    if (!containsChange && isEventAnimationInProgress_) {
       // The last animation tick didn't result in any changes to the UI.
       // It is safe to assume any event animation that was in progress has
       // completed.
