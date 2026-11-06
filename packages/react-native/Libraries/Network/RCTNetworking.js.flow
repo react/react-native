@@ -27,7 +27,7 @@ declare const RCTNetworking: interface {
     method: string,
     trackingName: string | void,
     url: string,
-    headers: {[string]: string},
+    headers: {[key: string]: string},
     data: ?RequestBody,
     responseType: NativeResponseType,
     incrementalUpdates: boolean,

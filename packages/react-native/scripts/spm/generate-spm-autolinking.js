@@ -1103,7 +1103,7 @@ function generateSynthPackageSwift(spec /*: SynthPackageSpec */) /*: string */ {
   const resources /*: ?Array<string> */ = spec.resources;
   const isDynamic /*: boolean */ = spec.isDynamic !== false;
   const targetPath /*: string */ = spec.targetPath ?? `Sources/${swiftName}`;
-  const siblingSynthAbsolutePaths /*: {[string]: string} */ =
+  const siblingSynthAbsolutePaths /*: {[key: string]: string} */ =
     spec.siblingSynthAbsolutePaths ?? {};
   const iosDeploymentTarget /*: string */ =
     spec.iosDeploymentTarget ?? MIN_IOS_VERSION_SUPPORTED;
@@ -1579,7 +1579,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   // source dir for self-managed ones. SPM identity stays unique either way
   // (wrapper basename = SwiftName; self-managed manifests declare the same
   // package name).
-  const siblingPackagePaths /*: {[string]: string} */ = {};
+  const siblingPackagePaths /*: {[key: string]: string} */ = {};
   for (const [name, wrapper] of wrapperDirs.entries()) {
     siblingPackagePaths[name] = wrapper;
   }
@@ -1629,7 +1629,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         .map(e => e.slice(0, -1)),
     );
 
-    const siblingSynthAbsolutePaths /*: {[string]: string} */ = {};
+    const siblingSynthAbsolutePaths /*: {[key: string]: string} */ = {};
     for (const sibling of target.spmTargetDependencies ?? []) {
       const sibPath = siblingPackagePaths[sibling];
       if (sibPath != null) {

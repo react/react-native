@@ -13,7 +13,7 @@
 const stringifySafe = require('../Utilities/stringifySafe').default;
 const invariant = require('invariant');
 
-type TransformObject = {[string]: unknown, ...};
+type TransformObject = {[key: string]: unknown, ...};
 type TransformArray = Array<TransformObject>;
 
 /**

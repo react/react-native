@@ -470,8 +470,8 @@ class VirtualizedSectionList<
     return null;
   }
 
-  _updateHighlightMap: {[string]: (v: boolean) => void} = {};
-  _updatePropsMap: {[string]: void | ((v: boolean) => void)} = {};
+  _updateHighlightMap: {[key: string]: (v: boolean) => void} = {};
+  _updatePropsMap: {[key: string]: void | ((v: boolean) => void)} = {};
   _listRef: ?VirtualizedList;
   _captureRef = (ref: null | VirtualizedList) => {
     this._listRef = ref;

@@ -20,8 +20,10 @@ describe('useAnimatedProps', () => {
     const useAnimatedProps = createAnimatedPropsHook(null);
 
     const refs = [];
-    function Sentinel(props: {[string]: unknown}): React.Node {
-      const [, ref] = useAnimatedProps<{[string]: unknown}, unknown>(props);
+    function Sentinel(props: {[key: string]: unknown}): React.Node {
+      const [, ref] = useAnimatedProps<{[key: string]: unknown}, unknown>(
+        props,
+      );
       useLayoutEffect(() => {
         refs.push(ref);
       }, [ref]);
@@ -41,8 +43,10 @@ describe('useAnimatedProps', () => {
     const useAnimatedProps = createAnimatedPropsHook(null);
 
     const refs = [];
-    function Sentinel(props: {[string]: unknown}): React.Node {
-      const [, ref] = useAnimatedProps<{[string]: unknown}, unknown>(props);
+    function Sentinel(props: {[key: string]: unknown}): React.Node {
+      const [, ref] = useAnimatedProps<{[key: string]: unknown}, unknown>(
+        props,
+      );
       useLayoutEffect(() => {
         refs.push(ref);
       }, [ref]);
@@ -64,8 +68,10 @@ describe('useAnimatedProps', () => {
     const useAnimatedProps = createAnimatedPropsHook(null);
 
     const refs = [];
-    function Sentinel(props: {[string]: unknown}): React.Node {
-      const [, ref] = useAnimatedProps<{[string]: unknown}, unknown>(props);
+    function Sentinel(props: {[key: string]: unknown}): React.Node {
+      const [, ref] = useAnimatedProps<{[key: string]: unknown}, unknown>(
+        props,
+      );
       useLayoutEffect(() => {
         refs.push(ref);
       }, [ref]);

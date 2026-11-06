@@ -43,7 +43,7 @@ const timerIDs: Array<?number> = [];
 const freeIdxs: Array<number> = [];
 let reactNativeMicrotasks: Array<number> = [];
 let requestIdleCallbacks: Array<number> = [];
-const requestIdleCallbackTimeouts: {[number]: number, ...} = {};
+const requestIdleCallbackTimeouts: {[key: number]: number, ...} = {};
 
 let GUID = 1;
 const errors: Array<Error> = [];

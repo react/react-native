@@ -11,7 +11,7 @@
 import FillRateHelper from '../FillRateHelper';
 
 let rowFramesGlobal: ?{
-  [string]: Readonly<{
+  [key: string]: Readonly<{
     height: number,
     isMounted: boolean,
     y: number,

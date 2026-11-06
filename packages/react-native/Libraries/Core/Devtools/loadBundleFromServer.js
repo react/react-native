@@ -57,7 +57,7 @@ export class LoadBundleFromServerRequestError extends LoadBundleFromServerError 
 
 function asyncRequest(
   url: string,
-): Promise<{body: string, headers: {[string]: string}}> {
+): Promise<{body: string, headers: {[key: string]: string}}> {
   let id = null;
   let responseText = null;
   let headers = null;
@@ -65,7 +65,7 @@ function asyncRequest(
   let completeListener;
   let responseListener;
   let incrementalDataListener;
-  return new Promise<{body: string, headers: {[string]: string}}>(
+  return new Promise<{body: string, headers: {[key: string]: string}}>(
     (resolve, reject) => {
       dataListener = Networking.addListener(
         'didReceiveNetworkData',

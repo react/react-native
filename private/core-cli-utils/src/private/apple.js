@@ -172,7 +172,7 @@ const tasks = {
       }),
     ),
     installDependencies: task(FIFTH, 'Install CocoaPods dependencies', () => {
-      const env /*: {[string]: string | void} */ = {
+      const env /*: {[key: string]: string | void} */ = {
         RCT_NEW_ARCH_ENABLED: options.newArchitecture ? '1' : '0',
         USE_FRAMEWORKS: options.frameworks,
         USE_HERMES: options.hermes ? '1' : '0',
