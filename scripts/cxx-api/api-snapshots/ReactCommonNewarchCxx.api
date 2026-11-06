@@ -4158,6 +4158,7 @@ enum facebook::yoga::Errata : uint32_t {
   MinSizeUndefinedInsteadOfAuto,
   None,
   StretchFlexBasis,
+  WrapCrossAlignmentIgnoresMarginAndInset,
 }
 
 enum facebook::yoga::FlexDirection : uint8_t {
