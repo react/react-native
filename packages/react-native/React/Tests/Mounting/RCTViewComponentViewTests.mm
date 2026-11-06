@@ -5,8 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <React/RCTScrollViewComponentView.h>
 #import <React/RCTViewComponentView.h>
 #import <XCTest/XCTest.h>
+#import <react/renderer/components/scrollview/ScrollViewShadowNode.h>
 #import <react/renderer/components/view/ViewProps.h>
 #import <react/renderer/components/view/ViewShadowNode.h>
 #import <react/renderer/graphics/Color.h>
@@ -18,6 +20,32 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   auto props = std::make_shared<ViewProps>();
   props->removeClippedSubviews = removeClippedSubviews;
   return props;
+}
+
+// The ScrollView's clipping pass, which runs after each mounting transaction and while scrolling.
+@interface RCTScrollViewComponentView (Testing)
+- (void)_remountChildren;
+@end
+
+// Counts the clipping passes that reach it.
+@interface RCTClippingPassSpyView : UIView
+@property (nonatomic, assign) NSUInteger passCount;
+@end
+
+@implementation RCTClippingPassSpyView
+- (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(UIView *)clipView
+{
+  self.passCount++;
+}
+@end
+
+// A ScrollView, 400 points tall, with `content` as its content view.
+static RCTScrollViewComponentView *makeScrollView(UIView *content)
+{
+  RCTScrollViewComponentView *scrollView =
+      [[RCTScrollViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 400)];
+  [scrollView mountChildComponentView:(id)content index:0];
+  return scrollView;
 }
 
 @interface RCTViewComponentViewTests : XCTestCase
@@ -161,6 +189,152 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   XCTAssertNil(child.superview);
   NSMutableArray *reactSubviews = [view valueForKey:@"_reactSubviews"];
   XCTAssertEqual(reactSubviews.count, 1u);
+}
+
+#pragma mark - ScrollView clipping pass
+
+- (void)testScrollViewSkipsClippingPassWithoutClippingViews
+{
+  UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 400)];
+  RCTClippingPassSpyView *spy = [RCTClippingPassSpyView new];
+  RCTScrollViewComponentView *scrollView = makeScrollView(spy);
+  [window addSubview:scrollView];
+
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 0u);
+}
+
+- (void)testScrollViewOutsideWindowRunsClippingPass
+{
+  // Content can be mounted before its ScrollView is in a window, so the pass runs there as before.
+  RCTClippingPassSpyView *spy = [RCTClippingPassSpyView new];
+  RCTScrollViewComponentView *scrollView = makeScrollView(spy);
+
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 1u);
+}
+
+- (void)testClippingViewInWindowGetsClippingPass
+{
+  UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 400)];
+  RCTViewComponentView *content = [RCTViewComponentView new];
+  content.frame = CGRectMake(0, 0, 100, 2000);
+  RCTClippingPassSpyView *spy = [RCTClippingPassSpyView new];
+  [content mountChildComponentView:(id)spy index:0];
+
+  // Mount the rows before turning clipping on, so that both start attached.
+  RCTViewComponentView *list = [RCTViewComponentView new];
+  list.frame = CGRectMake(0, 0, 100, 2000);
+  UIView *visibleRow = [UIView new];
+  visibleRow.frame = CGRectMake(0, 0, 100, 100);
+  UIView *offscreenRow = [UIView new];
+  offscreenRow.frame = CGRectMake(0, 1500, 100, 100);
+  [list mountChildComponentView:(id)visibleRow index:0];
+  [list mountChildComponentView:(id)offscreenRow index:1];
+  [list updateProps:makeViewProps(true) oldProps:ViewShadowNode::defaultSharedProps()];
+  [content mountChildComponentView:list index:1];
+  XCTAssertEqual(offscreenRow.superview, list);
+
+  RCTScrollViewComponentView *scrollView = makeScrollView(content);
+  [window addSubview:scrollView];
+
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 1u);
+  XCTAssertEqual(visibleRow.superview, list);
+  XCTAssertNil(offscreenRow.superview);
+}
+
+- (void)testClippingPassFollowsClippingViewProps
+{
+  UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 400)];
+  RCTViewComponentView *content = [RCTViewComponentView new];
+  RCTClippingPassSpyView *spy = [RCTClippingPassSpyView new];
+  [content mountChildComponentView:(id)spy index:0];
+  RCTViewComponentView *list = [RCTViewComponentView new];
+  [list updateProps:makeViewProps(true) oldProps:ViewShadowNode::defaultSharedProps()];
+  [content mountChildComponentView:list index:1];
+  RCTScrollViewComponentView *scrollView = makeScrollView(content);
+  [window addSubview:scrollView];
+
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 1u);
+
+  [list updateProps:makeViewProps(false) oldProps:nullptr];
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 1u);
+
+  [list updateProps:makeViewProps(true) oldProps:nullptr];
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 2u);
+
+  // A clipping view outside the window doesn't need the pass.
+  [content unmountChildComponentView:list index:1];
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 2u);
+
+  [content mountChildComponentView:list index:1];
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 3u);
+
+  // A recycled view starts without `removeClippedSubviews`.
+  [content unmountChildComponentView:list index:1];
+  [list prepareForRecycle];
+  [content mountChildComponentView:list index:1];
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 3u);
+
+  // Turned on outside the window, the view registers once it is attached.
+  [content unmountChildComponentView:list index:1];
+  [list updateProps:makeViewProps(true) oldProps:nullptr];
+  [content mountChildComponentView:list index:1];
+  [scrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 4u);
+}
+
+- (void)testClippingViewOnlyRegistersWithNearestScrollView
+{
+  UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 400)];
+  RCTViewComponentView *innerContent = [RCTViewComponentView new];
+  RCTClippingPassSpyView *innerSpy = [RCTClippingPassSpyView new];
+  [innerContent mountChildComponentView:(id)innerSpy index:0];
+  RCTViewComponentView *list = [RCTViewComponentView new];
+  [list updateProps:makeViewProps(true) oldProps:ViewShadowNode::defaultSharedProps()];
+  [innerContent mountChildComponentView:list index:1];
+  RCTScrollViewComponentView *innerScrollView = makeScrollView(innerContent);
+
+  RCTViewComponentView *content = [RCTViewComponentView new];
+  RCTClippingPassSpyView *spy = [RCTClippingPassSpyView new];
+  [content mountChildComponentView:(id)spy index:0];
+  [content mountChildComponentView:innerScrollView index:1];
+  RCTScrollViewComponentView *outerScrollView = makeScrollView(content);
+  [window addSubview:outerScrollView];
+
+  // The outer pass stops at the inner ScrollView, which handles `list` itself.
+  [outerScrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 0u);
+  [innerScrollView _remountChildren];
+  XCTAssertEqual(innerSpy.passCount, 1u);
+}
+
+- (void)testScrollViewWithRemoveClippedSubviewsDoesNotRegisterWithOuterScrollView
+{
+  // For example a horizontal list inside a vertical one: ScrollView forwards the prop to the
+  // native ScrollView too, but the inner ScrollView clips its own content.
+  UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 400)];
+  RCTScrollViewComponentView *innerScrollView = makeScrollView([RCTViewComponentView new]);
+  auto innerProps = std::make_shared<ScrollViewProps>();
+  innerProps->removeClippedSubviews = true;
+  [innerScrollView updateProps:innerProps oldProps:ScrollViewShadowNode::defaultSharedProps()];
+
+  RCTViewComponentView *content = [RCTViewComponentView new];
+  RCTClippingPassSpyView *spy = [RCTClippingPassSpyView new];
+  [content mountChildComponentView:(id)spy index:0];
+  [content mountChildComponentView:innerScrollView index:1];
+  RCTScrollViewComponentView *outerScrollView = makeScrollView(content);
+  [window addSubview:outerScrollView];
+
+  [outerScrollView _remountChildren];
+  XCTAssertEqual(spy.passCount, 0u);
 }
 
 #pragma mark - hitTest against non-invertible transforms (#50797)
