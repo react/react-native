@@ -60,7 +60,10 @@ function asyncRequest(
 ): Promise<{body: string, headers: {[string]: string}}> {
   let id = null;
   let responseText = null;
-  let headers = null;
+  let head: ?{
+    status: number,
+    headers: ?{[string]: string},
+  } = null;
   let dataListener;
   let completeListener;
   let responseListener;
@@ -91,7 +94,7 @@ function asyncRequest(
         'didReceiveNetworkResponse',
         ([requestId, status, responseHeaders]) => {
           if (requestId === id) {
-            headers = responseHeaders;
+            head = {status, headers: responseHeaders};
           }
         },
       );
@@ -99,20 +102,43 @@ function asyncRequest(
         'didCompleteNetworkResponse',
         ([requestId, errorMessage, isTimeout]) => {
           if (requestId === id) {
-            if (errorMessage) {
+            if (
+              errorMessage != null ||
+              isTimeout ||
+              responseText == null ||
+              head == null ||
+              head.status < 200 ||
+              head.status >= 300
+            ) {
+              let summary = null,
+                cause: ?string = null;
+              if (errorMessage != null || isTimeout) {
+                summary = isTimeout
+                  ? 'Request timed out'
+                  : 'Could not load bundle';
+                cause = errorMessage;
+              } else if (responseText == null || head == null) {
+                summary = 'Request completed with missing response data';
+              }
+              if (head && (head.status < 200 || head.status >= 300)) {
+                const {status} = head;
+                summary = [`HTTP ${status} when loading bundle ${url}`, summary]
+                  .filter(Boolean)
+                  .join('; ');
+                cause = cause ?? responseText;
+              }
               reject(
                 new LoadBundleFromServerRequestError(
-                  'Could not load bundle',
+                  summary ?? `Unknown error when loading bundle ${url}`,
                   url,
                   isTimeout,
                   {
-                    cause: errorMessage,
+                    cause,
                   },
                 ),
               );
             } else {
-              //$FlowFixMe[incompatible-type]
-              resolve({body: responseText, headers});
+              resolve({body: responseText, headers: head.headers ?? {}});
             }
           }
         },
