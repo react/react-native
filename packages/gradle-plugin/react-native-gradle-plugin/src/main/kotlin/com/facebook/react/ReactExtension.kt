@@ -7,6 +7,7 @@
 
 package com.facebook.react
 
+import com.facebook.react.model.ModelAutolinkingDependenciesPlatformAndroidJson
 import com.facebook.react.utils.JsonUtils
 import com.facebook.react.utils.projectPathToLibraryName
 import java.io.File
@@ -201,19 +202,29 @@ abstract class ReactExtension @Inject constructor(val project: Project) {
           ?.filterNot { it.platforms?.android?.isPureCxxDependency == true }
           ?.forEach { deps ->
             val nameCleansed = deps.nameCleansed
-            val dependencyConfiguration = deps.platforms?.android?.dependencyConfiguration
-            val buildTypes = deps.platforms?.android?.buildTypes ?: emptyList()
-            if (buildTypes.isEmpty()) {
-              result.add((dependencyConfiguration ?: "implementation") to ":$nameCleansed")
-            } else {
-              buildTypes.forEach { buildType ->
-                result.add(
-                    (dependencyConfiguration ?: "${buildType}Implementation") to ":$nameCleansed",
-                )
-              }
+            resolveGradleConfigurations(checkNotNull(deps.platforms?.android)).forEach {
+                configuration ->
+              result.add(configuration to ":$nameCleansed")
             }
           }
       return result
+    }
+
+    /**
+     * Resolves the Gradle configuration names a dependency is added to, honoring
+     * `dependencyConfiguration` overrides and `buildTypes` scoping.
+     */
+    internal fun resolveGradleConfigurations(
+        platformAndroid: ModelAutolinkingDependenciesPlatformAndroidJson
+    ): List<String> {
+      val dependencyConfiguration = platformAndroid.dependencyConfiguration
+      // Declared non-null in the model, but JSON deserialization can leave it unset.
+      val buildTypes: List<String>? = platformAndroid.buildTypes
+      return if (buildTypes.isNullOrEmpty()) {
+        listOf(dependencyConfiguration ?: "implementation")
+      } else {
+        buildTypes.map { dependencyConfiguration ?: "${it}Implementation" }
+      }
     }
   }
 }
