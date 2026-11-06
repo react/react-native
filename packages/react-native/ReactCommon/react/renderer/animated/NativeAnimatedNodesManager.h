@@ -18,10 +18,10 @@
 #include <React/Debug.h>
 #include <React/RendererCore.h>
 #include <folly/dynamic.h>
-#include <react/renderer/animated/EventEmitterListener.h>
 #include <react/renderer/animated/event_drivers/EventAnimationDriver.h>
 #include <react/renderer/animationbackend/AnimatedPropsBuilder.h>
 #include <react/renderer/animationbackend/AnimationBackend.h>
+#include <react/renderer/core/EventEmitterListener.h>
 #include <react/renderer/uimanager/UIManagerAnimationBackend.h>
 #include <chrono>
 #include <memory>
