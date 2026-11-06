@@ -12,6 +12,8 @@
 
 #include "NativeArray.h"
 
+#include <cmath>
+
 using namespace facebook::jni;
 
 namespace facebook::react {
@@ -51,6 +53,36 @@ void processTransform(
   jResult->setRegion(0, MatrixSize, doubleTransform.data());
 }
 
+// `matrix` is column-major: x' = m[0] x + m[4] y + m[12],
+// y' = m[1] x + m[5] y + m[13]. The other entries are the Z axis, perspective
+// and the homogeneous scale.
+bool isAffine2DMatrix(const folly::dynamic& matrix) {
+  if (!matrix.isArray() || matrix.size() != 16) {
+    return false;
+  }
+  for (const auto& entry : matrix) {
+    if (!entry.isNumber()) {
+      return false;
+    }
+  }
+  for (size_t i : {2, 3, 6, 7, 8, 9, 11, 14}) {
+    if (matrix[i].asDouble() != 0.0) {
+      return false;
+    }
+  }
+  return matrix[10].asDouble() == 1.0 && matrix[15].asDouble() == 1.0;
+}
+
+bool hasSkew(const folly::dynamic& matrix) {
+  double xAxisX = matrix[0].asDouble();
+  double xAxisY = matrix[1].asDouble();
+  double yAxisX = matrix[4].asDouble();
+  double yAxisY = matrix[5].asDouble();
+  double cosineBetweenAxes = (xAxisX * yAxisX + xAxisY * yAxisY) /
+      (std::hypot(xAxisX, xAxisY) * std::hypot(yAxisX, yAxisY));
+  return std::abs(cosineBetweenAxes) > 1e-5;
+}
+
 // Same result as SkewMatrixHelper.isAffine2DTransformWithSkew, but reads the
 // array in place instead of crossing JNI for each element and key.
 jboolean isAffine2DTransformWithSkew(
@@ -71,11 +103,17 @@ jboolean isAffine2DTransformWithSkew(
       continue;
     }
     const auto& type = key.getString();
-    if (type == "matrix" || type == "perspective" || type == "rotateX" ||
-        type == "rotateY") {
+    if (type == "perspective" || type == "rotateX" || type == "rotateY") {
       return JNI_FALSE;
     }
-    if (type == "translate") {
+    if (type == "matrix") {
+      if (!isAffine2DMatrix(value)) {
+        return JNI_FALSE;
+      }
+      if (hasSkew(value)) {
+        hasSkewTransform = true;
+      }
+    } else if (type == "translate") {
       if (value.isArray() && value.size() > 2 && value[2].isNumber() &&
           value[2].asDouble() != 0.0) {
         return JNI_FALSE;

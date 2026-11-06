@@ -30,6 +30,15 @@ import {
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
+const TAN_20 = Math.tan((20 * Math.PI) / 180);
+const COS_15 = Math.cos((15 * Math.PI) / 180);
+const SIN_15 = Math.sin((15 * Math.PI) / 180);
+
+// x' = a x + c y, y' = b x + d y, in the 16-number layout of `matrix`.
+function matrix2D(a: number, b: number, c: number, d: number): Array<number> {
+  return [a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+}
+
 function AnimateTransformSingleProp() {
   const [theta] = useState(new Animated.Value(45));
   const animate = () => {
@@ -316,6 +325,32 @@ function SkewExample(): React.Node {
         </Pressable>
       </View>
       <RNTesterText style={styles.skewLabel}>
+        Same transforms as a matrix
+      </RNTesterText>
+      <View style={styles.skewRow}>
+        <Pressable
+          testID="skew-27649-matrix-x"
+          android_ripple={ripple}
+          onPress={() => setTapped('matrix skewX 20deg')}
+          style={tapStyle(styles.skewBoxMatrixX)}>
+          <Text style={styles.skewBoxText}>matrix</Text>
+        </Pressable>
+        <Pressable
+          testID="skew-27649-matrix-xr"
+          android_ripple={ripple}
+          onPress={() => setTapped('matrix skewX + rotate')}
+          style={tapStyle(styles.skewBoxMatrixXR)}>
+          <Text style={styles.skewBoxText}>+rotate</Text>
+        </Pressable>
+        <Pressable
+          testID="skew-27649-matrix-r"
+          android_ripple={ripple}
+          onPress={() => setTapped('matrix rotate only')}
+          style={tapStyle(styles.skewBoxMatrixR)}>
+          <Text style={styles.skewBoxText}>no skew</Text>
+        </Pressable>
+      </View>
+      <RNTesterText style={styles.skewLabel}>
         Animated (useNativeDriver: true)
       </RNTesterText>
       <Animated.View
@@ -553,6 +588,25 @@ const styles = StyleSheet.create({
   skewBoxXR: {transform: [{skewX: '20deg'}, {rotate: '15deg'}]},
   skewBoxXS: {transform: [{skewX: '20deg'}, {scale: 1.1}]},
   skewBoxXT: {transform: [{skewX: '20deg'}, {translateX: 8}]},
+  // skewX(20deg)
+  skewBoxMatrixX: {transform: [{matrix: matrix2D(1, 0, TAN_20, 1)}]},
+  // skewX(20deg) rotate(15deg)
+  skewBoxMatrixXR: {
+    transform: [
+      {
+        matrix: matrix2D(
+          COS_15 + TAN_20 * SIN_15,
+          SIN_15,
+          TAN_20 * COS_15 - SIN_15,
+          COS_15,
+        ),
+      },
+    ],
+  },
+  // rotate(15deg)
+  skewBoxMatrixR: {
+    transform: [{matrix: matrix2D(COS_15, SIN_15, -SIN_15, COS_15)}],
+  },
 });
 
 exports.title = 'Transforms';
@@ -735,7 +789,7 @@ exports.examples = [
     title: 'Skew (#27649)',
     name: 'skew-27649',
     description:
-      'skewX/skewY rendering, hit testing, and native-driven animation on Android Q+ and iOS',
+      'skewX/skewY and skewed matrix rendering, hit testing, and native-driven animation on Android Q+ and iOS',
     render(): React.Node {
       return <SkewExample />;
     },
