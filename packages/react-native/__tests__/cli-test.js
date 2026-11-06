@@ -10,19 +10,12 @@
 
 'use strict';
 
-const {devDependencies} = require('../../rn-tester/package.json');
-const {peerDependencies} = require('../package.json');
 const {spawnSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const {minVersion} = require('semver');
 
-const CLI_PACKAGE = '@react-native-community/cli';
-const CLI_RANGE = peerDependencies[CLI_PACKAGE];
-const MINIMUM_CLI_VERSION = minVersion(CLI_RANGE);
-
-describe('react-native CLI version warning', () => {
+describe('react-native CLI compatibility', () => {
   let projectDir;
 
   beforeEach(() => {
@@ -33,7 +26,7 @@ describe('react-native CLI version warning', () => {
     fs.rmSync(projectDir, {recursive: true, force: true});
   });
 
-  function runConfig(version, range = CLI_RANGE) {
+  function runConfig(version) {
     const cliDir = path.join(
       projectDir,
       'node_modules',
@@ -55,18 +48,13 @@ describe('react-native CLI version warning', () => {
       'react-native',
     );
     fs.mkdirSync(reactNativeDir, {recursive: true});
-    fs.copyFileSync(
-      path.join(__dirname, '..', 'cli.js'),
-      path.join(reactNativeDir, 'cli.js'),
-    );
-    fs.writeFileSync(
-      path.join(reactNativeDir, 'package.json'),
-      JSON.stringify({
-        name: 'react-native',
-        peerDependencies: {[CLI_PACKAGE]: range},
-      }),
-    );
-    return spawnSync(
+    for (const file of ['cli.js', 'package.json']) {
+      fs.copyFileSync(
+        path.join(__dirname, '..', file),
+        path.join(reactNativeDir, file),
+      );
+    }
+    const {status, stdout, stderr} = spawnSync(
       process.execPath,
       [path.join(reactNativeDir, 'cli.js'), 'config'],
       {
@@ -80,53 +68,28 @@ describe('react-native CLI version warning', () => {
         },
       },
     );
+    return {status, stdout, stderr};
   }
 
-  it('keeps the declared minimum on the CLI major exercised by RNTester', () => {
-    expect(MINIMUM_CLI_VERSION.major).toBe(
-      minVersion(devDependencies[CLI_PACKAGE]).major,
-    );
+  it('refuses to run an incompatible CLI with an upgrade error', () => {
+    expect(runConfig('20.2.0')).toMatchInlineSnapshot(`
+Object {
+  "status": 1,
+  "stderr": "Error: Refusing to use @react-native-community/cli, as the installed version is incompatible with this version of React Native. Please upgrade @react-native-community/cli dependencies to 21.x.x.
+",
+  "stdout": "",
+}
+`);
   });
 
-  it('reports an incompatible CLI on stderr and preserves config output', () => {
-    const {status, stdout, stderr} = runConfig('20.2.0');
-
-    expect(status).toBe(0);
-    expect(JSON.parse(stdout)).toEqual({platforms: {}});
-    expect(stderr).toContain('@react-native-community/cli@20.2.0');
-    expect(stderr).toContain(`"${CLI_PACKAGE}": "${CLI_RANGE}"`);
-  });
-
-  it.each([
-    MINIMUM_CLI_VERSION.version,
-    [
-      MINIMUM_CLI_VERSION.major,
-      MINIMUM_CLI_VERSION.minor,
-      MINIMUM_CLI_VERSION.patch,
-    ].join('.'),
-    `${MINIMUM_CLI_VERSION.major + 1}.0.0-alpha.1`,
-  ])('accepts CLI %s without a warning', version => {
-    const {status, stdout, stderr} = runConfig(version);
-
-    expect(status).toBe(0);
-    expect(JSON.parse(stdout)).toEqual({platforms: {}});
-    expect(stderr).toBe('');
-  });
-
-  it('uses an updated peer range for the warning and install suggestion', () => {
-    const range = '>=22.0.0';
-    const {status, stdout, stderr} = runConfig('21.0.0', range);
-
-    expect(status).toBe(0);
-    expect(JSON.parse(stdout)).toEqual({platforms: {}});
-    expect(stderr).toContain(`requires ${range}`);
-    expect(stderr).toContain(`"${CLI_PACKAGE}": "${range}"`);
-  });
-
-  it('accepts the version allowed by an updated peer range', () => {
-    const {status, stderr} = runConfig('20.2.0', '>=20.0.0');
-
-    expect(status).toBe(0);
-    expect(stderr).toBe('');
-  });
+  it.each(['21.0.0-alpha.1', '21.0.0', '22.0.0-alpha.1'])(
+    'runs compatible CLI %s without an error',
+    version => {
+      expect(runConfig(version)).toEqual({
+        status: 0,
+        stdout: '{"platforms":{}}\n',
+        stderr: '',
+      });
+    },
+  );
 });

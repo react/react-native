@@ -12,12 +12,12 @@
 'use strict';
 
 // $FlowFixMe[untyped-import]
-const {name, peerDependencies} = require('./package.json');
+const {name} = require('./package.json');
 const {styleText} = require('node:util');
-const {satisfies} = require('semver');
+const {major} = require('semver');
 
 const COMMUNITY_CLI_PACKAGE = '@react-native-community/cli';
-const COMMUNITY_CLI_RANGE = peerDependencies[COMMUNITY_CLI_PACKAGE];
+const MIN_SUPPORTED_CLI_MAJOR = 21;
 
 const deprecated = () => {
   throw new Error(
@@ -25,16 +25,23 @@ const deprecated = () => {
   );
 };
 
-function resolveFromProject(request /*: string */) {
+function findCommunityCli(startDir /*: string */ = process.cwd()) {
   // With isolated node_modules (eg pnpm), we won't be able to find
   // `@react-native-community/cli` starting from the `react-native` directory.
   // Instead, we should use the project root, which we assume to be the cwd.
-  const options /*: {paths?: Array<string>, ...} */ = {paths: [process.cwd()]};
-  return require.resolve(request, options);
-}
-
-function findCommunityCli() {
-  const rncli = resolveFromProject(COMMUNITY_CLI_PACKAGE);
+  const options /*: {paths?: Array<string>, ...} */ = {paths: [startDir]};
+  const rncli = require.resolve(COMMUNITY_CLI_PACKAGE, options);
+  const manifestPath = require.resolve(
+    `${COMMUNITY_CLI_PACKAGE}/package.json`,
+    options,
+  );
+  // $FlowFixMe[unsupported-syntax]
+  const {version} = require(manifestPath);
+  if (major(version) < MIN_SUPPORTED_CLI_MAJOR) {
+    throw new Error(
+      `Refusing to use ${COMMUNITY_CLI_PACKAGE}, as the installed version is incompatible with this version of React Native. Please upgrade ${COMMUNITY_CLI_PACKAGE} dependencies to ${MIN_SUPPORTED_CLI_MAJOR}.x.x.`,
+    );
+  }
   // $FlowFixMe[unsupported-syntax]
   return require(rncli);
 }
@@ -57,14 +64,14 @@ let cli /*: Readonly<{
   run: deprecated,
 };
 
-function warnWithExplicitDependency(message /*: string */) {
+function warnWithExplicitDependency(version /*: string */ = '*') {
   console.warn(`
-${styleText('yellow', '⚠')}️ ${message} Update your ${styleText(['dim'], 'package.json')} to include:
+${styleText('yellow', '⚠')}️ ${styleText(['dim'], 'react-native')} depends on ${styleText('dim', '@react-native-community/cli')} for cli commands. To fix update your ${styleText(['dim'], 'package.json')} to include:
 
 ${styleText(
   ['white', 'bold'],
   `  "devDependencies": {
-    "${COMMUNITY_CLI_PACKAGE}": "${COMMUNITY_CLI_RANGE}"
+    "@react-native-community/cli": "latest",
   }
 `,
 )}
@@ -74,26 +81,15 @@ ${styleText(
 
 function main() {
   try {
-    const communityCli = findCommunityCli();
-    const manifestPath = resolveFromProject(
-      `${COMMUNITY_CLI_PACKAGE}/package.json`,
-    );
-    // $FlowFixMe[unsupported-syntax]
-    const {version} = require(manifestPath);
-    if (!satisfies(version, COMMUNITY_CLI_RANGE, {includePrerelease: true})) {
-      warnWithExplicitDependency(
-        `react-native found ${COMMUNITY_CLI_PACKAGE}@${version}, but requires ${COMMUNITY_CLI_RANGE} for CLI commands.`,
-      );
-    }
-    return communityCli.run(name);
+    return findCommunityCli().run(name);
   } catch (e) {
     if (isMissingCliDependency(e)) {
-      warnWithExplicitDependency(
-        `react-native depends on ${COMMUNITY_CLI_PACKAGE} for CLI commands.`,
-      );
-      process.exit(1);
+      warnWithExplicitDependency();
+    } else {
+      console.error(String(e));
     }
-    throw e;
+    process.exitCode = 1;
+    return;
   }
 }
 
