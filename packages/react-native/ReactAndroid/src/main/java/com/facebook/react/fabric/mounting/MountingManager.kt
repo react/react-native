@@ -345,6 +345,7 @@ internal class MountingManager(
       params: WritableMap?,
       @EventCategoryDef eventCategory: Int,
       eventTimestamp: Long,
+      customCoalesceKey: Int = 0,
   ) {
     val smm = getSurfaceMountingManager(surfaceId, reactTag)
     if (smm == null) {
@@ -357,7 +358,15 @@ internal class MountingManager(
       )
       return
     }
-    smm.dispatchEvent(reactTag, eventName, canCoalesceEvent, params, eventCategory, eventTimestamp)
+    smm.dispatchEvent(
+        reactTag,
+        eventName,
+        canCoalesceEvent,
+        params,
+        eventCategory,
+        eventTimestamp,
+        customCoalesceKey,
+    )
   }
 
   private fun getSurfaceMountingManager(surfaceId: Int, reactTag: Int): SurfaceMountingManager? =
