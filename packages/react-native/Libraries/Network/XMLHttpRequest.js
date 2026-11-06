@@ -443,9 +443,17 @@ class XMLHttpRequest extends EventTarget {
     timeOutError: boolean,
   ): void {
     if (requestId === this._requestId) {
-      if (error) {
+      // A request that completes without ever receiving a response (status is
+      // still 0) is a failure, not a successful load. Reporting it as a load
+      // makes fetch() construct a Response with status 0, which throws a
+      // RangeError outside the promise chain and crashes the app.
+      const completionError =
+        !error && this.status === 0
+          ? 'Request completed without a response'
+          : error;
+      if (completionError) {
         if (this._responseType === '' || this._responseType === 'text') {
-          this._response = error;
+          this._response = completionError;
         }
         this._hasError = true;
         if (timeOutError) {
@@ -456,9 +464,9 @@ class XMLHttpRequest extends EventTarget {
       this._requestId = null;
       this.setReadyState(this.DONE);
 
-      if (error) {
+      if (completionError) {
         XMLHttpRequest._interceptor &&
-          XMLHttpRequest._interceptor.loadingFailed(requestId, error);
+          XMLHttpRequest._interceptor.loadingFailed(requestId, completionError);
       } else {
         XMLHttpRequest._interceptor &&
           XMLHttpRequest._interceptor.loadingFinished(
