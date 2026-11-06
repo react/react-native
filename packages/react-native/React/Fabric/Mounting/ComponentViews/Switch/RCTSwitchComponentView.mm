@@ -54,6 +54,40 @@ using namespace facebook::react;
   return self;
 }
 
+#pragma mark - UIView
+
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+
+  // iOS 26 does not draw a `thumbTintColor` that was set while the switch had no window.
+  if (self.window) {
+    [self _reapplyThumbTintColor];
+  }
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  // iOS 26 also drops the thumb color on a color appearance change, including the one when the app
+  // is backgrounded. Setting it again synchronously here gets overridden, so wait a run loop turn.
+  if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+    __weak __typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf _reapplyThumbTintColor];
+    });
+  }
+}
+
+- (void)_reapplyThumbTintColor
+{
+  const auto &props = static_cast<const SwitchProps &>(*_props);
+  if (props.thumbTintColor) {
+    _switchView.thumbTintColor = RCTUIColorFromSharedColor(props.thumbTintColor);
+  }
+}
+
 #pragma mark - RCTComponentViewProtocol
 
 - (void)prepareForRecycle
