@@ -75,6 +75,18 @@ class CustomLineHeightSpanTest {
     assertThat(layout.height).isEqualTo(24)
   }
 
+  @Test
+  fun fractionalLineHeightRoundsUpToWholePixels() {
+    assertThat(CustomLineHeightSpan(42.5f).lineHeight).isEqualTo(43)
+    assertThat(CustomLineHeightSpan(44.01f).lineHeight).isEqualTo(45)
+  }
+
+  @Test
+  fun lineHeightFloatingPointErrorAboveWholePixelsDoesNotRoundUp() {
+    assertThat(CustomLineHeightSpan(Math.nextUp(44f)).lineHeight).isEqualTo(44)
+    assertThat(CustomLineHeightSpan(44.0004f).lineHeight).isEqualTo(44)
+  }
+
   private fun buildStaticLayout(text: String, lineHeight: Int): StaticLayout {
     val spannable = SpannableString(text)
     spannable.setSpan(
