@@ -13,6 +13,7 @@
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 
 import hotdog from '../../assets/hotdog.jpg';
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {
   DynamicColorIOS,
@@ -256,6 +257,33 @@ const styles = StyleSheet.create({
     left: -10,
     top: -10,
     backgroundColor: 'blue',
+  },
+  hairlineBox: {
+    width: 44,
+    height: 44,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'black',
+    backgroundColor: '#f5f5f5',
+  },
+  hairlineBoxContainer: {
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  hairlineRow: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: 'black',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  subpixelLabel: {
+    fontSize: 9,
+    marginTop: 4,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    marginTop: 10,
   },
 });
 
@@ -618,6 +646,109 @@ export default {
                 },
               ]}
             />
+          </View>
+        );
+      },
+    },
+    {
+      title: 'Hairline borders at subpixel Y offsets',
+      name: 'hairline-subpixel-y-offsets',
+      description:
+        'Ensure hairlineWidth borders render completely on all sides even when positioned at fractional/subpixel Y offsets on iOS',
+      render: function (): React.Node {
+        const subpixelYOffsets = [0, 0.25, 0.33, 0.5, 0.67, 0.75];
+        return (
+          <View testID="border-test-hairline-subpixel-y-offsets">
+            <RNTesterText style={styles.sectionTitle}>
+              Boxes at fractional Y offsets (borderWidth = hairlineWidth):
+            </RNTesterText>
+            <View style={styles.wrapper}>
+              {subpixelYOffsets.map(yOffset => (
+                <View key={yOffset} style={styles.hairlineBoxContainer}>
+                  <View style={[styles.hairlineBox, {top: yOffset}]} />
+                  <RNTesterText style={styles.subpixelLabel}>
+                    {`+${yOffset}pt`}
+                  </RNTesterText>
+                </View>
+              ))}
+            </View>
+
+            <RNTesterText style={styles.sectionTitle}>
+              Stacked rows with hairline bottom borders (fractional heights):
+            </RNTesterText>
+            <View>
+              {subpixelYOffsets.map((fraction, index) => (
+                <View
+                  key={index}
+                  style={[styles.hairlineRow, {height: 24 + fraction}]}>
+                  <RNTesterText style={styles.subpixelLabel}>
+                    {`Row ${index + 1} (height: ${(24 + fraction).toFixed(2)}pt)`}
+                  </RNTesterText>
+                </View>
+              ))}
+            </View>
+
+            <RNTesterText style={styles.sectionTitle}>
+              Single-side hairline borders at fractional Y offset (+0.33pt):
+            </RNTesterText>
+            <View style={styles.wrapper}>
+              <View style={styles.hairlineBoxContainer}>
+                <View
+                  style={[
+                    styles.hairlineBox,
+                    {
+                      borderWidth: 0,
+                      borderTopWidth: StyleSheet.hairlineWidth,
+                      borderColor: 'red',
+                      top: 0.33,
+                    },
+                  ]}
+                />
+                <RNTesterText style={styles.subpixelLabel}>top</RNTesterText>
+              </View>
+              <View style={styles.hairlineBoxContainer}>
+                <View
+                  style={[
+                    styles.hairlineBox,
+                    {
+                      borderWidth: 0,
+                      borderBottomWidth: StyleSheet.hairlineWidth,
+                      borderColor: 'red',
+                      top: 0.33,
+                    },
+                  ]}
+                />
+                <RNTesterText style={styles.subpixelLabel}>bottom</RNTesterText>
+              </View>
+              <View style={styles.hairlineBoxContainer}>
+                <View
+                  style={[
+                    styles.hairlineBox,
+                    {
+                      borderWidth: 0,
+                      borderLeftWidth: StyleSheet.hairlineWidth,
+                      borderColor: 'red',
+                      top: 0.33,
+                    },
+                  ]}
+                />
+                <RNTesterText style={styles.subpixelLabel}>left</RNTesterText>
+              </View>
+              <View style={styles.hairlineBoxContainer}>
+                <View
+                  style={[
+                    styles.hairlineBox,
+                    {
+                      borderWidth: 0,
+                      borderRightWidth: StyleSheet.hairlineWidth,
+                      borderColor: 'red',
+                      top: 0.33,
+                    },
+                  ]}
+                />
+                <RNTesterText style={styles.subpixelLabel}>right</RNTesterText>
+              </View>
+            </View>
           </View>
         );
       },
