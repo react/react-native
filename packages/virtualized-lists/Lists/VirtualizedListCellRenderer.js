@@ -193,8 +193,9 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       index,
     );
 
-    // NOTE: that when this is a sticky header, `onLayout` will get automatically extracted and
-    // called explicitly by `ScrollViewStickyHeader`.
+    // NOTE: that when this is a sticky header, `onCellLayout` will get automatically intercepted
+    // and called explicitly by `ScrollViewStickyHeader` using the wrapper's ScrollView-relative
+    // coordinates. `onLayout` is similarly forwarded for non-VirtualizedList sticky children.
     const itemSeparator: React.Node = isValidElement(ItemSeparatorComponent)
       ? // $FlowFixMe[incompatible-type]
         ItemSeparatorComponent
