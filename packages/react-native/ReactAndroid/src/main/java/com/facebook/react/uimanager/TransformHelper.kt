@@ -237,6 +237,14 @@ public object TransformHelper {
     return doubleArrayOf(newTranslateX, newTranslateY, newTranslateZ)
   }
 
+  /** Native implementation of [SkewMatrixHelper.isAffine2DTransformWithSkew]. */
+  @JvmStatic
+  internal fun isAffine2DTransformWithSkew(transforms: NativeArray): Boolean =
+      nativeIsAffine2DTransformWithSkew(transforms)
+
+  @JvmStatic
+  private external fun nativeIsAffine2DTransformWithSkew(transforms: NativeArray): Boolean
+
   @JvmStatic
   private external fun nativeProcessTransform(
       transforms: NativeArray,
