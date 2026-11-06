@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0218b6cf490454e1ccd93001208a58be>>
+ * @generated SignedSource<<9893cccc64417f9a7bc866a763cb83c0>>
  */
 
 /**
@@ -270,6 +270,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
+    return false;
+  }
+
+  bool fixTextInlineViewLineHeight() override {
     return false;
   }
 
