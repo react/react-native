@@ -232,4 +232,38 @@ describe('enableStandaloneFuseboxShell experiment', () => {
       });
     });
   });
+
+  describe('preparation failure logging', () => {
+    const logger = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+    };
+    const {ToolLauncherWithFuseboxShell} = setupToolLauncherWithFuseboxShell(
+      () =>
+        Promise.resolve({
+          code: 'unexpected_error',
+          verboseInfo: 'LaunchProcess: failed to execvp',
+        }),
+    );
+    const server = withServerForEachTest({
+      logger,
+      unstable_toolLauncher: ToolLauncherWithFuseboxShell,
+      unstable_experiments: {
+        enableStandaloneFuseboxShell: true,
+      },
+    });
+
+    test('logs an unexpected error as a non-fatal warning', async () => {
+      // Access the server to ensure the dev middleware has been created
+      expect(server.serverBaseUrl).toBeDefined();
+      await jest.runOnlyPendingTimersAsync();
+
+      expect(logger.error).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      const [message] = logger.warn.mock.calls[0];
+      expect(message).toContain('Using a fallback version instead');
+      expect(message).toContain('LaunchProcess: failed to execvp');
+    });
+  });
 });
