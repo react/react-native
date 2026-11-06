@@ -88,4 +88,7 @@
 
   <!-- tag is used to store the safe area insets observer attached to the view -->
   <item type="id" name="safe_area_insets_observer"/>
+
+  <!-- tag is used to store clipPath to apply to the view -->
+  <item type="id" name="clip_path"/>
 </resources>
