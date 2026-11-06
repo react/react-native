@@ -532,24 +532,49 @@ function ItemWithSeparator<ItemT>(
 
   const [separatorHighlighted, setSeparatorHighlighted] = useState(false);
 
-  const [leadingSeparatorProps, setLeadingSeparatorProps] = useState<
-    ItemWithSeparatorCommonProps<ItemT>,
-  >({
+  const propsLeadingSeparatorProps: ItemWithSeparatorCommonProps<ItemT> = {
     leadingItem: props.leadingItem,
     leadingSection: props.leadingSection,
     section: props.section,
     trailingItem: props.item,
     trailingSection: props.trailingSection,
-  });
-  const [separatorProps, setSeparatorProps] = useState<
-    ItemWithSeparatorCommonProps<ItemT>,
-  >({
+  };
+  const propsSeparatorProps: ItemWithSeparatorCommonProps<ItemT> = {
     leadingItem: props.item,
     leadingSection: props.leadingSection,
     section: props.section,
     trailingItem: props.trailingItem,
     trailingSection: props.trailingSection,
-  });
+  };
+
+  const [leadingSeparatorProps, setLeadingSeparatorProps] = useState<
+    ItemWithSeparatorCommonProps<ItemT>,
+  >(propsLeadingSeparatorProps);
+  const [separatorProps, setSeparatorProps] = useState<
+    ItemWithSeparatorCommonProps<ItemT>,
+  >(propsSeparatorProps);
+
+  // Same cell can re-render with new leading/trailing items (e.g. after a
+  // section reorder). Sync derived state from props during render so
+  // ItemSeparatorComponent doesn't receive stale leadingItem/trailingItem.
+  if (
+    leadingSeparatorProps.leadingItem !== propsLeadingSeparatorProps.leadingItem ||
+    leadingSeparatorProps.trailingItem !== propsLeadingSeparatorProps.trailingItem ||
+    leadingSeparatorProps.leadingSection !== propsLeadingSeparatorProps.leadingSection ||
+    leadingSeparatorProps.section !== propsLeadingSeparatorProps.section ||
+    leadingSeparatorProps.trailingSection !== propsLeadingSeparatorProps.trailingSection
+  ) {
+    setLeadingSeparatorProps(propsLeadingSeparatorProps);
+  }
+  if (
+    separatorProps.leadingItem !== propsSeparatorProps.leadingItem ||
+    separatorProps.trailingItem !== propsSeparatorProps.trailingItem ||
+    separatorProps.leadingSection !== propsSeparatorProps.leadingSection ||
+    separatorProps.section !== propsSeparatorProps.section ||
+    separatorProps.trailingSection !== propsSeparatorProps.trailingSection
+  ) {
+    setSeparatorProps(propsSeparatorProps);
+  }
 
   useEffect(() => {
     setSelfHighlightCallback(cellKey, setSeparatorHighlighted);
