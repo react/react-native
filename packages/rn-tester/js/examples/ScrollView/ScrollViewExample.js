@@ -1832,6 +1832,7 @@ const styles = StyleSheet.create({
   },
   fullScreenContentContainer: {
     backgroundColor: '#aae3b6',
+    paddingHorizontal: 16,
   },
   fullScreenControls: {
     backgroundColor: '#eeeeee',
