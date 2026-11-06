@@ -7,6 +7,7 @@
 
 #import <React/RCTViewComponentView.h>
 #import <XCTest/XCTest.h>
+#import <react/renderer/components/view/ViewEventEmitter.h>
 #import <react/renderer/components/view/ViewProps.h>
 #import <react/renderer/components/view/ViewShadowNode.h>
 #import <react/renderer/graphics/Color.h>
@@ -20,10 +21,192 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   return props;
 }
 
+@interface RCTViewComponentView (SafeAreaInsetsTests)
+- (UIEdgeInsets)_safeAreaInsetsForEvent;
+- (NSValue *)_lastSentSafeAreaInsets;
+@end
+
+@interface RCTSafeAreaTestWindow : UIWindow
+@property (nonatomic, assign) UIEdgeInsets testInsets;
+@end
+
+@implementation RCTSafeAreaTestWindow
+- (UIEdgeInsets)safeAreaInsets
+{
+  return self.testInsets;
+}
+@end
+
+@interface RCTSafeAreaTestView : RCTViewComponentView
+@property (nonatomic, assign) UIEdgeInsets testInsets;
+@property (nonatomic, assign) NSUInteger layoutRequests;
+@end
+
+struct RCTSafeAreaTestProps : ViewProps {};
+
+@implementation RCTSafeAreaTestView
+- (instancetype)initWithFrame:(CGRect)frame
+{
+  if (self = [super initWithFrame:frame]) {
+    _props = std::make_shared<RCTSafeAreaTestProps>();
+  }
+  return self;
+}
+
+- (void)setNeedsLayout
+{
+  self.layoutRequests += 1;
+  [super setNeedsLayout];
+}
+
+- (UIEdgeInsets)safeAreaInsets
+{
+  return self.testInsets;
+}
+@end
+
 @interface RCTViewComponentViewTests : XCTestCase
 @end
 
 @implementation RCTViewComponentViewTests
+
+- (void)testSafeAreaEventIncludesWindowOverlapBeyondInsetParent
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 466, 678)];
+  window.testInsets = UIEdgeInsetsMake(0, 0, 34, 84);
+  UIView *parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 382, 678)];
+  [window addSubview:parent];
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:window.bounds];
+  view.testInsets = UIEdgeInsetsMake(17, 0, 34, 0);
+  [parent addSubview:view];
+
+  XCTAssertEqualWithAccuracy(view.safeAreaInsets.right, 0, 0.001);
+  UIEdgeInsets insets = [view _safeAreaInsetsForEvent];
+  XCTAssertEqualWithAccuracy(insets.right, 84, 0.001);
+  XCTAssertEqualWithAccuracy(insets.top, 17, 0.001);
+  XCTAssertEqualWithAccuracy(insets.bottom, 34, 0.001);
+
+  view.frame = parent.bounds;
+  insets = [view _safeAreaInsetsForEvent];
+  XCTAssertEqualWithAccuracy(insets.right, 0, 0.001);
+}
+
+- (void)testSafeAreaEventDoesNotTreatOffWindowSpaceAsSystemInsets
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 400, 600)];
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:CGRectMake(350, 100, 100, 100)];
+  [window addSubview:view];
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], UIEdgeInsetsZero));
+  view.frame = CGRectMake(450, 100, 100, 100);
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], UIEdgeInsetsZero));
+}
+
+- (void)testSafeAreaEventOnlyAddsAnInsetWhereTheReservedStripIntersects
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 400, 600)];
+  window.testInsets = UIEdgeInsetsMake(0, 0, 0, 40);
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:CGRectMake(350, 100, 100, 100)];
+  [window addSubview:view];
+  XCTAssertEqualWithAccuracy([view _safeAreaInsetsForEvent].right, 90, 0.001);
+  view.frame = CGRectMake(450, 100, 100, 100);
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], UIEdgeInsetsZero));
+  view.frame = CGRectMake(350, 650, 100, 100);
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], UIEdgeInsetsZero));
+}
+
+- (void)testSafeAreaEventUsesRenderedBoundsForScaledAndReflectedViews
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 400, 600)];
+  window.testInsets = UIEdgeInsetsMake(20, 10, 30, 40);
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:CGRectMake(100, 150, 200, 300)];
+  [window addSubview:view];
+  view.transform = CGAffineTransformMakeScale(2, 2);
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], window.testInsets));
+  view.transform = CGAffineTransformMakeScale(-2, 2);
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], window.testInsets));
+}
+
+- (void)testSafeAreaEventPreservesLocalInsetsWithoutAddingThemTwice
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 400, 600)];
+  window.testInsets = UIEdgeInsetsMake(20, 10, 30, 40);
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:window.bounds];
+  view.testInsets = UIEdgeInsetsMake(25, 15, 35, 45);
+  [window addSubview:view];
+
+  UIEdgeInsets insets = [view _safeAreaInsetsForEvent];
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(insets, view.testInsets));
+}
+
+- (void)testSafeAreaEventConvertsWindowEdgesIntoViewCoordinates
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 400, 600)];
+  window.testInsets = UIEdgeInsetsMake(20, 10, 30, 40);
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:CGRectMake(5, 10, 385, 580)];
+  [window addSubview:view];
+  view.bounds = CGRectMake(100, 200, 385, 580);
+
+  UIEdgeInsets insets = [view _safeAreaInsetsForEvent];
+  XCTAssertEqualWithAccuracy(insets.left, 5, 0.001);
+  XCTAssertEqualWithAccuracy(insets.top, 10, 0.001);
+  XCTAssertEqualWithAccuracy(insets.right, 30, 0.001);
+  XCTAssertEqualWithAccuracy(insets.bottom, 20, 0.001);
+}
+
+- (void)testSafeAreaEventUpdatesWhenWindowInsetsChangeWithoutViewResize
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 400, 600)];
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:window.bounds];
+  [window addSubview:view];
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], UIEdgeInsetsZero));
+  window.testInsets = UIEdgeInsetsMake(0, 40, 0, 0);
+  XCTAssertEqualWithAccuracy([view _safeAreaInsetsForEvent].left, 40, 0.001);
+}
+
+- (void)testSafeAreaEventCacheUpdatesAfterWindowInsetsChange
+{
+  RCTSafeAreaTestWindow *window = [[RCTSafeAreaTestWindow alloc] initWithFrame:CGRectMake(0, 0, 400, 600)];
+  RCTSafeAreaTestView *view = [[RCTSafeAreaTestView alloc] initWithFrame:window.bounds];
+  auto props = std::make_shared<ViewProps>();
+  props->onSafeAreaInsetsChange = true;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  [view updateEventEmitter:std::make_shared<ViewEventEmitter>(nullptr, EventDispatcher::Weak{})];
+  [window addSubview:view];
+  [view layoutSubviews];
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _lastSentSafeAreaInsets].UIEdgeInsetsValue, UIEdgeInsetsZero));
+
+  window.testInsets = UIEdgeInsetsMake(0, 40, 0, 0);
+  view.layoutRequests = 0;
+  [view safeAreaInsetsDidChange];
+  XCTAssertGreaterThan(view.layoutRequests, 0u);
+  [view layoutIfNeeded];
+  XCTAssertEqualWithAccuracy([view _lastSentSafeAreaInsets].UIEdgeInsetsValue.left, 40, 0.001);
+}
+
+- (void)testObservedOriginChangeSchedulesSafeAreaLayout
+{
+  RCTSafeAreaTestView *view = [RCTSafeAreaTestView new];
+  auto props = std::make_shared<ViewProps>();
+  props->onSafeAreaInsetsChange = true;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  LayoutMetrics metrics;
+  metrics.frame = {.origin = {.x = 0, .y = 0}, .size = {.width = 100, .height = 100}};
+  [view updateLayoutMetrics:metrics oldLayoutMetrics:LayoutMetrics{}];
+  [view layoutIfNeeded];
+  view.layoutRequests = 0;
+
+  LayoutMetrics movedMetrics = metrics;
+  movedMetrics.frame.origin.x = 20;
+  [view updateLayoutMetrics:movedMetrics oldLayoutMetrics:metrics];
+  XCTAssertGreaterThan(view.layoutRequests, 0u);
+}
+
+- (void)testSafeAreaEventKeepsLocalInsetsWhenDetached
+{
+  RCTSafeAreaTestView *view = [RCTSafeAreaTestView new];
+  view.testInsets = UIEdgeInsetsMake(10, 20, 30, 40);
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets([view _safeAreaInsetsForEvent], view.testInsets));
+}
 
 #pragma mark - removeClippedSubviews toggle
 
