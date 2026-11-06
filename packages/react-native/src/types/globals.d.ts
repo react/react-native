@@ -184,6 +184,7 @@ declare global {
     handler: (...args: Args) => void,
     ...args: Args
   ): number;
+  function queueMicrotask(callback: () => void): void;
 
   function cancelAnimationFrame(handle: number | null | undefined): void;
   function requestAnimationFrame(callback: (time: number) => void): number;
