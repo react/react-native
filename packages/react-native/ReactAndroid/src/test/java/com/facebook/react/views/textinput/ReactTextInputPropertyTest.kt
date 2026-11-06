@@ -239,6 +239,20 @@ class ReactTextInputPropertyTest {
   }
 
   @Test
+  fun testClearingAccessibilityDisabledPreservesNonEditableInput() {
+    for (state in listOf(JavaOnlyMap(), JavaOnlyMap.of("disabled", null), null)) {
+      manager.updateProperties(
+          view,
+          buildStyles("editable", false, "accessibilityState", JavaOnlyMap.of("disabled", true)),
+      )
+
+      manager.updateProperties(view, buildStyles("accessibilityState", state))
+
+      assertThat(view.isEnabled).isFalse()
+    }
+  }
+
+  @Test
   fun testAutoCompleteExtendedHints() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
       return
