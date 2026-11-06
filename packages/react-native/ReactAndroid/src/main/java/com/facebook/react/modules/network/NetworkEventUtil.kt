@@ -139,11 +139,13 @@ internal object NetworkEventUtil {
       data: WritableMap,
       rawData: ByteArray,
   ) {
-    InspectorNetworkReporter.maybeStoreResponseBody(
-        devToolsRequestId,
-        Base64.encodeToString(rawData, Base64.NO_WRAP),
-        true,
-    )
+    if (InspectorNetworkReporter.isDebuggingEnabled()) {
+      InspectorNetworkReporter.maybeStoreResponseBody(
+          devToolsRequestId,
+          Base64.encodeToString(rawData, Base64.NO_WRAP),
+          true,
+      )
+    }
     reactContext?.emitDeviceEvent(
         "didReceiveNetworkData",
         Arguments.createArray().apply {
