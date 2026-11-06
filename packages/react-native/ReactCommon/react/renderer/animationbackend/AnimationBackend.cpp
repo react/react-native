@@ -163,15 +163,22 @@ void AnimationBackend::applyMutations(std::vector<AnimationMutations> batches) {
 
 void AnimationBackend::onAnimationFrame(AnimationTimestamp timestamp) {
   std::vector<CallbackWithId> callbacksCopy;
+  std::vector<AnimationFrontend> startedFrontends;
 
   {
     std::lock_guard lock(mutex_);
     callbacksCopy = callbacks;
+    for (const auto& registered : frontends_) {
+      if (registered.started) {
+        startedFrontends.push_back(registered.frontend);
+      }
+    }
   }
 
   // Sized up front rather than grown: MSVC's std::set move isn't noexcept, so
   // growing a vector of AnimationMutations would try to copy move-only props.
-  std::vector<AnimationMutations> batches(callbacksCopy.size());
+  std::vector<AnimationMutations> batches(
+      callbacksCopy.size() + startedFrontends.size());
   std::transform(
       callbacksCopy.begin(),
       callbacksCopy.end(),
@@ -179,7 +186,28 @@ void AnimationBackend::onAnimationFrame(AnimationTimestamp timestamp) {
       [timestamp](const CallbackWithId& callbackWithId) {
         return callbackWithId.callback(timestamp);
       });
+  for (size_t i = 0; i < startedFrontends.size(); i++) {
+    batches[callbacksCopy.size() + i] =
+        startedFrontends[i].onAnimationFrame(timestamp);
+  }
   applyMutations(std::move(batches));
+}
+
+void AnimationBackend::resumeFramesLocked() {
+  if (!isRenderCallbackStarted_) {
+    animationChoreographer_->resume();
+    isRenderCallbackStarted_ = true;
+  }
+}
+
+void AnimationBackend::pauseFramesIfIdleLocked() {
+  if (isRenderCallbackStarted_ && callbacks.empty() &&
+      std::none_of(frontends_.begin(), frontends_.end(), [](auto& frontend) {
+        return frontend.started;
+      })) {
+    animationChoreographer_->pause();
+    isRenderCallbackStarted_ = false;
+  }
 }
 
 CallbackId AnimationBackend::start(const Callback& callback) {
@@ -187,10 +215,7 @@ CallbackId AnimationBackend::start(const Callback& callback) {
 
   auto callbackId = nextCallbackId_++;
   callbacks.push_back({.callbackId = callbackId, .callback = callback});
-  if (!isRenderCallbackStarted_) {
-    animationChoreographer_->resume();
-    isRenderCallbackStarted_ = true;
-  }
+  resumeFramesLocked();
 
   return callbackId;
 }
@@ -206,10 +231,34 @@ void AnimationBackend::stop(CallbackId callbackId) {
   }
 
   callbacks.erase(it);
-  if (isRenderCallbackStarted_ && callbacks.empty()) {
-    animationChoreographer_->pause();
-    isRenderCallbackStarted_ = false;
+  pauseFramesIfIdleLocked();
+}
+
+AnimationFrontendId AnimationBackend::registerFrontend(
+    AnimationFrontend frontend) {
+  std::lock_guard lock(mutex_);
+  frontends_.push_back({.frontend = std::move(frontend)});
+  return static_cast<AnimationFrontendId>(frontends_.size());
+}
+
+void AnimationBackend::startFrontend(AnimationFrontendId frontendId) {
+  std::lock_guard lock(mutex_);
+  auto& registered = frontends_.at(frontendId - 1);
+  if (registered.started || !registered.frontend.onAnimationFrame) {
+    return;
   }
+  registered.started = true;
+  resumeFramesLocked();
+}
+
+void AnimationBackend::stopFrontend(AnimationFrontendId frontendId) {
+  std::lock_guard lock(mutex_);
+  auto& registered = frontends_.at(frontendId - 1);
+  if (!registered.started) {
+    return;
+  }
+  registered.started = false;
+  pauseFramesIfIdleLocked();
 }
 
 void AnimationBackend::trigger() {
