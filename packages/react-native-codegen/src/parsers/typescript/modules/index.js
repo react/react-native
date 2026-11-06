@@ -362,12 +362,17 @@ function translateTypeAnnotation(
     }
     case 'TSEnumDeclaration': {
       if (
-        typeAnnotation.members.some(
-          m =>
-            m.initializer &&
-            m.initializer.type === 'NumericLiteral' &&
-            !Number.isInteger(m.initializer.value),
-        )
+        typeAnnotation.members.some(m => {
+          const initializer =
+            m.initializer?.type === 'UnaryExpression' &&
+            m.initializer.operator === '-'
+              ? m.initializer.argument
+              : m.initializer;
+          return (
+            initializer?.type === 'NumericLiteral' &&
+            !Number.isInteger(initializer.value)
+          );
+        })
       ) {
         throw new UnsupportedEnumDeclarationParserError(
           hasteModuleName,
