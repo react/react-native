@@ -606,6 +606,17 @@ size_t Runtime::length(const String& str) {
   return utf16(str).size();
 }
 
+BigInt Runtime::createBigIntFromBytes(
+    const uint8_t* /*bytes*/,
+    size_t /*length*/) {
+  throw JSINativeException(
+      "createBigIntFromBytes is not implemented by this runtime");
+}
+
+std::vector<uint8_t> Runtime::bytes(const BigInt& /*bigint*/) {
+  throw JSINativeException("BigInt.bytes is not implemented by this runtime");
+}
+
 bool Runtime::detached(const ArrayBuffer& buffer) {
   Value prop = buffer.getProperty(*this, "detached");
   if (!prop.isBool()) {
