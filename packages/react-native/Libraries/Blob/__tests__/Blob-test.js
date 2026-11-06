@@ -158,4 +158,10 @@ describe('Blob', function () {
 
     expect(() => blob.size).toThrow();
   });
+
+  it('should have the Blob string tag', () => {
+    const blob = new Blob();
+
+    expect(Object.prototype.toString.call(blob)).toBe('[object Blob]');
+  });
 });
