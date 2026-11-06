@@ -742,7 +742,7 @@ const textInputExamples: Array<RNTesterModuleExample> = [
           />
           <ExampleTextInput
             style={{marginTop: 10}}
-            placeholder="allowFontScaling = false"
+            placeholder="allowFontScaling = true"
             allowFontScaling={true}
           />
         </View>
