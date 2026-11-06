@@ -890,6 +890,7 @@ export type ____ViewStyle_InternalBase = Readonly<{
   cursor?: CursorValue,
   boxShadow?: ReadonlyArray<BoxShadowValue> | string,
   filter?: ReadonlyArray<FilterFunction> | string,
+  backdropFilter?: ReadonlyArray<FilterFunction> | string,
   mixBlendMode?: ____BlendMode_Internal,
   backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
   experimental_backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,

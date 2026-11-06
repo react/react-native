@@ -324,6 +324,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/Filter/FilterExample'),
     },
     {
+      key: 'BackdropFilterExample',
+      category: 'UI',
+      module: require('../examples/BackdropFilter/BackdropFilterExample'),
+    },
+    {
       key: 'LinearGradientExample',
       category: 'UI',
       module: require('../examples/LinearGradient/LinearGradientExample'),
