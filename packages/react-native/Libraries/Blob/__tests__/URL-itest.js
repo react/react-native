@@ -25,12 +25,11 @@ describe('URL', function () {
     expect(d.href).toBe('https://developer.mozilla.org/en-US/docs');
     const f = new URL('/en-US/docs', d);
     expect(f.href).toBe('https://developer.mozilla.org/en-US/docs');
-    // from original test suite, but requires complex implementation
-    // const g = new URL(
-    //   '/en-US/docs',
-    //   'https://developer.mozilla.org/fr-FR/toto',
-    // );
-    // expect(g.href).toBe('https://developer.mozilla.org/en-US/docs');
+    const g = new URL(
+      '/en-US/docs',
+      'https://developer.mozilla.org/fr-FR/toto',
+    );
+    expect(g.href).toBe('https://developer.mozilla.org/en-US/docs');
     const h = new URL('/en-US/docs', a);
     expect(h.href).toBe('https://developer.mozilla.org/en-US/docs');
     const i = new URL('http://github.com', 'http://google.com');
@@ -160,6 +159,61 @@ describe('URL', function () {
     expect(urlWithoutTrailing.toString()).toBe(
       'https://example.com/path/to/resource',
     );
+  });
+  it('resolves a network-path reference with the scheme of the base URL', () => {
+    expect(new URL('//cdn.example.com/x.js', 'https://example.com/').href).toBe(
+      'https://cdn.example.com/x.js',
+    );
+  });
+
+  it('resolves the RFC 3986 reference examples against a base URL', () => {
+    const base = 'http://a.com/b/c/d;p?q';
+    const cases = [
+      ['g:h', 'g:h'],
+      ['g', 'http://a.com/b/c/g'],
+      ['./g', 'http://a.com/b/c/g'],
+      ['g/', 'http://a.com/b/c/g/'],
+      ['/g', 'http://a.com/g'],
+      ['//g', 'http://g/'],
+      ['?y', 'http://a.com/b/c/d;p?y'],
+      ['g?y', 'http://a.com/b/c/g?y'],
+      ['#s', 'http://a.com/b/c/d;p?q#s'],
+      ['g#s', 'http://a.com/b/c/g#s'],
+      ['g?y#s', 'http://a.com/b/c/g?y#s'],
+      [';x', 'http://a.com/b/c/;x'],
+      ['g;x', 'http://a.com/b/c/g;x'],
+      ['g;x?y#s', 'http://a.com/b/c/g;x?y#s'],
+      ['', 'http://a.com/b/c/d;p?q'],
+      ['.', 'http://a.com/b/c/'],
+      ['./', 'http://a.com/b/c/'],
+      ['..', 'http://a.com/b/'],
+      ['../', 'http://a.com/b/'],
+      ['../g', 'http://a.com/b/g'],
+      ['../..', 'http://a.com/'],
+      ['../../', 'http://a.com/'],
+      ['../../g', 'http://a.com/g'],
+      ['../../../g', 'http://a.com/g'],
+      ['../../../../g', 'http://a.com/g'],
+      ['/./g', 'http://a.com/g'],
+      ['/../g', 'http://a.com/g'],
+      ['g.', 'http://a.com/b/c/g.'],
+      ['.g', 'http://a.com/b/c/.g'],
+      ['g..', 'http://a.com/b/c/g..'],
+      ['..g', 'http://a.com/b/c/..g'],
+      ['./../g', 'http://a.com/b/g'],
+      ['./g/.', 'http://a.com/b/c/g/'],
+      ['g/./h', 'http://a.com/b/c/g/h'],
+      ['g/../h', 'http://a.com/b/c/h'],
+      ['g;x=1/./y', 'http://a.com/b/c/g;x=1/y'],
+      ['g;x=1/../y', 'http://a.com/b/c/y'],
+      ['g?y/./x', 'http://a.com/b/c/g?y/./x'],
+      ['g?y/../x', 'http://a.com/b/c/g?y/../x'],
+      ['g#s/./x', 'http://a.com/b/c/g#s/./x'],
+      ['g#s/../x', 'http://a.com/b/c/g#s/../x'],
+    ];
+    for (const [reference, expected] of cases) {
+      expect(new URL(reference, base).href).toBe(expected);
+    }
   });
 });
 
