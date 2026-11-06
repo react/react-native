@@ -995,6 +995,28 @@ end
     ).toBe(nestedContent);
   });
 
+  it('refuses to scaffold when a nested apple/Package.swift exists without markers', () => {
+    makePodspec();
+    // Same as the ios/ case, for libraries that keep sources shared across
+    // Apple platforms (and their manifest) in apple/.
+    fs.mkdirSync(path.join(depRoot, 'apple'), {recursive: true});
+    const nestedContent =
+      '// swift-tools-version: 6.0\n// Hand-written apple/ manifest.\n';
+    fs.writeFileSync(
+      path.join(depRoot, 'apple', 'Package.swift'),
+      nestedContent,
+    );
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('skipped-self-managed');
+    expect(result.reason).toContain('apple/Package.swift');
+    // Root stayed clean
+    expect(fs.existsSync(path.join(depRoot, 'Package.swift'))).toBe(false);
+    // Nested file untouched
+    expect(
+      fs.readFileSync(path.join(depRoot, 'apple', 'Package.swift'), 'utf8'),
+    ).toBe(nestedContent);
+  });
+
   it('refuses to overwrite a Package.swift carrying the autolinker AUTOGEN_MARKER', () => {
     makePodspec();
     fs.writeFileSync(

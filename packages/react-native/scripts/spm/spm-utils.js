@@ -299,6 +299,16 @@ const PER_APP_HEADERS_REL = 'build/generated/ios/ReactAppHeaders';
 const SCAFFOLDER_MARKER =
   '// AUTO-SCAFFOLDED by react-native spm scaffold — safe to edit & commit via patch-package.';
 
+// Subdirectories of a library where a hand-written Package.swift may live
+// instead of the package root, in lookup order (the root is always checked
+// first). Both keep SwiftPM artifacts (.build/, .swiftpm/, Package.resolved)
+// out of the npm package root: `ios/` sits next to the iOS sources, and
+// `apple/` next to sources shared across Apple platforms.
+const NESTED_PACKAGE_SWIFT_DIRS /*: ReadonlyArray<string> */ = Object.freeze([
+  'ios',
+  'apple',
+]);
+
 // Remote SPM package mode (prototype of the GitHub-distribution endgame):
 // when active, app + libraries all depend on ONE remote package identity
 // (`.package(url:exact:)`) instead of the local path-based artifacts package
@@ -828,4 +838,5 @@ module.exports = {
   isValidScriptPhaseId,
   isValidScriptPhaseName,
   SCAFFOLDER_MARKER,
+  NESTED_PACKAGE_SWIFT_DIRS,
 };

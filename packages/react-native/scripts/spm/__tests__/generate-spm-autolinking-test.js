@@ -973,9 +973,10 @@ describe('generateSynthPackageSwift (spm.name override)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// findSelfManagedPackageDir — detects hand-authored Package.swift at either
-// the dep root or under ios/. The nested layout lets community libraries
-// keep their npm-package root free of SPM artifacts (.build/, .swiftpm/).
+// findSelfManagedPackageDir — detects hand-authored Package.swift at the dep
+// root, under ios/, or under apple/. The nested layouts let community
+// libraries keep their npm-package root free of SPM artifacts (.build/,
+// .swiftpm/).
 // ---------------------------------------------------------------------------
 
 describe('findSelfManagedPackageDir', () => {
@@ -1045,6 +1046,75 @@ describe('findSelfManagedPackageDir', () => {
       '// Hand-authored nested manifest.\n',
     );
     expect(findSelfManagedPackageDir(depRoot)).toBe(path.join(depRoot, 'ios'));
+  });
+
+  it('returns <dep>/apple when only an apple/ manifest exists and lacks the AUTOGEN marker', () => {
+    // Libraries that share sources across iOS, macOS, tvOS and visionOS often
+    // keep them (and their manifest) in apple/ instead of ios/.
+    fs.mkdirSync(path.join(depRoot, 'apple'));
+    fs.writeFileSync(
+      path.join(depRoot, 'apple', 'Package.swift'),
+      '// swift-tools-version: 6.0\n// Hand-authored apple/ manifest.\n',
+    );
+    expect(findSelfManagedPackageDir(depRoot)).toBe(
+      path.join(depRoot, 'apple'),
+    );
+  });
+
+  it('returns null when the apple/ manifest carries the AUTOGEN marker', () => {
+    fs.mkdirSync(path.join(depRoot, 'apple'));
+    fs.writeFileSync(
+      path.join(depRoot, 'apple', 'Package.swift'),
+      AUTOGEN_MARKER + '\n// synth wrapper content\n',
+    );
+    expect(findSelfManagedPackageDir(depRoot)).toBe(null);
+  });
+
+  it('prefers the root manifest over an apple/ manifest', () => {
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      '// Root manifest.\n',
+    );
+    fs.mkdirSync(path.join(depRoot, 'apple'));
+    fs.writeFileSync(
+      path.join(depRoot, 'apple', 'Package.swift'),
+      '// apple/ manifest.\n',
+    );
+    expect(findSelfManagedPackageDir(depRoot)).toBe(depRoot);
+  });
+
+  it('prefers ios/ over apple/ when both ship a hand-authored manifest', () => {
+    fs.mkdirSync(path.join(depRoot, 'ios'));
+    fs.writeFileSync(
+      path.join(depRoot, 'ios', 'Package.swift'),
+      '// ios/ manifest.\n',
+    );
+    fs.mkdirSync(path.join(depRoot, 'apple'));
+    fs.writeFileSync(
+      path.join(depRoot, 'apple', 'Package.swift'),
+      '// apple/ manifest.\n',
+    );
+    expect(findSelfManagedPackageDir(depRoot)).toBe(path.join(depRoot, 'ios'));
+  });
+
+  it('falls back to apple/ when the root and ios/ manifests are autolinker-generated', () => {
+    fs.writeFileSync(
+      path.join(depRoot, 'Package.swift'),
+      AUTOGEN_MARKER + '\n// stale synth\n',
+    );
+    fs.mkdirSync(path.join(depRoot, 'ios'));
+    fs.writeFileSync(
+      path.join(depRoot, 'ios', 'Package.swift'),
+      AUTOGEN_MARKER + '\n// stale synth\n',
+    );
+    fs.mkdirSync(path.join(depRoot, 'apple'));
+    fs.writeFileSync(
+      path.join(depRoot, 'apple', 'Package.swift'),
+      '// Hand-authored apple/ manifest.\n',
+    );
+    expect(findSelfManagedPackageDir(depRoot)).toBe(
+      path.join(depRoot, 'apple'),
+    );
   });
 });
 
@@ -2175,6 +2245,53 @@ describe('main() — libs/ symlinks for self-managed deps', () => {
     app.writeAutolinkingJson(['react-native-foo']);
     app.sync();
     expect(fs.readdirSync(app.libsDir)).toEqual(['ReactNativeFoo']);
+  });
+
+  it('links a dep whose hand-authored manifest lives in apple/', () => {
+    const appRoot = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'spm-libs-apple-')),
+    );
+    created.push(appRoot);
+    const rnRoot = path.join(appRoot, 'rn');
+    fs.mkdirSync(rnRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(appRoot, 'package.json'),
+      JSON.stringify({name: 'app'}),
+    );
+
+    // Manifest and sources live in apple/, nothing at the dep root.
+    const depDir = path.join(appRoot, 'node_modules', 'react-native-baz');
+    fs.mkdirSync(path.join(depDir, 'apple'), {recursive: true});
+    fs.writeFileSync(
+      path.join(depDir, 'apple', 'Package.swift'),
+      '// swift-tools-version:5.9\n// hand-authored\n',
+    );
+    fs.writeFileSync(path.join(depDir, 'apple', 'Baz.swift'), '// src\n');
+
+    const autolinkDir = path.join(appRoot, 'build', 'generated', 'autolinking');
+    fs.mkdirSync(autolinkDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(autolinkDir, 'autolinking.json'),
+      JSON.stringify({
+        dependencies: {
+          'react-native-baz': {root: depDir, platforms: {ios: {}}},
+        },
+      }),
+    );
+
+    main(['--app-root', appRoot, '--react-native-root', rnRoot]);
+
+    // Referenced as self-managed: the alias points at apple/, and no synth
+    // wrapper is written for it.
+    expect(
+      fs.realpathSync(path.join(autolinkDir, 'libs', 'ReactNativeBaz')),
+    ).toBe(path.join(depDir, 'apple'));
+    expect(
+      fs.existsSync(path.join(autolinkDir, 'packages', 'ReactNativeBaz')),
+    ).toBe(false);
+    expect(
+      fs.readFileSync(path.join(autolinkDir, 'Package.swift'), 'utf8'),
+    ).toContain('path: "libs/ReactNativeBaz"');
   });
 });
 
