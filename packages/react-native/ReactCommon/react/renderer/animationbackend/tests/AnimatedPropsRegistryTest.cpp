@@ -9,6 +9,9 @@
 #include <hermes/hermes.h>
 #include <react/renderer/animationbackend/AnimatedPropsBuilder.h>
 #include <react/renderer/animationbackend/AnimatedPropsRegistry.h>
+#include <react/renderer/components/text/RawTextProps.h>
+#include <react/renderer/components/text/RawTextShadowNode.h>
+#include <react/renderer/components/text/TextShadowNode.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/element/ComponentBuilder.h>
 #include <react/renderer/element/Element.h>
@@ -214,6 +217,56 @@ TEST_F(AnimatedPropsRegistryTest, stoppedSurfacesIgnoreUpdates) {
   updateRaw(folly::dynamic::object("opacity", 0.5));
   registry.initializeSurface(1);
   EXPECT_TRUE(registry.getMap(1).second.empty());
+}
+
+TEST_F(AnimatedPropsRegistryTest, keepsLatestText) {
+  update({.props = {}, .rawProps = nullptr, .text = "1"});
+  EXPECT_EQ(snapshot().text, "1");
+
+  update({.props = {}, .rawProps = nullptr, .text = "2"});
+  EXPECT_EQ(snapshot().text, "2");
+
+  updateRaw(folly::dynamic::object("opacity", 0.25));
+  EXPECT_EQ(snapshot().text, "2");
+}
+
+TEST_F(AnimatedPropsRegistryTest, builderDoesNotCarryTextToTheNextProps) {
+  AnimatedPropsBuilder propsBuilder;
+  propsBuilder.setText("1");
+  EXPECT_EQ(propsBuilder.get().text, "1");
+  EXPECT_FALSE(propsBuilder.get().text.has_value());
+}
+
+TEST_F(AnimatedPropsRegistryTest, childrenWithTextWritesFirstRawText) {
+  auto rawTextElement = [](Tag tag, std::string text) {
+    return Element<RawTextShadowNode>().surfaceId(1).tag(tag).props(
+        [text = std::move(text)]() {
+          auto props = std::make_shared<RawTextProps>();
+          props->text = text;
+          return props;
+        });
+  };
+  auto textNode = builder.build(
+      Element<TextShadowNode>().surfaceId(1).tag(20).children(
+          {Element<TextShadowNode>().surfaceId(1).tag(21),
+           rawTextElement(22, "old"),
+           rawTextElement(23, "static")}));
+
+  auto children = childrenWithText(*textNode, {}, "new");
+
+  auto textOf = [](const ShadowNode& node) {
+    return static_cast<const RawTextProps&>(*node.getProps()).text;
+  };
+  EXPECT_EQ(children->at(0), textNode->getChildren().at(0));
+  EXPECT_EQ(children->at(1)->getTag(), 22);
+  EXPECT_EQ(textOf(*children->at(1)), "new");
+  EXPECT_EQ(textOf(*textNode->getChildren().at(1)), "old");
+  EXPECT_EQ(children->at(2), textNode->getChildren().at(2));
+}
+
+TEST_F(AnimatedPropsRegistryTest, childrenWithTextKeepsNodeWithoutRawText) {
+  auto textNode = builder.build(Element<TextShadowNode>().surfaceId(1).tag(20));
+  EXPECT_EQ(childrenWithText(*textNode, {}, "new"), nullptr);
 }
 
 } // namespace facebook::react

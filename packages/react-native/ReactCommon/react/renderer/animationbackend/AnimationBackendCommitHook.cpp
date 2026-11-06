@@ -43,6 +43,7 @@ RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
               const ShadowNode& shadowNode,
               const ShadowNodeFragment& fragment) {
             auto newProps = ShadowNodeFragment::propsPlaceholder();
+            auto children = fragment.children;
             std::shared_ptr<BaseViewProps> viewProps = nullptr;
             if (auto updatesIter = updates.find(shadowNode.getTag());
                 updatesIter != updates.end() &&
@@ -68,10 +69,15 @@ RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
               for (const auto& propName : snapshot->propNames) {
                 updateProp(propName, *viewProps, *snapshot);
               }
+
+              if (snapshot->text) {
+                children =
+                    childrenWithText(shadowNode, fragment, *snapshot->text);
+              }
             }
             return shadowNode.clone(
                 {.props = newProps,
-                 .children = fragment.children,
+                 .children = children,
                  .state = shadowNode.getState(),
                  .runtimeShadowNodeReference = true});
           }));
