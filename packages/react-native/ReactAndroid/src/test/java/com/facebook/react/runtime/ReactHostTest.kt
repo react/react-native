@@ -8,6 +8,7 @@
 package com.facebook.react.runtime
 
 import android.app.Activity
+import android.content.Intent
 import com.facebook.react.MemoryPressureRouter
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.common.LifecycleState
@@ -31,6 +32,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -141,6 +143,89 @@ class ReactHostTest {
     reactHost.destroy("Destroying from testing infra", null)
     assertThat(reactHost.isInstanceInitialized).isFalse()
     assertThat(reactHost.currentReactContext).isNull()
+  }
+
+  @Test
+  fun testActivityResultWithInitializedContext() {
+    reactHost.start()
+    val intent = Intent("test-result")
+
+    reactHost.onActivityResult(activityController.get(), 7, Activity.RESULT_OK, intent)
+
+    verify(checkNotNull(reactHost.currentReactContext))
+        .onActivityResult(activityController.get(), 7, Activity.RESULT_OK, intent)
+  }
+
+  @Test
+  fun testActivityResultsWaitForScheduledInitialization() {
+    val bgTasks = ArrayDeque<Runnable>()
+    reactHost =
+        spy(
+            ReactHostImpl(
+                activityController.get().application,
+                reactHostDelegate,
+                mock(),
+                { bgTasks.add(it) },
+                Task.IMMEDIATE_EXECUTOR,
+                false /* allowPackagerServerAccess */,
+                false /* useDevSupport */,
+            ),
+        )
+    doReturn(null).whenever(reactHost).getOrCreateReactHostInspectorTarget()
+    doNothing().whenever(reactHost).unregisterInstanceFromInspector(any())
+
+    reactHost.start()
+    val intent = Intent("test-result")
+    reactHost.onActivityResult(activityController.get(), 7, Activity.RESULT_OK, intent)
+    reactHost.onActivityResult(activityController.get(), 8, Activity.RESULT_CANCELED, null)
+    assertThat(reactHost.currentReactContext).isNull()
+
+    while (bgTasks.isNotEmpty()) bgTasks.removeFirst().run()
+
+    val reactContext = checkNotNull(reactHost.currentReactContext)
+    val ordered = org.mockito.Mockito.inOrder(reactContext)
+    ordered
+        .verify(reactContext)
+        .onActivityResult(activityController.get(), 7, Activity.RESULT_OK, intent)
+    ordered
+        .verify(reactContext)
+        .onActivityResult(activityController.get(), 8, Activity.RESULT_CANCELED, null)
+  }
+
+  @Test
+  fun testActivityResultDoesNotStartAnUnusedHost() {
+    reactHost.onActivityResult(activityController.get(), 7, Activity.RESULT_OK, null)
+
+    assertThat(reactHost.currentReactContext).isNull()
+    assertThat(mockedReactInstanceCtor.constructed()).isEmpty()
+  }
+
+  @Test
+  fun testActivityResultIsNotDeliveredToDestroyedActivity() {
+    val bgTasks = ArrayDeque<Runnable>()
+    reactHost =
+        spy(
+            ReactHostImpl(
+                activityController.get().application,
+                reactHostDelegate,
+                mock(),
+                { bgTasks.add(it) },
+                Task.IMMEDIATE_EXECUTOR,
+                false /* allowPackagerServerAccess */,
+                false /* useDevSupport */,
+            ),
+        )
+    doReturn(null).whenever(reactHost).getOrCreateReactHostInspectorTarget()
+    doNothing().whenever(reactHost).unregisterInstanceFromInspector(any())
+
+    val activity = activityController.get()
+    reactHost.start()
+    reactHost.onActivityResult(activity, 7, Activity.RESULT_OK, null)
+    activityController.pause().stop().destroy()
+    while (bgTasks.isNotEmpty()) bgTasks.removeFirst().run()
+
+    verify(checkNotNull(reactHost.currentReactContext), never())
+        .onActivityResult(activity, 7, Activity.RESULT_OK, null)
   }
 
   @Test
