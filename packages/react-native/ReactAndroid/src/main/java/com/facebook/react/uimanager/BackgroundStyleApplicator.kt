@@ -90,6 +90,11 @@ public object BackgroundStyleApplicator {
   }
 
   @JvmStatic
+  internal fun cancelBackgroundImageURLRequests(view: View) {
+    getBackgroundImage(view)?.cancelBackgroundImageURLRequests()
+  }
+
+  @JvmStatic
   internal fun setBackgroundSize(view: View, backgroundSizes: List<BackgroundSize>?) {
     ensureBackgroundImageDrawable(view).backgroundSize = backgroundSizes
   }
