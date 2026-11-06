@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a27136f5ae413f712c906f2e07152443>>
+ * @generated SignedSource<<a0f7646d7e04eb089b4a1f083399bce1>>
  */
 
 /**
@@ -162,6 +162,11 @@ bool NativeReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid(
 bool NativeReactNativeFeatureFlags::enableEagerRootViewAttachment(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableEagerRootViewAttachment();
+}
+
+bool NativeReactNativeFeatureFlags::enableEllipsizedTextTrimmingAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableEllipsizedTextTrimmingAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid(

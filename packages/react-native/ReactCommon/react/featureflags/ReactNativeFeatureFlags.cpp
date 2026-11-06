@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<56e127471f63e47798ec619e6fa56738>>
+ * @generated SignedSource<<1cd242f72f95aaf95ea05fa25aea7cdf>>
  */
 
 /**
@@ -120,6 +120,10 @@ bool ReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid() {
 
 bool ReactNativeFeatureFlags::enableEagerRootViewAttachment() {
   return getAccessor().enableEagerRootViewAttachment();
+}
+
+bool ReactNativeFeatureFlags::enableEllipsizedTextTrimmingAndroid() {
+  return getAccessor().enableEllipsizedTextTrimmingAndroid();
 }
 
 bool ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid() {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<90f271ea47f91e6a84979209b7b3d816>>
+ * @generated SignedSource<<2827752b1ae114bb5626dec944437ccf>>
  */
 
 /**
@@ -85,6 +85,8 @@ class NativeReactNativeFeatureFlags
   bool enableDoubleMeasurementFixAndroid(jsi::Runtime& runtime);
 
   bool enableEagerRootViewAttachment(jsi::Runtime& runtime);
+
+  bool enableEllipsizedTextTrimmingAndroid(jsi::Runtime& runtime);
 
   bool enableExclusivePropsUpdateAndroid(jsi::Runtime& runtime);
 

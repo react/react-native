@@ -1369,6 +1369,7 @@ internal object TextLayoutManager {
     return CreateLayoutResult(
         layout,
         textBreakStrategy,
+        hyphenationFrequency,
         justificationMode,
     )
   }
@@ -1453,7 +1454,12 @@ internal object TextLayoutManager {
         )
 
     return PreparedLayout(
-        result.layout,
+        layoutForDrawing(
+            result.layout,
+            text,
+            result.hyphenationFrequency,
+            result.justificationMode,
+        ),
         maximumNumberOfLines,
         verticalOffset,
         reactTags,
@@ -1463,6 +1469,28 @@ internal object TextLayoutManager {
         // `result.layout.text` may be ellipsized; keep the full text for a11y.
         sourceText = text,
     )
+  }
+
+  /**
+   * The layout a prepared layout draws: [layout] without the text hidden after an ellipsis, when
+   * that is enabled and possible.
+   */
+  @VisibleForTesting
+  internal fun layoutForDrawing(
+      layout: Layout,
+      text: Spanned,
+      hyphenationFrequency: Int,
+      justificationMode: Int,
+  ): Layout {
+    if (!ReactNativeFeatureFlags.enableEllipsizedTextTrimmingAndroid()) {
+      return layout
+    }
+    return EllipsisTrimmedLayout.createIfNeeded(
+        layout,
+        text,
+        hyphenationFrequency,
+        justificationMode,
+    ) ?: layout
   }
 
   @JvmStatic
@@ -1974,6 +2002,7 @@ internal object TextLayoutManager {
   private class CreateLayoutResult(
       val layout: Layout,
       val textBreakStrategy: Int,
+      val hyphenationFrequency: Int,
       val justificationMode: Int,
   )
 

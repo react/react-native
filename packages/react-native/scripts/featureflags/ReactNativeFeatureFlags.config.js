@@ -311,6 +311,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableEllipsizedTextTrimmingAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-29',
+        description:
+          'Draws ellipsized text on Android without the text hidden after the ellipsis, so that it is not shaped again on every draw.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableExclusivePropsUpdateAndroid: {
       dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,
