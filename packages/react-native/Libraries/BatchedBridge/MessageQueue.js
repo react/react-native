@@ -50,9 +50,9 @@ class MessageQueue {
   _eventLoopStartTime: number;
   _reactNativeMicrotasksCallback: ?() => void;
 
-  _debugInfo: {[number]: [number, number], ...};
-  _remoteModuleTable: {[number]: string, ...};
-  _remoteMethodTable: {[number]: ReadonlyArray<string>, ...};
+  _debugInfo: {[key: number]: [number, number], ...};
+  _remoteModuleTable: {[key: number]: string, ...};
+  _remoteMethodTable: {[key: number]: ReadonlyArray<string>, ...};
 
   __spy: ?(data: SpyData) => void;
 
@@ -203,7 +203,7 @@ class MessageQueue {
           delete this._debugInfo[this._callID - DEBUG_INFO_LIMIT];
         }
         if (this._successCallbacks.size > 500) {
-          const info: {[number]: {method: string, module: string}} = {};
+          const info: {[key: number]: {method: string, module: string}} = {};
           this._successCallbacks.forEach((_, callID) => {
             const debug = this._debugInfo[callID];
             const module = debug && this._remoteModuleTable[debug[0]];

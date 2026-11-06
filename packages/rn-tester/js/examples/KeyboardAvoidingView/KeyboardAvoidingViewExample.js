@@ -66,7 +66,7 @@ const BEHAVIORS: Array<KeyboardAvoidingBehavior> = [
   'height',
 ];
 
-const BEHAVIOR_DESCRIPTIONS: {[KeyboardAvoidingBehavior]: string} = {
+const BEHAVIOR_DESCRIPTIONS: {[key: KeyboardAvoidingBehavior]: string} = {
   padding: 'Sets bottom padding equal to the keyboard overlap.',
   position: 'Offsets the content container up by the keyboard overlap.',
   height: 'Shrinks the view height by the keyboard overlap.',

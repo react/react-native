@@ -176,8 +176,8 @@ function maybeLogCommand(command: string, args: ReadonlyArray<string>): void {
   }
 }
 
-function toEnv(env: EnvironmentOverrides): {[string]: string} {
-  return Object.keys(env).reduce<{[string]: string}>((acc, key) => {
+function toEnv(env: EnvironmentOverrides): {[key: string]: string} {
+  return Object.keys(env).reduce<{[key: string]: string}>((acc, key) => {
     if (env[key] != null) {
       acc[key] = env[key];
     }
@@ -462,7 +462,7 @@ export function printConsoleLog(log: ConsoleLogMessage): void {
 
 // Returns a markdown table corresponding to the given data, adopted from the RN console.table polyfill implementation
 export function markdownTable(
-  data: {[string]: {[string]: string}},
+  data: {[key: string]: {[key: string]: string}},
   indexColumnName?: string = '',
 ): string {
   const repeat = (element: string, n: number) =>

@@ -928,7 +928,7 @@ const buildModuleSchema = (
  */
 function findNativeComponentType(
   statement: $FlowFixMe,
-  foundConfigs: Array<{[string]: string}>,
+  foundConfigs: Array<{[key: string]: string}>,
   parser: Parser,
 ): void {
   let declaration = statement.declaration;
@@ -949,7 +949,7 @@ function findNativeComponentType(
         parser.getTypeArgumentParamsFromDeclaration(declaration);
       const funcArgumentParams = declaration.arguments;
 
-      const nativeComponentType: {[string]: string} =
+      const nativeComponentType: {[key: string]: string} =
         parser.getNativeComponentType(typeArgumentParams, funcArgumentParams);
       if (funcArgumentParams.length > 1) {
         nativeComponentType.optionsExpression = funcArgumentParams[1];
@@ -1153,7 +1153,7 @@ function getEventArgument(
 /* $FlowFixMe[signature-verification-failure] there's no flowtype for AST.
  * TODO(T108222691): Use flow-types for @babel/parser */
 function findComponentConfig(ast: $FlowFixMe, parser: Parser) {
-  const foundConfigs: Array<{[string]: string}> = [];
+  const foundConfigs: Array<{[key: string]: string}> = [];
 
   const defaultExports = ast.body.filter(
     node => node.type === 'ExportDefaultDeclaration',

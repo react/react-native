@@ -33,7 +33,7 @@ export default class RNTesterPlatformTestEventRecorder {
   eventsInScope: Array<EventRecord> = []; // Tracks synchronous event dispatches
   recording: boolean = true;
 
-  mergeTypesTruthMap: {[string]: boolean} = {};
+  mergeTypesTruthMap: {[key: string]: boolean} = {};
 
   constructor(options: EventRecorderOptions) {
     if (options.mergeEventTypes && Array.isArray(options.mergeEventTypes)) {

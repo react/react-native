@@ -1459,7 +1459,7 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   }
 
   // Write artifacts.json only on full success.
-  const artifactsJson /*: {[string]: {xcframeworkPath: string, url: string}} */ =
+  const artifactsJson /*: {[key: string]: {xcframeworkPath: string, url: string}} */ =
     {};
   for (const r of succeeded) {
     if (r.error == null) {
@@ -1543,7 +1543,7 @@ function validateArtifactsCache(
   if (!fs.existsSync(artifactsJsonPath)) {
     return `artifacts.json missing in ${artifactsDir}`;
   }
-  let json /*: {[string]: {xcframeworkPath: string, url: string}} */ = {};
+  let json /*: {[key: string]: {xcframeworkPath: string, url: string}} */ = {};
   try {
     // $FlowFixMe[unclear-type] JSON.parse returns any
     const parsed /*: any */ = JSON.parse(

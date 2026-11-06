@@ -312,7 +312,7 @@ const UIManagerJSPlatformAPIs = Platform.select({
   },
 });
 
-const UIManagerJS: UIManagerJSInterface & {[string]: ViewManagerConfig} = {
+const UIManagerJS: UIManagerJSInterface & {[key: string]: ViewManagerConfig} = {
   ...UIManagerJSOverridenAPIs,
   ...UIManagerJSDeprecatedPlatformAPIs,
   ...UIManagerJSPlatformAPIs,

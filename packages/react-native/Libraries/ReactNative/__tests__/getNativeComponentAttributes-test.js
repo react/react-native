@@ -10,7 +10,7 @@
 
 'use strict';
 
-let mockDefaultEventTypes: {[string]: unknown} = {};
+let mockDefaultEventTypes: {[key: string]: unknown} = {};
 
 jest.mock('../UIManager', () => ({
   __esModule: true,

@@ -35,11 +35,11 @@ type ImageComponentStaticsIOS = Readonly<{
 
   getSizeWithHeaders(
     uri: string,
-    headers: {[string]: string, ...},
+    headers: {[key: string]: string, ...},
   ): Promise<ImageSize>,
   getSizeWithHeaders(
     uri: string,
-    headers: {[string]: string, ...},
+    headers: {[key: string]: string, ...},
     success: (width: number, height: number) => void,
     failure?: (error: unknown) => void,
   ): void,

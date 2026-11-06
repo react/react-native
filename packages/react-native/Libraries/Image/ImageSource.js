@@ -39,7 +39,7 @@ export interface ImageURISource {
    * `headers` is an object representing the HTTP headers to send along with the
    * request for a remote image.
    */
-  readonly headers?: ?{[string]: string};
+  readonly headers?: ?{[key: string]: string};
 
   /**
    * `body` is the HTTP body to send with the request. This must be a valid
@@ -91,7 +91,7 @@ type ImageSourceProperties = {
   body?: ?string,
   bundle?: ?string,
   cache?: ?('default' | 'reload' | 'force-cache' | 'only-if-cached'),
-  headers?: ?{[string]: string},
+  headers?: ?{[key: string]: string},
   height?: ?number,
   method?: ?string,
   scale?: ?number,

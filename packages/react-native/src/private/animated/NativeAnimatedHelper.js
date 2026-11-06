@@ -60,10 +60,10 @@ const isSingleOpBatching =
 let flushQueueImmediate = null;
 
 const eventListenerGetValueCallbacks: {
-  [number]: (value: number) => void,
+  [key: number]: (value: number) => void,
 } = {};
 const eventListenerAnimationFinishedCallbacks: {
-  [number]: EndCallback,
+  [key: number]: EndCallback,
 } = {};
 let globalEventEmitterGetValueListener: ?EventSubscription = null;
 let globalEventEmitterAnimationFinishedListener: ?EventSubscription = null;
@@ -119,7 +119,9 @@ function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
     methodNames.push('connectAnimatedNodeToShadowNodeFamily');
   }
   const nativeOperations: {
-    [Values<typeof methodNames>]: (...rest: ReadonlyArray<unknown>) => void,
+    [key: Values<typeof methodNames>]: (
+      ...rest: ReadonlyArray<unknown>
+    ) => void,
   } = {};
   if (isSingleOpBatching) {
     for (let ii = 0, length = methodNames.length; ii < length; ii++) {

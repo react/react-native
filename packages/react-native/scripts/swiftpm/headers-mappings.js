@@ -21,8 +21,8 @@ type MappingOption = {
 function reactCommonMappings(
   reactCommonPath /*: string */,
   headersOutput /*: string */,
-) /*: { [string]: MappingOption } */ {
-  let mappings /*: { [string]: MappingOption } */ = {};
+) /*: { [key: string]: MappingOption } */ {
+  let mappings /*: { [key: string]: MappingOption } */ = {};
   mappings[`${reactCommonPath}/react`] = {
     destination: path.join(headersOutput, 'react'),
     excludeFolders: [],
@@ -95,8 +95,8 @@ function reactCommonMappings(
 function reactMappings(
   reactNativePath /*: string */,
   headersOutput /*: string */,
-) /*: { [string]: MappingOption } */ {
-  let mappings /*: { [string]: MappingOption } */ = {};
+) /*: { [key: string]: MappingOption } */ {
+  let mappings /*: { [key: string]: MappingOption } */ = {};
   mappings[`${reactNativePath}/React`] = {
     destination: path.join(headersOutput, 'React'),
     excludeFolders: ['includes', 'headers', 'tests'],
@@ -114,8 +114,8 @@ function reactMappings(
 function librariesMappings(
   reactNativePath /*: string */,
   headersOutput /*: string */,
-) /*: { [string]: MappingOption } */ {
-  let mappings /*: { [string]: MappingOption } */ = {};
+) /*: { [key: string]: MappingOption } */ {
+  let mappings /*: { [key: string]: MappingOption } */ = {};
   mappings[`${reactNativePath}/Libraries`] = {
     destination: path.join(headersOutput, 'React'),
     excludeFolders: ['tests'],

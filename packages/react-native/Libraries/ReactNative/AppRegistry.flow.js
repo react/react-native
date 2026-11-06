@@ -32,7 +32,7 @@ export type AppConfig = {
   ...
 };
 export type AppParameters = {
-  initialProps: Readonly<{[string]: unknown, ...}>,
+  initialProps: Readonly<{[key: string]: unknown, ...}>,
   rootTag: RootTag,
 };
 export type Runnable = (

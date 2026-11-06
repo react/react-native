@@ -11,11 +11,11 @@
 'use strict';
 
 function compareSnaps(
-  flowFixtures /*: Readonly<{[string]: string}> */,
-  flowSnaps /*: Readonly<{[string]: string}> */,
+  flowFixtures /*: Readonly<{[key: string]: string}> */,
+  flowSnaps /*: Readonly<{[key: string]: string}> */,
   flowExtraCases /*: ReadonlyArray<string> */,
-  tsFixtures /*: Readonly<{[string]: string}> */,
-  tsSnaps /*: Readonly<{[string]: string}> */,
+  tsFixtures /*: Readonly<{[key: string]: string}> */,
+  tsSnaps /*: Readonly<{[key: string]: string}> */,
   tsExtraCases /*: ReadonlyArray<string> */,
   ignoredCases /*: ReadonlyArray<string> */,
 ) {
@@ -68,7 +68,7 @@ function compareSnaps(
 }
 
 function compareTsArraySnaps(
-  tsSnaps /*: Readonly<{[string]: string}> */,
+  tsSnaps /*: Readonly<{[key: string]: string}> */,
   tsExtraCases /*: ReadonlyArray<string> */,
 ) {
   for (const array2Case of tsExtraCases.filter(

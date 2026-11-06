@@ -126,7 +126,7 @@ export async function createAndConnectTarget(
     deviceId = null,
     deviceHostHeader = null,
   }: Readonly<{
-    debuggerHeaders?: ?{[string]: unknown},
+    debuggerHeaders?: ?{[key: string]: unknown},
     debuggerOriginHeader?: ?string,
     deviceId?: ?string,
     deviceHostHeader?: ?string,

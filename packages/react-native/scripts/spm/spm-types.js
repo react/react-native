@@ -138,7 +138,7 @@ export type AutolinkingDepJson = {
   ...
 };
 export type RawAutolinkingJson = {
-  dependencies?: ?{[string]: AutolinkingDepJson},
+  dependencies?: ?{[key: string]: AutolinkingDepJson},
   ...
 };
 // Validated/normalized dep — name and ios platform are guaranteed present.
@@ -312,7 +312,7 @@ export type PluginContext = {
   appRoot: string,
   projectRoot: string,
   reactNativeRoot: string,
-  autolinking: {readonly [string]: unknown},
+  autolinking: {readonly [key: string]: unknown},
   outputDir: string,
   // How to depend on React (package ref + product set); null only when there is
   // no resolvable React dependency at all.

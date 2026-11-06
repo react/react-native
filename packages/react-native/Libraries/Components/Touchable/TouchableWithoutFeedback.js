@@ -250,7 +250,7 @@ export default function TouchableWithoutFeedback(
   // adopting `Pressability`, so preserve that behavior.
   const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} = eventHandlers;
 
-  const elementProps: {[string]: unknown, ...} = {
+  const elementProps: {[key: string]: unknown, ...} = {
     ...eventHandlersWithoutBlurAndFocus,
     accessible: props.accessible !== false,
     accessibilityState:

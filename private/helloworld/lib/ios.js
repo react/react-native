@@ -113,9 +113,9 @@ export async function launchSimulator(device: IOSDevice): Promise<Result> {
 export async function launchApp(
   udid: string,
   bundleId: string,
-  env: {[string]: string} | null = null,
+  env: {[key: string]: string} | null = null,
 ): Promise<Result> {
-  const _env: {[string]: string | void} = {};
+  const _env: {[key: string]: string | void} = {};
   if (env) {
     for (const [key, value] of Object.entries(env)) {
       _env['SIMCTL_CHILD_' + key] = value;

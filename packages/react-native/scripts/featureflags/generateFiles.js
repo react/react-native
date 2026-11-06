@@ -66,7 +66,7 @@ export default function generateFiles(
   };
 
   if (generatorOptions.verifyUnchanged) {
-    const existingModules: {[string]: string} = {};
+    const existingModules: {[key: string]: string} = {};
     for (const moduleName of Object.keys(generatedFiles)) {
       const existingModule = fs.readFileSync(moduleName, 'utf8');
       existingModules[moduleName] = existingModule;
