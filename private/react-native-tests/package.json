@@ -1,0 +1,10 @@
+{
+  "name": "@react-native/tests-cxx",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Linux CMake harness that runs a representative subset of ReactCommon C++ (gtest) unit tests on GitHub CI",
+  "scripts": {
+    "build": "./build.sh",
+    "test": "./test.sh"
+  }
+}
