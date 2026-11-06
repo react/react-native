@@ -282,6 +282,12 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
    */
   mutable std::atomic<bool> hasBeenMounted_{false};
 
+  /*
+   * The family's `nativePropsVersion_DEPRECATED` that `props_` already
+   * include, so that cloning doesn't apply `nativeProps_DEPRECATED` again.
+   */
+  uint32_t nativePropsVersion_{0};
+
   static Props::Shared propsForClonedShadowNode(const ShadowNode &sourceShadowNode, const Props::Shared &props);
 
  protected:

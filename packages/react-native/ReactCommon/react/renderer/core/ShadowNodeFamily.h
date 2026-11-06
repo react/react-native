@@ -130,6 +130,12 @@ class ShadowNodeFamily final : public jsi::NativeState {
   mutable std::unique_ptr<folly::dynamic> nativeProps_DEPRECATED;
   mutable std::mutex nativePropsMutex;
 
+  /*
+   * Incremented whenever `nativeProps_DEPRECATED` changes, so a cloned node
+   * can tell whether its props already include them.
+   */
+  mutable uint32_t nativePropsVersion_DEPRECATED{0};
+
   /**
    * @return tag for the ShadowNodeFamily.
    */

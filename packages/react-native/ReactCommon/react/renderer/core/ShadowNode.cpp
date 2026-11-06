@@ -126,6 +126,11 @@ ShadowNode::ShadowNode(
   react_native_assert(children_);
   traits_.set(ShadowNodeTraits::Trait::ChildrenAreShared);
 
+  // A clone that keeps the source's props keeps the native props they include.
+  if (fragment.props == ShadowNodeFragment::propsPlaceholder()) {
+    nativePropsVersion_ = sourceShadowNode.nativePropsVersion_;
+  }
+
   if (fragment.children) {
     for (const auto& child : *children_) {
       child->family_->setParent(family_);
@@ -140,11 +145,17 @@ std::shared_ptr<ShadowNode> ShadowNode::clone(
   const auto& componentDescriptor = family.componentDescriptor_;
 
   std::optional<RawProps> propsOverride;
+  uint32_t nativePropsVersion = 0;
   {
     std::lock_guard<std::mutex> lock(family.nativePropsMutex);
     if (family.nativeProps_DEPRECATED != nullptr) {
       if (fragment.props == ShadowNodeFragment::propsPlaceholder()) {
-        propsOverride.emplace(*family.nativeProps_DEPRECATED);
+        // Props of a node that already include the current
+        // `nativeProps_DEPRECATED` don't need them applied again.
+        if (nativePropsVersion_ != family.nativePropsVersion_DEPRECATED) {
+          propsOverride.emplace(*family.nativeProps_DEPRECATED);
+          nativePropsVersion = family.nativePropsVersion_DEPRECATED;
+        }
       } else {
         // TODO: We might need to merge fragment.props with
         // `family.nativeProps_DEPRECATED`.
@@ -158,12 +169,14 @@ std::shared_ptr<ShadowNode> ShadowNode::clone(
     // result escapes the lock so the rest of the clone work runs
     // unblocked.
     auto propsParserContext = PropsParserContext{family_->getSurfaceId(), {}};
-    return componentDescriptor.cloneShadowNode(
+    auto clonedShadowNode = componentDescriptor.cloneShadowNode(
         *this,
         {.props = componentDescriptor.cloneProps(
              propsParserContext, props_, std::move(*propsOverride)),
          .children = fragment.children,
          .state = fragment.state});
+    clonedShadowNode->nativePropsVersion_ = nativePropsVersion;
+    return clonedShadowNode;
   }
 
   return componentDescriptor.cloneShadowNode(*this, fragment);
