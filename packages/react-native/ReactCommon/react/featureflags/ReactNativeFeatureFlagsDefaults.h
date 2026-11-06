@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0d3bb7075eb6c56705ca92778df53ee2>>
+ * @generated SignedSource<<7979e7fc5f994c8c2e0c1c6420b5f98d>>
  */
 
 /**
@@ -203,6 +203,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
 
   bool enableLayoutAnimationsOnIOS() override {
     return true;
+  }
+
+  bool enableLazyViewManagerConstantsAndroid() override {
+    return false;
   }
 
   bool enableModuleArgumentNSNullConversionIOS() override {

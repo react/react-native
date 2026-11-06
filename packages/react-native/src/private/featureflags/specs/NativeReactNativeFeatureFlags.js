@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<55a231fc569a5f337238fa1fd32d7905>>
+ * @generated SignedSource<<b7462953ea901fe602f4c00fb0b009a6>>
  * @flow strict
  * @noformat
  */
@@ -69,6 +69,7 @@ export interface Spec extends TurboModule {
   readonly enableKeyEvents?: () => boolean;
   readonly enableLayoutAnimationsOnAndroid?: () => boolean;
   readonly enableLayoutAnimationsOnIOS?: () => boolean;
+  readonly enableLazyViewManagerConstantsAndroid?: () => boolean;
   readonly enableModuleArgumentNSNullConversionIOS?: () => boolean;
   readonly enableMountingCoordinatorPullModelAndroid?: () => boolean;
   readonly enableMutationObserverByDefault?: () => boolean;

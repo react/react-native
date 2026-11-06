@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fe195f00b14e21b85f26c043014c1b01>>
+ * @generated SignedSource<<80010f640c50a7e914c083ccaa8f471a>>
  */
 
 /**
@@ -68,6 +68,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableKeyEventsCache: Boolean? = null
   private var enableLayoutAnimationsOnAndroidCache: Boolean? = null
   private var enableLayoutAnimationsOnIOSCache: Boolean? = null
+  private var enableLazyViewManagerConstantsAndroidCache: Boolean? = null
   private var enableModuleArgumentNSNullConversionIOSCache: Boolean? = null
   private var enableMountingCoordinatorPullModelAndroidCache: Boolean? = null
   private var enableMutationObserverByDefaultCache: Boolean? = null
@@ -560,6 +561,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableLayoutAnimationsOnIOS()
       accessedFeatureFlags.add("enableLayoutAnimationsOnIOS")
       enableLayoutAnimationsOnIOSCache = cached
+    }
+    return cached
+  }
+
+  override fun enableLazyViewManagerConstantsAndroid(): Boolean {
+    var cached = enableLazyViewManagerConstantsAndroidCache
+    if (cached == null) {
+      cached = currentProvider.enableLazyViewManagerConstantsAndroid()
+      accessedFeatureFlags.add("enableLazyViewManagerConstantsAndroid")
+      enableLazyViewManagerConstantsAndroidCache = cached
     }
     return cached
   }

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8052aa74d815d8a13e52eb2f69169dae>>
+ * @generated SignedSource<<d51581b82bddef7e8dce9f882d3508d2>>
  */
 
 /**
@@ -260,6 +260,11 @@ class ReactNativeFeatureFlags {
    * When enabled, LayoutAnimations API will animate state changes on iOS.
    */
   RN_EXPORT static bool enableLayoutAnimationsOnIOS();
+
+  /**
+   * When enabled, UIManager.getConstants() in bridgeless mode on Android returns only the view manager names. JS gets the constants of each view manager on first use.
+   */
+  RN_EXPORT static bool enableLazyViewManagerConstantsAndroid();
 
   /**
    * Enable NSNull conversion when handling module arguments on iOS
