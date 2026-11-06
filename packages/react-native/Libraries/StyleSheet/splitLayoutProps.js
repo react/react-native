@@ -44,6 +44,7 @@ export default function splitLayoutProps(props: ?ViewStyle): {
         case 'minWidth':
         case 'maxWidth':
         case 'position':
+        case 'zIndex':
         case 'left':
         case 'right':
         case 'bottom':
