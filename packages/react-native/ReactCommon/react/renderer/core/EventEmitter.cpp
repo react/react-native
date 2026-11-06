@@ -39,8 +39,11 @@ static bool hasPrefix(const std::string& str, const std::string& prefix) {
 }
 
 std::mutex& EventEmitter::DispatchMutex() {
-  static std::mutex mutex;
-  return mutex;
+  // Intentionally leaked: host platform callbacks can still dispatch events
+  // while `exit()` runs static destructors, and locking a destroyed mutex
+  // throws `std::system_error`.
+  static auto* mutex = new std::mutex();
+  return *mutex;
 }
 
 ValueFactory EventEmitter::defaultPayloadFactory() {
