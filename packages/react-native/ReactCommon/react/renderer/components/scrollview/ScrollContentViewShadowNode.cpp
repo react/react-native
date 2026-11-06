@@ -7,6 +7,7 @@
 
 #include "ScrollContentViewShadowNode.h"
 
+#include <algorithm>
 #include <array>
 
 namespace facebook::react {
@@ -78,16 +79,18 @@ StyleLength resolvedPadding(
 }
 
 /*
- * A percentage padding keeps the edge as the style set it, with no inset
- * added, since Yoga holds one length per edge and a percentage has no point
- * value to add to.
+ * The safe area is a floor on the padding, as it is on UIKit's layout
+ * margins: the edge takes the larger of its style padding and the inset. A
+ * percentage padding keeps the edge as the style set it, with no inset
+ * applied, since Yoga holds one length per edge and a percentage has no point
+ * value to compare.
  */
 StyleLength padded(StyleLength value, Float inset) {
   if (inset == 0 || value.isPercent()) {
     return value;
   }
-  auto base = value.isPoints() ? value.value().unwrap() : 0.0f;
-  return StyleLength::points(base + inset);
+  auto base = value.isPoints() ? Float{value.value().unwrap()} : Float{0};
+  return StyleLength::points(std::max(base, inset));
 }
 
 } // namespace
