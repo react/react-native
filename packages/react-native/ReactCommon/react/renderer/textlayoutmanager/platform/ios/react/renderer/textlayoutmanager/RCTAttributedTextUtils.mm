@@ -515,7 +515,8 @@ NSString *RCTNSStringFromStringApplyingTextTransform(NSString *string, TextTrans
 static BOOL RCTIsParagraphStyleEffectivelySame(
     NSParagraphStyle *style1,
     NSParagraphStyle *style2,
-    const TextAttributes &baseTextAttributes)
+    const TextAttributes &baseTextAttributes,
+    BOOL singleLine)
 {
   if (style1 == nil || style2 == nil) {
     return style1 == nil && style2 == nil;
@@ -558,6 +559,17 @@ static BOOL RCTIsParagraphStyleEffectivelySame(
     }
   }
 
+  // A single-line text field lays its line out with its own line break mode and writing direction and without a line
+  // height (UIKit sets them in the text it shows): those are not compared.
+  if (singleLine) {
+    NSMutableParagraphStyle *mutableStyle2 = [style2 mutableCopy];
+    style2 = mutableStyle2;
+    mutableStyle2.lineBreakMode = style1.lineBreakMode;
+    mutableStyle2.baseWritingDirection = style1.baseWritingDirection;
+    mutableStyle2.minimumLineHeight = style1.minimumLineHeight;
+    mutableStyle2.maximumLineHeight = style1.maximumLineHeight;
+  }
+
   return [style1 isEqual:style2];
 }
 
@@ -566,7 +578,8 @@ static BOOL RCTIsAttributeEffectivelySame(
     NSDictionary<NSAttributedStringKey, id> *attributes1,
     NSDictionary<NSAttributedStringKey, id> *attributes2,
     NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes,
-    const TextAttributes &baseTextAttributes)
+    const TextAttributes &baseTextAttributes,
+    BOOL singleLine)
 {
   // The event emitter is React-internal metadata, not something UIKit shows, and a TextInput dispatches its events
   // through its own emitter rather than through this attribute. Text typed into the field often carries no
@@ -580,7 +593,7 @@ static BOOL RCTIsAttributeEffectivelySame(
 
   // Normalize attributes which can inexact but still effectively the same
   if ([attributeKey isEqualToString:NSParagraphStyleAttributeName]) {
-    return RCTIsParagraphStyleEffectivelySame(attribute1, attribute2, baseTextAttributes);
+    return RCTIsParagraphStyleEffectivelySame(attribute1, attribute2, baseTextAttributes, singleLine);
   }
 
   // Otherwise rely on built-in comparison
@@ -591,7 +604,8 @@ BOOL RCTIsAttributedStringEffectivelySame(
     NSAttributedString *text1,
     NSAttributedString *text2,
     NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes,
-    const TextAttributes &baseTextAttributes)
+    const TextAttributes &baseTextAttributes,
+    BOOL singleLine)
 {
   if (![text1.string isEqualToString:text2.string]) {
     return NO;
@@ -628,7 +642,8 @@ BOOL RCTIsAttributedStringEffectivelySame(
                                                               text1Attributes,
                                                               text2Attributes,
                                                               insensitiveAttributes,
-                                                              baseTextAttributes)) {
+                                                              baseTextAttributes,
+                                                              singleLine)) {
                                                         areAttributesSame = NO;
                                                         *text1Stop = YES;
                                                         *text2Stop = YES;
@@ -650,7 +665,8 @@ BOOL RCTIsAttributedStringEffectivelySame(
                                                               text1Attributes,
                                                               text2Attributes,
                                                               insensitiveAttributes,
-                                                              baseTextAttributes)) {
+                                                              baseTextAttributes,
+                                                              singleLine)) {
                                                         areAttributesSame = NO;
                                                         *text1Stop = YES;
                                                         *text2Stop = YES;
@@ -661,4 +677,13 @@ BOOL RCTIsAttributedStringEffectivelySame(
                          }];
 
   return areAttributesSame;
+}
+
+BOOL RCTIsAttributedStringEffectivelySame(
+    NSAttributedString *text1,
+    NSAttributedString *text2,
+    NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes,
+    const TextAttributes &baseTextAttributes)
+{
+  return RCTIsAttributedStringEffectivelySame(text1, text2, insensitiveAttributes, baseTextAttributes, NO);
 }

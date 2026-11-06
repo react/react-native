@@ -65,6 +65,18 @@ BOOL RCTIsAttributedStringEffectivelySame(
     NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes,
     const facebook::react::TextAttributes &baseTextAttributes);
 
+/*
+ * The same, where `singleLine` says the control is a single-line text field: it lays its line out with its own line
+ * break mode and writing direction and without a line height (UIKit sets them in the text it shows), so those are not
+ * compared.
+ */
+BOOL RCTIsAttributedStringEffectivelySame(
+    NSAttributedString *text1,
+    NSAttributedString *text2,
+    NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes,
+    const facebook::react::TextAttributes &baseTextAttributes,
+    BOOL singleLine);
+
 static inline NSData *RCTWrapEventEmitter(const std::shared_ptr<const facebook::react::EventEmitter> &eventEmitter)
 {
   auto eventEmitterPtr = new std::weak_ptr<const facebook::react::EventEmitter>(eventEmitter);
