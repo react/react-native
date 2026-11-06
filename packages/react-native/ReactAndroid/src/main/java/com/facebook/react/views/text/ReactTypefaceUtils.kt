@@ -173,17 +173,45 @@ public object ReactTypefaceUtils {
     }
   }
 
-  internal fun applyFontVariationSettings(paint: Paint, fontVariationSettings: String?) {
+  internal fun applyTypeface(
+      paint: Paint,
+      typeface: Typeface?,
+      fontVariationSettings: String?,
+  ) {
+    val typefaceChanged = paint.typeface !== typeface
+    if (typefaceChanged) {
+      paint.typeface = typeface
+    }
+    applyFontVariationSettings(paint, fontVariationSettings, typefaceChanged)
+  }
+
+  internal fun applyFontVariationSettings(
+      paint: Paint,
+      fontVariationSettings: String?,
+      typefaceChanged: Boolean = true,
+  ) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
       return
     }
 
     try {
-      // Paint skips unchanged settings even after setTypeface, so clear them first.
-      if (paint.fontVariationSettings != null && fontVariationSettings != null) {
+      val previousSettings = paint.fontVariationSettings
+      // Paint retains the settings string when its typeface changes.
+      val needsReset =
+          typefaceChanged &&
+              fontVariationSettings != null &&
+              previousSettings == fontVariationSettings
+      if (needsReset) {
         paint.setFontVariationSettings(null)
       }
-      paint.setFontVariationSettings(fontVariationSettings)
+      if (
+          !paint.setFontVariationSettings(fontVariationSettings) &&
+              previousSettings != null &&
+              !needsReset
+      ) {
+        // Unsupported axes leave the previous settings applied.
+        paint.setFontVariationSettings(null)
+      }
     } catch (exception: IllegalArgumentException) {
       // Paint instances are reused, so explicitly clear axes from a previous layout.
       paint.setFontVariationSettings(null)

@@ -726,14 +726,27 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
     typefaceDirty = false
 
-    val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
+    val oldTypeface = typeface
+    val newTypeface = applyStyles(oldTypeface, fontStyle, fontWeight, fontFamily, context.assets)
     typeface = newTypeface
+    val typefaceChanged = oldTypeface !== typeface
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      // TextView skips unchanged settings even after a typeface change, so clear them first.
-      if (getFontVariationSettings() != null && parsedFontVariationSettings != null) {
+      val previousSettings = getFontVariationSettings()
+      // TextView retains the settings string when its typeface changes.
+      val needsReset =
+          typefaceChanged &&
+              parsedFontVariationSettings != null &&
+              previousSettings == parsedFontVariationSettings
+      if (needsReset) {
         super.setFontVariationSettings(null)
       }
-      super.setFontVariationSettings(parsedFontVariationSettings)
+      if (
+          !super.setFontVariationSettings(parsedFontVariationSettings) &&
+              previousSettings != null &&
+              !needsReset
+      ) {
+        super.setFontVariationSettings(null)
+      }
     }
 
     // Match behavior of CustomStyleSpan and enable SUBPIXEL_TEXT_FLAG when setting anything
