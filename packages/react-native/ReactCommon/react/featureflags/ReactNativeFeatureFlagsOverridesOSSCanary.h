@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<739fbf5a89bc456157ea470c43745e9d>>
+ * @generated SignedSource<<3994d16ce8555b34a8ab8e18291b03cc>>
  */
 
 /**
@@ -50,10 +50,6 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
   }
 
   bool fixBorderlessRippleAndroid() override {
-    return true;
-  }
-
-  bool fuseboxFrameRecordingEnabled() override {
     return true;
   }
 
