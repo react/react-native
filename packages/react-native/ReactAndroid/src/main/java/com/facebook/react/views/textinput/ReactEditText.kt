@@ -24,6 +24,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
+import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -1276,29 +1277,42 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
     val spanned = text as? Spanned
     if (spanned != null) {
-      val layout = layout
+      val drawSpans = spanned.getSpans(0, spanned.length, CanvasEffectSpan::class.java)
+      val layout = if (drawSpans.isNotEmpty()) layoutForDraw() else null
       if (layout != null) {
-        val drawSpans = spanned.getSpans(0, spanned.length, CanvasEffectSpan::class.java)
-        if (drawSpans.isNotEmpty()) {
-          canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
-            for (span in drawSpans) {
-              span.onPreDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
-            }
+        canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
+          for (span in drawSpans) {
+            span.onPreDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
           }
-
-          super.onDraw(canvas)
-
-          canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
-            for (span in drawSpans) {
-              span.onDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
-            }
-          }
-          return
         }
+
+        super.onDraw(canvas)
+
+        canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
+          for (span in drawSpans) {
+            span.onDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
+          }
+        }
+        return
       }
     }
 
     super.onDraw(canvas)
+  }
+
+  /**
+   * TextView drops its layout when an attribute like the placeholder changes, and Fabric only
+   * measures this view again when its frame changes. Rebuild the layout for the current frame so
+   * the CanvasEffectSpans drawn around super.onDraw are not skipped.
+   */
+  private fun layoutForDraw(): Layout? {
+    if (layout == null && width > 0) {
+      measure(
+          View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+          View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+      )
+    }
+    return layout
   }
 
   public override fun onDragEvent(event: DragEvent): Boolean {
