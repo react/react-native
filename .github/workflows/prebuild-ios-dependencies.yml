@@ -91,12 +91,15 @@ jobs:
       - name: Build slice ${{ matrix.slice }} for ${{ matrix.flavor }}
         if: steps.restore-slice-folder.outputs.cache-hit != 'true'
         run: node scripts/releases/prepare-ios-prebuilds.js -b -p ${{ matrix.slice }} -r ${{ matrix.flavor }}
+      - name: Compress slice to preserve symlinks
+        run: |
+          tar -czf "$RUNNER_TEMP/prebuild-slice-${{ matrix.flavor }}-${{ matrix.slice }}.tar.gz" \
+            -C packages/react-native/third-party/.build/Build/Products .
       - name: Upload Artifacts
         uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-slice-${{ matrix.flavor }}-${{ matrix.slice }}
-          path: |
-            packages/react-native/third-party/.build/Build/Products
+          path: ${{ runner.temp }}/prebuild-slice-${{ matrix.flavor }}-${{ matrix.slice }}.tar.gz
       - name: Save Cache
         uses: actions/cache/save@v5
         if: ${{ github.ref == 'refs/heads/main' && steps.restore-slice-folder.outputs.cache-hit != 'true' }}
@@ -147,8 +150,15 @@ jobs:
         uses: ./.github/actions/download-artifact
         with:
           pattern: prebuild-slice-${{ matrix.flavor }}-*
-          path: packages/react-native/third-party/.build/Build/Products
+          path: ${{ runner.temp }}/prebuild-slices
           merge-multiple: true
+      - name: Extract slices
+        if: steps.restore-xcframework.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p packages/react-native/third-party/.build/Build/Products
+          for archive in "$RUNNER_TEMP"/prebuild-slices/*.tar.gz; do
+            tar -xzf "$archive" -C packages/react-native/third-party/.build/Build/Products
+          done
       - name: Setup Keychain
         if: ${{ steps.restore-xcframework.outputs.cache-hit != 'true' && env.REACT_ORG_CODE_SIGNING_P12_CERT != '' }}
         uses: apple-actions/import-codesign-certs@v3 # https://github.com/marketplace/actions/import-code-signing-certificates
