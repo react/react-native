@@ -349,15 +349,17 @@ describe('AbortController', () => {
       const second = new AbortController();
       const reason = new Error('stop');
 
-      const signal = AbortSignal.any([first.signal, second.signal]);
+      Fantom.runTask(() => {
+        const signal = AbortSignal.any([first.signal, second.signal]);
 
-      expect(signal).toBeInstanceOf(AbortSignal);
-      expect(signal.aborted).toBe(false);
+        expect(signal).toBeInstanceOf(AbortSignal);
+        expect(signal.aborted).toBe(false);
 
-      second.abort(reason);
+        second.abort(reason);
 
-      expect(signal.aborted).toBe(true);
-      expect(signal.reason).toBe(reason);
+        expect(signal.aborted).toBe(true);
+        expect(signal.reason).toBe(reason);
+      });
     });
 
     it('should abort immediately if one of the provided signals is already aborted', () => {
