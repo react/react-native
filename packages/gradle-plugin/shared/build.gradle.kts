@@ -17,6 +17,7 @@ repositories { mavenCentral() }
 group = "com.facebook.react"
 
 dependencies {
+  implementation(gradleApi())
   implementation(libs.gson)
   implementation(libs.guava)
   testImplementation(libs.junit)
@@ -40,6 +41,7 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 tasks.withType<Test>().configureEach {
+  jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
   testLogging {
     exceptionFormat = TestExceptionFormat.FULL
     showExceptions = true

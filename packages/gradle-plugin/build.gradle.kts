@@ -9,6 +9,7 @@ plugins { alias(libs.plugins.kotlin.jvm).apply(false) }
 
 tasks.register("build") {
   dependsOn(
+      ":react-native-library-plugin:build",
       ":react-native-gradle-plugin:build",
       ":settings-plugin:build",
       ":shared-testutil:build",
@@ -18,6 +19,7 @@ tasks.register("build") {
 
 tasks.register("clean") {
   dependsOn(
+      ":react-native-library-plugin:clean",
       ":react-native-gradle-plugin:clean",
       ":settings-plugin:clean",
       ":shared-testutil:clean",
