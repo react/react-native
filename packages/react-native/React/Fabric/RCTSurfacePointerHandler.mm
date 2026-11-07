@@ -6,6 +6,7 @@
  */
 
 #import "RCTSurfacePointerHandler.h"
+#import "RCTSurfacePointerHandler+Internal.h"
 
 #import <React/RCTIdentifierPool.h>
 #import <React/RCTReactTaggedView.h>
@@ -132,6 +133,12 @@ struct ActivePointer {
    * pointer leaving the screen entirely.
    */
   BOOL shouldLeaveWhenReleased;
+
+  /*
+   * `cancelTouchesInView:` cancelled the pointer. UIKit still delivers its
+   * touch, so it stays registered until it ends, but it dispatches nothing more.
+   */
+  BOOL isCancelled = NO;
 
   struct Hasher {
     size_t operator()(const ActivePointer &activePointer) const
@@ -564,7 +571,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   for (UITouch *touch in touches) {
     auto iterator = _activePointers.find(touch);
     RCTAssert(iterator != _activePointers.end(), @"Inconsistency between local and UIKit touch registries");
-    if (iterator == _activePointers.end()) {
+    if (iterator == _activePointers.end() || iterator->second.isCancelled) {
       continue;
     }
     UpdateActivePointerWithUITouch(iterator->second, touch, event, _rootComponentView);
@@ -608,7 +615,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   for (UITouch *touch in touches) {
     auto iterator = _activePointers.find(touch);
     RCTAssert(iterator != _activePointers.end(), @"Inconsistency between local and UIKit touch registries");
-    if (iterator == _activePointers.end()) {
+    if (iterator == _activePointers.end() || iterator->second.isCancelled) {
       continue;
     }
     activePointers.push_back(iterator->second);
@@ -717,6 +724,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
     activePointers.reserve(_activePointers.size());
 
     for (const auto &pair : _activePointers) {
+      if (pair.second.isCancelled) {
+        continue;
+      }
       activePointers.push_back(pair.second);
     }
 
@@ -731,6 +741,29 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 - (BOOL)canPreventGestureRecognizer:(UIGestureRecognizer *)preventedGestureRecognizer
 {
   return NO;
+}
+
+#pragma mark - Internal Interface
+
+- (void)cancelTouchesInView:(UIView *)view
+{
+  std::vector<ActivePointer> cancelledPointers;
+  for (const auto &pair : _activePointers) {
+    if (!pair.second.isCancelled && [pair.first.view isDescendantOfView:view]) {
+      cancelledPointers.push_back(pair.second);
+    }
+  }
+  if (cancelledPointers.empty()) {
+    return;
+  }
+
+  [self _dispatchActivePointers:cancelledPointers eventType:RCTPointerEventTypeCancel];
+
+  for (auto &pair : _activePointers) {
+    if ([pair.first.view isDescendantOfView:view]) {
+      pair.second.isCancelled = YES;
+    }
+  }
 }
 
 #pragma mark - Hover callbacks

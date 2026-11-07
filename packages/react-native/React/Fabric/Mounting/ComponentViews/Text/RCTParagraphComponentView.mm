@@ -7,6 +7,7 @@
 
 #import "RCTParagraphComponentView.h"
 #import "RCTParagraphComponentAccessibilityProvider.h"
+#import "RCTSelectableTextView+Internal.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
@@ -31,6 +32,10 @@ using namespace facebook::react;
                       paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                                     frame:(CGRect)frame
                            containerFrame:(CGRect *)containerFrame;
+
+- (NSTextStorage *)textStorageForNSAttributedString:(NSAttributedString *)attributedString
+                                paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                               size:(CGSize)size;
 
 @end
 
@@ -72,6 +77,15 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
   RCTParagraphTextView *_textView;
   CGRect _textLayoutFrame;
+#if !TARGET_OS_TV
+  RCTSelectableTextView *_selectableTextView;
+  RCTTextLayoutManager *_selectionLayoutManager;
+  ParagraphShadowNode::ConcreteState::Shared _selectionRenderedState;
+  NSAttributedString *_selectionRenderedText;
+  CGSize _selectionRenderedSize;
+  ParagraphAttributes _selectionRenderedParagraphAttributes;
+  BOOL _selectableTextViewNeedsUpdate;
+#endif
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -140,6 +154,16 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
     }
   }
 
+#if !TARGET_OS_TV
+  // The selection text view lays the text out with these attributes. A change
+  // of them alone computes no new frame, so nothing else marks the view dirty.
+  if (newParagraphProps.isSelectable &&
+      newParagraphProps.paragraphAttributes != oldParagraphProps.paragraphAttributes &&
+      ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    _selectableTextViewNeedsUpdate = YES;
+  }
+#endif
+
   [super updateProps:props oldProps:oldProps];
 }
 
@@ -206,6 +230,15 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   if ((updateMask & (RNComponentViewUpdateMaskState | RNComponentViewUpdateMaskLayoutMetrics)) != 0) {
     [self _updateTextViewFrame];
   }
+#if !TARGET_OS_TV
+  // `updateProps:` runs before the state and the layout of the same mutation,
+  // and a change of `selectable` alone computes no frames. So the text view is
+  // updated here, once, after all of the mutation. A text view that does not
+  // exist yet waits for the first touch.
+  if (_selectableTextView != nil) {
+    [self updateSelectableTextViewIfNeeded];
+  }
+#endif
 }
 
 - (void)prepareForRecycle
@@ -213,6 +246,14 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   [super prepareForRecycle];
   _textView.state = nullptr;
   _accessibilityProvider = nil;
+#if !TARGET_OS_TV
+  // Recycling removes only the selection text view. The long press stays,
+  // because the view keeps its `_props`: when the next paragraph is selectable
+  // too, `updateProps:` sees no change and does not add the long press again.
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    [self disableTextSelection];
+  }
+#endif
 }
 
 - (void)_updateTextViewFrame
@@ -246,6 +287,12 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
   _textLayoutFrame = drawingFrame;
   _textView.frame = textViewFrame;
   _textView.drawingFrame = CGRectOffset(drawingFrame, -textViewFrame.origin.x, -textViewFrame.origin.y);
+
+#if !TARGET_OS_TV
+  if ([self isPartialTextSelectionEnabled]) {
+    _selectableTextViewNeedsUpdate = YES;
+  }
+#endif
 }
 
 #pragma mark - Accessibility
@@ -350,6 +397,17 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
 {
+#if !TARGET_OS_TV
+  // A drag of a selection handle starts on the glyphs the handle sits on, and
+  // that is often a pressable <Text>. Adjusting a selection must not press it.
+  // Only a touch on the selected text or on its handles is held back: a tap in
+  // the padding still presses the paragraph, or the <Pressable> around it.
+  if (_selectableTextView != nil &&
+      [_selectableTextView selectionOwnsTouchAtPoint:[self convertPoint:point toView:_selectableTextView]]) {
+    return nullptr;
+  }
+#endif
+
   const auto &state = _textView.state;
   if (!state) {
     return _eventEmitter;
@@ -384,6 +442,11 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 #if !TARGET_OS_TV
 - (void)enableContextMenu
 {
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    [self enableTextSelection];
+    return;
+  }
+
   _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                                               action:@selector(handleLongPress:)];
 
@@ -396,6 +459,11 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 
 - (void)disableContextMenu
 {
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    [self disableTextSelection];
+    return;
+  }
+
   [self removeGestureRecognizer:_longPressGestureRecognizer];
   if (@available(iOS 16.0, *)) {
     [self removeInteraction:_editMenuInteraction];
@@ -425,12 +493,24 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 
 - (BOOL)canBecomeFirstResponder
 {
+  // With partial selection, `_selectableTextView` is the responder that owns the selection.
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    return NO;
+  }
+
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
   return paragraphProps.isSelectable;
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
+  // With partial selection, `_selectableTextView` copies the selected range.
+  // This class implements `copy:` for the long-press menu, so the inherited
+  // answer for `copy:` is YES and would make the paragraph copy all its text.
+  if (ReactNativeFeatureFlags::enableIOSPartialTextSelection()) {
+    return action != @selector(copy:) && [super canPerformAction:action withSender:sender];
+  }
+
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
 
   if (paragraphProps.isSelectable && action == @selector(copy:)) {
@@ -458,6 +538,184 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   pasteboard.items = @[ item ];
+}
+
+#pragma mark - Text Selection
+
+/*
+ * Selection is provided by a `UITextView` laid out with the paragraph's own
+ * TextKit stack, which gives the platform behaviour users expect: long press to
+ * select a word, drag handles to extend the range and an edit menu that copies
+ * only what is selected.
+ */
+- (void)enableTextSelection
+{
+  _selectableTextViewNeedsUpdate = YES;
+}
+
+- (void)disableTextSelection
+{
+  _selectableTextViewNeedsUpdate = NO;
+  [self removeSelectableTextView];
+  _selectionLayoutManager = nil;
+}
+
+- (BOOL)isPartialTextSelectionEnabled
+{
+  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
+  return paragraphProps.isSelectable && ReactNativeFeatureFlags::enableIOSPartialTextSelection();
+}
+
+/*
+ * The selection text view is built on the first touch that lands on the
+ * paragraph, and not on mount. Most selectable paragraphs are never selected,
+ * and each text view holds a TextKit stack of its own.
+ *
+ * The text view sits right below the glyphs, and so above the inline views of
+ * the paragraph. The inline views must still get their touches first, as they
+ * do without the text view. The text view then takes only the touches that
+ * the paragraph itself takes: none with `pointerEvents="box-none"`, and all on
+ * the text with `pointerEvents="box-only"`.
+ */
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+  UIView *hitView = [super hitTest:point withEvent:event];
+  if (![self isPartialTextSelectionEnabled]) {
+    return hitView;
+  }
+
+  if (hitView == self) {
+    [self updateSelectableTextViewIfNeeded];
+    return [self hitTestSelectableTextView:point withEvent:event] ?: self;
+  }
+
+  if (_selectableTextView != nil && [hitView isDescendantOfView:_selectableTextView]) {
+    UIView *inlineHitView = [self hitTestInlineViews:point withEvent:event];
+    if (inlineHitView != nil) {
+      return inlineHitView;
+    }
+    return _props->pointerEvents == PointerEventsMode::BoxNone ? nil : hitView;
+  }
+
+  return hitView;
+}
+
+- (UIView *)hitTestSelectableTextView:(CGPoint)point withEvent:(UIEvent *)event
+{
+  if (_selectableTextView == nil) {
+    return nil;
+  }
+  return [_selectableTextView hitTest:[_selectableTextView convertPoint:point fromView:self] withEvent:event];
+}
+
+- (UIView *)hitTestInlineViews:(CGPoint)point withEvent:(UIEvent *)event
+{
+  for (UIView *subview in [_selectableTextView.superview.subviews reverseObjectEnumerator]) {
+    if (subview == _selectableTextView || subview == _textView) {
+      continue;
+    }
+    UIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event];
+    if (hitView != nil) {
+      return hitView;
+    }
+  }
+  return nil;
+}
+
+- (void)removeSelectableTextView
+{
+  [_selectableTextView removeFromSuperview];
+  _selectableTextView = nil;
+  _selectionRenderedState = nullptr;
+  _selectionRenderedText = nil;
+  _selectionRenderedSize = CGSizeZero;
+  _selectionRenderedParagraphAttributes = ParagraphAttributes{};
+}
+
+- (void)updateSelectableTextViewIfNeeded
+{
+  if (!_selectableTextViewNeedsUpdate) {
+    return;
+  }
+  _selectableTextViewNeedsUpdate = NO;
+  // `_textLayoutFrame` is the frame `RCTParagraphTextView` draws the glyphs
+  // into, compression adjustment included. The selection must use the same
+  // frame, or the selection rects sit away from the glyphs they select.
+  [self updateSelectableTextViewWithDrawingFrame:_textLayoutFrame];
+}
+
+/*
+ * A `UITextView` binds its text container at initialisation, so the selectable
+ * text view is rebuilt only when the text, the available size or the paragraph
+ * attributes that configure the container change.
+ */
+- (void)updateSelectableTextViewWithDrawingFrame:(CGRect)drawingFrame
+{
+  const auto &state = _textView.state;
+  if (!state || CGRectIsEmpty(drawingFrame)) {
+    [self removeSelectableTextView];
+    return;
+  }
+
+  // A relayout of unchanged text is the most frequent update, and it needs no
+  // conversion of the text. The content comparison does not look at the layout
+  // metrics that size the attachments, so a paragraph with attachments always
+  // takes the full comparison.
+  const auto &attributedString = state->getData().attributedString;
+  if (_selectableTextView != nil && _selectionRenderedState &&
+      CGSizeEqualToSize(drawingFrame.size, _selectionRenderedSize) &&
+      _paragraphAttributes == _selectionRenderedParagraphAttributes &&
+      !RCTAttributedStringHasAttachments(attributedString) &&
+      attributedString.isContentEqual(_selectionRenderedState->getData().attributedString)) {
+    _selectableTextView.frame = drawingFrame;
+    return;
+  }
+
+  NSAttributedString *attributedText = RCTNSAttributedStringFromAttributedString(attributedString);
+  if (attributedText.length == 0) {
+    [self removeSelectableTextView];
+    return;
+  }
+
+  // The layout string decides the rebuild, and the painted string does not. A
+  // press on a nested pressable <Text> paints a highlight, which changes the
+  // painted string. A rebuild in the middle of that touch destroys the text
+  // view before its long press starts, so the paragraph never selects.
+  NSAttributedString *layoutText = RCTUnpaintedAttributedString(attributedText);
+
+  BOOL needsRebuild = _selectableTextView == nil || ![layoutText isEqualToAttributedString:_selectionRenderedText] ||
+      !CGSizeEqualToSize(drawingFrame.size, _selectionRenderedSize) ||
+      _paragraphAttributes != _selectionRenderedParagraphAttributes;
+
+  if (needsRebuild) {
+    if (_selectionLayoutManager == nil) {
+      _selectionLayoutManager = [RCTTextLayoutManager new];
+    }
+    NSTextStorage *textStorage = [_selectionLayoutManager textStorageForNSAttributedString:layoutText
+                                                                       paragraphAttributes:_paragraphAttributes
+                                                                                      size:drawingFrame.size];
+    NSTextContainer *textContainer = textStorage.layoutManagers.firstObject.textContainers.firstObject;
+
+    [_selectableTextView removeFromSuperview];
+    _selectableTextView = [[RCTSelectableTextView alloc] initWithFrame:drawingFrame textContainer:textContainer];
+    // Under the drawn paragraph, which is how a native text view stacks the two:
+    // UIKit paints the selection, and the glyphs go on top of it. The drawn
+    // paragraph passes touches through, so the text view still gets them.
+    UIView *container = _textView.superview;
+    if (container != nil) {
+      [container insertSubview:_selectableTextView belowSubview:_textView];
+    } else {
+      [self addSubview:_selectableTextView];
+    }
+
+    _selectionRenderedText = [layoutText copy];
+    _selectionRenderedSize = drawingFrame.size;
+    _selectionRenderedParagraphAttributes = _paragraphAttributes;
+  }
+
+  _selectionRenderedState = state;
+  _selectableTextView.frame = drawingFrame;
+  _selectableTextView.sourceAttributedText = attributedText;
 }
 #else
 - (void)enableContextMenu
