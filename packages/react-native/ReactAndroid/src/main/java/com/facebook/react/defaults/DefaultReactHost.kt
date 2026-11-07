@@ -54,6 +54,11 @@ public object DefaultReactHost {
    * @param exceptionHandler Callback that can be used by React Native host applications to react to
    *   exceptions thrown by the internals of React Native.
    * @param bindingsInstaller that can be used for installing bindings.
+   * @param runtimeGlobals Native values to install as properties of `globalThis` before the main
+   *   bundle executes and before [bindingsInstaller] runs. Values are copied when the host is
+   *   created and installed for each new runtime, including reloads. Supports strings, booleans,
+   *   numbers, null, and nested maps and lists. Names must not match non-writable globals defined
+   *   by React Native or the JavaScript engine.
    *
    * TODO(T186951312): Should this be @UnstableReactNativeAPI?
    */
@@ -70,6 +75,7 @@ public object DefaultReactHost {
       cxxReactPackageProviders: List<(ReactContext) -> CxxReactPackage> = emptyList(),
       exceptionHandler: (Exception) -> Unit = { throw it },
       bindingsInstaller: BindingsInstaller? = null,
+      runtimeGlobals: Map<String, Any?> = emptyMap(),
   ): ReactHost {
     reactHost?.let {
       return it
@@ -96,6 +102,7 @@ public object DefaultReactHost {
             bindingsInstaller = bindingsInstaller,
             turboModuleManagerDelegateBuilder = defaultTmmDelegateBuilder,
             exceptionHandler = exceptionHandler,
+            runtimeGlobals = runtimeGlobals,
         )
     val componentFactory = ComponentFactory()
     DefaultComponentsRegistry.register(componentFactory)

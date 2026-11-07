@@ -46,6 +46,20 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
 @property (nonatomic, strong) id<RCTDependencyProvider> dependencyProvider;
 
 @optional
+/**
+ * Returns native values to install as JavaScript globals before the main bundle executes.
+ * Each key names a property on globalThis. Values may be NSString, NSNumber (including booleans), NSNull,
+ * RCTArrayBuffer, or nested NSDictionary and NSArray containers of these types.
+ * All dictionary keys must be NSString. Callers must supply supported types; values use React Native's
+ * native-to-JSI conversion without additional input validation.
+ * Names must not match non-writable globals defined by React Native or the JavaScript engine:
+ * assigning to them throws during runtime initialization.
+ *
+ * Called on the JavaScript thread for each new runtime, including reloads, before
+ * host:didInitializeRuntime:. Return nil or an empty dictionary to install no globals.
+ */
+- (NSDictionary<NSString *, id> *_Nullable)initialRuntimeGlobals;
+
 /// This method returns a map of Component Descriptors and Components classes that needs to be registered in the
 /// new renderer. The Component Descriptor is a string which represent the name used in JS to refer to the native
 /// component. The default implementation returns an empty dictionary. Subclasses can override this method to register
