@@ -1608,8 +1608,8 @@ class VirtualizedList extends StateSafePureComponent<
     }
   };
 
-  // Stable so React does not detach and reattach every cell's ref on each render.
-  // Unmounted cells are removed in `_onCellUnmount`.
+  // Stable, so React doesn't detach and reattach every cell's ref on each
+  // render. Unmounted cells are removed in `_onCellUnmount`.
   _captureCellRef = (cellRenderer: null | CellRenderer<any>): void => {
     if (cellRenderer != null) {
       this._cellRefs[cellRenderer.props.cellKey] = cellRenderer;
