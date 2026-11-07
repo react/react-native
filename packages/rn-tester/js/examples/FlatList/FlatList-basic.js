@@ -128,11 +128,11 @@ class FlatListExample extends React.PureComponent<Props, State> {
     this._listRef?.recordInteraction(); // e.g. flipping logViewable switch
   }
 
-  _setBooleanValue: string => boolean => void = key => value =>
+  _setBooleanValue: (v: string) => (v: boolean) => void = key => value =>
     // $FlowFixMe[incompatible-type]
     this.setState({[key]: value});
 
-  _setIsRTL: boolean => void = value => {
+  _setIsRTL: (v: boolean) => void = value => {
     I18nManager.forceRTL(value);
     this.setState({isRTL: value});
     Alert.alert(

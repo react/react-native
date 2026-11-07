@@ -31,34 +31,6 @@ jobs:
         run: node ./scripts/releases/use-hermes-prebuilt.js
       - name: Run yarn install again, with the correct hermes version
         uses: ./.github/actions/yarn-install
-      - name: Ensure CocoaPods (`spm add --deintegrate` shells out to `pod`)
-        shell: bash
-        run: pod --version || sudo gem install cocoapods --no-document
-      # Both flavors are needed by every matrix cell, not just the one it builds:
-      # `spm add` stages both flavor framework trees and lets a per-configuration
-      # build setting pick one at build time, so it validates the debug/ and
-      # release/ artifact slots together (and `--download skip` refuses an
-      # incomplete slot). Please don't "optimise" this down to one flavor.
-      - name: Download ReactCore (Debug)
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactCoreDebug.xcframework.tar.gz
-          path: /tmp/rc-debug
-      - name: Download ReactCore (Release)
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactCoreRelease.xcframework.tar.gz
-          path: /tmp/rc-release
-      - name: Download ReactNativeDependencies (Debug)
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactNativeDependenciesDebug.xcframework.tar.gz
-          path: /tmp/deps-debug
-      - name: Download ReactNativeDependencies (Release)
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactNativeDependenciesRelease.xcframework.tar.gz
-          path: /tmp/deps-release
       - name: Download React Native package
         uses: ./.github/actions/download-artifact
         with:
@@ -70,34 +42,24 @@ jobs:
       - name: Prepare the HelloWorld application
         shell: bash
         run: node ./scripts/e2e/init-project-e2e.js --useHelloWorld --pathToLocalReactNative "/tmp/react-native-tmp/$(cat /tmp/react-native-tmp/react-native-package-version)"
-      # The ordinary `spm download`, pointed at the XCFrameworks this run just
-      # built rather than at the published nightly (RN_CORE_TARBALL_PATH /
-      # RN_DEPS_TARBALL_PATH are overrides download-spm-artifacts.js already
-      # supports). It fills both flavor slots per call and skips any slot that
-      # already validates, so it runs twice: the first pass fills both slots
-      # from the Release tarballs, then debug/ is dropped and refilled from the
-      # Debug tarballs while release/ is left alone. hermes-engine is fetched
-      # from Maven by the command itself.
-      - name: Download XCFrameworks built in this run (Debug + Release)
+      - name: Download the XCFrameworks built in this run
+        uses: ./.github/actions/setup-spm-artifacts
+        with:
+          working-directory: ${{ env.APP_IOS_DIR }}
+      # The `spm deinit` round trip runs in the Debug cell only: it does not
+      # depend on the flavor.
+      - name: Record HelloWorld before SwiftPM
+        if: matrix.flavor == 'Debug'
         shell: bash
-        working-directory: ${{ env.APP_IOS_DIR }}
         run: |
-          RN_CORE_TARBALL_PATH=/tmp/rc-release/ReactCoreRelease.xcframework.tar.gz \
-          RN_DEPS_TARBALL_PATH=/tmp/deps-release/ReactNativeDependenciesRelease.xcframework.tar.gz \
-            npx react-native spm download --artifacts /tmp/spm-artifacts
-          rm -rf /tmp/spm-artifacts/debug
-          RN_CORE_TARBALL_PATH=/tmp/rc-debug/ReactCoreDebug.xcframework.tar.gz \
-          RN_DEPS_TARBALL_PATH=/tmp/deps-debug/ReactNativeDependenciesDebug.xcframework.tar.gz \
-            npx react-native spm download --artifacts /tmp/spm-artifacts
-      - name: Scaffold Package.swift manifests for community dependencies
+          ./.github/workflow-scripts/assert-spm-deinit.sh record "$APP_IOS_DIR"
+          cp -R "$APP_IOS_DIR" "$RUNNER_TEMP/ios-before-spm"
+      # HelloWorld is a CocoaPods project in git. CI converts it to SwiftPM on every run.
+      - name: Convert HelloWorld to SwiftPM
         shell: bash
         working-directory: ${{ env.APP_IOS_DIR }}
-        run: npx react-native spm scaffold || true
-      - name: Convert the app to SwiftPM
-        shell: bash
-        working-directory: ${{ env.APP_IOS_DIR }}
-        run: npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
-      - name: Assert the app is on SwiftPM
+        run: RN_STRICT_API=1 npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+      - name: Assert HelloWorld is on SwiftPM
         shell: bash
         working-directory: ${{ env.APP_IOS_DIR }}
         run: |
@@ -146,3 +108,47 @@ jobs:
             echo "::error::Release build embeds a Debug React.framework ($COUNT getDebugProps symbols, expected none)"
             exit 1
           fi
+      - name: Take HelloWorld back to CocoaPods
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: npx react-native spm deinit
+      # Informational only. Expected differences include the CocoaPods
+      # references and the .xcworkspace, which `pod install` restores, and the
+      # JavaScriptCore.framework reference and empty Pods group, which deinit
+      # does not restore on purpose.
+      - name: Show what changed since before SwiftPM
+        if: ${{ !cancelled() && matrix.flavor == 'Debug' }}
+        shell: bash
+        run: diff -r -x build "$RUNNER_TEMP/ios-before-spm" "$APP_IOS_DIR" || true
+      - name: Check that only the CocoaPods files are left
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        run: ./.github/workflow-scripts/assert-spm-deinit.sh check "$APP_IOS_DIR" "$XCODE_PROJECT" "$PODFILE_SHA256" "$GITIGNORE_SHA256"
+      - name: Setup ruby
+        if: matrix.flavor == 'Debug'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6.10
+      # The tarballs are the Debug ones that setup-spm-artifacts downloaded.
+      - name: Install the CocoaPods dependencies
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        working-directory: private/helloworld
+        run: |
+          export RCT_USE_LOCAL_RN_DEP=/tmp/deps-debug/ReactNativeDependenciesDebug.xcframework.tar.gz
+          export RCT_TESTONLY_RNCORE_TARBALL_PATH=/tmp/rc-debug/ReactCoreDebug.xcframework.tar.gz
+          yarn bootstrap ios | cat
+      - name: Build ${{ env.XCODE_SCHEME }} with CocoaPods (Debug)
+        if: matrix.flavor == 'Debug'
+        shell: bash
+        working-directory: ${{ env.APP_IOS_DIR }}
+        run: |
+          xcodebuild \
+            -workspace "${XCODE_PROJECT%.xcodeproj}.xcworkspace" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/cocoapods-e2e-dd \
+            build

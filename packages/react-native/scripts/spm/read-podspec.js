@@ -32,7 +32,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 /*::
-type RawSpec = {[string]: unknown};
+type RawSpec = {[key: string]: unknown};
 */
 
 // ---------------------------------------------------------------------------

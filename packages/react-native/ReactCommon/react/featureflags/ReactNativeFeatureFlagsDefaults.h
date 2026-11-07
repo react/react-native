@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7b08cc12523878f5fe5de8e88ddfcb8a>>
+ * @generated SignedSource<<89ab9e63f9f36a3a7144d2798fb0ee29>>
  */
 
 /**
@@ -182,6 +182,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableImperativeFocus() override {
+    return false;
+  }
+
+  bool enableInteractableResponderViews() override {
     return false;
   }
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a512025b95fc84ba442eeb630f9cd156>>
+ * @generated SignedSource<<8991088f237ee5347385d79227b701a9>>
  */
 
 /**
@@ -235,6 +235,11 @@ class ReactNativeFeatureFlags {
    * Enable ref.focus() and ref.blur() for all views, not just TextInput.
    */
   RN_EXPORT static bool enableImperativeFocus();
+
+  /**
+   * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+   */
+  RN_EXPORT static bool enableInteractableResponderViews();
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.

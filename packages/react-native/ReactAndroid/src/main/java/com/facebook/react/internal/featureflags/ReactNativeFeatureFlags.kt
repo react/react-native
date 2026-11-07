@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f8f977e57eb4363282e0a38815ebef3b>>
+ * @generated SignedSource<<3e8e0db62761e8883d79917c14b0c482>>
  */
 
 /**
@@ -263,6 +263,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableImperativeFocus(): Boolean = accessor.enableImperativeFocus()
+
+  /**
+   * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+   */
+  @JvmStatic
+  public fun enableInteractableResponderViews(): Boolean = accessor.enableInteractableResponderViews()
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.

@@ -26,7 +26,7 @@ export type Getter<T> = () => T;
 
 // This defines the types for the overrides object, whose methods can return
 // null or undefined to fallback to the default value.
-export type OverridesFor<T extends {readonly [string]: () => unknown}> =
+export type OverridesFor<T extends {readonly [key: string]: () => unknown}> =
   Partial<{
     [key in keyof T]: Getter<?ReturnType<T[key]>>,
   }>;

@@ -312,7 +312,7 @@ export function unstable_produceFramesForDuration(milliseconds: number) {
 export function unstable_getDirectManipulationProps(
   nodeOrRef: NodeOrRef,
 ): Readonly<{
-  [string]: unknown,
+  [key: string]: unknown,
 }> {
   const node = getNode(nodeOrRef);
   const shadowNode = getNodeFromPublicInstance(node);
@@ -320,7 +320,7 @@ export function unstable_getDirectManipulationProps(
 }
 
 export function unstable_getFabricUpdateProps(nodeOrRef: NodeOrRef): Readonly<{
-  [string]: unknown,
+  [key: string]: unknown,
 }> {
   const node = getNode(nodeOrRef);
   const shadowNode = getNodeFromPublicInstance(node);
@@ -344,7 +344,7 @@ export function getDefinedEventHandlers(
   // WARNING: This uses React private API (fiber internals).
   // $FlowExpectedError[incompatible-type]
   const memoizedProps = (
-    instanceHandle as {memoizedProps?: {[string]: unknown}}
+    instanceHandle as {memoizedProps?: {[key: string]: unknown}}
   ).memoizedProps;
   if (memoizedProps == null) {
     return [];

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b7cc2e354af10387111491ff815f42a2>>
+ * @generated SignedSource<<ffbb122203de70880dab890f086850f5>>
  */
 
 /**
@@ -145,6 +145,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableImperativeFocus(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableInteractableResponderViews(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableInteropViewManagerClassLookUpOptimizationIOS(

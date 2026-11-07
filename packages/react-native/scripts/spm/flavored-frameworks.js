@@ -35,7 +35,7 @@ function plistJson(p /*: string */) /*: $FlowFixMe */ {
 
 /*::
 type ArtifactIndexEntry = {xcframeworkPath: string, url?: string};
-type ArtifactIndex = {[string]: ArtifactIndexEntry};
+type ArtifactIndex = {[key: string]: ArtifactIndexEntry};
 type ValidatedFramework = {
   id: string,
   frameworkName: string,
@@ -546,7 +546,7 @@ function sourceIdentity(framework /*: StagedFramework */) /*: {
   debug: {path: string, info: number, binaries: Array<{path: string, size: number, mtime: number}>},
   release: {path: string, info: number, binaries: Array<{path: string, size: number, mtime: number}>},
 } */ {
-  const identity /*: {[string]: {path: string, info: number, binaries: Array<{path: string, size: number, mtime: number}>}} */ =
+  const identity /*: {[key: string]: {path: string, info: number, binaries: Array<{path: string, size: number, mtime: number}>}} */ =
     {};
   for (const flavor of FLAVORS) {
     const xcframeworkPath = framework.sourcePaths[flavor];

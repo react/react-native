@@ -77,7 +77,7 @@ export type GenerateFunction = (
 ) => FilesOutput;
 
 export type LibraryGeneratorsFunctions = Readonly<{
-  [string]: Array<GenerateFunction>,
+  [key: string]: Array<GenerateFunction>,
 }>;
 
 export type LibraryOptions = Readonly<{
@@ -92,9 +92,9 @@ export type LibraryOptions = Readonly<{
 }>;
 
 export type SchemasOptions = Readonly<{
-  schemas: {[string]: SchemaType},
+  schemas: {[key: string]: SchemaType},
   outputDirectory: string,
-  supportedApplePlatforms?: {[string]: {[string]: boolean}},
+  supportedApplePlatforms?: {[key: string]: {[key: string]: boolean}},
 }>;
 
 export type LibraryGenerators =

@@ -60,7 +60,7 @@ class XHRExampleDownload extends React.Component<{...}, any> {
     const onreadystatechange = () => {
       if (xhr.readyState === xhr.HEADERS_RECEIVED) {
         const contentLength = parseInt(
-          xhr.getResponseHeader('Content-Length'),
+          String(xhr.getResponseHeader('Content-Length')),
           10,
         );
         this.setState({

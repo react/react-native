@@ -191,6 +191,17 @@ export default function processBackgroundImage(
   return result;
 }
 
+function isValidColorStopPosition(position: unknown): boolean {
+  if (typeof position === 'number') {
+    return Number.isFinite(position);
+  }
+  return (
+    typeof position === 'string' &&
+    position.endsWith('%') &&
+    Number.isFinite(parseFloat(position))
+  );
+}
+
 function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
   color: ColorStopColor,
   position: ColorStopPosition,
@@ -210,10 +221,7 @@ function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
       positions.length === 1
     ) {
       const position = positions[0];
-      if (
-        typeof position === 'number' ||
-        (typeof position === 'string' && position.endsWith('%'))
-      ) {
+      if (isValidColorStopPosition(position)) {
         processedColorStops.push({
           color: null,
           position,
@@ -230,10 +238,7 @@ function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
       }
       if (positions != null && positions.length > 0) {
         for (const position of positions) {
-          if (
-            typeof position === 'number' ||
-            (typeof position === 'string' && position.endsWith('%'))
-          ) {
+          if (isValidColorStopPosition(position)) {
             processedColorStops.push({
               color: processedColor,
               position,
@@ -810,10 +815,11 @@ function getPositionFromCSSValue(position: string) {
   }
 
   if (position.endsWith('px')) {
-    return parseFloat(position);
+    const value = parseFloat(position);
+    return Number.isFinite(value) ? value : null;
   }
 
-  if (position.endsWith('%')) {
+  if (isValidColorStopPosition(position)) {
     return position;
   }
 }

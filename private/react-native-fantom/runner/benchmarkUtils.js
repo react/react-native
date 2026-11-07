@@ -18,7 +18,7 @@ export const printBenchmarkResultsRanking = (
     result: BenchmarkResult,
   }>,
 ) => {
-  const testTaskTimings: {[string]: {[string]: number}} = {};
+  const testTaskTimings: {[key: string]: {[key: string]: number}} = {};
   let numTestVariants = 0;
 
   for (const benchmarkResult of benchmarkResults) {
@@ -46,7 +46,7 @@ export const printBenchmarkResultsRanking = (
   }
 
   // Find relative execution times for tasks
-  const results: {[string]: {[string]: string}} = {};
+  const results: {[key: string]: {[key: string]: string}} = {};
   for (const taskName in testTaskTimings) {
     const kv = Object.entries(testTaskTimings[taskName]);
     kv.sort((a, b) => b[1] - a[1]);

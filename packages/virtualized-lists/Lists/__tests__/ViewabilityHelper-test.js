@@ -14,7 +14,7 @@ import ListMetricsAggregator from '../ListMetricsAggregator';
 import ViewabilityHelper from '../ViewabilityHelper';
 
 let rowFrames: ?{
-  [string]: Readonly<{height: number, y: number}>,
+  [key: string]: Readonly<{height: number, y: number}>,
 };
 let data;
 const props: CellMetricProps = {

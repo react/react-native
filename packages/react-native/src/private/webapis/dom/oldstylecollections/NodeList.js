@@ -22,7 +22,7 @@ import {setPlatformObject} from '../../webidl/PlatformObjects';
 // IMPORTANT: The Flow type definition for this module is defined in `NodeList.js.flow`
 // because Flow only supports indexers in classes in declaration files.
 
-const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor<unknown>, ...} = {
+const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor, ...} = {
   value: {},
   writable: false,
 };

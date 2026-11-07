@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ab630b75fb3e4e8d98071daa789cd183>>
+ * @generated SignedSource<<831fb9840955085ec29c74490214d4ca>>
  */
 
 /**
@@ -180,6 +180,10 @@ bool ReactNativeFeatureFlags::enableImperativeEvents() {
 
 bool ReactNativeFeatureFlags::enableImperativeFocus() {
   return getAccessor().enableImperativeFocus();
+}
+
+bool ReactNativeFeatureFlags::enableInteractableResponderViews() {
+  return getAccessor().enableInteractableResponderViews();
 }
 
 bool ReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS() {

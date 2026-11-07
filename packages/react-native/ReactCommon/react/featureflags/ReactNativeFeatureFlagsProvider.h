@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<51d6cc13f941575462d1c934f6e90a63>>
+ * @generated SignedSource<<2835823a0015e62d7fa337b3ea16613f>>
  */
 
 /**
@@ -66,6 +66,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableImmediateUpdateModeForContentOffsetChanges() = 0;
   virtual bool enableImperativeEvents() = 0;
   virtual bool enableImperativeFocus() = 0;
+  virtual bool enableInteractableResponderViews() = 0;
   virtual bool enableInteropViewManagerClassLookUpOptimizationIOS() = 0;
   virtual bool enableIntersectionObserverByDefault() = 0;
   virtual bool enableKeyEvents() = 0;

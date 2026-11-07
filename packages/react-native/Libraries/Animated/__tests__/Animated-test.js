@@ -207,7 +207,7 @@ describe('Animated', () => {
 
     it('renders animated and primitive style correctly', () => {
       const anim = new Animated.Value(0);
-      const staticProps: {[string]: unknown} = {
+      const staticProps: {[key: string]: unknown} = {
         style: [
           {transform: [{translateX: anim}]},
           {transform: [{translateX: 100}]},
