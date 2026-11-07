@@ -8,6 +8,7 @@
 package com.facebook.react.tasks.internal
 
 import com.facebook.react.utils.Os.unixifyPath
+import com.facebook.react.utils.findGitBashOnWindows
 import com.facebook.react.utils.windowsAwareBashCommandLine
 import java.io.FileOutputStream
 import org.gradle.api.file.DirectoryProperty
@@ -53,7 +54,7 @@ abstract class BuildCodegenCLITask : Exec() {
     commandLine(
         windowsAwareBashCommandLine(
             codegenDir.asFile.get().canonicalPath.unixifyPath().plus(BUILD_SCRIPT_PATH),
-            bashWindowsHome = bashWindowsHome.orNull,
+            bashWindowsHome = bashWindowsHome.orNull ?: findGitBashOnWindows(),
         ),
     )
     super.exec()
