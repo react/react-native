@@ -210,6 +210,20 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // Traits:
   if (newTextInputProps.multiline != oldTextInputProps.multiline) {
     [self _setMultiline:newTextInputProps.multiline];
+  } else if (
+      !newTextInputProps.multiline && !std::isnan(oldTextInputProps.textAttributes.letterSpacing) &&
+      std::isnan(newTextInputProps.textAttributes.letterSpacing) && _backedTextInputView.attributedText.length == 0) {
+    // Once a `UITextField` has shown a new placeholder string with `NSKernAttributeName`, it keeps that kerning for
+    // later placeholders that have no kern attribute. Removing `letterSpacing` leaves out the attribute (there is no
+    // value meaning "the font's own kerning"), so only a fresh backed text input renders the placeholder without
+    // spacing. A recycled view gets here with the previous component's `letterSpacing` still in `_props`.
+    // `RCTUITextView` (multiline) draws its own placeholder label and is not affected. An input holding text is
+    // left alone: its placeholder is hidden.
+    const BOOL wasFirstResponder = _backedTextInputView.isFirstResponder;
+    [self _setMultiline:newTextInputProps.multiline];
+    if (wasFirstResponder) {
+      [_backedTextInputView becomeFirstResponder];
+    }
   }
 
   if (newTextInputProps.traits.autocapitalizationType != oldTextInputProps.traits.autocapitalizationType) {
@@ -307,20 +321,22 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // because they are being checked on-demand.
 
   // Other props:
-  if (newTextInputProps.placeholder != oldTextInputProps.placeholder) {
-    _backedTextInputView.placeholder = RCTNSStringFromString(newTextInputProps.placeholder);
-  }
-
-  if (newTextInputProps.placeholderTextColor != oldTextInputProps.placeholderTextColor) {
-    _backedTextInputView.placeholderColor = RCTUIColorFromSharedColor(newTextInputProps.placeholderTextColor);
-  }
-
+  // Text attributes go before the placeholder: a new placeholder string must not reach UIKit with the previous
+  // attributes, which it would keep (see the `letterSpacing` note above).
   if (newTextInputProps.textAttributes != oldTextInputProps.textAttributes) {
     NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
     defaultAttributes[RCTAttributedStringEventEmitterKey] =
         _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
     _backedTextInputView.defaultTextAttributes = defaultAttributes;
+  }
+
+  if (newTextInputProps.placeholder != oldTextInputProps.placeholder) {
+    _backedTextInputView.placeholder = RCTNSStringFromString(newTextInputProps.placeholder);
+  }
+
+  if (newTextInputProps.placeholderTextColor != oldTextInputProps.placeholderTextColor) {
+    _backedTextInputView.placeholderColor = RCTUIColorFromSharedColor(newTextInputProps.placeholderTextColor);
   }
 
   if (newTextInputProps.selectionColor != oldTextInputProps.selectionColor) {
