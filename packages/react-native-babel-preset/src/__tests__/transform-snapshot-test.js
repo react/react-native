@@ -568,6 +568,43 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).toContain('_classPrivateFieldLooseKey');
     });
 
+    it('transforms class static blocks without unstable_preserveClassPrivate', () => {
+      const code = `
+        class Config {
+          static value = 0;
+          static {
+            Config.value = 2;
+          }
+        }
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+      });
+      expect(result).not.toContain('static {');
+      expect(result).toContain('Config.value = 2');
+    });
+
+    it('transforms class static blocks when the profile lowers classes', () => {
+      const code = `
+        class Config {
+          static value = 0;
+          static {
+            Config.value = 2;
+          }
+        }
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-legacy',
+        customTransformOptions: {
+          unstable_preserveClassPrivate: true,
+        },
+      });
+      expect(result).not.toContain('static {');
+      expect(result).toContain('Config.value = 2');
+    });
+
     it('preserves async/await with unstable_preserveAsync', () => {
       const code = `
         async function fetchData() {
