@@ -30,10 +30,24 @@
 #import <react/renderer/core/RawEvent.h>
 #import <react/renderer/graphics/Color.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
+#import <react/renderer/textlayoutmanager/RCTTextLayoutManager.h>
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #import <react/utils/ContextContainer.h>
 
 using namespace facebook::react;
+
+/*
+ * The paragraph view declares this in a private category of its own. It builds
+ * the text storage the paragraph draws with, and the one the selection lays
+ * out with, so the tests use it for the reference layout.
+ */
+@interface RCTTextLayoutManager (RCTParagraphSelectionTests)
+
+- (NSTextStorage *)textStorageForNSAttributedString:(NSAttributedString *)attributedString
+                                paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                               size:(CGSize)size;
+
+@end
 
 /*
  * A touch emitter whose events are recorded, by type and in order, as they are
@@ -468,6 +482,118 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   return props;
 }
 
+- (Props::Shared)selectablePropsWithParagraphAttributes:(ParagraphAttributes)paragraphAttributes
+{
+  auto props = std::make_shared<ParagraphProps>();
+  props->isSelectable = true;
+  props->paragraphAttributes = std::move(paragraphAttributes);
+  return props;
+}
+
+/*
+ * A paragraph long enough to wrap or to truncate at 320 points, at one font
+ * size, with an optional fixed line height.
+ */
+- (AttributedString)longAttributedStringWithFontSize:(Float)fontSize lineHeight:(Float)lineHeight
+{
+  auto textAttributes = TextAttributes{};
+  textAttributes.fontSize = fontSize;
+  textAttributes.lineHeight = lineHeight;
+
+  auto fragment = AttributedString::Fragment{};
+  fragment.string =
+      "A paragraph that is long enough to wrap onto several lines at this width, "
+      "or to be cut short when it may take only one line.";
+  fragment.textAttributes = textAttributes;
+
+  auto attributedString = AttributedString{};
+  attributedString.appendFragment(std::move(fragment));
+  return attributedString;
+}
+
+/*
+ * The paragraph draws with a text storage that `RCTTextLayoutManager` builds
+ * from the painted string, at the drawing size. This builds the same storage,
+ * which is the layout the selection rects have to land on.
+ */
+- (NSLayoutManager *)drawingLayoutManagerFor:(RCTParagraphComponentView *)view
+                         paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                        size:(CGSize)size
+{
+  NSTextStorage *textStorage = [[RCTTextLayoutManager new] textStorageForNSAttributedString:view.attributedText
+                                                                        paragraphAttributes:paragraphAttributes
+                                                                                       size:size];
+  return textStorage.layoutManagers.firstObject;
+}
+
+/*
+ * Every line fragment, as its used rect and its glyph range, in order.
+ */
+- (NSArray<NSValue *> *)lineFragmentsOf:(NSLayoutManager *)layoutManager
+{
+  NSMutableArray<NSValue *> *lineFragments = [NSMutableArray new];
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+  NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+  [layoutManager enumerateLineFragmentsForGlyphRange:glyphRange
+                                          usingBlock:^(
+                                              CGRect rect,
+                                              CGRect usedRect,
+                                              NSTextContainer *container,
+                                              NSRange lineGlyphRange,
+                                              BOOL *stop) {
+                                            [lineFragments addObject:[NSValue valueWithCGRect:usedRect]];
+                                            [lineFragments addObject:[NSValue valueWithRange:lineGlyphRange]];
+                                          }];
+  return lineFragments;
+}
+
+/*
+ * Asserts that the selection text view places every line and every glyph where
+ * the drawing places it, and that the two use the same fonts, which is what
+ * `adjustsFontSizeToFit` changes.
+ */
+- (void)assertSelectionLayoutMatchesDrawingIn:(RCTParagraphComponentView *)view
+                          paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+{
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(selectionTextView);
+
+  NSLayoutManager *drawing = [self drawingLayoutManagerFor:view
+                                       paragraphAttributes:paragraphAttributes
+                                                      size:selectionTextView.frame.size];
+  NSLayoutManager *selection = selectionTextView.layoutManager;
+
+  XCTAssertEqualObjects(
+      [self lineFragmentsOf:selection],
+      [self lineFragmentsOf:drawing],
+      @"The lines must sit where the drawing puts them.");
+
+  NSRange drawnGlyphs = [drawing glyphRangeForTextContainer:drawing.textContainers.firstObject];
+  NSRange selectedGlyphs = [selection glyphRangeForTextContainer:selection.textContainers.firstObject];
+  XCTAssertTrue(NSEqualRanges(drawnGlyphs, selectedGlyphs), @"The selection must lay out the same glyphs.");
+
+  for (NSUInteger glyphIndex = drawnGlyphs.location; glyphIndex < NSMaxRange(drawnGlyphs); glyphIndex++) {
+    CGPoint drawnLocation = [drawing locationForGlyphAtIndex:glyphIndex];
+    CGPoint selectedLocation = [selection locationForGlyphAtIndex:glyphIndex];
+    XCTAssertTrue(
+        CGPointEqualToPoint(drawnLocation, selectedLocation),
+        @"Glyph %lu must sit where the drawing puts it.",
+        (unsigned long)glyphIndex);
+  }
+
+  NSTextStorage *drawnText = drawing.textStorage;
+  NSTextStorage *selectedText = selection.textStorage;
+  [drawnText enumerateAttribute:NSFontAttributeName
+                        inRange:NSMakeRange(0, drawnText.length)
+                        options:0
+                     usingBlock:^(UIFont *drawnFont, NSRange range, BOOL *stop) {
+                       UIFont *selectedFont = [selectedText attribute:NSFontAttributeName
+                                                              atIndex:range.location
+                                                       effectiveRange:nil];
+                       XCTAssertEqualObjects(selectedFont, drawnFont, @"The selection must use the drawn font.");
+                     }];
+}
+
 /*
  * Builds a paragraph view with the update calls that `RCTMountingManager` makes
  * for an insert. The view gets no event emitter and no parent. The selection
@@ -672,6 +798,83 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
                              XCTAssertEqualObjects(
                                  attributes[NSFontAttributeName], paintedFont, @"The font must survive the strip.");
                            }];
+}
+
+#pragma mark - The selection lays out as the drawing does
+
+/*
+ * Stripping the paint must not move a glyph. The default fixtures lay out at
+ * one size with default paragraph attributes, which proves little. These tests
+ * take the layouts that bend the text, build the drawing's layout with the
+ * same method the paragraph draws with, and compare line by line and glyph by
+ * glyph. Each one first checks that its layout really bent the text.
+ */
+- (void)testSelectionLayoutMatchesTheDrawingWithAdjustsFontSizeToFit
+{
+  auto paragraphAttributes = ParagraphAttributes{};
+  paragraphAttributes.adjustsFontSizeToFit = true;
+  paragraphAttributes.minimumFontScale = 0.5;
+  // The scaling sees an overflow only as a truncated line, so it needs a line
+  // limit and a truncating break mode, as `<Text numberOfLines={1}
+  // adjustsFontSizeToFit>` gives it: JavaScript defaults `ellipsizeMode` to
+  // tail, and a clipping container never reports an overflow.
+  paragraphAttributes.maximumNumberOfLines = 1;
+  paragraphAttributes.ellipsizeMode = EllipsizeMode::Tail;
+  RCTParagraphComponentView *view =
+      [self paragraphViewWithProps:[self selectablePropsWithParagraphAttributes:paragraphAttributes]
+                  attributedString:[self longAttributedStringWithFontSize:40 lineHeight:NAN]];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(selectionTextView);
+
+  NSLayoutManager *drawing = [self drawingLayoutManagerFor:view
+                                       paragraphAttributes:paragraphAttributes
+                                                      size:selectionTextView.frame.size];
+  UIFont *drawnFont = [drawing.textStorage attribute:NSFontAttributeName atIndex:0 effectiveRange:nil];
+  XCTAssertLessThan(drawnFont.pointSize, 40, @"The drawing must shrink the font, or the fixture tests nothing.");
+
+  [self assertSelectionLayoutMatchesDrawingIn:view paragraphAttributes:paragraphAttributes];
+}
+
+- (void)testSelectionLayoutMatchesTheDrawingWithTruncation
+{
+  auto paragraphAttributes = ParagraphAttributes{};
+  paragraphAttributes.maximumNumberOfLines = 1;
+  paragraphAttributes.ellipsizeMode = EllipsizeMode::Tail;
+  RCTParagraphComponentView *view =
+      [self paragraphViewWithProps:[self selectablePropsWithParagraphAttributes:paragraphAttributes]
+                  attributedString:[self longAttributedStringWithFontSize:20 lineHeight:NAN]];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(selectionTextView);
+
+  NSLayoutManager *drawing = [self drawingLayoutManagerFor:view
+                                       paragraphAttributes:paragraphAttributes
+                                                      size:selectionTextView.frame.size];
+  NSRange drawnGlyphs = [drawing glyphRangeForTextContainer:drawing.textContainers.firstObject];
+  XCTAssertNotEqual(
+      [drawing truncatedGlyphRangeInLineFragmentForGlyphAtIndex:drawnGlyphs.location].location,
+      NSNotFound,
+      @"The drawing must truncate the line, or the fixture tests nothing.");
+
+  [self assertSelectionLayoutMatchesDrawingIn:view paragraphAttributes:paragraphAttributes];
+}
+
+- (void)testSelectionLayoutMatchesTheDrawingWithACompressedLineHeight
+{
+  auto paragraphAttributes = ParagraphAttributes{};
+  RCTParagraphComponentView *view =
+      [self paragraphViewWithProps:[self selectablePropsWithParagraphAttributes:paragraphAttributes]
+                  attributedString:[self longAttributedStringWithFontSize:20 lineHeight:12]];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(selectionTextView);
+
+  NSLayoutManager *drawing = [self drawingLayoutManagerFor:view
+                                       paragraphAttributes:paragraphAttributes
+                                                      size:selectionTextView.frame.size];
+  NSArray<NSValue *> *drawnLines = [self lineFragmentsOf:drawing];
+  XCTAssertGreaterThan(drawnLines.count, 2u, @"The text must wrap, or the line height is not tested.");
+  XCTAssertEqual(drawnLines[0].CGRectValue.size.height, 12, @"The drawing must compress the lines.");
+
+  [self assertSelectionLayoutMatchesDrawingIn:view paragraphAttributes:paragraphAttributes];
 }
 
 /*
