@@ -400,10 +400,10 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 #if !TARGET_OS_TV
   // A drag of a selection handle starts on the glyphs the handle sits on, and
   // that is often a pressable <Text>. Adjusting a selection must not press it.
-  // Only a touch on the selection view is held back: a tap in the padding
-  // still presses the paragraph, or the <Pressable> around it.
-  if (_selectableTextView.selectionOwnsTouches &&
-      [_selectableTextView pointInside:[self convertPoint:point toView:_selectableTextView] withEvent:nil]) {
+  // Only a touch on the selected text or on its handles is held back: a tap in
+  // the padding still presses the paragraph, or the <Pressable> around it.
+  if (_selectableTextView != nil &&
+      [_selectableTextView selectionOwnsTouchAtPoint:[self convertPoint:point toView:_selectableTextView]]) {
     return nullptr;
   }
 #endif

@@ -162,13 +162,17 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 
 @property (nonatomic) UITouchPhase touchPhase;
 
+/*
+ * Where the finger is now, in the coordinates of the view it landed on.
+ */
+@property (nonatomic) CGPoint point;
+
 + (instancetype)touchOnView:(UIView *)view atPoint:(CGPoint)point;
 
 @end
 
 @implementation RCTParagraphSelectionTouch {
   __weak UIView *_touchView;
-  CGPoint _point;
 }
 
 + (instancetype)touchOnView:(UIView *)view atPoint:(CGPoint)point
@@ -1264,6 +1268,51 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 }
 
 /*
+ * A handle drag starts on the knob, which hangs outside the text view's
+ * bounds: above the first line of the selection, or below its last. In a
+ * padded paragraph that knob sits in the padding, and dragging it must not
+ * press. Farther from the handle, the padding presses as usual.
+ */
+- (void)testATouchOnASelectionHandleDoesNotPress
+{
+  auto fragmentEmitter = std::make_shared<TouchEventEmitter>(nullptr, EventDispatcher::Weak{});
+  auto paragraphEmitter = std::make_shared<ViewEventEmitter>(nullptr, EventDispatcher::Weak{});
+  RCTParagraphComponentView *view = [self paragraphViewWithEventEmitter:fragmentEmitter
+                                                                   text:"Selectable wavy decoration"
+                                                          contentInsets:EdgeInsets{40, 40, 40, 40}];
+  [view updateEventEmitter:paragraphEmitter];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(selectionTextView);
+
+  selectionTextView.selectedRange = NSMakeRange(3, 5);
+  NSArray<UITextSelectionRect *> *selectionRects =
+      [selectionTextView selectionRectsForRange:selectionTextView.selectedTextRange];
+  XCTAssertGreaterThan(selectionRects.count, 0u, @"The selection must have rects, or there is no handle to test.");
+
+  CGRect firstRect = selectionRects.firstObject.rect;
+  CGPoint onTheStartKnob = [view convertPoint:CGPointMake(CGRectGetMinX(firstRect), CGRectGetMinY(firstRect) - 8)
+                                     fromView:selectionTextView];
+  XCTAssertFalse(
+      [selectionTextView pointInside:[view convertPoint:onTheStartKnob toView:selectionTextView] withEvent:nil],
+      @"The knob must sit outside the text view, or the bounds check alone covers it.");
+  XCTAssertTrue(
+      [(id<RCTTouchableComponentViewProtocol>)view touchEventEmitterAtPoint:onTheStartKnob] == nullptr,
+      @"A drag that starts on the handle must not press.");
+
+  // In the left margin, past both handles, and below the line in text
+  // container coordinates: the layout manager maps a point in those, so only
+  // a point past the text falls back to the paragraph's own emitter.
+  CGPoint farFromTheKnob = CGPointMake(10, 95);
+  XCTAssertFalse(
+      [selectionTextView pointInside:[view convertPoint:farFromTheKnob toView:selectionTextView] withEvent:nil],
+      @"The control point must sit outside the text view.");
+  XCTAssertEqual(
+      (const void *)[(id<RCTTouchableComponentViewProtocol>)view touchEventEmitterAtPoint:farFromTheKnob].get(),
+      (const void *)paragraphEmitter.get(),
+      @"The padding away from the handle must still press.");
+}
+
+/*
  * The long press that selects is one touch of possibly several. Only that
  * touch leaves React Native: a finger held on another paragraph keeps its
  * touch, and ends it as usual. The cancelled touch dispatches nothing more
@@ -1314,6 +1363,47 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
       @"A cancelled touch must dispatch nothing more.");
 
   [touchHandler detachFromView:rootView];
+  window.hidden = YES;
+}
+
+/*
+ * A handle drag begins on the selection and lifts away from it: iOS keeps the
+ * knob clear of the finger. The pointer handler resolves the target at the
+ * finger for every event, so without a cancel the lift would reach the
+ * paragraph as a `pointerUp` with no `pointerDown` before it. The selection
+ * view sees the touch begin after the handlers do, and cancels it there.
+ */
+- (void)testAHandleDragThatLiftsInThePaddingStaysSilent
+{
+  RCTParagraphSelectionRecordingEmitter paragraph;
+  RCTParagraphComponentView *view = [self paragraphViewWithEventEmitter:paragraph.emitter()
+                                                                   text:"Selectable wavy decoration"
+                                                          contentInsets:EdgeInsets{40, 40, 40, 40}];
+  UIView *rootView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 400)];
+  UIWindow *window = [self windowWithRootView:rootView paragraphs:@[ view ]];
+  RCTSurfacePointerHandler *pointerHandler = [RCTSurfacePointerHandler new];
+  [pointerHandler attachToView:rootView];
+
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  selectionTextView.selectedRange = NSMakeRange(3, 5);
+
+  // The drag begins on the selected text, which the handlers see first, and
+  // the responder chain then hands it to the selection view.
+  RCTParagraphSelectionTouch *drag = [RCTParagraphSelectionTouch touchOnView:selectionTextView
+                                                                     atPoint:CGPointMake(50, 10)];
+  [pointerHandler touchesBegan:[NSSet setWithObject:drag] withEvent:nil];
+  [selectionTextView touchesBegan:[NSSet setWithObject:drag] withEvent:nil];
+
+  // The finger lifts in the padding below the text, past both handles.
+  drag.point = CGPointMake(50, 150);
+  drag.touchPhase = UITouchPhaseMoved;
+  [pointerHandler touchesMoved:[NSSet setWithObject:drag] withEvent:nil];
+  drag.touchPhase = UITouchPhaseEnded;
+  [pointerHandler touchesEnded:[NSSet setWithObject:drag] withEvent:nil];
+
+  XCTAssertTrue(paragraph.eventTypes().empty(), @"A handle drag must reach the paragraph as no pointer event at all.");
+
+  [pointerHandler detachFromView:rootView];
   window.hidden = YES;
 }
 

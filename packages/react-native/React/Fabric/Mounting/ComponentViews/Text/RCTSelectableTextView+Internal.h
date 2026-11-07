@@ -53,6 +53,14 @@ RCT_EXTERN NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *
  */
 @property (nonatomic, readonly) BOOL selectionOwnsTouches;
 
+/*
+ * Whether a touch at `point`, in this view's coordinates, belongs to the
+ * selection: it lands on the text, or on one of the two selection handles.
+ * The handle knobs sit outside the bounds, above the first line and below the
+ * last, so a bounds check alone lets a handle drag through.
+ */
+- (BOOL)selectionOwnsTouchAtPoint:(CGPoint)point;
+
 @end
 
 NS_ASSUME_NONNULL_END

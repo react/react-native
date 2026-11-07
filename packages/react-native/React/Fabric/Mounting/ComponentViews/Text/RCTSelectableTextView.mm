@@ -89,6 +89,66 @@ NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *attributedS
   }
 }
 
+/*
+ * How far from a handle's anchor a finger still counts as being on the handle.
+ * The knob is about 10 points across and sits just outside the line, and
+ * UIKit accepts a drag that starts a little away from it.
+ */
+static const CGFloat RCTSelectionHandleGrabRadius = 24.0;
+
+- (BOOL)selectionOwnsTouchAtPoint:(CGPoint)point
+{
+  if (!_selectionOwnsTouches) {
+    return NO;
+  }
+  if ([self pointInside:point withEvent:nil]) {
+    return YES;
+  }
+
+  UITextRange *selectedTextRange = self.selectedTextRange;
+  if (selectedTextRange == nil || selectedTextRange.isEmpty) {
+    return NO;
+  }
+
+  CGRect startRect = CGRectNull;
+  CGRect endRect = CGRectNull;
+  for (UITextSelectionRect *selectionRect in [self selectionRectsForRange:selectedTextRange]) {
+    if (selectionRect.containsStart) {
+      startRect = selectionRect.rect;
+    }
+    if (selectionRect.containsEnd) {
+      endRect = selectionRect.rect;
+    }
+  }
+  if (CGRectIsNull(startRect) || CGRectIsNull(endRect)) {
+    return NO;
+  }
+
+  // The start handle hangs off the top left of the first rect, and the end
+  // handle off the bottom right of the last one.
+  CGPoint startHandle = CGPointMake(CGRectGetMinX(startRect), CGRectGetMinY(startRect));
+  CGPoint endHandle = CGPointMake(CGRectGetMaxX(endRect), CGRectGetMaxY(endRect));
+  return hypot(point.x - startHandle.x, point.y - startHandle.y) <= RCTSelectionHandleGrabRadius ||
+      hypot(point.x - endHandle.x, point.y - endHandle.y) <= RCTSelectionHandleGrabRadius;
+}
+
+/*
+ * A touch that begins while a selection shows is a handle drag, or a tap on
+ * the selection. The paragraph hands out no emitter for where it lands, but
+ * the pointer handler resolves the target again for every event, at the
+ * finger, and a handle drag lifts away from the handle: iOS keeps the knob
+ * clear of the finger. Cancelling the touch here keeps it silent to the end.
+ * The handlers see the touch before this view does, so the cancel reaches a
+ * registered touch.
+ */
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+  [super touchesBegan:touches withEvent:event];
+  if (_selectionOwnsTouches) {
+    [self _cancelSurfaceTouchesInSelection];
+  }
+}
+
 - (void)_cancelSurfaceTouchesInSelection
 {
   // Every surface on the way up tracks the touch, with a touch handler and,
