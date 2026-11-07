@@ -100,12 +100,15 @@ jobs:
         with:
           name: prebuild-ios-core-headers-${{ matrix.flavor }}-${{ matrix.slice }}
           path: packages/react-native/.build/headers
+      - name: Compress slice to preserve symlinks
+        run: |
+          tar -czf "$RUNNER_TEMP/prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}.tar.gz" \
+            -C packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products .
       - name: Upload artifacts
         uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}
-          path: |
-            packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          path: ${{ runner.temp }}/prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}.tar.gz
       - name: Save Cache
         uses: actions/cache/save@v5
         if: ${{ github.ref == 'refs/heads/main' }} # To avoid that the cache explode
@@ -133,7 +136,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: packages/react-native/.build/output/xcframeworks
-          key: v4-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v5-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
       - name: Setup node.js
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-node
@@ -148,8 +151,15 @@ jobs:
         uses: ./.github/actions/download-artifact
         with:
           pattern: prebuild-ios-core-slice-${{ matrix.flavor }}-*
-          path: packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          path: ${{ runner.temp }}/prebuild-slices
           merge-multiple: true
+      - name: Extract slices
+        if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          for archive in "$RUNNER_TEMP"/prebuild-slices/*.tar.gz; do
+            tar -xzf "$archive" -C packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          done
       - name: Download headers
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/download-artifact
@@ -222,6 +232,16 @@ jobs:
           # regressions here instead of in downstream builds.
           cd packages/react-native
           node scripts/ios-prebuild/headers-verify.js --flavor "${{ matrix.flavor }}" ${{ inputs.version-type != '' && '--require-stamped-version' || '' }}
+      - name: Verify Mac Catalyst framework symlinks
+        if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
+        run: |
+          framework="packages/react-native/.build/output/xcframeworks/${{ matrix.flavor }}/React.xcframework/ios-arm64_x86_64-maccatalyst/React.framework"
+          for link in React Resources Versions/Current; do
+            if [ ! -L "$framework/$link" ]; then
+              echo "::error::Expected framework symlink: $framework/$link. Archive build slices before uploading them."
+              exit 1
+            fi
+          done
       - name: Compress and Rename XCFramework
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         run: |
@@ -267,4 +287,4 @@ jobs:
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
-          key: v4-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v5-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
