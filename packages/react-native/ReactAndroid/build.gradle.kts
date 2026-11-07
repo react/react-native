@@ -760,6 +760,7 @@ dependencies {
   compileOnly(project(":packages:react-native:ReactAndroid:hermes-engine"))
 
   implementation(libs.androidx.collection)
+  implementation(libs.androidx.emoji2)
 
   testImplementation(libs.junit)
   testImplementation(libs.assertj)
