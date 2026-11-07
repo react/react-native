@@ -597,6 +597,9 @@ describe('react-native-babel-preset transform snapshots', () => {
       const result = transformCode(code, {
         dev: false,
         unstable_transformProfile: 'hermes-legacy',
+        customTransformOptions: {
+          unstable_preserveClassPrivate: true,
+        },
       });
       expect(result).not.toContain('static {');
       expect(result).toContain('Config.value = 2');
