@@ -7,13 +7,31 @@
 
 #include "JHermesInstance.h"
 
+#include <android/log.h>
 #include <fbjni/fbjni.h>
+#include <hermes/hermes.h>
+
+#include <mutex>
 
 namespace facebook::react {
+
+static void hermesFatalHandler(const std::string& reason) {
+  __android_log_assert(nullptr, "Hermes", "%s", reason.c_str());
+}
+
+static constinit std::once_flag flag;
 
 jni::local_ref<JHermesInstance::jhybriddata> JHermesInstance::initHybrid(
     jni::alias_ref<jclass> /* unused */,
     bool allocInOldGenBeforeTTI) {
+  std::call_once(flag, []() {
+    auto* fatalHandlerInterface =
+        jsi::castInterface<facebook::hermes::ISetFatalHandler>(
+            facebook::hermes::makeHermesRootAPI());
+    if (fatalHandlerInterface) {
+      fatalHandlerInterface->setFatalHandler(hermesFatalHandler);
+    }
+  });
   return makeCxxInstance(allocInOldGenBeforeTTI);
 }
 
