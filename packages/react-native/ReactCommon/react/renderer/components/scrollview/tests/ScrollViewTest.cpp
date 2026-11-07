@@ -136,4 +136,21 @@ TEST(ScrollViewStateTest, zeroSizeContentBoundingRect) {
   EXPECT_EQ(contentSize.height, 0.0f);
 }
 
+#ifdef RN_SERIALIZABLE_STATE
+TEST(ScrollViewStateTest, dynamicIncludesScrollAwayPaddingBottom) {
+  ScrollViewState state;
+
+  EXPECT_EQ(state.getDynamic()["scrollAwayPaddingBottom"].asInt(), 0);
+
+  folly::dynamic data =
+      folly::dynamic::object("contentOffsetLeft", 0.0)("contentOffsetTop", 0.0)(
+          "scrollAwayPaddingTop", 5.0)("scrollAwayPaddingBottom", 10.0);
+  ScrollViewState newState(state, data);
+
+  EXPECT_EQ(newState.scrollAwayPaddingTop, 5);
+  EXPECT_EQ(newState.scrollAwayPaddingBottom, 10);
+  EXPECT_EQ(newState.getDynamic()["scrollAwayPaddingBottom"].asInt(), 10);
+}
+#endif
+
 } // namespace facebook::react
