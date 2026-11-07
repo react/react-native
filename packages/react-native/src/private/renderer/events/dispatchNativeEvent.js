@@ -39,7 +39,7 @@ import {
 export default function dispatchNativeEvent(
   target: ?EventTarget,
   type: string,
-  payload: {[string]: unknown},
+  payload: {[key: string]: unknown},
 ): void {
   // $FlowFixMe[incompatible-type] The global is backed by this implementation.
   const internalTarget = target as ?InternalEventTarget;

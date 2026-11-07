@@ -10,6 +10,9 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import type {AccessibilityProps} from 'react-native';
+
+import {rolePropSuite} from '../../../../src/private/__tests__/utilities/accessibilityPropsSuite';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {Text, TouchableNativeFeedback, View} from 'react-native';
@@ -18,6 +21,16 @@ describe('<TouchableNativeFeedback>', () => {
   it('sets displayName', () => {
     expect(TouchableNativeFeedback.displayName).toBe('TouchableNativeFeedback');
   });
+
+  component ComponentWithAccessibilityProps(...props: AccessibilityProps) {
+    return (
+      <TouchableNativeFeedback {...props}>
+        <Text>Touchable</Text>
+      </TouchableNativeFeedback>
+    );
+  }
+
+  rolePropSuite(ComponentWithAccessibilityProps);
 
   describe('rendering', () => {
     it('renders its child as pressable', () => {

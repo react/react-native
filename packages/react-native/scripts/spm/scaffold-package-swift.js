@@ -1147,7 +1147,7 @@ function collectAutolinkedDeps(
   } */,
 ) /*: ?Array<AutolinkedDep> */ {
   const {autolinkingJsonPath, remote, onSkipped} = opts;
-  /*:: type AutolinkingJson = {dependencies?: ?{[string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
+  /*:: type AutolinkingJson = {dependencies?: ?{[key: string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
   // $FlowFixMe[incompatible-type] JSON.parse returns any
   const data /*: AutolinkingJson */ = JSON.parse(
     fs.readFileSync(autolinkingJsonPath, 'utf8'),

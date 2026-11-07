@@ -65,7 +65,7 @@ const unknownKeysReported /*: Set<string> */ = new Set();
 
 function readPackageJson(
   root /*: string */,
-) /*: ?{readonly [string]: unknown} */ {
+) /*: ?{readonly [key: string]: unknown} */ {
   const pkgPath = path.join(root, 'package.json');
   if (!fs.existsSync(pkgPath)) {
     return null;
@@ -84,7 +84,7 @@ function readPackageJson(
 // A settings object, or null for anything else the author may have written
 // there — an array included, since its indices are not fields.
 function objectField(
-  source /*: ?{readonly [string]: unknown} */,
+  source /*: ?{readonly [key: string]: unknown} */,
   key /*: string */,
 ) /*: ?SwiftpmConfig */ {
   const value = source?.[key];
@@ -94,7 +94,7 @@ function objectField(
 }
 
 function declaredFields(
-  config /*: ?{readonly [string]: unknown} */,
+  config /*: ?{readonly [key: string]: unknown} */,
 ) /*: Array<string> */ {
   return config == null
     ? []
@@ -103,8 +103,8 @@ function declaredFields(
 
 // util.isDeepStrictEqual is missing from the Flow library definitions.
 function sameField(
-  a /*: ?{readonly [string]: unknown} */,
-  b /*: ?{readonly [string]: unknown} */,
+  a /*: ?{readonly [key: string]: unknown} */,
+  b /*: ?{readonly [key: string]: unknown} */,
   field /*: string */,
 ) /*: boolean */ {
   try {

@@ -36,7 +36,7 @@ type Props = Readonly<{
   style?: ?ViewStyleProp,
   frame?: ?InspectedElementFrame,
   selection?: ?number,
-  setSelection?: number => unknown,
+  setSelection?: (v: number) => unknown,
 }>;
 
 class ElementProperties extends React.Component<Props> {

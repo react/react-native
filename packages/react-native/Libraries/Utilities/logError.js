@@ -18,6 +18,7 @@
 const logError = function (...args: ReadonlyArray<unknown>) {
   if (args.length === 1 && args[0] instanceof Error) {
     const err = args[0];
+    // $FlowFixMe[unsafe-addition]
     console.error('Error: "' + err.message + '".  Stack:\n' + err.stack);
   } else {
     console.error.apply(console, args);

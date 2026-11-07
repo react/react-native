@@ -103,7 +103,7 @@ type OptionalVirtualizedSectionListProps<
    * enabled by default on iOS because that is the platform standard there.
    */
   stickySectionHeadersEnabled?: boolean,
-  onEndReached?: ?({distanceFromEnd: number, ...}) => void,
+  onEndReached?: ?(v: {distanceFromEnd: number, ...}) => void,
 };
 
 export type VirtualizedSectionListProps<
@@ -426,7 +426,7 @@ class VirtualizedSectionList<
 
   _setUpdateHighlightFor = (
     cellKey: string,
-    updateHighlightFn: ?(boolean) => void,
+    updateHighlightFn: ?(v: boolean) => void,
   ) => {
     if (updateHighlightFn != null) {
       this._updateHighlightMap[cellKey] = updateHighlightFn;
@@ -435,7 +435,10 @@ class VirtualizedSectionList<
     }
   };
 
-  _setUpdatePropsFor = (cellKey: string, updatePropsFn: ?(boolean) => void) => {
+  _setUpdatePropsFor = (
+    cellKey: string,
+    updatePropsFn: ?(v: boolean) => void,
+  ) => {
     if (updatePropsFn != null) {
       this._updatePropsMap[cellKey] = updatePropsFn;
     } else {
@@ -467,8 +470,8 @@ class VirtualizedSectionList<
     return null;
   }
 
-  _updateHighlightMap: {[string]: (boolean) => void} = {};
-  _updatePropsMap: {[string]: void | (boolean => void)} = {};
+  _updateHighlightMap: {[key: string]: (v: boolean) => void} = {};
+  _updatePropsMap: {[key: string]: void | ((v: boolean) => void)} = {};
   _listRef: ?VirtualizedList;
   _captureRef = (ref: null | VirtualizedList) => {
     this._listRef = ref;
@@ -492,11 +495,11 @@ type ItemWithSeparatorProps<ItemT> = Readonly<{
   item: ItemT,
   setSelfHighlightCallback: (
     cellKey: string,
-    updateFn: ?(boolean) => void,
+    updateFn: ?(v: boolean) => void,
   ) => void,
   setSelfUpdatePropsCallback: (
     cellKey: string,
-    updateFn: ?(boolean) => void,
+    updateFn: ?(v: boolean) => void,
   ) => void,
   prevCellKey?: ?string,
   updateHighlightFor: (prevCellKey: string, value: boolean) => void,

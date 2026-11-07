@@ -87,7 +87,7 @@ function uuidComment(comment /*: ?string */) /*: string */ {
  * entries into an existing project.
  */
 function serializeEntry(
-  entry /*: {readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [string]: string}, ...} */,
+  entry /*: {readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [key: string]: string}, ...} */,
 ) /*: string */ {
   let out = `\t\t${entry.uuid}${uuidComment(entry.comment)} = {`;
   const fieldKeys = Object.keys(entry.fields);

@@ -20,7 +20,7 @@ export type PackagerAsset = Readonly<{
 }>;
 */
 
-const androidScaleSuffix /*: {[string]: string} */ = {
+const androidScaleSuffix /*: {[key: string]: string} */ = {
   '0.75': 'ldpi',
   '1': 'mdpi',
   '1.5': 'hdpi',

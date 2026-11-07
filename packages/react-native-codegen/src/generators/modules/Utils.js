@@ -38,17 +38,16 @@ function createAliasResolver(aliasMap: NativeModuleAliasMap): AliasResolver {
 function getModules(
   schema: SchemaType,
 ): Readonly<{[hasteModuleName: string]: NativeModuleSchema}> {
-  return Object.keys(schema.modules).reduce<{[string]: NativeModuleSchema}>(
-    (modules, hasteModuleName: string) => {
-      const module = schema.modules[hasteModuleName];
-      if (module == null || module.type === 'Component') {
-        return modules;
-      }
-      modules[hasteModuleName] = module;
+  return Object.keys(schema.modules).reduce<{
+    [key: string]: NativeModuleSchema,
+  }>((modules, hasteModuleName: string) => {
+    const module = schema.modules[hasteModuleName];
+    if (module == null || module.type === 'Component') {
       return modules;
-    },
-    {},
-  );
+    }
+    modules[hasteModuleName] = module;
+    return modules;
+  }, {});
 }
 
 function isDirectRecursiveMember(

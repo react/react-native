@@ -137,7 +137,7 @@ function visit(
 function getConfigType(
   // TODO(T71778680): Flow-type this node.
   ast: $FlowFixMe,
-  Visitor: ({isComponent: boolean, isModule: boolean}) => {
+  Visitor: (v: {isComponent: boolean, isModule: boolean}) => {
     [type: string]: (node: $FlowFixMe) => void,
   },
 ): 'module' | 'component' | 'none' {

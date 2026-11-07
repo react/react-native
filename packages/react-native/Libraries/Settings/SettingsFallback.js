@@ -16,7 +16,7 @@ const Settings = {
     return null;
   },
 
-  set(settings: {[string]: unknown, ...}) {
+  set(settings: {[key: string]: unknown, ...}) {
     console.warn('Settings is not yet supported on this platform.');
   },
 

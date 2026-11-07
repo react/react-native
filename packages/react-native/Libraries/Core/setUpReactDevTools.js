@@ -77,7 +77,9 @@ if (__DEV__) {
     require('../Components/View/ReactNativeStyleAttributes').default;
   const resolveRNStyle = require('../StyleSheet/flattenStyle').default;
 
-  function handleReactDevToolsSettingsUpdate(settings: {[string]: unknown}) {
+  function handleReactDevToolsSettingsUpdate(settings: {
+    [key: string]: unknown,
+  }) {
     reactDevToolsSettingsManager.setGlobalHookSettings(
       JSON.stringify(settings),
     );

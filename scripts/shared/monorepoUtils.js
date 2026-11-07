@@ -138,7 +138,7 @@ async function parsePackageInfo(
  */
 async function updatePackageJson(
   {path: packagePath, packageJson} /*: PackageInfo */,
-  newPackageVersions /*: Readonly<{[string]: string}> */,
+  newPackageVersions /*: Readonly<{[key: string]: string}> */,
 ) /*: Promise<void> */ {
   const packageName = packageJson.name;
 

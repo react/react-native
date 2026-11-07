@@ -39,7 +39,7 @@ import {
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
-const DISPLAY_STATUS_MAPPING: {[PlatformTestResultStatus]: string} = {
+const DISPLAY_STATUS_MAPPING: {[key: PlatformTestResultStatus]: string} = {
   PASS: 'Pass',
   FAIL: 'Fail',
   ERROR: 'Error',
@@ -487,9 +487,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const STATUS_TEXT_STYLE_MAPPING: {[PlatformTestResultStatus]: TextStyle} = {
-  PASS: styles.passText,
-  FAIL: styles.failText,
-  ERROR: styles.errorText,
-  SKIPPED: styles.skippedText,
-};
+const STATUS_TEXT_STYLE_MAPPING: {[key: PlatformTestResultStatus]: TextStyle} =
+  {
+    PASS: styles.passText,
+    FAIL: styles.failText,
+    ERROR: styles.errorText,
+    SKIPPED: styles.skippedText,
+  };

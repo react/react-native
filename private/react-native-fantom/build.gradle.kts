@@ -35,6 +35,7 @@ fun getSDKPath(): String {
 
 val FOLLY_VERSION = libs.versions.folly.get()
 val GFLAGS_VERSION = libs.versions.gflags.get()
+val GOOGLETEST_VERSION = libs.versions.googletest.get()
 val NLOHMANNJSON_VERSION = libs.versions.nlohmannjson.get()
 
 val buildDir = project.layout.buildDirectory.get().asFile
@@ -104,6 +105,27 @@ val prepareGflags by
       outputDir.set(File(thirdParty, "gflags"))
     }
 
+val downloadGoogleTestDest = File(downloadsDir, "googletest-${GOOGLETEST_VERSION}.tar.gz")
+val downloadGoogleTest by
+    tasks.registering(Download::class) {
+      dependsOn(createNativeDepsDirectories)
+      src("https://github.com/google/googletest/archive/v${GOOGLETEST_VERSION}.tar.gz")
+      onlyIfModified(true)
+      overwrite(false)
+      retries(5)
+      quiet(true)
+      dest(downloadGoogleTestDest)
+    }
+
+val prepareGoogleTest by
+    tasks.registering(Copy::class) {
+      dependsOn(listOf(downloadGoogleTest))
+      from(tarTree(downloadGoogleTestDest))
+      eachFile { path = path.substringAfter("/") }
+      includeEmptyDirs = false
+      into("$thirdParty/googletest")
+    }
+
 val downloadNlohmannJsonDest = File(downloadsDir, "nlohmann_json-${NLOHMANNJSON_VERSION}.tar.gz")
 val downloadNlohmannJson by
     tasks.registering(Download::class) {
@@ -164,6 +186,7 @@ val prepareNative3pDependencies by
     tasks.registering {
       dependsOn(
           prepareGflags,
+          prepareGoogleTest,
           prepareNlohmannJson,
           prepareFolly,
           ":packages:react-native:ReactAndroid:prepareBoost",
@@ -228,4 +251,39 @@ val buildFantomTester by
       )
       standardOutputFile.set(project.file("$buildDir/reports/build-fantom_tester.log"))
       errorOutputFile.set(project.file("$buildDir/reports/build-fantom_tester.error.log"))
+    }
+
+val buildReactCommonTests by
+    tasks.registering(CustomExecTask::class) {
+      dependsOn(configureFantomTester)
+      workingDir(testerDir)
+      inputs.files(testerBuildOutputFileTree)
+      outputs.upToDateWhen { false }
+      commandLine(
+          cmakeBinaryPath,
+          "--build",
+          testerBuildDir.toString(),
+          "--target",
+          "react_common_tests",
+          "-j",
+          ndkBuildJobs,
+      )
+      standardOutputFile.set(project.file("$buildDir/reports/build-react_common_tests.log"))
+      errorOutputFile.set(project.file("$buildDir/reports/build-react_common_tests.error.log"))
+    }
+
+val testReactCommon by
+    tasks.registering(Exec::class) {
+      dependsOn(buildReactCommonTests)
+      outputs.upToDateWhen { false }
+      commandLine(
+          "$cmakePath/bin/ctest",
+          "--test-dir",
+          "$testerBuildDir/react-common-tests",
+          "--output-on-failure",
+          "--output-junit",
+          "$reportsDir/react-common-tests.xml",
+          "-j",
+          ndkBuildJobs,
+      )
     }

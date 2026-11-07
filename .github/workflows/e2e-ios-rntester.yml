@@ -112,9 +112,7 @@ jobs:
           if [[ "${{ steps.test-state.outputs.should-run }}" == "false" || "${{ steps.run-tests.outcome }}" == "success" ]]; then
             RESULT=passed
           elif [[ "${{ steps.download-app.outcome }}" == "failure" ]]; then
-            # test_ios_rntester uses continue-on-error, so it reports success
-            # even when the build that uploads this app failed.
-            echo "::error::RNTesterApp-NewArch-${{ matrix.flavor }} is missing. Check the test_ios_rntester (${{ matrix.flavor }}, frameworks: false) job."
+            echo "::error::RNTesterApp-NewArch-${{ matrix.flavor }} is missing. Check the test_ios_rntester (${{ matrix.flavor }}) job."
             RESULT=failed
           elif [[ -f "$STATE" ]] && jq -e 'any(.flows[]; .status == "failed")' "$STATE" > /dev/null; then
             RESULT=failed

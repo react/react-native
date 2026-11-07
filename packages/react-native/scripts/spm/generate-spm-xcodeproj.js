@@ -135,7 +135,7 @@ const SPM_GENERATED_SOURCES_GROUP_NAME = 'SPM Generated Sources';
 // pbxproj `lastKnownFileType` per source extension. v1 plugins emit Swift only;
 // .m/.mm are mapped as future-proofing (the plugin contract permits ObjC/ObjC++
 // sources). An unmapped extension is skipped with a loud log.
-const GENERATED_SOURCE_FILE_TYPES /*: {[string]: string} */ = {
+const GENERATED_SOURCE_FILE_TYPES /*: {[key: string]: string} */ = {
   '.swift': 'sourcecode.swift',
   '.m': 'sourcecode.c.objc',
   '.mm': 'sourcecode.cpp.objcpp',
@@ -172,17 +172,17 @@ type RemoteCfg = {url: string, version: string, identity: string};
 type BuildSettingChange = {
   configUuid: string,
   createdArrayKeys: Array<string>,
-  appendedArrayValues: {[string]: Array<string>},
+  appendedArrayValues: {[key: string]: Array<string>},
   createdScalars: Array<string>,
   // Scalars whose pre-injection value was replaced (key → original raw
   // value), e.g. a ${PODS_ROOT}-anchored REACT_NATIVE_PATH that dangles once
   // CocoaPods is deintegrated. Deinit restores the original.
-  replacedScalars?: {[string]: string},
+  replacedScalars?: {[key: string]: string},
   // Array settings that existed as a SCALAR and were promoted to a `( … )`
   // array (key → the pre-injection raw value text, quotes included). Deinit
   // restores that value verbatim; removing the injected members would leave
   // the promoted array and its `"$(inherited)"` seed behind.
-  promotedArrayScalars?: {[string]: string},
+  promotedArrayScalars?: {[key: string]: string},
 };
 // An array field injection CREATED (rather than appended to a pre-existing
 // one), so deinit removes the whole field and lands byte-identical.
@@ -281,7 +281,7 @@ function buildSpmDependencyGraph(
  * Render the SPM graph into pbxproj section entry objects the in-place injector
  * splices into an existing project.
  */
-/*:: type PbxEntryT = {uuid: string, comment: string, fields: {[string]: string}}; */
+/*:: type PbxEntryT = {uuid: string, comment: string, fields: {[key: string]: string}}; */
 
 function spmGraphToEntries(
   graph /*: SpmGraph */,
@@ -340,7 +340,7 @@ function shellScriptPhase(
   name /*: string */,
   script /*: string */,
   options /*: {inputPaths?: ?(string | ReadonlyArray<string>), outputPaths?: ?(string | ReadonlyArray<string>), alwaysOutOfDate?: ?boolean, comment?: string} */ = {},
-) /*: {uuid: string, comment: string, fields: {[string]: string}} */ {
+) /*: {uuid: string, comment: string, fields: {[key: string]: string}} */ {
   const empty = '(\n\t\t\t)';
   const pathList = (
     value /*: ?(string | ReadonlyArray<string>) */,
@@ -1613,7 +1613,7 @@ function injectSpmIntoPbxproj(
   flavoredFrameworks /*: ReadonlyArray<FlavoredFrameworkManifestEntry> */ = [],
   scriptPhases /*: ReadonlyArray<PluginScriptPhase> */ = [],
   cxxApiDefines /*: ReadonlyArray<string> */ = [],
-) /*: {text: string, injectedUuids: Array<string>, createdArrayFields: Array<CreatedArrayField>, xcconfig: XcconfigRecord, generatedFiles: {[string]: string}, generatedSourceUuids: {[string]: Array<string>}, scriptPhaseUuids: {[string]: string}} */ {
+) /*: {text: string, injectedUuids: Array<string>, createdArrayFields: Array<CreatedArrayField>, xcconfig: XcconfigRecord, generatedFiles: {[key: string]: string}, generatedSourceUuids: {[key: string]: Array<string>}, scriptPhaseUuids: {[key: string]: string}} */ {
   let text = input;
   const mkUuid = (section /*: string */, id /*: string */) =>
     namespacedUUID(plan.rootUuid, section, id);
@@ -1624,7 +1624,7 @@ function injectSpmIntoPbxproj(
   // 1. Insert the new objects (skip any UUID already present — idempotency).
   const insertObjects = (
     sectionName /*: string */,
-    objs /*: ReadonlyArray<{readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [string]: string}, ...}> */,
+    objs /*: ReadonlyArray<{readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [key: string]: string}, ...}> */,
   ) => {
     const fresh = objs.filter(o => !text.includes(o.uuid));
     for (const o of objs) {
@@ -1753,7 +1753,7 @@ function injectSpmIntoPbxproj(
       removedPodsRootReactNativePath = true;
     }
   }
-  const generatedFiles /*: {[string]: string} */ = {
+  const generatedFiles /*: {[key: string]: string} */ = {
     [GENERATED_XCCONFIG_PATH]: generateReactNativeXcconfig(
       plan.configUuids.map(uuid => buildConfigurationName(text, uuid)),
       reactNativePaths.fromSrcRoot,
@@ -1876,7 +1876,7 @@ function injectSpmIntoPbxproj(
   //    normalized path (deterministic → idempotent) and recorded so `deinit`
   //    reverts it and `update` reconciles it (removal is done by the caller,
   //    which owns the prior marker; emission here is purely additive).
-  const generatedSourceUuids /*: {[string]: Array<string>} */ = {};
+  const generatedSourceUuids /*: {[key: string]: Array<string>} */ = {};
   const sourcesPhaseUuid = plan.sourcesPhaseUuid;
   if (generatedSources.length > 0) {
     if (sourcesPhaseUuid == null) {
@@ -1973,7 +1973,7 @@ function injectSpmIntoPbxproj(
   // 9. Plugin-declared build phases (SwiftPM has no `script_phase`). Each
   //    phase's UUID is keyed on its plugin id, so re-runs refresh in place and
   //    `deinit` reverses it.
-  const scriptPhaseUuids /*: {[string]: string} */ = {};
+  const scriptPhaseUuids /*: {[key: string]: string} */ = {};
   if (scriptPhases.length > 0) {
     const seated /*: Array<SeatedPhase> */ = [];
     for (const scriptPhase of scriptPhases) {
@@ -2469,7 +2469,7 @@ function readScriptPhasesManifest(
  */
 function readMarker(
   xcodeprojPath /*: string */,
-) /*: ?{targetUuid?: ?string, generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, linkedFrameworks?: Array<{id: string, frameworkName: string}>, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: unknown, buildSettingChanges?: Array<BuildSettingChange>, xcconfig?: XcconfigRecord, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, gitignore?: GitignoreRecord, ...} */ {
+) /*: ?{targetUuid?: ?string, generatedSources?: {[key: string]: Array<string>}, scriptPhases?: {[key: string]: string}, linkedFrameworks?: Array<{id: string, frameworkName: string}>, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: unknown, buildSettingChanges?: Array<BuildSettingChange>, xcconfig?: XcconfigRecord, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, gitignore?: GitignoreRecord, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
     // $FlowFixMe[incompatible-return] JSON.parse returns any
@@ -2605,7 +2605,7 @@ function readLinkedFrameworks(
  */
 function assertPluginFrameworksLinked(
   appRoot /*: string */,
-  env /*: {readonly [string]: ?string} */ = process.env,
+  env /*: {readonly [key: string]: ?string} */ = process.env,
 ) /*: void */ {
   const builtProjectPath = env.PROJECT_FILE_PATH;
   const xcodeprojPath =
@@ -2851,7 +2851,7 @@ function injectSpmIntoExistingXcodeproj(
   // idempotently skips) everything that remains, so an unchanged run stays
   // byte-identical. deinit needs none of this: the removed objects live in
   // `injectedUuids`.
-  const prevGeneratedSources /*: {[string]: Array<string>} */ =
+  const prevGeneratedSources /*: {[key: string]: Array<string>} */ =
     prevMarker?.generatedSources ?? {};
   const currentPaths = new Set(generatedSources.map(s => s.path));
   const staleUuids /*: Array<string> */ = [];
@@ -2870,7 +2870,7 @@ function injectSpmIntoExistingXcodeproj(
     );
   }
   // Same reconciliation for script phases, keyed on the plugin-supplied id.
-  const prevScriptPhases /*: {[string]: string} */ =
+  const prevScriptPhases /*: {[key: string]: string} */ =
     prevMarker?.scriptPhases ?? {};
   const currentPhaseIds = new Set(scriptPhases.map(p => p.id));
   for (const id of Object.keys(prevScriptPhases)) {
@@ -3118,7 +3118,7 @@ function removeRecordedBuildSettings(
         );
       }
     }
-    const promotedArrayScalars /*: {[string]: string} */ =
+    const promotedArrayScalars /*: {[key: string]: string} */ =
       change.promotedArrayScalars ?? {};
     for (const key of Object.keys(promotedArrayScalars)) {
       const current = dict();
@@ -3149,7 +3149,7 @@ function removeRecordedBuildSettings(
         text = removeField(text, current, key);
       }
     }
-    const replacedScalars /*: {[string]: string} */ =
+    const replacedScalars /*: {[key: string]: string} */ =
       change.replacedScalars ?? {};
     for (const key of Object.keys(replacedScalars)) {
       const current = dict();

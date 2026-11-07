@@ -23,7 +23,7 @@ import invariant from 'invariant';
 export type Mapping =
   {[key: string]: Mapping, ...} | AnimatedValue | AnimatedValueXY;
 export type EventConfig<T> = {
-  listener?: ?(NativeSyntheticEvent<T>) => unknown,
+  listener?: ?(v: NativeSyntheticEvent<T>) => unknown,
   useNativeDriver: boolean,
   platformConfig?: PlatformConfig,
 };

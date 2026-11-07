@@ -21,7 +21,7 @@ import convertRequestBody from './convertRequestBody';
 import NativeNetworkingAndroid from './NativeNetworkingAndroid';
 
 type Header = [string, string];
-type HeadersMap = {[string]: string};
+type HeadersMap = {[key: string]: string};
 
 // Convert FormData headers to arrays, which are easier to consume in
 // native on Android.
@@ -51,7 +51,7 @@ const emitter = new NativeEventEmitter<RCTNetworkingEventDefinitions>(
 const RCTNetworking = {
   addListener<K extends keyof RCTNetworkingEventDefinitions>(
     eventType: K,
-    listener: (...RCTNetworkingEventDefinitions[K]) => unknown,
+    listener: (...rest: RCTNetworkingEventDefinitions[K]) => unknown,
     context?: unknown,
   ): EventSubscription {
     return emitter.addListener(eventType, listener, context);

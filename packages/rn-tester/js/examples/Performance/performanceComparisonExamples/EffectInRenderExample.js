@@ -40,6 +40,7 @@ function ItemFetcherBadExample(props: {
   // $FlowFixMe[incompatible-type]
   fetchMoreItems(count).then((items: ItemDataType[]) => {
     onFetched(items);
+    // $FlowFixMe[incompatible-type]
   }, console.error);
 }
 
@@ -62,6 +63,7 @@ function ItemFetcherGoodExample(props: {
     // $FlowFixMe[incompatible-type]
     fetchMoreItems(count).then((items: ItemDataType[]) => {
       onFetched(items);
+      // $FlowFixMe[incompatible-type]
     }, console.error);
   }, [onFetched, count]);
 }

@@ -24,6 +24,7 @@ const React = require('react');
 const {
   Image,
   LayoutAnimation,
+  PixelRatio,
   StyleSheet,
   Text,
   TextInput,
@@ -1388,6 +1389,32 @@ function TextBaseLineLayoutExample(props: {}): React.Node {
   );
 }
 
+function FitContentWholePixelWidthExample(props: {}): React.Node {
+  // Each label is measured, then measured again with its own width as its
+  // maximum, because its container is only as wide as the label and the
+  // container's padding. That maximum picks up floating point error from the
+  // padding and from the conversion to DIPs and back, so it can fall a hair
+  // short of the label's width. Each row is about a pixel wider than the last.
+  // No label should wrap.
+  const rows = [];
+  for (let i = 0; i < 17; i++) {
+    rows.push(
+      <View key={i} style={styles.fitContentRow}>
+        <View style={styles.fitContentLabelContainer}>
+          <Text
+            style={[
+              styles.fitContentLabel,
+              {letterSpacing: -0.25 + i / (18 * PixelRatio.get())},
+            ]}>
+            Add payment method
+          </Text>
+        </View>
+      </View>,
+    );
+  }
+  return <View testID="text-fit-content-whole-pixel-width">{rows}</View>;
+}
+
 const examples = [
   {
     title: 'Wrapped text width mode',
@@ -1483,6 +1510,11 @@ const examples = [
         </RNTesterText>
       );
     },
+  },
+  {
+    title: 'Fit-content text at whole pixel widths',
+    name: 'fitContentWholePixelWidth',
+    render: FitContentWholePixelWidthExample,
   },
   {
     title: 'Hyphenation',
@@ -1981,6 +2013,20 @@ const styles = StyleSheet.create({
   },
   wrappedText: {
     maxWidth: 300,
+  },
+  fitContentRow: {
+    backgroundColor: '#E4E6EB',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  fitContentLabelContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 60.15,
+  },
+  fitContentLabel: {
+    fontSize: 15,
+    maxWidth: '100%',
   },
   lineBreakSample: {
     backgroundColor: '#eee',
