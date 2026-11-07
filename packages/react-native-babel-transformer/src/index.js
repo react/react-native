@@ -84,9 +84,19 @@ const getBabelRC = (function () {
         projectBabelRCPath = path.resolve(projectRoot, '.babelrc.js');
       }
 
+      // .babelrc.cjs
+      if (!fs.existsSync(projectBabelRCPath)) {
+        projectBabelRCPath = path.resolve(projectRoot, '.babelrc.cjs');
+      }
+
       // babel.config.js
       if (!fs.existsSync(projectBabelRCPath)) {
         projectBabelRCPath = path.resolve(projectRoot, 'babel.config.js');
+      }
+
+      // babel.config.cjs
+      if (!fs.existsSync(projectBabelRCPath)) {
+        projectBabelRCPath = path.resolve(projectRoot, 'babel.config.cjs');
       }
 
       // If we found a babel config file, extend our config off of it
