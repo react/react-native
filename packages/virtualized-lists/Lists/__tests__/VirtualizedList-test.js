@@ -294,6 +294,59 @@ describe('VirtualizedList', () => {
     });
   });
 
+  it('does not reattach cell refs when the list re-renders', async () => {
+    const listRef = createRef();
+    const items = generateItems(5);
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList ref={listRef} {...baseItemProps(items)} />,
+      );
+    });
+
+    const cellRefs = listRef.current._cellRefs;
+    const cellRefWrites = [];
+    listRef.current._cellRefs = new Proxy(cellRefs, {
+      set(target, cellKey, cellRenderer) {
+        cellRefWrites.push(cellKey);
+        target[cellKey] = cellRenderer;
+        return true;
+      },
+    });
+
+    await act(() => {
+      component.update(
+        <VirtualizedList
+          ref={listRef}
+          {...baseItemProps(items)}
+          extraData={1}
+        />,
+      );
+    });
+
+    expect(cellRefWrites).toEqual([]);
+    expect(Object.keys(cellRefs)).toEqual(['0', '1', '2', '3', '4']);
+  });
+
+  it('removes cell refs when cells unmount', async () => {
+    const listRef = createRef();
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList ref={listRef} {...baseItemProps(generateItems(5))} />,
+      );
+    });
+
+    await act(() => {
+      component.update(
+        <VirtualizedList ref={listRef} {...baseItemProps(generateItems(2))} />,
+      );
+    });
+
+    expect(Object.keys(listRef.current._cellRefs)).toEqual(['0', '1']);
+    expect(listRef.current._cellRefs[0].props.cellKey).toBe(0);
+  });
+
   it('handles nested lists', async () => {
     let component;
     await act(() => {

@@ -1017,9 +1017,7 @@ class VirtualizedList extends StateSafePureComponent<
           onUpdateSeparators={this._onUpdateSeparators}
           onCellFocusCapture={this._onCellFocusCapture}
           onUnmount={this._onCellUnmount}
-          ref={ref => {
-            this._cellRefs[key] = ref;
-          }}
+          ref={this._captureCellRef}
           renderItem={renderItem}
           {...(shouldListenForLayout && {
             onCellLayout: this._onCellLayout,
@@ -1607,6 +1605,14 @@ class VirtualizedList extends StateSafePureComponent<
       this._scheduleCellsToRenderUpdate();
     } else {
       this._updateCellsToRender();
+    }
+  };
+
+  // Stable so React does not detach and reattach every cell's ref on each render.
+  // Unmounted cells are removed in `_onCellUnmount`.
+  _captureCellRef = (cellRenderer: null | CellRenderer<any>): void => {
+    if (cellRenderer != null) {
+      this._cellRefs[cellRenderer.props.cellKey] = cellRenderer;
     }
   };
 
