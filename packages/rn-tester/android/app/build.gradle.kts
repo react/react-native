@@ -72,8 +72,14 @@ react {
   autolinkLibrariesWithApp()
 }
 
-/** Run Proguard to shrink the Java bytecode in release builds. */
-val enableProguardInReleaseBuilds = true
+/**
+ * Run Proguard to shrink the Java bytecode in release builds. Pass
+ * `-Preact.internal.disableMinifyInReleaseBuilds=true` to keep class names intact, which is needed
+ * to collect ReactAndroid's Baseline Profile (see BaselineProfileGenerator).
+ */
+val enableProguardInReleaseBuilds =
+    project.findProperty("react.internal.disableMinifyInReleaseBuilds")?.toString()?.toBoolean() !=
+        true
 
 /** This allows to customized the CMake version used for compiling RN Tester. */
 val cmakeVersion =
