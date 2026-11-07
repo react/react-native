@@ -655,13 +655,15 @@ static CGSize RCTTextLayoutSizeForFrameSize(CGSize frameSize, const ParagraphAtt
                   CGRect glyphRect = [layoutManager boundingRectForGlyphRange:range inTextContainer:textContainer];
 
                   CGRect frame;
-                  UIFont *font = [[textStorage attributedSubstringFromRange:range] attribute:NSFontAttributeName
-                                                                                     atIndex:0
-                                                                              effectiveRange:nil];
+                  NSDictionary<NSAttributedStringKey, id> *attributes = [textStorage attributesAtIndex:range.location
+                                                                                        effectiveRange:nil];
+                  UIFont *font = attributes[NSFontAttributeName];
+                  CGFloat baselineOffset = [attributes[NSBaselineOffsetAttributeName] doubleValue];
                   frame = {
                       .origin =
                           {glyphRect.origin.x,
-                           glyphRect.origin.y + glyphRect.size.height - attachmentSize.height + font.descender},
+                           glyphRect.origin.y + glyphRect.size.height - attachmentSize.height + font.descender -
+                               baselineOffset},
                       .size = attachmentSize};
 
                   auto rect = facebook::react::Rect{
