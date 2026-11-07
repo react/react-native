@@ -34,6 +34,7 @@ import android.text.method.KeyListener
 import android.text.method.QwertyKeyListener
 import android.util.TypedValue
 import android.view.ActionMode
+import android.view.ContextMenu
 import android.view.DragEvent
 import android.view.Gravity
 import android.view.KeyEvent
@@ -424,9 +425,73 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
    * React Native replaces copy (as rich text) with copy as plain text.
    */
   override fun onTextContextMenuItem(id: Int): Boolean =
-      super.onTextContextMenuItem(
-          if (id == android.R.id.paste) android.R.id.pasteAsPlainText else id,
-      )
+      withClipboardAccessGuard(fallback = false) {
+        super.onTextContextMenuItem(
+            if (id == android.R.id.paste) android.R.id.pasteAsPlainText else id,
+        )
+      }
+
+  override fun startActionMode(callback: ActionMode.Callback, type: Int): ActionMode? =
+      super.startActionMode(ClipboardSafeActionModeCallback(callback), type)
+
+  override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean =
+      withClipboardAccessGuard(fallback = false) { super.onKeyShortcut(keyCode, event) }
+
+  override fun onCreateContextMenu(menu: ContextMenu) {
+    withClipboardAccessGuard(fallback = Unit) { super.onCreateContextMenu(menu) }
+  }
+
+  override fun onInitializeAccessibilityNodeInfo(info: AccessibilityNodeInfo) {
+    withClipboardAccessGuard(fallback = Unit) { super.onInitializeAccessibilityNodeInfo(info) }
+  }
+
+  override fun performAccessibilityAction(action: Int, arguments: Bundle?): Boolean =
+      withClipboardAccessGuard(fallback = false) {
+        super.performAccessibilityAction(action, arguments)
+      }
+
+  /*
+   * ClipboardManager throws a SecurityException when the READ_CLIPBOARD app op is set to
+   * MODE_ERRORED for the app, which some OEM clipboard privacy settings do. TextView reads the
+   * clipboard from its text menus, keyboard shortcuts, accessibility info and actions, and when
+   * pasting, so treat a denial as an unavailable clipboard instead of crashing.
+   */
+  private inline fun <T> withClipboardAccessGuard(fallback: T, block: () -> T): T =
+      try {
+        block()
+      } catch (e: SecurityException) {
+        FLog.w(TAG, "Clipboard access denied", e)
+        fallback
+      }
+
+  /*
+   * Editor builds the floating text menu in onCreateActionMode, often from a posted runnable
+   * (smart selection), so no ReactEditText method is on the stack when TextView.canPaste()
+   * throws. Returning false from onCreate/onPrepare cancels the menu instead of crashing.
+   */
+  private inner class ClipboardSafeActionModeCallback(private val delegate: ActionMode.Callback) :
+      ActionMode.Callback2() {
+    override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean =
+        withClipboardAccessGuard(fallback = false) { delegate.onCreateActionMode(mode, menu) }
+
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean =
+        withClipboardAccessGuard(fallback = false) { delegate.onPrepareActionMode(mode, menu) }
+
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean =
+        withClipboardAccessGuard(fallback = false) { delegate.onActionItemClicked(mode, item) }
+
+    override fun onDestroyActionMode(mode: ActionMode) {
+      delegate.onDestroyActionMode(mode)
+    }
+
+    override fun onGetContentRect(mode: ActionMode, view: View, outRect: Rect) {
+      if (delegate is ActionMode.Callback2) {
+        delegate.onGetContentRect(mode, view, outRect)
+      } else {
+        super.onGetContentRect(mode, view, outRect)
+      }
+    }
+  }
 
   internal fun clearFocusAndMaybeRefocus() {
     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P || !isInTouchMode) {
