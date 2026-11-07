@@ -320,12 +320,22 @@ bool YGNodeHasMinContentMeasureFunc(YGNodeConstRef node) {
   return resolveRef(node)->hasMinContentMeasureFunc();
 }
 
-void YGNodeSetMinContentWidth(YGNodeRef node, float minContentWidth) {
-  resolveRef(node)->setMinContentWidth(FloatOptional{minContentWidth});
+void YGNodeSetMinContentWidth(YGNodeRef nodeRef, float minContentWidth) {
+  const auto node = resolveRef(nodeRef);
+  const FloatOptional value{minContentWidth};
+  if (node->getMinContentWidth() != value) {
+    node->setMinContentWidth(value);
+    node->markDirtyAndPropagate();
+  }
 }
 
-void YGNodeSetMinContentHeight(YGNodeRef node, float minContentHeight) {
-  resolveRef(node)->setMinContentHeight(FloatOptional{minContentHeight});
+void YGNodeSetMinContentHeight(YGNodeRef nodeRef, float minContentHeight) {
+  const auto node = resolveRef(nodeRef);
+  const FloatOptional value{minContentHeight};
+  if (node->getMinContentHeight() != value) {
+    node->setMinContentHeight(value);
+    node->markDirtyAndPropagate();
+  }
 }
 
 float YGNodeGetMinContentWidth(YGNodeConstRef node) {
