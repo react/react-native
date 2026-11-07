@@ -270,7 +270,7 @@ type EventTypeAST = any;
 
 type TypeMap = {
   // $FlowFixMe[unclear-type] there's no flowtype for ASTs
-  [string]: any,
+  [key: string]: any,
   ...
 };
 

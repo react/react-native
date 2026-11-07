@@ -17,16 +17,17 @@ import type {Dependency, Destination, Platform} from './types';
 
 // CI can't use commas in cache keys, so 'macOS,variant=Mac Catalyst' was creating troubles
 // This map that converts from platforms to valid Xcodebuild destinations.
-const platformToDestination /*: Readonly<{|[Platform]: Destination|}> */ = {
-  ios: 'iOS',
-  'ios-simulator': 'iOS Simulator',
-  macos: 'macOS',
-  'mac-catalyst': 'macOS,variant=Mac Catalyst',
-  tvos: 'tvOS',
-  'tvos-simulator': 'tvOS Simulator',
-  xros: 'visionOS',
-  'xros-simulator': 'visionOS Simulator',
-};
+const platformToDestination /*: Readonly<{|[key: Platform]: Destination|}> */ =
+  {
+    ios: 'iOS',
+    'ios-simulator': 'iOS Simulator',
+    macos: 'macOS',
+    'mac-catalyst': 'macOS,variant=Mac Catalyst',
+    tvos: 'tvOS',
+    'tvos-simulator': 'tvOS Simulator',
+    xros: 'visionOS',
+    'xros-simulator': 'visionOS Simulator',
+  };
 
 const arrayLike = (value /*: Array<any> */) /*: Array<any> */ =>
   Array.isArray(value) ? value : [value];

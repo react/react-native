@@ -32,10 +32,6 @@ jobs:
         uses: ./.github/actions/setup-node
       - name: Run yarn
         uses: ./.github/actions/yarn-install
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6.10
       - name: Download React Native Package
         uses: ./.github/actions/download-artifact
         with:
@@ -43,28 +39,12 @@ jobs:
           path: /tmp/react-native-tmp
       - name: Print /tmp folder
         run: ls -lR /tmp/react-native-tmp
-      - name: Download ReactNativeDependencies
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/third-party
-      - name: Print third-party folder
-        shell: bash
-        run: ls -lR /tmp/third-party
-      - name: Download React Native Prebuilds
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/ReactCore
-      - name: Print ReactCore folder
-        shell: bash
-        run: ls -lR /tmp/ReactCore
       - name: Configure git
         shell: bash
         run: |
           git config --global user.email "react-native-bot@meta.com"
           git config --global user.name "React Native Bot"
-      - name: Build the app
+      - name: Create the app
         run: |
           REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
           echo "React Native tgs is $REACT_NATIVE_PKG"
@@ -77,19 +57,19 @@ jobs:
           fi
 
           node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
-
-          cd /tmp/RNTestProject/ios
-          bundle install
-          NEW_ARCH_ENABLED=1
-
-          export RCT_USE_LOCAL_RN_DEP=/tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          # Disable prebuilds for now, as they are causing issues with E2E tests for 0.82-stable branch
-          export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ matrix.flavor }}.xcframework.tar.gz"
-          RN_STRICT_API=1 RCT_NEW_ARCH_ENABLED=$NEW_ARCH_ENABLED bundle exec pod install
-
+      - name: Download the XCFrameworks built in this run
+        uses: ./.github/actions/setup-spm-artifacts
+        with:
+          working-directory: /tmp/RNTestProject/ios
+      - name: Convert the app to SwiftPM
+        working-directory: /tmp/RNTestProject/ios
+        run: RN_STRICT_API=1 npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+      - name: Build the app
+        working-directory: /tmp/RNTestProject/ios
+        run: |
           xcodebuild \
             -scheme "RNTestProject" \
-            -workspace RNTestProject.xcworkspace \
+            -project RNTestProject.xcodeproj \
             -configuration "${{ matrix.flavor }}" \
             -sdk "iphonesimulator" \
             -destination "generic/platform=iOS Simulator" \

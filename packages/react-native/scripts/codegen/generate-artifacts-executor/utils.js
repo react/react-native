@@ -407,9 +407,9 @@ function isReactNativeCoreLibrary(libraryName /*: string */) /*: boolean */ {
  */
 function parseiOSAnnotations(
   libraries /*: ReadonlyArray<$FlowFixMe> */,
-) /*: {[string]: $FlowFixMe} */ {
-  const mLibraryMap /*: {[string]: $FlowFixMe} */ = {};
-  const cLibraryMap /*: {[string]: $FlowFixMe} */ = {};
+) /*: {[key: string]: $FlowFixMe} */ {
+  const mLibraryMap /*: {[key: string]: $FlowFixMe} */ = {};
+  const cLibraryMap /*: {[key: string]: $FlowFixMe} */ = {};
   const map = {};
 
   for (const library of libraries) {

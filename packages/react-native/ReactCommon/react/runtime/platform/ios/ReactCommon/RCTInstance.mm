@@ -39,12 +39,14 @@
 #import <jsinspector-modern/ReactCdp.h>
 #import <jsireact/JSIExecutor.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/core/EventEmitterListener.h>
 #import <react/runtime/ReactInstance.h>
 #import <react/utils/ContextContainer.h>
 #import <react/utils/FollyConvert.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #import "ObjCTimerRegistry.h"
+#import "RCTEventDispatcherEventPayload.h"
 #import "RCTJSThreadManager.h"
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 #import "RCTLegacyUIManagerConstantsProvider.h"
@@ -58,7 +60,7 @@
 using namespace facebook;
 using namespace facebook::react;
 
-@interface RCTInstance () <RCTTurboModuleManagerDelegate>
+@interface RCTInstance () <RCTTurboModuleManagerDelegate, RCTEventDispatcherObserver>
 @end
 
 @implementation RCTInstance {
@@ -83,6 +85,8 @@ using namespace facebook::react;
   RCTDevMenuConfigurationDecorator *_devMenuConfigurationDecorator;
 
   jsinspector_modern::HostTarget *_parentInspectorTarget;
+
+  std::shared_ptr<EventEmitterListenerContainer> _eventDispatcherListeners;
 }
 
 #pragma mark - Public
@@ -225,6 +229,24 @@ using namespace facebook::react;
   if (_valid) {
     _reactInstance->registerSegment(static_cast<uint32_t>([segmentId unsignedIntValue]), path.UTF8String);
   }
+}
+
+#pragma mark - RCTEventDispatcherObserver
+
+- (void)eventDispatcherWillDispatchEvent:(id<RCTEvent>)event
+{
+  // Only component events carry `@[viewTag, eventName, body]` as their arguments.
+  Class<RCTEvent> eventClass = [event class];
+  if (![[eventClass moduleDotMethod] isEqualToString:@"RCTEventEmitter.receiveEvent"]) {
+    return;
+  }
+  auto listeners = _eventDispatcherListeners;
+  auto tag = static_cast<Tag>(event.viewTag.integerValue);
+  auto eventName = std::string(event.eventName.UTF8String ?: "");
+  // Listeners run on the main thread, where C++ Native Animated handles events.
+  RCTExecuteOnMainQueue(^{
+    listeners->willDispatchEvent(tag, eventName, RCTEventDispatcherEventPayload(event));
+  });
 }
 
 #pragma mark - RCTTurboModuleManagerDelegate
@@ -384,6 +406,13 @@ using namespace facebook::react;
   contextContainer->insert(
       "RCTEventDispatcher",
       facebook::react::wrapManagedObject([_turboModuleManager moduleForName:"RCTEventDispatcher"]));
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled()) {
+    // Lets C++ Native Animated receive events that native code delivers only to RCTEventDispatcher
+    // observers, outside Fabric event emitters.
+    _eventDispatcherListeners = std::make_shared<EventEmitterListenerContainer>();
+    contextContainer->insert("RCTEventDispatcherListeners", _eventDispatcherListeners);
+    [[_turboModuleManager moduleForName:"RCTEventDispatcher"] addDispatchObserver:self];
+  }
   contextContainer->insert("RCTBridgeModuleDecorator", facebook::react::wrapManagedObject(_bridgeModuleDecorator));
   contextContainer->insert(RuntimeSchedulerKey, std::weak_ptr<RuntimeScheduler>(_reactInstance->getRuntimeScheduler()));
   contextContainer->insert("RCTBridgeProxy", facebook::react::wrapManagedObject(bridgeProxy));

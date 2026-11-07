@@ -18,7 +18,7 @@ const MOCK_FILENAME = '/absolute/path/to/input.js';
 
 function transformWithCaller(
   code: string,
-  options: {[string]: unknown},
+  options: {[key: string]: unknown},
   caller: {
     enableBabelRuntime?: boolean | string,
     babelRuntimeModuleName?: string,

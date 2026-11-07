@@ -158,7 +158,7 @@ const testConfigs = [
 
 function transformCode(
   code: string,
-  options: {[string]: unknown},
+  options: {[key: string]: unknown},
 ): string | null {
   const result = babel.transformSync(code, {
     babelrc: false,
@@ -173,7 +173,7 @@ function transformCode(
 
 function transformCodeWithSourceOptimization(
   code: string,
-  options: {[string]: unknown},
+  options: {[key: string]: unknown},
 ): string | null {
   const config = preset.getPreset(code, options);
   const result = babel.transformSync(code, {
@@ -208,7 +208,10 @@ function ensureDirectoryExists(dir: string): void {
   }
 }
 
-function makeHeader(description: string, options: {[string]: unknown}): string {
+function makeHeader(
+  description: string,
+  options: {[key: string]: unknown},
+): string {
   return `/**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *

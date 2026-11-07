@@ -17,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
                                                         (const std::vector<facebook::react::ColorStop> &)colorStops
                                                     gradientLineLength:(CGFloat)gradientLineLength;
 
++ (std::vector<facebook::react::ProcessedColorStop>)
+    clipColorStops:(const std::vector<facebook::react::ProcessedColorStop> &)colorStops
+               end:(facebook::react::Float)end;
+
 // CAGradientLayer linear gradient squishes the non-square gradient to square gradient.
 // This function fixes the "squished" effect.
 // See https://stackoverflow.com/a/43176174 for more information.

@@ -6157,7 +6157,7 @@ type WindowFileSystemPickerFileType = {|
    * },
    */
   accept: {
-    [string]: Array<string>,
+    [key: string]: Array<string>,
   },
 |};
 

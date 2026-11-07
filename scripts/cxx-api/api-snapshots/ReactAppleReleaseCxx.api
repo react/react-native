@@ -1093,6 +1093,7 @@ interface RCTGenericDelegateSplitter<DelegateT> : public NSObject {
 
 interface RCTGradientUtils : public NSObject {
   public virtual static std::pair<CGPoint, CGPoint> pointsForCAGradientLayerLinearGradient:endPoint:bounds:(CGPoint startPoint, CGPoint endPoint, CGSize bounds);
+  public virtual static std::vector<facebook::react::ProcessedColorStop> clipColorStops:end:(const std::vector<facebook::react::ProcessedColorStop>& colorStops, facebook::react::Float end);
   public virtual static std::vector<facebook::react::ProcessedColorStop> getFixedColorStops:gradientLineLength:(const std::vector<facebook::react::ColorStop>& colorStops, CGFloat gradientLineLength);
   public virtual static void getColors:andLocations:fromColorStops:(NSMutableArray<id>* colors, NSMutableArray<NSNumber*>* locations, const std::vector<facebook::react::ProcessedColorStop>& colorStops);
 }

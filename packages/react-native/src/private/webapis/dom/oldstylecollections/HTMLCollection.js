@@ -18,7 +18,7 @@ import {setPlatformObject} from '../../webidl/PlatformObjects';
 // IMPORTANT: The type definition for this module is defined in `HTMLCollection.js.flow`
 // because Flow only supports indexers in classes in declaration files.
 
-const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor<unknown>, ...} = {
+const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor, ...} = {
   value: {},
   enumerable: true,
   configurable: false,

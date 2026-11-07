@@ -13,7 +13,7 @@
 const stringifySafe = require('../Utilities/stringifySafe').default;
 const invariant = require('invariant');
 
-type TransformObject = {[string]: unknown, ...};
+type TransformObject = {[key: string]: unknown, ...};
 type TransformArray = Array<TransformObject>;
 
 /**
@@ -152,7 +152,7 @@ const _getKeyAndValueFromCSSTransform: (
       };
 
     default:
-      return {key, value: !isNaN(args) ? Number(args) : args};
+      return {key, value: !isNaN(Number(args)) ? Number(args) : args};
   }
 };
 

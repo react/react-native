@@ -103,10 +103,10 @@ interface Spec extends TurboModule {
   getDirectManipulationProps: (
     shadowNode: unknown /* ShadowNode */,
   ) => Readonly<{
-    [string]: unknown,
+    [key: string]: unknown,
   }>;
   getFabricUpdateProps: (shadowNode: unknown /* ShadowNode */) => Readonly<{
-    [string]: unknown,
+    [key: string]: unknown,
   }>;
   flushMessageQueue: () => void;
   flushEventQueue: () => void;

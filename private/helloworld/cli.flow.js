@@ -12,6 +12,7 @@ import {run} from './lib/cli';
 import {getExistingPath, pauseWatchman} from './lib/filesystem';
 import {
   bootSimulator,
+  getDependencyManager,
   getSimulatorDetails,
   getXcodeBuildSettings,
   hasPodInstalled,
@@ -174,13 +175,17 @@ build
         break;
     }
 
+    const dependencyManager = getDependencyManager(cwd.ios);
+    const isWorkspace = dependencyManager === 'cocoapods';
+
     await pauseWatchman(async () => {
       await run(
         apple.build({
-          isWorkspace: true,
-          name: 'HelloWorld.xcworkspace',
+          isWorkspace,
+          name: isWorkspace ? 'HelloWorld.xcworkspace' : 'HelloWorld.xcodeproj',
           mode,
           scheme: 'HelloWorld',
+          dependencyManager,
           cwd: cwd.ios,
           env: {
             SKIP_BUNDLING: 'true',
@@ -190,6 +195,46 @@ build
       );
     });
   });
+
+const getJSVMConfig = (): {
+  jsvm: 'hermes' | 'jsc',
+  hermes: {path: string, hermesc: string},
+} => {
+  if (getDependencyManager(cwd.ios) === 'swiftpm') {
+    // A SwiftPM app has no Pods/hermes-engine. Like react-native-xcode.sh, use
+    // the hermesc of the hermes-compiler package that react-native depends on.
+    return {
+      jsvm: 'hermes',
+      hermes: {
+        path: path.dirname(
+          require.resolve('hermes-compiler/package.json', {
+            paths: [path.dirname(require.resolve('react-native/package.json'))],
+          }),
+        ),
+        hermesc: 'hermesc/osx-bin/hermesc',
+      },
+    };
+  }
+
+  const isHermesInstalled = hasPodInstalled(cwd.ios, 'hermes-engine');
+
+  // Validate only after initial build, as hermesc may not be prebuilt
+  const hermesFolder = path.join(cwd.ios, 'Pods/hermes-engine');
+  const hermesc = getExistingPath(hermesFolder, possibleHermescPaths);
+
+  if (hermesc == null && isHermesInstalled) {
+    throw new Error(
+      `Unable to find hermesc at:\n-${possibleHermescPaths
+        .map(line => ' - ' + line)
+        .join('\n')}`,
+    );
+  }
+
+  return {
+    jsvm: isHermesInstalled ? 'hermes' : 'jsc',
+    hermes: {path: hermesFolder, hermesc: hermesc ?? ''},
+  };
+};
 
 type BundleOptions = {
   prod: boolean,
@@ -205,8 +250,8 @@ bundle
   .action(async ({prod, watch}: BundleOptions) => {
     const mode = prod ? 'Release' : 'Debug';
 
-    const isHermesInstalled = hasPodInstalled(cwd.ios, 'hermes-engine');
     const settings = await getBuildSettings(mode);
+    const {jsvm, hermes} = getJSVMConfig();
 
     // Metro: src -> js
     const jsBundlePath = path.join(settings.bundleBuildDir, 'main.jsbundle.js');
@@ -215,18 +260,6 @@ bundle
       settings.bundleResourceDir,
       'main.jsbundle',
     );
-
-    // Validate only after initial build, as hermesc may not be prebuilt
-    const hermesFolder = path.join(cwd.ios, 'Pods/hermes-engine');
-    const hermesc = getExistingPath(hermesFolder, possibleHermescPaths);
-
-    if (hermesc == null && isHermesInstalled) {
-      throw new Error(
-        `Unable to find hermesc at:\n-${possibleHermescPaths
-          .map(line => ' - ' + line)
-          .join('\n')}`,
-      );
-    }
 
     const bundler = watch
       ? app.bundle({
@@ -240,11 +273,8 @@ bundle
           outputSourceMap: settings.bundleResourceDir,
           outputBundle: binaryBundlePath,
           dev: !prod,
-          jsvm: isHermesInstalled ? 'hermes' : 'jsc',
-          hermes: {
-            path: hermesFolder,
-            hermesc: hermesc ?? '',
-          },
+          jsvm,
+          hermes,
           callback: metroProcess => {
             const readline = require('node:readline');
             readline.emitKeypressEvents(process.stdin);
@@ -267,11 +297,8 @@ bundle
           outputSourceMap: settings.bundleResourceDir,
           outputBundle: binaryBundlePath,
           dev: !prod,
-          jsvm: isHermesInstalled ? 'hermes' : 'jsc',
-          hermes: {
-            path: hermesFolder,
-            hermesc: hermesc ?? '',
-          },
+          jsvm,
+          hermes,
         });
 
     // JS Bundle

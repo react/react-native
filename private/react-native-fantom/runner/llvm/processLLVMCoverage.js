@@ -63,7 +63,7 @@ function getLLVMCommand(command: 'llvm-profdata' | 'llvm-cov'): string {
 export default async function processLLVMCoverage(
   profrawFilePath: string,
   binaryPath: string,
-): Promise<{[string]: FileCoverageData}> {
+): Promise<{[key: string]: FileCoverageData}> {
   if (!fs.existsSync(profrawFilePath)) {
     printConsoleLog({
       type: 'console-log',

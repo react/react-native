@@ -26,7 +26,7 @@ export default class ResponderEvent extends LegacySyntheticEvent {
   constructor(
     type: string,
     options: EventInit,
-    nativeEvent: {[string]: unknown},
+    nativeEvent: {[key: string]: unknown},
     dispatchConfig: ?DispatchConfig,
     touchHistory: TouchHistory,
   ) {

@@ -91,12 +91,12 @@ export default class SettingsStore {
     }
   }
 
-  get store(): {[string]: unknown} {
+  get store(): {[key: string]: unknown} {
     try {
       const data = fs.readFileSync(this.path, 'utf8');
       const deserializedData = this._deserialize(data);
       return {
-        ...(deserializedData as any as {[string]: unknown}),
+        ...(deserializedData as any as {[key: string]: unknown}),
       };
     } catch (error) {
       if (error?.code === 'ENOENT') {

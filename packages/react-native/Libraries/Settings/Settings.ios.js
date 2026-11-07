@@ -12,7 +12,7 @@ import RCTDeviceEventEmitter from '../EventEmitter/RCTDeviceEventEmitter';
 import NativeSettingsManager from './NativeSettingsManager';
 import invariant from 'invariant';
 
-type SettingsValues = {[string]: unknown, ...};
+type SettingsValues = {[key: string]: unknown, ...};
 type SettingsCallback = () => void;
 type SettingsType = {
   _settings: ?SettingsValues,

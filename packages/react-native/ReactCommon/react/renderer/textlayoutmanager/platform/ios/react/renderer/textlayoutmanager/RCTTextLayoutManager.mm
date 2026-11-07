@@ -39,6 +39,18 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   }
 }
 
+// Text is laid out with an unbounded height, as during measurement, so that lines and attachments end up where
+// measurement placed them. A container clamped to the frame height makes TextKit squeeze the remaining content into
+// the last line that fits. The paragraph view clips the drawing to its bounds.
+static CGSize RCTTextLayoutSizeForFrameSize(CGSize frameSize, const ParagraphAttributes &paragraphAttributes)
+{
+  if (paragraphAttributes.adjustsFontSizeToFit) {
+    // Font scaling shrinks the text until it fits the frame height.
+    return frameSize;
+  }
+  return CGSize{frameSize.width, CGFLOAT_MAX};
+}
+
 - (TextMeasurement)measureNSAttributedString:(NSAttributedString *)attributedString
                          paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                                layoutContext:(TextLayoutContext)layoutContext
@@ -136,7 +148,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
-                                                  size:frame.size];
+                                                  size:RCTTextLayoutSizeForFrameSize(frame.size, paragraphAttributes)];
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
@@ -475,7 +487,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
-                                                  size:frame.size];
+                                                  size:RCTTextLayoutSizeForFrameSize(frame.size, paragraphAttributes)];
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
@@ -506,7 +518,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
-                                                  size:frame.size];
+                                                  size:RCTTextLayoutSizeForFrameSize(frame.size, paragraphAttributes)];
 
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;

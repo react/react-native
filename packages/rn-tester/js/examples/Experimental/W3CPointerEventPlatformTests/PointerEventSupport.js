@@ -218,7 +218,7 @@ export function useTestEventHandler(
   const eventProps: any = useMemo(() => {
     const handlerFactory = (eventName: string) => (event: any) =>
       handler(event, eventName);
-    const props: {[string]: (event: any) => void} = {};
+    const props: {[key: string]: (event: any) => void} = {};
     for (const eventName of eventNames) {
       const eventPropName =
         'on' + eventName[0].toUpperCase() + eventName.slice(1);
