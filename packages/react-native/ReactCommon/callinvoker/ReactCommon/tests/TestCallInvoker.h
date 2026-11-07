@@ -30,8 +30,10 @@ class TestCallInvoker : public CallInvoker {
   void flushQueue()
   {
     while (!queue_.empty()) {
-      queue_.front()(runtime_);
+      auto job = std::move(queue_.front());
       queue_.pop_front();
+      job(runtime_);
+      job = {};
       runtime_.drainMicrotasks(); // Run microtasks every cycle.
     }
   }
