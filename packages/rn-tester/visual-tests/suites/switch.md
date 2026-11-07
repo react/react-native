@@ -5,5 +5,6 @@
 | `basic` | Initial values and both switches toggled |
 | `disabled` | Initial rendering |
 | `custom-colors` | Initial values and both switches toggled |
+| `thumb-color-on-mount` | Initial rendering, and on iOS after the app is backgrounded and foregrounded |
 
 Screenshots use the existing RNTester example crops. Each example starts from a fresh app launch; captures wait for the target and for animations to settle.
