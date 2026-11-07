@@ -761,7 +761,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     fuseboxFrameRecordingEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-03-05',
         description:
@@ -769,7 +769,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     fuseboxScreenshotCaptureEnabled: {
       defaultValue: true,
