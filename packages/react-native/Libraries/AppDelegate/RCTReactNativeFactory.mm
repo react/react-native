@@ -13,6 +13,7 @@
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTHost.h>
+#import <ReactCommon/RCTRuntimeGlobals.h>
 #import <objc/runtime.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/featureflags/ReactNativeFeatureFlagsOverridesOSSCanary.h>
@@ -264,6 +265,10 @@ static NSDictionary *RCTConvertConnectionOptionsToLaunchOptions(UISceneConnectio
 
 - (void)host:(RCTHost *)host didInitializeRuntime:(facebook::jsi::Runtime &)runtime
 {
+  if ([_delegate respondsToSelector:@selector(initialRuntimeGlobals)]) {
+    RCTInstallRuntimeGlobals(runtime, [_delegate initialRuntimeGlobals]);
+  }
+
   if ([_delegate respondsToSelector:@selector(host:didInitializeRuntime:)]) {
     [_delegate host:host didInitializeRuntime:runtime];
   }

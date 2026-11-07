@@ -327,6 +327,7 @@ facebook::react::ComponentRegistryFactory facebook::react::getDefaultComponentRe
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
 facebook::react::ParagraphAttributes facebook::react::convertRawProp(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::ParagraphAttributes& sourceParagraphAttributes, const facebook::react::ParagraphAttributes& defaultParagraphAttributes);
+facebook::react::ReactInstance::BindingsInstallFunc facebook::react::createRuntimeGlobalsInstaller(folly::dynamic globals, facebook::react::ReactInstance::BindingsInstallFunc additionalBindings = {});
 facebook::react::Rect facebook::react::insetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& insets) noexcept;
 facebook::react::Rect facebook::react::outsetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& outsets) noexcept;
 facebook::react::ScriptTag facebook::react::parseTypeFromHeader(const facebook::react::BundleHeader& header);
@@ -518,6 +519,7 @@ void facebook::react::fromRawValueShared(const facebook::react::ContextContainer
 void facebook::react::fromString(const std::string& string, facebook::react::AccessibilityTraits& result);
 void facebook::react::g_setNativeAnimatedNowTimestampFunction(facebook::react::TimePointFunction nowFunction);
 void facebook::react::handleJSError(facebook::jsi::Runtime& runtime, const facebook::jsi::JSError& error, bool isFatal);
+void facebook::react::installRuntimeGlobals(facebook::jsi::Runtime& runtime, const folly::dynamic& globals);
 void facebook::react::parseProcessedBackgroundImage(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundImage>& result);
 void facebook::react::parseProcessedFontVariant(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::FontVariant& result);
 void facebook::react::parseUnprocessedBackgroundImageList(const facebook::react::PropsParserContext& context, const std::vector<facebook::react::RawValue>& value, std::vector<facebook::react::BackgroundImage>& result);

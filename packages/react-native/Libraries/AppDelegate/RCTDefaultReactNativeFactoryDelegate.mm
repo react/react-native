@@ -102,6 +102,11 @@
 {
 }
 
+- (NSDictionary<NSString *, id> *_Nullable)initialRuntimeGlobals
+{
+  return nil;
+}
+
 - (NSArray<NSString *> *)unstableModulesRequiringMainQueueSetup
 {
   return (self.dependencyProvider != nullptr)

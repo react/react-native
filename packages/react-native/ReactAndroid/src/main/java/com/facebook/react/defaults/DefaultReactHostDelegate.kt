@@ -15,6 +15,7 @@ import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.runtime.BindingsInstaller
 import com.facebook.react.runtime.JSRuntimeFactory
 import com.facebook.react.runtime.ReactHostDelegate
+import com.facebook.react.runtime.RuntimeGlobalsBindingsInstaller
 import com.facebook.react.runtime.hermes.HermesInstance
 
 /**
@@ -32,6 +33,11 @@ import com.facebook.react.runtime.hermes.HermesInstance
  *   to install C++ objects into jsi::Runtime during the initialization of React Native
  * @param exceptionHandler Callback that can be used by React Native host applications to react to
  *   exceptions thrown by the internals of React Native.
+ * @param runtimeGlobals Native values to install as properties of `globalThis` before the main
+ *   bundle executes and before [bindingsInstaller] runs. Values are copied during construction and
+ *   installed for each new runtime, including reloads. Supports strings, booleans, numbers, null,
+ *   and nested maps and lists. Names must not match non-writable globals defined by React Native or
+ *   the JavaScript engine. When empty, [bindingsInstaller] is used unchanged.
  */
 @DoNotStrip
 @UnstableReactNativeAPI
@@ -40,9 +46,14 @@ public class DefaultReactHostDelegate(
     override val jsBundleLoader: JSBundleLoader,
     override val reactPackages: List<ReactPackage> = emptyList(),
     override val jsRuntimeFactory: JSRuntimeFactory = HermesInstance(),
-    override val bindingsInstaller: BindingsInstaller? = null,
+    bindingsInstaller: BindingsInstaller? = null,
     private val exceptionHandler: (Exception) -> Unit = { throw it },
     override val turboModuleManagerDelegateBuilder: ReactPackageTurboModuleManagerDelegate.Builder,
+    runtimeGlobals: Map<String, Any?> = emptyMap(),
 ) : ReactHostDelegate {
+  override val bindingsInstaller: BindingsInstaller? =
+      if (runtimeGlobals.isEmpty()) bindingsInstaller
+      else RuntimeGlobalsBindingsInstaller.create(runtimeGlobals, bindingsInstaller)
+
   override fun handleInstanceException(error: Exception): Unit = exceptionHandler(error)
 }
