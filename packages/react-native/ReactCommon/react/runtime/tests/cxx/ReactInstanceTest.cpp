@@ -18,6 +18,7 @@
 #include <jsi/hermes-interfaces.h>
 #include <jsi/jsi.h>
 #include <react/runtime/ReactInstance.h>
+#include <react/runtime/RuntimeGlobals.h>
 
 using ::testing::_;
 using ::testing::HasSubstr;
@@ -312,6 +313,26 @@ TEST_F(ReactInstanceTest, testProfilingFlag) {
   initializeRuntimeWithScript({.isProfiling = true}, "");
   auto val = eval("__RCTProfileIsProfiling === true");
   EXPECT_EQ(val.getBool(), true);
+}
+
+TEST_F(
+    ReactInstanceTest,
+    testRuntimeGlobalsAreReadableWhenTheMainBundleStarts) {
+  instance_->initializeRuntime(
+      {.isProfiling = false},
+      createRuntimeGlobalsInstaller(
+          folly::dynamic::object(
+              "startupConfig", folly::dynamic::object("protocolVersion", 2))));
+  instance_->loadScript(
+      std::make_unique<JSBigStdString>(
+          "var protocolVersionAtStart = startupConfig.protocolVersion;"),
+      "");
+  while (messageQueueThread_->size() > 0) {
+    step();
+  }
+
+  expectNoError();
+  EXPECT_EQ(eval("protocolVersionAtStart").getNumber(), 2);
 }
 
 TEST_F(ReactInstanceTest, testSetTimeout) {
