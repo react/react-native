@@ -73,3 +73,7 @@
 -keep public class com.facebook.imageutils.** {
    public *;
 }
+
+# Activity result launcher keys include the contract's class name. Keep those names so that R8
+# doesn't merge different contracts into one class or rename them between builds.
+-keepnames class * extends androidx.activity.result.contract.ActivityResultContract
