@@ -13,10 +13,7 @@ unsigned char blackGIF[] = {0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01
                             0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x2c, 0x00, 0x00, 0x00, 0x00,
                             0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b};
 
-RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader2)
-    RCTDefineImageDecoder(RCTImageLoaderTestsDecoder1) RCTDefineImageDecoder(RCTImageLoaderTestsDecoder2)
-
-        @interface RCTImageLoaderTestsImageCache : NSObject<RCTImageCache>
+@interface RCTImageLoaderTestsImageCache : NSObject <RCTImageCache>
 
 @property (nonatomic, strong) UIImage *image;
 @property (nonatomic, copy) NSString *URLString;
