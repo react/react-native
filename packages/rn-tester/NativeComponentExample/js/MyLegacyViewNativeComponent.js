@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {HostComponent, ViewProps} from 'react-native';
+import type {ColorValue, HostComponent, ViewProps} from 'react-native';
 
 import * as React from 'react';
 import {UIManager, findNodeHandle, requireNativeComponent} from 'react-native';
@@ -27,7 +27,7 @@ type ColorChangedEvent = {
 type NativeProps = Readonly<{
   ...ViewProps,
   opacity?: number,
-  color?: string,
+  color?: ColorValue,
   onColorChanged?: (event: ColorChangedEvent) => void,
 }>;
 
