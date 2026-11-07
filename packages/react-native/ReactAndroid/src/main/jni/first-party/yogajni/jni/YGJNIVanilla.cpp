@@ -16,7 +16,7 @@
 #include "YGJTypesVanilla.h"
 #include "YogaJniException.h"
 #include "common.h"
-#include "jni.h"
+#include "jni.h" // @manual=fbsource//xplat/yoga/lib/jni:jni
 
 using namespace facebook;
 using namespace facebook::yoga;
