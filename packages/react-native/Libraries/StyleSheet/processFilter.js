@@ -150,12 +150,18 @@ function _getFilterAmount(filterName: string, filterArgs: unknown): ?number {
       if (filterArgAsNumber === 0) {
         return 0;
       }
-      if (unit !== 'deg' && unit !== 'rad') {
-        return undefined;
+      switch (unit) {
+        case 'deg':
+          return filterArgAsNumber;
+        case 'grad':
+          return (360 * filterArgAsNumber) / 400;
+        case 'rad':
+          return (180 * filterArgAsNumber) / Math.PI;
+        case 'turn':
+          return 360 * filterArgAsNumber;
+        default:
+          return undefined;
       }
-      return unit === 'rad'
-        ? (180 * filterArgAsNumber) / Math.PI
-        : filterArgAsNumber;
     // blur takes any positive CSS length that is not a percent. In RN
     // we currently only have DIPs, so we are not parsing units here.
     case 'blur':
