@@ -62,6 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setupAnimationDriver:(const facebook::react::SurfaceHandler &)surfaceHandler;
 
+// Permanently removes the layout-animation observer. Call on the main queue.
+- (void)stopObservingLayoutAnimations;
+
 - (void)onAnimationStarted;
 
 - (void)onAllAnimationsComplete;

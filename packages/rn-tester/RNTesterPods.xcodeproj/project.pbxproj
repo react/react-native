@@ -50,6 +50,7 @@
 		F0D621C32BBB9E38005960AC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F0D621C22BBB9E38005960AC /* PrivacyInfo.xcprivacy */; };
 		F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */; };
 		F1A0B1C23D4E5F6071829322 /* RCTTurboModuleStringConversionTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */; };
+		F1A0B1C23D4E5F6071829342 /* RCTInstanceInvalidationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = F1A0B1C23D4E5F6071829341 /* RCTInstanceInvalidationTests.mm */; };
 		D1A60AD11B9247A080734F02 /* RCTDevLoadingViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */; };
 /* End PBXBuildFile section */
 
@@ -148,6 +149,7 @@
 		F0D621C22BBB9E38005960AC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTurboModuleArrayBufferTests.mm; sourceTree = "<group>"; };
 		F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTurboModuleStringConversionTests.mm; sourceTree = "<group>"; };
+		F1A0B1C23D4E5F6071829341 /* RCTInstanceInvalidationTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTInstanceInvalidationTests.mm; sourceTree = "<group>"; };
 		D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTDevLoadingViewTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -309,6 +311,7 @@
 				E7DB20CB22B2BAA5005AC45F /* RCTModuleMethodTests.mm */,
 				F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */,
 				F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */,
+				F1A0B1C23D4E5F6071829341 /* RCTInstanceInvalidationTests.mm */,
 				E7DB20CF22B2BAA5005AC45F /* RCTMultipartStreamReaderTests.m */,
 				A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */,
 				E7DB20BE22B2BAA4005AC45F /* RCTNativeAnimatedNodesManagerTests.m */,
@@ -620,6 +623,7 @@
 				E7DB20E822B2BAA6005AC45F /* RCTModuleMethodTests.mm in Sources */,
 				F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */,
 				F1A0B1C23D4E5F6071829322 /* RCTTurboModuleStringConversionTests.mm in Sources */,
+				F1A0B1C23D4E5F6071829342 /* RCTInstanceInvalidationTests.mm in Sources */,
 				E7DB20E222B2BAA6005AC45F /* RCTGzipTests.m in Sources */,
 				E7DB20ED22B2BAA6005AC45F /* RCTURLUtilsTests.m in Sources */,
 				E7DB20D322B2BAA6005AC45F /* RCTBlobManagerTests.m in Sources */,

@@ -8,6 +8,7 @@
 #import "RCTScheduler.h"
 
 #import <QuartzCore/CADisplayLink.h>
+#import <React/RCTAssert.h>
 #import <cxxreact/TraceSection.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/animations/LayoutAnimationDriver.h>
@@ -256,6 +257,12 @@ class RCTAnimationChoreographer : public AnimationChoreographer {
 - (void)setupAnimationDriver:(const facebook::react::SurfaceHandler &)surfaceHandler
 {
   surfaceHandler.getMountingCoordinator()->setMountingOverrideDelegate(_animationDriver);
+}
+
+- (void)stopObservingLayoutAnimations
+{
+  RCTAssertMainQueue();
+  _uiRunLoopObserver.reset();
 }
 
 - (void)onAnimationStarted
