@@ -41,6 +41,21 @@ void ViewShadowNode::initialize() noexcept {
     return false;
   };
 
+  auto hasContainerAccessibilityProps = [&]() {
+    const auto& state = viewProps.accessibilityState;
+    bool hasState = state.has_value() &&
+        (state->disabled || state->selected.has_value() ||
+         state->expanded.has_value() ||
+         state->checked == AccessibilityState::Checked ||
+         state->checked == AccessibilityState::Unchecked);
+    return !viewProps.accessibilityLabel.empty() ||
+        !viewProps.accessibilityRole.empty() || viewProps.role.has_value() ||
+        hasState || !viewProps.accessibilityActions.empty() ||
+        viewProps.onAccessibilityEscape || viewProps.onAccessibilityMagicTap ||
+        viewProps.accessibilityShowsLargeContentViewer ||
+        viewProps.accessibilityIgnoresInvertColors;
+  };
+
   bool formsStackingContext = !viewProps.collapsable ||
       viewProps.pointerEvents == PointerEventsMode::BoxOnly ||
       viewProps.pointerEvents == PointerEventsMode::None ||
@@ -60,7 +75,7 @@ void ViewShadowNode::initialize() noexcept {
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
       HostPlatformViewTraitsInitializer::formsStackingContext(viewProps) ||
-      !viewProps.accessibilityOrder.empty();
+      !viewProps.accessibilityOrder.empty() || hasContainerAccessibilityProps();
 
   bool formsView = formsStackingContext ||
       isColorMeaningful(viewProps.backgroundColor) || hasBorder() ||
