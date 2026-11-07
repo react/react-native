@@ -2773,6 +2773,7 @@ protocol RCTPullToRefreshViewViewProtocol : public NSObject {
 protocol RCTReactNativeFactoryDelegate : public RCTBridgeDelegate, public RCTUIConfiguratorProtocol, public RCTHostDelegate, public RCTTurboModuleManagerDelegate, public RCTComponentViewFactoryComponentProvider, public RCTJSRuntimeConfiguratorProtocol {
   public @property (strong) id<RCTDependencyProvider> dependencyProvider;
   public virtual NSDictionary<NSString*, Class<RCTComponentViewProtocol>>* thirdPartyFabricComponents();
+  public virtual NSDictionary<NSString*, id>* _Nullable initialRuntimeGlobals();
   public virtual NSURL* _Nullable bundleURL();
 }
 

@@ -731,6 +731,7 @@ facebook::react::MapBuffer facebook::react::toMapBuffer(const facebook::react::F
 facebook::react::MapBuffer facebook::react::toMapBuffer(const facebook::react::ParagraphAttributes& paragraphAttributes);
 facebook::react::MapBuffer facebook::react::toMapBuffer(const facebook::react::TextAttributes& textAttributes);
 facebook::react::ParagraphAttributes facebook::react::convertRawProp(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::ParagraphAttributes& sourceParagraphAttributes, const facebook::react::ParagraphAttributes& defaultParagraphAttributes);
+facebook::react::ReactInstance::BindingsInstallFunc facebook::react::createRuntimeGlobalsInstaller(folly::dynamic globals, facebook::react::ReactInstance::BindingsInstallFunc additionalBindings = {});
 facebook::react::Rect facebook::react::insetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& insets) noexcept;
 facebook::react::Rect facebook::react::outsetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& outsets) noexcept;
 facebook::react::ScriptTag facebook::react::parseTypeFromHeader(const facebook::react::BundleHeader& header);
@@ -954,6 +955,7 @@ void facebook::react::fromRawValueShared(const facebook::react::ContextContainer
 void facebook::react::fromString(const std::string& string, facebook::react::AccessibilityTraits& result);
 void facebook::react::g_setNativeAnimatedNowTimestampFunction(facebook::react::TimePointFunction nowFunction);
 void facebook::react::handleJSError(facebook::jsi::Runtime& runtime, const facebook::jsi::JSError& error, bool isFatal);
+void facebook::react::installRuntimeGlobals(facebook::jsi::Runtime& runtime, const folly::dynamic& globals);
 void facebook::react::parseProcessedBackgroundImage(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundImage>& result);
 void facebook::react::parseProcessedFontVariant(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::FontVariant& result);
 void facebook::react::parseUnprocessedBackgroundImageList(const facebook::react::PropsParserContext& context, const std::vector<facebook::react::RawValue>& value, std::vector<facebook::react::BackgroundImage>& result);
@@ -2420,6 +2422,13 @@ class facebook::react::JReadableMapBuffer : public jni::HybridClass<facebook::re
 class facebook::react::JRuntimeExecutor : public jni::HybridClass<facebook::react::JRuntimeExecutor> {
   public facebook::react::RuntimeExecutor get();
   public static constexpr auto kJavaDescriptor;
+}
+
+class facebook::react::JRuntimeGlobalsBindingsInstaller : public jni::HybridClass<facebook::react::JRuntimeGlobalsBindingsInstaller, facebook::react::JBindingsInstaller> {
+  public facebook::react::ReactInstance::BindingsInstallFunc getBindingsInstallFunc() override;
+  public static constexpr auto kJavaDescriptor;
+  public static jni::local_ref<jhybriddata> initHybrid(jni::alias_ref<jclass>, facebook::react::NativeMap* globals, jni::alias_ref<JBindingsInstaller::javaobject> bindingsInstaller);
+  public static void registerNatives();
 }
 
 class facebook::react::JRuntimeScheduler : public jni::HybridClass<facebook::react::JRuntimeScheduler> {

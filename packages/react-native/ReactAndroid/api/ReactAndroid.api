@@ -1783,9 +1783,9 @@ public class com/facebook/react/defaults/DefaultReactActivityDelegate : com/face
 public final class com/facebook/react/defaults/DefaultReactHost {
 	public static final field INSTANCE Lcom/facebook/react/defaults/DefaultReactHost;
 	public static final fun getDefaultReactHost (Landroid/content/Context;Lcom/facebook/react/ReactNativeHost;Lcom/facebook/react/runtime/JSRuntimeFactory;)Lcom/facebook/react/ReactHost;
-	public static final fun getDefaultReactHost (Landroid/content/Context;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/facebook/react/runtime/JSRuntimeFactory;ZLjava/util/List;Lkotlin/jvm/functions/Function1;Lcom/facebook/react/runtime/BindingsInstaller;)Lcom/facebook/react/ReactHost;
+	public static final fun getDefaultReactHost (Landroid/content/Context;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/facebook/react/runtime/JSRuntimeFactory;ZLjava/util/List;Lkotlin/jvm/functions/Function1;Lcom/facebook/react/runtime/BindingsInstaller;Ljava/util/Map;)Lcom/facebook/react/ReactHost;
 	public static synthetic fun getDefaultReactHost$default (Landroid/content/Context;Lcom/facebook/react/ReactNativeHost;Lcom/facebook/react/runtime/JSRuntimeFactory;ILjava/lang/Object;)Lcom/facebook/react/ReactHost;
-	public static synthetic fun getDefaultReactHost$default (Landroid/content/Context;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/facebook/react/runtime/JSRuntimeFactory;ZLjava/util/List;Lkotlin/jvm/functions/Function1;Lcom/facebook/react/runtime/BindingsInstaller;ILjava/lang/Object;)Lcom/facebook/react/ReactHost;
+	public static synthetic fun getDefaultReactHost$default (Landroid/content/Context;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/facebook/react/runtime/JSRuntimeFactory;ZLjava/util/List;Lkotlin/jvm/functions/Function1;Lcom/facebook/react/runtime/BindingsInstaller;Ljava/util/Map;ILjava/lang/Object;)Lcom/facebook/react/ReactHost;
 }
 
 public abstract class com/facebook/react/defaults/DefaultReactNativeHost : com/facebook/react/ReactNativeHost {
@@ -3071,6 +3071,19 @@ public final class com/facebook/react/runtime/ReactSurfaceView : com/facebook/re
 	public fun onChildStartedNativeGesture (Landroid/view/View;Landroid/view/MotionEvent;)V
 	public fun requestChildFocus (Landroid/view/View;Landroid/view/View;)V
 	public fun requestDisallowInterceptTouchEvent (Z)V
+}
+
+public final class com/facebook/react/runtime/RuntimeGlobalsBindingsInstaller : com/facebook/react/runtime/BindingsInstaller {
+	public static final field Companion Lcom/facebook/react/runtime/RuntimeGlobalsBindingsInstaller$Companion;
+	public synthetic fun <init> (Lcom/facebook/jni/HybridData;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun create (Ljava/util/Map;)Lcom/facebook/react/runtime/RuntimeGlobalsBindingsInstaller;
+	public static final fun create (Ljava/util/Map;Lcom/facebook/react/runtime/BindingsInstaller;)Lcom/facebook/react/runtime/RuntimeGlobalsBindingsInstaller;
+}
+
+public final class com/facebook/react/runtime/RuntimeGlobalsBindingsInstaller$Companion {
+	public final fun create (Ljava/util/Map;)Lcom/facebook/react/runtime/RuntimeGlobalsBindingsInstaller;
+	public final fun create (Ljava/util/Map;Lcom/facebook/react/runtime/BindingsInstaller;)Lcom/facebook/react/runtime/RuntimeGlobalsBindingsInstaller;
+	public static synthetic fun create$default (Lcom/facebook/react/runtime/RuntimeGlobalsBindingsInstaller$Companion;Ljava/util/Map;Lcom/facebook/react/runtime/BindingsInstaller;ILjava/lang/Object;)Lcom/facebook/react/runtime/RuntimeGlobalsBindingsInstaller;
 }
 
 public abstract class com/facebook/react/runtime/cxxreactpackage/CxxReactPackage {

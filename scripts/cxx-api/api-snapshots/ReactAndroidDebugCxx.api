@@ -1630,6 +1630,13 @@ class facebook::react::JRuntimeExecutor : public jni::HybridClass<facebook::reac
   public static constexpr auto kJavaDescriptor;
 }
 
+class facebook::react::JRuntimeGlobalsBindingsInstaller : public jni::HybridClass<facebook::react::JRuntimeGlobalsBindingsInstaller, facebook::react::JBindingsInstaller> {
+  public facebook::react::ReactInstance::BindingsInstallFunc getBindingsInstallFunc() override;
+  public static constexpr auto kJavaDescriptor;
+  public static jni::local_ref<jhybriddata> initHybrid(jni::alias_ref<jclass>, facebook::react::NativeMap* globals, jni::alias_ref<JBindingsInstaller::javaobject> bindingsInstaller);
+  public static void registerNatives();
+}
+
 class facebook::react::JRuntimeScheduler : public jni::HybridClass<facebook::react::JRuntimeScheduler> {
   public static constexpr auto kJavaDescriptor;
   public std::weak_ptr<facebook::react::RuntimeScheduler> get();
