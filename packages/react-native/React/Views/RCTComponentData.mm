@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #import "RCTComponentData.h"
 
 #import <objc/message.h>
@@ -550,3 +552,5 @@ NSString *RCTViewManagerModuleNameForClass(Class managerClass)
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
