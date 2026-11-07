@@ -9,6 +9,7 @@
 
 #include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/uimanager/UIManager.h>
 
 namespace facebook::react {
@@ -242,8 +243,17 @@ void SurfaceHandler::constraintLayout(
         link_.shadowTree && "`link_.shadowTree` must not be null.");
     link_.shadowTree->commit(
         [&](const RootShadowNode& oldRootShadowNode) {
-          return oldRootShadowNode.clone(
+          auto newRoot = oldRootShadowNode.clone(
               propsParserContext, layoutConstraints, layoutContext);
+
+          if (ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() &&
+              layoutContext.fontSizeMultiplier !=
+                  oldRootShadowNode.getConcreteProps()
+                      .layoutContext.fontSizeMultiplier) {
+            newRoot->dirtyLayout();
+          }
+
+          return newRoot;
         },
         {/* default commit options */});
   }
