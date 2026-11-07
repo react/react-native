@@ -1051,6 +1051,39 @@ describe('<FlatList>', () => {
 
         expect(root.takeMountingManagerLogs()).toEqual([]);
       });
+
+      it('dispatches scrollTo command for the row of an item when numColumns > 1', () => {
+        const root = Fantom.createRoot();
+        const flatListRef = createRef<FlatList<Item>>();
+
+        Fantom.runTask(() => {
+          root.render(
+            <FlatList
+              ref={flatListRef}
+              nativeID="flat-list"
+              data={DATA}
+              numColumns={2}
+              renderItem={({item}) => <View style={{height: ITEM_HEIGHT}} />}
+              getItemLayout={getItemLayout}
+            />,
+          );
+        });
+
+        root.takeMountingManagerLogs();
+
+        Fantom.runTask(() => {
+          nullthrows(flatListRef.current).scrollToItem({
+            item: DATA[5],
+            animated: false,
+          });
+        });
+
+        // Item at index 5 is in row 2 with numColumns=2, and rows are
+        // ITEM_HEIGHT=50 tall, so it should scroll to offset 100
+        expect(root.takeMountingManagerLogs()).toEqual([
+          'Command {type: "ScrollView", nativeID: "flat-list", name: "scrollTo, args: [0,100,false]"}',
+        ]);
+      });
     });
 
     describe('recordInteraction', () => {
