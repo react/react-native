@@ -9,8 +9,11 @@
 #import <XCTest/XCTest.h>
 
 #import <React/RCTParagraphComponentView.h>
+#import <React/RCTSurfacePointerHandler.h>
+#import <React/RCTSurfaceTouchHandler.h>
 
 #import <React/RCTTouchableComponentViewProtocol.h>
+#import <ReactCommon/RuntimeExecutor.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
@@ -19,12 +22,67 @@
 #import <react/renderer/components/text/ParagraphState.h>
 #import <react/renderer/components/text/TextShadowNode.h>
 #import <react/renderer/components/view/TouchEventEmitter.h>
+#import <react/renderer/components/view/ViewEventEmitter.h>
+#import <react/renderer/core/EventBeat.h>
 #import <react/renderer/core/EventDispatcher.h>
+#import <react/renderer/core/EventListener.h>
+#import <react/renderer/core/EventQueueProcessor.h>
+#import <react/renderer/core/RawEvent.h>
 #import <react/renderer/graphics/Color.h>
+#import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #import <react/utils/ContextContainer.h>
 
 using namespace facebook::react;
+
+/*
+ * A touch emitter whose events are recorded, by type and in order, as they are
+ * dispatched. The dispatcher's listener sees every event before it is queued,
+ * so no JavaScript runtime has to run.
+ */
+class RCTParagraphSelectionRecordingEmitter {
+ public:
+  RCTParagraphSelectionRecordingEmitter()
+  {
+    runtimeScheduler_ = std::make_unique<RuntimeScheduler>([](std::function<void(facebook::jsi::Runtime &)> &&) {});
+    auto eventBeat = std::make_unique<EventBeat>(std::make_shared<EventBeat::OwnerBox>(), *runtimeScheduler_);
+    auto eventQueueProcessor = EventQueueProcessor(
+        [](facebook::jsi::Runtime &,
+           EventTarget *,
+           const std::string &,
+           ReactEventPriority,
+           const EventPayload &,
+           HighResTimeStamp) {},
+        [](facebook::jsi::Runtime &) {},
+        [](const StateUpdate &) {},
+        {});
+    eventDispatcher_ = std::make_shared<EventDispatcher>(
+        eventQueueProcessor, std::move(eventBeat), [](const StateUpdate &) {}, std::weak_ptr<EventLogger>{});
+    listener_ = std::make_shared<EventListener>([this](const RawEvent &event) {
+      eventTypes_.push_back(event.type);
+      return true;
+    });
+    eventDispatcher_->addListener(listener_);
+    emitter_ = std::make_shared<TouchEventEmitter>(nullptr, eventDispatcher_);
+  }
+
+  std::shared_ptr<TouchEventEmitter> emitter() const
+  {
+    return emitter_;
+  }
+
+  const std::vector<std::string> &eventTypes() const
+  {
+    return eventTypes_;
+  }
+
+ private:
+  std::unique_ptr<RuntimeScheduler> runtimeScheduler_;
+  std::shared_ptr<EventDispatcher> eventDispatcher_;
+  std::shared_ptr<EventListener> listener_;
+  std::shared_ptr<TouchEventEmitter> emitter_;
+  std::vector<std::string> eventTypes_;
+};
 
 class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults {
  public:
@@ -77,6 +135,100 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 
 - (void)customMenuAction:(id)sender
 {
+}
+
+@end
+
+/*
+ * A touch that the surface handlers can track outside UIKit's event delivery.
+ * It lands on one view, at one point in that view's coordinates, and reports
+ * no force, radius or tilt.
+ */
+@interface RCTParagraphSelectionTouch : UITouch
+
+@property (nonatomic) UITouchPhase touchPhase;
+
++ (instancetype)touchOnView:(UIView *)view atPoint:(CGPoint)point;
+
+@end
+
+@implementation RCTParagraphSelectionTouch {
+  __weak UIView *_touchView;
+  CGPoint _point;
+}
+
++ (instancetype)touchOnView:(UIView *)view atPoint:(CGPoint)point
+{
+  RCTParagraphSelectionTouch *touch = [self new];
+  touch->_touchView = view;
+  touch->_point = point;
+  touch.touchPhase = UITouchPhaseBegan;
+  return touch;
+}
+
+- (UIView *)view
+{
+  return _touchView;
+}
+
+- (UIWindow *)window
+{
+  return _touchView.window;
+}
+
+- (UITouchPhase)phase
+{
+  return _touchPhase;
+}
+
+- (UITouchType)type
+{
+  return UITouchTypeDirect;
+}
+
+- (NSUInteger)tapCount
+{
+  return 1;
+}
+
+- (NSTimeInterval)timestamp
+{
+  return 0;
+}
+
+- (CGFloat)force
+{
+  return 0;
+}
+
+- (CGFloat)maximumPossibleForce
+{
+  return 0;
+}
+
+- (CGFloat)majorRadius
+{
+  return 0;
+}
+
+- (CGFloat)altitudeAngle
+{
+  return 0;
+}
+
+- (CGFloat)azimuthAngleInView:(UIView *)view
+{
+  return 0;
+}
+
+- (CGPoint)locationInView:(UIView *)view
+{
+  return [_touchView convertPoint:_point toView:view];
+}
+
+- (CGPoint)previousLocationInView:(UIView *)view
+{
+  return [self locationInView:view];
 }
 
 @end
@@ -185,11 +337,21 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
  */
 - (AttributedString)attributedStringWithEventEmitter:(std::shared_ptr<TouchEventEmitter>)eventEmitter
 {
+  return [self attributedStringWithEventEmitter:std::move(eventEmitter) text:"Selectable wavy decoration"];
+}
+
+/*
+ * Two paragraphs with the same text share one cached text storage, and with it
+ * one emitter. A test with two pressable paragraphs gives each its own text.
+ */
+- (AttributedString)attributedStringWithEventEmitter:(std::shared_ptr<TouchEventEmitter>)eventEmitter
+                                                text:(std::string)text
+{
   auto textAttributes = TextAttributes{};
   textAttributes.fontSize = 20;
 
   auto fragment = AttributedString::Fragment{};
-  fragment.string = "Selectable wavy decoration";
+  fragment.string = std::move(text);
   fragment.textAttributes = textAttributes;
   fragment.parentShadowView.eventEmitter = eventEmitter;
   // The emitter only reaches the attributed string when the fragment names a
@@ -203,18 +365,53 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 
 - (RCTParagraphComponentView *)paragraphViewWithEventEmitter:(std::shared_ptr<TouchEventEmitter>)eventEmitter
 {
+  return [self paragraphViewWithEventEmitter:std::move(eventEmitter)
+                                        text:"Selectable wavy decoration"
+                               contentInsets:EdgeInsets{}];
+}
+
+/*
+ * A padded paragraph lays its text out inside the insets, so the selection text
+ * view covers the text and not the padding.
+ */
+- (RCTParagraphComponentView *)paragraphViewWithEventEmitter:(std::shared_ptr<TouchEventEmitter>)eventEmitter
+                                                        text:(std::string)text
+                                               contentInsets:(EdgeInsets)contentInsets
+{
   RCTParagraphComponentView *view = [RCTParagraphComponentView new];
   view.frame = CGRectMake(0, 0, 320, 100);
 
   [view updateProps:[self propsWithSelectable:YES] oldProps:nullptr];
-  [view updateState:[self stateWithAttributedString:[self attributedStringWithEventEmitter:eventEmitter]] oldState:nil];
+  [view updateState:[self stateWithAttributedString:[self attributedStringWithEventEmitter:eventEmitter
+                                                                                      text:std::move(text)]]
+           oldState:nil];
 
   auto layoutMetrics = LayoutMetrics{};
   layoutMetrics.frame = facebook::react::Rect{facebook::react::Point{0, 0}, facebook::react::Size{320, 100}};
+  layoutMetrics.contentInsets = contentInsets;
   [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:{}];
 
   [view finalizeUpdates:RNComponentViewUpdateMaskAll];
   return view;
+}
+
+/*
+ * Two paragraphs under one root view in a window, as a surface handler sees
+ * them: the first at the top, the second below it. The handlers convert touch
+ * points through the window's screen, so the root needs one.
+ */
+- (UIWindow *)windowWithRootView:(UIView *)rootView paragraphs:(NSArray<RCTParagraphComponentView *> *)paragraphs
+{
+  CGFloat top = 0;
+  for (RCTParagraphComponentView *paragraph in paragraphs) {
+    paragraph.frame = CGRectMake(0, top, 320, 100);
+    [rootView addSubview:paragraph];
+    top += 200;
+  }
+
+  UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 320, 400)];
+  [window addSubview:rootView];
+  return window;
 }
 
 - (AttributedString)attributedStringWithText:(std::string)text
@@ -810,7 +1007,7 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
  * A drag of a selection handle starts on the glyphs the handle sits on, which
  * is often a pressable <Text>. Delivering that touch presses the link, so
  * adjusting a selection follows it. While a selection shows, the paragraph
- * must hand out no event emitter at all.
+ * must hand out no event emitter for a touch on the text.
  */
 - (void)testShowingSelectionGivesNoEventEmitter
 {
@@ -824,6 +1021,151 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   XCTAssertTrue(
       [(id<RCTTouchableComponentViewProtocol>)view touchEventEmitterAtPoint:CGPointMake(100, 10)] == nullptr,
       @"A touch that lands while a selection shows must not press the text under it.");
+}
+
+/*
+ * The guard stops at the edge of the text. A padded paragraph inside a
+ * <Pressable> still presses from its padding while a selection shows, through
+ * the paragraph's own emitter, as it does with nothing selected.
+ *
+ * The point sits in the left padding and below the single line of text: the
+ * layout manager reads the point in text container coordinates, and a point
+ * past the last glyph is what falls back to the paragraph's own emitter.
+ */
+- (void)testATouchInThePaddingStillPressesWhileASelectionShows
+{
+  auto fragmentEmitter = std::make_shared<TouchEventEmitter>(nullptr, EventDispatcher::Weak{});
+  auto paragraphEmitter = std::make_shared<ViewEventEmitter>(nullptr, EventDispatcher::Weak{});
+  RCTParagraphComponentView *view = [self paragraphViewWithEventEmitter:fragmentEmitter
+                                                                   text:"Selectable wavy decoration"
+                                                          contentInsets:EdgeInsets{10, 10, 10, 10}];
+  [view updateEventEmitter:paragraphEmitter];
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertNotNil(selectionTextView);
+  XCTAssertEqual(
+      selectionTextView.frame.origin.x, 10, @"The selection text view must cover the text, not the padding.");
+  CGPoint inPadding = CGPointMake(5, 95);
+  XCTAssertFalse(
+      [selectionTextView pointInside:[view convertPoint:inPadding toView:selectionTextView] withEvent:nil],
+      @"The point must be outside the selection text view.");
+
+  selectionTextView.selectedRange = NSMakeRange(0, 5);
+
+  XCTAssertEqual(
+      (const void *)[(id<RCTTouchableComponentViewProtocol>)view touchEventEmitterAtPoint:inPadding].get(),
+      (const void *)paragraphEmitter.get(),
+      @"A touch in the padding must still press the paragraph while a selection shows.");
+  XCTAssertTrue(
+      [(id<RCTTouchableComponentViewProtocol>)view touchEventEmitterAtPoint:CGPointMake(100, 50)] == nullptr,
+      @"A touch on the text must still hand out no emitter.");
+}
+
+/*
+ * The long press that selects is one touch of possibly several. Only that
+ * touch leaves React Native: a finger held on another paragraph keeps its
+ * touch, and ends it as usual. The cancelled touch dispatches nothing more
+ * while UIKit keeps delivering it.
+ */
+- (void)testSelectingWithOneFingerCancelsOnlyThatFingersTouch
+{
+  RCTParagraphSelectionRecordingEmitter selected;
+  RCTParagraphSelectionRecordingEmitter held;
+  RCTParagraphComponentView *selectedParagraph = [self paragraphViewWithEventEmitter:selected.emitter()];
+  RCTParagraphComponentView *heldParagraph = [self paragraphViewWithEventEmitter:held.emitter()
+                                                                            text:"Held pressable paragraph"
+                                                                   contentInsets:EdgeInsets{}];
+  UIView *rootView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 400)];
+  UIWindow *window = [self windowWithRootView:rootView paragraphs:@[ selectedParagraph, heldParagraph ]];
+  RCTSurfaceTouchHandler *touchHandler = [RCTSurfaceTouchHandler new];
+  [touchHandler attachToView:rootView];
+
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:selectedParagraph];
+  RCTParagraphSelectionTouch *selectingTouch = [RCTParagraphSelectionTouch touchOnView:selectionTextView
+                                                                               atPoint:CGPointMake(100, 10)];
+  RCTParagraphSelectionTouch *heldTouch = [RCTParagraphSelectionTouch touchOnView:heldParagraph
+                                                                          atPoint:CGPointMake(100, 10)];
+  [touchHandler touchesBegan:[NSSet setWithObject:selectingTouch] withEvent:nil];
+  [touchHandler touchesBegan:[NSSet setWithObject:heldTouch] withEvent:nil];
+
+  selectionTextView.selectedRange = NSMakeRange(0, 5);
+
+  XCTAssertTrue(
+      selected.eventTypes() == (std::vector<std::string>{"topTouchStart", "topTouchCancel"}),
+      @"The touch that made the selection must be cancelled.");
+  XCTAssertTrue(
+      held.eventTypes() == (std::vector<std::string>{"topTouchStart"}),
+      @"A finger held on another paragraph must keep its touch.");
+
+  heldTouch.touchPhase = UITouchPhaseEnded;
+  [touchHandler touchesEnded:[NSSet setWithObject:heldTouch] withEvent:nil];
+  selectingTouch.touchPhase = UITouchPhaseMoved;
+  [touchHandler touchesMoved:[NSSet setWithObject:selectingTouch] withEvent:nil];
+  selectingTouch.touchPhase = UITouchPhaseEnded;
+  [touchHandler touchesEnded:[NSSet setWithObject:selectingTouch] withEvent:nil];
+
+  XCTAssertTrue(
+      held.eventTypes() == (std::vector<std::string>{"topTouchStart", "topTouchEnd"}),
+      @"The held touch must end as usual.");
+  XCTAssertTrue(
+      selected.eventTypes() == (std::vector<std::string>{"topTouchStart", "topTouchCancel"}),
+      @"A cancelled touch must dispatch nothing more.");
+
+  [touchHandler detachFromView:rootView];
+  window.hidden = YES;
+}
+
+/*
+ * W3C pointer events resolve their emitter again on every dispatch. The
+ * `pointerCancel` of the pointer that made the selection must still find the
+ * emitter, so the paragraph holds touches back only after the cancel. The
+ * other pointer stays, and lifts with a `pointerUp`.
+ */
+- (void)testSelectingCancelsThePointerThatMadeItAndKeepsTheOther
+{
+  RCTParagraphSelectionRecordingEmitter selected;
+  RCTParagraphSelectionRecordingEmitter held;
+  RCTParagraphComponentView *selectedParagraph = [self paragraphViewWithEventEmitter:selected.emitter()];
+  RCTParagraphComponentView *heldParagraph = [self paragraphViewWithEventEmitter:held.emitter()
+                                                                            text:"Held pressable paragraph"
+                                                                   contentInsets:EdgeInsets{}];
+  UIView *rootView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 400)];
+  UIWindow *window = [self windowWithRootView:rootView paragraphs:@[ selectedParagraph, heldParagraph ]];
+  RCTSurfacePointerHandler *pointerHandler = [RCTSurfacePointerHandler new];
+  [pointerHandler attachToView:rootView];
+
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:selectedParagraph];
+  RCTParagraphSelectionTouch *selectingTouch = [RCTParagraphSelectionTouch touchOnView:selectionTextView
+                                                                               atPoint:CGPointMake(100, 10)];
+  RCTParagraphSelectionTouch *heldTouch = [RCTParagraphSelectionTouch touchOnView:heldParagraph
+                                                                          atPoint:CGPointMake(100, 10)];
+  [pointerHandler touchesBegan:[NSSet setWithObject:selectingTouch] withEvent:nil];
+  [pointerHandler touchesBegan:[NSSet setWithObject:heldTouch] withEvent:nil];
+
+  selectionTextView.selectedRange = NSMakeRange(0, 5);
+
+  XCTAssertTrue(
+      selected.eventTypes() == (std::vector<std::string>{"topPointerDown", "topPointerCancel"}),
+      @"The pointer that made the selection must get its pointerCancel.");
+  XCTAssertTrue(
+      held.eventTypes() == (std::vector<std::string>{"topPointerDown"}),
+      @"A pointer held on another paragraph must keep going.");
+
+  heldTouch.touchPhase = UITouchPhaseEnded;
+  [pointerHandler touchesEnded:[NSSet setWithObject:heldTouch] withEvent:nil];
+  selectingTouch.touchPhase = UITouchPhaseMoved;
+  [pointerHandler touchesMoved:[NSSet setWithObject:selectingTouch] withEvent:nil];
+  selectingTouch.touchPhase = UITouchPhaseEnded;
+  [pointerHandler touchesEnded:[NSSet setWithObject:selectingTouch] withEvent:nil];
+
+  XCTAssertTrue(
+      held.eventTypes() == (std::vector<std::string>{"topPointerDown", "topPointerUp"}),
+      @"The held pointer must lift as usual.");
+  XCTAssertTrue(
+      selected.eventTypes() == (std::vector<std::string>{"topPointerDown", "topPointerCancel"}),
+      @"A cancelled pointer must dispatch nothing more.");
+
+  [pointerHandler detachFromView:rootView];
+  window.hidden = YES;
 }
 
 /*

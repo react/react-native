@@ -400,9 +400,10 @@ static BOOL RCTAttributedStringHasAttachments(const AttributedString &attributed
 #if !TARGET_OS_TV
   // A drag of a selection handle starts on the glyphs the handle sits on, and
   // that is often a pressable <Text>. Adjusting a selection must not press it.
-  // `resignFirstResponder` empties the range, so an empty range means no
-  // selection is on screen and an ordinary press goes through.
-  if (_selectableTextView.selectedRange.length > 0) {
+  // Only a touch on the selection view is held back: a tap in the padding
+  // still presses the paragraph, or the <Pressable> around it.
+  if (_selectableTextView.selectionOwnsTouches &&
+      [_selectableTextView pointInside:[self convertPoint:point toView:_selectableTextView] withEvent:nil]) {
     return nullptr;
   }
 #endif

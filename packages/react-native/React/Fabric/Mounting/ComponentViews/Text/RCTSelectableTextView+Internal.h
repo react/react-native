@@ -45,6 +45,14 @@ RCT_EXTERN NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *
  */
 @property (nonatomic, copy, nullable) NSAttributedString *sourceAttributedText;
 
+/*
+ * YES while a selection shows and the touches on this view belong to it: a
+ * handle drag, or a tap on the selected text. The paragraph hands out no event
+ * emitter for such a touch. It turns on once the touches that made the
+ * selection are cancelled, and off when the selection clears.
+ */
+@property (nonatomic, readonly) BOOL selectionOwnsTouches;
+
 @end
 
 NS_ASSUME_NONNULL_END

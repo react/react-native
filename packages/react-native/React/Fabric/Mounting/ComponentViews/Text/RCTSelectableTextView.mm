@@ -10,7 +10,8 @@
 #if !TARGET_OS_TV
 
 #import <MobileCoreServices/UTCoreTypes.h>
-#import <React/RCTSurfaceTouchHandler.h>
+#import <React/RCTSurfacePointerHandler+Internal.h>
+#import <React/RCTSurfaceTouchHandler+Internal.h>
 #import <React/RCTViewComponentView.h>
 #import <react/renderer/textlayoutmanager/RCTAttributedTextUtils.h>
 
@@ -33,7 +34,6 @@ NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *attributedS
 
 @implementation RCTSelectableTextView {
   UITapGestureRecognizer *_dismissSelectionRecognizer;
-  BOOL _didCancelTouchesForSelection;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame textContainer:(NSTextContainer *)textContainer
@@ -69,28 +69,36 @@ NSAttributedString *RCTUnpaintedAttributedString(NSAttributedString *attributedS
  * finger after a long press presses the <Text> under it. Selecting a link
  * follows the link.
  *
- * Once a selection exists the touch belongs to the selection, so the other
- * recognizer has to let go. Disabling a recognizer cancels what it tracks,
- * which reaches React Native as a cancelled touch and stops the press.
+ * Once a selection exists the touch belongs to the selection, so the handler
+ * has to let go of it, and only of it: a finger held on another control keeps
+ * its touch. The cancel reaches React Native as a cancelled touch and stops
+ * the press.
+ *
+ * `selectionOwnsTouches` turns on after the cancel, not before. The pointer
+ * handler resolves the emitter again for its `pointerCancel`, and the
+ * paragraph hands out none once the selection owns the touches.
  */
 - (void)textViewDidChangeSelection:(UITextView *)textView
 {
   BOOL hasSelection = textView.selectedRange.length > 0;
-  if (hasSelection && !_didCancelTouchesForSelection) {
-    _didCancelTouchesForSelection = YES;
-    [self _cancelSurfaceTouches];
+  if (hasSelection && !_selectionOwnsTouches) {
+    [self _cancelSurfaceTouchesInSelection];
+    _selectionOwnsTouches = YES;
   } else if (!hasSelection) {
-    _didCancelTouchesForSelection = NO;
+    _selectionOwnsTouches = NO;
   }
 }
 
-- (void)_cancelSurfaceTouches
+- (void)_cancelSurfaceTouchesInSelection
 {
+  // Every surface on the way up tracks the touch, with a touch handler and,
+  // for W3C pointer events, a pointer handler beside it. Every one lets go.
   for (UIView *ancestor = self.superview; ancestor != nil; ancestor = ancestor.superview) {
     for (UIGestureRecognizer *recognizer in ancestor.gestureRecognizers) {
-      if ([recognizer isKindOfClass:[RCTSurfaceTouchHandler class]] && recognizer.isEnabled) {
-        recognizer.enabled = NO;
-        recognizer.enabled = YES;
+      if ([recognizer isKindOfClass:[RCTSurfaceTouchHandler class]]) {
+        [(RCTSurfaceTouchHandler *)recognizer cancelTouchesInView:self];
+      } else if ([recognizer isKindOfClass:[RCTSurfacePointerHandler class]]) {
+        [(RCTSurfacePointerHandler *)recognizer cancelTouchesInView:self];
       }
     }
   }
