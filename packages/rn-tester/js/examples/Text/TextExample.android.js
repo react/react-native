@@ -1415,6 +1415,72 @@ function FitContentWholePixelWidthExample(props: {}): React.Node {
   return <View testID="text-fit-content-whole-pixel-width">{rows}</View>;
 }
 
+function AdjustsFontSizeToFitWholePixelHeightExample(props: {}): React.Node {
+  // Each label's line height is a whole number of pixels, and so is the space
+  // its container leaves for it below the container's padding. That space
+  // picks up floating point error from the padding and from the conversion to
+  // DIPs and back, so it can fall a hair short of the line height. Each row is
+  // a pixel taller than the last. No label should shrink.
+  const pixelRatio = PixelRatio.get();
+  const rows = [];
+  for (let i = 0; i < 17; i++) {
+    const lineHeight = (Math.round(20 * pixelRatio) + i) / pixelRatio;
+    rows.push(
+      <View
+        key={i}
+        style={[
+          styles.adjustsFontSizeToFitRow,
+          {height: lineHeight + styles.adjustsFontSizeToFitRow.paddingTop},
+        ]}>
+        <Text
+          adjustsFontSizeToFit={true}
+          numberOfLines={1}
+          style={[styles.adjustsFontSizeToFitLabel, {lineHeight}]}>
+          Add payment method
+        </Text>
+      </View>,
+    );
+  }
+  return (
+    <View testID="text-adjusts-font-size-to-fit-whole-pixel-height">
+      {rows}
+    </View>
+  );
+}
+
+function AdjustsFontSizeToFitLineHeightExample(props: {}): React.Node {
+  // Each label's lines exactly fill its container. Android lays lines out a
+  // whole number of pixels tall, so it rounds up a line height that isn't one.
+  // Each row's line height is half a pixel taller than the last, so it
+  // alternates between whole and fractional pixels, and some of the whole ones
+  // convert to a hair over a whole number of pixels. No label should shrink.
+  const pixelRatio = PixelRatio.get();
+  const rows = [];
+  for (const numberOfLines of [1, 2]) {
+    for (let i = 0; i < 9; i++) {
+      const lineHeight = (Math.round(16 * pixelRatio) + i / 2) / pixelRatio;
+      rows.push(
+        <View
+          key={`${numberOfLines}-${i}`}
+          style={[
+            styles.adjustsFontSizeToFitLineHeightRow,
+            numberOfLines > 1 &&
+              styles.adjustsFontSizeToFitLineHeightWrappingRow,
+            {height: numberOfLines * lineHeight},
+          ]}>
+          <Text
+            adjustsFontSizeToFit={true}
+            numberOfLines={numberOfLines}
+            style={[styles.adjustsFontSizeToFitLineHeightLabel, {lineHeight}]}>
+            Add payment method
+          </Text>
+        </View>,
+      );
+    }
+  }
+  return <View testID="text-adjusts-font-size-to-fit-line-height">{rows}</View>;
+}
+
 const examples = [
   {
     title: 'Wrapped text width mode',
@@ -1515,6 +1581,16 @@ const examples = [
     title: 'Fit-content text at whole pixel widths',
     name: 'fitContentWholePixelWidth',
     render: FitContentWholePixelWidthExample,
+  },
+  {
+    title: 'adjustsFontSizeToFit at whole pixel heights',
+    name: 'adjustsFontSizeToFitWholePixelHeight',
+    render: AdjustsFontSizeToFitWholePixelHeightExample,
+  },
+  {
+    title: 'adjustsFontSizeToFit with lineHeight',
+    name: 'adjustsFontSizeToFitLineHeight',
+    render: AdjustsFontSizeToFitLineHeightExample,
   },
   {
     title: 'Hyphenation',
@@ -2027,6 +2103,24 @@ const styles = StyleSheet.create({
   fitContentLabel: {
     fontSize: 15,
     maxWidth: '100%',
+  },
+  adjustsFontSizeToFitRow: {
+    backgroundColor: '#E4E6EB',
+    marginBottom: 2,
+    paddingTop: 7.1,
+  },
+  adjustsFontSizeToFitLabel: {
+    fontSize: 16,
+  },
+  adjustsFontSizeToFitLineHeightRow: {
+    backgroundColor: '#E4E6EB',
+    marginBottom: 2,
+  },
+  adjustsFontSizeToFitLineHeightWrappingRow: {
+    width: 90,
+  },
+  adjustsFontSizeToFitLineHeightLabel: {
+    fontSize: 12,
   },
   lineBreakSample: {
     backgroundColor: '#eee',

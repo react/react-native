@@ -9,6 +9,7 @@ package com.facebook.react.views.text.internal.span
 
 import android.graphics.Paint.FontMetricsInt
 import android.text.style.LineHeightSpan
+import com.facebook.react.views.text.TextLayoutManager
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -17,8 +18,10 @@ import kotlin.math.floor
  * LineHeightSpan.Standard which only effects space between the baselines of adjacent line boxes
  * (does not impact space before the first line or after the last).
  */
-internal class CustomLineHeightSpan(height: Float) : LineHeightSpan, ReactSpan {
-  val lineHeight: Int = ceil(height.toDouble()).toInt()
+internal class CustomLineHeightSpan(val height: Float) : LineHeightSpan, ReactSpan {
+  // Lines are laid out a whole number of pixels tall, so round the height up, but not past a whole
+  // number of pixels it only exceeds by floating point error.
+  val lineHeight: Int = ceil(height - TextLayoutManager.PIXEL_SIZE_TOLERANCE).toInt()
 
   override fun chooseHeight(
       text: CharSequence,
