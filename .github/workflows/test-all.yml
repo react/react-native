@@ -128,6 +128,12 @@ jobs:
         uses: ./.github/actions/test-ios-rntester
         with:
           flavor: ${{ matrix.flavor }}
+          # One cell only: `yarn test-ios` does its own pod install and builds
+          # Debug static pods whichever cell invokes it (RNTester.xcscheme pins
+          # its TestAction to Debug), so the other three are identical reruns.
+          # A `frameworks: true` cell, because only `frameworks: false` cells run
+          # `Upload RNTester App`, which test_e2e_ios_rntester consumes.
+          run-unit-tests: ${{ matrix.flavor == 'Debug' && matrix.frameworks }}
 
   # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
   test_ios_rntester_cocoapods:

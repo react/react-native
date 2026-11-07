@@ -2,12 +2,12 @@ name: prepare-ios-tests
 description: Prepare iOS Tests
 runs:
   using: composite
+  # The `Run Ruby Tests` step (`sh run_ruby_tests.sh`) was removed here. It had
+  # never executed - no caller set `run-unit-tests: true` - and cannot pass as
+  # written: run_ruby_tests.sh loads all ten *-test.rb into one process, where
+  # test_utils/PodMock.rb's `Pod::UI` class collides with the real cocoapods
+  # `Pod::UI` module that spm-test.rb requires. Reviving it is separate work.
   steps:
-    - name: Run Ruby Tests
-      shell: bash
-      run: |
-        cd packages/react-native/scripts
-        sh run_ruby_tests.sh
     - name: Boot iPhone Simulator
       shell: bash
       run: source scripts/.tests.env && xcrun simctl boot "$IOS_DEVICE" || true
