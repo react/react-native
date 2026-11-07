@@ -146,6 +146,7 @@ public object ViewProps {
   public const val BORDER_START_COLOR: String = "borderStartColor"
   public const val BORDER_END_COLOR: String = "borderEndColor"
   public const val BOX_SHADOW: String = "boxShadow"
+  public const val BACKDROP_FILTER: String = "backdropFilter"
   public const val FILTER: String = "filter"
   public const val MIX_BLEND_MODE: String = "mixBlendMode"
   public const val OUTLINE_COLOR: String = "outlineColor"

@@ -13,8 +13,10 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.BlendMode
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
@@ -29,6 +31,7 @@ import com.facebook.react.R
 import com.facebook.react.bridge.ReactNoCrashSoftException
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil.assertOnUiThread
 import com.facebook.react.bridge.UiThreadUtil.runOnUiThread
@@ -989,11 +992,45 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
+  // Snapshot of the parent's composited content (background + previous siblings) used to apply
+  // backdrop-filter effects on children that request them.
+  private var backdropBitmap: Bitmap? = null
+  private var backdropCanvas: Canvas? = null
+  private var hasBackdropFilterChild = false
+
+  override fun onDetachedFromWindow() {
+    super.onDetachedFromWindow()
+    backdropBitmap?.recycle()
+    backdropBitmap = null
+    backdropCanvas = null
+  }
+
   override fun dispatchDraw(canvas: Canvas) {
     if (_overflow != Overflow.VISIBLE || getTag(R.id.filter) != null) {
       clipToPaddingBox(this, canvas)
     }
+
+    hasBackdropFilterChild =
+        (0 until childCount).any { getChildAt(it).getTag(R.id.backdrop_filter) != null }
+
+    if (hasBackdropFilterChild && width > 0 && height > 0) {
+      val bmp =
+          backdropBitmap?.takeIf { it.width == width && it.height == height }
+              ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                backdropBitmap?.recycle()
+                backdropBitmap = it
+              }
+      bmp.eraseColor(Color.WHITE)
+      val snapCanvas = Canvas(bmp)
+      backdropCanvas = snapCanvas
+      background?.draw(snapCanvas)
+    }
+
     super.dispatchDraw(canvas)
+
+    if (hasBackdropFilterChild) {
+      backdropCanvas = null
+    }
   }
 
   override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
@@ -1001,6 +1038,31 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
     if (drawWithZ) {
       enableZ(canvas, true)
+    }
+
+    val backdropFilter: ReadableArray? =
+        if (hasBackdropFilterChild) child.getTag(R.id.backdrop_filter) as? ReadableArray else null
+    val snapBitmap = backdropBitmap
+    if (backdropFilter != null && snapBitmap != null) {
+      val childLeft = child.left
+      val childTop = child.top
+      val srcLeft = childLeft.coerceAtLeast(0).coerceAtMost(snapBitmap.width)
+      val srcTop = childTop.coerceAtLeast(0).coerceAtMost(snapBitmap.height)
+      val srcRight = child.right.coerceAtLeast(0).coerceAtMost(snapBitmap.width)
+      val srcBottom = child.bottom.coerceAtLeast(0).coerceAtMost(snapBitmap.height)
+      if (srcRight > srcLeft && srcBottom > srcTop) {
+        BackdropFilterHelper.drawFilteredBackdrop(
+            canvas,
+            snapBitmap,
+            childLeft,
+            childTop,
+            srcLeft,
+            srcTop,
+            srcRight,
+            srcBottom,
+            backdropFilter,
+        )
+      }
     }
 
     var mixBlendMode: BlendMode? = null
@@ -1024,6 +1086,12 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
     if (mixBlendMode != null) {
       canvas.restore()
+    }
+
+    // Update snapshot so subsequent backdrop-filter siblings see this child's pixels.
+    val snapCanvas = backdropCanvas
+    if (hasBackdropFilterChild && snapCanvas != null && backdropFilter == null) {
+      super.drawChild(snapCanvas, child, drawingTime)
     }
 
     if (drawWithZ) {
