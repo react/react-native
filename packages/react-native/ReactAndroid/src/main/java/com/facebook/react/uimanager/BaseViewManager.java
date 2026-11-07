@@ -180,6 +180,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       ((ReactAccessibilityDelegate) accessibilityDelegate).internal_prepareToRecycle();
     }
     view.setContentDescription(null);
+    resetStateDescription(view);
     view.setSelected(false);
     view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
     ViewCompat.setAccessibilityLiveRegion(view, ViewCompat.ACCESSIBILITY_LIVE_REGION_NONE);
@@ -463,10 +464,19 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     view.setTag(R.id.accessibility_state_disabled, null);
   }
 
+  private static void resetStateDescription(@NonNull View view) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+        && view.getTag(R.id.accessibility_state_description) != null) {
+      view.setStateDescription(null);
+    }
+    view.setTag(R.id.accessibility_state_description, null);
+  }
+
   private void updateViewContentDescription(@NonNull T view) {
     final String accessibilityLabel = (String) view.getTag(R.id.accessibility_label);
     final ReadableMap accessibilityState = (ReadableMap) view.getTag(R.id.accessibility_state);
     final List<String> contentDescription = new ArrayList<>();
+    final List<String> stateDescription = new ArrayList<>();
     final ReadableMap accessibilityValue = (ReadableMap) view.getTag(R.id.accessibility_value);
     if (accessibilityLabel != null) {
       contentDescription.add(accessibilityLabel);
@@ -479,19 +489,27 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
         if (state.equals(STATE_CHECKED)
             && value.getType() == ReadableType.String
             && value.asString().equals(STATE_MIXED)) {
-          contentDescription.add(view.getContext().getString(R.string.state_mixed_description));
+          stateDescription.add(view.getContext().getString(R.string.state_mixed_description));
         } else if (state.equals(STATE_BUSY)
             && value.getType() == ReadableType.Boolean
             && value.asBoolean()) {
-          contentDescription.add(view.getContext().getString(R.string.state_busy_description));
+          stateDescription.add(view.getContext().getString(R.string.state_busy_description));
         }
       }
     }
     if (accessibilityValue != null && accessibilityValue.hasKey("text")) {
       final Dynamic text = accessibilityValue.getDynamic("text");
       if (text != null && text.getType() == ReadableType.String) {
-        contentDescription.add(text.asString());
+        stateDescription.add(text.asString());
       }
+    }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+      contentDescription.addAll(stateDescription);
+    } else if (!stateDescription.isEmpty()) {
+      view.setStateDescription(TextUtils.join(", ", stateDescription));
+      view.setTag(R.id.accessibility_state_description, true);
+    } else {
+      resetStateDescription(view);
     }
     view.setContentDescription(
         contentDescription.isEmpty() ? null : TextUtils.join(", ", contentDescription));

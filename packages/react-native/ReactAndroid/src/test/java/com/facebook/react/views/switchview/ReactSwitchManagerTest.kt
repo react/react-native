@@ -78,6 +78,17 @@ class ReactSwitchManagerTest {
   }
 
   @Test
+  fun accessibilityLabelKeepsTheStateDescriptionOfTheSwitch() {
+    manager.setValue(view, true)
+    val stateDescription = view.stateDescription
+    assertThat(stateDescription).isNotNull()
+
+    manager.setAccessibilityLabel(view, "Wi-Fi")
+
+    assertThat(view.stateDescription).isEqualTo(stateDescription)
+  }
+
+  @Test
   fun backgroundColorKeepsBoxShadow() {
     BackgroundStyleApplicator.setBoxShadow(
         view,
