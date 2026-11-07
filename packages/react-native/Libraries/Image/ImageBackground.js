@@ -75,6 +75,8 @@ class ImageBackground extends React.Component<ImageBackgroundProps> {
       imageStyle,
       imageRef,
       importantForAccessibility,
+      'aria-hidden': ariaHidden,
+      accessibilityElementsHidden,
       ...props
     } = this.props;
 
@@ -82,13 +84,17 @@ class ImageBackground extends React.Component<ImageBackgroundProps> {
     const flattenedStyle = flattenStyle(style);
     return (
       <View
+        accessibilityElementsHidden={accessibilityElementsHidden}
         accessibilityIgnoresInvertColors={true}
+        aria-hidden={ariaHidden}
         importantForAccessibility={importantForAccessibility}
         style={style}
         ref={this._captureRef}>
         {/* $FlowFixMe[incompatible-use] */}
         <Image
           {...props}
+          accessibilityElementsHidden={accessibilityElementsHidden}
+          aria-hidden={ariaHidden}
           importantForAccessibility={importantForAccessibility}
           style={[
             StyleSheet.absoluteFill,
