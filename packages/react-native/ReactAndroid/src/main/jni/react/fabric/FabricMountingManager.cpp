@@ -10,6 +10,7 @@
 #include "AnimatedPropBufferEncoder.h"
 #include "EventEmitterWrapper.h"
 #include "MountItem.h"
+#include "MountItemReordering.h"
 #include "StateWrapperImpl.h"
 
 #include <cxxreact/TraceSection.h>
@@ -603,7 +604,8 @@ void FabricMountingManager::executeMount(
   auto& mutations = transaction.getMutations();
 
   bool maintainMutationOrder =
-      ReactNativeFeatureFlags::disableMountItemReorderingAndroid();
+      ReactNativeFeatureFlags::disableMountItemReorderingAndroid() ||
+      requiresStrictMountItemOrder(mutations);
   bool updateViewsOnDensityChange =
       ReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange();
 
@@ -1023,13 +1025,9 @@ void FabricMountingManager::executeMount(
     }
   }
 
-  // Write deletes last - so that all prop updates, etc, for the tag in the same
-  // batch don't fail. Without additional machinery, moving deletes here
-  // requires that the differ never produces "DELETE...CREATE" in that order for
-  // the same tag. It's nice to be able to batch all similar operations together
-  // for space efficiency.
-  // FIXME: this optimization is incorrect when multiple transactions are
-  // merged together
+  // Write deletes last so updates for the same tag do not fail. Batches that
+  // recreate a deleted tag preserve mutation order in cppCommonMountItems
+  // instead, keeping updates and deletes attached to the correct native view.
   if (!cppDeleteMountItems.empty()) {
     writeMountItemPreamble(
         buffer, CppMountItem::Type::Delete, cppDeleteMountItems.size());
