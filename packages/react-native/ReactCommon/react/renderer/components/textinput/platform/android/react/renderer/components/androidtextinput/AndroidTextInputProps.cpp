@@ -33,6 +33,12 @@ hasValue(const RawProps& rawProps, bool defaultValue, const char* name) {
   return false;
 }
 
+// ReactTextInputManager resets a color to the platform default for null, while
+// 0 is transparent.
+static folly::dynamic colorOrNull(const SharedColor& color) {
+  return color ? folly::dynamic(*color) : folly::dynamic(nullptr);
+}
+
 AndroidTextInputProps::AndroidTextInputProps(
     const PropsParserContext &context,
     const AndroidTextInputProps &sourceProps,
@@ -151,6 +157,16 @@ AndroidTextInputProps::AndroidTextInputProps(
           {false})),
       fontWeight(convertRawProp(context, rawProps, "fontWeight", sourceProps.fontWeight, {})),
       fontFamily(convertRawProp(context, rawProps, "fontFamily", sourceProps.fontFamily, {})),
+      onKeyPress(convertRawProp(context, rawProps, "onKeyPress", sourceProps.onKeyPress, {false})),
+      onSelectionChange(convertRawProp(context, rawProps,
+          "onSelectionChange",
+          sourceProps.onSelectionChange,
+          {false})),
+      onContentSizeChange(convertRawProp(context, rawProps,
+          "onContentSizeChange",
+          sourceProps.onContentSizeChange,
+          {false})),
+      onScroll(convertRawProp(context, rawProps, "onScroll", sourceProps.onScroll, {false})),
       // See AndroidTextInputComponentDescriptor for usage
       // TODO T63008435: can these, and this feature, be removed entirely?
       hasPadding(hasValue(rawProps, sourceProps.hasPadding, "padding")),
@@ -227,6 +243,10 @@ void AndroidTextInputProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(includeFontPadding);
     RAW_SET_PROP_SWITCH_CASE_BASIC(fontWeight);
     RAW_SET_PROP_SWITCH_CASE_BASIC(fontFamily);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(onKeyPress);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(onSelectionChange);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(onContentSizeChange);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(onScroll);
 
     case CONSTEXPR_RAW_PROPS_KEY_HASH("value"): {
       fromRawValue(context, value, this->value, {});
@@ -596,6 +616,11 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
     result["textTransform"] = textTransform;
   }
 
+  if (textAttributes.foregroundColor !=
+      oldProps->textAttributes.foregroundColor) {
+    result["color"] = colorOrNull(textAttributes.foregroundColor);
+  }
+
   if (letterSpacing != oldProps->letterSpacing) {
     result["letterSpacing"] = letterSpacing;
   }
@@ -626,6 +651,22 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
         textAttributes.fontVariationSettings.has_value()
         ? folly::dynamic(*textAttributes.fontVariationSettings)
         : folly::dynamic(nullptr);
+  }
+
+  if (onKeyPress != oldProps->onKeyPress) {
+    result["onKeyPress"] = onKeyPress;
+  }
+
+  if (onSelectionChange != oldProps->onSelectionChange) {
+    result["onSelectionChange"] = onSelectionChange;
+  }
+
+  if (onContentSizeChange != oldProps->onContentSizeChange) {
+    result["onContentSizeChange"] = onContentSizeChange;
+  }
+
+  if (onScroll != oldProps->onScroll) {
+    result["onScroll"] = onScroll;
   }
 
   return result;
