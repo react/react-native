@@ -73,26 +73,25 @@ const RawValue* RawPropsParser::at(
 // This is trivial if you have a simple Props constructor, but difficult or
 // impossible if you have a shared sub-prop Struct that is used by multiple
 // parent Props.
-#ifdef REACT_NATIVE_DEBUG
-  bool resetLoop = false;
-#endif
-  do {
-    rawProps.keyIndexCursor_++;
+  rawProps.keyIndexCursor_++;
 
-    if (static_cast<size_t>(rawProps.keyIndexCursor_) >= keys_.size())
-        [[unlikely]] {
+  if (static_cast<size_t>(rawProps.keyIndexCursor_) >= keys_.size())
+      [[unlikely]] {
+    rawProps.keyIndexCursor_ = 0;
+  }
+
+  if (!keysEqual(key, keys_[rawProps.keyIndexCursor_])) [[unlikely]] {
+    auto keyIndex = nameToIndex_.at(key);
+    if (keyIndex == kRawPropsValueIndexEmpty) [[unlikely]] {
 #ifdef REACT_NATIVE_DEBUG
-      if (resetLoop) {
-        LOG(ERROR)
-            << "Looked up property name which was not seen when preparing: "
-            << key;
-        return nullptr;
-      }
-      resetLoop = true;
+      LOG(ERROR)
+          << "Looked up property name which was not seen when preparing: "
+          << key;
 #endif
-      rawProps.keyIndexCursor_ = 0;
+      return nullptr;
     }
-  } while (!keysEqual(key, keys_[rawProps.keyIndexCursor_]));
+    rawProps.keyIndexCursor_ = static_cast<int>(keyIndex);
+  }
 
   auto valueIndex = rawProps.keyIndexToValueIndex_[rawProps.keyIndexCursor_];
   return valueIndex == kRawPropsValueIndexEmpty ? nullptr

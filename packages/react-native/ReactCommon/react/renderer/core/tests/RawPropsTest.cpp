@@ -480,3 +480,21 @@ TEST(RawPropsTest, copyJSIRawProps) {
   EXPECT_NEAR(
       copyProps->derivedFloatValue, originalProps->derivedFloatValue, 0.00001);
 }
+
+TEST(RawPropsTest, handleOutOfOrderPropsLookup) {
+  ContextContainer contextContainer{};
+  PropsParserContext parserContext{-1, contextContainer};
+
+  auto raw = RawProps(folly::dynamic::object("intValue", 42)("floatValue", 12.5f));
+
+  auto parser = RawPropsParser();
+  parser.prepare<PropsPrimitiveTypes>();
+  raw.parse(parser);
+
+  // In PropsPrimitiveTypes, keys are registered as:
+  // intValue, doubleValue, floatValue, stringValue, boolValue
+  // Lookup floatValue first, then intValue (out-of-order):
+  EXPECT_NEAR((float)*raw.at("floatValue"), 12.5f, 0.00001);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_NEAR((float)*raw.at("floatValue"), 12.5f, 0.00001);
+}
