@@ -27,6 +27,7 @@ import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import androidx.emoji2.text.EmojiCompat
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.Assertions
 import com.facebook.react.bridge.JavaOnlyArray
@@ -794,6 +795,24 @@ internal object TextLayoutManager {
     return text
   }
 
+  /**
+   * ReactTextView and ReactEditText are AppCompat views, so AppCompat runs their text through
+   * [EmojiCompat] when it is set. That replaces each emoji the system font has no glyph for with an
+   * EmojiSpan drawn from the downloadable emoji font, and that span is not as wide as what the
+   * system font measures for the same characters. Run the same pass here, on every Spannable this
+   * class builds, so the layout we measure has the same widths as the one the view draws.
+   */
+  private fun processEmojiCompat(text: Spannable) {
+    if (!EmojiCompat.isConfigured()) {
+      return
+    }
+    val emojiCompat = EmojiCompat.get()
+    if (emojiCompat.loadState == EmojiCompat.LOAD_STATE_SUCCEEDED) {
+      // Adds the spans to `text` in place, since it is already a Spannable.
+      emojiCompat.process(text)
+    }
+  }
+
   @OptIn(UnstableReactNativeAPI::class)
   private fun createSpannableFromAttributedString(
       assets: AssetManager,
@@ -814,6 +833,7 @@ internal object TextLayoutManager {
           )
 
       reactTextViewManagerCallback?.onPostProcessSpannable(spannable)
+      processEmojiCompat(spannable)
       return spannable
     } else {
       val sb = SpannableStringBuilder()
@@ -844,6 +864,7 @@ internal object TextLayoutManager {
       }
 
       reactTextViewManagerCallback?.onPostProcessSpannable(sb)
+      processEmojiCompat(sb)
       return sb
     }
   }
