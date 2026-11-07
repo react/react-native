@@ -11,7 +11,7 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import * as React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 
 const styles = StyleSheet.create({
   invisibleBox: {
@@ -89,6 +89,23 @@ function CursorExampleViewFlattening(): React.Node {
   );
 }
 
+function CursorExampleMounting(): React.Node {
+  const [visible, setVisible] = React.useState(true);
+
+  return (
+    <View collapsable={false}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => setVisible(value => !value)}
+        style={[styles.box, styles.centerContent, styles.pointer]}>
+        <Text>Toggle sibling</Text>
+      </Pressable>
+      {visible && <Text>Removable sibling</Text>}
+      <Text>This should always be last.</Text>
+    </View>
+  );
+}
+
 exports.title = 'Cursor';
 exports.category = 'UI';
 exports.description =
@@ -108,5 +125,11 @@ exports.examples = [
     title: 'View flattening',
     description: 'Views with a cursor do not get flattened',
     render: CursorExampleViewFlattening,
+  },
+  {
+    title: 'Mount and unmount while hovering',
+    description:
+      'Hover over the button with a pointer or Apple Pencil, then press repeatedly. The sibling should toggle without crashing or changing the text order. In the iOS Simulator, enable Send Pointer to Device.',
+    render: CursorExampleMounting,
   },
 ] as Array<RNTesterModuleExample>;
