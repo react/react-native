@@ -53,7 +53,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
     public fun onMessage(byteString: ByteString, params: WritableMap)
   }
 
-  private val webSocketConnections: MutableMap<Int, WebSocket> = ConcurrentHashMap()
+  private val webSocketConnections = WebSocketConnections()
   private val contentHandlers: MutableMap<Int, ContentHandler> = ConcurrentHashMap()
   private val cookieHandler: ForwardingCookieHandler = ForwardingCookieHandler()
 
@@ -61,10 +61,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
   private val inspectorRequestIds: MutableMap<Int, String> = ConcurrentHashMap()
 
   override fun invalidate() {
-    for (socket in webSocketConnections.values) {
-      socket.close(1_001 /* endpoint is going away */, null)
-    }
-    webSocketConnections.clear()
+    webSocketConnections.invalidate()
     contentHandlers.clear()
     inspectorRequestIds.clear()
   }
@@ -189,101 +186,110 @@ public class WebSocketModule(context: ReactApplicationContext) :
       )
     }
 
-    client.newWebSocket(
-        request,
-        object : WebSocketListener() {
-          override fun onOpen(webSocket: WebSocket, response: Response) {
-            webSocketConnections[id] = webSocket
-            reportToInspector(id) { requestId ->
-              InspectorNetworkReporter.reportWebSocketHandshakeResponseReceived(
-                  requestId,
-                  response.code(),
-                  NetworkEventUtil.okHttpHeadersToMap(response.headers()),
-              )
-            }
-            val params = buildReadableMap {
-              put("id", id)
-              put("protocol", response.header("Sec-WebSocket-Protocol", ""))
-            }
-            sendEvent("websocketOpen", params)
+    val connection = webSocketConnections.create(id)
+    val socket =
+        try {
+          client.newWebSocket(
+              request,
+              object : WebSocketListener() {
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                  if (!webSocketConnections.opened(connection, webSocket)) return
+                  reportToInspector(id) { requestId ->
+                    InspectorNetworkReporter.reportWebSocketHandshakeResponseReceived(
+                        requestId,
+                        response.code(),
+                        NetworkEventUtil.okHttpHeadersToMap(response.headers()),
+                    )
+                  }
+                  val params = buildReadableMap {
+                    put("id", id)
+                    put("protocol", response.header("Sec-WebSocket-Protocol", ""))
+                  }
+                  sendEvent("websocketOpen", params)
+                }
+
+                override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                  if (webSocketConnections.readable(connection, webSocket)) {
+                    webSocket.close(code, reason)
+                  }
+                }
+
+                override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                  if (!webSocketConnections.finish(connection, webSocket)) return
+                  reportToInspector(id) { requestId ->
+                    InspectorNetworkReporter.reportWebSocketClosed(requestId)
+                  }
+                  inspectorRequestIds.remove(id)
+                  val params = buildReadableMap {
+                    put("id", id)
+                    put("code", code)
+                    put("reason", reason)
+                  }
+                  sendEvent("websocketClosed", params)
+                }
+
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                  if (!webSocketConnections.finish(connection, webSocket)) return
+                  reportToInspector(id) { requestId ->
+                    InspectorNetworkReporter.reportWebSocketClosed(requestId)
+                  }
+                  inspectorRequestIds.remove(id)
+                  notifyWebSocketFailed(id, t.message)
+                }
+
+                override fun onMessage(webSocket: WebSocket, text: String) {
+                  if (!webSocketConnections.readable(connection, webSocket)) return
+                  reportToInspector(id) { requestId ->
+                    InspectorNetworkReporter.reportWebSocketMessageReceived(requestId, text)
+                  }
+                  val params = Arguments.createMap()
+                  params.putInt("id", id)
+                  params.putString("type", "text")
+
+                  val contentHandler = contentHandlers[id]
+                  if (contentHandler != null) {
+                    contentHandler.onMessage(text, params)
+                  } else {
+                    params.putString("data", text)
+                  }
+                  sendEvent("websocketMessage", params)
+                }
+
+                override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                  if (!webSocketConnections.readable(connection, webSocket)) return
+                  reportToInspector(id) { requestId ->
+                    InspectorNetworkReporter.reportWebSocketMessageReceived(requestId, bytes)
+                  }
+                  val params = Arguments.createMap()
+                  params.putInt("id", id)
+                  params.putString("type", "binary")
+
+                  val contentHandler = contentHandlers[id]
+                  if (contentHandler != null) {
+                    contentHandler.onMessage(bytes, params)
+                  } else {
+                    val text = bytes.base64()
+
+                    params.putString("data", text)
+                  }
+
+                  sendEvent("websocketMessage", params)
+                }
+              },
+          )
+        } catch (error: Exception) {
+          if (webSocketConnections.finish(connection, null)) {
+            notifyWebSocketFailed(id, error.message)
           }
-
-          override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-            webSocket.close(code, reason)
-          }
-
-          override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            reportToInspector(id) { requestId ->
-              InspectorNetworkReporter.reportWebSocketClosed(requestId)
-            }
-            inspectorRequestIds.remove(id)
-            val params = buildReadableMap {
-              put("id", id)
-              put("code", code)
-              put("reason", reason)
-            }
-            sendEvent("websocketClosed", params)
-          }
-
-          override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-            reportToInspector(id) { requestId ->
-              InspectorNetworkReporter.reportWebSocketClosed(requestId)
-            }
-            inspectorRequestIds.remove(id)
-            notifyWebSocketFailed(id, t.message)
-          }
-
-          override fun onMessage(webSocket: WebSocket, text: String) {
-            reportToInspector(id) { requestId ->
-              InspectorNetworkReporter.reportWebSocketMessageReceived(requestId, text)
-            }
-            val params = Arguments.createMap()
-            params.putInt("id", id)
-            params.putString("type", "text")
-
-            val contentHandler = contentHandlers[id]
-            if (contentHandler != null) {
-              contentHandler.onMessage(text, params)
-            } else {
-              params.putString("data", text)
-            }
-            sendEvent("websocketMessage", params)
-          }
-
-          override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-            reportToInspector(id) { requestId ->
-              InspectorNetworkReporter.reportWebSocketMessageReceived(requestId, bytes)
-            }
-            val params = Arguments.createMap()
-            params.putInt("id", id)
-            params.putString("type", "binary")
-
-            val contentHandler = contentHandlers[id]
-            if (contentHandler != null) {
-              contentHandler.onMessage(bytes, params)
-            } else {
-              val text = bytes.base64()
-
-              params.putString("data", text)
-            }
-
-            sendEvent("websocketMessage", params)
-          }
-        },
-    )
+          return
+        }
+    webSocketConnections.attach(connection, socket)
   }
 
   override fun close(code: Double, reason: String?, socketID: Double) {
     val id = socketID.toInt()
-    val client = webSocketConnections[id]
-    if (client == null) {
-      // WebSocket is already closed
-      // Don't do anything, mirror the behavior on web
-      return
-    }
     try {
-      client.close(code.toInt(), reason)
-      webSocketConnections.remove(id)
+      webSocketConnections.close(id, code.toInt(), reason ?: "")
       contentHandlers.remove(id)
     } catch (e: Exception) {
       FLog.e(ReactConstants.TAG, "Could not close WebSocket connection for id $id", e)
@@ -292,8 +298,9 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
   override fun send(message: String, socketID: Double) {
     val id = socketID.toInt()
-    val client = webSocketConnections[id]
+    val client = webSocketConnections.openSocket(id)
     if (client == null) {
+      webSocketConnections.retire(id)
       // This is a programmer error -- display development warning
       var params = buildReadableMap {
         put("id", id)
@@ -306,7 +313,6 @@ public class WebSocketModule(context: ReactApplicationContext) :
         put("reason", "client is null")
       }
       sendEvent("websocketClosed", params)
-      webSocketConnections.remove(id)
       contentHandlers.remove(id)
       inspectorRequestIds.remove(id)
       return
@@ -323,8 +329,9 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
   override fun sendBinary(base64String: String, socketID: Double) {
     val id = socketID.toInt()
-    val client = webSocketConnections[id]
+    val client = webSocketConnections.openSocket(id)
     if (client == null) {
+      webSocketConnections.retire(id)
       // This is a programmer error -- display development warning
       var params = buildReadableMap {
         put("id", id)
@@ -337,7 +344,6 @@ public class WebSocketModule(context: ReactApplicationContext) :
         put("reason", "client is null")
       }
       sendEvent("websocketClosed", params)
-      webSocketConnections.remove(id)
       contentHandlers.remove(id)
       inspectorRequestIds.remove(id)
       return
@@ -354,8 +360,9 @@ public class WebSocketModule(context: ReactApplicationContext) :
   }
 
   public fun sendBinary(byteString: ByteString, id: Int) {
-    val client = webSocketConnections[id]
+    val client = webSocketConnections.openSocket(id)
     if (client == null) {
+      webSocketConnections.retire(id)
       // This is a programmer error -- display development warning
       var params = buildReadableMap {
         put("id", id)
@@ -368,7 +375,6 @@ public class WebSocketModule(context: ReactApplicationContext) :
         put("reason", "client is null")
       }
       sendEvent("websocketClosed", params)
-      webSocketConnections.remove(id)
       contentHandlers.remove(id)
       inspectorRequestIds.remove(id)
       return
@@ -385,8 +391,9 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
   override fun ping(socketID: Double) {
     val id = socketID.toInt()
-    val client = webSocketConnections[id]
+    val client = webSocketConnections.openSocket(id)
     if (client == null) {
+      webSocketConnections.retire(id)
       // This is a programmer error -- display development warning
       var params = buildReadableMap {
         put("id", id)
@@ -399,7 +406,6 @@ public class WebSocketModule(context: ReactApplicationContext) :
         put("reason", "client is null")
       }
       sendEvent("websocketClosed", params)
-      webSocketConnections.remove(id)
       contentHandlers.remove(id)
       inspectorRequestIds.remove(id)
       return
