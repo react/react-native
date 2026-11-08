@@ -7,12 +7,16 @@
 
 #import "RCTTiming.h"
 
+#include <math.h>
+#include <time.h>
+
 #import <React/RCTAssert.h>
 #import <React/RCTConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 
 static const NSTimeInterval kMinimumSleepInterval = 1;
+static const NSTimeInterval kNoTimerTarget = INFINITY;
 
 // These timing contants should be kept in sync with the ones in `JSTimers.js`.
 // The duration of a frame. This assumes that we want to run at 60 fps.
@@ -22,14 +26,22 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
 
 @interface _RCTTimer : NSObject
 
-@property (nonatomic, strong, readonly) NSDate *target;
+@property (nonatomic, assign, readonly) NSTimeInterval target;
 @property (nonatomic, assign, readonly) BOOL repeats;
 @property (nonatomic, copy, readonly) NSNumber *callbackID;
 @property (nonatomic, assign, readonly) NSTimeInterval interval;
 
++ (NSTimeInterval)monotonicTime;
+
 @end
 
 @implementation _RCTTimer
+
++ (NSTimeInterval)monotonicTime
+{
+  // Timer delays measure elapsed time, including time spent asleep.
+  return clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW) / (NSTimeInterval)NSEC_PER_SEC;
+}
 
 - (instancetype)initWithCallbackID:(NSNumber *)callbackID
                           interval:(NSTimeInterval)interval
@@ -40,7 +52,7 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
     _interval = interval;
     _repeats = repeats;
     _callbackID = callbackID;
-    _target = [NSDate dateWithTimeIntervalSinceNow:targetTime];
+    _target = [_RCTTimer monotonicTime] + targetTime;
   }
   return self;
 }
@@ -48,18 +60,15 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
 /**
  * Returns `YES` if we should invoke the JS callback.
  */
-- (BOOL)shouldFire:(NSDate *)now
+- (BOOL)shouldFire:(NSTimeInterval)now
 {
-  if (_target && [_target timeIntervalSinceDate:now] <= 0) {
-    return YES;
-  }
-  return NO;
+  return _target <= now;
 }
 
 - (void)reschedule
 {
   // The JS Timers will do fine grained calculating of expired timeouts.
-  _target = [NSDate dateWithTimeIntervalSinceNow:_interval];
+  _target = [_RCTTimer monotonicTime] + _interval;
 }
 
 @end
@@ -92,6 +101,7 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
 @implementation RCTTiming {
   NSMutableDictionary<NSNumber *, _RCTTimer *> *_timers;
   NSTimer *_sleepTimer;
+  NSTimeInterval _sleepTimerTarget;
   BOOL _sendIdleEvents;
   BOOL _inBackground;
   id<RCTTimingDelegate> _timingDelegate;
@@ -226,15 +236,15 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
 
 - (void)didUpdateFrame:(RCTFrameUpdate *)update
 {
-  NSDate *nextScheduledTarget = [NSDate distantFuture];
+  NSTimeInterval nextScheduledTarget = kNoTimerTarget;
   NSMutableArray<_RCTTimer *> *timersToCall = [NSMutableArray new];
-  NSDate *now = [NSDate date]; // compare all the timers to the same base time
+  NSTimeInterval now = [_RCTTimer monotonicTime];
   @synchronized(_timers) {
     for (_RCTTimer *timer in _timers.allValues) {
       if ([timer shouldFire:now]) {
         [timersToCall addObject:timer];
-      } else {
-        nextScheduledTarget = [nextScheduledTarget earlierDate:timer.target];
+      } else if (timer.target < nextScheduledTarget) {
+        nextScheduledTarget = timer.target;
       }
     }
   }
@@ -242,7 +252,13 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
   // Call timers that need to be called
   if (timersToCall.count > 0) {
     NSArray<NSNumber *> *sortedTimers = [[timersToCall sortedArrayUsingComparator:^(_RCTTimer *a, _RCTTimer *b) {
-      return [a.target compare:b.target];
+      if (a.target < b.target) {
+        return NSOrderedAscending;
+      }
+      if (a.target > b.target) {
+        return NSOrderedDescending;
+      }
+      return NSOrderedSame;
     }] valueForKey:@"callbackID"];
     [_timingDelegate callTimers:sortedTimers];
   }
@@ -250,7 +266,9 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
   for (_RCTTimer *timer in timersToCall) {
     if (timer.repeats) {
       [timer reschedule];
-      nextScheduledTarget = [nextScheduledTarget earlierDate:timer.target];
+      if (timer.target < nextScheduledTarget) {
+        nextScheduledTarget = timer.target;
+      }
     } else {
       @synchronized(_timers) {
         [_timers removeObjectForKey:timer.callbackID];
@@ -275,7 +293,7 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
     timerCount = _timers.count;
   }
   if (_inBackground) {
-    if (timerCount != 0u) {
+    if (nextScheduledTarget != kNoTimerTarget) {
       [self scheduleSleepTimer:nextScheduledTarget];
     }
   } else if (!_sendIdleEvents && timersToCall.count == 0) {
@@ -285,26 +303,31 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
       _paused = YES;
     }
     // If the next timer is more than 1 second out, pause and schedule an NSTimer;
-    else if ([nextScheduledTarget timeIntervalSinceNow] > kMinimumSleepInterval) {
+    else if (
+        nextScheduledTarget != kNoTimerTarget &&
+        nextScheduledTarget - [_RCTTimer monotonicTime] > kMinimumSleepInterval) {
       [self scheduleSleepTimer:nextScheduledTarget];
       _paused = YES;
     }
   }
 }
 
-- (void)scheduleSleepTimer:(NSDate *)sleepTarget
+- (void)scheduleSleepTimer:(NSTimeInterval)sleepTarget
 {
   @synchronized(self) {
+    NSTimeInterval delay = MAX(sleepTarget - [_RCTTimer monotonicTime], 0);
     if ((_sleepTimer == nil) || !_sleepTimer.valid) {
-      _sleepTimer = [[NSTimer alloc] initWithFireDate:sleepTarget
-                                             interval:0
-                                               target:[_RCTTimingProxy proxyWithTarget:self]
-                                             selector:@selector(timerDidFire)
-                                             userInfo:nil
-                                              repeats:NO];
+      _sleepTimer = [NSTimer timerWithTimeInterval:delay
+                                            target:[_RCTTimingProxy proxyWithTarget:self]
+                                          selector:@selector(timerDidFire)
+                                          userInfo:nil
+                                           repeats:NO];
+      _sleepTimerTarget = sleepTarget;
       [[NSRunLoop currentRunLoop] addTimer:_sleepTimer forMode:NSDefaultRunLoopMode];
-    } else {
-      _sleepTimer.fireDate = [_sleepTimer.fireDate earlierDate:sleepTarget];
+    } else if (sleepTarget < _sleepTimerTarget) {
+      // Convert to a date only when setting the run loop's wakeup.
+      _sleepTimer.fireDate = [NSDate dateWithTimeIntervalSinceNow:delay];
+      _sleepTimerTarget = sleepTarget;
     }
   }
 }
@@ -347,7 +370,7 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
   if (_inBackground) {
     [self scheduleSleepTimer:timer.target];
   } else if (_paused) {
-    if ([timer.target timeIntervalSinceNow] > kMinimumSleepInterval) {
+    if (timer.target - [_RCTTimer monotonicTime] > kMinimumSleepInterval) {
       [self scheduleSleepTimer:timer.target];
     } else {
       [self startTimers];
