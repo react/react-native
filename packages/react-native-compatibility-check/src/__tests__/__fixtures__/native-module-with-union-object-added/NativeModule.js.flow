@@ -12,20 +12,20 @@ import type {TurboModule} from 'react-native';
 
 import {TurboModuleRegistry} from 'react-native';
 
-type ObjectA = {|
+type ObjectA = {
   kind: 'a',
   value: number,
-|};
+};
 
-type ObjectB = {|
+type ObjectB = {
   kind: 'b',
   name: string,
-|};
+};
 
-type ObjectC = {|
+type ObjectC = {
   kind: 'c',
   flag: boolean,
-|};
+};
 
 type ObjectUnion = ObjectA | ObjectB | ObjectC;
 

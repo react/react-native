@@ -821,9 +821,9 @@ declare class FileSystemFileHandle extends FileSystemHandle {
 
   getFile(): Promise<File>;
   createSyncAccessHandle(): Promise<FileSystemSyncAccessHandle>;
-  createWritable(options?: {|
+  createWritable(options?: {
     keepExistingData?: boolean,
-  |}): Promise<FileSystemWritableFileStream>;
+  }): Promise<FileSystemWritableFileStream>;
 }
 
 // https://fs.spec.whatwg.org/#api-filesystemdirectoryhandle
@@ -834,13 +834,13 @@ declare class FileSystemDirectoryHandle extends FileSystemHandle {
 
   getDirectoryHandle(
     name: string,
-    options?: {|create?: boolean|},
+    options?: {create?: boolean},
   ): Promise<FileSystemDirectoryHandle>;
   getFileHandle(
     name: string,
-    options?: {|create?: boolean|},
+    options?: {create?: boolean},
   ): Promise<FileSystemFileHandle>;
-  removeEntry(name: string, options?: {|recursive?: boolean|}): Promise<void>;
+  removeEntry(name: string, options?: {recursive?: boolean}): Promise<void>;
   resolve(possibleDescendant: FileSystemHandle): Promise<Array<string> | null>;
 
   // Async iterator functions
@@ -855,9 +855,9 @@ declare class FileSystemSyncAccessHandle {
   close(): void;
   flush(): void;
   getSize(): number;
-  read(buffer: ArrayBuffer, options?: {|at: number|}): number;
+  read(buffer: ArrayBuffer, options?: {at: number}): number;
   truncate(newSize: number): void;
-  write(buffer: ArrayBuffer, options?: {|at: number|}): number;
+  write(buffer: ArrayBuffer, options?: {at: number}): number;
 }
 
 declare class MediaStream {}
@@ -867,6 +867,6 @@ declare class FileSystemWritableFileStream {}
 
 type PermissionState = 'granted' | 'denied' | 'prompt';
 
-type FileSystemHandlePermissionDescriptor = {|
+type FileSystemHandlePermissionDescriptor = {
   mode: 'read' | 'readwrite',
-|};
+};
