@@ -9,9 +9,11 @@
 
 package com.facebook.react.uimanager
 
+import android.app.Activity
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.View.OnFocusChangeListener
+import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.view.ViewCompat
 import com.facebook.react.R
@@ -39,6 +41,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -345,6 +348,24 @@ class BaseViewManagerTest {
 
     Assertions.assertThat(recycled.getTag(R.id.accessibility_order_parent)).isNull()
     Assertions.assertThat(recycled.getTag(R.id.original_focusability)).isNull()
+  }
+
+  @Test
+  fun testViewStillHeldByADetachedParentIsNotRecycled() {
+    val parent = ReactViewGroup(themedReactContext)
+    val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+    activity.setContentView(parent)
+    val previous = createView(JavaOnlyMap())
+    parent.addView(previous)
+    parent.startViewTransition(previous)
+    parent.removeView(previous)
+    (parent.parent as ViewGroup).removeView(parent)
+    viewManager.onDropViewInstance(previous)
+
+    val created = createView(JavaOnlyMap())
+    ReactViewGroup(themedReactContext).addView(created)
+
+    Assertions.assertThat(created).isNotSameAs(previous)
   }
 
   @Test

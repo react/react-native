@@ -219,8 +219,12 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode<?>>
         ((ViewGroup) recyclableView.getParent()).removeView(recyclableView);
       }
 
-      view = recycleView(reactContext, recyclableView);
-    } else {
+      // A parent that called startViewTransition keeps the view as its parent after removeView.
+      if (recyclableView.getParent() == null) {
+        view = recycleView(reactContext, recyclableView);
+      }
+    }
+    if (view == null) {
       view = createViewInstance(reactContext);
     }
     view.setId(reactTag);
