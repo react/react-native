@@ -27,6 +27,7 @@ target_link_libraries(bridgelesshermes
         jsinspector
         logger
         react_cxxstableapi
+        react_nativemodule_nodeapi
         ${reactnative}
 )
 

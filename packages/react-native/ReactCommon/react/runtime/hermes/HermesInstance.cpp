@@ -6,12 +6,15 @@
  */
 
 #include "HermesInstance.h"
+#include "HermesNodeApiEngine.h"
 
+#include <ReactCommon/CxxTurboModuleUtils.h>
 #include <hermes/inspector-modern/chrome/HermesRuntimeTargetDelegate.h>
 #include <jsi/jsilib.h>
 #include <jsinspector-modern/InspectorFlags.h>
 #include <logger/react_native_log.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/nativemodule/nodeapi/NativeNodeApi.h>
 
 #include <mutex>
 
@@ -25,6 +28,7 @@ static void hermesFatalHandler(const std::string& reason) {
 }
 
 static constinit std::once_flag fatalHandlerFlag;
+static constinit std::once_flag nodeApiFlag;
 
 class HermesJSRuntime : public JSRuntime {
  public:
@@ -68,6 +72,15 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
     if (fatalHandlerInterface) {
       fatalHandlerInterface->setFatalHandler(hermesFatalHandler);
     }
+  });
+
+  std::call_once(nodeApiFlag, []() {
+    registerCxxModuleToGlobalModuleMap(
+        std::string(NativeNodeApi::kModuleName),
+        [](std::shared_ptr<CallInvoker> jsInvoker) {
+          return std::make_shared<NativeNodeApi>(
+              std::make_shared<HermesNodeApiEngine>(), std::move(jsInvoker));
+        });
   });
 
   auto gcConfig = ::hermes::vm::GCConfig::Builder()
