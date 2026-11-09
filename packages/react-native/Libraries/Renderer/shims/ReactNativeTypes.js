@@ -7,7 +7,7 @@
  * @noformat
  * @nolint
  * @flow strict
- * @generated SignedSource<<754f20eb2e94694ed737239967119f40>>
+ * @generated SignedSource<<ca1150670940b4964edac67873cee2d4>>
  */
 
 import type {
@@ -30,6 +30,8 @@ export type AttributeType<T, V> =
       process?: (arg1: V) => T,
       /** Final payload for a removed prop, including an explicit undefined. */
       resetValue?: unknown,
+      /** Final payload for a prop omitted or undefined on initial creation. */
+      defaultValue?: unknown,
     }>;
 
 // We either force that `diff` and `process` always use unknown,

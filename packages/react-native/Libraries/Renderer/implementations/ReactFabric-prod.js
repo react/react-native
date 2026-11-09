@@ -7,7 +7,7 @@
  * @noflow
  * @nolint
  * @preventMunge
- * @generated SignedSource<<f1159e174e2c4ae02640d6a11e18b4b1>>
+ * @generated SignedSource<<92bce21cba48deae6861d6ea9b66345a>>
  *
  * This file was sync'd from the facebook/react repository.
  */
@@ -11502,7 +11502,8 @@ function cloneHiddenInstance(instance) {
   var node = instance.node,
     updatePayload = reactPrivateInterface.createAttributePayload(
       { style: { display: "none" } },
-      instance.canonical.viewConfig.validAttributes
+      instance.canonical.viewConfig.validAttributes,
+      { isInitial: !1 }
     );
   return {
     node: cloneNodeWithNewProps(node, updatePayload),

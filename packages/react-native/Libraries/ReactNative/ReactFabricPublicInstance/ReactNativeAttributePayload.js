@@ -12,6 +12,7 @@ import type {AttributeConfiguration} from '../../Renderer/shims/ReactNativeTypes
 
 import flattenStyle from '../../StyleSheet/flattenStyle';
 import deepDiffer from '../../Utilities/differ/deepDiffer';
+import getDefaultValues from './ReactNativeAttributeDefaults';
 
 const emptyObject = {};
 
@@ -101,7 +102,8 @@ function restoreDeletedValuesInNestedArray(
       } else if (
         typeof attributeConfig.diff === 'function' ||
         typeof attributeConfig.process === 'function' ||
-        hasResetValue
+        hasResetValue ||
+        Object.hasOwn(attributeConfig, 'defaultValue')
       ) {
         updatePayload[propKey] =
           typeof attributeConfig.process === 'function'
@@ -333,7 +335,8 @@ function diffProperties(
       } else if (
         typeof attributeConfig.diff === 'function' ||
         typeof attributeConfig.process === 'function' ||
-        hasResetValue
+        hasResetValue ||
+        Object.hasOwn(attributeConfig, 'defaultValue')
       ) {
         // case: CustomAttributeConfiguration
         const nextValue =
@@ -361,7 +364,8 @@ function diffProperties(
     } else if (
       typeof attributeConfig.diff === 'function' ||
       typeof attributeConfig.process === 'function' ||
-      hasResetValue
+      hasResetValue ||
+      Object.hasOwn(attributeConfig, 'defaultValue')
     ) {
       // case: CustomAttributeConfiguration
       const shouldUpdate =
@@ -433,7 +437,8 @@ function diffProperties(
       typeof attributeConfig !== 'object' ||
       typeof attributeConfig.diff === 'function' ||
       typeof attributeConfig.process === 'function' ||
-      Object.hasOwn(attributeConfig, 'resetValue')
+      Object.hasOwn(attributeConfig, 'resetValue') ||
+      Object.hasOwn(attributeConfig, 'defaultValue')
     ) {
       // case: CustomAttributeConfiguration | !Object
       // Flag the leaf property for removal by sending a sentinel.
@@ -502,6 +507,18 @@ function addNestedProperty(
     let newValue;
 
     if (prop === undefined) {
+      if (
+        isInitial &&
+        typeof attributeConfig === 'object' &&
+        Object.hasOwn(attributeConfig, 'defaultValue')
+      ) {
+        if (payload == null) {
+          const emptyPayload: {[key: string]: unknown} = {};
+          payload = emptyPayload;
+        }
+        payload[propKey] = attributeConfig.defaultValue;
+        continue;
+      }
       // Discard the prop if it was previously defined.
       if (
         (payload != null && Object.hasOwn(payload, propKey)) ||
@@ -526,7 +543,8 @@ function addNestedProperty(
         newValue = attributeConfig.process(prop);
       } else if (
         typeof attributeConfig.diff === 'function' ||
-        Object.hasOwn(attributeConfig, 'resetValue')
+        Object.hasOwn(attributeConfig, 'resetValue') ||
+        Object.hasOwn(attributeConfig, 'defaultValue')
       ) {
         // An atomic prop with custom diffing. We don't need to do diffing when adding props.
         newValue = prop;
@@ -544,7 +562,8 @@ function addNestedProperty(
     if (
       newValue !== undefined ||
       (typeof attributeConfig === 'object' &&
-        Object.hasOwn(attributeConfig, 'resetValue'))
+        (Object.hasOwn(attributeConfig, 'resetValue') ||
+          Object.hasOwn(attributeConfig, 'defaultValue')))
     ) {
       if (!payload) {
         payload = {} as {[key: string]: unknown};
@@ -582,7 +601,12 @@ export function create(
   validAttributes: AttributeConfiguration,
   {isInitial = true}: Readonly<{isInitial?: boolean}> = {},
 ): null | {[key: string]: unknown} {
-  return addNestedProperty(null, props, validAttributes, isInitial);
+  const payload = addNestedProperty(null, props, validAttributes, isInitial);
+  if (!isInitial) {
+    return payload;
+  }
+  const defaults = getDefaultValues(validAttributes);
+  return defaults == null ? payload : {...defaults, ...payload};
 }
 
 export function diff(
