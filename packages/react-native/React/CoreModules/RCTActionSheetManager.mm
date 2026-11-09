@@ -25,6 +25,8 @@ using namespace facebook::react;
 @interface RCTActionSheetManager () <NativeActionSheetManagerSpec>
 
 @property (nonatomic, strong) NSMutableArray<UIAlertController *> *alertControllers;
+@property (nonatomic, strong) UIControl *outsideTouchShield;
+@property (nonatomic, copy) dispatch_block_t outsideTouchHandler;
 
 @end
 
@@ -47,27 +49,67 @@ RCT_EXPORT_MODULE()
 
 @synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;
 
+// The anchor view, if it is still on screen. The press that opened the sheet may have removed it.
+- (UIView *)anchorViewForTag:(NSNumber *)anchorViewTag
+{
+  UIView *anchorView = anchorViewTag != nullptr ? [self.viewRegistry_DEPRECATED viewForReactTag:anchorViewTag] : nil;
+  return anchorView.window != nil ? anchorView : nil;
+}
+
+// On iOS 26 a popover lets the touch that dismisses it reach the views below, so a tap outside
+// the sheet would also press whatever React Native view is under the finger.
+// A transparent control under the popover takes that touch and dismisses the sheet instead.
+- (void)showOutsideTouchShieldInWindow:(UIWindow *)window handler:(dispatch_block_t)handler
+{
+  [self hideOutsideTouchShield];
+  UIControl *shield = [[UIControl alloc] initWithFrame:window.bounds];
+  shield.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [shield addTarget:self action:@selector(outsideTouchShieldTouched) forControlEvents:UIControlEventTouchDown];
+  [window addSubview:shield];
+  self.outsideTouchShield = shield;
+  self.outsideTouchHandler = handler;
+}
+
+- (void)outsideTouchShieldTouched
+{
+  dispatch_block_t handler = self.outsideTouchHandler;
+  if (handler != nil) {
+    handler();
+  }
+}
+
+- (void)hideOutsideTouchShield
+{
+  [self.outsideTouchShield removeFromSuperview];
+  self.outsideTouchShield = nil;
+  self.outsideTouchHandler = nil;
+}
+
 - (void)presentViewController:(UIViewController *)alertController
        onParentViewController:(UIViewController *)parentViewController
                 anchorViewTag:(NSNumber *)anchorViewTag
 {
   alertController.modalPresentationStyle = UIModalPresentationPopover;
   UIView *sourceView = parentViewController.view;
+  UIView *anchorView = [self anchorViewForTag:anchorViewTag];
 
-  if (anchorViewTag != nullptr) {
-    sourceView = [self.viewRegistry_DEPRECATED viewForReactTag:anchorViewTag];
+  if (anchorView != nil) {
+    sourceView = anchorView;
   } else {
     alertController.popoverPresentationController.permittedArrowDirections = 0;
   }
 
-  if ([UIDevice.currentDevice userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-    // These information only make sense for iPad, where the action sheet needs
-    // to be presented from a specific anchor point.
-    // Before iOS 26, if these information were passed on an iOS app, the action sheet
-    // was ignoring them. after iOS 26, they are took into consideration and the
-    // sheet behavior changes, for example the user can interact with the background
-    // By applying these informations only to the iPad use case, we revert to the previous
-    // behavior.
+  // On iOS 26 an iPhone action sheet without a source is shown centred, like an alert.
+  // When the caller passes an anchor, present the sheet from it as UIKit does in native apps.
+  BOOL presentsFromAnchor = NO;
+  if (@available(iOS 26.0, *)) {
+    presentsFromAnchor = anchorView != nil;
+  }
+
+  if (presentsFromAnchor || [UIDevice.currentDevice userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+    // Before iOS 26, iPhones ignored the source view and rect. On iOS 26 they are used and the popover
+    // lets the background receive touches, so they are set on iPhone only when an anchor is passed,
+    // and the outside touch shield blocks the background while the sheet is shown.
     alertController.popoverPresentationController.sourceView = sourceView;
     alertController.popoverPresentationController.sourceRect = sourceView.bounds;
   }
@@ -165,6 +207,7 @@ RCT_EXPORT_MODULE()
                                                              if (!callbackInvoked) {
                                                                callbackInvoked = true;
                                                                [self->_alertControllers removeObject:alertController];
+                                                               [self hideOutsideTouchShield];
                                                                callback(@[ @(localIndex) ]);
                                                              }
                                                            }];
@@ -212,6 +255,24 @@ RCT_EXPORT_MODULE()
     }
 
     [self->_alertControllers addObject:alertController];
+
+    UIView *anchorView = nil;
+    if (@available(iOS 26.0, *)) {
+      anchorView = [self anchorViewForTag:anchorViewTag];
+    }
+    if (anchorView != nil) {
+      [self showOutsideTouchShieldInWindow:anchorView.window
+                                   handler:^{
+                                     [alertController dismissViewControllerAnimated:YES completion:nil];
+                                     [self->_alertControllers removeObject:alertController];
+                                     [self hideOutsideTouchShield];
+                                     // As in UIKit, a tap outside the popover selects the cancel button, if any.
+                                     if (!callbackInvoked && cancelButtonIndex >= 0) {
+                                       callbackInvoked = true;
+                                       callback(@[ @(cancelButtonIndex) ]);
+                                     }
+                                   }];
+    }
     [self presentViewController:alertController onParentViewController:controller anchorViewTag:anchorViewTag];
   });
 }
@@ -226,6 +287,7 @@ RCT_EXPORT_MODULE()
   dispatch_async(dispatch_get_main_queue(), ^{
     [alertController dismissViewControllerAnimated:YES completion:nil];
     [self->_alertControllers removeLastObject];
+    [self hideOutsideTouchShield];
   });
 }
 
