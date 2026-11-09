@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3994d16ce8555b34a8ab8e18291b03cc>>
+ * @generated SignedSource<<40e11c065544ce9f611779eb21f6522d>>
  */
 
 /**
@@ -50,6 +50,10 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
   }
 
   bool fixBorderlessRippleAndroid() override {
+    return true;
+  }
+
+  bool fixTextInlineViewLineHeight() override {
     return true;
   }
 
