@@ -343,6 +343,14 @@ let reactTurboModuleCoreMicrotasks = RNTarget(
   dependencies: [.reactNativeDependencies, .reactDebug, .reactFeatureFlags, .reactUtils, .reactPerfLogger, .reactCxxReact, .reactTurboModuleCore]
 )
 
+/// React-nodeapinativemodule.podspec
+let reactNodeApiNativeModule = RNTarget(
+  name: .reactNodeApiNativeModule,
+  path: "ReactCommon/react/nativemodule/nodeapi",
+  searchPaths: [".build/artifacts/hermes/destroot/include/hermes/napi"],
+  dependencies: [.reactNativeDependencies, .jsi, .logger, .reactCxxReact, .reactTurboModuleCore, .hermesPrebuilt]
+)
+
 /// React-idlecallback.podspec
 let reactIdleCallbacksNativeModule = RNTarget(
   name: .reactIdleCallbacksNativeModule,
@@ -429,7 +437,7 @@ let reactRuntime = RNTarget(
   name: .reactRuntime,
   path: "ReactCommon/react/runtime",
   excludedPaths: ["tests", "iostests", "platform"],
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactCxxReact, .reactJsErrorHandler, .reactPerformanceTimeline, .reactUtils, .reactFeatureFlags, .reactJsInspector, .reactJsiTooling, .reactHermes, .reactRuntimeScheduler, .hermesPrebuilt],
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactCxxReact, .reactJsErrorHandler, .reactPerformanceTimeline, .reactUtils, .reactFeatureFlags, .reactJsInspector, .reactJsiTooling, .reactHermes, .reactRuntimeScheduler, .reactNodeApiNativeModule, .hermesPrebuilt],
   defines: [
     CXXSetting.define("HERMES_ENABLE_DEBUGGER", to: "1", .when(configuration: BuildConfiguration.debug))
   ]
@@ -745,6 +753,7 @@ let targets = [
   reactTurboModuleCore,
   reactTurboModuleCoreDefaults,
   reactTurboModuleCoreMicrotasks,
+  reactNodeApiNativeModule,
   reactIdleCallbacksNativeModule,
   reactWebPerformanceNativeModule,
   reactIntersectionObserverNativeModule,
@@ -938,6 +947,7 @@ extension String {
   static let reactTurboModuleCore = "ReactCommon/turbomodule/core"
   static let reactTurboModuleCoreDefaults = "ReactCommon/turbomodule/core/defaults"
   static let reactTurboModuleCoreMicrotasks = "ReactCommon/turbomodule/core/microtasks"
+  static let reactNodeApiNativeModule = "React-nodeapinativemodule"
   static let reactIdleCallbacksNativeModule = "React-idlecallbacksnativemodule"
   static let reactWebPerformanceNativeModule = "React-webperformancenativemodule"
   static let reactIntersectionObserverNativeModule = "React-intersectionobservernativemodule"

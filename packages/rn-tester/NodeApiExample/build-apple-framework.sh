@@ -16,7 +16,12 @@ FRAMEWORK="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/$NAME.framework"
 WORK_DIR="$DERIVED_FILE_DIR/$NAME"
 
 # TODO: Link a node-api framework once Hermes ships it, instead of hermesvm.
-NODE_API_HEADERS="$PODS_ROOT/Headers/Public/hermes-engine/hermes/napi"
+if [ -n "${PODS_ROOT:-}" ]; then
+  NODE_API_HEADERS="$PODS_ROOT/Headers/Public/hermes-engine/hermes/napi"
+else
+  # SwiftPM: the Hermes artifacts React Native was prebuilt with.
+  NODE_API_HEADERS="$SOURCE_DIR/../../react-native/.build/artifacts/hermes/destroot/include/hermes/napi"
+fi
 
 eval "SEARCH_PATHS=($FRAMEWORK_SEARCH_PATHS)"
 FRAMEWORK_FLAGS=()
