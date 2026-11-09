@@ -427,6 +427,16 @@ static CGSize RCTTextLayoutSizeForFrameSize(CGSize frameSize, const ParagraphAtt
   return paragraphLines;
 }
 
+- (NSTextStorage *)textStorageForNSAttributedString:(NSAttributedString *)attributedString
+                                paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                               size:(CGSize)size
+{
+  return
+      [self _textStorageAndLayoutManagerWithAttributesString:attributedString
+                                         paragraphAttributes:paragraphAttributes
+                                                        size:RCTTextLayoutSizeForFrameSize(size, paragraphAttributes)];
+}
+
 - (CGFloat)_maximumFontSizeInAttributedString:(NSAttributedString *)attributedString
 {
   __block CGFloat maximumFontSize = 0.0;

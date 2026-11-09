@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f9c238d577cf696d9baed365741d3d5a>>
+ * @generated SignedSource<<9ebb2ad1ff4665b8b5068798946ad281>>
  */
 
 /**
@@ -222,6 +222,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableIOSCompressedTextFrameAdjustment() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableIOSCompressedTextFrameAdjustment");
+    return method(javaProvider_);
+  }
+
+  bool enableIOSPartialTextSelection() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableIOSPartialTextSelection");
     return method(javaProvider_);
   }
 
@@ -786,6 +792,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableIOSCompressedTextFrameAdjustment(
   return ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableIOSPartialTextSelection(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableIOSPartialTextSelection();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableIOSTextBaselineOffsetPerLine(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine();
@@ -1245,6 +1256,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableIOSCompressedTextFrameAdjustment",
         JReactNativeFeatureFlagsCxxInterop::enableIOSCompressedTextFrameAdjustment),
+      makeNativeMethod(
+        "enableIOSPartialTextSelection",
+        JReactNativeFeatureFlagsCxxInterop::enableIOSPartialTextSelection),
       makeNativeMethod(
         "enableIOSTextBaselineOffsetPerLine",
         JReactNativeFeatureFlagsCxxInterop::enableIOSTextBaselineOffsetPerLine),
