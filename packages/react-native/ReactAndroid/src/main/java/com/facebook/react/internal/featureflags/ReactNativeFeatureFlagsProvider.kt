@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3c3e22fe0cffa5498750e91ad05df9a8>>
+ * @generated SignedSource<<ee3f736a54539b92f30c4ad0fb832ab0>>
  */
 
 /**
@@ -146,6 +146,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fixBorderlessRippleAndroid(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
+
+  @DoNotStrip public fun fixTextInlineViewLineHeight(): Boolean
 
   @DoNotStrip public fun fixTextLayoutOnPixelDensityChange(): Boolean
 
