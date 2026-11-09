@@ -64,6 +64,8 @@ kotlin { jvmToolchain(17) }
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_2_1)
+    // Remove this suppression in RN 0.90 when the Kotlin API version can be raised.
+    freeCompilerArgs.add("-Xwarning-level=DEPRECATED_LANGUAGE_VERSION:disabled")
     // See comment above on JDK 11 support
     jvmTarget.set(JvmTarget.JVM_11)
     allWarningsAsErrors.set(
