@@ -47,20 +47,23 @@ declare class ws$WebSocketServer extends events$EventEmitter {
   /**
    * Emitted when the server closes.
    */
-  on(event: 'close', v1: () => unknown): this;
+  on(event: 'close', listener: () => unknown): this;
 
   /**
    * Emitted when the handshake is complete.
    */
   on(
     event: 'connection',
-    v1: (socket: ws$WebSocket, request: http$IncomingMessage<>) => unknown,
+    listener: (
+      socket: ws$WebSocket,
+      request: http$IncomingMessage<>,
+    ) => unknown,
   ): this;
 
   /**
    * Emitted when an error occurs on the underlying server.
    */
-  on(event: 'error', v1: (error: Error) => unknown): this;
+  on(event: 'error', listener: (error: Error) => unknown): this;
 
   /**
    * Emitted before the response headers are written to the socket as part of
@@ -68,13 +71,16 @@ declare class ws$WebSocketServer extends events$EventEmitter {
    */
   on(
     event: 'headers',
-    v1: (headers: Array<string>, request: http$IncomingMessage<>) => unknown,
+    listener: (
+      headers: Array<string>,
+      request: http$IncomingMessage<>,
+    ) => unknown,
   ): this;
 
   /**
    * Emitted when the underlying server has been bound.
    */
-  on(event: 'listening', v1: () => unknown): this;
+  on(event: 'listening', listener: () => unknown): this;
 
   /**
    * Returns the bound address, the address family name, and port of the server
@@ -102,7 +108,7 @@ declare class ws$WebSocketServer extends events$EventEmitter {
     request: http$IncomingMessage<>,
     socket: net$Socket,
     head: Buffer,
-    callback: (v: ?ws$WebSocket) => unknown,
+    callback: (socket: ?ws$WebSocket) => unknown,
   ): void;
 
   /**
@@ -137,8 +143,8 @@ declare type ws$MessageListener = (
   isBinary: boolean,
 ) => unknown;
 declare type ws$OpenListener = () => unknown;
-declare type ws$PingListener = (v: Buffer) => unknown;
-declare type ws$PongListener = (v: Buffer) => unknown;
+declare type ws$PingListener = (data: Buffer) => unknown;
+declare type ws$PongListener = (data: Buffer) => unknown;
 declare type ws$UnexpectedResponseListener = (
   request: http$ClientRequest<>,
   response: http$IncomingMessage<>,
@@ -173,44 +179,47 @@ declare class ws$WebSocket extends events$EventEmitter {
   /*
    * Emitted when the connection is closed.
    */
-  on(v0: 'close', v1: ws$CloseListener): this;
+  on(event: 'close', listener: ws$CloseListener): this;
 
   /*
    * Emitted when an error occurs.
    */
-  on(v0: 'error', v1: ws$ErrorListener): this;
+  on(event: 'error', listener: ws$ErrorListener): this;
 
   /*
    * Emitted when a message is received from the server.
    */
-  on(v0: 'message', v1: ws$MessageListener): this;
+  on(event: 'message', listener: ws$MessageListener): this;
 
   /*
    * Emitted when the connection is established.
    */
-  on(v0: 'open', v1: ws$OpenListener): this;
+  on(event: 'open', listener: ws$OpenListener): this;
 
   /*
    * Emitted when a ping is received from the server.
    */
-  on(v0: 'ping', v1: ws$PingListener): this;
+  on(event: 'ping', listener: ws$PingListener): this;
 
   /*
    * Emitted when a pong is received from the server.
    */
-  on(v0: 'pong', v1: ws$PongListener): this;
+  on(event: 'pong', listener: ws$PongListener): this;
 
   /*
    * Emitted when the server response is not the expected one,
    * for example a 401 response.
    */
-  on(v0: 'unexpected-response', v1: ws$UnexpectedResponseListener): this;
+  on(
+    event: 'unexpected-response',
+    listener: ws$UnexpectedResponseListener,
+  ): this;
 
   /*
    * Emitted when response headers are received from the server as part of the
    * handshake.
    */
-  on(v0: 'upgrade', v1: ws$UpgradeListener): this;
+  on(event: 'upgrade', listener: ws$UpgradeListener): this;
 
   /**
    * Register an event listener emulating the `EventTarget` interface.
@@ -247,7 +256,7 @@ declare class ws$WebSocket extends events$EventEmitter {
   ): this;
   addEventListener(
     type: 'unexpected-response',
-    v1: ws$UnexpectedResponseListener,
+    listener: ws$UnexpectedResponseListener,
     options?: {once?: boolean},
   ): this;
   addEventListener(
@@ -313,7 +322,7 @@ declare class ws$WebSocket extends events$EventEmitter {
   removeEventListener(type: 'pong', listener: ws$PongListener): this;
   removeEventListener(
     type: 'unexpected-response',
-    v1: ws$UnexpectedResponseListener,
+    listener: ws$UnexpectedResponseListener,
   ): this;
   removeEventListener(type: 'upgrade', listener: ws$UpgradeListener): this;
 
