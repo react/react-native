@@ -1,0 +1,60 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
+- tapOn: 'APIs'
+- scrollUntilVisible:
+    element:
+      id: 'Node-API'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'Node-API'
+- tapOn:
+    id: 'node-api-hello'
+- assertVisible: 'hello\(\) → "Hello from Node-API"'
+- tapOn:
+    id: 'node-api-add'
+- assertVisible: 'add\(2, 3\) → 5'
+- tapOn:
+    id: 'node-api-square-async'
+- extendedWaitUntil:
+    visible: 'squareAsync\(7\) → 49'
+    timeout: 5000
+- tapOn:
+    id: 'node-api-tick-from-thread'
+- extendedWaitUntil:
+    visible: 'tick 3 from thread'
+    timeout: 5000
+- tapOn:
+    id: 'node-api-env-stats'
+- assertVisible: 'envStats\(\) → \{"created":1,"cleanedUp":0\}'
+# A reload tears down the runtime, which should run the env's cleanup hook.
+- tapOn:
+    id: 'node-api-reload'
+# The log is cleared once the new runtime renders.
+- extendedWaitUntil:
+    notVisible: 'envStats\(\) → .*'
+    timeout: 30000
+- extendedWaitUntil:
+    visible: 'APIs'
+    timeout: 30000
+# iOS returns to the landing screen after a reload, Android doesn't.
+- runFlow:
+    when:
+      notVisible:
+        id: 'node-api-env-stats'
+    commands:
+      - tapOn: 'APIs'
+      - scrollUntilVisible:
+          element:
+            id: 'Node-API'
+          direction: DOWN
+          speed: 40
+      - tapOn:
+          id: 'Node-API'
+- tapOn:
+    id: 'node-api-env-stats'
+- assertVisible: 'envStats\(\) → \{"created":2,"cleanedUp":1\}'

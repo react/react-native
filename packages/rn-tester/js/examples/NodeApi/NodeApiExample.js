@@ -62,23 +62,24 @@ function NodeApiExample(): React.Node {
     }
   };
 
-  const actions: Array<[string, (addon: Addon) => unknown]> = [
-    ['hello()', a => a.hello()],
-    ['add(2, 3)', a => a.add(2, 3)],
-    ['squareAsync(7)', a => a.squareAsync(7)],
+  const actions: Array<[string, string, (addon: Addon) => unknown]> = [
+    ['hello', 'hello()', a => a.hello()],
+    ['add', 'add(2, 3)', a => a.add(2, 3)],
+    ['square-async', 'squareAsync(7)', a => a.squareAsync(7)],
     [
+      'tick-from-thread',
       'tickFromThread(3)',
       a => a.tickFromThread(3, i => append(`tick ${i} from thread`)),
     ],
-    ['envStats()', a => a.envStats()],
+    ['env-stats', 'envStats()', a => a.envStats()],
   ];
 
   return (
     <View style={styles.container}>
-      {actions.map(([label, action]) => (
-        <View key={label} style={styles.item}>
+      {actions.map(([id, label, action]) => (
+        <View key={id} style={styles.item}>
           <TouchableOpacity
-            testID={`node-api-${label}`}
+            testID={`node-api-${id}`}
             style={[styles.column, styles.button]}
             onPress={() => run(label, action)}>
             <RNTesterText style={styles.buttonText}>{label}</RNTesterText>
