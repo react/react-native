@@ -57,6 +57,7 @@ munge_underscores=true
 
 module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/packages/react-native/index.js'
 module.name_mapper='^react-native/asset-registry$' -> '<PROJECT_ROOT>/packages/react-native/src/asset-registry.js'
+module.name_mapper='^react-native/node-api$' -> '<PROJECT_ROOT>/packages/react-native/src/node-api.js'
 module.name_mapper='^react-native/package.json$' -> '<PROJECT_ROOT>/packages/react-native/package.json'
 module.name_mapper='^react-native/react-private-interface$' -> '<PROJECT_ROOT>/packages/react-native/src/react-private-interface.js'
 module.name_mapper='^react-native/setup-env$' -> '<PROJECT_ROOT>/packages/react-native/src/setup-env.js'
