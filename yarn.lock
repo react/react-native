@@ -7999,10 +7999,10 @@ raw-body@^3.0.2:
     iconv-lite "~0.7.0"
     unpipe "~1.0.0"
 
-react-devtools-core@^6.1.5:
-  version "6.1.5"
-  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-6.1.5.tgz#c5eca79209dab853a03b2158c034c5166975feee"
-  integrity sha512-ePrwPfxAnB+7hgnEr8vpKxL9cmnp7F322t8oqcPshbIQQhDKgFDW4tjhF2wjVbdXF9O/nyuy3sQWd9JGpiLPvA==
+react-devtools-core@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-8.0.0.tgz#05102227a4797c1f93c479c30684a45e77017379"
+  integrity sha512-DGXJX+sCn2zC3ZalHoJhmZJsvP4QTpERlmCQAOgExc4Vp74ywB9ZnO8992cKw5ZcOS5u8GtpchTUPbjTiu5zaw==
   dependencies:
     shell-quote "^1.6.1"
     ws "^7"
