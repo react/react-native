@@ -52,6 +52,7 @@ TODO: Explain the different components of React Native at a high level.
       - [Animation Backend](../packages/react-native/ReactCommon/react/renderer/animationbackend/__docs__/AnimationBackend.md)
       - [Native Animated](../packages/react-native/ReactCommon/react/renderer/animated/__docs__/NativeAnimated.md)
     - Native Modules / TurboModules
+      - [Node-API](../packages/react-native/ReactCommon/react/nativemodule/nodeapi/__docs__/README.md)
     - JS Runtime
       - [Event Loop](../packages/react-native/ReactCommon/react/renderer/runtimescheduler/__docs__/README.md)
       - Globals and environment setup
