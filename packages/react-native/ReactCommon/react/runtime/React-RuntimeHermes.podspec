@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources("hermes/*.{cpp,h}", "hermes/*.h")
   s.header_dir             = "react/runtime/hermes"
-  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"${PODS_TARGET_SRCROOT}/../..\" \"${PODS_TARGET_SRCROOT}/../../hermes/executor\"",
+  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"${PODS_TARGET_SRCROOT}/../..\" \"${PODS_TARGET_SRCROOT}/../../hermes/executor\" \"$(PODS_ROOT)/Headers/Public/hermes-engine/hermes/napi\"",
                                 "USE_HEADERMAP" => "YES",
                                 "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                 "GCC_WARN_PEDANTIC" => "YES" }
@@ -46,6 +46,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-jsinspectortracing", :framework_name => 'jsinspector_moderntracing')
 
   s.dependency "React-hermes"
+  s.dependency "React-nodeapinativemodule"
   s.dependency "hermes-engine"
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-jsitooling", :framework_name => "JSITooling")
