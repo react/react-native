@@ -11,6 +11,7 @@
 'use strict';
 
 const {isValidSwiftName, makeLogger} = require('./spm-utils');
+const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -64,7 +65,7 @@ const unknownKeysReported /*: Set<string> */ = new Set();
 
 function readPackageJson(
   root /*: string */,
-) /*: ?{readonly [string]: unknown} */ {
+) /*: ?{readonly [key: string]: unknown} */ {
   const pkgPath = path.join(root, 'package.json');
   if (!fs.existsSync(pkgPath)) {
     return null;
@@ -83,7 +84,7 @@ function readPackageJson(
 // A settings object, or null for anything else the author may have written
 // there — an array included, since its indices are not fields.
 function objectField(
-  source /*: ?{readonly [string]: unknown} */,
+  source /*: ?{readonly [key: string]: unknown} */,
   key /*: string */,
 ) /*: ?SwiftpmConfig */ {
   const value = source?.[key];
@@ -93,11 +94,25 @@ function objectField(
 }
 
 function declaredFields(
-  config /*: ?{readonly [string]: unknown} */,
+  config /*: ?{readonly [key: string]: unknown} */,
 ) /*: Array<string> */ {
   return config == null
     ? []
     : SWIFTPM_FIELDS.filter(field => config[field] !== undefined);
+}
+
+// util.isDeepStrictEqual is missing from the Flow library definitions.
+function sameField(
+  a /*: ?{readonly [key: string]: unknown} */,
+  b /*: ?{readonly [key: string]: unknown} */,
+  field /*: string */,
+) /*: boolean */ {
+  try {
+    assert.deepStrictEqual(a?.[field], b?.[field]);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function stringList(value /*: unknown */) /*: Array<string> */ {
@@ -155,8 +170,14 @@ function readSwiftpmConfig(
   }
   const deprecated = objectField(rnConfig, 'spm');
   const deprecatedFields = declaredFields(deprecated);
-  if (deprecatedFields.length > 0) {
-    reportDeprecation(root, deprecatedFields);
+  // A library that supports React Native versions reading only the `spm`
+  // block must declare a field in both places, so an identical copy is not
+  // something it can act on.
+  const unmirroredFields = deprecatedFields.filter(
+    field => !sameField(fromPackageJson, deprecated, field),
+  );
+  if (unmirroredFields.length > 0) {
+    reportDeprecation(root, unmirroredFields);
   }
   if (fromPackageJson == null) {
     return deprecatedFields.length > 0 ? deprecated : null;

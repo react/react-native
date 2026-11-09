@@ -1,0 +1,74 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ScrollViewExample/scrollTo
+- extendedWaitUntil:
+    visible:
+      id: 'scroll_vertical'
+    timeout: 15000
+- tapOn:
+    id: 'scroll_to_bottom_button'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/scroll-view/scroll-to/end
+    cropOn:
+      id: 'scroll_vertical'
+- tapOn:
+    id: 'scroll_to_top_button'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/scroll-view/scroll-to/start
+    cropOn:
+      id: 'scroll_vertical'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ScrollViewExample/horizontalScrollTo
+- extendedWaitUntil:
+    visible:
+      id: 'scroll_horizontal'
+    timeout: 15000
+- tapOn:
+    id: 'scroll_to_end_button'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/scroll-view/horizontal-scroll-to/end
+    cropOn:
+      id: 'scroll_horizontal'
+- tapOn:
+    id: 'scroll_to_start_button'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/scroll-view/horizontal-scroll-to/start
+    cropOn:
+      id: 'scroll_horizontal'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/ScrollViewExample/invertStickyHeaders
+- extendedWaitUntil:
+    visible:
+      id: 'scroll_sticky_header'
+    timeout: 15000
+- tapOn:
+    id: 'scroll_to_bottom_button'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/scroll-view/sticky-header/end
+    cropOn:
+      id: 'scroll_sticky_header'
+- tapOn:
+    id: 'scroll_to_top_button'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/scroll-view/sticky-header/start
+    cropOn:
+      id: 'scroll_sticky_header'

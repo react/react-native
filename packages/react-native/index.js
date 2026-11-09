@@ -221,6 +221,26 @@ module.exports = {
   get Animated() {
     return require('./Libraries/Animated/Animated').default;
   },
+  get AnimatedFlatList() {
+    return require('./Libraries/Animated/components/AnimatedFlatList').default;
+  },
+  get AnimatedImage() {
+    return require('./Libraries/Animated/components/AnimatedImage').default;
+  },
+  get AnimatedScrollView() {
+    return require('./Libraries/Animated/components/AnimatedScrollView')
+      .default;
+  },
+  get AnimatedSectionList() {
+    return require('./Libraries/Animated/components/AnimatedSectionList')
+      .default;
+  },
+  get AnimatedText() {
+    return require('./Libraries/Animated/components/AnimatedText').default;
+  },
+  get AnimatedView() {
+    return require('./Libraries/Animated/components/AnimatedView').default;
+  },
   get Appearance() {
     return require('./Libraries/Utilities/Appearance');
   },
@@ -235,15 +255,6 @@ module.exports = {
   },
   get BackHandler() {
     return require('./Libraries/Utilities/BackHandler').default;
-  },
-  get Clipboard() {
-    warnOnce(
-      'clipboard-moved',
-      'Clipboard has been extracted from react-native core and will be removed in a future release. ' +
-        "It can now be installed and imported from '@react-native-clipboard/clipboard' instead of 'react-native'. " +
-        'See https://github.com/react-native-clipboard/clipboard',
-    );
-    return require('./Libraries/Components/Clipboard/Clipboard').default;
   },
   get codegenNativeCommands() {
     return require('./Libraries/Utilities/codegenNativeCommands').default;
@@ -443,6 +454,22 @@ if (__DEV__) {
         'InteractionManager has been removed from react-native core. ' +
           'Please refactor long tasks into smaller ones, and use ' +
           "'requestIdleCallback' instead.",
+      );
+    },
+  });
+
+  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
+   * attempting to access Clipboard. */
+  /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
+   * attempting to access Clipboard. */
+  Object.defineProperty(module.exports, 'Clipboard', {
+    configurable: true,
+    get() {
+      invariant(
+        false,
+        'Clipboard has been removed from react-native core. ' +
+          "It can now be installed and imported from '@react-native-clipboard/clipboard' instead of 'react-native'. " +
+          'See https://github.com/react-native-clipboard/clipboard',
       );
     },
   });

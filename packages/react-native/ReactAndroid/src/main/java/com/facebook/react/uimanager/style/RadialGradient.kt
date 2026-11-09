@@ -129,7 +129,10 @@ internal class RadialGradient(
                       }
                   val colorStopPosition =
                       if (colorStop.hasKey("position") && !colorStop.isNull("position")) {
-                        LengthPercentage.setFromDynamic(colorStop.getDynamic("position"))
+                        LengthPercentage.setFromDynamic(
+                            colorStop.getDynamic("position"),
+                            allowNegative = true,
+                        )
                       } else {
                         null
                       }
@@ -241,7 +244,11 @@ internal class RadialGradient(
 
     val (radiusX, radiusY) = calculateRadius(centerX, centerY, width, height)
 
-    val finalStops = ColorStopUtils.getFixedColorStops(colorStops, max(radiusX, radiusY))
+    val fixedStops = ColorStopUtils.getFixedColorStops(colorStops, max(radiusX, radiusY))
+    // Unlike negative stops, stops past the ending shape stay visible outside it, so the radius
+    // grows to fit them.
+    val radiusScale = max(fixedStops.lastOrNull()?.position ?: 1f, 1f)
+    val finalStops = ColorStopUtils.clipColorStops(fixedStops, radiusScale)
     val colors = IntArray(finalStops.size)
     val positions = FloatArray(finalStops.size)
 
@@ -249,12 +256,12 @@ internal class RadialGradient(
       val color = colorStop.color
       if (color != null && colorStop.position != null) {
         colors[i] = color
-        positions[i] = colorStop.position
+        positions[i] = colorStop.position / radiusScale
       }
     }
 
     // max is used to handle 0 radius user input. Radius has to be a positive float
-    val radius = max(radiusX, 0.00001f)
+    val radius = max(radiusX * radiusScale, 0.00001f)
 
     val shader =
         AndroidRadialGradient(centerX, centerY, radius, colors, positions, Shader.TileMode.CLAMP)

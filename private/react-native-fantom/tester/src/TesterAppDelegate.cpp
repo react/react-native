@@ -270,6 +270,7 @@ void TesterAppDelegate::startSurface(
     float heightDp,
     SurfaceId surfaceId,
     float pointScaleFactor,
+    float fontScale,
     float offsetX,
     float offsetY) {
   Size extentsDp{static_cast<Float>(widthDp), static_cast<Float>(heightDp)};
@@ -281,6 +282,7 @@ void TesterAppDelegate::startSurface(
 
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
+      .fontSizeMultiplier = fontScale,
       .viewportOffset = {.x = offsetX, .y = offsetY},
   };
 

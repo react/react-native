@@ -18,6 +18,7 @@ const MockNativeMethods = jest.requireActual<TMockNativeMethods>(
   '../MockNativeMethods',
 ).default;
 
+// $FlowFixMe[incompatible-type]
 const Text = mockComponent(
   'react-native/Libraries/Text/Text',
   MockNativeMethods, // instanceMethods

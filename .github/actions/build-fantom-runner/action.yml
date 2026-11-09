@@ -54,6 +54,14 @@ runs:
       env:
         CC: clang
         CXX: clang++
+    - name: Upload Fantom build logs
+      if: ${{ always() }}
+      uses: ./.github/actions/upload-artifact
+      with:
+        name: build-fantom-results
+        compression-level: 1
+        if-no-files-found: ignore
+        path: private/react-native-fantom/build/reports
     - name: Save Fantom ccache
       if: ${{ github.ref == 'refs/heads/main' || contains(github.ref, '-stable') }}
       uses: actions/cache/save@v5

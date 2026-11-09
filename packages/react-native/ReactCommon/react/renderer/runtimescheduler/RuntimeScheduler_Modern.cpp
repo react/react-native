@@ -153,7 +153,7 @@ void RuntimeScheduler_Modern::executeNowOnTheSameThread(
     RawCallback&& callback) {
   TraceSection s("RuntimeScheduler::executeNowOnTheSameThread");
 
-  static thread_local jsi::Runtime* runtimePtr = nullptr;
+  static constinit thread_local jsi::Runtime* runtimePtr = nullptr;
 
   auto currentTime = now_();
   auto priority = SchedulerPriority::ImmediatePriority;

@@ -1695,6 +1695,17 @@ it('does not move render area when initialScrollIndex is > 0 and offset not yet 
   // 5 cells should be present starting at index 1, since we have not seen a
   // scroll event yet for current position.
   expect(component).toMatchSnapshot();
+  const instance = component.getInstance();
+  expect(instance.state.pendingScrollUpdateCount).toBe(1);
+  expect(instance._hiPriInProgress).toBe(false);
+
+  await act(() => {
+    simulateScroll(component, {x: 0, y: 10});
+  });
+
+  expect(instance.state.pendingScrollUpdateCount).toBe(0);
+  expect(instance.state.cellsAroundViewport.last).toBeGreaterThan(5);
+  expect(instance._hiPriInProgress).toBe(false);
 });
 
 it('clamps render area when items removed for initialScrollIndex > 0 and scroller position not yet known', async () => {
@@ -2278,6 +2289,7 @@ it('renders windowSize derived region at top', async () => {
 it('does not update state on a scroll that keeps the render window', async () => {
   const items = generateItems(10);
   const ITEM_HEIGHT = 10;
+  const onEndReached = jest.fn();
 
   let component;
   await act(() => {
@@ -2286,6 +2298,7 @@ it('does not update state on a scroll that keeps the render window', async () =>
         initialNumToRender={1}
         maxToRenderPerBatch={1}
         windowSize={3}
+        onEndReached={onEndReached}
         {...baseItemProps(items)}
         {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
       />,
@@ -2314,6 +2327,96 @@ it('does not update state on a scroll that keeps the render window', async () =>
   });
 
   expect(setStateSpy).not.toHaveBeenCalled();
+
+  const instance = component.getInstance();
+  const componentDidUpdateSpy = jest.spyOn(instance, 'componentDidUpdate');
+
+  await act(() => {
+    // The high-priority update reads the final scroll position when React
+    // processes it, so returning to the top makes the queued update a no-op.
+    simulateScroll(component, {x: 0, y: 60});
+    simulateScroll(component, {x: 0, y: 0});
+  });
+
+  expect(setStateSpy).toHaveBeenCalledTimes(1);
+  expect(componentDidUpdateSpy).not.toHaveBeenCalled();
+  expect(instance._hiPriInProgress).toBe(false);
+
+  const previousWindow = instance.state.cellsAroundViewport;
+  await act(() => {
+    simulateScroll(component, {x: 0, y: 60});
+  });
+
+  // No timer tick should be needed for the next high-priority update.
+  expect(instance.state.cellsAroundViewport.last).toBeGreaterThan(
+    previousWindow.last,
+  );
+  expect(componentDidUpdateSpy).toHaveBeenCalledTimes(1);
+  expect(instance._hiPriInProgress).toBe(false);
+
+  const updateCellsToRenderSpy = jest.spyOn(instance, '_updateCellsToRender');
+  const computeCellsUpdateSpy = jest.spyOn(
+    VirtualizedList,
+    '_computeCellsUpdate',
+  );
+  componentDidUpdateSpy.mockClear();
+  await act(() => {
+    simulateScroll(component, {x: 0, y: 0});
+    for (let i = 0; i < items.length; i++) {
+      instance._updateCellsToRender();
+    }
+  });
+
+  expect(
+    computeCellsUpdateSpy.mock.results.some(({value}) => value == null),
+  ).toBe(true);
+  expect(
+    computeCellsUpdateSpy.mock.results.some(({value}) => value != null),
+  ).toBe(true);
+  expect(componentDidUpdateSpy).toHaveBeenCalledTimes(1);
+  expect(updateCellsToRenderSpy).toHaveBeenCalledTimes(items.length + 1);
+  expect(instance._hiPriInProgress).toBe(false);
+  computeCellsUpdateSpy.mockRestore();
+
+  let reenteredFromOnEndReached = false;
+  onEndReached.mockImplementationOnce(() => {
+    reenteredFromOnEndReached = true;
+    simulateScroll(component, {x: 0, y: 0});
+    expect(instance._hiPriInProgress).toBe(true);
+  });
+
+  const setState = VirtualizedList.prototype.setState.bind(instance);
+  setStateSpy.mockRestore();
+  jest.spyOn(instance, 'setState').mockImplementation((updater, onComplete) => {
+    setState(
+      updater,
+      onComplete == null
+        ? undefined
+        : () => {
+            onComplete();
+            if (
+              reenteredFromOnEndReached &&
+              instance.state.cellsAroundViewport.last === items.length - 1
+            ) {
+              // The old completion must not release the new update queued
+              // by onEndReached during componentDidUpdate.
+              expect(instance._hiPriInProgress).toBe(true);
+              instance._updateCellsToRender();
+              expect(instance._hiPriInProgress).toBe(true);
+            }
+          },
+    );
+  });
+
+  await act(() => {
+    simulateScroll(component, {x: 0, y: 80});
+    for (let i = 0; i < items.length; i++) {
+      instance._updateCellsToRender();
+    }
+  });
+
+  expect(reenteredFromOnEndReached).toBe(true);
+  expect(instance._hiPriInProgress).toBe(false);
 });
 
 it('renders windowSize derived region in middle', async () => {

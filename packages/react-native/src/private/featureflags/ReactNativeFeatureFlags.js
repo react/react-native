@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5a79107fda7ef89a1d68594cad01b8e7>>
+ * @generated SignedSource<<248a6701e98d6850499d84dd5c2bff5f>>
  * @flow strict
  * @noformat
  */
@@ -78,7 +78,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFabricCommitBranchingMergeOnMainThread: Getter<boolean>,
   enableFabricLogs: Getter<boolean>,
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
-  enableFontScaleChangesUpdatingLayout: Getter<boolean>,
+  enableFollowUpMountItemDispatchAndroid: Getter<boolean>,
   enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
@@ -87,6 +87,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
   enableImperativeEvents: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
+  enableInteractableResponderViews: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
   enableIntersectionObserverByDefault: Getter<boolean>,
   enableKeyEvents: Getter<boolean>,
@@ -117,6 +118,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   fuseboxFrameRecordingEnabled: Getter<boolean>,
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
   fuseboxWebSocketEventsEnabled: Getter<boolean>,
+  keepTimersRunningWhileHostPausedAndroid: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
   overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean>,
   perfIssuesEnabled: Getter<boolean>,
@@ -338,9 +340,9 @@ export const enableFabricLogs: Getter<boolean> = createNativeFlagGetter('enableF
  */
 export const enableFlexboxAutoMinSizeInStrictMode: Getter<boolean> = createNativeFlagGetter('enableFlexboxAutoMinSizeInStrictMode', false);
 /**
- * Enables font scale changes updating layout for measurable nodes.
+ * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
  */
-export const enableFontScaleChangesUpdatingLayout: Getter<boolean> = createNativeFlagGetter('enableFontScaleChangesUpdatingLayout', true);
+export const enableFollowUpMountItemDispatchAndroid: Getter<boolean> = createNativeFlagGetter('enableFollowUpMountItemDispatchAndroid', false);
 /**
  * Adjusts iOS Text drawing frames for compressed explicit line heights.
  */
@@ -373,6 +375,10 @@ export const enableImperativeEvents: Getter<boolean> = createNativeFlagGetter('e
  * Enable ref.focus() and ref.blur() for all views, not just TextInput.
  */
 export const enableImperativeFocus: Getter<boolean> = createNativeFlagGetter('enableImperativeFocus', false);
+/**
+ * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+ */
+export const enableInteractableResponderViews: Getter<boolean> = createNativeFlagGetter('enableInteractableResponderViews', false);
 /**
  * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
  */
@@ -484,7 +490,7 @@ export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fu
 /**
  * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
-export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', false);
+export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', true);
 /**
  * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
@@ -492,7 +498,11 @@ export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlag
 /**
  * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
  */
-export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
+export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', true);
+/**
+ * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+ */
+export const keepTimersRunningWhileHostPausedAndroid: Getter<boolean> = createNativeFlagGetter('keepTimersRunningWhileHostPausedAndroid', false);
 /**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
  */

@@ -13,12 +13,16 @@
                       moduleRegistry:(RCTModuleRegistry *)moduleRegistry
                        bundleManager:(RCTBundleManager *)bundleManager
                    callableJSModules:(RCTCallableJSModules *)callableJSModules
+                       launchOptions:(NSDictionary *)launchOptions
+                   performanceLogger:(RCTPerformanceLogger *)performanceLogger
 {
   if (self = [super init]) {
     _viewRegistry_DEPRECATED = viewRegistry;
     _moduleRegistry = moduleRegistry;
     _bundleManager = bundleManager;
     _callableJSModules = callableJSModules;
+    _launchOptions = [launchOptions copy];
+    _performanceLogger = performanceLogger;
   }
   return self;
 }
@@ -67,6 +71,28 @@
    */
   if ([bridgeModule respondsToSelector:@selector(setModuleRegistry:)]) {
     bridgeModule.moduleRegistry = _moduleRegistry;
+  }
+
+  /**
+   * Attach the launch options to this TurboModule, which allows this TurboModule
+   * to read the launch-time configuration of the React instance.
+   *
+   * Usage: In the TurboModule @implementation, include:
+   *   `@synthesize launchOptions = _launchOptions`
+   */
+  if ([bridgeModule respondsToSelector:@selector(setLaunchOptions:)]) {
+    bridgeModule.launchOptions = _launchOptions;
+  }
+
+  /**
+   * Attach the RCTPerformanceLogger to this TurboModule, which allows this
+   * TurboModule to read React Native perf events.
+   *
+   * Usage: In the TurboModule @implementation, include:
+   *   `@synthesize performanceLogger = _performanceLogger`
+   */
+  if ([bridgeModule respondsToSelector:@selector(setPerformanceLogger:)]) {
+    bridgeModule.performanceLogger = _performanceLogger;
   }
 }
 

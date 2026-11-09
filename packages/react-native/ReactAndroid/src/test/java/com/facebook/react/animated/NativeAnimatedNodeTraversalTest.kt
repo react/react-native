@@ -91,7 +91,7 @@ class NativeAnimatedNodeTraversalTest {
     whenever(uiManagerMock.directEventNamesResolver).thenAnswer {
       object : UIManagerModule.CustomEventNamesResolver {
         override fun resolveCustomEventName(eventName: String): String {
-          val constants: Map<String, Any?> = uiManagerMock.constants ?: emptyMap()
+          val constants: Map<String, Any?> = uiManagerMock.constants
           val directEventTypes: Any? = constants["customDirectEventTypes"]
           if (directEventTypes != null && directEventTypes is Map<*, *>) {
             val customEventType = directEventTypes[eventName]

@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
 class Row extends React.Component<
   Readonly<{
     data: Data,
-    onClick: Data => void,
+    onClick: (v: Data) => void,
   }>,
 > {
   _onClick = () => {

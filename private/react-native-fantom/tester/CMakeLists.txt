@@ -258,3 +258,5 @@ target_compile_options(fantom_tester
     -fexceptions
     -frtti
     -std=c++20)
+
+add_subdirectory(react-common-tests)

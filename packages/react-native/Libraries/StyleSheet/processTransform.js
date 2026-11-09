@@ -13,7 +13,7 @@
 const stringifySafe = require('../Utilities/stringifySafe').default;
 const invariant = require('invariant');
 
-type TransformObject = {[string]: unknown, ...};
+type TransformObject = {[key: string]: unknown, ...};
 type TransformArray = Array<TransformObject>;
 
 /**
@@ -60,11 +60,16 @@ const _getKeyAndValueFromCSSTransform: (
   key,
   args,
 ) => {
-  const argsWithUnitsRegex = new RegExp(/([+-]?\d+(\.\d+)?)([a-zA-Z]+|%)?/g);
+  const argsWithUnitsRegex = new RegExp(
+    /([+-]?(?:\d+(?:\.\d*)?|\.\d+))([a-zA-Z]+|%)?/g,
+  );
 
   switch (key) {
     case 'matrix':
-      return {key, value: args.match(/[+-]?\d+(\.\d+)?/g)?.map(Number)};
+      return {
+        key,
+        value: args.match(/[+-]?(?:\d+(?:\.\d*)?|\.\d+)/g)?.map(Number),
+      };
     case 'translate':
     case 'translate3d':
       const parsedArgs = [];
@@ -73,7 +78,7 @@ const _getKeyAndValueFromCSSTransform: (
       let matches;
       while ((matches = argsWithUnitsRegex.exec(args))) {
         const value = Number(matches[1]);
-        const unitOfMeasurement = matches[3];
+        const unitOfMeasurement = matches[2];
 
         if (value !== 0 && !unitOfMeasurement) {
           missingUnitOfMeasurement = true;
@@ -125,7 +130,7 @@ const _getKeyAndValueFromCSSTransform: (
       }
 
       const value = Number(argMatches[1]);
-      const unitOfMeasurement = argMatches[3];
+      const unitOfMeasurement = argMatches[2];
 
       if (__DEV__) {
         invariant(
@@ -135,10 +140,19 @@ const _getKeyAndValueFromCSSTransform: (
         );
       }
 
-      return {key, value};
+      // The percentage unit is meaningful for translations, so keep it in the
+      // value instead of dropping it. A bare number is interpreted as points.
+      return {
+        key,
+        value:
+          unitOfMeasurement === '%' &&
+          (key === 'translateX' || key === 'translateY')
+            ? `${value}%`
+            : value,
+      };
 
     default:
-      return {key, value: !isNaN(args) ? Number(args) : args};
+      return {key, value: !isNaN(Number(args)) ? Number(args) : args};
   }
 };
 

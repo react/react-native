@@ -141,7 +141,7 @@ function mergePropsStack(
   propsStack: Array<StackProps>,
   defaultValues: ResolvedStackProps,
 ): ResolvedStackProps {
-  const merged: ResolvedStackProps = propsStack.reduce(
+  const merged: ResolvedStackProps = propsStack.reduce<ResolvedStackProps>(
     (prev, cur) => {
       for (const prop in cur) {
         // $FlowFixMe[invalid-computed-prop] dynamic merge over the known StackProps keys

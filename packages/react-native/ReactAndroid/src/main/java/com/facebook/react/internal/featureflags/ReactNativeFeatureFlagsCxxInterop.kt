@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ec3e384af62c0e672da53b57354bca62>>
+ * @generated SignedSource<<e7d0d9416b8e1fa2a9f6246050cc06b0>>
  */
 
 /**
@@ -86,7 +86,7 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableFontScaleChangesUpdatingLayout(): Boolean
+  @DoNotStrip @JvmStatic public external fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
@@ -103,6 +103,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableImperativeEvents(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -163,6 +165,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun fuseboxScreenshotCaptureEnabled(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fuseboxWebSocketEventsEnabled(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun keepTimersRunningWhileHostPausedAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun optimizedAnimatedPropUpdates(): Boolean
 

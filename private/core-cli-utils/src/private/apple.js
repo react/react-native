@@ -27,8 +27,12 @@ type AppleBuildOptions = {
   mode: AppleBuildMode,
   scheme?: string,
   destination: 'device' | 'simulator' | string,
+  // How the project gets its native dependencies. Defaults to 'cocoapods'.
+  dependencyManager?: AppleDependencyManager,
   ...AppleOptions,
 };
+
+type AppleDependencyManager = 'cocoapods' | 'swiftpm';
 
 type AppleBootstrapOption = {
   // Enabled by default
@@ -78,6 +82,32 @@ const FIRST = 1,
   FOURTH = 4,
   FIFTH = 5;
 
+// The Swift packages `react-native spm` generates, which Xcode resolves before
+// it runs any build phase.
+const SWIFT_PACKAGE_DIRS = [
+  'build/xcframeworks',
+  'build/generated/autolinking',
+  'build/generated/ios',
+];
+
+function assertReadable(
+  cwd /*: string */,
+  files /*: ReadonlyArray<string> */,
+  fix /*: string */,
+) {
+  for (const file of files) {
+    try {
+      fs.accessSync(
+        path.join(cwd, file),
+        /* eslint-disable-next-line no-bitwise */
+        fs.constants.F_OK | fs.constants.R_OK,
+      );
+    } catch (e /*: unknown */) {
+      throw new Error(`Please run: ${fix}: ` + String(e));
+    }
+  }
+}
+
 function getNodePackagePath(packageName /*: string */) /*: string */ {
   // $FlowFixMe[prop-missing] type definition is incomplete
   return require.resolve(packageName, {cwd: [process.cwd(), ...module.paths]});
@@ -94,7 +124,7 @@ type BootstrapTasks = {
 
 type BuildTasks = {
   validate: Task<void>,
-  hasPodsInstalled: Task<void>,
+  hasDependenciesInstalled: Task<void>,
   build: Task<ExecaPromise>,
 };
 
@@ -142,7 +172,7 @@ const tasks = {
       }),
     ),
     installDependencies: task(FIFTH, 'Install CocoaPods dependencies', () => {
-      const env /*: {[string]: string | void} */ = {
+      const env /*: {[key: string]: string | void} */ = {
         RCT_NEW_ARCH_ENABLED: options.newArchitecture ? '1' : '0',
         USE_FRAMEWORKS: options.frameworks,
         USE_HERMES: options.hermes ? '1' : '0',
@@ -170,23 +200,29 @@ const tasks = {
         assertDependencies(isOnPath('xcodebuild', 'Xcode Commandline Tools'));
       },
     ),
-    hasPodsInstalled: task(FIRST, 'Check Pods are installed', () => {
-      for (const file of ['Podfile.lock', 'Pods']) {
-        try {
-          fs.accessSync(
-            path.join(options.cwd, file),
-            /* eslint-disable-next-line no-bitwise */
-            fs.constants.F_OK | fs.constants.R_OK,
+    hasDependenciesInstalled: task(
+      FIRST,
+      'Check the native dependencies are installed',
+      () => {
+        if (options.dependencyManager === 'swiftpm') {
+          assertReadable(
+            options.cwd,
+            SWIFT_PACKAGE_DIRS,
+            'npx react-native spm update',
           );
-        } catch (e /*: unknown */) {
-          throw new Error('Please run: yarn run bootstrap ios: ' + String(e));
+          return;
         }
-      }
-      checkPodfileInSyncWithManifest(
-        path.join(options.cwd, 'Podfile.lock'),
-        path.join(options.cwd, 'Pods/Manifest.lock'),
-      );
-    }),
+        assertReadable(
+          options.cwd,
+          ['Podfile.lock', 'Pods'],
+          'yarn run bootstrap ios',
+        );
+        checkPodfileInSyncWithManifest(
+          path.join(options.cwd, 'Podfile.lock'),
+          path.join(options.cwd, 'Pods/Manifest.lock'),
+        );
+      },
+    ),
     build: task(SECOND, 'build an app artifact', () => {
       const _args = [
         options.isWorkspace ? '-workspace' : '-project',

@@ -91,6 +91,7 @@ class BundleHermesCTaskTest {
           it.minifyEnabled.set(true)
           it.hermesEnabled.set(true)
           it.devEnabled.set(true)
+          it.resetMetroCacheBeforeBundling.set(true)
           it.extraPackagerArgs.set(listOf("extra", "arg"))
           it.hermesCommand.set("./my-hermesc")
           it.hermesFlags.set(listOf("flag1", "flag2"))
@@ -102,6 +103,7 @@ class BundleHermesCTaskTest {
     assertThat(task.minifyEnabled.get()).isTrue()
     assertThat(task.hermesEnabled.get()).isTrue()
     assertThat(task.devEnabled.get()).isTrue()
+    assertThat(task.resetMetroCacheBeforeBundling.get()).isTrue()
     assertThat(task.extraPackagerArgs.get()).isEqualTo(listOf("extra", "arg"))
     assertThat(task.hermesCommand.get()).isEqualTo("./my-hermesc")
     assertThat(task.hermesFlags.get()).isEqualTo(listOf("flag1", "flag2"))
@@ -211,6 +213,7 @@ class BundleHermesCTaskTest {
           it.resourcesDir.set(resourcesDir)
           it.bundleConfig.set(bundleConfig)
           it.minifyEnabled.set(true)
+          it.resetMetroCacheBeforeBundling.set(true)
           it.extraPackagerArgs.set(listOf("--read-global-cache"))
         }
 
@@ -265,6 +268,7 @@ class BundleHermesCTaskTest {
           it.resourcesDir.set(resourcesDir)
           it.bundleConfig.set(bundleConfig)
           it.minifyEnabled.set(true)
+          it.resetMetroCacheBeforeBundling.set(true)
           it.extraPackagerArgs.set(listOf("--read-global-cache"))
         }
 
@@ -318,12 +322,39 @@ class BundleHermesCTaskTest {
           it.entryFile.set(entryFile)
           it.resourcesDir.set(resourcesDir)
           it.minifyEnabled.set(true)
+          it.resetMetroCacheBeforeBundling.set(true)
           it.extraPackagerArgs.set(listOf("--read-global-cache"))
         }
 
     val bundleCommand = task.getBundleCommand(bundleFile, sourceMapFile)
 
     assertThat(bundleCommand).doesNotContain("--config")
+  }
+
+  @Test
+  fun getBundleCommand_withResetMetroCacheBeforeBundlingDisabled_returnsCommandWithoutResetCache() {
+    val entryFile = tempFolder.newFile("index.js")
+    val cliFile = tempFolder.newFile("cli.js")
+    val bundleFile = tempFolder.newFile("bundle.js")
+    val sourceMapFile = tempFolder.newFile("bundle.js.map")
+    val resourcesDir = tempFolder.newFolder("res")
+    val task =
+        createTestTask<BundleHermesCTask> {
+          it.nodeExecutableAndArgs.set(listOf("node", "arg1", "arg2"))
+          it.root.set(tempFolder.root)
+          it.cliFile.set(cliFile)
+          it.bundleCommand.set("bundle")
+          it.devEnabled.set(true)
+          it.entryFile.set(entryFile)
+          it.resourcesDir.set(resourcesDir)
+          it.minifyEnabled.set(true)
+          it.resetMetroCacheBeforeBundling.set(false)
+          it.extraPackagerArgs.set(listOf("--read-global-cache"))
+        }
+
+    val bundleCommand = task.getBundleCommand(bundleFile, sourceMapFile)
+
+    assertThat(bundleCommand).doesNotContain("--reset-cache")
   }
 
   @Test

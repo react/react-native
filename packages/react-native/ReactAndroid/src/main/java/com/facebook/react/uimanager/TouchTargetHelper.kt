@@ -212,6 +212,10 @@ public object TouchTargetHelper {
       val childrenCount = viewGroup.childCount
       for (i in childrenCount - 1 downTo 0) {
         val child = viewGroup.getChildAt(i)
+        // A child Android would not dispatch to (ViewGroup.canViewReceivePointerEvents).
+        if (child.visibility != View.VISIBLE && child.animation == null) {
+          continue
+        }
         val childPoint = tempPoint
         if (!getChildPoint(eventCoords[0], eventCoords[1], viewGroup, child, childPoint)) {
           // Child's transform is non-invertible (e.g. scaleX: 0 or scaleY: 0): the child is

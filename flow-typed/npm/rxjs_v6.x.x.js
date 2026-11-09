@@ -116,9 +116,9 @@ declare class rxjs$Observable<T> implements rxjs$Subscribable<T> {
   constructor(
     subscribe?: (subscriber: rxjs$Subscriber<T>) => rxjs$TeardownLogic,
   ): void;
-  static create(
-    subscribe?: (subscriber: rxjs$Subscriber<T>) => rxjs$TeardownLogic,
-  ): rxjs$Observable<T>;
+  static create<U>(
+    subscribe?: (subscriber: rxjs$Subscriber<U>) => rxjs$TeardownLogic,
+  ): rxjs$Observable<U>;
   lift<R>(operator: rxjs$Operator<T, R>): rxjs$Observable<R>;
   subscribe(observer?: rxjs$PartialObserver<T>): rxjs$Subscription;
   subscribe(
@@ -297,7 +297,7 @@ declare class rxjs$Subject<T>
   hasError: boolean;
   thrownError: any;
   constructor(): void;
-  static create: Function;
+  static create: any;
   lift<R>(operator: rxjs$Operator<T, R>): rxjs$Observable<R>;
   next(value?: T): void;
   error(err: any): void;

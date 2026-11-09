@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b5f4608f47743d0e2e9b1db3db551227>>
+ * @generated SignedSource<<6b457b1b41a17fa2065720edc82939e3>>
  */
 
 /**
@@ -205,10 +205,10 @@ public object ReactNativeFeatureFlags {
   public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = accessor.enableFlexboxAutoMinSizeInStrictMode()
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
    */
   @JvmStatic
-  public fun enableFontScaleChangesUpdatingLayout(): Boolean = accessor.enableFontScaleChangesUpdatingLayout()
+  public fun enableFollowUpMountItemDispatchAndroid(): Boolean = accessor.enableFollowUpMountItemDispatchAndroid()
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
@@ -257,6 +257,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableImperativeFocus(): Boolean = accessor.enableImperativeFocus()
+
+  /**
+   * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+   */
+  @JvmStatic
+  public fun enableInteractableResponderViews(): Boolean = accessor.enableInteractableResponderViews()
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
@@ -437,6 +443,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fuseboxWebSocketEventsEnabled(): Boolean = accessor.fuseboxWebSocketEventsEnabled()
+
+  /**
+   * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+   */
+  @JvmStatic
+  public fun keepTimersRunningWhileHostPausedAndroid(): Boolean = accessor.keepTimersRunningWhileHostPausedAndroid()
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.

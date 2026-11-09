@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<cd6aa804d1c10b93775adf83419368e3>>
+ * @generated SignedSource<<e844f0dd0aa8fd1d9d2d12344c9f977a>>
  */
 
 /**
@@ -81,7 +81,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = false
 
-  override fun enableFontScaleChangesUpdatingLayout(): Boolean = true
+  override fun enableFollowUpMountItemDispatchAndroid(): Boolean = false
 
   override fun enableIOSCompressedTextFrameAdjustment(): Boolean = false
 
@@ -98,6 +98,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableImperativeEvents(): Boolean = false
 
   override fun enableImperativeFocus(): Boolean = false
+
+  override fun enableInteractableResponderViews(): Boolean = false
 
   override fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean = false
 
@@ -153,11 +155,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxEnabledRelease(): Boolean = false
 
-  override fun fuseboxFrameRecordingEnabled(): Boolean = false
+  override fun fuseboxFrameRecordingEnabled(): Boolean = true
 
   override fun fuseboxScreenshotCaptureEnabled(): Boolean = true
 
-  override fun fuseboxWebSocketEventsEnabled(): Boolean = false
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = true
+
+  override fun keepTimersRunningWhileHostPausedAndroid(): Boolean = false
 
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 

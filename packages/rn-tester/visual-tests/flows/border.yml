@@ -1,0 +1,44 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/BorderExample/corner-radii
+- extendedWaitUntil:
+    visible:
+      id: 'border-test-corner-radii'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/border/corner-radii/default
+    cropOn:
+      id: 'border-test-corner-radii'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/BorderExample/child-clipping-radius
+- extendedWaitUntil:
+    visible:
+      id: 'border-test-child-clipping-radius'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/border/child-clipping-radius/default
+    cropOn:
+      id: 'border-test-child-clipping-radius'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/BorderExample/equal-width-borders
+- extendedWaitUntil:
+    visible:
+      id: 'border-test-equal-width-borders'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/border/equal-width-borders/default
+    cropOn:
+      id: 'border-test-equal-width-borders'

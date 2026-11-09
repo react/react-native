@@ -91,7 +91,7 @@ function symlinkReactAppleHeaders(
 ) /*: number */ {
   let linkedCount = 0;
 
-  const mappings /*: {[string]: string } */ = {};
+  const mappings /*: {[key: string]: string } */ = {};
   mappings[
     `${reactApplePath}/Libraries/RCTFoundation/RCTDeprecation/Exported`
   ] = `${headersOutput}/RCTDeprecation`;

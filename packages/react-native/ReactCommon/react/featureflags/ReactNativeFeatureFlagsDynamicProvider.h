@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ec15d61f2d6f06c6ec5998f8524de016>>
+ * @generated SignedSource<<8c22809fda00ab42d807816b7606e291>>
  */
 
 /**
@@ -308,13 +308,13 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableFlexboxAutoMinSizeInStrictMode();
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    auto value = values_["enableFontScaleChangesUpdatingLayout"];
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    auto value = values_["enableFollowUpMountItemDispatchAndroid"];
     if (!value.isNull()) {
       return value.getBool();
     }
 
-    return ReactNativeFeatureFlagsDefaults::enableFontScaleChangesUpdatingLayout();
+    return ReactNativeFeatureFlagsDefaults::enableFollowUpMountItemDispatchAndroid();
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -387,6 +387,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableImperativeFocus();
+  }
+
+  bool enableInteractableResponderViews() override {
+    auto value = values_["enableInteractableResponderViews"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableInteractableResponderViews();
   }
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS() override {
@@ -657,6 +666,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fuseboxWebSocketEventsEnabled();
+  }
+
+  bool keepTimersRunningWhileHostPausedAndroid() override {
+    auto value = values_["keepTimersRunningWhileHostPausedAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::keepTimersRunningWhileHostPausedAndroid();
   }
 
   bool optimizedAnimatedPropUpdates() override {

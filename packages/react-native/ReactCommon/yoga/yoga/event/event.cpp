@@ -46,7 +46,7 @@ struct Node {
       : subscriber{std::move(subscriber)} {}
 };
 
-std::atomic<Node*> subscribers{nullptr};
+constinit std::atomic<Node*> subscribers{nullptr};
 
 Node* push(Node* newHead) {
   Node* oldHead = nullptr;

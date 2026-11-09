@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<46e48274f8b27b9c6136b13048682252>>
+ * @generated SignedSource<<17288b4f2e30e06448c4affd54918ade>>
  */
 
 /**
@@ -145,8 +145,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    return true;
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    return false;
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -178,6 +178,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableImperativeFocus() override {
+    return false;
+  }
+
+  bool enableInteractableResponderViews() override {
     return false;
   }
 
@@ -290,7 +294,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxFrameRecordingEnabled() override {
-    return false;
+    return true;
   }
 
   bool fuseboxScreenshotCaptureEnabled() override {
@@ -298,6 +302,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxWebSocketEventsEnabled() override {
+    return true;
+  }
+
+  bool keepTimersRunningWhileHostPausedAndroid() override {
     return false;
   }
 

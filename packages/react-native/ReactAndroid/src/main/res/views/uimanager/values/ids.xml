@@ -88,4 +88,7 @@
 
   <!-- tag is used to store the safe area insets observer attached to the view -->
   <item type="id" name="safe_area_insets_observer"/>
+
+  <!-- tag marks that BaseViewManager installed the no-op touch listener -->
+  <item type="id" name="noop_touch_listener"/>
 </resources>

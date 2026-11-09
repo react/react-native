@@ -12,8 +12,6 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/NSDataBigString.h>
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Inspector.h>
-#import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBridgeModuleDecorator.h>
@@ -29,7 +27,6 @@
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTLogBox.h>
-#import <React/RCTModuleData.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTRedBox.h>
 #import <React/RCTSurfacePresenter.h>
@@ -42,12 +39,14 @@
 #import <jsinspector-modern/ReactCdp.h>
 #import <jsireact/JSIExecutor.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/core/EventEmitterListener.h>
 #import <react/runtime/ReactInstance.h>
 #import <react/utils/ContextContainer.h>
 #import <react/utils/FollyConvert.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #import "ObjCTimerRegistry.h"
+#import "RCTEventDispatcherEventPayload.h"
 #import "RCTJSThreadManager.h"
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 #import "RCTLegacyUIManagerConstantsProvider.h"
@@ -61,7 +60,7 @@
 using namespace facebook;
 using namespace facebook::react;
 
-@interface RCTInstance () <RCTTurboModuleManagerDelegate>
+@interface RCTInstance () <RCTTurboModuleManagerDelegate, RCTEventDispatcherObserver>
 @end
 
 @implementation RCTInstance {
@@ -86,6 +85,8 @@ using namespace facebook::react;
   RCTDevMenuConfigurationDecorator *_devMenuConfigurationDecorator;
 
   jsinspector_modern::HostTarget *_parentInspectorTarget;
+
+  std::shared_ptr<EventEmitterListenerContainer> _eventDispatcherListeners;
 }
 
 #pragma mark - Public
@@ -129,7 +130,9 @@ using namespace facebook::react;
     _bridgeModuleDecorator = [[RCTBridgeModuleDecorator alloc] initWithViewRegistry:[RCTViewRegistry new]
                                                                      moduleRegistry:moduleRegistry
                                                                       bundleManager:bundleManager
-                                                                  callableJSModules:[RCTCallableJSModules new]];
+                                                                  callableJSModules:[RCTCallableJSModules new]
+                                                                      launchOptions:launchOptions
+                                                                  performanceLogger:_performanceLogger];
     _devMenuConfigurationDecorator =
 #if RCT_DEV_MENU
         [[RCTDevMenuConfigurationDecorator alloc] initWithDevMenuConfiguration:devMenuConfiguration];
@@ -226,6 +229,24 @@ using namespace facebook::react;
   if (_valid) {
     _reactInstance->registerSegment(static_cast<uint32_t>([segmentId unsignedIntValue]), path.UTF8String);
   }
+}
+
+#pragma mark - RCTEventDispatcherObserver
+
+- (void)eventDispatcherWillDispatchEvent:(id<RCTEvent>)event
+{
+  // Only component events carry `@[viewTag, eventName, body]` as their arguments.
+  Class<RCTEvent> eventClass = [event class];
+  if (![[eventClass moduleDotMethod] isEqualToString:@"RCTEventEmitter.receiveEvent"]) {
+    return;
+  }
+  auto listeners = _eventDispatcherListeners;
+  auto tag = static_cast<Tag>(event.viewTag.integerValue);
+  auto eventName = std::string(event.eventName.UTF8String ?: "");
+  // Listeners run on the main thread, where C++ Native Animated handles events.
+  RCTExecuteOnMainQueue(^{
+    listeners->willDispatchEvent(tag, eventName, RCTEventDispatcherEventPayload(event));
+  });
 }
 
 #pragma mark - RCTTurboModuleManagerDelegate
@@ -327,7 +348,6 @@ using namespace facebook::react;
   bridgeProxy.jsCallInvoker = jsCallInvoker;
   bridgeProxy.performanceLogger = _performanceLogger;
   _bridgeProxy = bridgeProxy;
-  [RCTBridge setCurrentBridge:(RCTBridge *)bridgeProxy];
 
   // Set up TurboModules
   _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridgeProxy:bridgeProxy
@@ -386,6 +406,13 @@ using namespace facebook::react;
   contextContainer->insert(
       "RCTEventDispatcher",
       facebook::react::wrapManagedObject([_turboModuleManager moduleForName:"RCTEventDispatcher"]));
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled()) {
+    // Lets C++ Native Animated receive events that native code delivers only to RCTEventDispatcher
+    // observers, outside Fabric event emitters.
+    _eventDispatcherListeners = std::make_shared<EventEmitterListenerContainer>();
+    contextContainer->insert("RCTEventDispatcherListeners", _eventDispatcherListeners);
+    [[_turboModuleManager moduleForName:"RCTEventDispatcher"] addDispatchObserver:self];
+  }
   contextContainer->insert("RCTBridgeModuleDecorator", facebook::react::wrapManagedObject(_bridgeModuleDecorator));
   contextContainer->insert(RuntimeSchedulerKey, std::weak_ptr<RuntimeScheduler>(_reactInstance->getRuntimeScheduler()));
   contextContainer->insert("RCTBridgeProxy", facebook::react::wrapManagedObject(bridgeProxy));
@@ -554,7 +581,10 @@ using namespace facebook::react;
     return;
   }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   NSArray<NSString *> *modulesInOldArchMode = [getModulesLoadedWithOldArch() copy];
+#pragma clang diagnostic pop
   if (modulesInOldArchMode.count > 0) {
     NSMutableString *moduleList = [NSMutableString new];
     for (NSString *moduleName in modulesInOldArchMode) {

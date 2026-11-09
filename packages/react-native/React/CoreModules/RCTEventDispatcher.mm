@@ -8,10 +8,7 @@
 #import "RCTEventDispatcher.h"
 
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Private.h>
-#import <React/RCTBridge.h>
 #import <React/RCTComponentEvent.h>
-#import <React/RCTProfile.h>
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModule.h>
 

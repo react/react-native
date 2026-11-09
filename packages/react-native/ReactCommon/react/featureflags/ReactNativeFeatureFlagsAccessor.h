@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0b7f6d7766d1e038b3909bb7ea634f83>>
+ * @generated SignedSource<<3c072a5cbda73530a3c24e16cd978efc>>
  */
 
 /**
@@ -63,7 +63,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableFabricCommitBranchingMergeOnMainThread();
   bool enableFabricLogs();
   bool enableFlexboxAutoMinSizeInStrictMode();
-  bool enableFontScaleChangesUpdatingLayout();
+  bool enableFollowUpMountItemDispatchAndroid();
   bool enableIOSCompressedTextFrameAdjustment();
   bool enableIOSTextBaselineOffsetPerLine();
   bool enableIOSViewClipToPaddingBox();
@@ -72,6 +72,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableImmediateUpdateModeForContentOffsetChanges();
   bool enableImperativeEvents();
   bool enableImperativeFocus();
+  bool enableInteractableResponderViews();
   bool enableInteropViewManagerClassLookUpOptimizationIOS();
   bool enableIntersectionObserverByDefault();
   bool enableKeyEvents();
@@ -102,6 +103,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool fuseboxFrameRecordingEnabled();
   bool fuseboxScreenshotCaptureEnabled();
   bool fuseboxWebSocketEventsEnabled();
+  bool keepTimersRunningWhileHostPausedAndroid();
   bool optimizedAnimatedPropUpdates();
   bool overrideBySynchronousMountPropsAtMountingAndroid();
   bool perfIssuesEnabled();
@@ -141,7 +143,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 96> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -172,7 +174,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableFabricCommitBranchingMergeOnMainThread_;
   std::atomic<std::optional<bool>> enableFabricLogs_;
   std::atomic<std::optional<bool>> enableFlexboxAutoMinSizeInStrictMode_;
-  std::atomic<std::optional<bool>> enableFontScaleChangesUpdatingLayout_;
+  std::atomic<std::optional<bool>> enableFollowUpMountItemDispatchAndroid_;
   std::atomic<std::optional<bool>> enableIOSCompressedTextFrameAdjustment_;
   std::atomic<std::optional<bool>> enableIOSTextBaselineOffsetPerLine_;
   std::atomic<std::optional<bool>> enableIOSViewClipToPaddingBox_;
@@ -181,6 +183,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableImmediateUpdateModeForContentOffsetChanges_;
   std::atomic<std::optional<bool>> enableImperativeEvents_;
   std::atomic<std::optional<bool>> enableImperativeFocus_;
+  std::atomic<std::optional<bool>> enableInteractableResponderViews_;
   std::atomic<std::optional<bool>> enableInteropViewManagerClassLookUpOptimizationIOS_;
   std::atomic<std::optional<bool>> enableIntersectionObserverByDefault_;
   std::atomic<std::optional<bool>> enableKeyEvents_;
@@ -211,6 +214,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> fuseboxFrameRecordingEnabled_;
   std::atomic<std::optional<bool>> fuseboxScreenshotCaptureEnabled_;
   std::atomic<std::optional<bool>> fuseboxWebSocketEventsEnabled_;
+  std::atomic<std::optional<bool>> keepTimersRunningWhileHostPausedAndroid_;
   std::atomic<std::optional<bool>> optimizedAnimatedPropUpdates_;
   std::atomic<std::optional<bool>> overrideBySynchronousMountPropsAtMountingAndroid_;
   std::atomic<std::optional<bool>> perfIssuesEnabled_;

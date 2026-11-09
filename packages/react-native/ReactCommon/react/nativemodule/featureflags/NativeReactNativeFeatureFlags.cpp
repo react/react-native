@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ca361bb00c0b31657c5a1559a12d5f5a>>
+ * @generated SignedSource<<e2ae2de7462f86cdaf2bfa90f046cd62>>
  */
 
 /**
@@ -189,9 +189,9 @@ bool NativeReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode(
   return ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
+bool NativeReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid(
     jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+  return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
@@ -232,6 +232,11 @@ bool NativeReactNativeFeatureFlags::enableImperativeEvents(
 bool NativeReactNativeFeatureFlags::enableImperativeFocus(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeFocus();
+}
+
+bool NativeReactNativeFeatureFlags::enableInteractableResponderViews(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableInteractableResponderViews();
 }
 
 bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS(
@@ -382,6 +387,11 @@ bool NativeReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(
 bool NativeReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
+}
+
+bool NativeReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c5e9b41b76c5580c0a4ba848af4e36a5>>
+ * @generated SignedSource<<3c3e22fe0cffa5498750e91ad05df9a8>>
  */
 
 /**
@@ -81,7 +81,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
-  @DoNotStrip public fun enableFontScaleChangesUpdatingLayout(): Boolean
+  @DoNotStrip public fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip public fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
@@ -98,6 +98,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip public fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip public fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -158,6 +160,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fuseboxScreenshotCaptureEnabled(): Boolean
 
   @DoNotStrip public fun fuseboxWebSocketEventsEnabled(): Boolean
+
+  @DoNotStrip public fun keepTimersRunningWhileHostPausedAndroid(): Boolean
 
   @DoNotStrip public fun optimizedAnimatedPropUpdates(): Boolean
 

@@ -118,6 +118,10 @@ internal object TextLayoutManager {
 
   private const val TEXT_WIDTH_MODE_LONGEST_LINE = "longest-line"
 
+  // Widths arrive in pixels converted from Yoga's floating point DIPs, so a width of a whole number
+  // of pixels can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
+  private const val PIXEL_WIDTH_TOLERANCE = 0.001f
+
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
   // These wrappers mirror Android 15 APIs but use reflection because some internal targets still
@@ -865,7 +869,8 @@ internal object TextLayoutManager {
     // layout as a BoringLayout
     if (
         boring != null &&
-            (widthYogaMeasureMode == YogaMeasureMode.UNDEFINED || boring.width <= floor(width))
+            (widthYogaMeasureMode == YogaMeasureMode.UNDEFINED ||
+                boring.width <= floorPixelWidth(width))
     ) {
       // Guard uses floor() but layout width below uses ceil() for EXACTLY mode intentionally:
       // text that barely fails the floor-based guard falls through to StaticLayout, which also
@@ -888,21 +893,27 @@ internal object TextLayoutManager {
     // Layout.getDesiredWidth is a full measuring pass over the text, so only run it when its
     // result can affect the layout width. It cannot when the width is EXACTLY, nor when the text
     // was boring but did not fit: boring.width is the unwrapped width of the same text and we only
-    // get here if it exceeds floor(width), so min(desiredWidth, floor(width)) is floor(width).
+    // get here if it exceeds the floored width, so the minimum of both is the floored width.
     val layoutWidth =
         when {
           widthYogaMeasureMode == YogaMeasureMode.EXACTLY -> ceil(width).toInt()
-          widthYogaMeasureMode == YogaMeasureMode.AT_MOST && boring != null -> floor(width).toInt()
+          widthYogaMeasureMode == YogaMeasureMode.AT_MOST && boring != null ->
+              floorPixelWidth(width)
           else -> {
             val desiredWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
             if (widthYogaMeasureMode == YogaMeasureMode.AT_MOST) {
-              min(desiredWidth, floor(width).toInt())
+              min(desiredWidth, floorPixelWidth(width))
             } else {
               desiredWidth
             }
           }
         }
-    val enableStartOverhang = widthYogaMeasureMode == YogaMeasureMode.EXACTLY
+    // Bounds-based width is limited to text with RTL characters. An EXACTLY width usually comes
+    // from an earlier advance-based AT_MOST measurement, and LTR glyph bounds that are wider than
+    // their advances (some OEM fonts) would make a single line overflow that width and ellipsize.
+    val enableStartOverhang =
+        widthYogaMeasureMode == YogaMeasureMode.EXACTLY &&
+            TextDirectionHeuristics.ANYRTL_LTR.isRtl(text, 0, text.length)
     val layout =
         buildLayout(
             text,
@@ -964,6 +975,14 @@ internal object TextLayoutManager {
       layout
     }
   }
+
+  /**
+   * Rounds a maximum width down to whole pixels, without losing the last pixel of a width that
+   * falls a floating point error short of it. Text measured at a whole number of pixels gets that
+   * width back as its constraint once Yoga has converted it to DIPs and back, and flooring that to
+   * one pixel less wraps the text.
+   */
+  private fun floorPixelWidth(width: Float): Int = floor(width + PIXEL_WIDTH_TOLERANCE).toInt()
 
   @VisibleForTesting
   internal fun adjustLayoutForRtlRightOverhang(

@@ -30,7 +30,7 @@ const REACT_NATIVE_PACKAGE_ROOT_FOLDER /*: string */ = path.join(
 );
 const CODEGEN_REPO_PATH = `${REACT_NATIVE_REPOSITORY_ROOT}/packages/react-native-codegen`;
 
-const CORE_LIBRARIES_WITH_OUTPUT_FOLDER /*: {[string]: $FlowFixMe} */ = {
+const CORE_LIBRARIES_WITH_OUTPUT_FOLDER /*: {[key: string]: $FlowFixMe} */ = {
   FBReactNativeSpec: {
     ios: path.join(
       REACT_NATIVE_PACKAGE_ROOT_FOLDER,

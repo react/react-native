@@ -358,7 +358,7 @@ TYPED_TEST(JsiIntegrationPortableTest, ReactNativeApplicationEnable) {
                                           "method": "ReactNativeApplication.metadataUpdated",
                                           "params": {
                                             "integrationName": "JsiIntegrationTest",
-                                            "unstable_frameRecordingEnabled": false,
+                                            "unstable_frameRecordingEnabled": true,
                                             "unstable_isProfilingBuild": false,
                                             "unstable_networkInspectionEnabled": true
                                           }

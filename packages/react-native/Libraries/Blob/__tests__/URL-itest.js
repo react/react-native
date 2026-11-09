@@ -133,10 +133,6 @@ describe('URL', function () {
     expect(urlParams.has('query')).toBe(true);
     expect(urlParams.has('key')).toBe(false);
 
-    // Sorting URLSearchParams is not exercised here: URLSearchParams.sort()
-    // relies on String.prototype.localeCompare, which requires ICU collation
-    // support that is unavailable in Fantom's Hermes build.
-
     // searchParams.set() should replace values not duplicate them
     const urlWithSearchParams = new URL(
       'https://example.com/api/data?foo=bar&baz=qux',
@@ -164,5 +160,45 @@ describe('URL', function () {
     expect(urlWithoutTrailing.toString()).toBe(
       'https://example.com/path/to/resource',
     );
+  });
+});
+
+describe('URLSearchParams.sort', () => {
+  it('sorts names by code units while preserving the order of duplicate values', () => {
+    const params = new URLSearchParams([
+      ['a', 'first'],
+      ['Z', 'uppercase'],
+      ['a', 'second'],
+      ['z', 'lowercase'],
+      ['ä', 'umlaut'],
+    ]);
+
+    params.sort();
+
+    expect(Array.from(params.entries())).toEqual([
+      ['Z', 'uppercase'],
+      ['a', 'first'],
+      ['a', 'second'],
+      ['z', 'lowercase'],
+      ['ä', 'umlaut'],
+    ]);
+  });
+
+  it('compares supplementary characters using their UTF-16 code units', () => {
+    const params = new URLSearchParams([
+      ['\uE000', 'private use'],
+      ['\uD83D\uDE02', 'second supplementary'],
+      ['\uFF03', 'fullwidth'],
+      ['\uD83D\uDE00', 'first supplementary'],
+    ]);
+
+    params.sort();
+
+    expect(Array.from(params.entries())).toEqual([
+      ['\uD83D\uDE00', 'first supplementary'],
+      ['\uD83D\uDE02', 'second supplementary'],
+      ['\uE000', 'private use'],
+      ['\uFF03', 'fullwidth'],
+    ]);
   });
 });

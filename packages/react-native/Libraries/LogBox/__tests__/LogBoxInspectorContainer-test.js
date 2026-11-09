@@ -10,15 +10,6 @@
 
 'use strict';
 
-const BackHandler: $FlowFixMe = require('../../Utilities/BackHandler').default;
-const LogBoxData = require('../Data/LogBoxData');
-const LogBoxLog = require('../Data/LogBoxLog').default;
-const {
-  _LogBoxInspectorContainer: LogBoxInspectorContainer,
-} = require('../LogBoxInspectorContainer');
-const render = require('@react-native/jest-preset/jest/renderer');
-const React = require('react');
-
 // Mock `LogBoxInspector` because we are interested in snapshotting the behavior
 // of `LogBoxInspectorContainer`, not `LogBoxInspector`.
 jest.mock('../UI/LogBoxInspector', () => ({
@@ -29,6 +20,15 @@ jest.mock('../UI/LogBoxInspector', () => ({
 jest.mock('../../Utilities/BackHandler', () =>
   require('../../Utilities/__mocks__/BackHandler'),
 );
+
+const BackHandler: $FlowFixMe = require('../../Utilities/BackHandler').default;
+const LogBoxData = require('../Data/LogBoxData');
+const LogBoxLog = require('../Data/LogBoxLog').default;
+const {
+  _LogBoxInspectorContainer: LogBoxInspectorContainer,
+} = require('../LogBoxInspectorContainer');
+const render = require('@react-native/jest-preset/jest/renderer');
+const React = require('react');
 
 describe('LogBoxInspectorContainer', () => {
   let output;

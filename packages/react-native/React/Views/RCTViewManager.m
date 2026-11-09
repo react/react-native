@@ -10,7 +10,6 @@
 #import "RCTAssert.h"
 #import "RCTBorderCurve.h"
 #import "RCTBorderStyle.h"
-#import "RCTBridge.h"
 #import "RCTConvert+Transform.h"
 #import "RCTConvert.h"
 #import "RCTCursor.h"

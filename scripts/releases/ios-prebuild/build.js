@@ -53,6 +53,22 @@ async function buildPlatform(
   buildFolder /*: string */,
 ) {
   console.log(`Building ${destination}...`);
+  const command = getPlatformBuildCommand(
+    scheme,
+    configuration,
+    destination,
+    buildFolder,
+  );
+
+  execSync(command, {cwd: rootFolder, stdio: 'inherit'});
+}
+
+function getPlatformBuildCommand(
+  scheme /*: string */,
+  configuration /*: string */,
+  destination /*: Destination */,
+  buildFolder /*: string */,
+) /*: string */ {
   const command =
     `xcodebuild -scheme "${scheme}" -destination "generic/platform=${destination}" ` +
     `-derivedDataPath "${buildFolder}" ` +
@@ -60,10 +76,15 @@ async function buildPlatform(
     'SKIP_INSTALL=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     DEBUG_INFORMATION_FORMAT=dwarf-with-dsym';
-
-  execSync(command, {cwd: rootFolder, stdio: 'inherit'});
+  // Xcode defaults Release to -Os. Android builds these dependencies at -O2 in
+  // Release. A command-line setting applies to every configuration, so add it
+  // only to Release builds.
+  return configuration === 'Release'
+    ? `${command} GCC_OPTIMIZATION_LEVEL=2`
+    : command;
 }
 
 module.exports = {
   buildDepenencies,
+  getPlatformBuildCommand,
 };

@@ -55,7 +55,7 @@ interface ILogBox {
   install(): void;
   uninstall(): void;
   isInstalled(): boolean;
-  ignoreLogs(ReadonlyArray<IgnorePattern>): void;
+  ignoreLogs(v: ReadonlyArray<IgnorePattern>): void;
   ignoreAllLogs(value?: boolean): void;
   clearAllLogs(): void;
   addLog(log: LogData): void;

@@ -226,6 +226,9 @@ public object ColorPropConverter {
     val theme = context.theme
 
     if (theme.resolveAttribute(resourceId, outValue, true)) {
+      if (outValue.type == TypedValue.TYPE_STRING) {
+        return ResourcesCompat.getColor(context.resources, outValue.resourceId, theme)
+      }
       return outValue.data
     }
 
