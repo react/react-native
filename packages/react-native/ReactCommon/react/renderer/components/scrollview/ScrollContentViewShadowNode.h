@@ -21,8 +21,9 @@ extern const char ScrollContentViewComponentName[];
 
 /*
  * `ShadowNode` for the <ScrollContentView> component, the content container of
- * a <ScrollView>. It pads its content by the safe area in its state, on top of
- * the padding its style sets.
+ * a <ScrollView>. It lays its content out clear of the safe area in its state
+ * by at least the padding its style sets: across the scrollable axis as
+ * padding, and along it as what the padding exceeds UIKit's content inset by.
  */
 class ScrollContentViewShadowNode final : public ConcreteViewShadowNode<
                                               ScrollContentViewComponentName,
@@ -48,10 +49,11 @@ class ScrollContentViewShadowNode final : public ConcreteViewShadowNode<
   void applySafeAreaPadding();
 
   /*
-   * Pads `style` by `state.safeAreaPadding`, on top of the padding `style`
-   * resolves to on each edge, following the precedence Yoga gives the padding
-   * edges for `layoutDirection`. An edge with a percentage padding keeps it
-   * and gets no inset.
+   * Raises the padding `style` resolves to on each edge to at least
+   * `state.safeAreaPadding`, less `state.contentInsetAdjustment` where UIKit
+   * already applies the safe area as a content inset, following the precedence
+   * Yoga gives the padding edges for `layoutDirection`. An edge with a
+   * percentage padding keeps it and gets no inset.
    */
   static void padForSafeArea(yoga::Style &style, const ScrollContentViewState &state, LayoutDirection layoutDirection);
 
