@@ -2198,6 +2198,7 @@ class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseVi
 class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
   public SafeAreaViewProps() = default;
   public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public facebook::react::SafeAreaViewPointerEvents pointerEvents;
   public virtual facebook::react::ComponentName getDiffPropsImplementationTarget() const override;
   public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
 }
@@ -2990,6 +2991,13 @@ enum facebook::react::Role : uint8_t {
   Tree,
   Treegrid,
   Treeitem,
+}
+
+enum facebook::react::SafeAreaViewPointerEvents {
+  Auto,
+  BoxNone,
+  BoxOnly,
+  None,
 }
 
 enum facebook::react::SchedulerPriority : int {

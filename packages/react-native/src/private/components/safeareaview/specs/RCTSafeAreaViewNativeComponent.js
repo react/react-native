@@ -9,6 +9,7 @@
  */
 
 import type {ViewProps} from '../../../../../Libraries/Components/View/ViewPropTypes';
+import type {WithDefault} from '../../../../../Libraries/Types/CodegenTypes';
 import type {HostComponent} from '../../../types/HostComponent';
 
 import codegenNativeComponent from '../../../../../Libraries/Utilities/codegenNativeComponent';
@@ -16,7 +17,11 @@ import codegenNativeComponent from '../../../../../Libraries/Utilities/codegenNa
 type RCTSafeAreaViewNativeProps = Readonly<{
   ...ViewProps,
 
-  // No props
+  // Declared so the generated Android delegate applies it to the native view.
+  pointerEvents?: WithDefault<
+    'auto' | 'box-none' | 'box-only' | 'none',
+    'auto',
+  >,
 }>;
 
 export default codegenNativeComponent<RCTSafeAreaViewNativeProps>(
