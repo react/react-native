@@ -266,6 +266,7 @@ class ReactNativeElement extends ReadOnlyElement {
     const updatePayload = createAttributePayload(
       nativeProps,
       this.__viewConfig.validAttributes,
+      {isInitial: false},
     );
 
     const node = getNativeElementReference(this);
