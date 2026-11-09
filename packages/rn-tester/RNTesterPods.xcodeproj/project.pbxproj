@@ -332,6 +332,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				68CD48B71D2BCB2C007E06A9 /* Build JS Bundle */,
 				79E8BE2B119D4C5CCD2F04B3 /* [RN] Copy Hermes Framework */,
+				4F7F229B62EFCD7CD0990588 /* [RN] Build Node-API Example */,
 				17FE348EDF12252D972FFC2F /* [CP] Embed Pods Frameworks */,
 				DFEE284B22AD5E88BBF1026A /* [CP] Copy Pods Resources */,
 			);
@@ -425,6 +426,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		4F7F229B62EFCD7CD0990588 /* [RN] Build Node-API Example */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/NodeApiExample/addon.c",
+				"$(SRCROOT)/NodeApiExample/build-apple-framework.sh",
+			);
+			name = "[RN] Build Node-API Example";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/nodeapiexample.framework/nodeapiexample",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/NodeApiExample/build-apple-framework.sh\"\n";
+		};
 		17FE348EDF12252D972FFC2F /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
