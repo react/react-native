@@ -22,7 +22,6 @@ import getAssetDestPathAndroid from './getAssetDestPathAndroid';
 import getAssetDestPathIOS from './getAssetDestPathIOS';
 import fs from 'node:fs';
 import path from 'node:path';
-import {styleText} from 'node:util';
 
 type CopiedFiles = {
   [src: string]: string,
@@ -64,10 +63,9 @@ async function saveAssets(
     // remove unused scales from the optimized bundle.
     const catalogDir = path.join(assetCatalogDest, 'RNAssets.xcassets');
     if (!fs.existsSync(catalogDir)) {
-      console.error(
-        `${styleText('red', 'error')}: Could not find asset catalog 'RNAssets.xcassets' in ${assetCatalogDest}. Make sure to create it if it does not exist.`,
+      throw new Error(
+        `Could not find asset catalog 'RNAssets.xcassets' in ${assetCatalogDest}. Make sure to create it if it does not exist.`,
       );
-      return;
     }
 
     console.info('Adding images to asset catalog', catalogDir);
