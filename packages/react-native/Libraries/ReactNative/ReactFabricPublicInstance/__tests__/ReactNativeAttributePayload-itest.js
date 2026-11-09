@@ -204,6 +204,45 @@ describe('ReactNativeAttributePayload resetValue', () => {
       <rn-view nativeID="reset" />,
     );
   });
+
+  it('preserves undefined resets after imperative props have been applied', () => {
+    const ResetValueView = NativeComponentRegistry.get<
+      Readonly<{nativeID?: string, collapsable?: boolean}>,
+    >('FantomUndefinedResetValueView', () => ({
+      uiViewClassName: 'RCTView',
+      validAttributes: {nativeID: {resetValue: undefined}},
+    }));
+    const root = Fantom.createRoot();
+    const ref = React.createRef<HostInstance>();
+    const setNativeProps = (props: {...}) => {
+      Fantom.runTask(() => {
+        const view = ref.current;
+        if (view == null) {
+          throw new Error('The native view did not mount.');
+        }
+        view.setNativeProps(props);
+      });
+    };
+    const render = (nativeID: string | void) => {
+      Fantom.runTask(() => {
+        root.render(
+          <ResetValueView ref={ref} nativeID={nativeID} collapsable={false} />,
+        );
+      });
+    };
+    render('provided');
+    setNativeProps({testID: 'imperative'});
+    render(undefined);
+    expect(
+      root.getRenderedOutput({props: ['nativeID', 'testID']}).toJSX(),
+    ).toEqual(<rn-view testID="imperative" />);
+    render('again');
+    setNativeProps({nativeID: 'imperative-native-id'});
+    render(undefined);
+    expect(
+      root.getRenderedOutput({props: ['nativeID', 'testID']}).toJSX(),
+    ).toEqual(<rn-view testID="imperative" />);
+  });
 });
 
 describe('ReactNativeAttributePayload.create', () => {

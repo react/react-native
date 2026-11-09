@@ -40,6 +40,54 @@ std::unique_ptr<facebook::react::LeakChecker> constructLeakCheckerIfNeeded(
 
 namespace facebook::react {
 
+namespace {
+
+RawProps mergeNativeProps(
+    const RawProps& rawProps,
+    folly::dynamic& nativeProps) {
+  jsi::Runtime* runtime = nullptr;
+  std::optional<jsi::Object> mergedProps;
+  auto updatedNativeProps = nativeProps;
+
+  rawProps.forEachItem([&](std::string_view name, const RawValue& value) {
+    const auto key = std::string(name);
+    auto nativeProp = updatedNativeProps.find(key);
+    if (value.hasType<std::pair<jsi::Runtime*, jsi::Value>>()) {
+      auto [jsiRuntime, jsiValue] =
+          static_cast<std::pair<jsi::Runtime*, jsi::Value>>(value);
+      if (!mergedProps) {
+        runtime = jsiRuntime;
+        mergedProps.emplace(
+            jsi::valueFromDynamic(*runtime, nativeProps).asObject(*runtime));
+      }
+      mergedProps->setProperty(*runtime, name.data(), jsiValue);
+
+      if (nativeProp != updatedNativeProps.items().end()) {
+        if (jsiValue.isUndefined() || jsiValue.isNull() ||
+            (jsiValue.isObject() &&
+             jsiValue.asObject(*runtime).isFunction(*runtime))) {
+          nativeProp->second = nullptr;
+        } else {
+          nativeProp->second = jsi::dynamicFromValue(*runtime, jsiValue);
+        }
+      }
+    } else if (nativeProp != updatedNativeProps.items().end()) {
+      nativeProp->second = static_cast<folly::dynamic>(value);
+    }
+  });
+
+  nativeProps = std::move(updatedNativeProps);
+  if (runtime != nullptr && mergedProps) {
+    // Preserve JSI values on unrelated React props while applying the native
+    // overrides. Only props already managed by setNativeProps enter its cache.
+    return RawProps(*runtime, std::move(*mergedProps));
+  }
+  return RawProps(mergeDynamicProps(
+      rawProps.toDynamic(), nativeProps, NullValueStrategy::Override));
+}
+
+} // namespace
+
 // Explicitly define destructors here, as they have to exist in order to act as
 // a "key function" for the ShadowNodeWrapper class -- this allows for RTTI to
 // work properly across dynamic library boundaries (i.e. dynamic_cast that is
@@ -128,48 +176,21 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
 
   auto props = ShadowNodeFragment::propsPlaceholder();
   if (!rawProps.isEmpty()) {
-    std::optional<folly::dynamic> finalProps;
+    std::optional<RawProps> finalProps;
     {
       std::lock_guard<std::mutex> lock(family.nativePropsMutex);
       if (family.nativeProps_DEPRECATED != nullptr) {
-        // 1. update the nativeProps_DEPRECATED props.
-        //
-        // In this step, we want the most recent value for the props
-        // managed by setNativeProps.
-        // Values in `rawProps` patch (take precedence over)
-        // `nativeProps_DEPRECATED`. For example, if both
-        // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'.
-        // Value from `rawProps` overrides what was previously in
-        // `nativeProps_DEPRECATED`. Notice that the `nativeProps_DEPRECATED`
-        // patch will not get more props from `rawProps`: if the key is not
-        // present in `nativeProps_DEPRECATED`, it will not be added.
-        //
-        // The result of this operation is the new `nativeProps_DEPRECATED`.
-        family.nativeProps_DEPRECATED =
-            std::make_unique<folly::dynamic>(mergeDynamicProps(
-                *family.nativeProps_DEPRECATED, // source
-                (folly::dynamic)rawProps, // patch
-                NullValueStrategy::Ignore));
-
-        // 2. Compute the final set of props.
-        //
-        // This step takes the new props handled by `setNativeProps` and
-        // merges them in the `rawProps` managed by React.
-        // The new props handled by `nativeProps` now takes precedence
-        // on the props handled by React, as we want to make sure that
-        // all the props are applied to the component.
-        // We use these finalProps as source of truth for the component.
-        finalProps = mergeDynamicProps(
-            (folly::dynamic)rawProps, // source
-            *family.nativeProps_DEPRECATED, // patch
-            NullValueStrategy::Override);
+        // React updates replace overlapping imperative values. Keep other
+        // native overrides and preserve the JSI patch for prop parsing.
+        finalProps.emplace(
+            mergeNativeProps(rawProps, *family.nativeProps_DEPRECATED));
       }
     }
 
     props = componentDescriptor.cloneProps(
         propsParserContext,
         shadowNode.getProps(),
-        finalProps ? RawProps(std::move(*finalProps)) : std::move(rawProps));
+        finalProps ? std::move(*finalProps) : std::move(rawProps));
   }
 
   auto clonedShadowNode = componentDescriptor.cloneShadowNode(

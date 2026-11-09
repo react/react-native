@@ -78,19 +78,23 @@ folly::dynamic RawProps::toDynamic(
     case Mode::Empty:
       return folly::dynamic::object();
     case Mode::JSI: {
-      if (filterObjectKeys != nullptr) {
-        // We need to filter props
-        return jsi::dynamicFromValue(
-            *runtime_, value_, [&](const std::string& key) {
-              if (filterObjectKeys) {
-                return filterObjectKeys(key);
-              }
-              return false;
-            });
-      } else {
-        // We don't need to filter, just include all props by default
-        return jsi::dynamicFromValue(*runtime_, value_, nullptr);
+      auto result = jsi::dynamicFromValue(*runtime_, value_, filterObjectKeys);
+      auto object = value_.asObject(*runtime_);
+      auto names = object.getPropertyNames(*runtime_);
+      for (size_t i = 0; i < names.size(*runtime_); i++) {
+        auto name = names.getValueAtIndex(*runtime_, i).getString(*runtime_);
+        auto key = name.utf8(*runtime_);
+        if (result.find(key) != result.items().end() ||
+            (filterObjectKeys && filterObjectKeys(key))) {
+          continue;
+        }
+        // An explicit undefined is a prop reset. Dynamic/Java consumers use
+        // null for resets; omitting the key would retain the previous value.
+        if (object.getProperty(*runtime_, name).isUndefined()) {
+          result[key] = nullptr;
+        }
       }
+      return result;
     }
     case Mode::Dynamic:
       return dynamic_;
