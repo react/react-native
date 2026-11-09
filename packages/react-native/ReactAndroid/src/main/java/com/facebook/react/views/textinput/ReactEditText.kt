@@ -153,6 +153,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     private set
 
   private var autoFocus = false
+  private var showSoftKeyboardOnWindowFocus = false
   private var contextMenuHidden = false
   private var didAttachToWindow = false
   private var selectTextOnFocus = false
@@ -464,11 +465,32 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   // that. This method will eventually replace requestFocusInternal()
   private fun requestFocusProgrammatically(): Boolean {
     val focused = super.requestFocus(FOCUS_DOWN, null)
-    if (isInTouchMode && showSoftInputOnFocus) {
-      showSoftKeyboard()
+    if (hasWindowFocus()) {
+      showSoftKeyboardIfInTouchMode()
+    } else {
+      showSoftKeyboardOnWindowFocus = true
     }
 
     return focused
+  }
+
+  private fun showSoftKeyboardIfInTouchMode() {
+    if (isInTouchMode && showSoftInputOnFocus) {
+      showSoftKeyboard()
+    }
+  }
+
+  override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+    super.onWindowFocusChanged(hasWindowFocus)
+    if (hasWindowFocus && showSoftKeyboardOnWindowFocus) {
+      showSoftKeyboardOnWindowFocus = false
+      // The window tells the input method about its focused view only after this callback.
+      post {
+        if (isFocused && hasWindowFocus()) {
+          showSoftKeyboardIfInTouchMode()
+        }
+      }
+    }
   }
 
   override fun addTextChangedListener(watcher: TextWatcher) {
@@ -1007,7 +1029,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
   protected fun showSoftKeyboard(): Boolean = inputMethodManager.showSoftInput(this, 0)
 
-  // Mirrors the guard on requestFocusProgrammatically(), plus editability ("editable"
+  // Mirrors the guard on showSoftKeyboardIfInTouchMode(), plus editability ("editable"
   // prop maps to isEnabled): never summon the keyboard for a read-only input.
   private fun showSoftKeyboardIfEditable() {
     if (isEnabled && isInTouchMode && showSoftInputOnFocus) {
@@ -1016,6 +1038,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   }
 
   protected fun hideSoftKeyboard() {
+    showSoftKeyboardOnWindowFocus = false
     inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
   }
 
