@@ -605,6 +605,47 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).toContain('Config.value = 2');
     });
 
+    it('transforms class static blocks that use private fields and super', () => {
+      const code = `
+        class Base {
+          static base = 1;
+        }
+        class Config extends Base {
+          static #secret = 1;
+          static value = 0;
+          static {
+            Config.value = Config.#secret + super.base;
+          }
+        }
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+      });
+      expect(result).not.toContain('static {');
+      expect(result).not.toContain('#secret');
+    });
+
+    it('preserves class static blocks with unstable_preserveClassPrivate', () => {
+      const code = `
+        class Config {
+          static #secret = 1;
+          static {
+            Config.value = Config.#secret;
+          }
+        }
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+        customTransformOptions: {
+          unstable_preserveClassPrivate: true,
+        },
+      });
+      expect(result).toContain('static {');
+      expect(result).toContain('#secret');
+    });
+
     it('preserves async/await with unstable_preserveAsync', () => {
       const code = `
         async function fetchData() {
