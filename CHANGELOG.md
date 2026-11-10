@@ -19,6 +19,7 @@
 #### Android specific
 
 - **Renderer**: Fix `addViewAt` crash when a view that a parent still holds with `startViewTransition` is inserted into another parent ([45152f1f85](https://github.com/react/react-native/commit/45152f1f853541d8db3a24f34ff439ebf9b388b6) by [@pawicao](https://github.com/pawicao))
+
 ## v0.89.0-rc.0
 
 ### Breaking
