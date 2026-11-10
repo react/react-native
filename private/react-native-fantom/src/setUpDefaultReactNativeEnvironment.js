@@ -9,6 +9,8 @@
  */
 
 import setUpDefaultReactNativeEnvironment from '../../../packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment';
+import setUpFantomEnvironment from './setUpFantomEnvironment';
 
 // Do NOT enable developer tools for Fantom.
 setUpDefaultReactNativeEnvironment(false);
+setUpFantomEnvironment();

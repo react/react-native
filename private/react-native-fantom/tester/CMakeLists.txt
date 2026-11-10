@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.22)
 set(CMAKE_VERBOSE_MAKEFILE on)
 if(UNIX AND NOT APPLE)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -24,12 +24,12 @@ find_library(LIB_HERMES hermesvm
 add_library(hermes-engine::hermesvm INTERFACE IMPORTED)
 set_target_properties(hermes-engine::hermesvm PROPERTIES
   INTERFACE_LINK_LIBRARIES ${LIB_HERMES})
-find_package(OpenSSL REQUIRED)
 
 # Boost in NDK is not compatible with desktop build
 add_third_party_subdir(boost)
 
 # Third-party downloaded targets
+add_third_party_subdir(boringssl)
 add_react_third_party_ndk_subdir(glog)
 add_react_third_party_ndk_subdir(double-conversion)
 add_react_third_party_ndk_subdir(fast_float)
@@ -37,6 +37,7 @@ add_react_third_party_ndk_subdir(fmt)
 add_fantom_third_party_subdir(folly)
 add_fantom_third_party_subdir(gflags)
 add_fantom_third_party_subdir(nlohmann_json)
+add_fantom_third_party_subdir(skia)
 
 # Marks everything added below as React Native's own build, to enable private
 # includes in Fantom.
@@ -145,6 +146,7 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/stubs/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/oss/*.cpp
 )
+list(APPEND SOURCES ${REACT_COMMON_DIR}/react/renderer/components/textinput/BaseTextInputProps.cpp)
 add_executable(fantom_tester ${SOURCES})
 
 target_include_directories(fantom_tester PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -158,6 +160,7 @@ target_link_libraries(fantom_tester
     folly_runtime
     gflags
     glog
+    fantom_skia
 
     # hermes
     hermes-engine::hermesvm
