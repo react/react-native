@@ -117,6 +117,23 @@ the baseline directory before cleaning up the temporary file. Unused images are
 removed only during a full successful snapshot update; empty, failed, skipped or
 filtered suites preserve their baselines.
 
+Failing screenshot snapshots show expected, received and diff PNG previews in
+supported terminals instead of hash diffs, with file paths beneath the images.
+Wide terminals show Expected, Received and Difference side by side; narrow
+terminals stack them. Fantom selects the image protocol from the detected
+terminal. VS Code requires `terminal.integrated.enableImages` in its settings;
+Fantom checks the terminal's response before sending images. If that check
+cannot confirm support (including when another program is reading terminal
+input), it keeps text diagnostics and file paths without printing image headers.
+Unsupported terminals, terminal multiplexers, CI and redirected output retain
+text diagnostics and file paths. Full text diagnostics also remain when any
+required image preview is unavailable.
+
+GitHub Fantom jobs upload failed comparisons as the `fantom-screenshot-failures`
+artifact, grouped by test configuration and snapshot. Each comparison includes
+the expected, received and difference PNGs when available. Failures from earlier
+retries are retained even if a later attempt passes.
+
 ### Painting
 
 The painter traverses Fabric's mounted child order, including stacking changes.

@@ -134,11 +134,15 @@ class SnapshotContext {
     const message = isNew
       ? `Expected to have snapshot \`${key}\` but it was not found.`
       : `Expected to match snapshot.\n${diff(snapshot, received) ?? 'Failed to compare output'}`;
-    throw new Error(
-      screenshot == null
-        ? message
-        : `${message}\n${screenshotContext.getFailureMessage()}`,
-    );
+    if (screenshot != null) {
+      throw new ScreenshotSnapshotError(
+        `${message}\n${screenshotContext.getFailureMessage()}`,
+        isNew
+          ? `Expected to have screenshot snapshot \`${key}\` but it was not found.`
+          : 'Expected to match screenshot snapshot.',
+      );
+    }
+    throw new Error(message);
   }
 
   toMatchInlineSnapshot(
@@ -208,6 +212,19 @@ class SnapshotContext {
 
   getInlineSnapshotResults(): TestInlineSnapshotResults {
     return [...(this.#snapshotState?.inlineSnapshotResults ?? [])];
+  }
+}
+
+export class ScreenshotSnapshotError extends Error {
+  previewError: Error;
+
+  constructor(message: string, previewMessage: string) {
+    super(message);
+    this.previewError = new Error(previewMessage);
+  }
+
+  getPreviewMessage(): string {
+    return this.previewError.stack ?? this.previewError.message;
   }
 }
 

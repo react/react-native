@@ -285,6 +285,7 @@ module.exports = async function runTest(
       duration: 0,
       failureDetails: [] as Array<Error | void>,
       failureMessages: [] as Array<string>,
+      screenshotFailureMessages: undefined as Array<string | null> | void,
       fullName: title,
       numPassingAsserts: 0,
       snapshotResults: {} as TestSnapshotResults,
@@ -503,6 +504,12 @@ module.exports = async function runTest(
               formatScreenshotFailure(maybeStackTrace, screenshotResults),
             ),
           ),
+          screenshotFailureMessages: testResult.screenshotFailureMessages?.map(
+            maybeStackTrace =>
+              maybeStackTrace == null
+                ? null
+                : symbolicateStackTrace(sourceMapPath, maybeStackTrace),
+          ),
           failureDetails: testResult.failureDetails.map(failureDetail =>
             failureDetail == null
               ? undefined
@@ -617,6 +624,27 @@ module.exports = async function runTest(
       globalConfig,
       testPath,
     ),
+    screenshotFailureMessage: testResults.some(
+      result => result.screenshotFailureMessages != null,
+    )
+      ? formatResultsErrors(
+          testResults.map(result => ({
+            ...result,
+            failureMessages: result.failureMessages.map(
+              (message, index) =>
+                result.screenshotFailureMessages?.[index] ?? message,
+            ),
+            failureDetails: result.failureDetails.map((detail, index) =>
+              result.screenshotFailureMessages?.[index] != null
+                ? undefined
+                : detail,
+            ),
+          })),
+          config,
+          globalConfig,
+          testPath,
+        )
+      : undefined,
     coverage: coverageMap,
     leaks: false,
     openHandles: [],
