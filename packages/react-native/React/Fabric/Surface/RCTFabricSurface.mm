@@ -63,7 +63,7 @@ using namespace facebook::react;
 
     [self setMinimumSize:CGSizeZero maximumSize:RCTViewportSize()];
 
-    [self _updateLayoutContext];
+    [self updateLayoutContext];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleContentSizeCategoryDidChangeNotification:)
@@ -157,7 +157,7 @@ using namespace facebook::react;
 
   if (!_view) {
     _view = [[RCTSurfaceView alloc] initWithSurface:self];
-    [self _updateLayoutContext];
+    [self updateLayoutContext];
 #if !TARGET_OS_TV
     _touchHandler = [RCTSurfaceTouchHandler new];
     [_touchHandler attachToView:_view];
@@ -186,7 +186,7 @@ using namespace facebook::react;
   }
 }
 
-- (void)_updateLayoutContext
+- (void)updateLayoutContext
 {
   auto layoutConstraints = _surfaceHandler->getLayoutConstraints();
   layoutConstraints.layoutDirection = RCTLayoutDirection([[RCTI18nUtil sharedInstance] isRTL]);
@@ -194,8 +194,6 @@ using namespace facebook::react;
   auto layoutContext = _surfaceHandler->getLayoutContext();
 
   layoutContext.pointScaleFactor = RCTScreenScale();
-  layoutContext.swapLeftAndRightInRTL =
-      [[RCTI18nUtil sharedInstance] isRTL] && [[RCTI18nUtil sharedInstance] doLeftAndRightSwapInRTL];
   layoutContext.fontSizeMultiplier = RCTFontSizeMultiplier();
 
   _surfaceHandler->constraintLayout(layoutConstraints, layoutContext);
@@ -290,7 +288,7 @@ using namespace facebook::react;
 
 - (void)handleContentSizeCategoryDidChangeNotification:(NSNotification *)notification
 {
-  [self _updateLayoutContext];
+  [self updateLayoutContext];
 }
 
 #pragma mark - Private

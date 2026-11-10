@@ -8,6 +8,7 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 
 #import <React/RCTI18nUtil.h>
+#import <React/RCTSurfacePresenterStub.h>
 #import "RCTI18nManager.h"
 
 #import "CoreModulesPlugins.h"
@@ -17,7 +18,9 @@ using namespace facebook::react;
 @interface RCTI18nManager () <NativeI18nManagerSpec>
 @end
 
-@implementation RCTI18nManager
+@implementation RCTI18nManager {
+  __weak id<RCTSurfacePresenterStub> _surfacePresenter;
+}
 
 RCT_EXPORT_MODULE()
 
@@ -26,19 +29,26 @@ RCT_EXPORT_MODULE()
   return NO;
 }
 
-- (void)allowRTL:(BOOL)value
+- (void)setSurfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
 {
-  [[RCTI18nUtil sharedInstance] allowRTL:value];
+  _surfacePresenter = surfacePresenter;
 }
 
-- (void)forceRTL:(BOOL)value
+- (NSNumber *)forceRTL:(BOOL)value
 {
+  BOOL wasRTL = [[RCTI18nUtil sharedInstance] isRTL];
   [[RCTI18nUtil sharedInstance] forceRTL:value];
-}
+  BOOL isRTL = [[RCTI18nUtil sharedInstance] isRTL];
 
-- (void)swapLeftAndRightInRTL:(BOOL)value
-{
-  [[RCTI18nUtil sharedInstance] swapLeftAndRightInRTL:value];
+  if (isRTL != wasRTL) {
+    // Returns before the relayout, so JS reads the new value before any layout event
+    id<RCTSurfacePresenterStub> surfacePresenter = _surfacePresenter;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [surfacePresenter updateLayoutDirectionOfSurfaces];
+    });
+  }
+
+  return @(isRTL);
 }
 
 - (NSDictionary *)constantsToExport
@@ -50,8 +60,24 @@ RCT_EXPORT_MODULE()
 {
   return @{
     @"isRTL" : @([[RCTI18nUtil sharedInstance] isRTL]),
-    @"doLeftAndRightSwapInRTL" : @([[RCTI18nUtil sharedInstance] doLeftAndRightSwapInRTL])
+    @"localeIdentifier" : [self _localeIdentifier],
   };
+}
+
+// BCP 47 language tag (e.g. "en-US", "zh-Hans-CN"), the same format as Android and the web
+- (NSString *)_localeIdentifier
+{
+  NSLocale *locale = [NSLocale currentLocale];
+  NSMutableArray<NSString *> *subtags = [NSMutableArray arrayWithObject:locale.languageCode];
+
+  if (locale.scriptCode != nil) {
+    [subtags addObject:locale.scriptCode];
+  }
+  if (locale.countryCode != nil) {
+    [subtags addObject:locale.countryCode];
+  }
+
+  return [subtags componentsJoinedByString:@"-"];
 }
 
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params

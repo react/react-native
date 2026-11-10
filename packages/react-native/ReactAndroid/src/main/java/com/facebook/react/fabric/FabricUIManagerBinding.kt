@@ -46,7 +46,6 @@ internal class FabricUIManagerBinding : HybridClassBase() {
       offsetX: Float,
       offsetY: Float,
       isRTL: Boolean,
-      doLeftAndRightSwapInRTL: Boolean,
   )
 
   external fun startSurfaceWithSurfaceHandler(
@@ -74,7 +73,6 @@ internal class FabricUIManagerBinding : HybridClassBase() {
       offsetX: Float,
       offsetY: Float,
       isRTL: Boolean,
-      doLeftAndRightSwapInRTL: Boolean,
   )
 
   external fun driveCxxAnimations()
