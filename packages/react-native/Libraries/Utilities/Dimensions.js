@@ -31,8 +31,8 @@ let dimensionsInitialized = false;
 let dimensions: DimensionsPayload;
 
 /**
- * Provides the application window's width and height. Prefer
- * `useWindowDimensions` in React components.
+ * Provides measurements for the application window and screen. React components
+ * can subscribe to either with `useWindowDimensions` or `useScreenDimensions`.
  *
  * @see https://reactnative.dev/docs/dimensions
  */
@@ -40,8 +40,6 @@ class Dimensions {
   /**
    * Returns the current dimensions for `'window'` or `'screen'`. On Android,
    * `'window'` dimensions exclude the status bar and navigation bar.
-   *
-   * NOTE: `useWindowDimensions` is the preferred API for React components.
    *
    * Although dimensions are available immediately, they may change (e.g. due to
    * device rotation) so any rendering logic or styles that depend on these
