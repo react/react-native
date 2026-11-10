@@ -1160,17 +1160,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableNativeEventTargetEventDispatching: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2026-04-13',
-        description:
-          'When enabled, the React Native renderer dispatches events through the W3C EventTarget API (addEventListener/dispatchEvent) instead of the legacy plugin-based system.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     externalElementInspectionEnabled: {
       defaultValue: true,
       metadata: {
