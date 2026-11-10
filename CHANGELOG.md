@@ -5,14 +5,14 @@
 ### Changed
 - **Hermes**: Bump Hermes to 260318099.0.7 ([1b3e731478](https://github.com/react/react-native/commit/1b3e731478e7cd016728f798896d4ecda5af21ac) by [@fabriziocucci](https://github.com/fabriziocucci))
 - **Metro**: Bump Metro to 0.88.0 ([532d1ca446](https://github.com/react/react-native/commit/532d1ca446c84fa422f2b6ad6ffb2bef7a6a81f0) by [@robhogan](https://github.com/robhogan))
-- Promote fuseboxWebSocketEventsEnabled to stable ([3d8a7a0296](https://github.com/react/react-native/commit/3d8a7a0296e8ee9ae9db4ec23456dd6f26ab43bb) by [@huntie](https://github.com/huntie))
-- Use metro:runtime for asyncRequireModulePath ([2f9082fe08](https://github.com/react/react-native/commit/2f9082fe080b1828e5277adc35d66fd3d978be3c) by [@robhogan](https://github.com/robhogan))
+- **Metro**: Use `metro:runtime` for `asyncRequireModulePath`, so Metro's transform cache is shareable across checkouts ([2f9082fe08](https://github.com/react/react-native/commit/2f9082fe080b1828e5277adc35d66fd3d978be3c) by [@robhogan](https://github.com/robhogan))
+- **React Native DevTools**: Promote `fuseboxWebSocketEventsEnabled` to stable, showing WebSocket events in the Network panel by default ([3d8a7a0296](https://github.com/react/react-native/commit/3d8a7a0296e8ee9ae9db4ec23456dd6f26ab43bb) by [@huntie](https://github.com/huntie))
 
 ### Fixed
-- Fix WebSocket request initiator for framework call sites ([d66f5230fd](https://github.com/react/react-native/commit/d66f5230fd6889af7bc51034f4a6c55da5cf4e05) by [@huntie](https://github.com/huntie))
+- **React Native DevTools**: Fix the Network panel initiator for WebSockets opened by framework code ([d66f5230fd](https://github.com/react/react-native/commit/d66f5230fd6889af7bc51034f4a6c55da5cf4e05) by [@huntie](https://github.com/huntie))
 
 #### Android specific
-- Fix `addViewAt` crash when a view that a parent still holds with `startViewTransition` is inserted into another parent ([45152f1f85](https://github.com/react/react-native/commit/45152f1f853541d8db3a24f34ff439ebf9b388b6) by [@pawicao](https://github.com/pawicao))
+- **Renderer**: Fix `addViewAt` crash when a view that a parent still holds with `startViewTransition` is inserted into another parent ([45152f1f85](https://github.com/react/react-native/commit/45152f1f853541d8db3a24f34ff439ebf9b388b6) by [@pawicao](https://github.com/pawicao))
 
 ## v0.89.0-rc.0
 
