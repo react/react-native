@@ -6,11 +6,6 @@
 
 - **React Native DevTools**: Add support for inspecting WebSocket events in the Network panel ([3d8a7a0296](https://github.com/react/react-native/commit/3d8a7a0296e8ee9ae9db4ec23456dd6f26ab43bb) by [@huntie](https://github.com/huntie))
 
-### Changed
-
-- **Hermes**: Bump Hermes to 260318099.0.7 ([1b3e731478](https://github.com/react/react-native/commit/1b3e731478e7cd016728f798896d4ecda5af21ac) by [@fabriziocucci](https://github.com/fabriziocucci))
-- **Metro**: Bump Metro to 0.88.0 ([532d1ca446](https://github.com/react/react-native/commit/532d1ca446c84fa422f2b6ad6ffb2bef7a6a81f0) by [@robhogan](https://github.com/robhogan))
-
 ### Fixed
 
 - **Metro**: Make Metro's transform cache shareable across checkouts by pointing `asyncRequireModulePath` at `metro:runtime/modules/asyncRequire` instead of an absolute path ([2f9082fe08](https://github.com/react/react-native/commit/2f9082fe080b1828e5277adc35d66fd3d978be3c) by [@robhogan](https://github.com/robhogan))
