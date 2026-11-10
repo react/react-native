@@ -13,12 +13,14 @@ import type {Server} from 'connect';
 import openStackFrameMiddleware from './openStackFrameMiddleware';
 import openURLMiddleware from './openURLMiddleware';
 import securityHeadersMiddleware from './securityHeadersMiddleware';
+import statusMiddleware from './statusMiddleware';
 import compression from 'compression';
 import connect from 'connect';
 import nocache from 'nocache';
 
 type Options = Readonly<{
   serverBaseUrl: URL,
+  projectRoot: string,
   watchFolders: ReadonlyArray<string>,
 }>;
 
@@ -28,6 +30,7 @@ type Options = Readonly<{
  */
 export default function createDevServerMiddleware({
   serverBaseUrl,
+  projectRoot,
   watchFolders,
 }: Options): Server {
   return connect()
@@ -35,5 +38,6 @@ export default function createDevServerMiddleware({
     .use(compression())
     .use(nocache())
     .use('/open-stack-frame', openStackFrameMiddleware({watchFolders}))
-    .use('/open-url', openURLMiddleware());
+    .use('/open-url', openURLMiddleware())
+    .use('/status', statusMiddleware({projectRoot}));
 }
