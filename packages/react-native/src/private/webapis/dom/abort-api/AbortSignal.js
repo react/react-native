@@ -185,13 +185,7 @@ export function createAbortSignal(): AbortSignal {
 /**
  * Abort a given signal.
  */
-export function abortSignal(
-  reason: unknown | void = new DOMException(
-    'signal is aborted without reason',
-    'AbortError',
-  ),
-  signal: AbortSignal,
-): void {
+export function abortSignal(reason: unknown | void, signal: AbortSignal): void {
   // $FlowExpectedError[invalid-compare]
   // $FlowExpectedError[prop-missing]
   if (signal[ABORTED_KEY] !== false) {
@@ -200,7 +194,10 @@ export function abortSignal(
   // $FlowExpectedError[prop-missing]
   signal[ABORTED_KEY] = true;
   // $FlowExpectedError[prop-missing]
-  signal[REASON_KEY] = reason;
+  signal[REASON_KEY] =
+    reason === undefined
+      ? new DOMException('signal is aborted without reason', 'AbortError')
+      : reason;
   dispatchTrustedEvent(signal, new Event('abort'));
 }
 
