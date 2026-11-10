@@ -68,7 +68,7 @@ module.name_mapper='^react-native/src/fb_internal/\(.*\)$' -> '<PROJECT_ROOT>/pa
 # `src/fb_internal/*` stay importable.
 module.name_mapper='^react-native/\(Libraries\|src/private\|src/types\)/.*$' -> 'react-native-deep-import-is-not-part-of-the-public-api'
 module.name_mapper='^@react-native/dev-middleware$' -> '<PROJECT_ROOT>/packages/dev-middleware'
-module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
+module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|ttf\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
 
 module.system.haste.module_ref_prefix=m#
 

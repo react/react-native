@@ -116,6 +116,8 @@ interface Spec extends TurboModule {
     surfaceId: RootTag,
     config: RenderFormatOptions,
   ) => string;
+  registerAsset(uri: string, filePath: string): void;
+  registerFont(filePath: string): void;
   reportTestSuiteResultsJSON: (results: string) => void;
   createShadowNodeReferenceCounter(
     shadowNode: unknown /* ShadowNode */,
