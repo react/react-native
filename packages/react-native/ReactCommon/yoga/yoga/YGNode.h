@@ -235,7 +235,8 @@ YG_EXPORT bool YGNodeHasMeasureFunc(YGNodeConstRef node);
  * invoked with the same `AtMost 0` constraint — preserving today's
  * behavior. Setting this is a perf opt-in for Primitives whose min-content
  * size is cheap to compute or differs from what the regular measure would
- * return.
+ * return. Its results are kept, as a measure function's are, until the node is
+ * marked dirty.
  */
 typedef YGSize (*YGMinContentMeasureFunc)(
     YGNodeConstRef node,
@@ -259,7 +260,8 @@ YG_EXPORT bool YGNodeHasMinContentMeasureFunc(YGNodeConstRef node);
 
 /**
  * Static per-axis min-content size used by the CSS Flexbox §4.5 automatic
- * minimum sizing probe. Pass `YGUndefined` to clear.
+ * minimum sizing probe. Pass `YGUndefined` to clear. A new value marks the node
+ * dirty, as a style change does.
  *
  * When set, the algorithm's probe short-circuits at this node along the
  * matching axis — skipping both the regular `YGMeasureFunc` / `YGMinContent
