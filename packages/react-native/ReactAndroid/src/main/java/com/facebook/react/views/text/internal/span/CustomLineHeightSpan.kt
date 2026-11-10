@@ -18,7 +18,7 @@ import kotlin.math.floor
  * (does not impact space before the first line or after the last).
  */
 internal class CustomLineHeightSpan(height: Float) : LineHeightSpan, ReactSpan {
-  val lineHeight: Int = ceil(height.toDouble()).toInt()
+  val requestedLineHeight: Int = ceil(height.toDouble()).toInt()
 
   override fun chooseHeight(
       text: CharSequence,
@@ -38,19 +38,17 @@ internal class CustomLineHeightSpan(height: Float) : LineHeightSpan, ReactSpan {
     // if line-fit-edge is not leading and this is not the root inline box, if the half-leading is
     // positive, treat it as zero. The layout bounds exactly encloses this effective A′ and D′.
 
-    val leading = lineHeight - ((-fm.ascent) + fm.descent)
+
+    // Calculate the font's natural height
+    val fontHeight = (-fm.ascent) + fm.descent
+    // Clamp lineHeight to at least the font's natural height
+    val lineHeight = if (requestedLineHeight < fontHeight) fontHeight else requestedLineHeight
+    val leading = lineHeight - fontHeight
     fm.ascent -= ceil(leading / 2.0f).toInt()
     fm.descent += floor(leading / 2.0f).toInt()
 
-    // The top of the first line, and the bottom of the last line, may influence bounds of the
-    // paragraph, so we match them to the text ascent/descent. It is otherwise desirable to allow
-    // line boxes to overlap (to allow too large glyphs to be drawn outside them), so we do not
-    // adjust the top/bottom of interior line-boxes.
-    if (start == 0) {
-      fm.top = fm.ascent
-    }
-    if (end == text.length) {
-      fm.bottom = fm.descent
-    }
+    // Always set top and bottom to match ascent and descent to avoid clipping on any line.
+    fm.top = fm.ascent
+    fm.bottom = fm.descent
   }
 }
