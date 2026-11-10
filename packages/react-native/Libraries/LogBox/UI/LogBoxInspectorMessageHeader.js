@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {LogLevel} from '../Data/LogBoxLog';
 import type {Message} from '../Data/parseLogBoxLog';
 
@@ -26,6 +27,7 @@ component LogBoxInspectorMessageHeader(
   level: LogLevel,
   title: string,
   onPress: () => void,
+  style?: ?ViewStyleProp,
 ) {
   function renderShowMore() {
     if (message.content.length < SHOW_MORE_MESSAGE_LENGTH || !collapsed) {
@@ -42,7 +44,7 @@ component LogBoxInspectorMessageHeader(
   }
 
   return (
-    <View style={messageStyles.body}>
+    <View style={[messageStyles.body, style]}>
       <View style={messageStyles.heading}>
         <Text
           maxFontSizeMultiplier={1.5}
