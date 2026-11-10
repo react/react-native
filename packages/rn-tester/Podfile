@@ -60,6 +60,10 @@ end
 
 target 'RNTester' do
   pods('RNTester')
+
+  target 'RNTesterPointerTests' do
+    inherit! :search_paths
+  end
 end
 
 target 'RNTesterUnitTests' do

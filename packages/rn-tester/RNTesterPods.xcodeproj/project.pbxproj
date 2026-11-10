@@ -9,9 +9,11 @@
 /* Begin PBXBuildFile section */
 		0EA618032BE537D3001875EF /* RNTesterBundle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0EA618022BE537D3001875EF /* RNTesterBundle.bundle */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		2739B3EDD893CA35F4F24F84 /* RCTSurfacePointerHandlerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = B997F112EE69706F065B2DE9 /* RCTSurfacePointerHandlerTests.mm */; };
 		2DDEF0101F84BF7B00DBDF73 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */; };
 		383889DA23A7398900D06C3E /* RCTConvert_UIColorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 383889D923A7398900D06C3E /* RCTConvert_UIColorTests.m */; };
 		3D2AFAF51D646CF80089D1A3 /* legacy_image@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D2AFAF41D646CF80089D1A3 /* legacy_image@2x.png */; };
+		43C32951B62BA32FD11957E8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAF463989F68EF327A20F4B9 /* Foundation.framework */; };
 		46C0FD761B0B9B1E8662B759 /* libPods-RNTesterUnitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B312B0EEE90BA411618B015 /* libPods-RNTesterUnitTests.a */; };
 		5C60EB1C226440DB0018C04F /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5C60EB1B226440DB0018C04F /* AppDelegate.mm */; };
 		602160B9478DAFF2BAB56595 /* RCTUtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D5D13FB1445C5C19639921CC /* RCTUtilsTests.m */; };
@@ -22,6 +24,7 @@
 		A975CA6C2C05EADF0043F72A /* RCTNetworkTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */; };
 		C175B6D9ED9336FB66637943 /* libPods-RNTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */; };
 		CD10C7A5290BD4EB0033E1ED /* RCTEventEmitterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD10C7A4290BD4EB0033E1ED /* RCTEventEmitterTests.m */; };
+		D1A60AD11B9247A080734F02 /* RCTDevLoadingViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */; };
 		E62F11832A5C6580000BF1C8 /* FlexibleSizeExampleView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27F441E81BEBE5030039B79C /* FlexibleSizeExampleView.mm */; };
 		E62F11842A5C6584000BF1C8 /* UpdatePropertiesExampleView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 272E6B3C1BEA849E001FCF37 /* UpdatePropertiesExampleView.mm */; };
 		E7DB20D122B2BAA6005AC45F /* RCTBundleURLProviderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20A922B2BAA3005AC45F /* RCTBundleURLProviderTests.m */; };
@@ -45,15 +48,21 @@
 		E7DB20EC22B2BAA6005AC45F /* RCTMultipartStreamReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CF22B2BAA5005AC45F /* RCTMultipartStreamReaderTests.m */; };
 		E7DB20ED22B2BAA6005AC45F /* RCTURLUtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20D022B2BAA5005AC45F /* RCTURLUtilsTests.m */; };
 		E7DB213122B2C649005AC45F /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7DB213022B2C649005AC45F /* JavaScriptCore.framework */; };
-		E7DB216722B2F69F005AC45F /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7DB213022B2C649005AC45F /* JavaScriptCore.framework */; };
-		E7DB218C22B41FCD005AC45F /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7DB218B22B41FCD005AC45F /* XCTest.framework */; };
 		F0D621C32BBB9E38005960AC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F0D621C22BBB9E38005960AC /* PrivacyInfo.xcprivacy */; };
 		F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */; };
 		F1A0B1C23D4E5F6071829322 /* RCTTurboModuleStringConversionTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */; };
-		D1A60AD11B9247A080734F02 /* RCTDevLoadingViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */; };
+		E7DB216722B2F69F005AC45F /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7DB213022B2C649005AC45F /* JavaScriptCore.framework */; };
+		E7DB218C22B41FCD005AC45F /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7DB218B22B41FCD005AC45F /* XCTest.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		771A6F8445BB60E7DAC45233 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
+			remoteInfo = RNTester;
+		};
 		ADA4EF572546F3F8000B7E75 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -83,6 +92,7 @@
 		2B312B0EEE90BA411618B015 /* libPods-RNTesterUnitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTesterUnitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = RNTester/Images.xcassets; sourceTree = "<group>"; };
 		383889D923A7398900D06C3E /* RCTConvert_UIColorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTConvert_UIColorTests.m; sourceTree = "<group>"; };
+		3C3965CAFF5C696F221DF404 /* RNTesterPointerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RNTesterPointerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D2AFAF41D646CF80089D1A3 /* legacy_image@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "legacy_image@2x.png"; path = "RNTester/legacy_image@2x.png"; sourceTree = "<group>"; };
 		3FF60722627F93D8F62FA1E3 /* Pods-RNTesterUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterUnitTests.release.xcconfig"; path = "Target Support Files/Pods-RNTesterUnitTests/Pods-RNTesterUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -95,9 +105,11 @@
 		832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftTest.swift; path = RNTester/SwiftTest.swift; sourceTree = "<group>"; };
 		A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTNetworkTaskTests.m; sourceTree = "<group>"; };
 		AC474BFB29BBD4A1002BDAED /* RNTester.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RNTester.xctestplan; path = RNTester/RNTester.xctestplan; sourceTree = "<group>"; };
+		B997F112EE69706F065B2DE9 /* RCTSurfacePointerHandlerTests.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = RCTSurfacePointerHandlerTests.mm; path = "../react-native/React/Tests/TouchHandling/RCTSurfacePointerHandlerTests.mm"; sourceTree = "<group>"; };
 		CA59C9994B1822826D8983F0 /* Pods-RNTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.debug.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.debug.xcconfig"; sourceTree = "<group>"; };
 		CD10C7A4290BD4EB0033E1ED /* RCTEventEmitterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTEventEmitterTests.m; sourceTree = "<group>"; };
 		D134EB89DD98253FCF879A47 /* Pods-RNTesterUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-RNTesterUnitTests/Pods-RNTesterUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTDevLoadingViewTests.m; sourceTree = "<group>"; };
 		D5D13FB1445C5C19639921CC /* RCTUtilsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTUtilsTests.m; sourceTree = "<group>"; };
 		E771AEEA22B44E3100EA1189 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = RNTester/Info.plist; sourceTree = "<group>"; };
 		E7DB209F22B2BA84005AC45F /* RNTesterUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RNTesterUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -143,15 +155,23 @@
 		E7DB211A22B2BD53005AC45F /* libReact-RCTVibration.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTVibration.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB212222B2BD53005AC45F /* libyoga.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libyoga.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB213022B2C649005AC45F /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		E7DB215722B2F332005AC45F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E7DB218B22B41FCD005AC45F /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		F0D621C22BBB9E38005960AC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F1A0B1C23D4E5F6071829301 /* RCTTurboModuleArrayBufferTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTurboModuleArrayBufferTests.mm; sourceTree = "<group>"; };
 		F1A0B1C23D4E5F6071829321 /* RCTTurboModuleStringConversionTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTurboModuleStringConversionTests.mm; sourceTree = "<group>"; };
-		D1A60AD11B9247A080734F01 /* RCTDevLoadingViewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTDevLoadingViewTests.m; sourceTree = "<group>"; };
+		FAF463989F68EF327A20F4B9 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		E7DB215722B2F332005AC45F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		106076F774E7039684DC62C2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				43C32951B62BA32FD11957E8 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -240,6 +260,7 @@
 				E7DB212222B2BD53005AC45F /* libyoga.a */,
 				4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */,
 				2B312B0EEE90BA411618B015 /* libPods-RNTesterUnitTests.a */,
+				85355AD432A16512E101E918 /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -260,6 +281,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2DE7E7D81FB2A4F3009E225D /* Frameworks */,
 				E23BD6487B06BD71F1A86914 /* Pods */,
+				B997F112EE69706F065B2DE9 /* RCTSurfacePointerHandlerTests.mm */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -271,8 +293,17 @@
 			children = (
 				13B07F961A680F5B00A75B9A /* RNTester.app */,
 				E7DB209F22B2BA84005AC45F /* RNTesterUnitTests.xctest */,
+				3C3965CAFF5C696F221DF404 /* RNTesterPointerTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		85355AD432A16512E101E918 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				FAF463989F68EF327A20F4B9 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 		E23BD6487B06BD71F1A86914 /* Pods */ = {
@@ -325,6 +356,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0497DB7F2CEA00B0FE0F8B15 /* RNTesterPointerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 86DB10AE554725936B24662D /* Build configuration list for PBXNativeTarget "RNTesterPointerTests" */;
+			buildPhases = (
+				D4CA4483E53D4A2C4DED9F29 /* Sources */,
+				106076F774E7039684DC62C2 /* Frameworks */,
+				69C3A65F4B7A44482BF7AA24 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9BCA55DF6B334CDE241F651C /* PBXTargetDependency */,
+			);
+			name = RNTesterPointerTests;
+			productName = RNTesterPointerTests;
+			productReference = 3C3965CAFF5C696F221DF404 /* RNTesterPointerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		13B07F861A680F5B00A75B9A /* RNTester */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "RNTester" */;
@@ -400,6 +449,7 @@
 			targets = (
 				13B07F861A680F5B00A75B9A /* RNTester */,
 				E7DB209E22B2BA84005AC45F /* RNTesterUnitTests */,
+				0497DB7F2CEA00B0FE0F8B15 /* RNTesterPointerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -414,6 +464,13 @@
 				0EA618032BE537D3001875EF /* RNTesterBundle.bundle in Resources */,
 				F0D621C32BBB9E38005960AC /* PrivacyInfo.xcprivacy in Resources */,
 				3D2AFAF51D646CF80089D1A3 /* legacy_image@2x.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		69C3A65F4B7A44482BF7AA24 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -606,6 +663,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D4CA4483E53D4A2C4DED9F29 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2739B3EDD893CA35F4F24F84 /* RCTSurfacePointerHandlerTests.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E7DB209B22B2BA84005AC45F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -643,6 +708,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9BCA55DF6B334CDE241F651C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RNTester;
+			target = 13B07F861A680F5B00A75B9A /* RNTester */;
+			targetProxy = 771A6F8445BB60E7DAC45233 /* PBXContainerItemProxy */;
+		};
 		ADA4EF582546F3F8000B7E75 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* RNTester */;
@@ -730,6 +801,34 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		22E3485DAB8359FC4A5FB564 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"RN_BUILDING=1",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_ROOT}/Headers/Private/Yoga",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.meta.RNTesterPointerTests;
+				SDKROOT = iphoneos;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RNTester.app/RNTester";
+			};
+			name = Debug;
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -925,6 +1024,35 @@
 			};
 			name = Release;
 		};
+		8D34CE2CC67497DA25513358 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"RN_BUILDING=1",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_ROOT}/Headers/Private/Yoga",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.meta.RNTesterPointerTests;
+				SDKROOT = iphoneos;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RNTester.app/RNTester";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		E7DB20A722B2BA84005AC45F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D134EB89DD98253FCF879A47 /* Pods-RNTesterUnitTests.debug.xcconfig */;
@@ -1018,6 +1146,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		86DB10AE554725936B24662D /* Build configuration list for PBXNativeTarget "RNTesterPointerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8D34CE2CC67497DA25513358 /* Release */,
+				22E3485DAB8359FC4A5FB564 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
