@@ -3,9 +3,10 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# Builds the C++ unit tests in ReactCommon/**/tests against the libraries the
-# Fantom tester already compiles, one GoogleTest executable per tests
-# directory. Run them with ctest from this directory's build directory.
+# Builds the C++ unit tests in ReactCommon/**/tests and ReactCommon/yoga/test
+# against the libraries the Fantom tester already compiles, one GoogleTest
+# executable per test directory. Run them with ctest from this directory's
+# build directory.
 
 cmake_minimum_required(VERSION 3.13)
 
@@ -78,12 +79,12 @@ set(jsinspector_modern_tests_EXCLUDED
   JsiIntegrationHermesTest/*.TwoConnectionsDebuggerLifecycle)
 
 file(GLOB_RECURSE react_common_tests_SRC CONFIGURE_DEPENDS ${REACT_COMMON_DIR}/*.cpp)
-list(FILTER react_common_tests_SRC INCLUDE REGEX "/tests/")
+list(FILTER react_common_tests_SRC INCLUDE REGEX "/tests/|/yoga/test/")
 list(FILTER react_common_tests_SRC EXCLUDE REGEX "/benchmarks/")
 
 set(react_common_tests_DIRS)
 foreach(source ${react_common_tests_SRC})
-  string(REGEX REPLACE "^(.*/tests)/.*$" "\\1" test_dir ${source})
+  string(REGEX REPLACE "^(.*/(tests|yoga/test))/.*$" "\\1" test_dir ${source})
   list(APPEND react_common_tests_DIRS ${test_dir})
 endforeach()
 list(REMOVE_DUPLICATES react_common_tests_DIRS)
