@@ -105,6 +105,8 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
   BOOL _automaticallyAdjustKeyboardInsets;
 
   CGPoint _contentOffsetWhenClipped;
+  // Set when `_remountChildren` was skipped because the view was outside a window.
+  BOOL _needsRemountChildren;
 
   __weak UIView *_contentView;
 
@@ -866,6 +868,19 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (!self.window) {
     // The view is being removed, ensure that the scroll end event is dispatched
     [self _handleScrollEndIfNeeded];
+  } else if (_needsRemountChildren) {
+    // Clipped subviews were not updated outside the window. `layoutSubviews` does it
+    // before the view is displayed.
+    [self setNeedsLayout];
+  }
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+
+  if (_needsRemountChildren) {
+    [self _remountChildren];
   }
 }
 
@@ -1016,6 +1031,14 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (ReactNativeFeatureFlags::enableViewCulling()) {
     return;
   }
+
+  if (!self.window) {
+    // Nothing is displayed outside a window, and the walk below visits every descendant view.
+    // It runs once the view is in a window again (see `didMoveToWindow`).
+    _needsRemountChildren = YES;
+    return;
+  }
+  _needsRemountChildren = NO;
 
   [_scrollView updateClippedSubviewsWithClipRect:CGRectInset(_scrollView.bounds, -kClippingLeeway, -kClippingLeeway)
                                   relativeToView:_scrollView];
