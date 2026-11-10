@@ -3,6 +3,7 @@
 exports[`LogBoxInspector should render fatal with selectedIndex 2 1`] = `
 <rn-view
   backgroundColor="rgba(255, 255, 255, 1)"
+  experimental_onSafeAreaInsetsChange="true"
   flex="1"
   nativeID="logbox_inspector"
 >
@@ -209,6 +210,7 @@ exports[`LogBoxInspector should render null with no logs 1`] = `null`;
 exports[`LogBoxInspector should render warning with selectedIndex 0 1`] = `
 <rn-view
   backgroundColor="rgba(255, 255, 255, 1)"
+  experimental_onSafeAreaInsetsChange="true"
   flex="1"
   nativeID="logbox_inspector"
 >
