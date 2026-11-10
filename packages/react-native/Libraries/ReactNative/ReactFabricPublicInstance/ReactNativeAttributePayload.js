@@ -12,6 +12,7 @@ import type {AttributeConfiguration} from '../../Renderer/shims/ReactNativeTypes
 
 import flattenStyle from '../../StyleSheet/flattenStyle';
 import deepDiffer from '../../Utilities/differ/deepDiffer';
+import getDefaultValues from './ReactNativeAttributeDefaults';
 
 const emptyObject = {};
 
@@ -66,7 +67,7 @@ function restoreDeletedValuesInNestedArray(
         continue;
       }
       let nextProp = obj[propKey];
-      if (nextProp === undefined) {
+      if (nextProp === undefined && !Object.hasOwn(obj, propKey)) {
         continue;
       }
 
@@ -75,26 +76,39 @@ function restoreDeletedValuesInNestedArray(
         continue; // not a valid native prop
       }
 
-      if (typeof nextProp === 'function') {
+      const hasResetValue =
+        typeof attributeConfig === 'object' &&
+        Object.hasOwn(attributeConfig, 'resetValue');
+      if (nextProp === undefined && !hasResetValue) {
+        continue;
+      }
+      if (
+        typeof nextProp === 'function' &&
+        !(
+          typeof attributeConfig === 'object' &&
+          typeof attributeConfig.process === 'function'
+        )
+      ) {
         nextProp = true;
       }
-      if (typeof nextProp === 'undefined') {
-        nextProp = null;
-      }
-
-      if (typeof attributeConfig !== 'object') {
-        // case: !Object is the default case
+      if (
+        nextProp === undefined &&
+        hasResetValue &&
+        typeof attributeConfig === 'object'
+      ) {
+        updatePayload[propKey] = attributeConfig.resetValue;
+      } else if (typeof attributeConfig !== 'object') {
         updatePayload[propKey] = nextProp;
       } else if (
         typeof attributeConfig.diff === 'function' ||
-        typeof attributeConfig.process === 'function'
+        typeof attributeConfig.process === 'function' ||
+        hasResetValue ||
+        Object.hasOwn(attributeConfig, 'defaultValue')
       ) {
-        // case: CustomAttributeConfiguration
-        const nextValue =
+        updatePayload[propKey] =
           typeof attributeConfig.process === 'function'
             ? attributeConfig.process(nextProp)
             : nextProp;
-        updatePayload[propKey] = nextValue;
       }
       // $FlowFixMe[incompatible-use] found when upgrading Flow
       removedKeys[propKey] = false;
@@ -255,6 +269,30 @@ function diffProperties(
     prevProp = prevProps[propKey];
     nextProp = nextProps[propKey];
 
+    const hasResetValue =
+      typeof attributeConfig === 'object' &&
+      Object.hasOwn(attributeConfig, 'resetValue');
+    if (
+      nextProp === undefined &&
+      hasResetValue &&
+      typeof attributeConfig === 'object'
+    ) {
+      if (
+        prevProp !== undefined ||
+        (updatePayload != null && Object.hasOwn(updatePayload, propKey))
+      ) {
+        if (updatePayload == null) {
+          const emptyPayload: {[key: string]: unknown} = {};
+          updatePayload = emptyPayload;
+        }
+        updatePayload[propKey] = attributeConfig.resetValue;
+      }
+      if (removedKeys != null) {
+        removedKeys[propKey] = false;
+      }
+      continue;
+    }
+
     if (typeof nextProp === 'function') {
       const attributeConfigHasProcess =
         typeof attributeConfig === 'object' &&
@@ -284,7 +322,7 @@ function diffProperties(
       removedKeys[propKey] = false;
     }
 
-    if (updatePayload && updatePayload[propKey] !== undefined) {
+    if (updatePayload != null && Object.hasOwn(updatePayload, propKey)) {
       // Something else already triggered an update to this key because another
       // value diffed. Since we're now later in the nested arrays our value is
       // more important so we need to calculate it and override the existing
@@ -296,7 +334,9 @@ function diffProperties(
         updatePayload[propKey] = nextProp;
       } else if (
         typeof attributeConfig.diff === 'function' ||
-        typeof attributeConfig.process === 'function'
+        typeof attributeConfig.process === 'function' ||
+        hasResetValue ||
+        Object.hasOwn(attributeConfig, 'defaultValue')
       ) {
         // case: CustomAttributeConfiguration
         const nextValue =
@@ -323,7 +363,9 @@ function diffProperties(
       }
     } else if (
       typeof attributeConfig.diff === 'function' ||
-      typeof attributeConfig.process === 'function'
+      typeof attributeConfig.process === 'function' ||
+      hasResetValue ||
+      Object.hasOwn(attributeConfig, 'defaultValue')
     ) {
       // case: CustomAttributeConfiguration
       const shouldUpdate =
@@ -381,7 +423,7 @@ function diffProperties(
       continue; // not a valid native prop
     }
 
-    if (updatePayload && updatePayload[propKey] !== undefined) {
+    if (updatePayload != null && Object.hasOwn(updatePayload, propKey)) {
       // This was already updated to a diff result earlier.
       continue;
     }
@@ -394,13 +436,19 @@ function diffProperties(
     if (
       typeof attributeConfig !== 'object' ||
       typeof attributeConfig.diff === 'function' ||
-      typeof attributeConfig.process === 'function'
+      typeof attributeConfig.process === 'function' ||
+      Object.hasOwn(attributeConfig, 'resetValue') ||
+      Object.hasOwn(attributeConfig, 'defaultValue')
     ) {
       // case: CustomAttributeConfiguration | !Object
       // Flag the leaf property for removal by sending a sentinel.
       (updatePayload || (updatePayload = {} as {[key: string]: unknown}))[
         propKey
-      ] = null;
+      ] =
+        typeof attributeConfig === 'object' &&
+        Object.hasOwn(attributeConfig, 'resetValue')
+          ? attributeConfig.resetValue
+          : null;
       if (!removedKeys) {
         removedKeys = {} as {[key: string]: boolean};
       }
@@ -428,12 +476,18 @@ function addNestedProperty(
   payloadInput: null | {[key: string]: unknown},
   props: NestedNode,
   validAttributes: AttributeConfiguration,
+  isInitial: boolean = false,
 ): null | {[key: string]: unknown} {
   let payload = payloadInput;
   // Flatten nested style props.
   if (Array.isArray(props)) {
     for (let i = 0; i < props.length; i++) {
-      payload = addNestedProperty(payload, props[i], validAttributes);
+      payload = addNestedProperty(
+        payload,
+        props[i],
+        validAttributes,
+        isInitial,
+      );
     }
     return payload;
   }
@@ -453,17 +507,45 @@ function addNestedProperty(
     let newValue;
 
     if (prop === undefined) {
-      // Discard the prop if it was previously defined.
-      if (payload && payload[propKey] !== undefined) {
-        newValue = null;
-      } else {
+      if (
+        isInitial &&
+        typeof attributeConfig === 'object' &&
+        Object.hasOwn(attributeConfig, 'defaultValue')
+      ) {
+        if (payload == null) {
+          const emptyPayload: {[key: string]: unknown} = {};
+          payload = emptyPayload;
+        }
+        payload[propKey] = attributeConfig.defaultValue;
         continue;
       }
+      // Discard the prop if it was previously defined.
+      if (
+        (payload != null && Object.hasOwn(payload, propKey)) ||
+        (!isInitial &&
+          typeof attributeConfig === 'object' &&
+          Object.hasOwn(attributeConfig, 'resetValue'))
+      ) {
+        if (payload == null) {
+          const emptyPayload: {[key: string]: unknown} = {};
+          payload = emptyPayload;
+        }
+        payload[propKey] =
+          typeof attributeConfig === 'object' &&
+          Object.hasOwn(attributeConfig, 'resetValue')
+            ? attributeConfig.resetValue
+            : null;
+      }
+      continue;
     } else if (typeof attributeConfig === 'object') {
       if (typeof attributeConfig.process === 'function') {
         // An atomic prop with custom processing.
         newValue = attributeConfig.process(prop);
-      } else if (typeof attributeConfig.diff === 'function') {
+      } else if (
+        typeof attributeConfig.diff === 'function' ||
+        Object.hasOwn(attributeConfig, 'resetValue') ||
+        Object.hasOwn(attributeConfig, 'defaultValue')
+      ) {
         // An atomic prop with custom diffing. We don't need to do diffing when adding props.
         newValue = prop;
       }
@@ -477,7 +559,12 @@ function addNestedProperty(
       }
     }
 
-    if (newValue !== undefined) {
+    if (
+      newValue !== undefined ||
+      (typeof attributeConfig === 'object' &&
+        (Object.hasOwn(attributeConfig, 'resetValue') ||
+          Object.hasOwn(attributeConfig, 'defaultValue')))
+    ) {
       if (!payload) {
         payload = {} as {[key: string]: unknown};
       }
@@ -490,6 +577,7 @@ function addNestedProperty(
       // $FlowFixMe[incompatible-type] prop values are typed `unknown` but are nodes here
       prop,
       attributeConfig,
+      isInitial,
     );
   }
 
@@ -511,8 +599,14 @@ function clearProperties(
 export function create(
   props: NestedNode,
   validAttributes: AttributeConfiguration,
+  {isInitial = true}: Readonly<{isInitial?: boolean}> = {},
 ): null | {[key: string]: unknown} {
-  return addNestedProperty(null, props, validAttributes);
+  const payload = addNestedProperty(null, props, validAttributes, isInitial);
+  if (!isInitial) {
+    return payload;
+  }
+  const defaults = getDefaultValues(validAttributes);
+  return defaults == null ? payload : {...defaults, ...payload};
 }
 
 export function diff(

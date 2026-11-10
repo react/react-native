@@ -6,13 +6,420 @@
  *
  * @flow
  * @format
+ * @fantom_js_opt *
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {AttributeConfiguration} from '../../../Renderer/shims/ReactNativeTypes';
+import type {HostInstance} from 'react-native';
+
+import * as NativeComponentRegistry from '../../../NativeComponent/NativeComponentRegistry';
+import * as Fantom from '@react-native/fantom';
+import * as React from 'react';
 
 const {create, diff} = require('../ReactNativeAttributePayload');
+
+describe('ReactNativeAttributePayload defaultValue', () => {
+  it('fills initial omissions and explicit undefined without processing defaults', () => {
+    const process = jest.fn(value => Number(value) * 2);
+    const attributes: AttributeConfiguration = {
+      a: {defaultValue: 13, process: process},
+    };
+    expect(create({}, attributes)).toEqual({a: 13});
+    expect(create({a: undefined}, attributes)).toEqual({a: 13});
+    expect(process).not.toHaveBeenCalled();
+    expect(create({a: 7}, attributes)).toEqual({a: 14});
+    expect(process).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps explicit null on the normal processing path', () => {
+    const process = jest.fn(value => value);
+    expect(
+      create({a: null}, {a: {defaultValue: 13, process: process}}),
+    ).toEqual({a: null});
+    expect(process).toHaveBeenCalledWith(null);
+    const payload = create(
+      {a: null},
+      {a: {defaultValue: 13, process: () => undefined}},
+    );
+    expect(Object.keys(payload ?? {})).toEqual(['a']);
+    expect(payload?.a).toBe(undefined);
+  });
+
+  it('preserves the identity of arbitrary default payloads', () => {
+    for (const defaultValue of [
+      undefined,
+      null,
+      0,
+      false,
+      '',
+      {},
+      Symbol('default'),
+      () => {},
+    ]) {
+      const attributes: AttributeConfiguration = {
+        a: {defaultValue: defaultValue},
+      };
+      const payload = create({}, attributes);
+      expect(Object.keys(payload ?? {})).toEqual(['a']);
+      expect(payload?.a).toBe(defaultValue);
+    }
+  });
+
+  it('keeps initial defaults independent of reset values', () => {
+    const attributes: AttributeConfiguration = {
+      a: {defaultValue: 13, resetValue: undefined},
+    };
+    expect(create({}, attributes)).toEqual({a: 13});
+    expect(diff({a: 7}, {}, attributes)).toEqual({a: undefined});
+    expect(diff({}, {}, attributes)).toBe(null);
+    expect(diff({a: undefined}, {a: undefined}, attributes)).toBe(null);
+    expect(create({}, {a: {resetValue: 13}})).toBe(null);
+    expect(diff({a: 7}, {}, {a: {defaultValue: 13}})).toEqual({a: null});
+  });
+
+  it('applies nested defaults once after flattening initial props', () => {
+    const attributes: AttributeConfiguration = {
+      style: {a: {defaultValue: 13, resetValue: undefined}, b: true},
+    };
+    expect(create({}, attributes)).toEqual({a: 13});
+    expect(create({style: {}}, attributes)).toEqual({a: 13});
+    expect(
+      create({style: [{a: 7}, {a: undefined}, {b: 2}]}, attributes),
+    ).toEqual({a: 13, b: 2});
+    expect(create({style: [{a: undefined}, {a: 7}]}, attributes)).toEqual({
+      a: 7,
+    });
+    expect(create({style: [{a: 7}, {a: null}]}, attributes)).toEqual({a: null});
+    expect(diff({style: {a: 7}}, {style: {}}, attributes)).toEqual({
+      a: undefined,
+    });
+    expect(diff({}, {style: {}}, attributes)).toBe(null);
+    expect(diff({style: [{a: 7}]}, {style: [{a: 7}, {}]}, attributes)).toBe(
+      null,
+    );
+  });
+
+  it('does not traverse opaque reset payloads when collecting defaults', () => {
+    const resetValue = {a: {defaultValue: 13}};
+    expect(create({}, {a: {resetValue: resetValue}})).toBe(null);
+  });
+
+  it('does not share payload mutations between view creations', () => {
+    const attributes: AttributeConfiguration = {a: {defaultValue: 13}};
+    const first = create({}, attributes);
+    if (first == null) {
+      throw new Error('The initial default was not provided.');
+    }
+    first.a = 7;
+    expect(create({}, attributes)).toEqual({a: 13});
+  });
+
+  it('does not apply defaults to imperative updates', () => {
+    const attributes: AttributeConfiguration = {
+      a: {defaultValue: 13, resetValue: undefined},
+      b: true,
+    };
+    expect(create({}, attributes, {isInitial: false})).toBe(null);
+    expect(create({b: 7}, attributes, {isInitial: false})).toEqual({b: 7});
+    expect(create({a: undefined}, attributes, {isInitial: false})).toEqual({
+      a: undefined,
+    });
+  });
+
+  it('applies initial defaults through Fabric without reapplying them on updates', () => {
+    const DefaultValueView = NativeComponentRegistry.get<
+      Readonly<{nativeID?: string, testID?: string, collapsable?: boolean}>,
+    >('FantomDefaultValueView', () => ({
+      uiViewClassName: 'RCTView',
+      validAttributes: {
+        nativeID: {defaultValue: 'initial', resetValue: undefined},
+      },
+    }));
+    const root = Fantom.createRoot();
+    const ref = React.createRef<HostInstance>();
+
+    Fantom.runTask(() => {
+      root.render(<DefaultValueView ref={ref} collapsable={false} />);
+    });
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      <rn-view nativeID="initial" />,
+    );
+    Fantom.runTask(() => {
+      root.render(
+        <DefaultValueView ref={ref} nativeID="provided" collapsable={false} />,
+      );
+    });
+    Fantom.runTask(() => {
+      const view = ref.current;
+      if (view == null) {
+        throw new Error('The native view did not mount.');
+      }
+      view.setNativeProps({testID: 'imperative'});
+    });
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      <rn-view nativeID="provided" />,
+    );
+    Fantom.runTask(() => {
+      root.render(<DefaultValueView ref={ref} collapsable={false} />);
+    });
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      <rn-view />,
+    );
+  });
+
+  it('does not reapply defaults when React hides a Fabric view', () => {
+    const DefaultValueView = NativeComponentRegistry.get<
+      Readonly<{nativeID?: string, collapsable?: boolean}>,
+    >('FantomHiddenDefaultValueView', () => ({
+      uiViewClassName: 'RCTView',
+      validAttributes: {nativeID: {defaultValue: 'initial'}},
+    }));
+    const root = Fantom.createRoot();
+    const render = (mode: 'visible' | 'hidden') => {
+      Fantom.runTask(() => {
+        root.render(
+          <React.Activity mode={mode}>
+            <DefaultValueView nativeID="provided" collapsable={false} />
+          </React.Activity>,
+        );
+      });
+    };
+    render('visible');
+    render('hidden');
+    render('visible');
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      <rn-view nativeID="provided" />,
+    );
+  });
+});
+
+describe('ReactNativeAttributePayload resetValue', () => {
+  it('retains a present undefined payload when a prop is removed', () => {
+    const attributes: AttributeConfiguration = {a: {resetValue: undefined}};
+    const nextPropsCases: Array<{[key: string]: unknown}> = [
+      {},
+      {a: undefined},
+    ];
+    for (const nextProps of nextPropsCases) {
+      const payload = diff({a: 7}, nextProps, attributes);
+      expect(Object.keys(payload ?? {})).toEqual(['a']);
+      expect(payload?.a).toBe(undefined);
+    }
+    expect(create({}, attributes)).toBe(null);
+    expect(create({a: undefined}, attributes)).toBe(null);
+    expect(diff({}, {}, attributes)).toBe(null);
+    expect(diff({a: undefined}, {a: undefined}, attributes)).toBe(null);
+  });
+
+  it('preserves explicit null independently of removal', () => {
+    const attributes: AttributeConfiguration = {a: {resetValue: undefined}};
+    expect(diff({a: 7}, {a: null}, attributes)).toEqual({a: null});
+    expect(diff({a: null}, {a: undefined}, attributes)).toEqual({a: undefined});
+    expect(diff({a: null}, {}, attributes)).toEqual({a: undefined});
+    expect(diff({a: undefined}, {a: null}, attributes)).toEqual({a: null});
+    expect(diff({a: null}, {a: null}, attributes)).toBe(null);
+    expect(create({a: null}, attributes)).toEqual({a: null});
+  });
+
+  it('accepts opaque reset payloads without processing or comparing them', () => {
+    const process = jest.fn(value => ({value: value}));
+    const customDiff = jest.fn<[unknown, unknown], boolean>(() => false);
+    for (const resetValue of [
+      undefined,
+      null,
+      0,
+      false,
+      '',
+      {},
+      Symbol('reset'),
+      () => {},
+    ]) {
+      const attributes: AttributeConfiguration = {
+        a: {resetValue: resetValue, process: process, diff: customDiff},
+      };
+      const nextPropsCases: Array<{[key: string]: unknown}> = [
+        {},
+        {a: undefined},
+      ];
+      for (const nextProps of nextPropsCases) {
+        const payload = diff({a: 7}, nextProps, attributes);
+        expect(Object.keys(payload ?? {})).toEqual(['a']);
+        expect(payload?.a).toBe(resetValue);
+      }
+    }
+    expect(process).not.toHaveBeenCalled();
+    expect(customDiff).not.toHaveBeenCalled();
+  });
+
+  it('does not compare the reset payload to the previous input', () => {
+    const attributes: AttributeConfiguration = {
+      a: {resetValue: 13, process: value => Number(value) * 2},
+    };
+    expect(create({a: 13}, attributes)).toEqual({a: 26});
+    expect(diff({a: 13}, {a: undefined}, attributes)).toEqual({a: 13});
+  });
+
+  it('handles callbacks and objects with only a reset configuration', () => {
+    const callback = () => {};
+    const attributes: AttributeConfiguration = {
+      a: {resetValue: undefined, process: value => value},
+      b: {resetValue: undefined},
+    };
+    const object = {value: 7};
+    expect(create({a: callback, b: object}, attributes)).toEqual({
+      a: callback,
+      b: object,
+    });
+    expect(diff({a: callback, b: object}, {}, attributes)).toEqual({
+      a: undefined,
+      b: undefined,
+    });
+  });
+
+  it('restores values shadowed by removed entries in nested arrays', () => {
+    const attributes: AttributeConfiguration = {
+      style: {a: {resetValue: undefined}},
+    };
+    expect(
+      diff({style: [{a: 1}, {a: 2}]}, {style: [{a: 1}]}, attributes),
+    ).toEqual({a: 1});
+    expect(
+      diff(
+        {style: [{a: 1}, {a: 2}, {a: 3}]},
+        {style: [{a: 1}, {a: undefined}]},
+        attributes,
+      ),
+    ).toEqual({a: undefined});
+    expect(
+      diff({style: [{a: 1}]}, {style: [{a: 1}, {a: undefined}]}, attributes),
+    ).toEqual({a: undefined});
+    expect(diff({style: {a: 1}}, {style: {}}, attributes)).toEqual({
+      a: undefined,
+    });
+    expect(diff({style: {a: 1}}, {}, attributes)).toEqual({a: undefined});
+  });
+
+  it('lets a later nested value override an undefined reset payload', () => {
+    const attributes: AttributeConfiguration = {
+      style: {a: {resetValue: undefined}},
+    };
+    expect(
+      diff(
+        {style: [{a: 1}, {a: 2}]},
+        {style: [{a: undefined}, {a: 2}]},
+        attributes,
+      ),
+    ).toEqual({a: 2});
+    expect(create({style: [{a: 1}, {a: undefined}]}, attributes)).toEqual({
+      a: undefined,
+    });
+  });
+
+  it('restores a processed callback without converting it to an event marker', () => {
+    const first = () => {};
+    const second = () => {};
+    const attributes: AttributeConfiguration = {
+      style: {a: {resetValue: undefined, process: value => value}},
+    };
+    expect(
+      diff(
+        {style: [{a: first}, {a: second}]},
+        {style: [{a: first}]},
+        attributes,
+      ),
+    ).toEqual({a: first});
+  });
+
+  it('can reset explicitly undefined imperative props', () => {
+    expect(
+      create({a: undefined}, {a: {resetValue: undefined}}, {isInitial: false}),
+    ).toEqual({a: undefined});
+  });
+
+  it('applies reset payloads through Fabric and setNativeProps', () => {
+    const ResetValueView = NativeComponentRegistry.get<
+      Readonly<{nativeID?: string, collapsable?: boolean}>,
+    >('FantomResetValueView', () => ({
+      uiViewClassName: 'RCTView',
+      validAttributes: {nativeID: {resetValue: 'reset'}},
+    }));
+    const root = Fantom.createRoot();
+    const ref = React.createRef<HostInstance>();
+
+    Fantom.runTask(() => {
+      root.render(
+        <ResetValueView ref={ref} nativeID="provided" collapsable={false} />,
+      );
+    });
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      <rn-view nativeID="provided" />,
+    );
+
+    Fantom.runTask(() => {
+      root.render(<ResetValueView ref={ref} collapsable={false} />);
+    });
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      <rn-view nativeID="reset" />,
+    );
+
+    Fantom.runTask(() => {
+      root.render(
+        <ResetValueView ref={ref} nativeID="again" collapsable={false} />,
+      );
+    });
+    Fantom.runTask(() => {
+      const view = ref.current;
+      if (view == null) {
+        throw new Error('The native view did not mount.');
+      }
+      view.setNativeProps({nativeID: undefined});
+    });
+    expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+      <rn-view nativeID="reset" />,
+    );
+  });
+
+  it('preserves undefined resets after imperative props have been applied', () => {
+    const ResetValueView = NativeComponentRegistry.get<
+      Readonly<{nativeID?: string, collapsable?: boolean}>,
+    >('FantomUndefinedResetValueView', () => ({
+      uiViewClassName: 'RCTView',
+      validAttributes: {nativeID: {resetValue: undefined}},
+    }));
+    const root = Fantom.createRoot();
+    const ref = React.createRef<HostInstance>();
+    const setNativeProps = (props: {...}) => {
+      Fantom.runTask(() => {
+        const view = ref.current;
+        if (view == null) {
+          throw new Error('The native view did not mount.');
+        }
+        view.setNativeProps(props);
+      });
+    };
+    const render = (nativeID: string | void) => {
+      Fantom.runTask(() => {
+        root.render(
+          <ResetValueView ref={ref} nativeID={nativeID} collapsable={false} />,
+        );
+      });
+    };
+    render('provided');
+    setNativeProps({testID: 'imperative'});
+    render(undefined);
+    expect(
+      root.getRenderedOutput({props: ['nativeID', 'testID']}).toJSX(),
+    ).toEqual(<rn-view testID="imperative" />);
+    render('again');
+    setNativeProps({nativeID: 'imperative-native-id'});
+    render(undefined);
+    expect(
+      root.getRenderedOutput({props: ['nativeID', 'testID']}).toJSX(),
+    ).toEqual(<rn-view testID="imperative" />);
+  });
+});
 
 describe('ReactNativeAttributePayload.create', () => {
   it('should work with simple example', () => {

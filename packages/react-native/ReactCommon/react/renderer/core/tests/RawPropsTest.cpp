@@ -43,6 +43,23 @@ TEST(RawPropsTest, jsiPropsHaveNoDynamicSource) {
   EXPECT_EQ(rawProps.toDynamic(), expected);
 }
 
+TEST(RawPropsTest, undefinedValuesResetDynamicProps) {
+  auto runtime = facebook::hermes::makeHermesRuntime();
+  auto object = jsi::Object(*runtime);
+  object.setProperty(*runtime, "opacity", jsi::Value::undefined());
+  object.setProperty(*runtime, "nativeID", "provided");
+  const auto rawProps = RawProps(*runtime, jsi::Value(*runtime, object));
+  const folly::dynamic expected =
+      folly::dynamic::object("opacity", nullptr)("nativeID", "provided");
+  EXPECT_EQ(rawProps.toDynamic(), expected);
+  const folly::dynamic filteredExpected =
+      folly::dynamic::object("nativeID", "provided");
+  EXPECT_EQ(
+      rawProps.toDynamic(
+          [](const std::string& key) { return key == "opacity"; }),
+      filteredExpected);
+}
+
 class PropsSingleFloat : public Props {
  public:
   PropsSingleFloat() = default;

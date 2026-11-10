@@ -7,7 +7,7 @@
  * @noformat
  * @nolint
  * @flow strict
- * @generated SignedSource<<92e869744dd405a4d74b1b6f50fa8d52>>
+ * @generated SignedSource<<ca1150670940b4964edac67873cee2d4>>
  */
 
 import type {
@@ -28,6 +28,10 @@ export type AttributeType<T, V> =
   | Readonly<{
       diff?: (arg1: T, arg2: T) => boolean,
       process?: (arg1: V) => T,
+      /** Final payload for a removed prop, including an explicit undefined. */
+      resetValue?: unknown,
+      /** Final payload for a prop omitted or undefined on initial creation. */
+      defaultValue?: unknown,
     }>;
 
 // We either force that `diff` and `process` always use unknown,

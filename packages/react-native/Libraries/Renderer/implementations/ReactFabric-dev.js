@@ -7,7 +7,7 @@
  * @noflow
  * @nolint
  * @preventMunge
- * @generated SignedSource<<b2da61aa9e350b425820dfd464cce486>>
+ * @generated SignedSource<<f847e2376e684e5a5b3f0215e934aafa>>
  *
  * This file was sync'd from the facebook/react repository.
  */
@@ -17263,7 +17263,8 @@ __DEV__ &&
       var node = instance.node,
         updatePayload = reactPrivateInterface.createAttributePayload(
           { style: { display: "none" } },
-          instance.canonical.viewConfig.validAttributes
+          instance.canonical.viewConfig.validAttributes,
+          { isInitial: !1 }
         );
       return {
         node: cloneNodeWithNewProps(node, updatePayload),
