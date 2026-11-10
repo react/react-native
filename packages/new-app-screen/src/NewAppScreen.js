@@ -9,6 +9,7 @@
  */
 
 import Links from './Links';
+import RuntimeVersion from './RuntimeVersion';
 import {ThemedText, useTheme} from './Theme';
 import * as React from 'react';
 import {
@@ -135,8 +136,7 @@ function getHermesLabel(): React.Node {
 
   return (
     <ThemedText color="secondary" style={styles.label}>
-      JS Engine: Hermes (
-      {global.HermesInternal.getRuntimeProperties?.()['OSS Release Version']})
+      JS Engine: Hermes ({RuntimeVersion.hermes})
     </ThemedText>
   );
 }

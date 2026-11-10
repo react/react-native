@@ -12,6 +12,7 @@ import type {
   RootTag,
   TurboModule,
 } from '../../../../../Libraries/TurboModule/RCTExport';
+import type {UnsafeObject} from '../../../../../Libraries/Types/CodegenTypes';
 
 import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/TurboModuleRegistry';
 
@@ -116,6 +117,7 @@ interface Spec extends TurboModule {
     surfaceId: RootTag,
     config: RenderFormatOptions,
   ) => string;
+  takeScreenshot(surfaceId: RootTag): UnsafeObject;
   registerAsset(uri: string, filePath: string): void;
   registerFont(filePath: string): void;
   reportTestSuiteResultsJSON: (results: string) => void;

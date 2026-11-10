@@ -161,6 +161,7 @@ target_link_libraries(fantom_tester
     gflags
     glog
     fantom_skia
+    OpenSSL::Crypto
 
     # hermes
     hermes-engine::hermesvm

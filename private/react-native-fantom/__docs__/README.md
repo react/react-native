@@ -124,6 +124,49 @@ Similar to Jest, you can also run Fantom in watch mode using `--watch`:
 yarn fantom <regexForTestFiles> --watch
 ```
 
+### PNG screenshots
+
+`root.takeScreenshot()` captures the currently mounted Fabric revision into an
+immutable `Screenshot`. Capture after `runTask` to include its mounted updates;
+capture itself does not flush pending React work. The bitmap remains usable
+after later updates or root destruction.
+
+```javascript
+const root = Fantom.createRoot();
+Fantom.runTask(() => root.render(<Screen />));
+const screenshot = root.takeScreenshot();
+expect(screenshot).toMatchSnapshot();
+expect(screenshot.isEqual(root.takeScreenshot())).toBe(true);
+```
+
+The headless renderer paints Yoga's mounted frames with CPU Skia. Text uses the
+same layout and bundled fonts as intrinsic measurement, so the measured sizes
+and painted content agree. `isEqual()` compares bitmap dimensions and pixels in
+memory.
+
+`toMatchSnapshot()` compares a SHA-256 hash of the bitmap dimensions and pixels
+with the value in Jest's `.snap` file. The expected PNG is not read for
+comparison. The runner also keeps an inspectable image in
+`__snapshots__/<test-file>.screenshots/`, named from the test, label and
+assertion number. Capture defers PNG encoding until an image must be saved;
+encoded bytes are cached for repeated saves. A matching hash passes even if the
+PNG is missing, and the runner regenerates that image.
+
+`toMatchInlineSnapshot()` embeds the screenshot's type and hash directly in the
+test source. It does not encode or save an image, so inline failures report a
+text diff.
+
+New snapshots are saved during a normal local run. `--updateSnapshot` (`-u`)
+accepts changed hashes and PNGs together; CI requires an existing matching hash.
+A mismatch leaves the baseline unchanged, saves a difference image alongside the
+received image, and reports all three image paths for inspection. Unused images
+are removed only during a successful snapshot update with no skipped or filtered
+tests. Negated snapshot assertions are unsupported.
+
+See [Rendering](rendering.md) for the painting architecture, supported features,
+font selection and the configuration that keeps shared baselines consistent
+across Linux and macOS.
+
 ### Interactive REPL
 
 > [!WARNING]
