@@ -22,7 +22,11 @@ import expect from './expect';
 import {createMockFunction} from './mocks';
 import patchWeakRef from './patchWeakRef';
 import {screenshotContext} from './ScreenshotContext';
-import {setupSnapshotConfig, snapshotContext} from './snapshotContext';
+import {
+  ScreenshotSnapshotError,
+  setupSnapshotConfig,
+  snapshotContext,
+} from './snapshotContext';
 
 export type TestCaseResult = {
   ancestorTitles: Array<string>,
@@ -31,7 +35,8 @@ export type TestCaseResult = {
   status: 'passed' | 'failed' | 'pending',
   duration: number,
   failureMessages: Array<string>,
-  failureDetails: Array<?FailureDetail>,
+  screenshotFailureMessages?: Array<string | null>,
+  failureDetails: Array<?FailureDetail | null>,
   numPassingAsserts: number,
   snapshotResults: TestSnapshotResults,
   inlineSnapshotResults: TestInlineSnapshotResults,
@@ -364,6 +369,14 @@ function runSpec(spec: Spec): TestCaseResult {
       result.failureMessages.push(`Non-error value thrown: ${String(error)}`);
       result.failureDetails.push(null);
     }
+  }
+
+  if (errors.some(error => error instanceof ScreenshotSnapshotError)) {
+    result.screenshotFailureMessages = errors.map(error =>
+      error instanceof ScreenshotSnapshotError
+        ? error.getPreviewMessage()
+        : null,
+    );
   }
 
   result.snapshotResults = snapshotContext.getSnapshotResults();

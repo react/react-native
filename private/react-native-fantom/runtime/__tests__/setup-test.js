@@ -166,3 +166,74 @@ it('runs teardown after a failed setup and retains both errors', () => {
   jestExpect(failed.failureDetails[0].message).toBe('setup failed');
   jestExpect(failed.failureDetails[1].message).toBe('teardown failed');
 });
+
+it('preserves screenshot text errors alongside preview errors and teardown failures', () => {
+  const {registerTest} = require('../setup');
+  const {ScreenshotSnapshotError} = require('../snapshotContext');
+  registerTest(
+    () => {
+      afterEach(() => {
+        throw new Error('teardown failed');
+      });
+      it('fails screenshot assertion', () => {
+        throw new ScreenshotSnapshotError(
+          'Expected old-hash, received new-hash',
+          'Expected to match screenshot snapshot.',
+        );
+      });
+    },
+    {data: {}, updateSnapshot: 'none'},
+  );
+  const [failed] = results();
+  jestExpect(failed.failureMessages[0]).toContain('old-hash');
+  jestExpect(failed.failureDetails[0].message).toContain('old-hash');
+  jestExpect(failed.screenshotFailureMessages[0]).toContain(
+    'Expected to match screenshot snapshot.',
+  );
+  jestExpect(failed.screenshotFailureMessages[0]).not.toContain('old-hash');
+  jestExpect(failed.screenshotFailureMessages[1]).toBe(null);
+});
+
+for (const screenshotPosition of ['test', 'teardown']) {
+  it(`keeps failure indexes aligned when the screenshot fails in ${screenshotPosition}`, () => {
+    const {registerTest} = require('../setup');
+    const {ScreenshotSnapshotError} = require('../snapshotContext');
+    const screenshotError = new ScreenshotSnapshotError(
+      'Expected old-hash, received new-hash',
+      'Expected to match screenshot snapshot.',
+    );
+    const errors =
+      screenshotPosition === 'test'
+        ? [screenshotError, 'non-error failure']
+        : ['non-error failure', screenshotError];
+    registerTest(
+      () => {
+        afterEach(() => {
+          throw errors[1];
+        });
+        it(`fails with screenshot in ${screenshotPosition}`, () => {
+          throw errors[0];
+        });
+      },
+      {data: {}, updateSnapshot: 'none'},
+    );
+    const [failed] = results();
+    const screenshotIndex = screenshotPosition === 'test' ? 0 : 1;
+    const nonErrorIndex = 1 - screenshotIndex;
+    jestExpect(failed.failureDetails.length).toBe(2);
+    jestExpect(failed.failureDetails[nonErrorIndex]).toBe(null);
+    jestExpect(failed.failureDetails[screenshotIndex].message).toContain(
+      'old-hash',
+    );
+    jestExpect(failed.screenshotFailureMessages[screenshotIndex]).toContain(
+      'Expected to match screenshot snapshot.',
+    );
+    jestExpect(failed.screenshotFailureMessages[screenshotIndex]).not.toContain(
+      'old-hash',
+    );
+    jestExpect(failed.screenshotFailureMessages[nonErrorIndex]).toBe(null);
+    jestExpect(failed.failureMessages[nonErrorIndex]).toContain(
+      'non-error failure',
+    );
+  });
+}

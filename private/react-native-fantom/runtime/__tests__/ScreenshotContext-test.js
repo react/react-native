@@ -13,7 +13,11 @@ import type {ScreenshotConfig} from '../ScreenshotContext';
 import Screenshot from '../../src/Screenshot';
 import runtimeExpect from '../expect';
 import {ScreenshotContext, screenshotContext} from '../ScreenshotContext';
-import {setupSnapshotConfig, snapshotContext} from '../snapshotContext';
+import {
+  ScreenshotSnapshotError,
+  setupSnapshotConfig,
+  snapshotContext,
+} from '../snapshotContext';
 
 function createScreenshot() {
   const saveToFile = jest.fn<[string], void>();
@@ -213,4 +217,91 @@ it('requires configuration and propagates save errors', () => {
   expect(() => createContext().record(failure, 'test 1', false, true)).toThrow(
     'Cannot save PNG',
   );
+});
+
+it('retains text diagnostics and a preview alternative for screenshot failures', () => {
+  const {screenshot} = createScreenshot();
+  const config = {
+    updateSnapshot: 'none' as const,
+    screenshots: {
+      snapshotDirectory: '/snapshots',
+      receivedDirectory: '/received',
+      files: [],
+    },
+  };
+  for (const data of [{}, {'Example renders 1': 'old-hash'}]) {
+    setupSnapshotConfig({...config, data});
+    snapshotContext.setTargetTest('Example renders');
+    screenshotContext.setTargetTest('Example renders');
+    let failure;
+    try {
+      snapshotContext.toMatchSnapshot(
+        'Screenshot {hash: pixel-hash}',
+        null,
+        screenshot,
+      );
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toBeInstanceOf(ScreenshotSnapshotError);
+    if (!(failure instanceof ScreenshotSnapshotError)) {
+      return;
+    }
+    expect(failure.message).toContain('/snapshots');
+    const preview = failure.getPreviewMessage();
+    expect(preview).toContain('screenshot snapshot');
+    expect(preview).not.toContain('old-hash');
+    expect(preview).not.toContain('pixel-hash');
+    expect(preview).not.toContain('Screenshot {');
+    expect(preview).not.toContain('/snapshots');
+    expect(snapshotContext.getSnapshotResults()['Example renders 1'].pass).toBe(
+      false,
+    );
+  }
+});
+
+it('preserves text diagnostics for unsupported terminals and ordinary snapshots', () => {
+  const {screenshot} = createScreenshot();
+  for (const isScreenshot of [false, true]) {
+    setupSnapshotConfig({
+      updateSnapshot: 'none',
+      data: {'Example renders 1': 'old-hash'},
+      screenshots: {
+        snapshotDirectory: '/snapshots',
+        receivedDirectory: '/received',
+        files: [],
+      },
+    });
+    snapshotContext.setTargetTest('Example renders');
+    screenshotContext.setTargetTest('Example renders');
+    expect(() =>
+      snapshotContext.toMatchSnapshot(
+        'pixel-hash',
+        null,
+        isScreenshot ? screenshot : undefined,
+      ),
+    ).toThrow('old-hash');
+  }
+});
+
+it('keeps preview diagnostics independent of a rewritten error stack', () => {
+  const message =
+    'Expected old-hash, received new-hash\nReceived: /received/image.png';
+  const failure = new ScreenshotSnapshotError(
+    message,
+    'Expected to match screenshot snapshot.',
+  );
+  for (const stack of [
+    'Error: Expected old-hash, received new-hash\n    at assertion (test.js:10:2)',
+    '    at assertion (test.js:10:2)',
+  ]) {
+    failure.stack = stack;
+    const preview = failure.getPreviewMessage();
+    expect(preview).toContain('Expected to match screenshot snapshot.');
+    expect(preview).not.toContain('old-hash');
+    expect(preview).not.toContain('new-hash');
+    expect(preview).not.toContain('/received/image.png');
+    expect(failure.message).toBe(message);
+    expect(failure.stack).toBe(stack);
+  }
 });
