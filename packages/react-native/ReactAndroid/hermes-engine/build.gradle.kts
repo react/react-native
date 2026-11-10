@@ -210,6 +210,7 @@ val prepareHeadersForPrefab by
       dependsOn(buildHermesC)
       from("$hermesDir/API")
       from("$hermesDir/public")
+      from("$hermesDir/include") { include("hermes/napi/**") }
       include("**/*.h")
       exclude("jsi/**")
       into(prefabHeadersDir)
@@ -264,6 +265,7 @@ val prepareHeadersForPrefabWithDebugger by
       dependsOn(buildHermesCWithDebugger)
       from("$hermesDir/API")
       from("$hermesDir/public")
+      from("$hermesDir/include") { include("hermes/napi/**") }
       include("**/*.h")
       exclude("jsi/**")
       into(prefabHeadersDir)

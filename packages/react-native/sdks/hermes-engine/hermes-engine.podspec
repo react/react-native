@@ -134,6 +134,20 @@ Pod::Spec.new do |spec|
       ss.header_dir = 'hermes/Public'
     end
 
+    # hermes_napi.h: Hermes' embedder API, used by React Native's Node-API host.
+    spec.subspec 'NodeApiEmbedder' do |ss|
+      ss.source_files = ''
+      ss.public_header_files = 'API/napi/hermes_napi.h'
+      ss.header_dir = 'napi'
+    end
+
+    # node_api.h and friends: the Node-API headers Hermes vendors from Node.js, for addons.
+    spec.subspec 'NodeApi' do |ss|
+      ss.source_files = ''
+      ss.public_header_files = 'include/hermes/napi/*.h'
+      ss.header_dir = 'hermes/napi'
+    end
+
     hermesc_path = "${PODS_ROOT}/hermes-engine/build_host_hermesc"
 
     if ENV.has_key?('HERMES_OVERRIDE_HERMESC_PATH') && File.exist?(ENV['HERMES_OVERRIDE_HERMESC_PATH']) then

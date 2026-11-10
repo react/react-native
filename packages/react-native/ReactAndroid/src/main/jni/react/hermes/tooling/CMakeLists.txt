@@ -22,6 +22,7 @@ add_library(hermestooling
         $<TARGET_OBJECTS:hermesinstancejni>
         $<TARGET_OBJECTS:jni_lib_merge_glue>
         $<TARGET_OBJECTS:jsijniprofiler>
+        $<TARGET_OBJECTS:react_nativemodule_nodeapi>
 )
 target_merge_so(hermestooling)
 target_link_libraries(hermestooling
@@ -38,5 +39,6 @@ target_include_directories(hermestooling
         $<TARGET_PROPERTY:hermes_inspector_modern,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:hermesinstancejni,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:jsijniprofiler,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:react_nativemodule_nodeapi,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_compile_reactnative_options(hermestooling PRIVATE)

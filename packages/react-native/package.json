@@ -49,6 +49,10 @@
       "types": null,
       "default": "./src/asset-registry.js"
     },
+    "./node-api": {
+      "types": "./src/node-api.d.ts",
+      "default": "./src/node-api.js"
+    },
     "./react-private-interface": {
       "types": null,
       "default": "./src/react-private-interface.js"
