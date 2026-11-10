@@ -10,9 +10,10 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useMemo} from 'react';
-import {Animated, StyleSheet, Text, View, useAnimatedValue} from 'react-native';
+import {Animated, StyleSheet, View, useAnimatedValue} from 'react-native';
 
 const colors = ['lime', 'green'];
 
@@ -76,7 +77,7 @@ function ChessboardExample() {
 
   return (
     <View style={styles.workaround} collapsable={false}>
-      <Text style={styles.text}>{state}</Text>
+      <RNTesterText style={styles.text}>{state}</RNTesterText>
       <View style={styles.chessboard}>
         <View style={styles.border}>
           {[...Array(N).keys()].map(i => (

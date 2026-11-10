@@ -508,30 +508,30 @@ function AllowFontScalingExample(props: {}): React.Node {
 function MaxFontSizeMultiplierExample(props: {}): React.Node {
   return (
     <View testID={'max-font-size-multiplier'}>
-      <Text>
+      <RNTesterText>
         When allowFontScaling is enabled, you can use the maxFontSizeMultiplier
         prop to set an upper limit on how much the font size will be scaled.
-      </Text>
-      <Text
+      </RNTesterText>
+      <RNTesterText
         allowFontScaling={true}
         maxFontSizeMultiplier={1}
         style={{marginTop: 10}}>
         This text will not scale up (max 1x)
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1.5}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1.5}>
         This text will scale up (max 1.5x)
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1}>
         <Text>Inherit max (max 1x)</Text>
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1}>
         <Text maxFontSizeMultiplier={1.5}>
           Override inherited max (max 1.5x)
         </Text>
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1}>
         <Text maxFontSizeMultiplier={0}>Ignore inherited max (no max)</Text>
-      </Text>
+      </RNTesterText>
       <Text
         allowFontScaling={true}
         maxFontSizeMultiplier={1}
@@ -1561,20 +1561,20 @@ const examples = [
           {rows.map(text => (
             <View key={text} style={{flexDirection: 'row', gap: 8}}>
               <View style={styles.overhangBubble}>
-                <Text
+                <RNTesterText
                   allowFontScaling={false}
                   style={{fontFamily: 'cursive', fontSize: 18, lineHeight: 27}}>
                   {text}
                   <Text style={{color: 'green'}}> f</Text>
-                </Text>
+                </RNTesterText>
               </View>
               <View style={styles.overhangBubble}>
-                <Text
+                <RNTesterText
                   allowFontScaling={false}
                   style={{fontSize: 18, lineHeight: 27}}>
                   {text}
                   <Text style={{color: 'green'}}> f</Text>
-                </Text>
+                </RNTesterText>
               </View>
             </View>
           ))}

@@ -11,9 +11,10 @@
 import type {RNTesterModuleExample} from '../../../types/RNTesterTypes';
 import type {PointerEvent} from 'react-native';
 
+import RNTesterText from '../../../components/RNTesterText';
 import * as React from 'react';
 import {useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 const styles = StyleSheet.create({
   container: {height: '30%', width: '100%', backgroundColor: 'black'},
@@ -60,22 +61,22 @@ function ManyPointersPropertiesExample(): React.Node {
           //$FlowFixMe[incompatible-type] can't supply generic for Object.entries
           ([key, evt]: [string, PointerEvent['nativeEvent']]) => (
             <View style={styles.property} key={key}>
-              <Text>PointerID: {evt.pointerId}</Text>
-              <Text>
+              <RNTesterText>PointerID: {evt.pointerId}</RNTesterText>
+              <RNTesterText>
                 Offset: [{evt.offsetX.toPrecision(3)},{' '}
                 {evt.offsetY.toPrecision(3)}]
-              </Text>
-              <Text>
+              </RNTesterText>
+              <RNTesterText>
                 Coordinates: [{evt.clientX.toPrecision(3)},{' '}
                 {evt.clientY.toPrecision(3)}]
-              </Text>
-              <Text>
+              </RNTesterText>
+              <RNTesterText>
                 Screen Coordinates: [{evt.screenX?.toPrecision(3)},{' '}
                 {evt.screenY?.toPrecision(3)}]
-              </Text>
-              <Text>Button: {evt.button}</Text>
-              <Text>Pressure: {evt.pressure}</Text>
-              <Text>Modifiers: {getModifiersText(evt)}</Text>
+              </RNTesterText>
+              <RNTesterText>Button: {evt.button}</RNTesterText>
+              <RNTesterText>Pressure: {evt.pressure}</RNTesterText>
+              <RNTesterText>Modifiers: {getModifiersText(evt)}</RNTesterText>
             </View>
           ),
         )}

@@ -31,7 +31,6 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
   TextInput,
   TouchableNativeFeedback,
   TouchableOpacity,
@@ -2226,10 +2225,10 @@ function AriaHiddenExample(): React.Node {
         aria-label={
           ariaHidden ? 'This should be hidden' : 'This should be accessible'
         }>
-        <Text>View with Text content</Text>
+        <RNTesterText>View with Text content</RNTesterText>
       </View>
 
-      <Text aria-hidden={ariaHidden}>Regular Text</Text>
+      <RNTesterText aria-hidden={ariaHidden}>Regular Text</RNTesterText>
 
       <TextInput
         editable={false}
@@ -2258,7 +2257,7 @@ function AriaHiddenExample(): React.Node {
           ariaHidden ? 'This should be hidden' : 'This should be accessible'
         }
         style={styles.button}>
-        <Text>Pressable with text content</Text>
+        <RNTesterText>Pressable with text content</RNTesterText>
       </Pressable>
 
       <Image
