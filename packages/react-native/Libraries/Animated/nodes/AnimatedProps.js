@@ -27,7 +27,7 @@ import invariant from 'invariant';
 
 export type AnimatedPropsAllowlist = Readonly<{
   style?: ?AnimatedStyleAllowlist,
-  [key: string]: true | AnimatedStyleAllowlist,
+  [key: string]: ?(true | AnimatedStyleAllowlist),
 }>;
 
 type TargetView = {

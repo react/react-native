@@ -176,7 +176,7 @@ class ReadOnlyNode extends EventTarget {
   /**
    * @abstract
    */
-  get textContent(): string {
+  get textContent(): string | null {
     throw new TypeError(
       '`textContent` is abstract and must be implemented in a subclass of `ReadOnlyNode`',
     );
