@@ -8,10 +8,28 @@
 #include "EventQueue.h"
 
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/components/view/PointerEvent.h>
+#include <optional>
 #include "EventEmitter.h"
 #include "ShadowNodeFamily.h"
 
 namespace facebook::react {
+
+namespace {
+
+std::optional<double> pointerIdForCoalescing(const RawEvent& event) {
+  const auto& payload = event.eventPayload;
+  if (payload && payload->getType() == EventPayloadType::PointerEvent) {
+    return static_cast<const PointerEvent&>(*payload).pointerId;
+  }
+  // Android pointer moves share ValueFactory's type with nonpointer events.
+  if (payload && event.type == "topPointerMove") {
+    return payload->extractValue({"pointerId"});
+  }
+  return std::nullopt;
+}
+
+} // namespace
 
 EventQueue::EventQueue(
     EventQueueProcessor eventProcessor,
@@ -35,7 +53,8 @@ void EventQueue::enqueueEvent(RawEvent&& rawEvent) const {
           // for the same target. If the same target has event types A1, B1
           // in the event queue and event A2 occurs. A1 has to stay in the
           // queue.
-          if (it->isUnique && it->type == rawEvent.type) {
+          if (it->isUnique && it->type == rawEvent.type &&
+              pointerIdForCoalescing(*it) == pointerIdForCoalescing(rawEvent)) {
             repeatedEvent = it;
           }
 
