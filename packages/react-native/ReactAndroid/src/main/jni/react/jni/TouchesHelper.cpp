@@ -8,8 +8,8 @@
 #include "TouchesHelper.h"
 
 #include <stdexcept>
+#include <utility>
 
-#include "WritableNativeArray.h"
 #include "WritableNativeMap.h"
 
 using namespace facebook::jni;
@@ -72,25 +72,11 @@ local_ref<WritableNativeMap::jhybridobject> createTouchPayload(
     }
   }
 
-  auto jPayload = WritableNativeMap::newObjectJavaArgs();
-  auto* payload = jPayload->cthis();
-  // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const double* fields = values.get() + eventPointer * kPointerFields;
-  payload->putDouble("pageX", fields[kPageXIndex]);
-  payload->putDouble("pageY", fields[kPageYIndex]);
-  payload->putDouble("locationX", fields[kLocationXIndex]);
-  payload->putDouble("locationY", fields[kLocationYIndex]);
-  payload->putInt(
-      "targetSurface", static_cast<int>(fields[kTargetSurfaceIndex]));
-  payload->putInt("target", static_cast<int>(fields[kTargetIndex]));
-  payload->putDouble("timestamp", fields[kTimestampIndex]);
-  payload->putDouble("identifier", fields[kIdentifierIndex]);
-  // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  WritableNativeArray changedTouchesArray(std::move(changedTouches));
-  payload->putNativeArray("changedTouches", &changedTouchesArray);
-  WritableNativeArray touchesArray(std::move(touches));
-  payload->putNativeArray("touches", &touchesArray);
-  return jPayload;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  auto payload = createTouch(values.get() + eventPointer * kPointerFields);
+  payload.insert("changedTouches", std::move(changedTouches));
+  payload.insert("touches", std::move(touches));
+  return WritableNativeMap::newObjectCxxArgs(std::move(payload));
 }
 
 } // namespace
