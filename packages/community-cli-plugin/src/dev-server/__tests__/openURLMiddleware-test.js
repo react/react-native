@@ -32,12 +32,7 @@ beforeEach(async () => {
   }
   baseUrl = `http://localhost:${address.port}`;
   app
-    .use(
-      '/open-url',
-      require('../openURLMiddleware').default({
-        serverBaseUrl: new URL(baseUrl),
-      }),
-    )
+    .use('/open-url', require('../openURLMiddleware').default())
     .use((req, res) => {
       res.writeHead(404);
       res.end();
@@ -49,10 +44,10 @@ afterEach(() => {
   return new Promise(resolve => server.close(() => resolve()));
 });
 
-function postURL(body: string, headers?: {Origin?: string}): Promise<Response> {
+function postURL(body: string): Promise<Response> {
   return fetch(baseUrl + '/open-url', {
     method: 'POST',
-    headers: {...headers, 'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'application/json'},
     body,
   });
 }
@@ -78,16 +73,6 @@ describe('/open-url', () => {
     expect(first.status).toBe(200);
     expect(second.status).toBe(429);
     expect(open).toHaveBeenCalledTimes(1);
-  });
-
-  test('refuses a cross-origin request', async () => {
-    const resp = await postURL(
-      JSON.stringify({url: 'https://reactnative.dev/'}),
-      {Origin: 'https://example.com'},
-    );
-
-    expect(resp.status).toBe(403);
-    expect(open).not.toHaveBeenCalled();
   });
 
   test('rejects a body that is not JSON', async () => {

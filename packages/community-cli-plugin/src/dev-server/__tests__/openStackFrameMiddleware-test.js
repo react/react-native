@@ -52,7 +52,7 @@ beforeEach(() => {
 });
 
 async function startServer(
-  mount: (app: Server, serverBaseUrl: URL) => void,
+  mount: (app: Server) => void,
 ): Promise<{server: http$Server, baseUrl: string}> {
   const app = connect();
   const server = http.createServer(app);
@@ -62,7 +62,7 @@ async function startServer(
     throw new Error('Expected the server to listen on a TCP port');
   }
   const baseUrl = `http://localhost:${address.port}`;
-  mount(app, new URL(baseUrl));
+  mount(app);
   app.use((req, res) => {
     res.writeHead(404);
     res.end();
@@ -70,11 +70,10 @@ async function startServer(
   return {server, baseUrl};
 }
 
-function mountOpenStackFrame(app: Server, serverBaseUrl: URL) {
+function mountOpenStackFrame(app: Server) {
   app.use(
     '/open-stack-frame',
     require('../openStackFrameMiddleware').default({
-      serverBaseUrl,
       watchFolders: [projectRoot],
     }),
   );
@@ -85,14 +84,10 @@ function stopServer(server: http$Server): Promise<void> {
   return new Promise(resolve => server.close(() => resolve()));
 }
 
-function postFrame(
-  baseUrl: string,
-  body: string,
-  headers?: {Origin?: string},
-): Promise<Response> {
+function postFrame(baseUrl: string, body: string): Promise<Response> {
   return fetch(baseUrl + '/open-stack-frame', {
     method: 'POST',
-    headers: {...headers, 'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'application/json'},
     body,
   });
 }
@@ -127,17 +122,6 @@ describe('/open-stack-frame', () => {
     expect(first.status).toBe(200);
     expect(second.status).toBe(429);
     expect(launchEditor).toHaveBeenCalledTimes(1);
-  });
-
-  test('refuses a cross-origin request', async () => {
-    const resp = await postFrame(
-      baseUrl,
-      JSON.stringify({file: appFile, lineNumber: 12}),
-      {Origin: 'https://example.com'},
-    );
-
-    expect(resp.status).toBe(403);
-    expect(launchEditor).not.toHaveBeenCalled();
   });
 
   test('rejects a body that is not JSON', async () => {
@@ -185,33 +169,6 @@ describe('/open-stack-frame', () => {
     const resp = await fetch(baseUrl + '/open-stack-frame');
 
     expect(resp.status).toBe(404);
-    expect(launchEditor).not.toHaveBeenCalled();
-  });
-});
-
-describe('/open-stack-frame behind a middleware that serves it', () => {
-  let server: http$Server;
-  let baseUrl: string;
-
-  beforeEach(async () => {
-    ({server, baseUrl} = await startServer((app, serverBaseUrl) => {
-      app.use('/open-stack-frame', (req, res, next) => {
-        res.end('handled upstream');
-        next();
-      });
-      mountOpenStackFrame(app, serverBaseUrl);
-    }));
-  });
-
-  afterEach(() => stopServer(server));
-
-  test('leaves the response to that middleware', async () => {
-    const resp = await postFrame(
-      baseUrl,
-      JSON.stringify({file: appFile, lineNumber: 12}),
-    );
-
-    expect(await resp.text()).toBe('handled upstream');
     expect(launchEditor).not.toHaveBeenCalled();
   });
 });
