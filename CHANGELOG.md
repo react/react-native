@@ -8,7 +8,7 @@
 
 ### Fixed
 
-- **Metro**: Make Metro's transform cache shareable across checkouts by pointing `asyncRequireModulePath` at `metro:runtime/modules/asyncRequire` instead of an absolute path ([2f9082fe08](https://github.com/react/react-native/commit/2f9082fe080b1828e5277adc35d66fd3d978be3c) by [@robhogan](https://github.com/robhogan))
+- **Metro**: Make Metro's transform cache shareable across checkouts by pointing `asyncRequireModulePath` at `metro:runtime/modules/asyncRequire` instead of an absolute path ([2f9082fe08](https://github.com/react/react-native/commit/2f9082fe080b1828e5277adc35d66fd3d978be3c) by [@janicduplessis](https://github.com/janicduplessis))
 - **React Native DevTools**: Fix the initiator of WebSocket connections opened from framework code, such as Metro's Fast Refresh socket, in the Network panel ([d66f5230fd](https://github.com/react/react-native/commit/d66f5230fd6889af7bc51034f4a6c55da5cf4e05) by [@huntie](https://github.com/huntie))
 
 #### Android specific
