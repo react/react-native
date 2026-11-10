@@ -369,31 +369,6 @@ PODS:
     - React-utils
     - SocketRocket
     - Yoga
-  - React-Core/RCTPushNotificationHeaders (1000.0.0):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTDeprecation
-    - React-Core/Default
-    - React-cxxreact
-    - React-featureflags
-    - React-hermes
-    - React-jsi
-    - React-jsiexecutor
-    - React-jsinspector
-    - React-jsinspectorcdp
-    - React-jsitooling
-    - React-perflogger
-    - React-runtimeexecutor
-    - React-runtimescheduler
-    - React-utils
-    - SocketRocket
-    - Yoga
   - React-Core/RCTSettingsHeaders (1000.0.0):
     - boost
     - DoubleConversion
@@ -2310,13 +2285,6 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon
     - SocketRocket
-  - React-RCTPushNotification (1000.0.0):
-    - RCTTypeSafety
-    - React-Core/RCTPushNotificationHeaders
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFBReactNativeSpec
-    - ReactCommon
   - React-RCTRuntime (1000.0.0):
     - boost
     - DoubleConversion
@@ -2766,7 +2734,6 @@ DEPENDENCIES:
   - React-RCTImage (from `../react-native/Libraries/Image`)
   - React-RCTLinking (from `../react-native/Libraries/LinkingIOS`)
   - React-RCTNetwork (from `../react-native/Libraries/Network`)
-  - React-RCTPushNotification (from `../react-native/Libraries/PushNotificationIOS`)
   - React-RCTRuntime (from `../react-native/React/Runtime`)
   - React-RCTSettings (from `../react-native/Libraries/Settings`)
   - React-RCTText (from `../react-native/Libraries/Text`)
@@ -2927,8 +2894,6 @@ EXTERNAL SOURCES:
     :path: "../react-native/Libraries/LinkingIOS"
   React-RCTNetwork:
     :path: "../react-native/Libraries/Network"
-  React-RCTPushNotification:
-    :path: "../react-native/Libraries/PushNotificationIOS"
   React-RCTRuntime:
     :path: "../react-native/React/Runtime"
   React-RCTSettings:
@@ -3042,7 +3007,6 @@ SPEC CHECKSUMS:
   React-RCTImage: bb0eb46db1e24ad906cb31c21e21b514db5b8a55
   React-RCTLinking: 6fb1ec3188dbf07f87b29afe172064a46d331446
   React-RCTNetwork: f424e280b3f9edd4d6692296c69d3dd5de92f78a
-  React-RCTPushNotification: 49c1acca24d107235c15a61af9ed856ef9e4c956
   React-RCTRuntime: feb1d8054fd1128af1622a6ec477ed5585dd01cc
   React-RCTSettings: a932ad87f8dc6601deb45220a9bfa7da4a44df03
   React-RCTText: 16b0e933027bd04a5fc594461cb7691cd7eaaa56
@@ -3068,6 +3032,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: a9afa834491f5b80bc3b10d2d91e8bfb15ab1100
 
-PODFILE CHECKSUM: abfcf138a255569f3324d5118cecdcbc64bdb8c6
+PODFILE CHECKSUM: db07ab6d8e9f392be23257e43287ba2e56b83787
 
 COCOAPODS: 1.16.2

@@ -137,7 +137,6 @@
 		E7DB210E22B2BD53005AC45F /* libReact-RCTImage.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTImage.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB211022B2BD53005AC45F /* libReact-RCTLinking.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTLinking.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB211222B2BD53005AC45F /* libReact-RCTNetwork.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTNetwork.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E7DB211422B2BD53005AC45F /* libReact-RCTPushNotification.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTPushNotification.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB211622B2BD53005AC45F /* libReact-RCTSettings.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTSettings.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB211822B2BD53005AC45F /* libReact-RCTText.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTText.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB211A22B2BD53005AC45F /* libReact-RCTVibration.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTVibration.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -233,7 +232,6 @@
 				E7DB210E22B2BD53005AC45F /* libReact-RCTImage.a */,
 				E7DB211022B2BD53005AC45F /* libReact-RCTLinking.a */,
 				E7DB211222B2BD53005AC45F /* libReact-RCTNetwork.a */,
-				E7DB211422B2BD53005AC45F /* libReact-RCTPushNotification.a */,
 				E7DB211622B2BD53005AC45F /* libReact-RCTSettings.a */,
 				E7DB211822B2BD53005AC45F /* libReact-RCTText.a */,
 				E7DB211A22B2BD53005AC45F /* libReact-RCTVibration.a */,

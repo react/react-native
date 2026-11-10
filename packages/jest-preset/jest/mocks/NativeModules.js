@@ -135,49 +135,6 @@ const NativeModules = {
       };
     },
   },
-  PushNotificationManager: {
-    presentLocalNotification: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    scheduleLocalNotification: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    cancelAllLocalNotifications: jest.fn() as JestMockFn<
-      $FlowFixMe,
-      $FlowFixMe,
-    >,
-    removeAllDeliveredNotifications: jest.fn() as JestMockFn<
-      $FlowFixMe,
-      $FlowFixMe,
-    >,
-    getDeliveredNotifications: jest.fn(callback =>
-      process.nextTick(() => []),
-    ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    removeDeliveredNotifications: jest.fn() as JestMockFn<
-      $FlowFixMe,
-      $FlowFixMe,
-    >,
-    setApplicationIconBadgeNumber: jest.fn() as JestMockFn<
-      $FlowFixMe,
-      $FlowFixMe,
-    >,
-    getApplicationIconBadgeNumber: jest.fn(callback =>
-      process.nextTick(() => callback(0)),
-    ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    cancelLocalNotifications: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    getScheduledLocalNotifications: jest.fn(callback =>
-      process.nextTick(() => callback()),
-    ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    requestPermissions: jest.fn(() =>
-      Promise.resolve({alert: true, badge: true, sound: true}),
-    ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    abandonPermissions: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    checkPermissions: jest.fn(callback =>
-      process.nextTick(() => callback({alert: true, badge: true, sound: true})),
-    ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    getInitialNotification: jest.fn(() => Promise.resolve(null)) as JestMockFn<
-      $FlowFixMe,
-      $FlowFixMe,
-    >,
-    addListener: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-    removeListeners: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
-  },
   SourceCode: {
     getConstants(): $FlowFixMe {
       return {

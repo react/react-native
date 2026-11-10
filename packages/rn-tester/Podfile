@@ -47,8 +47,6 @@ def pods(target_name, options = {})
   )
   pod 'ReactCommon-Samples', :path => "#{@prefix_path}/ReactCommon/react/nativemodule/samples"
 
-  # Additional Pods which aren't included in the default Podfile
-  pod 'React-RCTPushNotification', :path => "#{@prefix_path}/Libraries/PushNotificationIOS"
   # Additional Pods which are classed as unstable
 
   # RNTester native modules and components

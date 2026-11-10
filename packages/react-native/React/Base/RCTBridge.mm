@@ -95,7 +95,6 @@ NSSet<NSString *> *getCoreModuleClasses(void)
       @"RCTFileRequestHandler",
       @"RCTHTTPRequestHandler",
       @"RCTNetworking",
-      @"RCTPushNotificationManager",
       @"RCTSettingsManager",
       @"RCTBaseTextViewManager",
       @"RCTBaseTextInputViewManager",
