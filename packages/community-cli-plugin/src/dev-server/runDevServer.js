@@ -14,13 +14,11 @@ import type {Reporter, TerminalReportableEvent, TerminalReporter} from 'metro';
 import loadMetroConfig from '../utils/loadMetroConfig';
 import attachKeyHandlers from './attachKeyHandlers';
 import createDevMiddlewareLogger from './createDevMiddlewareLogger';
+import createDevServerMiddleware from './createDevServerMiddleware';
 import isDevServerRunning from './isDevServerRunning';
 import loadCommunityMiddleware from './loadCommunityMiddleware';
-import openStackFrameMiddleware from './openStackFrameMiddleware';
-import openURLMiddleware from './openURLMiddleware';
 import * as version from './version';
 import {createDevMiddleware} from '@react-native/dev-middleware';
-import connect from 'connect';
 import * as Metro from 'metro';
 import path from 'node:path';
 import url from 'node:url';
@@ -125,16 +123,10 @@ async function runDevServer(
     serverBaseUrl: devServerUrl,
     logger: createDevMiddlewareLogger(terminalReporter),
   });
-  const serverBaseUrl = new URL(devServerUrl);
-  const pluginMiddleware = connect()
-    .use(
-      '/open-stack-frame',
-      openStackFrameMiddleware({
-        serverBaseUrl,
-        watchFolders: [unstable_serverRoot ?? projectRoot, ...watchFolders],
-      }),
-    )
-    .use('/open-url', openURLMiddleware({serverBaseUrl}));
+  const pluginMiddleware = createDevServerMiddleware({
+    serverBaseUrl: new URL(devServerUrl),
+    watchFolders: [unstable_serverRoot ?? projectRoot, ...watchFolders],
+  });
 
   const reporter: Reporter = {
     update(event: TerminalReportableEvent) {
@@ -167,8 +159,8 @@ async function runDevServer(
     secureCert: args.cert,
     secureKey: args.key,
     unstable_extraMiddleware: [
-      communityMiddleware,
       pluginMiddleware,
+      communityMiddleware,
       middleware,
     ],
     websocketEndpoints: {
