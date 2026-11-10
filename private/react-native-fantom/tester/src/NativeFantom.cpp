@@ -14,12 +14,14 @@
 #include <react/renderer/components/modal/ModalHostViewShadowNode.h>
 #include <react/renderer/components/scrollview/ScrollViewShadowNode.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
 #include "TesterAppDelegate.h"
 
 #include <jsi/instrumentation.h>
+#include "render/ImageRenderer.h"
 #include "render/RenderFormatOptions.h"
 #include "render/RenderOutput.h"
 #include "render/TextLayout.h"
@@ -113,6 +115,22 @@ std::string NativeFantom::getRenderedOutput(
   auto viewTree = appDelegate_.mountingManager_->getViewTree(surfaceId);
   return appDelegate_.mountingManager_->renderer()->render(
       viewTree, formatOptions);
+}
+
+jsi::Object NativeFantom::takeScreenshot(
+    jsi::Runtime& runtime,
+    SurfaceId surfaceId) {
+  try {
+    auto screenshot = ImageRenderer{}.capture(
+        appDelegate_.mountingManager_->getViewTree(surfaceId), assetPaths_);
+    auto object = jsi::Object::createFromHostObject(runtime, screenshot);
+    object.setExternalMemoryPressure(runtime, screenshot->getMemorySize());
+    return object;
+  } catch (const std::exception& error) {
+    throw jsi::JSError(
+        runtime,
+        std::string("Cannot render Fantom screenshot: ") + error.what());
+  }
 }
 
 void NativeFantom::registerAsset(

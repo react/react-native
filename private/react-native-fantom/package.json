@@ -10,7 +10,8 @@
   "dependencies": {
     "@expo-google-fonts/noto-color-emoji": "0.4.7",
     "babel-plugin-istanbul": "^7.0.0",
-    "dejavu-fonts-ttf": "2.37.3"
+    "dejavu-fonts-ttf": "2.37.3",
+    "pngjs": "7.0.0"
   },
   "peerDependencies": {
     "jest": "^29.7.0",

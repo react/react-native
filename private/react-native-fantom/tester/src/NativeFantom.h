@@ -102,6 +102,7 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
       SurfaceId surfaceId,
       NativeFantomGetRenderedOutputRenderFormatOptions options);
 
+  jsi::Object takeScreenshot(jsi::Runtime &runtime, SurfaceId surfaceId);
   void registerAsset(jsi::Runtime &runtime, const std::string &uri, const std::string &filePath);
   void registerFont(jsi::Runtime &runtime, const std::string &filePath);
 

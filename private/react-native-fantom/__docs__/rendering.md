@@ -72,7 +72,74 @@ and x86 optimized stages producing different rounded channel values when
 compositing the same pixels, including color emoji. These settings apply only to
 Fantom's Skia library.
 
-The scalar selector is an optional `SK_RASTER_PIPELINE_FORCE_SCALAR` definition
-in the pinned Skia source. Gradle patches its prepared source copy, and CMake
-validates the selector without modifying the source. Keep the internal target's
-flags and the public GN flags aligned when changing Skia.
+The pinned Skia source adds optional scalar-stage selection and makes the forced
+raster pipeline apply to sprite and saved-layer compositing. This keeps native
+pixel-format defaults from selecting byte-based alpha rounding instead. Gradle
+patches its prepared source copy, and CMake validates the scalar selector
+without modifying the source. Keep the internal target's flags and the public GN
+flags aligned when changing Skia.
+
+## Screenshot snapshots
+
+`root.takeScreenshot()` paints the currently mounted revision into an immutable
+CPU bitmap. It does not flush pending React work. Captures survive later commits
+and root destruction. Use `isEqual()` to compare their dimensions and pixel rows
+in memory. `saveToFile()` writes a PNG, creating parent directories and
+replacing an existing file.
+
+Use `Fantom.unstable_produceFramesForDuration()` to capture repeatable animation
+states without waiting for real time. Native layout animations need
+`@fantom_flags useSharedAnimatedBackend:true` in the test and produce
+intermediate mounted revisions. Native opacity and transform updates applied
+directly to views are visible to screenshots only after they are committed to
+the mounted tree.
+
+`toMatchSnapshot()` stores a SHA-256 hash of the image dimensions and
+premultiplied RGBA pixel rows. It compares that hash with the ordinary Jest
+snapshot value; it does not decode an expected PNG. An inspectable PNG is kept
+beside the `.snap` file in `<test-file>.screenshots`. PNG encoding is deferred
+until an image must be saved, and PNG bytes are cached for repeated saves. A
+matching hash passes even when the standalone PNG is missing; the runner
+recreates that image from the matching capture without updating the hash.
+
+`toMatchInlineSnapshot()` embeds the same `{type: 'Screenshot', hash}` value in
+the test source. It compares hashes without encoding or saving PNGs, including
+when the inline snapshot is created, updated or fails. Inline failures use
+ordinary text snapshot diagnostics.
+
+Snapshot mismatches retain the received PNG and save a difference PNG in the
+same temporary directory. Failure diagnostics include the paths to the expected,
+received and difference images, including in CI and redirected output. The
+difference highlights changed pixels in red over faded unchanged content; it
+does not affect hash comparison. Missing or unreadable images retain their
+original diagnostics without a difference image. Snapshot updates copy it into
+the baseline directory before cleaning up the temporary file. Unused images are
+removed only during a full successful snapshot update; empty, failed, skipped or
+filtered suites preserve their baselines.
+
+### Painting
+
+The painter traverses Fabric's mounted child order, including stacking changes.
+Yoga supplies the frames for flow and absolute positioning. Overflow clips
+descendants to the view's rounded bounds; each view restores its canvas state
+before painting siblings. Nonidentity affine transforms are centered on the
+view, while identity transforms preserve child coordinates without extra
+floating-point translations. Singular transforms are skipped.
+
+`View`, styled and nested `Text`, `TextInput`, `Image` and `ScrollView` use this
+shared canvas. Text inputs paint values or placeholders, including multiline and
+secure entry. Scroll views offset their content to show the current viewport.
+Backgrounds, solid borders, rounded corners and opacity follow the mounted
+props.
+
+Images support local PNG files (`file://` or filesystem paths) and base64 PNG
+data URIs, with resize modes and tint. Supply network images as local fixtures.
+The shared asset resolver maps bundled `require()` sources to native files while
+keeping their React Native URIs stable in text snapshots.
+
+An empty root produces a transparent viewport; a destroyed root cannot be
+captured. Viewport offsets do not move the screenshot's origin. The renderer
+does not reproduce Android or iOS platform chrome, shadows or perspective
+transforms. Additional font fixtures can be registered with
+`NativeFantom.registerFont()` before mounting; the default fonts need no
+per-test registration.
