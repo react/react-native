@@ -46,10 +46,10 @@ import com.facebook.react.modules.toast.ToastModule
 import com.facebook.react.modules.vibration.VibrationModule
 import com.facebook.react.modules.websocket.WebSocketModule
 import com.facebook.react.uimanager.ViewManager
+import com.facebook.react.views.activityindicator.ReactActivityIndicatorViewManager
 import com.facebook.react.views.drawer.ReactDrawerLayoutManager
 import com.facebook.react.views.image.ReactImageManager
 import com.facebook.react.views.modal.ReactModalHostManager
-import com.facebook.react.views.progressbar.ReactProgressBarViewManager
 import com.facebook.react.views.safeareaview.ReactSafeAreaViewManager
 import com.facebook.react.views.scroll.ReactHorizontalScrollContainerViewManager
 import com.facebook.react.views.scroll.ReactHorizontalScrollViewManager
@@ -144,7 +144,7 @@ constructor(private val config: MainPackageConfig? = null) :
           ReactDrawerLayoutManager(),
           ReactHorizontalScrollViewManager(),
           ReactHorizontalScrollContainerViewManager(),
-          ReactProgressBarViewManager(),
+          ReactActivityIndicatorViewManager(),
           if (ReactNativeFeatureFlags.useNestedScrollViewAndroid()) ReactNestedScrollViewManager()
           else ReactScrollViewManager(),
           ReactSwitchManager(),
@@ -176,8 +176,8 @@ constructor(private val config: MainPackageConfig? = null) :
               ModuleSpec.viewManagerSpec { ReactHorizontalScrollViewManager() },
           ReactHorizontalScrollContainerViewManager.REACT_CLASS to
               ModuleSpec.viewManagerSpec { ReactHorizontalScrollContainerViewManager() },
-          ReactProgressBarViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactProgressBarViewManager() },
+          ReactActivityIndicatorViewManager.REACT_CLASS to
+              ModuleSpec.viewManagerSpec { ReactActivityIndicatorViewManager() },
           ReactSafeAreaViewManager.REACT_CLASS to
               ModuleSpec.viewManagerSpec { ReactSafeAreaViewManager() },
           ReactScrollViewManager.REACT_CLASS to

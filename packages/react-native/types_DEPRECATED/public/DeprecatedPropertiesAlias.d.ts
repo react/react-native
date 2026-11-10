@@ -27,7 +27,6 @@ import {
   ActivityIndicatorProps,
   ActivityIndicatorIOSProps,
   DrawerLayoutAndroidProps,
-  ProgressBarAndroidProps,
   RefreshControlProps,
   RefreshControlPropsIOS,
   RefreshControlPropsAndroid,
@@ -113,9 +112,6 @@ export type ActivityIndicatorIOSProperties = ActivityIndicatorIOSProps;
 
 /** @deprecated Use DrawerLayoutAndroidProps */
 export type DrawerLayoutAndroidProperties = DrawerLayoutAndroidProps;
-
-/** @deprecated Use ProgressBarAndroidProps */
-export type ProgressBarAndroidProperties = ProgressBarAndroidProps;
 
 /** @deprecated Use RefreshControlProps */
 export type RefreshControlProperties = RefreshControlProps;
