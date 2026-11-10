@@ -27,7 +27,7 @@ runs:
       run: |
         for attempt in 1 2 3; do
           echo "Attempt $attempt of 3"
-          if yarn fantom; then
+          if yarn fantom --ci; then
             exit 0
           fi
           if [ "$attempt" -lt 3 ]; then

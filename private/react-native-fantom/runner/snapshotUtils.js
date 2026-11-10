@@ -320,6 +320,11 @@ export const updateSnapshotsAndGetJestSnapshotResult = (
         continue;
       }
 
+      if (snapshotState._updateSnapshot !== 'all') {
+        snapshotState.unmatched++;
+        snapshotState._uncheckedKeys.delete(key);
+        continue;
+      }
       snapshotState._dirty = true;
       snapshotState._snapshotData[key] = addExtraLineBreaks(result.value);
       snapshotState.updated++;
