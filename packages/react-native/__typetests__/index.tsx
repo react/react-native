@@ -120,6 +120,7 @@ import {
   findNodeHandle,
   requireNativeComponent,
   useColorScheme,
+  useScreenDimensions,
   useWindowDimensions,
   // @ts-ignore
   SectionListData,
@@ -163,6 +164,11 @@ function testDimensions() {
     dimensionsListener,
   );
   subscription.remove();
+}
+
+function TestUseScreenDimensions() {
+  const {width, height, scale, fontScale} = useScreenDimensions();
+  const metrics: number[] = [width, height, scale, fontScale];
 }
 
 function TextUseWindowDimensions() {
