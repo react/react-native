@@ -140,9 +140,10 @@ internal object NetworkEventUtil {
       rawData: ByteArray,
   ) {
     if (InspectorNetworkReporter.isDebuggingEnabled()) {
+      val encodedData = Base64.encodeToString(rawData, Base64.NO_WRAP)
       InspectorNetworkReporter.maybeStoreResponseBody(
           devToolsRequestId,
-          Base64.encodeToString(rawData, Base64.NO_WRAP),
+          encodedData,
           true,
       )
     }
