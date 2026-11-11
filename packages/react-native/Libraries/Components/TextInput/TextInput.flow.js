@@ -101,6 +101,10 @@ type TextInputKeyPressEventData = Readonly<{
   key: string,
   target?: ?number,
   eventCount: number,
+  altKey?: boolean,
+  ctrlKey?: boolean,
+  metaKey?: boolean,
+  shiftKey?: boolean,
   ...
 }>;
 
@@ -850,6 +854,10 @@ type TextInputBaseProps = Readonly<{
    * This will be called with `{ nativeEvent: { key: keyValue } }`
    * where `keyValue` is `'Enter'` or `'Backspace'` for respective keys and
    * the typed-in character otherwise including `' '` for space.
+   * On Android, keys pressed on a hardware keyboard are reported as well, each
+   * by its `KeyboardEvent.key` value (such as `'ArrowLeft'`, `'Shift'` or
+   * `'F1'`), with `altKey`, `ctrlKey`, `metaKey` and `shiftKey` set for the
+   * modifier keys held.
    * Fires before `onChange` callbacks.
    */
   onKeyPress?: ?(e: TextInputKeyPressEvent) => unknown,
