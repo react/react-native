@@ -123,6 +123,13 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
       &static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode)
            .yogaConfig_;
 
+  const auto& yogaSourceShadowNode =
+      static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode);
+  if (YGNodeGetOwner(&yogaSourceShadowNode.yogaNode_) == nullptr) {
+    yogaSourceShadowNode.wasClonedWhileUnowned_.store(
+        true, std::memory_order_relaxed);
+  }
+
   YGNodeSetContext(&yogaNode_, this);
   yogaNode_.setOwner(nullptr);
   YGNodeSetConfig(
@@ -202,16 +209,24 @@ void YogaLayoutableShadowNode::adoptYogaChild(size_t index) {
 
   auto& childNode =
       dynamic_cast<const YogaLayoutableShadowNode&>(*getChildren().at(index));
+  bool isUnowned = YGNodeGetOwner(&childNode.yogaNode_) == nullptr;
 
-  if (YGNodeGetOwner(&childNode.yogaNode_) == nullptr) {
+  if (isUnowned &&
+      !childNode.wasClonedWhileUnowned_.load(std::memory_order_relaxed)) {
     // The child node is not owned.
     childNode.yogaNode_.setOwner(&yogaNode_);
     // At this point the child yoga node must be already inserted by the caller.
     // react_native_assert(layoutableChildNode.yogaNode_.isDirty());
   } else {
-    // The child is owned by some other node, we need to clone that.
+    // The child is owned by some other node, or shares its children with a
+    // clone, so we need to clone it.
     // TODO: At this point, React has wrong reference to the node. (T138668036)
     auto clonedChildNode = childNode.clone({});
+    if (isUnowned) {
+      // Its children may hold a layout zeroed out under the hidden clone.
+      static_cast<YogaLayoutableShadowNode&>(*clonedChildNode)
+          .yogaNode_.setDirty(true);
+    }
 
     // Replace the child node with a newly cloned one in the children list.
     replaceChild(childNode, clonedChildNode, index);

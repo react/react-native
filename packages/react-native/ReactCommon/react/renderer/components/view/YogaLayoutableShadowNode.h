@@ -9,6 +9,7 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <atomic>
 #include <memory>
 #include <vector>
 
@@ -215,6 +216,13 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * Whether the full Yoga subtree of this Node has been configured.
    */
   bool yogaTreeHasBeenConfigured_{false};
+
+  /*
+   * Set when this node is cloned while no Yoga node owns it. React can append
+   * such a node after committing its clone (it reveals a hidden subtree's
+   * original instance), so it must be cloned rather than adopted in place.
+   */
+  mutable std::atomic<bool> wasClonedWhileUnowned_{false};
 };
 
 } // namespace facebook::react
