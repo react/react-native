@@ -41,8 +41,8 @@ struct LayoutResults {
   // they hold until the node, its config or its direction changes. A leaf
   // stores its measured min-content without padding and border, which doesn't
   // depend on the owner. A container stores its full min-content, which
-  // depends on `minContentOwnerWidth` when a percentage padding or margin in
-  // the subtree it walked resolves against it
+  // depends on `minContentOwnerWidth` when its own percentage padding, or a
+  // percentage padding or margin below it, resolves against it
   // (`minContentResolvesAgainstOwnerWidth`).
   std::array<uint32_t, 2> minContentGeneration = {};
   std::array<float, 2> minContentOwnerWidth = {{YGUndefined, YGUndefined}};

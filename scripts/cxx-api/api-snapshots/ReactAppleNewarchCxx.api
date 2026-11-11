@@ -8255,7 +8255,8 @@ class facebook::yoga::Node : public YGNode {
 class facebook::yoga::Style {
   public bool flexEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool flexStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
-  public bool hasPercentMarginOrPadding() const;
+  public bool hasPercentMargin() const;
+  public bool hasPercentPadding() const;
   public bool horizontalInsetsDefined() const;
   public bool inlineEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool inlineStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
