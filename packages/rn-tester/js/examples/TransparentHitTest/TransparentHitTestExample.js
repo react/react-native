@@ -12,15 +12,17 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import RNTesterText from '../../components/RNTesterText';
+
 const React = require('react');
-const {Alert, Text, TouchableOpacity, View} = require('react-native');
+const {Alert, TouchableOpacity, View} = require('react-native');
 
 class TransparentHitTestExample extends React.Component<{...}> {
   render(): React.Node {
     return (
       <View style={{flex: 1}}>
         <TouchableOpacity onPress={() => Alert.alert('Alert', 'Hi!')}>
-          <Text>HELLO!</Text>
+          <RNTesterText>HELLO!</RNTesterText>
         </TouchableOpacity>
 
         <View
@@ -38,7 +40,6 @@ class TransparentHitTestExample extends React.Component<{...}> {
     );
   }
 }
-
 exports.title = 'TransparentHitTestExample';
 exports.category = 'UI';
 exports.displayName = 'TransparentHitTestExample';

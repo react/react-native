@@ -8,17 +8,15 @@
  * @format
  */
 
-import type {
-  TestInlineSnapshotResults,
-  TestSnapshotResults,
-} from '../runtime/snapshotContext';
+import type {TestCaseResult} from '../runtime/setup';
+import type {TestInlineSnapshotResults} from '../runtime/snapshotContext';
 import type {SnapshotState} from 'jest-snapshot';
 
 import {symbolicateStackTrace} from './utils';
 import fs from 'node:fs';
 import path from 'node:path';
 
-type JestSnapshotResult = {
+export type JestSnapshotResult = {
   added: number,
   fileDeleted: boolean,
   matched: number,
@@ -295,9 +293,15 @@ export function saveInlineSnapshotsToSource(
 
 export const updateSnapshotsAndGetJestSnapshotResult = (
   snapshotState: SnapshotState,
-  testSnapshotResults: Array<TestSnapshotResults>,
+  testResults: ReadonlyArray<
+    Readonly<{
+      status: TestCaseResult['status'],
+      snapshotResults: TestCaseResult['snapshotResults'],
+      ...
+    }>,
+  >,
 ): JestSnapshotResult => {
-  for (const snapshotResults of testSnapshotResults) {
+  for (const {snapshotResults} of testResults) {
     for (const [key, result] of Object.entries(snapshotResults)) {
       if (result.pass) {
         snapshotState.matched++;
@@ -314,12 +318,16 @@ export const updateSnapshotsAndGetJestSnapshotResult = (
         snapshotState._dirty = true;
         snapshotState._snapshotData[key] = addExtraLineBreaks(result.value);
         snapshotState.added++;
-        snapshotState.matched++;
         snapshotState._uncheckedKeys.delete(key);
 
         continue;
       }
 
+      if (snapshotState._updateSnapshot !== 'all') {
+        snapshotState.unmatched++;
+        snapshotState._uncheckedKeys.delete(key);
+        continue;
+      }
       snapshotState._dirty = true;
       snapshotState._snapshotData[key] = addExtraLineBreaks(result.value);
       snapshotState.updated++;
@@ -327,8 +335,11 @@ export const updateSnapshotsAndGetJestSnapshotResult = (
     }
   }
 
-  const uncheckedCount = snapshotState.getUncheckedCount();
-  const uncheckedKeys = snapshotState.getUncheckedKeys();
+  const allTestsPassed =
+    testResults.length > 0 &&
+    testResults.every(result => result.status === 'passed');
+  const uncheckedCount = allTestsPassed ? snapshotState.getUncheckedCount() : 0;
+  const uncheckedKeys = allTestsPassed ? snapshotState.getUncheckedKeys() : [];
   if (uncheckedCount) {
     snapshotState.removeUncheckedKeys();
   }
@@ -338,7 +349,8 @@ export const updateSnapshotsAndGetJestSnapshotResult = (
     added: snapshotState.added,
     fileDeleted: status.deleted,
     matched: snapshotState.matched,
-    unchecked: status.deleted ? 0 : snapshotState.getUncheckedCount(),
+    unchecked:
+      status.deleted || !allTestsPassed ? 0 : snapshotState.getUncheckedCount(),
     uncheckedKeys: [...uncheckedKeys],
     unmatched: snapshotState.unmatched,
     updated: snapshotState.updated,

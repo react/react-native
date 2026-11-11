@@ -36,7 +36,7 @@ type AndroidProps = Readonly<{
 
 type TouchableHighlightBaseProps = Readonly<{
   /**
-   * Opacity of the wrapped view when touch is active. Requires `underlayColor` to be set.
+   * Opacity of the wrapped view when touch is active.
    *
    * @default `0.85`
    */

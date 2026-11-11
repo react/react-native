@@ -22,6 +22,7 @@ const {
   generateSynthPackageSwift,
   hasMixedLanguageSources,
   hasPodspec,
+  isMixedLanguageSourceList,
   linkHeaderTree,
   main,
   reactDescriptor,
@@ -1151,6 +1152,31 @@ describe('MissingManifestError + reportMissingManifests', () => {
   });
 });
 
+describe('isMixedLanguageSourceList', () => {
+  it.each(['m', 'mm', 'c', 'cc', 'cpp', 'cxx'])(
+    'recognizes Swift mixed with .%s sources, ignoring case',
+    extension => {
+      expect(
+        isMixedLanguageSourceList([
+          'ios/Foo.SWIFT',
+          `ios/Bar.${extension.toUpperCase()}`,
+        ]),
+      ).toBe(true);
+    },
+  );
+
+  it.each([
+    ['empty', []],
+    ['Swift only', ['Foo.swift']],
+    ['C-family only', ['Foo.m', 'Bar.cpp']],
+    ['headers with Swift', ['Foo.h', 'Bar.hpp', 'Foo.swift']],
+    ['non-source suffixes', ['Foo.swift.bak', 'Bar.m']],
+    ['non-C-family suffixes', ['Foo.swift', 'Bar.cpp.bak']],
+  ])('rejects %s source lists', (_name, files) => {
+    expect(isMixedLanguageSourceList(files)).toBe(false);
+  });
+});
+
 describe('hasMixedLanguageSources', () => {
   let root;
 
@@ -1206,6 +1232,158 @@ function useTempApps() {
 
   return {created, spies};
 }
+
+describe('main() — missing-manifest podspec sources', () => {
+  const {created} = useTempApps();
+  let isolated;
+
+  beforeEach(() => {
+    jest.isolateModules(() => {
+      jest.doMock('../read-podspec', () => {
+        const actual = jest.requireActual('../read-podspec');
+        return {
+          ...actual,
+          // Exercise the real podspec parser without spawning CocoaPods.
+          readPodspecCached: podspecPath =>
+            actual.flattenSubspecs(actual.regexPodspec(podspecPath)),
+        };
+      });
+      isolated = require('../generate-spm-autolinking');
+    });
+  });
+
+  afterEach(() => {
+    jest.dontMock('../read-podspec');
+  });
+
+  function missingManifest({
+    sourceFiles,
+    excludeFiles = '',
+    swift = false,
+    podspecDir = '',
+    decoyPodspec = false,
+    iosConfig = (_depRoot, _podspecPath) => ({}),
+  }) {
+    const appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-pod-sources-'));
+    created.push(appRoot);
+    const rnRoot = path.join(appRoot, 'rn');
+    fs.mkdirSync(rnRoot);
+    fs.writeFileSync(
+      path.join(appRoot, 'package.json'),
+      JSON.stringify({name: 'app'}),
+    );
+    const depRoot = path.join(appRoot, 'node_modules', 'react-native-foo');
+    fs.mkdirSync(path.join(depRoot, 'ios'), {recursive: true});
+    fs.mkdirSync(path.join(depRoot, 'expo', 'ios'), {recursive: true});
+    for (const file of ['ios/Foo.h', 'ios/Foo.m', 'expo/ios/X.swift']) {
+      fs.writeFileSync(path.join(depRoot, file), '');
+    }
+    if (swift) fs.writeFileSync(path.join(depRoot, 'ios/Bar.swift'), '');
+    const podspecPath = path.join(depRoot, podspecDir, 'Foo.podspec');
+    fs.writeFileSync(
+      podspecPath,
+      'Pod::Spec.new do |s|\n' +
+        '  s.name = "Foo"\n' +
+        `  s.source_files = "${sourceFiles}"\n` +
+        `  s.exclude_files = "${excludeFiles}"\n` +
+        'end\n',
+    );
+    if (decoyPodspec) {
+      fs.writeFileSync(
+        path.join(depRoot, 'A.podspec'),
+        'Pod::Spec.new do |s|\n' +
+          '  s.name = "A"\n' +
+          '  s.source_files = "ios/**/*.{h,m}"\n' +
+          'end\n',
+      );
+    }
+    const autolinkDir = path.join(appRoot, 'build/generated/autolinking');
+    fs.mkdirSync(autolinkDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(autolinkDir, 'autolinking.json'),
+      JSON.stringify({
+        dependencies: {
+          'react-native-foo': {
+            root: depRoot,
+            platforms: {ios: iosConfig(depRoot, podspecPath)},
+          },
+        },
+      }),
+    );
+    let error;
+    try {
+      isolated.main(['--app-root', appRoot, '--react-native-root', rnRoot]);
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(isolated.MissingManifestError);
+    expect(error.missingManifests).toHaveLength(1);
+    return error.missingManifests[0];
+  }
+
+  it('ignores stray Swift outside podspec sources and recommends scaffolding', () => {
+    const entry = missingManifest({sourceFiles: 'ios/**/*.{h,m,mm}'});
+    expect(entry.mixed).toBe(false);
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining('npx react-native spm scaffold'),
+    );
+    expect(console.error).not.toHaveBeenCalledWith(
+      expect.stringContaining('mixed Swift'),
+    );
+  });
+
+  it('reports mixed languages when the podspec includes Swift and Objective-C', () => {
+    const entry = missingManifest({
+      sourceFiles: 'ios/**/*.{h,m,swift}',
+      swift: true,
+    });
+    expect(entry.mixed).toBe(true);
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining('mixed Swift'),
+    );
+    expect(console.error).not.toHaveBeenCalledWith(
+      expect.stringContaining('npx react-native spm scaffold'),
+    );
+  });
+
+  it('judges the configured podspecPath, not the first podspec found', () => {
+    const entry = missingManifest({
+      sourceFiles: 'ios/**/*.{h,m,swift}',
+      swift: true,
+      decoyPodspec: true,
+      iosConfig: (_depRoot, podspecPath) => ({podspecPath}),
+    });
+    expect(entry.mixed).toBe(true);
+  });
+
+  it('expands podspec globs from the package root when sourceDir is nested', () => {
+    const entry = missingManifest({
+      sourceFiles: 'ios/**/*.{h,m,swift}',
+      swift: true,
+      podspecDir: 'ios',
+      iosConfig: (depRoot, podspecPath) => ({
+        podspecPath,
+        sourceDir: path.join(depRoot, 'ios'),
+      }),
+    });
+    expect(entry.mixed).toBe(true);
+  });
+
+  it('recommends scaffolding when exclude_files removes the only included Swift file', () => {
+    const entry = missingManifest({
+      sourceFiles: 'ios/**/*.{h,m,swift}',
+      excludeFiles: 'ios/Bar.swift',
+      swift: true,
+    });
+    expect(entry.mixed).toBe(false);
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining('npx react-native spm scaffold'),
+    );
+    expect(console.error).not.toHaveBeenCalledWith(
+      expect.stringContaining('mixed Swift'),
+    );
+  });
+});
 
 // ---------------------------------------------------------------------------
 // main() — autolinking plugin host exemption

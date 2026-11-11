@@ -25,6 +25,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
@@ -392,6 +393,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   override fun setLineHeight(lineHeight: Int) {
     textAttributes.lineHeight = lineHeight.toFloat()
     // We don't call super.setLineHeight() because LineHeight is fully managed by ReactNative
+    updateHint()
   }
 
   override fun onScrollChanged(horiz: Int, vert: Int, oldHoriz: Int, oldVert: Int) {
@@ -669,9 +671,30 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public fun setPlaceholder(placeholder: String?) {
     if (placeholder != this.placeholder) {
       this.placeholder = placeholder
-      hint = placeholder
+      updateHint()
     }
     updatePlaceholderEllipsize()
+  }
+
+  // The text takes its line height from a span (see addSpansFromStyleAttributes); the hint needs
+  // the same span, or it is drawn with the font's own line height, off the text's baseline.
+  private fun updateHint() {
+    val placeholder = placeholder
+    val lineHeight = textAttributes.lineHeight
+    hint =
+        // A removed lineHeight prop comes back as 0, and a 0-high span would hide the hint.
+        if (placeholder.isNullOrEmpty() || lineHeight.isNaN() || lineHeight <= 0f) {
+          placeholder
+        } else {
+          SpannableString(placeholder).apply {
+            setSpan(
+                CustomLineHeightSpan(textAttributes.effectiveLineHeight),
+                0,
+                length,
+                Spanned.SPAN_INCLUSIVE_INCLUSIVE,
+            )
+          }
+        }
   }
 
   private fun updatePlaceholderEllipsize() {
@@ -1176,6 +1199,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     if (!effectiveLetterSpacing.isNaN()) {
       letterSpacing = effectiveLetterSpacing
     }
+    updateHint()
   }
 
   /**

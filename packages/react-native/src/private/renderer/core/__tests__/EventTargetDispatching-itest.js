@@ -4,7 +4,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags enableNativeEventTargetEventDispatching:*
  * @fantom_flags enableImperativeEvents:*
  * @flow strict-local
  * @format
@@ -480,13 +479,10 @@ describe('EventTarget-based Event Dispatching', () => {
   });
 
   // --- addEventListener / removeEventListener on refs ---
-  // These tests require both `enableNativeEventTargetEventDispatching` and
-  // `enableImperativeEvents` to be enabled, since the public `addEventListener`
-  // API on element refs is only available when both flags are on. They are
-  // skipped for the other flag combinations.
+  // These tests require `enableImperativeEvents` to be enabled, since the
+  // public `addEventListener` API on element refs is only available then.
 
-  (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
-    ReactNativeFeatureFlags.enableImperativeEvents()
+  (ReactNativeFeatureFlags.enableImperativeEvents() === true
     ? describe
     : describe.skip)('addEventListener / removeEventListener', () => {
     it('addEventListener on a ref receives dispatched events', () => {
@@ -869,74 +865,66 @@ describe('EventTarget-based Event Dispatching', () => {
     }
   });
 
-  (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()
-    ? it
-    : it.skip)(
-    'event.target points to the original target and event.currentTarget changes at each step',
-    () => {
-      const root = Fantom.createRoot();
-      const parentRef = React.createRef<React.ElementRef<typeof View>>();
-      const childRef = React.createRef<React.ElementRef<typeof View>>();
-      const targets: Array<{target: unknown, currentTarget: unknown}> = [];
+  it('event.target points to the original target and event.currentTarget changes at each step', () => {
+    const root = Fantom.createRoot();
+    const parentRef = React.createRef<React.ElementRef<typeof View>>();
+    const childRef = React.createRef<React.ElementRef<typeof View>>();
+    const targets: Array<{target: unknown, currentTarget: unknown}> = [];
 
-      Fantom.runTask(() => {
-        root.render(
+    Fantom.runTask(() => {
+      root.render(
+        <View
+          ref={parentRef}
+          onPointerUpCapture={(e: $FlowFixMe) => {
+            targets.push({
+              target: e.target,
+              currentTarget: e.currentTarget,
+            });
+          }}
+          onPointerUp={(e: $FlowFixMe) => {
+            targets.push({
+              target: e.target,
+              currentTarget: e.currentTarget,
+            });
+          }}>
           <View
-            ref={parentRef}
-            onPointerUpCapture={(e: $FlowFixMe) => {
-              targets.push({
-                target: e.target,
-                currentTarget: e.currentTarget,
-              });
-            }}
+            ref={childRef}
             onPointerUp={(e: $FlowFixMe) => {
               targets.push({
                 target: e.target,
                 currentTarget: e.currentTarget,
               });
-            }}>
-            <View
-              ref={childRef}
-              onPointerUp={(e: $FlowFixMe) => {
-                targets.push({
-                  target: e.target,
-                  currentTarget: e.currentTarget,
-                });
-              }}
-            />
-          </View>,
-        );
-      });
-
-      Fantom.dispatchNativeEvent(
-        childRef,
-        'onPointerUp',
-        {x: 0, y: 0},
-        {
-          category: Fantom.NativeEventCategory.Discrete,
-        },
+            }}
+          />
+        </View>,
       );
+    });
 
-      expect(targets).toHaveLength(3);
+    Fantom.dispatchNativeEvent(
+      childRef,
+      'onPointerUp',
+      {x: 0, y: 0},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
 
-      // event.target is always the original target element
-      expect(targets[0].target).toBe(childRef.current);
-      expect(targets[1].target).toBe(childRef.current);
-      expect(targets[2].target).toBe(childRef.current);
+    expect(targets).toHaveLength(3);
 
-      // event.currentTarget changes at each propagation step
-      // Capture: parent
-      expect(targets[0].currentTarget).toBe(parentRef.current);
-      // Bubble: child, then parent
-      expect(targets[1].currentTarget).toBe(childRef.current);
-      expect(targets[2].currentTarget).toBe(parentRef.current);
-    },
-  );
+    // event.target is always the original target element
+    expect(targets[0].target).toBe(childRef.current);
+    expect(targets[1].target).toBe(childRef.current);
+    expect(targets[2].target).toBe(childRef.current);
 
-  (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
-    ReactNativeFeatureFlags.enableImperativeEvents()
-    ? it
-    : it.skip)(
+    // event.currentTarget changes at each propagation step
+    // Capture: parent
+    expect(targets[0].currentTarget).toBe(parentRef.current);
+    // Bubble: child, then parent
+    expect(targets[1].currentTarget).toBe(childRef.current);
+    expect(targets[2].currentTarget).toBe(parentRef.current);
+  });
+
+  (ReactNativeFeatureFlags.enableImperativeEvents() === true ? it : it.skip)(
     'direct (non-bubbling) events do not propagate via addEventListener',
     () => {
       const root = Fantom.createRoot();
@@ -983,8 +971,7 @@ describe('EventTarget-based Event Dispatching', () => {
     },
   );
 
-  (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
-    ReactNativeFeatureFlags.enableImperativeEvents()
+  (ReactNativeFeatureFlags.enableImperativeEvents() === true
     ? describe
     : describe.skip)('bubbling to document element and document', () => {
     it('event bubbles from child up to the document element', () => {
@@ -1374,9 +1361,7 @@ describe('EventTarget-based Event Dispatching', () => {
     });
   });
 
-  (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()
-    ? describe
-    : describe.skip)('event timestamps', () => {
+  describe('event timestamps', () => {
     it('event preserves native timestamp from nativeEvent.timeStamp', () => {
       const root = Fantom.createRoot();
       const ref = React.createRef<React.ElementRef<typeof View>>();
@@ -1661,11 +1646,8 @@ describe('EventTarget-based Event Dispatching', () => {
   });
 
   // The dispatch-behavior tests use `addEventListener` on refs and the
-  // document element, which is only available when both
-  // `enableNativeEventTargetEventDispatching` and `enableImperativeEvents`
-  // are enabled.
-  (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
-    ReactNativeFeatureFlags.enableImperativeEvents()
+  // document element, which requires `enableImperativeEvents` to be enabled.
+  (ReactNativeFeatureFlags.enableImperativeEvents() === true
     ? describe
     : describe.skip)('direct events (rnIsDirect) — dispatch behavior', () => {
     it('dispatches onLayout to the target but never to ancestor onLayout props or bubble listeners', () => {
