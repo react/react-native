@@ -5,15 +5,38 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "Transform.h"
+#include <react/renderer/graphics/Transform.h>
 
 #include <cmath>
+#include <limits>
 
 #include <glog/logging.h>
 #include <react/debug/react_native_assert.h>
+#include <react/renderer/graphics/TransformUtils.h>
 #include <react/utils/FloatComparison.h>
 
 namespace facebook::react {
+
+namespace {
+
+// A depth from 0 up to 1px renders as 1px:
+// https://drafts.csswg.org/css-transforms-2/#funcdef-perspective
+Float renderedDepth(Float perspective) {
+  return perspective >= 0 && perspective < 1 ? 1 : perspective;
+}
+
+Float inverseDepth(const TransformOperation& perspective) {
+  return 1 / renderedDepth(perspective.x.resolve(0));
+}
+
+// A perspective interpolates as its matrix, whose m34 is -1 / depth, and an
+// inverse depth of 0 is no perspective:
+// https://drafts.csswg.org/css-transforms-2/#interpolation-of-transform-functions
+Transform perspectiveOfInverseDepth(Float inverse) {
+  return inverse == 0 ? Transform{} : Transform::Perspective(1 / inverse);
+}
+
+} // namespace
 
 /* static */ Transform Transform::Identity() noexcept {
   return {};
@@ -36,7 +59,7 @@ namespace facebook::react {
           .x = ValueUnit(perspective, UnitType::Point),
           .y = Zero,
           .z = Zero});
-  transform.matrix[11] = -1 / perspective;
+  transform.matrix[11] = -1 / renderedDepth(perspective);
   return transform;
 }
 
@@ -217,9 +240,12 @@ Transform::Translate(Float x, Float y, Float z) noexcept {
           .y = Zero,
           .z = Zero};
     case TransformOperationType::Perspective:
+      // No perspective: an infinite depth, whose m34 is 0.
       return TransformOperation{
           .type = TransformOperationType::Perspective,
-          .x = Zero,
+          .x =
+              ValueUnit{
+                  std::numeric_limits<Float>::infinity(), UnitType::Point},
           .y = Zero,
           .z = Zero};
     case TransformOperationType::Scale:
@@ -255,9 +281,17 @@ Transform::Translate(Float x, Float y, Float z) noexcept {
 
 /* static */ Transform Transform::Interpolate(
     Float animationProgress,
-    const Transform& lhs,
-    const Transform& rhs,
+    const Transform& declaredLhs,
+    const Transform& declaredRhs,
     const Size& size) {
+  // A transform holding a non-finite number is an invalid declaration, which
+  // animates as no transform does. A valid one animates however large its
+  // matrix grows, and a frame whose matrix cannot be drawn is drawn
+  // untransformed (BaseViewProps::resolveTransform).
+  const auto noTransform = Transform{};
+  const auto& lhs = hasFiniteOperands(declaredLhs) ? declaredLhs : noTransform;
+  const auto& rhs = hasFiniteOperands(declaredRhs) ? declaredRhs : noTransform;
+
   // Iterate through operations and reconstruct an interpolated resulting
   // transform If at any point we hit an "Arbitrary" Transform, return at that
   // point
@@ -301,6 +335,15 @@ Transform::Translate(Float x, Float y, Float z) noexcept {
              : Transform::DefaultTransformOperation(type));
     react_native_assert(type == lhsOp.type);
     react_native_assert(type == rhsOp.type);
+
+    if (type == TransformOperationType::Perspective) {
+      result =
+          result *
+          perspectiveOfInverseDepth(
+              inverseDepth(lhsOp) +
+              (inverseDepth(rhsOp) - inverseDepth(lhsOp)) * animationProgress);
+      continue;
+    }
 
     result = result *
         Transform::FromTransformOperation(

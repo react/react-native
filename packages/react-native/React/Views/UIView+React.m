@@ -10,6 +10,7 @@
 #import <objc/runtime.h>
 
 #import "RCTAssert.h"
+#import "RCTConvert+Transform.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
 
@@ -272,6 +273,12 @@ static void updateTransform(UIView *view)
         CATransform3DConcat(CATransform3DMakeTranslation(-anchorPointX, -anchorPointY, -anchorPointZ), transform);
   } else {
     transform = view.reactTransform;
+  }
+
+  // A transform whose origin's translations overflow it is drawn untransformed, as RCTConvert draws one that
+  // overflows on its own.
+  if (!RCTIsFiniteTransform(transform)) {
+    transform = CATransform3DIdentity;
   }
 
   view.layer.transform = transform;
