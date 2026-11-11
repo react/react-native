@@ -91,4 +91,7 @@
 
   <!-- tag marks that BaseViewManager installed the no-op touch listener -->
   <item type="id" name="noop_touch_listener"/>
+
+  <!-- tag is used to store the view the last tap in the window focused -->
+  <item type="id" name="tap_focused_view"/>
 </resources>
