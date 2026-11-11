@@ -178,6 +178,21 @@ TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsOnlyOnce) {
       static_cast<const ViewProps&>(*third->getProps()).opacity, 0.25);
 }
 
+// Another clone of a node whose props don't include the props set by
+// `setNativeProps_DEPRECATED` still applies them, even after a clone of the
+// same node already did.
+TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsToEveryNodeWithoutThem) {
+  auto original = currentViewNode();
+  uiManager_->setNativeProps_DEPRECATED(
+      original, RawProps(folly::dynamic::object("opacity", 0.5)));
+
+  original->clone({});
+  auto second = original->clone({});
+  EXPECT_NE(second->getProps(), original->getProps());
+  EXPECT_FLOAT_EQ(
+      static_cast<const ViewProps&>(*second->getProps()).opacity, 0.5);
+}
+
 // After a React re-render replaces a node's props, the next clone applies the
 // props set by `setNativeProps_DEPRECATED` again.
 TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsAfterReactRender) {

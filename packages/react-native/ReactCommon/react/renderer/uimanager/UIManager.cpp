@@ -146,11 +146,12 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
         //
         // The result of this operation is the new `nativeProps_DEPRECATED`.
         family.nativeProps_DEPRECATED =
-            std::make_unique<folly::dynamic>(mergeDynamicProps(
-                *family.nativeProps_DEPRECATED, // source
-                (folly::dynamic)rawProps, // patch
-                NullValueStrategy::Ignore));
-        family.nativePropsVersion_DEPRECATED++;
+            std::make_shared<ShadowNodeFamily::NativeProps_DEPRECATED>(
+                ShadowNodeFamily::NativeProps_DEPRECATED{
+                    .props = mergeDynamicProps(
+                        family.nativeProps_DEPRECATED->props, // source
+                        (folly::dynamic)rawProps, // patch
+                        NullValueStrategy::Ignore)});
 
         // 2. Compute the final set of props.
         //
@@ -162,7 +163,7 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
         // We use these finalProps as source of truth for the component.
         finalProps = mergeDynamicProps(
             (folly::dynamic)rawProps, // source
-            *family.nativeProps_DEPRECATED, // patch
+            family.nativeProps_DEPRECATED->props, // patch
             NullValueStrategy::Override);
       }
     }
@@ -466,20 +467,23 @@ void UIManager::setNativeProps_DEPRECATED(
   auto& family = shadowNode->getFamily();
   {
     std::lock_guard<std::mutex> lock(family.nativePropsMutex);
-    family.nativePropsVersion_DEPRECATED++;
     if (family.nativeProps_DEPRECATED) {
       // Values in `rawProps` patch (take precedence over)
       // `nativeProps_DEPRECATED`. For example, if both
       // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'. Value from
       // `rawProps` overrides what was previously in `nativeProps_DEPRECATED`.
       family.nativeProps_DEPRECATED =
-          std::make_unique<folly::dynamic>(mergeDynamicProps(
-              *family.nativeProps_DEPRECATED,
-              (folly::dynamic)rawProps,
-              NullValueStrategy::Override));
+          std::make_shared<ShadowNodeFamily::NativeProps_DEPRECATED>(
+              ShadowNodeFamily::NativeProps_DEPRECATED{
+                  .props = mergeDynamicProps(
+                      family.nativeProps_DEPRECATED->props,
+                      (folly::dynamic)rawProps,
+                      NullValueStrategy::Override)});
     } else {
       family.nativeProps_DEPRECATED =
-          std::make_unique<folly::dynamic>((folly::dynamic)rawProps);
+          std::make_shared<ShadowNodeFamily::NativeProps_DEPRECATED>(
+              ShadowNodeFamily::NativeProps_DEPRECATED{
+                  .props = (folly::dynamic)rawProps});
     }
   }
 
