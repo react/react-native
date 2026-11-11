@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<715bdce4ff85be24d125b1c894da41d8>>
+ * @generated SignedSource<<9745db68f9d0fe8cccfddac2e8ffee30>>
  * @flow strict
  * @noformat
  */
@@ -110,6 +110,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableVirtualViewContainerStateExperimental: Getter<boolean>,
   fixBorderlessRippleAndroid: Getter<boolean>,
   fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean>,
+  fixTextInlineViewLineHeight: Getter<boolean>,
   fixTextLayoutOnPixelDensityChange: Getter<boolean>,
   fixYogaFlexBasisFitContentInMainAxis: Getter<boolean>,
   fuseboxAssertSingleHostState: Getter<boolean>,
@@ -465,6 +466,10 @@ export const fixBorderlessRippleAndroid: Getter<boolean> = createNativeFlagGette
  * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
  */
 export const fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean> = createNativeFlagGetter('fixMappingOfEventPrioritiesBetweenFabricAndReact', false);
+/**
+ * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+ */
+export const fixTextInlineViewLineHeight: Getter<boolean> = createNativeFlagGetter('fixTextInlineViewLineHeight', false);
 /**
  * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.
  */

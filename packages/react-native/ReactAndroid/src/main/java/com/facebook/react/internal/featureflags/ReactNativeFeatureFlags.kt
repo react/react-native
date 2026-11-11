@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6b457b1b41a17fa2065720edc82939e3>>
+ * @generated SignedSource<<61e45cda49df36384f8e5a8bfb4383bd>>
  */
 
 /**
@@ -401,6 +401,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
+
+  /**
+   * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+   */
+  @JvmStatic
+  public fun fixTextInlineViewLineHeight(): Boolean = accessor.fixTextInlineViewLineHeight()
 
   /**
    * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.
