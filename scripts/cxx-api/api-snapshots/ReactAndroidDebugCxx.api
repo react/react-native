@@ -7211,6 +7211,7 @@ struct facebook::yoga::LayoutData {
 struct facebook::yoga::LayoutResults {
   public bool computedAutoMinMainSizeResolved() const;
   public bool hadOverflow() const;
+  public bool minContentResolvesAgainstOwnerWidth(facebook::yoga::Dimension axis) const;
   public bool operator==(facebook::yoga::LayoutResults layout) const;
   public facebook::yoga::CachedMeasurement cachedLayout;
   public facebook::yoga::Direction direction() const;
@@ -7225,7 +7226,6 @@ struct facebook::yoga::LayoutResults {
   public float position(facebook::yoga::PhysicalEdge physicalEdge) const;
   public float rawDimension(facebook::yoga::Dimension axis) const;
   public static constexpr int32_t MaxCachedMeasurements;
-  public std::array<bool, 2> minContentResolvesAgainstOwnerWidth;
   public std::array<facebook::yoga::CachedMeasurement, facebook::yoga::LayoutResults::MaxCachedMeasurements> cachedMeasurements;
   public std::array<float, 2> minContent;
   public std::array<float, 2> minContentOwnerWidth;
@@ -7241,6 +7241,7 @@ struct facebook::yoga::LayoutResults {
   public void setHadOverflow(bool hadOverflow);
   public void setMargin(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setMeasuredDimension(facebook::yoga::Dimension axis, float dimension);
+  public void setMinContentResolvesAgainstOwnerWidth(facebook::yoga::Dimension axis, bool resolves);
   public void setPadding(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setPosition(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setRawDimension(facebook::yoga::Dimension axis, float dimension);

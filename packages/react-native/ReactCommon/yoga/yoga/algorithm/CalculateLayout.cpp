@@ -993,12 +993,12 @@ static MinContentSize computeMinContentMainSize(
 
   if (hasMemoizedMinContent(
           node, axisDimension, ownerDirection, generationCount) &&
-      (!layout.minContentResolvesAgainstOwnerWidth[axisIndex] ||
+      (!layout.minContentResolvesAgainstOwnerWidth(axisDimension) ||
        yoga::inexactEquals(
            layout.minContentOwnerWidth[axisIndex], ownerWidth))) {
     return {
         layout.minContent[axisIndex],
-        layout.minContentResolvesAgainstOwnerWidth[axisIndex]};
+        layout.minContentResolvesAgainstOwnerWidth(axisDimension)};
   }
 
   const Direction direction = node->resolveDirection(ownerDirection);
@@ -1060,8 +1060,8 @@ static MinContentSize computeMinContentMainSize(
   const float minContent = wantRow ? widthMin : heightMin;
   layout.minContent[axisIndex] = minContent;
   layout.minContentOwnerWidth[axisIndex] = ownerWidth;
-  layout.minContentResolvesAgainstOwnerWidth[axisIndex] =
-      resolvesAgainstOwnerWidth;
+  layout.setMinContentResolvesAgainstOwnerWidth(
+      axisDimension, resolvesAgainstOwnerWidth);
   layout.minContentGeneration[axisIndex] = generationCount;
   return {minContent, resolvesAgainstOwnerWidth};
 }
