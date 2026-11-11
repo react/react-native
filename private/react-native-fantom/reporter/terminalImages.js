@@ -11,7 +11,7 @@
 import {getPngDimensions} from '../runner/screenshots/pngUtils';
 
 export type ImageProtocol = 'iterm2' | 'kitty';
-export type TerminalEnvironment = {[string]: string | void};
+export type TerminalEnvironment = {[key: string]: string | void};
 
 export function getImageProtocol(
   isTTY: ?boolean,

@@ -49,7 +49,7 @@ const png = fs.readFileSync(fixture);
 const output = jest.fn<[string], boolean>(() => true);
 let directory: string;
 let differencePath: string;
-let env: {[string]: string | void};
+let env: {[key: string]: string | void};
 let savedEnvironment: typeof process.env;
 const terminal = {isTTY: true, columns: 80, rows: 30, write: output};
 

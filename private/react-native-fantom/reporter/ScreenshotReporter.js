@@ -45,7 +45,7 @@ interface TerminalOutput {
   readonly isTTY?: boolean;
   readonly columns?: number;
   readonly rows?: number;
-  write(string): unknown;
+  write(chunk: string): unknown;
 }
 
 export default function createScreenshotReporter(globalConfig: {

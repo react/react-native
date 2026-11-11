@@ -13,16 +13,19 @@ import {Buffer} from 'node:buffer';
 interface TerminalInput {
   readonly isRaw: boolean;
   readonly readableFlowing: ?boolean;
-  listenerCount(string): number;
-  on('data', (Buffer | string) => void): unknown;
-  removeListener('data', (Buffer | string) => void): unknown;
-  setRawMode(boolean): unknown;
+  listenerCount(event: string): number;
+  on(event: 'data', listener: (data: Buffer | string) => void): unknown;
+  removeListener(
+    event: 'data',
+    listener: (data: Buffer | string) => void,
+  ): unknown;
+  setRawMode(flag: boolean): unknown;
   pause(): unknown;
-  unshift(Buffer): unknown;
+  unshift(chunk: Buffer): unknown;
 }
 
 interface TerminalOutput {
-  write(string): unknown;
+  write(chunk: string): unknown;
 }
 
 export default function queryImageSupport(
