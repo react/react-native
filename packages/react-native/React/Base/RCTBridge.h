@@ -86,6 +86,16 @@ RCT_EXTERN_C_END
 @interface RCTBridge : NSObject <RCTInvalidating>
 
 /**
+ * This method is used to call functions in the JavaScript application context.
+ * It is primarily intended for use by modules that require two-way communication
+ * with the JavaScript code. Safe to call from any thread.
+ */
+- (void)enqueueJSCall:(NSString *)module
+               method:(NSString *)method
+                 args:(NSArray *)args
+           completion:(dispatch_block_t)completion;
+
+/**
  * This method registers the file path of an additional JS segment by its ID.
  *
  * @experimental

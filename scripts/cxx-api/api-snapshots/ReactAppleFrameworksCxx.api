@@ -659,6 +659,7 @@ interface RCTBridge : public NSObject <RCTInvalidating> {
   public virtual id moduleForClass:(Class moduleClass);
   public virtual id moduleForName:(NSString* moduleName);
   public virtual id moduleForName:lazilyLoadIfNecessary:(NSString* moduleName, BOOL lazilyLoad);
+  public virtual void enqueueJSCall:method:args:completion:(NSString* module, NSString* method, NSArray* args, dispatch_block_t completion);
   public virtual void onFastRefresh();
   public virtual void registerSegmentWithId:path:(NSUInteger segmentId, NSString* path);
   public virtual void setRCTTurboModuleRegistry:(id<RCTTurboModuleRegistry> turboModuleRegistry);
