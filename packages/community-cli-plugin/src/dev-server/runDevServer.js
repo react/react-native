@@ -125,6 +125,7 @@ async function runDevServer(
   });
   const pluginMiddleware = createDevServerMiddleware({
     serverBaseUrl: new URL(devServerUrl),
+    projectRoot,
     watchFolders: [unstable_serverRoot ?? projectRoot, ...watchFolders],
   });
 
