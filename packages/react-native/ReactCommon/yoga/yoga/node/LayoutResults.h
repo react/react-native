@@ -28,10 +28,11 @@ struct LayoutResults {
   FloatOptional computedFlexBasis = {};
 
   // Per-flex-item floor along the main axis derived from CSS Flexbox §4.5
-  // automatic minimum sizing. Set by `resolveFlexibleLength` when the parent's
-  // config does NOT carry the `MinSizeUndefinedInsteadOfAuto` errata and the
-  // item has no explicit main-axis `min-{width,height}`. Read by the
-  // shrink/bound machinery to keep items at least this large. `Undefined`
+  // automatic minimum sizing, applied when the parent's config does NOT carry
+  // the `MinSizeUndefinedInsteadOfAuto` errata and the item has no explicit
+  // main-axis `min-{width,height}`. Computed on first use by the shrink/grow
+  // bound machinery and valid while `computedAutoMinMainSizeResolved()` is
+  // set; `resolveFlexibleLength` resets both for each flex line. `Undefined`
   // means "no auto-min applies."
   FloatOptional computedAutoMinMainSize = {};
 
@@ -69,6 +70,14 @@ struct LayoutResults {
 
   void setHadOverflow(bool hadOverflow) {
     hadOverflow_ = hadOverflow;
+  }
+
+  bool computedAutoMinMainSizeResolved() const {
+    return computedAutoMinMainSizeResolved_;
+  }
+
+  void setComputedAutoMinMainSizeResolved(bool resolved) {
+    computedAutoMinMainSizeResolved_ = resolved;
   }
 
   float dimension(Dimension axis) const {
@@ -132,6 +141,7 @@ struct LayoutResults {
  private:
   Direction direction_ : bitCount<Direction>() = Direction::Inherit;
   bool hadOverflow_ : 1 = false;
+  bool computedAutoMinMainSizeResolved_ : 1 = false;
 
   std::array<float, 2> dimensions_ = {{YGUndefined, YGUndefined}};
   std::array<float, 2> measuredDimensions_ = {{YGUndefined, YGUndefined}};
