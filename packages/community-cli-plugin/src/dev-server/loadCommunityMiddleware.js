@@ -41,8 +41,6 @@ const unusedMiddlewareStub: Server = {};
 // (@react-native-community/cli-server-api) and should be migrated into core.
 // e.g. used by packages/react-native/Libraries/Core/Devtools/:
 // - /symbolicate
-// e.g. used by ./isDevServerRunning.js:
-// - /status
 const communityMiddlewareFallback: DevServerMiddlewareFactory = () => ({
   middleware: unusedMiddlewareStub,
   websocketEndpoints: {},
