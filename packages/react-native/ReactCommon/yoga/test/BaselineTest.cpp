@@ -140,6 +140,15 @@ YGSize measureWord(
   return YGSize{.width = 30.0f, .height = 10.0f};
 }
 
+YGSize measureUncounted(
+    YGNodeConstRef /*node*/,
+    float /*width*/,
+    YGMeasureMode /*widthMode*/,
+    float /*height*/,
+    YGMeasureMode /*heightMode*/) {
+  return YGSize{.width = 30.0f, .height = 10.0f};
+}
+
 YGConfigRef autoMinSizeConfig() {
   YGConfigRef config = YGConfigNew();
   YGConfigSetErrata(config, YGErrataNone);
@@ -399,13 +408,112 @@ TEST(MinContentTest, testOwnPercentageMarginLeavesChildrenShared) {
   YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
 
   // The content's own margin keys the item's memo and not the content's, so a
-  // narrower second tree walks the item again but shares the content's leaf.
+  // narrower second tree walks the item again but only reads the content.
   YGNodeRef rootCopy = YGNodeClone(root);
   YGNodeStyleSetWidth(rootCopy, 290);
   YGNodeCalculateLayout(rootCopy, YGUndefined, YGUndefined, YGDirectionLTR);
 
+  EXPECT_EQ(content, YGNodeGetChild(YGNodeGetChild(rootCopy, 0), 0));
   EXPECT_EQ(
       leaf, YGNodeGetChild(YGNodeGetChild(YGNodeGetChild(rootCopy, 0), 0), 0));
+
+  YGNodeFreeRecursive(rootCopy);
+  YGNodeFreeRecursive(root);
+  YGConfigFree(config);
+}
+
+TEST(MinContentTest, testWalkClonesOnlyTheChildrenItWritesTo) {
+  YGConfigRef config = autoMinSizeConfig();
+  MeasureCalls paddedCalls;
+  MeasureCalls stableCalls;
+  YGNodeRef root = YGNodeNewWithConfig(config);
+  YGNodeStyleSetAlignItems(root, YGAlignFlexStart);
+  YGNodeStyleSetWidth(root, 300);
+  YGNodeStyleSetHeight(root, 100);
+  YGNodeRef item = YGNodeNewWithConfig(config);
+  YGNodeStyleSetWidth(item, 50);
+  YGNodeStyleSetHeight(item, 200);
+  YGNodeStyleSetFlexShrink(item, 1);
+  YGNodeInsertChild(root, item, 0);
+  YGNodeRef padded = YGNodeNewWithConfig(config);
+  YGNodeStyleSetPaddingPercent(padded, YGEdgeLeft, 10);
+  YGNodeRef paddedLeaf = measuredLeaf(config, &paddedCalls);
+  YGNodeInsertChild(padded, paddedLeaf, 0);
+  YGNodeInsertChild(item, padded, 0);
+  YGNodeRef stable = measuredLeaf(config, &stableCalls);
+  YGNodeInsertChild(item, stable, 1);
+  YGNodeRef hidden = YGNodeNewWithConfig(config);
+  YGNodeStyleSetDisplay(hidden, YGDisplayNone);
+  YGNodeInsertChild(item, hidden, 2);
+  YGNodeRef absolute = YGNodeNewWithConfig(config);
+  YGNodeStyleSetPositionType(absolute, YGPositionTypeAbsolute);
+  YGNodeInsertChild(item, absolute, 3);
+  YGNodeRef staticLeaf = YGNodeNewWithConfig(config);
+  YGNodeSetMeasureFunc(staticLeaf, measureUncounted);
+  YGNodeSetMinContentWidth(staticLeaf, 20);
+  YGNodeSetMinContentHeight(staticLeaf, 5);
+  YGNodeInsertChild(item, staticLeaf, 4);
+  YGNodeRef empty = YGNodeNewWithConfig(config);
+  YGNodeInsertChild(item, empty, 5);
+  YGNodeRef sibling = YGNodeNewWithConfig(config);
+  YGNodeStyleSetHeight(sibling, 200);
+  YGNodeStyleSetFlexShrink(sibling, 1);
+  YGNodeInsertChild(root, sibling, 1);
+  YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  // Only `padded`'s memo is keyed on the width, so a narrower second tree walks
+  // it again and only reads the item's other children and `padded`'s leaf.
+  YGNodeRef rootCopy = YGNodeClone(root);
+  YGNodeStyleSetWidth(rootCopy, 290);
+  YGNodeCalculateLayout(rootCopy, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  const YGNodeRef itemCopy = YGNodeGetChild(rootCopy, 0);
+  EXPECT_NE(padded, YGNodeGetChild(itemCopy, 0));
+  EXPECT_EQ(paddedLeaf, YGNodeGetChild(YGNodeGetChild(itemCopy, 0), 0));
+  EXPECT_EQ(stable, YGNodeGetChild(itemCopy, 1));
+  EXPECT_EQ(hidden, YGNodeGetChild(itemCopy, 2));
+  EXPECT_EQ(absolute, YGNodeGetChild(itemCopy, 3));
+  EXPECT_EQ(staticLeaf, YGNodeGetChild(itemCopy, 4));
+  EXPECT_EQ(empty, YGNodeGetChild(itemCopy, 5));
+
+  YGNodeFreeRecursive(rootCopy);
+  YGNodeFreeRecursive(root);
+  YGConfigFree(config);
+}
+
+TEST(MinContentTest, testWalkMeasuresOnTheCloneOnlyTheAxisItCannotRead) {
+  YGConfigRef config = autoMinSizeConfig();
+  MeasureCalls minContentCalls;
+  YGNodeRef root = YGNodeNewWithConfig(config);
+  YGNodeStyleSetWidth(root, 100);
+  YGNodeStyleSetHeight(root, 100);
+  YGNodeRef item = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexDirection(item, YGFlexDirectionRow);
+  YGNodeStyleSetHeight(item, 30);
+  YGNodeStyleSetMinHeight(item, 0);
+  YGNodeStyleSetFlexGrow(item, 1);
+  YGNodeInsertChild(root, item, 0);
+  // The walk reads the leaf's static min-content width and has to measure its
+  // min-content height, which a row item's height is the maximum of.
+  YGNodeRef leaf = YGNodeNewWithConfig(config);
+  YGNodeSetMeasureFunc(leaf, measureUncounted);
+  YGNodeSetMinContentMeasureFunc(leaf, measureWord);
+  YGNodeSetContext(leaf, &minContentCalls);
+  minContentCalls.original = leaf;
+  YGNodeSetMinContentWidth(leaf, 20);
+  YGNodeInsertChild(item, leaf, 0);
+  YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  // A second tree shares the leaf, under a copy of the item that drops its
+  // minimum height, so the walk first reaches the leaf in that tree.
+  YGNodeRef rootCopy = YGNodeClone(root);
+  YGNodeRef itemCopy = YGNodeClone(item);
+  YGNodeSwapChild(rootCopy, itemCopy, 0);
+  YGNodeStyleSetMinHeight(itemCopy, YGUndefined);
+  YGNodeCalculateLayout(rootCopy, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  EXPECT_EQ(0, minContentCalls.ofOriginal);
+  EXPECT_EQ(1, minContentCalls.ofCopies);
 
   YGNodeFreeRecursive(rootCopy);
   YGNodeFreeRecursive(root);
