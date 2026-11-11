@@ -346,7 +346,7 @@ class YG_EXPORT Style {
   // axes, and a percentage size or size bound against the owner's size on its
   // own axis.
   bool resolvesAgainstOwnerWidth() const {
-    return hasPercentMarginOrPadding() ||
+    return anyIsPercent(margin_) || anyIsPercent(padding_) ||
         dimensions_[yoga::to_underlying(Dimension::Width)].isPercent() ||
         minDimensions_[yoga::to_underlying(Dimension::Width)].isPercent() ||
         maxDimensions_[yoga::to_underlying(Dimension::Width)].isPercent();
@@ -358,6 +358,7 @@ class YG_EXPORT Style {
         maxDimensions_[yoga::to_underlying(Dimension::Height)].isPercent();
   }
 
+  // Kept out of resolvesAgainstOwnerWidth(), which every cache lookup runs.
   bool hasPercentMarginOrPadding() const {
     return anyIsPercent(margin_) || anyIsPercent(padding_);
   }
