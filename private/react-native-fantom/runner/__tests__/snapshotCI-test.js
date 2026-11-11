@@ -17,7 +17,9 @@ import os from 'node:os';
 import path from 'node:path';
 
 function evaluate(state: SnapshotState, snapshotResults: TestSnapshotResults) {
-  return updateSnapshotsAndGetJestSnapshotResult(state, [snapshotResults]);
+  return updateSnapshotsAndGetJestSnapshotResult(state, [
+    {status: 'failed', snapshotResults},
+  ]);
 }
 
 describe('Fantom snapshot update modes', () => {

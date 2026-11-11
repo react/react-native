@@ -38,6 +38,14 @@ runs:
         exit 1
       env:
         LD_LIBRARY_PATH: ${{ github.workspace }}/private/react-native-fantom/build/tester
+    - name: Upload failed screenshot comparisons
+      if: ${{ always() }}
+      uses: ./.github/actions/upload-artifact
+      with:
+        name: fantom-screenshot-failures
+        compression-level: 1
+        if-no-files-found: ignore
+        path: private/react-native-fantom/build/screenshot-failures
     - name: Upload test results
       if: ${{ always() }}
       uses: ./.github/actions/upload-artifact
