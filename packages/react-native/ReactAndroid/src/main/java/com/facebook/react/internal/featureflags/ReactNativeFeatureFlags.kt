@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<61e45cda49df36384f8e5a8bfb4383bd>>
+ * @generated SignedSource<<c65f172e91f823049cf508cc70663c64>>
  */
 
 /**
@@ -119,12 +119,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
-
-  /**
-   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
-   */
-  @JvmStatic
-  public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = accessor.enableAndroidAutoOffscreenCompositingForElevation()
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
