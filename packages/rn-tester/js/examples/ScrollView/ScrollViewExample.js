@@ -421,6 +421,7 @@ const examples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    name: 'onMomentumScroll',
     title: '<ScrollView> OnMomentumScroll\n',
     description:
       'An alert will be called when the momentum scroll starts or ends.',
@@ -1118,17 +1119,81 @@ const OnScrollOptions = () => {
 };
 
 const OnMomentumScroll = () => {
-  const [scroll, setScroll] = useState('none');
+  const ref = useRef<?React.ElementRef<typeof ScrollView>>(null);
+  const [beginCount, setBeginCount] = useState(0);
+  const [endCount, setEndCount] = useState(0);
+  const [lastEvent, setLastEvent] = useState('none');
+  // Counts a begin while momentum is already active, or an end without a
+  // matching begin.
+  const [errorCount, setErrorCount] = useState(0);
+  const isMomentumActiveRef = useRef(false);
+
+  const handleMomentumScrollBegin = useCallback(() => {
+    if (isMomentumActiveRef.current) {
+      setErrorCount(count => count + 1);
+    }
+    isMomentumActiveRef.current = true;
+    setBeginCount(count => count + 1);
+    setLastEvent('onMomentumScrollBegin');
+  }, []);
+
+  const handleMomentumScrollEnd = useCallback(() => {
+    if (!isMomentumActiveRef.current) {
+      setErrorCount(count => count + 1);
+    }
+    isMomentumActiveRef.current = false;
+    setEndCount(count => count + 1);
+    setLastEvent('onMomentumScrollEnd');
+  }, []);
+
+  // Leaves isMomentumActiveRef alone: it mirrors the native momentum state, so an
+  // end event still pending after a reset pairs with its begin.
+  const resetCounts = useCallback(() => {
+    setBeginCount(0);
+    setEndCount(0);
+    setErrorCount(0);
+    setLastEvent('none');
+  }, []);
+
   return (
     <View>
-      <RNTesterText>Scroll State: {scroll}</RNTesterText>
+      <RNTesterText testID="momentum_last_event">
+        Last event: {lastEvent}
+      </RNTesterText>
+      <RNTesterText testID="momentum_begin_count">
+        begin:{beginCount}
+      </RNTesterText>
+      <RNTesterText testID="momentum_end_count">end:{endCount}</RNTesterText>
+      <RNTesterText testID="momentum_errors">errors:{errorCount}</RNTesterText>
       <ScrollView
+        ref={ref}
         style={[styles.scrollView, {height: 200}]}
-        onMomentumScrollBegin={() => setScroll('onMomentumScrollBegin')}
-        onMomentumScrollEnd={() => setScroll('onMomentumScrollEnd')}
+        testID="momentum_scroll_view"
+        onMomentumScrollBegin={handleMomentumScrollBegin}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
         nestedScrollEnabled>
         {ITEMS.map(createItemRow)}
       </ScrollView>
+      <Button
+        label="scrollTo bottom (animated)"
+        testID="momentum_scroll_to_bottom_animated"
+        onPress={() => ref.current?.scrollToEnd({animated: true})}
+      />
+      <Button
+        label="scrollTo top (animated)"
+        testID="momentum_scroll_to_top_animated"
+        onPress={() => ref.current?.scrollTo({x: 0, y: 0, animated: true})}
+      />
+      <Button
+        label="scrollTo top (not animated)"
+        testID="momentum_scroll_to_top_not_animated"
+        onPress={() => ref.current?.scrollTo({x: 0, y: 0, animated: false})}
+      />
+      <Button
+        label="Reset counts"
+        testID="momentum_reset"
+        onPress={resetCounts}
+      />
     </View>
   );
 };
