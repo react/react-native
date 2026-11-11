@@ -7,6 +7,8 @@
 
 #pragma once
 
+#ifndef RCT_DISABLE_NODE_API
+
 #include <react/nativemodule/nodeapi/NodeApiEngine.h>
 
 struct hermes_napi_host;
@@ -23,3 +25,5 @@ class HermesNodeApiEngine : public NodeApiEngine {
 };
 
 } // namespace facebook::react
+
+#endif // RCT_DISABLE_NODE_API

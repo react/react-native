@@ -36,6 +36,13 @@ object PropertyUtils {
   const val STRICT_CXX_API_ENABLED = "strictCxxApiEnabled"
   const val SCOPED_STRICT_CXX_API_ENABLED = "react.strictCxxApiEnabled"
 
+  /**
+   * Public property that leaves Node-API out of React Native and Hermes when they're built from
+   * source, and defines RCT_DISABLE_NODE_API for the app's native build
+   */
+  const val DISABLE_NODE_API = "disableNodeApi"
+  const val SCOPED_DISABLE_NODE_API = "react.disableNodeApi"
+
   /** Public property that excludes jsctooling from core */
   const val USE_THIRD_PARTY_JSC = "useThirdPartyJSC"
   const val SCOPED_USE_THIRD_PARTY_JSC = "react.useThirdPartyJSC"

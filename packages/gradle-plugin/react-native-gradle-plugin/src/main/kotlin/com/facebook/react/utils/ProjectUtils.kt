@@ -9,10 +9,12 @@ package com.facebook.react.utils
 
 import com.facebook.react.ReactExtension
 import com.facebook.react.model.ModelPackageJson
+import com.facebook.react.utils.PropertyUtils.DISABLE_NODE_API
 import com.facebook.react.utils.PropertyUtils.EDGE_TO_EDGE_ENABLED
 import com.facebook.react.utils.PropertyUtils.HERMES_ENABLED
 import com.facebook.react.utils.PropertyUtils.REACT_NATIVE_ARCHITECTURES
 import com.facebook.react.utils.PropertyUtils.RESET_METRO_CACHE_BEFORE_BUNDLING
+import com.facebook.react.utils.PropertyUtils.SCOPED_DISABLE_NODE_API
 import com.facebook.react.utils.PropertyUtils.SCOPED_EDGE_TO_EDGE_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_HERMES_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_REACT_NATIVE_ARCHITECTURES
@@ -66,6 +68,13 @@ internal object ProjectUtils {
             project.property(STRICT_CXX_API_ENABLED).toString().toBoolean()) ||
             (project.hasProperty(SCOPED_STRICT_CXX_API_ENABLED) &&
                 project.property(SCOPED_STRICT_CXX_API_ENABLED).toString().toBoolean())
+
+  internal val Project.isNodeApiDisabled: Boolean
+    get() =
+        (project.hasProperty(DISABLE_NODE_API) &&
+            project.property(DISABLE_NODE_API).toString().toBoolean()) ||
+            (project.hasProperty(SCOPED_DISABLE_NODE_API) &&
+                project.property(SCOPED_DISABLE_NODE_API).toString().toBoolean())
 
   internal val Project.useThirdPartyJSC: Boolean
     get() =

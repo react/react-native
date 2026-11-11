@@ -18,6 +18,8 @@ let REMOVE_LEGACY_MODULE_INTEROP =
 let REMOVE_LEGACY_COMPONENT_INTEROP =
   ProcessInfo.processInfo.environment["RCT_REMOVE_LEGACY_COMPONENT_INTEROP"] == "1"
 
+let DISABLE_NODE_API = ProcessInfo.processInfo.environment["RCT_DISABLE_NODE_API"] == "1"
+
 /**
  This is the `Package.swift` file that allows to build React Native core using Swift PM.
  To build React Native, you need to follow these steps:
@@ -437,7 +439,8 @@ let reactRuntime = RNTarget(
   name: .reactRuntime,
   path: "ReactCommon/react/runtime",
   excludedPaths: ["tests", "iostests", "platform"],
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactCxxReact, .reactJsErrorHandler, .reactPerformanceTimeline, .reactUtils, .reactFeatureFlags, .reactJsInspector, .reactJsiTooling, .reactHermes, .reactRuntimeScheduler, .reactNodeApiNativeModule, .hermesPrebuilt],
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactCxxReact, .reactJsErrorHandler, .reactPerformanceTimeline, .reactUtils, .reactFeatureFlags, .reactJsInspector, .reactJsiTooling, .reactHermes, .reactRuntimeScheduler, .hermesPrebuilt]
+    + (DISABLE_NODE_API ? [] : [.reactNodeApiNativeModule]),
   defines: [
     CXXSetting.define("HERMES_ENABLE_DEBUGGER", to: "1", .when(configuration: BuildConfiguration.debug))
   ]
@@ -766,7 +769,7 @@ let targets = [
   reactAppDelegate,
   reactSettings,
   reactRuntimeExecutor,
-]
+].filter { !DISABLE_NODE_API || $0.name != .reactNodeApiNativeModule }
 
 // MARK: Package object
 
@@ -992,6 +995,7 @@ extension Target {
     let legacyInteropDefines: [CXXSetting] =
       (REMOVE_LEGACY_MODULE_INTEROP ? [.define("RCT_REMOVE_LEGACY_MODULE_INTEROP", to: "1")] : [])
       + (REMOVE_LEGACY_COMPONENT_INTEROP ? [.define("RCT_REMOVE_LEGACY_COMPONENT_INTEROP", to: "1")] : [])
+      + (DISABLE_NODE_API ? [.define("RCT_DISABLE_NODE_API", to: "1")] : [])
 
     // Every target built through this factory is React Native's own, so RN_BUILDING
     // keeps the react/cxxstableapi guards inert for internal sources. cxxSettings are

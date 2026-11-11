@@ -15,6 +15,7 @@ import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
 import com.facebook.react.utils.ProjectUtils.isNewArchEnabled
+import com.facebook.react.utils.ProjectUtils.isNodeApiDisabled
 import com.facebook.react.utils.ProjectUtils.isStrictCxxApiEnabled
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import com.facebook.react.utils.ProjectUtils.shouldResetMetroCacheBeforeBundling
@@ -203,6 +204,32 @@ class ProjectUtilsTest {
     val project = createProject()
     project.extensions.extraProperties.set("strictCxxApiEnabled", "¯\\_(ツ)_/¯")
     assertThat(project.isStrictCxxApiEnabled).isFalse()
+  }
+
+  @Test
+  fun isNodeApiDisabled_returnsFalseByDefault() {
+    assertThat(createProject().isNodeApiDisabled).isFalse()
+  }
+
+  @Test
+  fun isNodeApiDisabled_withDisabledViaProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("disableNodeApi", "true")
+    assertThat(project.isNodeApiDisabled).isTrue()
+  }
+
+  @Test
+  fun isNodeApiDisabled_withDisabledViaScopedProperty_returnsTrue() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.disableNodeApi", "true")
+    assertThat(project.isNodeApiDisabled).isTrue()
+  }
+
+  @Test
+  fun isNodeApiDisabled_withFalseViaProperty_returnsFalse() {
+    val project = createProject()
+    project.extensions.extraProperties.set("disableNodeApi", "false")
+    assertThat(project.isNodeApiDisabled).isFalse()
   }
 
   @Test

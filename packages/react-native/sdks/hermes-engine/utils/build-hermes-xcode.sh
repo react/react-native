@@ -64,6 +64,11 @@ if [[ $PLATFORM_NAME == "catalyst" ]]; then
   boost_context_flag="-DHERMES_ALLOW_BOOST_CONTEXT=0"
 fi
 
+enable_napi="true"
+if [[ "${RCT_DISABLE_NODE_API:-0}" == "1" ]]; then
+  enable_napi="false"
+fi
+
 architectures=$( echo "$ARCHS" | tr  " " ";" )
 
 echo "Configure Apple framework"
@@ -77,6 +82,7 @@ echo "Configure Apple framework"
   -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING="$deployment_target" \
   -DHERMES_ENABLE_DEBUGGER:BOOLEAN="$enable_debugger" \
   -DHERMES_ENABLE_INTL:BOOLEAN=true \
+  -DHERMES_ENABLE_NAPI:BOOLEAN="$enable_napi" \
   -DHERMES_ENABLE_LIBFUZZER:BOOLEAN=false \
   -DHERMES_ENABLE_FUZZILLI:BOOLEAN=false \
   -DHERMES_ENABLE_TEST_SUITE:BOOLEAN=false \

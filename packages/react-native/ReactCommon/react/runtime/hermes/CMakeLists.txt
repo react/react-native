@@ -27,9 +27,11 @@ target_link_libraries(bridgelesshermes
         jsinspector
         logger
         react_cxxstableapi
-        react_nativemodule_nodeapi
         ${reactnative}
 )
+if(NOT RCT_DISABLE_NODE_API)
+        target_link_libraries(bridgelesshermes react_nativemodule_nodeapi)
+endif()
 
 target_compile_reactnative_options(bridgelesshermes PRIVATE)
 if(${CMAKE_BUILD_TYPE} MATCHES Debug OR REACT_NATIVE_DEBUG_OPTIMIZED)

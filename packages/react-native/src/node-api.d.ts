@@ -28,7 +28,8 @@
  * @param filename Passed to the system's `dlopen()` as is, for example
  *   `libmy_addon.so` on Android or `@rpath/my_addon.framework/my_addon` on
  *   Apple platforms.
- * @throws If the JavaScript engine doesn't implement Node-API, or if the
- *   addon can't be loaded or throws while initializing.
+ * @throws If the JavaScript engine doesn't implement Node-API, if React
+ *   Native was built without it, or if the addon can't be loaded or throws
+ *   while initializing.
  */
 export function dlopen(module: {exports: unknown}, filename: string): void;

@@ -13,6 +13,7 @@ import com.android.build.api.variant.Variant
 import com.facebook.react.ReactExtension
 import com.facebook.react.internal.StubPchBuildService
 import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
+import com.facebook.react.utils.ProjectUtils.isNodeApiDisabled
 import com.facebook.react.utils.ProjectUtils.isStrictCxxApiEnabled
 import java.io.File
 import org.gradle.api.Project
@@ -59,6 +60,11 @@ internal object NdkConfiguratorUtils {
         }
         if (project.isStrictCxxApiEnabled && cmakeArgs.none { it.startsWith("-DRN_STRICT_API") }) {
           cmakeArgs.add("-DRN_STRICT_API=ON")
+        }
+        if (
+            project.isNodeApiDisabled && cmakeArgs.none { it.startsWith("-DRCT_DISABLE_NODE_API") }
+        ) {
+          cmakeArgs.add("-DRCT_DISABLE_NODE_API=ON")
         }
 
         val architectures = project.getReactNativeArchitectures()

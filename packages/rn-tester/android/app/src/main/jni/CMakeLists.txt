@@ -12,7 +12,9 @@ include(${REACT_ANDROID_DIR}/cmake-utils/ReactNative-application.cmake)
 
 add_subdirectory(${REACT_COMMON_DIR}/react/nativemodule/samples/platform/android/ sampleturbomodule_build)
 add_subdirectory(${REACT_COMMON_DIR}/../../rn-tester/NativeCxxModuleExample/ nativecxxmoduleexample_build)
-add_subdirectory(${REACT_COMMON_DIR}/../../rn-tester/NodeApiExample/ nodeapiexample_build)
+if(NOT RCT_DISABLE_NODE_API)
+  add_subdirectory(${REACT_COMMON_DIR}/../../rn-tester/NodeApiExample/ nodeapiexample_build)
+endif()
 
 # RN Tester needs to link against the sample turbomobule
 target_link_libraries(${CMAKE_PROJECT_NAME}

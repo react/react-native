@@ -15,6 +15,13 @@ SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/$NAME.framework"
 WORK_DIR="$DERIVED_FILE_DIR/$NAME"
 
+if [[ "${RCT_DISABLE_NODE_API:-0}" == "1" ]]; then
+  echo "Skipping the Node-API example: React Native is built without Node-API"
+  # Xcode creates the output's directory before running the phase.
+  rm -rf "$FRAMEWORK"
+  exit 0
+fi
+
 # TODO: Link a node-api framework once Hermes ships it, instead of hermesvm.
 if [ -n "${PODS_ROOT:-}" ]; then
   NODE_API_HEADERS="$PODS_ROOT/Headers/Public/hermes-engine/hermes/napi"

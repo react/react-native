@@ -6,15 +6,19 @@
  */
 
 #include "HermesInstance.h"
-#include "HermesNodeApiEngine.h"
 
-#include <ReactCommon/CxxTurboModuleUtils.h>
 #include <hermes/inspector-modern/chrome/HermesRuntimeTargetDelegate.h>
 #include <jsi/jsilib.h>
 #include <jsinspector-modern/InspectorFlags.h>
 #include <logger/react_native_log.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+
+#ifndef RCT_DISABLE_NODE_API
+#include "HermesNodeApiEngine.h"
+
+#include <ReactCommon/CxxTurboModuleUtils.h>
 #include <react/nativemodule/nodeapi/NativeNodeApi.h>
+#endif
 
 #include <mutex>
 
@@ -28,7 +32,9 @@ static void hermesFatalHandler(const std::string& reason) {
 }
 
 static constinit std::once_flag fatalHandlerFlag;
+#ifndef RCT_DISABLE_NODE_API
 static constinit std::once_flag nodeApiFlag;
+#endif
 
 class HermesJSRuntime : public JSRuntime {
  public:
@@ -74,6 +80,7 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
     }
   });
 
+#ifndef RCT_DISABLE_NODE_API
   std::call_once(nodeApiFlag, []() {
     registerCxxModuleToGlobalModuleMap(
         std::string(NativeNodeApi::kModuleName),
@@ -82,6 +89,7 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
               std::make_shared<HermesNodeApiEngine>(), std::move(jsInvoker));
         });
   });
+#endif
 
   auto gcConfig = ::hermes::vm::GCConfig::Builder()
                       // Default to 3GB

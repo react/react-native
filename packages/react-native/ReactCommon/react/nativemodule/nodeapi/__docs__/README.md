@@ -48,6 +48,21 @@ Addons compile against the Node-API headers Hermes vendors from Node.js
 (`include/hermes/napi`) and link against the engine. The engine's embedder API
 (`hermes_napi.h`) is only used here, not by addons.
 
+## ⚙️ Building without Node-API
+
+Apps that don't load addons can leave Node-API out of React Native and Hermes:
+
+- Android: `disableNodeApi=true` (or `react.disableNodeApi=true`) as a Gradle
+  property.
+- iOS: `RCT_DISABLE_NODE_API=1` when running `pod install`, or when resolving
+  the Swift package.
+
+This defines `RCT_DISABLE_NODE_API`, which leaves out the module and its
+registration, and builds Hermes with `HERMES_ENABLE_NAPI=OFF`. It only takes
+effect when React Native and Hermes are built from source: prebuilt artifacts
+always include Node-API. `react-native/node-api` throws in apps built without
+it.
+
 ## 🔗 Relationship with other systems
 
 ### Part of

@@ -296,6 +296,11 @@ fun windowsAwareCommandLine(vararg commands: String): List<String> {
   return result
 }
 
+fun disableNodeApi(): Boolean {
+  val value = project.properties["disableNodeApi"] ?: project.properties["react.disableNodeApi"]
+  return value?.toString()?.toBoolean() ?: false
+}
+
 fun reactNativeArchitectures(): List<String> {
   val value = project.properties["reactNativeArchitectures"]
   return value?.toString()?.split(",") ?: listOf("armeabi-v7a", "x86", "x86_64", "arm64-v8a")
@@ -348,6 +353,9 @@ android {
         )
 
         arguments("-DHERMESVM_HEAP_HV_MODE=HEAP_HV_PREFER32")
+        if (disableNodeApi()) {
+          arguments("-DHERMES_ENABLE_NAPI=False")
+        }
 
         targets("hermesvm")
       }

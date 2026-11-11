@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_DISABLE_NODE_API
+
 #include "HermesNodeApiEngine.h"
 
 #include <jsi/hermes-interfaces.h>
@@ -45,3 +47,5 @@ napi_status HermesNodeApiEngine::loadAddon(
 }
 
 } // namespace facebook::react
+
+#endif // RCT_DISABLE_NODE_API

@@ -608,6 +608,28 @@ class ReactNativePodsUtils
         end
     end
 
+    # Also set as a build setting, which Xcode passes to script phases such as
+    # the Hermes build and the app's own.
+    def self.set_node_api_flags(installer, build_rncore_from_source:)
+        disabled = ENV['RCT_DISABLE_NODE_API'] == '1'
+        self.extract_projects(installer).each do |project|
+            project.build_configurations.each do |config|
+                if disabled
+                    self.set_flag_in_config(config, "-DRCT_DISABLE_NODE_API=1")
+                    config.build_settings['RCT_DISABLE_NODE_API'] = '1'
+                else
+                    self.remove_flag_in_config(config, "-DRCT_DISABLE_NODE_API=1")
+                    config.build_settings.delete('RCT_DISABLE_NODE_API')
+                end
+            end
+            project.save()
+        end
+        if disabled && !build_rncore_from_source
+            Pod::UI.warn("RCT_DISABLE_NODE_API=1 has no effect on the prebuilt React.xcframework. " \
+                "Set RCT_USE_PREBUILT_RNCORE=0 to compile React Native without Node-API.")
+        end
+    end
+
     # The macros reach every target that inherits the project settings: the app,
     # third-party pods and app codegen. React Native's own pods define RN_BUILDING,
     # which keeps the guards inert for them.
