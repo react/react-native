@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3994d16ce8555b34a8ab8e18291b03cc>>
+ * @generated SignedSource<<5d2aa512fdd8490ad30340ccaf754dc4>>
  */
 
 /**
@@ -28,10 +28,6 @@ namespace facebook::react {
 class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlagsOverridesOSSStable {
  public:
     ReactNativeFeatureFlagsOverridesOSSCanary() = default;
-
-  bool cxxNativeAnimatedEnabled() override {
-    return true;
-  }
 
   bool enableAccessibilityOrder() override {
     return true;
