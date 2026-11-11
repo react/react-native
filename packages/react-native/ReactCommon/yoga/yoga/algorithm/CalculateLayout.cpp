@@ -3053,6 +3053,18 @@ bool calculateLayoutInternal(
   return (needToVisitNode || cachedResults == nullptr);
 }
 
+// Generation 0 stands for none in `LayoutResults`, so the count skips it when
+// it wraps.
+static uint32_t nextGenerationCount() {
+  uint32_t current = gCurrentGenerationCount.load(std::memory_order_relaxed);
+  uint32_t next = 0;
+  do {
+    next = current + 1 == 0 ? 1 : current + 1;
+  } while (!gCurrentGenerationCount.compare_exchange_weak(
+      current, next, std::memory_order_relaxed));
+  return next;
+}
+
 void calculateLayout(
     yoga::Node* const node,
     const float ownerWidth,
@@ -3064,8 +3076,7 @@ void calculateLayout(
   // Increment the generation count. This will force the recursive routine to
   // visit all dirty nodes at least once. Subsequent visits will be skipped if
   // the input parameters don't change.
-  const uint32_t currentGenerationCount =
-      gCurrentGenerationCount.fetch_add(1, std::memory_order_relaxed) + 1;
+  const uint32_t currentGenerationCount = nextGenerationCount();
   node->processDimensions();
   const Direction direction = node->resolveDirection(ownerDirection);
   float width = YGUndefined;

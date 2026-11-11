@@ -7,6 +7,10 @@
 
 #include <gtest/gtest.h>
 
+#include <atomic>
+#include <cstdint>
+#include <limits>
+
 #include <yoga/Yoga.h>
 #include <yoga/algorithm/Baseline.h>
 #include <yoga/enums/Align.h>
@@ -17,6 +21,9 @@
 #include <yoga/node/Node.h>
 
 namespace facebook::yoga {
+
+extern std::atomic<uint32_t> gCurrentGenerationCount;
+
 namespace {
 
 TEST(ConfigTest, defaultConfigIsConstexpr) {
@@ -402,6 +409,46 @@ TEST(MinContentTest, testOwnPercentageMarginLeavesChildrenShared) {
 
   YGNodeFreeRecursive(rootCopy);
   YGNodeFreeRecursive(root);
+  YGConfigFree(config);
+}
+
+TEST(MinContentTest, testLayoutWhereGenerationWrapsMeasuresAsAnyOther) {
+  YGConfigRef config = autoMinSizeConfig();
+  const auto layOutNestedRow = [config](MeasureCalls* calls) {
+    YGNodeRef root = YGNodeNewWithConfig(config);
+    YGNodeStyleSetFlexDirection(root, YGFlexDirectionRow);
+    YGNodeStyleSetWidth(root, 100);
+    YGNodeStyleSetHeight(root, 50);
+    YGNodeRef item = YGNodeNewWithConfig(config);
+    YGNodeStyleSetFlexBasis(item, 100);
+    YGNodeStyleSetFlexShrink(item, 1);
+    YGNodeInsertChild(root, item, 0);
+    YGNodeRef container = item;
+    for (int depth = 0; depth < 4; depth++) {
+      YGNodeRef child = YGNodeNewWithConfig(config);
+      YGNodeInsertChild(container, child, 0);
+      container = child;
+    }
+    YGNodeInsertChild(container, measuredLeaf(config, calls), 0);
+    YGNodeRef sibling = YGNodeNewWithConfig(config);
+    YGNodeStyleSetFlexBasis(sibling, 300);
+    YGNodeStyleSetFlexShrink(sibling, 1);
+    YGNodeInsertChild(root, sibling, 1);
+    YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+    const float itemWidth = YGNodeLayoutGetWidth(item);
+    YGNodeFreeRecursive(root);
+    return itemWidth;
+  };
+  MeasureCalls before;
+  ASSERT_FLOAT_EQ(30.0f, layOutNestedRow(&before));
+
+  gCurrentGenerationCount = std::numeric_limits<uint32_t>::max();
+  MeasureCalls atWrap;
+  const float itemWidthAtWrap = layOutNestedRow(&atWrap);
+
+  EXPECT_FLOAT_EQ(30.0f, itemWidthAtWrap);
+  EXPECT_EQ(before.ofOriginal, atWrap.ofOriginal);
+
   YGConfigFree(config);
 }
 
