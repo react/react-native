@@ -27,8 +27,8 @@ const BOBBLE_SPOTS = [...Array(NUM_BOBBLES)].map((_, i) => {
       };
 });
 
-class AnExBobble extends React.Component<Object, any> {
-  constructor(props: Object) {
+class AnExBobble extends React.Component<{...}, any> {
+  constructor(props: {...}) {
     super(props);
     this.state = {};
     // $FlowFixMe[prop-missing]

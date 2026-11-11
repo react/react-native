@@ -13,9 +13,9 @@
  * See https://dom.spec.whatwg.org/#interface-eventtarget.
  */
 
+import type {AbortSignal as InternalAbortSignal} from '../abort-api/AbortSignal';
 import type {EventPhase} from './Event';
 
-import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
 import {setPlatformObject} from '../../webidl/PlatformObjects';
 import Event from './Event';
 import {
@@ -51,7 +51,7 @@ export type AddEventListenerOptions = Readonly<{
   ...EventListenerOptions,
   passive?: boolean,
   once?: boolean,
-  signal?: AbortSignal,
+  signal?: InternalAbortSignal,
 }>;
 
 type EventListenerRegistration = {
@@ -403,66 +403,49 @@ function invoke(
 
   setCurrentTarget(event, eventTarget);
 
-  if (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()) {
-    // Resolve the prop-based listener. Pass the event so subclasses can read
-    // its `type` and any pre-resolved internal slots; pass `isCapture`
-    // separately because it can't be derived from `event.eventPhase` (which
-    // is `AT_TARGET` during both passes through the target node).
-    // $FlowExpectedError[prop-missing]
-    const propListener: EventCallback | null = eventTarget[
-      EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY
-    ](event, isCapture);
+  // Resolve the prop-based listener. Pass the event so subclasses can read
+  // its `type` and any pre-resolved internal slots; pass `isCapture`
+  // separately because it can't be derived from `event.eventPhase` (which
+  // is `AT_TARGET` during both passes through the target node).
+  // $FlowExpectedError[prop-missing]
+  const propListener: EventCallback | null = eventTarget[
+    EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY
+  ](event, isCapture);
 
-    const listenersByType = getListenersForPhase(eventTarget, isCapture);
-    const maybeListeners = listenersByType?.get(event.type);
-
-    // Fast path: only a prop listener (no `addEventListener` listeners).
-    // This is the overwhelmingly common case for React-driven dispatch.
-    if (maybeListeners == null) {
-      if (propListener == null) {
-        return;
-      }
-      const currentEvent = global.event;
-      global.event = event;
-      try {
-        propListener.call(eventTarget, event);
-      } catch (error) {
-        handleListenerError(error, errorState);
-      }
-      global.event = currentEvent;
-      return;
-    }
-
-    // Slow path: combine prop listener + addEventListener listeners.
-    const listeners: Array<EventListenerRegistration> = [];
-    if (propListener != null) {
-      listeners.push({
-        callback: propListener,
-        passive: false,
-        once: false,
-        removed: false,
-      });
-    }
-    for (const registration of maybeListeners.values()) {
-      listeners.push(registration);
-    }
-    invokeListeners(eventTarget, event, listeners, isCapture, errorState);
-    return;
-  }
-
-  // Legacy path (flag OFF): only `addEventListener` listeners.
   const listenersByType = getListenersForPhase(eventTarget, isCapture);
   const maybeListeners = listenersByType?.get(event.type);
+
+  // Fast path: only a prop listener (no `addEventListener` listeners).
+  // This is the overwhelmingly common case for React-driven dispatch.
   if (maybeListeners == null) {
+    if (propListener == null) {
+      return;
+    }
+    const currentEvent = global.event;
+    global.event = event;
+    try {
+      propListener.call(eventTarget, event);
+    } catch (error) {
+      handleListenerError(error, errorState);
+    }
+    global.event = currentEvent;
     return;
   }
-  invokeListeners(
-    eventTarget,
-    event,
-    Array.from(maybeListeners.values()),
-    isCapture,
-    errorState,
-  );
+
+  // Slow path: combine prop listener + addEventListener listeners.
+  const listeners: Array<EventListenerRegistration> = [];
+  if (propListener != null) {
+    listeners.push({
+      callback: propListener,
+      passive: false,
+      once: false,
+      removed: false,
+    });
+  }
+  for (const registration of maybeListeners.values()) {
+    listeners.push(registration);
+  }
+  invokeListeners(eventTarget, event, listeners, isCapture, errorState);
 }
 
 function invokeListeners(

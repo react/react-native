@@ -33,8 +33,7 @@ import {
  * 1. Responder negotiation (touch handling, grant/release lifecycle)
  * 2. Normal event dispatch via dispatchTrustedEvent (capture/bubble phases)
  *
- * Called from the React renderer's dispatchEvent when
- * enableNativeEventTargetEventDispatching is enabled.
+ * Called from the React renderer's dispatchEvent.
  */
 export default function dispatchNativeEvent(
   target: ?EventTarget,

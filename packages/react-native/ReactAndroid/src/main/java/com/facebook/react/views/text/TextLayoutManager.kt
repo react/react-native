@@ -118,9 +118,9 @@ internal object TextLayoutManager {
 
   private const val TEXT_WIDTH_MODE_LONGEST_LINE = "longest-line"
 
-  // Widths arrive in pixels converted from Yoga's floating point DIPs, so a width of a whole number
-  // of pixels can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
-  private const val PIXEL_WIDTH_TOLERANCE = 0.001f
+  // Sizes arrive in pixels converted from Yoga's floating point DIPs, so a whole number of pixels
+  // can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
+  private const val PIXEL_SIZE_TOLERANCE = 0.001f
 
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
@@ -982,7 +982,7 @@ internal object TextLayoutManager {
    * width back as its constraint once Yoga has converted it to DIPs and back, and flooring that to
    * one pixel less wraps the text.
    */
-  private fun floorPixelWidth(width: Float): Int = floor(width + PIXEL_WIDTH_TOLERANCE).toInt()
+  private fun floorPixelWidth(width: Float): Int = floor(width + PIXEL_SIZE_TOLERANCE).toInt()
 
   @VisibleForTesting
   internal fun adjustLayoutForRtlRightOverhang(
@@ -1560,7 +1560,8 @@ internal object TextLayoutManager {
 
       val singleLineTextExceedsWidth = text.length == 1 && layout.getLineWidth(0) > width
       val exceedsHeight =
-          heightYogaMeasureMode != YogaMeasureMode.UNDEFINED && layout.height > height
+          heightYogaMeasureMode != YogaMeasureMode.UNDEFINED &&
+              layout.height > height + PIXEL_SIZE_TOLERANCE
       val exceedsMaximumNumberOfLines =
           maximumNumberOfLines != ReactConstants.UNSET &&
               maximumNumberOfLines != 0 &&

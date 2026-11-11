@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.89.0-rc.1
+
+### Added
+
+- **React Native DevTools**: Add support for inspecting WebSocket events in the Network panel ([3d8a7a0296](https://github.com/react/react-native/commit/3d8a7a0296e8ee9ae9db4ec23456dd6f26ab43bb) by [@huntie](https://github.com/huntie))
+
+### Fixed
+
+- **Metro**: Make Metro's transform cache shareable across checkouts by pointing `asyncRequireModulePath` at `metro:runtime/modules/asyncRequire` instead of an absolute path ([2f9082fe08](https://github.com/react/react-native/commit/2f9082fe080b1828e5277adc35d66fd3d978be3c) by [@janicduplessis](https://github.com/janicduplessis))
+- **React Native DevTools**: Fix the initiator of WebSocket connections opened from framework code, such as Metro's Fast Refresh socket, in the Network panel ([d66f5230fd](https://github.com/react/react-native/commit/d66f5230fd6889af7bc51034f4a6c55da5cf4e05) by [@huntie](https://github.com/huntie))
+
+#### Android specific
+
+- **Renderer**: Fix `addViewAt` crash when a view that a parent still holds with `startViewTransition` is inserted into another parent ([45152f1f85](https://github.com/react/react-native/commit/45152f1f853541d8db3a24f34ff439ebf9b388b6) by [@pawicao](https://github.com/pawicao))
+
 ## v0.89.0-rc.0
 
 ### Breaking
