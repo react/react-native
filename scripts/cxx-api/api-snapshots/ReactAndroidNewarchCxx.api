@@ -6477,7 +6477,7 @@ class facebook::yoga::Node : public YGNode {
   public const facebook::yoga::LayoutResults& getLayout() const;
   public const facebook::yoga::Style& style() const;
   public const std::vector<facebook::yoga::Node*>& getChildren() const;
-  public facebook::yoga::Direction resolveDirection(facebook::yoga::Direction ownerDirection);
+  public facebook::yoga::Direction resolveDirection(facebook::yoga::Direction ownerDirection) const;
   public facebook::yoga::FloatOptional getMinContentHeight() const noexcept;
   public facebook::yoga::FloatOptional getMinContentWidth() const noexcept;
   public facebook::yoga::FloatOptional getResolvedDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension dimension, float referenceLength, float ownerWidth) const;
@@ -6501,6 +6501,7 @@ class facebook::yoga::Node : public YGNode {
   public size_t getLineIndex() const;
   public using LayoutableChildren = facebook::yoga::LayoutableChildren<facebook::yoga::Node>;
   public void clearChildren();
+  public void cloneChildIfNeeded(size_t index);
   public void cloneChildrenIfNeeded();
   public void cloneContentsChildrenIfNeeded();
   public void insertChild(facebook::yoga::Node* child, size_t index);
