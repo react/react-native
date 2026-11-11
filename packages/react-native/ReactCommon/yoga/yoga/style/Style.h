@@ -359,8 +359,12 @@ class YG_EXPORT Style {
   }
 
   // Kept out of resolvesAgainstOwnerWidth(), which every cache lookup runs.
-  bool hasPercentMarginOrPadding() const {
-    return anyIsPercent(margin_) || anyIsPercent(padding_);
+  bool hasPercentMargin() const {
+    return anyIsPercent(margin_);
+  }
+
+  bool hasPercentPadding() const {
+    return anyIsPercent(padding_);
   }
 
   FloatOptional aspectRatio() const {

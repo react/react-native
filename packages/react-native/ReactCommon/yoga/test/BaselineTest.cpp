@@ -307,5 +307,103 @@ TEST(MinContentTest, testPercentagePaddingFollowsNewWidth) {
   YGConfigFree(config);
 }
 
+TEST(MinContentTest, testPercentageMarginFollowsNewWidth) {
+  YGConfigRef config = autoMinSizeConfig();
+  MeasureCalls calls;
+  YGNodeRef root = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexDirection(root, YGFlexDirectionRow);
+  YGNodeStyleSetWidth(root, 100);
+  YGNodeStyleSetHeight(root, 50);
+  YGNodeRef item = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexBasis(item, 100);
+  YGNodeStyleSetFlexShrink(item, 1);
+  YGNodeInsertChild(root, item, 0);
+  YGNodeRef content = YGNodeNewWithConfig(config);
+  YGNodeStyleSetMarginPercent(content, YGEdgeLeft, 10);
+  YGNodeInsertChild(content, measuredLeaf(config, &calls), 0);
+  YGNodeInsertChild(item, content, 0);
+  YGNodeRef sibling = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexBasis(sibling, 300);
+  YGNodeStyleSetFlexShrink(sibling, 1);
+  YGNodeInsertChild(root, sibling, 1);
+  YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+  ASSERT_FLOAT_EQ(40.0f, YGNodeLayoutGetWidth(item));
+
+  YGNodeStyleSetWidth(root, 150);
+  YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  EXPECT_FLOAT_EQ(45.0f, YGNodeLayoutGetWidth(item));
+
+  YGNodeFreeRecursive(root);
+  YGConfigFree(config);
+}
+
+TEST(MinContentTest, testLeafPercentagePaddingFollowsNewWidth) {
+  YGConfigRef config = autoMinSizeConfig();
+  MeasureCalls calls;
+  YGNodeRef root = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexDirection(root, YGFlexDirectionRow);
+  YGNodeStyleSetWidth(root, 100);
+  YGNodeStyleSetHeight(root, 50);
+  YGNodeRef item = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexBasis(item, 100);
+  YGNodeStyleSetFlexShrink(item, 1);
+  YGNodeInsertChild(root, item, 0);
+  YGNodeRef leaf = measuredLeaf(config, &calls);
+  YGNodeStyleSetPaddingPercent(leaf, YGEdgeLeft, 10);
+  YGNodeInsertChild(item, leaf, 0);
+  YGNodeRef sibling = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexBasis(sibling, 300);
+  YGNodeStyleSetFlexShrink(sibling, 1);
+  YGNodeInsertChild(root, sibling, 1);
+  YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+  ASSERT_FLOAT_EQ(40.0f, YGNodeLayoutGetWidth(item));
+
+  YGNodeStyleSetWidth(root, 150);
+  YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  EXPECT_FLOAT_EQ(45.0f, YGNodeLayoutGetWidth(item));
+
+  YGNodeFreeRecursive(root);
+  YGConfigFree(config);
+}
+
+TEST(MinContentTest, testOwnPercentageMarginLeavesChildrenShared) {
+  YGConfigRef config = autoMinSizeConfig();
+  MeasureCalls calls;
+  YGNodeRef root = YGNodeNewWithConfig(config);
+  YGNodeStyleSetAlignItems(root, YGAlignFlexStart);
+  YGNodeStyleSetWidth(root, 300);
+  YGNodeStyleSetHeight(root, 100);
+  YGNodeRef item = YGNodeNewWithConfig(config);
+  YGNodeStyleSetWidth(item, 50);
+  YGNodeStyleSetHeight(item, 200);
+  YGNodeStyleSetFlexShrink(item, 1);
+  YGNodeInsertChild(root, item, 0);
+  YGNodeRef content = YGNodeNewWithConfig(config);
+  YGNodeStyleSetMarginPercent(content, YGEdgeLeft, 10);
+  YGNodeRef leaf = measuredLeaf(config, &calls);
+  YGNodeInsertChild(content, leaf, 0);
+  YGNodeInsertChild(item, content, 0);
+  YGNodeRef sibling = YGNodeNewWithConfig(config);
+  YGNodeStyleSetHeight(sibling, 200);
+  YGNodeStyleSetFlexShrink(sibling, 1);
+  YGNodeInsertChild(root, sibling, 1);
+  YGNodeCalculateLayout(root, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  // The content's own margin keys the item's memo and not the content's, so a
+  // narrower second tree walks the item again but shares the content's leaf.
+  YGNodeRef rootCopy = YGNodeClone(root);
+  YGNodeStyleSetWidth(rootCopy, 290);
+  YGNodeCalculateLayout(rootCopy, YGUndefined, YGUndefined, YGDirectionLTR);
+
+  EXPECT_EQ(
+      leaf, YGNodeGetChild(YGNodeGetChild(YGNodeGetChild(rootCopy, 0), 0), 0));
+
+  YGNodeFreeRecursive(rootCopy);
+  YGNodeFreeRecursive(root);
+  YGConfigFree(config);
+}
+
 } // namespace
 } // namespace facebook::yoga

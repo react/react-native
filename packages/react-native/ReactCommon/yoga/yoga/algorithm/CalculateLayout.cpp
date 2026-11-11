@@ -889,8 +889,9 @@ static bool hasMemoizedMinContent(
        !isCacheStale(node, ownerDirection, generationCount));
 }
 
-// A min-content size, and whether a percentage padding or margin resolved
-// against the owner's width went into it.
+// A min-content size, and whether the walk behind it resolved a percentage
+// against the owner's width: the node's padding, or a padding or margin below
+// it, on either axis.
 struct MinContentSize {
   float size;
   bool resolvesAgainstOwnerWidth;
@@ -929,7 +930,8 @@ struct MinContentSize {
 // as long as the node's cached measurements hold, so a later layout walks only
 // the subtrees that changed: a leaf's measure callback runs again only once the
 // leaf is marked dirty, and a container is walked again for a new `ownerWidth`
-// only when a percentage padding or margin below it resolves against it.
+// only when its own percentage padding, or a percentage padding or margin
+// below it, resolves against it.
 static MinContentSize computeMinContentMainSize(
     yoga::Node* const node,
     const FlexDirection requestedAxis,
@@ -947,7 +949,7 @@ static MinContentSize computeMinContentMainSize(
   const FloatOptional staticMin =
       wantRow ? node->getMinContentWidth() : node->getMinContentHeight();
   if (staticMin.isDefined()) {
-    return {staticMin.unwrap(), node->style().hasPercentMarginOrPadding()};
+    return {staticMin.unwrap(), false};
   }
 
   LayoutResults& layout = node->getLayout();
@@ -984,11 +986,11 @@ static MinContentSize computeMinContentMainSize(
             requestedAxis, leafDirection, ownerWidth);
     return {
         layout.minContent[axisIndex] + paddingAndBorder,
-        node->style().hasPercentMarginOrPadding()};
+        node->style().hasPercentPadding()};
   }
 
   if (node->getChildCount() == 0) {
-    return {0.0f, node->style().hasPercentMarginOrPadding()};
+    return {0.0f, false};
   }
 
   if (hasMemoizedMinContent(
@@ -1009,7 +1011,7 @@ static MinContentSize computeMinContentMainSize(
 
   float mainTotal = 0.0f;
   float crossMax = 0.0f;
-  bool resolvesAgainstOwnerWidth = node->style().hasPercentMarginOrPadding();
+  bool resolvesAgainstOwnerWidth = node->style().hasPercentPadding();
 
   node->cloneChildrenIfNeeded();
   for (size_t i = 0; i < node->getChildCount(); i++) {
@@ -1042,7 +1044,8 @@ static MinContentSize computeMinContentMainSize(
             child->style().computeMarginForAxis(nodeCrossAxis, ownerWidth));
     resolvesAgainstOwnerWidth = resolvesAgainstOwnerWidth ||
         childMain.resolvesAgainstOwnerWidth ||
-        childCross.resolvesAgainstOwnerWidth;
+        childCross.resolvesAgainstOwnerWidth ||
+        child->style().hasPercentMargin();
   }
 
   mainTotal += node->style().computeFlexStartPaddingAndBorder(
