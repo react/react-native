@@ -9,7 +9,10 @@
 
 #include <atomic>
 #include <cstdint>
+#include <initializer_list>
 #include <limits>
+#include <unordered_set>
+#include <vector>
 
 #include <yoga/Yoga.h>
 #include <yoga/algorithm/Baseline.h>
@@ -163,6 +166,25 @@ YGNodeRef measuredLeaf(YGConfigRef config, MeasureCalls* calls) {
   return leaf;
 }
 
+// YGNodeFreeRecursive leaks a node two trees share (react/yoga#2087).
+void freeTreesSharingNodes(std::initializer_list<YGNodeRef> roots) {
+  std::unordered_set<YGNodeRef> nodes;
+  std::vector<YGNodeRef> pending(roots);
+  while (!pending.empty()) {
+    const YGNodeRef node = pending.back();
+    pending.pop_back();
+    if (!nodes.insert(node).second) {
+      continue;
+    }
+    for (size_t index = 0; index < YGNodeGetChildCount(node); index++) {
+      pending.push_back(YGNodeGetChild(node, index));
+    }
+  }
+  for (const YGNodeRef node : nodes) {
+    YGNodeFinalize(node);
+  }
+}
+
 // Only an item that grows or shrinks gets an automatic minimum size.
 
 TEST(MinContentTest, testWalkClonesChildrenOfAnotherTree) {
@@ -195,8 +217,7 @@ TEST(MinContentTest, testWalkClonesChildrenOfAnotherTree) {
   EXPECT_EQ(0, calls.ofOriginal);
   EXPECT_GT(calls.ofCopies, 0);
 
-  YGNodeFreeRecursive(rootCopy);
-  YGNodeFreeRecursive(root);
+  freeTreesSharingNodes({rootCopy, root});
   YGConfigFree(config);
 }
 
@@ -287,8 +308,7 @@ TEST(MinContentTest, testNewWidthDoesNotCloneItemContent) {
   EXPECT_EQ(content, YGNodeGetChild(YGNodeGetChild(rootCopy, 0), 0));
   EXPECT_FLOAT_EQ(50.0f, YGNodeLayoutGetHeight(YGNodeGetChild(rootCopy, 0)));
 
-  YGNodeFreeRecursive(rootCopy);
-  YGNodeFreeRecursive(root);
+  freeTreesSharingNodes({rootCopy, root});
   YGConfigFree(config);
 }
 
@@ -417,8 +437,7 @@ TEST(MinContentTest, testOwnPercentageMarginLeavesChildrenShared) {
   EXPECT_EQ(
       leaf, YGNodeGetChild(YGNodeGetChild(YGNodeGetChild(rootCopy, 0), 0), 0));
 
-  YGNodeFreeRecursive(rootCopy);
-  YGNodeFreeRecursive(root);
+  freeTreesSharingNodes({rootCopy, root});
   YGConfigFree(config);
 }
 
@@ -476,8 +495,7 @@ TEST(MinContentTest, testWalkClonesOnlyTheChildrenItWritesTo) {
   EXPECT_EQ(staticLeaf, YGNodeGetChild(itemCopy, 4));
   EXPECT_EQ(empty, YGNodeGetChild(itemCopy, 5));
 
-  YGNodeFreeRecursive(rootCopy);
-  YGNodeFreeRecursive(root);
+  freeTreesSharingNodes({rootCopy, root});
   YGConfigFree(config);
 }
 
@@ -515,8 +533,7 @@ TEST(MinContentTest, testWalkMeasuresOnTheCloneOnlyTheAxisItCannotRead) {
   EXPECT_EQ(0, minContentCalls.ofOriginal);
   EXPECT_EQ(1, minContentCalls.ofCopies);
 
-  YGNodeFreeRecursive(rootCopy);
-  YGNodeFreeRecursive(root);
+  freeTreesSharingNodes({rootCopy, root});
   YGConfigFree(config);
 }
 
