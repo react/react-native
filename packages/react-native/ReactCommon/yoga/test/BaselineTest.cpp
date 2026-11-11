@@ -147,6 +147,8 @@ YGNodeRef measuredLeaf(YGConfigRef config, MeasureCalls* calls) {
   return leaf;
 }
 
+// Only an item that grows or shrinks gets an automatic minimum size.
+
 TEST(MinContentTest, testWalkClonesChildrenOfAnotherTree) {
   YGConfigRef config = autoMinSizeConfig();
   MeasureCalls calls;
@@ -156,6 +158,7 @@ TEST(MinContentTest, testWalkClonesChildrenOfAnotherTree) {
   YGNodeRef item = YGNodeNewWithConfig(config);
   YGNodeStyleSetHeight(item, 30);
   YGNodeStyleSetMinHeight(item, 0);
+  YGNodeStyleSetFlexGrow(item, 1);
   YGNodeInsertChild(root, item, 0);
   // Explicit minimum heights keep every min-content walk away from the leaf.
   YGNodeRef leaf = measuredLeaf(config, &calls);
@@ -188,6 +191,7 @@ TEST(MinContentTest, testUnchangedItemIsNotMeasuredAgain) {
   YGNodeStyleSetWidth(root, 100);
   YGNodeStyleSetHeight(root, 100);
   YGNodeRef item = YGNodeNewWithConfig(config);
+  YGNodeStyleSetFlexGrow(item, 1);
   YGNodeInsertChild(root, item, 0);
   YGNodeInsertChild(item, measuredLeaf(config, &calls), 0);
   YGNodeRef sibling = YGNodeNewWithConfig(config);

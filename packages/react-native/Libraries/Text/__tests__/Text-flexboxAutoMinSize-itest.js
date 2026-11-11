@@ -35,6 +35,8 @@ const paragraphWithMinHeight = (
   </Text>
 );
 
+// Only an item that grows or shrinks gets an automatic minimum size.
+
 type FooterScreenProps = Readonly<{
   footerHeight: number,
   footerRef: React.RefSetter<HostInstance>,
@@ -47,7 +49,7 @@ function FooterScreen({
   return (
     <LayoutConformance mode="strict">
       <View style={{flex: 1}}>
-        <View>{paragraph}</View>
+        <View style={{flexGrow: 1}}>{paragraph}</View>
         <View ref={footerRef} style={{height: footerHeight}} />
       </View>
     </LayoutConformance>
@@ -62,8 +64,10 @@ type ItemScreenProps = Readonly<{
 function ItemScreen({itemMinHeight, itemRef}: ItemScreenProps): React.Node {
   return (
     <LayoutConformance mode="strict">
-      <View style={{flex: 1, minHeight: 0}}>
-        <View ref={itemRef} style={{height: 30, minHeight: itemMinHeight}}>
+      <View style={{height: 50, minHeight: 0}}>
+        <View
+          ref={itemRef}
+          style={{flexGrow: 1, height: 30, minHeight: itemMinHeight}}>
           {paragraphWithMinHeight}
         </View>
       </View>
@@ -111,6 +115,6 @@ describe('<Text> holding a <View> under strict layout conformance', () => {
     render(0);
     render();
 
-    expect(nullthrows(itemRef.current).getBoundingClientRect().height).toBe(30);
+    expect(nullthrows(itemRef.current).getBoundingClientRect().height).toBe(50);
   });
 });
