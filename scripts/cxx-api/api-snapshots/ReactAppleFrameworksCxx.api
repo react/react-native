@@ -13399,6 +13399,7 @@ struct facebook::yoga::LayoutData {
 }
 
 struct facebook::yoga::LayoutResults {
+  public bool computedAutoMinMainSizeResolved() const;
   public bool hadOverflow() const;
   public bool operator==(facebook::yoga::LayoutResults layout) const;
   public facebook::yoga::CachedMeasurement cachedLayout;
@@ -13423,6 +13424,7 @@ struct facebook::yoga::LayoutResults {
   public uint32_t generationCount;
   public uint32_t nextCachedMeasurementsIndex;
   public void setBorder(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
+  public void setComputedAutoMinMainSizeResolved(bool resolved);
   public void setDimension(facebook::yoga::Dimension axis, float dimension);
   public void setDirection(facebook::yoga::Direction direction);
   public void setHadOverflow(bool hadOverflow);
