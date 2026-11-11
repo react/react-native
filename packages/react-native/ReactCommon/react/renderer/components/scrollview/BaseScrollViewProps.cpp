@@ -170,13 +170,19 @@ BaseScrollViewProps::BaseScrollViewProps(
           rawProps,
           "horizontal",
           sourceProps.horizontal,
-          true)),
+          false)),
       padsContentForSafeArea(convertRawProp(
           context,
           rawProps,
           "padsContentForSafeArea",
           sourceProps.padsContentForSafeArea,
           false)),
+      fadingEdgeLength(convertRawProp(
+          context,
+          rawProps,
+          "fadingEdgeLength",
+          sourceProps.fadingEdgeLength,
+          nullptr)),
       scrollEventThrottle(convertRawProp(
           context,
           rawProps,
@@ -301,6 +307,7 @@ void BaseScrollViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(persistentScrollbar);
     RAW_SET_PROP_SWITCH_CASE_BASIC(horizontal);
     RAW_SET_PROP_SWITCH_CASE_BASIC(padsContentForSafeArea);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(fadingEdgeLength);
     RAW_SET_PROP_SWITCH_CASE_BASIC(scrollEventThrottle);
     RAW_SET_PROP_SWITCH_CASE_BASIC(zoomScale);
     RAW_SET_PROP_SWITCH_CASE_BASIC(contentInset);

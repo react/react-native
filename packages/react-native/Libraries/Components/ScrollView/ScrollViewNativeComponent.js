@@ -124,6 +124,8 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           endDraggingSensitivityMultiplier: true,
           directionalLockEnabled: true,
           disableIntervalMomentum: true,
+          fadingEdgeLength: true,
+          horizontal: true,
           indicatorStyle: true,
           inverted: true,
           keyboardDismissMode: true,

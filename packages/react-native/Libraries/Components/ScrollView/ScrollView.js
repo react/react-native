@@ -443,21 +443,6 @@ export type ScrollViewPropsAndroid = Readonly<{
    */
   persistentScrollbar?: ?boolean,
   /**
-   * Controls the fading effect at the edges of the scroll content.
-   *
-   * A value greater than 0 will apply the fading effect, indicating more content is available
-   * to scroll.
-   *
-   * You can specify a single number to apply the same fading length to both edges.
-   * Alternatively, use an object with `start` and `end` properties to set different
-   * fading lengths for the start and end of the scroll content.
-   *
-   * The default value is 0.
-   *
-   * @platform android
-   */
-  fadingEdgeLength?: ?number | {start: number, end: number},
-  /**
    * When false, the ScrollView will not automatically scroll to a focused child when
    * the child requests focus. This can be useful when you want to control the scroll
    * position programmatically.
@@ -525,6 +510,19 @@ type ScrollViewBaseProps = Readonly<{
    * @default `'normal'`
    */
   decelerationRate?: ?DecelerationRateType,
+  /**
+   * Controls the fading effect at the edges of the scroll content.
+   *
+   * A value greater than 0 will apply the fading effect, indicating more content is available
+   * to scroll.
+   *
+   * You can specify a single number to apply the same fading length to both edges.
+   * Alternatively, use an object with `start` and `end` properties to set different
+   * fading lengths for the start and end of the scroll content.
+   *
+   * The default value is 0.
+   */
+  fadingEdgeLength?: ?number | {start: number, end: number},
 
   /**
    * *Experimental, iOS Only*. The API is experimental and will change in future releases.
