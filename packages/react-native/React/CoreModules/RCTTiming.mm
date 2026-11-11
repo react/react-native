@@ -183,6 +183,14 @@ static NSTimeInterval RCTMonotonicTime()
 
 - (void)appDidMoveToForeground
 {
+  if (_inBackground) {
+    @synchronized(self) {
+      if (_sleepTimer.valid) {
+        // The run-loop timer can still be waiting on time that elapsed during device sleep.
+        [self updateSleepTimerFireDate:_sleepTimerTarget];
+      }
+    }
+  }
   _inBackground = NO;
   [self startTimers];
 }
@@ -309,11 +317,19 @@ static NSTimeInterval RCTMonotonicTime()
   }
 }
 
+// Call with the sleep timer lock held.
+- (void)updateSleepTimerFireDate:(NSTimeInterval)sleepTarget
+{
+  NSTimeInterval delay = MAX(sleepTarget - RCTMonotonicTime(), 0);
+  _sleepTimer.fireDate = [NSDate dateWithTimeIntervalSinceNow:delay];
+  _sleepTimerTarget = sleepTarget;
+}
+
 - (void)scheduleSleepTimer:(NSTimeInterval)sleepTarget
 {
   @synchronized(self) {
-    NSTimeInterval delay = MAX(sleepTarget - RCTMonotonicTime(), 0);
     if ((_sleepTimer == nil) || !_sleepTimer.valid) {
+      NSTimeInterval delay = MAX(sleepTarget - RCTMonotonicTime(), 0);
       _sleepTimer = [NSTimer timerWithTimeInterval:delay
                                             target:[_RCTTimingProxy proxyWithTarget:self]
                                           selector:@selector(timerDidFire)
@@ -322,9 +338,7 @@ static NSTimeInterval RCTMonotonicTime()
       _sleepTimerTarget = sleepTarget;
       [[NSRunLoop currentRunLoop] addTimer:_sleepTimer forMode:NSDefaultRunLoopMode];
     } else if (sleepTarget < _sleepTimerTarget) {
-      // Convert to a date only when setting the run loop's wakeup.
-      _sleepTimer.fireDate = [NSDate dateWithTimeIntervalSinceNow:delay];
-      _sleepTimerTarget = sleepTarget;
+      [self updateSleepTimerFireDate:sleepTarget];
     }
   }
 }
