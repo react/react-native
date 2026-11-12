@@ -36,7 +36,6 @@ import {
   Alert,
   Animated,
   I18nManager,
-  Platform,
   StyleSheet,
   TextInput,
   View,
@@ -227,20 +226,18 @@ class FlatListExample extends React.PureComponent<Props, State> {
                 this.state.maintainVisibleContentPosition,
                 this._setBooleanValue('maintainVisibleContentPosition'),
               )}
-              {Platform.OS === 'android' && (
-                <View>
-                  <TextInput
-                    placeholder="Fading edge length"
-                    underlineColorAndroid="black"
-                    keyboardType={'numeric'}
-                    onChange={event =>
-                      this.setState({
-                        fadingEdgeLength: Number(event.nativeEvent.text),
-                      })
-                    }
-                  />
-                </View>
-              )}
+              <View>
+                <TextInput
+                  placeholder="Fading edge length"
+                  underlineColorAndroid="black"
+                  keyboardType={'numeric'}
+                  onChange={event =>
+                    this.setState({
+                      fadingEdgeLength: Number(event.nativeEvent.text),
+                    })
+                  }
+                />
+              </View>
               <Spindicator value={this._scrollPos} />
             </View>
           </View>

@@ -11,6 +11,7 @@
 
 #include <React/RendererCore.h>
 #include <React/View.h>
+#include <folly/dynamic.h>
 #include <react/renderer/components/scrollview/primitives.h>
 
 #include <optional>
@@ -64,6 +65,7 @@ class BaseScrollViewProps : public ViewProps {
   bool persistentScrollbar{false};
   bool horizontal{false};
   bool padsContentForSafeArea{false};
+  folly::dynamic fadingEdgeLength{};
   Float scrollEventThrottle{};
   Float zoomScale{1.0f};
   EdgeInsets contentInset{};

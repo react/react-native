@@ -561,22 +561,6 @@ export interface ScrollViewPropsAndroid {
   nestedScrollEnabled?: boolean | undefined;
 
   /**
-   * Controls the fading effect at the edges of the scroll content.
-   *
-   * A value greater than 0 will apply the fading effect, indicating more content is available
-   * to scroll.
-   *
-   * You can specify a single number to apply the same fading length to both edges.
-   * Alternatively, use an object with `start` and `end` properties to set different
-   * fading lengths for the start and end of the scroll content.
-   *
-   * The default value is 0.
-   *
-   * @platform android
-   */
-  fadingEdgeLength?: number | {start: number; end: number} | undefined;
-
-  /**
    * Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
    */
   persistentScrollbar?: boolean | undefined;
@@ -634,6 +618,20 @@ export interface ScrollViewProps
    *  - `'fast'`: 0.99 on iOS, 0.9 on Android
    */
   decelerationRate?: 'fast' | 'normal' | number | undefined;
+
+  /**
+   * Controls the fading effect at the edges of the scroll content.
+   *
+   * A value greater than 0 will apply the fading effect, indicating more content is available
+   * to scroll.
+   *
+   * You can specify a single number to apply the same fading length to both edges.
+   * Alternatively, use an object with `start` and `end` properties to set different
+   * fading lengths for the start and end of the scroll content.
+   *
+   * The default value is 0.
+   */
+  fadingEdgeLength?: number | {start: number; end: number} | undefined;
 
   /**
    * When true the scroll view's children are arranged horizontally in a row

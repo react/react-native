@@ -32,12 +32,6 @@ HostPlatformScrollViewProps::HostPlatformScrollViewProps(
           "nestedScrollEnabled",
           sourceProps.nestedScrollEnabled,
           false)),
-      fadingEdgeLength(convertRawProp(
-          context,
-          rawProps,
-          "fadingEdgeLength",
-          sourceProps.fadingEdgeLength,
-          nullptr)),
       overScrollMode(convertRawProp(
           context,
           rawProps,
@@ -72,7 +66,6 @@ void HostPlatformScrollViewProps::setProp(
   switch (hash) {
     RAW_SET_PROP_SWITCH_CASE_BASIC(sendMomentumEvents);
     RAW_SET_PROP_SWITCH_CASE_BASIC(nestedScrollEnabled);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(fadingEdgeLength);
     RAW_SET_PROP_SWITCH_CASE_BASIC(overScrollMode);
     RAW_SET_PROP_SWITCH_CASE_BASIC(endFillColor);
     RAW_SET_PROP_SWITCH_CASE_BASIC(scrollsChildToFocus);
@@ -287,6 +280,10 @@ folly::dynamic HostPlatformScrollViewProps::getDiffProps(
     result["horizontal"] = horizontal;
   }
 
+  if (fadingEdgeLength != oldProps->fadingEdgeLength) {
+    result["fadingEdgeLength"] = fadingEdgeLength;
+  }
+
   if (scrollEventThrottle != oldProps->scrollEventThrottle) {
     result["scrollEventThrottle"] = scrollEventThrottle;
   }
@@ -369,10 +366,6 @@ folly::dynamic HostPlatformScrollViewProps::getDiffProps(
 
   if (nestedScrollEnabled != oldProps->nestedScrollEnabled) {
     result["nestedScrollEnabled"] = nestedScrollEnabled;
-  }
-
-  if (fadingEdgeLength != oldProps->fadingEdgeLength) {
-    result["fadingEdgeLength"] = fadingEdgeLength;
   }
 
   if (overScrollMode != oldProps->overScrollMode) {

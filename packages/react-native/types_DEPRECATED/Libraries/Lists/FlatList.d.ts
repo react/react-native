@@ -157,8 +157,6 @@ export interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
    * fading lengths for the start and end of the scroll content.
    *
    * The default value is 0.
-   *
-   * @platform android
    */
   fadingEdgeLength?: number | {start: number; end: number} | undefined;
 

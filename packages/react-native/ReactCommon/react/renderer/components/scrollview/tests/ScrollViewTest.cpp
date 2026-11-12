@@ -56,6 +56,35 @@ TEST(ScrollViewPropsTest, safeAreaPaddingResetsToDefault) {
   EXPECT_FALSE(reset.padsContentForSafeArea);
 }
 
+TEST(ScrollViewPropsTest, horizontalResetsToDefault) {
+  auto horizontal =
+      parseScrollViewProps(folly::dynamic::object("horizontal", true));
+  EXPECT_TRUE(horizontal.horizontal);
+  auto reset = parseScrollViewProps(
+      folly::dynamic::object("horizontal", nullptr), horizontal);
+  EXPECT_EQ(reset.horizontal, BaseScrollViewProps{}.horizontal);
+}
+
+TEST(ScrollViewPropsTest, fadingEdgeLengthTakesANumberOrAPair) {
+  auto number =
+      parseScrollViewProps(folly::dynamic::object("fadingEdgeLength", 40));
+  EXPECT_EQ(number.fadingEdgeLength, folly::dynamic(40));
+  const folly::dynamic startAndEnd =
+      folly::dynamic::object("start", 0)("end", 80);
+  auto pair = parseScrollViewProps(
+      folly::dynamic::object("fadingEdgeLength", startAndEnd), number);
+  EXPECT_EQ(pair.fadingEdgeLength, startAndEnd);
+}
+
+TEST(ScrollViewPropsTest, fadingEdgeLengthResetsToDefault) {
+  auto faded =
+      parseScrollViewProps(folly::dynamic::object("fadingEdgeLength", 40));
+  EXPECT_EQ(faded.fadingEdgeLength, folly::dynamic(40));
+  auto reset = parseScrollViewProps(
+      folly::dynamic::object("fadingEdgeLength", nullptr), faded);
+  EXPECT_EQ(reset.fadingEdgeLength, BaseScrollViewProps{}.fadingEdgeLength);
+}
+
 TEST(ScrollViewStateTest, defaultConstructor) {
   ScrollViewState state;
 

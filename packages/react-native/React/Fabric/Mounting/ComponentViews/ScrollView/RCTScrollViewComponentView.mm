@@ -57,6 +57,22 @@ static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(const S
   }
 }
 
+static CGFloat RCTFadingEdgeLengthFromValue(const folly::dynamic *value)
+{
+  return (value != nullptr && value->isNumber()) ? fmax(value->asDouble(), 0) : 0;
+}
+
+static void RCTGetFadingEdgeLengths(const ScrollViewProps &props, CGFloat *start, CGFloat *end)
+{
+  const auto &fadingEdgeLength = props.fadingEdgeLength;
+  if (fadingEdgeLength.isObject()) {
+    *start = RCTFadingEdgeLengthFromValue(fadingEdgeLength.get_ptr("start"));
+    *end = RCTFadingEdgeLengthFromValue(fadingEdgeLength.get_ptr("end"));
+  } else {
+    *start = *end = RCTFadingEdgeLengthFromValue(&fadingEdgeLength);
+  }
+}
+
 // Once Fabric implements proper NativeAnimationDriver, this should be removed.
 // This is just a workaround to allow animations based on onScroll event.
 // This is only used to animate sticky headers in ScrollViews, and only the contentOffset and tag is used.
@@ -124,6 +140,8 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
   BOOL _avoidAdjustmentForMaintainVisibleContentPosition;
 
   RCTVirtualViewContainerState *_virtualViewContainerState;
+
+  CAGradientLayer *_fadingEdgeMaskLayer;
 }
 
 + (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(UIView *)view
@@ -316,6 +334,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     _containerView.transform = transform;
     _scrollView.transform = transform;
   }
+  [self _updateFadingEdgeMask];
 }
 
 - (bool)isInverted
@@ -460,10 +479,77 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     scrollView.keyboardDismissMode = RCTUIKeyboardDismissModeFromProps(newScrollViewProps);
   }
 
+  BOOL fadingEdgeChanged = oldScrollViewProps.fadingEdgeLength != newScrollViewProps.fadingEdgeLength ||
+      oldScrollViewProps.horizontal != newScrollViewProps.horizontal;
+
   [super updateProps:props oldProps:oldProps];
 
   // Must run after `super updateProps:` so it is based on the latest calculated view.
   ((RCTEnhancedScrollView *)_scrollView).inverted = [self isInverted];
+
+  if (fadingEdgeChanged) {
+    [self _updateFadingEdgeMask];
+  }
+}
+
+// Android's `View.draw` geometry: each edge fades over its own length, scaled so that neither passes the middle.
+- (void)_updateFadingEdgeMask
+{
+  const auto &props = static_cast<const ScrollViewProps &>(*_props);
+  CGFloat start;
+  CGFloat end;
+  RCTGetFadingEdgeLengths(props, &start, &end);
+  CGFloat length = fmax(start, end);
+  CGFloat extent = props.horizontal ? _scrollView.bounds.size.width : _scrollView.bounds.size.height;
+
+  if (length == 0 || extent == 0) {
+    // A mask costs an offscreen pass, so a scroll view without a fading edge carries none.
+    if (_fadingEdgeMaskLayer != nil) {
+      _scrollView.layer.mask = nil;
+      _fadingEdgeMaskLayer = nil;
+    }
+    return;
+  }
+
+  CGFloat fadeLength = fmin(length, extent / 2);
+  if (_fadingEdgeMaskLayer == nil) {
+    _fadingEdgeMaskLayer = [CAGradientLayer layer];
+    _fadingEdgeMaskLayer.colors = @[
+      (id)UIColor.clearColor.CGColor,
+      (id)UIColor.blackColor.CGColor,
+      (id)UIColor.blackColor.CGColor,
+      (id)UIColor.clearColor.CGColor,
+    ];
+  }
+
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+  // `start` and `end` are logical edges: in RTL the scroll view is mirrored, and its mask with it.
+  _fadingEdgeMaskLayer.startPoint = props.horizontal ? CGPointMake(0, 0.5) : CGPointMake(0.5, 0);
+  _fadingEdgeMaskLayer.endPoint = props.horizontal ? CGPointMake(1, 0.5) : CGPointMake(0.5, 1);
+  _fadingEdgeMaskLayer.locations = @[
+    @0,
+    @(fadeLength * start / length / extent),
+    @(1 - fadeLength * end / length / extent),
+    @1,
+  ];
+  _fadingEdgeMaskLayer.frame = _scrollView.bounds;
+  [CATransaction commit];
+
+  // The scroll view rather than this view: RCTViewComponentView owns `currentContainerView.layer.mask`.
+  _scrollView.layer.mask = _fadingEdgeMaskLayer;
+}
+
+- (void)_layoutFadingEdgeMask
+{
+  if (_fadingEdgeMaskLayer == nil) {
+    return;
+  }
+  // The mask is laid out in the scroll view's bounds, whose origin is the content offset.
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+  _fadingEdgeMaskLayer.frame = _scrollView.bounds;
+  [CATransaction commit];
 }
 
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
@@ -759,6 +845,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
+  [self _layoutFadingEdgeMask];
+
   auto scrollMetrics = [self _scrollViewMetrics];
 
   [self _updateStateWithContentOffset];

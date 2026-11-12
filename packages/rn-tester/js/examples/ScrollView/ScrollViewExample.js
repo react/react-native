@@ -529,6 +529,15 @@ const examples: Array<RNTesterModuleExample> = [
       return <HorizontalScrollTextInputs />;
     },
   },
+  {
+    name: 'fadingEdgeLength',
+    title: '<ScrollView> fadingEdgeLength\n',
+    description:
+      'Fades the content out at the edges of the scroll view, with one length for both edges or one per edge.',
+    render(): React.Node {
+      return <FadingEdgeLengthExample />;
+    },
+  },
 ];
 
 if (Platform.OS === 'ios') {
@@ -592,10 +601,10 @@ if (Platform.OS === 'ios') {
   });
 } else if (Platform.OS === 'android') {
   examples.push({
-    title: '<ScrollView> EndFillColor & FadingEdgeLength\n',
-    description: 'Toggle to set endFillColor and fadingEdgeLength.',
+    title: '<ScrollView> EndFillColor\n',
+    description: 'Toggle to set endFillColor.',
     render(): React.Node {
-      return <EndFillColorFadingEdgeLen />;
+      return <EndFillColorExample />;
     },
   });
   examples.push({
@@ -851,15 +860,13 @@ const HorizontalScrollView = (props: {
   );
 };
 
-const EndFillColorFadingEdgeLen = () => {
+const EndFillColorExample = () => {
   const [endFillColor, setEndFillColor] = useState('');
-  const [fadingEdgeLen, setFadingEdgeLen] = useState(0);
   return (
     <View>
       <ScrollView
         style={[styles.scrollView, {height: 200}]}
         endFillColor={endFillColor}
-        fadingEdgeLength={fadingEdgeLen}
         nestedScrollEnabled>
         {ITEMS.map(createItemRow)}
       </ScrollView>
@@ -869,15 +876,41 @@ const EndFillColorFadingEdgeLen = () => {
           endFillColor === '' ? setEndFillColor('#A9DFD0') : setEndFillColor('')
         }
       />
-      <Button
-        label={fadingEdgeLen === 0 ? 'setFadingEdgeLen' : 'resetFadingEdgeLen'}
-        onPress={() =>
-          fadingEdgeLen === 0 ? setFadingEdgeLen(300) : setFadingEdgeLen(0)
-        }
-      />
     </View>
   );
 };
+
+const FADING_EDGE_LENGTHS = [
+  {label: '0', value: 0},
+  {label: '40', value: 40},
+  {label: '{start: 0, end: 80}', value: {start: 0, end: 80}},
+];
+
+const FadingEdgeLengthExample = () => (
+  <View>
+    {FADING_EDGE_LENGTHS.map(({label, value}) => (
+      <View key={label}>
+        <RNTesterText style={styles.text}>
+          fadingEdgeLength: {label}
+        </RNTesterText>
+        <View style={styles.fadingEdgeLengthRow}>
+          <ScrollView
+            horizontal
+            style={[styles.scrollView, styles.fadingEdgeLengthHorizontal]}
+            fadingEdgeLength={value}>
+            {ITEMS.map(createItemRow)}
+          </ScrollView>
+          <ScrollView
+            style={[styles.scrollView, styles.fadingEdgeLengthVertical]}
+            fadingEdgeLength={value}
+            nestedScrollEnabled>
+            {ITEMS.map(createItemRow)}
+          </ScrollView>
+        </View>
+      </View>
+    ))}
+  </View>
+);
 
 const SnapToOptions = () => {
   const [snapToAlignment, setSnapToAlignment] = useState('start');
@@ -1718,6 +1751,20 @@ const styles = StyleSheet.create({
   },
   horizontalScrollView: {
     height: 106,
+  },
+  fadingEdgeLengthRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 5,
+  },
+  fadingEdgeLengthHorizontal: {
+    flex: 1,
+    height: 50,
+  },
+  fadingEdgeLengthVertical: {
+    flexGrow: 0,
+    height: 120,
+    width: 106,
   },
   text: {
     fontSize: 16,
