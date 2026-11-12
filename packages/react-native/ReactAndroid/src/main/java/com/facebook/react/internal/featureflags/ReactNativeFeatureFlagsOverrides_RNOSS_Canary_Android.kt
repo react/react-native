@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c55a008621d0fef9a4e65eb70439377b>>
+ * @generated SignedSource<<0aa6021a35e690e00686c95c387017f6>>
  */
 
 /**
@@ -34,6 +34,8 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
   override fun fixBorderlessRippleAndroid(): Boolean = true
 
   override fun fixTextInlineViewLineHeight(): Boolean = true
+
+  override fun optimizedAnimatedPropUpdates(): Boolean = true
 
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
 

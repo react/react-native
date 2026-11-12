@@ -15,6 +15,11 @@ namespace facebook::react {
 
 class ReactNativeFeatureFlagsOverridesOSSStable : public ReactNativeFeatureFlagsDefaults {
  public:
+  bool optimizedAnimatedPropUpdates() override
+  {
+    return true;
+  }
+
   bool useNativeViewConfigsInBridgelessMode() override
   {
     return true;

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7a83edc30ac98fe24e2a56bc414c30a8>>
+ * @generated SignedSource<<153a8b43c146142cba2df3fa5d865562>>
  */
 
 /**
@@ -50,6 +50,10 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
   }
 
   bool fixTextInlineViewLineHeight() override {
+    return true;
+  }
+
+  bool optimizedAnimatedPropUpdates() override {
     return true;
   }
 

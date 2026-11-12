@@ -824,7 +824,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'canary',
     },
     overrideBySynchronousMountPropsAtMountingAndroid: {
       defaultValue: true,
