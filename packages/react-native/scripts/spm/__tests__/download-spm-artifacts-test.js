@@ -830,11 +830,10 @@ describe('npm dist-tag resolvers', () => {
       'hermes-compiler/latest-v1': {ok: false, status: 500},
     });
 
-    const assertion = expect(resolveLatestV1Version()).rejects.toThrow(
-      /npm lookup failed/,
-    );
-    await jest.advanceTimersByTimeAsync(3_000);
-    await assertion;
+    await Promise.all([
+      expect(resolveLatestV1Version()).rejects.toThrow(/npm lookup failed/),
+      jest.advanceTimersByTimeAsync(3_000),
+    ]);
 
     expect(globalThis.fetch).toHaveBeenCalledTimes(3);
   });
