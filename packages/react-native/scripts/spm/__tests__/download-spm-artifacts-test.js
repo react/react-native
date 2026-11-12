@@ -671,11 +671,14 @@ describe('download', () => {
 
 describe('resolveSnapshotUrl', () => {
   let origFetch;
+  let warnSpy;
   beforeEach(() => {
     origFetch = globalThis.fetch;
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
   afterEach(() => {
     globalThis.fetch = origFetch;
+    warnSpy.mockRestore();
   });
 
   const METADATA = `<?xml version="1.0"?>
@@ -729,7 +732,6 @@ describe('resolveSnapshotUrl', () => {
   });
 
   it('retries the metadata request after a transient server error', async () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const router = routerFetch({'maven-metadata.xml': {text: METADATA}});
     globalThis.fetch = jest
       .fn()
@@ -746,7 +748,6 @@ describe('resolveSnapshotUrl', () => {
 
     expect(await pending).toContain('0.85.0-20260101.123456-7');
     expect(globalThis.fetch).toHaveBeenCalledTimes(2);
-    warnSpy.mockRestore();
   });
 
   it('throws when timestamp/buildNumber are absent', async () => {
@@ -770,11 +771,14 @@ describe('resolveSnapshotUrl', () => {
 
 describe('npm dist-tag resolvers', () => {
   let origFetch;
+  let warnSpy;
   beforeEach(() => {
     origFetch = globalThis.fetch;
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
   afterEach(() => {
     globalThis.fetch = origFetch;
+    warnSpy.mockRestore();
   });
 
   it('resolveNightlyVersion returns the version from the npm registry', async () => {
@@ -787,7 +791,6 @@ describe('npm dist-tag resolvers', () => {
   });
 
   it('resolveNightlyVersion retries a dropped connection', async () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const router = routerFetch({
       'react-native/nightly': {json: {version: '0.86.0-nightly-xyz'}},
     });
@@ -804,7 +807,6 @@ describe('npm dist-tag resolvers', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('retrying in 1000ms'),
     );
-    warnSpy.mockRestore();
   });
 
   it('resolveNightlyVersion throws on a failed npm lookup', async () => {
@@ -824,7 +826,6 @@ describe('npm dist-tag resolvers', () => {
   });
 
   it('resolveLatestV1Version throws on a failed lookup', async () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     globalThis.fetch = routerFetch({
       'hermes-compiler/latest-v1': {ok: false, status: 500},
     });
@@ -836,7 +837,6 @@ describe('npm dist-tag resolvers', () => {
     await assertion;
 
     expect(globalThis.fetch).toHaveBeenCalledTimes(3);
-    warnSpy.mockRestore();
   });
 });
 
