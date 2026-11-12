@@ -468,36 +468,45 @@ function InternalTextInput(props: TextInputProps): React.Node {
   const {
     editable,
     hitSlop,
+    onLongPress,
     onPress,
     onPressIn,
     onPressOut,
     rejectResponderTermination,
   } = props;
 
-  const config = useMemo(
-    () => ({
+  const config = useMemo(() => {
+    const focusIfEditable = () => {
+      if (editable !== false && inputRef.current != null) {
+        inputRef.current.focus();
+      }
+    };
+    return {
       cancelable: Platform.OS === 'ios' ? !rejectResponderTermination : null,
       hitSlop,
+      onLongPress:
+        onLongPress == null
+          ? null
+          : (event: GestureResponderEvent) => {
+              onLongPress(event);
+              focusIfEditable();
+            },
       onPress: (event: GestureResponderEvent) => {
         onPress?.(event);
-        if (editable !== false) {
-          if (inputRef.current != null) {
-            inputRef.current.focus();
-          }
-        }
+        focusIfEditable();
       },
       onPressIn,
       onPressOut,
-    }),
-    [
-      editable,
-      hitSlop,
-      onPress,
-      onPressIn,
-      onPressOut,
-      rejectResponderTermination,
-    ],
-  );
+    };
+  }, [
+    editable,
+    hitSlop,
+    onLongPress,
+    onPress,
+    onPressIn,
+    onPressOut,
+    rejectResponderTermination,
+  ]);
 
   // Hide caret during test runs due to a flashing caret
   // makes screenshot tests flakey
