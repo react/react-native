@@ -48,13 +48,12 @@ function getRepoRoot(): string {
 function getLLVMCommand(command: 'llvm-profdata' | 'llvm-cov'): string {
   return path.join(
     getRepoRoot(),
-    'arvr',
-    'third-party',
-    'toolchains',
+    'fbcode',
+    'third-party-buck',
     'platform010',
     'build',
     'llvm-fb',
-    '17',
+    '21',
     'bin',
     command,
   );
