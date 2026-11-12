@@ -16,11 +16,15 @@ export class CLIError extends Error {
   constructor(msg: string, originalError?: Error | string) {
     super(inlineString(msg));
     if (originalError != null) {
-      this.stack =
-        typeof originalError === 'string'
-          ? originalError
-          : // $FlowFixMe[sketchy-null-string]
-            originalError.stack || ''.split('\n').slice(0, 2).join('\n');
+      if (typeof originalError === 'string') {
+        this.stack = originalError;
+      } else {
+        const originalStack = originalError.stack;
+        this.stack =
+          originalStack == null || originalStack === ''
+            ? ''.split('\n').slice(0, 2).join('\n')
+            : originalStack;
+      }
     } else {
       // When the "originalError" is not passed, it means that we know exactly
       // what went wrong and provide means to fix it. In such cases showing the
