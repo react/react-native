@@ -1276,11 +1276,11 @@ describe('Native Animated', () => {
     it('fails for unsupported styles', async () => {
       const {Animated} = importModules();
 
-      const fontSize = new Animated.Value(0);
+      const left = new Animated.Value(0);
 
-      await create(<Animated.Text style={{fontSize}} />);
+      await create(<Animated.View style={{left}} />);
 
-      const animation = Animated.timing(fontSize, {
+      const animation = Animated.timing(left, {
         toValue: 10,
         duration: 50,
         useNativeDriver: true,
@@ -1290,7 +1290,7 @@ describe('Native Animated', () => {
       animation.start();
       expect(console.error).toHaveBeenCalledTimes(1);
       expect(console.error).toHaveBeenCalledWith(
-        "Style property 'fontSize' is not supported by native animated module",
+        "Style property 'left' is not supported by native animated module",
       );
     });
 

@@ -19,5 +19,10 @@ class ReactNativeFeatureFlagsOverridesOSSStable : public ReactNativeFeatureFlags
   {
     return true;
   }
+
+  bool useSharedAnimatedBackend() override
+  {
+    return true;
+  }
 };
 } // namespace facebook::react

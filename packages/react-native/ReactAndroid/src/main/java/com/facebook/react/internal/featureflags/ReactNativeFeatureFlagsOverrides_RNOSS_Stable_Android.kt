@@ -8,4 +8,6 @@
 package com.facebook.react.internal.featureflags
 
 public class ReactNativeFeatureFlagsOverrides_RNOSS_Stable_Android() :
-    ReactNativeNewArchitectureFeatureFlagsDefaults()
+    ReactNativeNewArchitectureFeatureFlagsDefaults() {
+  override fun useSharedAnimatedBackend(): Boolean = true
+}

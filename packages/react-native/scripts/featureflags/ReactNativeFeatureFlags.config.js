@@ -1030,14 +1030,14 @@ const definitions: FeatureFlagDefinitions = {
     },
     useSharedAnimatedBackend: {
       dangerouslyExposeInPublicCppHeaders: true,
-      defaultValue: true,
+      defaultValue: false,
       metadata: {
         dateAdded: '2025-08-02',
         description: 'Use shared animation backend in C++ Animated',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'stable',
+      ossReleaseStage: 'canary',
     },
     useTraitHiddenOnAndroid: {
       defaultValue: false,

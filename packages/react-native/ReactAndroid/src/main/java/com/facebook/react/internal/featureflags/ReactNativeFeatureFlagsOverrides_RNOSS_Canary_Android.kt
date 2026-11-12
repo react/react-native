@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b01595e58efedbdf98f4af48b1a2c424>>
+ * @generated SignedSource<<c55a008621d0fef9a4e65eb70439377b>>
  */
 
 /**
@@ -36,6 +36,8 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
   override fun fixTextInlineViewLineHeight(): Boolean = true
 
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
+
+  override fun useSharedAnimatedBackend(): Boolean = true
 
   override fun useTurboModuleInterop(): Boolean = true
 }
