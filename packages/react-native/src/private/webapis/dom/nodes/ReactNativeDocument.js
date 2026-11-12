@@ -74,7 +74,6 @@ export default class ReactNativeDocument extends ReadOnlyNode {
     return null;
   }
 
-  // $FlowExpectedError[incompatible-type] This is defined as returning string in Node, but it's actually null in Document.
   get textContent(): null {
     return null;
   }

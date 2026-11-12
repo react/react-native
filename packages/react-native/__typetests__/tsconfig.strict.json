@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // Strict variant: Type checks the generated declarations themselves the way
+  // an app with `"strict": true` and `"skipLibCheck": false` does.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": false
+  },
+  "include": [],
+  "files": ["strict-lib-check.ts"]
+}
