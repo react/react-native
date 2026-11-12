@@ -62,6 +62,13 @@ export interface TextPropsAndroid {
   disabled?: boolean | undefined;
 
   /**
+   * Whether this `Text` should be focusable with a non-touch input device, eg. receive focus with
+   * a hardware keyboard. An accessible `Text` is focusable unless this is `false`, and
+   * accessibility services reach it either way.
+   */
+  focusable?: boolean | undefined;
+
+  /**
    * Lets the user select text, to use the native copy and paste functionality.
    */
   selectable?: boolean | undefined;

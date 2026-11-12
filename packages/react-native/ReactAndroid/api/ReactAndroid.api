@@ -6021,6 +6021,7 @@ public final class com/facebook/react/views/text/ReactFontManager$Companion {
 
 public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/widget/AppCompatTextView, com/facebook/react/uimanager/ReactCompoundView {
 	public fun <init> (Landroid/content/Context;)V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	protected fun dispatchHoverEvent (Landroid/view/MotionEvent;)Z
 	public fun dispatchKeyEvent (Landroid/view/KeyEvent;)Z
 	public fun getSpanned ()Landroid/text/Spannable;
@@ -6032,6 +6033,7 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	protected fun onMeasure (II)V
 	protected fun onSizeChanged (IIII)V
 	public fun reactTagForTouch (FF)I
+	public fun requestFocus (ILandroid/graphics/Rect;)Z
 	public fun setAdjustFontSizeToFit (Z)V
 	public fun setBackgroundColor (I)V
 	public fun setBorderColor (ILjava/lang/Integer;)V
@@ -6090,6 +6092,7 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public final fun setDataDetectorType (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setDisabled (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setEllipsizeMode (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
+	public final fun setFocusable (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setFontSize (Lcom/facebook/react/views/text/ReactTextView;F)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setLetterSpacing (Lcom/facebook/react/views/text/ReactTextView;F)V
@@ -6446,6 +6449,7 @@ public final class com/facebook/react/views/view/ReactDrawableHelper {
 public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGroup, com/facebook/react/touch/ReactHitSlopView, com/facebook/react/touch/ReactInterceptingViewGroup, com/facebook/react/uimanager/HasElevatedDescendantCache, com/facebook/react/uimanager/ReactClippingViewGroup, com/facebook/react/uimanager/ReactOverflowViewWithInset, com/facebook/react/uimanager/ReactPointerEventsView {
 	public fun <init> (Landroid/content/Context;)V
 	public fun addChildrenForAccessibility (Ljava/util/ArrayList;)V
+	public fun addFocusables (Ljava/util/ArrayList;II)V
 	public final fun cleanUpAxOrderListener ()V
 	protected fun dispatchDraw (Landroid/graphics/Canvas;)V
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
@@ -6475,6 +6479,7 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	public fun onTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun onViewAdded (Landroid/view/View;)V
 	public fun onViewRemoved (Landroid/view/View;)V
+	public fun requestFocus (ILandroid/graphics/Rect;)Z
 	public fun requestLayout ()V
 	public final fun setAxOrderList (Ljava/util/List;)V
 	public final fun setBackfaceVisibility (Ljava/lang/String;)V

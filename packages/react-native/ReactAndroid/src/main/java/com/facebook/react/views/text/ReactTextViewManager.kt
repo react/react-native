@@ -268,6 +268,11 @@ public constructor(
     view.isFocusable = accessible
   }
 
+  @ReactProp(name = "focusable", defaultBoolean = true)
+  public fun setFocusable(view: ReactTextView, focusable: Boolean) {
+    view.setExcludedFromKeyboardFocus(!focusable)
+  }
+
   // maxLines can only be set in master view (block), doesn't really make sense to set in a span
   @ReactProp(name = ViewProps.NUMBER_OF_LINES, defaultInt = ViewDefaults.NUMBER_OF_LINES)
   public fun setNumberOfLines(view: ReactTextView, numberOfLines: Int) {

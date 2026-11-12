@@ -57,6 +57,7 @@ import com.facebook.react.views.text.internal.span.ReactFragmentIndexSpan;
 import com.facebook.react.views.text.internal.span.ReactTagSpan;
 import com.facebook.yoga.YogaMeasureMode;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 @Nullsafe(Nullsafe.Mode.LOCAL)
 public class ReactTextView extends AppCompatTextView implements ReactCompoundView {
@@ -83,6 +84,13 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   private boolean mTextIsSelectable;
   private boolean mShouldAdjustSpannableFontSize;
   private Overflow mOverflow = Overflow.VISIBLE;
+
+  /**
+   * Set from the `focusable` prop. {@link #isFocusable()} also carries `accessible`, so a text
+   * excluded here stays focusable for accessibility services while keyboard navigation passes over
+   * it.
+   */
+  private boolean mExcludedFromKeyboardFocus;
 
   private @Nullable Spannable mSpanned;
   // Fitting the font size to the view shrinks the font size spans of mSpanned in place. These are
@@ -141,6 +149,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     mAdjustsFontSizeToFit = false;
     mLinkifyMaskType = 0;
     mTextIsSelectable = false;
+    mExcludedFromKeyboardFocus = false;
     mShouldAdjustSpannableFontSize = false;
     mEllipsizeLocation = TextUtils.TruncateAt.END;
     mFontSize = Float.NaN;
@@ -756,6 +765,28 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
 
   public void setLinkifyMask(int mask) {
     mLinkifyMaskType = mask;
+  }
+
+  /* package */ void setExcludedFromKeyboardFocus(boolean excludedFromKeyboardFocus) {
+    mExcludedFromKeyboardFocus = excludedFromKeyboardFocus;
+  }
+
+  @Override
+  public void addFocusables(ArrayList<View> views, int direction, int focusableMode) {
+    // A focused view stays a candidate so that focus search can move on from it.
+    if (mExcludedFromKeyboardFocus && !isFocused()) {
+      return;
+    }
+    super.addFocusables(views, direction, focusableMode);
+  }
+
+  @Override
+  public boolean requestFocus(int direction, @Nullable Rect previouslyFocusedRect) {
+    // Selecting text takes focus from a touch, which `focusable` leaves alone.
+    if (mExcludedFromKeyboardFocus && !isInTouchMode()) {
+      return false;
+    }
+    return super.requestFocus(direction, previouslyFocusedRect);
   }
 
   @Override
