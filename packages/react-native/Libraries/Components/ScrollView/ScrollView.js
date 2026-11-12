@@ -386,8 +386,13 @@ export type ScrollViewPropsIOS = Readonly<{
    */
   zoomScale?: ?number,
   /**
-   * This property specifies how the safe area insets are used to modify the
-   * content area of the scroll view.
+   * How the safe area insets modify the content area of the scroll view.
+   *
+   * Along the scrollable axis, the insets become content insets, so content
+   * scrolls under the system UI. Across it, every value except `'never'` pads
+   * the content container by the insets, so content is laid out clear of the
+   * system UI, such as the rail on iPhone Duo or camera cutout in landscape,
+   * while the container's background still extends edge to edge.
    *
    * @default `'never'`
    * @platform ios
