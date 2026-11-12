@@ -1416,7 +1416,6 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public bool disableIntervalMomentum;
   public bool horizontal;
   public bool isInvertedVirtualizedList;
-  public bool padsContentForSafeArea;
   public bool pagingEnabled;
   public bool persistentScrollbar;
   public bool pinchGestureEnabled;
