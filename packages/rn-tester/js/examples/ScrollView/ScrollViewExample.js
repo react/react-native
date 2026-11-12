@@ -360,7 +360,7 @@ const examples: Array<RNTesterModuleExample> = [
   {
     title: '<ScrollView> Content Inset Adjustment Behavior\n',
     description:
-      'How the safe area modifies the content area of a full screen ScrollView: along the scrollable axis it becomes content insets, across it the content container is padded, and on every edge the container padding counts toward it.',
+      'How the safe area modifies the content area of a full screen ScrollView: along the scrollable axis it becomes content insets, across it the content container is padded for automatic and always, and on each edge where an inset applies, point-valued container padding counts toward it.',
     platform: 'ios',
     render(): React.Node {
       return <ContentInsetAdjustmentBehaviorExample />;
