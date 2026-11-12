@@ -888,10 +888,16 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _updateContentViewSafeAreaPadding];
 }
 
+- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView *)scrollView
+{
+  [self _updateContentViewSafeAreaPadding];
+}
+
 /*
- * Hands the content container the safe area to pad its content by: the pair of insets across the scrollable axis,
- * unless `contentInsetAdjustmentBehavior` is `never`. Along the scrollable axis UIKit turns the safe area into content
- * insets instead, so content scrolls under the system UI.
+ * Hands the content container the safe area to lay its content out clear of, unless `contentInsetAdjustmentBehavior`
+ * is `never`: the pair of insets across the scrollable axis, which it pads by, and along the axis the content inset
+ * UIKit adds for the safe area, which its own padding counts toward. Content still scrolls under the system UI along
+ * the axis.
  */
 - (void)_updateContentViewSafeAreaPadding
 {
@@ -900,17 +906,24 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
   UIEdgeInsets padding = UIEdgeInsetsZero;
+  UIEdgeInsets contentInset = UIEdgeInsetsZero;
   if (props.contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never) {
     UIEdgeInsets insets = self.safeAreaInsets;
+    UIEdgeInsets adjusted = _scrollView.adjustedContentInset;
+    UIEdgeInsets current = _scrollView.contentInset;
     if (props.horizontal) {
       padding.top = insets.top;
       padding.bottom = insets.bottom;
+      contentInset.left = adjusted.left - current.left;
+      contentInset.right = adjusted.right - current.right;
     } else {
       padding.left = insets.left;
       padding.right = insets.right;
+      contentInset.top = adjusted.top - current.top;
+      contentInset.bottom = adjusted.bottom - current.bottom;
     }
   }
-  ((RCTScrollContentViewComponentView *)_contentView).safeAreaPadding = padding;
+  [(RCTScrollContentViewComponentView *)_contentView setSafeAreaPadding:padding contentInsetAdjustment:contentInset];
 }
 
 - (void)_handleScrollEndIfNeeded
