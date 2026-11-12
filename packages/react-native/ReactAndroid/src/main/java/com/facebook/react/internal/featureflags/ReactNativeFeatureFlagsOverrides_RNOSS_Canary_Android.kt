@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fd4345ea47feeb68c7570cb871d4a013>>
+ * @generated SignedSource<<82778fba8150a27cd6b21cf434a97421>>
  */
 
 /**
@@ -33,7 +33,11 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
 
   override fun fixBorderlessRippleAndroid(): Boolean = true
 
+  override fun optimizedAnimatedPropUpdates(): Boolean = true
+
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
+
+  override fun useSharedAnimatedBackend(): Boolean = true
 
   override fun useTurboModuleInterop(): Boolean = true
 }
