@@ -30,10 +30,20 @@ using namespace facebook::react;
   return self;
 }
 
-- (void)setSafeAreaPadding:(UIEdgeInsets)safeAreaPadding
+- (void)setSafeAreaPadding:(UIEdgeInsets)safeAreaPadding contentInsetAdjustment:(UIEdgeInsets)contentInsetAdjustment
 {
   _safeAreaPadding = safeAreaPadding;
+  _contentInsetAdjustment = contentInsetAdjustment;
   [self _updateStateIfNecessary];
+}
+
+static EdgeInsets RCTRoundedEdgeInsets(UIEdgeInsets insets)
+{
+  return {
+      .left = RCTRoundPixelValue(insets.left),
+      .top = RCTRoundPixelValue(insets.top),
+      .right = RCTRoundPixelValue(insets.right),
+      .bottom = RCTRoundPixelValue(insets.bottom)};
 }
 
 - (void)_updateStateIfNecessary
@@ -42,15 +52,10 @@ using namespace facebook::react;
     return;
   }
 
-  UIEdgeInsets insets = _safeAreaPadding;
-  insets.left = RCTRoundPixelValue(insets.left);
-  insets.top = RCTRoundPixelValue(insets.top);
-  insets.right = RCTRoundPixelValue(insets.right);
-  insets.bottom = RCTRoundPixelValue(insets.bottom);
-
   RCTI18nUtil *i18nUtil = [RCTI18nUtil sharedInstance];
   ScrollContentViewState newData;
-  newData.safeAreaPadding = RCTEdgeInsetsFromUIEdgeInsets(insets);
+  newData.safeAreaPadding = RCTRoundedEdgeInsets(_safeAreaPadding);
+  newData.contentInsetAdjustment = RCTRoundedEdgeInsets(_contentInsetAdjustment);
   newData.swapLeftAndRightInRTL = i18nUtil.isRTL && i18nUtil.doLeftAndRightSwapInRTL;
   if (newData == _lastStateData) {
     return;
@@ -90,6 +95,7 @@ using namespace facebook::react;
   _state.reset();
   _lastStateData = {};
   _safeAreaPadding = UIEdgeInsetsZero;
+  _contentInsetAdjustment = UIEdgeInsetsZero;
 }
 
 @end
