@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2dad5bfb138206688c250519c29c1975>>
+ * @generated SignedSource<<3141cc5c7fa67ed4ceb291b1f6a538e5>>
  */
 
 /**
@@ -287,6 +287,11 @@ bool NativeReactNativeFeatureFlags::enableNativeCSSParsing(
 bool NativeReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid();
+}
+
+bool NativeReactNativeFeatureFlags::enablePremountItemsBetweenFramesAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enablePremountItemsBetweenFramesAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enablePreparedTextLayout(

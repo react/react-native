@@ -21,6 +21,7 @@ import static com.facebook.react.uimanager.UIManagerHelper.PADDING_TOP_INDEX;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
+import android.os.Debug;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
@@ -58,8 +59,11 @@ import com.facebook.react.fabric.events.FabricEventEmitter;
 import com.facebook.react.fabric.internal.interop.InteropUIBlockListener;
 import com.facebook.react.fabric.interop.UIBlock;
 import com.facebook.react.fabric.interop.UIBlockViewResolver;
+import com.facebook.react.fabric.mounting.DisplayFrameInterval;
+import com.facebook.react.fabric.mounting.FrameIntervalSources;
 import com.facebook.react.fabric.mounting.MountItemDispatcher;
 import com.facebook.react.fabric.mounting.MountingManager;
+import com.facebook.react.fabric.mounting.PreMountItemsBetweenFrames;
 import com.facebook.react.fabric.mounting.SurfaceMountingManager;
 import com.facebook.react.fabric.mounting.mountitems.BatchMountItem;
 import com.facebook.react.fabric.mounting.mountitems.BatchedAnimatedPropsMountItem;
@@ -182,6 +186,8 @@ public class FabricUIManager
   private final MountingManager mMountingManager;
   private final FabricEventDispatcher mEventDispatcher;
   private final MountItemDispatcher mMountItemDispatcher;
+  private final DisplayFrameInterval mDisplayFrameInterval;
+  private final PreMountItemsBetweenFrames mPreMountItemsBetweenFrames;
   private final ViewManagerRegistry mViewManagerRegistry;
 
   private final TextEffectRegistry mTextEffectRegistry = new TextEffectRegistry();
@@ -258,6 +264,15 @@ public class FabricUIManager
     mMountingManager = new MountingManager(viewManagerRegistry, mMountItemExecutor);
     mMountItemDispatcher =
         new MountItemDispatcher(mMountingManager, new MountItemDispatchListener());
+    mDisplayFrameInterval = new DisplayFrameInterval(reactContext);
+    mPreMountItemsBetweenFrames =
+        new PreMountItemsBetweenFrames(
+            mMountItemDispatcher,
+            FrameIntervalSources.create(mDisplayFrameInterval),
+            Debug::threadCpuTimeNanos,
+            mDispatchUIFrameCallback,
+            UiThreadUtil.getUiThreadHandler(),
+            mDispatchUIFrameCallback::handleBetweenFramesException);
     mEventDispatcher = new FabricEventDispatcher(reactContext, new FabricEventEmitter(this));
     mBatchEventDispatchedListener = batchEventDispatchedListener;
     mReactApplicationContext.addLifecycleEventListener(this);
@@ -463,6 +478,9 @@ public class FabricUIManager
   @Override
   public void initialize() {
     mEventDispatcher.addBatchEventDispatchedListener(mBatchEventDispatchedListener);
+    if (ReactNativeFeatureFlags.enablePremountItemsBetweenFramesAndroid()) {
+      mDisplayFrameInterval.start();
+    }
     if (ReactNativeFeatureFlags.enableFabricLogs()) {
       mDevToolsReactPerfLogger = new DevToolsReactPerfLogger();
       mDevToolsReactPerfLogger.addDevToolsReactPerfLoggerListener(FABRIC_PERF_LOGGER);
@@ -498,6 +516,9 @@ public class FabricUIManager
 
     mEventDispatcher.removeBatchEventDispatchedListener(mBatchEventDispatchedListener);
     mEventDispatcher.invalidate();
+    if (ReactNativeFeatureFlags.enablePremountItemsBetweenFramesAndroid()) {
+      mDisplayFrameInterval.stop();
+    }
 
     mReactApplicationContext.unregisterComponentCallbacks(mViewManagerRegistry);
     mViewManagerRegistry.invalidate();
@@ -1531,6 +1552,36 @@ public class FabricUIManager
     return performanceCounters;
   }
 
+  @UiThread
+  @ThreadConfined(UI)
+  private void scheduleMountNotification() {
+    if (mMountNotificationScheduled || mSurfaceIdsWithPendingMountNotification.isEmpty()) {
+      return;
+    }
+    mMountNotificationScheduled = true;
+
+    // Notify mount when the effects are visible and prevent mount hooks to
+    // delay paint.
+    UiThreadUtil.getUiThreadHandler()
+        .postAtFrontOfQueue(
+            () -> {
+              mMountNotificationScheduled = false;
+
+              // Create a copy in case mount hooks trigger more mutations
+              final List<Integer> surfaceIdsToReportMount = mSurfaceIdsWithPendingMountNotification;
+              mSurfaceIdsWithPendingMountNotification = new ArrayList<>();
+
+              final @Nullable FabricUIManagerBinding binding = mBinding;
+              if (binding == null || mDestroyed) {
+                return;
+              }
+
+              for (int surfaceId : surfaceIdsToReportMount) {
+                binding.reportMount(surfaceId);
+              }
+            });
+  }
+
   private class MountItemDispatchListener implements MountItemDispatcher.ItemDispatchListener {
     @UiThread
     @ThreadConfined(UI)
@@ -1560,30 +1611,9 @@ public class FabricUIManager
         }
       }
 
-      if (!mMountNotificationScheduled && !mSurfaceIdsWithPendingMountNotification.isEmpty()) {
-        mMountNotificationScheduled = true;
-
-        // Notify mount when the effects are visible and prevent mount hooks to
-        // delay paint.
-        UiThreadUtil.getUiThreadHandler()
-            .postAtFrontOfQueue(
-                () -> {
-                  mMountNotificationScheduled = false;
-
-                  // Create a copy in case mount hooks trigger more mutations
-                  final List<Integer> surfaceIdsToReportMount =
-                      mSurfaceIdsWithPendingMountNotification;
-                  mSurfaceIdsWithPendingMountNotification = new ArrayList<>();
-
-                  final @Nullable FabricUIManagerBinding binding = mBinding;
-                  if (binding == null || mDestroyed) {
-                    return;
-                  }
-
-                  for (int surfaceId : surfaceIdsToReportMount) {
-                    binding.reportMount(surfaceId);
-                  }
-                });
+      // A commit mounted between frames shows once the next frame draws it, which reports it.
+      if (!mDispatchUIFrameCallback.isDispatchingBetweenFrames()) {
+        scheduleMountNotification();
       }
     }
 
@@ -1635,9 +1665,12 @@ public class FabricUIManager
     }
   }
 
-  private class DispatchUIFrameCallback extends GuardedFrameCallback {
+  private class DispatchUIFrameCallback extends GuardedFrameCallback
+      implements PreMountItemsBetweenFrames.Mounting {
 
     private volatile boolean mIsMountingEnabled = true;
+
+    private boolean mIsDispatchingBetweenFrames = false;
 
     private volatile boolean mShouldSchedule = false;
 
@@ -1680,13 +1713,52 @@ public class FabricUIManager
       schedule();
     }
 
-    @UiThread
-    @ThreadConfined(UI)
+    @AnyThread
     void pause() {
       ReactChoreographer.getInstance()
           .removeFrameCallback(ReactChoreographer.CallbackType.DISPATCH_UI, this);
+      if (ReactNativeFeatureFlags.enablePremountItemsBetweenFramesAndroid()) {
+        // invalidate() pauses from any thread; the slices it stops belong to the UI thread.
+        if (UiThreadUtil.isOnUiThread()) {
+          mPreMountItemsBetweenFrames.cancel();
+        } else {
+          UiThreadUtil.runOnUiThread(mPreMountItemsBetweenFrames::cancel);
+        }
+      }
       mShouldSchedule = false;
       mIsScheduled = false;
+    }
+
+    @Override
+    @AnyThread
+    public boolean isMountingAllowed() {
+      return mIsMountingEnabled && !mDestroyed;
+    }
+
+    @Override
+    @UiThread
+    @ThreadConfined(UI)
+    public void dispatchMountItemsBetweenFrames() {
+      mIsDispatchingBetweenFrames = true;
+      try {
+        mMountItemDispatcher.tryDispatchMountItems();
+      } finally {
+        mIsDispatchingBetweenFrames = false;
+      }
+    }
+
+    @UiThread
+    @ThreadConfined(UI)
+    boolean isDispatchingBetweenFrames() {
+      return mIsDispatchingBetweenFrames;
+    }
+
+    @UiThread
+    @ThreadConfined(UI)
+    void handleBetweenFramesException(Exception exception) {
+      FLog.e(TAG, "Exception thrown when pre-mounting or mounting between frames", exception);
+      mIsMountingEnabled = false;
+      mReactApplicationContext.getExceptionHandler().handleException(exception);
     }
 
     @Override
@@ -1728,13 +1800,23 @@ public class FabricUIManager
       }
 
       try {
-        // First, execute as many pre mount items as we can within frameTimeNanos time.
-        // If not all pre mount items were executed, following may happen:
-        //   1. In case there are view commands or mount items in MountItemDispatcher: execute
-        //   remaining pre mount items.
-        //   2. In case there are no view commands or mount items, wait until next frame.
-        mMountItemDispatcher.dispatchPreMountItems(frameTimeNanos);
-        mMountItemDispatcher.tryDispatchMountItems();
+        // A dispatch runs every pending pre-mount item before its pulls and mount items. What is
+        // left runs either here, for half of a 60 Hz frame, or after this frame's traversal until
+        // the next vsync, and here only when the last frame left no time after it: for about as
+        // long as its draw slept, counting what it pre-mounted before its traversal, or for half a
+        // frame once two frames in a row were busy for a whole frame interval. The slices are
+        // queued once this frame's mount items have run, and run only while mounting is enabled,
+        // so a frame that fails to mount leaves nothing to pre-mount.
+        if (ReactNativeFeatureFlags.enablePremountItemsBetweenFramesAndroid()) {
+          mPreMountItemsBetweenFrames.preMountBeforeTraversal();
+          mMountItemDispatcher.tryDispatchMountItems();
+          // This frame draws what the slices mounted since the last one, so it reports that too.
+          scheduleMountNotification();
+          mPreMountItemsBetweenFrames.scheduleAfterFrame(frameTimeNanos);
+        } else {
+          mMountItemDispatcher.dispatchPreMountItems(frameTimeNanos);
+          mMountItemDispatcher.tryDispatchMountItems();
+        }
       } catch (Exception ex) {
         FLog.e(TAG, "Exception thrown when executing UIFrameGuarded", ex);
         mIsMountingEnabled = false;

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7f3861dc19829017df54ce8408ab1a9c>>
+ * @generated SignedSource<<8f42e6bb9bef49a50ffd4cd7fd998ba8>>
  */
 
 /**
@@ -220,6 +220,10 @@ bool ReactNativeFeatureFlags::enableNativeCSSParsing() {
 
 bool ReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid() {
   return getAccessor().enablePreallocatedPropsDiffOnInsertAndroid();
+}
+
+bool ReactNativeFeatureFlags::enablePremountItemsBetweenFramesAndroid() {
+  return getAccessor().enablePremountItemsBetweenFramesAndroid();
 }
 
 bool ReactNativeFeatureFlags::enablePreparedTextLayout() {
