@@ -385,16 +385,31 @@ export type ScrollViewPropsIOS = Readonly<{
    * @platform ios
    */
   zoomScale?: ?number,
+
   /**
-   * How the safe area insets modify the content area of the scroll view.
+   * Controls whether and how the ScrollView keeps its content clear of the
+   * system safe areas (iOS only).
    *
-   * Along the scrollable axis, the insets become content insets, so content
-   * scrolls under the system UI. Across it, every value except `'never'` pads
-   * the content container by the insets, so content is laid out clear of the
-   * system UI, such as the rail on iPhone Duo or camera cutout in landscape,
-   * while the container's background still extends edge to edge. On every
-   * edge, the `contentContainerStyle` padding counts toward the inset, so
-   * content sits at the larger of the two.
+   * `'automatic'` is strongly recommended anywhere a ScrollView or FlatList
+   * is the root element of a given screen.
+   *
+   * Along the scrollable axis, every value except `'never'` applies the safe
+   * area insets, e.g. to avoid the status bar and home indicator for a
+   * vertical ScrollView in portrait.
+   *
+   * Across the scrollable axis, `'automatic'` and `'always'` also pad the
+   * content container by the insets, such as side insets for an iPhone in
+   * landscape, or the vertical bar on iPhone Duo.
+   *
+   * - **'never'** (default): Applies no insets. Content is laid out and
+   *   scrolls under the system UI.
+   * - **'automatic'**: Applies the insets on both axes.
+   * - **'scrollableAxes'**: Applies the insets along the scrollable axis only.
+   * - **'always'**: Applies the insets on both axes, even when the content
+   *   fits.
+   *
+   * Note: With this prop set, any `contentContainerStyle` padding counts
+   * towards the insets rather than adding to them. See `contentContainerStyle`.
    *
    * @default `'never'`
    * @platform ios
