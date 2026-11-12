@@ -16,7 +16,6 @@ import attachKeyHandlers from './attachKeyHandlers';
 import createDevMiddlewareLogger from './createDevMiddlewareLogger';
 import createDevServerMiddleware from './createDevServerMiddleware';
 import isDevServerRunning from './isDevServerRunning';
-import loadCommunityMiddleware from './loadCommunityMiddleware';
 import * as version from './version';
 import {createDevMiddleware} from '@react-native/dev-middleware';
 import * as Metro from 'metro';
@@ -107,15 +106,6 @@ async function runDevServer(
   const ReporterImpl = getReporterImpl(args.customLogReporterPath);
   const terminalReporter = new ReporterImpl(terminal);
 
-  const createCommunityMiddleware = loadCommunityMiddleware();
-  const {
-    middleware: communityMiddleware,
-    websocketEndpoints: communityWebsocketEndpoints,
-  } = createCommunityMiddleware({
-    host: hostname,
-    port,
-    watchFolders,
-  });
   const logger = createDevMiddlewareLogger(terminalReporter);
   const {middleware, websocketEndpoints} = createDevMiddleware({
     serverBaseUrl: devServerUrl,
@@ -159,13 +149,8 @@ async function runDevServer(
     secure: args.https,
     secureCert: args.cert,
     secureKey: args.key,
-    unstable_extraMiddleware: [
-      pluginMiddleware,
-      communityMiddleware,
-      middleware,
-    ],
+    unstable_extraMiddleware: [pluginMiddleware, middleware],
     websocketEndpoints: {
-      ...communityWebsocketEndpoints,
       ...pluginWebsocketEndpoints,
       ...websocketEndpoints,
     },
