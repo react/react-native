@@ -4994,7 +4994,6 @@ class facebook::react::ConcreteShadowNode : public BaseShadowNodeT {
   public const facebook::react::ConcreteShadowNode::ConcreteEventEmitter& getConcreteEventEmitter() const;
   public const facebook::react::ConcreteShadowNode::ConcreteProps& getConcreteProps() const;
   public const facebook::react::ConcreteShadowNode::ConcreteStateData& getStateData() const;
-  public const std::shared_ptr<const facebook::react::ConcreteShadowNode::ConcreteProps>& getConcreteSharedProps() const;
   public static const facebook::react::ConcreteShadowNode::SharedConcreteProps& defaultSharedProps();
   public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static facebook::react::ComponentHandle Handle();
@@ -5002,6 +5001,7 @@ class facebook::react::ConcreteShadowNode : public BaseShadowNodeT {
   public static facebook::react::ConcreteShadowNode::ConcreteStateData initialStateData(const facebook::react::Props::Shared&, const facebook::react::ShadowNodeFamily::Shared&, const facebook::react::ComponentDescriptor&);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::Props::Shared& baseProps);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::Props::Shared& baseProps = nullptr);
+  public std::shared_ptr<const facebook::react::ConcreteShadowNode::ConcreteProps> getConcreteSharedProps() const;
   public using ConcreteEventEmitter = EventEmitterT;
   public using ConcreteProps = PropsT;
   public using ConcreteState = facebook::react::ConcreteState<StateDataT>;

@@ -141,7 +141,7 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * Returns a concrete props object associated with the node, as a shared_ptr.
    * Thread-safe after the node is sealed.
    */
-  const std::shared_ptr<const ConcreteProps> &getConcreteSharedProps() const
+  std::shared_ptr<const ConcreteProps> getConcreteSharedProps() const
   {
     react_native_assert(BaseShadowNodeT::props_ && "Props must not be `nullptr`.");
     return std::static_pointer_cast<const ConcreteProps>(props_);
