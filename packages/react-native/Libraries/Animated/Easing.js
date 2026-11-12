@@ -64,14 +64,14 @@ const EasingStatic = {
   /**
    * A stepping function, returns 1 for any positive value of `n`.
    */
-  step0(n: number): number {
+  step0: (n: number): number => {
     return n > 0 ? 1 : 0;
   },
 
   /**
    * A stepping function, returns 1 if `n` is greater than or equal to 1.
    */
-  step1(n: number): number {
+  step1: (n: number): number => {
     return n >= 1 ? 1 : 0;
   },
 
@@ -81,7 +81,7 @@ const EasingStatic = {
    *
    * http://cubic-bezier.com/#0,0,1,1
    */
-  linear(t: number): number {
+  linear: (t: number): number => {
     return t;
   },
 
@@ -91,7 +91,7 @@ const EasingStatic = {
    *
    * http://cubic-bezier.com/#.42,0,1,1
    */
-  ease(t: number): number {
+  ease: (t: number): number => {
     /* $FlowFixMe[constant-condition] Error discovered during Constant
      * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
     if (!ease) {
@@ -106,7 +106,7 @@ const EasingStatic = {
    *
    * http://easings.net/#easeInQuad
    */
-  quad(t: number): number {
+  quad: (t: number): number => {
     return t * t;
   },
 
@@ -116,7 +116,7 @@ const EasingStatic = {
    *
    * http://easings.net/#easeInCubic
    */
-  cubic(t: number): number {
+  cubic: (t: number): number => {
     return t * t * t;
   },
 
@@ -126,7 +126,7 @@ const EasingStatic = {
    * n = 4: http://easings.net/#easeInQuart
    * n = 5: http://easings.net/#easeInQuint
    */
-  poly(n: number): EasingFunction {
+  poly: (n: number): EasingFunction => {
     return (t: number) => Math.pow(t, n);
   },
 
@@ -135,7 +135,7 @@ const EasingStatic = {
    *
    * http://easings.net/#easeInSine
    */
-  sin(t: number): number {
+  sin: (t: number): number => {
     return 1 - Math.cos((t * Math.PI) / 2);
   },
 
@@ -144,7 +144,7 @@ const EasingStatic = {
    *
    * http://easings.net/#easeInCirc
    */
-  circle(t: number): number {
+  circle: (t: number): number => {
     return 1 - Math.sqrt(1 - t * t);
   },
 
@@ -153,7 +153,7 @@ const EasingStatic = {
    *
    * http://easings.net/#easeInExpo
    */
-  exp(t: number): number {
+  exp: (t: number): number => {
     return Math.pow(2, 10 * (t - 1));
   },
 
@@ -167,7 +167,7 @@ const EasingStatic = {
    *
    * http://easings.net/#easeInElastic
    */
-  elastic(bounciness: number = 1): EasingFunction {
+  elastic: (bounciness: number = 1): EasingFunction => {
     const p = bounciness * Math.PI;
     return t => 1 - Math.pow(Math.cos((t * Math.PI) / 2), 3) * Math.cos(t * p);
   },
@@ -178,7 +178,7 @@ const EasingStatic = {
    *
    * https://easings.net/#easeInBack
    */
-  back(s: number = 1.70158): EasingFunction {
+  back: (s: number = 1.70158): EasingFunction => {
     return t => t * t * ((s + 1) * t - s);
   },
 
@@ -187,7 +187,7 @@ const EasingStatic = {
    *
    * http://easings.net/#easeInBounce
    */
-  bounce(t: number): number {
+  bounce: (t: number): number => {
     if (t < 1 / 2.75) {
       return 7.5625 * t * t;
     }
@@ -213,7 +213,7 @@ const EasingStatic = {
    * A useful tool to visualize cubic bezier curves can be found at
    * http://cubic-bezier.com/
    */
-  bezier(x1: number, y1: number, x2: number, y2: number): EasingFunction {
+  bezier: (x1: number, y1: number, x2: number, y2: number): EasingFunction => {
     const _bezier = require('./bezier').default;
     return _bezier(x1, y1, x2, y2);
   },
@@ -221,14 +221,14 @@ const EasingStatic = {
   /**
    * Runs an easing function forwards.
    */
-  in(easing: EasingFunction): EasingFunction {
+  in: (easing: EasingFunction): EasingFunction => {
     return easing;
   },
 
   /**
    * Runs an easing function backwards.
    */
-  out(easing: EasingFunction): EasingFunction {
+  out: (easing: EasingFunction): EasingFunction => {
     return t => 1 - easing(1 - t);
   },
 
@@ -237,7 +237,7 @@ const EasingStatic = {
    * forwards for half of the duration, then backwards for the rest of the
    * duration.
    */
-  inOut(easing: EasingFunction): EasingFunction {
+  inOut: (easing: EasingFunction): EasingFunction => {
     return t => {
       if (t < 0.5) {
         return easing(t * 2) / 2;
