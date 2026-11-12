@@ -38,14 +38,14 @@ module.exports = {
   /**
    * @deprecated Button is deprecated and will be removed in a future release.
    * Build your own button with Pressable instead.
-   * See https://reactnative.dev/docs/button
+   * See https://reactnative.dev/docs/pressable
    */
   get Button() {
     warnOnce(
       'button-deprecated',
       'Button is deprecated and will be removed in a future release. ' +
         'Build your own button with Pressable instead. ' +
-        'See https://reactnative.dev/docs/button',
+        'See https://reactnative.dev/docs/pressable',
     );
     return require('./Libraries/Components/Button').default;
   },

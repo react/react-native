@@ -159,7 +159,7 @@ type ButtonPropsCore = Readonly<{
 /**
  * Button is deprecated and will be removed in a future release.
  * Build your own button with `Pressable` instead.
- * @see https://reactnative.dev/docs/button
+ * @see https://reactnative.dev/docs/pressable
  * @deprecated
  * @build-types emit-as-interface Uniwind compatibility
  */
@@ -194,7 +194,7 @@ export type ButtonInstance = React.ElementRef<typeof NativeTouchable>;
  * Button is deprecated and will be removed in a future release.
  * Build your own button with `Pressable` instead.
  *
- * @see https://reactnative.dev/docs/button
+ * @see https://reactnative.dev/docs/pressable
  * @deprecated
  */
 const Button: component(
