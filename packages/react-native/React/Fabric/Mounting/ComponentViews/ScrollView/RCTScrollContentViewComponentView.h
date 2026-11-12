@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*
  * The safe area the content is laid out clear of, as a floor on the content container's own padding. The enclosing
- * scroll view sets the pair of insets across its scrollable axis, and zero while its `contentInsetAdjustmentBehavior`
- * is `never`.
+ * scroll view sets the pair of insets across its scrollable axis while its `contentInsetAdjustmentBehavior` is
+ * `automatic` or `always`, and zero otherwise.
  */
 @property (nonatomic, readonly) UIEdgeInsets safeAreaPadding;
 

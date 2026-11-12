@@ -84,6 +84,16 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(UIScrollView *scrollView, NSInt
                                                     userInfo:userInfo];
 }
 
+/*
+ * Whether the content container is padded by the safe area across the scrollable axis. `scrollableAxes` leaves that
+ * axis to UIKit, as its name says, so only `automatic` and `always` pad it.
+ */
+static BOOL RCTPadsContentForSafeArea(ContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior)
+{
+  return contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Automatic ||
+      contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Always;
+}
+
 @interface RCTScrollViewComponentView () <
     UIScrollViewDelegate,
     RCTScrollViewProtocol,
@@ -451,7 +461,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
       scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
     ((RCTEnhancedScrollView *)_scrollView).padsContentForSafeArea =
-        contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never;
+        RCTPadsContentForSafeArea(contentInsetAdjustmentBehavior);
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
 
@@ -894,10 +904,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 }
 
 /*
- * Hands the content container the safe area to lay its content out clear of, unless `contentInsetAdjustmentBehavior`
- * is `never`: the pair of insets across the scrollable axis, which it pads by, and along the axis the content inset
- * UIKit adds for the safe area, which its own padding counts toward. Content still scrolls under the system UI along
- * the axis.
+ * Hands the content container the safe area to lay its content out clear of: along the scrollable axis, the content
+ * inset UIKit adds for the safe area, which its own padding counts toward, unless `contentInsetAdjustmentBehavior` is
+ * `never`; and across the axis, the pair of insets it pads by, for `automatic` and `always`. Content still scrolls
+ * under the system UI along the axis.
  */
 - (void)_updateContentViewSafeAreaPadding
 {
@@ -908,19 +918,24 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   UIEdgeInsets padding = UIEdgeInsetsZero;
   UIEdgeInsets contentInset = UIEdgeInsetsZero;
   if (props.contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never) {
-    UIEdgeInsets insets = self.safeAreaInsets;
     UIEdgeInsets adjusted = _scrollView.adjustedContentInset;
     UIEdgeInsets current = _scrollView.contentInset;
     if (props.horizontal) {
-      padding.top = insets.top;
-      padding.bottom = insets.bottom;
       contentInset.left = adjusted.left - current.left;
       contentInset.right = adjusted.right - current.right;
     } else {
-      padding.left = insets.left;
-      padding.right = insets.right;
       contentInset.top = adjusted.top - current.top;
       contentInset.bottom = adjusted.bottom - current.bottom;
+    }
+  }
+  if (RCTPadsContentForSafeArea(props.contentInsetAdjustmentBehavior)) {
+    UIEdgeInsets insets = self.safeAreaInsets;
+    if (props.horizontal) {
+      padding.top = insets.top;
+      padding.bottom = insets.bottom;
+    } else {
+      padding.left = insets.left;
+      padding.right = insets.right;
     }
   }
   [(RCTScrollContentViewComponentView *)_contentView setSafeAreaPadding:padding contentInsetAdjustment:contentInset];
