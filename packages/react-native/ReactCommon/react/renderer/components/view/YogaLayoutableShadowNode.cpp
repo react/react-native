@@ -402,6 +402,10 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   }
 
   yogaNode_.setStyle(styleResult);
+  // A style rebuilt from the props lacks what `configureYogaTree` applies to
+  // it, such as the left and right swap in RTL, so the node needs configuring
+  // again.
+  yogaTreeHasBeenConfigured_ = false;
   if (getTraits().check(ShadowNodeTraits::ViewKind)) {
     auto& viewProps = static_cast<const ViewProps&>(*props_);
     // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
@@ -1015,9 +1019,10 @@ void YogaLayoutableShadowNode::swapLeftAndRightInYogaStyleProps() {
 }
 
 void YogaLayoutableShadowNode::swapLeftAndRightInViewProps() {
-  if (auto viewShadowNode = dynamic_cast<ViewShadowNode*>(this)) {
+  if (getTraits().check(ShadowNodeTraits::ViewKind)) {
     // TODO: Do not mutate props directly.
-    auto& props = const_cast<ViewProps&>(viewShadowNode->getConcreteProps());
+    auto& props =
+        const_cast<ViewProps&>(static_cast<const ViewProps&>(*props_));
 
     // Swap border node values, borderRadii, borderColors and borderStyles.
     if (props.borderRadii.topLeft.has_value()) {
