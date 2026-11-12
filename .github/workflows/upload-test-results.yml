@@ -27,109 +27,46 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       RUN_ID: ${{ github.event.workflow_run.id }}
       RUN_UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
+      DOWNLOADS: /tmp/test-artifacts
       DEST: /tmp/test-results/${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
       # Every key under this prefix is written once, so a rerun of this
       # workflow skips what an earlier attempt already uploaded.
       PREFIX: gs://${{ vars.VISUAL_BUCKET }}/verify/incoming/${{ github.repository }}/${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
     steps:
+      # The default branch's own scripts, never the pull request's.
+      - name: Checkout default branch
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: List artifacts
+        id: list
+        run: .github/workflow-scripts/upload-test-results.sh list
       - name: Download test results
-        run: |
-          set -euo pipefail
-          retry() {
-            for attempt in 1 2 3; do
-              "$@" && return 0
-              echo "Attempt $attempt failed"
-              sleep $((attempt * 10))
-            done
-            return 1
-          }
-          fetch() {
-            gh api "$@" > "$OUT"
-          }
-          mkdir -p "$DEST/artifacts"
-          OUT=/tmp/artifacts.jsonl retry fetch --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" --jq '.artifacts[]'
-          # A rerun replaces the per-flow state of the jobs it reruns, so once a
-          # later attempt has replaced any, this attempt's results are gone and
-          # it isn't recorded.
-          if jq -e --slurp '[.[] | select(.created_at > env.RUN_UPDATED_AT and (.name | test("^e2e_[a-z]+_[a-z]+_state_")))] | length > 0' /tmp/artifacts.jsonl > /dev/null; then
-            echo "A later attempt replaced this attempt's test state, so it isn't recorded"
-            touch "$DEST/replaced"
-            exit 0
-          fi
-          # Every artifact from this attempt, so recordings and logs can be
-          # linked.
-          jq --slurp --arg base "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts" '[.[]
-            | select(.created_at <= env.RUN_UPDATED_AT)
-            | {id, name, sizeInBytes: .size_in_bytes, createdAt: .created_at, expiresAt: .expires_at, expired, url: "\($base)/\(.id)"}]' \
-            /tmp/artifacts.jsonl > "$DEST/artifacts.json"
-          # Only small per-flow E2E state artifacts are downloaded.
-          jq -r '.[]
-            | select((.expired | not) and .sizeInBytes <= 1048576)
-            | select(.name | test("^e2e_[a-z]+_[a-z]+_state_[A-Za-z0-9_-]+$"))
-            | "\(.id) \(.name)"' "$DEST/artifacts.json" |
-          while read -r ID NAME; do
-            OUT="/tmp/artifact-$ID.zip" retry fetch "repos/$GITHUB_REPOSITORY/actions/artifacts/$ID/zip" < /dev/null
-            # Extract only results.json, so paths inside the archive are never used.
-            if unzip -p "/tmp/artifact-$ID.zip" results.json 2>/dev/null | head -c 1048577 > "/tmp/results-$ID.json" &&
-              [[ -s "/tmp/results-$ID.json" ]] && (( $(wc -c < "/tmp/results-$ID.json") <= 1048576 )) &&
-              jq empty "/tmp/results-$ID.json" 2>/dev/null; then
-              mkdir -p "$DEST/artifacts/$NAME"
-              mv "/tmp/results-$ID.json" "$DEST/artifacts/$NAME/results.json"
-            else
-              echo "Skipping $NAME: no results.json, too large or not JSON"
-            fi
-          done
-          find "$DEST" -type f
+        if: steps.list.outputs.record == 'true'
+        uses: ./.github/actions/download-artifact
+        with:
+          pattern: e2e_*_state_*
+          path: ${{ env.DOWNLOADS }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Collect test results
+        if: steps.list.outputs.record == 'true'
+        run: .github/workflow-scripts/upload-test-results.sh collect
       - name: Describe the run
+        if: steps.list.outputs.record == 'true'
         env:
           WORKFLOW_RUN: ${{ toJSON(github.event.workflow_run) }}
           REPO_ID: ${{ github.event.repository.id }}
-        run: |
-          # pull_requests omits fork PRs and can list unrelated PRs on a push,
-          # so only PRs into this repository are kept, and only for pull
-          # request runs. The head repository and branch identify a fork PR.
-          jq --argjson repoId "$REPO_ID" '{
-            repository: .repository.full_name,
-            runId: .id,
-            runAttempt: .run_attempt,
-            event,
-            conclusion,
-            headSha: .head_sha,
-            headBranch: .head_branch,
-            headRepository: .head_repository.full_name,
-            pullRequests: (if .event == "pull_request"
-              then [.pull_requests[] | select(.base.repo.id == $repoId) | .number]
-              else [] end),
-            createdAt: .created_at,
-            runStartedAt: .run_started_at,
-            updatedAt: .updated_at,
-            url: .html_url
-          }' <<< "$WORKFLOW_RUN" > "$DEST/run.json"
-          cat "$DEST/run.json"
+        run: .github/workflow-scripts/upload-test-results.sh describe
       - name: Authenticate to Google Cloud
+        if: steps.list.outputs.record == 'true'
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           project_id: ${{ vars.VISUAL_GCP_PROJECT }}
           workload_identity_provider: ${{ vars.VISUAL_WORKLOAD_IDENTITY_PROVIDER }}
       - name: Setup gcloud
+        if: steps.list.outputs.record == 'true'
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Upload
-        run: |
-          set -euo pipefail
-          if [[ -e "$DEST/replaced" ]]; then
-            exit 0
-          fi
-          retry() {
-            for attempt in 1 2 3; do
-              "$@" && return 0
-              echo "Attempt $attempt failed"
-              sleep $((attempt * 10))
-            done
-            return 1
-          }
-          if [[ -n "$(ls -A "$DEST/artifacts")" ]]; then
-            retry gcloud storage cp --recursive --no-clobber "$DEST/artifacts" "$PREFIX/"
-          fi
-          retry gcloud storage cp --no-clobber "$DEST/artifacts.json" "$PREFIX/artifacts.json"
-          # A run is complete once its run.json exists, so it goes last.
-          retry gcloud storage cp --no-clobber "$DEST/run.json" "$PREFIX/run.json"
+        if: steps.list.outputs.record == 'true'
+        run: .github/workflow-scripts/upload-test-results.sh upload
