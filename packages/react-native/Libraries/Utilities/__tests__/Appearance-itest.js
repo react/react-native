@@ -10,7 +10,11 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import View from '../../Components/View/View';
 import * as Appearance from '../Appearance';
+import useColorScheme from '../useColorScheme';
+import * as Fantom from '@react-native/fantom';
+import * as React from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
 const NativeAppearance = require('../NativeAppearance');
@@ -49,5 +53,26 @@ describe('Appearance', () => {
     expect(Appearance.getColorScheme()).toBe('dark');
 
     subscription.remove();
+  });
+
+  it('updates useColorScheme in the same task as setColorScheme', () => {
+    let observed;
+    function TestComponent() {
+      observed = useColorScheme();
+      return <View />;
+    }
+
+    const root = Fantom.createRoot();
+    Fantom.runTask(() => {
+      root.render(<TestComponent />);
+    });
+
+    expect(observed).toBe('dark');
+
+    Fantom.runTask(() => {
+      Appearance.setColorScheme('light');
+    });
+
+    expect(observed).toBe('light');
   });
 });

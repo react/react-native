@@ -117,8 +117,8 @@ export function setColorScheme(colorScheme: ColorSchemeOverride): void {
   const state = getState();
   const {NativeAppearance} = state;
   if (NativeAppearance != null) {
+    const prevColorScheme = getColorScheme();
     NativeAppearance.setColorScheme(colorScheme);
-    const prevColorScheme = state.appearance?.colorScheme;
     state.appearance = {
       colorScheme:
         colorScheme === 'auto' || colorScheme === 'unspecified'
