@@ -1090,7 +1090,7 @@ internal class BorderDrawable(
     }
     val alpha = rawAlpha + (rawAlpha shr 7) // make it 0..256
     val colorAlpha = color ushr 24
-    val multipliedAlpha = colorAlpha * (alpha shr 7) shr 8
+    val multipliedAlpha = colorAlpha * alpha shr 8
     return (multipliedAlpha shl 24) or (color and 0x00FFFFFF)
   }
 }

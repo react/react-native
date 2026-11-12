@@ -66,6 +66,25 @@ class BorderDrawableTest {
     assertThat(drawBorderPaint(drawable).pathEffect).isNull()
   }
 
+  @Test
+  fun settingAlphaScalesBorderColorAlpha() {
+    val borderInsets = BorderInsets().apply { setBorderWidth(LogicalEdge.ALL, 8f) }
+    val drawable =
+        BorderDrawable(
+            context = RuntimeEnvironment.getApplication(),
+            borderWidth = Spacing(0f),
+            borderRadius = null,
+            borderInsets = borderInsets,
+            borderStyle = BorderStyle.SOLID,
+        )
+    drawable.setBounds(0, 0, 240, 120)
+    drawable.setBorderWidth(Spacing.ALL, 8f)
+    drawable.setBorderColor(LogicalEdge.ALL, Color.RED)
+    drawable.alpha = 128
+
+    assertThat(Color.alpha(drawBorderPaint(drawable).color)).isEqualTo(128)
+  }
+
   private fun drawBorderPaint(drawable: BorderDrawable): Paint {
     val canvas = mock<Canvas>()
     drawable.draw(canvas)
