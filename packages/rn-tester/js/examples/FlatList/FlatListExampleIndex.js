@@ -26,6 +26,7 @@ import onViewableItemsChanged_noWaitwaitForInteractionExample from './FlatList-o
 import onViewableItemsChanged_offScreen from './FlatList-onViewableItemsChanged-offScreen';
 import onViewableItemsChanged_waitForInteractionExample from './FlatList-onViewableItemsChanged-waitForInteraction';
 import StickyHeadersExample from './FlatList-stickyHeaders';
+import VirtualCollectionExample from './FlatList-virtualCollection';
 import WithSeparatorsExample from './FlatList-withSeparators';
 
 export default {
@@ -53,5 +54,6 @@ export default {
     onViewableItemsChanged_horizontal_noWaitForInteraction,
     onViewableItemsChanged_offScreen,
     onViewableItemsChanged_horizontal_offScreen,
+    VirtualCollectionExample,
   ],
 } as RNTesterModule;
