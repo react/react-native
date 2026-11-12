@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<61e45cda49df36384f8e5a8bfb4383bd>>
+ * @generated SignedSource<<681aa6af1fcf8e867cf3815c6fd03fe9>>
  */
 
 /**
@@ -323,6 +323,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = accessor.enablePreallocatedPropsDiffOnInsertAndroid()
+
+  /**
+   * Pre-mount views on Android in the time each frame leaves free: after the frame, in short slices that stop before the next vsync, and, after a frame that left none, before the next traversal for about as long as the last draw slept, counting what that frame pre-mounted before its traversal, or for half a frame once two frames in a row were busy for a whole frame, at most half a frame, instead of before every traversal for half of a 60 Hz frame.
+   */
+  @JvmStatic
+  public fun enablePremountItemsBetweenFramesAndroid(): Boolean = accessor.enablePremountItemsBetweenFramesAndroid()
 
   /**
    * Enables caching text layout artifacts for later reuse

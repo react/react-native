@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9568202bd43aba18de332e6d411a0458>>
+ * @generated SignedSource<<875bac2e6848179e795270d3ee386e92>>
  * @flow strict
  * @noformat
  */
@@ -97,6 +97,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableMutationObserverByDefault: Getter<boolean>,
   enableNativeCSSParsing: Getter<boolean>,
   enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean>,
+  enablePremountItemsBetweenFramesAndroid: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
@@ -414,6 +415,10 @@ export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('e
  * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
  */
 export const enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean> = createNativeFlagGetter('enablePreallocatedPropsDiffOnInsertAndroid', false);
+/**
+ * Pre-mount views on Android in the time each frame leaves free: after the frame, in short slices that stop before the next vsync, and, after a frame that left none, before the next traversal for about as long as the last draw slept, counting what that frame pre-mounted before its traversal, or for half a frame once two frames in a row were busy for a whole frame, at most half a frame, instead of before every traversal for half of a 60 Hz frame.
+ */
+export const enablePremountItemsBetweenFramesAndroid: Getter<boolean> = createNativeFlagGetter('enablePremountItemsBetweenFramesAndroid', false);
 /**
  * Enables caching text layout artifacts for later reuse
  */
