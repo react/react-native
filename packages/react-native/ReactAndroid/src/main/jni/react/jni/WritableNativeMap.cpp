@@ -7,6 +7,8 @@
 
 #include "WritableNativeMap.h"
 
+#include <utility>
+
 using namespace facebook::jni;
 
 namespace facebook::react {
@@ -18,6 +20,13 @@ WritableNativeMap::WritableNativeMap(folly::dynamic&& val)
   if (!map_.isObject()) {
     throw std::runtime_error("WritableNativeMap value must be an object.");
   }
+}
+
+local_ref<WritableNativeMap::JavaPart> WritableNativeMap::newObjectCxxArgs(
+    folly::dynamic&& val) {
+  auto map = newObjectJavaArgs(false);
+  setCxxInstance(map, std::move(val));
+  return map;
 }
 
 void WritableNativeMap::initHybrid(alias_ref<jhybridobject> jobj) {

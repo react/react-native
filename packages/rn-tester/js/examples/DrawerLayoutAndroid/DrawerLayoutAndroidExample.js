@@ -13,6 +13,7 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {Node} from 'react';
 
+import RNTesterText from '../../components/RNTesterText';
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
 import * as React from 'react';
 import {useContext, useRef, useState} from 'react';
@@ -64,9 +65,9 @@ const Drawer = () => {
           title="Change Drawer Position"
           onPress={() => changeDrawerPosition()}
         />
-        <Text style={styles.paragraph}>
+        <RNTesterText style={styles.paragraph}>
           Swipe from the side or press button below to see it!
-        </Text>
+        </RNTesterText>
         <Button
           title="Open drawer"
           /* $FlowFixMe[incompatible-use] */

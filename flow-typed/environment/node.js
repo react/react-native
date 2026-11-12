@@ -2549,7 +2549,7 @@ declare module 'fs' {
       ...
     }>,
     writeFile(
-      v0: FSPromisePath | FileHandle,
+      file: FSPromisePath | FileHandle,
       data: string | Buffer | Uint8Array,
       options?: string | WriteOptions,
     ): Promise<void>,
@@ -3343,9 +3343,9 @@ declare module 'perf_hooks' {
     setResourceTimingBufferSize(maxSize: number): void;
     readonly timeOrigin: number;
     timerify<TArgs extends Iterable<unknown>, TReturn>(
-      fn: (...rest: TArgs) => TReturn,
+      fn: (...args: TArgs) => TReturn,
       options?: Readonly<{histogram?: RecordableHistogram}>,
-    ): (...rest: TArgs) => TReturn;
+    ): (...args: TArgs) => TReturn;
     toJSON(): unknown;
   }
 
@@ -3537,7 +3537,7 @@ type readline$InterfaceCompleter = (
   | [Array<string>, string]
   | ((
       line: string,
-      v1: (err: ?Error, data: [Array<string>, string]) => void,
+      callback: (err: ?Error, data: [Array<string>, string]) => void,
     ) => void);
 
 declare class readline$Interface extends events$EventEmitter {
@@ -5630,18 +5630,18 @@ declare class Process extends events$EventEmitter {
   emitWarning(warning: string | Error): void;
   emitWarning(
     warning: string,
-    typeOrCtor: string | ((...rest: empty) => unknown),
+    typeOrCtor: string | ((...args: empty) => unknown),
   ): void;
   emitWarning(
     warning: string,
     type: string,
-    codeOrCtor: string | ((...rest: empty) => unknown),
+    codeOrCtor: string | ((...args: empty) => unknown),
   ): void;
   emitWarning(
     warning: string,
     type: string,
     code: string,
-    ctor?: (...rest: empty) => unknown,
+    ctor?: (...args: empty) => unknown,
   ): void;
   execArgv: Array<string>;
   execPath: string;
@@ -5671,7 +5671,7 @@ declare class Process extends events$EventEmitter {
     },
     rss: () => number,
   };
-  nextTick: <T>(cb: (...rest: T) => unknown, ...rest: T) => void;
+  nextTick: <T>(cb: (...args: T) => unknown, ...args: T) => void;
   pid: number;
   platform: string;
   release: {

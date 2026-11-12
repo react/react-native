@@ -9,10 +9,12 @@
 
 package com.facebook.react.modules.network
 
+import android.util.Base64
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.testutils.shadows.ShadowArguments
 import com.facebook.testutils.shadows.ShadowInspectorNetworkReporter
 import com.facebook.testutils.shadows.ShadowSoLoader
@@ -26,6 +28,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -171,6 +174,41 @@ class NetworkEventUtilTest {
     assertThat(args.size()).isEqualTo(2)
     assertThat(args.getInt(0)).isEqualTo(requestId)
     assertThat(args.getMap(1)).isEqualTo(data)
+  }
+
+  @Test
+  fun testOnDataReceivedMapDoesNotEncodeBodyWithoutDebugger() {
+    mockStatic(Base64::class.java).use { base64 ->
+      NetworkEventUtil.onDataReceived(
+          reactContext,
+          1,
+          "devToolsRequestId",
+          Arguments.createMap(),
+          byteArrayOf(1, 2, 3),
+      )
+
+      base64.verifyNoInteractions()
+    }
+  }
+
+  @OptIn(UnstableReactNativeAPI::class)
+  @Test
+  fun testOnDataReceivedMapStoresEncodedBodyWithDebugger() {
+    mockStatic(InspectorNetworkReporter::class.java).use { reporter ->
+      reporter.`when`<Boolean> { InspectorNetworkReporter.isDebuggingEnabled() }.thenReturn(true)
+
+      NetworkEventUtil.onDataReceived(
+          reactContext,
+          1,
+          "devToolsRequestId",
+          Arguments.createMap(),
+          byteArrayOf(1, 2, 3),
+      )
+
+      reporter.verify {
+        InspectorNetworkReporter.maybeStoreResponseBody("devToolsRequestId", "AQID", true)
+      }
+    }
   }
 
   @Test

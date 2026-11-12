@@ -20,6 +20,7 @@ import {
   StyleSheet,
   TouchableHighlight,
   View,
+  useVerticalBarEdgeIOS,
 } from 'react-native';
 
 const barStyles = ['default', 'auto', 'light-content', 'dark-content'];
@@ -282,6 +283,18 @@ class StatusBarStaticAndroidExample extends React.Component<{...}> {
   }
 }
 
+function StatusBarVerticalBarEdgeExample(): React.Node {
+  const edge = useVerticalBarEdgeIOS();
+
+  return (
+    <View>
+      <RNTesterText testID="vertical-bar-edge">
+        Vertical bar edge: {edge ?? 'none'}
+      </RNTesterText>
+    </View>
+  );
+}
+
 class ModalExample extends React.Component<{...}, $FlowFixMe> {
   state: $FlowFixMe | {modalVisible: boolean} = {
     modalVisible: false,
@@ -349,6 +362,14 @@ exports.examples = [
     title: 'StatusBar static API',
     render(): React.Node {
       return <StatusBarStaticIOSExample />;
+    },
+    platform: 'ios',
+  },
+  {
+    title: 'StatusBar vertical bar edge',
+    name: 'vertical-bar-edge',
+    render(): React.Node {
+      return <StatusBarVerticalBarEdgeExample />;
     },
     platform: 'ios',
   },

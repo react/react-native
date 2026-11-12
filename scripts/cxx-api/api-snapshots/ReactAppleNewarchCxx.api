@@ -2384,6 +2384,7 @@ protocol NativeSourceCodeSpec : public NSObjectRCTBridgeModule, public RCTTurboM
 }
 
 protocol NativeStatusBarManagerIOSSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
+  public virtual NSString* _Nullable getVerticalBarEdge();
   public virtual facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> constantsToExport();
   public virtual facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> getConstants();
   public virtual void addListener:(NSString* eventType);
@@ -3970,6 +3971,7 @@ class facebook::react::LongLivedObjectCollection {
   public static facebook::react::LongLivedObjectCollection& get(facebook::jsi::Runtime& runtime);
   public void add(std::shared_ptr<facebook::react::LongLivedObject> o);
   public void clear();
+  public void clear(facebook::jsi::Runtime& runtime);
   public void operator=(const facebook::react::LongLivedObjectCollection&) = delete;
   public void remove(const facebook::react::LongLivedObject* o);
 }
@@ -4395,6 +4397,7 @@ class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseVi
 class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
   public SafeAreaViewProps() = default;
   public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public facebook::react::SafeAreaViewPointerEvents pointerEvents;
 }
 
 class facebook::react::Sealable {
@@ -5070,6 +5073,13 @@ enum facebook::react::Role : uint8_t {
   Tree,
   Treegrid,
   Treeitem,
+}
+
+enum facebook::react::SafeAreaViewPointerEvents {
+  Auto,
+  BoxNone,
+  BoxOnly,
+  None,
 }
 
 enum facebook::react::SchedulerPriority : int {
@@ -6002,10 +6012,11 @@ class facebook::react::SyncCallback<R(Args...)> {
   public R operator()(Args... args) const;
   public SyncCallback(const facebook::react::SyncCallback&) = delete;
   public SyncCallback(facebook::jsi::Runtime& rt, facebook::jsi::Function function, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
-  public SyncCallback(facebook::react::SyncCallback&& other) noexcept;
+  public SyncCallback(facebook::react::SyncCallback&&) noexcept = default;
   public facebook::react::SyncCallback& operator=(const facebook::react::SyncCallback&) = delete;
-  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&& other) noexcept;
-  public ~SyncCallback();
+  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&&) noexcept = default;
+  public void reset(facebook::jsi::Runtime& runtime) noexcept;
+  public ~SyncCallback() = default;
 }
 
 template <typename R, typename... Args>
@@ -6041,6 +6052,27 @@ class facebook::react::ConcreteComponentDescriptor : public facebook::react::Com
 
 template <typename T, typename = void>
 struct facebook::react::Bridging {
+}
+
+template <typename T>
+class facebook::react::LongLivedObjectHandle {
+  public LongLivedObjectHandle() = default;
+  public LongLivedObjectHandle(const facebook::react::LongLivedObjectHandle&) = delete;
+  public LongLivedObjectHandle(facebook::jsi::Runtime& runtime, T value, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
+  public LongLivedObjectHandle(facebook::react::LongLivedObjectHandle&&) noexcept = default;
+  public bool expired() const noexcept;
+  public facebook::react::LongLivedObjectHandle& operator=(const facebook::react::LongLivedObjectHandle&) = delete;
+  public facebook::react::LongLivedObjectHandle& operator=(facebook::react::LongLivedObjectHandle&& other) noexcept;
+  public std::shared_ptr<facebook::react::CallInvoker> lockInvoker() const noexcept;
+  public std::shared_ptr<facebook::react::LongLivedObjectHandle::Holder> lockJSValue(facebook::jsi::Runtime&) const noexcept;
+  public void reset() noexcept;
+  public void reset(facebook::jsi::Runtime& runtime) noexcept;
+  public ~LongLivedObjectHandle();
+}
+
+struct facebook::react::LongLivedObjectHandle::Holder : public facebook::react::LongLivedObject {
+  public Holder(facebook::jsi::Runtime& runtime, T value);
+  public T value;
 }
 
 template <typename T>
@@ -6983,6 +7015,9 @@ struct facebook::react::array_detail::BridgingDynamic {
 
 template <typename T, typename C>
 C facebook::react::detail::memberFunctionClass(T C::*);
+template <typename T>
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<T>, std::weak_ptr<facebook::react::CallInvoker>) = delete;
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<facebook::react::LongLivedObject> object, std::weak_ptr<facebook::react::CallInvoker> jsInvoker) noexcept;
 
 class facebook::react::detail::OwnedBytesBuffer : public facebook::jsi::MutableBuffer {
   public OwnedBytesBuffer(std::vector<uint8_t> bytes) noexcept;
@@ -8766,6 +8801,7 @@ struct facebook::yoga::LayoutData {
 }
 
 struct facebook::yoga::LayoutResults {
+  public bool computedAutoMinMainSizeResolved() const;
   public bool hadOverflow() const;
   public bool operator==(facebook::yoga::LayoutResults layout) const;
   public facebook::yoga::CachedMeasurement cachedLayout;
@@ -8790,6 +8826,7 @@ struct facebook::yoga::LayoutResults {
   public uint32_t generationCount;
   public uint32_t nextCachedMeasurementsIndex;
   public void setBorder(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
+  public void setComputedAutoMinMainSizeResolved(bool resolved);
   public void setDimension(facebook::yoga::Dimension axis, float dimension);
   public void setDirection(facebook::yoga::Direction direction);
   public void setHadOverflow(bool hadOverflow);
