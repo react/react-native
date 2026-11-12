@@ -5575,6 +5575,8 @@ public class com/facebook/react/views/scroll/ReactHorizontalScrollViewManager : 
 	public fun flashScrollIndicators (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;)V
 	public synthetic fun flashScrollIndicators (Ljava/lang/Object;)V
 	public fun getName ()Ljava/lang/String;
+	public synthetic fun onDropViewInstance (Landroid/view/View;)V
+	public fun onDropViewInstance (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;)V
 	public synthetic fun prepareToRecycleView (Lcom/facebook/react/uimanager/ThemedReactContext;Landroid/view/View;)Landroid/view/View;
 	protected fun prepareToRecycleView (Lcom/facebook/react/uimanager/ThemedReactContext;Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;)Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;
 	public synthetic fun receiveCommand (Landroid/view/View;ILcom/facebook/react/bridge/ReadableArray;)V
@@ -5873,6 +5875,8 @@ public class com/facebook/react/views/scroll/ReactScrollViewManager : com/facebo
 	public fun getCommandsMap ()Ljava/util/Map;
 	public fun getExportedCustomDirectEventTypeConstants ()Ljava/util/Map;
 	public fun getName ()Ljava/lang/String;
+	public synthetic fun onDropViewInstance (Landroid/view/View;)V
+	public fun onDropViewInstance (Lcom/facebook/react/views/scroll/ReactScrollView;)V
 	public synthetic fun prepareToRecycleView (Lcom/facebook/react/uimanager/ThemedReactContext;Landroid/view/View;)Landroid/view/View;
 	protected fun prepareToRecycleView (Lcom/facebook/react/uimanager/ThemedReactContext;Lcom/facebook/react/views/scroll/ReactScrollView;)Lcom/facebook/react/views/scroll/ReactScrollView;
 	public synthetic fun receiveCommand (Landroid/view/View;ILcom/facebook/react/bridge/ReadableArray;)V

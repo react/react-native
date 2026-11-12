@@ -74,6 +74,11 @@ constructor(private val fpsListener: FpsListener? = null) :
     return preparedView
   }
 
+  override fun onDropViewInstance(view: ReactHorizontalScrollView) {
+    view.setMaintainVisibleContentPosition(null)
+    super.onDropViewInstance(view)
+  }
+
   override fun getName(): String = REACT_CLASS
 
   public override fun createViewInstance(context: ThemedReactContext): ReactHorizontalScrollView =

@@ -83,6 +83,11 @@ constructor(private val fpsListener: FpsListener? = null) :
     return preparedView
   }
 
+  override fun onDropViewInstance(view: ReactNestedScrollView) {
+    view.setMaintainVisibleContentPosition(null)
+    super.onDropViewInstance(view)
+  }
+
   override fun getName(): String = REACT_CLASS
 
   override fun createViewInstance(context: ThemedReactContext): ReactNestedScrollView =
