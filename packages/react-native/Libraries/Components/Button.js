@@ -156,21 +156,29 @@ type ButtonPropsCore = Readonly<{
   accessibilityLanguage?: ?Stringish,
 }>;
 
-/** @build-types emit-as-interface Uniwind compatibility */
+/**
+ * Button is deprecated and will be removed in a future release.
+ * Build your own button with `Pressable` instead.
+ * @see https://reactnative.dev/docs/button
+ * @deprecated
+ * @build-types emit-as-interface Uniwind compatibility
+ */
 export type ButtonProps = ButtonPropsCore;
 
 const NativeTouchable:
   typeof TouchableNativeFeedback | typeof TouchableOpacity =
   Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
 
+/**
+ * Button is deprecated and will be removed in a future release.
+ * Build your own button with `Pressable` instead.
+ * @deprecated
+ */
 export type ButtonInstance = React.ElementRef<typeof NativeTouchable>;
 
 /**
  * A basic button component that should render nicely on any platform. Supports a
  * minimal level of customization.
- *
- * If this button doesn't look right for your app, you can build your own button
- * using `Pressable`.
  *
  * Example:
  *
@@ -183,7 +191,11 @@ export type ButtonInstance = React.ElementRef<typeof NativeTouchable>;
  * />
  * ```
  *
+ * Button is deprecated and will be removed in a future release.
+ * Build your own button with `Pressable` instead.
+ *
  * @see https://reactnative.dev/docs/button
+ * @deprecated
  */
 const Button: component(
   ref?: React.RefSetter<ButtonInstance>,
