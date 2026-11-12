@@ -243,7 +243,7 @@ async function resolveSnapshotUrl(
     `${version}-SNAPSHOT/maven-metadata.xml`;
 
   log(`  Fetching snapshot metadata: ${metadataUrl}`);
-  const res = await fetch(metadataUrl);
+  const res = await fetchWithRetry(metadataUrl);
   if (!res.ok) {
     throw new Error(
       `Failed to fetch snapshot metadata (${res.status}): ${metadataUrl}`,
@@ -305,7 +305,9 @@ async function resolveNightlyVersion(
 ) /*: Promise<string> */ {
   log(`  Resolving nightly version from npm: ${npmPackage}`);
 
-  const res = await fetch(`https://registry.npmjs.org/${npmPackage}/nightly`);
+  const res = await fetchWithRetry(
+    `https://registry.npmjs.org/${npmPackage}/nightly`,
+  );
   if (!res.ok) {
     throw new Error(`npm lookup failed for ${npmPackage}: ${res.status}`);
   }
@@ -358,8 +360,7 @@ async function resolveCacheSlotVersion(
 
 async function resolveLatestV1Version() /*: Promise<string> */ {
   log('  Resolving latest-v1 Hermes from npm...');
-  // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
-  const res = await fetch(
+  const res = await fetchWithRetry(
     'https://registry.npmjs.org/hermes-compiler/latest-v1',
   );
   if (!res.ok) {
@@ -651,7 +652,10 @@ function isRetryableDownloadError(error /*: Error */) /*: boolean */ {
   if (httpStatus == null) {
     return true;
   }
-  const status = Number(httpStatus);
+  return isRetryableHttpStatus(Number(httpStatus));
+}
+
+function isRetryableHttpStatus(status /*: number */) /*: boolean */ {
   return status === 408 || status === 429 || status >= 500;
 }
 
@@ -816,6 +820,34 @@ async function download(
       );
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
+  }
+}
+
+async function fetchWithRetry(url /*: string */) /*: Promise<Response> */ {
+  for (let attempt = 1; ; attempt++) {
+    let reason;
+    try {
+      // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
+      const res = await fetch(url);
+      if (
+        attempt === DOWNLOAD_MAX_ATTEMPTS ||
+        !isRetryableHttpStatus(res.status)
+      ) {
+        return res;
+      }
+      reason = `HTTP ${res.status}`;
+    } catch (error) {
+      if (attempt === DOWNLOAD_MAX_ATTEMPTS) {
+        throw error;
+      }
+      reason = error.message;
+    }
+    const delayMs = DOWNLOAD_RETRY_BASE_DELAY_MS * attempt;
+    warn(
+      `  Request failed (${reason}); retrying in ${delayMs}ms ` +
+        `(attempt ${attempt + 1}/${DOWNLOAD_MAX_ATTEMPTS})`,
+    );
+    await new Promise(resolve => setTimeout(resolve, delayMs));
   }
 }
 

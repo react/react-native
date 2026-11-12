@@ -716,7 +716,7 @@ describe('resolveSnapshotUrl', () => {
 
   it('throws when the metadata request fails', async () => {
     globalThis.fetch = routerFetch({
-      'maven-metadata.xml': {ok: false, status: 500},
+      'maven-metadata.xml': {ok: false, status: 404},
     });
     await expect(
       resolveSnapshotUrl(
@@ -726,6 +726,27 @@ describe('resolveSnapshotUrl', () => {
         'x.tar.gz',
       ),
     ).rejects.toThrow(/Failed to fetch snapshot metadata/);
+  });
+
+  it('retries the metadata request after a transient server error', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const router = routerFetch({'maven-metadata.xml': {text: METADATA}});
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ok: false, status: 503})
+      .mockImplementation(router);
+
+    const pending = resolveSnapshotUrl(
+      '0.85.0',
+      'react',
+      'react-native-artifacts',
+      'reactnative-core-debug.tar.gz',
+    );
+    await jest.advanceTimersByTimeAsync(1_000);
+
+    expect(await pending).toContain('0.85.0-20260101.123456-7');
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+    warnSpy.mockRestore();
   });
 
   it('throws when timestamp/buildNumber are absent', async () => {
@@ -765,6 +786,27 @@ describe('npm dist-tag resolvers', () => {
     );
   });
 
+  it('resolveNightlyVersion retries a dropped connection', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const router = routerFetch({
+      'react-native/nightly': {json: {version: '0.86.0-nightly-xyz'}},
+    });
+    globalThis.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockImplementation(router);
+
+    const pending = resolveNightlyVersion('react-native');
+    await jest.advanceTimersByTimeAsync(1_000);
+
+    expect(await pending).toBe('0.86.0-nightly-xyz');
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('retrying in 1000ms'),
+    );
+    warnSpy.mockRestore();
+  });
+
   it('resolveNightlyVersion throws on a failed npm lookup', async () => {
     globalThis.fetch = routerFetch({
       'react-native/nightly': {ok: false, status: 404},
@@ -782,10 +824,19 @@ describe('npm dist-tag resolvers', () => {
   });
 
   it('resolveLatestV1Version throws on a failed lookup', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     globalThis.fetch = routerFetch({
       'hermes-compiler/latest-v1': {ok: false, status: 500},
     });
-    await expect(resolveLatestV1Version()).rejects.toThrow(/npm lookup failed/);
+
+    const assertion = expect(resolveLatestV1Version()).rejects.toThrow(
+      /npm lookup failed/,
+    );
+    await jest.advanceTimersByTimeAsync(3_000);
+    await assertion;
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(3);
+    warnSpy.mockRestore();
   });
 });
 
@@ -1018,7 +1069,7 @@ describe('resolveCacheSlotVersion', () => {
 
   it('falls back to the raw label when the nightly lookup fails', async () => {
     globalThis.fetch = routerFetch({
-      'react-native/nightly': {ok: false, status: 503},
+      'react-native/nightly': {ok: false, status: 404},
     });
     expect(await resolveCacheSlotVersion('nightly')).toBe('nightly');
   });
