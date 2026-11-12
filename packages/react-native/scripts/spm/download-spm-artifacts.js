@@ -824,22 +824,15 @@ async function download(
 }
 
 async function fetchWithRetry(url /*: string */) /*: Promise<Response> */ {
-  for (let attempt = 1; ; attempt++) {
+  for (let attempt = 1; attempt < DOWNLOAD_MAX_ATTEMPTS; attempt++) {
     let reason;
     try {
-      // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
       const res = await fetch(url);
-      if (
-        attempt === DOWNLOAD_MAX_ATTEMPTS ||
-        !isRetryableHttpStatus(res.status)
-      ) {
+      if (!isRetryableHttpStatus(res.status)) {
         return res;
       }
       reason = `HTTP ${res.status}`;
     } catch (error) {
-      if (attempt === DOWNLOAD_MAX_ATTEMPTS) {
-        throw error;
-      }
       reason = error.message;
     }
     const delayMs = DOWNLOAD_RETRY_BASE_DELAY_MS * attempt;
@@ -849,6 +842,7 @@ async function fetchWithRetry(url /*: string */) /*: Promise<Response> */ {
     );
     await new Promise(resolve => setTimeout(resolve, delayMs));
   }
+  return fetch(url);
 }
 
 /**
