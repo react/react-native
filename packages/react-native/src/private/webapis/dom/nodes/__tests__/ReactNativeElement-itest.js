@@ -1420,6 +1420,21 @@ describe('ReactNativeElement', () => {
         expect(callback.mock.calls).toEqual([[10, 10, 100, 100, 10, 10]]);
       });
 
+      it('component.measure(...) releases its callback when it throws', () => {
+        const root = Fantom.createRoot();
+        const ref = createRef<HostInstance>();
+        Fantom.runTask(() => {
+          root.render(<View ref={ref} />);
+        });
+
+        const node = nullthrows(ref.current);
+        expect(() =>
+          node.measure(() => {
+            throw new Error('measurement callback failed');
+          }),
+        ).toThrow('measurement callback failed');
+      });
+
       it('unmounted.measure(...) does nothing', () => {
         const root = Fantom.createRoot();
         const ref = createRef<HostInstance>();

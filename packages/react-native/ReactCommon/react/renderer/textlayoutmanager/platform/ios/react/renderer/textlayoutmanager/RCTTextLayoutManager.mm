@@ -21,6 +21,9 @@
 
 using namespace facebook::react;
 
+@interface RCTTextLayoutManager () <NSLayoutManagerDelegate>
+@end
+
 @implementation RCTTextLayoutManager {
   SimpleThreadSafeCache<AttributedString, std::shared_ptr<void>, 256> _cache;
 }
@@ -457,6 +460,10 @@ static CGSize RCTTextLayoutSizeForFrameSize(CGSize frameSize, const ParagraphAtt
 
   NSLayoutManager *layoutManager = [NSLayoutManager new];
   layoutManager.usesFontLeading = NO;
+  if (ReactNativeFeatureFlags::fixTextInlineViewLineHeight() &&
+      [attributedString containsAttachmentsInRange:NSMakeRange(0, attributedString.length)]) {
+    layoutManager.delegate = self;
+  }
   [layoutManager addTextContainer:textContainer];
 
   NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:attributedString];
@@ -477,6 +484,47 @@ static CGSize RCTTextLayoutSizeForFrameSize(CGSize frameSize, const ParagraphAtt
   }
 
   return textStorage;
+}
+
+#pragma mark - NSLayoutManagerDelegate
+
+- (BOOL)layoutManager:(NSLayoutManager *)layoutManager
+    shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
+         lineFragmentUsedRect:(inout CGRect *)lineFragmentUsedRect
+               baselineOffset:(inout CGFloat *)baselineOffset
+              inTextContainer:(NSTextContainer *)textContainer
+                forGlyphRange:(NSRange)glyphRange
+{
+  NSTextStorage *textStorage = layoutManager.textStorage;
+  NSRange characterRange = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:nil];
+
+  // Tallest space any attachment on this line needs above the baseline, counting the NSBaselineOffset lift that
+  // RCTApplyBaselineOffset gives the text.
+  __block CGFloat requiredAscent = 0;
+  [textStorage enumerateAttribute:NSAttachmentAttributeName
+                          inRange:characterRange
+                          options:0
+                       usingBlock:^(NSTextAttachment *attachment, NSRange range, __unused BOOL *stop) {
+                         if (attachment == nil) {
+                           return;
+                         }
+                         CGFloat baselineShift = [[textStorage attribute:NSBaselineOffsetAttributeName
+                                                                 atIndex:range.location
+                                                          effectiveRange:nil] doubleValue];
+                         requiredAscent = MAX(attachment.bounds.size.height + baselineShift, requiredAscent);
+                       }];
+
+  // maximumLineHeight (from lineHeight) caps the line even when an attachment is taller.
+  // Inline views aren't subject to lineHeight, so add the missing height above the baseline.
+  CGFloat missingHeight = requiredAscent - *baselineOffset;
+  if (missingHeight <= 0) {
+    return NO;
+  }
+
+  lineFragmentRect->size.height += missingHeight;
+  lineFragmentUsedRect->size.height += missingHeight;
+  *baselineOffset += missingHeight;
+  return YES;
 }
 
 - (std::shared_ptr<const EventEmitter>)getEventEmitterWithAttributeString:(const AttributedString &)attributedString

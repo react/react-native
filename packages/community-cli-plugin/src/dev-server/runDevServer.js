@@ -16,7 +16,6 @@ import attachKeyHandlers from './attachKeyHandlers';
 import createDevMiddlewareLogger from './createDevMiddlewareLogger';
 import createDevServerMiddleware from './createDevServerMiddleware';
 import isDevServerRunning from './isDevServerRunning';
-import loadCommunityMiddleware from './loadCommunityMiddleware';
 import * as version from './version';
 import {createDevMiddleware} from '@react-native/dev-middleware';
 import * as Metro from 'metro';
@@ -103,40 +102,31 @@ async function runDevServer(
     metroConfig.server.forwardClientLogs = false;
   }
 
-  let reportEvent: (event: TerminalReportableEvent) => void;
   const terminal = new Metro.Terminal(process.stdout);
   const ReporterImpl = getReporterImpl(args.customLogReporterPath);
   const terminalReporter = new ReporterImpl(terminal);
 
-  const createCommunityMiddleware = loadCommunityMiddleware();
-  const {
-    middleware: communityMiddleware,
-    websocketEndpoints: communityWebsocketEndpoints,
-    messageSocketEndpoint,
-    eventsSocketEndpoint,
-  } = createCommunityMiddleware({
-    host: hostname,
-    port,
-    watchFolders,
-  });
+  const logger = createDevMiddlewareLogger(terminalReporter);
   const {middleware, websocketEndpoints} = createDevMiddleware({
     serverBaseUrl: devServerUrl,
-    logger: createDevMiddlewareLogger(terminalReporter),
+    logger,
   });
-  const pluginMiddleware = createDevServerMiddleware({
+  const {
+    middleware: pluginMiddleware,
+    websocketEndpoints: pluginWebsocketEndpoints,
+    messageSocket,
+    eventsSocket,
+  } = createDevServerMiddleware({
     serverBaseUrl: new URL(devServerUrl),
     projectRoot,
     watchFolders: [unstable_serverRoot ?? projectRoot, ...watchFolders],
+    logger,
   });
 
   const reporter: Reporter = {
     update(event: TerminalReportableEvent) {
       terminalReporter.update(event);
-      /* $FlowFixMe[constant-condition] Error discovered during Constant
-       * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
-      if (reportEvent) {
-        reportEvent(event);
-      }
+      eventsSocket.reportEvent(event);
       if (args.interactive && event.type === 'initialize_done') {
         terminalReporter.update({
           type: 'unstable_server_log',
@@ -145,7 +135,7 @@ async function runDevServer(
         });
         attachKeyHandlers({
           devServerUrl,
-          messageSocket: messageSocketEndpoint,
+          messageSocket,
           reporter: terminalReporter,
         });
       }
@@ -159,18 +149,12 @@ async function runDevServer(
     secure: args.https,
     secureCert: args.cert,
     secureKey: args.key,
-    unstable_extraMiddleware: [
-      pluginMiddleware,
-      communityMiddleware,
-      middleware,
-    ],
+    unstable_extraMiddleware: [pluginMiddleware, middleware],
     websocketEndpoints: {
-      ...communityWebsocketEndpoints,
+      ...pluginWebsocketEndpoints,
       ...websocketEndpoints,
     },
   });
-
-  reportEvent = eventsSocketEndpoint.reportEvent;
 
   await version.logIfUpdateAvailable(cliConfig, terminalReporter);
 }

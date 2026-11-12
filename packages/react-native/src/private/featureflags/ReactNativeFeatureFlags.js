@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9745db68f9d0fe8cccfddac2e8ffee30>>
+ * @generated SignedSource<<9568202bd43aba18de332e6d411a0458>>
  * @flow strict
  * @noformat
  */
@@ -229,7 +229,7 @@ export const cdpInteractionMetricsEnabled: Getter<boolean> = createNativeFlagGet
 /**
  * Use a C++ implementation of Native Animated instead of the platform implementation.
  */
-export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', false);
+export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', true);
 /**
  * When enabled, sets the default overflow style for Text components to hidden instead of visible.
  */
