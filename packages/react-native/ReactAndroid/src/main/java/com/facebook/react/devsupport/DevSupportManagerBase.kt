@@ -156,6 +156,13 @@ public abstract class DevSupportManagerBase(
   override val downloadedJSBundleFile: String
     get() = jsBundleDownloadedFile.absolutePath
 
+  /**
+   * The dev server's revision label of the bundle last downloaded into [downloadedJSBundleFile];
+   * null while a download is in progress or after one failed.
+   */
+  public var downloadedJSBundleRevisionId: String? = null
+    private set
+
   public val devServerHelper: DevServerHelper =
       DevServerHelper(devSettings, applicationContext, devSettings.packagerConnectionSettings)
 
@@ -778,9 +785,11 @@ public abstract class DevSupportManagerBase(
 
     val bundleInfo = BundleDownloader.BundleInfo()
 
+    downloadedJSBundleRevisionId = null
     devServerHelper.downloadBundleFromURL(
         object : DevBundleDownloadListener {
           override fun onSuccess() {
+            downloadedJSBundleRevisionId = bundleInfo.revisionId
             hideDevLoadingView()
             devBundleDownloadListener?.onSuccess()
             ReactMarker.logMarker(ReactMarkerConstants.DOWNLOAD_END, bundleInfo.toJSONString())

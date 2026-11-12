@@ -699,14 +699,18 @@ public abstract class com/facebook/react/bridge/JSBundleLoader {
 	public fun <init> ()V
 	public static final fun createAssetLoader (Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
 	public static final fun createCachedBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
+	public static final fun createCachedBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public static final fun createFileLoader (Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public static final fun createFileLoader (Ljava/lang/String;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
+	public fun getRevisionId ()Ljava/lang/String;
 	public abstract fun loadScript (Lcom/facebook/react/bridge/JSBundleLoaderDelegate;)Ljava/lang/String;
 }
 
 public final class com/facebook/react/bridge/JSBundleLoader$Companion {
 	public final fun createAssetLoader (Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
 	public final fun createCachedBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
+	public final fun createCachedBundleFromNetworkLoader (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
+	public static synthetic fun createCachedBundleFromNetworkLoader$default (Lcom/facebook/react/bridge/JSBundleLoader$Companion;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public final fun createFileLoader (Ljava/lang/String;)Lcom/facebook/react/bridge/JSBundleLoader;
 	public final fun createFileLoader (Ljava/lang/String;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
 }
@@ -1823,6 +1827,7 @@ public final class com/facebook/react/devsupport/BundleDownloader$BundleInfo {
 	public fun <init> ()V
 	public static final fun fromJSONString (Ljava/lang/String;)Lcom/facebook/react/devsupport/BundleDownloader$BundleInfo;
 	public final fun getFilesChangedCount ()I
+	public final fun getRevisionId ()Ljava/lang/String;
 	public final fun getUrl ()Ljava/lang/String;
 	public final fun toJSONString ()Ljava/lang/String;
 }
@@ -1900,6 +1905,7 @@ public abstract class com/facebook/react/devsupport/DevSupportManagerBase : com/
 	public final fun getDevSettings ()Lcom/facebook/react/modules/debug/interfaces/DeveloperSettings;
 	public final fun getDevSupportEnabled ()Z
 	public fun getDownloadedJSBundleFile ()Ljava/lang/String;
+	public final fun getDownloadedJSBundleRevisionId ()Ljava/lang/String;
 	public final fun getJSAppBundleName ()Ljava/lang/String;
 	public fun getKeyboardShortcutsEnabled ()Z
 	public final fun getLastErrorCookie ()I

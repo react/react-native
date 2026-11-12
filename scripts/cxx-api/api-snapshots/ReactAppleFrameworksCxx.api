@@ -1769,6 +1769,7 @@ interface RCTShadowView : public NSObject <RCTComponent> {
 interface RCTSource : public NSObject {
   public @property (assign, readonly) NSInteger filesChangedCount;
   public @property (assign, readonly) NSUInteger length;
+  public @property (copy, readonly) NSString* revisionId;
   public @property (strong, readonly) NSData* data;
   public @property (strong, readonly) NSURL* downloadedBundleFileURL;
   public @property (strong, readonly) NSURL* url;

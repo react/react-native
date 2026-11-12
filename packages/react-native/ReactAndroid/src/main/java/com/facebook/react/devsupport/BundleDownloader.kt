@@ -42,12 +42,17 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
     public var filesChangedCount: Int = 0
       internal set
 
+    /** The dev server's label for the revision it built the bundle from (`X-Metro-Delta-ID`). */
+    public var revisionId: String? = null
+      internal set
+
     public fun toJSONString(): String? =
         try {
           JSONObject()
               .apply {
                 put("url", _url)
                 put("filesChangedCount", filesChangedCount)
+                put("revisionId", revisionId)
               }
               .toString()
         } catch (e: JSONException) {
@@ -66,6 +71,7 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
           BundleInfo().apply {
             _url = obj.getString("url")
             filesChangedCount = obj.getInt("filesChangedCount")
+            revisionId = obj.optString("revisionId").ifEmpty { null }
           }
         } catch (e: JSONException) {
           FLog.e(TAG, "Invalid bundle info: ", e)
@@ -335,6 +341,7 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
 
     private fun populateBundleInfo(url: String, headers: Headers, bundleInfo: BundleInfo) {
       bundleInfo._url = url
+      bundleInfo.revisionId = headers["X-Metro-Delta-ID"]
 
       val filesChangedCountStr = headers["X-Metro-Files-Changed-Count"]
       if (filesChangedCountStr != null) {

@@ -16,6 +16,10 @@ public abstract class JSBundleLoader {
   /** Loads the script, returning the URL of the source it loaded. */
   public abstract fun loadScript(delegate: JSBundleLoaderDelegate): String
 
+  /** The dev server's label for the revision it built the bundle from, null when there is none. */
+  public open val revisionId: String?
+    get() = null
+
   public companion object {
     /**
      * This loader is recommended one for release version of your app. In that case local JS
@@ -61,14 +65,20 @@ public abstract class JSBundleLoader {
      * bundle to be prefetched and stored in local file. We do that to avoid passing large strings
      * between java and native code and avoid allocating memory in java to fit whole JS bundle in
      * it. Providing correct [sourceURL] of downloaded bundle is required for JS stacktraces to work
-     * correctly and allows for source maps to correctly symbolize those.
+     * correctly and allows for source maps to correctly symbolize those. [revisionId] is the dev
+     * server's label for the revision it built the bundle from (`X-Metro-Delta-ID`), null when it
+     * sent none; the loader exposes it as [JSBundleLoader.revisionId].
      */
     @JvmStatic
+    @JvmOverloads
     public fun createCachedBundleFromNetworkLoader(
         sourceURL: String,
         cachedFileLocation: String,
+        revisionId: String? = null,
     ): JSBundleLoader =
         object : JSBundleLoader() {
+          override val revisionId: String? = revisionId
+
           override fun loadScript(delegate: JSBundleLoaderDelegate): String {
             return try {
               delegate.loadScriptFromFile(cachedFileLocation, sourceURL, false)
