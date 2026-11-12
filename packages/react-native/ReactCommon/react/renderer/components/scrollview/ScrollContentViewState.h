@@ -25,11 +25,18 @@ namespace facebook::react {
 class ScrollContentViewState final {
  public:
   /*
-   * The safe area the content is laid out clear of, as padding on top of the
-   * padding the style sets. The enclosing scroll view sets the pair of edges
-   * across its scrollable axis.
+   * The safe area the content is laid out clear of, as a floor on the padding
+   * the style sets. The enclosing scroll view sets the pair of edges across
+   * its scrollable axis.
    */
   EdgeInsets safeAreaPadding{};
+
+  /*
+   * The content inset UIKit adds for the safe area along the scrollable axis,
+   * which the padding the style sets on those edges counts toward. The
+   * enclosing scroll view sets the pair of edges along its scrollable axis.
+   */
+  EdgeInsets contentInsetAdjustment{};
 
   /*
    * Whether left and right swap in RTL, which decides the padding edges the
@@ -48,6 +55,11 @@ class ScrollContentViewState final {
              (Float)data["top"].getDouble(),
              (Float)data["right"].getDouble(),
              (Float)data["bottom"].getDouble()}),
+        contentInsetAdjustment(
+            {(Float)data["contentInsetLeft"].getDouble(),
+             (Float)data["contentInsetTop"].getDouble(),
+             (Float)data["contentInsetRight"].getDouble(),
+             (Float)data["contentInsetBottom"].getDouble()}),
         swapLeftAndRightInRTL(data["swapLeftAndRightInRTL"].getBool())
   {
   }
@@ -56,6 +68,8 @@ class ScrollContentViewState final {
   {
     return folly::dynamic::object("left", safeAreaPadding.left)("top", safeAreaPadding.top)(
         "right", safeAreaPadding.right)("bottom", safeAreaPadding.bottom)(
+        "contentInsetLeft", contentInsetAdjustment.left)("contentInsetTop", contentInsetAdjustment.top)(
+        "contentInsetRight", contentInsetAdjustment.right)("contentInsetBottom", contentInsetAdjustment.bottom)(
         "swapLeftAndRightInRTL", swapLeftAndRightInRTL);
   }
 #endif

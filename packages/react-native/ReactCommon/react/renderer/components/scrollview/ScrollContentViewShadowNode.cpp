@@ -7,6 +7,7 @@
 
 #include "ScrollContentViewShadowNode.h"
 
+#include <algorithm>
 #include <array>
 
 namespace facebook::react {
@@ -78,16 +79,21 @@ StyleLength resolvedPadding(
 }
 
 /*
+ * The safe area is a floor on the padding, as it is on UIKit's layout
+ * margins: the edge takes the larger of its style padding and the inset.
+ * Where UIKit already applies the inset as a content inset, the edge keeps
+ * what its padding exceeds that by, which lands the content on the same floor.
  * A percentage padding keeps the edge as the style set it, with no inset
- * added, since Yoga holds one length per edge and a percentage has no point
- * value to add to.
+ * applied, since Yoga holds one length per edge and a percentage has no point
+ * value to compare.
  */
-StyleLength padded(StyleLength value, Float inset) {
-  if (inset == 0 || value.isPercent()) {
+StyleLength padded(StyleLength value, Float inset, Float contentInset) {
+  if ((inset == 0 && contentInset == 0) || value.isPercent()) {
     return value;
   }
-  auto base = value.isPoints() ? value.value().unwrap() : 0.0f;
-  return StyleLength::points(base + inset);
+  auto base = value.isPoints() ? Float{value.value().unwrap()} : Float{0};
+  return StyleLength::points(
+      std::max(std::max(base, inset) - contentInset, Float{0}));
 }
 
 } // namespace
@@ -131,22 +137,31 @@ void ScrollContentViewShadowNode::applySafeAreaPadding() {
     const ScrollContentViewState& state,
     LayoutDirection layoutDirection) {
   const auto& insets = state.safeAreaPadding;
+  const auto& contentInsets = state.contentInsetAdjustment;
   auto swap = state.swapLeftAndRightInRTL;
-  if (insets.top != 0 || insets.bottom != 0) {
+  if (insets.top != 0 || insets.bottom != 0 || contentInsets.top != 0 ||
+      contentInsets.bottom != 0) {
     auto top = padded(
-        resolvedPadding(style, Edge::Top, layoutDirection, swap), insets.top);
+        resolvedPadding(style, Edge::Top, layoutDirection, swap),
+        insets.top,
+        contentInsets.top);
     auto bottom = padded(
         resolvedPadding(style, Edge::Bottom, layoutDirection, swap),
-        insets.bottom);
+        insets.bottom,
+        contentInsets.bottom);
     style.setPadding(Edge::Top, top);
     style.setPadding(Edge::Bottom, bottom);
   }
-  if (insets.left != 0 || insets.right != 0) {
+  if (insets.left != 0 || insets.right != 0 || contentInsets.left != 0 ||
+      contentInsets.right != 0) {
     auto left = padded(
-        resolvedPadding(style, Edge::Left, layoutDirection, swap), insets.left);
+        resolvedPadding(style, Edge::Left, layoutDirection, swap),
+        insets.left,
+        contentInsets.left);
     auto right = padded(
         resolvedPadding(style, Edge::Right, layoutDirection, swap),
-        insets.right);
+        insets.right,
+        contentInsets.right);
     // The logical edges take precedence over every other padding edge along
     // the row. The physical edges are cleared, since at layout they are copied
     // over the logical ones when left and right swap in RTL.

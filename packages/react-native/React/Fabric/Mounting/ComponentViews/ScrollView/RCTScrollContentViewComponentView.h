@@ -17,11 +17,19 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCTScrollContentViewComponentView : RCTViewComponentView
 
 /*
- * The safe area the content is laid out clear of, as padding on top of the content container's own. The enclosing
+ * The safe area the content is laid out clear of, as a floor on the content container's own padding. The enclosing
  * scroll view sets the pair of insets across its scrollable axis, and zero while its `contentInsetAdjustmentBehavior`
  * is `never`.
  */
-@property (nonatomic, assign) UIEdgeInsets safeAreaPadding;
+@property (nonatomic, readonly) UIEdgeInsets safeAreaPadding;
+
+/*
+ * The content inset UIKit adds for the safe area along the scrollable axis, which the content container's own padding
+ * on those edges counts toward. The enclosing scroll view sets the pair of insets along its scrollable axis.
+ */
+@property (nonatomic, readonly) UIEdgeInsets contentInsetAdjustment;
+
+- (void)setSafeAreaPadding:(UIEdgeInsets)safeAreaPadding contentInsetAdjustment:(UIEdgeInsets)contentInsetAdjustment;
 
 @end
 

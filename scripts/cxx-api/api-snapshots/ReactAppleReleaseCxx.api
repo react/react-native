@@ -1597,7 +1597,9 @@ interface RCTScheduler : public NSObject {
 }
 
 interface RCTScrollContentViewComponentView : public RCTViewComponentView {
-  public @property (assign) UIEdgeInsets safeAreaPadding;
+  public @property (assign, readonly) UIEdgeInsets contentInsetAdjustment;
+  public @property (assign, readonly) UIEdgeInsets safeAreaPadding;
+  public virtual void setSafeAreaPadding:contentInsetAdjustment:(UIEdgeInsets safeAreaPadding, UIEdgeInsets contentInsetAdjustment);
 }
 
 interface RCTScrollEvent : public NSObject <RCTEvent> {

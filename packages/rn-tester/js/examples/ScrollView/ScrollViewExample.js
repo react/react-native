@@ -360,7 +360,7 @@ const examples: Array<RNTesterModuleExample> = [
   {
     title: '<ScrollView> Content Inset Adjustment Behavior\n',
     description:
-      'How the safe area modifies the content area of a full screen ScrollView: along the scrollable axis it becomes content insets, across it the content container is padded.',
+      'How the safe area modifies the content area of a full screen ScrollView: along the scrollable axis it becomes content insets, across it the content container is padded, and on every edge the container padding counts toward it.',
     platform: 'ios',
     render(): React.Node {
       return <ContentInsetAdjustmentBehaviorExample />;
@@ -1548,13 +1548,16 @@ const FULL_SCREEN_ITEMS = [...Array(40)].map((_, i) => `Item ${i}`);
 const ContentInsetAdjustmentBehaviorExample = () => {
   const [visible, setVisible] = useState(false);
   const [horizontal, setHorizontal] = useState(false);
+  const [underHeader, setUnderHeader] = useState(false);
   const [behavior, setBehavior] =
     useState<(typeof CONTENT_INSET_ADJUSTMENT_BEHAVIORS)[number]>('automatic');
   return (
     <View>
       <RNTesterText>
         Opens a full screen ScrollView that extends under the system UI,
-        including the rail on iPhone Duo and the notch in landscape.
+        including the rail on iPhone Duo and the notch in landscape. "under
+        header" places a custom header above it, so it starts clear of the
+        status bar.
       </RNTesterText>
       <Button onPress={() => setVisible(true)} label="Open full screen" />
       <Modal
@@ -1563,6 +1566,11 @@ const ContentInsetAdjustmentBehaviorExample = () => {
         supportedOrientations={['portrait', 'landscape']}
         visible={visible}
         onRequestClose={() => setVisible(false)}>
+        {underHeader && (
+          <View style={styles.fullScreenHeader}>
+            <Text style={styles.fullScreenHeaderTitle}>Under header</Text>
+          </View>
+        )}
         <ScrollView
           horizontal={horizontal}
           style={styles.fullScreenScrollView}
@@ -1584,10 +1592,17 @@ const ContentInsetAdjustmentBehaviorExample = () => {
                 onPress={() => setHorizontal(!horizontal)}
                 label={horizontal ? 'horizontal' : 'vertical'}
               />
+              <Button
+                active={underHeader}
+                onPress={() => setUnderHeader(!underHeader)}
+                label="under header"
+              />
               <Button onPress={() => setVisible(false)} label="Close" />
             </View>
           </View>
-          {FULL_SCREEN_ITEMS.map(createItemRow)}
+          {FULL_SCREEN_ITEMS.map((msg, index) => (
+            <Item key={index} msg={msg} style={styles.fullScreenItem} />
+          ))}
         </ScrollView>
       </Modal>
     </View>
@@ -1830,12 +1845,37 @@ const styles = StyleSheet.create({
   fullScreenScrollView: {
     backgroundColor: '#eeeeee',
   },
+  // A stand-in for a navigation bar: tall enough to clear the status bar on
+  // every iPhone, with the title along its bottom edge.
+  fullScreenHeader: {
+    height: 104,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 10,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#cccccc',
+  },
+  fullScreenHeaderTitle: {
+    fontSize: 19,
+    fontWeight: '600',
+  },
   fullScreenContentContainer: {
     backgroundColor: '#aae3b6',
+    padding: 20,
+    gap: 12,
   },
   fullScreenControls: {
-    backgroundColor: '#eeeeee',
-    paddingVertical: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 8,
+  },
+  fullScreenItem: {
+    margin: 0,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
   },
   rowTitle: {
     flex: 1,
