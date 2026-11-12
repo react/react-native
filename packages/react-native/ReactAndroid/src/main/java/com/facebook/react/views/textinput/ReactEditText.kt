@@ -75,6 +75,7 @@ import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.EventDispatcher
+import com.facebook.react.uimanager.events.KeyValue
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderStyle
 import com.facebook.react.uimanager.style.LogicalEdge
@@ -145,6 +146,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var touchDownY = 0f
   private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
   private var onKeyPress = false
+  private var isDeadKeyPending = false
   private val textAttributes: TextAttributes
   private var typefaceDirty = false
   private var fontFamily: String? = null
@@ -376,6 +378,34 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     }
   }
 
+  override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+    val character = KeyValue.typedCharacter(event)
+    if (onKeyPress && !event.isSystem) {
+      eventDispatcher?.dispatchEvent(
+          ReactTextInputKeyPressEvent(
+              UIManagerHelper.getSurfaceId(this),
+              id,
+              KeyValue.of(keyCode, composeWithPendingDeadKey(character)),
+              event.metaState,
+          )
+      )
+    }
+    val handled = super.onKeyDown(keyCode, event)
+    isDeadKeyPending =
+        KeyValue.isDeadKey(character) || (isDeadKeyPending && KeyEvent.isModifierKey(keyCode))
+    return handled
+  }
+
+  // QwertyKeyListener leaves a dead key's accent selected and composes it with the next character.
+  private fun composeWithPendingDeadKey(character: Int): Int {
+    val text = text
+    if (!isDeadKeyPending || character == 0 || text == null || selectionEnd - selectionStart != 1) {
+      return character
+    }
+    val composed = KeyEvent.getDeadChar(text[selectionStart].code, character)
+    return if (composed != 0) composed else character
+  }
+
   // Consume 'Enter' key events: TextView tries to give focus to the next TextInput, but it can't
   // since we only allow JS to change focus, which in turn causes TextView to crash.
   override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
@@ -545,6 +575,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       FLog.e(TAG, "onSelectionChanged[$id]: $selStart $selEnd")
     }
 
+    isDeadKeyPending = false
     super.onSelectionChanged(selStart, selEnd)
     if (selectionWatcher != null && hasFocus()) {
       selectionWatcher?.onSelectionChanged(selStart, selEnd)

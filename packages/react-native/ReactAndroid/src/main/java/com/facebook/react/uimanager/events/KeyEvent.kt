@@ -19,7 +19,7 @@ internal abstract class KeyEvent(
 
   // Extract all needed data from keyEvent immediately to avoid storing the AndroidKeyEvent itself
   private val keyCode: Int = keyEvent.keyCode
-  private val unicodeChar: Int = keyEvent.unicodeChar
+  private val key: String = KeyValue.of(keyEvent)
   private val isAltPressed: Boolean = keyEvent.isAltPressed
   private val isCtrlPressed: Boolean = keyEvent.isCtrlPressed
   private val isMetaPressed: Boolean = keyEvent.isMetaPressed
@@ -35,7 +35,7 @@ internal abstract class KeyEvent(
     eventData.putInt("target", viewTag)
 
     // W3C KeyboardEvent properties
-    eventData.putString("key", getKeyString())
+    eventData.putString("key", key)
     eventData.putString("code", getCodeString())
 
     // Modifier keys
@@ -48,13 +48,6 @@ internal abstract class KeyEvent(
     eventData.putDouble("timestamp", timestampMs.toDouble())
 
     return eventData
-  }
-
-  private fun getKeyString(): String {
-    return when {
-      unicodeChar != 0 && !Character.isISOControl(unicodeChar) -> unicodeChar.toChar().toString()
-      else -> KEY_NAME_MAP[keyCode] ?: UNIDENTIFIED
-    }
   }
 
   private fun getCodeString(): String {
@@ -126,30 +119,6 @@ internal abstract class KeyEvent(
               AndroidKeyEvent.KEYCODE_DPAD_LEFT to "ArrowLeft",
               AndroidKeyEvent.KEYCODE_DPAD_RIGHT to "ArrowRight",
               AndroidKeyEvent.KEYCODE_DPAD_CENTER to "Enter",
-          )
-        }
-
-    private val KEY_NAME_MAP: Map<Int, String> by
-        lazy(LazyThreadSafetyMode.PUBLICATION) {
-          mapOf(
-              AndroidKeyEvent.KEYCODE_ENTER to "Enter",
-              AndroidKeyEvent.KEYCODE_DPAD_CENTER to "Enter",
-              AndroidKeyEvent.KEYCODE_SPACE to " ",
-              AndroidKeyEvent.KEYCODE_TAB to "Tab",
-              AndroidKeyEvent.KEYCODE_DEL to "Backspace",
-              AndroidKeyEvent.KEYCODE_ESCAPE to "Escape",
-              AndroidKeyEvent.KEYCODE_SHIFT_LEFT to "Shift",
-              AndroidKeyEvent.KEYCODE_SHIFT_RIGHT to "Shift",
-              AndroidKeyEvent.KEYCODE_CTRL_LEFT to "Control",
-              AndroidKeyEvent.KEYCODE_CTRL_RIGHT to "Control",
-              AndroidKeyEvent.KEYCODE_ALT_LEFT to "Alt",
-              AndroidKeyEvent.KEYCODE_ALT_RIGHT to "Alt",
-              AndroidKeyEvent.KEYCODE_META_LEFT to "Meta",
-              AndroidKeyEvent.KEYCODE_META_RIGHT to "Meta",
-              AndroidKeyEvent.KEYCODE_DPAD_UP to "ArrowUp",
-              AndroidKeyEvent.KEYCODE_DPAD_DOWN to "ArrowDown",
-              AndroidKeyEvent.KEYCODE_DPAD_LEFT to "ArrowLeft",
-              AndroidKeyEvent.KEYCODE_DPAD_RIGHT to "ArrowRight",
           )
         }
   }
