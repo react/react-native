@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9568202bd43aba18de332e6d411a0458>>
+ * @generated SignedSource<<dc0dd2029ab8fac9f979a1666f49318d>>
  * @flow strict
  * @noformat
  */
@@ -585,7 +585,7 @@ export const useNestedScrollViewAndroid: Getter<boolean> = createNativeFlagGette
 /**
  * Use shared animation backend in C++ Animated
  */
-export const useSharedAnimatedBackend: Getter<boolean> = createNativeFlagGetter('useSharedAnimatedBackend', false);
+export const useSharedAnimatedBackend: Getter<boolean> = createNativeFlagGetter('useSharedAnimatedBackend', true);
 /**
  * Use Trait::hidden on Android
  */
