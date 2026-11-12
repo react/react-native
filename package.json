@@ -73,7 +73,7 @@
     "@react-native/metro-babel-transformer": "0.87.0-main",
     "@react-native/metro-config": "0.87.0-main",
     "@tsconfig/node22": "22.0.2",
-    "@types/react": "^19.1.0",
+    "@types/react": "^19.3.0",
     "@typescript-eslint/parser": "^8.59.2",
     "ansi-regex": "^5.0.0",
     "ansi-styles": "^4.2.1",
