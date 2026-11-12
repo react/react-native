@@ -35,6 +35,7 @@
 #include <react/utils/ReactNativeVersion.h>
 #include <react/utils/SharedFunction.h>
 #include <react/utils/Telemetry.h>
+#include <react/utils/TokenStreamWriter.h>
 #include <react/utils/fnv1a.h>
 #include <react/utils/hash_combine.h>
 #include <react/utils/toLower.h>
