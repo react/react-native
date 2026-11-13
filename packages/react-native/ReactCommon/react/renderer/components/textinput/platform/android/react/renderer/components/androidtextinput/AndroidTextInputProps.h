@@ -17,6 +17,7 @@
 #include <react/renderer/components/textinput/BaseTextInputProps.h>
 #include <react/renderer/components/textinput/basePrimitives.h>
 #include <unordered_map>
+#include <vector>
 
 namespace facebook::react {
 
@@ -108,6 +109,16 @@ class AndroidTextInputProps final : public BaseTextInputProps {
   bool includeFontPadding{false};
   std::string fontWeight{};
   std::string fontFamily{};
+  std::optional<std::vector<std::string>> fontVariant{};
+
+  /*
+   * Whether JS listens to these events. ReactTextInputManager only sets up the
+   * native watchers for them when these props are sent.
+   */
+  bool onKeyPress{false};
+  bool onSelectionChange{false};
+  bool onContentSizeChange{false};
+  bool onScroll{false};
 
   /**
    * Auxiliary information to detect if these props are set or not.
