@@ -8,6 +8,7 @@
 package com.facebook.react.views.drawer
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -21,6 +22,7 @@ import com.facebook.react.R
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.HasChildPressedStateDelay
+import com.facebook.react.uimanager.HiddenSubtreeFocusHelper
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole
 import com.facebook.react.uimanager.events.NativeGestureUtil.notifyNativeGestureEnded
 import com.facebook.react.uimanager.events.NativeGestureUtil.notifyNativeGestureStarted
@@ -66,6 +68,16 @@ public class ReactDrawerLayout(reactContext: ReactContext) :
 
   override fun shouldDelayChildPressedState(): Boolean =
       hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
+
+  override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    super.addFocusables(views, direction, focusableMode)
+    HiddenSubtreeFocusHelper.removeHiddenFocusables(this, views, firstAddedIndex)
+  }
+
+  override fun onRequestFocusInDescendants(direction: Int, previouslyFocusedRect: Rect?): Boolean =
+      !HiddenSubtreeFocusHelper.hidesDescendants(this) &&
+          super.onRequestFocusInDescendants(direction, previouslyFocusedRect)
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     try {
