@@ -237,11 +237,17 @@ RCT_EXPORT_MODULE()
     for (UIWindowScene *scene in RCTSharedApplication().connectedScenes) {
       [windows addObjectsFromArray:scene.windows];
     }
+    // Look for a React Native root view (RCTSurfaceHostingView, RCTSurfaceView or RCTRootView), not only for
+    // mounted content. When the bundle fails to load no RCTView is ever mounted, and the dev menu is how the
+    // developer points the app at a reachable bundler.
+    NSArray<NSString *> *reactViewClassNamePrefixes = @[ @"RCTView", @"RCTSurface", @"RCTRootView" ];
     for (UIWindow *window in windows) {
       NSString *recursiveDescription = [window valueForKey:@"recursiveDescription"];
-      if ([recursiveDescription containsString:@"RCTView"]) {
-        [self show];
-        return;
+      for (NSString *classNamePrefix in reactViewClassNamePrefixes) {
+        if ([recursiveDescription containsString:classNamePrefix]) {
+          [self show];
+          return;
+        }
       }
     }
   }
