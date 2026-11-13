@@ -109,6 +109,15 @@ class AndroidTextInputProps final : public BaseTextInputProps {
   std::string fontWeight{};
   std::string fontFamily{};
 
+  /*
+   * Whether JS listens to these events. ReactTextInputManager only sets up the
+   * native watchers for them when these props are sent.
+   */
+  bool onKeyPress{false};
+  bool onSelectionChange{false};
+  bool onContentSizeChange{false};
+  bool onScroll{false};
+
   /**
    * Auxiliary information to detect if these props are set or not.
    * See AndroidTextInputComponentDescriptor for usage.
