@@ -1220,6 +1220,7 @@ public class ReactHostImpl(
                 JSBundleLoader.createCachedBundleFromNetworkLoader(
                     bundleURL,
                     asyncDevSupportManager.downloadedJSBundleFile,
+                    asyncDevSupportManager.downloadedJSBundleRevisionId,
                 )
             taskCompletionSource.setResult(bundleLoader)
           }

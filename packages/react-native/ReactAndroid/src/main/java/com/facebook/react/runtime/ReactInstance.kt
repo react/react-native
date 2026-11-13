@@ -316,6 +316,7 @@ internal class ReactInstance(
               loadSynchronously: Boolean,
           ) {
             context.sourceURL = sourceURL
+            ReactJavaScriptLoads.willExecute(sourceURL, fileName, bundleLoader.revisionId)
             loadJSBundleFromFile(fileName, sourceURL)
           }
 
@@ -325,6 +326,7 @@ internal class ReactInstance(
               loadSynchronously: Boolean,
           ) {
             context.sourceURL = assetURL
+            ReactJavaScriptLoads.willExecute(assetURL, null, null)
             loadJSBundleFromAssets(assetManager, assetURL)
           }
 
@@ -476,6 +478,7 @@ internal class ReactInstance(
   }
 
   fun registerSegment(segmentId: Int, path: String) {
+    ReactJavaScriptLoads.willExecute(path, path, null)
     registerSegmentNative(segmentId, path)
   }
 

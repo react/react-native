@@ -20,6 +20,13 @@ const invariant = require('invariant');
 const MetroHMRClient = require('metro-runtime/src/modules/HMRClient');
 const prettyFormat = require('pretty-format');
 
+declare var global: {
+  __HMR_UPDATE_REPORTER__?: {
+    onUpdate: (update: Readonly<{revisionId: ?string, ...}>) => void,
+  },
+  ...
+};
+
 const pendingEntryPoints = [];
 let hmrClient = null;
 let hmrUnavailableReason: string | null = null;
@@ -235,11 +242,15 @@ Error: ${e.message}`;
       }
     });
 
-    client.on('update', ({isInitialUpdate}) => {
+    client.on('update', ({isInitialUpdate, revisionId}) => {
+      // Runs after the client applied the update, or stashed it until Fast
+      // Refresh is enabled. An update that throws while it runs is not
+      // reported.
       if (client.isEnabled() && !isInitialUpdate) {
         dismissRedbox();
         LogBox.clearAllLogs();
       }
+      global.__HMR_UPDATE_REPORTER__?.onUpdate({revisionId});
     });
 
     client.on('update-done', body => {

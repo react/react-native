@@ -60,6 +60,16 @@
 using namespace facebook;
 using namespace facebook::react;
 
+static NSDictionary<NSString *, id> *
+RCTJavaScriptLoadUserInfo(RCTBridgeProxy *_Nullable bridgeProxy, NSURL *_Nullable url, NSString *_Nullable revisionId)
+{
+  NSMutableDictionary<NSString *, id> *userInfo = [NSMutableDictionary new];
+  userInfo[@"bridge"] = bridgeProxy;
+  userInfo[@"url"] = url;
+  userInfo[@"revisionId"] = revisionId;
+  return userInfo;
+}
+
 @interface RCTInstance () <RCTTurboModuleManagerDelegate, RCTEventDispatcherObserver>
 @end
 
@@ -227,6 +237,11 @@ using namespace facebook::react;
 - (void)registerSegmentWithId:(NSNumber *)segmentId path:(NSString *)path
 {
   if (_valid) {
+    RCTMarkJavaScriptStartedExecuting();
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:RCTJavaScriptWillStartExecutingNotification
+                      object:self
+                    userInfo:RCTJavaScriptLoadUserInfo(_bridgeProxy, path ? [NSURL fileURLWithPath:path] : nil, nil)];
     _reactInstance->registerSegment(static_cast<uint32_t>([segmentId unsignedIntValue]), path.UTF8String);
   }
 }
@@ -606,13 +621,27 @@ using namespace facebook::react;
   auto script = std::make_unique<NSDataBigString>(source.data);
   const auto *url = deriveSourceURL(source.url).UTF8String;
 
-  auto beforeLoad = [waitUntilModuleSetupComplete = self->_waitUntilModuleSetupComplete](jsi::Runtime &_) {
+  NSURL *sourceURL = source.url;
+  NSString *revisionId = source.revisionId;
+  __weak __typeof(self) weakSelf = self;
+  auto beforeLoad = [waitUntilModuleSetupComplete = self->_waitUntilModuleSetupComplete,
+                     weakSelf,
+                     sourceURL,
+                     revisionId](jsi::Runtime &) {
     if (waitUntilModuleSetupComplete) {
       waitUntilModuleSetupComplete();
     }
+    // Posted synchronously on the JS thread right before the bundle runs, so observers learn of every bundle that
+    // starts executing, including one that throws before afterLoad.
+    __strong __typeof(weakSelf) strongSelf = weakSelf;
+    RCTMarkJavaScriptStartedExecuting();
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:RCTJavaScriptWillStartExecutingNotification
+                      object:strongSelf
+                    userInfo:RCTJavaScriptLoadUserInfo(
+                                 strongSelf ? strongSelf->_bridgeProxy : nil, sourceURL, revisionId)];
   };
-  __weak __typeof(self) weakSelf = self;
-  auto afterLoad = [weakSelf](jsi::Runtime &) {
+  auto afterLoad = [weakSelf, sourceURL](jsi::Runtime &) {
     [[NSNotificationCenter defaultCenter] postNotificationName:@"RCTInstanceDidLoadBundle" object:nil];
     __strong __typeof(weakSelf) strongSelf = weakSelf;
     if (strongSelf) {
@@ -620,9 +649,10 @@ using namespace facebook::react;
       // afterLoad runs on the JS thread; post on main like the legacy bridge so
       // RCTJavaScriptDidLoadNotification observers aren't invoked off-main.
       RCTExecuteOnMainQueue(^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:RCTJavaScriptDidLoadNotification
-                                                            object:strongSelf
-                                                          userInfo:bridgeProxy ? @{@"bridge" : bridgeProxy} : @{}];
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:RCTJavaScriptDidLoadNotification
+                          object:strongSelf
+                        userInfo:RCTJavaScriptLoadUserInfo(bridgeProxy, sourceURL, nil)];
       });
     }
   };

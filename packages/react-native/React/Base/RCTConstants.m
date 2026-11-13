@@ -7,6 +7,8 @@
 
 #import "RCTConstants.h"
 
+#import <stdatomic.h>
+
 NSString *const RCTPlatformName = @"ios";
 
 NSString *const RCTUserInterfaceStyleDidChangeNotification = @"RCTUserInterfaceStyleDidChangeNotification";
@@ -24,6 +26,22 @@ NSString *const RCTDidInitializeModuleNotificationModuleKey = @"module";
 
 NSString *const RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED =
     @"RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED";
+
+static atomic_bool *RCTJavaScriptStartedExecuting(void)
+{
+  static atomic_bool started = false;
+  return &started;
+}
+
+BOOL RCTHasJavaScriptStartedExecuting(void)
+{
+  return atomic_load(RCTJavaScriptStartedExecuting());
+}
+
+void RCTMarkJavaScriptStartedExecuting(void)
+{
+  atomic_store(RCTJavaScriptStartedExecuting(), true);
+}
 
 /*
  * W3C Pointer Events

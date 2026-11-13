@@ -27,6 +27,7 @@ NSString *const RCTJavaScriptLoaderErrorDomain = @"RCTJavaScriptLoaderErrorDomai
   NSUInteger _length;
   NSInteger _filesChangedCount;
   NSURL *_downloadedBundleFileURL;
+  NSString *_revisionId;
 }
 
 @end
@@ -223,6 +224,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 static void parseHeaders(NSDictionary *headers, RCTSource *source)
 {
   source->_filesChangedCount = [headers[@"X-Metro-Files-Changed-Count"] integerValue];
+  id revisionId = headers[@"X-Metro-Delta-ID"];
+  if ([revisionId isKindOfClass:[NSString class]] && [revisionId length] > 0) {
+    source->_revisionId = [revisionId copy];
+  }
 }
 
 static NSURL *persistDownloadedBundle(NSData *data, NSError **error)

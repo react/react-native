@@ -10,6 +10,7 @@
 #import <OCMock/OCMock.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBundleManager.h>
+#import <React/RCTConstants.h>
 #import <React/RCTJavaScriptLoader.h>
 #import <React/RCTSurfacePresenter.h>
 #import <ReactCommon/RCTHermesInstance.h>
@@ -240,6 +241,117 @@ static void (^sOnInit)(void);
       initCountAtBundleLoad,
       1u,
       @"FakeEagerModule -init must have fully returned before the JS bundle finishes loading");
+}
+
+- (void)testPostsTheBundleURLAndRevisionBeforeTheBundleRunsAndAfterItLoads
+{
+  OCMStub([_mockDelegate unstableModulesRequiringMainQueueSetup]).andReturn(@[]);
+  NSURL *bundleURL = [NSURL URLWithString:@"file:///empty.bundle"];
+  RCTSource *emptySource = OCMClassMock([RCTSource class]);
+  OCMStub([emptySource url]).andReturn(bundleURL);
+  OCMStub([emptySource revisionId]).andReturn(@"rev-1");
+  OCMStub([emptySource data]).andReturn([NSData data]);
+  OCMStub([_mockDelegate loadBundleAtURL:[OCMArg any] onProgress:[OCMArg any] onComplete:[OCMArg any]])
+      .andDo(^(NSInvocation *invocation) {
+        __unsafe_unretained RCTSourceLoadBlock onComplete;
+        [invocation getArgument:&onComplete atIndex:4];
+        onComplete(nil, emptySource);
+      });
+
+  NSMutableArray<NSString *> *order = [NSMutableArray new];
+  __block NSDictionary *willExecuteUserInfo = nil;
+  __block BOOL startedBeforeWillExecute = NO;
+  __block NSDictionary *didLoadUserInfo = nil;
+  XCTestExpectation *willExecute = [self expectationWithDescription:RCTJavaScriptWillStartExecutingNotification];
+  XCTestExpectation *didLoad = [self expectationWithDescription:RCTJavaScriptDidLoadNotification];
+  NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+  id willExecuteObserver = [center addObserverForName:RCTJavaScriptWillStartExecutingNotification
+                                               object:nil
+                                                queue:nil
+                                           usingBlock:^(NSNotification *notification) {
+                                             @synchronized(order) {
+                                               [order addObject:@"willExecute"];
+                                             }
+                                             willExecuteUserInfo = notification.userInfo;
+                                             startedBeforeWillExecute = RCTHasJavaScriptStartedExecuting();
+                                             [willExecute fulfill];
+                                           }];
+  _bundleLoadObserver = [center addObserverForName:@"RCTInstanceDidLoadBundle"
+                                            object:nil
+                                             queue:nil
+                                        usingBlock:^(NSNotification *_) {
+                                          @synchronized(order) {
+                                            [order addObject:@"didLoadBundle"];
+                                          }
+                                        }];
+  id didLoadObserver = [center addObserverForName:RCTJavaScriptDidLoadNotification
+                                           object:nil
+                                            queue:nil
+                                       usingBlock:^(NSNotification *notification) {
+                                         didLoadUserInfo = notification.userInfo;
+                                         [didLoad fulfill];
+                                       }];
+
+  RCTInstance *instance = [self makeInstance];
+  [self waitForExpectations:@[ willExecute, didLoad ] timeout:10.0];
+  [instance invalidate];
+  [center removeObserver:willExecuteObserver];
+  [center removeObserver:didLoadObserver];
+
+  XCTAssertEqualObjects(willExecuteUserInfo[@"url"], bundleURL);
+  XCTAssertEqualObjects(willExecuteUserInfo[@"revisionId"], @"rev-1");
+  XCTAssertNotNil(willExecuteUserInfo[@"bridge"]);
+  XCTAssertTrue(startedBeforeWillExecute);
+  XCTAssertEqualObjects(didLoadUserInfo[@"url"], bundleURL);
+  XCTAssertNotNil(didLoadUserInfo[@"bridge"]);
+  @synchronized(order) {
+    XCTAssertEqualObjects(order, (@[ @"willExecute", @"didLoadBundle" ]));
+  }
+}
+
+- (void)testPostsTheSegmentURLBeforeTheSegmentIsRegistered
+{
+  OCMStub([_mockDelegate unstableModulesRequiringMainQueueSetup]).andReturn(@[]);
+  RCTSource *emptySource = OCMClassMock([RCTSource class]);
+  OCMStub([emptySource url]).andReturn([NSURL URLWithString:@"file:///empty.bundle"]);
+  OCMStub([emptySource data]).andReturn([NSData data]);
+  OCMStub([_mockDelegate loadBundleAtURL:[OCMArg any] onProgress:[OCMArg any] onComplete:[OCMArg any]])
+      .andDo(^(NSInvocation *invocation) {
+        __unsafe_unretained RCTSourceLoadBlock onComplete;
+        [invocation getArgument:&onComplete atIndex:4];
+        onComplete(nil, emptySource);
+      });
+  XCTestExpectation *didLoad = [self expectationWithDescription:RCTJavaScriptDidLoadNotification];
+  NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+  id didLoadObserver = [center addObserverForName:RCTJavaScriptDidLoadNotification
+                                           object:nil
+                                            queue:nil
+                                       usingBlock:^(NSNotification *_) {
+                                         [didLoad fulfill];
+                                       }];
+  RCTInstance *instance = [self makeInstance];
+  [self waitForExpectations:@[ didLoad ] timeout:10.0];
+  [center removeObserver:didLoadObserver];
+
+  NSMutableArray<NSDictionary *> *willExecuteUserInfos = [NSMutableArray new];
+  id willExecuteObserver = [center addObserverForName:RCTJavaScriptWillStartExecutingNotification
+                                               object:nil
+                                                queue:nil
+                                           usingBlock:^(NSNotification *notification) {
+                                             @synchronized(willExecuteUserInfos) {
+                                               [willExecuteUserInfos addObject:notification.userInfo ?: @{}];
+                                             }
+                                           }];
+  [instance registerSegmentWithId:@7 path:@"/segments/missing-7.js"];
+  [center removeObserver:willExecuteObserver];
+  [instance invalidate];
+
+  @synchronized(willExecuteUserInfos) {
+    XCTAssertEqual(willExecuteUserInfos.count, 1u);
+    XCTAssertEqualObjects(willExecuteUserInfos.firstObject[@"url"], [NSURL fileURLWithPath:@"/segments/missing-7.js"]);
+    XCTAssertNil(willExecuteUserInfos.firstObject[@"revisionId"]);
+    XCTAssertNotNil(willExecuteUserInfos.firstObject[@"bridge"]);
+  }
 }
 
 - (void)testInvalidateDoesNotDeadlockWhenSuspendCallsIntoJS

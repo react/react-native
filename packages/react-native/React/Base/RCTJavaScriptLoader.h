@@ -76,6 +76,13 @@ NS_ENUM(NSInteger){
  */
 @property (strong, nonatomic, readonly) NSURL *downloadedBundleFileURL;
 
+/**
+ * The bundler's identifier for the revision of the module graph this bundle was
+ * built from, taken from the `X-Metro-Delta-ID` response header. nil when the
+ * bundle was not served by a bundler that sends one (e.g. read from disk).
+ */
+@property (copy, nonatomic, readonly) NSString *revisionId;
+
 @end
 
 typedef void (^RCTSourceLoadProgressBlock)(RCTLoadingProgress *progressData);
