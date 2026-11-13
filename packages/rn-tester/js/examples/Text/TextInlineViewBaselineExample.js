@@ -28,6 +28,7 @@ const TALL_LINE_HEIGHT = 48;
 const FONT_FAMILY = 'Helvetica';
 const SERIF_FONT_FAMILY = 'TimesNewRomanPSMT';
 const SPACING = 8;
+const DISPLAY_DECIMAL_PLACES = 3;
 
 type Sample = Readonly<{
   name: string,
@@ -108,8 +109,6 @@ function InlineViewBaselineSample({
     });
   }, [baseline]);
 
-  const error =
-    baseline != null && bottom != null ? bottom - baseline : undefined;
   const content = (
     <>
       {'Hg '}
@@ -147,11 +146,11 @@ function InlineViewBaselineSample({
         allowFontScaling={false}
         testID={`${name}-metrics`}
         style={styles.metrics}>
-        {error == null
-          ? baseline == null
-            ? 'Measuring...'
-            : 'View measurement unavailable'
-          : `baseline ${baseline?.toFixed(3)} | bottom ${bottom?.toFixed(3)} | error ${error.toFixed(3)} pt`}
+        {baseline == null
+          ? 'Measuring...'
+          : bottom == null
+            ? 'View measurement unavailable'
+            : `baseline ${baseline.toFixed(DISPLAY_DECIMAL_PLACES)} | bottom ${bottom.toFixed(DISPLAY_DECIMAL_PLACES)} | error ${(bottom - baseline).toFixed(DISPLAY_DECIMAL_PLACES)} pt`}
       </RNTesterText>
     </View>
   );
@@ -171,7 +170,7 @@ export function TextInlineViewBaselineExample(): React.Node {
         sample.
       </RNTesterText>
       <RNTesterText allowFontScaling={false} style={styles.metrics}>
-        {`One pixel: ${(1 / scale).toFixed(3)} pt | font scale: ${fontScale.toFixed(3)} (last sample only)`}
+        {`One pixel: ${(1 / scale).toFixed(DISPLAY_DECIMAL_PLACES)} pt | font scale: ${fontScale.toFixed(DISPLAY_DECIMAL_PLACES)} (last sample only)`}
       </RNTesterText>
       {SAMPLES.map(sample => (
         <InlineViewBaselineSample key={sample.name} {...sample} />
