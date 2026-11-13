@@ -226,6 +226,7 @@ RCT_EXPORT_MODULE()
 - (NSString *)getVerticalBarEdge
 {
   __block NSString *edge;
+  // NOLINTNEXTLINE(facebook-rct-unsafe-execute-on-main-queue-sync-check)
   RCTUnsafeExecuteOnMainQueueSync(^{
     edge = RCTVerticalBarEdge(RCTKeyWindow().traitCollection);
   });
