@@ -47,7 +47,7 @@
     "@babel/preset-env": "^7.25.3",
     "flow-estree": "0.340.0",
     "micromatch": "^4.0.4",
-    "prettier": "3.9.4",
+    "prettier": "3.10.0",
     "rimraf": "^3.0.2"
   },
   "peerDependencies": {
