@@ -105,9 +105,11 @@ class FuseboxReactDevToolsDispatcher {
   }
 }
 
-Object.defineProperty(global, '__FUSEBOX_REACT_DEVTOOLS_DISPATCHER__', {
-  value: FuseboxReactDevToolsDispatcher,
-  configurable: false,
-  enumerable: false,
-  writable: false,
-});
+if (global.__FUSEBOX_REACT_DEVTOOLS_DISPATCHER__ == null) {
+  Object.defineProperty(global, '__FUSEBOX_REACT_DEVTOOLS_DISPATCHER__', {
+    value: FuseboxReactDevToolsDispatcher,
+    configurable: false,
+    enumerable: false,
+    writable: false,
+  });
+}
