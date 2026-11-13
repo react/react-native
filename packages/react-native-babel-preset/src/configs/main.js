@@ -280,6 +280,7 @@ const getPreset = (src, options, babel) => {
           ...(preserveClassPrivate
             ? []
             : [
+                [require('@babel/plugin-transform-class-static-block')],
                 [require('@babel/plugin-transform-private-methods'), {loose}],
                 [
                   require('@babel/plugin-transform-private-property-in-object'),

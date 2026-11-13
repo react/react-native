@@ -36,6 +36,7 @@
     "@babel/plugin-transform-async-to-generator": "^7.24.7",
     "@babel/plugin-transform-block-scoping": "^7.25.0",
     "@babel/plugin-transform-class-properties": "^7.25.4",
+    "@babel/plugin-transform-class-static-block": "^7.26.0",
     "@babel/plugin-transform-classes": "^7.25.4",
     "@babel/plugin-transform-destructuring": "^7.24.8",
     "@babel/plugin-transform-flow-strip-types": "^7.25.2",
