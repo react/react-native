@@ -8,6 +8,8 @@
 package com.facebook.react.uimanager.drawable
 
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.SharedPreferences
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -256,6 +258,39 @@ class BoxShadowDrawableTest {
     verify(borderRadius, times(1)).resolve(any(), any(), any(), any())
   }
 
+  @Test
+  fun rtlShadowsWithoutARadiusOrInsetsReadNoSwapPreference() {
+    val countingContext = PreferenceCountingContext(context)
+    val shadows =
+        listOf(
+            insetShadow(null, drawableContext = countingContext),
+            outsetShadow(null, drawableContext = countingContext),
+        )
+    shadows.forEach {
+      it.bounds = Rect(0, 0, 100, 50)
+      it.layoutDirection = LayoutDirection.RTL
+    }
+
+    repeat(2) { shadows.forEach { it.draw(RecordingCanvas()) } }
+
+    assertThat(countingContext.preferenceReads).isZero()
+  }
+
+  @Test
+  fun ltrShadowsReadNoSwapPreference() {
+    val countingContext = PreferenceCountingContext(context)
+    val shadows =
+        listOf(
+            insetShadow(topLeftRoundedBy(8f), leftEdgeBy(3f), drawableContext = countingContext),
+            outsetShadow(topLeftRoundedBy(8f), drawableContext = countingContext),
+        )
+    shadows.forEach { it.bounds = Rect(0, 0, 100, 50) }
+
+    repeat(2) { shadows.forEach { it.draw(RecordingCanvas()) } }
+
+    assertThat(countingContext.preferenceReads).isZero()
+  }
+
   private fun setScreenDensity(density: Float) {
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics().apply { this.density = density })
   }
@@ -263,9 +298,10 @@ class BoxShadowDrawableTest {
   private fun insetShadow(
       borderRadius: BorderRadiusStyle?,
       borderInsets: BorderInsets? = null,
+      drawableContext: Context = context,
   ): InsetBoxShadowDrawable =
       InsetBoxShadowDrawable(
-          context = context,
+          context = drawableContext,
           shadowColor = Color.BLACK,
           offsetX = 2f,
           offsetY = 3f,
@@ -275,9 +311,12 @@ class BoxShadowDrawableTest {
           borderRadius = borderRadius,
       )
 
-  private fun outsetShadow(borderRadius: BorderRadiusStyle?): OutsetBoxShadowDrawable =
+  private fun outsetShadow(
+      borderRadius: BorderRadiusStyle?,
+      drawableContext: Context = context,
+  ): OutsetBoxShadowDrawable =
       OutsetBoxShadowDrawable(
-          context = context,
+          context = drawableContext,
           shadowColor = Color.BLACK,
           offsetX = 2f,
           offsetY = 3f,
@@ -319,6 +358,16 @@ class BoxShadowDrawableTest {
   private fun assertDrawsLike(drawable: Drawable, expected: Drawable) {
     assertThat(RecordingCanvas().also { drawable.draw(it) }.calls)
         .isEqualTo(RecordingCanvas().also { expected.draw(it) }.calls)
+  }
+
+  private class PreferenceCountingContext(base: Context) : ContextWrapper(base) {
+    var preferenceReads = 0
+      private set
+
+    override fun getSharedPreferences(name: String?, mode: Int): SharedPreferences {
+      preferenceReads += 1
+      return super.getSharedPreferences(name, mode)
+    }
   }
 
   /** Records each call a drawable makes as text, and every geometry object it hands the canvas. */

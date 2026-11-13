@@ -126,7 +126,9 @@ internal class OutsetBoxShadowDrawable(
     // Neither the density nor the RTL left/right swap preference notifies the drawable
     val density = PixelUtil.getDisplayMetricDensity()
     val swapsLeftAndRight =
-        layoutDirection == LayoutDirection.RTL && I18nUtil.instance.doLeftAndRightSwapInRTL(context)
+        layoutDirection == LayoutDirection.RTL &&
+            borderRadius != null &&
+            I18nUtil.instance.doLeftAndRightSwapInRTL(context)
     if (!needUpdatePath && density == pathDensity && swapsLeftAndRight == pathSwapsLeftAndRight) {
       return
     }
