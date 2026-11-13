@@ -244,6 +244,46 @@ describe('<Button>', () => {
       });
     });
 
+    describe('accessibilityLabelledBy', () => {
+      it('propagates accessibilityLabelledBy', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Button title="Hello" accessibilityLabelledBy="formLabel" />,
+          );
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['accessibilityLabelledBy']})
+            .toJSX(),
+        ).toEqual(
+          <rn-view accessibilityLabelledBy="[formLabel]">
+            <rn-paragraph>HELLO</rn-paragraph>
+          </rn-view>,
+        );
+      });
+
+      it('maps aria-labelledby to accessibilityLabelledBy', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<Button title="Hello" aria-labelledby="formLabel" />);
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['accessibilityLabelledBy']})
+            .toJSX(),
+        ).toEqual(
+          <rn-view accessibilityLabelledBy="[formLabel]">
+            <rn-paragraph>HELLO</rn-paragraph>
+          </rn-view>,
+        );
+      });
+    });
+
     describe('importantForAccessibility', () => {
       it('propagates "no-hide-descendants"', () => {
         const root = Fantom.createRoot();
