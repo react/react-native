@@ -62,8 +62,12 @@ export function getBuckModesForPlatform({
   enableCoverage: boolean,
   enableOptimized: boolean,
 }): ReadonlyArray<string> {
-  let mode = enableCoverage ? 'code-coverage' : enableOptimized ? 'opt' : 'dev';
+  const modes = ['@//xplat/mode/react-native/granite'];
+  if (enableOptimized) {
+    modes.push('@//xplat/mode/hermes/opt');
+  }
 
+  let sanitizer: ?('asan' | 'tsan') = null;
   if (enableOptimized) {
     if (EnvironmentOptions.enableASAN || EnvironmentOptions.enableTSAN) {
       printConsoleLog({
@@ -81,41 +85,60 @@ export function getBuckModesForPlatform({
         message:
           'ASAN and TSAN modes cannot be used together. Using ASAN mode as a fallback.',
       });
-      mode = 'dev-asan';
+      sanitizer = 'asan';
     } else if (EnvironmentOptions.enableASAN) {
-      mode = 'dev-asan';
+      sanitizer = 'asan';
     } else if (EnvironmentOptions.enableTSAN) {
-      mode = 'dev-tsan';
+      sanitizer = 'tsan';
     }
   }
 
-  let osPlatform;
   switch (os.platform()) {
-    case 'linux':
-      osPlatform = `@//arvr/mode/linux/${mode}`;
+    case 'linux': {
+      let mode = enableOptimized ? 'opt' : 'dev-nosan';
+      if (sanitizer != null) {
+        mode = `dev-${sanitizer}`;
+      } else if (enableCoverage) {
+        mode = enableOptimized ? 'opt-cov' : 'dev-cov';
+      }
+      modes.push(
+        `@//fbcode/mode/${mode}`,
+        // The tester and hermesc binaries are copied out of `buck-out`, so
+        // they cannot depend on shared libraries next to them.
+        '--modifier=ovr_config//build_mode/constraints:static',
+      );
       break;
+    }
     case 'darwin':
-      osPlatform =
-        /* $FlowFixMe[invalid-compare] Error discovered during Constant
-         * Condition roll out. See https://fburl.com/workplace/4oq3zi07. */
+      modes.push(
         os.arch() === 'arm64'
-          ? `@//arvr/mode/mac-arm/${mode}`
-          : `@//arvr/mode/mac/${mode}`;
+          ? '@//fbobjc/mode/macosx-arm64'
+          : '@//fbobjc/mode/macosx-x86_64',
+      );
+      // The macOS modes do not set the build mode constraint, which decides
+      // between `REACT_NATIVE_DEBUG` and `REACT_NATIVE_PRODUCTION`.
+      if (enableOptimized) {
+        modes.push(
+          '@//fbobjc/mode/production',
+          '--modifier=ovr_config//build_mode/constraints:opt',
+        );
+      } else {
+        modes.push('--modifier=ovr_config//build_mode/constraints:dev');
+      }
+      if (sanitizer != null) {
+        modes.push(`@//fbobjc/mode/${sanitizer}`);
+      } else if (enableCoverage) {
+        modes.push('@//fbobjc/mode/coverage');
+      }
       break;
     case 'win32':
-      osPlatform = `@//arvr/mode/win/${mode}`;
-      break;
+      throw new Error('Windows is not supported for Fantom');
     default:
       throw new Error(`Unsupported platform: ${os.platform()}`);
   }
 
-  const result: Array<string> = [
-    '@//xplat/mode/react-native/granite',
-    osPlatform,
-  ];
-
   if (enableCoverage) {
-    result.push(
+    modes.push(
       '-c',
       'code_coverage.enabled=filtered',
       '-c',
@@ -123,29 +146,7 @@ export function getBuckModesForPlatform({
     );
   }
 
-  // The coverage platform (e.g. `@//arvr/mode/linux/code-coverage`) pins the
-  // `core_build_mode` constraint to `opt`. `get_react_native_preprocessor_flags()`
-  // in `tools/build_defs/oss/rn_defs.bzl` selects on that constraint
-  // (`ovr_config//build_mode/constraints:{dev,opt}`) to decide between
-  // `-DREACT_NATIVE_DEBUG` and `-DREACT_NATIVE_PRODUCTION`. Under coverage it
-  // therefore compiles the native tester with `REACT_NATIVE_PRODUCTION`, which
-  // breaks dev-mode tests that use debug-only native APIs (e.g. timer mocking
-  // via `installHighResTimeStampMock`).
-  //
-  // Explicitly stack the `core_build_mode` constraint so the build reflects the
-  // test's intended dev/opt mode. This only overrides `core_build_mode`; the
-  // coverage instrumentation constraint and `-c code_coverage.*` flags above are
-  // left intact, so coverage is still collected.
-  if (enableCoverage) {
-    result.push(
-      '--modifier',
-      enableOptimized
-        ? 'ovr_config//build_mode/constraints:opt'
-        : 'ovr_config//build_mode/constraints:dev',
-    );
-  }
-
-  return result;
+  return modes;
 }
 
 export type AsyncCommandResult = {
