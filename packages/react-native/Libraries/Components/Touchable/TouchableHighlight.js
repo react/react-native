@@ -231,9 +231,8 @@ class TouchableHighlightImpl extends React.Component<
       'aria-selected': ariaSelected,
     } = this.props;
 
-    let _accessibilityState: ?AccessibilityState;
+    let _accessibilityState: ?AccessibilityState = accessibilityState;
     if (
-      accessibilityState != null ||
       ariaBusy != null ||
       ariaChecked != null ||
       ariaDisabled != null ||
