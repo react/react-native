@@ -6,7 +6,7 @@
  */
 
 plugins {
-  id("com.facebook.react")
+  id("com.facebook.react.library")
   id("com.android.library")
 }
 
