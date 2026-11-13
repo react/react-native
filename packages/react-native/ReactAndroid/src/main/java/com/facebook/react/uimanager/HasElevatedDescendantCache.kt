@@ -8,7 +8,6 @@
 package com.facebook.react.uimanager
 
 import android.view.ViewParent
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 
 /**
  * Implemented by views that cache whether their subtree contains a descendant with `elevation`, so
@@ -52,14 +51,10 @@ internal interface HasElevatedDescendantCache {
     /**
      * Marks the elevated-descendant cache stale on [start] and each ancestor, walking through any
      * intervening non-implementing container. This is O(depth) of flag writes; the actual subtree
-     * scan happens once, lazily, at the next draw. A no-op unless the feature flag is enabled, so
-     * the flag-off path costs nothing.
+     * scan happens once, lazily, at the next draw.
      */
     @JvmStatic
     fun invalidateAncestors(start: ViewParent?) {
-      if (!ReactNativeFeatureFlags.enableAndroidAutoOffscreenCompositingForElevation()) {
-        return
-      }
       var node: ViewParent? = start
       while (node != null) {
         val cache = node as? HasElevatedDescendantCache
