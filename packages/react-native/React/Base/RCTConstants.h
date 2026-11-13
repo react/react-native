@@ -23,11 +23,16 @@ RCT_EXTERN NSString *const RCTJavaScriptWillStartLoadingNotification;
 
 /**
  * This notification fires when the bridge starts executing the JS bundle.
+ * On iOS, `RCTInstance` posts it synchronously right before a bundle runs, on the JS thread, and right before a
+ * segment is registered, on the registering thread. `userInfo` holds the `bridge` and the bundle or segment file
+ * `url`. Observers must not use UIKit or wait on the main thread.
  */
 RCT_EXTERN NSString *const RCTJavaScriptWillStartExecutingNotification;
 
 /**
  * This notification fires when the bridge has finished loading the JS bundle.
+ * On iOS, `RCTInstance` posts it on the main thread after the bundle has run, with the `bridge` and the bundle's
+ * `url` in `userInfo`.
  */
 RCT_EXTERN NSString *const RCTJavaScriptDidLoadNotification;
 
