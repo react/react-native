@@ -38,6 +38,26 @@ using Content = ParagraphShadowNode::Content;
 // NOLINTNEXTLINE(facebook-hte-CArray, modernize-avoid-c-arrays)
 const char ParagraphComponentName[] = "Paragraph";
 
+/* static */ ShadowNodeTraits ParagraphShadowNode::BaseTraits() {
+  auto traits = ConcreteViewShadowNode::BaseTraits();
+  traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
+  traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
+  traits.set(ShadowNodeTraits::Trait::BaselineYogaNode);
+
+#ifdef ANDROID
+  // Unsetting `FormsStackingContext` trait is essential on Android where we
+  // can't mount views inside `TextView`. `PreparedLayoutTextView` is a
+  // `ViewGroup`, so inline views can be mounted inside of it and clipped.
+  // T221699219: This should be removed when PreparedLayoutTextView is rolled
+  // out.
+  if (!ReactNativeFeatureFlags::enablePreparedTextLayout()) {
+    traits.unset(ShadowNodeTraits::Trait::FormsStackingContext);
+  }
+#endif
+
+  return traits;
+}
+
 void ParagraphShadowNode::initialize() noexcept {
 #ifdef ANDROID
   if (getConcreteProps().isSelectable) {
