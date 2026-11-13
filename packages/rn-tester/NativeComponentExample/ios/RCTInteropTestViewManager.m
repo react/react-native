@@ -8,6 +8,8 @@
 #import "RCTInteropTestViewManager.h"
 #import "RCTInteropTestView.h"
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 @implementation InteropTestViewManager
 
 RCT_EXPORT_MODULE(InteropTestView)
@@ -18,3 +20,5 @@ RCT_EXPORT_MODULE(InteropTestView)
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

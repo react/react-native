@@ -21,6 +21,8 @@
 
 typedef void (^RCTViewManagerUIBlock)(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry);
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 @interface RCTViewManager : NSObject <RCTBridgeModule>
 
 /**
@@ -119,3 +121,5 @@ typedef void (^RCTViewManagerUIBlock)(RCTUIManager *uiManager, NSDictionary<NSNu
 CGFloat RCTJSONParseOnlyNumber(id json);
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
