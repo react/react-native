@@ -141,6 +141,13 @@ void UIManager::updateShadowTree(
           // Add all its ancestors to shadowNodesToUpdate list
           addAncestorsToUpdateList(
               shadowNode, rootShadowNode, shadowNodesToUpdate);
+
+          // Every node and its ancestors are in the list, so the rest of the
+          // tree does not need to be visited.
+          if (remainingTagToProps.empty()) {
+            deque.clear();
+            break;
+          }
         }
         for (const auto& child : shadowNode->getChildren()) {
           deque.push_back(child);
