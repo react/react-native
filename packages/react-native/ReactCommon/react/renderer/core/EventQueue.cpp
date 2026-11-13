@@ -35,7 +35,8 @@ void EventQueue::enqueueEvent(RawEvent&& rawEvent) const {
           // for the same target. If the same target has event types A1, B1
           // in the event queue and event A2 occurs. A1 has to stay in the
           // queue.
-          if (it->isUnique && it->type == rawEvent.type) {
+          if (it->isUnique && it->type == rawEvent.type &&
+              it->coalescingKey == rawEvent.coalescingKey) {
             repeatedEvent = it;
           }
 
