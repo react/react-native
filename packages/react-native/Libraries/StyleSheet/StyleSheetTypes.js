@@ -769,7 +769,24 @@ type RadialGradientValue = {
   }>,
 };
 
-export type BackgroundImageValue = LinearGradientValue | RadialGradientValue;
+type ConicGradientValue = {
+  type: 'conic-gradient',
+  from?: string,
+  position?: RadialGradientPosition,
+  colorStops: ReadonlyArray<
+    | {
+        color: ____ColorValue_Internal,
+        positions?: ReadonlyArray<string>,
+      }
+    | {
+        color?: null,
+        positions: Readonly<[string]>,
+      },
+  >,
+};
+
+export type BackgroundImageValue =
+  LinearGradientValue | RadialGradientValue | ConicGradientValue;
 
 export type BackgroundSizeValue = {
   x: string | number,
