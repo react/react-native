@@ -176,6 +176,7 @@ class XMLHttpRequest extends EventTarget {
   upload: XMLHttpRequestEventTarget = new XMLHttpRequestEventTarget();
 
   _requestId: ?number;
+  _requestGeneration: number = 0;
   _subscriptions: Array<EventSubscription>;
 
   _aborted: boolean = false;
@@ -204,6 +205,7 @@ class XMLHttpRequest extends EventTarget {
   }
 
   _reset(): void {
+    this._requestGeneration++;
     this.readyState = this.UNSENT;
     this.responseHeaders = undefined;
     this.status = 0;
@@ -591,6 +593,7 @@ class XMLHttpRequest extends EventTarget {
       throw new Error('Request has already been sent');
     }
     this._sent = true;
+    const requestGeneration = this._requestGeneration;
     const incrementalEvents =
       this._incrementalEvents || !!this.onreadystatechange || !!this.onprogress;
 
@@ -661,7 +664,13 @@ class XMLHttpRequest extends EventTarget {
         nativeResponseType,
         incrementalEvents,
         this.timeout,
-        (requestId: number) => this.__didCreateRequest(requestId),
+        (requestId: number) => {
+          if (requestGeneration !== this._requestGeneration) {
+            RCTNetworking.abortRequest(requestId);
+            return;
+          }
+          this.__didCreateRequest(requestId);
+        },
         this.withCredentials,
       );
     };
