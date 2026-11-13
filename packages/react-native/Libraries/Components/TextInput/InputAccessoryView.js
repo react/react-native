@@ -76,6 +76,10 @@ const InputAccessoryView: React.ComponentType<InputAccessoryViewProps> = (
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
+    // The native host only anchors the accessory: its children are moved into
+    // the keyboard's input accessory view, while the host keeps a screen-wide
+    // frame in the layout and would otherwise swallow touches under it.
+    pointerEvents: 'box-none',
   },
   safeAreaView: {
     flex: 1,
