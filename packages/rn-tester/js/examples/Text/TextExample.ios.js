@@ -15,6 +15,7 @@ import type {RNTesterModule} from '../../types/RNTesterTypes';
 import hotdog from '../../assets/hotdog.jpg';
 import RNTesterText from '../../components/RNTesterText';
 import TextLegend from '../../components/TextLegend';
+import {TextInlineViewBaselineExample} from './TextInlineViewBaselineExample';
 import TextSharedExamples from './TextSharedExamples';
 import TextWidthModeExample from './TextWidthModeExample';
 
@@ -1353,6 +1354,11 @@ const examples = [
   {
     title: 'Inline views',
     render: (): React.Node => <TextInlineView.Basic />,
+  },
+  {
+    title: 'Inline view baseline alignment',
+    name: 'inline-view-baseline',
+    render: (): React.Node => <TextInlineViewBaselineExample />,
   },
   {
     title: 'Inline views with line height',
