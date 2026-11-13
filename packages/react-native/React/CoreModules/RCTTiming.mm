@@ -103,6 +103,10 @@ static NSTimeInterval RCTMonotonicTime()
   BOOL _sendIdleEvents;
   BOOL _inBackground;
   id<RCTTimingDelegate> _timingDelegate;
+  // The run loop of the thread that creates timers (the JS thread). Every method that touches the
+  // timer state runs there; app lifecycle notifications, posted on the main thread, are forwarded
+  // to it (see -performOnTimingThread:).
+  CFRunLoopRef _timingRunLoop;
 }
 
 @synthesize paused = _paused;
@@ -127,11 +131,16 @@ static NSTimeInterval RCTMonotonicTime()
   _paused = YES;
   _timers = [NSMutableDictionary new];
   _inBackground = NO;
+  __weak RCTTiming *weakSelf = self;
   RCTExecuteOnMainQueue(^{
-    if (!self->_inBackground &&
-        ([RCTSharedApplication() applicationState] == UIApplicationStateBackground ||
-         [UIDevice currentDevice].proximityState)) {
-      [self appDidMoveToBackground];
+    if ([RCTSharedApplication() applicationState] == UIApplicationStateBackground ||
+        [UIDevice currentDevice].proximityState) {
+      [weakSelf performOnTimingThread:^{
+        RCTTiming *strongSelf = weakSelf;
+        if (strongSelf && !strongSelf->_inBackground) {
+          [strongSelf appDidMoveToBackground];
+        }
+      }];
     }
   });
 
@@ -141,14 +150,14 @@ static NSTimeInterval RCTMonotonicTime()
          UIApplicationWillTerminateNotification
        ]) {
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(appDidMoveToBackground)
+                                             selector:@selector(appDidMoveToBackgroundNotification)
                                                  name:name
                                                object:nil];
   }
 
   for (NSString *name in @[ UIApplicationDidBecomeActiveNotification, UIApplicationWillEnterForegroundNotification ]) {
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(appDidMoveToForeground)
+                                             selector:@selector(appDidMoveToForegroundNotification)
                                                  name:name
                                                object:nil];
   }
@@ -162,6 +171,54 @@ static NSTimeInterval RCTMonotonicTime()
 - (void)dealloc
 {
   [_sleepTimer invalidate];
+  if (_timingRunLoop) {
+    CFRelease(_timingRunLoop);
+  }
+}
+
+/**
+ * Runs `block` on the thread that creates timers.
+ *
+ * App lifecycle notifications are posted on the main thread, while the rest of this class runs on
+ * the timers thread. Handling them inline made two threads write `_paused` and `_inBackground`
+ * without synchronization, and installed the background NSTimer (-scheduleSleepTimer:) on the
+ * main run loop in NSDefaultRunLoopMode. That timer does not fire while the main thread is busy
+ * or in another run loop mode — as during a Face ID prompt — and the timers thread can then only
+ * move its fire date, so every JS timer stalls. Forwarding keeps all timer state, and the sleep
+ * timer, on one thread.
+ *
+ * Before the first timer is created the timers thread is unknown; there is no timer to race with
+ * then, so the block runs in place.
+ */
+- (void)performOnTimingThread:(dispatch_block_t)block
+{
+  CFRunLoopRef runLoop = NULL;
+  @synchronized(self) {
+    if (!_timingRunLoop || _timingRunLoop == CFRunLoopGetCurrent()) {
+      block();
+      return;
+    }
+    runLoop = (CFRunLoopRef)CFRetain(_timingRunLoop);
+  }
+  CFRunLoopPerformBlock(runLoop, kCFRunLoopCommonModes, block);
+  CFRunLoopWakeUp(runLoop);
+  CFRelease(runLoop);
+}
+
+- (void)appDidMoveToBackgroundNotification
+{
+  __weak RCTTiming *weakSelf = self;
+  [self performOnTimingThread:^{
+    [weakSelf appDidMoveToBackground];
+  }];
+}
+
+- (void)appDidMoveToForegroundNotification
+{
+  __weak RCTTiming *weakSelf = self;
+  [self performOnTimingThread:^{
+    [weakSelf appDidMoveToForeground];
+  }];
 }
 
 - (void)invalidate
@@ -190,11 +247,14 @@ static NSTimeInterval RCTMonotonicTime()
 - (void)proximityChanged
 {
   BOOL isClose = [UIDevice currentDevice].proximityState;
-  if (isClose) {
-    [self appDidMoveToBackground];
-  } else {
-    [self appDidMoveToForeground];
-  }
+  __weak RCTTiming *weakSelf = self;
+  [self performOnTimingThread:^{
+    if (isClose) {
+      [weakSelf appDidMoveToBackground];
+    } else {
+      [weakSelf appDidMoveToForeground];
+    }
+  }];
 }
 
 - (void)stopTimers
@@ -349,6 +409,12 @@ static NSTimeInterval RCTMonotonicTime()
                jsSchedulingTime:(NSDate *)jsSchedulingTime
                         repeats:(BOOL)repeats
 {
+  @synchronized(self) {
+    if (!_timingRunLoop) {
+      _timingRunLoop = (CFRunLoopRef)CFRetain(CFRunLoopGetCurrent());
+    }
+  }
+
   NSTimeInterval jsSchedulingOverhead = MAX(-jsSchedulingTime.timeIntervalSinceNow, 0);
 
   NSTimeInterval targetTime = jsDuration - jsSchedulingOverhead;
