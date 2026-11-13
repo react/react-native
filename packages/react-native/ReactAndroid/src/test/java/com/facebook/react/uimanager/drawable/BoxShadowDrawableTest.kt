@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable
 import android.util.DisplayMetrics
 import android.util.LayoutDirection
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.modules.i18nmanager.I18nUtil
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
@@ -48,12 +49,13 @@ class BoxShadowDrawableTest {
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics().apply { density = 2f })
+    setScreenDensity(2f)
   }
 
   @After
   fun tearDown() {
     DisplayMetricsHolder.setScreenDisplayMetrics(null)
+    I18nUtil.instance.swapLeftAndRightInRTL(context, true)
   }
 
   @Test
@@ -183,6 +185,81 @@ class BoxShadowDrawableTest {
     assertDrawsLike(drawable, expected)
   }
 
+  @Test
+  fun insetShadowFollowsADensityChange() {
+    val drawable = insetShadow(roundedBy(8f), allEdgesBy(3f)).withBounds(Rect(0, 0, 100, 50))
+    drawable.draw(RecordingCanvas())
+
+    setScreenDensity(3f)
+
+    val expected = insetShadow(roundedBy(8f), allEdgesBy(3f)).withBounds(Rect(0, 0, 100, 50))
+    assertDrawsLike(drawable, expected)
+  }
+
+  @Test
+  fun outsetShadowFollowsADensityChange() {
+    val drawable = outsetShadow(roundedBy(8f)).withBounds(Rect(0, 0, 100, 50))
+    drawable.draw(RecordingCanvas())
+
+    setScreenDensity(3f)
+
+    assertDrawsLike(drawable, outsetShadow(roundedBy(8f)).withBounds(Rect(0, 0, 100, 50)))
+  }
+
+  @Test
+  fun insetShadowFollowsTheLeftAndRightSwapPreferenceInRtl() {
+    val drawable = insetShadow(topLeftRoundedBy(8f), leftEdgeBy(3f)).withBounds(Rect(0, 0, 100, 50))
+    drawable.layoutDirection = LayoutDirection.RTL
+    drawable.draw(RecordingCanvas())
+
+    I18nUtil.instance.swapLeftAndRightInRTL(context, false)
+
+    val expected = insetShadow(topLeftRoundedBy(8f), leftEdgeBy(3f)).withBounds(Rect(0, 0, 100, 50))
+    expected.layoutDirection = LayoutDirection.RTL
+    assertDrawsLike(drawable, expected)
+  }
+
+  @Test
+  fun outsetShadowFollowsTheLeftAndRightSwapPreferenceInRtl() {
+    val drawable = outsetShadow(topLeftRoundedBy(8f)).withBounds(Rect(0, 0, 100, 50))
+    drawable.layoutDirection = LayoutDirection.RTL
+    drawable.draw(RecordingCanvas())
+
+    I18nUtil.instance.swapLeftAndRightInRTL(context, false)
+
+    val expected = outsetShadow(topLeftRoundedBy(8f)).withBounds(Rect(0, 0, 100, 50))
+    expected.layoutDirection = LayoutDirection.RTL
+    assertDrawsLike(drawable, expected)
+  }
+
+  @Test
+  fun insetShadowInRtlKeepsItsGeometryAcrossDraws() {
+    val borderRadius = spy(topLeftRoundedBy(8f))
+    val drawable = insetShadow(borderRadius, leftEdgeBy(3f)).withBounds(Rect(0, 0, 100, 50))
+    drawable.layoutDirection = LayoutDirection.RTL
+
+    drawable.draw(RecordingCanvas())
+    drawable.draw(RecordingCanvas())
+
+    verify(borderRadius, times(1)).resolve(any(), any(), any(), any())
+  }
+
+  @Test
+  fun outsetShadowInRtlKeepsItsGeometryAcrossDraws() {
+    val borderRadius = spy(topLeftRoundedBy(8f))
+    val drawable = outsetShadow(borderRadius).withBounds(Rect(0, 0, 100, 50))
+    drawable.layoutDirection = LayoutDirection.RTL
+
+    drawable.draw(RecordingCanvas())
+    drawable.draw(RecordingCanvas())
+
+    verify(borderRadius, times(1)).resolve(any(), any(), any(), any())
+  }
+
+  private fun setScreenDensity(density: Float) {
+    DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics().apply { this.density = density })
+  }
+
   private fun insetShadow(
       borderRadius: BorderRadiusStyle?,
       borderInsets: BorderInsets? = null,
@@ -217,6 +294,15 @@ class BoxShadowDrawableTest {
 
   private fun startRoundedBy(radius: Float): BorderRadiusStyle =
       BorderRadiusStyle().apply { set(BorderRadiusProp.BORDER_TOP_START_RADIUS, points(radius)) }
+
+  private fun topLeftRoundedBy(radius: Float): BorderRadiusStyle =
+      BorderRadiusStyle().apply { set(BorderRadiusProp.BORDER_TOP_LEFT_RADIUS, points(radius)) }
+
+  private fun allEdgesBy(width: Float): BorderInsets =
+      BorderInsets().apply { setBorderWidth(LogicalEdge.ALL, width) }
+
+  private fun leftEdgeBy(width: Float): BorderInsets =
+      BorderInsets().apply { setBorderWidth(LogicalEdge.LEFT, width) }
 
   private fun <T : Drawable> T.withBounds(bounds: Rect): T = apply { this.bounds = bounds }
 

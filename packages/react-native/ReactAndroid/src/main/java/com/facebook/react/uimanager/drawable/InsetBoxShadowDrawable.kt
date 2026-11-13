@@ -18,8 +18,11 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import android.util.LayoutDirection
 import androidx.annotation.RequiresApi
+import com.facebook.react.modules.i18nmanager.I18nUtil
 import com.facebook.react.uimanager.FilterHelper
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.style.BorderInsets
@@ -59,6 +62,8 @@ internal class InsetBoxShadowDrawable(
       }
 
   private var needUpdatePath = true
+  private var pathDensity = 0f
+  private var pathSwapsLeftAndRight = false
   private val paddingBoxRect = RectF()
   private val paddingBoxRadii = FloatArray(8)
   private var hasPaddingBoxRadii = false
@@ -130,10 +135,16 @@ internal class InsetBoxShadowDrawable(
   }
 
   private fun updatePath() {
-    if (!needUpdatePath) {
+    // Neither the density nor the RTL left/right swap preference notifies the drawable
+    val density = PixelUtil.getDisplayMetricDensity()
+    val swapsLeftAndRight =
+        layoutDirection == LayoutDirection.RTL && I18nUtil.instance.doLeftAndRightSwapInRTL(context)
+    if (!needUpdatePath && density == pathDensity && swapsLeftAndRight == pathSwapsLeftAndRight) {
       return
     }
     needUpdatePath = false
+    pathDensity = density
+    pathSwapsLeftAndRight = swapsLeftAndRight
 
     val computedBorderRadii = computeBorderRadii()
     val computedBorderInsets = computeBorderInsets()
