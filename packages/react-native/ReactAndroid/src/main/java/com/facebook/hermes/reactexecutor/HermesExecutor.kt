@@ -10,32 +10,15 @@ package com.facebook.hermes.reactexecutor
 import com.facebook.jni.HybridData
 import com.facebook.jni.annotations.DoNotStrip
 import com.facebook.react.bridge.JavaScriptExecutor
-import com.facebook.react.common.build.ReactBuildConfig
-import com.facebook.soloader.SoLoader
 
 public class HermesExecutor internal constructor(enableDebugger: Boolean, debuggerName: String) :
     JavaScriptExecutor(initHybridDefaultConfig(enableDebugger, debuggerName)) {
 
-  override fun getName(): String = "HermesExecutor$mode"
+  override fun getName(): String = "HermesExecutor"
 
   public companion object {
-    private var mode: String? = null
-
-    init {
-      loadLibrary()
-    }
-
-    @JvmStatic
-    @Throws(UnsatisfiedLinkError::class)
-    public fun loadLibrary() {
-      if (mode == null) {
-        // libhermesvm must be loaded explicitly to invoke its JNI_OnLoad.
-        SoLoader.loadLibrary("hermesvm")
-        SoLoader.loadLibrary("hermes_executor")
-        // libhermes_executor is built differently for Debug & Release so we load the proper mode.
-        mode = if (ReactBuildConfig.DEBUG) "Debug" else "Release"
-      }
-    }
+    /** Retained for compatibility; this method no longer loads native libraries. */
+    @JvmStatic public fun loadLibrary() {}
 
     @DoNotStrip
     @JvmStatic
