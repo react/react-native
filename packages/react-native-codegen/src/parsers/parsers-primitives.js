@@ -61,7 +61,7 @@ const {
   wrapNullable,
 } = require('./parsers-commons');
 const {nullGuard} = require('./parsers-utils');
-const {isModuleRegistryCall} = require('./utils');
+const {getTypeArguments, isModuleRegistryCall} = require('./utils');
 
 function emitBoolean(nullable: boolean): Nullable<BooleanTypeAnnotation> {
   return wrapNullable(nullable, {
@@ -348,7 +348,7 @@ function emitPromise(
     parser,
   );
 
-  const elementType = typeAnnotation.typeParameters.params[0];
+  const elementType = getTypeArguments(typeAnnotation).params[0];
   if (
     elementType.type === 'ExistsTypeAnnotation' ||
     elementType.type === 'EmptyTypeAnnotation'
@@ -364,7 +364,7 @@ function emitPromise(
     try {
       elementTypeResult = translateTypeAnnotation(
         hasteModuleName,
-        typeAnnotation.typeParameters.params[0],
+        getTypeArguments(typeAnnotation).params[0],
         types,
         aliasMap,
         enumMap,
@@ -574,7 +574,7 @@ function emitArrayType(
     enumMap,
     cxxOnly,
     typeAnnotation.type,
-    typeAnnotation.typeParameters.params[0],
+    getTypeArguments(typeAnnotation).params[0],
     nullable,
     translateTypeAnnotation,
     parser,

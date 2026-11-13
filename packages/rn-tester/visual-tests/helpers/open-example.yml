@@ -5,9 +5,17 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 - waitForAnimationToEnd:
     timeout: 30000
 - openLink: ${EXAMPLE_URL}
-- waitForAnimationToEnd:
-    timeout: 15000
-- openLink: ${EXAMPLE_URL}
+# On a slow Android emulator, the first link can arrive before the JS Linking
+# listener is registered and be dropped, so Android sends it again once settled.
+# On iOS, each link raises an "Open in RNTester?" dialog, so it's sent once and
+# accepted. A second, unaccepted dialog leaves RNTester on the previous screen.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - waitForAnimationToEnd:
+          timeout: 15000
+      - openLink: ${EXAMPLE_URL}
 - runFlow:
     when:
       platform: iOS

@@ -254,6 +254,7 @@ const UIManagerOverrides = {
 // $FlowFixMe[incompatible-type] Flow cannot infer properties from descriptors.
 const UIManager: UIManagerJSInterface = Object.create(
   Object.getPrototypeOf(UIManagerImpl),
+  // $FlowFixMe[cannot-spread-interface]
   {
     ...Object.getOwnPropertyDescriptors(
       // $FlowFixMe[class-object-subtyping] UIManagerImpl is a runtime object.

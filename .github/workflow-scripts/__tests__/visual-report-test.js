@@ -20,7 +20,9 @@ const {
 } = require('../visual/report');
 const {
   approvalKey,
+  baselineImageKey,
   baselinePrefix,
+  blobKey,
   publicUrl,
   reportPrefix,
 } = require('../visual/storage');
@@ -49,7 +51,20 @@ describe('visual reports and approval', () => {
     });
 
     test.each([
+      ['blobs', `blobs/${'a'.repeat(64)}.png`],
+      [null, `baselines/ios-x-0123abcd/${SHA_A}/text/basic/default.png`],
+    ])('finds a baseline image with imageStore %p', (imageStore, key) => {
+      expect(
+        baselineImageKey(
+          {environmentKey: 'ios-x-0123abcd', sha: SHA_A, imageStore},
+          {id: 'text/basic/default', sha256: 'a'.repeat(64)},
+        ),
+      ).toBe(key);
+    });
+
+    test.each([
       [() => baselinePrefix('k', 'main')],
+      [() => blobKey('../x')],
       [
         () =>
           reportPrefix({prNumber: -1, headSha: SHA_A, runId: 1, runAttempt: 1}),

@@ -16,8 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.facebook.react.R
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.HasElevatedDescendantCache
 import org.assertj.core.api.Assertions.assertThat
@@ -98,8 +96,7 @@ class ReactViewGroupTest {
   }
 
   @Test
-  fun `auto offscreen compositing - true when flag on, alpha lt 1, and elevated descendant`() {
-    overrideAutoOffscreenFlag(true)
+  fun `auto offscreen compositing - true when alpha lt 1 and there is an elevated descendant`() {
     val rvg = ReactViewGroup(context)
     mount(rvg, elevatedChild())
     rvg.alpha = 0.5f
@@ -111,7 +108,6 @@ class ReactViewGroupTest {
     // Returning true at full opacity is what bakes the offscreen decision into the RenderNode, so a
     // later alpha change -- including a native-driver opacity animation -- composites uniformly. No
     // layer is actually allocated until alpha < 1, so this costs nothing while opaque.
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     mount(rvg, elevatedChild())
     rvg.alpha = 1f
@@ -120,7 +116,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - false when there is no elevated descendant`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     mount(rvg, View(context))
     rvg.alpha = 0.5f
@@ -128,17 +123,7 @@ class ReactViewGroupTest {
   }
 
   @Test
-  fun `auto offscreen compositing - false when flag is off`() {
-    overrideAutoOffscreenFlag(false)
-    val rvg = ReactViewGroup(context)
-    mount(rvg, elevatedChild())
-    rvg.alpha = 0.5f
-    assertThat(rvg.hasOverlappingRendering()).isFalse()
-  }
-
-  @Test
   fun `auto offscreen compositing - detects a nested elevated descendant`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     val inner = ReactViewGroup(context)
     inner.addView(elevatedChild())
@@ -149,7 +134,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - detects an elevated view inside a non-ReactViewGroup container`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     val container = FrameLayout(context)
     container.addView(elevatedChild())
@@ -160,7 +144,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - invalidation bubbles through a non-ReactViewGroup ancestor`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     val container = FrameLayout(context)
     val inner = ReactViewGroup(context)
@@ -177,7 +160,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - reflects an elevated child added after a prior query`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     rvg.alpha = 0.5f
     assertThat(rvg.hasOverlappingRendering()).isFalse()
@@ -187,7 +169,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - false once the elevated descendant is removed`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     val child = elevatedChild()
     mount(rvg, child)
@@ -198,7 +179,7 @@ class ReactViewGroupTest {
   }
 
   @Test
-  fun `needsOffscreenAlphaCompositing forces overlapping rendering regardless of flag`() {
+  fun `needsOffscreenAlphaCompositing forces overlapping rendering`() {
     val rvg = ReactViewGroup(context)
     rvg.setNeedsOffscreenAlphaCompositing(true)
     assertThat(rvg.hasOverlappingRendering()).isTrue()
@@ -206,7 +187,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - recycling a child invalidates the parent`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     val inner = ReactViewGroup(context)
     inner.addView(elevatedChild())
@@ -219,7 +199,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - counts an elevated descendant that is currently clipped out`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     rvg.left = 0
     rvg.right = 100
@@ -246,7 +225,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - invalidateAncestors refreshes an outer ReactViewGroup across a nested one`() {
-    overrideAutoOffscreenFlag(true)
     val outer = ReactViewGroup(context)
     val inner = ReactViewGroup(context)
     mount(outer, inner)
@@ -261,7 +239,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - invalidateElevatedDescendantCache reports whether it changed state`() {
-    overrideAutoOffscreenFlag(true)
     val rvg = ReactViewGroup(context)
     rvg.addView(elevatedChild())
     // Prime the cache.
@@ -274,7 +251,6 @@ class ReactViewGroupTest {
 
   @Test
   fun `auto offscreen compositing - invalidateAncestors short-circuits at an already-stale node`() {
-    overrideAutoOffscreenFlag(true)
     val outer = ReactViewGroup(context)
     val inner = ReactViewGroup(context)
     mount(outer, elevatedChild()) // direct elevated child, scanned first
@@ -299,14 +275,6 @@ class ReactViewGroupTest {
   private fun unmount(parent: ReactViewGroup, child: View) {
     parent.removeView(child)
     HasElevatedDescendantCache.invalidateAncestors(parent)
-  }
-
-  private fun overrideAutoOffscreenFlag(enabled: Boolean) {
-    ReactNativeFeatureFlags.override(
-        object : ReactNativeFeatureFlagsDefaults() {
-          override fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = enabled
-        },
-    )
   }
 
   private fun elevatedChild(): View = View(context).apply { elevation = 10f }

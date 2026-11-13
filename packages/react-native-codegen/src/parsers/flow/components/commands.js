@@ -19,6 +19,7 @@ import type {
 import type {Parser} from '../../parser';
 import type {TypeDeclarationMap} from '../../utils';
 
+const {getTypeArguments} = require('../../utils');
 const {getValueFromTypes} = require('../utils.js');
 
 // $FlowFixMe[unclear-type] there's no flowtype for ASTs
@@ -114,7 +115,7 @@ function buildCommandSchema(
         returnType = {
           type: 'ArrayTypeAnnotation',
           elementType: getCommandArrayElementTypeType(
-            paramValue.typeParameters.params[0],
+            getTypeArguments(paramValue).params[0],
             parser,
           ),
         };

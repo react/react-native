@@ -764,7 +764,6 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public bool disableIntervalMomentum;
   public bool horizontal;
   public bool isInvertedVirtualizedList;
-  public bool padsContentForSafeArea;
   public bool pagingEnabled;
   public bool persistentScrollbar;
   public bool pinchGestureEnabled;
@@ -3902,12 +3901,14 @@ struct facebook::react::AnimatedPropBase {
 }
 
 struct facebook::react::AnimatedProps {
+  public std::optional<std::string> text;
   public std::unique_ptr<facebook::react::RawProps> rawProps;
   public std::vector<std::unique_ptr<facebook::react::AnimatedPropBase>> props;
 }
 
 struct facebook::react::AnimatedPropsBuilder {
   public facebook::react::AnimatedProps get();
+  public std::optional<std::string> text;
   public std::unique_ptr<facebook::react::RawProps> rawProps;
   public std::vector<std::unique_ptr<facebook::react::AnimatedPropBase>> props;
   public void setAlignContent(facebook::yoga::Align value);
@@ -3958,6 +3959,7 @@ struct facebook::react::AnimatedPropsBuilder {
   public void setShadowOffset(facebook::react::Size value);
   public void setShadowOpacity(Float value);
   public void setShadowRadius(Float value);
+  public void setText(std::string value);
   public void setTransform(const facebook::react::Transform& t);
   public void setTransformOrigin(const facebook::react::TransformOrigin& value);
   public void setWidth(facebook::yoga::Style::SizeLength value);

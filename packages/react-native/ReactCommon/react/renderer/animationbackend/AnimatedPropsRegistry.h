@@ -24,6 +24,7 @@ struct PropsSnapshot {
   std::unique_ptr<BaseViewProps> props;
   std::unordered_set<PropName> propNames;
   std::unique_ptr<folly::dynamic> rawProps;
+  std::optional<std::string> text;
 };
 
 struct SurfaceContext {
@@ -38,6 +39,13 @@ using SnapshotMap = std::unordered_map<Tag, std::unique_ptr<PropsSnapshot>>;
  * drivers. A null value is kept, so it still resets the prop on commit.
  */
 void mergeAnimatedRawProps(folly::dynamic &target, const folly::dynamic &source);
+
+/*
+ * The children to clone `shadowNode` with so that its first RawText child shows
+ * `text`. React can replace a RawText, so it is looked up on every clone.
+ */
+std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>
+childrenWithText(const ShadowNode &shadowNode, const ShadowNodeFragment &fragment, const std::string &text);
 
 class AnimatedPropsRegistry {
  public:
