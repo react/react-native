@@ -31,6 +31,10 @@ public open class ReactSwipeRefreshLayout(reactContext: ReactContext) :
 
   override var hasChildPressedStateDelay: Boolean? = null
 
+  init {
+    clipChildren = false
+  }
+
   public override fun setRefreshing(refreshing: Boolean) {
     this.refreshing = refreshing
 
