@@ -146,7 +146,7 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
         //
         // The result of this operation is the new `nativeProps_DEPRECATED`.
         family.nativeProps_DEPRECATED =
-            std::make_shared<ShadowNodeFamily::NativeProps_DEPRECATED>(
+            std::make_unique<ShadowNodeFamily::NativeProps_DEPRECATED>(
                 ShadowNodeFamily::NativeProps_DEPRECATED{
                     .props = mergeDynamicProps(
                         family.nativeProps_DEPRECATED->props, // source
@@ -473,7 +473,7 @@ void UIManager::setNativeProps_DEPRECATED(
       // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'. Value from
       // `rawProps` overrides what was previously in `nativeProps_DEPRECATED`.
       family.nativeProps_DEPRECATED =
-          std::make_shared<ShadowNodeFamily::NativeProps_DEPRECATED>(
+          std::make_unique<ShadowNodeFamily::NativeProps_DEPRECATED>(
               ShadowNodeFamily::NativeProps_DEPRECATED{
                   .props = mergeDynamicProps(
                       family.nativeProps_DEPRECATED->props,
@@ -481,7 +481,7 @@ void UIManager::setNativeProps_DEPRECATED(
                       NullValueStrategy::Override)});
     } else {
       family.nativeProps_DEPRECATED =
-          std::make_shared<ShadowNodeFamily::NativeProps_DEPRECATED>(
+          std::make_unique<ShadowNodeFamily::NativeProps_DEPRECATED>(
               ShadowNodeFamily::NativeProps_DEPRECATED{
                   .props = (folly::dynamic)rawProps});
     }

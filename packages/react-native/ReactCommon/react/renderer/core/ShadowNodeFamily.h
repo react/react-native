@@ -124,15 +124,11 @@ class ShadowNodeFamily final : public jsi::NativeState {
   void dispatchRawState(StateUpdate &&stateUpdate, EventQueue::UpdateMode updateMode);
 
   struct NativeProps_DEPRECATED {
-    /*
-     * Not modified once set: `nativeProps_DEPRECATED` is replaced instead.
-     */
     folly::dynamic props;
 
     /*
      * The props of a shadow node that already include `props`, so that
-     * cloning that node doesn't apply them again. Guarded by
-     * `nativePropsMutex`.
+     * cloning that node doesn't apply them again.
      */
     std::shared_ptr<const Props> appliedProps;
   };
@@ -140,9 +136,10 @@ class ShadowNodeFamily final : public jsi::NativeState {
   /*
    * Holds currently applied native props. `nullptr` if setNativeProps API is
    * not used. It is used to backport setNativeProps API from the old
-   * architecture and will be removed in the future.
+   * architecture and will be removed in the future. Guarded by
+   * `nativePropsMutex`.
    */
-  mutable std::shared_ptr<NativeProps_DEPRECATED> nativeProps_DEPRECATED;
+  mutable std::unique_ptr<NativeProps_DEPRECATED> nativeProps_DEPRECATED;
   mutable std::mutex nativePropsMutex;
 
   /**
