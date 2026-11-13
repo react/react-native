@@ -109,6 +109,15 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    */
   mutable yoga::Node yogaNode_;
 
+  /*
+   * Whether `layout()` has to compute `overflowInset` again because the props
+   * or the children of this node changed since its last layout. Children with
+   * a new layout, which include all children when the size of this node
+   * changes, are checked in `layout()` itself. Subclasses that change the
+   * layout metrics of their children after `layout()` have to set it.
+   */
+  bool overflowInsetNeedsUpdate_{true};
+
  private:
   void updateYogaChildrenOwnersIfNeeded();
 

@@ -1210,6 +1210,7 @@ class facebook::react::ViewShadowNode : public facebook::react::ConcreteViewShad
 }
 
 class facebook::react::YogaLayoutableShadowNode : public facebook::react::LayoutableShadowNode {
+  protected bool overflowInsetNeedsUpdate_;
   protected facebook::yoga::Config yogaConfig_;
   protected mutable facebook::yoga::Node yogaNode_;
   protected virtual bool shouldNewRevisionDirtyMeasurement(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment) const;

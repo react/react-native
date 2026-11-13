@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<dcfcca254ea381db5ac0cc2ea2a6a66b>>
+ * @generated SignedSource<<44add928aa34871a70b7f35524ddfd97>>
  */
 
 /**
@@ -186,6 +186,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun skipActivityIdentityAssertionOnHostPause(): Boolean
 
   @DoNotStrip public fun skipUnchangedChildrenInDifferentiator(): Boolean
+
+  @DoNotStrip public fun skipUnchangedOverflowInsetInLayout(): Boolean
 
   @DoNotStrip public fun syncAndroidClipBoundsWithOverflow(): Boolean
 

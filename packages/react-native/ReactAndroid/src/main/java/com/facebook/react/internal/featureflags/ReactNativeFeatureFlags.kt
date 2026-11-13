@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c65f172e91f823049cf508cc70663c64>>
+ * @generated SignedSource<<d8800bc1ed4391e9333258dd7c99f412>>
  */
 
 /**
@@ -521,6 +521,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun skipUnchangedChildrenInDifferentiator(): Boolean = accessor.skipUnchangedChildrenInDifferentiator()
+
+  /**
+   * Layout keeps the overflowInset of a node from its previous revision, instead of computing it again from its children, when neither the node nor its children changed.
+   */
+  @JvmStatic
+  public fun skipUnchangedOverflowInsetInLayout(): Boolean = accessor.skipUnchangedOverflowInsetInLayout()
 
   /**
    * Override getClipBounds on Android views to return the padding box when overflow is hidden
