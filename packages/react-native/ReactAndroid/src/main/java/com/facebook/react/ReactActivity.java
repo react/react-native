@@ -9,6 +9,7 @@ package com.facebook.react;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import androidx.activity.OnBackPressedCallback;
@@ -60,7 +61,11 @@ public abstract class ReactActivity extends AppCompatActivity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     mDelegate.onCreate(savedInstanceState);
-    if (AndroidVersion.isAtLeastTargetSdk36(this)) {
+    // From API 33, an app that sets android:enableOnBackInvokedCallback="true" receives Back
+    // through OnBackInvokedDispatcher, and onBackPressed() is not called. Register the callback
+    // on API 33+ so that BackHandler keeps working there, not only on API 36+.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+        && getApplicationInfo().targetSdkVersion >= AndroidVersion.VERSION_CODE_BAKLAVA) {
       getOnBackPressedDispatcher().addCallback(this, mBackPressedCallback);
     }
   }
