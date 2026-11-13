@@ -41,7 +41,7 @@ class UtilsTests < Test::Unit::TestCase
         ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = nil
         ENV['RN_STRICT_API'] = nil
         ENV['RN_ALLOW_FRAMEWORKS'] = nil
-        ENV['RCT_DISABLE_NODE_API'] = nil
+        ENV['RCT_NODE_API_ENABLED'] = nil
         system_reset_commands
         $RN_PLATFORMS = nil
     end
@@ -620,12 +620,12 @@ class UtilsTests < Test::Unit::TestCase
     # Test - Set Node-API flags            #
     # ==================================== #
 
-    def assert_node_api_flag(user_project_mock, disabled:)
+    def assert_node_api_flag(user_project_mock, enabled:)
         user_project_mock.build_configurations.each do |config|
             ["OTHER_CFLAGS", "OTHER_CPLUSPLUSFLAGS"].each do |key|
-                assert_equal(disabled, config.build_settings[key].include?("-DRCT_DISABLE_NODE_API=1"))
+                assert_equal(enabled, config.build_settings[key].include?("-DRCT_NODE_API_ENABLED=1"))
             end
-            assert_equal(disabled ? '1' : nil, config.build_settings['RCT_DISABLE_NODE_API'])
+            assert_equal(enabled ? '1' : nil, config.build_settings['RCT_NODE_API_ENABLED'])
         end
     end
 
@@ -638,13 +638,13 @@ class UtilsTests < Test::Unit::TestCase
         ReactNativePodsUtils.set_node_api_flags(installer, build_rncore_from_source: true)
 
         # Assert
-        assert_node_api_flag(user_project_mock, disabled: false)
+        assert_node_api_flag(user_project_mock, enabled: false)
         assert_equal([], Pod::UI.collected_warns)
     end
 
-    def test_setNodeApiFlags_whenDisabled_addsFlag
+    def test_setNodeApiFlags_whenEnabled_addsFlag
         # Arrange
-        ENV['RCT_DISABLE_NODE_API'] = '1'
+        ENV['RCT_NODE_API_ENABLED'] = '1'
         user_project_mock = prepare_empty_user_project_mock()
         installer = legacy_interop_installer_mock(user_project_mock)
 
@@ -652,28 +652,28 @@ class UtilsTests < Test::Unit::TestCase
         ReactNativePodsUtils.set_node_api_flags(installer, build_rncore_from_source: true)
 
         # Assert
-        assert_node_api_flag(user_project_mock, disabled: true)
+        assert_node_api_flag(user_project_mock, enabled: true)
         assert_equal([], Pod::UI.collected_warns)
     end
 
-    def test_setNodeApiFlags_whenReenabled_removesPreviouslyAddedFlag
+    def test_setNodeApiFlags_whenDisabledAgain_removesPreviouslyAddedFlag
         # Arrange
-        ENV['RCT_DISABLE_NODE_API'] = '1'
+        ENV['RCT_NODE_API_ENABLED'] = '1'
         user_project_mock = prepare_empty_user_project_mock()
         installer = legacy_interop_installer_mock(user_project_mock)
         ReactNativePodsUtils.set_node_api_flags(installer, build_rncore_from_source: true)
 
         # Act
-        ENV['RCT_DISABLE_NODE_API'] = '0'
+        ENV['RCT_NODE_API_ENABLED'] = '0'
         ReactNativePodsUtils.set_node_api_flags(installer, build_rncore_from_source: true)
 
         # Assert
-        assert_node_api_flag(user_project_mock, disabled: false)
+        assert_node_api_flag(user_project_mock, enabled: false)
     end
 
-    def test_setNodeApiFlags_whenDisabledWithPrebuiltRNCore_warns
+    def test_setNodeApiFlags_whenEnabledWithPrebuiltRNCore_warns
         # Arrange
-        ENV['RCT_DISABLE_NODE_API'] = '1'
+        ENV['RCT_NODE_API_ENABLED'] = '1'
         user_project_mock = prepare_empty_user_project_mock()
         installer = legacy_interop_installer_mock(user_project_mock)
 
@@ -682,7 +682,7 @@ class UtilsTests < Test::Unit::TestCase
 
         # Assert
         assert_equal(1, Pod::UI.collected_warns.length)
-        assert(Pod::UI.collected_warns.first.include?("RCT_DISABLE_NODE_API=1"))
+        assert(Pod::UI.collected_warns.first.include?("RCT_NODE_API_ENABLED=1"))
         assert(Pod::UI.collected_warns.first.include?("RCT_USE_PREBUILT_RNCORE=0"))
     end
 

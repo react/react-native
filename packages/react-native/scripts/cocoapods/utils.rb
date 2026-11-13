@@ -611,22 +611,22 @@ class ReactNativePodsUtils
     # Also set as a build setting, which Xcode passes to script phases such as
     # the Hermes build and the app's own.
     def self.set_node_api_flags(installer, build_rncore_from_source:)
-        disabled = ENV['RCT_DISABLE_NODE_API'] == '1'
+        enabled = ENV['RCT_NODE_API_ENABLED'] == '1'
         self.extract_projects(installer).each do |project|
             project.build_configurations.each do |config|
-                if disabled
-                    self.set_flag_in_config(config, "-DRCT_DISABLE_NODE_API=1")
-                    config.build_settings['RCT_DISABLE_NODE_API'] = '1'
+                if enabled
+                    self.set_flag_in_config(config, "-DRCT_NODE_API_ENABLED=1")
+                    config.build_settings['RCT_NODE_API_ENABLED'] = '1'
                 else
-                    self.remove_flag_in_config(config, "-DRCT_DISABLE_NODE_API=1")
-                    config.build_settings.delete('RCT_DISABLE_NODE_API')
+                    self.remove_flag_in_config(config, "-DRCT_NODE_API_ENABLED=1")
+                    config.build_settings.delete('RCT_NODE_API_ENABLED')
                 end
             end
             project.save()
         end
-        if disabled && !build_rncore_from_source
-            Pod::UI.warn("RCT_DISABLE_NODE_API=1 has no effect on the prebuilt React.xcframework. " \
-                "Set RCT_USE_PREBUILT_RNCORE=0 to compile React Native without Node-API.")
+        if enabled && !build_rncore_from_source
+            Pod::UI.warn("RCT_NODE_API_ENABLED=1 has no effect on the prebuilt React.xcframework. " \
+                "Set RCT_USE_PREBUILT_RNCORE=0 to compile React Native with Node-API.")
         end
     end
 

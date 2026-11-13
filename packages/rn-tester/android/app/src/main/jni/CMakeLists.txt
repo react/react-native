@@ -12,7 +12,7 @@ include(${REACT_ANDROID_DIR}/cmake-utils/ReactNative-application.cmake)
 
 add_subdirectory(${REACT_COMMON_DIR}/react/nativemodule/samples/platform/android/ sampleturbomodule_build)
 add_subdirectory(${REACT_COMMON_DIR}/../../rn-tester/NativeCxxModuleExample/ nativecxxmoduleexample_build)
-if(NOT RCT_DISABLE_NODE_API)
+if(RCT_NODE_API_ENABLED)
   add_subdirectory(${REACT_COMMON_DIR}/../../rn-tester/NodeApiExample/ nodeapiexample_build)
 endif()
 

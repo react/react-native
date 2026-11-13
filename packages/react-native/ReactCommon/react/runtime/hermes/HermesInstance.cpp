@@ -13,7 +13,7 @@
 #include <logger/react_native_log.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 
-#ifndef RCT_DISABLE_NODE_API
+#ifdef RCT_NODE_API_ENABLED
 #include "HermesNodeApiEngine.h"
 
 #include <ReactCommon/CxxTurboModuleUtils.h>
@@ -32,7 +32,7 @@ static void hermesFatalHandler(const std::string& reason) {
 }
 
 static constinit std::once_flag fatalHandlerFlag;
-#ifndef RCT_DISABLE_NODE_API
+#ifdef RCT_NODE_API_ENABLED
 static constinit std::once_flag nodeApiFlag;
 #endif
 
@@ -80,7 +80,7 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
     }
   });
 
-#ifndef RCT_DISABLE_NODE_API
+#ifdef RCT_NODE_API_ENABLED
   std::call_once(nodeApiFlag, []() {
     registerCxxModuleToGlobalModuleMap(
         std::string(NativeNodeApi::kModuleName),

@@ -122,8 +122,8 @@ def use_react_native! (
   # layers are still supported. Both will default to 1 in a future React Native release.
   ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] == '1' ? '1' : '0'
   ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] == '1' ? '1' : '0'
-  # Leaving Node-API out of React Native and Hermes is opt-in.
-  ENV['RCT_DISABLE_NODE_API'] = ENV['RCT_DISABLE_NODE_API'] == '1' ? '1' : '0'
+  # Building React Native and Hermes with Node-API is opt-in.
+  ENV['RCT_NODE_API_ENABLED'] = ENV['RCT_NODE_API_ENABLED'] == '1' ? '1' : '0'
   # Enforcing the C++ stable API is opt-in.
   ENV['RN_STRICT_API'] = ENV['RN_STRICT_API'] == '1' ? '1' : '0'
   # Silences the stable API's "for frameworks" warning.

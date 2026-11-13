@@ -31,6 +31,7 @@ import com.facebook.react.utils.JsonUtils
 import com.facebook.react.utils.NdkConfiguratorUtils.configureReactNativeNdk
 import com.facebook.react.utils.NdkConfiguratorUtils.configureStrictCxxApiForLibrary
 import com.facebook.react.utils.NdkConfiguratorUtils.configureStubPchGeneration
+import com.facebook.react.utils.ProjectUtils.isNodeApiEnabled
 import com.facebook.react.utils.ProjectUtils.isStrictCxxApiEnabled
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import com.facebook.react.utils.PropertyUtils
@@ -99,6 +100,11 @@ class ReactPlugin : Plugin<Project> {
             readVersionAndGroupStrings(project, propertiesFile, hermesVersionPropertiesFile)
         configureDependencies(project, versionAndGroupStrings)
         configureRepositories(project, versionAndGroupStrings)
+        if (project.isNodeApiEnabled && !isReactNativeBuiltFromSource(project, reactNativeDir)) {
+          project.logger.warn(
+              "WARNING: 'nodeApiEnabled' has no effect on the prebuilt React Native AAR, which doesn't include Node-API. Build React Native from source to load Node-API addons.",
+          )
+        }
       }
 
       configureReactNativeNdk(project, extension)
@@ -153,6 +159,12 @@ class ReactPlugin : Plugin<Project> {
       configureCodegen(project, extension, rootExtension, isLibrary = true)
     }
   }
+
+  private fun isReactNativeBuiltFromSource(project: Project, reactNativeDir: File): Boolean =
+      project.rootProject.findProject(":packages:react-native:ReactAndroid") != null ||
+          project.gradle.includedBuilds.any {
+            it.projectDir.canonicalFile == reactNativeDir.canonicalFile
+          }
 
   private fun checkJvmVersion(project: Project) {
     val jvmVersion = Jvm.current().javaVersion?.majorVersion

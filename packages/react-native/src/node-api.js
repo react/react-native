@@ -38,7 +38,9 @@ import NativeNodeApi from './private/node-api/specs/NativeNodeApi';
 export function dlopen(module: {exports: unknown, ...}, filename: string) {
   if (NativeNodeApi == null) {
     throw new Error(
-      'Node-API is not available: the JavaScript engine does not implement it, or React Native was built without it',
+      global.HermesInternal == null
+        ? 'Node-API is not available: the JavaScript engine does not implement it'
+        : 'Node-API is not available: React Native was built without it. Enable it with the Gradle property `nodeApiEnabled=true` (Android) or `RCT_NODE_API_ENABLED=1` (iOS), and build React Native from source',
     );
   }
   NativeNodeApi.dlopen(module, filename);

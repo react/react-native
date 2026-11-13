@@ -46,7 +46,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-jsinspectortracing", :framework_name => 'jsinspector_moderntracing')
 
   s.dependency "React-hermes"
-  s.dependency "React-nodeapinativemodule" unless ENV['RCT_DISABLE_NODE_API'] == '1'
+  s.dependency "React-nodeapinativemodule" if ENV['RCT_NODE_API_ENABLED'] == '1'
   s.dependency "hermes-engine"
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-jsitooling", :framework_name => "JSITooling")

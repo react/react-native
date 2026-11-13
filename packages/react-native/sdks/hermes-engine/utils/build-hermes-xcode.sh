@@ -64,9 +64,9 @@ if [[ $PLATFORM_NAME == "catalyst" ]]; then
   boost_context_flag="-DHERMES_ALLOW_BOOST_CONTEXT=0"
 fi
 
-enable_napi="true"
-if [[ "${RCT_DISABLE_NODE_API:-0}" == "1" ]]; then
-  enable_napi="false"
+enable_napi="false"
+if [[ "${RCT_NODE_API_ENABLED:-0}" == "1" ]]; then
+  enable_napi="true"
 fi
 
 architectures=$( echo "$ARCHS" | tr  " " ";" )

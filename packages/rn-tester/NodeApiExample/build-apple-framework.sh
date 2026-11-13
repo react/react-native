@@ -15,7 +15,7 @@ SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/$NAME.framework"
 WORK_DIR="$DERIVED_FILE_DIR/$NAME"
 
-if [[ "${RCT_DISABLE_NODE_API:-0}" == "1" ]]; then
+if [[ "${RCT_NODE_API_ENABLED:-0}" != "1" ]]; then
   echo "Skipping the Node-API example: React Native is built without Node-API"
   # Xcode creates the output's directory before running the phase.
   rm -rf "$FRAMEWORK"

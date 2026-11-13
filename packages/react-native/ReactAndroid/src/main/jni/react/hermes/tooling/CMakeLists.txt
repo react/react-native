@@ -23,7 +23,7 @@ add_library(hermestooling
         $<TARGET_OBJECTS:jni_lib_merge_glue>
         $<TARGET_OBJECTS:jsijniprofiler>
 )
-if(NOT RCT_DISABLE_NODE_API)
+if(RCT_NODE_API_ENABLED)
         target_sources(hermestooling PRIVATE $<TARGET_OBJECTS:react_nativemodule_nodeapi>)
         target_include_directories(hermestooling
                 PUBLIC

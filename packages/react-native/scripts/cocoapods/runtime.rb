@@ -14,7 +14,7 @@ def setup_bridgeless!(react_native_path: "../node_modules/react-native", use_her
     pod 'React-RuntimeApple', :path => "#{react_native_path}/ReactCommon/react/runtime/platform/ios"
     if use_hermes
         pod 'React-RuntimeHermes', :path => "#{react_native_path}/ReactCommon/react/runtime"
-        unless ENV['RCT_DISABLE_NODE_API'] == '1'
+        if ENV['RCT_NODE_API_ENABLED'] == '1'
             pod 'React-nodeapinativemodule', :path => "#{react_native_path}/ReactCommon/react/nativemodule/nodeapi"
         end
     end

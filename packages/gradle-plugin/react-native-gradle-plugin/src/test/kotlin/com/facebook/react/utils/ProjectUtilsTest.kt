@@ -15,7 +15,7 @@ import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
 import com.facebook.react.utils.ProjectUtils.isNewArchEnabled
-import com.facebook.react.utils.ProjectUtils.isNodeApiDisabled
+import com.facebook.react.utils.ProjectUtils.isNodeApiEnabled
 import com.facebook.react.utils.ProjectUtils.isStrictCxxApiEnabled
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import com.facebook.react.utils.ProjectUtils.shouldResetMetroCacheBeforeBundling
@@ -207,29 +207,29 @@ class ProjectUtilsTest {
   }
 
   @Test
-  fun isNodeApiDisabled_returnsFalseByDefault() {
-    assertThat(createProject().isNodeApiDisabled).isFalse()
+  fun isNodeApiEnabled_returnsFalseByDefault() {
+    assertThat(createProject().isNodeApiEnabled).isFalse()
   }
 
   @Test
-  fun isNodeApiDisabled_withDisabledViaProperty_returnsTrue() {
+  fun isNodeApiEnabled_withEnabledViaProperty_returnsTrue() {
     val project = createProject()
-    project.extensions.extraProperties.set("disableNodeApi", "true")
-    assertThat(project.isNodeApiDisabled).isTrue()
+    project.extensions.extraProperties.set("nodeApiEnabled", "true")
+    assertThat(project.isNodeApiEnabled).isTrue()
   }
 
   @Test
-  fun isNodeApiDisabled_withDisabledViaScopedProperty_returnsTrue() {
+  fun isNodeApiEnabled_withEnabledViaScopedProperty_returnsTrue() {
     val project = createProject()
-    project.extensions.extraProperties.set("react.disableNodeApi", "true")
-    assertThat(project.isNodeApiDisabled).isTrue()
+    project.extensions.extraProperties.set("react.nodeApiEnabled", "true")
+    assertThat(project.isNodeApiEnabled).isTrue()
   }
 
   @Test
-  fun isNodeApiDisabled_withFalseViaProperty_returnsFalse() {
+  fun isNodeApiEnabled_withFalseViaProperty_returnsFalse() {
     val project = createProject()
-    project.extensions.extraProperties.set("disableNodeApi", "false")
-    assertThat(project.isNodeApiDisabled).isFalse()
+    project.extensions.extraProperties.set("nodeApiEnabled", "false")
+    assertThat(project.isNodeApiEnabled).isFalse()
   }
 
   @Test
