@@ -41,7 +41,7 @@
     "@react-native/codegen": "0.87.0-main"
   },
   "devDependencies": {
-    "flow-remove-types": "^2.336.0",
+    "flow-remove-types": "^2.340.0",
     "rimraf": "^3.0.2"
   }
 }
