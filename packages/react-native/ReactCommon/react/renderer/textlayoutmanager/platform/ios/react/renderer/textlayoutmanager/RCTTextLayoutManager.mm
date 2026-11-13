@@ -701,16 +701,14 @@ static CGSize RCTTextLayoutSizeForFrameSize(CGSize frameSize, const ParagraphAtt
                 } else {
                   CGSize attachmentSize = attachment.bounds.size;
                   CGRect glyphRect = [layoutManager boundingRectForGlyphRange:range inTextContainer:textContainer];
-
-                  CGRect frame;
-                  UIFont *font = [[textStorage attributedSubstringFromRange:range] attribute:NSFontAttributeName
-                                                                                     atIndex:0
-                                                                              effectiveRange:nil];
-                  frame = {
-                      .origin =
-                          {glyphRect.origin.x,
-                           glyphRect.origin.y + glyphRect.size.height - attachmentSize.height + font.descender},
-                      .size = attachmentSize};
+                  // The attachment sits on the baseline of its line. A line holding only an attachment has no
+                  // descent, so the baseline can't be derived from the font's descender.
+                  CGRect lineFragmentRect = [layoutManager lineFragmentRectForGlyphAtIndex:attachmentGlyphRange.location
+                                                                            effectiveRange:nil];
+                  CGFloat baseline = lineFragmentRect.origin.y +
+                      [layoutManager locationForGlyphAtIndex:attachmentGlyphRange.location].y;
+                  CGRect frame = {
+                      .origin = {glyphRect.origin.x, baseline - attachmentSize.height}, .size = attachmentSize};
 
                   auto rect = facebook::react::Rect{
                       .origin = facebook::react::Point{.x = frame.origin.x, .y = frame.origin.y},
