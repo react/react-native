@@ -175,4 +175,58 @@ TEST_F(EventAnimationDriverTests, sharedBackendEventDoesNotEndDecayAnimation) {
   EXPECT_GT(animatedValue(), valueAfterEvent);
 }
 
+TEST_F(
+    EventAnimationDriverTests,
+    animationThatChangesNoViewDoesNotRecommitEventDrivenProps) {
+  initNodesManager();
+  nodesManager_->onRender();
+
+  const folly::dynamic valueNodeConfig =
+      folly::dynamic::object("type", "value")("value", 0)("offset", 0);
+  nodesManager_->createAnimatedNode(scrollValueTag_, valueNodeConfig);
+  nodesManager_->addAnimatedEventToView(
+      viewTag_,
+      "scroll",
+      folly::dynamic::object("animatedValueTag", scrollValueTag_)(
+          "nativeEventPath", folly::dynamic::array("contentOffset", "y")));
+  const auto styleNodeTag = ++tag_;
+  nodesManager_->createAnimatedNode(
+      styleNodeTag,
+      folly::dynamic::object("type", "style")(
+          "style", folly::dynamic::object("opacity", scrollValueTag_)));
+  nodesManager_->connectAnimatedNodes(scrollValueTag_, styleNodeTag);
+  const auto propsNodeTag = ++tag_;
+  nodesManager_->createAnimatedNode(
+      propsNodeTag,
+      folly::dynamic::object("type", "props")(
+          "props", folly::dynamic::object("style", styleNodeTag)));
+  nodesManager_->connectAnimatedNodes(styleNodeTag, propsNodeTag);
+  nodesManager_->connectAnimatedNodeToView(propsNodeTag, viewTag_);
+
+  // A running animation on a value that is connected to no view.
+  nodesManager_->createAnimatedNode(animatedValueTag_, valueNodeConfig);
+  nodesManager_->startAnimatingNode(
+      1,
+      animatedValueTag_,
+      folly::dynamic::object("type", "frames")(
+          "frames", folly::dynamic::array(0.0, 0.25, 0.5, 0.75, 1.0))(
+          "toValue", 100)("iterations", -1),
+      std::nullopt);
+
+  nodesManager_->onRender();
+  lastCommittedProps = folly::dynamic::object();
+  nodesManager_->onRender();
+  nodesManager_->onRender();
+  EXPECT_TRUE(lastCommittedProps.empty());
+
+  // The event-driven props are still committed once after a scroll ends.
+  dispatchScrollAt(kStartTime, 1);
+  lastCommittedProps = folly::dynamic::object();
+  nodesManager_->onRender();
+  EXPECT_EQ(lastCommittedProps["opacity"], 1);
+  lastCommittedProps = folly::dynamic::object();
+  nodesManager_->onRender();
+  EXPECT_TRUE(lastCommittedProps.empty());
+}
+
 } // namespace facebook::react
