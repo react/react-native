@@ -34,6 +34,12 @@ appId: ${APP_ID}
     timeout: 15000
 - tapOn:
     id: 'scroll_to_end_button'
+# waitForAnimationToEnd returns at once if the scroll hasn't started yet, so
+# wait for an item that is only on screen once it has.
+- extendedWaitUntil:
+    visible:
+      text: 'Item 11'
+    timeout: 5000
 - waitForAnimationToEnd:
     timeout: 5000
 - takeScreenshot:
@@ -42,6 +48,10 @@ appId: ${APP_ID}
       id: 'scroll_horizontal'
 - tapOn:
     id: 'scroll_to_start_button'
+- extendedWaitUntil:
+    visible:
+      text: 'Item 0'
+    timeout: 5000
 - waitForAnimationToEnd:
     timeout: 5000
 - takeScreenshot:
