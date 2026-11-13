@@ -42,3 +42,23 @@ appId: ${APP_ID}
     path: ${VISUAL_OUTPUT_DIR}/border/equal-width-borders/default
     cropOn:
       id: 'border-test-equal-width-borders'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/BorderExample/color-change
+- extendedWaitUntil:
+    visible:
+      id: 'border-test-color-change'
+    timeout: 15000
+- tapOn:
+    id: 'border-color-change-button'
+- extendedWaitUntil:
+    visible:
+      text: 'Per-side colors.*'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/border/color-change/per-side-colors
+    cropOn:
+      id: 'border-test-color-change'
