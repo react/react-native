@@ -960,8 +960,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                      }
                    }];
 
-  BOOL shouldFallbackToBareTextComparison =
-      [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"dictation"] ||
+  BOOL shouldFallbackDictation = [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"dictation"];
+  if (@available(iOS 16.0, *)) {
+    shouldFallbackDictation = shouldFallbackDictation || _backedTextInputView.dictationRecognizing;
+  }
+
+  BOOL shouldFallbackToBareTextComparison = shouldFallbackDictation ||
       [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"ko-KR"] ||
       _backedTextInputView.markedTextRange || _backedTextInputView.isSecureTextEntry || fontHasBeenUpdatedBySystem;
 
