@@ -141,6 +141,7 @@ export default class AnimatedValue extends AnimatedWithChildren {
    */
   setValue(value: number): void {
     if (this._animation) {
+      this._animation.__isValueOverridden = true;
       this._animation.stop();
       this._animation = null;
     }
@@ -225,6 +226,9 @@ export default class AnimatedValue extends AnimatedWithChildren {
    * See https://reactnative.dev/docs/animatedvalue#resetanimation
    */
   resetAnimation(callback?: ?(value: number) => void): void {
+    if (this._animation) {
+      this._animation.__isValueOverridden = true;
+    }
     this.stopAnimation(callback);
     this._value = this._startingValue;
     if (this.__isNative) {

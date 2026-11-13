@@ -25,6 +25,7 @@ import {
   useContext,
   useEffect,
   useInsertionEffect,
+  useLayoutEffect,
   useReducer,
   useRef,
 } from 'react';
@@ -96,6 +97,19 @@ export default function createAnimatedPropsHook(
     });
 
     useAnimatedPropsLifecycle(node);
+
+    // `onUpdateRef` is cleared while hidden (e.g. by `Activity`), so values that
+    // changed in the meantime have not been committed. Layout effects with these
+    // dependencies only re-run for the same `node` when it is revealed.
+    const disconnectedNodeRef = useRef<AnimatedProps | null>(null);
+    useLayoutEffect(() => {
+      if (disconnectedNodeRef.current === node) {
+        scheduleUpdate();
+      }
+      return () => {
+        disconnectedNodeRef.current = node;
+      };
+    }, [node]);
 
     // TODO: This "effect" does three things:
     //
