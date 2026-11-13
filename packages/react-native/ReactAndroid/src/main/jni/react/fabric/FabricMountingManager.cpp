@@ -671,11 +671,37 @@ void FabricMountingManager::executeMount(
           break;
         }
         case ShadowViewMutation::Delete: {
-          (maintainMutationOrder ? cppCommonMountItems : cppDeleteMountItems)
-              .push_back(CppMountItem::DeleteMountItem(oldChildShadowView));
-          if (allocatedViewTags.erase(oldChildShadowView.tag) != 1) {
-            LOG(ERROR) << "Emitting delete for unallocated view "
-                       << oldChildShadowView.tag;
+          // When multiple transactions are merged, a tag may appear in both a
+          // DELETE (from an earlier transaction) and a CREATE (from a later
+          // transaction) within the same merged batch. Writing all DELETEs last
+          // would then emit UPDATE/LAYOUT instructions for the re-created view
+          // before its DELETE arrives on the Java side: the old native view is
+          // still attached and receives a layout pass it cannot handle,
+          // crashing in ReactViewGroup.isViewClipped (see GitHub issue #59724).
+          //
+          // Fix: when a DELETE is followed by a CREATE for the same tag in the
+          // same batch, promote the DELETE into cppCommonMountItems so it is
+          // emitted in mutation order (before the CREATE) rather than deferred.
+          auto tag = oldChildShadowView.tag;
+          bool hasSubsequentCreate = false;
+          if (!maintainMutationOrder) {
+            for (const auto& m : mutations) {
+              if (m.type == ShadowViewMutation::Create &&
+                  m.newChildShadowView.tag == tag) {
+                hasSubsequentCreate = true;
+                break;
+              }
+            }
+          }
+          if (maintainMutationOrder || hasSubsequentCreate) {
+            cppCommonMountItems.push_back(
+                CppMountItem::DeleteMountItem(oldChildShadowView));
+          } else {
+            cppDeleteMountItems.push_back(
+                CppMountItem::DeleteMountItem(oldChildShadowView));
+          }
+          if (allocatedViewTags.erase(tag) != 1) {
+            LOG(ERROR) << "Emitting delete for unallocated view " << tag;
           }
           break;
         }
@@ -1023,13 +1049,11 @@ void FabricMountingManager::executeMount(
     }
   }
 
-  // Write deletes last - so that all prop updates, etc, for the tag in the same
-  // batch don't fail. Without additional machinery, moving deletes here
-  // requires that the differ never produces "DELETE...CREATE" in that order for
-  // the same tag. It's nice to be able to batch all similar operations together
-  // for space efficiency.
-  // FIXME: this optimization is incorrect when multiple transactions are
-  // merged together
+  // Write remaining deletes last - for tags that do NOT have a subsequent
+  // CREATE in the same batch. This preserves the original space-efficiency
+  // optimisation for the common case (no recycled tag in this batch) while
+  // the Delete-case handler above promotes any DELETE/CREATE pair back into
+  // cppCommonMountItems so it is flushed in the correct order.
   if (!cppDeleteMountItems.empty()) {
     writeMountItemPreamble(
         buffer, CppMountItem::Type::Delete, cppDeleteMountItems.size());
