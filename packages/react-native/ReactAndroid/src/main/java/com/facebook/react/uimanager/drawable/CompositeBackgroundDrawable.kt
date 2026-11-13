@@ -19,6 +19,7 @@ import android.os.Build
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.dpToPx
+import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.style.BorderInsets
 import com.facebook.react.uimanager.style.BorderRadiusStyle
 
@@ -207,8 +208,8 @@ internal class CompositeBackgroundDrawable(
           borderRadius?.resolve(
               layoutDirection,
               context,
-              bounds.width().toFloat(),
-              bounds.height().toFloat(),
+              bounds.width().pxToDp(),
+              bounds.height().pxToDp(),
           )
 
       val computedBorderInsets = borderInsets?.resolve(layoutDirection, context)

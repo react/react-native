@@ -65,6 +65,26 @@ class CompositeBackgroundDrawableTest {
   }
 
   @Test
+  fun percentageRadiusIsResolvedAgainstTheSizeInDp() {
+    val drawable =
+        CompositeBackgroundDrawable(
+            context = context,
+            borderRadius =
+                BorderRadiusStyle(
+                    listOf(
+                        BorderRadiusProp.BORDER_RADIUS to
+                            LengthPercentage(25f, LengthPercentageType.PERCENT)
+                    )
+                ),
+        )
+    drawable.setBounds(0, 0, 120, 120)
+    val outline = Outline().also { drawable.getOutline(it) }
+
+    assertThat(outline.getRect(Rect())).isTrue()
+    assertThat(outline.radius).isEqualTo(30f)
+  }
+
+  @Test
   fun differentCornersGiveAPath() {
     val outline =
         outlineOf(
