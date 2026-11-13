@@ -401,7 +401,7 @@ void Node::processDimensions() {
   }
 }
 
-Direction Node::resolveDirection(const Direction ownerDirection) {
+Direction Node::resolveDirection(const Direction ownerDirection) const {
   if (style_.direction() == Direction::Inherit) {
     return ownerDirection != Direction::Inherit ? ownerDirection
                                                 : Direction::LTR;
@@ -434,6 +434,25 @@ void Node::cloneChildrenIfNeeded() {
       }
     }
     i += 1;
+  }
+}
+
+// cloneChildrenIfNeeded keeps its own copy: every layout runs it per child.
+void Node::cloneChildIfNeeded(size_t index) {
+  Node*& child = children_[index];
+  if (child->getOwner() == this) {
+    return;
+  }
+  child = resolveRef(config_->cloneNode(child, this, index));
+  child->setOwner(this);
+
+  if (child->style().display() == Display::Contents) [[unlikely]] {
+    // The contents node's children are treated as children of the
+    // contents node's parent for layout purposes, so they need
+    // to be cloned as well.
+    child->cloneChildrenIfNeeded();
+  } else if (child->hasContentsChildren()) [[unlikely]] {
+    child->cloneContentsChildrenIfNeeded();
   }
 }
 

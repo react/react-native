@@ -36,11 +36,14 @@ struct LayoutResults {
   // means "no auto-min applies."
   FloatOptional computedAutoMinMainSize = {};
 
-  // Memoized min-content sizes for §4.5, indexed by dimension and valid only
-  // during layout generation `minContentGeneration`. A leaf stores its measured
-  // min-content without padding and border, which doesn't depend on the owner.
-  // A container stores its full min-content, which depends on
-  // `minContentOwnerWidth` through percentage padding and margins.
+  // Memoized min-content sizes for §4.5, indexed by dimension, with the layout
+  // generation each was computed in (0 for none). Like `cachedMeasurements`,
+  // they hold until the node, its config or its direction changes. A leaf
+  // stores its measured min-content without padding and border, which doesn't
+  // depend on the owner. A container stores its full min-content, which
+  // depends on `minContentOwnerWidth` when its own percentage padding, or a
+  // percentage padding or margin below it, resolves against it
+  // (`minContentResolvesAgainstOwnerWidth`).
   std::array<uint32_t, 2> minContentGeneration = {};
   std::array<float, 2> minContentOwnerWidth = {{YGUndefined, YGUndefined}};
   std::array<float, 2> minContent = {{YGUndefined, YGUndefined}};
@@ -78,6 +81,20 @@ struct LayoutResults {
 
   void setComputedAutoMinMainSizeResolved(bool resolved) {
     computedAutoMinMainSizeResolved_ = resolved;
+  }
+
+  bool minContentResolvesAgainstOwnerWidth(Dimension axis) const {
+    return axis == Dimension::Width
+        ? minContentWidthResolvesAgainstOwnerWidth_
+        : minContentHeightResolvesAgainstOwnerWidth_;
+  }
+
+  void setMinContentResolvesAgainstOwnerWidth(Dimension axis, bool resolves) {
+    if (axis == Dimension::Width) {
+      minContentWidthResolvesAgainstOwnerWidth_ = resolves;
+    } else {
+      minContentHeightResolvesAgainstOwnerWidth_ = resolves;
+    }
   }
 
   float dimension(Dimension axis) const {
@@ -142,6 +159,8 @@ struct LayoutResults {
   Direction direction_ : bitCount<Direction>() = Direction::Inherit;
   bool hadOverflow_ : 1 = false;
   bool computedAutoMinMainSizeResolved_ : 1 = false;
+  bool minContentWidthResolvesAgainstOwnerWidth_ : 1 = false;
+  bool minContentHeightResolvesAgainstOwnerWidth_ : 1 = false;
 
   std::array<float, 2> dimensions_ = {{YGUndefined, YGUndefined}};
   std::array<float, 2> measuredDimensions_ = {{YGUndefined, YGUndefined}};

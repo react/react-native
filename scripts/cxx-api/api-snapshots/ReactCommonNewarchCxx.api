@@ -3870,7 +3870,7 @@ class facebook::yoga::Node : public YGNode {
   public const facebook::yoga::LayoutResults& getLayout() const;
   public const facebook::yoga::Style& style() const;
   public const std::vector<facebook::yoga::Node*>& getChildren() const;
-  public facebook::yoga::Direction resolveDirection(facebook::yoga::Direction ownerDirection);
+  public facebook::yoga::Direction resolveDirection(facebook::yoga::Direction ownerDirection) const;
   public facebook::yoga::FloatOptional getMinContentHeight() const noexcept;
   public facebook::yoga::FloatOptional getMinContentWidth() const noexcept;
   public facebook::yoga::FloatOptional getResolvedDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension dimension, float referenceLength, float ownerWidth) const;
@@ -3894,6 +3894,7 @@ class facebook::yoga::Node : public YGNode {
   public size_t getLineIndex() const;
   public using LayoutableChildren = facebook::yoga::LayoutableChildren<facebook::yoga::Node>;
   public void clearChildren();
+  public void cloneChildIfNeeded(size_t index);
   public void cloneChildrenIfNeeded();
   public void cloneContentsChildrenIfNeeded();
   public void insertChild(facebook::yoga::Node* child, size_t index);
@@ -3939,6 +3940,8 @@ class facebook::yoga::Node : public YGNode {
 class facebook::yoga::Style {
   public bool flexEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool flexStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
+  public bool hasPercentMargin() const;
+  public bool hasPercentPadding() const;
   public bool horizontalInsetsDefined() const;
   public bool inlineEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool inlineStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
@@ -4452,6 +4455,7 @@ struct facebook::yoga::LayoutData {
 struct facebook::yoga::LayoutResults {
   public bool computedAutoMinMainSizeResolved() const;
   public bool hadOverflow() const;
+  public bool minContentResolvesAgainstOwnerWidth(facebook::yoga::Dimension axis) const;
   public bool operator==(facebook::yoga::LayoutResults layout) const;
   public facebook::yoga::CachedMeasurement cachedLayout;
   public facebook::yoga::Direction direction() const;
@@ -4481,6 +4485,7 @@ struct facebook::yoga::LayoutResults {
   public void setHadOverflow(bool hadOverflow);
   public void setMargin(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setMeasuredDimension(facebook::yoga::Dimension axis, float dimension);
+  public void setMinContentResolvesAgainstOwnerWidth(facebook::yoga::Dimension axis, bool resolves);
   public void setPadding(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setPosition(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setRawDimension(facebook::yoga::Dimension axis, float dimension);
