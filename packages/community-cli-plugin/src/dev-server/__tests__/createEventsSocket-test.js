@@ -16,7 +16,7 @@ import {startTestServer, waitUntil} from './SocketTestUtils';
 jest.useRealTimers();
 
 const logger = {warn: jest.fn(), error: jest.fn()};
-const broadcast = jest.fn<[string, ?{[string]: unknown}], void>();
+const broadcast = jest.fn<[string, ?{[key: string]: unknown}], void>();
 
 let testServer: TestServer;
 let eventsSocket: ReturnType<typeof createEventsSocket>;
@@ -64,7 +64,7 @@ describe('/events', () => {
 
   test('logs an event that cannot be serialized', async () => {
     const client = await testServer.connect('/events');
-    const circular: {[string]: unknown} = {};
+    const circular: {[key: string]: unknown} = {};
     circular.self = circular;
 
     eventsSocket.reportEvent(circular);
