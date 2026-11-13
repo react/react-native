@@ -26,17 +26,14 @@ The baseline for a PR is the one for the commit it's based on, or the nearest ea
        file: ../helpers/open-example.yml
        env:
          EXAMPLE_URL: rntester://example/TextExample/textWidthMode
-   - extendedWaitUntil:
-       visible:
-         id: 'text-width-mode-example'
-       timeout: 15000
+         EXAMPLE_ID: text-width-mode-example
    - takeScreenshot:
        path: ${VISUAL_OUTPUT_DIR}/text/width-mode/default
        cropOn:
          id: 'text-width-mode-example'
    ```
 
-   `open-example.yml` deep-links to `rntester://example/<module>/<example>`. Wait for something that's only visible once the example has rendered, and crop to the example's `testID` so that the status bar and surrounding UI aren't part of the screenshot.
+   `open-example.yml` deep-links to `rntester://example/<module>/<example>` and waits for the element with the `testID` in `EXAMPLE_ID`, relaunching and linking again if it doesn't appear. Use a `testID` that only that example has, not the generic `example-container`, and crop to the example's `testID` so that the status bar and surrounding UI aren't part of the screenshot.
 
 3. Open a PR. The new test has no baseline yet, so the report lists it as new, and like any other difference it needs a maintainer's approval (see below). Once the PR lands, `main` is captured with it and later PRs are compared against that.
 

@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextInputExample/clipping
+      EXAMPLE_ID: textinput-clipping
 - extendedWaitUntil:
     visible:
       id: 'textinput-clipping'
@@ -18,6 +19,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextInputExample/placeholderEllipsizing
+      EXAMPLE_ID: textinput-placeholder-singleline
 - extendedWaitUntil:
     visible:
       id: 'textinput-placeholder-singleline'
@@ -42,6 +44,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextInputExample/textStyles
+      EXAMPLE_ID: text-styles
 - extendedWaitUntil:
     visible:
       id: 'text-styles'

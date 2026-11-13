@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ViewExample/opacity
+      EXAMPLE_ID: view-test-opacity
 - extendedWaitUntil:
     visible:
       id: 'view-test-opacity'
@@ -18,6 +19,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ViewExample/overflow
+      EXAMPLE_ID: view-test-overflow
 - extendedWaitUntil:
     visible:
       id: 'view-test-overflow'
@@ -32,6 +34,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ViewExample/flexgap
+      EXAMPLE_ID: view-test-flexgap
 - extendedWaitUntil:
     visible:
       id: 'view-test-flexgap'
@@ -46,6 +49,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ViewExample/z-index
+      EXAMPLE_ID: z-index-button
 - extendedWaitUntil:
     visible:
       id: 'z-index-button'

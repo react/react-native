@@ -4,6 +4,7 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/wrappedLastLineClipping
+      EXAMPLE_ID: last-line-clipping-example
 - extendedWaitUntil:
     visible:
       id: 'last-line-clipping-example'

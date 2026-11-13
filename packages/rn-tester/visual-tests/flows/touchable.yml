@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TouchableExample/highlight
+      EXAMPLE_ID: touchable_highlight_text_button
 - extendedWaitUntil:
     visible:
       id: 'touchable_highlight_text_button'
@@ -29,6 +30,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TouchableExample/without-feedback
+      EXAMPLE_ID: touchable_without_feedback_button
 - extendedWaitUntil:
     visible:
       id: 'touchable_without_feedback_button'
@@ -54,6 +56,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TouchableExample/feedback-events
+      EXAMPLE_ID: touchable_feedback_events_button
 - extendedWaitUntil:
     visible:
       id: 'touchable_feedback_events_button'

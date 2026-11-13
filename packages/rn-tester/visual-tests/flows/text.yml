@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/wrap
+      EXAMPLE_ID: text-wrap
 - extendedWaitUntil:
     visible:
       id: 'text-wrap'
@@ -18,6 +19,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/nested
+      EXAMPLE_ID: text-test-nested
 - extendedWaitUntil:
     visible:
       id: 'text-test-nested'
@@ -32,6 +34,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/ellipsizeMode
+      EXAMPLE_ID: text-ellipsize-mode
 - extendedWaitUntil:
     visible:
       id: 'text-ellipsize-mode'
@@ -46,6 +49,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/numberOfLines
+      EXAMPLE_ID: number-of-lines
 - extendedWaitUntil:
     visible:
       id: 'number-of-lines'
@@ -60,6 +64,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/textDecoration
+      EXAMPLE_ID: text-text-decoration
 - extendedWaitUntil:
     visible:
       id: 'text-text-decoration'
@@ -74,6 +79,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/textAlign
+      EXAMPLE_ID: text-align-example
 - extendedWaitUntil:
     visible:
       id: 'text-align-example'

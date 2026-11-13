@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ScrollViewExample/scrollTo
+      EXAMPLE_ID: scroll_vertical
 - extendedWaitUntil:
     visible:
       id: 'scroll_vertical'
@@ -28,6 +29,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ScrollViewExample/horizontalScrollTo
+      EXAMPLE_ID: scroll_horizontal
 - extendedWaitUntil:
     visible:
       id: 'scroll_horizontal'
@@ -62,6 +64,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ScrollViewExample/invertStickyHeaders
+      EXAMPLE_ID: scroll_sticky_header
 - extendedWaitUntil:
     visible:
       id: 'scroll_sticky_header'
