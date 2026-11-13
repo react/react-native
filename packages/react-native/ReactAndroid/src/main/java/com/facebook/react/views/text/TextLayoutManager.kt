@@ -1092,13 +1092,11 @@ internal object TextLayoutManager {
       builder.setUseLineSpacingFromFallbacks(true)
     }
 
-    // Leave the platform default in place unless a style was requested, so text without these props
-    // lays out exactly as before.
-    if (
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            (lineBreakStyle != LineBreakConfig.LINE_BREAK_STYLE_NONE ||
-                lineBreakWordStyle != LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE)
-    ) {
+    // Always pass a config built with LineBreakConfig.Builder, the way TextView builds one for the
+    // view that draws this text. StaticLayout's default (LineBreakConfig.NONE) can break lines
+    // differently from the view on some devices, e.g. when the app locale differs from the locale
+    // the system booted with, and the extra line the view draws falls outside the measured height.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       builder.setLineBreakConfig(
           LineBreakConfig.Builder()
               .setLineBreakStyle(lineBreakStyle)
