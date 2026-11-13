@@ -124,13 +124,15 @@ class ShadowNodeFamily final : public jsi::NativeState {
   void dispatchRawState(StateUpdate &&stateUpdate, EventQueue::UpdateMode updateMode);
 
   struct NativeProps_DEPRECATED {
+    explicit NativeProps_DEPRECATED(folly::dynamic props) : props(std::move(props)) {}
+
     folly::dynamic props;
 
     /*
      * The props of a shadow node that already include `props`, so that
      * cloning that node doesn't apply them again.
      */
-    std::shared_ptr<const Props> appliedProps;
+    std::shared_ptr<const Props> appliedProps = nullptr;
   };
 
   /*
