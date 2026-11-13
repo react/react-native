@@ -674,4 +674,30 @@ TEST(ConversionsTest, float_optional_undefined_for_string) {
   EXPECT_TRUE(result.isUndefined());
 }
 
+TEST(ConversionsTest, background_position_bottom_right) {
+  RawValue value{folly::dynamic::array(
+      folly::dynamic::object("bottom", 8)("right", "10%"))};
+  std::vector<BackgroundPosition> result;
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  ASSERT_EQ(result.size(), 1);
+  EXPECT_FALSE(result[0].top.has_value());
+  EXPECT_FALSE(result[0].left.has_value());
+  EXPECT_EQ(result[0].bottom, (ValueUnit{8.0f, UnitType::Point}));
+  EXPECT_EQ(result[0].right, (ValueUnit{10.0f, UnitType::Percent}));
+}
+
+TEST(ConversionsTest, background_position_top_left_next_to_bottom_right) {
+  RawValue value{folly::dynamic::array(
+      folly::dynamic::object("top", 4)("left", 2)("bottom", 8)("right", 6))};
+  std::vector<BackgroundPosition> result;
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  ASSERT_EQ(result.size(), 1);
+  EXPECT_EQ(result[0].top, (ValueUnit{4.0f, UnitType::Point}));
+  EXPECT_EQ(result[0].left, (ValueUnit{2.0f, UnitType::Point}));
+  EXPECT_EQ(result[0].bottom, (ValueUnit{8.0f, UnitType::Point}));
+  EXPECT_EQ(result[0].right, (ValueUnit{6.0f, UnitType::Point}));
+}
+
 } // namespace facebook::react
