@@ -6555,6 +6555,12 @@ class facebook::react::YogaStylableProps : public facebook::react::Props {
   public YogaStylableProps() = default;
   public YogaStylableProps(const facebook::react::PropsParserContext& context, const facebook::react::YogaStylableProps& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
   public facebook::yoga::Style yogaStyle;
+  public facebook::yoga::Style::Length borderBlockEndWidth;
+  public facebook::yoga::Style::Length borderBlockStartWidth;
+  public facebook::yoga::Style::Length borderBlockWidth;
+  public facebook::yoga::Style::Length borderInlineEndWidth;
+  public facebook::yoga::Style::Length borderInlineStartWidth;
+  public facebook::yoga::Style::Length borderInlineWidth;
   public facebook::yoga::Style::Length insetBlockEnd;
   public facebook::yoga::Style::Length insetBlockStart;
   public facebook::yoga::Style::Length insetInlineEnd;
@@ -9608,6 +9614,9 @@ struct facebook::react::CascadedRectangleEdges {
   public facebook::react::CascadedRectangleEdges::OptionalT bottom;
   public facebook::react::CascadedRectangleEdges::OptionalT end;
   public facebook::react::CascadedRectangleEdges::OptionalT horizontal;
+  public facebook::react::CascadedRectangleEdges::OptionalT inlineEnd;
+  public facebook::react::CascadedRectangleEdges::OptionalT inlineStart;
+  public facebook::react::CascadedRectangleEdges::OptionalT inline_;
   public facebook::react::CascadedRectangleEdges::OptionalT left;
   public facebook::react::CascadedRectangleEdges::OptionalT right;
   public facebook::react::CascadedRectangleEdges::OptionalT start;

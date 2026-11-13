@@ -173,6 +173,13 @@ void YogaStylableProps::setProp(
       RAW_SET_PROP_SWITCH_CASE(paddingBlock, "paddingBlock");
       RAW_SET_PROP_SWITCH_CASE(paddingBlockStart, "paddingBlockStart");
       RAW_SET_PROP_SWITCH_CASE(paddingBlockEnd, "paddingBlockEnd");
+      RAW_SET_PROP_SWITCH_CASE(borderBlockWidth, "borderBlockWidth");
+      RAW_SET_PROP_SWITCH_CASE(borderBlockStartWidth, "borderBlockStartWidth");
+      RAW_SET_PROP_SWITCH_CASE(borderBlockEndWidth, "borderBlockEndWidth");
+      RAW_SET_PROP_SWITCH_CASE(borderInlineWidth, "borderInlineWidth");
+      RAW_SET_PROP_SWITCH_CASE(
+          borderInlineStartWidth, "borderInlineStartWidth");
+      RAW_SET_PROP_SWITCH_CASE(borderInlineEndWidth, "borderInlineEndWidth");
   }
 }
 
@@ -511,6 +518,43 @@ void YogaStylableProps::convertRawPropAliases(
       rawProps,
       "paddingBlockEnd",
       sourceProps.paddingBlockEnd,
+      yoga::StyleLength::undefined());
+
+  borderBlockWidth = convertRawProp(
+      context,
+      rawProps,
+      "borderBlockWidth",
+      sourceProps.borderBlockWidth,
+      yoga::StyleLength::undefined());
+  borderBlockStartWidth = convertRawProp(
+      context,
+      rawProps,
+      "borderBlockStartWidth",
+      sourceProps.borderBlockStartWidth,
+      yoga::StyleLength::undefined());
+  borderBlockEndWidth = convertRawProp(
+      context,
+      rawProps,
+      "borderBlockEndWidth",
+      sourceProps.borderBlockEndWidth,
+      yoga::StyleLength::undefined());
+  borderInlineWidth = convertRawProp(
+      context,
+      rawProps,
+      "borderInlineWidth",
+      sourceProps.borderInlineWidth,
+      yoga::StyleLength::undefined());
+  borderInlineStartWidth = convertRawProp(
+      context,
+      rawProps,
+      "borderInlineStartWidth",
+      sourceProps.borderInlineStartWidth,
+      yoga::StyleLength::undefined());
+  borderInlineEndWidth = convertRawProp(
+      context,
+      rawProps,
+      "borderInlineEndWidth",
+      sourceProps.borderInlineEndWidth,
       yoga::StyleLength::undefined());
 }
 

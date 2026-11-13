@@ -467,6 +467,18 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   if (props.paddingBlock.isDefined()) {
     result.setPadding(yoga::Edge::Vertical, props.paddingBlock);
   }
+  if (props.borderBlockWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Vertical, props.borderBlockWidth);
+  }
+  if (props.borderInlineWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Horizontal, props.borderInlineWidth);
+  }
+  if (props.borderInlineStartWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Start, props.borderInlineStartWidth);
+  }
+  if (props.borderInlineEndWidth.isDefined()) {
+    result.setBorder(yoga::Edge::End, props.borderInlineEndWidth);
+  }
 
   // Aliases without precedence
   if (result.position(yoga::Edge::Bottom).isUndefined()) {
@@ -486,6 +498,12 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   }
   if (result.padding(yoga::Edge::Bottom).isUndefined()) {
     result.setPadding(yoga::Edge::Bottom, props.paddingBlockEnd);
+  }
+  if (result.border(yoga::Edge::Top).isUndefined()) {
+    result.setBorder(yoga::Edge::Top, props.borderBlockStartWidth);
+  }
+  if (result.border(yoga::Edge::Bottom).isUndefined()) {
+    result.setBorder(yoga::Edge::Bottom, props.borderBlockEndWidth);
   }
 
   return result;

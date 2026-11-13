@@ -160,12 +160,17 @@ struct CascadedRectangleEdges {
   OptionalT block{};
   OptionalT blockStart{};
   OptionalT blockEnd{};
+  OptionalT inline_{};
+  OptionalT inlineStart{};
+  OptionalT inlineEnd{};
 
   Counterpart resolve(bool isRTL, T defaults) const
   {
-    const auto leadingEdge = isRTL ? end : start;
-    const auto trailingEdge = isRTL ? start : end;
-    const auto horizontalOrAllOrDefault = horizontal.value_or(all.value_or(defaults));
+    const auto startEdge = inlineStart ? inlineStart : start;
+    const auto endEdge = inlineEnd ? inlineEnd : end;
+    const auto leadingEdge = isRTL ? endEdge : startEdge;
+    const auto trailingEdge = isRTL ? startEdge : endEdge;
+    const auto horizontalOrAllOrDefault = inline_.value_or(horizontal.value_or(all.value_or(defaults)));
     const auto verticalOrAllOrDefault = vertical.value_or(all.value_or(defaults));
 
     return {

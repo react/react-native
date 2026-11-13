@@ -340,6 +340,21 @@ static void updateBorderColorsProps(
       "borderBlockStartColor",
       newBorderColor.blockStart,
       oldBorderColor.blockStart);
+  updateBorderColorPropValue(
+      result,
+      "borderInlineColor",
+      newBorderColor.inline_,
+      oldBorderColor.inline_);
+  updateBorderColorPropValue(
+      result,
+      "borderInlineEndColor",
+      newBorderColor.inlineEnd,
+      oldBorderColor.inlineEnd);
+  updateBorderColorPropValue(
+      result,
+      "borderInlineStartColor",
+      newBorderColor.inlineStart,
+      oldBorderColor.inlineStart);
 }
 
 inline static void updateNativeDrawableProp(

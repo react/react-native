@@ -62,8 +62,10 @@ internal value class BorderColors(
     return when (layoutDirection) {
       LayoutDirection.LTR ->
           ColorEdges(
-              edgeColors[LogicalEdge.START.ordinal]
+              edgeColors[LogicalEdge.INLINE_START.ordinal]
+                  ?: edgeColors[LogicalEdge.START.ordinal]
                   ?: edgeColors[LogicalEdge.LEFT.ordinal]
+                  ?: edgeColors[LogicalEdge.INLINE.ordinal]
                   ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
                   ?: edgeColors[LogicalEdge.ALL.ordinal]
                   ?: Color.BLACK,
@@ -73,8 +75,10 @@ internal value class BorderColors(
                   ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
                   ?: edgeColors[LogicalEdge.ALL.ordinal]
                   ?: Color.BLACK,
-              edgeColors[LogicalEdge.END.ordinal]
+              edgeColors[LogicalEdge.INLINE_END.ordinal]
+                  ?: edgeColors[LogicalEdge.END.ordinal]
                   ?: edgeColors[LogicalEdge.RIGHT.ordinal]
+                  ?: edgeColors[LogicalEdge.INLINE.ordinal]
                   ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
                   ?: edgeColors[LogicalEdge.ALL.ordinal]
                   ?: Color.BLACK,
@@ -88,8 +92,10 @@ internal value class BorderColors(
       LayoutDirection.RTL ->
           if (I18nUtil.instance.doLeftAndRightSwapInRTL(context)) {
             ColorEdges(
-                edgeColors[LogicalEdge.END.ordinal]
+                edgeColors[LogicalEdge.INLINE_END.ordinal]
+                    ?: edgeColors[LogicalEdge.END.ordinal]
                     ?: edgeColors[LogicalEdge.RIGHT.ordinal]
+                    ?: edgeColors[LogicalEdge.INLINE.ordinal]
                     ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeColors[LogicalEdge.ALL.ordinal]
                     ?: Color.BLACK,
@@ -99,8 +105,10 @@ internal value class BorderColors(
                     ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
                     ?: edgeColors[LogicalEdge.ALL.ordinal]
                     ?: Color.BLACK,
-                edgeColors[LogicalEdge.START.ordinal]
+                edgeColors[LogicalEdge.INLINE_START.ordinal]
+                    ?: edgeColors[LogicalEdge.START.ordinal]
                     ?: edgeColors[LogicalEdge.LEFT.ordinal]
+                    ?: edgeColors[LogicalEdge.INLINE.ordinal]
                     ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeColors[LogicalEdge.ALL.ordinal]
                     ?: Color.BLACK,
@@ -113,8 +121,10 @@ internal value class BorderColors(
             )
           } else {
             ColorEdges(
-                edgeColors[LogicalEdge.END.ordinal]
+                edgeColors[LogicalEdge.INLINE_END.ordinal]
+                    ?: edgeColors[LogicalEdge.END.ordinal]
                     ?: edgeColors[LogicalEdge.LEFT.ordinal]
+                    ?: edgeColors[LogicalEdge.INLINE.ordinal]
                     ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeColors[LogicalEdge.ALL.ordinal]
                     ?: Color.BLACK,
@@ -124,8 +134,10 @@ internal value class BorderColors(
                     ?: edgeColors[LogicalEdge.VERTICAL.ordinal]
                     ?: edgeColors[LogicalEdge.ALL.ordinal]
                     ?: Color.BLACK,
-                edgeColors[LogicalEdge.START.ordinal]
+                edgeColors[LogicalEdge.INLINE_START.ordinal]
+                    ?: edgeColors[LogicalEdge.START.ordinal]
                     ?: edgeColors[LogicalEdge.RIGHT.ordinal]
+                    ?: edgeColors[LogicalEdge.INLINE.ordinal]
                     ?: edgeColors[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeColors[LogicalEdge.ALL.ordinal]
                     ?: Color.BLACK,

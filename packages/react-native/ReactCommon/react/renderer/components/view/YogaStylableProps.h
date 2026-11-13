@@ -47,6 +47,11 @@ class YogaStylableProps : public Props {
   yoga::Style::Length paddingInlineEnd;
   yoga::Style::Length paddingBlock;
 
+  yoga::Style::Length borderBlockWidth;
+  yoga::Style::Length borderInlineWidth;
+  yoga::Style::Length borderInlineStartWidth;
+  yoga::Style::Length borderInlineEndWidth;
+
   // BlockEnd/BlockStart map to top/bottom (no writing mode), but we preserve
   // Yoga's precedence and prefer specific edges (e.g. top) to ones which are
   // flow relative (e.g. blockStart).
@@ -58,6 +63,9 @@ class YogaStylableProps : public Props {
 
   yoga::Style::Length paddingBlockStart;
   yoga::Style::Length paddingBlockEnd;
+
+  yoga::Style::Length borderBlockStartWidth;
+  yoga::Style::Length borderBlockEndWidth;
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
