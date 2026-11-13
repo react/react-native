@@ -35,6 +35,7 @@ const {
   UntypedModuleRegistryCallParserError,
   UnusedModuleInterfaceParserError,
 } = require('./errors');
+const {getTypeArguments} = require('./utils');
 
 function throwIfModuleInterfaceIsMisnamed(
   nativeModuleName: string,
@@ -360,7 +361,7 @@ function throwIfPartialNotAnnotatingTypeParameter(
 }
 
 function throwIfPartialWithMoreParameter(typeAnnotation: $FlowFixMe) {
-  if (typeAnnotation.typeParameters.params.length !== 1) {
+  if (getTypeArguments(typeAnnotation).params.length !== 1) {
     throw new Error('Partials only support annotating exactly one parameter.');
   }
 }

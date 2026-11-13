@@ -16,6 +16,7 @@ import android.util.SparseArray
 import androidx.core.content.res.ResourcesCompat
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.build.ReactBuildConfig
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Responsible for loading and caching Typeface objects.
@@ -32,8 +33,9 @@ import com.facebook.react.common.build.ReactBuildConfig
  */
 public class ReactFontManager {
 
-  private val fontCache: MutableMap<String, AssetFontFamily> = mutableMapOf()
-  private val customTypefaceCache: MutableMap<String, Typeface> = mutableMapOf()
+  // Read during text layout on any thread and written by font registration from other threads.
+  private val fontCache: ConcurrentHashMap<String, AssetFontFamily> = ConcurrentHashMap()
+  private val customTypefaceCache: ConcurrentHashMap<String, Typeface> = ConcurrentHashMap()
 
   /** The set of font family names that have been registered via [addCustomFont]. */
   public val customFontFamilies: Set<String>
@@ -64,13 +66,14 @@ public class ReactFontManager {
       typefaceStyle: TypefaceStyle,
       assetManager: AssetManager?,
   ): Typeface {
-    if (customTypefaceCache.containsKey(fontFamilyName)) {
+    val customTypeface = customTypefaceCache[fontFamilyName]
+    if (customTypeface != null) {
       // Apply `typefaceStyle` because custom fonts configure variants using `app:fontStyle` and
       // `app:fontWeight` in their resource XML configuration file.
-      return typefaceStyle.apply(customTypefaceCache[fontFamilyName])
+      return typefaceStyle.apply(customTypeface)
     }
 
-    val assetFontFamily = fontCache.getOrPut(fontFamilyName) { AssetFontFamily() }
+    val assetFontFamily = fontCache.computeIfAbsent(fontFamilyName) { AssetFontFamily() }
     val style = typefaceStyle.nearestStyle
     return assetFontFamily.getTypefaceForStyle(style)
         ?: createAssetTypeface(fontFamilyName, style, assetManager).also {
@@ -109,7 +112,9 @@ public class ReactFontManager {
    */
   public fun setTypeface(fontFamilyName: String, style: Int, typeface: Typeface?) {
     if (typeface != null) {
-      fontCache.getOrPut(fontFamilyName) { AssetFontFamily() }.setTypefaceForStyle(style, typeface)
+      fontCache
+          .computeIfAbsent(fontFamilyName) { AssetFontFamily() }
+          .setTypefaceForStyle(style, typeface)
     }
   }
 
@@ -205,8 +210,9 @@ public class ReactFontManager {
   private class AssetFontFamily {
     private val typefaceSparseArray: SparseArray<Typeface?> = SparseArray(4)
 
-    fun getTypefaceForStyle(style: Int): Typeface? = typefaceSparseArray[style]
+    @Synchronized fun getTypefaceForStyle(style: Int): Typeface? = typefaceSparseArray[style]
 
+    @Synchronized
     fun setTypefaceForStyle(style: Int, typeface: Typeface?) {
       typefaceSparseArray.put(style, typeface)
     }

@@ -37,7 +37,7 @@ class Tester extends React.Component<$FlowFixMe, $FlowFixMe> {
         ? this.props.reverseConfig
         : this.props.config;
     this.current = this.current ? 0 : 1;
-    const config: Object = {
+    const config: {...} = {
       ...animConfig,
       toValue: this.current,
     };

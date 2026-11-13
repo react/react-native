@@ -3747,6 +3747,7 @@ type duplexStreamOptions = writableStreamOptions &
     writableHighWaterMark?: number,
     ...
   };
+// prettier-ignore
 declare class stream$Duplex extends stream$Readable mixins stream$Writable {
   // This is an unusual class at runtime, per the docs it "prototypally extends from Readable,
   // and then parasitically from Writable." Its static methods have incompatible signatures
@@ -3755,13 +3756,10 @@ declare class stream$Duplex extends stream$Readable mixins stream$Writable {
 
   // $FlowFixMe[incompatible-exact] See above
   // $FlowFixMe[incompatible-type] See above
-  static fromWeb(
-    pair: Readonly<{
-      readable: ReadableStream,
-      writable: WritableStream,
-    }>,
-    options?: duplexStreamOptions,
-  ): this;
+  static fromWeb(pair: Readonly<{
+    readable: ReadableStream,
+    writable: WritableStream,
+  }>, options?: duplexStreamOptions): this;
 
   // $FlowFixMe[incompatible-type] See above
   static toWeb(streamDuplex: stream$Duplex): {

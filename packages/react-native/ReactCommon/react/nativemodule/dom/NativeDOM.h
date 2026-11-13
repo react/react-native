@@ -95,20 +95,19 @@ class NativeDOM : public NativeDOMCxxSpec<NativeDOM> {
 
 #pragma mark - Legacy layout APIs (for `ReactNativeElement`).
 
-  void
-  measure(jsi::Runtime &rt, std::shared_ptr<const ShadowNode> shadowNode, const MeasureOnSuccessCallback &callback);
+  void measure(jsi::Runtime &rt, std::shared_ptr<const ShadowNode> shadowNode, MeasureOnSuccessCallback callback);
 
   void measureInWindow(
       jsi::Runtime &rt,
       std::shared_ptr<const ShadowNode> shadowNode,
-      const MeasureInWindowOnSuccessCallback &callback);
+      MeasureInWindowOnSuccessCallback callback);
 
   void measureLayout(
       jsi::Runtime &rt,
       std::shared_ptr<const ShadowNode> shadowNode,
       std::shared_ptr<const ShadowNode> relativeToShadowNode,
       jsi::Function onFail,
-      const MeasureLayoutOnSuccessCallback &onSuccess);
+      MeasureLayoutOnSuccessCallback onSuccess);
 
 #pragma mark - Legacy direct manipulation APIs (for `ReactNativeElement`).
 

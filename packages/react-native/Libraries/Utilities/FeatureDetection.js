@@ -30,5 +30,6 @@ export function hasNativeConstructor(
   expectedName: string,
 ): boolean {
   const con = Object.getPrototypeOf(o).constructor;
+  // $FlowFixMe[incompatible-type]
   return con.name === expectedName && isNativeFunction(con);
 }

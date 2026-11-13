@@ -38,7 +38,7 @@ class BridgingTest : public ::testing::Test {
 
   ~BridgingTest() override
   {
-    LongLivedObjectCollection::get(rt).clear();
+    LongLivedObjectCollection::get(rt).clear(rt);
   }
 
   void TearDown() override

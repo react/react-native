@@ -122,6 +122,10 @@ class FabricUIManagerPullModelTest {
 
           override fun disableEarlyViewCommandExecution(): Boolean =
               disableEarlyViewCommandExecution
+
+          // C++ Native Animated keeps the frame callback armed every frame, which disables the
+          // idle disarm these tests cover.
+          override fun cxxNativeAnimatedEnabled(): Boolean = false
         },
     )
   }

@@ -12,6 +12,7 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import LogBoxInspectorHeader from '../LogBoxInspectorHeader';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 
 describe('LogBoxInspectorHeader', () => {
@@ -49,18 +50,29 @@ describe('LogBoxInspectorHeader', () => {
 
   it('should render two buttons for three or more total', () => {
     const root = Fantom.createRoot();
+    const onSelectIndex = jest.fn();
     Fantom.runTask(() => {
       root.render(
         <LogBoxInspectorHeader
-          onSelectIndex={() => {}}
+          onSelectIndex={onSelectIndex}
           selectedIndex={0}
-          total={1}
+          total={3}
           level="warn"
         />,
       );
     });
 
     expect(root.getRenderedOutput().toJSX()).toMatchSnapshot();
+
+    Fantom.dispatchNativeEvent(
+      nullthrows(root.document.getElementById('logbox_header_button_prev')),
+      'click',
+    );
+    Fantom.dispatchNativeEvent(
+      nullthrows(root.document.getElementById('logbox_header_button_next')),
+      'click',
+    );
+    expect(onSelectIndex.mock.calls).toEqual([[2], [1]]);
   });
 
   it('should render syntax error header', () => {

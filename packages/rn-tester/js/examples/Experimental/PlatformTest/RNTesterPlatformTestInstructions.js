@@ -8,8 +8,9 @@
  * @format
  */
 
+import RNTesterText from '../../../components/RNTesterText';
 import * as React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
@@ -28,9 +29,9 @@ export default function RNTesterPlatformTestInstructions({
     <View style={style}>
       {instructions.map((instruction, idx) => {
         return (
-          <Text key={idx} style={styles.instructionText}>
+          <RNTesterText key={idx} style={styles.instructionText}>
             {idx + 1}. {instruction}
-          </Text>
+          </RNTesterText>
         );
       })}
     </View>

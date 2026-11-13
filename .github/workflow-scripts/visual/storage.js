@@ -14,14 +14,20 @@ const {SHA_PATTERN} = require('./manifest');
 const BASELINE_SEARCH_DEPTH = 20;
 
 // Object layout. Every key is write-once: reports and approvals include the
-// run that produced them, and a baseline is only ever written for a new SHA.
+// run that produced them, a baseline is only ever written for a new SHA, and
+// a blob's key is its contents' SHA-256.
 //
+//   blobs/<sha256>.png
 //   baselines/<environment-key>/<main-sha>/manifest.json
 //   baselines/<environment-key>/<main-sha>/<test-id>.png
 //   reports/pull/<pr>/<head-sha>/<run-id>-<attempt>/results.json
 //   reports/pull/<pr>/<head-sha>/<run-id>-<attempt>/<platform>/{expected,captured,diff}/<test-id>.png
 //   reports/main/<sha>/<run-id>-<attempt>/...
 //   approvals/pull/<pr>/<fingerprint>.json
+//
+// A baseline manifest with `imageStore: 'blobs'` refers to its images in
+// `blobs/` by hash, so an image unchanged across commits is stored once.
+// Older baselines have a copy of each image under their own prefix.
 
 function assertSha(sha) {
   if (!SHA_PATTERN.test(sha)) {
@@ -38,6 +44,20 @@ function assertPositiveInteger(value, name) {
 function baselinePrefix(environmentKey, sha) {
   assertSha(sha);
   return `baselines/${environmentKey}/${sha}`;
+}
+
+function blobKey(sha256) {
+  if (!/^[0-9a-f]{64}$/.test(sha256)) {
+    throw new Error(`Invalid SHA-256: ${String(sha256)}`);
+  }
+  return `blobs/${sha256}.png`;
+}
+
+/** The key of `image` in the baseline published for `sha`. */
+function baselineImageKey({environmentKey, sha, imageStore}, image) {
+  return imageStore === 'blobs'
+    ? blobKey(image.sha256)
+    : `${baselinePrefix(environmentKey, sha)}/${image.id}.png`;
 }
 
 function reportPrefix({prNumber, headSha, runId, runAttempt}) {
@@ -75,6 +95,17 @@ async function fetchOrNull(url) {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
   return response;
+}
+
+async function existsAt(url) {
+  const response = await fetch(url, {method: 'HEAD', cache: 'no-store'});
+  if (response.status === 404) {
+    return false;
+  }
+  if (!response.ok) {
+    throw new Error(`HEAD ${url} failed with ${response.status}`);
+  }
+  return true;
 }
 
 async function fetchJsonOrNull(url) {
@@ -135,7 +166,10 @@ async function findBaseline({publicBaseUrl, environmentKey, candidateShas}) {
 module.exports = {
   BASELINE_SEARCH_DEPTH,
   approvalKey,
+  baselineImageKey,
   baselinePrefix,
+  blobKey,
+  existsAt,
   fetchBuffer,
   fetchJsonOrNull,
   findBaseline,

@@ -1,10 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`LogBoxInspectorHeader should render both buttons for two total 1`] = `
-<React.Fragment>
-  <rn-view
-    backgroundColor="rgba(250, 186, 48, 1)"
-  />
+<rn-view
+  backgroundColor="rgba(250, 186, 48, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-view
     accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
     accessible="true"
@@ -66,14 +66,14 @@ exports[`LogBoxInspectorHeader should render both buttons for two total 1`] = `
       width="8"
     />
   </rn-view>
-</React.Fragment>
+</rn-view>
 `;
 
 exports[`LogBoxInspectorHeader should render no buttons for one total 1`] = `
-<React.Fragment>
-  <rn-view
-    backgroundColor="rgba(250, 186, 48, 1)"
-  />
+<rn-view
+  backgroundColor="rgba(250, 186, 48, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-view
     alignItems="center"
     aspectRatio="1"
@@ -109,14 +109,14 @@ exports[`LogBoxInspectorHeader should render no buttons for one total 1`] = `
     marginTop="5"
     nativeID="logbox_header_button_next"
   />
-</React.Fragment>
+</rn-view>
 `;
 
 exports[`LogBoxInspectorHeader should render syntax error header 1`] = `
-<React.Fragment>
-  <rn-view
-    backgroundColor="rgba(243, 83, 105, 1)"
-  />
+<rn-view
+  backgroundColor="rgba(243, 83, 105, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-paragraph
     allowFontScaling="true"
     ellipsizeMode="tail"
@@ -132,15 +132,17 @@ exports[`LogBoxInspectorHeader should render syntax error header 1`] = `
   >
     Failed to compile
   </rn-paragraph>
-</React.Fragment>
+</rn-view>
 `;
 
 exports[`LogBoxInspectorHeader should render two buttons for three or more total 1`] = `
-<React.Fragment>
+<rn-view
+  backgroundColor="rgba(250, 186, 48, 1)"
+  experimental_onSafeAreaInsetsChange="true"
+>
   <rn-view
-    backgroundColor="rgba(250, 186, 48, 1)"
-  />
-  <rn-view
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+    accessible="true"
     alignItems="center"
     aspectRatio="1"
     justifyContent="center"
@@ -149,7 +151,18 @@ exports[`LogBoxInspectorHeader should render two buttons for three or more total
     marginRight="6"
     marginTop="5"
     nativeID="logbox_header_button_prev"
-  />
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronleft.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
   <rn-paragraph
     allowFontScaling="true"
     ellipsizeMode="tail"
@@ -163,9 +176,11 @@ exports[`LogBoxInspectorHeader should render two buttons for three or more total
     nativeID="logbox_header_title_text"
     overflow="hidden"
   >
-    Log 1 of 1
+    Log 1 of 3
   </rn-paragraph>
   <rn-view
+    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+    accessible="true"
     alignItems="center"
     aspectRatio="1"
     justifyContent="center"
@@ -174,6 +189,17 @@ exports[`LogBoxInspectorHeader should render two buttons for three or more total
     marginRight="6"
     marginTop="5"
     nativeID="logbox_header_button_next"
-  />
-</React.Fragment>
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronright.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
+</rn-view>
 `;
