@@ -8976,9 +8976,9 @@ struct facebook::yoga::LayoutData {
 }
 
 struct facebook::yoga::LayoutResults {
+  public YG_EXPORT bool operator==(facebook::yoga::LayoutResults layout) const;
   public bool computedAutoMinMainSizeResolved() const;
   public bool hadOverflow() const;
-  public bool operator==(facebook::yoga::LayoutResults layout) const;
   public facebook::yoga::CachedMeasurement cachedLayout;
   public facebook::yoga::Direction direction() const;
   public facebook::yoga::Direction lastOwnerDirection;
