@@ -26,7 +26,7 @@ namespace facebook::react {
 using ArrayPropsNativeComponentViewSizesMask = uint32_t;
 
 struct ArrayPropsNativeComponentViewSizesMaskWrapped {
-  ArrayPropsNativeComponentViewSizesMask value;
+  ArrayPropsNativeComponentViewSizesMask value{};
 };
 
 enum class ArrayPropsNativeComponentViewSizes: ArrayPropsNativeComponentViewSizesMask {
