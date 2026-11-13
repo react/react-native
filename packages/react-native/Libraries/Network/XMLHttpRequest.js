@@ -176,6 +176,7 @@ class XMLHttpRequest extends EventTarget {
   upload: XMLHttpRequestEventTarget = new XMLHttpRequestEventTarget();
 
   _requestId: ?number;
+  _requestGeneration: number = 0;
   _subscriptions: Array<EventSubscription>;
 
   _aborted: boolean = false;
@@ -204,6 +205,7 @@ class XMLHttpRequest extends EventTarget {
   }
 
   _reset(): void {
+    this._requestGeneration++;
     this.readyState = this.UNSENT;
     this.responseHeaders = undefined;
     this.status = 0;
@@ -652,6 +654,7 @@ class XMLHttpRequest extends EventTarget {
         'XMLHttpRequest URL needs to be defined (%s).',
         friendlyName,
       );
+      const currentGeneration = ++this._requestGeneration;
       RCTNetworking.sendRequest(
         method,
         this._trackingName ?? undefined,
@@ -661,7 +664,13 @@ class XMLHttpRequest extends EventTarget {
         nativeResponseType,
         incrementalEvents,
         this.timeout,
-        (requestId: number) => this.__didCreateRequest(requestId),
+        (requestId: number) => {
+          if (currentGeneration !== this._requestGeneration || this._aborted) {
+            RCTNetworking.abortRequest(requestId);
+            return;
+          }
+          this.__didCreateRequest(requestId);
+        },
         this.withCredentials,
       );
     };
@@ -674,6 +683,7 @@ class XMLHttpRequest extends EventTarget {
 
   abort(): void {
     this._aborted = true;
+    this._requestGeneration++;
     if (this._requestId != null) {
       RCTNetworking.abortRequest(this._requestId);
     }
