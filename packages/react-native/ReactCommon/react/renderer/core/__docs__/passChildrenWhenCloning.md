@@ -48,5 +48,17 @@ of mutation.
 
 The clone implementation of the YogaLayoutableShadowNode will compare the
 previous set of children with the new set. If both sets have the same size and
-each node has equivalent styling, the cloned node is not being dirtied for
-layout. This allows for improving the layout data re-use on subsequent renders.
+each new child is clean, has equivalent styling and carries the same layout
+results (computed layout and layout cache) as the child it replaces, the cloned
+node is not being dirtied for layout. This allows for improving the layout data
+re-use on subsequent renders.
+
+The layout results have to be compared as well: a child can be clean and styled
+the same while carrying a layout that the parent's cached layout was not
+computed with. Runtime shadow node reference updates can point the renderer at
+such a revision. For example, when `<Activity>` hides a subtree the renderer
+commits a `display: none` clone of the subtree's host root. Laying out that
+clone zeroes out clones of its children, and those clones inherit the children's
+runtime references, while the renderer keeps cloning from the visible host root.
+Without the layout check, the next clone of that host root would keep its cached
+layout and Yoga would never revisit the zeroed children.
