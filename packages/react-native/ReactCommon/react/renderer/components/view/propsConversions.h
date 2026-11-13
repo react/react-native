@@ -401,6 +401,9 @@ struct CascadedRectangleEdgesNames {
   const char *block;
   const char *blockEnd;
   const char *blockStart;
+  const char *inline_;
+  const char *inlineEnd;
+  const char *inlineStart;
   const char *all;
 };
 
@@ -462,6 +465,10 @@ static inline CascadedRectangleEdges<T> convertRawProp(
   result.blockEnd = convertRawProp(context, rawProps, names.blockEnd, sourceValue.blockEnd, defaultValue.blockEnd);
   result.blockStart =
       convertRawProp(context, rawProps, names.blockStart, sourceValue.blockStart, defaultValue.blockStart);
+  result.inline_ = convertRawProp(context, rawProps, names.inline_, sourceValue.inline_, defaultValue.inline_);
+  result.inlineEnd = convertRawProp(context, rawProps, names.inlineEnd, sourceValue.inlineEnd, defaultValue.inlineEnd);
+  result.inlineStart =
+      convertRawProp(context, rawProps, names.inlineStart, sourceValue.inlineStart, defaultValue.inlineStart);
 
   result.all = convertRawProp(context, rawProps, names.all, sourceValue.all, defaultValue.all);
 

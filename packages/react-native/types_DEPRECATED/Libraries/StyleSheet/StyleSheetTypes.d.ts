@@ -39,8 +39,14 @@ export interface FlexStyle {
   alignItems?: FlexAlignType | undefined;
   alignSelf?: 'auto' | FlexAlignType | undefined;
   aspectRatio?: number | string | undefined;
+  borderBlockEndWidth?: number | undefined;
+  borderBlockStartWidth?: number | undefined;
+  borderBlockWidth?: number | undefined;
   borderBottomWidth?: number | undefined;
   borderEndWidth?: number | undefined;
+  borderInlineEndWidth?: number | undefined;
+  borderInlineStartWidth?: number | undefined;
+  borderInlineWidth?: number | undefined;
   borderLeftWidth?: number | undefined;
   borderRightWidth?: number | undefined;
   borderStartWidth?: number | undefined;
@@ -463,6 +469,9 @@ export interface ViewStyle extends FlexStyle, ShadowStyleIOS, TransformsStyle {
   borderEndColor?: ColorValue | undefined;
   borderEndEndRadius?: AnimatableNumericValue | string | undefined;
   borderEndStartRadius?: AnimatableNumericValue | string | undefined;
+  borderInlineColor?: ColorValue | undefined;
+  borderInlineEndColor?: ColorValue | undefined;
+  borderInlineStartColor?: ColorValue | undefined;
   borderLeftColor?: ColorValue | undefined;
   borderRadius?: AnimatableNumericValue | string | undefined;
   borderRightColor?: ColorValue | undefined;
