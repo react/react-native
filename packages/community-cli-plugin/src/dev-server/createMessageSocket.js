@@ -24,7 +24,7 @@ export type Logger = Readonly<{
   ...
 }>;
 
-type Params = Readonly<{[string]: unknown}>;
+type Params = Readonly<{[key: string]: unknown}>;
 
 type ClientMessage =
   | Readonly<{kind: 'broadcast', method: string, params: unknown}>
@@ -45,7 +45,7 @@ type ClientMessage =
 
 type Client = Readonly<{
   socket: ws$WebSocket,
-  query: Readonly<{[string]: string}>,
+  query: Readonly<{[key: string]: string}>,
 }>;
 
 type Options = Readonly<{
@@ -130,7 +130,7 @@ export default function createMessageSocket({logger, serverBaseUrl}: Options): {
           result = clientId;
           break;
         case 'getpeers': {
-          const peers: {[string]: Readonly<{[string]: string}>} = {};
+          const peers: {[key: string]: Readonly<{[key: string]: string}>} = {};
           for (const [otherId, {query}] of clients) {
             if (otherId !== clientId) {
               peers[otherId] = query;
