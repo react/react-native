@@ -139,15 +139,22 @@ std::shared_ptr<ShadowNode> ShadowNode::clone(
   const auto& family = *family_;
   const auto& componentDescriptor = family.componentDescriptor_;
 
-  std::shared_ptr<ShadowNodeFamily::NativeProps_DEPRECATED> nativeProps;
+  std::shared_ptr<const Props> props;
   {
     std::lock_guard<std::mutex> lock(family.nativePropsMutex);
-    if (family.nativeProps_DEPRECATED != nullptr) {
+    const auto& nativeProps = family.nativeProps_DEPRECATED;
+    if (nativeProps != nullptr) {
       if (fragment.props == ShadowNodeFragment::propsPlaceholder()) {
         // Props that already include `nativeProps_DEPRECATED` don't need
         // them applied again.
-        if (family.nativeProps_DEPRECATED->appliedProps != props_) {
-          nativeProps = family.nativeProps_DEPRECATED;
+        if (nativeProps->appliedProps != props_) {
+          // Clone existing `props_` with `family.nativeProps_DEPRECATED` to
+          // apply previously set props via `setNativeProps` API.
+          auto propsParserContext =
+              PropsParserContext{family_->getSurfaceId(), {}};
+          props = componentDescriptor.cloneProps(
+              propsParserContext, props_, RawProps(nativeProps->props));
+          nativeProps->appliedProps = props;
         }
       } else {
         // TODO: We might need to merge fragment.props with
@@ -156,25 +163,10 @@ std::shared_ptr<ShadowNode> ShadowNode::clone(
     }
   }
 
-  if (nativeProps) {
-    // Clone existing `props_` with `family.nativeProps_DEPRECATED` to
-    // apply previously set props via `setNativeProps` API. The parsing
-    // runs outside the lock so the rest of the clone work runs
-    // unblocked.
-    auto propsParserContext = PropsParserContext{family_->getSurfaceId(), {}};
-    auto props = componentDescriptor.cloneProps(
-        propsParserContext, props_, RawProps(nativeProps->props));
-    {
-      std::lock_guard<std::mutex> lock(family.nativePropsMutex);
-      // Unless they changed in the meantime, the new props include the
-      // current `nativeProps_DEPRECATED`.
-      if (family.nativeProps_DEPRECATED == nativeProps) {
-        nativeProps->appliedProps = props;
-      }
-    }
+  if (props) {
     return componentDescriptor.cloneShadowNode(
         *this,
-        {.props = props,
+        {.props = std::move(props),
          .children = fragment.children,
          .state = fragment.state});
   }
