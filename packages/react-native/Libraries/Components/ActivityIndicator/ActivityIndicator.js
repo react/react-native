@@ -116,6 +116,8 @@ const ActivityIndicator: component(
   onLayout,
   size = 'small',
   style,
+  accessibilityElementsHidden,
+  'aria-hidden': ariaHidden,
   ...restProps
 }: {
   ref?: React.RefSetter<ActivityIndicatorInstance>,
@@ -155,6 +157,8 @@ const ActivityIndicator: component(
 
   return (
     <View
+      accessibilityElementsHidden={accessibilityElementsHidden}
+      aria-hidden={ariaHidden}
       onLayout={onLayout}
       style={StyleSheet.compose(styles.container, style)}>
       {Platform.OS === 'android' ? (
