@@ -6467,6 +6467,7 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	public fun invalidateElevatedDescendantCache ()Z
 	protected fun onAttachedToWindow ()V
 	protected fun onConfigurationChanged (Landroid/content/res/Configuration;)V
+	protected fun onDetachedFromWindow ()V
 	public fun onHoverEvent (Landroid/view/MotionEvent;)Z
 	public fun onInterceptTouchEvent (Landroid/view/MotionEvent;)Z
 	protected fun onLayout (ZIIII)V
