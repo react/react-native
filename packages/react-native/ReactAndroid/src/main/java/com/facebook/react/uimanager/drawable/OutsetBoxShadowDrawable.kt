@@ -8,7 +8,6 @@
 package com.facebook.react.uimanager.drawable
 
 import android.content.Context
-import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
@@ -21,7 +20,6 @@ import android.graphics.drawable.Drawable
 import android.util.LayoutDirection
 import androidx.annotation.RequiresApi
 import com.facebook.react.modules.i18nmanager.I18nUtil
-import com.facebook.react.uimanager.FilterHelper
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PixelUtil.pxToDp
@@ -32,30 +30,22 @@ import kotlin.math.roundToInt
 
 internal const val MIN_OUTSET_BOX_SHADOW_SDK_VERSION = 28
 
-// "the resulting shadow must approximate {...} a Gaussian blur with a standard deviation equal
-// to half the blur radius"
-// https://www.w3.org/TR/css-backgrounds-3/#shadow-blur
-private const val BLUR_RADIUS_SIGMA_SCALE = 0.5f
-
 /** Draws an outer box-shadow https://www.w3.org/TR/css-backgrounds-3/#shadow-shape */
 @RequiresApi(MIN_OUTSET_BOX_SHADOW_SDK_VERSION)
 internal class OutsetBoxShadowDrawable(
     private val context: Context,
-    private val shadowColor: Int,
-    private val offsetX: Float,
-    private val offsetY: Float,
-    private val blurRadius: Float,
-    private val spread: Float,
+    private var shadowColor: Int,
+    private var offsetX: Float,
+    private var offsetY: Float,
+    private var blurRadius: Float,
+    private var spread: Float,
     borderRadius: BorderRadiusStyle? = null,
 ) : Drawable() {
-  private val shadowPaint =
-      Paint().apply {
-        color = shadowColor
-        val convertedBlurRadius = FilterHelper.sigmaToRadius(blurRadius * BLUR_RADIUS_SIGMA_SCALE)
-        if (convertedBlurRadius > 0) {
-          maskFilter = BlurMaskFilter(convertedBlurRadius, BlurMaskFilter.Blur.NORMAL)
-        }
-      }
+  private val shadowPaint = Paint()
+  private var needUpdateMaskFilter = true
+  private var maskFilterDensity = 0f
+
+  private var drawableAlpha = 255
 
   private var needUpdatePath = true
   private var pathDensity = 0f
@@ -77,6 +67,10 @@ internal class OutsetBoxShadowDrawable(
       needUpdatePath = true
     }
 
+  init {
+    applyShadowColor()
+  }
+
   override fun onBoundsChange(bounds: Rect) {
     super.onBoundsChange(bounds)
     needUpdatePath = true
@@ -87,9 +81,47 @@ internal class OutsetBoxShadowDrawable(
     return true
   }
 
-  override fun setAlpha(alpha: Int) {
-    shadowPaint.alpha = (((alpha / 255f) * (Color.alpha(shadowColor) / 255f)) * 255f).roundToInt()
+  fun setShadowValues(
+      shadowColor: Int = this.shadowColor,
+      offsetX: Float = this.offsetX,
+      offsetY: Float = this.offsetY,
+      blurRadius: Float = this.blurRadius,
+      spread: Float = this.spread,
+  ) {
+    val colorChanged = shadowColor != this.shadowColor
+    val blurChanged = blurRadius != this.blurRadius
+    val geometryChanged =
+        offsetX != this.offsetX || offsetY != this.offsetY || spread != this.spread
+    if (!colorChanged && !blurChanged && !geometryChanged) {
+      return
+    }
+    this.shadowColor = shadowColor
+    this.offsetX = offsetX
+    this.offsetY = offsetY
+    this.blurRadius = blurRadius
+    this.spread = spread
+    if (colorChanged) {
+      applyShadowColor()
+    }
+    if (blurChanged) {
+      needUpdateMaskFilter = true
+    }
+    if (geometryChanged) {
+      needUpdatePath = true
+    }
     invalidateSelf()
+  }
+
+  override fun setAlpha(alpha: Int) {
+    drawableAlpha = alpha
+    applyShadowColor()
+    invalidateSelf()
+  }
+
+  private fun applyShadowColor() {
+    shadowPaint.color = shadowColor
+    shadowPaint.alpha =
+        (((drawableAlpha / 255f) * (Color.alpha(shadowColor) / 255f)) * 255f).roundToInt()
   }
 
   override fun setColorFilter(colorFilter: ColorFilter?) {
@@ -108,6 +140,7 @@ internal class OutsetBoxShadowDrawable(
   }
 
   override fun draw(canvas: Canvas) {
+    updateMaskFilter()
     updatePath()
 
     canvas.save().let { saveCount ->
@@ -120,6 +153,16 @@ internal class OutsetBoxShadowDrawable(
       }
       canvas.restoreToCount(saveCount)
     }
+  }
+
+  private fun updateMaskFilter() {
+    val density = PixelUtil.getDisplayMetricDensity()
+    if (!needUpdateMaskFilter && density == maskFilterDensity) {
+      return
+    }
+    needUpdateMaskFilter = false
+    maskFilterDensity = density
+    shadowPaint.maskFilter = createBoxShadowMaskFilter(blurRadius)
   }
 
   private fun updatePath() {
