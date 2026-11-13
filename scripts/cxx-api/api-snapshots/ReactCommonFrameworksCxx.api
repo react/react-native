@@ -1966,7 +1966,9 @@ class facebook::react::ReactInstance {
   public facebook::react::RuntimeExecutor getUnbufferedRuntimeExecutor() noexcept;
   public std::shared_ptr<facebook::react::CallInvoker> createJSCallInvoker() noexcept;
   public std::shared_ptr<facebook::react::RuntimeScheduler> getRuntimeScheduler() noexcept;
+  public using ArgFactory = std::function<void(facebook::jsi::Runtime& runtime, std::vector<facebook::jsi::Value>& args)>;
   public using BindingsInstallFunc = std::function<void(facebook::jsi::Runtime& runtime)>;
+  public void callFunctionOnModule(const std::string& moduleName, const std::string& methodName, facebook::react::ReactInstance::ArgFactory&& argFactory);
   public void callFunctionOnModule(const std::string& moduleName, const std::string& methodName, folly::dynamic&& args);
   public void handleMemoryPressureJs(int pressureLevel);
   public void initializeRuntime(facebook::react::ReactInstance::JSRuntimeFlags options, facebook::react::ReactInstance::BindingsInstallFunc bindingsInstallFunc) noexcept;
