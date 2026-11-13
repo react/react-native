@@ -419,6 +419,56 @@ class BaseViewManagerTest {
     Assertions.assertThat(view.elevation).isEqualTo(0f)
   }
 
+  @Test
+  fun testDeclaredActivateActionTakesTheAccessibilityClick() {
+    applyAccessibilityActions(JavaOnlyArray.of(JavaOnlyMap.of("name", "activate")))
+    view.createAccessibilityNodeInfo()
+
+    Assertions.assertThat(performAccessibilityClick()).isEqualTo(0)
+  }
+
+  @Test
+  fun testRemovedAccessibilityActionsNoLongerTakeTheAccessibilityClick() {
+    applyAccessibilityActions(JavaOnlyArray.of(JavaOnlyMap.of("name", "activate")))
+    view.createAccessibilityNodeInfo()
+    applyAccessibilityActions(null)
+
+    Assertions.assertThat(performAccessibilityClick()).isEqualTo(1)
+  }
+
+  @Test
+  fun testEmptiedAccessibilityActionsNoLongerTakeTheAccessibilityClick() {
+    applyAccessibilityActions(JavaOnlyArray.of(JavaOnlyMap.of("name", "activate")))
+    view.createAccessibilityNodeInfo()
+    applyAccessibilityActions(JavaOnlyArray())
+
+    Assertions.assertThat(performAccessibilityClick()).isEqualTo(1)
+  }
+
+  @Test
+  fun testRemainingAccessibilityActionsDoNotTakeTheAccessibilityClick() {
+    applyAccessibilityActions(
+        JavaOnlyArray.of(JavaOnlyMap.of("name", "activate"), JavaOnlyMap.of("name", "longpress"))
+    )
+    view.createAccessibilityNodeInfo()
+    applyAccessibilityActions(JavaOnlyArray.of(JavaOnlyMap.of("name", "longpress")))
+
+    Assertions.assertThat(performAccessibilityClick()).isEqualTo(1)
+  }
+
+  @Test
+  fun testRemovedAccessibilityActionsLeaveTheNodeInfo() {
+    applyAccessibilityActions(
+        JavaOnlyArray.of(JavaOnlyMap.of("name", "openMenu", "label", "Open menu"))
+    )
+    applyAccessibilityActions(null)
+
+    Assertions.assertThat(
+            view.createAccessibilityNodeInfo().actionList.map { it.label?.toString() }
+        )
+        .doesNotContain("Open menu")
+  }
+
   private fun recycleView(
       previousProps: JavaOnlyMap,
       beforeDrop: (ReactViewGroup) -> Unit = {},
@@ -447,4 +497,18 @@ class BaseViewManagerTest {
           null,
           JSResponderHandler(),
       )
+
+  private fun applyAccessibilityActions(accessibilityActions: JavaOnlyArray?) {
+    viewManager.updateProperties(
+        view,
+        ReactStylesDiffMap(JavaOnlyMap.of(ViewProps.ACCESSIBILITY_ACTIONS, accessibilityActions)),
+    )
+  }
+
+  private fun performAccessibilityClick(): Int {
+    var clicks = 0
+    view.setOnClickListener { clicks++ }
+    view.performAccessibilityAction(AccessibilityNodeInfo.ACTION_CLICK, null)
+    return clicks
+  }
 }
