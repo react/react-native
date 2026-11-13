@@ -18,8 +18,10 @@ import android.text.Spanned
 import android.text.TextUtils
 import android.util.DisplayMetrics
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.autofill.HintConstants
 import androidx.core.content.res.ResourcesCompat.ID_NULL
@@ -246,6 +248,96 @@ class ReactTextInputPropertyTest {
     manager.updateProperties(view, buildStyles("multiline", false))
     view.commitStagedInputType()
     assertThat(view.ellipsize).isEqualTo(TextUtils.TruncateAt.END)
+  }
+
+  @Test
+  fun testDisabledInputDoesNotClaimNativeTouches() {
+    val interceptionRequests = mutableListOf<Boolean>()
+    val parent =
+        object : FrameLayout(themedContext) {
+          override fun requestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
+            interceptionRequests.add(disallowIntercept)
+            super.requestDisallowInterceptTouchEvent(disallowIntercept)
+          }
+        }
+    parent.addView(view)
+    view.isEnabled = false
+
+    for (action in
+        listOf(
+            MotionEvent.ACTION_DOWN,
+            MotionEvent.ACTION_MOVE,
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_CANCEL,
+        )) {
+      val event = MotionEvent.obtain(0, 0, action, 10f, 10f, 0)
+      try {
+        assertThat(view.onTouchEvent(event)).isFalse()
+      } finally {
+        event.recycle()
+      }
+    }
+    assertThat(interceptionRequests).isEmpty()
+
+    // Re-enabling the same input must restore its normal touch handling.
+    view.isEnabled = true
+    val down = MotionEvent.obtain(1, 1, MotionEvent.ACTION_DOWN, 10f, 10f, 0)
+    try {
+      view.onTouchEvent(down)
+    } finally {
+      down.recycle()
+    }
+    assertThat(interceptionRequests).containsExactly(true)
+  }
+
+  @Test
+  fun testDisablingInputDuringGestureAllowsParentInterception() {
+    for (moveBeforeDisabling in listOf(false, true)) {
+      // Keep interception disallowed even if the input receives a MOVE before being disabled.
+      val input =
+          object : ReactEditText(themedContext) {
+            override fun canScrollVertically(direction: Int): Boolean = true
+          }
+      var interceptedMove = false
+      val parent =
+          object : FrameLayout(themedContext) {
+            override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+              if (event.action == MotionEvent.ACTION_MOVE) {
+                interceptedMove = true
+                return true
+              }
+              return false
+            }
+
+            override fun onTouchEvent(event: MotionEvent): Boolean = true
+          }
+      parent.addView(input)
+      parent.layout(0, 0, 100, 100)
+      input.layout(0, 0, 100, 100)
+
+      fun dispatch(action: Int): Boolean {
+        val event = MotionEvent.obtain(0, 0, action, 10f, 10f, 0)
+        return try {
+          parent.dispatchTouchEvent(event)
+        } finally {
+          event.recycle()
+        }
+      }
+
+      assertThat(dispatch(MotionEvent.ACTION_DOWN)).isTrue()
+      if (moveBeforeDisabling) {
+        dispatch(MotionEvent.ACTION_MOVE)
+      }
+      assertThat(interceptedMove).isFalse()
+
+      input.isEnabled = false
+      // The first disabled MOVE releases the parent's interception flag.
+      dispatch(MotionEvent.ACTION_MOVE)
+      assertThat(interceptedMove).isFalse()
+      dispatch(MotionEvent.ACTION_MOVE)
+      assertThat(interceptedMove).isTrue()
+      dispatch(MotionEvent.ACTION_UP)
+    }
   }
 
   @Test
