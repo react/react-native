@@ -29,6 +29,7 @@
 #import <React/RCTLogBox.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTRedBox.h>
+#import <React/RCTScheduler.h>
 #import <React/RCTSurfacePresenter.h>
 #import <ReactCommon/RCTTurboModule.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
@@ -206,28 +207,36 @@ using namespace facebook::react;
   }
   // suspend shouldn't be called under _invalidationMutex: it notifies surface observers,
   // which can call callFunctionOnJSModule and deadlock on the same mutex.
+  // Queued rendering updates capture the scheduler's delegate by raw pointer.
+  // Stop its run-loop observer on main, but keep it alive until queued JS work
+  // has drained. Release it before the runtime so its queued JSI handles remain valid.
+  __block RCTScheduler *scheduler = _surfacePresenter.scheduler;
   [_surfacePresenter suspend];
-  [_jsThreadManager dispatchToJSThread:^{
-    /**
-     * Every TurboModule is invalidated on its own method queue.
-     * TurboModuleManager invalidate blocks the calling thread until all TurboModules are invalidated.
-     */
-    [self->_turboModuleManager invalidate];
+  RCTExecuteOnMainQueue(^{
+    [scheduler stopObservingLayoutAnimations];
+    [self->_jsThreadManager dispatchToJSThread:^{
+      /**
+       * Every TurboModule is invalidated on its own method queue.
+       * TurboModuleManager invalidate blocks the calling thread until all TurboModules are invalidated.
+       */
+      [self->_turboModuleManager invalidate];
 
-    // Clean up all the Resources
-    self->_reactInstance = nullptr;
-    self->_jsRuntimeFactory = nullptr;
-    self->_appTMMDelegate = nil;
-    self->_delegate = nil;
-    [self->_displayLink invalidate];
-    self->_displayLink = nil;
+      // Clean up all the Resources
+      scheduler = nil;
+      self->_reactInstance = nullptr;
+      self->_jsRuntimeFactory = nullptr;
+      self->_appTMMDelegate = nil;
+      self->_delegate = nil;
+      [self->_displayLink invalidate];
+      self->_displayLink = nil;
 
-    self->_turboModuleManager = nil;
-    self->_performanceLogger = nil;
+      self->_turboModuleManager = nil;
+      self->_performanceLogger = nil;
 
-    // Terminate the JavaScript thread, so that no other work executes after this block.
-    self->_jsThreadManager = nil;
-  }];
+      // Terminate the JavaScript thread, so that no other work executes after this block.
+      self->_jsThreadManager = nil;
+    }];
+  });
 }
 
 - (std::shared_ptr<CallInvoker>)jsCallInvoker
