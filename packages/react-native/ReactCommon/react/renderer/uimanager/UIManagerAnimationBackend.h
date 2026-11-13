@@ -23,6 +23,14 @@ struct AnimationMutations;
 
 using AnimationTimestamp = std::chrono::duration<double, std::milli>;
 using CallbackId = uint64_t;
+using AnimationFrontendId = uint32_t;
+
+// A producer of animation mutations, such as C++ Animated or Reanimated.
+struct AnimationFrontend {
+  // Runs every frame while the frontend is started, after the callbacks passed
+  // to `start(callback)` and those of frontends registered earlier.
+  std::function<AnimationMutations(AnimationTimestamp)> onAnimationFrame;
+};
 
 class UIManagerAnimationBackend {
  public:
@@ -31,6 +39,10 @@ class UIManagerAnimationBackend {
   virtual ~UIManagerAnimationBackend() = default;
 
   virtual void onAnimationFrame(AnimationTimestamp timestamp) = 0;
+  virtual AnimationFrontendId registerFrontend(AnimationFrontend frontend) = 0;
+  // Starting a started frontend or stopping a stopped one does nothing.
+  virtual void startFrontend(AnimationFrontendId frontendId) = 0;
+  virtual void stopFrontend(AnimationFrontendId frontendId) = 0;
   virtual CallbackId start(const Callback &callback) = 0;
   virtual void stop(CallbackId callbackId) = 0;
   virtual void clearRegistry(SurfaceId surfaceId) = 0;
