@@ -4840,19 +4840,19 @@ flora-colossus@^3.0.2:
   dependencies:
     debug "^4.4.1"
 
-flow-api-translator@0.336.0:
-  version "0.336.0"
-  resolved "https://registry.yarnpkg.com/flow-api-translator/-/flow-api-translator-0.336.0.tgz#588c4672c6a32f7fcb00064314b7ad1551e728a5"
-  integrity sha512-0odorqlErVwnXLuFpQdpRwlUNaqklR2H2tN8uRmlV/Usb82k0S++ReH3afKL7BhUevi4xMsBa02vd38Lf8RznQ==
+flow-api-translator@0.340.0:
+  version "0.340.0"
+  resolved "https://registry.yarnpkg.com/flow-api-translator/-/flow-api-translator-0.340.0.tgz#c064bd1b86d0f68432d3aff620a3e4fc1e8543b5"
+  integrity sha512-scSfD46icbYxjzN4a0zER1Jc++po4TXeIKwCKQlKGjE7QfYNKpdf3KoN8hjnAH1HsVjM14gDYglYKqQepZ+AiQ==
   dependencies:
     "@babel/code-frame" "^7.16.0"
     "@typescript-eslint/parser" "8.38.0"
     "@typescript-eslint/visitor-keys" "8.38.0"
     flow-enums-runtime "^0.0.6"
-    flow-eslint "0.336.0"
-    flow-estree "0.336.0"
-    flow-parser "0.336.0"
-    flow-transform "0.336.0"
+    flow-eslint "0.340.0"
+    flow-estree "0.340.0"
+    flow-parser "0.340.0"
+    flow-transform "0.340.0"
     typescript "5.3.2"
 
 flow-bin@^0.340.0:
@@ -4865,19 +4865,24 @@ flow-enums-runtime@^0.0.6:
   resolved "https://registry.yarnpkg.com/flow-enums-runtime/-/flow-enums-runtime-0.0.6.tgz#5bb0cd1b0a3e471330f4d109039b7eba5cb3e787"
   integrity sha512-3PYnM29RFXwvAN6Pc/scUfkI7RwhQ/xqyLUyPNlXUp9S40zI8nup9tUSrTLSVnWGBN38FNiGWbwZOB6uR4OGdw==
 
-flow-eslint@0.336.0:
-  version "0.336.0"
-  resolved "https://registry.yarnpkg.com/flow-eslint/-/flow-eslint-0.336.0.tgz#2a9e807c85f41f8ba2329e787fd84bc67c411f6d"
-  integrity sha512-HWsiMD2mC3HbVwPKX74BxyX+ZjgiJi3BYDOG/FofbpLce/Eg1wftSuGEyvWprYpgKOnTEe/7o32IdLdTv25LaQ==
+flow-eslint@0.340.0:
+  version "0.340.0"
+  resolved "https://registry.yarnpkg.com/flow-eslint/-/flow-eslint-0.340.0.tgz#dbca65729dd9d671ae06ff935b6a0897f22f8d9f"
+  integrity sha512-Ms9ViJJtdv5dMH3M4i6jD3j+YTg0DyNN8rzLQrBKHLcsxH0zFbv4uajpJK9SgLmw2RKaBuuwRXKdDgfsfanWKQ==
   dependencies:
     esrecurse "^4.3.0"
-    flow-estree "0.336.0"
-    flow-parser "0.336.0"
+    flow-estree "0.340.0"
+    flow-parser "0.340.0"
 
 flow-estree@0.336.0:
   version "0.336.0"
   resolved "https://registry.yarnpkg.com/flow-estree/-/flow-estree-0.336.0.tgz#e9e90c68ac69b078b2d167588e47a11e5d240d86"
   integrity sha512-0VaGWHJourzh88otU5bVJ4Z/oIsD+R6yaeR0Q8t8dezsKQI/RLi5m3fNzkiLYLhJ+YwM3JRSKlOqGplOI5Yo3w==
+
+flow-estree@0.340.0:
+  version "0.340.0"
+  resolved "https://registry.yarnpkg.com/flow-estree/-/flow-estree-0.340.0.tgz#e86e368f5f33f4f5cc8871a18d3f79122569ebc2"
+  integrity sha512-LpYdzPWHsfDAc5nNmVrUPLo8UedFkJqogIxNyVO19tG7qBhvNwjs+Oo4TfWB+2Qa4arFevu3vdbxR5tfWps53g==
 
 flow-parser@0.336.0, flow-parser@^0.336.0:
   version "0.336.0"
@@ -4885,6 +4890,13 @@ flow-parser@0.336.0, flow-parser@^0.336.0:
   integrity sha512-O8QvQf/B3rBF+eagcc9/WMAjfJoaKckdgSd8PT/qvMIIe4ZjVKrSqV5SDnRFAKY0VrE8r5C4ADYgvYhmwkWADA==
   dependencies:
     flow-estree "0.336.0"
+
+flow-parser@0.340.0:
+  version "0.340.0"
+  resolved "https://registry.yarnpkg.com/flow-parser/-/flow-parser-0.340.0.tgz#7e1790634772a462612cc3d3347e2979ca4261af"
+  integrity sha512-zB1DgZcBVes/hHj/upWKLhukHAIkj+6g2o0yVnxCxS1Wyi/YLX513w8XpFLJ7/LUrbSE7CIHJAEZ94smHujt9Q==
+  dependencies:
+    flow-estree "0.340.0"
 
 flow-remove-types@^2.336.0:
   version "2.336.0"
@@ -4895,17 +4907,17 @@ flow-remove-types@^2.336.0:
     pirates "^3.0.2"
     vlq "^0.2.1"
 
-flow-transform@0.336.0:
-  version "0.336.0"
-  resolved "https://registry.yarnpkg.com/flow-transform/-/flow-transform-0.336.0.tgz#61fd6c761b63c412b67c707dcd81333d24e5fa8d"
-  integrity sha512-KQEt9y581jhxaUOM80sPbssa/t6bEnwGz0x/xfwmxXv8a69bs6wW83/1Roq1h9qoJfwvSTncWk3IlrpdBVBXXQ==
+flow-transform@0.340.0:
+  version "0.340.0"
+  resolved "https://registry.yarnpkg.com/flow-transform/-/flow-transform-0.340.0.tgz#ae9fa16ba916378d25806606fa7073c921652e29"
+  integrity sha512-JC7YcbERLI0XV0D3BkAXCFkZktq0EILxXRvJsWoHjdAZAZe2hIS1DGOmhbRyFti6crskGD/ui8w8nLvM/SoPxg==
   dependencies:
     "@babel/code-frame" "^7.16.0"
     esquery "^1.4.0"
     flow-enums-runtime "^0.0.6"
-    flow-eslint "0.336.0"
-    flow-estree "0.336.0"
-    flow-parser "0.336.0"
+    flow-eslint "0.340.0"
+    flow-estree "0.340.0"
+    flow-parser "0.340.0"
     string-width "4.2.3"
 
 for-each@^0.3.3:
