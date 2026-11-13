@@ -122,14 +122,12 @@ static jsi::Object convertNSDictionaryToJSIObject(jsi::Runtime &runtime, __unsaf
   for (NSUInteger i = 0; i < count; i++) {
     // Number keys become strings, and other keys that aren't strings are skipped, as
     // convertIdToFollyDynamic does.
-    __unsafe_unretained id key = keysAndObjects[i];
-    NSString *numberKey = nil;
+    id key = keysAndObjects[i];
     if (![key isKindOfClass:[NSString class]]) {
       if (![key isKindOfClass:[NSNumber class]] || [key isKindOfClass:[@YES class]]) {
         continue;
       }
-      numberKey = [key stringValue];
-      key = numberKey;
+      key = [key stringValue];
     }
     result.setProperty(
         runtime,
