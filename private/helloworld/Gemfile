@@ -7,7 +7,12 @@ ruby ">= 2.6.10"
 # "uninitialized constant ActiveSupport::LoggerThreadSafeLevel::Logger". A bare
 # `gem 'logger'` is not enough because bundler does not auto-require Gemfile gems;
 # require it here so it is loaded before cocoapods loads active_support.
-require 'logger'
+begin
+  require 'logger'
+rescue LoadError => error
+  # Dependency resolution can evaluate this file before logger is installed.
+  raise unless error.path == 'logger'
+end
 
 gem 'cocoapods', '~> 1.13', '!= 1.15.0', '!= 1.15.1'
 gem 'activesupport', '>= 6.1.7.5', '< 7.1.0'
