@@ -47,6 +47,8 @@ const {
   typeAliasResolution,
   typeEnumResolution,
 } = require('../../parsers-primitives');
+const {getTypeArguments} = require('../../utils');
+const {getEnumMembersType} = require('../utils');
 
 function translateTypeAnnotation(
   hasteModuleName: string,
@@ -125,7 +127,7 @@ function translateTypeAnnotation(
           const [paramType, isParamNullable] = unwrapNullable(
             translateTypeAnnotation(
               hasteModuleName,
-              typeAnnotation.typeParameters.params[0],
+              getTypeArguments(typeAnnotation).params[0],
               types,
               aliasMap,
               enumMap,
@@ -274,10 +276,19 @@ function translateTypeAnnotation(
         value: typeAnnotation.value,
       });
     }
+    case 'EnumBody':
     case 'EnumStringBody':
     case 'EnumNumberBody': {
+      const enumMembersType = getEnumMembersType(typeAnnotation);
+      if (enumMembersType == null) {
+        throw new UnsupportedTypeAnnotationParserError(
+          hasteModuleName,
+          typeAnnotation,
+          parser.language(),
+        );
+      }
       if (
-        typeAnnotation.type === 'EnumNumberBody' &&
+        enumMembersType === 'NumberTypeAnnotation' &&
         typeAnnotation.members.some(
           m =>
             m.type === 'EnumNumberMember' && !Number.isInteger(m.init?.value),

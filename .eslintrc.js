@@ -62,6 +62,13 @@ module.exports = {
       parser: 'jsonc-eslint-parser',
     },
     {
+      // Generated bundles carry `@nolint`, which this lint run does not honor.
+      files: ['private/eslint-plugin-monorepo/rules/sort-imports.js'],
+      rules: {
+        'ft-flow/require-valid-file-annotation': 'off',
+      },
+    },
+    {
       files: ['flow-typed/**/*.js', 'packages/react-native/flow/**/*'],
       rules: {
         '@react-native/monorepo/valid-flow-typed-signature': 'error',
