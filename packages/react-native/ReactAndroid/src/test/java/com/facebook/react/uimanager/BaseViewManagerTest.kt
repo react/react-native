@@ -446,6 +446,17 @@ class BaseViewManagerTest {
   }
 
   @Test
+  fun testRemainingAccessibilityActionsDoNotTakeTheAccessibilityClick() {
+    applyAccessibilityActions(
+        JavaOnlyArray.of(JavaOnlyMap.of("name", "activate"), JavaOnlyMap.of("name", "longpress"))
+    )
+    view.createAccessibilityNodeInfo()
+    applyAccessibilityActions(JavaOnlyArray.of(JavaOnlyMap.of("name", "longpress")))
+
+    Assertions.assertThat(performAccessibilityClick()).isEqualTo(1)
+  }
+
+  @Test
   fun testRemovedAccessibilityActionsLeaveTheNodeInfo() {
     applyAccessibilityActions(
         JavaOnlyArray.of(JavaOnlyMap.of("name", "openMenu", "label", "Open menu"))
