@@ -10,9 +10,10 @@
 
 import type {PointerEvent, ViewProps} from 'react-native';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useEffect, useRef, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 export default function EventfulView(props: {
   name: string,
@@ -33,7 +34,7 @@ export default function EventfulView(props: {
   onMoveCapture?: boolean,
   onCancel?: boolean,
   onCancelCapture?: boolean,
-  log: string => void,
+  log: (v: string) => void,
   ...ViewProps,
 }): React.Node {
   const ref = useRef<?React.ElementRef<typeof View>>();
@@ -102,9 +103,9 @@ export default function EventfulView(props: {
   return (
     <View ref={ref} {...listeners} {...restProps}>
       <View style={styles.row}>
-        <Text>
+        <RNTesterText>
           {props.name}, {tag}, {listeningTo}
-        </Text>
+        </RNTesterText>
       </View>
       {props.children}
     </View>

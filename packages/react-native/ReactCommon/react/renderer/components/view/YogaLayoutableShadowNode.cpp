@@ -62,7 +62,7 @@ static int FabricDefaultYogaLog(
   return size_s;
 }
 
-thread_local LayoutContext threadLocalLayoutContext;
+constinit thread_local LayoutContext threadLocalLayoutContext;
 
 YogaLayoutableShadowNode::YogaLayoutableShadowNode(
     const ShadowNodeFragment& fragment,
@@ -411,6 +411,10 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   }
 
   yogaNode_.setStyle(styleResult);
+  // A style rebuilt from the props lacks what `configureYogaTree` applies to
+  // it, such as the left and right swap in RTL, so the node needs configuring
+  // again.
+  yogaTreeHasBeenConfigured_ = false;
   if (getTraits().check(ShadowNodeTraits::ViewKind)) {
     auto& viewProps = static_cast<const ViewProps&>(*props_);
     // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
@@ -503,9 +507,9 @@ void YogaLayoutableShadowNode::configureYogaTree(
   // `pointScaleFactor` it is not part of the Yoga config, so a change does not
   // invalidate Yoga's layout cache. Dirty the node when it changes to force
   // re-measurement. We propagate up to the root so an unchanged, still-cached
-  // ancestor isn't skipped by `calculateLayoutInternal` before reaching us.
-  if (ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() &&
-      getTraits().check(ShadowNodeTraits::Trait::MeasurableYogaNode) &&
+  // ancestor isn't skipped by `calculateLayoutInternal` before reaching us. An
+  // owner that is already dirty stops it; the child loop below covers that.
+  if (getTraits().check(ShadowNodeTraits::Trait::MeasurableYogaNode) &&
       !floatEquality(
           getLayoutMetrics().fontSizeMultiplier, fontSizeMultiplier)) {
     yogaNode_.markDirtyAndPropagate();
@@ -547,13 +551,28 @@ void YogaLayoutableShadowNode::configureYogaTree(
       cloneChildInPlace(i).configureYogaTree(
           pointScaleFactor, fontSizeMultiplier, errata, swapLeftAndRight);
     }
+
+    // An in-place clone can come back dirty without dirtying this node, from
+    // `setSize()` in a descriptor's `adopt()` or from `completeClone()`.
+    // Apply the rule of `updateYogaChildren()` so Yoga doesn't skip it.
+    const auto& updatedYogaNode = yogaLayoutableChildren_[i]->yogaNode_;
+    if (updatedYogaNode.isDirty() && !yogaNode_.isDirty() &&
+        yogaNode_.style().display() != yoga::Display::None) {
+      yogaNode_.setDirty(true);
+    }
   }
 }
 
 YGErrata YogaLayoutableShadowNode::resolveErrata(YGErrata defaultErrata) const {
-  if (auto layoutConformanceNode =
-          dynamic_cast<const LayoutConformanceShadowNode*>(this)) {
-    switch (layoutConformanceNode->getConcreteProps().mode) {
+  // This runs for every child on every layout, and almost no node is a
+  // LayoutConformance node, so a failing `dynamic_cast` would be the common
+  // case. The class is final and its component name is defined once, in
+  // LayoutConformanceShadowNode.cpp, so comparing component handles is
+  // equivalent.
+  if (getComponentHandle() == LayoutConformanceShadowNode::Handle()) {
+    const auto& layoutConformanceNode =
+        static_cast<const LayoutConformanceShadowNode&>(*this);
+    switch (layoutConformanceNode.getConcreteProps().mode) {
       case LayoutConformance::Strict:
         // CSS Flexbox §4.5 automatic minimum sizing is the spec-compliant
         // behaviour, so strict conformance should adopt it — but its probe
@@ -769,9 +788,11 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       auto newLayoutMetrics = layoutMetricsFromYogaNode(*childYogaNode);
       newLayoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
       newLayoutMetrics.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
+      // Store the swap that `configureYogaTree` applied, which comes from the
+      // root, not this node's direction. Otherwise a `direction` override never
+      // matches the skip check there and is configured again on every pass.
       newLayoutMetrics.wasLeftAndRightSwapped =
-          layoutContext.swapLeftAndRightInRTL &&
-          newLayoutMetrics.layoutDirection == LayoutDirection::RightToLeft;
+          layoutMetrics_.wasLeftAndRightSwapped;
 
       // Child node's layout has changed. When a node is added to
       // `affectedNodes`, onLayout event is called on the component. Comparing
@@ -818,7 +839,12 @@ Rect YogaLayoutableShadowNode::getContentBounds() const {
 
     auto layoutMetricsWithOverflowInset = childNode.getLayoutMetrics();
     if (layoutMetricsWithOverflowInset.displayType != DisplayType::None) {
-      auto viewChildNode = dynamic_cast<const ViewShadowNode*>(&childNode);
+      // ViewShadowNode is final, so comparing component handles is equivalent
+      // to a `dynamic_cast`, without its cost for every non-View child.
+      auto viewChildNode =
+          childNode.getComponentHandle() == ViewShadowNode::Handle()
+          ? static_cast<const ViewShadowNode*>(&childNode)
+          : nullptr;
       auto hitSlop = viewChildNode != nullptr
           ? viewChildNode->getConcreteProps().hitSlop
           : EdgeInsets{};
@@ -940,8 +966,8 @@ float YogaLayoutableShadowNode::yogaNodeBaselineCallbackConnector(
 
 YogaLayoutableShadowNode& YogaLayoutableShadowNode::shadowNodeFromContext(
     YGNodeConstRef yogaNode) {
-  return dynamic_cast<YogaLayoutableShadowNode&>(
-      *static_cast<ShadowNode*>(YGNodeGetContext(yogaNode)));
+  // The context is only set by the constructors of this class, to `this`.
+  return *static_cast<YogaLayoutableShadowNode*>(YGNodeGetContext(yogaNode));
 }
 
 yoga::Config& YogaLayoutableShadowNode::initializeYogaConfig(
@@ -1024,9 +1050,10 @@ void YogaLayoutableShadowNode::swapLeftAndRightInYogaStyleProps() {
 }
 
 void YogaLayoutableShadowNode::swapLeftAndRightInViewProps() {
-  if (auto viewShadowNode = dynamic_cast<ViewShadowNode*>(this)) {
+  if (getTraits().check(ShadowNodeTraits::ViewKind)) {
     // TODO: Do not mutate props directly.
-    auto& props = const_cast<ViewProps&>(viewShadowNode->getConcreteProps());
+    auto& props =
+        const_cast<ViewProps&>(static_cast<const ViewProps&>(*props_));
 
     // Swap border node values, borderRadii, borderColors and borderStyles.
     if (props.borderRadii.topLeft.has_value()) {

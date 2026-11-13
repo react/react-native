@@ -48,7 +48,7 @@ export type Response =
   | ArrayBufferLike
   | Blob
   | ReadonlyArray<unknown>
-  | {[string]: unknown, ...};
+  | {[key: string]: unknown, ...};
 
 type XHRInterceptor = interface {
   requestSent(
@@ -167,7 +167,7 @@ class XMLHttpRequest extends EventTarget {
   DONE: number = DONE;
 
   readyState: number = UNSENT;
-  responseHeaders: ?{[string]: string};
+  responseHeaders: ?{[key: string]: string};
   status: number = 0;
   timeout: number = 0;
   responseURL: ?string;
@@ -181,8 +181,8 @@ class XMLHttpRequest extends EventTarget {
   _aborted: boolean = false;
   _cachedResponse: Response;
   _hasError: boolean = false;
-  _headers: {[string]: string};
-  _lowerCaseResponseHeaders: {[string]: string};
+  _headers: {[key: string]: string};
+  _lowerCaseResponseHeaders: {[key: string]: string};
   _method: ?string = null;
   _perfKey: ?string = null;
   _responseType: ResponseType;
@@ -355,7 +355,7 @@ class XMLHttpRequest extends EventTarget {
   __didReceiveResponse(
     requestId: number,
     status: number,
-    responseHeaders: ?{[string]: string},
+    responseHeaders: ?{[key: string]: string},
     responseURL: ?string,
   ): void {
     if (requestId === this._requestId) {
@@ -691,11 +691,11 @@ class XMLHttpRequest extends EventTarget {
     this._reset();
   }
 
-  setResponseHeaders(responseHeaders: ?{[string]: string}): void {
+  setResponseHeaders(responseHeaders: ?{[key: string]: string}): void {
     this.responseHeaders = responseHeaders || null;
-    const headers: {[string]: string} = responseHeaders || {};
+    const headers: {[key: string]: string} = responseHeaders || {};
     this._lowerCaseResponseHeaders = Object.keys(headers).reduce<{
-      [string]: string,
+      [key: string]: string,
     }>((lcaseHeaders, headerName) => {
       lcaseHeaders[headerName.toLowerCase()] = headers[headerName];
       return lcaseHeaders;

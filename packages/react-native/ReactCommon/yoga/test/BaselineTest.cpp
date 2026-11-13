@@ -19,6 +19,20 @@
 namespace facebook::yoga {
 namespace {
 
+TEST(ConfigTest, defaultConfigIsConstexpr) {
+#if defined(_WIN32)
+  const auto& config = Config::getDefault();
+  const auto copy = config;
+#else
+  constexpr const auto& config = Config::getDefault();
+  constexpr auto copy = config;
+  static_assert(&config == &Config::getDefault());
+#endif
+
+  EXPECT_EQ(&config, YGConfigGetDefault());
+  EXPECT_EQ(copy.getPointScaleFactor(), config.getPointScaleFactor());
+}
+
 void setMeasuredSize(Node& node, float width, float height) {
   node.setLayoutMeasuredDimension(width, Dimension::Width);
   node.setLayoutMeasuredDimension(height, Dimension::Height);

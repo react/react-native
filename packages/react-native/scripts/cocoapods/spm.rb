@@ -142,21 +142,25 @@ class SPMManager
   end
 
   # Flattening a pod's build dir moves its generated modulemap from
-  # "<Pod>/<Pod>.modulemap" to "<Pod>.modulemap"; the aggregate xcconfigs
-  # reference the old path via -fmodule-map-file. Must mutate the in-memory
-  # Config attributes — later post_install steps (NewArchitectureHelper) re-save
-  # the same Config objects and would clobber a plain file edit.
+  # "<Pod>/<Module>.modulemap" to "<Module>.modulemap"; the aggregate xcconfigs
+  # reference the old path via -fmodule-map-file. The module name differs from
+  # the pod name when the pod name isn't a C identifier (e.g. "rnmapbox-maps").
+  # Must mutate the in-memory Config attributes — later post_install steps
+  # (NewArchitectureHelper) re-save the same Config objects and would clobber a
+  # plain file edit.
   def rewrite_aggregate_modulemap_references(installer, pod_names)
     installer.aggregate_targets.each do |aggregate_target|
+      pod_targets = aggregate_target.pod_targets.select { |pod_target| pod_names.include?(pod_target.name) }
       aggregate_target.xcconfigs.each do |config_name, config_file|
         %w[OTHER_CFLAGS OTHER_SWIFT_FLAGS].each do |key|
           value = config_file.attributes[key]
           next unless value
 
-          updated_value = pod_names.reduce(value) do |acc, pod_name|
+          updated_value = pod_targets.reduce(value) do |acc, pod_target|
+            module_name = pod_target.product_module_name
             acc.gsub(
-              "${PODS_CONFIGURATION_BUILD_DIR}/#{pod_name}/#{pod_name}.modulemap",
-              "${PODS_CONFIGURATION_BUILD_DIR}/#{pod_name}.modulemap"
+              "${PODS_CONFIGURATION_BUILD_DIR}/#{pod_target.name}/#{module_name}.modulemap",
+              "${PODS_CONFIGURATION_BUILD_DIR}/#{module_name}.modulemap"
             )
           end
           config_file.attributes[key] = updated_value if updated_value != value

@@ -8,6 +8,7 @@
 #include "InspectorNetworkRequestListener.h"
 #include "SafeReleaseJniRef.h"
 
+#include <map>
 #include <utility>
 
 using namespace facebook::jni;

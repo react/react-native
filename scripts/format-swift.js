@@ -81,7 +81,20 @@ function findSwiftFormat() {
   }
   for (const [command, prefixArguments] of candidates) {
     const result = commandVersion(command, prefixArguments);
-    const version = parseSwiftFormatVersion(result.output);
+    let version = parseSwiftFormatVersion(result.output);
+    if (
+      result.status === 0 &&
+      version == null &&
+      result.output.trim() === 'main' &&
+      command === 'swift' &&
+      prefixArguments.length === 1 &&
+      prefixArguments[0] === 'format'
+    ) {
+      const toolchain = commandVersion(command);
+      if (toolchain.status === 0) {
+        version = parseSwiftFormatVersion(toolchain.output);
+      }
+    }
     if (
       result.status === 0 &&
       version != null &&

@@ -67,7 +67,6 @@ import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItemFactory;
 import com.facebook.react.fabric.mounting.mountitems.PrefetchResourcesMountItem;
-import com.facebook.react.fabric.mounting.mountitems.PullTransactionMountItem;
 import com.facebook.react.fabric.mounting.mountitems.SynchronousMountItem;
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags;
@@ -237,6 +236,11 @@ public class FabricUIManager
           // This executor can be technically accessed before the dispatcher is created,
           // but if that happens, something is terribly wrong
           mMountItemDispatcher.dispatchMountItems(items);
+          // Only called when a surface's root view attaches, before the surface counts as attached,
+          // so the dispatch above skips its pull. Pull model: the next frame pulls it.
+          if (mMountItemDispatcher.hasSurfaceIdsToPull()) {
+            mDispatchUIFrameCallback.schedule();
+          }
         }
       };
 
@@ -1017,15 +1021,9 @@ public class FabricUIManager
     if (shouldSchedule) {
       Assertions.assertNotNull(mountItem, "MountItem is null");
       if (synchronous) {
-        if (mMountingManager.isWaitingForViewAttach(mountItem.getSurfaceId())) {
-          // Regular mount items are still being deferred into the surface's attach queue.
-          // Executing this batch inline would run it ahead of the preallocations queued there.
-          mMountItemDispatcher.addMountItem(mountItem);
-        } else {
-          // Pull model: we are already on the UI thread, inside the dispatcher's loop executing
-          // a PullTransactionMountItem. We don't schedule the item, we execute it directly.
-          mountItem.execute(mMountingManager);
-        }
+        // Pull model: we are already on the UI thread, inside the dispatcher's pull of a surface
+        // whose root view is attached. We don't schedule the item, we execute it directly.
+        mountItem.execute(mMountingManager);
       } else {
         mMountItemDispatcher.addMountItem(mountItem);
         if (UiThreadUtil.isOnUiThread()) {
@@ -1075,19 +1073,18 @@ public class FabricUIManager
 
   /**
    * Pull model: called from C++ via JNI (usually on the commit thread) to signal that a transaction
-   * is available for {@code surfaceId}. Enqueues a PullTransactionMountItem so the UI thread pulls
-   * and applies the transaction itself, preserving mount-item ordering.
+   * is available for {@code surfaceId}. The next dispatch on the UI thread pulls and applies it
+   * before the queued mount items.
    */
   @SuppressWarnings("unused")
   @AnyThread
   @ThreadConfined(ANY)
   @VisibleForTesting
   void onTransactionAvailable(int surfaceId) {
-    FabricUIManagerBinding binding = mBinding;
-    if (binding == null) {
+    if (mBinding == null) {
       return;
     }
-    mMountItemDispatcher.addMountItem(new PullTransactionMountItem(surfaceId, binding));
+    mMountItemDispatcher.addSurfaceIdToPull(surfaceId);
     if (UiThreadUtil.isOnUiThread()) {
       mMountItemDispatcher.tryDispatchMountItems();
     }
@@ -1552,16 +1549,14 @@ public class FabricUIManager
         listener.didMountItems(FabricUIManager.this);
       }
 
-      if (mountItems == null || mountItems.isEmpty()) {
-        return;
-      }
-
-      // Collect surface IDs for all the mount items
-      for (MountItem mountItem : mountItems) {
-        if (mountItem != null
-            && mountItem.getSurfaceId() != View.NO_ID
-            && !mSurfaceIdsWithPendingMountNotification.contains(mountItem.getSurfaceId())) {
-          mSurfaceIdsWithPendingMountNotification.add(mountItem.getSurfaceId());
+      if (mountItems != null) {
+        // Collect surface IDs for all the mount items
+        for (MountItem mountItem : mountItems) {
+          if (mountItem != null
+              && mountItem.getSurfaceId() != View.NO_ID
+              && !mSurfaceIdsWithPendingMountNotification.contains(mountItem.getSurfaceId())) {
+            mSurfaceIdsWithPendingMountNotification.add(mountItem.getSurfaceId());
+          }
         }
       }
 
@@ -1589,6 +1584,20 @@ public class FabricUIManager
                     binding.reportMount(surfaceId);
                   }
                 });
+      }
+    }
+
+    @UiThread
+    @ThreadConfined(UI)
+    @Override
+    public void pullTransaction(int surfaceId) {
+      FabricUIManagerBinding binding = mBinding;
+      if (binding == null) {
+        return;
+      }
+      binding.pullAndExecuteTransaction(surfaceId);
+      if (!mSurfaceIdsWithPendingMountNotification.contains(surfaceId)) {
+        mSurfaceIdsWithPendingMountNotification.add(surfaceId);
       }
     }
 

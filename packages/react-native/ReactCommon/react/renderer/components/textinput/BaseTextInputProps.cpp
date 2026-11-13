@@ -104,7 +104,7 @@ BaseTextInputProps::BaseTextInputProps(
           rawProps,
           "editable",
           sourceProps.editable,
-          {})),
+          true)),
       readOnly(convertRawProp(
           context,
           rawProps,
@@ -151,7 +151,7 @@ void BaseTextInputProps::setProp(
   // propnames parsed here and outside of ParagraphAttributes. For example,
   // textBreakStrategy is duplicated.
   // This code is also duplicated in ParagraphProps.
-  static auto paDefaults = ParagraphAttributes{};
+  static constinit auto paDefaults = ParagraphAttributes{};
   switch (hash) {
     REBUILD_FIELD_SWITCH_CASE(
         paDefaults,

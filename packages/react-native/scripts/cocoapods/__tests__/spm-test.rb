@@ -18,10 +18,14 @@ class SPMTests < Test::Unit::TestCase
       super
     end
   end
-  PodTargetStub = Struct.new(:name)
-  AggregateTargetStub = Struct.new(:name, :pod_targets, :embed_frameworks_script_path) do
-    def xcconfigs
-      {}
+  PodTargetStub = Struct.new(:name, :product_module_name)
+  AggregateTargetStub = Struct.new(:name, :pod_targets, :embed_frameworks_script_path, :xcconfigs) do
+    def initialize(name, pod_targets, embed_frameworks_script_path, xcconfigs = {})
+      super
+    end
+
+    def xcconfig_path(config_name)
+      Pathname(TMP_DIR) + "#{name}.#{config_name.downcase}.xcconfig"
     end
   end
 
@@ -201,5 +205,33 @@ class SPMTests < Test::Unit::TestCase
     assert_equal([SPMManager::SIGNATURE_PHASE_NAME], phase_names.call("DynamicPod"))
     assert_empty(phase_names.call(POD_NAME))
     assert_loadable_project(project.path)
+  end
+
+  def test_module_map_references_use_the_module_name_of_pods_built_into_the_shared_products_dir
+    project = build_project(0)
+    project.new_target(:static_library, "rnmapbox-maps", :ios)
+    project.save
+    manager = SPMManager.new
+    [POD_NAME, "rnmapbox-maps"].each do |pod_name|
+      manager.dependency(
+        PodSpecStub.new(pod_name),
+        url: "https://github.com/rive-app/rive-ios.git",
+        requirement: { kind: "exactVersion", version: "6.26.0" },
+        products: ["RiveRuntime"]
+      )
+    end
+    flags = '$(inherited) -fmodule-map-file="${PODS_CONFIGURATION_BUILD_DIR}/%s" -fmodule-map-file="${PODS_CONFIGURATION_BUILD_DIR}/%s"'
+    config = Xcodeproj::Config.new(
+      "OTHER_CFLAGS" => flags % ["#{POD_NAME}/#{POD_NAME}.modulemap", "rnmapbox-maps/rnmapbox_maps.modulemap"],
+      "OTHER_SWIFT_FLAGS" => flags % ["#{POD_NAME}/#{POD_NAME}.modulemap", "rnmapbox-maps/rnmapbox_maps.modulemap"]
+    )
+    pod_targets = [PodTargetStub.new(POD_NAME, POD_NAME), PodTargetStub.new("rnmapbox-maps", "rnmapbox_maps")]
+    aggregate_target = AggregateTargetStub.new("Pods-App", pod_targets, File.join(TMP_DIR, "none.sh"), { "Debug" => config })
+
+    manager.apply_on_post_install(InstallerStub.new(project, [aggregate_target]))
+
+    expected = flags % ["#{POD_NAME}.modulemap", "rnmapbox_maps.modulemap"]
+    assert_equal(expected, config.attributes["OTHER_CFLAGS"])
+    assert_equal(expected, config.attributes["OTHER_SWIFT_FLAGS"])
   end
 end

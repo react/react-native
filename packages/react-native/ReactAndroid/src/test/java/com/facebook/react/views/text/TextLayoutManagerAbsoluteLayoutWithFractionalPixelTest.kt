@@ -8,6 +8,7 @@
 package com.facebook.react.views.text
 
 import android.annotation.SuppressLint
+import android.graphics.text.LineBreakConfig
 import android.text.BoringLayout
 import android.text.Layout
 import android.text.SpannableString
@@ -97,6 +98,8 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
           /* includeFontPadding = */ false,
           /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
           /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
+          /* lineBreakStyle = */ LineBreakConfig.LINE_BREAK_STYLE_NONE,
+          /* lineBreakWordStyle = */ LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE,
           Layout.Alignment.ALIGN_NORMAL,
           /* justificationMode = */ 0,
           /* ellipsizeMode = */ null,

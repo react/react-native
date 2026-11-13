@@ -9,6 +9,7 @@ package com.facebook.react.views.text
 
 import android.annotation.SuppressLint
 import android.graphics.RectF
+import android.graphics.text.LineBreakConfig
 import android.text.Layout
 import android.text.SpannableString
 import android.text.TextPaint
@@ -43,6 +44,29 @@ class TextLayoutManagerStartOverhangTest {
 
     assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isFalse()
     assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `EXACTLY mode keeps advance based width measurement for LTR text`() {
+    val layout =
+        createLayout(
+            YogaMeasureMode.EXACTLY,
+            text = SpannableString("Just listed"),
+            ellipsizeMode = TextUtils.TruncateAt.END,
+            maxNumberOfLines = 1,
+        )
+
+    assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isFalse()
+    assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `EXACTLY mode enables start overhang support for mixed LTR and RTL text`() {
+    val layout = createLayout(YogaMeasureMode.EXACTLY, text = SpannableString("Hello שלום"))
+
+    assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isTrue()
   }
 
   @Test
@@ -133,6 +157,22 @@ class TextLayoutManagerStartOverhangTest {
 
   @Test
   @Config(sdk = [35])
+  fun `mixed paragraph directions support requested line breaking styles`() {
+    val layout =
+        createLayout(
+            YogaMeasureMode.EXACTLY,
+            text = SpannableString("שלום\n\nעולם"),
+            maxNumberOfLines = 0,
+            lineBreakStyle = LineBreakConfig.LINE_BREAK_STYLE_STRICT,
+            lineBreakWordStyle = LineBreakConfig.LINE_BREAK_WORD_STYLE_PHRASE,
+        )
+
+    assertThat(TextLayoutManager.hasMixedParagraphDirections(layout)).isTrue()
+    assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
   fun `single paragraph direction keeps the start overhang drawing shift`() {
     val layout =
         createLayout(
@@ -161,6 +201,8 @@ class TextLayoutManagerStartOverhangTest {
       ellipsizeMode: TextUtils.TruncateAt? = null,
       maxNumberOfLines: Int = 2,
       paint: TextPaint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 26f },
+      lineBreakStyle: Int = LineBreakConfig.LINE_BREAK_STYLE_NONE,
+      lineBreakWordStyle: Int = LineBreakConfig.LINE_BREAK_WORD_STYLE_NONE,
   ): Layout =
       TextLayoutManager.createLayout(
           text,
@@ -170,6 +212,8 @@ class TextLayoutManagerStartOverhangTest {
           /* includeFontPadding = */ false,
           /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
           /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
+          lineBreakStyle,
+          lineBreakWordStyle,
           Layout.Alignment.ALIGN_NORMAL,
           /* justificationMode = */ 0,
           /* ellipsizeMode = */ ellipsizeMode,

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<312cec99bd429d22e25f4e82d7fc4ee7>>
+ * @generated SignedSource<<f7a31d0435905a87a8ce08a517f9e17d>>
  */
 
 /**
@@ -36,6 +36,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun defaultTextToOverflowHidden(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun deferTextInputTruncationIOS(): Boolean
+
   @DoNotStrip @JvmStatic public external fun disableEarlyViewCommandExecution(): Boolean
 
   @DoNotStrip @JvmStatic public external fun disableIdleEventDispatchFrameCallbackRearmAndroid(): Boolean
@@ -55,8 +57,6 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableAccessibilityOrder(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableAndroidTextMeasurementOptimizations(): Boolean
 
@@ -84,7 +84,7 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableFontScaleChangesUpdatingLayout(): Boolean
+  @DoNotStrip @JvmStatic public external fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
@@ -101,6 +101,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableImperativeEvents(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -148,6 +150,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun fixTextInlineViewLineHeight(): Boolean
+
   @DoNotStrip @JvmStatic public external fun fixTextLayoutOnPixelDensityChange(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fixYogaFlexBasisFitContentInMainAxis(): Boolean
@@ -161,6 +165,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun fuseboxScreenshotCaptureEnabled(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fuseboxWebSocketEventsEnabled(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun keepTimersRunningWhileHostPausedAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun optimizedAnimatedPropUpdates(): Boolean
 
@@ -183,6 +189,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun skipActivityIdentityAssertionOnHostPause(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun skipUnchangedChildrenInDifferentiator(): Boolean
 
   @DoNotStrip @JvmStatic public external fun syncAndroidClipBoundsWithOverflow(): Boolean
 

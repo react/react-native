@@ -15,6 +15,7 @@ import type {
   RNTesterModuleExample,
 } from '../../types/RNTesterTypes';
 
+import RNTesterText from '../../components/RNTesterText';
 import ExampleTextInput from './ExampleTextInput';
 import TextInputSharedExamples from './TextInputSharedExamples';
 import * as React from 'react';
@@ -27,7 +28,9 @@ const ToggleDefaultPaddingExample = (): React.Node => {
   return (
     <View>
       <ExampleTextInput style={hasPadding ? {padding: 0} : null} />
-      <Text onPress={() => setHasPadding(!hasPadding)}>Toggle padding</Text>
+      <RNTesterText onPress={() => setHasPadding(!hasPadding)}>
+        Toggle padding
+      </RNTesterText>
     </View>
   );
 };
@@ -313,12 +316,12 @@ const examples: Array<RNTesterModuleExample> = [
     render: function (): React.Node {
       return (
         <View>
-          <Text>
+          <RNTesterText>
             By default, text will respect Text Size accessibility setting on
             Android. It means that all font sizes will be increased or decreased
             depending on the value of the Text Size setting in the OS's Settings
             app.
-          </Text>
+          </RNTesterText>
           <ExampleTextInput
             placeholder="allowFontScaling = false"
             allowFontScaling={false}
@@ -338,11 +341,11 @@ const examples: Array<RNTesterModuleExample> = [
     render(): React.Node {
       return (
         <View testID={'max-font-size-multiplier'}>
-          <Text>
+          <RNTesterText>
             When allowFontScaling is enabled, you can use the
             maxFontSizeMultiplier prop to set an upper limit on how much the
             font size will be scaled.
-          </Text>
+          </RNTesterText>
           <ExampleTextInput
             allowFontScaling={true}
             maxFontSizeMultiplier={1}
@@ -498,9 +501,9 @@ const examples: Array<RNTesterModuleExample> = [
     render: function (): React.Node {
       return (
         <View>
-          <Text>accessibilityLabel prop</Text>
+          <RNTesterText>accessibilityLabel prop</RNTesterText>
           <ExampleTextInput accessibilityLabel="This is Accessibility Label" />
-          <Text>aria-label prop</Text>
+          <RNTesterText>aria-label prop</RNTesterText>
           <ExampleTextInput aria-label="This is Aria Label" />
         </View>
       );

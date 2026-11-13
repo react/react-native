@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<18267103ef4f3eb22f23a15b808528c2>>
+ * @generated SignedSource<<dcfcca254ea381db5ac0cc2ea2a6a66b>>
  */
 
 /**
@@ -31,6 +31,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun defaultTextToOverflowHidden(): Boolean
 
+  @DoNotStrip public fun deferTextInputTruncationIOS(): Boolean
+
   @DoNotStrip public fun disableEarlyViewCommandExecution(): Boolean
 
   @DoNotStrip public fun disableIdleEventDispatchFrameCallbackRearmAndroid(): Boolean
@@ -50,8 +52,6 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableAccessibilityOrder(): Boolean
 
   @DoNotStrip public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
-
-  @DoNotStrip public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
 
   @DoNotStrip public fun enableAndroidTextMeasurementOptimizations(): Boolean
 
@@ -79,7 +79,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
-  @DoNotStrip public fun enableFontScaleChangesUpdatingLayout(): Boolean
+  @DoNotStrip public fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip public fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
@@ -96,6 +96,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip public fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip public fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -143,6 +145,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 
+  @DoNotStrip public fun fixTextInlineViewLineHeight(): Boolean
+
   @DoNotStrip public fun fixTextLayoutOnPixelDensityChange(): Boolean
 
   @DoNotStrip public fun fixYogaFlexBasisFitContentInMainAxis(): Boolean
@@ -156,6 +160,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fuseboxScreenshotCaptureEnabled(): Boolean
 
   @DoNotStrip public fun fuseboxWebSocketEventsEnabled(): Boolean
+
+  @DoNotStrip public fun keepTimersRunningWhileHostPausedAndroid(): Boolean
 
   @DoNotStrip public fun optimizedAnimatedPropUpdates(): Boolean
 
@@ -178,6 +184,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean
 
   @DoNotStrip public fun skipActivityIdentityAssertionOnHostPause(): Boolean
+
+  @DoNotStrip public fun skipUnchangedChildrenInDifferentiator(): Boolean
 
   @DoNotStrip public fun syncAndroidClipBoundsWithOverflow(): Boolean
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<cd218b84f81cb128569351055afcceeb>>
+ * @generated SignedSource<<bcc1a490800e984e516519e8200db82b>>
  */
 
 /**
@@ -64,6 +64,11 @@ bool NativeReactNativeFeatureFlags::defaultTextToOverflowHidden(
   return ReactNativeFeatureFlags::defaultTextToOverflowHidden();
 }
 
+bool NativeReactNativeFeatureFlags::deferTextInputTruncationIOS(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::deferTextInputTruncationIOS();
+}
+
 bool NativeReactNativeFeatureFlags::disableEarlyViewCommandExecution(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::disableEarlyViewCommandExecution();
@@ -112,11 +117,6 @@ bool NativeReactNativeFeatureFlags::enableAccessibilityOrder(
 bool NativeReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
-}
-
-bool NativeReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation();
 }
 
 bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
@@ -184,9 +184,9 @@ bool NativeReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode(
   return ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
+bool NativeReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid(
     jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+  return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
@@ -227,6 +227,11 @@ bool NativeReactNativeFeatureFlags::enableImperativeEvents(
 bool NativeReactNativeFeatureFlags::enableImperativeFocus(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeFocus();
+}
+
+bool NativeReactNativeFeatureFlags::enableInteractableResponderViews(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableInteractableResponderViews();
 }
 
 bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS(
@@ -344,6 +349,11 @@ bool NativeReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndR
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
 }
 
+bool NativeReactNativeFeatureFlags::fixTextInlineViewLineHeight(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fixTextInlineViewLineHeight();
+}
+
 bool NativeReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange();
@@ -377,6 +387,11 @@ bool NativeReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(
 bool NativeReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
+}
+
+bool NativeReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(
@@ -432,6 +447,11 @@ bool NativeReactNativeFeatureFlags::shouldTriggerResponderTransferOnScrollAndroi
 bool NativeReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause();
+}
+
+bool NativeReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator();
 }
 
 bool NativeReactNativeFeatureFlags::syncAndroidClipBoundsWithOverflow(

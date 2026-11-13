@@ -4,7 +4,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags enableNativeEventTargetEventDispatching:true
  * @fantom_flags enableImperativeEvents:*
  * @flow strict-local
  * @format
@@ -32,15 +31,12 @@ function ensureReadOnlyNode(value: unknown): Node {
   return ensureInstance(value, Node);
 }
 
-// The public imperative EventTarget API is not part of the static type of this
-// final class (it is only present at runtime, gated by feature flags), so we
-// cast to an interface with optional members to inspect it without Flow errors.
-// Optional members make this a valid upcast and let us assert both presence
-// (`'function'`) and absence (`'undefined'`).
+// The public imperative EventTarget API is gated at runtime. Read-only
+// optional members let these tests inspect its presence or absence.
 type MaybeEventTarget = interface {
-  addEventListener?: unknown,
-  removeEventListener?: unknown,
-  dispatchEvent?: unknown,
+  readonly addEventListener?: unknown,
+  readonly removeEventListener?: unknown,
+  readonly dispatchEvent?: unknown,
 };
 
 describe('ReadOnlyText', () => {
@@ -330,8 +326,8 @@ describe('ReadOnlyText', () => {
   });
 
   describe('imperative EventTarget API', () => {
-    // These tests run with `enableNativeEventTargetEventDispatching:true` and
-    // `enableImperativeEvents:*` (see the `@fantom_flags` pragmas). The public
+    // These tests run with `enableImperativeEvents:*` (see the
+    // `@fantom_flags` pragma). The public
     // EventTarget API is gated behind `enableImperativeEvents`: when it is off
     // the methods are removed from this final class, when it is on they are
     // available.

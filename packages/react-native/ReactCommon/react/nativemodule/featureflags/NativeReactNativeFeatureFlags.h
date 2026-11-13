@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<84b944e162fc53799326c584a5edd17d>>
+ * @generated SignedSource<<b0f0a3f46e38986c1b48e947d1d7af1a>>
  */
 
 /**
@@ -46,6 +46,8 @@ class NativeReactNativeFeatureFlags
 
   bool defaultTextToOverflowHidden(jsi::Runtime& runtime);
 
+  bool deferTextInputTruncationIOS(jsi::Runtime& runtime);
+
   bool disableEarlyViewCommandExecution(jsi::Runtime& runtime);
 
   bool disableIdleEventDispatchFrameCallbackRearmAndroid(jsi::Runtime& runtime);
@@ -65,8 +67,6 @@ class NativeReactNativeFeatureFlags
   bool enableAccessibilityOrder(jsi::Runtime& runtime);
 
   bool enableAccumulatedUpdatesInRawPropsAndroid(jsi::Runtime& runtime);
-
-  bool enableAndroidAutoOffscreenCompositingForElevation(jsi::Runtime& runtime);
 
   bool enableAndroidTextMeasurementOptimizations(jsi::Runtime& runtime);
 
@@ -94,7 +94,7 @@ class NativeReactNativeFeatureFlags
 
   bool enableFlexboxAutoMinSizeInStrictMode(jsi::Runtime& runtime);
 
-  bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
+  bool enableFollowUpMountItemDispatchAndroid(jsi::Runtime& runtime);
 
   bool enableIOSCompressedTextFrameAdjustment(jsi::Runtime& runtime);
 
@@ -111,6 +111,8 @@ class NativeReactNativeFeatureFlags
   bool enableImperativeEvents(jsi::Runtime& runtime);
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
+
+  bool enableInteractableResponderViews(jsi::Runtime& runtime);
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS(jsi::Runtime& runtime);
 
@@ -158,6 +160,8 @@ class NativeReactNativeFeatureFlags
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
 
+  bool fixTextInlineViewLineHeight(jsi::Runtime& runtime);
+
   bool fixTextLayoutOnPixelDensityChange(jsi::Runtime& runtime);
 
   bool fixYogaFlexBasisFitContentInMainAxis(jsi::Runtime& runtime);
@@ -171,6 +175,8 @@ class NativeReactNativeFeatureFlags
   bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
 
   bool fuseboxWebSocketEventsEnabled(jsi::Runtime& runtime);
+
+  bool keepTimersRunningWhileHostPausedAndroid(jsi::Runtime& runtime);
 
   bool optimizedAnimatedPropUpdates(jsi::Runtime& runtime);
 
@@ -193,6 +199,8 @@ class NativeReactNativeFeatureFlags
   bool shouldTriggerResponderTransferOnScrollAndroid(jsi::Runtime& runtime);
 
   bool skipActivityIdentityAssertionOnHostPause(jsi::Runtime& runtime);
+
+  bool skipUnchangedChildrenInDifferentiator(jsi::Runtime& runtime);
 
   bool syncAndroidClipBoundsWithOverflow(jsi::Runtime& runtime);
 

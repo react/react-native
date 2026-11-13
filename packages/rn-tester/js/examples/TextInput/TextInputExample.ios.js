@@ -237,12 +237,12 @@ const TextInputWithFocusButton = () => {
 function KeyboardShortcutsExample() {
   return (
     <View>
-      <Text
+      <RNTesterText
         style={{
           marginBottom: 4,
         }}>
         Single line:
-      </Text>
+      </RNTesterText>
 
       <ExampleTextInput
         style={{
@@ -278,12 +278,12 @@ function KeyboardShortcutsExample() {
         showSoftInputOnFocus={false}
       />
 
-      <Text
+      <RNTesterText
         style={{
           marginBottom: 4,
         }}>
         Multiline:
-      </Text>
+      </RNTesterText>
 
       <ExampleTextInput
         style={styles.multiline}
@@ -728,14 +728,14 @@ const textInputExamples: Array<RNTesterModuleExample> = [
     render: function (): React.Node {
       return (
         <View>
-          <Text>
+          <RNTesterText>
             By default, text will respect Text Size accessibility setting on
             iOS. It means that all font sizes will be increased or decreased
             depending on the value of Text Size setting in{' '}
             <Text style={{fontWeight: 'bold'}}>
               Settings.app - Display & Brightness - Text Size
             </Text>
-          </Text>
+          </RNTesterText>
           <ExampleTextInput
             placeholder="allowFontScaling = false"
             allowFontScaling={false}
@@ -755,11 +755,11 @@ const textInputExamples: Array<RNTesterModuleExample> = [
     render(): React.Node {
       return (
         <View testID={'max-font-size-multiplier'}>
-          <Text>
+          <RNTesterText>
             When allowFontScaling is enabled, you can use the
             maxFontSizeMultiplier prop to set an upper limit on how much the
             font size will be scaled.
-          </Text>
+          </RNTesterText>
           <ExampleTextInput
             allowFontScaling={true}
             maxFontSizeMultiplier={1}
@@ -773,23 +773,6 @@ const textInputExamples: Array<RNTesterModuleExample> = [
             placeholder="This text will scale up (max 1.5x)"
             style={{marginTop: 10}}
             testID={'scalable-text-input'}
-          />
-        </View>
-      );
-    },
-  },
-  {
-    title: 'Auto-expanding',
-    render: function (): React.Node {
-      return (
-        <View>
-          <ExampleTextInput
-            placeholder="height increases with content"
-            defaultValue="React Native enables you to build world-class application experiences on native platforms using a consistent developer experience based on JavaScript and React. The focus of React Native is on developer efficiency across all the platforms you care about - learn once, write anywhere. Facebook uses React Native in multiple production apps and will continue investing in React Native."
-            multiline={true}
-            enablesReturnKeyAutomatically={true}
-            returnKeyType="go"
-            style={[styles.multiline, styles.multilineExpandable]}
           />
         </View>
       );

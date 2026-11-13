@@ -17,7 +17,7 @@ import type {ImageURISource} from './ImageSource';
 import resolveAssetSource from './resolveAssetSource';
 
 export type ImageSourceHeaders = {
-  [string]: string,
+  [key: string]: string,
 };
 
 /**

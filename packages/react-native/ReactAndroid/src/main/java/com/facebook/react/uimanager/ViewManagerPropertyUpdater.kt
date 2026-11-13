@@ -12,6 +12,7 @@ import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.ViewManagersPropertyCache.PropSetter
 import java.util.HashMap
+import java.util.concurrent.ConcurrentHashMap
 
 @Suppress("DEPRECATION")
 public object ViewManagerPropertyUpdater {
@@ -31,8 +32,11 @@ public object ViewManagerPropertyUpdater {
 
   private const val TAG = "ViewManagerPropertyUpdater"
 
-  private val VIEW_MANAGER_SETTER_MAP: MutableMap<Class<*>, ViewManagerSetter<*, *>> = HashMap()
-  private val SHADOW_NODE_SETTER_MAP: MutableMap<Class<*>, ShadowNodeSetter<*>> = HashMap()
+  // Used from the JS thread (view configs) and the UI thread (prop updates).
+  private val VIEW_MANAGER_SETTER_MAP: MutableMap<Class<*>, ViewManagerSetter<*, *>> =
+      ConcurrentHashMap()
+  private val SHADOW_NODE_SETTER_MAP: MutableMap<Class<*>, ShadowNodeSetter<*>> =
+      ConcurrentHashMap()
 
   @JvmStatic
   public fun clear() {

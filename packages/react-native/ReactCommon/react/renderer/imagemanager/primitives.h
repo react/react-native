@@ -62,10 +62,8 @@ class ImageSource {
     imageSourceResult["bundle"] = bundle;
     imageSourceResult["scale"] = scale;
 
-    folly::dynamic sizeResult = folly::dynamic::object();
-    sizeResult["width"] = size.width;
-    sizeResult["height"] = size.height;
-    imageSourceResult["size"] = sizeResult;
+    imageSourceResult["width"] = size.width;
+    imageSourceResult["height"] = size.height;
 
     imageSourceResult["body"] = body;
     imageSourceResult["method"] = method;

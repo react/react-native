@@ -292,7 +292,10 @@ function buildReactNativeHeadersXcframework(
   }
   fs.writeFileSync(
     path.join(stage, 'module.modulemap'),
-    renderNamespaceModuleMap(plan.namespaceModules),
+    renderNamespaceModuleMap(
+      plan.namespaceModules,
+      plan.textualNamespaceHeaders,
+    ),
   );
 
   // ---- compose (stub archives + create-xcframework) ----

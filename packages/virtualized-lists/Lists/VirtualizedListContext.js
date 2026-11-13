@@ -27,12 +27,12 @@ type Context = Readonly<{
   },
   horizontal: ?boolean,
   getOutermostParentListRef: () => VirtualizedList,
-  registerAsNestedChild: ({
+  registerAsNestedChild: (v: {
     cellKey: string,
     horizontal?: boolean,
     ref: VirtualizedList,
   }) => void,
-  unregisterAsNestedChild: ({ref: VirtualizedList}) => void,
+  unregisterAsNestedChild: (v: {ref: VirtualizedList}) => void,
   getCellVisibilityByKey?: (cellKey: string) => ?boolean,
   ...
 }>;

@@ -8,8 +8,8 @@
 #import "RCTLogBox.h"
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
-#import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
+#import <React/RCTDefines.h>
 #import <React/RCTLog.h>
 #import <React/RCTRedBoxSetEnabled.h>
 #import <React/RCTSurface.h>
@@ -24,8 +24,6 @@
   RCTLogBoxView *_view;
   __weak id<RCTSurfacePresenterStub> _bridgelessSurfacePresenter;
 }
-
-@synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE()
 

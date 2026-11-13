@@ -86,10 +86,6 @@ const publicAPIMapping = {
     default: 'Button',
     types: ['ButtonInstance', 'ButtonProps'],
   },
-  'Libraries/Components/Clipboard/Clipboard': {
-    default: 'Clipboard',
-    types: null,
-  },
   'Libraries/Components/DrawerAndroid/DrawerLayoutAndroid': {
     default: 'DrawerLayoutAndroid',
     types: null,

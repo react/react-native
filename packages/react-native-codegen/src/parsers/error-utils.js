@@ -35,6 +35,7 @@ const {
   UntypedModuleRegistryCallParserError,
   UnusedModuleInterfaceParserError,
 } = require('./errors');
+const {getTypeArguments} = require('./utils');
 
 function throwIfModuleInterfaceIsMisnamed(
   nativeModuleName: string,
@@ -360,7 +361,7 @@ function throwIfPartialNotAnnotatingTypeParameter(
 }
 
 function throwIfPartialWithMoreParameter(typeAnnotation: $FlowFixMe) {
-  if (typeAnnotation.typeParameters.params.length !== 1) {
+  if (getTypeArguments(typeAnnotation).params.length !== 1) {
     throw new Error('Partials only support annotating exactly one parameter.');
   }
 }
@@ -373,13 +374,15 @@ function throwIfMoreThanOneCodegenNativecommands(
   }
 }
 
-function throwIfConfigNotfound(foundConfigs: Array<{[string]: string}>) {
+function throwIfConfigNotfound(foundConfigs: Array<{[key: string]: string}>) {
   if (foundConfigs.length === 0) {
     throw new Error('Could not find component config for native component');
   }
 }
 
-function throwIfMoreThanOneConfig(foundConfigs: Array<{[string]: string}>) {
+function throwIfMoreThanOneConfig(
+  foundConfigs: Array<{[key: string]: string}>,
+) {
   if (foundConfigs.length > 1) {
     throw new Error('Only one component is supported per file');
   }

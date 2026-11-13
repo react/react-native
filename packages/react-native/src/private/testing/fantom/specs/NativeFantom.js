@@ -12,6 +12,7 @@ import type {
   RootTag,
   TurboModule,
 } from '../../../../../Libraries/TurboModule/RCTExport';
+import type {UnsafeObject} from '../../../../../Libraries/Types/CodegenTypes';
 
 import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/TurboModuleRegistry';
 
@@ -78,6 +79,7 @@ interface Spec extends TurboModule {
     viewportWidth: number,
     viewportHeight: number,
     devicePixelRatio: number,
+    fontScale: number,
     viewportOffsetX?: number,
     viewportOffsetY?: number,
   ) => RootTag;
@@ -102,10 +104,10 @@ interface Spec extends TurboModule {
   getDirectManipulationProps: (
     shadowNode: unknown /* ShadowNode */,
   ) => Readonly<{
-    [string]: unknown,
+    [key: string]: unknown,
   }>;
   getFabricUpdateProps: (shadowNode: unknown /* ShadowNode */) => Readonly<{
-    [string]: unknown,
+    [key: string]: unknown,
   }>;
   flushMessageQueue: () => void;
   flushEventQueue: () => void;
@@ -115,6 +117,9 @@ interface Spec extends TurboModule {
     surfaceId: RootTag,
     config: RenderFormatOptions,
   ) => string;
+  takeScreenshot(surfaceId: RootTag): UnsafeObject;
+  registerAsset(uri: string, filePath: string): void;
+  registerFont(filePath: string): void;
   reportTestSuiteResultsJSON: (results: string) => void;
   createShadowNodeReferenceCounter(
     shadowNode: unknown /* ShadowNode */,

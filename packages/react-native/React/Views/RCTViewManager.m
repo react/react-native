@@ -10,7 +10,6 @@
 #import "RCTAssert.h"
 #import "RCTBorderCurve.h"
 #import "RCTBorderStyle.h"
-#import "RCTBridge.h"
 #import "RCTConvert+Transform.h"
 #import "RCTConvert.h"
 #import "RCTCursor.h"
@@ -322,7 +321,6 @@ RCT_CUSTOM_VIEW_PROPERTY(accessibilityLargeContentTitle, NSString, RCTView)
 RCT_CUSTOM_VIEW_PROPERTY(nativeID, NSString *, RCTView)
 {
   view.nativeID = json ? [RCTConvert NSString:json] : defaultView.nativeID;
-  [_bridge.uiManager setNativeID:view.nativeID forView:view];
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(pointerEvents, RCTPointerEvents, RCTView)

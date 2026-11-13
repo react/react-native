@@ -14,8 +14,9 @@ import RNTesterText from '../../components/RNTesterText';
 import ScrollViewPressableStickyHeaderExample from './ScrollViewPressableStickyHeaderExample';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
-import {cloneElement, useCallback, useRef, useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {
+  Modal,
   Platform,
   RefreshControl,
   ScrollView,
@@ -63,114 +64,153 @@ class EnableDisableList extends React.Component<{}, {scrollEnabled: boolean}> {
 }
 
 let AppendingListItemCount = 6;
-class AppendingList extends React.Component<
-  {},
-  {items: ReadonlyArray<React.MixedElement>},
-> {
-  state: {items: ReadonlyArray<React.MixedElement>} = {
-    items: [...Array(AppendingListItemCount)].map((_, ii) => (
-      <Item msg={`Item ${ii}`} />
-    )),
-  };
-  render(): React.Node {
-    return (
-      <View>
-        <ScrollView
-          automaticallyAdjustContentInsets={false}
-          maintainVisibleContentPosition={{
-            minIndexForVisible: 0,
-            autoscrollToTopThreshold: 10,
+
+type ItemInfo = {
+  id: number,
+  paddingTop?: number,
+  paddingBottom?: number,
+};
+
+function AppendingList(): React.Node {
+  const [changeAtId, setChangeAtId] = useState('1');
+  const [items, setItems] = useState<ReadonlyArray<ItemInfo>>(() =>
+    [...Array(AppendingListItemCount)].map((_, ii) => ({
+      id: ii,
+    })),
+  );
+
+  const renderItem = (item: ItemInfo, horizontal: boolean) => (
+    <Item
+      key={item.id}
+      msg={`Item ${item.id}`}
+      // When changing an item's height, its top position should stay fixed
+      // rather than its bottom. This used to not be the case with negative
+      // zIndex.
+      zIndex={-item.id}
+      style={
+        horizontal
+          ? {
+              paddingLeft: item.paddingTop,
+              paddingRight: item.paddingBottom,
+            }
+          : {
+              paddingTop: item.paddingTop,
+              paddingBottom: item.paddingBottom,
+            }
+      }
+    />
+  );
+
+  return (
+    <View>
+      <ScrollView
+        automaticallyAdjustContentInsets={false}
+        maintainVisibleContentPosition={{
+          minIndexForVisible: 0,
+          autoscrollToTopThreshold: 10,
+        }}
+        nestedScrollEnabled
+        style={styles.scrollView}>
+        {items.map(item => renderItem(item, false))}
+      </ScrollView>
+      <ScrollView
+        horizontal={true}
+        automaticallyAdjustContentInsets={false}
+        maintainVisibleContentPosition={{
+          minIndexForVisible: 1,
+          autoscrollToTopThreshold: 10,
+        }}
+        style={[styles.scrollView, styles.horizontalScrollView]}>
+        {items.map(item => renderItem(item, true))}
+      </ScrollView>
+      <View style={styles.row}>
+        <Button
+          label="Add to top"
+          onPress={() => {
+            setItems(prevItems => {
+              const idx = AppendingListItemCount++;
+              return [{id: idx, paddingTop: idx * 5}, ...prevItems];
+            });
           }}
-          nestedScrollEnabled
-          style={styles.scrollView}>
-          {this.state.items.map(item =>
-            // $FlowFixMe[prop-missing] React.Element internal inspection
-            cloneElement(item, {key: item.props.msg}),
-          )}
-        </ScrollView>
-        <ScrollView
-          horizontal={true}
-          automaticallyAdjustContentInsets={false}
-          maintainVisibleContentPosition={{
-            minIndexForVisible: 1,
-            autoscrollToTopThreshold: 10,
+        />
+        <Button
+          label="Remove top"
+          onPress={() => {
+            setItems(prevItems => prevItems.slice(1));
           }}
-          style={[styles.scrollView, styles.horizontalScrollView]}>
-          {this.state.items.map(item =>
-            // $FlowFixMe[prop-missing] React.Element internal inspection
-            cloneElement(item, {key: item.props.msg, style: null}),
-          )}
-        </ScrollView>
-        <View style={styles.row}>
-          <Button
-            label="Add to top"
-            onPress={() => {
-              this.setState(state => {
-                const idx = AppendingListItemCount++;
-                return {
-                  items: [
-                    <Item style={{paddingTop: idx * 5}} msg={`Item ${idx}`} />,
-                  ].concat(state.items),
-                };
-              });
-            }}
-          />
-          <Button
-            label="Remove top"
-            onPress={() => {
-              this.setState(state => ({
-                items: state.items.slice(1),
-              }));
-            }}
-          />
-          <Button
-            label="Change height top"
-            onPress={() => {
-              this.setState(state => ({
-                items: [
-                  cloneElement(state.items[0], {
-                    style: {paddingBottom: Math.random() * 40},
-                  }),
-                ].concat(state.items.slice(1)),
-              }));
-            }}
-          />
-        </View>
-        <View style={styles.row}>
-          <Button
-            label="Add to end"
-            onPress={() => {
-              this.setState(state => ({
-                items: state.items.concat(
-                  <Item msg={`Item ${AppendingListItemCount++}`} />,
-                ),
-              }));
-            }}
-          />
-          <Button
-            label="Remove end"
-            onPress={() => {
-              this.setState(state => ({
-                items: state.items.slice(0, -1),
-              }));
-            }}
-          />
-          <Button
-            label="Change height end"
-            onPress={() => {
-              this.setState(state => ({
-                items: state.items.slice(0, -1).concat(
-                  cloneElement(state.items[state.items.length - 1], {
-                    style: {paddingBottom: Math.random() * 40},
-                  }),
-                ),
-              }));
-            }}
-          />
-        </View>
+        />
+        <Button
+          label="Change height top"
+          onPress={() => {
+            setItems(prevItems => {
+              if (prevItems.length === 0) {
+                return prevItems;
+              }
+              const [first, ...rest] = prevItems;
+              return [{...first, paddingBottom: Math.random() * 40}, ...rest];
+            });
+          }}
+        />
       </View>
-    );
-  }
+      <View style={styles.row}>
+        <Button
+          label="Add to end"
+          onPress={() => {
+            setItems(prevItems => {
+              const idx = AppendingListItemCount++;
+              return [...prevItems, {id: idx}];
+            });
+          }}
+        />
+        <Button
+          label="Remove end"
+          onPress={() => {
+            setItems(prevItems => prevItems.slice(0, -1));
+          }}
+        />
+        <Button
+          label="Change height end"
+          onPress={() => {
+            setItems(prevItems => {
+              if (prevItems.length === 0) {
+                return prevItems;
+              }
+              const last = prevItems[prevItems.length - 1];
+              return [
+                ...prevItems.slice(0, -1),
+                {...last, paddingBottom: Math.random() * 40},
+              ];
+            });
+          }}
+        />
+      </View>
+      <View style={styles.row}>
+        <TextInput
+          keyboardType="number-pad"
+          onChangeText={setChangeAtId}
+          placeholder="Id"
+          style={styles.indexInput}
+          value={changeAtId}
+        />
+        <Button
+          label="Change height at id"
+          onPress={() => {
+            const id = parseInt(changeAtId, 10);
+            if (Number.isNaN(id)) {
+              return;
+            }
+            setItems(prevItems =>
+              prevItems.map(item =>
+                item.id === id
+                  ? {...item, paddingBottom: Math.random() * 40}
+                  : item,
+              ),
+            );
+          }}
+        />
+      </View>
+    </View>
+  );
 }
 
 function CenterContentList(): React.Node {
@@ -318,6 +358,15 @@ const examples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    title: '<ScrollView> Content Inset Adjustment Behavior\n',
+    description:
+      'How the safe area modifies the content area of a full screen ScrollView: along the scrollable axis it becomes content insets, across it the content container is padded, and on every edge the container padding counts toward it.',
+    platform: 'ios',
+    render(): React.Node {
+      return <ContentInsetAdjustmentBehaviorExample />;
+    },
+  },
+  {
     title: '<ScrollView> Deceleration Rate\n',
     description:
       'Determines how quickly the scroll view decelerates after the user lifts their finger.',
@@ -437,7 +486,9 @@ const examples: Array<RNTesterModuleExample> = [
     title: '<ScrollView> smooth bi-directional content loading\n',
     description:
       'The `maintainVisibleContentPosition` prop allows insertions to either end of the content ' +
-      'without causing the visible content to jump. Re-ordering is not supported.',
+      'without causing the visible content to jump. Re-ordering is not supported. Items use ' +
+      'inverted z-index values so Fabric may reorder native children; the anchor should still ' +
+      'be the topmost visible item, not whichever child happens to appear first in the hierarchy.',
     render() {
       return <AppendingList />;
     },
@@ -468,6 +519,24 @@ const examples: Array<RNTesterModuleExample> = [
       "Children that overflow ScrollView's content container should still receive touch events",
     render() {
       return <ChildrenWithTouchEventsOverflowingContainerHorizontal />;
+    },
+  },
+  {
+    name: 'scrollTextInputsVertical',
+    title: '<ScrollView> TextInputs\n',
+    description:
+      'Vertical scroll gestures on a TextInput should scroll the ScrollView unless the input can also scroll vertically.',
+    render(): React.Node {
+      return <VerticalScrollTextInputs />;
+    },
+  },
+  {
+    name: 'scrollTextInputsHorizontal',
+    title: '<ScrollView> TextInputs (horizontal = true)\n',
+    description:
+      'Horizontal scroll gestures on a TextInput should scroll the ScrollView unless the input can also scroll horizontally.',
+    render(): React.Node {
+      return <HorizontalScrollTextInputs />;
     },
   },
 ];
@@ -607,6 +676,145 @@ const ScrollsChildToFocusExample = () => {
         When false, focusing a TextInput will not automatically scroll it into
         view.
       </RNTesterText>
+    </View>
+  );
+};
+
+const VerticalScrollTextInputs = () => {
+  const _verticalScrollView =
+    useRef<?React.ElementRef<typeof ScrollView>>(null);
+  const [verticalScrolled, setVerticalScrolled] = useState(false);
+
+  return (
+    <View>
+      <RNTesterText style={styles.text} testID="vertical_status">
+        scrolled = {verticalScrolled ? 'true' : 'false'}
+      </RNTesterText>
+      <ScrollView
+        ref={_verticalScrollView}
+        style={{backgroundColor: '#eeeeee', height: 350}}
+        contentContainerStyle={{padding: 10, gap: 20}}
+        nestedScrollEnabled
+        onScroll={event => {
+          setVerticalScrolled(event.nativeEvent.contentOffset.y > 0);
+        }}>
+        <TextInput
+          placeholder="TextInput"
+          style={styles.textInput}
+          testID="text_input_vertical"
+        />
+        <TextInput
+          placeholder="TextInput (center)"
+          style={styles.textInput}
+          textAlign="center"
+          testID="text_input_vertical_center"
+        />
+        <TextInput
+          placeholder="TextInput (right)"
+          style={styles.textInput}
+          textAlign="right"
+          testID="text_input_vertical_right"
+        />
+        <TextInput
+          defaultValue={
+            'A TextInput with a value that overflows the input width so it can be scrolled horizontally.'
+          }
+          placeholder="TextInput"
+          style={styles.textInput}
+          testID="text_input_vertical_overflow_width"
+        />
+        <TextInput
+          defaultValue={
+            'A multiline TextInput\nwith a value that\noverflows the input\nheight so it can be\nscrolled vertically.'
+          }
+          placeholder="TextInput"
+          style={styles.textInput}
+          multiline
+          testID="text_input_vertical_overflow_height"
+        />
+        <View
+          style={[styles.textInput, {backgroundColor: '#cccccc', height: 200}]}
+        />
+      </ScrollView>
+      <Button
+        label="Scroll to top"
+        onPress={() => {
+          nullthrows<$FlowFixMe>(_verticalScrollView.current).scrollTo({
+            y: 0,
+          });
+        }}
+        testID="scroll_to_top_button"
+      />
+    </View>
+  );
+};
+
+const HorizontalScrollTextInputs = () => {
+  const _horizontalScrollView =
+    useRef<?React.ElementRef<typeof ScrollView>>(null);
+  const [horizontalScrolled, setHorizontalScrolled] = useState(false);
+
+  return (
+    <View>
+      <RNTesterText style={styles.text} testID="horizontal_status">
+        scrolled = {horizontalScrolled ? 'true' : 'false'}
+      </RNTesterText>
+      <ScrollView
+        ref={_horizontalScrollView}
+        style={{backgroundColor: '#eeeeee'}}
+        contentContainerStyle={{padding: 10, gap: 20}}
+        nestedScrollEnabled
+        horizontal
+        onScroll={event => {
+          setHorizontalScrolled(event.nativeEvent.contentOffset.x > 0);
+        }}>
+        <View
+          style={[
+            styles.textInput,
+            {backgroundColor: '#cccccc', width: 100, height: '100%'},
+          ]}
+          testID="left_filler"
+        />
+        <View style={{gap: 20}}>
+          <TextInput
+            placeholder="TextInput"
+            style={[styles.textInput, {width: 200}]}
+            testID="text_input_horizontal"
+          />
+          <TextInput
+            defaultValue={
+              'A TextInput with a value that overflows the input width so it can be scrolled horizontally.'
+            }
+            placeholder="TextInput"
+            style={[styles.textInput, {width: 200}]}
+            testID="text_input_horizontal_overflow_width"
+          />
+          <TextInput
+            defaultValue={
+              'A multiline TextInput\nwith a value that\noverflows the input\nheight so it can be\nscrolled vertically.'
+            }
+            placeholder="TextInput"
+            style={[styles.textInput, {width: 200}]}
+            multiline
+            testID="text_input_horizontal_overflow_height"
+          />
+        </View>
+        <View
+          style={[
+            styles.textInput,
+            {backgroundColor: '#cccccc', width: 100, height: '100%'},
+          ]}
+        />
+      </ScrollView>
+      <Button
+        label="Scroll to start"
+        onPress={() => {
+          nullthrows<$FlowFixMe>(_horizontalScrollView.current).scrollTo({
+            x: 0,
+          });
+        }}
+        testID="scroll_to_start_button"
+      />
     </View>
   );
 };
@@ -1328,6 +1536,79 @@ const ContentExample = () => {
   );
 };
 
+const CONTENT_INSET_ADJUSTMENT_BEHAVIORS = [
+  'never',
+  'automatic',
+  'scrollableAxes',
+  'always',
+] as const;
+
+const FULL_SCREEN_ITEMS = [...Array(40)].map((_, i) => `Item ${i}`);
+
+const ContentInsetAdjustmentBehaviorExample = () => {
+  const [visible, setVisible] = useState(false);
+  const [horizontal, setHorizontal] = useState(false);
+  const [underHeader, setUnderHeader] = useState(false);
+  const [behavior, setBehavior] =
+    useState<(typeof CONTENT_INSET_ADJUSTMENT_BEHAVIORS)[number]>('automatic');
+  return (
+    <View>
+      <RNTesterText>
+        Opens a full screen ScrollView that extends under the system UI,
+        including the rail on iPhone Duo and the notch in landscape. "under
+        header" places a custom header above it, so it starts clear of the
+        status bar.
+      </RNTesterText>
+      <Button onPress={() => setVisible(true)} label="Open full screen" />
+      <Modal
+        animationType="slide"
+        presentationStyle="fullScreen"
+        supportedOrientations={['portrait', 'landscape']}
+        visible={visible}
+        onRequestClose={() => setVisible(false)}>
+        {underHeader && (
+          <View style={styles.fullScreenHeader}>
+            <Text style={styles.fullScreenHeaderTitle}>Under header</Text>
+          </View>
+        )}
+        <ScrollView
+          horizontal={horizontal}
+          style={styles.fullScreenScrollView}
+          contentContainerStyle={styles.fullScreenContentContainer}
+          contentInsetAdjustmentBehavior={behavior}>
+          <View style={styles.fullScreenControls}>
+            <View style={styles.row}>
+              {CONTENT_INSET_ADJUSTMENT_BEHAVIORS.map(value => (
+                <Button
+                  key={value}
+                  active={value === behavior}
+                  onPress={() => setBehavior(value)}
+                  label={value}
+                />
+              ))}
+            </View>
+            <View style={styles.row}>
+              <Button
+                onPress={() => setHorizontal(!horizontal)}
+                label={horizontal ? 'horizontal' : 'vertical'}
+              />
+              <Button
+                active={underHeader}
+                onPress={() => setUnderHeader(!underHeader)}
+                label="under header"
+              />
+              <Button onPress={() => setVisible(false)} label="Close" />
+            </View>
+          </View>
+          {FULL_SCREEN_ITEMS.map((msg, index) => (
+            <Item key={index} msg={msg} style={styles.fullScreenItem} />
+          ))}
+        </ScrollView>
+      </Modal>
+    </View>
+  );
+};
+
 const BouncesExample = () => {
   const [bounces, setBounces] = useState(false);
   const [bouncesZoom, setBouncesZoom] = useState(false);
@@ -1478,10 +1759,12 @@ function ChildrenWithTouchEventsOverflowingContainerHorizontal() {
 class Item extends React.PureComponent<{
   msg?: string,
   style?: ViewStyleProp,
+  zIndex?: number,
 }> {
   render(): $FlowFixMe {
     return (
-      <View style={[styles.item, this.props.style]}>
+      <View
+        style={[styles.item, this.props.style, {zIndex: this.props.zIndex}]}>
         <Text>{this.props.msg}</Text>
       </View>
     );
@@ -1538,6 +1821,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
+  indexInput: {
+    alignSelf: 'center',
+    backgroundColor: '#ffffff',
+    borderColor: '#cccccc',
+    borderRadius: 3,
+    borderWidth: 1,
+    flex: 1,
+    margin: 5,
+    padding: 5,
+    textAlign: 'center',
+  },
   item: {
     margin: 5,
     padding: 5,
@@ -1548,14 +1842,50 @@ const styles = StyleSheet.create({
   containerStyle: {
     backgroundColor: '#aae3b6',
   },
+  fullScreenScrollView: {
+    backgroundColor: '#eeeeee',
+  },
+  // A stand-in for a navigation bar: tall enough to clear the status bar on
+  // every iPhone, with the title along its bottom edge.
+  fullScreenHeader: {
+    height: 104,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 10,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#cccccc',
+  },
+  fullScreenHeaderTitle: {
+    fontSize: 19,
+    fontWeight: '600',
+  },
+  fullScreenContentContainer: {
+    backgroundColor: '#aae3b6',
+    padding: 20,
+    gap: 12,
+  },
+  fullScreenControls: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 8,
+  },
+  fullScreenItem: {
+    margin: 0,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+  },
   rowTitle: {
     flex: 1,
     fontWeight: 'bold',
     alignSelf: 'center',
   },
   textInput: {
-    height: 40,
+    height: 48,
     borderColor: 'gray',
     borderWidth: 1,
+    paddingHorizontal: 10,
   },
 });

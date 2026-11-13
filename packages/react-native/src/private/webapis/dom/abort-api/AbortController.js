@@ -61,7 +61,7 @@ export class AbortController {
    * Abort and signal to any observers that the associated activity is to be aborted.
    */
   abort(reason: unknown): void {
-    require('./AbortSignal').abortSignal(reason, getSignal(this));
+    require('./AbortSignal').abortSignal(getSignal(this), reason);
   }
 }
 

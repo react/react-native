@@ -56,7 +56,7 @@ class AccessibilityProps {
   bool onAccessibilityEscape{};
   bool onAccessibilityAction{};
   ImportantForAccessibility importantForAccessibility{ImportantForAccessibility::Auto};
-  Role role{Role::None};
+  std::optional<Role> role{};
   std::string testId;
 
 #pragma mark - DebugStringConvertible

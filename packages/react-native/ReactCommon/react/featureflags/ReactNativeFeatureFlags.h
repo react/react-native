@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<62dbb584d6aaf595314636a81346e3e5>>
+ * @generated SignedSource<<0a8759cd09aa452417aaa3720da346ae>>
  */
 
 /**
@@ -62,6 +62,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool defaultTextToOverflowHidden();
 
   /**
+   * When enabled, iOS TextInput applies edits that JS transforms (e.g. maxLength truncation) incrementally after the UIKit text change delegate call returns, avoiding synchronous text and selection rewrites that can deadlock UIKeyboardTaskQueue.
+   */
+  RN_EXPORT static bool deferTextInputTruncationIOS();
+
+  /**
    * Dispatch view commands in mount item order.
    */
   RN_EXPORT static bool disableEarlyViewCommandExecution();
@@ -110,11 +115,6 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
    */
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
-
-  /**
-   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
-   */
-  RN_EXPORT static bool enableAndroidAutoOffscreenCompositingForElevation();
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
@@ -182,9 +182,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableFlexboxAutoMinSizeInStrictMode();
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
    */
-  RN_EXPORT static bool enableFontScaleChangesUpdatingLayout();
+  RN_EXPORT static bool enableFollowUpMountItemDispatchAndroid();
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
@@ -227,6 +227,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableImperativeFocus();
 
   /**
+   * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+   */
+  RN_EXPORT static bool enableInteractableResponderViews();
+
+  /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
    */
   RN_EXPORT static bool enableInteropViewManagerClassLookUpOptimizationIOS();
@@ -257,7 +262,7 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableModuleArgumentNSNullConversionIOS();
 
   /**
-   * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
+   * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself at its next mount dispatch, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
    */
   RN_EXPORT static bool enableMountingCoordinatorPullModelAndroid();
 
@@ -342,6 +347,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
 
   /**
+   * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+   */
+  RN_EXPORT static bool fixTextInlineViewLineHeight();
+
+  /**
    * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.
    */
   RN_EXPORT static bool fixTextLayoutOnPixelDensityChange();
@@ -375,6 +385,11 @@ class ReactNativeFeatureFlags {
    * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
    */
   RN_EXPORT static bool fuseboxWebSocketEventsEnabled();
+
+  /**
+   * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+   */
+  RN_EXPORT static bool keepTimersRunningWhileHostPausedAndroid();
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
@@ -430,6 +445,11 @@ class ReactNativeFeatureFlags {
    * Skip activity identity assertion in ReactHostImpl::onHostPause()
    */
   RN_EXPORT static bool skipActivityIdentityAssertionOnHostPause();
+
+  /**
+   * When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.
+   */
+  RN_EXPORT static bool skipUnchangedChildrenInDifferentiator();
 
   /**
    * Override getClipBounds on Android views to return the padding box when overflow is hidden

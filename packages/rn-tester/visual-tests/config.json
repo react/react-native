@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "threshold": 0,
+    "includeAA": true,
+    "maxDiffPixels": 0
+  },
+  "tests": {
+    "transform/rotate/default": {
+      "threshold": 0.1,
+      "includeAA": false,
+      "maxDiffPixels": 100
+    },
+    "transform/rotate-scale/default": {
+      "threshold": 0.1,
+      "includeAA": false,
+      "maxDiffPixels": 100
+    },
+    "transform/string/default": {
+      "threshold": 0.1,
+      "includeAA": false,
+      "maxDiffPixels": 100
+    }
+  }
+}

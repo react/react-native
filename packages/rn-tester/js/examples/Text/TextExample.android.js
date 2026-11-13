@@ -24,6 +24,7 @@ const React = require('react');
 const {
   Image,
   LayoutAnimation,
+  PixelRatio,
   StyleSheet,
   Text,
   TextInput,
@@ -507,30 +508,30 @@ function AllowFontScalingExample(props: {}): React.Node {
 function MaxFontSizeMultiplierExample(props: {}): React.Node {
   return (
     <View testID={'max-font-size-multiplier'}>
-      <Text>
+      <RNTesterText>
         When allowFontScaling is enabled, you can use the maxFontSizeMultiplier
         prop to set an upper limit on how much the font size will be scaled.
-      </Text>
-      <Text
+      </RNTesterText>
+      <RNTesterText
         allowFontScaling={true}
         maxFontSizeMultiplier={1}
         style={{marginTop: 10}}>
         This text will not scale up (max 1x)
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1.5}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1.5}>
         This text will scale up (max 1.5x)
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1}>
         <Text>Inherit max (max 1x)</Text>
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1}>
         <Text maxFontSizeMultiplier={1.5}>
           Override inherited max (max 1.5x)
         </Text>
-      </Text>
-      <Text allowFontScaling={true} maxFontSizeMultiplier={1}>
+      </RNTesterText>
+      <RNTesterText allowFontScaling={true} maxFontSizeMultiplier={1}>
         <Text maxFontSizeMultiplier={0}>Ignore inherited max (no max)</Text>
-      </Text>
+      </RNTesterText>
       <Text
         allowFontScaling={true}
         maxFontSizeMultiplier={1}
@@ -603,6 +604,38 @@ function HyphenationExample(props: {}): React.Node {
         <RNTesterText style={{color: 'red'}}>Full: </RNTesterText>
         WillHaveAHyphenWhenBreakingForNewLine
       </RNTesterText>
+    </>
+  );
+}
+
+const LINE_BREAK_SAMPLE =
+  'キャッシュをチェックしてショートカットからコンピューターのメモリーをクリーンアップします。';
+
+function LineBreakExample(props: {}): React.Node {
+  // Each paragraph has a background so that a mismatch between the measured
+  // height and the drawn lines is visible. Requires Android 13 (API 33).
+  return (
+    <>
+      {(['auto', 'loose', 'normal', 'strict'] as const).map(lineBreak => (
+        <View key={lineBreak} style={{marginBottom: 8}}>
+          <RNTesterText style={{color: 'red'}}>
+            lineBreak="{lineBreak}"
+          </RNTesterText>
+          <RNTesterText lineBreak={lineBreak} style={styles.lineBreakSample}>
+            {LINE_BREAK_SAMPLE}
+          </RNTesterText>
+        </View>
+      ))}
+      {(['normal', 'auto-phrase'] as const).map(wordBreak => (
+        <View key={wordBreak} style={{marginBottom: 8}}>
+          <RNTesterText style={{color: 'red'}}>
+            wordBreak="{wordBreak}"
+          </RNTesterText>
+          <RNTesterText wordBreak={wordBreak} style={styles.lineBreakSample}>
+            {LINE_BREAK_SAMPLE}
+          </RNTesterText>
+        </View>
+      ))}
     </>
   );
 }
@@ -1356,6 +1389,65 @@ function TextBaseLineLayoutExample(props: {}): React.Node {
   );
 }
 
+function FitContentWholePixelWidthExample(props: {}): React.Node {
+  // Each label is measured, then measured again with its own width as its
+  // maximum, because its container is only as wide as the label and the
+  // container's padding. That maximum picks up floating point error from the
+  // padding and from the conversion to DIPs and back, so it can fall a hair
+  // short of the label's width. Each row is about a pixel wider than the last.
+  // No label should wrap.
+  const rows = [];
+  for (let i = 0; i < 17; i++) {
+    rows.push(
+      <View key={i} style={styles.fitContentRow}>
+        <View style={styles.fitContentLabelContainer}>
+          <Text
+            style={[
+              styles.fitContentLabel,
+              {letterSpacing: -0.25 + i / (18 * PixelRatio.get())},
+            ]}>
+            Add payment method
+          </Text>
+        </View>
+      </View>,
+    );
+  }
+  return <View testID="text-fit-content-whole-pixel-width">{rows}</View>;
+}
+
+function AdjustsFontSizeToFitWholePixelHeightExample(props: {}): React.Node {
+  // Each label's line height is a whole number of pixels, and so is the space
+  // its container leaves for it below the container's padding. That space
+  // picks up floating point error from the padding and from the conversion to
+  // DIPs and back, so it can fall a hair short of the line height. Each row is
+  // a pixel taller than the last. No label should shrink.
+  const pixelRatio = PixelRatio.get();
+  const rows = [];
+  for (let i = 0; i < 17; i++) {
+    const lineHeight = (Math.round(20 * pixelRatio) + i) / pixelRatio;
+    rows.push(
+      <View
+        key={i}
+        style={[
+          styles.adjustsFontSizeToFitRow,
+          {height: lineHeight + styles.adjustsFontSizeToFitRow.paddingTop},
+        ]}>
+        <Text
+          adjustsFontSizeToFit={true}
+          numberOfLines={1}
+          style={[styles.adjustsFontSizeToFitLabel, {lineHeight}]}>
+          Add payment method
+        </Text>
+      </View>,
+    );
+  }
+  return (
+    <View testID="text-adjusts-font-size-to-fit-whole-pixel-height">
+      {rows}
+    </View>
+  );
+}
+
 const examples = [
   {
     title: 'Wrapped text width mode',
@@ -1453,10 +1545,27 @@ const examples = [
     },
   },
   {
+    title: 'Fit-content text at whole pixel widths',
+    name: 'fitContentWholePixelWidth',
+    render: FitContentWholePixelWidthExample,
+  },
+  {
+    title: 'adjustsFontSizeToFit at whole pixel heights',
+    name: 'adjustsFontSizeToFitWholePixelHeight',
+    render: AdjustsFontSizeToFitWholePixelHeightExample,
+  },
+  {
     title: 'Hyphenation',
     name: 'hyphenation',
     render(): React.Node {
       return <HyphenationExample />;
+    },
+  },
+  {
+    title: 'Line break (lineBreak, wordBreak)',
+    name: 'lineBreak',
+    render(): React.Node {
+      return <LineBreakExample />;
     },
   },
   {
@@ -1490,20 +1599,20 @@ const examples = [
           {rows.map(text => (
             <View key={text} style={{flexDirection: 'row', gap: 8}}>
               <View style={styles.overhangBubble}>
-                <Text
+                <RNTesterText
                   allowFontScaling={false}
                   style={{fontFamily: 'cursive', fontSize: 18, lineHeight: 27}}>
                   {text}
                   <Text style={{color: 'green'}}> f</Text>
-                </Text>
+                </RNTesterText>
               </View>
               <View style={styles.overhangBubble}>
-                <Text
+                <RNTesterText
                   allowFontScaling={false}
                   style={{fontSize: 18, lineHeight: 27}}>
                   {text}
                   <Text style={{color: 'green'}}> f</Text>
-                </Text>
+                </RNTesterText>
               </View>
             </View>
           ))}
@@ -1729,6 +1838,13 @@ const examples = [
     },
   },
   {
+    title: 'Inline views with line height',
+    name: 'inlineViewsLineHeight',
+    render(): React.Node {
+      return <TextInlineView.ChangeLineHeight />;
+    },
+  },
+  {
     title: 'Inline views with multiple nested texts',
     name: 'inlineViewsMultiple',
     render(): React.Node {
@@ -1942,6 +2058,33 @@ const styles = StyleSheet.create({
   },
   wrappedText: {
     maxWidth: 300,
+  },
+  fitContentRow: {
+    backgroundColor: '#E4E6EB',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  fitContentLabelContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 60.15,
+  },
+  fitContentLabel: {
+    fontSize: 15,
+    maxWidth: '100%',
+  },
+  adjustsFontSizeToFitRow: {
+    backgroundColor: '#E4E6EB',
+    marginBottom: 2,
+    paddingTop: 7.1,
+  },
+  adjustsFontSizeToFitLabel: {
+    fontSize: 16,
+  },
+  lineBreakSample: {
+    backgroundColor: '#eee',
+    fontSize: 16,
+    width: 150,
   },
 });
 

@@ -235,7 +235,7 @@ export default class SectionList<
     }
   }
 
-  setNativeProps(props: {[string]: unknown, ...}) {
+  setNativeProps(props: {[key: string]: unknown, ...}) {
     const listRef = this._wrapperListRef && this._wrapperListRef.getListRef();
     if (listRef) {
       listRef.setNativeProps(props);

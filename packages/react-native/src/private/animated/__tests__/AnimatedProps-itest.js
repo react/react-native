@@ -61,7 +61,7 @@ test('connects and disconnects views', () => {
 });
 
 describe('AnimatedProps#__getValue', () => {
-  function getValue(inputProps: {[string]: unknown}) {
+  function getValue(inputProps: {[key: string]: unknown}) {
     const animatedProps = new AnimatedProps(inputProps, jest.fn());
     return animatedProps.__getValue();
   }

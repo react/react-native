@@ -513,6 +513,7 @@ facebook::react::SharedColor facebook::react::colorFromComponents(facebook::reac
 facebook::react::SharedColor facebook::react::colorFromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 facebook::react::SharedColor facebook::react::parsePlatformColor(const facebook::react::ContextContainer& contextContainer, int32_t surfaceId, const facebook::react::RawValue& value);
 facebook::react::SharedColor facebook::react::whiteColor();
+facebook::react::Size facebook::react::measureHostComponent(const facebook::react::ContextContainer* contextContainer, facebook::react::FabricUIManagerMeasureArgs args);
 facebook::react::Size facebook::react::yogaMeassureToSize(int64_t value);
 facebook::react::TurboModuleMethodValueKind facebook::react::getTurboModuleMethodValueKind(facebook::jsi::Runtime& rt, const facebook::jsi::Value* value);
 facebook::react::ValueUnit facebook::react::toValueUnit(const facebook::react::RawValue& value);
@@ -699,8 +700,8 @@ class facebook::react::AccessibilityProps {
   public facebook::react::AccessibilityTraits accessibilityTraits;
   public facebook::react::AccessibilityValue accessibilityValue;
   public facebook::react::ImportantForAccessibility importantForAccessibility;
-  public facebook::react::Role role;
   public std::optional<facebook::react::AccessibilityState> accessibilityState;
+  public std::optional<facebook::react::Role> role;
   public std::string accessibilityHint;
   public std::string accessibilityLabel;
   public std::string accessibilityLanguage;
@@ -1693,6 +1694,7 @@ class facebook::react::JavaTurboModule : public facebook::react::TurboModule {
   protected void configureEventEmitterCallback();
   protected void setEventEmitterCallback(jni::alias_ref<jobject>);
   public JavaTurboModule(const facebook::react::JavaTurboModule::InitParams& params);
+  public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const char* methodName, const char* methodSignature, const facebook::jsi::Value* args, size_t argCount);
   public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const std::string& methodName, const std::string& methodSignature, const facebook::jsi::Value* args, size_t argCount, jmethodID& cachedMethodID);
   public virtual ~JavaTurboModule();
 }
@@ -1718,6 +1720,7 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public virtual bool canBeTouchTarget() const;
   public virtual bool canChildrenBeTouchTarget() const;
   public virtual bool getIsLayoutClean() const = 0;
+  public virtual const facebook::react::LayoutableShadowNode* asLayoutable() const override;
   public virtual facebook::react::Float baseline(const facebook::react::LayoutContext& layoutContext, facebook::react::Size size) const;
   public virtual facebook::react::Point getContentOriginOffset(bool includeTransform) const;
   public virtual facebook::react::Size measure(const facebook::react::LayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
@@ -1750,6 +1753,7 @@ class facebook::react::LongLivedObjectCollection {
   public static facebook::react::LongLivedObjectCollection& get(facebook::jsi::Runtime& runtime);
   public void add(std::shared_ptr<facebook::react::LongLivedObject> o);
   public void clear();
+  public void clear(facebook::jsi::Runtime& runtime);
   public void operator=(const facebook::react::LongLivedObjectCollection&) = delete;
   public void remove(const facebook::react::LongLivedObject* o);
 }
@@ -2196,8 +2200,14 @@ class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseVi
 class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
   public SafeAreaViewProps() = default;
   public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public facebook::react::SafeAreaViewPointerEvents pointerEvents;
   public virtual facebook::react::ComponentName getDiffPropsImplementationTarget() const override;
   public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
+}
+
+class facebook::react::ScrollEventHelper : public facebook::jni::JavaClass<facebook::react::ScrollEventHelper> {
+  public static constexpr auto * kJavaDescriptor;
+  public static void registerNatives();
 }
 
 class facebook::react::Sealable {
@@ -2241,7 +2251,7 @@ class facebook::react::ShadowNode : public facebook::react::Sealable, public fac
   public int getOrderIndex() const;
   public static bool getUseRuntimeShadowNodeReferenceUpdateOnThread();
   public static bool sameFamily(const facebook::react::ShadowNode& first, const facebook::react::ShadowNode& second);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static std::shared_ptr<const std::vector<std::shared_ptr<const facebook::react::ShadowNode>>> emptySharedShadowNodeSharedList();
   public static void setUseRuntimeShadowNodeReferenceUpdateOnThread(bool isEnabled);
   public std::shared_ptr<const facebook::react::ContextContainer> getContextContainer() const;
@@ -2249,6 +2259,7 @@ class facebook::react::ShadowNode : public facebook::react::Sealable, public fac
   public std::shared_ptr<facebook::react::ShadowNode> cloneMultiple(const std::unordered_set<std::shared_ptr<const facebook::react::ShadowNodeFamily>>& familiesToUpdate, const std::function<std::shared_ptr<facebook::react::ShadowNode>(const facebook::react::ShadowNode& oldShadowNode, const facebook::react::ShadowNodeFragment& fragment)>& callback) const;
   public std::shared_ptr<facebook::react::ShadowNode> cloneTree(const facebook::react::ShadowNodeFamily& shadowNodeFamily, const std::function<std::shared_ptr<facebook::react::ShadowNode>(const facebook::react::ShadowNode& oldShadowNode)>& callback) const;
   public using AncestorList = std::vector<std::pair<std::reference_wrapper<const facebook::react::ShadowNode>, int>>;
+  public virtual const facebook::react::LayoutableShadowNode* asLayoutable() const;
   public virtual void appendChild(const std::shared_ptr<const facebook::react::ShadowNode>& child);
   public virtual void completeClone(const facebook::react::ShadowNode&, const facebook::react::ShadowNodeFragment&);
   public virtual void replaceChild(const facebook::react::ShadowNode& oldChild, const std::shared_ptr<const facebook::react::ShadowNode>& newChild, size_t suggestedIndex = std::numeric_limits<size_t>::max());
@@ -2288,10 +2299,10 @@ class facebook::react::ShadowNodeFamily : public facebook::jsi::NativeState {
 }
 
 class facebook::react::ShadowNodeTraits {
-  public bool check(facebook::react::ShadowNodeTraits::Trait traits) const;
-  public facebook::react::ShadowNodeTraits::Trait get() const;
-  public void set(facebook::react::ShadowNodeTraits::Trait trait);
-  public void unset(facebook::react::ShadowNodeTraits::Trait trait);
+  public constexpr bool check(facebook::react::ShadowNodeTraits::Trait traits) const;
+  public constexpr facebook::react::ShadowNodeTraits::Trait get() const;
+  public constexpr void set(facebook::react::ShadowNodeTraits::Trait trait);
+  public constexpr void unset(facebook::react::ShadowNodeTraits::Trait trait);
 }
 
 enum facebook::react::ShadowNodeTraits::Trait : int32_t {
@@ -2340,7 +2351,7 @@ class facebook::react::State {
   public virtual facebook::react::MapBuffer getMapBuffer() const = 0;
   public virtual folly::dynamic getDynamic() const = 0;
   public virtual jni::local_ref<jobject> getJNIReference() const = 0;
-  public virtual void updateState(folly::dynamic&& data) const = 0;
+  public virtual void updateState(folly::dynamic&& data, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const = 0;
   public virtual ~State() = default;
 }
 
@@ -2364,7 +2375,7 @@ class facebook::react::StateWrapperImpl : public jni::HybridClass<facebook::reac
   public static void registerNatives();
   public std::shared_ptr<const facebook::react::State> getState() const;
   public void setState(std::shared_ptr<const facebook::react::State> state);
-  public void updateStateImpl(facebook::react::NativeMap* map);
+  public void updateStateImpl(facebook::react::NativeMap* map, jint updateMode);
 }
 
 class facebook::react::SurfaceHandlerBinding : public jni::HybridClass<facebook::react::SurfaceHandlerBinding> {
@@ -2421,6 +2432,11 @@ class facebook::react::TouchEventEmitter : public facebook::react::EventEmitter 
   public void onTouchEnd(facebook::react::TouchEvent event) const;
   public void onTouchMove(facebook::react::TouchEvent event) const;
   public void onTouchStart(facebook::react::TouchEvent event) const;
+}
+
+class facebook::react::TouchesHelper : public facebook::jni::JavaClass<facebook::react::TouchesHelper> {
+  public static constexpr auto * kJavaDescriptor;
+  public static void registerNatives();
 }
 
 class facebook::react::TracingDelegate : public facebook::react::jsinspector_modern::HostTargetTracingDelegate {
@@ -2985,6 +3001,13 @@ enum facebook::react::Role : uint8_t {
   Treeitem,
 }
 
+enum facebook::react::SafeAreaViewPointerEvents {
+  Auto,
+  BoxNone,
+  BoxOnly,
+  None,
+}
+
 enum facebook::react::SchedulerPriority : int {
   IdlePriority,
   ImmediatePriority,
@@ -3241,6 +3264,15 @@ struct facebook::react::EventPayload {
   public virtual facebook::react::EventPayloadType getType() const = 0;
   public virtual std::optional<double> extractValue(const std::vector<std::string>&) const;
   public virtual ~EventPayload() = default;
+}
+
+struct facebook::react::FabricUIManagerMeasureArgs {
+  public const char* componentName;
+  public facebook::react::LayoutConstraints layoutConstraints;
+  public facebook::react::SurfaceId surfaceId;
+  public folly::dynamic localData;
+  public folly::dynamic props;
+  public folly::dynamic state;
 }
 
 struct facebook::react::FilterFunction {
@@ -3739,6 +3771,7 @@ struct facebook::react::WritableNativeMap : public jni::HybridClass<facebook::re
   public WritableNativeMap(folly::dynamic&& val);
   public friend HybridBase;
   public static constexpr auto kJavaDescriptor;
+  public static jni::local_ref<JavaPart> newObjectCxxArgs(folly::dynamic&& val = folly::dynamic::object());
   public static void initHybrid(jni::alias_ref<jhybridobject> jobj);
   public static void registerNatives();
   public void mergeNativeMap(facebook::react::ReadableNativeMap* other);
@@ -3756,7 +3789,7 @@ template <const char* concreteComponentName, typename ViewPropsT = facebook::rea
 class facebook::react::ConcreteViewShadowNode : public facebook::react::ConcreteShadowNode<concreteComponentName, facebook::react::YogaLayoutableShadowNode, ViewPropsT, ViewEventEmitterT, StateDataT> {
   public ConcreteViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ConcreteViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public using BaseShadowNode = facebook::react::ConcreteShadowNode<concreteComponentName, facebook::react::YogaLayoutableShadowNode, ViewPropsT, ViewEventEmitterT, StateDataT>;
   public using ConcreteViewProps = ViewPropsT;
   public virtual bool canBeTouchTarget() const override;
@@ -3773,12 +3806,12 @@ class facebook::react::ConcreteShadowNode : public BaseShadowNodeT {
   public const facebook::react::ConcreteShadowNode::ConcreteStateData& getStateData() const;
   public const std::shared_ptr<const facebook::react::ConcreteShadowNode::ConcreteProps>& getConcreteSharedProps() const;
   public static const facebook::react::ConcreteShadowNode::SharedConcreteProps& defaultSharedProps();
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static facebook::react::ComponentHandle Handle();
   public static facebook::react::ComponentName Name();
   public static facebook::react::ConcreteShadowNode::ConcreteStateData initialStateData(const facebook::react::Props::Shared&, const facebook::react::ShadowNodeFamily::Shared&, const facebook::react::ComponentDescriptor&);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::Props::Shared& baseProps);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::Props::Shared& baseProps = nullptr);
-  public static facebook::react::ShadowNodeTraits BaseTraits();
   public static void initializeDynamicProps(facebook::react::ConcreteShadowNode::UnsharedConcreteProps props, const facebook::react::RawProps& rawProps, const facebook::react::Props::Shared& baseProps = nullptr);
   public using ConcreteEventEmitter = EventEmitterT;
   public using ConcreteProps = PropsT;
@@ -3806,7 +3839,7 @@ class facebook::react::ConcreteState : public facebook::react::State {
   public virtual facebook::react::MapBuffer getMapBuffer() const override;
   public virtual folly::dynamic getDynamic() const override;
   public virtual jni::local_ref<jobject> getJNIReference() const override;
-  public virtual void updateState(folly::dynamic&& data) const override;
+  public virtual void updateState(folly::dynamic&& data, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const override;
   public void updateState(facebook::react::ConcreteState::Data&& newData, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const;
   public void updateState(std::function<facebook::react::StateData::Shared(const facebook::react::ConcreteState::Data& oldData)> callback, facebook::react::EventQueue::UpdateMode updateMode = facebook::react::EventQueue::UpdateMode::Asynchronous) const;
   public ~ConcreteState() override = default;
@@ -4131,10 +4164,11 @@ class facebook::react::SyncCallback<R(Args...)> {
   public R operator()(Args... args) const;
   public SyncCallback(const facebook::react::SyncCallback&) = delete;
   public SyncCallback(facebook::jsi::Runtime& rt, facebook::jsi::Function function, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
-  public SyncCallback(facebook::react::SyncCallback&& other) noexcept;
+  public SyncCallback(facebook::react::SyncCallback&&) noexcept = default;
   public facebook::react::SyncCallback& operator=(const facebook::react::SyncCallback&) = delete;
-  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&& other) noexcept;
-  public ~SyncCallback();
+  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&&) noexcept = default;
+  public void reset(facebook::jsi::Runtime& runtime) noexcept;
+  public ~SyncCallback() = default;
 }
 
 template <typename R, typename... Args>
@@ -4188,6 +4222,27 @@ class facebook::react::ConcreteComponentDescriptor : public facebook::react::Com
 
 template <typename T, typename = void>
 struct facebook::react::Bridging {
+}
+
+template <typename T>
+class facebook::react::LongLivedObjectHandle {
+  public LongLivedObjectHandle() = default;
+  public LongLivedObjectHandle(const facebook::react::LongLivedObjectHandle&) = delete;
+  public LongLivedObjectHandle(facebook::jsi::Runtime& runtime, T value, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
+  public LongLivedObjectHandle(facebook::react::LongLivedObjectHandle&&) noexcept = default;
+  public bool expired() const noexcept;
+  public facebook::react::LongLivedObjectHandle& operator=(const facebook::react::LongLivedObjectHandle&) = delete;
+  public facebook::react::LongLivedObjectHandle& operator=(facebook::react::LongLivedObjectHandle&& other) noexcept;
+  public std::shared_ptr<facebook::react::CallInvoker> lockInvoker() const noexcept;
+  public std::shared_ptr<facebook::react::LongLivedObjectHandle::Holder> lockJSValue(facebook::jsi::Runtime&) const noexcept;
+  public void reset() noexcept;
+  public void reset(facebook::jsi::Runtime& runtime) noexcept;
+  public ~LongLivedObjectHandle();
+}
+
+struct facebook::react::LongLivedObjectHandle::Holder : public facebook::react::LongLivedObject {
+  public Holder(facebook::jsi::Runtime& runtime, T value);
+  public T value;
 }
 
 template <typename T>
@@ -5384,6 +5439,9 @@ struct facebook::react::array_detail::BridgingDynamic {
 
 template <typename T, typename C>
 C facebook::react::detail::memberFunctionClass(T C::*);
+template <typename T>
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<T>, std::weak_ptr<facebook::react::CallInvoker>) = delete;
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<facebook::react::LongLivedObject> object, std::weak_ptr<facebook::react::CallInvoker> jsInvoker) noexcept;
 
 class facebook::react::detail::OwnedBytesBuffer : public facebook::jsi::MutableBuffer {
   public OwnedBytesBuffer(std::vector<uint8_t> bytes) noexcept;
@@ -6548,13 +6606,13 @@ constexpr bool facebook::yoga::operator>=(facebook::yoga::FloatOptional lhs, fac
 constexpr facebook::yoga::FloatOptional facebook::yoga::operator+(facebook::yoga::FloatOptional lhs, facebook::yoga::FloatOptional rhs);
 
 class facebook::yoga::Config : public YGConfig {
-  public Config(YGLogger logger);
   public YGNodeRef cloneNode(YGNodeConstRef node, YGNodeConstRef owner, size_t childIndex) const;
   public bool hasErrata(facebook::yoga::Errata errata) const;
   public bool useWebDefaults() const;
+  public constexpr Config(YGLogger logger);
   public facebook::yoga::Errata getErrata() const;
   public float getPointScaleFactor() const;
-  public static const facebook::yoga::Config& getDefault();
+  public static constexpr const facebook::yoga::Config& getDefault();
   public uint32_t getVersion() const noexcept;
   public void addErrata(facebook::yoga::Errata errata);
   public void log(const facebook::yoga::Node* node, facebook::yoga::LogLevel logLevel, const char* format, va_list args) const;
@@ -7184,6 +7242,7 @@ struct facebook::yoga::LayoutData {
 }
 
 struct facebook::yoga::LayoutResults {
+  public bool computedAutoMinMainSizeResolved() const;
   public bool hadOverflow() const;
   public bool operator==(facebook::yoga::LayoutResults layout) const;
   public facebook::yoga::CachedMeasurement cachedLayout;
@@ -7208,6 +7267,7 @@ struct facebook::yoga::LayoutResults {
   public uint32_t generationCount;
   public uint32_t nextCachedMeasurementsIndex;
   public void setBorder(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
+  public void setComputedAutoMinMainSizeResolved(bool resolved);
   public void setDimension(facebook::yoga::Dimension axis, float dimension);
   public void setDirection(facebook::yoga::Direction direction);
   public void setHadOverflow(bool hadOverflow);

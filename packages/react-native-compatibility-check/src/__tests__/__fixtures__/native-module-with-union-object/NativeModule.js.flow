@@ -12,15 +12,15 @@ import type {TurboModule} from 'react-native';
 
 import {TurboModuleRegistry} from 'react-native';
 
-type ObjectA = {|
+type ObjectA = {
   kind: 'a',
   value: number,
-|};
+};
 
-type ObjectB = {|
+type ObjectB = {
   kind: 'b',
   name: string,
-|};
+};
 
 type ObjectUnion = ObjectA | ObjectB;
 

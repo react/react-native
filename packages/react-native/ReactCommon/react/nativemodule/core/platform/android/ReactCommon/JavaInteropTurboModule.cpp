@@ -42,7 +42,6 @@ JavaInteropTurboModule::JavaInteropTurboModule(
     const std::vector<MethodDescriptor>& methodDescriptors)
     : JavaTurboModule(params),
       methodDescriptors_(methodDescriptors),
-      methodIDs_(methodDescriptors.size()),
       constantsCache_(jsi::Value::undefined()) {
   for (const auto& methodDescriptor : methodDescriptors) {
     methodMap_[methodDescriptor.methodName] = MethodMetadata{
@@ -73,11 +72,10 @@ jsi::Value JavaInteropTurboModule::create(
               jsi::Value ret = this->invokeJavaMethod(
                   rt,
                   this->methodDescriptors_[i].jsiReturnKind,
-                  this->methodDescriptors_[i].methodName,
-                  this->methodDescriptors_[i].jniSignature,
+                  this->methodDescriptors_[i].methodName.c_str(),
+                  this->methodDescriptors_[i].jniSignature.c_str(),
                   args,
-                  count,
-                  this->methodIDs_[i]);
+                  count);
 
               bool isRetValid = ret.isUndefined() || ret.isNull() ||
                   (ret.isObject() && !ret.asObject(rt).isFunction(rt));
@@ -112,11 +110,10 @@ jsi::Value JavaInteropTurboModule::create(
             return this->invokeJavaMethod(
                 rt,
                 this->methodDescriptors_[i].jsiReturnKind,
-                this->methodDescriptors_[i].methodName,
-                this->methodDescriptors_[i].jniSignature,
+                this->methodDescriptors_[i].methodName.c_str(),
+                this->methodDescriptors_[i].jniSignature.c_str(),
                 args,
-                count,
-                this->methodIDs_[i]);
+                count);
           });
     }
   }

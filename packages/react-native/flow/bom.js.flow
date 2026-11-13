@@ -62,7 +62,7 @@ interface Console {
     trackName?: string,
     trackGroup?: string,
     color?: DevToolsColor,
-    detail?: {[string]: unknown},
+    detail?: {[key: string]: unknown},
   ): void;
   createTask(label: string): ConsoleTask;
 }
@@ -93,7 +93,7 @@ declare class PerformanceEntry {
   entryType: string;
   name: string;
   startTime: DOMHighResTimeStamp;
-  toJSON(): {[string]: unknown};
+  toJSON(): {[key: string]: unknown};
 }
 
 // https://w3c.github.io/user-timing/#performancemark
@@ -112,7 +112,7 @@ declare class PerformanceServerTiming {
   description: string;
   duration: DOMHighResTimeStamp;
   name: string;
-  toJSON(): {[string]: unknown};
+  toJSON(): {[key: string]: unknown};
 }
 
 // https://www.w3.org/TR/resource-timing-2/#sec-performanceresourcetiming
@@ -209,7 +209,7 @@ declare class Performance {
     endMark?: string,
   ): PerformanceMeasure;
   now(): DOMHighResTimeStamp;
-  toJSON(): {[string]: unknown};
+  toJSON(): {[key: string]: unknown};
 }
 
 declare var performance: Performance;
@@ -623,7 +623,7 @@ declare class URLSearchParams {
       | string
       | URLSearchParams
       | Array<[string, string]>
-      | {[string]: string, ...},
+      | {[key: string]: string, ...},
   ): void;
   delete(name: string, value?: string): void;
   entries(): Iterator<[string, string]>;
@@ -821,9 +821,9 @@ declare class FileSystemFileHandle extends FileSystemHandle {
 
   getFile(): Promise<File>;
   createSyncAccessHandle(): Promise<FileSystemSyncAccessHandle>;
-  createWritable(options?: {|
+  createWritable(options?: {
     keepExistingData?: boolean,
-  |}): Promise<FileSystemWritableFileStream>;
+  }): Promise<FileSystemWritableFileStream>;
 }
 
 // https://fs.spec.whatwg.org/#api-filesystemdirectoryhandle
@@ -834,13 +834,13 @@ declare class FileSystemDirectoryHandle extends FileSystemHandle {
 
   getDirectoryHandle(
     name: string,
-    options?: {|create?: boolean|},
+    options?: {create?: boolean},
   ): Promise<FileSystemDirectoryHandle>;
   getFileHandle(
     name: string,
-    options?: {|create?: boolean|},
+    options?: {create?: boolean},
   ): Promise<FileSystemFileHandle>;
-  removeEntry(name: string, options?: {|recursive?: boolean|}): Promise<void>;
+  removeEntry(name: string, options?: {recursive?: boolean}): Promise<void>;
   resolve(possibleDescendant: FileSystemHandle): Promise<Array<string> | null>;
 
   // Async iterator functions
@@ -855,9 +855,9 @@ declare class FileSystemSyncAccessHandle {
   close(): void;
   flush(): void;
   getSize(): number;
-  read(buffer: ArrayBuffer, options?: {|at: number|}): number;
+  read(buffer: ArrayBuffer, options?: {at: number}): number;
   truncate(newSize: number): void;
-  write(buffer: ArrayBuffer, options?: {|at: number|}): number;
+  write(buffer: ArrayBuffer, options?: {at: number}): number;
 }
 
 declare class MediaStream {}
@@ -867,6 +867,6 @@ declare class FileSystemWritableFileStream {}
 
 type PermissionState = 'granted' | 'denied' | 'prompt';
 
-type FileSystemHandlePermissionDescriptor = {|
+type FileSystemHandlePermissionDescriptor = {
   mode: 'read' | 'readwrite',
-|};
+};

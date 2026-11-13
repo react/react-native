@@ -61,12 +61,6 @@
 
 @end
 
-@interface RCTBridge (RCTNetworking)
-
-@property (nonatomic, readonly) RCTNetworking *networking;
-
-@end
-
 @interface RCTBridgeProxy (RCTNetworking)
 
 @property (nonatomic, readonly) RCTNetworking *networking;

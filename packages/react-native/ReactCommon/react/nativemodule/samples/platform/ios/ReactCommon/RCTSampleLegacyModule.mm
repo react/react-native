@@ -7,9 +7,7 @@
 
 #import "RCTSampleLegacyModule.h"
 
-@implementation RCTSampleLegacyModule {
-  RCTBridge *_bridge;
-}
+@implementation RCTSampleLegacyModule
 
 // Backward-compatible export
 RCT_EXPORT_MODULE()
@@ -18,11 +16,6 @@ RCT_EXPORT_MODULE()
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
-}
-
-- (void)setBridge:(RCTBridge *)bridge
-{
-  _bridge = bridge;
 }
 
 - (dispatch_queue_t)methodQueue

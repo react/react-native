@@ -34,7 +34,7 @@ function generateId(prefix: string): string {
 
 const rootId = generateId('example-item-');
 
-function useTemporaryValue<T>(duration: number = 2000): [?T, (?T) => void] {
+function useTemporaryValue<T>(duration: number = 2000): [?T, (v: ?T) => void] {
   const [value, setValue] = useState<?T>(null);
 
   useEffect(() => {

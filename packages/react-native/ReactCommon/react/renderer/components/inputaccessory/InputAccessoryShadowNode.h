@@ -29,7 +29,7 @@ class InputAccessoryShadowNode final : public ConcreteViewShadowNode<
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::RootNodeKind);

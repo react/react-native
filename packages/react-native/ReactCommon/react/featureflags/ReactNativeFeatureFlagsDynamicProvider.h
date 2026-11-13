@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8d27c5f3feb4c8000922012882701b7e>>
+ * @generated SignedSource<<3e619f92c56f90a6ff3eea0c48d027a7>>
  */
 
 /**
@@ -81,6 +81,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::defaultTextToOverflowHidden();
+  }
+
+  bool deferTextInputTruncationIOS() override {
+    auto value = values_["deferTextInputTruncationIOS"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::deferTextInputTruncationIOS();
   }
 
   bool disableEarlyViewCommandExecution() override {
@@ -171,15 +180,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
-  }
-
-  bool enableAndroidAutoOffscreenCompositingForElevation() override {
-    auto value = values_["enableAndroidAutoOffscreenCompositingForElevation"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableAndroidAutoOffscreenCompositingForElevation();
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
@@ -299,13 +299,13 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableFlexboxAutoMinSizeInStrictMode();
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    auto value = values_["enableFontScaleChangesUpdatingLayout"];
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    auto value = values_["enableFollowUpMountItemDispatchAndroid"];
     if (!value.isNull()) {
       return value.getBool();
     }
 
-    return ReactNativeFeatureFlagsDefaults::enableFontScaleChangesUpdatingLayout();
+    return ReactNativeFeatureFlagsDefaults::enableFollowUpMountItemDispatchAndroid();
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -378,6 +378,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableImperativeFocus();
+  }
+
+  bool enableInteractableResponderViews() override {
+    auto value = values_["enableInteractableResponderViews"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableInteractableResponderViews();
   }
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS() override {
@@ -587,6 +596,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::fixMappingOfEventPrioritiesBetweenFabricAndReact();
   }
 
+  bool fixTextInlineViewLineHeight() override {
+    auto value = values_["fixTextInlineViewLineHeight"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixTextInlineViewLineHeight();
+  }
+
   bool fixTextLayoutOnPixelDensityChange() override {
     auto value = values_["fixTextLayoutOnPixelDensityChange"];
     if (!value.isNull()) {
@@ -648,6 +666,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fuseboxWebSocketEventsEnabled();
+  }
+
+  bool keepTimersRunningWhileHostPausedAndroid() override {
+    auto value = values_["keepTimersRunningWhileHostPausedAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::keepTimersRunningWhileHostPausedAndroid();
   }
 
   bool optimizedAnimatedPropUpdates() override {
@@ -747,6 +774,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::skipActivityIdentityAssertionOnHostPause();
+  }
+
+  bool skipUnchangedChildrenInDifferentiator() override {
+    auto value = values_["skipUnchangedChildrenInDifferentiator"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::skipUnchangedChildrenInDifferentiator();
   }
 
   bool syncAndroidClipBoundsWithOverflow() override {

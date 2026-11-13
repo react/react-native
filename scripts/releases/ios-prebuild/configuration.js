@@ -53,8 +53,13 @@ const dependencies /*: ReadonlyArray<Dependency> */ = [
     settings: {
       publicHeaderFiles: './headers',
       headerSearchPaths: ['src'],
-      cCompilerFlags: ['-Wno-shorten-64-to-32'],
-      cxxCompilerFlags: ['-Wno-shorten-64-to-32', `-std=${CPP_STANDARD}`],
+      // Android builds glog at -O2 in every build type, Debug included, so match it.
+      cCompilerFlags: ['-Wno-shorten-64-to-32', '-O2'],
+      cxxCompilerFlags: [
+        '-Wno-shorten-64-to-32',
+        `-std=${CPP_STANDARD}`,
+        '-O2',
+      ],
       defines: [
         {name: 'DEFINES_MODULE', value: 'YES'},
         {name: 'USE_HEADERMAP', value: 'NO'},

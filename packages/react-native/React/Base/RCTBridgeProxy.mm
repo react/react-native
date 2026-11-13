@@ -296,14 +296,6 @@ using namespace facebook;
   return YES;
 }
 
-- (void)start
-{
-  [self
-      logError:
-          @"Starting the bridge proxy does nothing. If you want to start React Native, please use RCTHost start. Nooping"
-           cmd:_cmd];
-}
-
 - (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules
 {
   [self
@@ -341,15 +333,6 @@ using namespace facebook;
 - (void)_immediatelyCallTimer:(NSNumber *)timer
 {
   [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-/**
- * RCTBridge (Inspector)
- */
-- (BOOL)inspectable
-{
-  [self logWarning:@"This method is not supported. Returning NO." cmd:_cmd];
-  return NO;
 }
 
 /**

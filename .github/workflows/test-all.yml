@@ -10,6 +10,14 @@ on:
 
 permissions:
   contents: read
+  actions: read
+
+concurrency:
+  # A new push to a pull request makes the previous run obsolete, so cancel it
+  # instead of spending (macOS) runner time on it. Runs on branches are never
+  # cancelled: each one gets its own group.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   set_release_type:
@@ -105,89 +113,35 @@ jobs:
     secrets: inherit
     needs: [prebuild_apple_dependencies]
 
-  test_ios_rntester_ruby_3_2_0:
-    runs-on: macos-15
-    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Run it
-        uses: ./.github/actions/test-ios-rntester
-        with:
-          ruby-version: '3.2.0'
-          flavor: Debug
-
-  test_ios_rntester_dynamic_frameworks:
-    runs-on: macos-15-large
-    needs: check_code_changes
-    if: |
-      needs.check_code_changes.outputs.any_code_change == 'true' &&
-      needs.check_code_changes.outputs.should_test_ios == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [Debug, Release]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Run it
-        uses: ./.github/actions/test-ios-rntester
-        with:
-          flavor: ${{ matrix.flavor }}
-          use-frameworks: true
-          run-unit-tests: false # tests for dynamic frameworks are already run in the test_ios_rntester job; this is to just a test build from source (no prebuilds)
-
   test_ios_rntester:
     runs-on: macos-15-large
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         flavor: [Debug, Release]
-        frameworks: [false, true]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Run it
         uses: ./.github/actions/test-ios-rntester
         with:
-          use-frameworks: ${{ matrix.frameworks }}
-          # Consume the prebuilt artifacts in the dynamic-frameworks cells too:
-          # prebuilt + use_frameworks is the config of the 2026-07-03
-          # SocketRocket dual-copy regression, previously covered by no lane
-          # (source-built dynamic frameworks stay covered by
-          # test_ios_rntester_dynamic_frameworks).
-          use-prebuilds: true
           flavor: ${{ matrix.flavor }}
 
-  test_maestro_cloud_ios:
-    needs: test_ios_rntester
-    # test_ios_rntester is continue-on-error. If its Release artifact is missing,
-    # the reusable workflow fails explicitly while downloading or validating it.
-    if: |
-      needs.test_ios_rntester.result == 'success' &&
-      (
-        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-        (
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          github.actor != 'dependabot[bot]'
-        )
-      )
-    uses: ./.github/workflows/maestro-cloud-rntester.yml
-    with:
-      platform: iOS
-      artifact-name: RNTesterApp-NewArch-Release
-      download-path: /tmp/RNTesterBuild/RNTester.app
-      app-file: /tmp/RNTesterBuild/RNTester.app
-      app-id: com.meta.RNTester.localDevelopment
-      device-model: iPhone-17-Pro
-      device-os: iOS-26-2
-      exclude-tags: android-only,local-screenshot-baseline
-    secrets: inherit
+  # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
+  test_ios_rntester_cocoapods:
+    runs-on: macos-15-large
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Run it
+        uses: ./.github/actions/test-ios-rntester
+        with:
+          flavor: Debug
+          dependency-manager: cocoapods
 
   test_e2e_ios_rntester:
     needs: test_ios_rntester
@@ -195,19 +149,32 @@ jobs:
     uses: ./.github/workflows/e2e-ios-rntester.yml
     secrets: inherit
 
+  # Each flow already gets a retry inside the job, so a flow that failed is
+  # reported straight away. These retries only re-run jobs that stopped before
+  # running every flow, and they skip flows that already passed.
   test_e2e_ios_rntester_retry_1:
     needs: test_e2e_ios_rntester
-    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.status == 'failure' }}
+    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.retryable == 'true' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_ios_rntester_retry_2:
     needs: test_e2e_ios_rntester_retry_1
-    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.status == 'failure' }}
+    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.retryable == 'true' }}
     uses: ./.github/workflows/e2e-ios-rntester.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
+
+  test_visual_ios_rntester:
+    needs: test_ios_rntester
+    if: ${{ needs.test_ios_rntester.result == 'success' }}
+    uses: ./.github/workflows/visual-capture-rntester.yml
+    with:
+      platform: ios
 
   test_e2e_ios_templateapp:
     needs: [build_npm_package, prebuild_apple_dependencies, check_code_changes]
@@ -227,28 +194,6 @@ jobs:
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
       fail-on-error: true
-    secrets: inherit
-
-  test_ios_spm_rntester:
-    needs:
-      [
-        prebuild_apple_dependencies,
-        prebuild_react_native_core,
-        check_code_changes,
-      ]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
-    uses: ./.github/workflows/test-ios-spm-rntester.yml
-    secrets: inherit
-
-  test_ios_spm_helloworld:
-    needs:
-      [
-        prebuild_apple_dependencies,
-        prebuild_react_native_core,
-        check_code_changes,
-      ]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
-    uses: ./.github/workflows/test-ios-spm-helloworld.yml
     secrets: inherit
 
   test_ios_spm_newapp:
@@ -335,6 +280,60 @@ jobs:
       fail-on-error: true
     secrets: inherit
 
+  test_react_common_cxx:
+    runs-on: 8-core-ubuntu
+    needs: [check_code_changes, lint]
+    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      # The tests use C++20 features newer than the image's clang 14, such as
+      # std::source_location and parenthesised aggregate initialisation.
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install -y git cmake openssl libssl-dev curl gnupg
+          codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
+          echo "deb http://apt.llvm.org/$codename/ llvm-toolchain-$codename-18 main" | sudo tee /etc/apt/sources.list.d/llvm-18.list
+          sudo apt update
+          sudo apt install -y clang-18
+      - name: Setup git safe folders
+        shell: bash
+        run: git config --global --add safe.directory '*'
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Install node dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Setup gradle
+        uses: ./.github/actions/setup-gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+      - name: Run ReactCommon C++ tests
+        shell: bash
+        run: ./gradlew :private:react-native-fantom:testReactCommon
+        env:
+          CC: clang-18
+          CXX: clang++-18
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: test-react-common-cxx-results
+          compression-level: 1
+          if-no-files-found: ignore
+          path: private/react-native-fantom/build/reports
+
   build_android:
     runs-on: 8-core-ubuntu
     needs: [set_release_type, check_code_changes]
@@ -361,28 +360,6 @@ jobs:
           release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
-  test_maestro_cloud_android:
-    needs: build_android
-    if: |
-      needs.build_android.result == 'success' &&
-      (
-        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-        (
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          github.actor != 'dependabot[bot]'
-        )
-      )
-    uses: ./.github/workflows/maestro-cloud-rntester.yml
-    with:
-      platform: Android
-      artifact-name: rntester-release
-      download-path: /tmp/rntester-android
-      app-file: /tmp/rntester-android/app-arm64-v8a-release.apk
-      app-id: com.facebook.react.uiapp
-      exclude-tags: ios-only,local-screenshot-baseline
-    secrets: inherit
-
   test_e2e_android_rntester:
     needs: build_android
     if: ${{ needs.build_android.result == 'success' }}
@@ -405,6 +382,13 @@ jobs:
       fail-on-error: true
       retry-attempt: 2
     secrets: inherit
+
+  test_visual_android_rntester:
+    needs: build_android
+    if: ${{ needs.build_android.result == 'success' }}
+    uses: ./.github/workflows/visual-capture-rntester.yml
+    with:
+      platform: android
 
   build_npm_package:
     runs-on: 8-core-ubuntu
@@ -468,12 +452,12 @@ jobs:
       - name: Setup git safe folders
         run: git config --global --add safe.directory '*'
       - name: Download npm package artifact
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: react-native-package
           path: build
       - name: Download maven-local artifact
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: maven-local
           path: /tmp/maven-local
@@ -508,21 +492,6 @@ jobs:
           path: ./private/helloworld/android/app/build/outputs/apk/
           compression-level: 0
 
-  test_ios_helloworld_with_ruby_3_2_0:
-    runs-on: macos-15
-    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
-    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
-    env:
-      PROJECT_NAME: iOSTemplateProject
-      YARN_ENABLE_IMMUTABLE_INSTALLS: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - uses: ./.github/actions/test-ios-helloworld
-        with:
-          ruby-version: 3.2.0
-          flavor: Debug
-
   test_ios_helloworld:
     runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
@@ -530,11 +499,6 @@ jobs:
     strategy:
       matrix:
         flavor: [Debug, Release]
-        use_frameworks: [false, true]
-        exclude:
-          # This config is tested with Ruby 3.2.0. Let's not double test it.
-          - flavor: Debug
-            use_frameworks: false
     env:
       PROJECT_NAME: iOSTemplateProject
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
@@ -544,7 +508,22 @@ jobs:
       - uses: ./.github/actions/test-ios-helloworld
         with:
           flavor: ${{ matrix.flavor }}
-          use-frameworks: ${{ matrix.use_frameworks }}
+
+  # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
+  test_ios_helloworld_cocoapods:
+    runs-on: macos-15
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
+    env:
+      PROJECT_NAME: iOSTemplateProject
+      YARN_ENABLE_IMMUTABLE_INSTALLS: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: ./.github/actions/test-ios-helloworld
+        with:
+          flavor: Debug
+          dependency-manager: cocoapods
 
   lint:
     runs-on: ubuntu-latest

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<52db1adfed5fd99e4ca145b50dc413a0>>
+ * @generated SignedSource<<edaa18da7b657e91ed3b2e5231cc0ac2>>
  */
 
 /**
@@ -38,11 +38,15 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool cxxNativeAnimatedEnabled() override {
-    return false;
+    return true;
   }
 
   bool defaultTextToOverflowHidden() override {
     return true;
+  }
+
+  bool deferTextInputTruncationIOS() override {
+    return false;
   }
 
   bool disableEarlyViewCommandExecution() override {
@@ -85,12 +89,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableAndroidAutoOffscreenCompositingForElevation() override {
-    return false;
-  }
-
   bool enableAndroidTextMeasurementOptimizations() override {
-    return false;
+    return true;
   }
 
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
@@ -141,8 +141,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    return true;
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    return false;
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -174,6 +174,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableImperativeFocus() override {
+    return false;
+  }
+
+  bool enableInteractableResponderViews() override {
     return false;
   }
 
@@ -218,7 +222,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enablePreparedTextLayout() override {
-    return false;
+    return true;
   }
 
   bool enablePropsUpdateReconciliationAndroid() override {
@@ -269,6 +273,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool fixTextInlineViewLineHeight() override {
+    return false;
+  }
+
   bool fixTextLayoutOnPixelDensityChange() override {
     return false;
   }
@@ -286,7 +294,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxFrameRecordingEnabled() override {
-    return false;
+    return true;
   }
 
   bool fuseboxScreenshotCaptureEnabled() override {
@@ -294,6 +302,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxWebSocketEventsEnabled() override {
+    return true;
+  }
+
+  bool keepTimersRunningWhileHostPausedAndroid() override {
     return false;
   }
 
@@ -314,7 +326,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   double preparedTextCacheSize() override {
-    return 200.0;
+    return 1000.0;
   }
 
   bool preventShadowTreeCommitExhaustion() override {
@@ -338,6 +350,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool skipActivityIdentityAssertionOnHostPause() override {
+    return false;
+  }
+
+  bool skipUnchangedChildrenInDifferentiator() override {
     return false;
   }
 

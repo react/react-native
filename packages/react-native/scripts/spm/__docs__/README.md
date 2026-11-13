@@ -23,6 +23,16 @@ cd ios
 npx react-native spm      # add on first run, update thereafter
 ```
 
+On a CocoaPods app, this stops and changes nothing. To convert the app, run
+`npx react-native spm add --deintegrate`. It runs `pod deintegrate` and keeps
+the `Podfile`. It warns about pods that are not part of React Native, because
+they are not installed while the app uses SwiftPM.
+
+`pod install` on a converted app stops with an error. To go back to CocoaPods,
+run `npx react-native spm deinit`, then `pod install` in `ios/`. If your Podfile
+does not call `react_native_post_install`, check `REACT_NATIVE_PATH`; see
+[Removing / resetting](./spm-scripts.md#removing--resetting).
+
 **If an autolinked dependency ships no `Package.swift`, setup stops with
 `error: Package.swift is missing for library "<name>"` and exit code 2.** Run
 `npx react-native spm scaffold`, persist the manifest with `patch-package`, and
@@ -40,7 +50,7 @@ Three documents cover the design, each owning one area:
 | Document                                                       | Covers                                                                                                                                                                                                                          |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [spm-scripts.md](./spm-scripts.md)                             | The tool itself: CLI surface, the six-step pipeline, [every file it creates or modifies](./spm-scripts.md#files-the-tool-touches), the two auto-sync hooks, and how Debug/Release flavor selection works.                       |
-| [spm-header-paths-contract.md](./spm-header-paths-contract.md) | How headers and package references resolve. The contract is **zero-`-I`**: no generated manifest carries a search path into React Native's own headers. Also covers remote mode.                                                |
+| [spm-header-paths-contract.md](./spm-header-paths-contract.md) | How headers and package references resolve. The contract is **zero-`-I`**: no generated manifest carries a search path into React Native's own headers. Also covers the planned remote mode.                                    |
 | [spm-autolinking-plugins.md](./spm-autolinking-plugins.md)     | The extension seam for frameworks with their own module system (Expo is the first consumer): discovery, the full context/return contract including `flavoredFrameworks`, `watchPaths` and `scriptPhases`, and failure behavior. |
 
 Two ideas explain most of the architecture:

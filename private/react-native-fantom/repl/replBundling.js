@@ -41,7 +41,7 @@ function getMetroPort(): number {
 
 function getBundleURL(
   relativeEntryPath: string,
-  extraParams: {[string]: string},
+  extraParams: {[key: string]: string},
 ): URL {
   const requestPath = relativeEntryPath.replace(/\.js$/, '');
   const url = new URL(

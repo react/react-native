@@ -946,6 +946,48 @@ TEST_P(RuntimeSchedulerTest, clearsQueuesOnError) {
   EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
 }
 
+TEST_P(RuntimeSchedulerTest, clearQueuesAllowsTaskDestructorsToScheduleTasks) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  bool didRunScheduledFromDestructor = false;
+
+  auto scheduleTask = [&]() {
+    runtimeScheduler_->scheduleTask(
+        SchedulerPriority::NormalPriority, [&](jsi::Runtime& /*runtime*/) {
+          didRunScheduledFromDestructor = true;
+        });
+  };
+  // Schedules a task when it is destroyed.
+  auto scheduleOnDestroy =
+      std::make_shared<OnScopeExit<decltype(scheduleTask)>>(
+          std::move(scheduleTask));
+
+  auto throwingCallback =
+      createHostFunctionFromLambda([&](bool /*unused*/) -> jsi::Value {
+        throw jsi::JSError(*runtime_, "Test error");
+      });
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::ImmediatePriority, std::move(throwingCallback));
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::LowPriority,
+      [scheduleOnDestroy =
+           std::move(scheduleOnDestroy)](jsi::Runtime& /*runtime*/) {});
+
+  EXPECT_EQ(stubQueue_->size(), 1);
+
+  // The throwing task clears the queues, which destroys the low priority task
+  // and runs its capture's destructor. That must not deadlock, and the task it
+  // schedules must still run.
+  stubQueue_->tick();
+
+  EXPECT_TRUE(didRunScheduledFromDestructor);
+  EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
+}
+
 TEST_P(RuntimeSchedulerTest, basicSameThreadExecution) {
   bool didRunSynchronousTask = false;
   std::thread t1([this, &didRunSynchronousTask]() {

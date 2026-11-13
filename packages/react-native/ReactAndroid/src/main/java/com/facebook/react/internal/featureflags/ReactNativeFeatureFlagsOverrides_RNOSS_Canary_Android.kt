@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c82895ef7e5cee6ba387620a43aa88b8>>
+ * @generated SignedSource<<0aa6021a35e690e00686c95c387017f6>>
  */
 
 /**
@@ -23,8 +23,6 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
   // We could use JNI to get the defaults from C++,
   // but that is more expensive than just duplicating the defaults here.
 
-  override fun cxxNativeAnimatedEnabled(): Boolean = true
-
   override fun enableAccessibilityOrder(): Boolean = true
 
   override fun enableImperativeEvents(): Boolean = true
@@ -35,11 +33,13 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
 
   override fun fixBorderlessRippleAndroid(): Boolean = true
 
-  override fun fuseboxFrameRecordingEnabled(): Boolean = true
+  override fun fixTextInlineViewLineHeight(): Boolean = true
 
-  override fun fuseboxWebSocketEventsEnabled(): Boolean = true
+  override fun optimizedAnimatedPropUpdates(): Boolean = true
 
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
+
+  override fun useSharedAnimatedBackend(): Boolean = true
 
   override fun useTurboModuleInterop(): Boolean = true
 }

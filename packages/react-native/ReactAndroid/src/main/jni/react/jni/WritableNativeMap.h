@@ -26,6 +26,9 @@ struct WritableNativeMap : jni::HybridClass<WritableNativeMap, ReadableNativeMap
   WritableNativeMap();
   WritableNativeMap(folly::dynamic &&val);
 
+  /** Creates a Java map without invoking initHybrid before installing its C++ contents. */
+  static jni::local_ref<JavaPart> newObjectCxxArgs(folly::dynamic &&val = folly::dynamic::object());
+
   static void initHybrid(jni::alias_ref<jhybridobject> jobj);
 
   void putNull(std::string key);

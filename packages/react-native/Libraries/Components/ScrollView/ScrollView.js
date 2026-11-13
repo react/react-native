@@ -386,8 +386,15 @@ export type ScrollViewPropsIOS = Readonly<{
    */
   zoomScale?: ?number,
   /**
-   * This property specifies how the safe area insets are used to modify the
-   * content area of the scroll view.
+   * How the safe area insets modify the content area of the scroll view.
+   *
+   * Along the scrollable axis, the insets become content insets, so content
+   * scrolls under the system UI. Across it, every value except `'never'` pads
+   * the content container by the insets, so content is laid out clear of the
+   * system UI, such as the rail on iPhone Duo or camera cutout in landscape,
+   * while the container's background still extends edge to edge. On every
+   * edge, the `contentContainerStyle` padding counts toward the inset, so
+   * content sits at the larger of the two.
    *
    * @default `'never'`
    * @platform ios
@@ -469,14 +476,15 @@ export type ScrollViewPropsAndroid = Readonly<{
 }>;
 
 type StickyHeaderComponentType = component(
-  ref?: React.RefSetter<Readonly<interface {setNextHeaderY: number => void}>>,
+  ref?: React.RefSetter<
+    Readonly<interface {setNextHeaderY: (v: number) => void}>,
+  >,
   ...ScrollViewStickyHeaderProps
 );
 
 type ScrollViewBaseProps = Readonly<{
   /**
-   * These styles will be applied to the scroll view content container which
-   * wraps all of the child views.
+   * Styles applied to the content container which wraps all child views.
    *
    * Example:
    *
@@ -492,8 +500,25 @@ type ScrollViewBaseProps = Readonly<{
    *   }
    * });
    * ```
+   *
+   * **Interaction with `contentInsetAdjustmentBehavior`**
+   *
+   * Commonly, `contentContainerStyle` is used to pad items away from the
+   * screen edges or the system scrollbar.
+   *
+   * If setting `contentInsetAdjustmentBehavior` (recommended), `padding` is
+   * applied slightly differently than with a regular `<View>`:
+   *
+   * - Pixel values: If a system safe area inset applies on a given edge, the
+   *   **greater of** the `padding` or inset length will be applied. An edge
+   *   without an inset, such as the top of a ScrollView below a header, keeps
+   *   its full `padding`.
+   * - Percentage values: Across the scrollable axis, used directly, overriding
+   *   any safe area padding. Along it, the safe area inset still applies, and
+   *   the `padding` adds to it.
    */
   contentContainerStyle?: ?ViewStyleProp,
+
   /**
    * Used to manually set the starting scroll offset.
    *
@@ -1986,8 +2011,8 @@ const styles = StyleSheet.create({
 
 type RefForwarder<TNativeInstance, TPublicInstance> = {
   getForwardingRef: (
-    ?React.RefSetter<TPublicInstance>,
-  ) => (TNativeInstance | null) => void,
+    v: ?React.RefSetter<TPublicInstance>,
+  ) => (v: TNativeInstance | null) => void,
   nativeInstance: TNativeInstance | null,
   publicInstance: TPublicInstance | null,
 };
@@ -1997,7 +2022,7 @@ type RefForwarder<TNativeInstance, TPublicInstance> = {
  * once `ScrollView` is reimplemented as a functional component.
  */
 function createRefForwarder<TNativeInstance, TPublicInstance>(
-  mutator: TNativeInstance => TPublicInstance,
+  mutator: (v: TNativeInstance) => TPublicInstance,
 ): RefForwarder<TNativeInstance, TPublicInstance> {
   const state: RefForwarder<TNativeInstance, TPublicInstance> = {
     getForwardingRef: memoize(forwardedRef => {

@@ -19,14 +19,14 @@ runs:
       run: git config --global --add safe.directory '*'
     - name: Download ReactNativeDependencies
       if: ${{ inputs.skip-apple-prebuilts != 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         pattern: ReactNativeDependencies*
         path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts
         merge-multiple: true
     - name: Download ReactCore artifacts
       if: ${{ inputs.skip-apple-prebuilts != 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         pattern: ReactCore*
         path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts
@@ -35,7 +35,7 @@ runs:
     # ReactNativeDependencies* pattern above; ReactNativeHeaders* needs its own.
     - name: Download ReactNativeHeaders artifacts
       if: ${{ inputs.skip-apple-prebuilts != 'true' }}
-      uses: actions/download-artifact@v7
+      uses: ./.github/actions/download-artifact
       with:
         pattern: ReactNativeHeaders*
         path: ./packages/react-native/ReactAndroid/external-artifacts/artifacts

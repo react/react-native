@@ -57,6 +57,7 @@ module.exports = {
     const cacheKeyParts = [
       MetroBabelTransformer.getCacheKey?.() ?? '',
       fs.readFileSync(__filename),
+      fs.readFileSync(require.resolve('./assetPlugin')),
       fs.readFileSync(
         require.resolve('./babel-plugins/inject-debugger-statements-in-tests'),
       ),

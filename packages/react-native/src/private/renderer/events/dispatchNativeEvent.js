@@ -33,21 +33,26 @@ import {
  * 1. Responder negotiation (touch handling, grant/release lifecycle)
  * 2. Normal event dispatch via dispatchTrustedEvent (capture/bubble phases)
  *
- * Called from the React renderer's dispatchEvent when
- * enableNativeEventTargetEventDispatching is enabled.
+ * Called from the React renderer's dispatchEvent.
  */
 export default function dispatchNativeEvent(
-  target: EventTarget,
+  target: ?EventTarget,
   type: string,
-  payload: {[string]: unknown},
+  payload: {[key: string]: unknown},
 ): void {
   // $FlowFixMe[incompatible-type] The global is backed by this implementation.
-  const internalTarget = target as InternalEventTarget;
+  const internalTarget = target as ?InternalEventTarget;
 
   // Process responder events before normal event dispatch.
   processResponderEvent(type, internalTarget, payload);
 
   try {
+    // The target is missing when its view unmounted during the touch, so only
+    // the responder step above applies.
+    if (internalTarget == null) {
+      return;
+    }
+
     // Normal EventTarget dispatch
     const bubbleConfig = customBubblingEventTypes[type];
     const directConfig = customDirectEventTypes[type];

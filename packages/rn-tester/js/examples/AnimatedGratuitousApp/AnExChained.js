@@ -18,8 +18,8 @@ import type {
 import * as React from 'react';
 import {Animated, PanResponder, StyleSheet, View} from 'react-native';
 
-class AnExChained extends React.Component<Object, any> {
-  constructor(props: Object) {
+class AnExChained extends React.Component<{...}, any> {
+  constructor(props: {...}) {
     super(props);
     this.state = {
       stickers: [new Animated.ValueXY()], // 1 leader

@@ -10,7 +10,6 @@
 #import <UserNotifications/UserNotifications.h>
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
-#import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTUtils.h>
 

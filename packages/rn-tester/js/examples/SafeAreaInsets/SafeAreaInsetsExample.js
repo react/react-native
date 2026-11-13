@@ -28,7 +28,10 @@ import {
 
 type Insets = SafeAreaInsetsChangeEvent['nativeEvent']['insets'];
 
-function useSafeAreaInsets(): [?Insets, (SafeAreaInsetsChangeEvent) => void] {
+function useSafeAreaInsets(): [
+  ?Insets,
+  (v: SafeAreaInsetsChangeEvent) => void,
+] {
   const [insets, setInsets] = useState<?Insets>(null);
   const onSafeAreaInsetsChange = useCallback(
     (event: SafeAreaInsetsChangeEvent) => {

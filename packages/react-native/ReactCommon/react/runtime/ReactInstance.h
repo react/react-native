@@ -27,6 +27,7 @@ namespace facebook::react {
 class ReactInstance final : private jsinspector_modern::InstanceTargetDelegate {
  public:
   using BindingsInstallFunc = std::function<void(jsi::Runtime &runtime)>;
+  using ArgFactory = std::function<void(jsi::Runtime &runtime, std::vector<jsi::Value> &args)>;
 
   ReactInstance(
       std::unique_ptr<JSRuntime> runtime,
@@ -70,6 +71,12 @@ class ReactInstance final : private jsinspector_modern::InstanceTargetDelegate {
   void registerSegment(uint32_t segmentId, const std::string &segmentPath);
 
   void callFunctionOnModule(const std::string &moduleName, const std::string &methodName, folly::dynamic &&args);
+
+  /**
+   * Like the overload above, but `argFactory` adds the arguments on the JS thread, so platform
+   * values can be converted to JS values directly.
+   */
+  void callFunctionOnModule(const std::string &moduleName, const std::string &methodName, ArgFactory &&argFactory);
 
   void handleMemoryPressureJs(int pressureLevel);
 

@@ -1097,7 +1097,7 @@ public class NetworkingModule(
     // would throw on every request, and spaces/invalid chars would violate the RFC 7231
     // User-Agent product-token syntax. Reduce the label to token-safe characters; if nothing
     // usable remains, fall back to the package name, which is always a valid token.
-    val label = appInfo?.let { pm.getApplicationLabel(it)?.toString() }
+    val label = appInfo?.let { pm.getApplicationLabel(it).toString() }
     val appName = sanitizeToUserAgentToken(label).ifEmpty { sanitizeToUserAgentToken(packageName) }
     if (appName.isEmpty()) return null
     val version =

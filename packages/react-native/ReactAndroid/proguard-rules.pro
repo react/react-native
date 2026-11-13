@@ -51,6 +51,17 @@
 -keep,includedescriptorclasses class com.facebook.react.turbomodule.core.** { *; }
 -keep,includedescriptorclasses class com.facebook.react.internal.turbomodule.core.** { *; }
 
+# Let tools outside the app's own code, such as OS accessibility and UI-understanding
+# services, identify the views React Native renders: UIManagerHelper returns the
+# UIManager for a view's React context, and UIManager.resolveView(reactTag) returns the
+# view React Native mounted under that tag.
+-keep class com.facebook.react.uimanager.UIManagerHelper {
+    public static *** getUIManager(...);
+}
+-keep interface com.facebook.react.bridge.UIManager {
+    android.view.View resolveView(int);
+}
+
 # hermes
 -keep class com.facebook.jni.** { *; }
 

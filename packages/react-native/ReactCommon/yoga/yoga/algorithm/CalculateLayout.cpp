@@ -35,7 +35,7 @@
 
 namespace facebook::yoga {
 
-std::atomic<uint32_t> gCurrentGenerationCount(0);
+constinit std::atomic<uint32_t> gCurrentGenerationCount(0);
 
 static bool hasAutoHorizontalMargin(const Style& style) {
   for (const auto direction : {Direction::LTR, Direction::RTL}) {
@@ -663,15 +663,50 @@ static bool measureNodeWithFixedSize(
   return false;
 }
 
+static bool isLayoutZeroedOutRecursively(const yoga::Node* const node) {
+  if (!node->getHasNewLayout()) {
+    return false;
+  }
+  // `configVersion` only validates the layout cache, which is empty after
+  // zeroing out. Embedders set it again when they give a cloned node a config.
+  LayoutResults zeroedOutLayout;
+  zeroedOutLayout.setDimension(Dimension::Width, 0);
+  zeroedOutLayout.setDimension(Dimension::Height, 0);
+  zeroedOutLayout.configVersion = node->getLayout().configVersion;
+  if (!(node->getLayout() == zeroedOutLayout)) {
+    return false;
+  }
+  for (const auto child : node->getChildren()) {
+    if (!isLayoutZeroedOutRecursively(child)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void zeroOutLayoutRecursively(yoga::Node* const node) {
   node->getLayout() = {};
   node->setLayoutDimension(0, Dimension::Width);
   node->setLayoutDimension(0, Dimension::Height);
   node->setHasNewLayout(true);
 
-  node->cloneChildrenIfNeeded();
-  for (const auto child : node->getChildren()) {
-    zeroOutLayoutRecursively(child);
+  // A display: none subtree is zeroed out on every layout pass of its parent.
+  // Most of it is usually still zeroed out from an earlier pass, but owned by
+  // an earlier tree, so cloning it to zero it out again changes nothing. Only
+  // clone the children, and recurse, when part of the subtree needs it.
+  //
+  // This relies on the embedder leaving `hasNewLayout` set under display: none
+  // nodes. Children that are skipped keep their owner from the earlier tree.
+  bool didCloneChildren = false;
+  for (size_t i = 0; i < node->getChildCount(); i++) {
+    if (isLayoutZeroedOutRecursively(node->getChild(i))) {
+      continue;
+    }
+    if (!didCloneChildren) {
+      node->cloneChildrenIfNeeded();
+      didCloneChildren = true;
+    }
+    zeroOutLayoutRecursively(node->getChild(i));
   }
 }
 
@@ -1068,19 +1103,39 @@ static FloatOptional computeAutoMinMainSize(
   return floor;
 }
 
-// boundAxis with an additional lower bound from `child`'s cached
-// `computedAutoMinMainSize`, applied on the main axis only. Used inside
-// the flex-shrink distribution to honor CSS §4.5 auto-min while preserving
-// the existing min/max/padding-and-border clamping.
+// boundAxis with an additional lower bound from `child`'s CSS §4.5 automatic
+// minimum main size, applied on the main axis only. Used inside the flex
+// distribution to honor auto-min while preserving the existing
+// min/max/padding-and-border clamping.
+//
+// The floor is computed on first use and cached on the child until
+// `resolveFlexibleLength` resets it for the next line, so only items that
+// actually grow or shrink run the min-content probe.
 static float boundAxisWithAutoMin(
-    const yoga::Node* const child,
+    yoga::Node* const child,
     const FlexDirection axis,
     const Direction direction,
     const float value,
     const float axisSize,
-    const float widthSize) {
-  float bounded = boundAxis(child, axis, direction, value, axisSize, widthSize);
-  const FloatOptional autoMin = child->getLayout().computedAutoMinMainSize;
+    const float ownerMainAxisSize,
+    const float ownerWidth,
+    const float ownerHeight,
+    const uint32_t generationCount) {
+  float bounded =
+      boundAxis(child, axis, direction, value, axisSize, ownerWidth);
+  LayoutResults& layout = child->getLayout();
+  if (!layout.computedAutoMinMainSizeResolved()) {
+    layout.computedAutoMinMainSize = computeAutoMinMainSize(
+        child,
+        axis,
+        direction,
+        ownerMainAxisSize,
+        ownerWidth,
+        ownerHeight,
+        generationCount);
+    layout.setComputedAutoMinMainSizeResolved(true);
+  }
+  const FloatOptional autoMin = layout.computedAutoMinMainSize;
   if (autoMin.isDefined() && bounded < autoMin.unwrap()) {
     bounded = autoMin.unwrap();
   }
@@ -1162,7 +1217,10 @@ static float distributeFreeSpaceSecondPass(
             direction,
             childSize,
             availableInnerMainDim,
-            availableInnerWidth);
+            mainAxisOwnerSize,
+            availableInnerWidth,
+            availableInnerHeight,
+            generationCount);
       }
     } else if (
         yoga::isDefined(flexLine.layout.remainingFreeSpace) &&
@@ -1179,7 +1237,10 @@ static float distributeFreeSpaceSecondPass(
                 flexLine.layout.remainingFreeSpace /
                     flexLine.layout.totalFlexGrowFactors * flexGrowFactor,
             availableInnerMainDim,
-            availableInnerWidth);
+            mainAxisOwnerSize,
+            availableInnerWidth,
+            availableInnerHeight,
+            generationCount);
       }
     }
 
@@ -1309,7 +1370,9 @@ static void distributeFreeSpaceFirstPass(
     const float ownerWidth,
     const float mainAxisOwnerSize,
     const float availableInnerMainDim,
-    const float availableInnerWidth) {
+    const float availableInnerWidth,
+    const float availableInnerHeight,
+    const uint32_t generationCount) {
   float flexShrinkScaledFactor = 0;
   float flexGrowFactor = 0;
   float baseMainSize = 0;
@@ -1363,7 +1426,10 @@ static void distributeFreeSpaceFirstPass(
             direction,
             baseMainSize,
             availableInnerMainDim,
-            availableInnerWidth);
+            mainAxisOwnerSize,
+            availableInnerWidth,
+            availableInnerHeight,
+            generationCount);
         if (yoga::isDefined(baseMainSize) && yoga::isDefined(boundMainSize) &&
             baseMainSize != boundMainSize) {
           // By excluding this item's size and flex factor from remaining, this
@@ -1453,27 +1519,16 @@ static void resolveFlexibleLength(
     const uint32_t generationCount) {
   const float originalFreeSpace = flexLine.layout.remainingFreeSpace;
 
-  // CSS Flexbox §4.5: compute each item's automatic minimum main-axis size
-  // up front so the bounding helpers below can floor shrunk values.
-  // computeAutoMinMainSize returns Undefined when the feature is off or an
-  // explicit `min-{w,h}` already pins the floor, in which case the cached
-  // value is also Undefined and `boundAxisWithAutoMin` reduces to `boundAxis`.
-  if (!node->hasErrata(Errata::MinSizeUndefinedInsteadOfAuto)) {
-    for (auto currentLineChild : flexLine.itemsInFlow) {
-      currentLineChild->getLayout().computedAutoMinMainSize =
-          computeAutoMinMainSize(
-              currentLineChild,
-              mainAxis,
-              direction,
-              mainAxisOwnerSize,
-              availableInnerWidth,
-              availableInnerHeight,
-              generationCount);
-    }
-  } else {
-    for (auto currentLineChild : flexLine.itemsInFlow) {
-      currentLineChild->getLayout().computedAutoMinMainSize = FloatOptional{};
-    }
+  // CSS Flexbox §4.5: `boundAxisWithAutoMin` computes each item's automatic
+  // minimum main size the first time the item flexes on this line. With the
+  // feature off, the floor starts out resolved as Undefined and the helper
+  // reduces to `boundAxis`.
+  const bool autoMinResolved =
+      node->hasErrata(Errata::MinSizeUndefinedInsteadOfAuto);
+  for (auto currentLineChild : flexLine.itemsInFlow) {
+    LayoutResults& childLayout = currentLineChild->getLayout();
+    childLayout.computedAutoMinMainSize = FloatOptional{};
+    childLayout.setComputedAutoMinMainSizeResolved(autoMinResolved);
   }
 
   // First pass: detect the flex items whose min/max constraints trigger
@@ -1485,7 +1540,9 @@ static void resolveFlexibleLength(
       ownerWidth,
       mainAxisOwnerSize,
       availableInnerMainDim,
-      availableInnerWidth);
+      availableInnerWidth,
+      availableInnerHeight,
+      generationCount);
 
   // Second pass: resolve the sizes of the flexible items
   const float distributedFreeSpace = distributeFreeSpaceSecondPass(

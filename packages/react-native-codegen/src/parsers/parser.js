@@ -314,7 +314,7 @@ export interface Parser {
   getNativeComponentType(
     typeArgumentParams: $FlowFixMe,
     funcArgumentParams: $FlowFixMe,
-  ): {[string]: string};
+  ): {[key: string]: string};
 
   /**
    * Given a annotatedElement, it returns the properties of annotated element.

@@ -17,7 +17,7 @@ import type {Dependency, Destination, Platform} from './types';
 
 // CI can't use commas in cache keys, so 'macOS,variant=Mac Catalyst' was creating troubles
 // This map that converts from platforms to valid Xcodebuild destinations.
-const platformToDestination /*: Readonly<{|[Platform]: Destination|}> */ = {
+const platformToDestination /*: Readonly<{[key: Platform]: Destination}> */ = {
   ios: 'iOS',
   'ios-simulator': 'iOS Simulator',
   macos: 'macOS',
@@ -85,18 +85,18 @@ const cli = yargs
 /**
  * Returns the tasks that need to be run based on the command line arguments
  */
-async function getCLIConfiguration() /*: Promise<?{|
-  tasks: {|
+async function getCLIConfiguration() /*: Promise<?{
+  tasks: {
     setup: boolean,
     swiftpackage: boolean,
     build: boolean,
     compose: boolean,
-  |},
+  },
   destinations: ReadonlyArray<Destination>,
   dependencies: ReadonlyArray<Dependency>,
   configuration: string,
   identity: ?string,
-|}> */ {
+}> */ {
   // Run input parsing
   const argv = await cli.argv;
 

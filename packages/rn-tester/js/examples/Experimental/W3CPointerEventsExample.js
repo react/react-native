@@ -8,6 +8,7 @@
  * @format
  */
 
+import RNTesterText from '../../components/RNTesterText';
 import CompatibilityAnimatedPointerMove from './Compatibility/CompatibilityAnimatedPointerMove';
 import CompatibilityNativeGestureHandling from './Compatibility/CompatibilityNativeGestureHandling';
 import ManyPointersPropertiesExample from './Compatibility/ManyPointersPropertiesExample';
@@ -30,9 +31,9 @@ import PointerEventPrimaryTouchPointer from './W3CPointerEventPlatformTests/Poin
 import EventfulView from './W3CPointerEventsEventfulView';
 import * as React from 'react';
 import {useState} from 'react';
-import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {Button, ScrollView, StyleSheet, View} from 'react-native';
 
-function AbsoluteChildExample({log}: {log: string => void}) {
+function AbsoluteChildExample({log}: {log: (v: string) => void}) {
   return (
     <View style={styles.absoluteExampleContainer}>
       <EventfulView
@@ -58,7 +59,7 @@ function AbsoluteChildExample({log}: {log: string => void}) {
   );
 }
 
-function RelativeChildExample({log}: {log: string => void}) {
+function RelativeChildExample({log}: {log: (v: string) => void}) {
   return (
     <>
       <EventfulView
@@ -104,7 +105,7 @@ function RelativeChildExample({log}: {log: string => void}) {
 function PointerEventScaffolding({
   Example,
 }: {
-  Example: component(log: (string) => void),
+  Example: component(log: (v: string) => void),
 }) {
   const [eventsLog, setEventsLog] = useState('');
   const clear = () => setEventsLog('');
@@ -116,10 +117,10 @@ function PointerEventScaffolding({
       <Example log={log} />
       <View>
         <View style={styles.row}>
-          <Text>Events Log</Text>
+          <RNTesterText>Events Log</RNTesterText>
           <Button onPress={clear} title="Clear" />
         </View>
-        <Text>{eventsLog}</Text>
+        <RNTesterText>{eventsLog}</RNTesterText>
       </View>
     </ScrollView>
   );

@@ -853,6 +853,33 @@ end
     expect(content).toContain(SCAFFOLDER_MARKER);
   });
 
+  it('emits resources before publicHeadersPath, the order SwiftPM requires', () => {
+    fs.mkdirSync(path.join(depRoot, 'ios'));
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Foo.h'), '');
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native-foo.podspec'),
+      `
+Pod::Spec.new do |s|
+  s.name = "react-native-foo"
+  s.version = "1.0"
+  s.source_files = "ios/**/*.{h,m,mm}"
+  s.resources = ["ios/Foo.bundle"]
+  s.dependency "React-Core"
+end
+`,
+    );
+    scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    const content = fs.readFileSync(
+      path.join(depRoot, 'Package.swift'),
+      'utf8',
+    );
+    const resourcesAt = content.indexOf('resources: [.copy("ios/Foo.bundle")]');
+    const publicHeadersAt = content.indexOf('publicHeadersPath: "ios"');
+    expect(resourcesAt).toBeGreaterThan(-1);
+    expect(publicHeadersAt).toBeGreaterThan(-1);
+    expect(resourcesAt).toBeLessThan(publicHeadersAt);
+  });
+
   it('skips (does not write) a mixed-language dep — Swift + ObjC(++) cannot share one SPM target', () => {
     // react-native-screens shape: a single source glob mixing .swift and .mm.
     const podspecPath = path.join(depRoot, 'react-native-foo.podspec');
@@ -1526,6 +1553,57 @@ describe('scaffoldAll', () => {
 });
 
 // ---------------------------------------------------------------------------
+// RCT_NEW_ARCH_ENABLED — CocoaPods' install_modules_dependencies(s) adds
+// -DRCT_NEW_ARCH_ENABLED=1 to the pod; the scaffolder strips that helper, so it
+// must emit the define itself or `#ifdef RCT_NEW_ARCH_ENABLED` code is dropped.
+// ---------------------------------------------------------------------------
+
+describe('RCT_NEW_ARCH_ENABLED define', () => {
+  const NEW_ARCH_DEFINE = '.define("RCT_NEW_ARCH_ENABLED", to: "1")';
+
+  function translate(overrides) {
+    return translatePodspecToSpmTarget(podspec(overrides), autolinkedDep());
+  }
+
+  function emit(spec) {
+    return emitScaffoldedPackageSwift(spec, {
+      cacheSlotLabel: null,
+      remote: null,
+      codegenPackageDir: '../../ios/build/generated/ios',
+      localXcfwPackageDir: '../../ios/build/xcframeworks',
+    });
+  }
+
+  function newArchDefines(spec) {
+    return spec.preprocessorDefines.filter(
+      d => d.name === 'RCT_NEW_ARCH_ENABLED',
+    );
+  }
+
+  it('adds RCT_NEW_ARCH_ENABLED=1 when the podspec calls install_modules_dependencies', () => {
+    const spec = translate({usesInstallModulesDependencies: true});
+    expect(newArchDefines(spec)).toEqual([
+      {name: 'RCT_NEW_ARCH_ENABLED', value: '1', config: null},
+    ]);
+  });
+
+  it('does not add the define when the podspec does not call install_modules_dependencies', () => {
+    const spec = translate({usesInstallModulesDependencies: false});
+    expect(newArchDefines(spec)).toEqual([]);
+  });
+
+  it('emits the define in both cSettings and cxxSettings, not as an unsafe flag', () => {
+    const out = emit(translate({usesInstallModulesDependencies: true}));
+    const cSettings = out.split('\n').find(l => l.includes('cSettings:'));
+    const cxxSettings = out.split('\n').find(l => l.includes('cxxSettings:'));
+    expect(cSettings).toContain(NEW_ARCH_DEFINE);
+    expect(cxxSettings).toContain(NEW_ARCH_DEFINE);
+    expect(out).not.toContain('-DRCT_NEW_ARCH_ENABLED');
+    expect(out).not.toContain('FOLLY_CFG_NO_COROUTINES');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // SCAFFOLDER_VERSION — auto-regen when the emitter's output format changes
 //
 // Without versioning, a Package.swift scaffolded by an older generator stays
@@ -1542,7 +1620,7 @@ describe('SCAFFOLDER_VERSION', () => {
   });
 
   it('is at the version the current emitter output requires', () => {
-    expect(SCAFFOLDER_VERSION).toBe(20);
+    expect(SCAFFOLDER_VERSION).toBe(22);
   });
 
   it('emitter writes the current version to the file', () => {

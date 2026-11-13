@@ -11,9 +11,12 @@
 'use strict';
 
 const {ParserError} = require('../errors');
+const {FlowParser} = require('../flow/parser');
+const {TypeScriptParser} = require('../typescript/parser');
 const {
   createParserErrorCapturer,
   extractNativeModuleName,
+  getTypeArguments,
   verifyPlatforms,
   visit,
 } = require('../utils.js');
@@ -290,5 +293,51 @@ describe('visit', () => {
 
       expect(visitorFunction).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe('getTypeArguments', () => {
+  const getAliasedType = (
+    parser: FlowParser | TypeScriptParser,
+    code: string,
+  ) => {
+    const declaration = parser.getAst(code).body[0];
+    return declaration.right ?? declaration.typeAnnotation;
+  };
+
+  it('returns the type arguments of a parsed Flow generic type', () => {
+    const typeArguments = getTypeArguments(
+      getAliasedType(new FlowParser(), 'type T = Readonly<{a: string}>;'),
+    );
+
+    expect(typeArguments.type).toBe('TypeParameterInstantiation');
+    expect(typeArguments.params.map(param => param.type)).toEqual([
+      'ObjectTypeAnnotation',
+    ]);
+  });
+
+  it('returns no type arguments for a parsed non-generic Flow type', () => {
+    expect(
+      getTypeArguments(getAliasedType(new FlowParser(), 'type T = Foo;')) ??
+        null,
+    ).toBeNull();
+  });
+
+  it('returns the type arguments of a parsed TypeScript generic type', () => {
+    const typeArguments = getTypeArguments(
+      getAliasedType(new TypeScriptParser(), 'type T = Readonly<{a: string}>;'),
+    );
+
+    expect(typeArguments.type).toBe('TSTypeParameterInstantiation');
+    expect(typeArguments.params.map(param => param.type)).toEqual([
+      'TSTypeLiteral',
+    ]);
+  });
+
+  it('prefers typeArguments, including null, over typeParameters', () => {
+    const typeParameters = {type: 'TypeParameterInstantiation', params: []};
+
+    expect(getTypeArguments({typeArguments: null, typeParameters})).toBeNull();
+    expect(getTypeArguments({typeParameters})).toBe(typeParameters);
   });
 });

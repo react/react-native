@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<669f16e131d4a5ddc026ffecc6893575>>
+ * @generated SignedSource<<db85f9c22970c773cc95ab6bf72d9871>>
  */
 
 /**
@@ -27,9 +27,11 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun cdpInteractionMetricsEnabled(): Boolean = false
 
-  override fun cxxNativeAnimatedEnabled(): Boolean = false
+  override fun cxxNativeAnimatedEnabled(): Boolean = true
 
   override fun defaultTextToOverflowHidden(): Boolean = true
+
+  override fun deferTextInputTruncationIOS(): Boolean = false
 
   override fun disableEarlyViewCommandExecution(): Boolean = false
 
@@ -51,9 +53,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
 
-  override fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = false
-
-  override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
+  override fun enableAndroidTextMeasurementOptimizations(): Boolean = true
 
   override fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean = false
 
@@ -79,7 +79,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = false
 
-  override fun enableFontScaleChangesUpdatingLayout(): Boolean = true
+  override fun enableFollowUpMountItemDispatchAndroid(): Boolean = false
 
   override fun enableIOSCompressedTextFrameAdjustment(): Boolean = false
 
@@ -96,6 +96,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableImperativeEvents(): Boolean = false
 
   override fun enableImperativeFocus(): Boolean = false
+
+  override fun enableInteractableResponderViews(): Boolean = false
 
   override fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean = false
 
@@ -117,7 +119,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = false
 
-  override fun enablePreparedTextLayout(): Boolean = false
+  override fun enablePreparedTextLayout(): Boolean = true
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
 
@@ -143,6 +145,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = false
 
+  override fun fixTextInlineViewLineHeight(): Boolean = false
+
   override fun fixTextLayoutOnPixelDensityChange(): Boolean = false
 
   override fun fixYogaFlexBasisFitContentInMainAxis(): Boolean = false
@@ -151,11 +155,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxEnabledRelease(): Boolean = false
 
-  override fun fuseboxFrameRecordingEnabled(): Boolean = false
+  override fun fuseboxFrameRecordingEnabled(): Boolean = true
 
   override fun fuseboxScreenshotCaptureEnabled(): Boolean = true
 
-  override fun fuseboxWebSocketEventsEnabled(): Boolean = false
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = true
+
+  override fun keepTimersRunningWhileHostPausedAndroid(): Boolean = false
 
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 
@@ -165,7 +171,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun perfMonitorV2Enabled(): Boolean = false
 
-  override fun preparedTextCacheSize(): Double = 200.0
+  override fun preparedTextCacheSize(): Double = 1000.0
 
   override fun preventShadowTreeCommitExhaustion(): Boolean = false
 
@@ -178,6 +184,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean = false
 
   override fun skipActivityIdentityAssertionOnHostPause(): Boolean = false
+
+  override fun skipUnchangedChildrenInDifferentiator(): Boolean = false
 
   override fun syncAndroidClipBoundsWithOverflow(): Boolean = false
 

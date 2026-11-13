@@ -40,6 +40,13 @@ void MountingCoordinator::push(ShadowTreeRevision revision) const {
   {
     std::scoped_lock lock(mutex_);
 
+    // ShadowTree releases its commit lock before pushing. Another thread may
+    // already have diffed a newer revision, even when lastRevision_ is empty.
+    // Never recreate removed views by diffing backwards from that newer base.
+    if (revision.number < baseRevision_.number) {
+      return;
+    }
+
     react_native_assert(
         !lastRevision_.has_value() || revision.number != lastRevision_->number);
 

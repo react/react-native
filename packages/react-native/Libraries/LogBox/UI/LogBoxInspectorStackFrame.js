@@ -25,7 +25,7 @@ component LogBoxInspectorStackFrame(
   frame: StackFrame,
   onPress?: ?(event: GestureResponderEvent) => void,
 ) {
-  const column = frame.column != null && parseInt(frame.column, 10);
+  const column = frame.column != null && parseInt(String(frame.column), 10);
   const location =
     getFileName(frame.file) +
     (frame.lineNumber != null
