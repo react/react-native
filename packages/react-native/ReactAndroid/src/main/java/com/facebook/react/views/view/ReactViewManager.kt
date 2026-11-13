@@ -421,6 +421,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
 
   @ReactProp(name = "focusable")
   public open fun setFocusable(view: ReactViewGroup, focusable: Boolean) {
+    view.excludedFromKeyboardFocus = !focusable
     if (focusable) {
       view.setOnClickListener {
         val eventDispatcher = UIManagerHelper.getEventDispatcher(view.context as ReactContext)
@@ -436,7 +437,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
       view.setOnClickListener(null)
       view.isClickable = false
       // Don't set view.setFocusable(false) because we might still want it to be focusable for
-      // accessibility reasons
+      // accessibility reasons. excludedFromKeyboardFocus keeps it out of keyboard navigation.
     }
   }
 
