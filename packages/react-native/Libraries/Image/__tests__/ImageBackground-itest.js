@@ -135,6 +135,32 @@ describe('<ImageBackground>', () => {
         );
       });
     });
+
+    describe('aria-hidden', () => {
+      it('is set on both the wrapper `View` and the inner `Image`', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <ImageBackground
+              aria-hidden={true}
+              style={{width: 150, height: 50}}
+              source={{uri: 'foo-bar.jpg'}}
+            />,
+          );
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['importantForAccessibility']})
+            .toJSX(),
+        ).toEqual(
+          <rn-view importantForAccessibility="no-hide-descendants">
+            <rn-image importantForAccessibility="no-hide-descendants" />
+          </rn-view>,
+        );
+      });
+    });
   });
 
   describe('ref', () => {
