@@ -46,6 +46,40 @@ describe('VirtualizedList', () => {
     expect(component).toMatchSnapshot();
   });
 
+  it('renders accessibility list role and collection item props', async () => {
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={[{key: 'i1'}, {key: 'i2'}, {key: 'i3'}]}
+          renderItem={({item}) => <item value={item.key} />}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+        />,
+      );
+    });
+    const root = component.toJSON();
+    expect(root.props.accessibilityRole).toBe('list');
+    expect(root.props['aria-rowcount']).toBe(3);
+    expect(root.props.accessibilityCollection).toEqual({
+      rowCount: 3,
+      columnCount: 1,
+      hierarchical: false,
+    });
+    const children = root.children;
+    expect(children.length).toBe(3);
+    expect(children[0].props.accessibilityRole).toBe('listitem');
+    expect(children[0].props['aria-setsize']).toBe(3);
+    expect(children[0].props['aria-posinset']).toBe(1);
+    expect(children[0].props.accessibilityCollectionItem).toEqual({
+      rowIndex: 0,
+      columnIndex: 0,
+      rowSpan: 1,
+      columnSpan: 1,
+      heading: false,
+    });
+  });
+
   it('renders simple list using ListItemComponent', async () => {
     function ListItemComponent({item}) {
       return <item value={item.key} />;
