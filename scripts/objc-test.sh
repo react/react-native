@@ -28,8 +28,6 @@ cleanup() {
   fi
   # kill whatever is occupying port 8081 (packager)
   lsof -i tcp:8081 | awk 'NR!=1 {print $2}' | xargs kill
-  # kill whatever is occupying port 5555 (web socket server)
-  lsof -i tcp:5555 | awk 'NR!=1 {print $2}' | xargs kill
 }
 
 # Wait for the package to start
@@ -49,24 +47,6 @@ waitForPackager() {
   done
 
   echo "Packager is ready!"
-}
-
-waitForWebSocketServer() {
-  local -i max_attempts=60
-  local -i attempt_num=1
-
-  until curl -s http://localhost:5555 | grep "Upgrade Required" -q; do
-    if (( attempt_num == max_attempts )); then
-      echo "WebSocket Server did not respond in time. No more attempts left."
-      exit 1
-    else
-      (( attempt_num++ ))
-      echo "WebSocket Server did not respond. Retrying for attempt number $attempt_num..."
-      sleep 1
-    fi
-  done
-
-  echo "WebSocket Server is ready!"
 }
 
 runTests() {
@@ -128,11 +108,6 @@ main() {
   # If first argument is "test", actually start the packager and run tests.
   # Otherwise, just build RNTester and exit
   if [ "$1" = "test" ]; then
-
-    # Start the WebSocket test server
-    echo "Launch WebSocket Server"
-    sh "./IntegrationTests/launchWebSocketServer.sh" &
-    waitForWebSocketServer
 
     # Start the packager
     yarn start --max-workers=1 || echo "Can't start packager automatically" &
