@@ -69,8 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*
  * Whether `ScrollView` pads the content container by the safe area across the scrollable axis, which it does when
- * its `contentInsetAdjustmentBehavior` prop is not `never`. UIKit's own `contentInsetAdjustmentBehavior` can differ,
- * as react-native-screens sets it natively on the first scroll view of a screen.
+ * its `contentInsetAdjustmentBehavior` prop is `automatic` or `always`. UIKit's own `contentInsetAdjustmentBehavior`
+ * can differ, as react-native-screens sets it natively on the first scroll view of a screen.
  */
 @property (nonatomic, assign) BOOL padsContentForSafeArea;
 
