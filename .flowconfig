@@ -76,6 +76,24 @@ react.runtime=automatic
 
 ban_spread_key_props=true
 
+experimental.react_managed_attributes=true
+experimental.jsx_intrinsic_elements=true
+experimental.require_function_type_param_name=true
+experimental.require_dictionary_key_label=true
+experimental.ban_explicit_exact_object_types=true
+experimental.strict_es6_import_export=true
+experimental.export_star_excludes_default=true
+
+unsuppressable_error_codes=invalid-type-cast-syntax
+unsuppressable_error_codes=deprecated-utility
+unsuppressable_error_codes=missing-function-type-param-name
+unsuppressable_error_codes=missing-dictionary-key-label
+unsuppressable_error_codes=unsupported-exact-object-type
+unsuppressable_error_codes=react-rule-hook-naming-convention
+unsuppressable_error_codes=react-rule-hook-definitely-not-in-component-or-hook
+unsuppressable_error_codes=react-rule-hook-mixed-with-non-hook
+unsuppressable_error_codes=react-rule-hook-non-hook-syntax
+
 [lints]
 sketchy-null-number=warn
 sketchy-null-mixed=warn
