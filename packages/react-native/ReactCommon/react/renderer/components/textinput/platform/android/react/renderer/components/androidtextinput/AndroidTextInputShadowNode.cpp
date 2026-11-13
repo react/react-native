@@ -189,7 +189,12 @@ AttributedString AndroidTextInputShadowNode::getAttributedString(
     // text value's background will stack. This is a hack/workaround to prevent
     // that effect.
     fragment.textAttributes.backgroundColor = clearColor();
-    fragment.parentShadowView = ShadowView(*this);
+    auto parentShadowView = ShadowView(*this);
+    // Clearing `props` and `state` (which we don't use) allows avoiding retain
+    // cycles.
+    parentShadowView.props = nullptr;
+    parentShadowView.state = nullptr;
+    fragment.parentShadowView = std::move(parentShadowView);
     attributedString.prependFragment(std::move(fragment));
   }
 
