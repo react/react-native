@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<edaa18da7b657e91ed3b2e5231cc0ac2>>
+ * @generated SignedSource<<ca7bb6b226b2e6d71e8bee67d7b5542b>>
  */
 
 /**
@@ -354,6 +354,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool skipUnchangedChildrenInDifferentiator() override {
+    return false;
+  }
+
+  bool skipUnchangedOverflowInsetInLayout() override {
     return false;
   }
 

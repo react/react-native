@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4e53ce712d5e472d8a9dfa673a108aa5>>
+ * @generated SignedSource<<ced701930d55c03e9b35b2e886a95846>>
  */
 
 /**
@@ -106,6 +106,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var shouldTriggerResponderTransferOnScrollAndroidCache: Boolean? = null
   private var skipActivityIdentityAssertionOnHostPauseCache: Boolean? = null
   private var skipUnchangedChildrenInDifferentiatorCache: Boolean? = null
+  private var skipUnchangedOverflowInsetInLayoutCache: Boolean? = null
   private var syncAndroidClipBoundsWithOverflowCache: Boolean? = null
   private var traceTurboModulePromiseRejectionsOnAndroidCache: Boolean? = null
   private var updateRuntimeShadowNodeReferencesOnCommitCache: Boolean? = null
@@ -939,6 +940,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.skipUnchangedChildrenInDifferentiator()
       accessedFeatureFlags.add("skipUnchangedChildrenInDifferentiator")
       skipUnchangedChildrenInDifferentiatorCache = cached
+    }
+    return cached
+  }
+
+  override fun skipUnchangedOverflowInsetInLayout(): Boolean {
+    var cached = skipUnchangedOverflowInsetInLayoutCache
+    if (cached == null) {
+      cached = currentProvider.skipUnchangedOverflowInsetInLayout()
+      accessedFeatureFlags.add("skipUnchangedOverflowInsetInLayout")
+      skipUnchangedOverflowInsetInLayoutCache = cached
     }
     return cached
   }

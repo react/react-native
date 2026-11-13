@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4bcfd7705680a00615bddc6ffeccfe4b>>
+ * @generated SignedSource<<eb7f9c0f5213ff5cba49495c83438914>>
  */
 
 /**
@@ -102,6 +102,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var shouldTriggerResponderTransferOnScrollAndroidCache: Boolean? = null
   private var skipActivityIdentityAssertionOnHostPauseCache: Boolean? = null
   private var skipUnchangedChildrenInDifferentiatorCache: Boolean? = null
+  private var skipUnchangedOverflowInsetInLayoutCache: Boolean? = null
   private var syncAndroidClipBoundsWithOverflowCache: Boolean? = null
   private var traceTurboModulePromiseRejectionsOnAndroidCache: Boolean? = null
   private var updateRuntimeShadowNodeReferencesOnCommitCache: Boolean? = null
@@ -853,6 +854,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.skipUnchangedChildrenInDifferentiator()
       skipUnchangedChildrenInDifferentiatorCache = cached
+    }
+    return cached
+  }
+
+  override fun skipUnchangedOverflowInsetInLayout(): Boolean {
+    var cached = skipUnchangedOverflowInsetInLayoutCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.skipUnchangedOverflowInsetInLayout()
+      skipUnchangedOverflowInsetInLayoutCache = cached
     }
     return cached
   }

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<80dd5355f9f95d594f04d6b41fc785f5>>
+ * @generated SignedSource<<f116ba3a2ab7741055c233f754e114b7>>
  */
 
 /**
@@ -531,6 +531,12 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
+  bool skipUnchangedOverflowInsetInLayout() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("skipUnchangedOverflowInsetInLayout");
+    return method(javaProvider_);
+  }
+
   bool syncAndroidClipBoundsWithOverflow() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("syncAndroidClipBoundsWithOverflow");
@@ -1041,6 +1047,11 @@ bool JReactNativeFeatureFlagsCxxInterop::skipUnchangedChildrenInDifferentiator(
   return ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::skipUnchangedOverflowInsetInLayout(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::skipUnchangedOverflowInsetInLayout();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::syncAndroidClipBoundsWithOverflow(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::syncAndroidClipBoundsWithOverflow();
@@ -1398,6 +1409,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "skipUnchangedChildrenInDifferentiator",
         JReactNativeFeatureFlagsCxxInterop::skipUnchangedChildrenInDifferentiator),
+      makeNativeMethod(
+        "skipUnchangedOverflowInsetInLayout",
+        JReactNativeFeatureFlagsCxxInterop::skipUnchangedOverflowInsetInLayout),
       makeNativeMethod(
         "syncAndroidClipBoundsWithOverflow",
         JReactNativeFeatureFlagsCxxInterop::syncAndroidClipBoundsWithOverflow),

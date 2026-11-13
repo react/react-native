@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8817847943e654f2ce61fc39af75baf8>>
+ * @generated SignedSource<<7c7d18b932a5989207a461df2a9e5fc2>>
  * @flow strict
  * @noformat
  */
@@ -130,6 +130,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean>,
   skipActivityIdentityAssertionOnHostPause: Getter<boolean>,
   skipUnchangedChildrenInDifferentiator: Getter<boolean>,
+  skipUnchangedOverflowInsetInLayout: Getter<boolean>,
   syncAndroidClipBoundsWithOverflow: Getter<boolean>,
   traceTurboModulePromiseRejectionsOnAndroid: Getter<boolean>,
   updateRuntimeShadowNodeReferencesOnCommit: Getter<boolean>,
@@ -545,6 +546,10 @@ export const skipActivityIdentityAssertionOnHostPause: Getter<boolean> = createN
  * When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.
  */
 export const skipUnchangedChildrenInDifferentiator: Getter<boolean> = createNativeFlagGetter('skipUnchangedChildrenInDifferentiator', false);
+/**
+ * Layout keeps the overflowInset of a node from its previous revision, instead of computing it again from its children, when neither the node nor its children changed.
+ */
+export const skipUnchangedOverflowInsetInLayout: Getter<boolean> = createNativeFlagGetter('skipUnchangedOverflowInsetInLayout', false);
 /**
  * Override getClipBounds on Android views to return the padding box when overflow is hidden
  */
