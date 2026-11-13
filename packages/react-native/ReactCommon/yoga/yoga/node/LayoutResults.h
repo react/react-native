@@ -9,6 +9,7 @@
 
 #include <array>
 
+#include <yoga/YGMacros.h>
 #include <yoga/debug/AssertFatal.h>
 #include <yoga/enums/Dimension.h>
 #include <yoga/enums/Direction.h>
@@ -136,7 +137,7 @@ struct LayoutResults {
     padding_[yoga::to_underlying(physicalEdge)] = dimension;
   }
 
-  bool operator==(LayoutResults layout) const;
+  YG_EXPORT bool operator==(LayoutResults layout) const;
 
  private:
   Direction direction_ : bitCount<Direction>() = Direction::Inherit;
