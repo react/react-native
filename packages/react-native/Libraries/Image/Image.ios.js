@@ -107,6 +107,7 @@ const EMPTY_IMAGE_SOURCE = {
   uri: undefined,
   width: undefined,
   height: undefined,
+  headers: undefined,
 };
 
 /**
@@ -162,12 +163,19 @@ let BaseImage: AbstractImageIOS = ({
   let resolvedStyle: ImageStyleProp;
   let sources;
   if (Array.isArray(resolvedSource)) {
+    const {headers: sourceHeaders} = resolvedSource[0] ?? {};
+    if (sourceHeaders != null) {
+      nativeProps.headers = sourceHeaders;
+    }
     resolvedStyle = [styles.base, style];
     sources = resolvedSource;
   } else {
-    const {uri} = resolvedSource;
+    const {uri, headers: sourceHeaders} = resolvedSource;
     if (uri === '') {
       console.warn('source.uri should not be an empty string');
+    }
+    if (sourceHeaders != null) {
+      nativeProps.headers = sourceHeaders;
     }
     resolvedStyle = [
       {
