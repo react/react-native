@@ -8,6 +8,7 @@
 package com.facebook.react.uimanager
 
 import android.graphics.Matrix
+import com.facebook.react.bridge.NativeArray
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
@@ -28,6 +29,10 @@ internal object SkewMatrixHelper {
    */
   @JvmStatic
   fun isAffine2DTransformWithSkew(transforms: ReadableArray): Boolean {
+    // Read Fabric's arrays in C++ rather than crossing JNI for every element and key.
+    if (transforms is NativeArray) {
+      return TransformHelper.isAffine2DTransformWithSkew(transforms)
+    }
     if (isRawMatrixShorthand(transforms)) {
       return false
     }

@@ -51,11 +51,49 @@ void processTransform(
   jResult->setRegion(0, MatrixSize, doubleTransform.data());
 }
 
+// Same result as SkewMatrixHelper.isAffine2DTransformWithSkew, but reads the
+// array in place instead of crossing JNI for each element and key.
+jboolean isAffine2DTransformWithSkew(
+    jni::alias_ref<jclass> /*unused*/,
+    NativeArray* jTransforms) {
+  const auto& transforms = jTransforms->getArray();
+  // The raw 16-element matrix shorthand used by Fabric LayoutAnimations.
+  if (transforms.size() == 16 && transforms[0].isNumber()) {
+    return JNI_FALSE;
+  }
+  bool hasSkewTransform = false;
+  for (const auto& transform : transforms) {
+    if (!transform.isObject() || transform.empty()) {
+      continue;
+    }
+    const auto& [key, value] = *transform.items().begin();
+    if (!key.isString()) {
+      continue;
+    }
+    const auto& type = key.getString();
+    if (type == "matrix" || type == "perspective" || type == "rotateX" ||
+        type == "rotateY") {
+      return JNI_FALSE;
+    }
+    if (type == "translate") {
+      if (value.isArray() && value.size() > 2 && value[2].isNumber() &&
+          value[2].asDouble() != 0.0) {
+        return JNI_FALSE;
+      }
+    } else if (type == "skewX" || type == "skewY") {
+      hasSkewTransform = true;
+    }
+  }
+  return hasSkewTransform ? JNI_TRUE : JNI_FALSE;
+}
+
 } // namespace
 
 void TransformHelper::registerNatives() {
   javaClassLocal()->registerNatives({
       makeNativeMethod("nativeProcessTransform", processTransform),
+      makeNativeMethod(
+          "nativeIsAffine2DTransformWithSkew", isAffine2DTransformWithSkew),
   });
 }
 
