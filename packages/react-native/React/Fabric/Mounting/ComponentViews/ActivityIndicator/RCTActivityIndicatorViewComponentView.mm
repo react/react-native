@@ -91,6 +91,18 @@ static UIActivityIndicatorViewStyle convertActivityIndicatorViewStyle(const Acti
   [super updateProps:props oldProps:oldProps];
 }
 
+// UIActivityIndicatorView is the accessibility element, not this view, so the
+// accessibility props go to it.
+- (BOOL)isAccessibilityElement
+{
+  return NO;
+}
+
+- (NSObject *)accessibilityElement
+{
+  return _activityIndicatorView;
+}
+
 @end
 
 Class<RCTComponentViewProtocol> RCTActivityIndicatorViewCls(void)
