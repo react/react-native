@@ -327,7 +327,13 @@ internal constructor(
       return
     }
     val view = viewState.view
-    checkNotNull(view) { "Unable to find view for viewState $viewState and tag $tag" }
+    if (view == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("ViewState has no view for tag: [$tag] for addViewAt"),
+      )
+      return
+    }
 
     // Display children before inserting
     if (SHOW_CHANGED_VIEW_HIERARCHIES) {
