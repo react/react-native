@@ -8,6 +8,7 @@
 #import "TextLayoutManager.h"
 #import "RCTTextLayoutManager.h"
 
+#import <limits>
 #import <optional>
 
 #import <react/renderer/attributedstring/PlaceholderAttributedString.h>
@@ -53,10 +54,15 @@ TextMeasurement TextLayoutManager::measure(
       const auto &attributedString =
           placeholderAttributedString ? *placeholderAttributedString : originalAttributedString;
 
+      // The native measurement depends only on the maximum width, and the result is clamped to the
+      // full constraints below, outside the cache, so the rest is left out of the key.
+      LayoutConstraints keyConstraints = layoutConstraints;
+      keyConstraints.minimumSize = Size{};
+      keyConstraints.maximumSize.height = std::numeric_limits<Float>::infinity();
       measurement = textMeasureCache_.get(
           {.attributedString = attributedString,
            .paragraphAttributes = paragraphAttributes,
-           .layoutConstraints = layoutConstraints,
+           .layoutConstraints = keyConstraints,
            .pointScaleFactor = layoutContext.pointScaleFactor},
           [&]() {
             auto telemetry = TransactionTelemetry::threadLocalTelemetry();
