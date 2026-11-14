@@ -1263,7 +1263,8 @@ internal object TextLayoutManager {
         .layout
   }
 
-  private fun createLayout(
+  @VisibleForTesting
+  internal fun createLayout(
       text: Spannable,
       paint: TextPaint,
       attributedString: MapBuffer,
@@ -1273,7 +1274,7 @@ internal object TextLayoutManager {
       height: Float,
       heightYogaMeasureMode: YogaMeasureMode,
   ): CreateLayoutResult {
-    val boring = isBoring(text, paint)
+    var boring = isBoring(text, paint)
 
     val textBreakStrategy =
         TextAttributeProps.getTextBreakStrategy(
@@ -1347,6 +1348,11 @@ internal object TextLayoutManager {
           justificationMode,
           paint,
       )
+      // The spans and paint now hold the fitted font size. Re-measure so the final layout does not
+      // keep the line metrics of the original, larger font.
+      if (boring != null) {
+        boring = isBoring(text, paint)
+      }
     }
 
     var layout =
@@ -2004,7 +2010,7 @@ internal object TextLayoutManager {
     return metrics
   }
 
-  private class CreateLayoutResult(
+  internal class CreateLayoutResult(
       val layout: Layout,
       val textBreakStrategy: Int,
       val justificationMode: Int,
