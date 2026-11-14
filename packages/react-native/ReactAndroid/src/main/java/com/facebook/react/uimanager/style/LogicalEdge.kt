@@ -67,12 +67,16 @@ public enum class LogicalEdge {
   /** Shorthand for block-start and block-end edges. */
   BLOCK {
     override fun toSpacingType(): Int = Spacing.BLOCK
+  },
+  INLINE_START {
+    override fun toSpacingType(): Int = Spacing.INLINE_START
+  },
+  INLINE_END {
+    override fun toSpacingType(): Int = Spacing.INLINE_END
+  },
+  INLINE {
+    override fun toSpacingType(): Int = Spacing.INLINE
   };
-
-  // TODO: not supported by Spacing users
-  // INLINE_START,
-  // INLINE_END,
-  // INLINE;
 
   /**
    * Converts this logical edge to the corresponding Spacing type constant.
@@ -104,6 +108,9 @@ public enum class LogicalEdge {
         Spacing.BLOCK_START -> BLOCK_START
         Spacing.BLOCK_END -> BLOCK_END
         Spacing.BLOCK -> BLOCK
+        Spacing.INLINE_START -> INLINE_START
+        Spacing.INLINE_END -> INLINE_END
+        Spacing.INLINE -> INLINE
         else -> throw IllegalArgumentException("Unknown spacing type: $spacingType")
       }
     }

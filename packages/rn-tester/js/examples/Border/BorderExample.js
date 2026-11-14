@@ -124,6 +124,23 @@ const styles = StyleSheet.create({
     borderRightWidth: 5,
     borderStyle: 'dashed',
   },
+  borderLogical: {
+    marginRight: 10,
+    borderBlockStartWidth: 10,
+    borderBlockStartColor: 'red',
+    borderBlockEndWidth: 20,
+    borderBlockEndColor: 'green',
+    borderInlineStartWidth: 30,
+    borderInlineStartColor: 'blue',
+    borderInlineEndWidth: 40,
+    borderInlineEndColor: 'yellow',
+  },
+  borderLogicalShorthands: {
+    borderBlockWidth: 10,
+    borderBlockColor: 'red',
+    borderInlineWidth: 20,
+    borderInlineColor: 'blue',
+  },
   border9: {
     borderWidth: 10,
     borderTopLeftRadius: 10,
@@ -383,6 +400,22 @@ export default {
             <View style={[styles.box, styles.border8, styles.border8Left]} />
             <View style={[styles.box, styles.border8, styles.border8Bottom]} />
             <View style={[styles.box, styles.border8, styles.border8Right]} />
+          </View>
+        );
+      },
+    },
+    {
+      title: 'Logical Borders',
+      name: 'logical-borders',
+      description: 'borderBlock* & borderInline*',
+      render: function (): React.Node {
+        return (
+          <View testID="border-test-logical-borders" style={styles.wrapper}>
+            <View style={[styles.box, styles.borderLogical]} />
+            <View
+              style={[styles.box, styles.borderLogical, {direction: 'rtl'}]}
+            />
+            <View style={[styles.box, styles.borderLogicalShorthands]} />
           </View>
         );
       },

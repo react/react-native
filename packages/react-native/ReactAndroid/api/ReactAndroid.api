@@ -4127,6 +4127,9 @@ public final class com/facebook/react/uimanager/Spacing {
 	public static final field Companion Lcom/facebook/react/uimanager/Spacing$Companion;
 	public static final field END I
 	public static final field HORIZONTAL I
+	public static final field INLINE I
+	public static final field INLINE_END I
+	public static final field INLINE_START I
 	public static final field LEFT I
 	public static final field RIGHT I
 	public static final field START I
@@ -4476,7 +4479,10 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field BACKGROUND_SIZE Ljava/lang/String;
 	public static final field BORDER_BLOCK_COLOR Ljava/lang/String;
 	public static final field BORDER_BLOCK_END_COLOR Ljava/lang/String;
+	public static final field BORDER_BLOCK_END_WIDTH Ljava/lang/String;
 	public static final field BORDER_BLOCK_START_COLOR Ljava/lang/String;
+	public static final field BORDER_BLOCK_START_WIDTH Ljava/lang/String;
+	public static final field BORDER_BLOCK_WIDTH Ljava/lang/String;
 	public static final field BORDER_BOTTOM_COLOR Ljava/lang/String;
 	public static final field BORDER_BOTTOM_END_RADIUS Ljava/lang/String;
 	public static final field BORDER_BOTTOM_LEFT_RADIUS Ljava/lang/String;
@@ -4488,6 +4494,12 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field BORDER_END_END_RADIUS Ljava/lang/String;
 	public static final field BORDER_END_START_RADIUS Ljava/lang/String;
 	public static final field BORDER_END_WIDTH Ljava/lang/String;
+	public static final field BORDER_INLINE_COLOR Ljava/lang/String;
+	public static final field BORDER_INLINE_END_COLOR Ljava/lang/String;
+	public static final field BORDER_INLINE_END_WIDTH Ljava/lang/String;
+	public static final field BORDER_INLINE_START_COLOR Ljava/lang/String;
+	public static final field BORDER_INLINE_START_WIDTH Ljava/lang/String;
+	public static final field BORDER_INLINE_WIDTH Ljava/lang/String;
 	public static final field BORDER_LEFT_COLOR Ljava/lang/String;
 	public static final field BORDER_LEFT_WIDTH Ljava/lang/String;
 	public static final field BORDER_RADIUS Ljava/lang/String;
@@ -4934,6 +4946,9 @@ public abstract class com/facebook/react/uimanager/style/LogicalEdge : java/lang
 	public static final field Companion Lcom/facebook/react/uimanager/style/LogicalEdge$Companion;
 	public static final field END Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field HORIZONTAL Lcom/facebook/react/uimanager/style/LogicalEdge;
+	public static final field INLINE Lcom/facebook/react/uimanager/style/LogicalEdge;
+	public static final field INLINE_END Lcom/facebook/react/uimanager/style/LogicalEdge;
+	public static final field INLINE_START Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field LEFT Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field RIGHT Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field START Lcom/facebook/react/uimanager/style/LogicalEdge;

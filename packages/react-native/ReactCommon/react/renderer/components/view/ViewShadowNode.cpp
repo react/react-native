@@ -38,7 +38,12 @@ void ViewShadowNode::initialize() noexcept {
         return true;
       }
     }
-    return false;
+    return viewProps.borderBlockWidth.isDefined() ||
+        viewProps.borderBlockStartWidth.isDefined() ||
+        viewProps.borderBlockEndWidth.isDefined() ||
+        viewProps.borderInlineWidth.isDefined() ||
+        viewProps.borderInlineStartWidth.isDefined() ||
+        viewProps.borderInlineEndWidth.isDefined();
   };
 
   bool formsStackingContext = !viewProps.collapsable ||

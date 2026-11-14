@@ -51,24 +51,28 @@ internal class BorderInsets {
     return when (layoutDirection) {
       LayoutDirection.LTR ->
           RectF(
-              edgeInsets[LogicalEdge.START.ordinal]
+              edgeInsets[LogicalEdge.INLINE_START.ordinal]
+                  ?: edgeInsets[LogicalEdge.START.ordinal]
                   ?: edgeInsets[LogicalEdge.LEFT.ordinal]
+                  ?: edgeInsets[LogicalEdge.INLINE.ordinal]
                   ?: edgeInsets[LogicalEdge.HORIZONTAL.ordinal]
                   ?: edgeInsets[LogicalEdge.ALL.ordinal]
                   ?: 0f,
-              edgeInsets[LogicalEdge.BLOCK_START.ordinal]
-                  ?: edgeInsets[LogicalEdge.TOP.ordinal]
+              edgeInsets[LogicalEdge.TOP.ordinal]
+                  ?: edgeInsets[LogicalEdge.BLOCK_START.ordinal]
                   ?: edgeInsets[LogicalEdge.BLOCK.ordinal]
                   ?: edgeInsets[LogicalEdge.VERTICAL.ordinal]
                   ?: edgeInsets[LogicalEdge.ALL.ordinal]
                   ?: 0f,
-              edgeInsets[LogicalEdge.END.ordinal]
+              edgeInsets[LogicalEdge.INLINE_END.ordinal]
+                  ?: edgeInsets[LogicalEdge.END.ordinal]
                   ?: edgeInsets[LogicalEdge.RIGHT.ordinal]
+                  ?: edgeInsets[LogicalEdge.INLINE.ordinal]
                   ?: edgeInsets[LogicalEdge.HORIZONTAL.ordinal]
                   ?: edgeInsets[LogicalEdge.ALL.ordinal]
                   ?: 0f,
-              edgeInsets[LogicalEdge.BLOCK_END.ordinal]
-                  ?: edgeInsets[LogicalEdge.BOTTOM.ordinal]
+              edgeInsets[LogicalEdge.BOTTOM.ordinal]
+                  ?: edgeInsets[LogicalEdge.BLOCK_END.ordinal]
                   ?: edgeInsets[LogicalEdge.BLOCK.ordinal]
                   ?: edgeInsets[LogicalEdge.VERTICAL.ordinal]
                   ?: edgeInsets[LogicalEdge.ALL.ordinal]
@@ -77,24 +81,28 @@ internal class BorderInsets {
       LayoutDirection.RTL ->
           if (I18nUtil.instance.doLeftAndRightSwapInRTL(context)) {
             RectF(
-                edgeInsets[LogicalEdge.END.ordinal]
+                edgeInsets[LogicalEdge.INLINE_END.ordinal]
+                    ?: edgeInsets[LogicalEdge.END.ordinal]
                     ?: edgeInsets[LogicalEdge.RIGHT.ordinal]
+                    ?: edgeInsets[LogicalEdge.INLINE.ordinal]
                     ?: edgeInsets[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
                     ?: 0f,
-                edgeInsets[LogicalEdge.BLOCK_START.ordinal]
-                    ?: edgeInsets[LogicalEdge.TOP.ordinal]
+                edgeInsets[LogicalEdge.TOP.ordinal]
+                    ?: edgeInsets[LogicalEdge.BLOCK_START.ordinal]
                     ?: edgeInsets[LogicalEdge.BLOCK.ordinal]
                     ?: edgeInsets[LogicalEdge.VERTICAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
                     ?: 0f,
-                edgeInsets[LogicalEdge.START.ordinal]
+                edgeInsets[LogicalEdge.INLINE_START.ordinal]
+                    ?: edgeInsets[LogicalEdge.START.ordinal]
                     ?: edgeInsets[LogicalEdge.LEFT.ordinal]
+                    ?: edgeInsets[LogicalEdge.INLINE.ordinal]
                     ?: edgeInsets[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
                     ?: 0f,
-                edgeInsets[LogicalEdge.BLOCK_END.ordinal]
-                    ?: edgeInsets[LogicalEdge.BOTTOM.ordinal]
+                edgeInsets[LogicalEdge.BOTTOM.ordinal]
+                    ?: edgeInsets[LogicalEdge.BLOCK_END.ordinal]
                     ?: edgeInsets[LogicalEdge.BLOCK.ordinal]
                     ?: edgeInsets[LogicalEdge.VERTICAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
@@ -102,24 +110,28 @@ internal class BorderInsets {
             )
           } else {
             RectF(
-                edgeInsets[LogicalEdge.END.ordinal]
+                edgeInsets[LogicalEdge.INLINE_END.ordinal]
+                    ?: edgeInsets[LogicalEdge.END.ordinal]
                     ?: edgeInsets[LogicalEdge.LEFT.ordinal]
+                    ?: edgeInsets[LogicalEdge.INLINE.ordinal]
                     ?: edgeInsets[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
                     ?: 0f,
-                edgeInsets[LogicalEdge.BLOCK_START.ordinal]
-                    ?: edgeInsets[LogicalEdge.TOP.ordinal]
+                edgeInsets[LogicalEdge.TOP.ordinal]
+                    ?: edgeInsets[LogicalEdge.BLOCK_START.ordinal]
                     ?: edgeInsets[LogicalEdge.BLOCK.ordinal]
                     ?: edgeInsets[LogicalEdge.VERTICAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
                     ?: 0f,
-                edgeInsets[LogicalEdge.START.ordinal]
+                edgeInsets[LogicalEdge.INLINE_START.ordinal]
+                    ?: edgeInsets[LogicalEdge.START.ordinal]
                     ?: edgeInsets[LogicalEdge.RIGHT.ordinal]
+                    ?: edgeInsets[LogicalEdge.INLINE.ordinal]
                     ?: edgeInsets[LogicalEdge.HORIZONTAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
                     ?: 0f,
-                edgeInsets[LogicalEdge.BLOCK_END.ordinal]
-                    ?: edgeInsets[LogicalEdge.BOTTOM.ordinal]
+                edgeInsets[LogicalEdge.BOTTOM.ordinal]
+                    ?: edgeInsets[LogicalEdge.BLOCK_END.ordinal]
                     ?: edgeInsets[LogicalEdge.BLOCK.ordinal]
                     ?: edgeInsets[LogicalEdge.VERTICAL.ordinal]
                     ?: edgeInsets[LogicalEdge.ALL.ordinal]
