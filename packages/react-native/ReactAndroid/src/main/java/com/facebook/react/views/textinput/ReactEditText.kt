@@ -33,6 +33,8 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.method.KeyListener
 import android.text.method.QwertyKeyListener
+import android.text.style.CharacterStyle
+import android.text.style.ParagraphStyle
 import android.util.TypedValue
 import android.view.ActionMode
 import android.view.DragEvent
@@ -1262,6 +1264,10 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         sb.append(currentText.subSequence(0, currentText.length))
       } catch (e: IndexOutOfBoundsException) {
         logSoftException(TAG, e)
+      }
+      // Drop editor spans like PasswordTransformationMethod.Visible, which hold on to this view
+      stripSpansOfKind(sb, Any::class.java) { span ->
+        span !is CharacterStyle && span !is ParagraphStyle && span !is ReactSpan
       }
     }
 
