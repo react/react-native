@@ -16,6 +16,7 @@ import ListMetricsAggregator from '../ListMetricsAggregator';
 import {
   computeWindowedRenderLimits,
   elementsThatOverlapOffsets,
+  findPinnedStickyHeader,
   newRangeCount,
 } from '../VirtualizeUtils';
 import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
@@ -290,5 +291,80 @@ describe('computeWindowedRenderLimits', function () {
       scrollMetrics,
     );
     expect(result).toEqual({first: 0, last: 4});
+  });
+});
+
+describe('findPinnedStickyHeader', function () {
+  // Three 50px sticky headers at 0, 450 and 900.
+  const layouts: {[number]: {offset: number, length: number}} = {
+    0: {offset: 0, length: 50},
+    6: {offset: 450, length: 50},
+    12: {offset: 900, length: 50},
+  };
+  const getHeaderLayout = (stickyIndex: number) => layouts[stickyIndex];
+
+  it('returns null before the first header reaches the start', function () {
+    expect(
+      findPinnedStickyHeader([2], () => ({offset: 100, length: 50}), 50),
+    ).toBe(null);
+  });
+
+  it('covers the full header length while it is pinned', function () {
+    expect(findPinnedStickyHeader([0, 6, 12], getHeaderLayout, 254)).toEqual({
+      stickyIndex: 0,
+      coveredLength: 50,
+    });
+  });
+
+  it('covers less while the next header pushes it out', function () {
+    expect(findPinnedStickyHeader([0, 6, 12], getHeaderLayout, 430)).toEqual({
+      stickyIndex: 0,
+      coveredLength: 20,
+    });
+  });
+
+  it('switches to the next header once it reaches the start', function () {
+    expect(findPinnedStickyHeader([0, 6, 12], getHeaderLayout, 450)).toEqual({
+      stickyIndex: 6,
+      coveredLength: 50,
+    });
+  });
+
+  it('keeps the last header pinned', function () {
+    expect(findPinnedStickyHeader([0, 6, 12], getHeaderLayout, 2000)).toEqual({
+      stickyIndex: 12,
+      coveredLength: 50,
+    });
+  });
+
+  it('handles unsorted indices and headers without a layout', function () {
+    expect(
+      findPinnedStickyHeader([12, 99, 6, 0], getHeaderLayout, 600),
+    ).toEqual({stickyIndex: 6, coveredLength: 50});
+  });
+
+  it('only covers what is left of a header with another right after it', function () {
+    // Headers at 0, 50, 100 and 150.
+    const getConsecutiveLayout = (stickyIndex: number) => ({
+      offset: stickyIndex * 50,
+      length: 50,
+    });
+    expect(
+      findPinnedStickyHeader([0, 1, 2, 3], getConsecutiveLayout, 60),
+    ).toEqual({stickyIndex: 1, coveredLength: 40});
+  });
+
+  it('keeps a header pinned when the next header starts inside it', function () {
+    const overlapping: {[number]: {offset: number, length: number}} = {
+      0: {offset: 0, length: 100},
+      1: {offset: 50, length: 50},
+    };
+    expect(
+      findPinnedStickyHeader(
+        [0, 1],
+        (stickyIndex: number) => overlapping[stickyIndex],
+        20,
+      ),
+    ).toEqual({stickyIndex: 0, coveredLength: 100});
   });
 });

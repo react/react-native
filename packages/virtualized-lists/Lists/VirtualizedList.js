@@ -9,7 +9,7 @@
  */
 
 import type {CellMetricProps, ListOrientation} from './ListMetricsAggregator';
-import type {ViewToken} from './ViewabilityHelper';
+import type {PinnedStickyHeader, ViewToken} from './ViewabilityHelper';
 import type {
   Item,
   ListRenderItem,
@@ -49,6 +49,7 @@ import {
 } from './VirtualizedListProps';
 import {
   computeWindowedRenderLimits,
+  findPinnedStickyHeader,
   keyExtractor as defaultKeyExtractor,
 } from './VirtualizeUtils';
 import invariant from 'invariant';
@@ -995,8 +996,12 @@ class VirtualizedList extends StateSafePureComponent<
       const key = VirtualizedList._keyExtractor(item, ii, this.props);
 
       this._indicesToKeys.set(ii, key);
-      if (stickyIndicesFromProps?.has(ii + stickyOffset)) {
+      const isStickyHeader =
+        stickyIndicesFromProps?.has(ii + stickyOffset) === true;
+      if (isStickyHeader) {
         stickyHeaderIndices.push(cells.length);
+      } else {
+        this._stickyHeaderKeysLaidOutByWrapper.delete(key);
       }
 
       const shouldListenForLayout =
@@ -1024,6 +1029,14 @@ class VirtualizedList extends StateSafePureComponent<
           {...(shouldListenForLayout && {
             onCellLayout: this._onCellLayout,
           })}
+          // `ScrollViewStickyHeader` calls this with the layout of its wrapper,
+          // which is relative to the list content.
+          onLayout={
+            shouldListenForLayout && isStickyHeader
+              ? (event: LayoutChangeEvent) =>
+                  this._onStickyHeaderCellLayout(event, key, ii)
+              : undefined
+          }
         />,
       );
       prevCellKey = key;
@@ -1521,6 +1534,8 @@ class VirtualizedList extends StateSafePureComponent<
   _scrollRef: ?React.ElementRef<typeof ScrollView> = null;
   _sentStartForContentLength = 0;
   _sentEndForContentLength = 0;
+  // Sticky header cells whose position comes from their sticky wrapper.
+  _stickyHeaderKeysLaidOutByWrapper: Set<string> = new Set();
   _updateCellsToRenderTimeoutID: ?ReturnType<typeof setTimeout> = null;
   _viewabilityTuples: Array<ViewabilityHelperCallbackTuple> = [];
 
@@ -1583,6 +1598,28 @@ class VirtualizedList extends StateSafePureComponent<
     cellKey: string,
     cellIndex: number,
   ): void => {
+    // A sticky header cell measures itself relative to its sticky wrapper, so
+    // prefer the wrapper's layout once it has been reported.
+    if (this._stickyHeaderKeysLaidOutByWrapper.has(cellKey)) {
+      return;
+    }
+    this._handleCellLayout(e, cellKey, cellIndex);
+  };
+
+  _onStickyHeaderCellLayout = (
+    e: LayoutChangeEvent,
+    cellKey: string,
+    cellIndex: number,
+  ): void => {
+    this._stickyHeaderKeysLaidOutByWrapper.add(cellKey);
+    this._handleCellLayout(e, cellKey, cellIndex);
+  };
+
+  _handleCellLayout(
+    e: LayoutChangeEvent,
+    cellKey: string,
+    cellIndex: number,
+  ): void {
     const layoutHasChanged = this._listMetrics.notifyCellLayout({
       cellIndex,
       cellKey,
@@ -1598,7 +1635,7 @@ class VirtualizedList extends StateSafePureComponent<
     this._computeBlankness();
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     this._notifyCrossOrientationChildren();
-  };
+  }
 
   _onCellFocusCapture = (cellKey: string) => {
     this._lastFocusedCellKey = cellKey;
@@ -1612,6 +1649,7 @@ class VirtualizedList extends StateSafePureComponent<
 
   _onCellUnmount = (cellKey: string) => {
     delete this._cellRefs[cellKey];
+    this._stickyHeaderKeysLaidOutByWrapper.delete(cellKey);
     this._listMetrics.notifyCellUnmounted(cellKey);
   };
 
@@ -2328,24 +2366,91 @@ class VirtualizedList extends StateSafePureComponent<
     ) {
       return;
     }
+    if (this._viewabilityTuples.length === 0) {
+      return;
+    }
+    const scrollOffset = this._scrollMetrics.offset;
     const visibleLength =
       this._scrollMetrics.crossAxisLength > 0
         ? this._scrollMetrics.visibleLength
         : 0;
     const shouldSuppressViewableItems =
       suppressViewableItems ?? this._shouldSuppressViewableItems();
+    const pinnedStickyHeader = this._getPinnedStickyHeader(scrollOffset);
     this._viewabilityTuples.forEach(tuple => {
       tuple.viewabilityHelper.onUpdate(
         props,
-        this._scrollMetrics.offset,
+        scrollOffset,
         visibleLength,
         this._listMetrics,
         this._createViewToken,
         tuple.onViewableItemsChanged,
         cellsAroundViewport,
         shouldSuppressViewableItems,
+        pinnedStickyHeader,
       );
     });
+  }
+
+  _getPinnedStickyHeader(scrollOffset: number): ?PinnedStickyHeader {
+    const {
+      ListHeaderComponent,
+      StickyHeaderComponent,
+      data,
+      getItemCount,
+      horizontal,
+      invertStickyHeaders,
+      inverted,
+      stickyHeaderHiddenOnScroll,
+      stickyHeaderIndices,
+    } = this.props;
+    const stickToBottom =
+      invertStickyHeaders !== undefined ? invertStickyHeaders : inverted;
+    // Only the default sticky header of a vertical scroll view pins to the
+    // start of the viewport. Where other sticky headers are drawn is unknown.
+    if (
+      stickyHeaderIndices == null ||
+      stickyHeaderIndices.length === 0 ||
+      horizontalOrDefault(horizontal) ||
+      stickToBottom === true ||
+      stickyHeaderHiddenOnScroll === true ||
+      StickyHeaderComponent != null ||
+      this._isNestedWithSameOrientation()
+    ) {
+      return null;
+    }
+
+    const stickyOffset = ListHeaderComponent ? 1 : 0;
+    const itemCount = getItemCount(data);
+    const pinned = findPinnedStickyHeader(
+      stickyHeaderIndices,
+      stickyIndex => {
+        if (stickyOffset === 1 && stickyIndex === 0) {
+          // The list header is the first child of the content container.
+          return {offset: 0, length: this._headerLength};
+        }
+        const cellIndex = stickyIndex - stickyOffset;
+        if (
+          !Number.isInteger(cellIndex) ||
+          cellIndex < 0 ||
+          cellIndex >= itemCount
+        ) {
+          return null;
+        }
+        return this._listMetrics.getCellMetrics(cellIndex, this.props);
+      },
+      scrollOffset,
+    );
+    if (pinned == null) {
+      return null;
+    }
+    return {
+      coveredLength: pinned.coveredLength,
+      cellIndex:
+        stickyOffset === 1 && pinned.stickyIndex === 0
+          ? null
+          : pinned.stickyIndex - stickyOffset,
+    };
   }
 }
 
