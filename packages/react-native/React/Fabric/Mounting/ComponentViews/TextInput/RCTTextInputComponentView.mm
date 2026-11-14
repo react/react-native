@@ -968,8 +968,21 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (shouldFallbackToBareTextComparison) {
     return [newText.string isEqualToString:oldText.string];
   } else {
+    // Typed text carries attributes a state built from props (a controlled `value`) does not: the input's
+    // `defaultTextAttributes` (the first character typed into an empty field also gets their background color and
+    // event emitter) and a paragraph style, which is UIKit's default one or the one in its initial typing attributes
+    // (another line break strategy). Both are accepted.
+    const auto &props = static_cast<const TextInputProps &>(*_props);
+    NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
+        [_originalTypingAttributes mutableCopy] ?: [NSMutableDictionary new];
+    [defaultAttributes addEntriesFromDictionary:_backedTextInputView.defaultTextAttributes];
+    defaultAttributes[NSParagraphStyleAttributeName] =
+        _backedTextInputView.defaultTextAttributes[NSParagraphStyleAttributeName]
+        ?: NSParagraphStyle.defaultParagraphStyle;
     return RCTIsAttributedStringEffectivelySame(
-        newText, oldText, _originalTypingAttributes, static_cast<const TextInputProps &>(*_props).textAttributes);
+               newText, oldText, defaultAttributes, props.textAttributes, !props.multiline) ||
+        RCTIsAttributedStringEffectivelySame(
+               newText, oldText, _originalTypingAttributes, props.textAttributes, !props.multiline);
   }
 }
 
