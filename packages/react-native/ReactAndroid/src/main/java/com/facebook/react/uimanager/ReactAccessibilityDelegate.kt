@@ -1020,7 +1020,8 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
               isSpeakingNode(childNodeInfo, child) &&
                   !isAccessibilityFocusable(childNodeInfo, child)
           ) {
-            val childNodeDescription = getTalkbackDescription(child, null)
+            // Initializing this node again can recursively synthesize its entire subtree again.
+            val childNodeDescription = getTalkbackDescription(child, childNodeInfo)
             if (!childNodeDescription.isNullOrEmpty()) {
               concatChildDescription.append(childNodeDescription.toString() + delimiter)
             }
