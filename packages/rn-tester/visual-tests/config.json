@@ -19,6 +19,11 @@
       "threshold": 0.1,
       "includeAA": false,
       "maxDiffPixels": 100
+    },
+    "transform/origin-decimal-negative/default": {
+      "threshold": 0.1,
+      "includeAA": false,
+      "maxDiffPixels": 100
     }
   }
 }
