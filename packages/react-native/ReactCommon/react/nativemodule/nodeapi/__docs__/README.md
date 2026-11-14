@@ -71,4 +71,5 @@ built without it.
 
 ### Uses this
 
-- RNTester's Node-API example (`packages/rn-tester/NodeApiExample`)
+- RNTester's Node-API example (`packages/rn-tester/NodeApiExample`, see its
+  [README](../../../../../../rn-tester/NodeApiExample/README.md))

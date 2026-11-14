@@ -1,5 +1,5 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
-# Not run in CI, which builds RNTester without Node-API. Build with -PnodeApiEnabled=true (Android) or RCT_NODE_API_ENABLED=1 pod install (iOS).
+# Not run in CI, which builds RNTester without Node-API. See ../README.md to run it.
 ---
 - launchApp
 - extendedWaitUntil:
