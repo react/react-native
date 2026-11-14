@@ -185,6 +185,16 @@ static void updateBorderWidthProps(
       "borderBottomWidth",
       newBorderWidths.bottom,
       oldBorderWidths.bottom);
+  updateBorderWidthPropValue(
+      result,
+      "borderBlockWidth",
+      newBorderWidths.vertical,
+      oldBorderWidths.vertical);
+  updateBorderWidthPropValue(
+      result,
+      "borderInlineWidth",
+      newBorderWidths.horizontal,
+      oldBorderWidths.horizontal);
 }
 
 static void updateBorderRadiusPropValue(
