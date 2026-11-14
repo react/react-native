@@ -20,8 +20,6 @@ export default function resolveAriaProps<T extends {...ViewProps, ...}>(
   props: T,
 ): T {
   const {
-    accessibilityState,
-    accessibilityValue,
     'aria-busy': ariaBusy,
     'aria-checked': ariaChecked,
     'aria-disabled': ariaDisabled,
@@ -77,7 +75,6 @@ export default function resolveAriaProps<T extends {...ViewProps, ...}>(
   }
 
   if (
-    accessibilityState != null ||
     ariaBusy != null ||
     ariaChecked != null ||
     ariaDisabled != null ||
@@ -85,26 +82,25 @@ export default function resolveAriaProps<T extends {...ViewProps, ...}>(
     ariaSelected != null
   ) {
     resolvedProps.accessibilityState = {
-      busy: ariaBusy ?? accessibilityState?.busy,
-      checked: ariaChecked ?? accessibilityState?.checked,
-      disabled: ariaDisabled ?? accessibilityState?.disabled,
-      expanded: ariaExpanded ?? accessibilityState?.expanded,
-      selected: ariaSelected ?? accessibilityState?.selected,
+      busy: ariaBusy ?? props.accessibilityState?.busy,
+      checked: ariaChecked ?? props.accessibilityState?.checked,
+      disabled: ariaDisabled ?? props.accessibilityState?.disabled,
+      expanded: ariaExpanded ?? props.accessibilityState?.expanded,
+      selected: ariaSelected ?? props.accessibilityState?.selected,
     };
   }
 
   if (
-    accessibilityValue != null ||
     ariaValueMax != null ||
     ariaValueMin != null ||
     ariaValueNow != null ||
     ariaValueText != null
   ) {
     resolvedProps.accessibilityValue = {
-      max: ariaValueMax ?? accessibilityValue?.max,
-      min: ariaValueMin ?? accessibilityValue?.min,
-      now: ariaValueNow ?? accessibilityValue?.now,
-      text: ariaValueText ?? accessibilityValue?.text,
+      max: ariaValueMax ?? props.accessibilityValue?.max,
+      min: ariaValueMin ?? props.accessibilityValue?.min,
+      now: ariaValueNow ?? props.accessibilityValue?.now,
+      text: ariaValueText ?? props.accessibilityValue?.text,
     };
   }
 
