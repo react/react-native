@@ -12,6 +12,7 @@ import type {PartialViewConfigWithoutName} from './PlatformBaseViewConfig';
 
 import ReactNativeStyleAttributes from '../Components/View/ReactNativeStyleAttributes';
 import {
+  backdropFilterAttribute,
   boxShadowAttribute,
   colorAttribute,
   filterAttribute,
@@ -251,6 +252,7 @@ const validAttributesForNonEventProps = {
   collapsable: true,
   collapsableChildren: true,
   filter: filterAttribute,
+  backdropFilter: backdropFilterAttribute,
   boxShadow: boxShadowAttribute,
   mixBlendMode: true,
   isolation: true,
