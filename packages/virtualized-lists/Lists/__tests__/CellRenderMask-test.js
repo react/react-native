@@ -185,4 +185,63 @@ describe('CellRenderMask', () => {
       {first: 4, last: 4, isSpacer: true},
     ]);
   });
+
+  describe('numCells', () => {
+    it('returns 0 for empty mask', () => {
+      expect(new CellRenderMask(0).numCells()).toBe(0);
+    });
+
+    it('returns the size passed to the constructor', () => {
+      expect(new CellRenderMask(1).numCells()).toBe(1);
+      expect(new CellRenderMask(10).numCells()).toBe(10);
+    });
+
+    it('is unaffected by addCells calls', () => {
+      const renderMask = new CellRenderMask(5);
+      renderMask.addCells({first: 1, last: 3});
+      expect(renderMask.numCells()).toBe(5);
+    });
+  });
+
+  describe('equals', () => {
+    it('returns true for two identical fresh masks', () => {
+      expect(new CellRenderMask(5).equals(new CellRenderMask(5))).toBe(true);
+    });
+
+    it('returns false when masks have different sizes', () => {
+      expect(new CellRenderMask(3).equals(new CellRenderMask(5))).toBe(false);
+    });
+
+    it('returns true after applying identical addCells operations', () => {
+      const a = new CellRenderMask(10);
+      const b = new CellRenderMask(10);
+      a.addCells({first: 2, last: 5});
+      b.addCells({first: 2, last: 5});
+      expect(a.equals(b)).toBe(true);
+    });
+
+    it('returns false when regions differ', () => {
+      const a = new CellRenderMask(10);
+      const b = new CellRenderMask(10);
+      a.addCells({first: 2, last: 5});
+      b.addCells({first: 3, last: 5});
+      expect(a.equals(b)).toBe(false);
+    });
+
+    it('returns false when one mask has more regions than the other', () => {
+      const a = new CellRenderMask(10);
+      const b = new CellRenderMask(10);
+      // a has two non-spacer regions; b has one
+      a.addCells({first: 1, last: 2});
+      a.addCells({first: 7, last: 8});
+      b.addCells({first: 1, last: 8});
+      expect(a.equals(b)).toBe(false);
+    });
+
+    it('is reflexive', () => {
+      const mask = new CellRenderMask(5);
+      mask.addCells({first: 1, last: 3});
+      expect(mask.equals(mask)).toBe(true);
+    });
+  });
 });
