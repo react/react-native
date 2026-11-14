@@ -39,6 +39,66 @@ export type ViewInstance = HostInstance;
 component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
   const hasTextAncestor = use(TextAncestorContext);
 
+  // Fast path: most views use none of the props that need transforming, so
+  // skip copying and rewriting their props.
+  let resolvedProps = needsPropTransforms(props)
+    ? transformProps(props)
+    : props;
+
+  if (__DEV__) {
+    const onSafeAreaInsetsChange =
+      resolvedProps.experimental_onSafeAreaInsetsChange;
+    if (onSafeAreaInsetsChange != null) {
+      // Copy rather than assign: on the fast path this is the incoming props.
+      resolvedProps = {
+        ...resolvedProps,
+        experimental_onSafeAreaInsetsChange:
+          warnOnRepeatedSafeAreaInsetsChanges(onSafeAreaInsetsChange),
+      };
+    }
+  }
+
+  const actualView =
+    ref == null ? (
+      <ViewNativeComponent {...resolvedProps} />
+    ) : (
+      <ViewNativeComponent {...resolvedProps} ref={ref} />
+    );
+
+  if (hasTextAncestor) {
+    return (
+      <TextAncestorContext value={false}>{actualView}</TextAncestorContext>
+    );
+  }
+  return actualView;
+}
+
+// Must check every prop that `transformProps` reads. Compares against
+// `undefined` rather than `null` so that `null` values still go through
+// `transformProps`, which strips them.
+function needsPropTransforms(props: ViewProps): boolean {
+  return (
+    props.accessibilityState !== undefined ||
+    props.accessibilityValue !== undefined ||
+    props['aria-busy'] !== undefined ||
+    props['aria-checked'] !== undefined ||
+    props['aria-disabled'] !== undefined ||
+    props['aria-expanded'] !== undefined ||
+    props['aria-hidden'] !== undefined ||
+    props['aria-label'] !== undefined ||
+    props['aria-labelledby'] !== undefined ||
+    props['aria-live'] !== undefined ||
+    props['aria-selected'] !== undefined ||
+    props['aria-valuemax'] !== undefined ||
+    props['aria-valuemin'] !== undefined ||
+    props['aria-valuenow'] !== undefined ||
+    props['aria-valuetext'] !== undefined ||
+    props.id !== undefined ||
+    props.tabIndex !== undefined
+  );
+}
+
+function transformProps(props: ViewProps): ViewProps {
   const {
     accessibilityState,
     accessibilityValue,
@@ -128,28 +188,7 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
     };
   }
 
-  if (__DEV__) {
-    const onSafeAreaInsetsChange =
-      resolvedProps.experimental_onSafeAreaInsetsChange;
-    if (onSafeAreaInsetsChange != null) {
-      resolvedProps.experimental_onSafeAreaInsetsChange =
-        warnOnRepeatedSafeAreaInsetsChanges(onSafeAreaInsetsChange);
-    }
-  }
-
-  const actualView =
-    ref == null ? (
-      <ViewNativeComponent {...resolvedProps} />
-    ) : (
-      <ViewNativeComponent {...resolvedProps} ref={ref} />
-    );
-
-  if (hasTextAncestor) {
-    return (
-      <TextAncestorContext value={false}>{actualView}</TextAncestorContext>
-    );
-  }
-  return actualView;
+  return resolvedProps;
 }
 
 View.displayName = 'View';
