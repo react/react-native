@@ -152,6 +152,35 @@ static UIColor *defaultPlaceholderColor(void)
 {
   _textWasPasted = NO;
   [self _invalidatePlaceholderVisibility];
+  [self _relayoutFirstTextLayoutFragmentIfMisplaced];
+}
+
+// On iOS 27, TextKit 2 can leave the first layout fragment pushed down by its own height (origin.y == height) after
+// an edit that replaces text inside the first paragraph while later paragraphs exist, e.g. Korean syllable
+// recomposition in a non-scrolling text view. UIKit hides this when Auto Layout re-measures the view, but views
+// here are sized with frames, so the whole text stays shifted until the next edit (FB25281535).
+// Re-laying out just that fragment fixes it. Nothing is done while the fragment is in place.
+- (void)_relayoutFirstTextLayoutFragmentIfMisplaced
+{
+  if (@available(iOS 16.0, tvOS 16.0, *)) {
+    NSTextLayoutManager *textLayoutManager = self.textLayoutManager;
+    if (textLayoutManager == nil) {
+      return;
+    }
+    __block NSTextLayoutFragment *firstFragment = nil;
+    [textLayoutManager enumerateTextLayoutFragmentsFromLocation:textLayoutManager.documentRange.location
+                                                        options:NSTextLayoutFragmentEnumerationOptionsNone
+                                                     usingBlock:^BOOL(NSTextLayoutFragment *fragment) {
+                                                       firstFragment = fragment;
+                                                       return NO;
+                                                     }];
+    if (firstFragment == nil || firstFragment.layoutFragmentFrame.origin.y <= 0) {
+      return;
+    }
+    NSTextRange *range = firstFragment.rangeInElement;
+    [textLayoutManager invalidateLayoutForRange:range];
+    [textLayoutManager ensureLayoutForRange:range];
+  }
 }
 
 - (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
