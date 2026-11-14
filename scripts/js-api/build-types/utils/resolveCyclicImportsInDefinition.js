@@ -24,8 +24,11 @@ function getReplacementInfo(
   filePath: string,
   packages: PackageConfig,
 ) {
-  const sourceDirectory = filePath.split('/').slice(0, -1).join('/');
-  const pathToRoot = path.relative(sourceDirectory, rootPath);
+  const sourceDirectory = path.dirname(filePath);
+  const pathToRoot = path
+    .relative(sourceDirectory, rootPath)
+    .split(path.sep)
+    .join('/');
 
   const packageToReplace = packages.find(({name}) => source.startsWith(name));
 
@@ -50,7 +53,7 @@ const visitor: PluginObj<{
 
       nodePath.node.source.value = nodePath.node.source.value.replace(
         packageToReplace.name,
-        path.join(pathToRoot, packageToReplace.directory),
+        path.posix.join(pathToRoot, packageToReplace.directory),
       );
     },
     ExportNamedDeclaration(nodePath, state) {
@@ -72,7 +75,7 @@ const visitor: PluginObj<{
       // $FlowExpectedError[incompatible-use]
       nodePath.node.source.value = nodePath.node.source.value.replace(
         packageToReplace.name,
-        path.join(pathToRoot, packageToReplace.directory),
+        path.posix.join(pathToRoot, packageToReplace.directory),
       );
     },
   },
