@@ -94,9 +94,11 @@ Pod::Spec.new do |spec|
         :execution_position => :before_compile,
         :script => <<-EOS
         . "$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh"
-
-        CONFIG="Release"
-        if echo $GCC_PREPROCESSOR_DEFINITIONS | grep -q "DEBUG=1"; then
+        . "$REACT_NATIVE_PATH/scripts/xcode/resolve-prebuilt-configuration.sh"
+        # Hermes-only: React-hermes may enable CDP via HERMES_ENABLE_DEBUGGER
+        # without DEBUG=1 on this target (static CocoaPods). Keep that signal
+        # out of the shared helper — it is not meaningful for RNCore / RNDeps.
+        if [ "$CONFIG" != "Debug" ] && echo "${GCC_PREPROCESSOR_DEFINITIONS:-}" | grep -q "HERMES_ENABLE_DEBUGGER=1"; then
           CONFIG="Debug"
         fi
 
