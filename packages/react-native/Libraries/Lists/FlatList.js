@@ -451,8 +451,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     }
   }
 
-  // $FlowFixMe[missing-local-annot]
-  componentDidUpdate(prevProps: FlatListProps<ItemT>) {
+  componentDidUpdate(prevProps: FlatListProps<ItemT>): void {
     invariant(
       prevProps.numColumns === this.props.numColumns,
       'Changing numColumns on the fly is not supported. Change the key prop on FlatList when ' +
