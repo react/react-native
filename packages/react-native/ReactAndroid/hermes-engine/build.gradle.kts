@@ -182,9 +182,18 @@ fun buildHermesCCommandLineArgs() = listOf(
     ndkBuildJobs,
 )
 
+// CMake caches contain absolute paths. Clear them only when Gradle runs configuration again.
+fun CustomExecTask.clearCMakeCacheBeforeConfigure(hermesBuildDir: File) {
+  doFirst {
+    File(hermesBuildDir, "CMakeCache.txt").delete()
+    File(hermesBuildDir, "CMakeFiles").deleteRecursively()
+  }
+}
+
 val configureBuildForHermes by
     tasks.registering(CustomExecTask::class) {
       dependsOn(installCMake)
+      clearCMakeCacheBeforeConfigure(hermesBuildDir)
       workingDir(hermesDir)
       inputs.dir(hermesDir)
       outputs.files(hermesBuildOutputFileTree)
@@ -239,6 +248,7 @@ val buildHermesLib by
 val configureBuildForHermesWithDebugger by
     tasks.registering(CustomExecTask::class) {
       dependsOn(installCMake)
+      clearCMakeCacheBeforeConfigure(hermesBuildDir)
       workingDir(hermesDir)
       inputs.dir(hermesDir)
       outputs.files(hermesBuildOutputFileTree)
