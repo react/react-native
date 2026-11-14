@@ -46,6 +46,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowBuild
 
 /** Verify {@link EditText} view property being applied properly by {@link ReactTextInputManager} */
 @RunWith(RobolectricTestRunner::class)
@@ -399,6 +400,42 @@ class ReactTextInputPropertyTest {
 
     manager.updateProperties(view, buildStyles("keyboardType", "email-address"))
     assertThat(view.inputType and generalKeyboardTypeFlags).isEqualTo(emailTypeFlags)
+  }
+
+  @Test
+  fun testCaretHidden() {
+    manager.updateProperties(view, buildStyles("keyboardType", "email-address"))
+    assertThat(view.isCursorVisible).isTrue
+
+    manager.updateProperties(view, buildStyles("caretHidden", true))
+    assertThat(view.isCursorVisible).isFalse
+
+    manager.updateProperties(view, buildStyles("caretHidden", false))
+    assertThat(view.isCursorVisible).isTrue
+  }
+
+  @Test
+  @Config(sdk = [Build.VERSION_CODES.Q])
+  fun testEmailCursorStaysHiddenOnXiaomiAndroid10WhenCaretHiddenIsUpdated() {
+    ShadowBuild.setManufacturer("Xiaomi")
+
+    manager.updateProperties(view, buildStyles("keyboardType", "email-address"))
+    assertThat(view.isCursorVisible).isFalse
+
+    manager.updateProperties(view, buildStyles("caretHidden", false))
+    assertThat(view.isCursorVisible).isFalse
+  }
+
+  @Test
+  @Config(sdk = [Build.VERSION_CODES.Q])
+  fun testCaretHiddenStillAppliesToOtherFieldsOnXiaomiAndroid10() {
+    ShadowBuild.setManufacturer("Xiaomi")
+
+    manager.updateProperties(view, buildStyles("caretHidden", true))
+    assertThat(view.isCursorVisible).isFalse
+
+    manager.updateProperties(view, buildStyles("caretHidden", false))
+    assertThat(view.isCursorVisible).isTrue
   }
 
   @Test

@@ -479,15 +479,10 @@ public open class ReactTextInputManager public constructor() :
     } catch (_: IllegalAccessException) {}
   }
 
+  // Deferred to onAfterUpdateTransaction() so the cursor follows the resolved keyboard type.
   @ReactProp(name = "caretHidden", defaultBoolean = false)
   public fun setCaretHidden(view: ReactEditText, caretHidden: Boolean) {
-    if (
-        view.stagedInputType == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS &&
-            shouldHideCursorForEmailTextInput()
-    ) {
-      return
-    }
-    view.isCursorVisible = !caretHidden
+    view.stagedCaretHidden = caretHidden
   }
 
   @ReactProp(name = "contextMenuHidden", defaultBoolean = false)
@@ -744,15 +739,6 @@ public open class ReactTextInputManager public constructor() :
       flagsToSet = INPUT_TYPE_KEYBOARD_DECIMAL_PAD
     } else if (KEYBOARD_TYPE_EMAIL_ADDRESS.equals(keyboardType, ignoreCase = true)) {
       flagsToSet = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS or InputType.TYPE_CLASS_TEXT
-
-      // Set cursor's visibility to False to fix a crash on some Xiaomi devices with Android Q. This
-      // crash happens when focusing on a email EditText, during which a prompt will be triggered
-      // but
-      // the system fail to locate it properly. Here is an example post discussing about this
-      // issue: https://github.com/facebook/react-native/issues/27204
-      if (shouldHideCursorForEmailTextInput()) {
-        view.isCursorVisible = false
-      }
     } else if (KEYBOARD_TYPE_PHONE_PAD.equals(keyboardType, ignoreCase = true)) {
       flagsToSet = InputType.TYPE_CLASS_PHONE
     } else if (KEYBOARD_TYPE_VISIBLE_PASSWORD.equals(keyboardType, ignoreCase = true)) {
@@ -907,6 +893,8 @@ public open class ReactTextInputManager public constructor() :
     super.onAfterUpdateTransaction(view)
     reconcileAutoCapitalize(view)
     view.commitStagedInputType()
+    view.isCursorVisible =
+        !view.stagedCaretHidden && !shouldHideCursorForEmailTextInput(view.inputType)
     // setInputType() clears paint-level font variation settings, so update the typeface last to
     // reapply any variation axes after the staged input type is committed.
     view.maybeUpdateTypeface()
@@ -1163,10 +1151,14 @@ public open class ReactTextInputManager public constructor() :
     private val DRAWABLE_HANDLE_FIELDS =
         arrayOf("mSelectHandleLeft", "mSelectHandleRight", "mSelectHandleCenter")
 
-    private fun shouldHideCursorForEmailTextInput(): Boolean {
-      val manufacturer = Build.MANUFACTURER.lowercase()
-      return (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && manufacturer.contains("xiaomi"))
-    }
+    // Some Xiaomi devices on Android 10 crash drawing an email field's cursor while showing their
+    // email suggestion popup: https://github.com/facebook/react-native/issues/27204
+    private fun shouldHideCursorForEmailTextInput(inputType: Int): Boolean =
+        (inputType and InputType.TYPE_MASK_CLASS) == InputType.TYPE_CLASS_TEXT &&
+            (inputType and InputType.TYPE_MASK_VARIATION) ==
+                InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS &&
+            Build.VERSION.SDK_INT == Build.VERSION_CODES.Q &&
+            Build.MANUFACTURER.lowercase().contains("xiaomi")
 
     private const val IME_ACTION_ID = 0x670
 
