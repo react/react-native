@@ -96,6 +96,11 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/ScrollView/ScrollViewMaintainVisibleContentPositionExample'),
   },
   {
+    key: 'MovingScrollViewExample',
+    category: 'Basic',
+    module: require('../examples/ScrollView/MovingScrollViewExample'),
+  },
+  {
     key: 'ScrollViewSimpleExample',
     category: 'Basic',
     module: require('../examples/ScrollView/ScrollViewSimpleExample'),
