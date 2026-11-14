@@ -454,9 +454,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   }
 
   public override fun onDraw(canvas: Canvas) {
-    if (_overflow != Overflow.VISIBLE) {
-      BackgroundStyleApplicator.clipToPaddingBox(this, canvas)
-    }
+    BackgroundStyleApplicator.updatePaddingBoxClip(this, canvas, _overflow != Overflow.VISIBLE)
     super.onDraw(canvas)
   }
 

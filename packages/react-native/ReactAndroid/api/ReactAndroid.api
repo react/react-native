@@ -3189,6 +3189,8 @@ public final class com/facebook/react/uimanager/BackgroundStyleApplicator {
 	public static final fun setOutlineOffset (Landroid/view/View;F)V
 	public static final fun setOutlineStyle (Landroid/view/View;Lcom/facebook/react/uimanager/style/OutlineStyle;)V
 	public static final fun setOutlineWidth (Landroid/view/View;F)V
+	public static final fun updatePaddingBoxClip (Landroid/view/View;Landroid/graphics/Canvas;Z)V
+	public static final fun updatePaddingBoxOutlineClip (Landroid/view/View;Landroid/graphics/Canvas;Z)Z
 }
 
 public abstract class com/facebook/react/uimanager/BaseViewManager : com/facebook/react/uimanager/ViewManager, android/view/View$OnLayoutChangeListener {

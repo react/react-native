@@ -19,6 +19,7 @@ import android.os.Build
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.dpToPx
+import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.style.BorderInsets
 import com.facebook.react.uimanager.style.BorderRadiusStyle
 
@@ -207,8 +208,8 @@ internal class CompositeBackgroundDrawable(
           borderRadius?.resolve(
               layoutDirection,
               context,
-              bounds.width().toFloat(),
-              bounds.height().toFloat(),
+              bounds.width().pxToDp(),
+              bounds.height().pxToDp(),
           )
 
       val computedBorderInsets = borderInsets?.resolve(layoutDirection, context)
@@ -246,6 +247,41 @@ internal class CompositeBackgroundDrawable(
     } else {
       outline.setRect(bounds)
     }
+  }
+
+  /**
+   * Returns the corner radius, in pixels, when every corner shares one circular radius and no
+   * border is set, so that the border box and the padding box are the same round rect, and the
+   * round rect [getOutline] describes. Returns null otherwise.
+   */
+  fun getUniformBorderRadiusWithoutBorder(): Float? {
+    val computedBorderInsets = borderInsets?.resolve(layoutDirection, context)
+    if (
+        computedBorderInsets != null &&
+            (computedBorderInsets.left != 0f ||
+                computedBorderInsets.top != 0f ||
+                computedBorderInsets.right != 0f ||
+                computedBorderInsets.bottom != 0f)
+    ) {
+      return null
+    }
+
+    val computedBorderRadius =
+        borderRadius?.resolve(
+            layoutDirection,
+            context,
+            bounds.width().pxToDp(),
+            bounds.height().pxToDp(),
+        ) ?: return null
+    if (!computedBorderRadius.isUniform()) {
+      return null
+    }
+
+    val corner = computedBorderRadius.topLeft
+    if (corner.horizontal <= 0f || corner.horizontal != corner.vertical) {
+      return null
+    }
+    return corner.horizontal.dpToPx()
   }
 
   companion object {
