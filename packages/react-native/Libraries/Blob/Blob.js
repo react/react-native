@@ -161,4 +161,10 @@ class Blob {
   }
 }
 
+// `toString()` should return `"[object Blob]"`
+Object.defineProperty(Blob.prototype, Symbol.toStringTag, {
+  configurable: true,
+  value: 'Blob',
+});
+
 export default Blob;

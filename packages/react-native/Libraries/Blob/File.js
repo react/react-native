@@ -55,4 +55,10 @@ class File extends Blob {
   }
 }
 
+// `toString()` should return `"[object File]"`
+Object.defineProperty(File.prototype, Symbol.toStringTag, {
+  configurable: true,
+  value: 'File',
+});
+
 export default File;
