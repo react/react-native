@@ -47,7 +47,10 @@ describe('processFilter', () => {
     {hueRotate: (180 * 1.5708) / Math.PI},
   ]);
   testUnitFilter('hue-rotate', -90, 'deg', [{hueRotate: -90}]);
-  testUnitFilter('hue-rotate', 1.5, 'grad', []);
+  testUnitFilter('hue-rotate', 100, 'grad', [{hueRotate: 90}]);
+  testUnitFilter('hue-rotate', 0.5, 'turn', [{hueRotate: 180}]);
+  testUnitFilter('hue-rotate', -0.25, 'turn', [{hueRotate: -90}]);
+  testUnitFilter('hue-rotate', 1, 'foo', []);
   testNumericFilter('hue-rotate', 90, []);
   testUnitFilter('hue-rotate', 50, '%', []);
 
