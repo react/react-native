@@ -4,6 +4,7 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TextExample/textWidthMode
+      EXAMPLE_ID: text-width-mode-example
 - extendedWaitUntil:
     visible:
       id: 'text-width-mode-example'

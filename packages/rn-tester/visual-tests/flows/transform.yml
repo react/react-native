@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TransformExample/rotate
+      EXAMPLE_ID: transform-rotate
 - extendedWaitUntil:
     visible:
       id: 'transform-rotate'
@@ -18,6 +19,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TransformExample/rotate-scale
+      EXAMPLE_ID: transform-rotate-scale
 - extendedWaitUntil:
     visible:
       id: 'transform-rotate-scale'
@@ -32,6 +34,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TransformExample/translate-percentage
+      EXAMPLE_ID: transform-translate-percentage
 - extendedWaitUntil:
     visible:
       id: 'transform-translate-percentage'
@@ -46,6 +49,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/TransformExample/string-transform
+      EXAMPLE_ID: transform-string
 - extendedWaitUntil:
     visible:
       id: 'transform-string'

@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/BorderExample/corner-radii
+      EXAMPLE_ID: border-test-corner-radii
 - extendedWaitUntil:
     visible:
       id: 'border-test-corner-radii'
@@ -18,6 +19,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/BorderExample/child-clipping-radius
+      EXAMPLE_ID: border-test-child-clipping-radius
 - extendedWaitUntil:
     visible:
       id: 'border-test-child-clipping-radius'
@@ -32,6 +34,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/BorderExample/equal-width-borders
+      EXAMPLE_ID: border-test-equal-width-borders
 - extendedWaitUntil:
     visible:
       id: 'border-test-equal-width-borders'

@@ -4,6 +4,7 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ImageExample/static-image
+      EXAMPLE_ID: image-static
 - extendedWaitUntil:
     visible:
       id: 'image-static'
@@ -22,6 +23,7 @@ appId: ${APP_ID}
           file: ../helpers/open-example.yml
           env:
             EXAMPLE_URL: rntester://example/ImageExample/base64-image
+            EXAMPLE_ID: image-base64
       - extendedWaitUntil:
           visible:
             id: 'image-base64'

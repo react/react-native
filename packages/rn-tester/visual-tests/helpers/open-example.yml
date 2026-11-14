@@ -1,25 +1,30 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp:
-    stopApp: true
-- waitForAnimationToEnd:
-    timeout: 30000
-- openLink: ${EXAMPLE_URL}
-# On a slow Android emulator, the first link can arrive before the JS Linking
-# listener is registered and be dropped, so Android sends it again once settled.
-# On iOS, each link raises an "Open in RNTester?" dialog, so it's sent once and
-# accepted. A second, unaccepted dialog leaves RNTester on the previous screen.
-- runFlow:
-    when:
-      platform: Android
+# Opens ${EXAMPLE_URL} and waits for the element with ID ${EXAMPLE_ID} in it.
+# RNTester ignores links until its JS has rendered. Its tab bar shows
+# "Components" on every screen, so that's waited for first. That wait is
+# optional, and if the link is still missed, or a relaunch restores the previous
+# example instead, this relaunches and links again until the requested
+# example's own element is visible. On iOS, the link can raise an "Open in
+# RNTester?" dialog, which is accepted.
+- retry:
+    maxRetries: 3
     commands:
-      - waitForAnimationToEnd:
-          timeout: 15000
-      - openLink: ${EXAMPLE_URL}
-- runFlow:
-    when:
-      platform: iOS
-    commands:
-      - tapOn:
-          text: 'Open'
+      - launchApp:
+          stopApp: true
+      - extendedWaitUntil:
+          visible: 'Components'
+          timeout: 30000
           optional: true
+      - openLink: ${EXAMPLE_URL}
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - tapOn:
+                text: 'Open'
+                optional: true
+      - extendedWaitUntil:
+          visible:
+            id: ${EXAMPLE_ID}
+          timeout: 15000
