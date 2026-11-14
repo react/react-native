@@ -618,14 +618,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       @Nullable ReadableArray transforms,
       @Nullable ReadableArray transformOrigin) {
     if (transforms == null) {
-      view.setTranslationX(PixelUtil.toPixelFromDIP(0));
-      view.setTranslationY(PixelUtil.toPixelFromDIP(0));
-      view.setRotation(0);
-      view.setRotationX(0);
-      view.setRotationY(0);
-      view.setScaleX(1);
-      view.setScaleY(1);
-      view.setCameraDistance(0);
+      resetTransformProperties(view);
       clearSkewAnimationMatrixIfActive(view);
       return;
     }
@@ -638,14 +631,13 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
               PixelUtil.toDIPFromPixel(view.getWidth()),
               PixelUtil.toDIPFromPixel(view.getHeight()),
               transformOrigin);
-      view.setTranslationX(0);
-      view.setTranslationY(0);
-      view.setRotation(0);
-      view.setRotationX(0);
-      view.setRotationY(0);
-      view.setScaleX(1);
-      view.setScaleY(1);
-      view.setCameraDistance(0);
+      resetTransformProperties(view);
+      // NaN and infinity are not CSS numbers, so a transform holding one is ignored, as
+      // TransformHelper.processTransform ignores it: https://drafts.csswg.org/css-values-4/#numbers
+      if (!SkewMatrixHelper.isFinite(affine)) {
+        clearSkewAnimationMatrixIfActive(view);
+        return;
+      }
       view.setAnimationMatrix(affine);
       // Tag value is the matrix itself so TouchTargetHelper can use it for hit testing -- View's
       // own getMatrix() does not compose mAnimationMatrix, so without this fallback the React
@@ -702,6 +694,17 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     }
 
     clearSkewAnimationMatrixIfActive(view);
+  }
+
+  private static <T extends View> void resetTransformProperties(@NonNull T view) {
+    view.setTranslationX(0);
+    view.setTranslationY(0);
+    view.setRotation(0);
+    view.setRotationX(0);
+    view.setRotationY(0);
+    view.setScaleX(1);
+    view.setScaleY(1);
+    view.setCameraDistance(0);
   }
 
   // setAnimationMatrix is called only on the transition out of a skew matrix; calling it

@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <React/RCTConversions.h>
 #import <React/RCTViewComponentView.h>
 #import <XCTest/XCTest.h>
 #import <react/renderer/components/view/ViewProps.h>
@@ -235,6 +236,21 @@ static RCTViewComponentView *makeViewWithTransform(const Transform &transform)
   RCTViewComponentView *view = makeViewWithTransform(Transform::Scale(INFINITY, 1, 1));
 
   XCTAssertTrue(CATransform3DIsIdentity(view.layer.transform));
+}
+
+- (void)testTransformWhoseMatrixOverflowsAFloatIsNotApplied
+{
+  RCTViewComponentView *view = makeViewWithTransform(Transform::Scale(1e20, 1, 1) * Transform::Scale(1e20, 1, 1));
+
+  XCTAssertTrue(CATransform3DIsIdentity(view.layer.transform));
+}
+
+- (void)testMatrixWithAnEntryPastTheLargestFloatConvertsToTheIdentity
+{
+  auto transform = Transform::Identity();
+  transform.matrix[0] = 1e39;
+
+  XCTAssertTrue(CATransform3DIsIdentity(RCTCATransform3DFromTransformMatrix(transform)));
 }
 
 #pragma mark - Full Keyboard Access focusability

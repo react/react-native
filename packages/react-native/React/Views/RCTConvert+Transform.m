@@ -9,6 +9,22 @@
 
 static const NSUInteger kMatrixArrayLength = 4 * 4;
 
+BOOL RCTIsFiniteTransform(CATransform3D transform)
+{
+  const CGFloat *entries = (const CGFloat *)&transform;
+  for (NSUInteger i = 0; i < kMatrixArrayLength; i++) {
+    if (!isfinite((float)entries[i])) {
+      return NO;
+    }
+  }
+  return YES;
+}
+
+static BOOL RCTIsNonFiniteLength(YGValue value)
+{
+  return (value.unit == YGUnitPoint || value.unit == YGUnitPercent) && !isfinite(value.value);
+}
+
 @implementation RCTConvert (Transform)
 
 + (CGFloat)convertToRadians:(id)json
@@ -20,7 +36,9 @@ static const NSUInteger kMatrixArrayLength = 4 * 4;
       return degrees * M_PI / 180;
     }
     if ([stringValue hasSuffix:@"rad"]) {
-      return [[stringValue substringToIndex:stringValue.length - 3] floatValue];
+      // The C++ transform parser holds an angle with a unit in degrees, as a float.
+      float degrees = [[stringValue substringToIndex:stringValue.length - 3] floatValue] * 57.295779513f;
+      return degrees * M_PI / 180;
     }
   }
   return [json floatValue];
@@ -41,12 +59,22 @@ static const NSUInteger kMatrixArrayLength = 4 * 4;
     return transform;
   }
   for (NSUInteger i = 0; i < kMatrixArrayLength; i++) {
-    ((CGFloat *)&transform)[i] = [RCTConvert CGFloat:json[i]];
+    // Read as a float, as every other operand is, so an entry past the largest float stays infinite.
+    ((CGFloat *)&transform)[i] = (float)[RCTConvert CGFloat:json[i]];
   }
   return transform;
 }
 
 + (CATransform3D)CATransform3D:(id)json
+{
+  CATransform3D transform = [self CATransform3DFromTransforms:json];
+  // NaN and infinity are not CSS numbers, so a transform holding one is an invalid declaration and is ignored:
+  // https://drafts.csswg.org/css-values-4/#numbers. Every non-finite operand but a perspective's makes the
+  // matrix non-finite.
+  return RCTIsFiniteTransform(transform) ? transform : CATransform3DIdentity;
+}
+
++ (CATransform3D)CATransform3DFromTransforms:(id)json
 {
   CATransform3D transform = CATransform3DIdentity;
   if (!json) {
@@ -79,8 +107,14 @@ static const NSUInteger kMatrixArrayLength = 4 * 4;
       transform = CATransform3DConcat(next, transform);
 
     } else if ([property isEqualToString:@"perspective"]) {
+      CGFloat perspective = [value floatValue];
+      // -1 / ±Infinity is a finite m34, so the matrix's own check cannot see it.
+      if (!isfinite(perspective)) {
+        return CATransform3DIdentity;
+      }
+      // A depth from 0 up to 1px renders as 1px: https://drafts.csswg.org/css-transforms-2/#funcdef-perspective
       next = CATransform3DIdentity;
-      next.m34 = -1 / [value floatValue];
+      next.m34 = -1 / (perspective >= 0 && perspective < 1 ? 1 : perspective);
       transform = CATransform3DConcat(next, transform);
 
     } else if ([property isEqualToString:@"rotateX"]) {
@@ -148,6 +182,11 @@ static const NSUInteger kMatrixArrayLength = 4 * 4;
 {
   RCTTransformOrigin transformOrigin = {
       [RCTConvert YGValue:json[0]], [RCTConvert YGValue:json[1]], [RCTConvert CGFloat:json[2]]};
+  // A non-finite origin converts as no origin does, and a view turns about its center for both.
+  if (RCTIsNonFiniteLength(transformOrigin.x) || RCTIsNonFiniteLength(transformOrigin.y) ||
+      !isfinite((float)transformOrigin.z)) {
+    return (RCTTransformOrigin){YGValueUndefined, YGValueUndefined, 0};
+  }
   return transformOrigin;
 }
 

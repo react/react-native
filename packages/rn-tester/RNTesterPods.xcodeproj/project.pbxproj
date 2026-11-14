@@ -14,6 +14,7 @@
 		3D2AFAF51D646CF80089D1A3 /* legacy_image@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D2AFAF41D646CF80089D1A3 /* legacy_image@2x.png */; };
 		46C0FD761B0B9B1E8662B759 /* libPods-RNTesterUnitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B312B0EEE90BA411618B015 /* libPods-RNTesterUnitTests.a */; };
 		5C60EB1C226440DB0018C04F /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5C60EB1B226440DB0018C04F /* AppDelegate.mm */; };
+		5F9A0C3F2E8B4A1D00C7B2E1 /* RCTConvert_CATransform3DTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F9A0C3E2E8B4A1D00C7B2E1 /* RCTConvert_CATransform3DTests.m */; };
 		602160B9478DAFF2BAB56595 /* RCTUtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D5D13FB1445C5C19639921CC /* RCTUtilsTests.m */; };
 		79B29C2E2E607A99007612A5 /* SceneDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 79B29C2D2E607A99007612A5 /* SceneDelegate.mm */; };
 		7F806D4D4D97AD6403558B35 /* RCTStatusBarAppearanceTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 67B0814814F7C07E196BC295 /* RCTStatusBarAppearanceTests.mm */; };
@@ -89,6 +90,7 @@
 		4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51BC9297B6C3163C14532020 /* Pods-RNTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.release.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.release.xcconfig"; sourceTree = "<group>"; };
 		5C60EB1B226440DB0018C04F /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = RNTester/AppDelegate.mm; sourceTree = "<group>"; };
+		5F9A0C3E2E8B4A1D00C7B2E1 /* RCTConvert_CATransform3DTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTConvert_CATransform3DTests.m; sourceTree = "<group>"; };
 		67B0814814F7C07E196BC295 /* RCTStatusBarAppearanceTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTStatusBarAppearanceTests.mm; sourceTree = "<group>"; };
 		A8717727467541429C262C64 /* RCTTimingClockChangeTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTimingClockChangeTests.mm; sourceTree = "<group>"; };
 		79B29C2C2E607A99007612A5 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = RNTester/SceneDelegate.h; sourceTree = "<group>"; };
@@ -297,6 +299,7 @@
 				E7DB20B222B2BAA4005AC45F /* RCTAnimationUtilsTests.m */,
 				E7DB20AB22B2BAA3005AC45F /* RCTBlobManagerTests.m */,
 				E7DB20A922B2BAA3005AC45F /* RCTBundleURLProviderTests.m */,
+				5F9A0C3E2E8B4A1D00C7B2E1 /* RCTConvert_CATransform3DTests.m */,
 				E7DB20CA22B2BAA5005AC45F /* RCTConvert_NSURLTests.m */,
 				E7DB20CE22B2BAA5005AC45F /* RCTConvert_YGValueTests.m */,
 				383889D923A7398900D06C3E /* RCTConvert_UIColorTests.m */,
@@ -637,6 +640,7 @@
 				CD10C7A5290BD4EB0033E1ED /* RCTEventEmitterTests.m in Sources */,
 				E7DB20E422B2BAA6005AC45F /* RCTFormatErrorTests.m in Sources */,
 				E7DB20EB22B2BAA6005AC45F /* RCTConvert_YGValueTests.m in Sources */,
+				5F9A0C3F2E8B4A1D00C7B2E1 /* RCTConvert_CATransform3DTests.m in Sources */,
 				E7DB20D822B2BAA6005AC45F /* RCTJSONTests.m in Sources */,
 				602160B9478DAFF2BAB56595 /* RCTUtilsTests.m in Sources */,
 				7F806D4D4D97AD6403558B35 /* RCTStatusBarAppearanceTests.mm in Sources */,

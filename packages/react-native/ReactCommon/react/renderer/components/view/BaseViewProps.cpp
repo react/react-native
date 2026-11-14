@@ -8,6 +8,7 @@
 #include "BaseViewProps.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include <react/renderer/components/view/BackgroundImagePropsConversions.h>
 #include <react/renderer/components/view/BoxShadowPropsConversions.h>
@@ -18,6 +19,7 @@
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
+#include <react/renderer/graphics/TransformUtils.h>
 #include <react/renderer/graphics/ValueUnit.h>
 
 namespace facebook::react {
@@ -48,6 +50,23 @@ std::array<float, 3> getTranslateForTransformOrigin(
   float newTranslateZ = origin[2];
 
   return std::array{newTranslateX, newTranslateY, newTranslateZ};
+}
+
+bool isFiniteTransformOrigin(const TransformOrigin& transformOrigin) {
+  return std::isfinite(transformOrigin.xy[0].value) &&
+      std::isfinite(transformOrigin.xy[1].value) &&
+      std::isfinite(transformOrigin.z);
+}
+
+// React Native holds a transform's numbers as floats, so an entry past the
+// largest float overflows where the matrix is a double too.
+bool isFiniteMatrix(const Transform& transform) {
+  for (const auto value : transform.matrix) {
+    if (!std::isfinite(static_cast<float>(value))) {
+      return false;
+    }
+  }
+  return true;
 }
 
 } // namespace
@@ -559,6 +578,13 @@ Transform BaseViewProps::resolveTransform(
     const Size& frameSize,
     const Transform& transform,
     const TransformOrigin& transformOrigin) {
+  // NaN and infinity are not CSS numbers, so a transform holding one is an
+  // invalid declaration, drawn untransformed:
+  // https://drafts.csswg.org/css-values-4/#numbers
+  if (!hasFiniteOperands(transform)) {
+    return {};
+  }
+
   auto transformMatrix = Transform{};
 
   // transform is matrix
@@ -572,7 +598,8 @@ Transform BaseViewProps::resolveTransform(
     }
   }
 
-  if (transformOrigin.isSet()) {
+  // A non-finite origin is ignored, so the transform turns about the center.
+  if (transformOrigin.isSet() && isFiniteTransformOrigin(transformOrigin)) {
     std::array<float, 3> translateOffsets = getTranslateForTransformOrigin(
         frameSize.width, frameSize.height, transformOrigin);
     transformMatrix =
@@ -583,6 +610,11 @@ Transform BaseViewProps::resolveTransform(
             -translateOffsets[0], -translateOffsets[1], -translateOffsets[2]);
   }
 
+  // A valid transform whose matrix overflows cannot be drawn, so it is drawn
+  // untransformed too.
+  if (!isFiniteMatrix(transformMatrix)) {
+    return {};
+  }
   return transformMatrix;
 }
 

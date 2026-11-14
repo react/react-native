@@ -65,8 +65,9 @@ internal object SkewMatrixHelper {
   /**
    * Builds a [Matrix] in pixel coordinates by walking [transforms] left-to-right and applying each
    * operation via `Matrix.preX` around the resolved pivot. Pivot is the view center; if
-   * [transformOrigin] is set, it overrides per-axis (Number values are DIP, "P%" strings are P/100
-   * of the view dimension; Z is ignored).
+   * [transformOrigin] is set, it overrides per-axis as [TransformHelper.resolveTransformOrigin]
+   * resolves it (Number values are DIP, "P%" strings are P/100 of the view dimension; Z is
+   * ignored), and an origin declaring a non-finite number is ignored.
    *
    * Composition is pre-multiplication: when the resulting matrix is applied to a point, the
    * rightmost (last) array entry is applied first. Matches CSS / iOS conventions and the
@@ -80,21 +81,14 @@ internal object SkewMatrixHelper {
       viewHeightDip: Float,
       transformOrigin: ReadableArray?,
   ): Matrix {
-    val pivotXPx: Float
-    val pivotYPx: Float
-    if (transformOrigin == null) {
-      pivotXPx = PixelUtil.toPixelFromDIP(viewWidthDip / 2f)
-      pivotYPx = PixelUtil.toPixelFromDIP(viewHeightDip / 2f)
-    } else {
-      pivotXPx =
-          PixelUtil.toPixelFromDIP(
-              resolveOriginAxis(transformOrigin, 0, viewWidthDip, viewWidthDip / 2f),
-          )
-      pivotYPx =
-          PixelUtil.toPixelFromDIP(
-              resolveOriginAxis(transformOrigin, 1, viewHeightDip, viewHeightDip / 2f),
-          )
-    }
+    val origin =
+        transformOrigin?.let {
+          TransformHelper.resolveTransformOrigin(it, viewWidthDip, viewHeightDip)
+        }
+    val pivotXPx =
+        PixelUtil.toPixelFromDIP(if (origin == null) viewWidthDip / 2f else origin[0].toFloat())
+    val pivotYPx =
+        PixelUtil.toPixelFromDIP(if (origin == null) viewHeightDip / 2f else origin[1].toFloat())
 
     val matrix = Matrix()
     for (i in 0 until transforms.size()) {
@@ -160,27 +154,18 @@ internal object SkewMatrixHelper {
   private fun isRawMatrixShorthand(transforms: ReadableArray): Boolean =
       transforms.size() == 16 && transforms.getType(0) == ReadableType.Number
 
-  private fun resolveOriginAxis(
-      origin: ReadableArray,
-      axis: Int,
-      dimensionDip: Float,
-      defaultDip: Float,
-  ): Float {
-    if (origin.size() <= axis) return defaultDip
-    return when (origin.getType(axis)) {
-      ReadableType.Number -> origin.getDouble(axis).toFloat()
-      ReadableType.String -> {
-        val part = origin.getString(axis) ?: return defaultDip
-        if (!part.endsWith("%")) return defaultDip
-        try {
-          (part.dropLast(1).toDouble() * dimensionDip / 100.0).toFloat()
-        } catch (e: NumberFormatException) {
-          defaultDip
-        }
-      }
-      else -> defaultDip
-    }
+  /** Whether every entry of [matrix] is finite. */
+  @JvmStatic
+  fun isFinite(matrix: Matrix): Boolean {
+    val values = matrixValues.get()!!
+    matrix.getValues(values)
+    return values.all { it.isFinite() }
   }
+
+  private val matrixValues: ThreadLocal<FloatArray> =
+      object : ThreadLocal<FloatArray>() {
+        override fun initialValue(): FloatArray = FloatArray(9)
+      }
 
   private fun parseTranslateValue(value: ReadableArray, index: Int, dimensionDip: Float): Double {
     if (value.getType(index) != ReadableType.String) {
