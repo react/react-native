@@ -375,6 +375,17 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
           },
 
           {
+            name: 'keyboardavoidingview',
+            headerPatterns: [
+              'react/renderer/components/keyboardavoidingview/**/*.h',
+            ],
+            excludePatterns: [
+              'react/renderer/components/keyboardavoidingview/tests',
+            ],
+            headerDir: 'react/renderer/components/keyboardavoidingview',
+          },
+
+          {
             name: 'modal',
             headerPatterns: ['react/renderer/components/modal/*.h'],
             excludePatterns: ['react/renderer/components/modal/tests'],

@@ -12,6 +12,7 @@
 #include <react/renderer/components/androidswitch/AndroidSwitchComponentDescriptor.h>
 #include <react/renderer/components/androidtextinput/AndroidTextInputComponentDescriptor.h>
 #include <react/renderer/components/image/ImageComponentDescriptor.h>
+#include <react/renderer/components/keyboardavoidingview/KeyboardAvoidingViewComponentDescriptor.h>
 #include <react/renderer/components/modal/ModalHostViewComponentDescriptor.h>
 #include <react/renderer/components/progressbar/AndroidProgressBarComponentDescriptor.h>
 #include <react/renderer/components/safeareaview/SafeAreaViewComponentDescriptor.h>
@@ -58,6 +59,9 @@ void addCoreComponents(
       concreteComponentDescriptorProvider<ViewComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<ImageComponentDescriptor>());
+  providerRegistry->add(
+      concreteComponentDescriptorProvider<
+          KeyboardAvoidingViewComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());
   providerRegistry->add(

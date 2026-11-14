@@ -24,6 +24,13 @@ struct AnimationMutations;
 using AnimationTimestamp = std::chrono::duration<double, std::milli>;
 using CallbackId = uint64_t;
 
+/*
+ * `ContextContainer` key of the `std::weak_ptr<UIManagerAnimationBackend>`
+ * that native components use to animate their own props.
+ * Only present when the backend is enabled.
+ */
+constexpr const char *const AnimationBackendKey = "AnimationBackend";
+
 class UIManagerAnimationBackend {
  public:
   using Callback = std::function<AnimationMutations(AnimationTimestamp)>;
