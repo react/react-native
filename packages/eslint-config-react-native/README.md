@@ -15,7 +15,7 @@ yarn add --dev eslint prettier @react-native/eslint-config
 
 ## Usage
 
-### For ESLint 9+ (Flat Config)
+### For ESLint 9 and 10 (Flat Config)
 
 Add to your `eslint.config.js`:
 
@@ -38,6 +38,8 @@ export default [
   // Your custom config here
 ];
 ```
+
+The flat config parses `.js` and `.jsx` files with [`flow-eslint`](https://www.npmjs.com/package/flow-eslint), which supports Flow and JSX syntax.
 
 ### For ESLint 8 (Legacy Config)
 

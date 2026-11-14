@@ -9,6 +9,7 @@
  */
 
 import eslintConfigReactNative from '..';
+import eslintConfigReactNativeFlat from '../flat';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 test('eslint-config-prettier is not globally overridden', () => {
@@ -48,4 +49,23 @@ for (const override of overrides) {
 
   // Technically, `overrides` can contain more `overrides`. Since we don't
   // currently use that and it is less common, we don't worry about it.
+}
+
+for (const config of eslintConfigReactNativeFlat) {
+  if (config === eslintConfigPrettier || config.rules == null) {
+    continue;
+  }
+  const configIdentifier = JSON.stringify(config.files ?? '<all files>');
+
+  test(`eslint-config-prettier is not overridden in flat config for ${configIdentifier}`, () => {
+    const overriddenRules = [];
+
+    for (const ruleName of Object.keys(eslintConfigPrettier.rules)) {
+      if (Object.hasOwn(config.rules, ruleName)) {
+        overriddenRules.push(ruleName);
+      }
+    }
+
+    expect(overriddenRules).toEqual([]);
+  });
 }
