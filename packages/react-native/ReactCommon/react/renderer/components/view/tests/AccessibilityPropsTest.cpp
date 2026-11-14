@@ -192,4 +192,12 @@ TEST(AccessibilityPropsTest, unset_selected_omits_selected_trait) {
       hasTrait(props.accessibilityTraits, AccessibilityTraits::Selected));
 }
 
+// JS registers the magic tap listener as `onMagicTap` (BaseViewConfig.ios.js),
+// so that is the raw prop name the flag has to be read from.
+TEST(AccessibilityPropsTest, reads_magic_tap_listener_from_on_magic_tap) {
+  auto props = parse(folly::dynamic::object("onMagicTap", true));
+
+  EXPECT_TRUE(props.onAccessibilityMagicTap);
+}
+
 } // namespace facebook::react
