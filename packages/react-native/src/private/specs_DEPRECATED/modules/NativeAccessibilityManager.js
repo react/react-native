@@ -50,6 +50,10 @@ export interface Spec extends TurboModule {
     onSuccess: (isScreenReaderEnabled: boolean) => void,
     onError: (error: UnsafeObject) => void,
   ) => void;
+  readonly getRecommendedTimeoutMillis?: (
+    mSec: number,
+    onSuccess: (recommendedTimeoutMillis: number) => void,
+  ) => void;
   readonly setAccessibilityContentSizeMultipliers: (JSMultipliers: {
     readonly extraSmall?: ?number,
     readonly small?: ?number,

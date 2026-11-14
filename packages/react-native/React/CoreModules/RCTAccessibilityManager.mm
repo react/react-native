@@ -61,7 +61,10 @@ static NSNotificationName RCTShowBordersStatusDidChangeNotification()
 #pragma clang diagnostic pop
 }
 
-@implementation RCTAccessibilityManager
+@implementation RCTAccessibilityManager {
+  // Replaced in tests through RCTAccessibilityManagerSetSwitchControlReader.
+  RCTSwitchControlReader _switchControlReader;
+}
 
 @synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;
 @synthesize moduleRegistry = _moduleRegistry;
@@ -474,6 +477,16 @@ static void setMultipliers(
   onSuccess(@[ @(_isVoiceOverEnabled) ]);
 }
 
+- (void)getRecommendedTimeoutMillis:(double)mSec onSuccess:(RCTResponseSenderBlock)onSuccess
+{
+  BOOL isSwitchControlRunning =
+      _switchControlReader != nil ? _switchControlReader() : UIAccessibilityIsSwitchControlRunning();
+  // iOS has no recommended timeout setting. Moving between elements one switch
+  // press at a time is slow, so allow three times as long while Switch Control
+  // is running.
+  onSuccess(@[ @(isSwitchControlRunning ? mSec * 3 : mSec) ]);
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
@@ -487,6 +500,13 @@ void RCTAccessibilityManagerSetIsVoiceOverEnabled(
     BOOL isVoiceOverEnabled)
 {
   [accessibilityManager _setIsVoiceOverEnabled:isVoiceOverEnabled];
+}
+
+void RCTAccessibilityManagerSetSwitchControlReader(
+    RCTAccessibilityManager *accessibilityManager,
+    RCTSwitchControlReader _Nullable switchControlReader)
+{
+  accessibilityManager->_switchControlReader = [switchControlReader copy];
 }
 
 @end
