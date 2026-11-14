@@ -14,4 +14,9 @@ namespace facebook::react {
 
 extern const char ModalHostViewComponentName[] = "ModalHostView";
 
+Transform ModalHostViewShadowNode::getTransform() const {
+  auto viewportOffset = getStateData().viewportOffset;
+  return Transform::Translate(viewportOffset.x, viewportOffset.y, 0);
+}
+
 } // namespace facebook::react
