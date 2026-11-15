@@ -42,22 +42,20 @@ export const ReadOnlyText_public: typeof ReadOnlyText =
 ReadOnlyText_public.prototype = ReadOnlyText.prototype;
 
 // The public imperative EventTarget API (`addEventListener`,
-// `removeEventListener`, `dispatchEvent`) is only inherited by this final class
-// when `enableNativeEventTargetEventDispatching` is enabled (which makes
-// `ReadOnlyNode` extend `EventTarget`). Until that public API is finalized, it
-// is gated behind `enableImperativeEvents`: when off we remove those methods
-// from this final class. Native/internal event dispatch does not rely on these
-// public methods, so removing them is safe.
-if (
-  ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
-  !ReactNativeFeatureFlags.enableImperativeEvents()
-) {
-  const prototype: interface {
-    addEventListener?: unknown,
-    removeEventListener?: unknown,
-    dispatchEvent?: unknown,
-  } = ReadOnlyText.prototype;
-  prototype.addEventListener = undefined;
-  prototype.removeEventListener = undefined;
-  prototype.dispatchEvent = undefined;
+// `removeEventListener`, `dispatchEvent`) is gated behind
+// `enableImperativeEvents` until it is finalized. Native/internal event
+// dispatch does not rely on these public methods.
+if (!ReactNativeFeatureFlags.enableImperativeEvents()) {
+  for (const method of [
+    'addEventListener',
+    'removeEventListener',
+    'dispatchEvent',
+  ]) {
+    Object.defineProperty(ReadOnlyText.prototype, method, {
+      value: undefined,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+  }
 }

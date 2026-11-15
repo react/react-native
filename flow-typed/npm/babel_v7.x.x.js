@@ -387,7 +387,7 @@ declare module '@babel/core' {
     buildCodeFrameError<TError extends Error>(
       node: BabelNode,
       msg: string,
-      v2: Class<TError>,
+      Error: Class<TError>,
     ): TError;
 
     mergeSourceMap(map: _BabelSourceMap): _BabelSourceMap;
@@ -408,7 +408,7 @@ declare module '@babel/core' {
 
     parseShebang(): void;
 
-    makeResult<T>(v: TransformResult<T>): TransformResult<T>;
+    makeResult<T>(result: TransformResult<T>): TransformResult<T>;
 
     generate(): TransformResult<>;
   }
@@ -955,8 +955,8 @@ declare module '@babel/core' {
   |};
 
   declare type TransformCallback<TMetadata> =
-    | ((v0: Error, v1: null) => unknown)
-    | ((v0: null, v1: TransformResult<TMetadata> | null) => unknown);
+    | ((error: Error, result: null) => unknown)
+    | ((error: null, result: TransformResult<TMetadata> | null) => unknown);
 
   /**
    * Transforms the passed in code. Calling a callback with an object with the generated code, source map, and AST.
@@ -1043,7 +1043,7 @@ declare module '@babel/core' {
     code: string,
     options?: BabelCoreOptions,
     callback:
-      ((error: Error) => void) | ((v0: void, v1: BabelNodeFile) => void),
+      ((error: Error) => void) | ((error: void, ast: BabelNodeFile) => void),
   ): void;
 
   declare export function parseSync(
@@ -1097,8 +1097,8 @@ declare module '@babel/core' {
   declare export function loadOptions(
     options?: unknown,
     callback:
-      | ((error: Error, v1: null) => unknown)
-      | ((v0: null, config: ResolvedConfig | null) => unknown),
+      | ((error: Error, config: null) => unknown)
+      | ((error: null, config: ResolvedConfig | null) => unknown),
   ): void;
   declare export function loadOptionsSync(
     options?: unknown,
@@ -1126,8 +1126,8 @@ declare module '@babel/core' {
   declare export function loadPartialConfig(
     options?: unknown,
     callback:
-      | ((error: Error, v1: null) => unknown)
-      | ((v0: null, config: PartialConfig | null) => unknown),
+      | ((error: Error, config: null) => unknown)
+      | ((error: null, config: PartialConfig | null) => unknown),
   ): void;
   declare export function loadPartialConfigSync(
     options?: unknown,
@@ -1315,13 +1315,13 @@ declare module '@babel/template' {
     (opts: PublicOpts): TemplateBuilder<T>,
 
     // Building from a string produces an AST builder function by default.
-    (tpl: string, opts: ?PublicOpts): (v: ?PublicReplacements) => T,
+    (tpl: string, opts: ?PublicOpts): (replacements: ?PublicReplacements) => T,
 
     // Building from a template literal produces an AST builder function by default.
     (
       tpl: Array<string>,
       ...args: Array<unknown>
-    ): (v: ?PublicReplacements) => T,
+    ): (replacements: ?PublicReplacements) => T,
 
     // Allow users to explicitly create templates that produce ASTs, skipping
     // the need for an intermediate function.
@@ -1354,13 +1354,13 @@ declare module '@babel/template' {
     (
       tpl: string,
       opts: ?PublicOpts,
-    ): (v: ?PublicReplacements) => Statement | Array<Statement>,
+    ): (replacements: ?PublicReplacements) => Statement | Array<Statement>,
 
     // Building from a template literal produces an AST builder function by default.
     (
       tpl: Array<string>,
       ...args: Array<unknown>
-    ): (v: ?PublicReplacements) => Statement | Array<Statement>,
+    ): (replacements: ?PublicReplacements) => Statement | Array<Statement>,
 
     // Allow users to explicitly create templates that produce ASTs, skipping
     // the need for an intermediate function.

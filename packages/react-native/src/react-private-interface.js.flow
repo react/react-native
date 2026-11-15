@@ -16,12 +16,16 @@
 
 import type {Spec as FabricUIManager} from '../Libraries/ReactNative/FabricUIManager';
 import typeof {createPublicTextInstance as createPublicTextInstanceT} from '../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
+import typeof * as ReactNativeFeatureFlagsT from './private/featureflags/ReactNativeFeatureFlags';
 
 export type {PublicRootInstance} from '../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 export type PublicTextInstance = ReturnType<createPublicTextInstanceT>;
 
 export {default as BatchedBridge} from '../Libraries/BatchedBridge/BatchedBridge';
-export * as ReactNativeFeatureFlags from './private/featureflags/ReactNativeFeatureFlags';
+declare export const ReactNativeFeatureFlags: {
+  ...ReactNativeFeatureFlagsT,
+  enableNativeEventTargetEventDispatching: () => boolean,
+};
 export * as ReactNativeViewConfigRegistry from '../Libraries/Renderer/shims/ReactNativeViewConfigRegistry';
 declare export const fabricUIManager: ?FabricUIManager;
 export {default as deepFreezeAndThrowOnMutationInDev} from '../Libraries/Utilities/deepFreezeAndThrowOnMutationInDev';

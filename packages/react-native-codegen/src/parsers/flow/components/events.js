@@ -39,6 +39,7 @@ const {
   emitStringProp,
   emitUnionProp,
 } = require('../../parsers-primitives');
+const {getTypeArguments} = require('../../utils');
 
 function getPropertyType(
   /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
@@ -66,7 +67,7 @@ function getPropertyType(
       return getPropertyType(
         name,
         optional,
-        typeAnnotation.typeParameters.params[0],
+        getTypeArguments(typeAnnotation).params[0],
         parser,
       );
     case 'ObjectTypeAnnotation':
@@ -145,7 +146,7 @@ function extractArrayElementType(
       };
     case '$ReadOnlyArray':
     case 'ReadonlyArray':
-      const genericParams = typeAnnotation.typeParameters.params;
+      const genericParams = getTypeArguments(typeAnnotation).params;
       if (genericParams.length !== 1) {
         throw new Error(
           `Events only supports arrays with 1 Generic type. Found ${
@@ -190,7 +191,7 @@ function findEventArgumentsAndType(
   const name = parser.getTypeAnnotationName(typeAnnotation);
   if (name === '$ReadOnly' || name === 'Readonly') {
     return {
-      argumentProps: typeAnnotation.typeParameters.params[0].properties,
+      argumentProps: getTypeArguments(typeAnnotation).params[0].properties,
       paperTopLevelNameDeprecated: paperName,
       bubblingType,
     };

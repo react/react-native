@@ -351,6 +351,73 @@ describe('Animated', () => {
       expect(cb).toBeCalledWith({finished: true});
     });
 
+    it('resets every value after a sequence finishes', () => {
+      const first = new Animated.Value(0);
+      const second = new Animated.Value(10);
+      const sequence = Animated.sequence([
+        Animated.timing(first, {
+          toValue: 1,
+          duration: 0,
+          useNativeDriver: false,
+        }),
+        Animated.timing(second, {
+          toValue: 20,
+          duration: 0,
+          useNativeDriver: false,
+        }),
+      ]);
+      const callback = jest.fn();
+
+      sequence.start(callback);
+      expect(callback).toHaveBeenCalledWith({finished: true});
+      expect(first.__getValue()).toBe(1);
+      expect(second.__getValue()).toBe(20);
+
+      sequence.reset();
+
+      expect(first.__getValue()).toBe(0);
+      expect(second.__getValue()).toBe(10);
+    });
+
+    it('restarts from the first animation after a finished sequence grows', () => {
+      const anim1 = {start: jest.fn()};
+      const anim2 = {start: jest.fn()};
+      const anim3 = {start: jest.fn()};
+      const animations: Array<$FlowFixMe> = [anim1, anim2];
+      const sequence = Animated.sequence(animations);
+
+      sequence.start(jest.fn());
+      anim1.start.mock.calls[0][0]({finished: true});
+      anim2.start.mock.calls[0][0]({finished: true});
+
+      animations.push(anim3);
+      sequence.start(jest.fn());
+
+      expect(anim1.start).toHaveBeenCalledTimes(2);
+      expect(anim3.start).not.toBeCalled();
+    });
+
+    it('does not stop or reset an animation added after the sequence finished', () => {
+      const anim1 = {start: jest.fn(), stop: jest.fn(), reset: jest.fn()};
+      const anim2 = {start: jest.fn(), stop: jest.fn(), reset: jest.fn()};
+      const anim3 = {start: jest.fn(), stop: jest.fn(), reset: jest.fn()};
+      const animations: Array<$FlowFixMe> = [anim1, anim2];
+      const sequence = Animated.sequence(animations);
+
+      sequence.start(jest.fn());
+      anim1.start.mock.calls[0][0]({finished: true});
+      anim2.start.mock.calls[0][0]({finished: true});
+
+      animations.push(anim3);
+      sequence.stop();
+      sequence.reset();
+
+      expect(anim3.stop).not.toBeCalled();
+      expect(anim3.reset).not.toBeCalled();
+      expect(anim1.reset).toBeCalled();
+      expect(anim2.reset).toBeCalled();
+    });
+
     it('supports interrupting sequence', () => {
       const anim1 = {start: jest.fn()};
       const anim2 = {start: jest.fn()};
@@ -695,6 +762,31 @@ describe('Animated', () => {
     // after anim2 is finished, the sequence is finished,
     // hence the loop iteration is finished, so the next iteration starts
     expect(anim1.start).toHaveBeenCalledTimes(2);
+  });
+
+  it('resets every sequence value before the next loop iteration', () => {
+    const first = new Animated.Value(0);
+    const second = new Animated.Value(10);
+    const secondValues: Array<number> = [];
+    first.addListener(() => secondValues.push(second.__getValue()));
+    const sequence = Animated.sequence([
+      Animated.timing(first, {
+        toValue: 1,
+        duration: 0,
+        useNativeDriver: false,
+      }),
+      Animated.timing(second, {
+        toValue: 20,
+        duration: 0,
+        useNativeDriver: false,
+      }),
+    ]);
+    const callback = jest.fn();
+
+    Animated.loop(sequence, {iterations: 2}).start(callback);
+
+    expect(callback).toHaveBeenCalledWith({finished: true});
+    expect(secondValues).toEqual([10, 10]);
   });
 
   describe('Animated Parallel', () => {

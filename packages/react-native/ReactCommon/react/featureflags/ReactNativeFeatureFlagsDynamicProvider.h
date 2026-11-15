@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<481e389d251f72f9e76d1ffee8c749e6>>
+ * @generated SignedSource<<3795a2485df9cdd87b64b3b04460b596>>
  */
 
 /**
@@ -180,15 +180,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
-  }
-
-  bool enableAndroidAutoOffscreenCompositingForElevation() override {
-    auto value = values_["enableAndroidAutoOffscreenCompositingForElevation"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableAndroidAutoOffscreenCompositingForElevation();
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
@@ -612,6 +603,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fixMappingOfEventPrioritiesBetweenFabricAndReact();
+  }
+
+  bool fixTextInlineViewLineHeight() override {
+    auto value = values_["fixTextInlineViewLineHeight"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixTextInlineViewLineHeight();
   }
 
   bool fixTextLayoutOnPixelDensityChange() override {

@@ -8,9 +8,11 @@
 package com.facebook.react.fabric
 
 import com.facebook.jni.HybridClassBase
+import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.NativeMap
 import com.facebook.react.bridge.RuntimeExecutor
 import com.facebook.react.bridge.RuntimeScheduler
+import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.soloader.SoLoader
 
 /**
@@ -99,6 +101,10 @@ private constructor(fabricUIManager: FabricUIManager) : HybridClassBase() {
         useGlobalRef: Boolean,
         uninstall: Boolean,
     ): FabricUIManager
+
+    @DoNotStrip
+    @JvmStatic
+    external fun createWritableNativeMapFromCxx(withContents: Boolean): WritableNativeMap
 
     @JvmStatic
     fun create(fabricUIManager: FabricUIManager): FabricMountingManagerTestHelper {

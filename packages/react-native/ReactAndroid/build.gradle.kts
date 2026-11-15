@@ -196,6 +196,15 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/root/",
                           "react/renderer/components/root/",
                       ),
+                      // rrc_scrollview
+                      Pair(
+                          "../ReactCommon/react/renderer/components/scrollview/",
+                          "react/renderer/components/scrollview/",
+                      ),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/scrollview/platform/android/",
+                          "",
+                      ),
                       // runtimeexecutor
                       Pair("../ReactCommon/runtimeexecutor/", ""),
                       Pair("../ReactCommon/runtimeexecutor/platform/cxx/", ""),

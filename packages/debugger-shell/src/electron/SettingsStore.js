@@ -16,7 +16,7 @@ const path = require('node:path');
 
 type Options = Readonly<{
   name?: string,
-  defaults?: Object,
+  defaults?: {...},
 }>;
 
 /**

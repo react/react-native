@@ -23,7 +23,6 @@
 #import "RCTInspectorUtils.h"
 #import "RCTJSThread.h"
 #import "RCTLog.h"
-#import "RCTPausedInDebuggerOverlayController.h"
 #import "RCTPerformanceLogger.h"
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
@@ -218,6 +217,13 @@ void RCTSetTurboModuleInteropBridgeProxyLogLevel(RCTBridgeProxyLoggingLevel logL
 }
 
 @implementation RCTBridge
+- (void)enqueueJSCall:(NSString *)module
+               method:(NSString *)method
+                 args:(NSArray *)args
+           completion:(__strong dispatch_block_t)completion
+{
+}
+
 - (void)registerSegmentWithId:(NSUInteger)segmentId path:(NSString *)path
 {
 }

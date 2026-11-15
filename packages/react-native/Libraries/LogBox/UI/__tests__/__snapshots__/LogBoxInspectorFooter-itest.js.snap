@@ -32,58 +32,73 @@ exports[`LogBoxInspectorFooter should render two buttons for error 1`] = `
   flexDirection="row"
 >
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_dismiss"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_dismiss"
     >
-      Dismiss
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Dismiss
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_minimize"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_minimize"
     >
-      Minimize
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Minimize
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_copy"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_copy"
     >
-      Copy
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Copy
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
 </rn-view>
 `;
@@ -94,58 +109,73 @@ exports[`LogBoxInspectorFooter should render two buttons for fatal 1`] = `
   flexDirection="row"
 >
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_dismiss"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_dismiss"
     >
-      Dismiss
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Dismiss
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_minimize"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_minimize"
     >
-      Minimize
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Minimize
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_copy"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_copy"
     >
-      Copy
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Copy
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
 </rn-view>
 `;
@@ -156,58 +186,73 @@ exports[`LogBoxInspectorFooter should render two buttons for warning 1`] = `
   flexDirection="row"
 >
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_dismiss"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_dismiss"
     >
-      Dismiss
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Dismiss
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_minimize"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_minimize"
     >
-      Minimize
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Minimize
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
   <rn-view
-    accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
-    accessible="true"
-    nativeID="logbox_footer_button_copy"
+    experimental_onSafeAreaInsetsChange="true"
+    flex="1"
   >
-    <rn-paragraph
-      allowFontScaling="true"
-      ellipsizeMode="tail"
-      fontSizeMultiplier="NaN"
-      foregroundColor="rgba(255, 255, 255, 1)"
-      includeFontPadding="false"
-      lineHeight="20"
-      maxFontSizeMultiplier="1.5"
-      overflow="hidden"
+    <rn-view
+      accessibilityState="{disabled:false,selected:null,checked:None,busy:false,expanded:null}"
+      accessible="true"
+      nativeID="logbox_footer_button_copy"
     >
-      Copy
-    </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(255, 255, 255, 1)"
+        includeFontPadding="false"
+        lineHeight="20"
+        maxFontSizeMultiplier="1.5"
+        overflow="hidden"
+      >
+        Copy
+      </rn-paragraph>
+    </rn-view>
   </rn-view>
 </rn-view>
 `;

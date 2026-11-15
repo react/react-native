@@ -15,9 +15,15 @@ import com.facebook.proguard.annotations.DoNotStrip
  * to stub out creating this class in a test. TODO(5815532): Check if consumed on read
  */
 @DoNotStrip
-public class WritableNativeMap : ReadableNativeMap(), WritableMap {
+public class WritableNativeMap @DoNotStrip private constructor(initializeNative: Boolean) :
+    ReadableNativeMap(), WritableMap {
+  /** Creates an empty writable map backed by native memory. */
+  public constructor() : this(true)
+
   init {
-    initHybrid()
+    if (initializeNative) {
+      initHybrid()
+    }
   }
 
   external override fun putBoolean(key: String, value: Boolean)

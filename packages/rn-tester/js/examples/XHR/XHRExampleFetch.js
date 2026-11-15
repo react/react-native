@@ -10,6 +10,7 @@
 
 'use strict';
 
+import RNTesterText from '../../components/RNTesterText';
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
 import * as React from 'react';
 import {
@@ -68,9 +69,9 @@ class XHRExampleFetch extends React.Component<any, any> {
       // $FlowFixMe[incompatible-use]
       const value = this.responseHeaders.get(key);
       responseHeaders.push(
-        <Text>
+        <RNTesterText>
           {key}: {value}
-        </Text>,
+        </RNTesterText>,
       );
     }
     return responseHeaders;
@@ -104,7 +105,7 @@ class XHRExampleFetch extends React.Component<any, any> {
     const responseURL = this.responseURL ? (
       <View style={{marginTop: 10}}>
         <Text style={styles.label}>Server response URL:</Text>
-        <Text>{this.responseURL}</Text>
+        <RNTesterText>{this.responseURL}</RNTesterText>
       </View>
     ) : null;
 

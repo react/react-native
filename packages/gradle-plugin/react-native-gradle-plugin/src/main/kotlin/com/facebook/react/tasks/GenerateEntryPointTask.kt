@@ -76,8 +76,6 @@ abstract class GenerateEntryPointTask : DefaultTask() {
         import com.facebook.react.soloader.OpenSourceMergedSoMapping;
         import com.facebook.soloader.SoLoader;
 
-        import java.io.IOException;
-
         /**
           * This class is the entry point for loading React Native using the configuration
           * that the users specifies in their .gradle files.
@@ -87,11 +85,7 @@ abstract class GenerateEntryPointTask : DefaultTask() {
           */
         public class ReactNativeApplicationEntryPoint {
           public static void loadReactNative(Context context) {
-            try {
-               SoLoader.init(context, OpenSourceMergedSoMapping.INSTANCE);
-            } catch (IOException error) {
-              throw new RuntimeException(error);
-            }
+            SoLoader.init(context, OpenSourceMergedSoMapping.INSTANCE);
             
             if ({{packageName}}.BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
               DefaultNewArchitectureEntryPoint.load();

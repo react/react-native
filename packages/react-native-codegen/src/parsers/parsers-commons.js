@@ -72,6 +72,7 @@ const {
   extractNativeModuleName,
   getConfigType,
   getSortedObject,
+  getTypeArguments,
   isModuleRegistryCall,
   verifyPlatforms,
   visit,
@@ -141,7 +142,7 @@ function assertGenericTypeAnnotationHasExactlyOneTypeParameter(
   typeAnnotation: $FlowFixMe,
   parser: Parser,
 ) {
-  if (typeAnnotation.typeParameters == null) {
+  if (getTypeArguments(typeAnnotation) == null) {
     throw new MissingTypeParameterGenericParserError(
       moduleName,
       typeAnnotation,
@@ -152,11 +153,11 @@ function assertGenericTypeAnnotationHasExactlyOneTypeParameter(
   const typeAnnotationType = parser.typeParameterInstantiation;
 
   invariant(
-    typeAnnotation.typeParameters.type === typeAnnotationType,
+    getTypeArguments(typeAnnotation).type === typeAnnotationType,
     `assertGenericTypeAnnotationHasExactlyOneTypeParameter: Type parameters must be an AST node of type '${typeAnnotationType}'`,
   );
 
-  if (typeAnnotation.typeParameters.params.length !== 1) {
+  if (getTypeArguments(typeAnnotation).params.length !== 1) {
     throw new MoreThanOneTypeParameterGenericParserError(
       moduleName,
       typeAnnotation,
@@ -195,9 +196,9 @@ function getObjectTypeAnnotations(
     if (
       parent.type === 'GenericTypeAnnotation' &&
       (parent.id?.name === '$ReadOnly' || parent.id?.name === 'Readonly') &&
-      parent.typeParameters?.params?.length === 1
+      getTypeArguments(parent)?.params?.length === 1
     ) {
-      parent = parent.typeParameters.params[0];
+      parent = getTypeArguments(parent).params[0];
     } else if (
       parent.type === 'TSTypeReference' &&
       parent.typeName?.name === 'Readonly' &&
@@ -513,12 +514,12 @@ function buildEventEmitterSchema(
   const resolveTypeAnnotationFN = parser.getResolveTypeAnnotationFN();
   const [typeAnnotation, typeAnnotationNullable] = unwrapNullable(value);
   const typeAnnotationUntyped =
-    value.typeParameters.params.length === 1 &&
+    getTypeArguments(value).params.length === 1 &&
     parser.language() === 'TypeScript'
-      ? value.typeParameters.params[0].type === 'TSTypeLiteral' &&
-        value.typeParameters.params[0].members.length === 0
-      : value.typeParameters.params[0].type === 'ObjectTypeAnnotation' &&
-        value.typeParameters.params[0].properties.length === 0;
+      ? getTypeArguments(value).params[0].type === 'TSTypeLiteral' &&
+        getTypeArguments(value).params[0].members.length === 0
+      : getTypeArguments(value).params[0].type === 'ObjectTypeAnnotation' &&
+        getTypeArguments(value).params[0].properties.length === 0;
 
   throwIfEventEmitterTypeIsUnsupported(
     hasteModuleName,
@@ -529,7 +530,7 @@ function buildEventEmitterSchema(
     typeAnnotationUntyped,
   );
   const eventTypeResolutionStatus = resolveTypeAnnotationFN(
-    typeAnnotation.typeParameters.params[0],
+    getTypeArguments(typeAnnotation).params[0],
     types,
     parser,
   );
@@ -543,7 +544,7 @@ function buildEventEmitterSchema(
 
   const eventTypeAnnotation = translateTypeAnnotation(
     hasteModuleName,
-    typeAnnotation.typeParameters.params[0],
+    getTypeArguments(typeAnnotation).params[0],
     types,
     aliasMap,
     enumMap,
@@ -554,7 +555,7 @@ function buildEventEmitterSchema(
 
   throwIfEventEmitterPayloadTypeIsUnsupported(
     hasteModuleName,
-    typeAnnotation.typeParameters.params[0],
+    getTypeArguments(typeAnnotation).params[0],
     key.name,
     eventTypeAnnotation,
   );
@@ -1341,7 +1342,7 @@ function handleEventHandler(
   const paperTopLevelNameDeprecated =
     parser.getPaperTopLevelNameDeprecated(typeAnnotation);
 
-  switch (typeAnnotation.typeParameters.params[0].type) {
+  switch (getTypeArguments(typeAnnotation).params[0].type) {
     case parser.nullLiteralTypeAnnotation:
     case parser.undefinedLiteralTypeAnnotation:
       return {
@@ -1352,7 +1353,7 @@ function handleEventHandler(
     default:
       return findEventArgumentsAndType(
         parser,
-        typeAnnotation.typeParameters.params[0],
+        getTypeArguments(typeAnnotation).params[0],
         types,
         eventType,
         paperTopLevelNameDeprecated,
