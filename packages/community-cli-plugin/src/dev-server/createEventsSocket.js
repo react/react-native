@@ -19,7 +19,7 @@ const PROTOCOL_VERSION = 2;
 type Options = Readonly<{
   logger: Logger,
   serverBaseUrl: URL,
-  broadcast: (method: string, params?: ?{[string]: unknown}) => void,
+  broadcast: (method: string, params?: ?{[key: string]: unknown}) => void,
 }>;
 
 /**
@@ -97,7 +97,7 @@ export default function createEventsSocket({
 function parseCommand(
   data: unknown,
   logger: Logger,
-): ?Readonly<{command: string, params: ?{[string]: unknown}}> {
+): ?Readonly<{command: string, params: ?{[key: string]: unknown}}> {
   let message;
   try {
     message = JSON.parse(String(data));

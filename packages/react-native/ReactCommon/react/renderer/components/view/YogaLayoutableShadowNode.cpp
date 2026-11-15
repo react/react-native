@@ -347,6 +347,17 @@ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
   }
 }
 
+// Every clone gets its own Yoga config, and `setConfig()` re-aligns the
+// layout's `configVersion` with it, so that field says nothing about whether
+// two nodes carry the same layout. Everything else has to match.
+static bool hasSameLayoutResults(
+    const yoga::Node& yogaNode,
+    const yoga::Node& otherYogaNode) {
+  auto layout = yogaNode.getLayout();
+  layout.configVersion = otherYogaNode.getLayout().configVersion;
+  return layout == otherYogaNode.getLayout();
+}
+
 void YogaLayoutableShadowNode::updateYogaChildren() {
   if (getTraits().check(ShadowNodeTraits::Trait::LeafYogaNode)) {
     return;
@@ -386,8 +397,11 @@ void YogaLayoutableShadowNode::updateYogaChildren() {
         auto& newYogaChildNode =
             yogaLayoutableChildren_.at(yogaChildIndex)->yogaNode_;
 
+        // A clean child styled the same can still carry another layout, e.g. a
+        // revision zeroed out under a `display: none` clone of this node.
         isClean = isClean && !newYogaChildNode.isDirty() &&
-            (newYogaChildNode.style() == oldYogaChildNode.style());
+            (newYogaChildNode.style() == oldYogaChildNode.style()) &&
+            hasSameLayoutResults(newYogaChildNode, oldYogaChildNode);
       }
     }
   }

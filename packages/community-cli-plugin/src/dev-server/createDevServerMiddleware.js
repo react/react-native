@@ -32,7 +32,7 @@ type DevServerMiddleware = Readonly<{
   middleware: Server,
   websocketEndpoints: {[path: string]: ws$WebSocketServer},
   messageSocket: Readonly<{
-    broadcast: (method: string, params?: ?{[string]: unknown}) => void,
+    broadcast: (method: string, params?: ?{[key: string]: unknown}) => void,
   }>,
   eventsSocket: Readonly<{
     reportEvent: (event: unknown) => void,
