@@ -235,9 +235,12 @@ static const CGFloat RCTSelectionHandleGrabRadius = 24.0;
 
 - (void)_handleTapToDismissSelection:(UITapGestureRecognizer *)recognizer
 {
-  // A tap on the text itself belongs to the text view, which moves or clears
-  // the selection on its own.
-  if ([self pointInside:[recognizer locationInView:self] withEvent:nil]) {
+  // A tap that lands on the text view belongs to it, and it moves or clears
+  // the selection on its own. An inline view of the paragraph is inside the
+  // frame of the text view but takes its own taps, so the frame can't tell.
+  UIView *rootView = recognizer.view;
+  UIView *hitView = [rootView hitTest:[recognizer locationInView:rootView] withEvent:nil];
+  if ([hitView isDescendantOfView:self]) {
     return;
   }
 

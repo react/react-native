@@ -252,6 +252,47 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
 @end
 
 /*
+ * A tap that reports one point in one view, for the recognizer action that
+ * clears the selection.
+ */
+@interface RCTParagraphSelectionTap : UITapGestureRecognizer
+
++ (instancetype)tapOnView:(UIView *)view atPoint:(CGPoint)point;
+
+@end
+
+@implementation RCTParagraphSelectionTap {
+  __weak UIView *_tapView;
+  CGPoint _point;
+}
+
++ (instancetype)tapOnView:(UIView *)view atPoint:(CGPoint)point
+{
+  RCTParagraphSelectionTap *tap = [self new];
+  tap->_tapView = view;
+  tap->_point = point;
+  return tap;
+}
+
+- (UIView *)view
+{
+  return _tapView;
+}
+
+- (CGPoint)locationInView:(UIView *)view
+{
+  return [_tapView convertPoint:_point toView:view];
+}
+
+@end
+
+@interface UITextView (RCTParagraphSelectionTests)
+
+- (void)_handleTapToDismissSelection:(UITapGestureRecognizer *)recognizer;
+
+@end
+
+/*
  * Covers `<Text selectable>` on iOS. Selection is provided by a `UITextView`
  * that lays the paragraph out but never paints it, while
  * `RCTParagraphComponentView` keeps drawing the glyphs. These tests hold that
@@ -1509,6 +1550,33 @@ class RCTParagraphSelectionFeatureFlags : public ReactNativeFeatureFlagsDefaults
   XCTAssertNotEqual([self selectionTextViewIn:view], selectionTextView);
   XCTAssertEqual(
       [view hitTest:onInlineView withEvent:nil], inlineView, @"A rebuilt text view must not take the touch either.");
+}
+
+/*
+ * A tap outside the text clears the selection. An inline view is inside the
+ * frame of the selection text view, but a tap on it is not a tap on the text.
+ */
+- (void)testATapOnAnInlineViewClearsTheSelection
+{
+  RCTParagraphComponentView *view = [self paragraphViewSelectable:YES];
+  [self mountInlineViewIn:view];
+  UIView *rootView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 400)];
+  UIWindow *window = [self windowWithRootView:rootView paragraphs:@[ view ]];
+  [window makeKeyAndVisible];
+
+  UITextView *selectionTextView = [self selectionTextViewAfterTouchIn:view];
+  XCTAssertTrue([selectionTextView becomeFirstResponder]);
+  selectionTextView.selectedRange = NSMakeRange(3, 5);
+
+  [selectionTextView _handleTapToDismissSelection:[RCTParagraphSelectionTap tapOnView:view
+                                                                              atPoint:CGPointMake(20, 10)]];
+  XCTAssertEqual(selectionTextView.selectedRange.length, 5, @"A tap on the text is the text view's own to handle.");
+
+  [selectionTextView _handleTapToDismissSelection:[RCTParagraphSelectionTap tapOnView:view
+                                                                              atPoint:CGPointMake(225, 55)]];
+  XCTAssertEqual(selectionTextView.selectedRange.length, 0, @"A tap on an inline view must clear the selection.");
+
+  window.hidden = YES;
 }
 
 /*
