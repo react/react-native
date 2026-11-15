@@ -273,6 +273,7 @@ const RNTesterApp = ({
     return null;
   }
 
+  const isIOS = Platform.OS === 'ios';
   const activeModule =
     // $FlowFixMe[invalid-computed-prop]
     activeModuleKey != null ? RNTesterList.Modules[activeModuleKey] : null;
@@ -289,7 +290,7 @@ const RNTesterApp = ({
 
   const BackButtonComponent: ?BackButton = customBackButton
     ? customBackButton
-    : Platform.OS === 'ios'
+    : isIOS
       ? ({onBack}) => (
           <Button title="Back" onPress={onBack} color={theme.LinkColor} />
         )
@@ -322,17 +323,19 @@ const RNTesterApp = ({
           module={activeModule}
           example={activeModuleExample}
           onExampleCardPress={handleModuleExampleCardPress}
+          bottomInset={isIOS ? contentInsets.bottom : undefined}
         />
       ) : (
         <RNTesterModuleList
           sections={activeExampleList}
           handleModuleCardPress={handleModuleCardPress}
+          bottomInset={isIOS ? contentInsets.bottom : 0}
         />
       )}
     </View>
   );
 
-  if (Platform.OS === 'ios') {
+  if (isIOS) {
     return (
       <RNTesterThemeContext.Provider value={theme}>
         <RNTesterTabsIOS
@@ -352,7 +355,6 @@ const RNTesterApp = ({
               backgroundColor: theme.GroupedBackgroundColor,
               paddingLeft: contentInsets.left,
               paddingRight: contentInsets.right,
-              paddingBottom: contentInsets.bottom,
             })}>
             <View
               style={{
@@ -371,7 +373,7 @@ const RNTesterApp = ({
 
   return (
     <RNTesterThemeContext.Provider value={theme}>
-      {Platform.OS === 'android' ? <StatusBar barStyle="dark-content" /> : null}
+      <StatusBar barStyle="dark-content" />
       {titleBar}
       {content}
       {!shouldHideChrome && (
