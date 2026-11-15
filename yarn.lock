@@ -4884,27 +4884,29 @@ flow-estree@0.340.0:
   resolved "https://registry.yarnpkg.com/flow-estree/-/flow-estree-0.340.0.tgz#e86e368f5f33f4f5cc8871a18d3f79122569ebc2"
   integrity sha512-LpYdzPWHsfDAc5nNmVrUPLo8UedFkJqogIxNyVO19tG7qBhvNwjs+Oo4TfWB+2Qa4arFevu3vdbxR5tfWps53g==
 
-flow-parser@0.336.0, flow-parser@^0.336.0:
+flow-parser@0.336.0:
   version "0.336.0"
   resolved "https://registry.yarnpkg.com/flow-parser/-/flow-parser-0.336.0.tgz#5c34f8a97edfa241d3e71c7a1dcd99a56b1cc2bc"
   integrity sha512-O8QvQf/B3rBF+eagcc9/WMAjfJoaKckdgSd8PT/qvMIIe4ZjVKrSqV5SDnRFAKY0VrE8r5C4ADYgvYhmwkWADA==
   dependencies:
     flow-estree "0.336.0"
 
-flow-parser@0.340.0:
+flow-parser@0.340.0, flow-parser@^0.340.0:
   version "0.340.0"
   resolved "https://registry.yarnpkg.com/flow-parser/-/flow-parser-0.340.0.tgz#7e1790634772a462612cc3d3347e2979ca4261af"
   integrity sha512-zB1DgZcBVes/hHj/upWKLhukHAIkj+6g2o0yVnxCxS1Wyi/YLX513w8XpFLJ7/LUrbSE7CIHJAEZ94smHujt9Q==
   dependencies:
     flow-estree "0.340.0"
 
-flow-remove-types@^2.336.0:
-  version "2.336.0"
-  resolved "https://registry.yarnpkg.com/flow-remove-types/-/flow-remove-types-2.336.0.tgz#0131b825a84dc216553e09e4e6597975bd25c77b"
-  integrity sha512-B1VuB3FPAsPTwIDJ7n+UElnKMnuwXBfbFRoLFKiNvbmqRQoramUydtUPqZ7bB8ot23pquOMGmu9fkqH7IxAsDA==
+flow-remove-types@^2.340.0:
+  version "2.340.0"
+  resolved "https://registry.yarnpkg.com/flow-remove-types/-/flow-remove-types-2.340.0.tgz#af66f963cd78baab59c085ca84f02408a3b6e50e"
+  integrity sha512-lrJaLAXvu1Ah1o9G4g+lBM1kiMYQ7CzhURFSxISfVvNNpmS6Zu+7ZPeQfdIFXivta1H+sElnRhRi+fhajKUL9A==
   dependencies:
-    flow-parser "^0.336.0"
+    flow-enums-runtime "^0.0.6"
+    flow-parser "^0.340.0"
     pirates "^3.0.2"
+    source-map-support "^0.5.21"
     vlq "^0.2.1"
 
 flow-transform@0.340.0:
@@ -8626,7 +8628,7 @@ source-map-support@0.5.13:
     buffer-from "^1.0.0"
     source-map "^0.6.0"
 
-source-map-support@^0.5.16, source-map-support@~0.5.20:
+source-map-support@^0.5.16, source-map-support@^0.5.21, source-map-support@~0.5.20:
   version "0.5.21"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.21.tgz#04fe7c7f9e1ed2d662233c28cb2b35b9f63f6e4f"
   integrity sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==
