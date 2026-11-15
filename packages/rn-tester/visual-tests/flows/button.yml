@@ -4,10 +4,9 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ButtonExample/default-styling
-      EXAMPLE_ID: button_default_styling
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'button_default_styling'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000
@@ -19,10 +18,9 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ButtonExample/disabled
-      EXAMPLE_ID: disabled_button
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'disabled_button'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000
@@ -34,10 +32,9 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ButtonExample/color-red
-      EXAMPLE_ID: cancel_button
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'cancel_button'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000
@@ -49,10 +46,9 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/ButtonExample/two-buttons-flexbox
-      EXAMPLE_ID: two_cancel_button
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'two_cancel_button'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000

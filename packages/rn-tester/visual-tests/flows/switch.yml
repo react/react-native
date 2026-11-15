@@ -4,7 +4,6 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/SwitchExample/basic
-      EXAMPLE_ID: on-off-initial-off
 - extendedWaitUntil:
     visible:
       id: 'on-off-initial-off'
@@ -39,10 +38,9 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/SwitchExample/disabled
-      EXAMPLE_ID: disabled-initial-off
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'disabled-initial-off'
     timeout: 15000
 - assertVisible:
     id: 'disabled-initial-off'
@@ -64,7 +62,6 @@ appId: ${APP_ID}
     file: ../helpers/open-example.yml
     env:
       EXAMPLE_URL: rntester://example/SwitchExample/custom-colors
-      EXAMPLE_ID: initial-false-switch
 - extendedWaitUntil:
     visible:
       id: 'initial-false-switch'
