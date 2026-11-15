@@ -10,7 +10,6 @@
 
 import type {NextHandleFunction} from 'connect';
 
-import isAllowedOrigin from './isAllowedOrigin';
 import readJSONBody from './readJSONBody';
 import launchEditor from 'launch-editor';
 import fs from 'node:fs';
@@ -19,7 +18,6 @@ import path from 'node:path';
 const LAUNCH_THROTTLE_MS = 2000;
 
 type Options = Readonly<{
-  serverBaseUrl: URL,
   watchFolders: ReadonlyArray<string>,
 }>;
 
@@ -34,7 +32,6 @@ type StackFrame = Readonly<{
  * inside one of `watchFolders`; a relative path resolves against the first.
  */
 export default function openStackFrameMiddleware({
-  serverBaseUrl,
   watchFolders,
 }: Options): NextHandleFunction {
   const rootsPromise = Promise.all(
@@ -46,17 +43,8 @@ export default function openStackFrameMiddleware({
   let lastLaunchTime = -Infinity;
 
   return async (req, res, next) => {
-    // `@react-native-community/cli-server-api` before v21, mounted ahead of
-    // this middleware, serves this route and calls `next()` after responding.
-    if (req.method !== 'POST' || res.writableEnded) {
+    if (req.method !== 'POST') {
       next();
-      return;
-    }
-
-    const {origin} = req.headers;
-    if (typeof origin === 'string' && !isAllowedOrigin(origin, serverBaseUrl)) {
-      res.writeHead(403);
-      res.end('Unauthorized origin');
       return;
     }
 

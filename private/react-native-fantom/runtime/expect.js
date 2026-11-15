@@ -133,7 +133,7 @@ class Expect {
   }
 
   toBe(expected: unknown): void {
-    const pass = this.#received === expected;
+    const pass = Object.is(this.#received, expected);
     if (!this.#isExpectedResult(pass)) {
       throw new ErrorWithCustomBlame(
         `Expected${this.#maybeNotLabel()} ${String(expected)} but received ${String(this.#received)}.`,
@@ -150,9 +150,23 @@ class Expect {
     }
   }
 
-  toBeCloseTo(expected: number, precision: number = 2): void {
+  toBeCloseTo(expected: unknown, precision: number = 2): void {
+    const received = this.#received;
+    if (typeof expected !== 'number') {
+      throw new ErrorWithCustomBlame(
+        `Expected ${String(expected)} to be a number but it was a ${typeof expected}`,
+      ).blameToPreviousFrame();
+    }
+    if (typeof received !== 'number') {
+      throw new ErrorWithCustomBlame(
+        `Expected ${String(received)} to be a number but it was a ${typeof received}`,
+      ).blameToPreviousFrame();
+    }
+
     const pass =
-      Math.abs(expected - Number(this.#received)) < Math.pow(10, -precision);
+      (received === Infinity && expected === Infinity) ||
+      (received === -Infinity && expected === -Infinity) ||
+      Math.abs(expected - received) < Math.pow(10, -precision) / 2;
     if (!this.#isExpectedResult(pass)) {
       throw new ErrorWithCustomBlame(
         `Expected ${String(this.#received)}${this.#maybeNotLabel()} to be close to ${expected}`,
@@ -179,7 +193,7 @@ class Expect {
   }
 
   toBeNull(): void {
-    const pass = this.#received == null;
+    const pass = Object.is(this.#received, null);
     if (!this.#isExpectedResult(pass)) {
       throw new ErrorWithCustomBlame(
         `Expected ${String(this.#received)}${this.#maybeNotLabel()} to be null`,

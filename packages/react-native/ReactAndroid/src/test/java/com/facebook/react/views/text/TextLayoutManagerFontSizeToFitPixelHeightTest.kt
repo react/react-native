@@ -26,11 +26,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.GraphicsMode
-import org.robolectric.annotation.TextLayoutMode
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@TextLayoutMode(TextLayoutMode.Mode.REALISTIC)
 @SuppressLint("InlinedApi")
 class TextLayoutManagerFontSizeToFitPixelHeightTest {
 

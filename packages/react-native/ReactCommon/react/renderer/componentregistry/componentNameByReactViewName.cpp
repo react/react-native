@@ -51,13 +51,6 @@ std::string componentNameByReactViewName(std::string viewName) {
     return "PullToRefreshView";
   }
 
-  // We need this temporarily for testing purposes until we have proper
-  // implementation of core components.
-  // iOS-only
-  if (viewName == "ScrollContentView") {
-    return "View";
-  }
-
   // iOS-only
   if (viewName == "MultilineTextInputView" ||
       viewName == "SinglelineTextInputView") {

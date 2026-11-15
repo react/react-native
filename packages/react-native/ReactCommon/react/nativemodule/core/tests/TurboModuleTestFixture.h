@@ -84,6 +84,7 @@ class TurboModuleTestFixture : public TurboModuleTestFixtureInternal, public ::t
   void TearDown() override
   {
     module_ = nullptr;
+    LongLivedObjectCollection::get(*runtime_).clear(*runtime_);
     jsInvoker_ = nullptr;
     runtime_ = nullptr;
   }

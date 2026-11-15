@@ -8,6 +8,8 @@
 #include "AnimatedPropsRegistry.h"
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/core/PropsParserContext.h>
+#include <algorithm>
+#include <cstring>
 #include "AnimatedProps.h"
 
 namespace facebook::react {
@@ -22,6 +24,37 @@ void mergeAnimatedRawProps(
   for (const auto& [key, value] : source.items()) {
     target[key] = value;
   }
+}
+
+std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>
+childrenWithText(
+    const ShadowNode& shadowNode,
+    const ShadowNodeFragment& fragment,
+    const std::string& text) {
+  const auto& children =
+      fragment.children ? *fragment.children : shadowNode.getChildren();
+  const auto rawText =
+      std::find_if(children.begin(), children.end(), [](const auto& child) {
+        return std::strcmp(child->getComponentName(), "RawText") == 0;
+      });
+  if (rawText == children.end()) {
+    return fragment.children;
+  }
+
+  const auto& rawTextNode = **rawText;
+  PropsParserContext propsParserContext{
+      rawTextNode.getSurfaceId(), *rawTextNode.getContextContainer()};
+  auto newProps = rawTextNode.getComponentDescriptor().cloneProps(
+      propsParserContext,
+      rawTextNode.getProps(),
+      RawProps(folly::dynamic::object("text", text)));
+
+  auto newChildren =
+      std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>(
+          children);
+  (*newChildren)[std::distance(children.begin(), rawText)] =
+      rawTextNode.clone({.props = newProps});
+  return newChildren;
 }
 
 void AnimatedPropsRegistry::update(
@@ -60,6 +93,9 @@ void AnimatedPropsRegistry::update(
           currentRawProps =
               std::make_unique<folly::dynamic>(newRawProps.toDynamic());
         }
+      }
+      if (animatedProps.text) {
+        snapshot->text = animatedProps.text;
       }
       if (!animatedProps.props.empty() && !snapshot->props) {
         snapshot->props = std::make_unique<BaseViewProps>();
@@ -101,6 +137,9 @@ AnimatedPropsRegistry::getMap(SurfaceId surfaceId) {
         } else {
           currentSnapshot->rawProps = std::move(propsSnapshot->rawProps);
         }
+      }
+      if (propsSnapshot->text) {
+        currentSnapshot->text = std::move(propsSnapshot->text);
       }
       if (!currentSnapshot->props) {
         currentSnapshot->props = std::move(propsSnapshot->props);

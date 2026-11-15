@@ -39,61 +39,52 @@ class AsyncPromise {
             },
             jsInvoker));
 
-    auto promiseHolder = std::make_shared<PromiseHolder>(rt, promise.asObject(rt));
-    LongLivedObjectCollection::get(rt).add(promiseHolder);
-
-    // The shared state can retain the promise holder weakly now.
-    state_->promiseHolder = promiseHolder;
+    state_->promiseHandle = LongLivedObjectHandle<jsi::Object>(rt, promise.asObject(rt), jsInvoker);
   }
 
   void resolve(T... value)
   {
-    std::lock_guard<std::mutex> lock(state_->mutex);
+    std::optional<AsyncCallback<T...>> resolve;
+    std::optional<AsyncCallback<Error>> reject;
+    {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      resolve = std::exchange(state_->resolve, std::nullopt);
+      reject = std::exchange(state_->reject, std::nullopt);
+    }
 
-    if (state_->resolve) {
-      state_->resolve->call(std::forward<T>(value)...);
-      state_->resolve.reset();
-      state_->reject.reset();
+    if (resolve) {
+      resolve->call(std::forward<T>(value)...);
     }
   }
 
   void reject(Error error)
   {
-    std::lock_guard<std::mutex> lock(state_->mutex);
+    std::optional<AsyncCallback<T...>> resolve;
+    std::optional<AsyncCallback<Error>> reject;
+    {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      resolve = std::exchange(state_->resolve, std::nullopt);
+      reject = std::exchange(state_->reject, std::nullopt);
+    }
 
-    if (state_->reject) {
-      state_->reject->call(std::move(error));
-      state_->reject.reset();
-      state_->resolve.reset();
+    if (reject) {
+      reject->call(std::move(error));
     }
   }
 
   jsi::Object get(jsi::Runtime &rt) const
   {
-    if (auto holder = state_->promiseHolder.lock()) {
-      return jsi::Value(rt, holder->promise).asObject(rt);
+    if (auto holder = state_->promiseHandle.lockJSValue(rt)) {
+      return jsi::Value(rt, holder->value).asObject(rt);
     } else {
       throw jsi::JSError(rt, "Failed to get invalidated promise");
     }
   }
 
  private:
-  struct PromiseHolder : LongLivedObject {
-    PromiseHolder(jsi::Runtime &runtime, jsi::Object p) : LongLivedObject(runtime), promise(std::move(p)) {}
-
-    jsi::Object promise;
-  };
-
   struct SharedState {
-    ~SharedState()
-    {
-      if (auto holder = promiseHolder.lock()) {
-        holder->allowRelease();
-      }
-    }
-
     std::mutex mutex;
-    std::weak_ptr<PromiseHolder> promiseHolder;
+    LongLivedObjectHandle<jsi::Object> promiseHandle;
     std::optional<AsyncCallback<T...>> resolve;
     std::optional<AsyncCallback<Error>> reject;
   };

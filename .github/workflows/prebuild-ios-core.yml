@@ -25,12 +25,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Set Hermes version
+        shell: bash
+        env:
+          USE_HERMES_PREBUILT: ${{ inputs.use-hermes-prebuilt }}
+        run: |
+          if [ "$USE_HERMES_PREBUILT" == "true" ]; then
+            HERMES_VERSION=$(curl --fail --silent --show-error --retry 3 https://registry.npmjs.org/hermes-compiler/latest-v1 | jq -er '.version')
+          else
+            HERMES_VERSION=$(sed -n 's/^HERMES_VERSION_NAME=//p' packages/react-native/sdks/hermes-engine/version.properties)
+          fi
+          test -n "$HERMES_VERSION"
+          echo "HERMES_VERSION=$HERMES_VERSION" >> "$GITHUB_ENV"
       - name: Restore cache if present
         id: restore-ios-slice
+        if: inputs.version-type == ''
         uses: actions/cache/restore@v5
         with:
-          key: v3-ios-core-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
-          path: packages/react-native/
+          key: v4-ios-core-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashFiles('.github/workflows/prebuild-ios-*.yml', '.github/actions/setup-*/action.yml', '.github/actions/yarn-install/action.yml', 'package.json', 'yarn.lock', 'babel.config.js', 'scripts/build/**/*', 'scripts/releases/ios-prebuild/**/*', 'scripts/releases/prepare-ios-prebuilds.js', 'packages/react-native/package.json', 'packages/react-native/Package.swift', 'packages/react-native/scripts/**/*', 'packages/react-native-codegen/**/*', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*', 'packages/react-native/src/private/specs*/**/*', 'packages/react-native/src/**/Native*.js', 'packages/react-native/src/**/*NativeComponent.js', 'packages/react-native/third-party-podspecs/**/PrivacyInfo.xcprivacy', 'packages/react-native/sdks/hermes-engine/version.properties', '!packages/react-native/Libraries/**/*.js', '!packages/react-native/Libraries/**/*.js.flow', '!packages/react-native/Libraries/**/*.ts', '!packages/react-native/Libraries/**/*.tsx') }}-${{ env.HERMES_VERSION }}
+          path: |
+            packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+            packages/react-native/.build/headers
       - name: Setup node.js
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-node
@@ -40,19 +55,6 @@ jobs:
       - name: Yarn Install
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
-      - name: Set Hermes version
-        shell: bash
-        run: |
-          # Non-stable RN builds resolve Hermes from npm's latest-v1 dist-tag.
-          # TODO: rename 'latest-v1' to 'latest' once V1 is the only Hermes on npm.
-          # Stable builds use the version pinned in version.properties.
-          if [ "${{ inputs.use-hermes-prebuilt }}" == "true" ]; then
-            HERMES_VERSION="latest-v1"
-          else
-            HERMES_VERSION=$(sed -n 's/^HERMES_VERSION_NAME=//p' packages/react-native/sdks/hermes-engine/version.properties)
-          fi
-          echo "Using Hermes version: $HERMES_VERSION"
-          echo "HERMES_VERSION=$HERMES_VERSION" >> $GITHUB_ENV
       - name: Set React Native version
         shell: bash
         run: |
@@ -108,9 +110,9 @@ jobs:
             packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
       - name: Save Cache
         uses: actions/cache/save@v5
-        if: ${{ github.ref == 'refs/heads/main' }} # To avoid that the cache explode
+        if: ${{ github.ref == 'refs/heads/main' && inputs.version-type == '' && steps.restore-ios-slice.outputs.cache-hit != 'true' }}
         with:
-          key: v3-ios-core-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: ${{ steps.restore-ios-slice.outputs.cache-primary-key }}
           path: |
             packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
             packages/react-native/.build/headers
@@ -128,12 +130,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Set Hermes version
+        shell: bash
+        env:
+          USE_HERMES_PREBUILT: ${{ inputs.use-hermes-prebuilt }}
+        run: |
+          if [ "$USE_HERMES_PREBUILT" == "true" ]; then
+            HERMES_VERSION=$(curl --fail --silent --show-error --retry 3 https://registry.npmjs.org/hermes-compiler/latest-v1 | jq -er '.version')
+          else
+            HERMES_VERSION=$(sed -n 's/^HERMES_VERSION_NAME=//p' packages/react-native/sdks/hermes-engine/version.properties)
+          fi
+          test -n "$HERMES_VERSION"
+          echo "HERMES_VERSION=$HERMES_VERSION" >> "$GITHUB_ENV"
       - name: Restore cache if present
         id: restore-ios-xcframework
+        if: inputs.version-type == ''
         uses: actions/cache/restore@v5
         with:
-          path: packages/react-native/.build/output/xcframeworks
-          key: v4-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          path: |
+            packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.xcframework.tar.gz
+            packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
+            packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
+          key: v5-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('.github/workflows/prebuild-ios-*.yml', '.github/actions/setup-*/action.yml', '.github/actions/yarn-install/action.yml', 'package.json', 'yarn.lock', 'babel.config.js', 'scripts/build/**/*', 'scripts/releases/ios-prebuild/**/*', 'scripts/releases/prepare-ios-prebuilds.js', 'packages/react-native/package.json', 'packages/react-native/Package.swift', 'packages/react-native/scripts/**/*', 'packages/react-native-codegen/**/*', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*', 'packages/react-native/src/private/specs*/**/*', 'packages/react-native/src/**/Native*.js', 'packages/react-native/src/**/*NativeComponent.js', 'packages/react-native/third-party-podspecs/**/PrivacyInfo.xcprivacy', 'packages/react-native/sdks/hermes-engine/version.properties', '!packages/react-native/Libraries/**/*.js', '!packages/react-native/Libraries/**/*.js.flow', '!packages/react-native/Libraries/**/*.ts', '!packages/react-native/Libraries/**/*.tsx') }}-${{ env.HERMES_VERSION }}
       - name: Setup node.js
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-node
@@ -175,20 +193,6 @@ jobs:
           tar -xzf /tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz -C /tmp/third-party/
           mkdir -p packages/react-native/third-party/
           mv /tmp/third-party/packages/react-native/third-party/ReactNativeDependencies.xcframework packages/react-native/third-party/ReactNativeDependencies.xcframework
-      - name: Set Hermes version
-        if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          # Non-stable RN builds resolve Hermes from npm's latest-v1 dist-tag.
-          # TODO: rename 'latest-v1' to 'latest' once V1 is the only Hermes on npm.
-          # Stable builds use the version pinned in version.properties.
-          if [ "${{ inputs.use-hermes-prebuilt }}" == "true" ]; then
-            HERMES_VERSION="latest-v1"
-          else
-            HERMES_VERSION=$(sed -n 's/^HERMES_VERSION_NAME=//p' packages/react-native/sdks/hermes-engine/version.properties)
-          fi
-          echo "Using Hermes version: $HERMES_VERSION"
-          echo "HERMES_VERSION=$HERMES_VERSION" >> $GITHUB_ENV
       - name: Stage Hermes headers
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         working-directory: packages/react-native
@@ -260,11 +264,11 @@ jobs:
           name: ReactNativeHeaders${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
       - name: Save cache if present
-        if: ${{ github.ref == 'refs/heads/main' }} # To avoid that the cache explode
+        if: ${{ github.ref == 'refs/heads/main' && inputs.version-type == '' && steps.restore-ios-xcframework.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v5
         with:
           path: |
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
-          key: v4-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: ${{ steps.restore-ios-xcframework.outputs.cache-primary-key }}

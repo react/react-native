@@ -559,6 +559,59 @@ TEST_F(YogaCloneTest, newChildrenCloneReflectsNewList) {
       100);
 }
 
+// A clone that is handed its children must not keep its layout when a child,
+// although clean and styled the same, carries a different computed layout.
+// That is the case for a child revision zeroed out under a `display: none`
+// clone of the parent, which React can hold through runtime shadow node
+// reference updates while it keeps cloning from the visible parent.
+TEST_F(YogaCloneTest, newChildrenWithDifferentLayoutDirtyTheClone) {
+  auto hiddenRoot = rootShadowNode_->cloneTree(
+      parentShadowNode_->getFamily(), [](const ShadowNode& oldShadowNode) {
+        auto hiddenProps = std::make_shared<ViewProps>();
+        auto& yogaStyle = hiddenProps->yogaStyle;
+        yogaStyle.setFlexDirection(yoga::FlexDirection::Row);
+        yogaStyle.setDimension(
+            yoga::Dimension::Width, yoga::StyleSizeLength::points(300));
+        yogaStyle.setDimension(
+            yoga::Dimension::Height, yoga::StyleSizeLength::points(100));
+        yogaStyle.setDisplay(yoga::Display::None);
+        return oldShadowNode.clone({.props = hiddenProps});
+      });
+  static_cast<RootShadowNode&>(*hiddenRoot).layoutIfNeeded();
+
+  auto zeroedChildA = hiddenRoot->getChildren()[0]->getChildren()[0];
+  ASSERT_EQ(
+      yogaNodeOf(*zeroedChildA).getLayout().dimension(yoga::Dimension::Width),
+      0);
+  ASSERT_FALSE(yogaNodeOf(*zeroedChildA).isDirty());
+
+  auto newChildren =
+      std::make_shared<const std::vector<std::shared_ptr<const ShadowNode>>>(
+          std::vector<std::shared_ptr<const ShadowNode>>{
+              zeroedChildA->clone({}),
+              parentShadowNode_->getChildren()[1],
+              parentShadowNode_->getChildren()[2]});
+
+  auto clonedParent = parentShadowNode_->clone(
+      {.props = ShadowNodeFragment::propsPlaceholder(),
+       .children = newChildren});
+
+  EXPECT_FALSE(
+      static_cast<const YogaLayoutableShadowNode&>(*clonedParent)
+          .getIsLayoutClean());
+
+  auto newRootShadowNode = rootShadowNode_->cloneTree(
+      parentShadowNode_->getFamily(),
+      [&](const ShadowNode& /*oldShadowNode*/) { return clonedParent; });
+  static_cast<RootShadowNode&>(*newRootShadowNode).layoutIfNeeded();
+
+  const auto& laidOutChildA =
+      yogaNodeOf(*newRootShadowNode->getChildren()[0]->getChildren()[0])
+          .getLayout();
+  EXPECT_EQ(laidOutChildA.dimension(yoga::Dimension::Width), 100);
+  EXPECT_EQ(laidOutChildA.dimension(yoga::Dimension::Height), 100);
+}
+
 // Successive prop-only clones (the animation commit pattern) must each
 // produce a self-consistent layout. Validates that the fast path's vector
 // copy yields a vector the next clone can again copy from.

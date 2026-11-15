@@ -8,13 +8,12 @@
 #import <React/RCTDevLoadingView.h>
 #include <UIKit/UIKit.h>
 
-#import <QuartzCore/QuartzCore.h>
-
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTAppearance.h>
 #import <React/RCTConstants.h>
 #import <React/RCTConvert.h>
 #import <React/RCTDefines.h>
+#import <React/RCTDevBanner.h>
 #import <React/RCTDevLoadingViewSetEnabled.h>
 #import <React/RCTUtils.h>
 
@@ -28,12 +27,7 @@ using namespace facebook::react;
 #if RCT_DEV_MENU
 
 @implementation RCTDevLoadingView {
-  UIWindow *_window;
-  UILabel *_label;
-  UIView *_container;
-  UIButton *_dismissButton;
-  NSDate *_showDate;
-  BOOL _hiding;
+  RCTDevBanner *_banner;
   BOOL _invalidated;
   dispatch_block_t _initialMessageBlock;
 }
@@ -43,6 +37,7 @@ RCT_EXPORT_MODULE()
 - (instancetype)init
 {
   if (self = [super init]) {
+    _banner = [RCTDevBanner new];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(hide)
                                                  name:RCTJavaScriptDidLoadNotification
@@ -65,11 +60,7 @@ RCT_EXPORT_MODULE()
     self->_invalidated = YES;
     // The delayed message retains this module, so dealloc cannot cancel it when the host is invalidated.
     [self clearInitialMessageDelay];
-    self->_window.hidden = YES;
-    self->_window = nil;
-    self->_container = nil;
-    self->_label = nil;
-    self->_dismissButton = nil;
+    [self->_banner dismissImmediately];
   });
 }
 
@@ -77,13 +68,6 @@ RCT_EXPORT_MODULE()
 {
   [self clearInitialMessageDelay];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  UIWindow *window = _window;
-  _window = nil;
-  if (window) {
-    RCTExecuteOnMainQueue(^{
-      window.hidden = YES;
-    });
-  }
 }
 
 + (void)setEnabled:(BOOL)enabled
@@ -122,7 +106,7 @@ RCT_EXPORT_MODULE()
     backgroundColor:(UIColor *)backgroundColor
       dismissButton:(BOOL)dismissButton
 {
-  if (!RCTDevLoadingViewGetEnabled() || _hiding) {
+  if (!RCTDevLoadingViewGetEnabled()) {
     return;
   }
 
@@ -144,119 +128,7 @@ RCT_EXPORT_MODULE()
     if (self->_invalidated || [self isRunningInTestEnvironment]) {
       return;
     }
-
-    self->_showDate = [NSDate date];
-
-    if (self->_label == nullptr) {
-      self->_label = [[UILabel alloc] init];
-      self->_label.translatesAutoresizingMaskIntoConstraints = NO;
-      self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
-      self->_label.textAlignment = NSTextAlignmentCenter;
-      [self->_container addSubview:self->_label];
-      self->_label.numberOfLines = 0;
-    }
-    self->_label.textColor = color;
-    self->_label.text = message;
-
-    if (self->_container == nullptr) {
-      self->_container = [[UIView alloc] init];
-      self->_container.translatesAutoresizingMaskIntoConstraints = NO;
-      UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hide)];
-      [self->_container addGestureRecognizer:tapGesture];
-      self->_container.userInteractionEnabled = YES;
-      [self->_container addSubview:self->_label];
-    }
-    self->_container.backgroundColor = backgroundColor;
-
-    // Handle button creation/removal dynamically based on dismissButton parameter
-    if (dismissButton && self->_dismissButton == nullptr) {
-      CGFloat hue = 0.0;
-      CGFloat saturation = 0.0;
-      CGFloat brightness = 0.0;
-      CGFloat alpha = 0.0;
-      [backgroundColor getHue:&hue saturation:&saturation brightness:&brightness alpha:&alpha];
-      UIColor *darkerBackground = [UIColor colorWithHue:hue
-                                             saturation:saturation
-                                             brightness:brightness * 0.7
-                                                  alpha:1.0];
-
-      UIButtonConfiguration *buttonConfig = [UIButtonConfiguration plainButtonConfiguration];
-      buttonConfig.attributedTitle = [[NSAttributedString alloc]
-          initWithString:@"Dismiss ✕"
-              attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:11.0 weight:UIFontWeightRegular]}];
-      buttonConfig.contentInsets = NSDirectionalEdgeInsetsMake(6, 12, 6, 12);
-      buttonConfig.background.backgroundColor = darkerBackground;
-      buttonConfig.background.cornerRadius = 10;
-      buttonConfig.baseForegroundColor = color;
-
-      // Button is a visual cue to tap anywhere on the banner to dismiss so no separate action is needed
-      self->_dismissButton = [UIButton buttonWithConfiguration:buttonConfig primaryAction:nil];
-      self->_dismissButton.userInteractionEnabled = NO;
-      self->_dismissButton.translatesAutoresizingMaskIntoConstraints = NO;
-
-      // Prevent button from being compressed - force label to wrap instead
-      [self->_dismissButton setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                                            forAxis:UILayoutConstraintAxisHorizontal];
-      [self->_dismissButton setContentHuggingPriority:UILayoutPriorityRequired
-                                              forAxis:UILayoutConstraintAxisHorizontal];
-
-      [self->_container addSubview:self->_dismissButton];
-    } else if (!dismissButton && self->_dismissButton != nullptr) {
-      [self->_dismissButton removeFromSuperview];
-      self->_dismissButton = nullptr;
-    }
-
-    UIWindow *mainWindow = RCTKeyWindow();
-    if (self->_window == nullptr) {
-      UIWindowScene *windowScene = mainWindow.windowScene;
-      if (windowScene != nil) {
-        self->_window = [[UIWindow alloc] initWithWindowScene:windowScene];
-      } else {
-        self->_window = [[UIWindow alloc] init];
-      }
-
-      self->_window.frame = self->_window.windowScene.coordinateSpace.bounds;
-
-#if !TARGET_OS_TV
-      self->_window.windowLevel = UIWindowLevelStatusBar + 1;
-#endif
-      self->_window.rootViewController = [UIViewController new];
-      [self->_window.rootViewController.view addSubview:self->_container];
-    }
-
-    CGFloat topSafeAreaHeight = mainWindow.safeAreaInsets.top;
-    self->_window.hidden = NO;
-
-    [self->_window layoutIfNeeded];
-
-    NSMutableArray *constraints = [NSMutableArray arrayWithArray:@[
-      // Container constraints
-      [self->_container.topAnchor constraintEqualToAnchor:self->_window.rootViewController.view.topAnchor],
-      [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.leadingAnchor],
-      [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.trailingAnchor],
-
-      // Label constraints
-      [self->_label.topAnchor constraintEqualToAnchor:self->_container.topAnchor constant:topSafeAreaHeight + 8],
-      [self->_label.leadingAnchor constraintEqualToAnchor:self->_container.leadingAnchor constant:10],
-      [self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-8],
-    ]];
-
-    // Add button-specific constraints if button exists
-    if (self->_dismissButton != nullptr) {
-      [constraints addObjectsFromArray:@[
-        [self->_dismissButton.trailingAnchor constraintEqualToAnchor:self->_container.trailingAnchor constant:-10],
-        [self->_dismissButton.centerYAnchor constraintEqualToAnchor:self->_label.centerYAnchor],
-        [self->_dismissButton.heightAnchor constraintEqualToConstant:22],
-        [self->_label.trailingAnchor constraintEqualToAnchor:self->_dismissButton.leadingAnchor constant:-10],
-      ]];
-    } else {
-      [constraints addObject:[self->_label.trailingAnchor constraintEqualToAnchor:self->_container.trailingAnchor
-                                                                         constant:-10]];
-    }
-
-    [NSLayoutConstraint activateConstraints:constraints];
-
-    [self->_window layoutIfNeeded];
+    [self->_banner showMessage:message color:color backgroundColor:backgroundColor dismissButton:dismissButton];
   });
 }
 
@@ -280,36 +152,17 @@ RCT_EXPORT_MODULE()
   [self clearInitialMessageDelay];
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    self->_hiding = YES;
-    const NSTimeInterval MIN_PRESENTED_TIME = 0.6;
-    NSTimeInterval presentedTime = [[NSDate date] timeIntervalSinceDate:self->_showDate];
-    NSTimeInterval delay = MAX(0, MIN_PRESENTED_TIME - presentedTime);
-    CGFloat height = self->_container.bounds.size.height;
-    [UIView animateWithDuration:0.25
-        delay:delay
-        options:0
-        animations:^{
-          self->_container.transform = CGAffineTransformMakeTranslation(0, -height);
-        }
-        completion:^(__unused BOOL finished) {
-          self->_container.transform = CGAffineTransformIdentity;
-          self->_window.hidden = YES;
-          self->_window = nil;
-          self->_container = nil;
-          self->_label = nil;
-          self->_dismissButton = nil;
-          self->_hiding = false;
-        }];
+    [self->_banner hide];
   });
 }
 
 - (void)showProgressMessage:(NSString *)message
 {
-  if (_window != nil) {
+  if (_banner.isVisible) {
     // This is an optimization. Since the progress can come in quickly,
     // we want to do the minimum amount of work to update the UI,
     // which is to only update the label text.
-    _label.text = message;
+    [_banner updateMessage:message];
     return;
   }
 
@@ -361,7 +214,7 @@ RCT_EXPORT_MODULE()
     [self showOfflineMessage];
   } else {
     [self showInitialMessageDelayed:^{
-      NSString *message = [NSString stringWithFormat:@"Loading from %@\u2026", RCT_PACKAGER_NAME];
+      NSString *message = [NSString stringWithFormat:@"Loading from %@…", RCT_PACKAGER_NAME];
       [self showProgressMessage:message];
     }];
   }

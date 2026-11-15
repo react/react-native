@@ -8,6 +8,7 @@
  * @format
  */
 
+import {formatProjectRootHeader} from './statusMiddleware';
 import net from 'node:net';
 
 /**
@@ -33,12 +34,12 @@ export default async function isDevServerRunning(
       return 'not_running';
     }
 
-    // FIXME: Depends on @react-native-community/cli-server-api
     const statusResponse = await fetch(`${devServerUrl}/status`);
     const body = await statusResponse.text();
 
     return body === 'packager-status:running' &&
-      statusResponse.headers.get('X-React-Native-Project-Root') === projectRoot
+      statusResponse.headers.get('X-React-Native-Project-Root') ===
+        formatProjectRootHeader(projectRoot)
       ? 'matched_server_running'
       : 'port_taken';
   } catch (e) {

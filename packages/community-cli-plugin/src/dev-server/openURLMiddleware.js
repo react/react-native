@@ -10,7 +10,6 @@
 
 import type {NextHandleFunction} from 'connect';
 
-import isAllowedOrigin from './isAllowedOrigin';
 import readJSONBody from './readJSONBody';
 import open from 'open';
 
@@ -20,30 +19,15 @@ const LAUNCH_THROTTLE_MS = 2000;
 // where these characters expand to variables, subexpressions and escapes.
 const POWERSHELL_EXPANSION_CHARS = /[$`"]/;
 
-type Options = Readonly<{
-  serverBaseUrl: URL,
-}>;
-
 /**
  * Open an `http:` or `https:` URL in the user's default browser.
  */
-export default function openURLMiddleware({
-  serverBaseUrl,
-}: Options): NextHandleFunction {
+export default function openURLMiddleware(): NextHandleFunction {
   let lastLaunchTime = -Infinity;
 
   return async (req, res, next) => {
-    // `@react-native-community/cli-server-api` before v21, mounted ahead of
-    // this middleware, serves this route.
-    if (req.method !== 'POST' || res.writableEnded) {
+    if (req.method !== 'POST') {
       next();
-      return;
-    }
-
-    const {origin} = req.headers;
-    if (typeof origin === 'string' && !isAllowedOrigin(origin, serverBaseUrl)) {
-      res.writeHead(403);
-      res.end('Unauthorized origin');
       return;
     }
 
