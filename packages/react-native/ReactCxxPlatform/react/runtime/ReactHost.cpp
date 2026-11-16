@@ -294,7 +294,12 @@ void ReactHost::createReactInstance() {
             });
 
         // Set up TurboModules
-        TurboModuleBinding::install(runtime, std::move(turboModuleManager));
+        TurboModuleBinding::install(
+            runtime,
+            [turboModuleManager = std::move(turboModuleManager)](
+                jsi::Runtime& /*runtime*/, const std::string& name) {
+              return turboModuleManager(name);
+            });
 
         if (bindingsInstallFunc) {
           bindingsInstallFunc(runtime);

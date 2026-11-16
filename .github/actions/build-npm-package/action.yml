@@ -10,6 +10,10 @@ inputs:
     description: When true, skip downloading prebuilt Apple artifacts (use when Apple prebuild jobs were skipped)
     required: false
     default: 'false'
+  artifact-suffix:
+    description: Appended to the names of the uploaded artifacts, so several package builds can run in one workflow run
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -79,7 +83,7 @@ runs:
     - name: Upload npm logs
       uses: ./.github/actions/upload-artifact
       with:
-        name: npm-logs
+        name: npm-logs${{ inputs.artifact-suffix }}
         path: ~/.npm/_logs
     - name: Build release package as a job artifact
       if: ${{ inputs.release-type == 'dry-run' }}
@@ -95,5 +99,5 @@ runs:
       uses: ./.github/actions/upload-artifact
       if: ${{ inputs.release-type == 'dry-run' }}
       with:
-        name: react-native-package
+        name: react-native-package${{ inputs.artifact-suffix }}
         path: build

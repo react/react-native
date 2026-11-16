@@ -574,11 +574,16 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     } else if (
         newViewProps.accessibilityValue.now.has_value() && newViewProps.accessibilityValue.min.has_value() &&
         newViewProps.accessibilityValue.max.has_value()) {
-      CGFloat val = (CGFloat)(newViewProps.accessibilityValue.now.value()) /
-          (newViewProps.accessibilityValue.max.value() - newViewProps.accessibilityValue.min.value());
-      self.accessibilityElement.accessibilityValue =
-          [NSNumberFormatter localizedStringFromNumber:@(val) numberStyle:NSNumberFormatterPercentStyle];
-      ;
+      CGFloat min = newViewProps.accessibilityValue.min.value();
+      CGFloat max = newViewProps.accessibilityValue.max.value();
+      CGFloat now = newViewProps.accessibilityValue.now.value();
+      if (min < max && min <= now && now <= max) {
+        self.accessibilityElement.accessibilityValue =
+            [NSNumberFormatter localizedStringFromNumber:@((now - min) / (max - min))
+                                             numberStyle:NSNumberFormatterPercentStyle];
+      } else {
+        self.accessibilityElement.accessibilityValue = nil;
+      }
     } else {
       self.accessibilityElement.accessibilityValue = nil;
     }
