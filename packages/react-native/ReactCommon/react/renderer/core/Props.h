@@ -9,7 +9,10 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <memory>
+
 #include <React/RendererDebug.h>
+#include <folly/dynamic.h>
 #include <react/renderer/core/PropsMacros.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
@@ -18,7 +21,6 @@
 
 #ifdef ANDROID
 #include <React/MapBuffer.h>
-#include <folly/dynamic.h>
 #endif
 
 namespace facebook::react {
@@ -60,6 +62,12 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
   setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
 
   std::string nativeId;
+
+  /*
+   * The conditional values that these props were resolved from, by prop name.
+   * Null if there are none.
+   */
+  std::shared_ptr<const folly::dynamic> conditionalValues;
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic rawProps = folly::dynamic::object();
