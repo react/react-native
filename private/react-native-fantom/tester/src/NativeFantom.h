@@ -152,6 +152,8 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
   void clearImage(jsi::Runtime &rt, const std::string &uri);
   void clearAllImages(jsi::Runtime &rt);
 
+  void setColorScheme(jsi::Runtime &runtime, const std::string &colorScheme);
+
  private:
   TesterAppDelegate &appDelegate_;
   std::unordered_map<std::string, std::string> assetPaths_;
