@@ -50,6 +50,7 @@ var _react = _interopRequireWildcard(require("react"));
 var React = _react;
 var _jsxRuntime = require("react/jsx-runtime");
 var _dataUtils = require("./data-utils");
+var Status = require("flow-enums-runtime").Mirrored(["Active", "Inactive", "Pending"]);
 var _count = (0, _classPrivateFieldLooseKey2.default)("count");
 var _instances = (0, _classPrivateFieldLooseKey2.default)("instances");
 var _increment = (0, _classPrivateFieldLooseKey2.default)("increment");
