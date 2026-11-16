@@ -95,9 +95,18 @@ describe('My feature', () => {
 Creating a root sets global `Dimensions` for both `window` and `screen` from its
 `viewportWidth`, `viewportHeight`, `devicePixelRatio`, and optional `fontScale`
 (default `1`). `useWindowDimensions()` and `PixelRatio` report the new root's
-values. If another root is still alive and the new metrics differ from the
-current global dimensions, Fantom applies the new values and emits a warning.
-Call `root.destroy()` when a root is no longer needed.
+values.
+
+`root.updateSurfaceConstraints(config)` updates any viewport, pixel ratio, font
+scale or viewport-offset fields supplied in `config`, preserving the others, and
+runs the pending JavaScript work. To batch native changes without running
+JavaScript, call `root.enqueueUpdateSurfaceConstraints(config)` within
+`Fantom.runOnUIThread()`, then call `Fantom.runWorkLoop()` when ready. Existing
+roots are updated without being registered again.
+
+If another root is still alive and the new metrics differ from the current
+global dimensions, Fantom applies the new values and emits a warning. Call
+`root.destroy()` when a root is no longer needed.
 
 Each root also uses its `fontScale` for native text and text-input measurement,
 including line heights and wrapping. `allowFontScaling={false}` opts a component
