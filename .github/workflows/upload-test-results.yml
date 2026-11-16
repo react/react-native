@@ -1,13 +1,13 @@
 # Copies the test result artifacts of a test workflow run, plus a description
 # of the run, to GCS for test history. Runs from the default branch after every
-# Test All, Test Android and Test iOS run,
-# including pull requests from forks. The artifacts are copied as inert data:
-# nothing in them is executed, and they are validated where they're read.
+# Test JS, Test C++, Test Android and Test iOS run, including pull requests from
+# forks. The artifacts are copied as inert data: nothing in them is executed,
+# and they are validated where they're read.
 name: Upload Test Results
 
 on:
   workflow_run:
-    workflows: [Test All, Test Android, Test iOS]
+    workflows: [Test JS, Test C++, Test Android, Test iOS]
     types: [completed]
 
 permissions: {}

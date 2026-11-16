@@ -25,7 +25,8 @@ on:
       - '**/gradle/**'
       - '**/android/**'
       # Android CI
-      - '.github/workflows/test-all.yml'
+      - '.github/workflows/test-cxx.yml'
+      - '.github/workflows/test-js.yml'
       - '.github/workflows/build-android-templateapp.yml'
       - '.github/workflows/e2e-android-*.yml'
       - '.github/workflows/test-android.yml'

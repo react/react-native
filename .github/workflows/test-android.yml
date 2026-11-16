@@ -46,7 +46,8 @@ on:
       - 'scripts/releases/prepare-ios-prebuilds.js'
       - 'scripts/validate-ios-test-env.sh'
       # iOS CI
-      - '.github/workflows/test-all.yml'
+      - '.github/workflows/test-cxx.yml'
+      - '.github/workflows/test-js.yml'
       - '.github/workflows/bump-podfile-lock.yml'
       - '.github/workflows/e2e-ios-*.yml'
       - '.github/workflows/prebuild-ios-*.yml'
