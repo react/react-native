@@ -22,6 +22,7 @@
 using namespace facebook::react;
 
 @interface RCTDeviceInfo () <NativeDeviceInfoSpec, RCTInitializing, RCTInvalidating>
+// Atomic because the sync -getConstants reads it on the JS thread while the main thread rewrites it.
 @property (atomic, copy) NSDictionary<NSString *, id> *constants;
 @end
 
