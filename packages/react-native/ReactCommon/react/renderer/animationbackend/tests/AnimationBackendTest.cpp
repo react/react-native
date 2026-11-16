@@ -121,4 +121,21 @@ TEST_F(AnimationBackendTest, layoutViewWritesNonLayoutPropsSynchronously) {
   EXPECT_EQ(delegate.synchronousUpdates.at(10), expected);
 }
 
+TEST_F(AnimationBackendTest, textOnlyMutationIsNotWrittenDirectly) {
+  backend->pushAnimationMutations([this](AnimationTimestamp /*timestamp*/) {
+    AnimatedPropsBuilder propsBuilder;
+    propsBuilder.setText("text");
+    AnimationMutations mutations;
+    mutations.batch.push_back(
+        AnimationMutation{
+            .tag = node->getTag(),
+            .family = node->getFamilyShared(),
+            .props = propsBuilder.get(),
+            .hasLayoutUpdates = false});
+    return mutations;
+  });
+
+  EXPECT_TRUE(delegate.synchronousUpdates.empty());
+}
+
 } // namespace facebook::react

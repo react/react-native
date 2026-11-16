@@ -58,7 +58,7 @@ Object.defineProperties(global, {
   requestAnimationFrame: {
     configurable: true,
     enumerable: true,
-    value(callback: number => void): ReturnType<typeof setTimeout> {
+    value(callback: (v: number) => void): ReturnType<typeof setTimeout> {
       return setTimeout(() => callback(jest.now()), 0);
     },
     writable: true,

@@ -35,13 +35,13 @@ public class WritableNativeArray : ReadableNativeArray(), WritableArray {
   // Note: this consumes the map so do not reuse it.
   override fun pushArray(array: ReadableArray?) {
     check(array == null || array is ReadableNativeArray) { "Illegal type provided" }
-    pushNativeArray(array as ReadableNativeArray?)
+    pushNativeArray(array)
   }
 
   // Note: this consumes the map so do not reuse it.
   override fun pushMap(map: ReadableMap?) {
     check(map == null || map is ReadableNativeMap) { "Illegal type provided" }
-    pushNativeMap(map as ReadableNativeMap?)
+    pushNativeMap(map)
   }
 
   private external fun initHybrid()

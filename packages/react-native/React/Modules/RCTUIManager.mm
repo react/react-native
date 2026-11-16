@@ -220,15 +220,6 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
 
 @end
 
-@implementation RCTBridge (RCTUIManager)
-
-- (RCTUIManager *)uiManager
-{
-  return [self moduleForClass:[RCTUIManager class]];
-}
-
-@end
-
 UIView *RCTPaperViewOrCurrentView(UIView *view)
 {
   if ([view respondsToSelector:@selector(paperView)]) {

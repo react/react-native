@@ -23,6 +23,7 @@ import NativeFantom, {
 import * as Benchmark from './Benchmark';
 import {getConstants} from './Constants';
 import getFantomRenderedOutput from './getFantomRenderedOutput';
+import Screenshot from './Screenshot';
 import {Dimensions, LogBox} from 'react-native';
 import {
   getInternalInstanceHandleFromPublicInstance,
@@ -120,6 +121,7 @@ class Root {
   #devicePixelRatio: number;
   #fontScale: number;
   #document: ?Document;
+  #destroyed: boolean = false;
 
   constructor(config?: RootConfig) {
     this.#viewportWidth = config?.viewportWidth ?? DEFAULT_VIEWPORT_WIDTH;
@@ -188,6 +190,17 @@ class Root {
     popDimensions(this.#surfaceId);
     NativeFantom.flushMessageQueue();
     this.#document = null;
+    this.#destroyed = true;
+  }
+
+  /**
+   * Captures the mounted pixels without flushing pending React work.
+   */
+  takeScreenshot(): Screenshot {
+    if (this.#destroyed) {
+      throw new Error('Cannot capture a screenshot of a destroyed root.');
+    }
+    return new Screenshot(NativeFantom.takeScreenshot(this.#surfaceId));
   }
 
   getRenderedOutput(config: RenderOutputConfig = {}): FantomRenderedOutput {
@@ -204,6 +217,7 @@ class Root {
 export type {Root};
 
 export {NativeEventCategory};
+export type {default as Screenshot} from './Screenshot';
 
 const DEFAULT_TASK_PRIORITY = unstable_ImmediatePriority;
 
@@ -312,7 +326,7 @@ export function unstable_produceFramesForDuration(milliseconds: number) {
 export function unstable_getDirectManipulationProps(
   nodeOrRef: NodeOrRef,
 ): Readonly<{
-  [string]: unknown,
+  [key: string]: unknown,
 }> {
   const node = getNode(nodeOrRef);
   const shadowNode = getNodeFromPublicInstance(node);
@@ -320,7 +334,7 @@ export function unstable_getDirectManipulationProps(
 }
 
 export function unstable_getFabricUpdateProps(nodeOrRef: NodeOrRef): Readonly<{
-  [string]: unknown,
+  [key: string]: unknown,
 }> {
   const node = getNode(nodeOrRef);
   const shadowNode = getNodeFromPublicInstance(node);
@@ -344,7 +358,7 @@ export function getDefinedEventHandlers(
   // WARNING: This uses React private API (fiber internals).
   // $FlowExpectedError[incompatible-type]
   const memoizedProps = (
-    instanceHandle as {memoizedProps?: {[string]: unknown}}
+    instanceHandle as {memoizedProps?: {[key: string]: unknown}}
   ).memoizedProps;
   if (memoizedProps == null) {
     return [];

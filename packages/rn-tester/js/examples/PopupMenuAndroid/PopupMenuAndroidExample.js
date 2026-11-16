@@ -14,10 +14,11 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {PopupMenuAndroidInstance} from '@react-native/popup-menu-android';
 import type {Node} from 'react';
 
+import RNTesterText from '../../components/RNTesterText';
 import PopupMenuAndroid from '@react-native/popup-menu-android';
 import * as React from 'react';
 import {useRef, useState} from 'react';
-import {Button, StyleSheet, Text, View} from 'react-native';
+import {Button, StyleSheet, View} from 'react-native';
 
 type Fruit = 'Apple' | 'Pear' | 'Banana' | 'Orange' | 'Kiwi';
 
@@ -34,7 +35,7 @@ const PopupMenu = () => {
 
   return (
     <View style={styles.container}>
-      {fruit ? <Text>Selected {fruit}</Text> : null}
+      {fruit ? <RNTesterText>Selected {fruit}</RNTesterText> : null}
       <PopupMenuAndroid
         instanceRef={popupRef}
         menuItems={items.map(({label}) => label)}

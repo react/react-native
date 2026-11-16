@@ -31,7 +31,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -55,8 +54,7 @@ class MountingManagerAnimatedPropsTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val reactContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val reactContext = ReactTestHelper.createTestReactApplicationContext()
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     mountingManager =
         MountingManager(ViewManagerRegistry(listOf<ViewManager<*, *>>(ReactViewManager())), {})

@@ -75,7 +75,7 @@ function getNativeComponentAttributes(
     }
   }
 
-  const validAttributes: {[string]: unknown} = {};
+  const validAttributes: {[key: string]: unknown} = {};
 
   for (const key in nativeProps) {
     const typeName = nativeProps[key];

@@ -32,7 +32,7 @@ function id(instance: HostInstance | null): string | null {
 
 test('accepts a ref callback', () => {
   const root = Fantom.createRoot();
-  const ledger: Array<{[string]: string | null}> = [];
+  const ledger: Array<{[key: string]: string | null}> = [];
 
   const ref = (current: HostInstance | null) => {
     ledger.push({ref: id(current)});
@@ -78,7 +78,7 @@ test('accepts a ref callback', () => {
 
 test('accepts a ref callback that returns a cleanup function', () => {
   const root = Fantom.createRoot();
-  const ledger: Array<{[string]: string | null}> = [];
+  const ledger: Array<{[key: string]: string | null}> = [];
 
   // TODO: Remove `| null` after Flow supports ref cleanup functions.
   const ref = (current: HostInstance | null) => {
@@ -128,7 +128,7 @@ test('accepts a ref callback that returns a cleanup function', () => {
 
 test('accepts a ref object', () => {
   const root = Fantom.createRoot();
-  const ledger: Array<{[string]: string | null}> = [];
+  const ledger: Array<{[key: string]: string | null}> = [];
 
   const ref = {
     // $FlowFixMe[unsafe-getters-setters] - Intentional.
@@ -177,7 +177,7 @@ test('accepts a ref object', () => {
 
 test('invokes refs in order', () => {
   const root = Fantom.createRoot();
-  const ledger: Array<{[string]: string | null}> = [];
+  const ledger: Array<{[key: string]: string | null}> = [];
 
   const refA = (current: HostInstance | null) => {
     ledger.push({refA: id(current)});
@@ -236,7 +236,7 @@ test('invokes refs in order', () => {
 // sure it does not change unexpectedly.
 test('invokes all refs if any ref changes', () => {
   const root = Fantom.createRoot();
-  const ledger: Array<{[string]: string | null}> = [];
+  const ledger: Array<{[key: string]: string | null}> = [];
 
   const refA = (current: HostInstance | null) => {
     ledger.push({refA: id(current)});

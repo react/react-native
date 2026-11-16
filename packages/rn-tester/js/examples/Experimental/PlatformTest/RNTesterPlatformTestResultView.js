@@ -12,7 +12,12 @@ import type {
   PlatformTestResult,
   PlatformTestResultStatus,
 } from './RNTesterPlatformTestTypes';
-import type {ListRenderItemInfo, TextStyle} from 'react-native';
+import type {
+  ListRenderItemInfo,
+  SafeAreaInsets,
+  SafeAreaInsetsChangeEvent,
+  TextStyle,
+} from 'react-native';
 
 import RNTesterPlatformTestMinimizedResultView from './RNTesterPlatformTestMinimizedResultView';
 import RNTesterPlatformTestResultsText from './RNTesterPlatformTestResultsText';
@@ -24,7 +29,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Switch,
   Text,
@@ -35,7 +39,7 @@ import {
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
 
-const DISPLAY_STATUS_MAPPING: {[PlatformTestResultStatus]: string} = {
+const DISPLAY_STATUS_MAPPING: {[key: PlatformTestResultStatus]: string} = {
   PASS: 'Pass',
   FAIL: 'Fail',
   ERROR: 'Error',
@@ -87,7 +91,7 @@ function FilterModalButton(props: FilterModalProps) {
         animationType="fade"
         presentationStyle="overFullScreen"
         transparent={true}>
-        <SafeAreaView style={styles.filterModalRoot}>
+        <View style={styles.filterModalRoot}>
           <KeyboardAvoidingView
             style={styles.filterModalKeyboardAvoidingRoot}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -123,7 +127,7 @@ function FilterModalButton(props: FilterModalProps) {
               </View>
             </View>
           </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
       </Modal>
     </>
   );
@@ -230,6 +234,13 @@ export default function RNTesterPlatformTestResultView(
   );
 
   const [resultsExpanded, setResultsExpanded] = useState(false);
+  const [safeAreaInsets, setSafeAreaInsets] = useState<?SafeAreaInsets>(null);
+  const handleSafeAreaInsetsChange = useCallback(
+    (event: SafeAreaInsetsChangeEvent) => {
+      setSafeAreaInsets(event.nativeEvent.insets);
+    },
+    [],
+  );
 
   const handleReset = useCallback(() => {
     setFilterFailStatus(false);
@@ -266,12 +277,21 @@ export default function RNTesterPlatformTestResultView(
         animationType="slide"
         onRequestClose={handleMaximizedPress}
         visible={resultsExpanded}>
-        <SafeAreaView
-          style={{
-            width: '100%',
-            height: '100%',
-            flexDirection: 'column',
-          }}>
+        <View
+          experimental_onSafeAreaInsetsChange={handleSafeAreaInsetsChange}
+          style={[
+            {
+              width: '100%',
+              height: '100%',
+              flexDirection: 'column',
+            },
+            safeAreaInsets != null && {
+              paddingTop: safeAreaInsets.top,
+              paddingRight: safeAreaInsets.right,
+              paddingBottom: safeAreaInsets.bottom,
+              paddingLeft: safeAreaInsets.left,
+            },
+          ]}>
           <View style={styles.resultsHeader}>
             <View style={styles.titleContainer}>
               <Text style={styles.title}>Results</Text>
@@ -308,7 +328,7 @@ export default function RNTesterPlatformTestResultView(
             <TableHeader />
             <FlatList data={filteredResults} renderItem={renderTableRow} />
           </View>
-        </SafeAreaView>
+        </View>
       </Modal>
     </>
   );
@@ -467,9 +487,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const STATUS_TEXT_STYLE_MAPPING: {[PlatformTestResultStatus]: TextStyle} = {
-  PASS: styles.passText,
-  FAIL: styles.failText,
-  ERROR: styles.errorText,
-  SKIPPED: styles.skippedText,
-};
+const STATUS_TEXT_STYLE_MAPPING: {[key: PlatformTestResultStatus]: TextStyle} =
+  {
+    PASS: styles.passText,
+    FAIL: styles.failText,
+    ERROR: styles.errorText,
+    SKIPPED: styles.skippedText,
+  };

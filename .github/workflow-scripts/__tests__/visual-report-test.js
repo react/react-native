@@ -20,7 +20,9 @@ const {
 } = require('../visual/report');
 const {
   approvalKey,
+  baselineImageKey,
   baselinePrefix,
+  blobKey,
   publicUrl,
   reportPrefix,
 } = require('../visual/storage');
@@ -49,7 +51,20 @@ describe('visual reports and approval', () => {
     });
 
     test.each([
+      ['blobs', `blobs/${'a'.repeat(64)}.png`],
+      [null, `baselines/ios-x-0123abcd/${SHA_A}/text/basic/default.png`],
+    ])('finds a baseline image with imageStore %p', (imageStore, key) => {
+      expect(
+        baselineImageKey(
+          {environmentKey: 'ios-x-0123abcd', sha: SHA_A, imageStore},
+          {id: 'text/basic/default', sha256: 'a'.repeat(64)},
+        ),
+      ).toBe(key);
+    });
+
+    test.each([
       [() => baselinePrefix('k', 'main')],
+      [() => blobKey('../x')],
       [
         () =>
           reportPrefix({prNumber: -1, headSha: SHA_A, runId: 1, runAttempt: 1}),
@@ -150,14 +165,17 @@ describe('visual reports and approval', () => {
             {id: 'a/b/same', status: 'unchanged'},
             changed('a/b/changed'),
           ]),
-          platform('ios', [{id: 'a/b/new', status: 'added', captured: {}}]),
+          platform('ios', [
+            {id: 'a/b/new', status: 'added', captured: {}},
+            {id: 'a/b/flaky', status: 'added', captured: {unstable: true}},
+          ]),
         ],
         headSha: SHA_A,
         gateSummary: 'Needs approval.',
       });
       expect(body.startsWith(COMMENT_MARKER)).toBe(true);
       expect(body).toContain(
-        '**2 visual difference(s)** at `aaaaaaaaaaaa`. Needs approval.',
+        '**3 visual difference(s)** at `aaaaaaaaaaaa`. Needs approval.',
       );
       expect(body).toContain(
         '### android `a/b/changed`: Changed, 3 px (3.000%)',
@@ -168,7 +186,10 @@ describe('visual reports and approval', () => {
       expect(body).toContain(
         '<details><summary>Expected and Captured</summary>',
       );
-      expect(body).toContain('### ios `a/b/new`: New');
+      expect(body).toContain('### ios `a/b/new`: New\n');
+      expect(body).toContain(
+        '### ios `a/b/flaky`: New, unstable: its two captures differed',
+      );
       expect(body).toContain('<details open><summary>Captured</summary>');
       expect(body).not.toContain('a/b/same');
     });

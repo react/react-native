@@ -46,7 +46,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /** The payload is never decoded — every test here mocks the image pipeline. */
@@ -63,8 +62,7 @@ class ImageLoaderModuleTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    reactContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    reactContext = ReactTestHelper.createTestReactApplicationContext()
     imageLoaderModule = ImageLoaderModule(reactContext)
 
     mockedHelper = mockStatic(ResourceDrawableIdHelper::class.java)

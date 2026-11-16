@@ -123,7 +123,7 @@ class AppStateImpl {
    */
   addEventListener<K extends AppStateEvent>(
     type: K,
-    handler: (...AppStateEventDefinitions[K]) => void,
+    handler: (...rest: AppStateEventDefinitions[K]) => void,
   ): EventSubscription {
     const emitter = this._emitter;
     if (emitter == null) {
@@ -132,7 +132,7 @@ class AppStateImpl {
     switch (type) {
       case 'change':
         // $FlowFixMe[invalid-tuple-arity] Flow cannot refine handler based on the event type
-        const changeHandler: AppStateStatus => void = handler;
+        const changeHandler: (v: AppStateStatus) => void = handler;
         return emitter.addListener('appStateDidChange', appStateData => {
           changeHandler(appStateData.app_state);
         });

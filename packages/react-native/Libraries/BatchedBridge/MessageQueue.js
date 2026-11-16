@@ -41,18 +41,18 @@ const TRACE_TAG_REACT = 1 << 13;
 const DEBUG_INFO_LIMIT = 32;
 
 class MessageQueue {
-  _lazyCallableModules: {[key: string]: (void) => {...}, ...};
+  _lazyCallableModules: {[key: string]: (v: void) => {...}, ...};
   _queue: [number[], number[], unknown[], number];
-  _successCallbacks: Map<number, ?(...unknown[]) => void>;
-  _failureCallbacks: Map<number, ?(...unknown[]) => void>;
+  _successCallbacks: Map<number, ?(...rest: unknown[]) => void>;
+  _failureCallbacks: Map<number, ?(...rest: unknown[]) => void>;
   _callID: number;
   _lastFlush: number;
   _eventLoopStartTime: number;
   _reactNativeMicrotasksCallback: ?() => void;
 
-  _debugInfo: {[number]: [number, number], ...};
-  _remoteModuleTable: {[number]: string, ...};
-  _remoteMethodTable: {[number]: ReadonlyArray<string>, ...};
+  _debugInfo: {[key: number]: [number, number], ...};
+  _remoteModuleTable: {[key: number]: string, ...};
+  _remoteMethodTable: {[key: number]: ReadonlyArray<string>, ...};
 
   __spy: ?(data: SpyData) => void;
 
@@ -148,9 +148,9 @@ class MessageQueue {
     this._lazyCallableModules[name] = () => module;
   }
 
-  registerLazyCallableModule(name: string, factory: void => interface {}) {
+  registerLazyCallableModule(name: string, factory: (v: void) => interface {}) {
     let module: interface {};
-    let getValue: ?(void) => interface {} = factory;
+    let getValue: ?(v: void) => interface {} = factory;
     this._lazyCallableModules[name] = () => {
       if (getValue) {
         module = getValue();
@@ -173,8 +173,8 @@ class MessageQueue {
     moduleID: number,
     methodID: number,
     params: unknown[],
-    onFail: ?(...unknown[]) => void,
-    onSucc: ?(...unknown[]) => void,
+    onFail: ?(...rest: unknown[]) => void,
+    onSucc: ?(...rest: unknown[]) => void,
   ): unknown {
     if (__DEV__) {
       invariant(
@@ -193,8 +193,8 @@ class MessageQueue {
     moduleID: number,
     methodID: number,
     params: unknown[],
-    onFail: ?(...unknown[]) => void,
-    onSucc: ?(...unknown[]) => void,
+    onFail: ?(...rest: unknown[]) => void,
+    onSucc: ?(...rest: unknown[]) => void,
   ): void {
     if (onFail || onSucc) {
       if (__DEV__) {
@@ -203,7 +203,7 @@ class MessageQueue {
           delete this._debugInfo[this._callID - DEBUG_INFO_LIMIT];
         }
         if (this._successCallbacks.size > 500) {
-          const info: {[number]: {method: string, module: string}} = {};
+          const info: {[key: number]: {method: string, module: string}} = {};
           this._successCallbacks.forEach((_, callID) => {
             const debug = this._debugInfo[callID];
             const module = debug && this._remoteModuleTable[debug[0]];
@@ -244,8 +244,8 @@ class MessageQueue {
     moduleID: number,
     methodID: number,
     params: unknown[],
-    onFail: ?(...unknown[]) => void,
-    onSucc: ?(...unknown[]) => void,
+    onFail: ?(...rest: unknown[]) => void,
+    onSucc: ?(...rest: unknown[]) => void,
   ): void {
     this.processCallbacks(moduleID, methodID, params, onFail, onSucc);
 

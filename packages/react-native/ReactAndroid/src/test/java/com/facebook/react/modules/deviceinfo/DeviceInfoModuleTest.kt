@@ -48,7 +48,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -81,7 +80,7 @@ class DeviceInfoModuleTest {
     fakeLandscapeDisplayMetrics.putInt("height", 100)
 
     displayMetricsHolder = mockStatic(DisplayMetricsHolder::class.java)
-    reactContext = spy(createTestReactApplicationContext(RuntimeEnvironment.getApplication()))
+    reactContext = spy(createTestReactApplicationContext())
     doReturn(true).whenever(reactContext).hasActiveReactInstance()
     doNothing()
         .whenever(reactContext)
@@ -101,7 +100,7 @@ class DeviceInfoModuleTest {
     deviceInfoModule.typedExportedConstants
     deviceInfoModule.emitUpdateDimensionsEvent()
     verify(reactContext, times(0))
-        ?.emitDeviceEvent(ArgumentMatchers.anyString(), ArgumentMatchers.any())
+        .emitDeviceEvent(ArgumentMatchers.anyString(), ArgumentMatchers.any())
   }
 
   @Test

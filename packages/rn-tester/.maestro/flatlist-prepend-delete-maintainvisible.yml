@@ -5,7 +5,7 @@
 # the first visible view, but re-ordering edge case is untested.
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

@@ -27,41 +27,37 @@ const Animated: typeof AnimatedImplementation = Platform.isDisableAnimations
 
 export default {
   /**
-   * FlatList and SectionList infer generic Type defined under their `data` and `section` props.
+   * @deprecated Use `AnimatedFlatList` instead.
    */
   get FlatList(): AnimatedFlatList<> {
     return require('./components/AnimatedFlatList').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedImage` instead.
    */
   get Image(): AnimatedImage {
     return require('./components/AnimatedImage').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedScrollView` instead.
    */
   get ScrollView(): AnimatedScrollView {
     return require('./components/AnimatedScrollView').default;
   },
   /**
-   * FlatList and SectionList infer generic Type defined under their `data` and `section` props.
+   * @deprecated Use `AnimatedSectionList` instead.
    */
   get SectionList(): AnimatedSectionList<> {
     return require('./components/AnimatedSectionList').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedText` instead.
    */
   get Text(): AnimatedText {
     return require('./components/AnimatedText').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedView` instead.
    */
   get View(): AnimatedView {
     return require('./components/AnimatedView').default;

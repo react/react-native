@@ -20,7 +20,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -32,8 +31,7 @@ class ExtraWindowEventListenerTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    reactContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    reactContext = ReactTestHelper.createTestReactApplicationContext()
     window = mock()
   }
 

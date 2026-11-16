@@ -268,7 +268,7 @@ export class MockedParser implements Parser {
   getNativeComponentType(
     typeArgumentParams: $FlowFixMe,
     funcArgumentParams: $FlowFixMe,
-  ): {[string]: string} {
+  ): {[key: string]: string} {
     return {
       propsTypeName: typeArgumentParams[0].id.name,
       componentName: funcArgumentParams[0].value,

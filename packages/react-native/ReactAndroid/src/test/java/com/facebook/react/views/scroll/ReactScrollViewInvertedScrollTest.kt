@@ -37,7 +37,6 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /** Verifies the direction of wheel and joystick scrolling in regular and inverted ScrollViews. */
@@ -53,7 +52,7 @@ class ReactScrollViewInvertedScrollTest {
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
     SoLoader.setInTestMode()
-    val context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val context = createTestReactApplicationContext()
     themedContext = ThemedReactContext(context, context, null, -1)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
     uiManagerHelperMock = mockStatic(UIManagerHelper::class.java)

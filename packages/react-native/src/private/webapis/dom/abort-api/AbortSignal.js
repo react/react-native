@@ -57,7 +57,7 @@ export class AbortSignal extends EventTarget {
    */
   static abort(reason: unknown): AbortSignal {
     const signal = createAbortSignal();
-    abortSignal(reason, signal);
+    abortSignal(signal, reason);
     return signal;
   }
 
@@ -186,11 +186,11 @@ export function createAbortSignal(): AbortSignal {
  * Abort a given signal.
  */
 export function abortSignal(
+  signal: AbortSignal,
   reason: unknown | void = new DOMException(
     'signal is aborted without reason',
     'AbortError',
   ),
-  signal: AbortSignal,
 ): void {
   // $FlowExpectedError[invalid-compare]
   // $FlowExpectedError[prop-missing]

@@ -10,8 +10,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class RCTBridge;
-
 namespace facebook::react {
 
 class Instance;

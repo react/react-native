@@ -22,7 +22,7 @@ type NonAnimatedNodeObject<TStyleProp> = TStyleProp extends AnimatedNode
 
 function flattenStyleArrayInto<
   TStyleProp extends ____DangerouslyImpreciseAnimatedStyleProp_Internal,
->(result: {[string]: $FlowFixMe}, styles: ReadonlyArray<?TStyleProp>) {
+>(result: {[key: string]: $FlowFixMe}, styles: ReadonlyArray<?TStyleProp>) {
   for (let i = 0, styleLength = styles.length; i < styleLength; ++i) {
     const style = styles[i];
     if (style === null || typeof style !== 'object') {
@@ -60,7 +60,7 @@ function flattenStyle<
     return style;
   }
 
-  const result: {[string]: $FlowFixMe} = {};
+  const result: {[key: string]: $FlowFixMe} = {};
   // $FlowFixMe[underconstrained-implicit-instantiation]
   flattenStyleArrayInto(result, style);
 

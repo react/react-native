@@ -24,7 +24,7 @@ import {
 
 type State = {
   testResults: {
-    [string]: {
+    [key: string]: {
       type: string,
       value: unknown,
       ...

@@ -20,7 +20,7 @@ import {type NativeResponseType} from './XMLHttpRequest';
 const RCTNetworking = {
   addListener<K extends keyof RCTNetworkingEventDefinitions>(
     eventType: K,
-    listener: (...RCTNetworkingEventDefinitions[K]) => unknown,
+    listener: (...rest: RCTNetworkingEventDefinitions[K]) => unknown,
     context?: unknown,
   ): EventSubscription {
     // $FlowFixMe[incompatible-type]

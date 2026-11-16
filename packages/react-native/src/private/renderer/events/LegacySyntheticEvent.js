@@ -30,13 +30,13 @@ export type DispatchConfig =
  * dispatching.
  */
 export default class LegacySyntheticEvent extends Event {
-  _nativeEvent: {[string]: unknown};
+  _nativeEvent: {[key: string]: unknown};
   _dispatchConfig: DispatchConfig | null;
 
   constructor(
     type: string,
     options: EventInit,
-    nativeEvent: {[string]: unknown},
+    nativeEvent: {[key: string]: unknown},
     dispatchConfig?: ?DispatchConfig,
   ) {
     super(type, options);
@@ -44,7 +44,7 @@ export default class LegacySyntheticEvent extends Event {
     this._dispatchConfig = dispatchConfig ?? null;
   }
 
-  get nativeEvent(): {[string]: unknown} {
+  get nativeEvent(): {[key: string]: unknown} {
     return this._nativeEvent;
   }
 

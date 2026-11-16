@@ -34,7 +34,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 
@@ -60,8 +59,7 @@ class SurfaceMountingManagerEventOrderingTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val reactContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val reactContext = ReactTestHelper.createTestReactApplicationContext()
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     mountingManager =
         MountingManager(

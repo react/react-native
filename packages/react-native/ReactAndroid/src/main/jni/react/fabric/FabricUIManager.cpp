@@ -23,8 +23,8 @@ Size measureHostComponent(
     return {};
   }
 
-  const auto fabricUIManager =
-      contextContainer->at<jni::global_ref<jobject>>("FabricUIManager");
+  auto fabricUIManager =
+      contextContainer->at<jni::alias_ref<jobject>>("FabricUIManager");
   static const auto measure =
       jni::findClassStatic("com/facebook/react/fabric/FabricUIManager")
           ->getMethod<jlong(

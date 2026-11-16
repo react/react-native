@@ -80,7 +80,7 @@ describe('Easing', () => {
     }
   });
 
-  function sampleEasingFunction(easing: number => number) {
+  function sampleEasingFunction(easing: (v: number) => number) {
     const DURATION = 300;
     const tickCount = Math.round((DURATION * 60) / 1000);
     const samples = [];

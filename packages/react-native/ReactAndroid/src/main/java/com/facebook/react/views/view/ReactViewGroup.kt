@@ -330,8 +330,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
    * We override this to allow developers to determine whether they need offscreen alpha compositing
    * or not. See the documentation of needsOffscreenAlphaCompositing in View.js.
    *
-   * When [ReactNativeFeatureFlags.enableAndroidAutoOffscreenCompositingForElevation] is enabled we
-   * also report overlapping rendering for a view drawn with reduced alpha that contains a
+   * We also report overlapping rendering for a view drawn with reduced alpha that contains a
    * descendant with elevation, so the framework composites the subtree offscreen before applying
    * the alpha and the elevation shadow fades uniformly instead of rendering as banded per-primitive
    * alpha (see https://github.com/facebook/react-native/issues/23090). We report this whenever an
@@ -349,8 +348,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     // later, including native-driver opacity animations that set alpha directly on the RenderNode
     // without re-recording, then composites through that layer and the shadow fades uniformly. A
     // layer is only actually allocated when alpha < 1, so this costs nothing at full opacity.
-    return ReactNativeFeatureFlags.enableAndroidAutoOffscreenCompositingForElevation() &&
-        hasElevatedDescendant()
+    return hasElevatedDescendant()
   }
 
   internal fun hasElevatedDescendant(): Boolean =

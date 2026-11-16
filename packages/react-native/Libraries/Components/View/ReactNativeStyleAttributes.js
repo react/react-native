@@ -81,7 +81,7 @@ export const aspectRatioAttribute: AnyAttributeType = nativeCSSParsing
   ? true
   : {process: processAspectRatio};
 
-const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
+const ReactNativeStyleAttributes: {[key: string]: AnyAttributeType, ...} = {
   /**
    * Layout
    */

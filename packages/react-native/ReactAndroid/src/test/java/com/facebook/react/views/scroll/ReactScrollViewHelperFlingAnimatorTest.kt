@@ -68,8 +68,7 @@ class ReactScrollViewHelperFlingAnimatorTest {
     mockChild = mock()
     mockAnimator = ValueAnimator()
     mockEventDispatcher = mock()
-    mockContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    mockContext = ReactTestHelper.createTestReactApplicationContext()
 
     mockScrollView = mock<MockScrollView>()
 

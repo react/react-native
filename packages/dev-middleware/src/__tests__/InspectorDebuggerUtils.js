@@ -25,7 +25,7 @@ export class DebuggerAgent {
   constructor(
     url: string,
     signal?: AbortSignal,
-    headers?: ?{[string]: unknown},
+    headers?: ?{[key: string]: unknown},
   ) {
     const ws = new WebSocket(url, {
       // The mock server uses a self-signed certificate.
@@ -122,7 +122,7 @@ export class DebuggerMock extends DebuggerAgent {
 export async function createDebuggerMock(
   url: string,
   signal: AbortSignal,
-  headers?: ?{[string]: unknown},
+  headers?: ?{[key: string]: unknown},
 ): Promise<DebuggerMock> {
   const debuggerMock = new DebuggerMock(url, signal, headers);
   await debuggerMock.ready();

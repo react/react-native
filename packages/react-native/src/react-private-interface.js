@@ -44,14 +44,24 @@ import typeof dispatchNativeEvent from './private/renderer/events/dispatchNative
 export type {PublicRootInstance} from '../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 export type PublicTextInstance = ReturnType<createPublicTextInstance>;
 
+type ReactNativeFeatureFlagsForReact = {
+  ...ReactNativeFeatureFlags,
+  enableNativeEventTargetEventDispatching: () => boolean,
+};
+
 // flowlint unsafe-getters-setters:off
 // eslint-disable-next-line @react-native/monorepo/no-commonjs-exports
 module.exports = {
   get BatchedBridge(): BatchedBridge {
     return require('../Libraries/BatchedBridge/BatchedBridge').default;
   },
-  get ReactNativeFeatureFlags(): ReactNativeFeatureFlags {
-    return require('./private/featureflags/ReactNativeFeatureFlags');
+  get ReactNativeFeatureFlags(): ReactNativeFeatureFlagsForReact {
+    return {
+      ...require('./private/featureflags/ReactNativeFeatureFlags'),
+      // Removed from React Native (always enabled) but still read by the
+      // vendored React renderer.
+      enableNativeEventTargetEventDispatching: () => true,
+    };
   },
   get ReactNativeViewConfigRegistry(): ReactNativeViewConfigRegistry {
     return require('../Libraries/Renderer/shims/ReactNativeViewConfigRegistry');

@@ -402,11 +402,6 @@ RCT_EXTERN_C_END
  */
 - (NSDictionary *)constantsToExport;
 
-/**
- * Notifies the module that a batch of JS method invocations has just completed.
- */
-- (void)batchDidComplete RCT_DEPRECATED;
-
 @end
 
 /**

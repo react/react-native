@@ -210,6 +210,7 @@ class DeviceEventReporter {
     error: Error,
     message: string,
   ): void {
+    // $FlowFixMe[incompatible-type]
     this.#eventReporter.logEvent({
       type: 'proxy_error',
       status: 'error',

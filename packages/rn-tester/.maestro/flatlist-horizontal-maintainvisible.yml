@@ -2,7 +2,7 @@
 # Horizontal: items are 200px wide, delta should be ~204px (200px + 4px margin)
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

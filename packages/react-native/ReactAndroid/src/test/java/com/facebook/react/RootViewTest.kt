@@ -38,7 +38,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
@@ -51,7 +50,7 @@ class RootViewTest {
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
 
-    reactContext = spy(createTestReactApplicationContext(RuntimeEnvironment.getApplication()))
+    reactContext = spy(createTestReactApplicationContext())
     doNothing().whenever(reactContext).emitDeviceEvent(any(), any())
 
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(reactContext)

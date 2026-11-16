@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<90f271ea47f91e6a84979209b7b3d816>>
+ * @generated SignedSource<<b0f0a3f46e38986c1b48e947d1d7af1a>>
  */
 
 /**
@@ -68,8 +68,6 @@ class NativeReactNativeFeatureFlags
 
   bool enableAccumulatedUpdatesInRawPropsAndroid(jsi::Runtime& runtime);
 
-  bool enableAndroidAutoOffscreenCompositingForElevation(jsi::Runtime& runtime);
-
   bool enableAndroidTextMeasurementOptimizations(jsi::Runtime& runtime);
 
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid(jsi::Runtime& runtime);
@@ -113,6 +111,8 @@ class NativeReactNativeFeatureFlags
   bool enableImperativeEvents(jsi::Runtime& runtime);
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
+
+  bool enableInteractableResponderViews(jsi::Runtime& runtime);
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS(jsi::Runtime& runtime);
 
@@ -159,6 +159,8 @@ class NativeReactNativeFeatureFlags
   bool fixBorderlessRippleAndroid(jsi::Runtime& runtime);
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
+
+  bool fixTextInlineViewLineHeight(jsi::Runtime& runtime);
 
   bool fixTextLayoutOnPixelDensityChange(jsi::Runtime& runtime);
 

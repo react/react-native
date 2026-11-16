@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<da45e41e9a58711ee3b68a38965938fb>>
+ * @generated SignedSource<<dcfcca254ea381db5ac0cc2ea2a6a66b>>
  */
 
 /**
@@ -53,8 +53,6 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
-  @DoNotStrip public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
-
   @DoNotStrip public fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip public fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean
@@ -98,6 +96,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip public fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip public fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -144,6 +144,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fixBorderlessRippleAndroid(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
+
+  @DoNotStrip public fun fixTextInlineViewLineHeight(): Boolean
 
   @DoNotStrip public fun fixTextLayoutOnPixelDensityChange(): Boolean
 

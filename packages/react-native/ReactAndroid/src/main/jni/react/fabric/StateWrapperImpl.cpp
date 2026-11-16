@@ -17,13 +17,6 @@ using namespace facebook::jni;
 
 namespace facebook::react {
 
-/**
- * Called from Java constructor through the JNI.
- */
-void StateWrapperImpl::initHybrid(jni::alias_ref<jhybridobject> jobj) {
-  return setCxxInstance(jobj);
-}
-
 jni::local_ref<ReadableNativeMap::jhybridobject>
 StateWrapperImpl::getStateDataImpl() {
   if (state_) {
@@ -71,7 +64,6 @@ std::shared_ptr<const State> StateWrapperImpl::getState() const {
 
 void StateWrapperImpl::registerNatives() {
   registerHybrid({
-      makeNativeMethod("initHybrid", StateWrapperImpl::initHybrid),
       makeNativeMethod("getStateDataImpl", StateWrapperImpl::getStateDataImpl),
       makeNativeMethod("updateStateImpl", StateWrapperImpl::updateStateImpl),
       makeNativeMethod(

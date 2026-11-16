@@ -56,6 +56,7 @@ type buffer$ToJSONRet = {
   ...
 };
 
+// $FlowFixMe[incompatible-type]
 declare class Buffer extends Uint8Array {
   constructor(
     value: Array<number> | number | string | Buffer | ArrayBuffer,
@@ -71,6 +72,7 @@ declare class Buffer extends Uint8Array {
     sourceStart?: number,
     sourceEnd?: number,
   ): number;
+  // $FlowFixMe[incompatible-type]
   entries(): IteratorObject<[number, number]>;
   equals(otherBuffer: Buffer): boolean;
   fill(
@@ -116,6 +118,7 @@ declare class Buffer extends Uint8Array {
   readUIntBE(offset: number, byteLength: number, noAssert?: boolean): number;
   readUIntLE(offset: number, byteLength: number, noAssert?: boolean): number;
   slice(start?: number, end?: number): this;
+  subarray(start?: number, end?: number): this;
   swap16(): Buffer;
   swap32(): Buffer;
   swap64(): Buffer;
@@ -2422,8 +2425,8 @@ declare module 'fs' {
       options?: GlobOptions<WithFileTypes>,
     ): Node$Conditional<
       WithFileTypes,
-      AsyncIterator<Dirent>,
-      AsyncIterator<string>,
+      AsyncIteratorObject<Dirent>,
+      AsyncIteratorObject<string>,
     >,
     lchmod(path: FSPromisePath, mode: number): Promise<void>,
     lchown(path: FSPromisePath, uid: number, guid: number): Promise<void>,
@@ -2533,7 +2536,7 @@ declare module 'fs' {
         maxQueue?: number,
         overflow?: 'ignore' | 'throw',
       }>,
-    ): AsyncIterator<{eventType: string, filename: ?string}>,
+    ): AsyncIteratorObject<{eventType: string, filename: ?string}>,
     write<T extends Buffer | Uint8Array>(
       filehandle: FileHandle,
       buffer: T,
@@ -2546,7 +2549,7 @@ declare module 'fs' {
       ...
     }>,
     writeFile(
-      FSPromisePath | FileHandle,
+      file: FSPromisePath | FileHandle,
       data: string | Buffer | Uint8Array,
       options?: string | WriteOptions,
     ): Promise<void>,
@@ -3340,9 +3343,9 @@ declare module 'perf_hooks' {
     setResourceTimingBufferSize(maxSize: number): void;
     readonly timeOrigin: number;
     timerify<TArgs extends Iterable<unknown>, TReturn>(
-      fn: (...TArgs) => TReturn,
+      fn: (...args: TArgs) => TReturn,
       options?: Readonly<{histogram?: RecordableHistogram}>,
-    ): (...TArgs) => TReturn;
+    ): (...args: TArgs) => TReturn;
     toJSON(): unknown;
   }
 
@@ -3534,7 +3537,7 @@ type readline$InterfaceCompleter = (
   | [Array<string>, string]
   | ((
       line: string,
-      ((err: ?Error, data: [Array<string>, string]) => void),
+      callback: (err: ?Error, data: [Array<string>, string]) => void,
     ) => void);
 
 declare class readline$Interface extends events$EventEmitter {
@@ -3744,6 +3747,7 @@ type duplexStreamOptions = writableStreamOptions &
     writableHighWaterMark?: number,
     ...
   };
+// prettier-ignore
 declare class stream$Duplex extends stream$Readable mixins stream$Writable {
   // This is an unusual class at runtime, per the docs it "prototypally extends from Readable,
   // and then parasitically from Writable." Its static methods have incompatible signatures
@@ -3752,13 +3756,10 @@ declare class stream$Duplex extends stream$Readable mixins stream$Writable {
 
   // $FlowFixMe[incompatible-exact] See above
   // $FlowFixMe[incompatible-type] See above
-  static fromWeb(
-    pair: Readonly<{
-      readable: ReadableStream,
-      writable: WritableStream,
-    }>,
-    options?: duplexStreamOptions,
-  ): this;
+  static fromWeb(pair: Readonly<{
+    readable: ReadableStream,
+    writable: WritableStream,
+  }>, options?: duplexStreamOptions): this;
 
   // $FlowFixMe[incompatible-type] See above
   static toWeb(streamDuplex: stream$Duplex): {
@@ -4271,7 +4272,7 @@ declare module 'timers/promises' {
     delay?: number,
     value?: T,
     options?: TimerOptions,
-  ): AsyncIterator<T>;
+  ): AsyncIteratorObject<T>;
 
   declare export var scheduler: Readonly<{
     wait(delay: number, options?: TimerOptions): Promise<void>,
@@ -5627,18 +5628,18 @@ declare class Process extends events$EventEmitter {
   emitWarning(warning: string | Error): void;
   emitWarning(
     warning: string,
-    typeOrCtor: string | ((...empty) => unknown),
+    typeOrCtor: string | ((...args: empty) => unknown),
   ): void;
   emitWarning(
     warning: string,
     type: string,
-    codeOrCtor: string | ((...empty) => unknown),
+    codeOrCtor: string | ((...args: empty) => unknown),
   ): void;
   emitWarning(
     warning: string,
     type: string,
     code: string,
-    ctor?: (...empty) => unknown,
+    ctor?: (...args: empty) => unknown,
   ): void;
   execArgv: Array<string>;
   execPath: string;
@@ -5668,7 +5669,7 @@ declare class Process extends events$EventEmitter {
     },
     rss: () => number,
   };
-  nextTick: <T>(cb: (...T) => unknown, ...T) => void;
+  nextTick: <T>(cb: (...args: T) => unknown, ...args: T) => void;
   pid: number;
   platform: string;
   release: {

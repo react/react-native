@@ -12,7 +12,7 @@ import Platform from '../Utilities/Platform';
 
 let Settings: {
   get<T = unknown>(key: string): ?T,
-  set(settings: {[string]: unknown, ...}): void,
+  set(settings: {[key: string]: unknown, ...}): void,
   watchKeys(keys: string | Array<string>, callback: () => void): number,
   clearWatch(watchId: number): void,
   ...

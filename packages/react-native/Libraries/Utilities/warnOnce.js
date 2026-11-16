@@ -10,7 +10,7 @@
 
 'use strict';
 
-const warnedKeys: {[string]: boolean, ...} = {};
+const warnedKeys: {[key: string]: boolean, ...} = {};
 
 /**
  * A simple function that prints a warning message once per session.

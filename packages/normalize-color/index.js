@@ -123,40 +123,39 @@ function parseColorString(color) {
     );
   }
 
-  if ((match = matchers.hsl.exec(color))) {
-    return (
-      (hslToRgb(
-        parse360(match[1]), // h
-        parsePercentage(match[2]), // s
-        parsePercentage(match[3]), // l
-      ) |
-        0x000000ff) >>> // a
-      0
-    );
-  }
-
-  if ((match = matchers.hsla.exec(color))) {
-    // hsla(H S L / A) notation
-    if (match[6] !== undefined) {
+  if ((match = matchers.hsla.exec(color) || matchers.hsl.exec(color))) {
+    // hsl(H S L / A) / hsla(H S L / A) notation
+    if (match[9] !== undefined) {
       return (
         (hslToRgb(
-          parse360(match[6]), // h
-          parsePercentage(match[7]), // s
-          parsePercentage(match[8]), // l
+          parse360(match[9]), // h
+          parsePercentage(match[10]), // s
+          parsePercentage(match[11]), // l
         ) |
-          parse1(match[9])) >>> // a
+          parse1(match[12])) >>> // a
         0
       );
     }
-
-    // hsla(H, S, L, A) notation
+    // hsl(H, S, L, A) / hsla(H, S, L, A) notation
+    else if (match[5] !== undefined) {
+      return (
+        (hslToRgb(
+          parse360(match[5]), // h
+          parsePercentage(match[6]), // s
+          parsePercentage(match[7]), // l
+        ) |
+          parse1(match[8])) >>> // a
+        0
+      );
+    }
+    // hsl(H, S, L) / hsla(H, S, L) notation
     return (
       (hslToRgb(
         parse360(match[2]), // h
         parsePercentage(match[3]), // s
         parsePercentage(match[4]), // l
       ) |
-        parse1(match[5])) >>> // a
+        0x000000ff) >>> // a
       0
     );
   }
@@ -242,6 +241,7 @@ function hwbToRgb(h, w, b) {
 
 const NUMBER = '[-+]?\\d*\\.?\\d+';
 const PERCENTAGE = NUMBER + '%';
+const ALPHA = NUMBER + '%?';
 
 function call(...args) {
   return '\\(\\s*(' + args.join(')\\s*,?\\s*(') + ')\\s*\\)';
@@ -272,26 +272,26 @@ function getMatchers() {
     const rgbRegexPattern =
       call(NUMBER, NUMBER, NUMBER) +
       '|' +
-      commaSeparatedCall(NUMBER, NUMBER, NUMBER, NUMBER) +
+      commaSeparatedCall(NUMBER, NUMBER, NUMBER, ALPHA) +
       '|' +
-      callWithSlashSeparator(NUMBER, NUMBER, NUMBER, NUMBER);
+      callWithSlashSeparator(NUMBER, NUMBER, NUMBER, ALPHA);
+    const hslRegexPattern =
+      call(NUMBER, PERCENTAGE, PERCENTAGE) +
+      '|' +
+      commaSeparatedCall(NUMBER, PERCENTAGE, PERCENTAGE, ALPHA) +
+      '|' +
+      callWithSlashSeparator(NUMBER, PERCENTAGE, PERCENTAGE, ALPHA);
 
     cachedMatchers = {
       rgb: new RegExp('^rgb(' + rgbRegexPattern + ')$'),
       rgba: new RegExp('^rgba(' + rgbRegexPattern + ')$'),
-      hsl: new RegExp('^hsl' + call(NUMBER, PERCENTAGE, PERCENTAGE) + '$'),
-      hsla: new RegExp(
-        '^hsla(' +
-          commaSeparatedCall(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER) +
-          '|' +
-          callWithSlashSeparator(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER) +
-          ')$',
-      ),
+      hsl: new RegExp('^hsl(' + hslRegexPattern + ')$'),
+      hsla: new RegExp('^hsla(' + hslRegexPattern + ')$'),
       hwb: new RegExp(
         '^hwb(' +
           callModern(NUMBER, PERCENTAGE, PERCENTAGE) +
           '|' +
-          callWithSlashSeparator(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER) +
+          callWithSlashSeparator(NUMBER, PERCENTAGE, PERCENTAGE, ALPHA) +
           ')$',
       ),
       hex3: /^#([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
@@ -320,7 +320,7 @@ function parse360(str) {
 }
 
 function parse1(str) {
-  const num = parseFloat(str);
+  const num = str.endsWith('%') ? parseFloat(str) / 100 : parseFloat(str);
   if (num < 0) {
     return 0;
   }

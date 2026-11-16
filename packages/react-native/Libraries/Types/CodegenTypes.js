@@ -46,5 +46,5 @@ export type WithDefault<
 > = ?Type;
 
 export type EventEmitter<T> = (
-  handler: (T) => void | Promise<void>,
+  handler: (v: T) => void | Promise<void>,
 ) => EventSubscription;

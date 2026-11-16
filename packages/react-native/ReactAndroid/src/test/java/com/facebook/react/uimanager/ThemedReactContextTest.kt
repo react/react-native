@@ -33,8 +33,7 @@ class ThemedReactContextTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    reactApplicationContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    reactApplicationContext = ReactTestHelper.createTestReactApplicationContext()
     themedReactContext =
         ThemedReactContext(reactApplicationContext, RuntimeEnvironment.getApplication(), null, -1)
     window = mock()

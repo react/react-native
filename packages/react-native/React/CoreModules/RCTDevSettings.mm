@@ -10,7 +10,6 @@
 #import <objc/runtime.h>
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
-#import <React/RCTBridge+Inspector.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTConstants.h>

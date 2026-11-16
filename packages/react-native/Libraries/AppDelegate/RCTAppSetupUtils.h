@@ -6,32 +6,21 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <React/RCTBridge.h>
-#import <React/RCTRootView.h>
+
+@class RCTBridge;
+@class RCTRootView;
 
 #ifdef __cplusplus
-
-#import <memory>
 
 #import <ReactCommon/RCTTurboModuleManager.h>
 
 @protocol RCTDependencyProvider;
 
-// Forward declaration to decrease compilation coupling
-namespace facebook::react {
-class JSExecutorFactory;
-class RuntimeScheduler;
-} // namespace facebook::react
 RCT_EXTERN NSArray<NSString *> *RCTAppSetupUnstableModulesRequiringMainQueueSetup(
     id<RCTDependencyProvider> dependencyProvider);
 
 RCT_EXTERN id<RCTTurboModule> RCTAppSetupDefaultModuleFromClass(
     Class moduleClass,
     id<RCTDependencyProvider> dependencyProvider);
-
-std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupDefaultJsExecutorFactory(
-    RCTBridge *bridge,
-    RCTTurboModuleManager *turboModuleManager,
-    const std::shared_ptr<facebook::react::RuntimeScheduler> &runtimeScheduler);
 
 #endif // __cplusplus

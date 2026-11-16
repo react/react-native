@@ -1,0 +1,72 @@
+# Copies Test All's test result artifacts, plus a description of the run, to
+# GCS for test history. Runs from the default branch after every Test All run,
+# including pull requests from forks. The artifacts are copied as inert data:
+# nothing in them is executed, and they are validated where they're read.
+name: Upload Test Results
+
+on:
+  workflow_run:
+    workflows: [Test All]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  upload:
+    # Nothing runs until the repository has GCP credentials configured.
+    if: |
+      vars.VISUAL_GCP_PROJECT != '' &&
+      vars.VISUAL_WORKLOAD_IDENTITY_PROVIDER != '' &&
+      vars.VISUAL_BUCKET != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN_ID: ${{ github.event.workflow_run.id }}
+      RUN_UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
+      DOWNLOADS: /tmp/test-artifacts
+      DEST: /tmp/test-results/${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+      # Every key under this prefix is written once, so a rerun of this
+      # workflow skips what an earlier attempt already uploaded.
+      PREFIX: gs://${{ vars.VISUAL_BUCKET }}/verify/incoming/${{ github.repository }}/${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+    steps:
+      # The default branch's own scripts, never the pull request's.
+      - name: Checkout default branch
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: List artifacts
+        id: list
+        run: .github/workflow-scripts/upload-test-results.sh list
+      - name: Download test results
+        if: steps.list.outputs.record == 'true'
+        uses: ./.github/actions/download-artifact
+        with:
+          pattern: e2e_*_state_*
+          path: ${{ env.DOWNLOADS }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Collect test results
+        if: steps.list.outputs.record == 'true'
+        run: .github/workflow-scripts/upload-test-results.sh collect
+      - name: Describe the run
+        if: steps.list.outputs.record == 'true'
+        env:
+          WORKFLOW_RUN: ${{ toJSON(github.event.workflow_run) }}
+          REPO_ID: ${{ github.event.repository.id }}
+        run: .github/workflow-scripts/upload-test-results.sh describe
+      - name: Authenticate to Google Cloud
+        if: steps.list.outputs.record == 'true'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          project_id: ${{ vars.VISUAL_GCP_PROJECT }}
+          workload_identity_provider: ${{ vars.VISUAL_WORKLOAD_IDENTITY_PROVIDER }}
+      - name: Setup gcloud
+        if: steps.list.outputs.record == 'true'
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+      - name: Upload
+        if: steps.list.outputs.record == 'true'
+        run: .github/workflow-scripts/upload-test-results.sh upload

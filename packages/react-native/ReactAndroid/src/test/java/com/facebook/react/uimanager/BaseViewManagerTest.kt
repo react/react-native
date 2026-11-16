@@ -128,6 +128,31 @@ class BaseViewManagerTest {
   }
 
   @Test
+  fun testAccessibilityValueWithoutTextRemovesThePreviousText() {
+    viewManager.setAccessibilityLabel(view, "Country")
+    viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
+    Assertions.assertThat(view.contentDescription).isEqualTo("Country, Ukraine")
+
+    viewManager.setAccessibilityValue(view, JavaOnlyMap())
+    Assertions.assertThat(view.contentDescription).isEqualTo("Country")
+  }
+
+  @Test
+  fun testAccessibilityValueNullKeepsTheLabel() {
+    viewManager.setAccessibilityLabel(view, "Country")
+    viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
+    viewManager.setAccessibilityValue(view, null)
+    Assertions.assertThat(view.contentDescription).isEqualTo("Country")
+  }
+
+  @Test
+  fun testAccessibilityValueNullClearsAValueOnlyDescription() {
+    viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
+    viewManager.setAccessibilityValue(view, null)
+    Assertions.assertThat(view.contentDescription).isNull()
+  }
+
+  @Test
   fun testRoleList() {
     viewManager.setRole(view, "list")
     Assertions.assertThat(view.getTag(R.id.role)).isEqualTo(ReactAccessibilityDelegate.Role.LIST)

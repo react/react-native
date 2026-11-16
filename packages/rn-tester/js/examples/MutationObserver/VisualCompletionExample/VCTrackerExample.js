@@ -21,7 +21,7 @@ export default class VCTracker {
   _navigationStartTime: number;
   _intersectionObserver: IntersectionObserver;
   _mutationObserver: MutationObserver;
-  _registeredCallback: (ReadonlyArray<VisualElement>) => void;
+  _registeredCallback: (v: ReadonlyArray<VisualElement>) => void;
   _visualElements: Map<Element, VisualElement> = new Map();
   _pendingMutations: WeakSet<Node> = new WeakSet();
 
@@ -91,7 +91,7 @@ export default class VCTracker {
   }
 
   onUpdateVisualElements(
-    callback: (ReadonlyArray<VisualElement>) => void,
+    callback: (v: ReadonlyArray<VisualElement>) => void,
   ): void {
     this._registeredCallback = callback;
   }

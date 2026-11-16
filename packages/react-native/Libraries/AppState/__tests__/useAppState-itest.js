@@ -30,10 +30,10 @@ describe('useAppState', () => {
   });
 
   function mockSubscription() {
-    const handlers: Array<(AppStateStatus) => void> = [];
+    const handlers: Array<(v: AppStateStatus) => void> = [];
     const remove = jest.fn();
     const addEventListener = jest.fn(
-      (type: string, handler: AppStateStatus => void) => {
+      (type: string, handler: (v: AppStateStatus) => void) => {
         handlers.push(handler);
         return {remove};
       },

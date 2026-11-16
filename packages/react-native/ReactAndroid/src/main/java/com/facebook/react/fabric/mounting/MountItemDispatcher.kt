@@ -151,7 +151,7 @@ internal class MountItemDispatcher(
       } catch (e: RetryableMountingLayerException) {
         if (item is DispatchCommandMountItem) {
           // Only DispatchCommandMountItem supports retries
-          val mountItem: DispatchCommandMountItem = item as DispatchCommandMountItem
+          val mountItem: DispatchCommandMountItem = item
           // Retrying exactly once
           if (mountItem.getRetries() == 0) {
             mountItem.incrementRetries()

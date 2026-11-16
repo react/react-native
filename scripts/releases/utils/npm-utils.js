@@ -29,8 +29,8 @@ type NpmInfo = {
 type PackageJSON = {
   name: string,
   version: string,
-  dependencies: {[string]: string},
-  devDependencies: {[string]: string},
+  dependencies: {[key: string]: string},
+  devDependencies: {[key: string]: string},
   ...
 }
 type NpmPackageOptions = {

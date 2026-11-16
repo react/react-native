@@ -119,8 +119,8 @@ declare class DOMStringList {
   @@iterator(): Iterator<string>;
   readonly [key: number]: string;
   readonly length: number;
-  item(number): string | null;
-  contains(string): boolean;
+  item(v: number): string | null;
+  contains(v: string): boolean;
 }
 
 declare class DOMError {
@@ -6146,7 +6146,7 @@ declare function scrollBy(options: ScrollToOptions): void;
 
 /* Window file picker */
 
-type WindowFileSystemPickerFileType = {|
+type WindowFileSystemPickerFileType = {
   description?: string,
   /*
    * An Object with the keys set to the MIME type
@@ -6157,11 +6157,11 @@ type WindowFileSystemPickerFileType = {|
    * },
    */
   accept: {
-    [string]: Array<string>,
+    [key: string]: Array<string>,
   },
-|};
+};
 
-type WindowBaseFilePickerOptions = {|
+type WindowBaseFilePickerOptions = {
   id?: number,
   startIn?:
     | FileSystemHandle
@@ -6171,24 +6171,24 @@ type WindowBaseFilePickerOptions = {|
     | 'music'
     | 'pictures'
     | 'videos',
-|};
+};
 
-type WindowFilePickerOptions = WindowBaseFilePickerOptions & {|
+type WindowFilePickerOptions = WindowBaseFilePickerOptions & {
   excludeAcceptAllOption?: boolean,
   types?: Array<WindowFileSystemPickerFileType>,
-|};
+};
 
-type WindowOpenFilePickerOptions = WindowFilePickerOptions & {|
+type WindowOpenFilePickerOptions = WindowFilePickerOptions & {
   multiple?: boolean,
-|};
+};
 
-type WindowSaveFilePickerOptions = WindowFilePickerOptions & {|
+type WindowSaveFilePickerOptions = WindowFilePickerOptions & {
   suggestedName?: string,
-|};
+};
 
-type WindowDirectoryFilePickerOptions = WindowBaseFilePickerOptions & {|
+type WindowDirectoryFilePickerOptions = WindowBaseFilePickerOptions & {
   mode?: 'read' | 'readwrite',
-|};
+};
 
 // https://wicg.github.io/file-system-access/#api-showopenfilepicker
 declare function showOpenFilePicker(

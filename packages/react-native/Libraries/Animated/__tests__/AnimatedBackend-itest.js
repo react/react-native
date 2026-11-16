@@ -912,3 +912,103 @@ test('animate width with memo and rerender (js sync test)', () => {
     <rn-view width="200" />,
   );
 });
+
+// A native scroll event pushes its values outside the frame loop. It must not
+// step running time-based animations: frames step them with the frame time, so
+// stepping them at the push's own time as well would move them whenever the
+// two times differ.
+test('native scroll event does not step a running timing animation', () => {
+  const scrollViewRef = createRef<HostInstance>();
+  const viewRef = createRef<HostInstance>();
+  const scrollFollowerRef = createRef<HostInstance>();
+  let _translateX;
+
+  component MyApp() {
+    const scrollY = useAnimatedValue(0);
+    const translateX = useAnimatedValue(0);
+    _translateX = translateX;
+    return (
+      <View style={{flex: 1}}>
+        <Animated.View
+          ref={viewRef}
+          style={{width: 10, height: 10, transform: [{translateX}]}}
+        />
+        <Animated.View
+          ref={scrollFollowerRef}
+          style={{width: 10, height: 10, transform: [{translateY: scrollY}]}}
+        />
+        <Animated.ScrollView
+          ref={scrollViewRef}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: scrollY}}}],
+            {useNativeDriver: true},
+          )}>
+          <View style={{height: 1000, width: 100}} />
+        </Animated.ScrollView>
+      </View>
+    );
+  }
+
+  // Stamp pushes far later than the frame clock, as on device, where a push
+  // between frames runs later than the next frame's vsync time.
+  const mockClock = Fantom.installHighResTimeStampMock();
+  mockClock.setTime(1e12);
+  let animation;
+  try {
+    const root = Fantom.createRoot();
+    Fantom.runTask(() => {
+      root.render(<MyApp />);
+    });
+    const scrollViewElement = nullthrows(scrollViewRef.current);
+    const viewElement = nullthrows(viewRef.current);
+    const scrollFollowerElement = nullthrows(scrollFollowerRef.current);
+
+    const getTransformValue = (element: HostInstance, key: string): number => {
+      const transform =
+        Fantom.unstable_getDirectManipulationProps(element).transform;
+      const first = Array.isArray(transform) ? transform[0] : null;
+      if (
+        first == null ||
+        typeof first !== 'object' ||
+        typeof first[key] !== 'number'
+      ) {
+        throw new Error(`Expected a numeric ${key} transform`);
+      }
+      return first[key];
+    };
+    const getTranslateX = (): number =>
+      getTransformValue(viewElement, 'translateX');
+
+    Fantom.runTask(() => {
+      animation = Animated.timing(nullthrows(_translateX), {
+        toValue: 100,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      });
+      animation.start();
+    });
+    Fantom.unstable_produceFramesForDuration(500);
+
+    const beforeScroll = getTranslateX();
+    expect(beforeScroll).toBeGreaterThan(0);
+    expect(beforeScroll).toBeLessThan(100);
+
+    Fantom.scrollTo(scrollViewElement, {x: 0, y: 10});
+    // The scroll event reached the native graph...
+    expect(getTransformValue(scrollFollowerElement, 'translateY')).toBe(10);
+    // ...and left the running timing animation where the frames put it.
+    expect(getTranslateX()).toBe(beforeScroll);
+
+    Fantom.unstable_produceFramesForDuration(100);
+    expect(getTranslateX()).toBeGreaterThan(beforeScroll);
+    expect(getTranslateX()).toBeLessThan(100);
+  } finally {
+    Fantom.runTask(() => {
+      animation?.stop();
+    });
+    // Flush the work queued by stopping the animation.
+    Fantom.runWorkLoop();
+    mockClock.uninstall();
+  }
+});

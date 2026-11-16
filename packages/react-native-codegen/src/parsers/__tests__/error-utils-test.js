@@ -985,14 +985,14 @@ describe('throwIfMoreThanOneCodegenNativecommands', () => {
 
 describe('throwIfConfigNotfound', () => {
   it('throws an error if config is not found', () => {
-    const configs: Array<{[string]: string}> = [];
+    const configs: Array<{[key: string]: string}> = [];
     expect(() => {
       throwIfConfigNotfound(configs);
     }).toThrowError('Could not find component config for native component');
   });
 
   it('does not throw an error if config contains some elements', () => {
-    const configs: Array<{[string]: string}> = [
+    const configs: Array<{[key: string]: string}> = [
       {
         propsTypeName: 'testPropsTypeName',
         componentName: 'testComponentName',
@@ -1006,7 +1006,7 @@ describe('throwIfConfigNotfound', () => {
 
 describe('throwIfMoreThanOneConfig', () => {
   it('throws an error if config is not found', () => {
-    const configs: Array<{[string]: string}> = [
+    const configs: Array<{[key: string]: string}> = [
       {
         propsTypeName: 'testPropsTypeName1',
         componentName: 'testComponentName1',
@@ -1022,7 +1022,7 @@ describe('throwIfMoreThanOneConfig', () => {
   });
 
   it('does not throw an error if config contains some elements', () => {
-    const configs: Array<{[string]: string}> = [
+    const configs: Array<{[key: string]: string}> = [
       {
         propsTypeName: 'testPropsTypeName',
         componentName: 'testComponentName',

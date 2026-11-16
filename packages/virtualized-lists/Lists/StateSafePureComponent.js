@@ -33,7 +33,9 @@ export default class StateSafePureComponent<
 
   // $FlowFixMe[incompatible-type]
   setState<K extends keyof State>(
-    partialState: ?(Pick<State, K> | ((State, Props) => ?Pick<State, K>)),
+    partialState: ?(
+      Pick<State, K> | ((v0: State, v1: Props) => ?Pick<State, K>)
+    ),
     callback?: () => unknown,
   ): void {
     if (typeof partialState === 'function') {

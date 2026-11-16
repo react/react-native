@@ -10,6 +10,7 @@ package com.facebook.react.uimanager;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import android.graphics.Color;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactTestHelper;
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
@@ -22,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -38,9 +38,7 @@ public class BaseViewManagerDelegateTest {
     // (non-JNI) accessor so Robolectric doesn't try to load react_featureflagsjni.
     ReactNativeFeatureFlagsForTests.INSTANCE.setUp();
     viewManager = mock(ReactViewManager.class);
-    ReactApplicationContext context =
-        ReactTestHelper.INSTANCE.createTestReactApplicationContext(
-            RuntimeEnvironment.getApplication());
+    ReactApplicationContext context = ReactTestHelper.createTestReactApplicationContext();
     ThemedReactContext themedReactContext = new ThemedReactContext(context, context, null, -1);
     view = new ReactViewGroup(themedReactContext);
     delegate = new BaseViewManagerDelegate<>(viewManager) {};
@@ -65,5 +63,26 @@ public class BaseViewManagerDelegateTest {
     delegate.setProperty(view, ViewProps.OUTLINE_COLOR, null);
 
     verify(viewManager).setOutlineColor(view, null);
+  }
+
+  @Test
+  public void setShadowColorResetsToBlack() {
+    delegate.setProperty(view, ViewProps.SHADOW_COLOR, null);
+
+    verify(viewManager).setShadowColor(view, Color.BLACK);
+  }
+
+  @Test
+  public void setOutlineOffsetResetsToZero() {
+    delegate.setProperty(view, ViewProps.OUTLINE_OFFSET, null);
+
+    verify(viewManager).setOutlineOffset(view, 0f);
+  }
+
+  @Test
+  public void setOutlineWidthResetsToZero() {
+    delegate.setProperty(view, ViewProps.OUTLINE_WIDTH, null);
+
+    verify(viewManager).setOutlineWidth(view, 0f);
   }
 }

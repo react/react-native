@@ -13,12 +13,12 @@ import type {TurboModule} from 'react-native';
 
 import {TurboModuleRegistry} from 'react-native';
 
-type SimpleObject = {||};
+type SimpleObject = {};
 
-type BeforeMismatchGeneric<T> = {||};
+type BeforeMismatchGeneric<T> = {};
 
-type BeforeMatchingGeneric<T> = {||};
-type AfterMatchingGeneric<T> = {||};
+type BeforeMatchingGeneric<T> = {};
+type AfterMatchingGeneric<T> = {};
 
 export interface Spec extends TurboModule {
   readonly simpleObject: (a: SimpleObject) => void;
@@ -28,6 +28,4 @@ export interface Spec extends TurboModule {
   readonly afterMatchingGeneric: <T>(a: AfterMatchingGeneric<T>) => void;
 }
 
-TurboModuleRegistry.getEnforcing<Spec>(
-  'NativeModuleTest',
-) as Spec;
+TurboModuleRegistry.getEnforcing<Spec>('NativeModuleTest') as Spec;

@@ -21,7 +21,7 @@ const defineLazyObjectProperty =
   require('../Utilities/defineLazyObjectProperty').default;
 const UIManagerProperties = require('./UIManagerProperties').default;
 
-const viewManagerConfigs: {[string]: ViewManagerConfig | null} = {};
+const viewManagerConfigs: {[key: string]: ViewManagerConfig | null} = {};
 
 const triedLoadingConfig = new Set<string>();
 
@@ -122,7 +122,7 @@ function lazifyViewManagerConfig(viewName: string) {
     defineLazyObjectProperty(viewConfig, 'Constants', {
       get: () => {
         const viewManager = NativeModules[viewConfig.Manager];
-        const constants: {[string]: unknown} = {};
+        const constants: {[key: string]: unknown} = {};
         viewManager &&
           Object.keys(viewManager).forEach(key => {
             const value = viewManager[key];
@@ -136,7 +136,7 @@ function lazifyViewManagerConfig(viewName: string) {
     defineLazyObjectProperty(viewConfig, 'Commands', {
       get: () => {
         const viewManager = NativeModules[viewConfig.Manager];
-        const commands: {[string]: number} = {};
+        const commands: {[key: string]: number} = {};
         let index = 0;
         viewManager &&
           Object.keys(viewManager).forEach(key => {

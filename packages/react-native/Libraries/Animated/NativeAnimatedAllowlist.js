@@ -18,7 +18,7 @@ import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNa
  * In general native animated implementation should support any numeric or color property that
  * doesn't need to be updated through the shadow view hierarchy (all non-layout properties).
  */
-const SUPPORTED_COLOR_STYLES: {[string]: true} = {
+const SUPPORTED_COLOR_STYLES: {[key: string]: true} = {
   backgroundColor: true,
   borderBottomColor: true,
   borderColor: true,
@@ -31,7 +31,7 @@ const SUPPORTED_COLOR_STYLES: {[string]: true} = {
   tintColor: true,
 };
 
-const SUPPORTED_STYLES: {[string]: true} = {
+const SUPPORTED_STYLES: {[key: string]: true} = {
   ...SUPPORTED_COLOR_STYLES,
   borderBottomEndRadius: true,
   borderBottomLeftRadius: true,
@@ -118,7 +118,7 @@ const SUPPORTED_STYLES: {[string]: true} = {
     : {}),
 };
 
-const SUPPORTED_TRANSFORMS: {[string]: true} = {
+const SUPPORTED_TRANSFORMS: {[key: string]: true} = {
   translateX: true,
   translateY: true,
   scale: true,
@@ -136,7 +136,7 @@ const SUPPORTED_TRANSFORMS: {[string]: true} = {
     : {}),
 };
 
-const SUPPORTED_INTERPOLATION_PARAMS: {[string]: true} = {
+const SUPPORTED_INTERPOLATION_PARAMS: {[key: string]: true} = {
   inputRange: true,
   outputRange: true,
   extrapolate: true,

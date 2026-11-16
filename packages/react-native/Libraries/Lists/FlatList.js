@@ -412,7 +412,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     }
   }
 
-  setNativeProps(props: {[string]: unknown, ...}) {
+  setNativeProps(props: {[key: string]: unknown, ...}) {
     if (this._listRef) {
       this._listRef.setNativeProps(props);
     }

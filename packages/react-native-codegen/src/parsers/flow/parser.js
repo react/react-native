@@ -48,6 +48,7 @@ const {
 } = require('../parsers-commons');
 const {Visitor} = require('../parsers-primitives');
 const {wrapComponentSchema} = require('../schema.js');
+const {getTypeArguments} = require('../utils');
 const {buildComponentSchema} = require('./components');
 const {
   flattenProperties,
@@ -56,6 +57,7 @@ const {
 } = require('./components/componentsUtils');
 const {flowTranslateTypeAnnotation} = require('./modules');
 const {parseFlowAndThrowErrors} = require('./parseFlowAndThrowErrors');
+const {getEnumMembersType} = require('./utils');
 const invariant = require('invariant');
 const fs = require('node:fs');
 
@@ -177,15 +179,10 @@ class FlowParser implements Parser {
   }
 
   parseEnumMembersType(typeAnnotation: $FlowFixMe): NativeModuleEnumMemberType {
-    const enumMembersType: ?NativeModuleEnumMemberType =
-      typeAnnotation.type === 'EnumStringBody'
-        ? 'StringTypeAnnotation'
-        : typeAnnotation.type === 'EnumNumberBody'
-          ? 'NumberTypeAnnotation'
-          : null;
+    const enumMembersType = getEnumMembersType(typeAnnotation);
     if (!enumMembersType) {
       throw new Error(
-        `Unknown enum type annotation type. Got: ${typeAnnotation.type}. Expected: EnumStringBody or EnumNumberBody.`,
+        `Unknown enum type annotation type. Got: ${typeAnnotation.type}. Expected a string or number enum body.`,
       );
     }
     return enumMembersType;
@@ -269,7 +266,7 @@ class FlowParser implements Parser {
     typeAnnotation: $FlowFixMe,
     types: TypeDeclarationMap,
   ): $FlowFixMe {
-    return types[typeAnnotation.typeParameters.params[0].id.name];
+    return types[getTypeArguments(typeAnnotation).params[0].id.name];
   }
 
   // TODO(T71778680): Flow type AST Nodes
@@ -352,7 +349,7 @@ class FlowParser implements Parser {
   getNativeComponentType(
     typeArgumentParams: $FlowFixMe,
     funcArgumentParams: $FlowFixMe,
-  ): {[string]: string} {
+  ): {[key: string]: string} {
     return {
       propsTypeName: typeArgumentParams[0].id.name,
       componentName: funcArgumentParams[0].value,
@@ -533,7 +530,7 @@ class FlowParser implements Parser {
   getProperties(typeName: string, types: TypeDeclarationMap): $FlowFixMe {
     const typeAlias = types[typeName];
     try {
-      return typeAlias.right.typeParameters.params[0].properties;
+      return getTypeArguments(typeAlias.right).params[0].properties;
     } catch (e) {
       throw new Error(
         `Failed to find type definition for "${typeName}", please check that you have a valid codegen flow file`,
@@ -572,8 +569,8 @@ class FlowParser implements Parser {
   }
 
   getPaperTopLevelNameDeprecated(typeAnnotation: $FlowFixMe): $FlowFixMe {
-    return typeAnnotation.typeParameters.params.length > 1
-      ? typeAnnotation.typeParameters.params[1].value
+    return getTypeArguments(typeAnnotation).params.length > 1
+      ? getTypeArguments(typeAnnotation).params[1].value
       : null;
   }
 }

@@ -50,7 +50,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /**
@@ -76,7 +75,7 @@ class ReactImagePropertyTest {
     flogMock = mockStatic(FLog::class.java)
 
     SoLoader.setInTestMode()
-    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    context = createTestReactApplicationContext()
     themeContext = ThemedReactContext(context, context, null, -1)
     Fresco.initialize(context)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())

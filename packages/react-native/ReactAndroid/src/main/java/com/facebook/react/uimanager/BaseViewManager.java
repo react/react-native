@@ -33,6 +33,7 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.ReactConstants;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.Role;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -69,6 +70,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   private static final String STATE_BUSY = "busy";
   private static final String STATE_EXPANDED = "expanded";
   private static final String STATE_MIXED = "mixed";
+
+  private static final View.OnTouchListener NOOP_LISTENER = (v, event) -> false;
 
   public BaseViewManager() {
     super(null);
@@ -165,6 +168,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     // NOTE: setClickable MUST be called AFTER setOnClickListener because
     // the latter has the side effect of setting isClickable=true on some views!
     view.setOnClickListener(null);
+    setInteractable(view, false);
     view.setClickable(false);
     view.setFocusable(false);
     view.setFocusableInTouchMode(false);
@@ -489,9 +493,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
         contentDescription.add(text.asString());
       }
     }
-    if (!contentDescription.isEmpty()) {
-      view.setContentDescription(TextUtils.join(", ", contentDescription));
-    }
+    view.setContentDescription(
+        contentDescription.isEmpty() ? null : TextUtils.join(", ", contentDescription));
   }
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_ACTIONS)
@@ -505,15 +508,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_VALUE)
   public void setAccessibilityValue(T view, ReadableMap accessibilityValue) {
-    if (accessibilityValue == null) {
-      view.setTag(R.id.accessibility_value, null);
-      view.setContentDescription(null);
-    } else {
-      view.setTag(R.id.accessibility_value, accessibilityValue);
-      if (accessibilityValue.hasKey("text")) {
-        updateViewContentDescription(view);
-      }
-    }
+    view.setTag(R.id.accessibility_value, accessibilityValue);
+    updateViewContentDescription(view);
   }
 
   @ReactProp(name = ViewProps.IMPORTANT_FOR_ACCESSIBILITY)
@@ -988,7 +984,24 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = "onStartShouldSetResponder")
   public void setStartShouldSetResponder(@NonNull T view, boolean value) {
-    // no-op, handled by JSResponder
+    // Touch handled by the JSResponder system, but listener is needed to indicate interactability.
+    setInteractable(view, value);
+  }
+
+  private static void setInteractable(@NonNull View view, boolean interactable) {
+    if (!ReactNativeFeatureFlags.enableInteractableResponderViews()) {
+      return;
+    }
+    boolean noopListener = view.getTag(R.id.noop_touch_listener) != null;
+    if (interactable) {
+      if (!noopListener) {
+        view.setOnTouchListener(NOOP_LISTENER);
+        view.setTag(R.id.noop_touch_listener, Boolean.TRUE);
+      }
+    } else if (noopListener) {
+      view.setOnTouchListener(null);
+      view.setTag(R.id.noop_touch_listener, null);
+    }
   }
 
   @ReactProp(name = "onStartShouldSetResponderCapture")

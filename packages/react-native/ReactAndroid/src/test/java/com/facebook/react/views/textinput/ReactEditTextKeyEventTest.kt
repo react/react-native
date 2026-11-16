@@ -26,7 +26,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -39,7 +38,7 @@ class ReactEditTextKeyEventTest {
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val context = createTestReactApplicationContext()
     val themedContext = ThemedReactContext(context, context.baseContext, null, ID_NULL)
     manager = ReactTextInputManager()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
