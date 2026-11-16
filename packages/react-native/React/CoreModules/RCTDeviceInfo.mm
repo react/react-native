@@ -22,6 +22,7 @@
 using namespace facebook::react;
 
 @interface RCTDeviceInfo () <NativeDeviceInfoSpec, RCTInitializing, RCTInvalidating>
+@property (atomic, copy) NSDictionary<NSString *, id> *constants;
 @end
 
 @implementation RCTDeviceInfo {
@@ -31,7 +32,6 @@ using namespace facebook::react;
   NSDictionary *_currentInterfaceDimensions;
   BOOL _isFullscreen;
   std::atomic<BOOL> _invalidated;
-  NSDictionary *_constants;
 
   __weak UIWindow *_applicationWindow;
   NSDictionary * (^_dimensionsProvider)(void);
@@ -122,7 +122,7 @@ RCT_EXPORT_MODULE()
 - (void)invalidateCachedConstants
 {
   RCTAssertMainQueue();
-  _constants = @{
+  self.constants = @{
     @"Dimensions" : [self _exportedDimensions],
     // Note:
     // This prop is deprecated and will be removed in a future release.
@@ -236,13 +236,13 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (NSDictionary<NSString *, id> *)getConstants
 {
-  return _constants;
+  return self.constants;
 }
 
 - (void)didReceiveNewContentSizeMultiplier
 {
   [self invalidateCachedConstants];
-  NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
+  NSDictionary *nextInterfaceDimensions = self.constants[@"Dimensions"];
 
   RCTModuleRegistry *moduleRegistry = _moduleRegistry;
   RCTExecuteOnMainQueue(^{
@@ -280,7 +280,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   if ((isOrientationChanging || isResizingOrChangingToFullscreen) && RCTIsAppActive()) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
+    NSDictionary *nextInterfaceDimensions = self.constants[@"Dimensions"];
     [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
                                                                           body:nextInterfaceDimensions];
     // We only want to track the current _currentInterfaceOrientation and _isFullscreen only
@@ -303,7 +303,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 - (void)_interfaceFrameDidChange
 {
   [self invalidateCachedConstants];
-  NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
+  NSDictionary *nextInterfaceDimensions = self.constants[@"Dimensions"];
 
   // update and publish the even only when the app is in active state
   if (!([nextInterfaceDimensions isEqual:_currentInterfaceDimensions]) && RCTIsAppActive()) {
