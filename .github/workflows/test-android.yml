@@ -1,10 +1,83 @@
 name: Test Android
 
 on:
-  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    # A pull request whose changed files all match these patterns doesn't
+    # need this platform tested.
+    paths-ignore:
+      # Not code
+      - '**/*.md'
+      - '**/__docs__/**'
+      - '**/LICENSE'
+      # Apple sources and build files
+      - 'packages/react-native/React/**'
+      - 'packages/react-native/ReactApple/**'
+      - 'packages/react-native/Libraries/**/*.h'
+      - '**/*.m'
+      - '**/*.mm'
+      - '**/*.swift'
+      - '**/*.podspec'
+      - '**/*.rb'
+      - '**/*.ios.js'
+      - '**/Gemfile'
+      - '**/Gemfile.lock'
+      - '**/Podfile'
+      - '**/Podfile.lock'
+      - '**/.xcode.env'
+      - '**/*.xcodeproj/**'
+      - '**/*.xcworkspace/**'
+      - '**/ios/**'
+      - '**/apple/**'
+      - 'packages/rn-tester/RNTester*/**'
+      # CocoaPods, SwiftPM and prebuild tooling
+      - 'packages/react-native/scripts/cocoapods/**'
+      - 'packages/react-native/scripts/ios-prebuild/**'
+      - 'packages/react-native/scripts/react_native_pods_utils/**'
+      - 'packages/react-native/scripts/spm/**'
+      - 'packages/react-native/scripts/swiftpm/**'
+      - 'packages/react-native/scripts/xcode/**'
+      - 'packages/react-native/scripts/ios-prebuild.js'
+      - 'packages/react-native/scripts/react-native-xcode.sh'
+      - 'packages/react-native/scripts/setup-apple-spm.js'
+      - 'packages/react-native/third-party-podspecs/**'
+      - 'scripts/process-podspecs.sh'
+      - 'scripts/releases/ios-prebuild/**'
+      - 'scripts/releases/prepare-ios-prebuilds.js'
+      - 'scripts/validate-ios-test-env.sh'
+      # iOS CI
+      - '.github/workflows/test-cxx.yml'
+      - '.github/workflows/test-js.yml'
+      - '.github/workflows/bump-podfile-lock.yml'
+      - '.github/workflows/e2e-ios-*.yml'
+      - '.github/workflows/prebuild-ios-*.yml'
+      - '.github/workflows/test-ios.yml'
+      - '.github/workflows/test-ios-spm-newapp.yml'
+      - '.github/actions/maestro-ios/**'
+      - '.github/actions/prepare-ios-tests/**'
+      - '.github/actions/setup-spm-artifacts/**'
+      - '.github/actions/setup-xcode/**'
+      - '.github/actions/test-ios-helloworld/**'
+      - '.github/actions/test-ios-rntester/**'
+  push:
+    branches:
+      - main
+      - '*-stable'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  # A new push to a pull request makes the previous run obsolete, so cancel it
+  # instead of spending (macOS) runner time on it. Runs on branches are never
+  # cancelled: each one gets its own group.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build_android:
+    if: github.repository == 'react/react-native'
     runs-on: 8-core-ubuntu
     container:
       image: reactnativecommunity/react-native-android:latest
@@ -49,62 +122,62 @@ jobs:
           skip-apple-prebuilts: true
           artifact-suffix: -android
 
-  test_e2e_android_rntester:
+  test_e2e_rntester:
     needs: build_android
     uses: ./.github/workflows/e2e-android-rntester.yml
     secrets: inherit
 
-  test_e2e_android_rntester_retry_1:
-    needs: test_e2e_android_rntester
-    if: ${{ always() && needs.test_e2e_android_rntester.outputs.status == 'failure' }}
+  test_e2e_rntester_retry_1:
+    needs: test_e2e_rntester
+    if: ${{ always() && needs.test_e2e_rntester.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-rntester.yml
     with:
       retry-attempt: 1
     secrets: inherit
 
-  test_e2e_android_rntester_retry_2:
-    needs: test_e2e_android_rntester_retry_1
-    if: ${{ always() && needs.test_e2e_android_rntester_retry_1.outputs.status == 'failure' }}
+  test_e2e_rntester_retry_2:
+    needs: test_e2e_rntester_retry_1
+    if: ${{ always() && needs.test_e2e_rntester_retry_1.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-rntester.yml
     with:
       fail-on-error: true
       retry-attempt: 2
     secrets: inherit
 
-  test_visual_android_rntester:
+  test_visual_rntester:
     needs: build_android
     uses: ./.github/workflows/visual-capture-rntester.yml
     with:
       platform: android
 
-  build_android_templateapp:
+  build_templateapp:
     needs: [build_npm_package, build_android]
     uses: ./.github/workflows/build-android-templateapp.yml
     secrets: inherit
 
-  test_e2e_android_templateapp:
-    needs: build_android_templateapp
+  test_e2e_templateapp:
+    needs: build_templateapp
     uses: ./.github/workflows/e2e-android-templateapp.yml
     secrets: inherit
 
-  test_e2e_android_templateapp_retry_1:
-    needs: test_e2e_android_templateapp
-    if: ${{ always() && needs.test_e2e_android_templateapp.outputs.status == 'failure' }}
+  test_e2e_templateapp_retry_1:
+    needs: test_e2e_templateapp
+    if: ${{ always() && needs.test_e2e_templateapp.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
     with:
       retry-attempt: 1
     secrets: inherit
 
-  test_e2e_android_templateapp_retry_2:
-    needs: test_e2e_android_templateapp_retry_1
-    if: ${{ always() && needs.test_e2e_android_templateapp_retry_1.outputs.status == 'failure' }}
+  test_e2e_templateapp_retry_2:
+    needs: test_e2e_templateapp_retry_1
+    if: ${{ always() && needs.test_e2e_templateapp_retry_1.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
     with:
       fail-on-error: true
       retry-attempt: 2
     secrets: inherit
 
-  test_android_helloworld:
+  test_helloworld:
     runs-on: 4-core-ubuntu
     needs: [build_npm_package, build_android]
     container:

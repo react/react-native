@@ -39,7 +39,7 @@ Architecture notes live in `__docs__` directories beside the code they describe,
 | `yarn format-<language>` | Format one language: `javascript`, `cpp`, `kotlin`, `java`, `python`, or `swift` |
 | `yarn format-check-<language>` | Check one language without changing files |
 
-JavaScript CI is the `lint`, `test_js`, and `build_js_types` jobs in [`.github/workflows/test-all.yml`](.github/workflows/test-all.yml); Fantom and the native platforms have their own jobs.
+JavaScript CI is the `lint`, `test_js`, and `build_js_types` jobs in [`.github/workflows/test-js.yml`](.github/workflows/test-js.yml). The ReactCommon C++ tests and Fantom run in [`test-cxx.yml`](.github/workflows/test-cxx.yml), and Android and iOS in [`test-android.yml`](.github/workflows/test-android.yml) and [`test-ios.yml`](.github/workflows/test-ios.yml), which skip pull requests that only touch the other platform.
 
 The formatting command uses pinned npm packages for Kotlin and Java and installs pinned Ruff through Python. To format every language, install a JDK with Java 17 or newer, Python 3 with pip, and a Swift 6.3 or newer toolchain in addition to Node and Yarn. Each language wrapper checks its own requirements and prints installation guidance when something is missing; `yarn format` then skips that language and continues formatting the others. Swift formatting accepts either `swift-format` or `swift format` from the installed toolchain.
 
