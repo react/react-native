@@ -14,6 +14,7 @@ import type {RootTag} from '../Types/RootTagTypes';
 import type {UIManagerJSInterface} from '../Types/UIManagerJSInterface';
 import type {UIManagerConstants, ViewManagerConfig} from './NativeUIManager';
 
+import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import {unstable_hasComponent} from '../NativeComponent/NativeComponentRegistryUnstable';
 import defineLazyObjectProperty from '../Utilities/defineLazyObjectProperty';
 import Platform from '../Utilities/Platform';
@@ -80,6 +81,18 @@ const getConstantsForViewManager: ?(
   viewManagerName: string,
 ) => ?ViewManagerConfig =
   global.RN$LegacyInterop_UIManager_getConstantsForViewManager;
+
+const lazyViewManagerConfigs: Map<string, ?ViewManagerConfig> = new Map();
+
+function getLazyViewManagerConfig(viewManagerName: string): ?ViewManagerConfig {
+  if (!lazyViewManagerConfigs.has(viewManagerName)) {
+    lazyViewManagerConfigs.set(
+      viewManagerName,
+      nullthrows(getConstantsForViewManager)(viewManagerName),
+    );
+  }
+  return lazyViewManagerConfigs.get(viewManagerName);
+}
 
 const getDefaultEventTypes: ?() => ViewManagerConfig =
   global.RN$LegacyInterop_UIManager_getDefaultEventTypes;
@@ -452,7 +465,31 @@ const UIManagerJS: UIManagerJSInterface & {[key: string]: ViewManagerConfig} = {
   },
 };
 
-if (getUIManagerConstants) {
+/**
+ * Resolves a legacy property read on `UIManager` (`UIManager.RCTView`) that
+ * isn't one of its methods. Used instead of copying every view manager config
+ * onto `UIManagerJS` when `lazyLegacyUIManagerConstants` is enabled, so the
+ * native legacy constants are only built when something reads them.
+ */
+export function getLegacyUIManagerProperty(name: string): unknown {
+  if (!getUIManagerConstants) {
+    return undefined;
+  }
+  const constants = getUIManagerConstantsCached();
+  if (Object.hasOwn(constants, name)) {
+    return constants[name];
+  }
+  const viewManagerNames: ?Array<string> = constants.ViewManagerNames;
+  if (viewManagerNames == null || !viewManagerNames.includes(name)) {
+    return undefined;
+  }
+  return getLazyViewManagerConfig(name);
+}
+
+if (
+  getUIManagerConstants &&
+  !ReactNativeFeatureFlags.lazyLegacyUIManagerConstants()
+) {
   Object.keys(getUIManagerConstantsCached()).forEach(viewConfigName => {
     UIManagerJS[viewConfigName] = getUIManagerConstantsCached()[viewConfigName];
   });

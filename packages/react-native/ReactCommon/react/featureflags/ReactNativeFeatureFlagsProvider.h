@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<60437c0aafa9d1f8de97120056c42970>>
+ * @generated SignedSource<<93109330f750f9d0c61b7b121a92b2e8>>
  */
 
 /**
@@ -97,6 +97,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool fuseboxScreenshotCaptureEnabled() = 0;
   virtual bool fuseboxWebSocketEventsEnabled() = 0;
   virtual bool keepTimersRunningWhileHostPausedAndroid() = 0;
+  virtual bool lazyLegacyUIManagerConstants() = 0;
   virtual bool optimizedAnimatedPropUpdates() = 0;
   virtual bool overrideBySynchronousMountPropsAtMountingAndroid() = 0;
   virtual bool perfIssuesEnabled() = 0;

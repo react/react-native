@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<80dd5355f9f95d594f04d6b41fc785f5>>
+ * @generated SignedSource<<f9266e4288f57c9bfec1971229af7f4e>>
  */
 
 /**
@@ -456,6 +456,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool keepTimersRunningWhileHostPausedAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("keepTimersRunningWhileHostPausedAndroid");
+    return method(javaProvider_);
+  }
+
+  bool lazyLegacyUIManagerConstants() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("lazyLegacyUIManagerConstants");
     return method(javaProvider_);
   }
 
@@ -981,6 +987,11 @@ bool JReactNativeFeatureFlagsCxxInterop::keepTimersRunningWhileHostPausedAndroid
   return ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::lazyLegacyUIManagerConstants(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::lazyLegacyUIManagerConstants();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::optimizedAnimatedPropUpdates();
@@ -1362,6 +1373,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "keepTimersRunningWhileHostPausedAndroid",
         JReactNativeFeatureFlagsCxxInterop::keepTimersRunningWhileHostPausedAndroid),
+      makeNativeMethod(
+        "lazyLegacyUIManagerConstants",
+        JReactNativeFeatureFlagsCxxInterop::lazyLegacyUIManagerConstants),
       makeNativeMethod(
         "optimizedAnimatedPropUpdates",
         JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates),

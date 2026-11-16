@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8817847943e654f2ce61fc39af75baf8>>
+ * @generated SignedSource<<41929bbaa0bc3fa76c0f8bcbd8ec79fa>>
  * @flow strict
  * @noformat
  */
@@ -118,6 +118,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
   fuseboxWebSocketEventsEnabled: Getter<boolean>,
   keepTimersRunningWhileHostPausedAndroid: Getter<boolean>,
+  lazyLegacyUIManagerConstants: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
   overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean>,
   perfIssuesEnabled: Getter<boolean>,
@@ -497,6 +498,10 @@ export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGe
  * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
  */
 export const keepTimersRunningWhileHostPausedAndroid: Getter<boolean> = createNativeFlagGetter('keepTimersRunningWhileHostPausedAndroid', false);
+/**
+ * In Bridgeless mode, resolves legacy view manager configs on `UIManager` (`UIManager.RCTView`) when they are first read, instead of copying every config onto `UIManager` when it is first imported. This keeps the native legacy UIManager constants off the startup path.
+ */
+export const lazyLegacyUIManagerConstants: Getter<boolean> = createNativeFlagGetter('lazyLegacyUIManagerConstants', false);
 /**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
  */

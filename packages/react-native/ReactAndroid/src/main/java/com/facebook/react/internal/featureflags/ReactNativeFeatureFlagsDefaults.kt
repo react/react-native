@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<db85f9c22970c773cc95ab6bf72d9871>>
+ * @generated SignedSource<<6debff8b53b28081f3e5b761f88aa961>>
  */
 
 /**
@@ -162,6 +162,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun fuseboxWebSocketEventsEnabled(): Boolean = true
 
   override fun keepTimersRunningWhileHostPausedAndroid(): Boolean = false
+
+  override fun lazyLegacyUIManagerConstants(): Boolean = false
 
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4bcfd7705680a00615bddc6ffeccfe4b>>
+ * @generated SignedSource<<4ea112ef050940ac67781229942e3a98>>
  */
 
 /**
@@ -90,6 +90,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
   private var fuseboxWebSocketEventsEnabledCache: Boolean? = null
   private var keepTimersRunningWhileHostPausedAndroidCache: Boolean? = null
+  private var lazyLegacyUIManagerConstantsCache: Boolean? = null
   private var optimizedAnimatedPropUpdatesCache: Boolean? = null
   private var overrideBySynchronousMountPropsAtMountingAndroidCache: Boolean? = null
   private var perfIssuesEnabledCache: Boolean? = null
@@ -745,6 +746,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.keepTimersRunningWhileHostPausedAndroid()
       keepTimersRunningWhileHostPausedAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun lazyLegacyUIManagerConstants(): Boolean {
+    var cached = lazyLegacyUIManagerConstantsCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.lazyLegacyUIManagerConstants()
+      lazyLegacyUIManagerConstantsCache = cached
     }
     return cached
   }

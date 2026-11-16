@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0a8759cd09aa452417aaa3720da346ae>>
+ * @generated SignedSource<<bdb228ae8b40ba62a434009d4c22749c>>
  */
 
 /**
@@ -390,6 +390,11 @@ class ReactNativeFeatureFlags {
    * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
    */
   RN_EXPORT static bool keepTimersRunningWhileHostPausedAndroid();
+
+  /**
+   * In Bridgeless mode, resolves legacy view manager configs on `UIManager` (`UIManager.RCTView`) when they are first read, instead of copying every config onto `UIManager` when it is first imported. This keeps the native legacy UIManager constants off the startup path.
+   */
+  RN_EXPORT static bool lazyLegacyUIManagerConstants();
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.

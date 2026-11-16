@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3e619f92c56f90a6ff3eea0c48d027a7>>
+ * @generated SignedSource<<7878968cc29d98cb3447069b38f881de>>
  */
 
 /**
@@ -675,6 +675,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::keepTimersRunningWhileHostPausedAndroid();
+  }
+
+  bool lazyLegacyUIManagerConstants() override {
+    auto value = values_["lazyLegacyUIManagerConstants"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::lazyLegacyUIManagerConstants();
   }
 
   bool optimizedAnimatedPropUpdates() override {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9b64fa4c8329098d9c2977ad2a162fbf>>
+ * @generated SignedSource<<42b3bef0cab857ebf55fc360cf0e4764>>
  */
 
 /**
@@ -304,6 +304,10 @@ bool ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled() {
 
 bool ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid() {
   return getAccessor().keepTimersRunningWhileHostPausedAndroid();
+}
+
+bool ReactNativeFeatureFlags::lazyLegacyUIManagerConstants() {
+  return getAccessor().lazyLegacyUIManagerConstants();
 }
 
 bool ReactNativeFeatureFlags::optimizedAnimatedPropUpdates() {

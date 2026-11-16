@@ -11,6 +11,7 @@
 import type {UnsafeObject} from '../Types/CodegenTypes';
 import type {UIManagerJSInterface} from '../Types/UIManagerJSInterface';
 
+import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import {getFabricUIManager} from './FabricUIManager';
 import nullthrows from 'nullthrows';
 
@@ -264,4 +265,43 @@ const UIManager: UIManagerJSInterface = Object.create(
   },
 );
 
-export default UIManager;
+function withLazyLegacyProperties(
+  target: UIManagerJSInterface,
+): UIManagerJSInterface {
+  const {getLegacyUIManagerProperty} = require('./BridgelessUIManager');
+  // Legacy code reads view manager configs and other legacy constants as
+  // properties (`UIManager.RCTView`). Resolve them when they are read, so that
+  // importing UIManager doesn't build the native legacy constants.
+  return new Proxy(target, {
+    get(obj, prop, receiver) {
+      if (typeof prop !== 'string' || prop in obj) {
+        return Reflect.get(obj, prop, receiver);
+      }
+      return getLegacyUIManagerProperty(prop);
+    },
+    has(obj, prop) {
+      return (
+        prop in obj ||
+        (typeof prop === 'string' && getLegacyUIManagerProperty(prop) != null)
+      );
+    },
+    getOwnPropertyDescriptor(obj, prop) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(obj, prop);
+      if (descriptor != null || typeof prop !== 'string') {
+        return descriptor;
+      }
+      const value = getLegacyUIManagerProperty(prop);
+      return value == null
+        ? undefined
+        : {value, writable: false, enumerable: true, configurable: true};
+    },
+  });
+}
+
+const UIManagerExport: UIManagerJSInterface =
+  global.RN$Bridgeless === true &&
+  ReactNativeFeatureFlags.lazyLegacyUIManagerConstants()
+    ? withLazyLegacyProperties(UIManager)
+    : UIManager;
+
+export default UIManagerExport;

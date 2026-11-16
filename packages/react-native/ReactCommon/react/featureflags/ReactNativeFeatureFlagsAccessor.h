@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<782d0e42e0854fc260d458a29ea52b8f>>
+ * @generated SignedSource<<3139ca0b554a8f105939a67dfc0edc9c>>
  */
 
 /**
@@ -104,6 +104,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool fuseboxScreenshotCaptureEnabled();
   bool fuseboxWebSocketEventsEnabled();
   bool keepTimersRunningWhileHostPausedAndroid();
+  bool lazyLegacyUIManagerConstants();
   bool optimizedAnimatedPropUpdates();
   bool overrideBySynchronousMountPropsAtMountingAndroid();
   bool perfIssuesEnabled();
@@ -143,7 +144,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 99> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -215,6 +216,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> fuseboxScreenshotCaptureEnabled_;
   std::atomic<std::optional<bool>> fuseboxWebSocketEventsEnabled_;
   std::atomic<std::optional<bool>> keepTimersRunningWhileHostPausedAndroid_;
+  std::atomic<std::optional<bool>> lazyLegacyUIManagerConstants_;
   std::atomic<std::optional<bool>> optimizedAnimatedPropUpdates_;
   std::atomic<std::optional<bool>> overrideBySynchronousMountPropsAtMountingAndroid_;
   std::atomic<std::optional<bool>> perfIssuesEnabled_;

@@ -804,6 +804,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    lazyLegacyUIManagerConstants: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-16',
+        description:
+          'In Bridgeless mode, resolves legacy view manager configs on `UIManager` (`UIManager.RCTView`) when they are first read, instead of copying every config onto `UIManager` when it is first imported. This keeps the native legacy UIManager constants off the startup path.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'canary',
+    },
     optimizedAnimatedPropUpdates: {
       defaultValue: false,
       metadata: {

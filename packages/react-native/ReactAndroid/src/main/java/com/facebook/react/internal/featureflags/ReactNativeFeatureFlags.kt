@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c65f172e91f823049cf508cc70663c64>>
+ * @generated SignedSource<<da99699a8757ddb1d4262efd277a4aa4>>
  */
 
 /**
@@ -449,6 +449,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun keepTimersRunningWhileHostPausedAndroid(): Boolean = accessor.keepTimersRunningWhileHostPausedAndroid()
+
+  /**
+   * In Bridgeless mode, resolves legacy view manager configs on `UIManager` (`UIManager.RCTView`) when they are first read, instead of copying every config onto `UIManager` when it is first imported. This keeps the native legacy UIManager constants off the startup path.
+   */
+  @JvmStatic
+  public fun lazyLegacyUIManagerConstants(): Boolean = accessor.lazyLegacyUIManagerConstants()
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
