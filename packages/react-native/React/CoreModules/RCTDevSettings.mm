@@ -122,8 +122,16 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 
 @end
 
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+// Each instance has its own packager connection, and the packager sends a command to every connection.
+// RCTTriggerReloadCommandListeners reloads every host, so only one live instance handles packager commands.
+// Accessed on the main queue only.
+static __weak RCTDevSettings *packagerCommandOwner;
+#endif
+
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
+  BOOL _invalidated;
 }
 
 @property (nonatomic, strong) Class executorClass;
@@ -183,18 +191,21 @@ RCT_EXPORT_MODULE()
 #endif
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+  __weak __typeof(self) weakSelf = self;
   [self
       addNotificationHandler:^(id params) {
+        if (![weakSelf _claimPackagerCommand]) {
+          return;
+        }
         RCTTriggerReloadCommandListeners(@"Global hotkey");
       }
                        queue:dispatch_get_main_queue()
                    forMethod:@"reload"];
 #if RCT_DEV_MENU
-  __weak __typeof(self) weakSelf = self;
   [self
       addNotificationHandler:^(id params) {
         __typeof(self) strongSelf = weakSelf;
-        if (strongSelf == nullptr) {
+        if (![strongSelf _claimPackagerCommand]) {
           return;
         }
         [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
@@ -210,6 +221,20 @@ RCT_EXPORT_MODULE()
 #endif
 }
 
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+- (BOOL)_claimPackagerCommand
+{
+  if (_invalidated) {
+    return NO;
+  }
+  if (packagerCommandOwner != nil && packagerCommandOwner != self) {
+    return NO;
+  }
+  packagerCommandOwner = self;
+  return YES;
+}
+#endif
+
 - (dispatch_queue_t)methodQueue
 {
   return dispatch_get_main_queue();
@@ -218,6 +243,12 @@ RCT_EXPORT_MODULE()
 - (void)invalidate
 {
   [super invalidate];
+  _invalidated = YES;
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+  if (packagerCommandOwner == self) {
+    packagerCommandOwner = nil;
+  }
+#endif
 #if RCT_DEV
   [_packagerConnection stop];
 #endif
