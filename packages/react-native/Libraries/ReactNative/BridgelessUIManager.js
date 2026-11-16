@@ -331,6 +331,15 @@ const UIManagerJS: UIManagerJSInterface & {[key: string]: ViewManagerConfig} = {
   ...UIManagerJSPlatformAPIs,
   ...UIManagerJSUnusedInNewArchAPIs,
   getViewManagerConfig: (viewManagerName: string): ViewManagerConfig => {
+    if (
+      getUIManagerConstants &&
+      getConstantsForViewManager &&
+      ReactNativeFeatureFlags.lazyLegacyUIManagerConstants()
+    ) {
+      // Look up the one view manager, instead of building the legacy
+      // constants for every view manager first.
+      return getLazyViewManagerConfig(viewManagerName);
+    }
     if (getUIManagerConstants) {
       const constants = getUIManagerConstantsCached();
       if (
@@ -474,6 +483,9 @@ const UIManagerJS: UIManagerJSInterface & {[key: string]: ViewManagerConfig} = {
 export function getLegacyUIManagerProperty(name: string): unknown {
   if (!getUIManagerConstants) {
     return undefined;
+  }
+  if (lazyViewManagerConfigs.has(name)) {
+    return lazyViewManagerConfigs.get(name);
   }
   const constants = getUIManagerConstantsCached();
   if (Object.hasOwn(constants, name)) {

@@ -86,6 +86,9 @@ describe('UIManager', () => {
           getConstantsForViewManager: JestMockFn<[string], {...}>,
         },
       ) => void,
+      {
+        hasConstantsForViewManagerBinding = true,
+      }: {hasConstantsForViewManagerBinding?: boolean} = {},
     ): void {
       const originalBridgelessValue = global.RN$Bridgeless;
       const originalGetConstants =
@@ -111,7 +114,7 @@ describe('UIManager', () => {
         global.RN$LegacyInterop_UIManager_getConstants = getConstants;
         // $FlowExpectedError[cannot-write]
         global.RN$LegacyInterop_UIManager_getConstantsForViewManager =
-          getConstantsForViewManager;
+          hasConstantsForViewManagerBinding ? getConstantsForViewManager : null;
         // $FlowExpectedError[cannot-write]
         global.RN$LegacyInterop_UIManager_getDefaultEventTypes = jest.fn(
           () => ({}),
@@ -195,6 +198,34 @@ describe('UIManager', () => {
         expect('RCTMissingView' in UIManager).toBe(false);
         expect(getConstantsForViewManager).not.toHaveBeenCalled();
       });
+    });
+
+    test('looks up a single view manager in getViewManagerConfig', () => {
+      withLazyBridgelessUIManager(
+        (UIManager, {getConstants, getConstantsForViewManager}) => {
+          const config = UIManager.getViewManagerConfig('RCTEagerView');
+          expect(config).toBe(lazyViewManagerConfig);
+          expect(UIManager.getViewManagerConfig('RCTEagerView')).toBe(config);
+          expect(Reflect.get(UIManager, 'RCTEagerView')).toBe(config);
+          expect(getConstants).not.toHaveBeenCalled();
+          expect(getConstantsForViewManager).toHaveBeenCalledTimes(1);
+          expect(getConstantsForViewManager).toHaveBeenCalledWith(
+            'RCTEagerView',
+          );
+        },
+      );
+    });
+
+    test('uses the legacy constants in getViewManagerConfig without a per-view binding', () => {
+      withLazyBridgelessUIManager(
+        (UIManager, {getConstants}) => {
+          expect(UIManager.getViewManagerConfig('RCTEagerView')).toBe(
+            eagerViewManagerConfig,
+          );
+          expect(getConstants).toHaveBeenCalledTimes(1);
+        },
+        {hasConstantsForViewManagerBinding: false},
+      );
     });
   });
 });
