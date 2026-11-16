@@ -401,7 +401,6 @@ using namespace facebook::react;
 
     RCTScreenSize();
     RCTScreenScale();
-    RCTSwitchSize();
 
     dispatch_semaphore_signal(moduleSetupComplete);
   });
