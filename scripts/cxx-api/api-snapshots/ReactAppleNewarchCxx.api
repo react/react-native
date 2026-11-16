@@ -1035,10 +1035,13 @@ interface RCTDivisionAnimatedNode : public RCTValueAnimatedNode {
 interface RCTEnhancedScrollView : public UIScrollView {
   public @property (assign) BOOL centerContent;
   public @property (assign) BOOL disableIntervalMomentum;
+  public @property (assign) BOOL horizontal;
+  public @property (assign) BOOL padsContentForSafeArea;
   public @property (assign) BOOL pinchGestureEnabled;
   public @property (assign) BOOL snapToEnd;
   public @property (assign) BOOL snapToStart;
   public @property (assign) CGFloat snapToInterval;
+  public @property (assign) UIEdgeInsets baseContentInset;
   public @property (copy) NSArray<NSNumber*>* snapToOffsets;
   public @property (copy) NSString* snapToAlignment;
   public @property (strong, readonly) RCTGenericDelegateSplitter<id<UIScrollViewDelegate>>* delegateSplitter;
@@ -3400,6 +3403,7 @@ const char facebook::react::RawTextComponentName[];
 const char facebook::react::RootComponentName[];
 const char facebook::react::RuntimeSchedulerKey[];
 const char facebook::react::SafeAreaViewComponentName[];
+const char facebook::react::ScrollContentViewComponentName[];
 const char facebook::react::ScrollViewComponentName[];
 const char facebook::react::TextComponentName[];
 const char facebook::react::TextEffectComponentName[];
@@ -6698,6 +6702,29 @@ class facebook::react::ScopedShadowTreeRevisionLock {
   public facebook::react::ScopedShadowTreeRevisionLock& operator=(const facebook::react::ScopedShadowTreeRevisionLock&) = delete;
   public facebook::react::ScopedShadowTreeRevisionLock& operator=(facebook::react::ScopedShadowTreeRevisionLock&&) = delete;
   public ~ScopedShadowTreeRevisionLock() noexcept;
+}
+
+class facebook::react::ScrollContentViewComponentDescriptor : public facebook::react::ConcreteComponentDescriptor<facebook::react::ScrollContentViewShadowNode> {
+  public ScrollContentViewComponentDescriptor(const facebook::react::ComponentDescriptorParameters& parameters, facebook::react::RawPropsParser&& rawPropsParser = {});
+  public virtual void adopt(facebook::react::ShadowNode& shadowNode) const override;
+}
+
+class facebook::react::ScrollContentViewProps : public facebook::react::HostPlatformViewProps {
+  public ScrollContentViewProps() = default;
+  public ScrollContentViewProps(const facebook::react::PropsParserContext& context, const facebook::react::ScrollContentViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+}
+
+class facebook::react::ScrollContentViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ScrollContentViewComponentName, facebook::react::ScrollContentViewProps, facebook::react::ViewEventEmitter, facebook::react::ScrollContentViewState> {
+  public ScrollContentViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
+  public ScrollContentViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
+  public static void padForSafeArea(facebook::yoga::Style& style, const facebook::react::ScrollContentViewState& state, facebook::react::LayoutDirection layoutDirection);
+  public void applySafeAreaPadding();
+}
+
+class facebook::react::ScrollContentViewState {
+  public bool operator==(const facebook::react::ScrollContentViewState&) const = default;
+  public bool swapLeftAndRightInRTL;
+  public facebook::react::EdgeInsets safeAreaPadding;
 }
 
 class facebook::react::ScrollViewEventEmitter : public facebook::react::BaseViewEventEmitter {
