@@ -41,7 +41,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.robolectric.ParameterizedRobolectricTestRunner
 import org.robolectric.Robolectric
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
@@ -81,7 +80,7 @@ class ReactScrollViewTouchCancelTest(private val kind: String) {
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
     SoLoader.setInTestMode()
-    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    context = createTestReactApplicationContext()
     context.scrollEndedListeners.addListener(scrollEndedListener)
     themedContext = ThemedReactContext(context, context, null, -1)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())

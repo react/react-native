@@ -89,11 +89,11 @@ class StyleValuePool {
       return StyleSizeLength::undefined();
     } else if (handle.isAuto()) {
       return StyleSizeLength::ofAuto();
-    } else if (handle.isKeyword(StyleValueHandle::Keyword::MaxContent)) {
+    } else if (isKeyword(handle, StyleValueHandle::Keyword::MaxContent)) {
       return StyleSizeLength::ofMaxContent();
-    } else if (handle.isKeyword(StyleValueHandle::Keyword::FitContent)) {
+    } else if (isKeyword(handle, StyleValueHandle::Keyword::FitContent)) {
       return StyleSizeLength::ofFitContent();
-    } else if (handle.isKeyword(StyleValueHandle::Keyword::Stretch)) {
+    } else if (isKeyword(handle, StyleValueHandle::Keyword::Stretch)) {
       return StyleSizeLength::ofStretch();
     } else {
       assert(
@@ -132,6 +132,17 @@ class StyleValuePool {
   }
 
  private:
+  bool isKeyword(StyleValueHandle handle, StyleValueHandle::Keyword keyword)
+      const {
+    if (handle.type() != StyleValueHandle::Type::Keyword) {
+      return false;
+    }
+    // storeKeyword() keeps an existing pool slot, so the keyword may be there
+    uint32_t value = handle.isValueIndexed() ? buffer_.get32(handle.value())
+                                             : handle.value();
+    return value == static_cast<uint32_t>(keyword);
+  }
+
   void storeValue(
       StyleValueHandle& handle,
       float value,

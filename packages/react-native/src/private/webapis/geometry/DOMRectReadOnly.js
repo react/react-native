@@ -16,7 +16,7 @@
 
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
-// flowlint sketchy-null:off, unsafe-getters-setters:off
+// flowlint unsafe-getters-setters:off
 
 export interface DOMRectInit {
   x?: ?number;

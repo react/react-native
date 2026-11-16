@@ -1193,6 +1193,20 @@ module.exports = [
     },
   },
   {
+    title: 'Auto-expanding (uncontrolled)',
+    render: function (): React.Node {
+      return (
+        <View>
+          <ExampleTextInput
+            placeholder="height should grow up to 10 lines"
+            multiline={true}
+            numberOfLines={10}
+          />
+        </View>
+      );
+    },
+  },
+  {
     title: 'Drag and drop',
     render: function (): React.Node {
       return (

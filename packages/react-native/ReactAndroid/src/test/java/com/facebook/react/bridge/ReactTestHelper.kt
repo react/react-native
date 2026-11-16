@@ -21,6 +21,7 @@ object ReactTestHelper {
 
   @OptIn(UnstableReactNativeAPI::class)
   @JvmOverloads
+  @JvmStatic
   fun createTestReactApplicationContext(
       application: Application = RuntimeEnvironment.getApplication()
   ): ReactApplicationContext {

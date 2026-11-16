@@ -12,7 +12,9 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {AccessibilityProps} from 'react-native';
 
-import accessibilityPropsSuite from '../../../../src/private/__tests__/utilities/accessibilityPropsSuite';
+import accessibilityPropsSuite, {
+  rolePropSuite,
+} from '../../../../src/private/__tests__/utilities/accessibilityPropsSuite';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
@@ -47,6 +49,59 @@ describe('<TouchableWithoutFeedback>', () => {
     }
 
     accessibilityPropsSuite(ComponentWithAccessibilityProps);
+    rolePropSuite(ComponentWithAccessibilityProps);
+
+    describe('aria-label', () => {
+      it('is mapped to accessibilityLabel', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableWithoutFeedback aria-label="Close">
+              <View />
+            </TouchableWithoutFeedback>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+        ).toEqual(<rn-view accessibilityLabel="Close" />);
+      });
+
+      it('takes precedence over accessibilityLabel', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableWithoutFeedback
+              aria-label="aria value"
+              accessibilityLabel="native value">
+              <View />
+            </TouchableWithoutFeedback>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+        ).toEqual(<rn-view accessibilityLabel="aria value" />);
+      });
+
+      it("keeps the child's own label when neither is set", () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableWithoutFeedback>
+              <View accessibilityLabel="child label" />
+            </TouchableWithoutFeedback>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+        ).toEqual(<rn-view accessibilityLabel="child label" />);
+      });
+    });
 
     describe('disabled', () => {
       it('sets accessibilityState disabled to true', () => {

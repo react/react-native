@@ -10,6 +10,7 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useMemo} from 'react';
 import {
@@ -67,16 +68,16 @@ function Row({
 }): React.Node {
   return (
     <View style={styles.row}>
-      <Text style={styles.label} numberOfLines={2}>
+      <RNTesterText style={styles.label} numberOfLines={2}>
         {label}
-      </Text>
+      </RNTesterText>
       <View style={styles.demo}>{children}</View>
     </View>
   );
 }
 
 function SectionHeader({title}: {title: string}): React.Node {
-  return <Text style={styles.section}>{title}</Text>;
+  return <RNTesterText style={styles.section}>{title}</RNTesterText>;
 }
 
 function FlagIndicator(): React.Node {

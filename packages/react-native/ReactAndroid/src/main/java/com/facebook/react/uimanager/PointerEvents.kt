@@ -7,6 +7,8 @@
 
 package com.facebook.react.uimanager
 
+import com.facebook.common.logging.FLog
+import com.facebook.react.common.ReactConstants
 import java.util.Locale
 
 /**
@@ -28,12 +30,21 @@ public enum class PointerEvents {
 
   public companion object {
 
+    /**
+     * Parses pointer events case-insensitively, treating hyphens as underscores. Null and invalid
+     * values return [AUTO]; invalid values also log a warning.
+     */
     @JvmStatic
     public fun parsePointerEvents(pointerEventsStr: String?): PointerEvents =
         if (pointerEventsStr == null) {
           AUTO
         } else {
-          PointerEvents.valueOf(pointerEventsStr.uppercase(Locale.US).replace("-", "_"))
+          try {
+            PointerEvents.valueOf(pointerEventsStr.uppercase(Locale.US).replace("-", "_"))
+          } catch (e: IllegalArgumentException) {
+            FLog.w(ReactConstants.TAG, "Invalid pointerEvents value: $pointerEventsStr")
+            AUTO
+          }
         }
 
     @JvmStatic

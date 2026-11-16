@@ -15,7 +15,6 @@ import type {InstanceHandle} from './internals/NodeInternals';
 import type ReactNativeDocument from './ReactNativeDocument';
 import type ReadOnlyElement from './ReadOnlyElement';
 
-import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
 import {setPlatformObject} from '../../webidl/PlatformObjects';
 import EventTarget from '../events/EventTarget';
 import {EVENT_TARGET_GET_THE_PARENT_KEY} from '../events/internals/EventTargetInternals';
@@ -28,14 +27,6 @@ import {
   setOwnerDocument,
 } from './internals/NodeInternals';
 import NativeDOM from './specs/NativeDOM';
-
-// $FlowFixMe[unsupported-variance-annotation]
-// $FlowFixMe[incompatible-type]
-const ReadOnlyNodeBase: typeof Object =
-  ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()
-    ? EventTarget
-    : // $FlowFixMe[incompatible-type]
-      Object;
 
 // Ideally, this class would be exported as-is, but calling super() in a
 // subclass is a very slow operation the way that Babel transforms it at
@@ -51,7 +42,7 @@ const ReadOnlyNodeBase: typeof Object =
 // hierarchy correctly.
 
 /** @build-types protected-constructor */
-class ReadOnlyNode extends ReadOnlyNodeBase {
+class ReadOnlyNode extends EventTarget {
   constructor(
     instanceHandle: InstanceHandle,
     // This will be null for the document node itself.

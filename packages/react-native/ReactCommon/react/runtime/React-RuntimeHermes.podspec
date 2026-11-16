@@ -37,6 +37,7 @@ Pod::Spec.new do |s|
   s.dependency "React-cxxstableapi"
   s.dependency "React-jsitracing"
   s.dependency "React-jsi"
+  s.dependency "React-logger"
   s.dependency "React-utils"
   s.dependency "React-RuntimeCore"
   s.dependency "React-featureflags"

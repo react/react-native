@@ -59,7 +59,11 @@ internal class ReactTextViewAccessibilityDelegate(
       }
     }
 
-    fun resetDelegate(view: View, originalFocus: Boolean, originalImportantForAccessibility: Int) {
+    private fun resetDelegate(
+        view: View,
+        originalFocus: Boolean,
+        originalImportantForAccessibility: Int,
+    ) {
       ViewCompat.setAccessibilityDelegate(
           view,
           ReactTextViewAccessibilityDelegate(
@@ -68,6 +72,33 @@ internal class ReactTextViewAccessibilityDelegate(
               originalImportantForAccessibility,
           ),
       )
+    }
+
+    /**
+     * Stores the links among the clickable spans of [text] in a view tag and resets the
+     * accessibility delegate so that these can be picked up by the accessibility system. A view
+     * that already has this delegate keeps it when the text has no links, before or after the
+     * update, as the delegate only reads the links when it's created.
+     */
+    fun updateAccessibilityLinks(view: View, text: Spanned) {
+      val accessibilityLinks = AccessibilityLinks(text)
+      val hadLinks = view.getTag(R.id.accessibility_links) != null
+      view.setTag(
+          R.id.accessibility_links,
+          if (accessibilityLinks.size() > 0) accessibilityLinks else null,
+      )
+      if (
+          accessibilityLinks.size() == 0 &&
+              !hadLinks &&
+              ViewCompat.getAccessibilityDelegate(view) is ReactTextViewAccessibilityDelegate
+      ) {
+        // Like setting the delegate through ViewCompat, which makes an "auto" view important.
+        if (view.importantForAccessibility == View.IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
+          view.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+        }
+        return
+      }
+      resetDelegate(view, view.isFocusable, view.importantForAccessibility)
     }
   }
 
@@ -82,13 +113,13 @@ internal class ReactTextViewAccessibilityDelegate(
 
     if (span is ReactClickableSpan && hostView is TextView) {
       span.isKeyboardFocused = hasFocus
-      span.focusBgColor = (hostView as TextView).highlightColor
+      span.focusBgColor = hostView.highlightColor
       hostView.invalidate()
     } else if (hostView is PreparedLayoutTextView) {
       if (hasFocus) {
-        (hostView as PreparedLayoutTextView).setSelection(link.start, link.end)
+        hostView.setSelection(link.start, link.end)
       } else {
-        (hostView as PreparedLayoutTextView).clearSelection()
+        hostView.clearSelection()
       }
     }
   }
@@ -155,11 +186,11 @@ internal class ReactTextViewAccessibilityDelegate(
 
   private fun getLayoutFromHost(): Layout? {
     return if (hostView is PreparedLayoutTextView) {
-      (hostView as PreparedLayoutTextView).preparedLayout?.layout
-    } else if (hostView is ReactTextView && (hostView as ReactTextView).preparedLayout != null) {
-      (hostView as ReactTextView).preparedLayout?.layout
+      hostView.preparedLayout?.layout
+    } else if (hostView is ReactTextView && hostView.preparedLayout != null) {
+      hostView.preparedLayout?.layout
     } else if (hostView is TextView) {
-      (hostView as TextView).layout
+      hostView.layout
     } else {
       null
     }

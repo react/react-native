@@ -215,7 +215,7 @@ function convertDefaultTypeToString(
       return String(typeAnnotation.default);
     case 'DoubleTypeAnnotation':
       const defaultDoubleVal = typeAnnotation.default;
-      return parseInt(defaultDoubleVal, 10) === defaultDoubleVal
+      return parseInt(String(defaultDoubleVal), 10) === defaultDoubleVal
         ? typeAnnotation.default.toFixed(1)
         : String(typeAnnotation.default);
     case 'FloatTypeAnnotation':
@@ -223,7 +223,7 @@ function convertDefaultTypeToString(
       if (defaultFloatVal == null) {
         return '';
       }
-      return parseInt(defaultFloatVal, 10) === defaultFloatVal
+      return parseInt(String(defaultFloatVal), 10) === defaultFloatVal
         ? defaultFloatVal.toFixed(1)
         : String(typeAnnotation.default);
     case 'ReservedPropTypeAnnotation':

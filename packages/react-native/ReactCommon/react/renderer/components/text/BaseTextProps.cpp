@@ -13,6 +13,8 @@
 #include <react/renderer/debug/DebugStringConvertibleItem.h>
 #include <react/utils/FloatComparison.h>
 
+#include <cmath>
+
 namespace facebook::react {
 
 static TextAttributes convertRawProp(
@@ -436,7 +438,9 @@ void BaseTextProps::appendTextAttributesProps(
   if (!floatEquality(
           textAttributes.letterSpacing,
           oldProps->textAttributes.letterSpacing)) {
-    result["letterSpacing"] = textAttributes.letterSpacing;
+    result["letterSpacing"] = std::isnan(textAttributes.letterSpacing)
+        ? folly::dynamic(nullptr)
+        : textAttributes.letterSpacing;
   }
 
   if (textAttributes.textTransform != oldProps->textAttributes.textTransform) {

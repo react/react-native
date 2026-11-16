@@ -1,0 +1,57 @@
+name: setup-spm-artifacts
+description: >-
+  Downloads the ReactCore and ReactNativeDependencies XCFrameworks built in this
+  run, in both flavors, into the SwiftPM artifact root /tmp/spm-artifacts. Pass
+  `--artifacts /tmp/spm-artifacts --download skip` to the `react-native spm`
+  command that follows.
+inputs:
+  working-directory:
+    description: The app directory that `npx react-native spm download` runs from.
+    required: true
+runs:
+  using: composite
+  steps:
+    # Both flavors are needed by every build, not just the one it builds:
+    # `spm` stages both flavor framework trees and lets a per-configuration
+    # build setting pick one at build time, so it validates the debug/ and
+    # release/ artifact slots together (and `--download skip` refuses an
+    # incomplete slot). Please don't "optimise" this down to one flavor.
+    - name: Download ReactCore (Debug)
+      uses: ./.github/actions/download-artifact
+      with:
+        name: ReactCoreDebug.xcframework.tar.gz
+        path: /tmp/rc-debug
+    - name: Download ReactCore (Release)
+      uses: ./.github/actions/download-artifact
+      with:
+        name: ReactCoreRelease.xcframework.tar.gz
+        path: /tmp/rc-release
+    - name: Download ReactNativeDependencies (Debug)
+      uses: ./.github/actions/download-artifact
+      with:
+        name: ReactNativeDependenciesDebug.xcframework.tar.gz
+        path: /tmp/deps-debug
+    - name: Download ReactNativeDependencies (Release)
+      uses: ./.github/actions/download-artifact
+      with:
+        name: ReactNativeDependenciesRelease.xcframework.tar.gz
+        path: /tmp/deps-release
+    # The ordinary `spm download`, pointed at the XCFrameworks this run just
+    # built rather than at the published nightly (RN_CORE_TARBALL_PATH /
+    # RN_DEPS_TARBALL_PATH are overrides download-spm-artifacts.js already
+    # supports). It fills both flavor slots per call and skips any slot that
+    # already validates, so it runs twice: the first pass fills both slots
+    # from the Release tarballs, then debug/ is dropped and refilled from the
+    # Debug tarballs while release/ is left alone. hermes-engine is fetched
+    # from Maven by the command itself.
+    - name: Stage the XCFrameworks for SwiftPM (Debug + Release)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        RN_CORE_TARBALL_PATH=/tmp/rc-release/ReactCoreRelease.xcframework.tar.gz \
+        RN_DEPS_TARBALL_PATH=/tmp/deps-release/ReactNativeDependenciesRelease.xcframework.tar.gz \
+          npx react-native spm download --artifacts /tmp/spm-artifacts
+        rm -rf /tmp/spm-artifacts/debug
+        RN_CORE_TARBALL_PATH=/tmp/rc-debug/ReactCoreDebug.xcframework.tar.gz \
+        RN_DEPS_TARBALL_PATH=/tmp/deps-debug/ReactNativeDependenciesDebug.xcframework.tar.gz \
+          npx react-native spm download --artifacts /tmp/spm-artifacts

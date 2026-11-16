@@ -15,6 +15,7 @@ import type {HostComponent} from '../../types/HostComponent';
 import AndroidHorizontalScrollViewNativeComponent from '../../../../Libraries/Components/ScrollView/AndroidHorizontalScrollViewNativeComponent';
 import ScrollContentViewNativeComponent from '../../../../Libraries/Components/ScrollView/ScrollContentViewNativeComponent';
 import ScrollViewNativeComponent from '../../../../Libraries/Components/ScrollView/ScrollViewNativeComponent';
+import View from '../../../../Libraries/Components/View/View';
 import Platform from '../../../../Libraries/Utilities/Platform';
 import AndroidHorizontalScrollContentViewNativeComponent from '../../components/scrollview/specs/AndroidHorizontalScrollContentViewNativeComponent';
 
@@ -26,4 +27,6 @@ export const HScrollViewNativeComponent: HostComponent<ScrollViewNativeProps> =
 export const HScrollContentViewNativeComponent: HostComponent<ViewProps> =
   Platform.OS === 'android'
     ? AndroidHorizontalScrollContentViewNativeComponent
-    : ScrollContentViewNativeComponent;
+    : Platform.OS === 'ios'
+      ? ScrollContentViewNativeComponent
+      : View;

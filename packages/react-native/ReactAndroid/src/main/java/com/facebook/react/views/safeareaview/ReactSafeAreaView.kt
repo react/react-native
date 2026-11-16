@@ -17,11 +17,16 @@ import com.facebook.react.bridge.GuardedRunnable
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.uimanager.PixelUtil.pxToDp
+import com.facebook.react.uimanager.PointerEvents
+import com.facebook.react.uimanager.ReactPointerEventsView
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
 
-internal class ReactSafeAreaView(val reactContext: ThemedReactContext) : ViewGroup(reactContext) {
+internal class ReactSafeAreaView(val reactContext: ThemedReactContext) :
+    ViewGroup(reactContext), ReactPointerEventsView {
   internal var stateWrapper: StateWrapper? = null
+
+  override var pointerEvents: PointerEvents = PointerEvents.AUTO
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()

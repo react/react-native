@@ -23,6 +23,7 @@ const {
   getNativeTypeFromAnnotation,
 } = require('./ComponentsGeneratorUtils.js');
 const {
+  convertDefaultTypeToString,
   generateStructName,
   getDefaultInitializerString,
   getEnumMaskName,
@@ -106,11 +107,13 @@ const EnumTemplate = ({
   values,
   fromCases,
   toCases,
+  defaultValue,
 }: {
   enumName: string,
   values: string,
   fromCases: string,
   toCases: string,
+  defaultValue: string,
 }) =>
   `
 enum class ${enumName} { ${values} };
@@ -118,7 +121,7 @@ enum class ${enumName} { ${values} };
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ${enumName} &result) {
   auto string = (std::string)value;
   ${fromCases}
-  abort();
+  result = ${defaultValue};
 }
 
 static inline std::string toString(const ${enumName} &value) {
@@ -142,12 +145,14 @@ const IntEnumTemplate = ({
   fromCases,
   toCases,
   toDynamicCases,
+  defaultValue,
 }: {
   enumName: string,
   values: string,
   fromCases: string,
   toCases: string,
   toDynamicCases: string,
+  defaultValue: string,
 }) =>
   `
 enum class ${enumName} { ${values} };
@@ -157,7 +162,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   auto integerValue = (int)value;
   switch (integerValue) {${fromCases}
     default:
-      abort();
+      result = ${defaultValue};
   }
 }
 
@@ -419,6 +424,7 @@ function generateStringEnum(
       values: values.map(toSafeCppString).join(', '),
       fromCases: fromCases,
       toCases: toCases,
+      defaultValue: convertDefaultTypeToString(componentName, prop),
     });
   }
 
@@ -474,6 +480,7 @@ function generateIntEnum(
       fromCases,
       toCases,
       toDynamicCases,
+      defaultValue: convertDefaultTypeToString(componentName, prop),
     });
   }
 

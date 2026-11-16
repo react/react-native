@@ -57,7 +57,7 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
    * A set of traits associated with a particular class.
    * Reimplement in subclasses to declare class-specific traits.
    */
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     return ShadowNodeTraits{};
   }

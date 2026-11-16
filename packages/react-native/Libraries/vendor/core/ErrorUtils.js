@@ -10,7 +10,9 @@
 
 // From @react-native/js-polyfills
 type ErrorHandler = (error: unknown, isFatal: boolean) => void;
-type Fn<Args extends ReadonlyArray<unknown>, Return> = (...Args) => Return;
+type Fn<Args extends ReadonlyArray<unknown>, Return> = (
+  ...rest: Args
+) => Return;
 export type ErrorUtils = {
   applyWithGuard<TArgs extends ReadonlyArray<unknown>, TOut>(
     fun: Fn<TArgs, TOut>,
@@ -29,7 +31,7 @@ export type ErrorUtils = {
     fun: Fn<TArgs, TOut>,
     name?: ?string,
     context?: unknown,
-  ): ?(...TArgs) => ?TOut,
+  ): ?(...rest: TArgs) => ?TOut,
   inGuard(): boolean,
   reportError(error: unknown): void,
   reportFatalError(error: unknown): void,

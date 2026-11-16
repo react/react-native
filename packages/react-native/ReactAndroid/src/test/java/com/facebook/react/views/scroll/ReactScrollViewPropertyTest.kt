@@ -31,7 +31,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /** Verifies border radius properties applied by the vertical and horizontal ScrollView managers. */
@@ -46,7 +45,7 @@ class ReactScrollViewPropertyTest {
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    context = createTestReactApplicationContext()
     themedContext = ThemedReactContext(context, context, null, -1)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
   }

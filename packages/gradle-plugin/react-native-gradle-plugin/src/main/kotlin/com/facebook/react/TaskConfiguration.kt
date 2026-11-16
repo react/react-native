@@ -13,6 +13,7 @@ import com.facebook.react.utils.BackwardCompatUtils.showJSCRemovalMessage
 import com.facebook.react.utils.NdkConfiguratorUtils.configureJsEnginePackagingOptions
 import com.facebook.react.utils.NdkConfiguratorUtils.configureNewArchPackagingOptions
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
+import com.facebook.react.utils.ProjectUtils.shouldResetMetroCacheBeforeBundling
 import com.facebook.react.utils.ProjectUtils.useThirdPartyJSC
 import com.facebook.react.utils.detectedCliFile
 import com.facebook.react.utils.detectedEntryFile
@@ -71,6 +72,7 @@ internal fun Project.configureReactTasks(variant: Variant, config: ReactExtensio
           task.cliFile.set(cliFile)
           task.bundleCommand.set(config.bundleCommand)
           task.entryFile.set(detectedEntryFile(config, entryFileEnvVariable))
+          task.resetMetroCacheBeforeBundling.set(project.shouldResetMetroCacheBeforeBundling)
           task.extraPackagerArgs.set(config.extraPackagerArgs)
           task.bundleConfig.set(config.bundleConfig)
           task.bundleAssetName.set(config.bundleAssetName)

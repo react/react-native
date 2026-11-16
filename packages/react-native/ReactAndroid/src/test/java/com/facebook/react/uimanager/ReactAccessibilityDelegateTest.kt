@@ -40,7 +40,6 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
@@ -54,7 +53,7 @@ class ReactAccessibilityDelegateTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    reactContext = spy(createTestReactApplicationContext(RuntimeEnvironment.getApplication()))
+    reactContext = spy(createTestReactApplicationContext())
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     view = ReactViewGroup(themedReactContext).apply { id = 100 }
     accessibilityDelegate = ReactAccessibilityDelegate(view, false, 0)

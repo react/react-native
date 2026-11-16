@@ -73,7 +73,10 @@ internal class LinearGradient(val direction: Direction, val colorStops: List<Col
                       }
                   val colorStopPosition =
                       if (colorStop.hasKey("position") && !colorStop.isNull("position")) {
-                        LengthPercentage.setFromDynamic(colorStop.getDynamic("position"))
+                        LengthPercentage.setFromDynamic(
+                            colorStop.getDynamic("position"),
+                            allowNegative = true,
+                        )
                       } else {
                         null
                       }
@@ -142,7 +145,8 @@ internal class LinearGradient(val direction: Direction, val colorStops: List<Col
     val dx = endPoint[0] - startPoint[0]
     val dy = endPoint[1] - startPoint[1]
     val gradientLineLength = sqrt(dx * dx + dy * dy)
-    val finalStops = ColorStopUtils.getFixedColorStops(colorStops, gradientLineLength)
+    val fixedStops = ColorStopUtils.getFixedColorStops(colorStops, gradientLineLength)
+    val finalStops = ColorStopUtils.clipColorStops(fixedStops)
     val colors = IntArray(finalStops.size)
     val positions = FloatArray(finalStops.size)
 
@@ -203,7 +207,7 @@ internal class LinearGradient(val direction: Direction, val colorStops: List<Col
     }
 
     val slope = tan(Math.toRadians((90 - adjustedAngle))).toFloat()
-    val perpendicularSlope = -1 / slope
+    val perpendicularSlope = -1f / slope
 
     val halfHeight = height / 2
     val halfWidth = width / 2

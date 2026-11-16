@@ -14,20 +14,21 @@ const utils = require('./codegen-utils');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const GENERATORS /*: {[string]: {[string]: ReadonlyArray<string>}} */ = {
-  all: {
-    android: ['componentsAndroid', 'modulesAndroid', 'modulesCxx'],
-    ios: ['componentsIOS', 'modulesIOS', 'modulesCxx'],
-  },
-  components: {
-    android: ['componentsAndroid'],
-    ios: ['componentsIOS'],
-  },
-  modules: {
-    android: ['modulesAndroid', 'modulesCxx'],
-    ios: ['modulesIOS', 'modulesCxx'],
-  },
-};
+const GENERATORS /*: {[key: string]: {[key: string]: ReadonlyArray<string>}} */ =
+  {
+    all: {
+      android: ['componentsAndroid', 'modulesAndroid', 'modulesCxx'],
+      ios: ['componentsIOS', 'modulesIOS', 'modulesCxx'],
+    },
+    components: {
+      android: ['componentsAndroid'],
+      ios: ['componentsIOS'],
+    },
+    modules: {
+      android: ['modulesAndroid', 'modulesCxx'],
+      ios: ['modulesIOS', 'modulesCxx'],
+    },
+  };
 
 function createOutputDirectoryIfNeeded(
   outputDirectory /*: string */,

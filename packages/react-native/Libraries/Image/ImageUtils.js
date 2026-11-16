@@ -10,7 +10,7 @@
 
 import type {ImageResizeMode} from './ImageResizeMode';
 
-const objectFitMap: {[string]: ImageResizeMode} = {
+const objectFitMap: {[key: string]: ImageResizeMode} = {
   contain: 'contain',
   cover: 'cover',
   fill: 'stretch',

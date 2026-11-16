@@ -166,7 +166,7 @@ export function getNativeElementReference(
  * Returns the current props for a node managed by React.
  * This accesses React internals (fiber.stateNode.canonical.currentProps).
  */
-export function getCurrentProps(node: ReadOnlyNode): {[string]: unknown} {
+export function getCurrentProps(node: ReadOnlyNode): {[key: string]: unknown} {
   const instanceHandle = getInstanceHandle(node);
   // $FlowExpectedError[incompatible-use] instanceHandle is opaque
   return instanceHandle?.stateNode?.canonical?.currentProps ?? {};

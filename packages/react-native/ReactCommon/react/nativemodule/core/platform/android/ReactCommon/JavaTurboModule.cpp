@@ -311,7 +311,7 @@ int32_t getUniqueId() {
 JNIArgs convertJSIArgsToJNIArgs(
     JNIEnv* env,
     jsi::Runtime& rt,
-    const std::string& methodName,
+    const char* methodName,
     const std::vector<std::string>& methodArgTypes,
     const jsi::Value* args,
     size_t count,
@@ -520,21 +520,23 @@ JNIArgs convertJSIArgsToJNIArgs(
   return jniArgs;
 }
 
-jsi::Value convertFromJMapToValue(JNIEnv* env, jsi::Runtime& rt, jobject arg) {
+struct JArguments : public jni::JavaClass<JArguments> {
+  constexpr static auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/Arguments;";
+
   // We currently use Java Argument.makeNativeMap() method to do this conversion
   // This could also be done purely in C++, but iterative over map methods
   // but those may end up calling reflection methods anyway
   // TODO (axe) Investigate the best way to convert Java Map to Value
-  jclass jArguments = env->FindClass("com/facebook/react/bridge/Arguments");
-  static jmethodID jMakeNativeMap = env->GetStaticMethodID(
-      jArguments,
-      "makeNativeMap",
-      "(Ljava/util/Map;)Lcom/facebook/react/bridge/WritableNativeMap;");
-  auto constants = env->CallStaticObjectMethod(jArguments, jMakeNativeMap, arg);
-  auto jResult = jni::adopt_local(constants);
-  auto result = jni::static_ref_cast<NativeMap::jhybridobject>(jResult);
-  return jsi::valueFromDynamic(rt, result->cthis()->consume());
-}
+  static jni::local_ref<WritableNativeMap::jhybridobject> makeNativeMap(
+      jni::alias_ref<jni::JMap<jstring, jobject>> map) {
+    static const auto method =
+        javaClassStatic()
+            ->getStaticMethod<WritableNativeMap::jhybridobject(
+                jni::alias_ref<jni::JMap<jstring, jobject>>)>("makeNativeMap");
+    return method(javaClassStatic(), map);
+  }
+};
 
 /**
  * Creates JSError with current JS runtime stack and Throwable stack trace.
@@ -588,15 +590,57 @@ void rejectWithException(
 
 } // namespace
 
+const JavaTurboModule::MethodInfo* JavaTurboModule::getMethodInfo(
+    JNIEnv* env,
+    const char* methodName,
+    const char* methodSignature) {
+  std::lock_guard<std::mutex> lock(methodInfosMutex_);
+  auto entry = methodInfos_.find(std::string_view(methodName));
+  if (entry == methodInfos_.end()) {
+    jclass cls = env->GetObjectClass(instance_.get());
+    jmethodID methodID = env->GetMethodID(cls, methodName, methodSignature);
+    env->DeleteLocalRef(cls);
+    if (methodID == nullptr) {
+      return nullptr;
+    }
+    std::string signature(methodSignature);
+    entry = methodInfos_
+                .emplace(
+                    methodName,
+                    MethodInfo{
+                        .methodID = methodID,
+                        .argTypes = getMethodArgTypesFromSignature(signature),
+                        .returnType =
+                            signature.substr(signature.find_last_of(')') + 1)})
+                .first;
+  }
+  return &entry->second;
+}
+
 jsi::Value JavaTurboModule::invokeJavaMethod(
     jsi::Runtime& runtime,
     TurboModuleMethodValueKind valueKind,
-    const std::string& methodNameStr,
+    const std::string& methodName,
     const std::string& methodSignature,
     const jsi::Value* args,
     size_t argCount,
-    jmethodID& methodID) {
-  const char* methodName = methodNameStr.c_str();
+    jmethodID& /*cachedMethodID*/) {
+  return invokeJavaMethod(
+      runtime,
+      valueKind,
+      methodName.c_str(),
+      methodSignature.c_str(),
+      args,
+      argCount);
+}
+
+jsi::Value JavaTurboModule::invokeJavaMethod(
+    jsi::Runtime& runtime,
+    TurboModuleMethodValueKind valueKind,
+    const char* methodName,
+    const char* methodSignature,
+    const jsi::Value* args,
+    size_t argCount) {
   const char* moduleName = name_.c_str();
 
   bool isMethodSync = isSyncMethod(valueKind);
@@ -660,43 +704,49 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
     }
   };
 
-  if (methodID == nullptr) {
-    jclass cls = env->GetObjectClass(instance);
-    methodID = env->GetMethodID(cls, methodName, methodSignature.c_str());
-
+  const MethodInfo* methodInfo =
+      getMethodInfo(env, methodName, methodSignature);
+  if (methodInfo == nullptr) {
     // If the method signature doesn't match, show a redbox here instead of
     // crashing later.
     checkJNIErrorForMethodCall();
+    throw jsi::JSError(
+        runtime,
+        "Unable to find method " + std::string(methodName) + "(" +
+            methodSignature + ") on " + name_);
   }
+  jmethodID methodID = methodInfo->methodID;
 
   // TODO(T43933641): Refactor to remove this special-casing
-  if (methodNameStr == "getConstants") {
+  if (std::strcmp(methodName, "getConstants") == 0) {
     TMPL::syncMethodCallArgConversionEnd(moduleName, methodName);
     TMPL::syncMethodCallExecutionStart(moduleName, methodName);
 
-    auto constantsMap = (jobject)env->CallObjectMethod(instance, methodID);
+    auto constantsMap = jni::adopt_local(
+        static_cast<jni::JMap<jstring, jobject>::javaobject>(
+            env->CallObjectMethod(instance, methodID)));
     checkJNIErrorForMethodCall();
 
     TMPL::syncMethodCallExecutionEnd(moduleName, methodName);
     TMPL::syncMethodCallReturnConversionStart(moduleName, methodName);
 
-    jsi::Value returnValue = constantsMap == nullptr
-        ? jsi::Value::undefined()
-        : convertFromJMapToValue(env, runtime, constantsMap);
+    jsi::Value returnValue = jsi::Value::undefined();
+    if (constantsMap) {
+      auto nativeMap = JArguments::makeNativeMap(constantsMap);
+      returnValue =
+          jsi::valueFromDynamic(runtime, nativeMap->cthis()->consume());
+    }
 
     TMPL::syncMethodCallReturnConversionEnd(moduleName, methodName);
     TMPL::syncMethodCallEnd(moduleName, methodName);
     return returnValue;
   }
 
-  std::vector<std::string> methodArgTypes =
-      getMethodArgTypesFromSignature(methodSignature);
-
   JNIArgs jniArgs = convertJSIArgsToJNIArgs(
       env,
       runtime,
-      methodNameStr,
-      methodArgTypes,
+      methodName,
+      methodInfo->argTypes,
       args,
       argCount,
       jsInvoker_,
@@ -712,8 +762,7 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
 
   switch (valueKind) {
     case BooleanKind: {
-      std::string returnType =
-          methodSignature.substr(methodSignature.find_last_of(')') + 1);
+      const std::string& returnType = methodInfo->returnType;
       if (returnType == "Ljava/lang/Boolean;") {
         auto returnObject =
             env->CallObjectMethodA(instance, methodID, jargs.data());
@@ -749,8 +798,7 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
       }
     }
     case NumberKind: {
-      std::string returnType =
-          methodSignature.substr(methodSignature.find_last_of(')') + 1);
+      const std::string& returnType = methodInfo->returnType;
       if (returnType == "Ljava/lang/Double;" ||
           returnType == "Ljava/lang/Float;" ||
           returnType == "Ljava/lang/Integer;") {
@@ -851,8 +899,8 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
 
       jsi::Value returnValue = jsi::Value::null();
       if (returnObject != nullptr) {
-        auto jResult = jni::adopt_local(returnObject);
-        auto result = jni::static_ref_cast<NativeMap::jhybridobject>(jResult);
+        auto result = jni::dynamic_ref_cast<NativeMap::jhybridobject>(
+            jni::adopt_local(returnObject));
         returnValue =
             jsi::valueFromDynamic(runtime, result->cthis()->consume());
       }
@@ -871,8 +919,8 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
 
       jsi::Value returnValue = jsi::Value::null();
       if (returnObject != nullptr) {
-        auto jResult = jni::adopt_local(returnObject);
-        auto result = jni::static_ref_cast<NativeArray::jhybridobject>(jResult);
+        auto result = jni::dynamic_ref_cast<NativeArray::jhybridobject>(
+            jni::adopt_local(returnObject));
         returnValue =
             jsi::valueFromDynamic(runtime, result->cthis()->consume());
       }
@@ -891,7 +939,7 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
            methodID,
            instance_ = jni::make_weak(instance_),
            moduleNameStr = name_,
-           methodNameStr,
+           methodNameStr = std::string(methodName),
            id = getUniqueId()]() mutable {
             TraceSection s(
                 "JavaTurboModuleAsyncMethodInvocation",
@@ -989,8 +1037,6 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
                 .utf8(runtime);
       }
 
-      const char* moduleName = name_.c_str();
-      const char* methodName = methodNameStr.c_str();
       TMPL::asyncMethodCallArgConversionEnd(moduleName, methodName);
       TMPL::asyncMethodCallDispatch(moduleName, methodName);
       nativeMethodCallInvoker_->invokeAsync(
@@ -1001,7 +1047,7 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
            methodID,
            instance_ = jni::make_weak(instance_),
            moduleNameStr = name_,
-           methodNameStr,
+           methodNameStr = std::string(methodName),
            id = getUniqueId()]() mutable {
             TraceSection s(
                 "JavaTurboModuleAsyncMethodInvocation",
@@ -1057,7 +1103,8 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
         if (!returnRef->isInstanceOf(JArrayBuffer::javaClassStatic())) {
           throw jsi::JSError(
               runtime,
-              "JavaTurboModule::invokeJavaMethod: expected " + methodNameStr +
+              "JavaTurboModule::invokeJavaMethod: expected " +
+                  std::string(methodName) +
                   " to return a com.facebook.react.bridge.ArrayBuffer.");
         }
 
@@ -1075,7 +1122,7 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
     }
     default:
       throw std::runtime_error(
-          "Unable to find method module: " + methodNameStr + "(" +
+          "Unable to find method module: " + std::string(methodName) + "(" +
           methodSignature + ")");
   }
 }

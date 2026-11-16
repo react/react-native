@@ -13,7 +13,7 @@
 type Module = {...};
 type RegisterCallableModule = (
   name: string,
-  moduleOrFactory: Module | (void => Module),
+  moduleOrFactory: Module | ((v: void) => Module),
 ) => void;
 
 const registerCallableModule: RegisterCallableModule = (function () {

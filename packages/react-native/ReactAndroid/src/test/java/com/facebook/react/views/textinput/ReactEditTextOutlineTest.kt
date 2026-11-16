@@ -50,7 +50,7 @@ class ReactEditTextOutlineTest {
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val context = createTestReactApplicationContext()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
     view =
         ReactTextInputManager().createViewInstance(ThemedReactContext(context, context, null, -1))

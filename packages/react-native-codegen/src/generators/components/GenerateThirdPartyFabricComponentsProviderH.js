@@ -68,8 +68,8 @@ Class<RCTComponentViewProtocol> ${className}Cls(void) __attribute__((used)); // 
 
 module.exports = {
   generate(
-    schemas: {[string]: SchemaType},
-    supportedApplePlatforms?: {[string]: {[string]: boolean}},
+    schemas: {[key: string]: SchemaType},
+    supportedApplePlatforms?: {[key: string]: {[key: string]: boolean}},
   ): FilesOutput {
     const fileName = 'RCTThirdPartyFabricComponentsProvider.h';
 

@@ -33,7 +33,7 @@ export default class RNTesterPlatformTestEventRecorder {
   eventsInScope: Array<EventRecord> = []; // Tracks synchronous event dispatches
   recording: boolean = true;
 
-  mergeTypesTruthMap: {[string]: boolean} = {};
+  mergeTypesTruthMap: {[key: string]: boolean} = {};
 
   constructor(options: EventRecorderOptions) {
     if (options.mergeEventTypes && Array.isArray(options.mergeEventTypes)) {
@@ -90,7 +90,7 @@ export default class RNTesterPlatformTestEventRecorder {
   _generateRecordedEventHandlerWithCallback(
     targetName: string,
     callback?: (event: Object, eventType: string) => void,
-  ): (Object, string) => void {
+  ): (v0: Object, v1: string) => void {
     return (e: Object, eventType: string) => {
       if (this.recording) {
         this._recordEvent(e, targetName, eventType);

@@ -10,6 +10,7 @@
 #include <react/fabric/FabricUIManagerBinding.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
+#include <react/jni/WritableNativeMap.h>
 #include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/root/RootShadowNode.h>
@@ -62,6 +63,17 @@ class FabricMountingManagerTestHelper::DeleteRecorder
 
 namespace {
 
+jni::local_ref<WritableNativeMap::jhybridobject> createWritableNativeMapFromCxx(
+    jni::alias_ref<jclass> /*unused*/,
+    jboolean withContents) {
+  if (withContents == JNI_FALSE) {
+    return WritableNativeMap::newObjectCxxArgs();
+  }
+  folly::dynamic payload = folly::dynamic::object("value", 42)(
+      "nested", folly::dynamic::object("enabled", true));
+  return WritableNativeMap::newObjectCxxArgs(std::move(payload));
+}
+
 ShadowView makeShadowView(jint surfaceId, jint tag) {
   ShadowView sv{};
   sv.componentName = "View";
@@ -77,6 +89,63 @@ void runNoJavaScript(std::function<void(jsi::Runtime& runtime)>&& /*unused*/) {}
 std::vector<Tag> toTags(jni::alias_ref<jni::JArrayInt> tags) {
   auto region = tags->getRegion(0, static_cast<jsize>(tags->size()));
   return {region.get(), region.get() + tags->size()};
+}
+
+bool fabricUIManagerAliasUsesOwnedHandle(
+    [[maybe_unused]] jni::alias_ref<jclass> javaClass,
+    jni::alias_ref<JFabricUIManager::javaobject> javaUIManager) {
+  auto contextContainer =
+      javaUIManager->getBinding()->getScheduler()->getContextContainer();
+  auto owner = contextContainer->at<std::shared_ptr<jni::global_ref<jobject>>>(
+      "FabricUIManagerOwner");
+  auto alias = contextContainer->at<jni::alias_ref<jobject>>("FabricUIManager");
+  auto env = jni::Environment::current();
+  return alias.get() == owner->get() &&
+      env->GetObjectRefType(alias.get()) == JNIGlobalRefType &&
+      jni::isSameObject(alias.get(), javaUIManager.get());
+}
+
+jni::local_ref<JFabricUIManager::javaobject> readFabricUIManagerFromContext(
+    [[maybe_unused]] jni::alias_ref<jclass> javaClass,
+    jni::alias_ref<JFabricUIManager::javaobject> javaUIManager,
+    jboolean useGlobalRef,
+    jboolean uninstall) {
+  static const auto bindingField =
+      JFabricUIManager::javaClassStatic()
+          ->getField<FabricUIManagerBinding::javaobject>("mBinding");
+  static const auto unregister =
+      jni::findClassStatic("com/facebook/react/fabric/FabricUIManagerBinding")
+          ->getMethod<void()>("unregister");
+  auto javaBinding = javaUIManager->getFieldValue(bindingField);
+  auto contextContainer =
+      javaBinding->cthis()->getScheduler()->getContextContainer();
+  if (useGlobalRef != 0) {
+    auto global =
+        contextContainer->at<jni::global_ref<jobject>>("FabricUIManager");
+    if (uninstall != 0) {
+      std::weak_ptr<jni::global_ref<jobject>> owner =
+          contextContainer->at<std::shared_ptr<jni::global_ref<jobject>>>(
+              "FabricUIManagerOwner");
+      unregister(javaBinding);
+      contextContainer->erase("FabricUIManager");
+      contextContainer->erase("FabricUIManagerOwner");
+      if (!owner.expired()) {
+        jni::throwNewJavaException(
+            "java/lang/AssertionError",
+            "FabricUIManager owner survived teardown");
+      }
+      contextContainer.reset();
+    }
+    return jni::make_local(
+        jni::static_ref_cast<JFabricUIManager::javaobject>(
+            jni::alias_ref<jobject>(global)));
+  }
+  if (uninstall != 0) {
+    unregister(javaBinding);
+  }
+  auto alias = contextContainer->at<jni::alias_ref<jobject>>("FabricUIManager");
+  return jni::make_local(
+      jni::static_ref_cast<JFabricUIManager::javaobject>(alias));
 }
 
 } // namespace
@@ -402,6 +471,13 @@ FabricMountingManagerTestHelper::pulledDeleteTags() {
 
 void FabricMountingManagerTestHelper::registerNatives() {
   registerHybrid({
+      makeNativeMethod(
+          "fabricUIManagerAliasUsesOwnedHandle",
+          fabricUIManagerAliasUsesOwnedHandle),
+      makeNativeMethod(
+          "readFabricUIManagerFromContext", readFabricUIManagerFromContext),
+      makeNativeMethod(
+          "createWritableNativeMapFromCxx", createWritableNativeMapFromCxx),
       makeNativeMethod(
           "initHybrid", FabricMountingManagerTestHelper::initHybrid),
       makeNativeMethod(

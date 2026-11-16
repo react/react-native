@@ -143,8 +143,10 @@ class WebSocket extends EventTarget {
     );
     this._socketId = nextWebSocketId++;
     this._registerEvents();
+    // Skip this constructor's own frame so that the request initiator stack
+    // starts at the caller of `new WebSocket()`.
     const devToolsRequestId =
-      global.__NETWORK_REPORTER__?.createDevToolsRequestId();
+      global.__NETWORK_REPORTER__?.createDevToolsRequestId(1);
     NativeWebSocketModule.connect(
       url,
       protocolList,

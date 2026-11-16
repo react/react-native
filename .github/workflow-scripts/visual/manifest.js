@@ -111,7 +111,18 @@ function collectImages(captureDir) {
   return images.sort();
 }
 
-function buildManifest({captureDir, platform, environment, git}) {
+/**
+ * `unstableIds` are new screenshots whose two captures differed, which
+ * compare doesn't publish as the baseline.
+ */
+function buildManifest({
+  captureDir,
+  platform,
+  environment,
+  git,
+  unstableIds = [],
+}) {
+  const unstable = new Set(unstableIds);
   const images = collectImages(captureDir).map(imagePath => {
     const relativePath = path
       .relative(captureDir, imagePath)
@@ -130,6 +141,11 @@ function buildManifest({captureDir, platform, environment, git}) {
       sha256: sha256(buffer),
     };
   });
+  for (const image of images) {
+    if (unstable.has(image.id)) {
+      image.unstable = true;
+    }
+  }
 
   return {
     version: MANIFEST_VERSION,
@@ -259,6 +275,11 @@ function main(args = process.argv.slice(2)) {
     platform,
     environment,
     git: readGitInfo(),
+    unstableIds:
+      process.env.VISUAL_UNSTABLE_PATH &&
+      fs.existsSync(process.env.VISUAL_UNSTABLE_PATH)
+        ? JSON.parse(fs.readFileSync(process.env.VISUAL_UNSTABLE_PATH, 'utf8'))
+        : [],
   });
   fs.writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`);
   console.info(
@@ -279,5 +300,7 @@ module.exports = {
   buildManifest,
   canonicalJson,
   environmentKey,
+  readAndroidEnvironment,
+  readIosEnvironment,
   sha256,
 };

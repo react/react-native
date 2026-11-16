@@ -29,12 +29,15 @@ NSString *const RCTAccessibilityManagerDidUpdateMultiplierNotification =
 @end
 
 // Show Borders was called Button Shapes before iOS 26.1, where UIKit deprecated
-// its API in favor of the Accessibility framework.
+// its API in favor of the Accessibility framework. Early iOS 26.1 betas can lack
+// the new symbols even though they pass the version availability check.
 static BOOL RCTIsShowBordersEnabled()
 {
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260100
   if (@available(iOS 26.1, *)) {
-    return AXShowBordersEnabled();
+    if (AXShowBordersEnabled != nullptr && &AXShowBordersEnabledStatusDidChangeNotification != nullptr) {
+      return AXShowBordersEnabled();
+    }
   }
 #endif
 #pragma clang diagnostic push
@@ -47,7 +50,9 @@ static NSNotificationName RCTShowBordersStatusDidChangeNotification()
 {
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260100
   if (@available(iOS 26.1, *)) {
-    return AXShowBordersEnabledStatusDidChangeNotification;
+    if (AXShowBordersEnabled != nullptr && &AXShowBordersEnabledStatusDidChangeNotification != nullptr) {
+      return AXShowBordersEnabledStatusDidChangeNotification;
+    }
   }
 #endif
 #pragma clang diagnostic push

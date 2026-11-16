@@ -39,10 +39,10 @@ typedef void (^RCTRedBoxButtonPressHandler)(void);
 
 - (void)addCustomButton:(NSString *)title onPressHandler:(RCTRedBoxButtonPressHandler)handler;
 
-/** Overrides bridge.bundleURL. Modify on main thread only. You shouldn't need to use this. */
+/** Overrides the bundle manager's bundleURL. Modify on main thread only. You shouldn't need to use this. */
 @property (nonatomic, strong) NSURL *overrideBundleURL;
 
-/** Overrides the default behavior of calling [bridge reload] on reload. You shouldn't need to use this. */
+/** Overrides the default behavior of triggering a reload command on reload. You shouldn't need to use this. */
 @property (nonatomic, strong) dispatch_block_t overrideReloadAction;
 
 @end

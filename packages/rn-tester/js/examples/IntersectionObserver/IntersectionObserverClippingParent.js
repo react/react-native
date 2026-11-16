@@ -10,6 +10,7 @@
 
 import type {HostInstance} from 'react-native';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import {Button, StyleSheet, Text, TextInput, View} from 'react-native';
@@ -105,7 +106,7 @@ component IntersectionObserverCustomClippingRootExample(
   return (
     <>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Root Margin (px):</Text>
+        <RNTesterText style={styles.label}>Root Margin (px):</RNTesterText>
         <TextInput
           style={styles.input}
           value={rootMarginInput}
@@ -115,9 +116,9 @@ component IntersectionObserverCustomClippingRootExample(
         />
         <Button title="Submit" onPress={handleSubmit} />
       </View>
-      <Text style={styles.currentMargin}>
+      <RNTesterText style={styles.currentMargin}>
         Current Root Margin: {rootMarginValue}
-      </Text>
+      </RNTesterText>
       {!e2eTest && (
         <Text style={styles.description}>
           This example highlights a clipping parent to both the explicit root

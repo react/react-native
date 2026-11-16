@@ -555,9 +555,14 @@ void NativeAnimatedNodesManager::handleAnimatedEvent(
     // frames.
     if (useSharedAnimatedBackend_) {
       if (auto animationBackend = animationBackend_.lock()) {
+        // Pass stepAnimations false so this push only propagates event values.
+        // Frames step time-based drivers with the vsync time, which can be
+        // earlier than this push's time, so stepping them here would move them
+        // backward on the next frame.
         animationBackend->pushAnimationMutations(
             [this](AnimationTimestamp timestamp) -> AnimationMutations {
-              return pullAnimationMutations(timestamp);
+              return pullAnimationMutations(
+                  timestamp, /* stepAnimations */ false);
             });
       }
     } else {
@@ -1038,14 +1043,17 @@ void NativeAnimatedNodesManager::insertMutations(
 
 AnimationMutations NativeAnimatedNodesManager::onAnimationFrameForBackend(
     AnimatedPropsBuilder& propsBuilder,
-    AnimationTimestamp timestamp) {
+    AnimationTimestamp timestamp,
+    bool stepAnimations) {
   AnimationMutations mutations{};
   auto timestampMs = timestamp.count();
   // Run all active animations
   auto hasFinishedAnimations = false;
   std::set<int> finishedAnimationValueNodes;
   for (const auto& [_id, driver] : activeAnimations_) {
-    driver->runAnimationStep(timestampMs);
+    if (stepAnimations) {
+      driver->runAnimationStep(timestampMs);
+    }
 
     if (driver->getIsComplete()) {
       hasFinishedAnimations = true;
@@ -1083,7 +1091,8 @@ AnimationMutations NativeAnimatedNodesManager::onAnimationFrameForBackend(
 }
 
 AnimationMutations NativeAnimatedNodesManager::pullAnimationMutations(
-    AnimationTimestamp timestamp) {
+    AnimationTimestamp timestamp,
+    bool stepAnimations) {
   if (!useSharedAnimatedBackend_) {
     return {};
   }
@@ -1113,7 +1122,8 @@ AnimationMutations NativeAnimatedNodesManager::pullAnimationMutations(
   // Step through the animation loop
   if (isAnimationUpdateNeeded()) {
     AnimatedPropsBuilder propsBuilder;
-    mutations = onAnimationFrameForBackend(propsBuilder, timestamp);
+    mutations =
+        onAnimationFrameForBackend(propsBuilder, timestamp, stepAnimations);
 
     if (mutations.batch.empty()) {
       // The last animation tick didn't result in any changes to the UI.

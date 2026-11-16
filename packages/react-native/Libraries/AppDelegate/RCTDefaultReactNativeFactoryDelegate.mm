@@ -6,6 +6,7 @@
  */
 
 #import "RCTDefaultReactNativeFactoryDelegate.h"
+#import <React/RCTRootView.h>
 #import <ReactCommon/RCTHost.h>
 #import "RCTAppSetupUtils.h"
 #import "RCTDependencyProvider.h"
@@ -14,8 +15,33 @@
 #endif
 
 #import <RCTAnimatedModuleProvider/RCTAnimatedModuleProvider.h>
+#import <React/RCTStatusBarAppearance.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/nativemodule/defaults/DefaultTurboModules.h>
+
+@interface RCTRootViewController : UIViewController
+@end
+
+@implementation RCTRootViewController
+
+#if !TARGET_OS_TV
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+  return RCTStatusBarAppearance.style;
+}
+
+- (BOOL)prefersStatusBarHidden
+{
+  return RCTStatusBarAppearance.hidden;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation
+{
+  return RCTStatusBarAppearance.updateAnimation;
+}
+#endif
+
+@end
 
 @implementation RCTDefaultReactNativeFactoryDelegate {
   // C++ Native Animated provider, created once on first use (getTurboModule: may be called
@@ -26,16 +52,9 @@
 
 @synthesize dependencyProvider;
 
-- (NSURL *_Nullable)sourceURLForBridge:(nonnull RCTBridge *)bridge
-{
-  [NSException raise:@"RCTBridgeDelegate::sourceURLForBridge not implemented"
-              format:@"Subclasses must implement a valid sourceURLForBridge method"];
-  return nil;
-}
-
 - (UIViewController *)createRootViewController
 {
-  return [UIViewController new];
+  return [RCTRootViewController new];
 }
 
 - (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController
@@ -54,10 +73,13 @@
 #endif
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)customizeRootView:(RCTRootView *)rootView
 {
   // Override point for customization after application launch.
 }
+#pragma clang diagnostic pop
 
 - (RCTColorSpace)defaultColorSpace
 {
@@ -111,11 +133,6 @@
 
 #pragma mark - RCTArchConfiguratorProtocol
 
-- (BOOL)newArchEnabled
-{
-  return YES;
-}
-
 - (Class)getModuleClassFromName:(const char *)name
 {
   return nullptr;
@@ -124,13 +141,6 @@
 - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
 {
   return nullptr;
-}
-
-- (void)loadSourceForBridge:(RCTBridge *)bridge
-                 onProgress:(RCTSourceLoadProgressBlock)onProgress
-                 onComplete:(RCTSourceLoadBlock)loadCallback
-{
-  [RCTJavaScriptLoader loadBundleAtURL:[self sourceURLForBridge:bridge] onProgress:onProgress onComplete:loadCallback];
 }
 
 @end

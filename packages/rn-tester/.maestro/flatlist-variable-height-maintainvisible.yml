@@ -2,7 +2,7 @@
 # Delta should be between 28-112px (random height from [30,50,70,90,110])
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

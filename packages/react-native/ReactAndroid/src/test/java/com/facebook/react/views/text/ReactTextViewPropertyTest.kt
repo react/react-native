@@ -29,7 +29,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /** Verify view properties are being applied correctly by [ReactTextViewManager] */
@@ -49,7 +48,7 @@ class ReactTextViewPropertyTest {
           override fun enableViewRecycling(): Boolean = true
         },
     )
-    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    context = createTestReactApplicationContext()
     themedContext = ThemedReactContext(context, context, null, -1)
     manager = ReactTextViewManager()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())

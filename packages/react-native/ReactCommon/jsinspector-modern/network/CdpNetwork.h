@@ -11,6 +11,7 @@
 
 #include <folly/dynamic.h>
 
+#include <map>
 #include <string>
 
 // Data containers for CDP Network domain types, supporting serialization to

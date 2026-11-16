@@ -24,14 +24,17 @@ RCT_EXTERN void RCTRegisterModule(Class);
  * This method is used to invoke a callback that was registered in the
  * JavaScript application context. Safe to call from any thread.
  */
-- (void)enqueueCallback:(NSNumber *)cbID args:(NSArray *)args;
+- (void)enqueueCallback:(NSNumber *)cbID
+                   args:(NSArray *)args
+    __deprecated_msg("This API will be removed along with the legacy architecture.");
 
 /**
  * This property is mostly used on the main thread, but may be touched from
  * a background thread if the RCTBridge happens to deallocate on a background
  * thread. Therefore, we want all writes to it to be seen atomically.
  */
-@property (atomic, strong) RCTBridge *batchedBridge;
+@property (atomic, strong)
+    RCTBridge *batchedBridge __deprecated_msg("This API will be removed along with the legacy architecture.");
 
 /**
  * An object that allows one to require NativeModules/TurboModules.
@@ -48,11 +51,14 @@ RCT_EXTERN void RCTRegisterModule(Class);
  * Dispatch work to a module's queue - this is also supports the fake RCTJSThread
  * queue. Exposed for the RCTProfiler
  */
-- (void)dispatchBlock:(dispatch_block_t)block queue:(dispatch_queue_t)queue;
+- (void)dispatchBlock:(dispatch_block_t)block
+                queue:(dispatch_queue_t)queue
+    __deprecated_msg("This API will be removed along with the legacy architecture.");
 
 /**
  * Registers additional classes with the ModuleRegistry.
  */
-- (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules;
+- (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules
+    __deprecated_msg("This API will be removed along with the legacy architecture.");
 
 @end

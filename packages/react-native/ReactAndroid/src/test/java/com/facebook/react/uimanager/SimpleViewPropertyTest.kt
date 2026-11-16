@@ -21,7 +21,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /** Verify [View] view property being applied properly by [SimpleViewManager] */
@@ -54,7 +53,7 @@ class SimpleViewPropertyTest {
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    context = createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    context = createTestReactApplicationContext()
     themedContext = ThemedReactContext(context, context, null, surfaceId)
     manager = ConcreteViewManager()
   }

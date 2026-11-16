@@ -1471,7 +1471,7 @@ class VirtualizedList extends StateSafePureComponent<
     }
   }
 
-  _cellRefs: {[string]: null | CellRenderer<any>} = {};
+  _cellRefs: {[key: string]: null | CellRenderer<any>} = {};
   _fillRateHelper: FillRateHelper;
   _listMetrics: ListMetricsAggregator = new ListMetricsAggregator();
   _footerLength = 0;
@@ -1479,7 +1479,7 @@ class VirtualizedList extends StateSafePureComponent<
   _hasTriggeredInitialScrollToIndex = false;
   _hasInteracted = false;
   _hasMore = false;
-  _hasWarned: {[string]: boolean} = {};
+  _hasWarned: {[key: string]: boolean} = {};
   _headerLength = 0;
   _hiPriInProgress: boolean = false; // flag to prevent infinite hiPri cell limit update
   _hiPriUpdateId: number = 0;

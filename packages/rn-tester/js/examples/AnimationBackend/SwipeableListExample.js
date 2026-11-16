@@ -10,6 +10,7 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useCallback, useMemo, useRef} from 'react';
 import {
@@ -217,7 +218,7 @@ function ListItemContent({item}: {item: Data}): React.Node {
       <View style={styles.avatarContainer}>
         <Text style={styles.avatarText}>{item.title[0]}</Text>
       </View>
-      <Text style={styles.title}>{item.title}</Text>
+      <RNTesterText style={styles.title}>{item.title}</RNTesterText>
     </View>
   );
 }

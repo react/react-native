@@ -39,7 +39,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadow.api.Shadow
@@ -77,8 +76,7 @@ class FabricUIManagerPullModelTest {
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
     overrideFeatureFlags()
-    reactContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    reactContext = ReactTestHelper.createTestReactApplicationContext()
     underTest =
         FabricUIManager(
             reactContext,
@@ -124,6 +122,10 @@ class FabricUIManagerPullModelTest {
 
           override fun disableEarlyViewCommandExecution(): Boolean =
               disableEarlyViewCommandExecution
+
+          // C++ Native Animated keeps the frame callback armed every frame, which disables the
+          // idle disarm these tests cover.
+          override fun cxxNativeAnimatedEnabled(): Boolean = false
         },
     )
   }

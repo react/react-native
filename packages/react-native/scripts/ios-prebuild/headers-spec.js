@@ -362,7 +362,7 @@ function planFromInventory(
   const react /*: Array<SpecEntry> */ = [];
   const reactNativeHeaders /*: Array<SpecEntry> */ = [];
   const umbrella /*: Array<string> */ = [];
-  const namespaceModules /*: {[string]: Array<string>} */ = {};
+  const namespaceModules /*: {[key: string]: Array<string>} */ = {};
   const textualNamespaceHeaders /*: Array<string> */ = [];
   const guardedHeaders = stableApiGuardedHeaders(manifest);
   const collisions /*: Array<string> */ = [];
@@ -579,7 +579,7 @@ function renderUmbrellaHeader(umbrella /*: Array<string> */) /*: string */ {
  * Members in `textualHeaders` (R13) are declared `textual header`.
  */
 function renderNamespaceModuleMap(
-  namespaceModules /*: {[string]: Array<string>} */,
+  namespaceModules /*: {[key: string]: Array<string>} */,
   textualHeaders /*: ReadonlyArray<string> */ = [],
 ) /*: string */ {
   const textual = new Set(textualHeaders);

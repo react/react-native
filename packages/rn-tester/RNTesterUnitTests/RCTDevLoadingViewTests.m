@@ -90,17 +90,17 @@
   [self showMessage:loadingView];
   [self drainMainQueue];
 
-  UIWindow *window = [loadingView valueForKey:@"window"];
+  UIWindow *window = [loadingView valueForKeyPath:@"banner.window"];
   XCTAssertNotNil(window);
   XCTAssertFalse(window.hidden);
-  XCTAssertNotNil([loadingView valueForKey:@"dismissButton"]);
+  XCTAssertNotNil([loadingView valueForKeyPath:@"banner.dismissButton"]);
 
   [loadingView invalidate];
   [self drainMainQueue];
 
   XCTAssertTrue(window.hidden);
-  for (NSString *key in @[ @"window", @"container", @"label", @"dismissButton" ]) {
-    XCTAssertNil([loadingView valueForKey:key], @"%@ should be released during invalidation", key);
+  for (NSString *keyPath in @[ @"banner.window", @"banner.container", @"banner.label", @"banner.dismissButton" ]) {
+    XCTAssertNil([loadingView valueForKeyPath:keyPath], @"%@ should be released during invalidation", keyPath);
   }
 }
 
@@ -132,8 +132,8 @@
   [progressView invalidate];
   [self drainMainQueue];
 
-  XCTAssertNil([messageView valueForKey:@"window"]);
-  XCTAssertNil([progressView valueForKey:@"window"]);
+  XCTAssertNil([messageView valueForKeyPath:@"banner.window"]);
+  XCTAssertNil([progressView valueForKeyPath:@"banner.window"]);
 }
 
 @end

@@ -27,7 +27,11 @@ import com.facebook.react.uimanager.events.TouchEvent
 import com.facebook.react.uimanager.events.TouchEventCoalescingKeyHelper
 import com.facebook.react.uimanager.events.TouchEventType
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowNativeLoader
+import com.facebook.testutils.shadows.ShadowNativeMap
 import com.facebook.testutils.shadows.ShadowSoLoader
+import com.facebook.testutils.shadows.ShadowTouchesHelper
+import com.facebook.testutils.shadows.ShadowWritableNativeMap
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -40,11 +44,20 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.shadow.api.Shadow
 
 @RunWith(RobolectricTestRunner::class)
-@Config(shadows = [ShadowSoLoader::class, ShadowArguments::class])
+@Config(
+    shadows =
+        [
+            ShadowSoLoader::class,
+            ShadowNativeLoader::class,
+            ShadowArguments::class,
+            ShadowWritableNativeMap::class,
+            ShadowTouchesHelper::class,
+        ]
+)
 class TouchEventDispatchTest {
   private val touchEventCoalescingKeyHelper = TouchEventCoalescingKeyHelper()
 
@@ -520,8 +533,7 @@ class TouchEventDispatchTest {
     metrics.density = 1f
     DisplayMetricsHolder.setScreenDisplayMetrics(metrics)
 
-    val reactContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val reactContext = ReactTestHelper.createTestReactApplicationContext()
     val uiQueueThread: MessageQueueThread = mock()
     whenever(uiQueueThread.isOnThread()).thenReturn(true)
     val queueConfig: ReactQueueConfiguration = mock()
@@ -560,7 +572,7 @@ class TouchEventDispatchTest {
             anyInt(),
             anyLong(),
         )
-    assertThat(startMoveEndExpectedSequence).isEqualTo(argument.allValues)
+    assertThat(startMoveEndExpectedSequence).isEqualTo(argument.payloads())
   }
 
   @Test
@@ -580,7 +592,7 @@ class TouchEventDispatchTest {
             anyInt(),
             anyLong(),
         )
-    assertThat(startMoveCancelExpectedSequence).isEqualTo(argument.allValues)
+    assertThat(startMoveCancelExpectedSequence).isEqualTo(argument.payloads())
   }
 
   @Test
@@ -600,7 +612,7 @@ class TouchEventDispatchTest {
             anyInt(),
             anyLong(),
         )
-    assertThat(startPointerMoveUpExpectedSequence).isEqualTo(argument.allValues)
+    assertThat(startPointerMoveUpExpectedSequence).isEqualTo(argument.payloads())
   }
 
   private fun createTouchEvent(
@@ -697,6 +709,10 @@ class TouchEventDispatchTest {
         }
   }
 }
+
+/** The contents of the captured payloads, which are shadowed native maps. */
+private fun ArgumentCaptor<WritableMap>.payloads(): List<JavaOnlyMap> =
+    allValues.map { Shadow.extract<ShadowNativeMap>(it).backingMap }
 
 private fun IntArray.toPointerProperties(): Array<PointerProperties> =
     this.map { PointerProperties().apply { id = it } }.toTypedArray()

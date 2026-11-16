@@ -43,83 +43,82 @@ type ReservedTypeMapping = {
   readonly java: JavaImportInfo,
 };
 
-const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
-  {
-    ColorPrimitive: {
-      cpp: {
-        typeName: 'SharedColor',
-        localIncludes: ['#include <React/Graphics.h>'],
-        conversionIncludes: [],
-      },
-      java: {
-        interfaceImports: [],
-        delegateImports: [
-          'import com.facebook.react.bridge.ColorPropConverter;',
-        ],
-      },
+const RESERVED_TYPES: {
+  readonly [key: ReservedPrimitiveName]: ReservedTypeMapping,
+} = {
+  ColorPrimitive: {
+    cpp: {
+      typeName: 'SharedColor',
+      localIncludes: ['#include <React/Graphics.h>'],
+      conversionIncludes: [],
     },
-    ImageSourcePrimitive: {
-      cpp: {
-        typeName: 'ImageSource',
-        localIncludes: ['#include <React/ImageManager.h>'],
-        conversionIncludes: ['#include <React/Image.h>'],
-      },
-      java: {
-        interfaceImports: ['import com.facebook.react.bridge.ReadableMap;'],
-        delegateImports: ['import com.facebook.react.bridge.ReadableMap;'],
-      },
+    java: {
+      interfaceImports: [],
+      delegateImports: ['import com.facebook.react.bridge.ColorPropConverter;'],
     },
-    ImageRequestPrimitive: {
-      cpp: {
-        typeName: 'ImageRequest',
-        localIncludes: ['#include <React/ImageManager.h>'],
-        conversionIncludes: [],
-      },
-      java: {
-        // ImageRequestPrimitive is not used in Java component props
-        interfaceImports: [],
-        delegateImports: [],
-      },
+  },
+  ImageSourcePrimitive: {
+    cpp: {
+      typeName: 'ImageSource',
+      localIncludes: ['#include <React/ImageManager.h>'],
+      conversionIncludes: ['#include <React/Image.h>'],
     },
-    PointPrimitive: {
-      cpp: {
-        typeName: 'Point',
-        localIncludes: ['#include <React/Graphics.h>'],
-        conversionIncludes: [],
-      },
-      java: {
-        interfaceImports: ['import com.facebook.react.bridge.ReadableMap;'],
-        delegateImports: ['import com.facebook.react.bridge.ReadableMap;'],
-      },
+    java: {
+      interfaceImports: ['import com.facebook.react.bridge.ReadableMap;'],
+      delegateImports: ['import com.facebook.react.bridge.ReadableMap;'],
     },
-    EdgeInsetsPrimitive: {
-      cpp: {
-        typeName: 'EdgeInsets',
-        localIncludes: ['#include <React/Graphics.h>'],
-        conversionIncludes: [],
-      },
-      java: {
-        interfaceImports: ['import com.facebook.react.bridge.ReadableMap;'],
-        delegateImports: ['import com.facebook.react.bridge.ReadableMap;'],
-      },
+  },
+  ImageRequestPrimitive: {
+    cpp: {
+      typeName: 'ImageRequest',
+      localIncludes: ['#include <React/ImageManager.h>'],
+      conversionIncludes: [],
     },
-    DimensionPrimitive: {
-      cpp: {
-        typeName: 'YGValue',
-        localIncludes: [
-          '#include <yoga/Yoga.h>',
-          '#include <React/RendererCore.h>',
-        ],
-        conversionIncludes: ['#include <React/View.h>'],
-      },
-      java: {
-        interfaceImports: ['import com.facebook.yoga.YogaValue;'],
-        delegateImports: [
-          'import com.facebook.react.bridge.DimensionPropConverter;',
-        ],
-      },
+    java: {
+      // ImageRequestPrimitive is not used in Java component props
+      interfaceImports: [],
+      delegateImports: [],
     },
-  };
+  },
+  PointPrimitive: {
+    cpp: {
+      typeName: 'Point',
+      localIncludes: ['#include <React/Graphics.h>'],
+      conversionIncludes: [],
+    },
+    java: {
+      interfaceImports: ['import com.facebook.react.bridge.ReadableMap;'],
+      delegateImports: ['import com.facebook.react.bridge.ReadableMap;'],
+    },
+  },
+  EdgeInsetsPrimitive: {
+    cpp: {
+      typeName: 'EdgeInsets',
+      localIncludes: ['#include <React/Graphics.h>'],
+      conversionIncludes: [],
+    },
+    java: {
+      interfaceImports: ['import com.facebook.react.bridge.ReadableMap;'],
+      delegateImports: ['import com.facebook.react.bridge.ReadableMap;'],
+    },
+  },
+  DimensionPrimitive: {
+    cpp: {
+      typeName: 'YGValue',
+      localIncludes: [
+        '#include <yoga/Yoga.h>',
+        '#include <React/RendererCore.h>',
+      ],
+      conversionIncludes: ['#include <React/View.h>'],
+    },
+    java: {
+      interfaceImports: ['import com.facebook.yoga.YogaValue;'],
+      delegateImports: [
+        'import com.facebook.react.bridge.DimensionPropConverter;',
+      ],
+    },
+  },
+};
 
 function getCppTypeForReservedPrimitive(name: ReservedPrimitiveName): string {
   return RESERVED_TYPES[name].cpp.typeName;

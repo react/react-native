@@ -28,7 +28,6 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
@@ -52,7 +51,7 @@ class BlobModuleTest {
     bytes = ByteArray(120)
     Random.Default.nextBytes(bytes)
 
-    context = ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    context = ReactTestHelper.createTestReactApplicationContext()
     blobModule = BlobModule(context)
     blobId = blobModule.store(bytes)
   }

@@ -26,13 +26,19 @@ export type SetupArgs = {
   // `add` target selection: which app target (when several) and which project.
   productName: string | null,
   xcodeprojPath: string | null,
-  // `add`: run `pod deintegrate` + strip RN from the Podfile before injecting.
-  // Also implied on the zero-arg path when resolveAction's safe-gate detects a
-  // freshly-scaffolded CocoaPods project (see setup-apple-spm.js).
+  // `add`: run `pod deintegrate` before injecting. The Podfile is kept.
   deintegrate: boolean,
   // Skip the single remaining confirmation (the add/update dirty-pbxproj
   // warning). Non-TTY auto-proceeds regardless (git is the safety net).
   yes: boolean,
+};
+
+// What `spm add` wrote to the app's .gitignore, kept in the injection marker
+// so `spm deinit` removes exactly that: whether it created the file, and every
+// line it appended (header included), in order, across all `add` runs.
+export type GitignoreRecord = {
+  created: boolean,
+  lines: Array<string>,
 };
 
 export type DownloadArgs = {
@@ -106,6 +112,9 @@ export type TargetEntry = {
   // the autolinking model (`dep.root`) so the watch file can flag manifest edits
   // without walking up from the (possibly nested) target source dir.
   root?: string,
+  // The podspec autolinking.json names (origin 'npm' only). The mixed-language
+  // check must read the same podspec the scaffolder would.
+  podspecPath?: ?string,
   // Filled in for npm-origin entries during the mirror step; consumed by the
   // synth-package emission step further down.
   mirrorReady?: ?{
@@ -132,7 +141,7 @@ export type AutolinkingDepJson = {
   ...
 };
 export type RawAutolinkingJson = {
-  dependencies?: ?{[string]: AutolinkingDepJson},
+  dependencies?: ?{[key: string]: AutolinkingDepJson},
   ...
 };
 // Validated/normalized dep — name and ios platform are guaranteed present.
@@ -306,7 +315,7 @@ export type PluginContext = {
   appRoot: string,
   projectRoot: string,
   reactNativeRoot: string,
-  autolinking: {readonly [string]: unknown},
+  autolinking: {readonly [key: string]: unknown},
   outputDir: string,
   // How to depend on React (package ref + product set); null only when there is
   // no resolvable React dependency at all.

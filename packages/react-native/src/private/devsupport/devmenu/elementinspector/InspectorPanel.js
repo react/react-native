@@ -12,7 +12,7 @@
 
 import type {ElementsHierarchy, InspectedElement} from './Inspector';
 
-import SafeAreaView from '../../../../../Libraries/Components/SafeAreaView/SafeAreaView';
+import SafeAreaView from '../../../components/safeareaview/SafeAreaView_INTERNAL_DO_NOT_USE';
 import * as React from 'react';
 
 const ScrollView =
@@ -33,7 +33,7 @@ type Props = Readonly<{
   setTouchTargeting: (val: boolean) => void,
   hierarchy?: ?ElementsHierarchy,
   selection?: ?number,
-  setSelection: number => unknown,
+  setSelection: (v: number) => unknown,
   inspected?: ?InspectedElement,
 }>;
 

@@ -560,8 +560,8 @@ export default class Pressability {
       ReactNativeFeatureFlags.shouldPressibilityUseW3CPointerEventsForHover()
     ) {
       const hoverPointerEvents = {
-        onPointerEnter: undefined as void | (PointerEvent => void),
-        onPointerLeave: undefined as void | (PointerEvent => void),
+        onPointerEnter: undefined as void | ((v: PointerEvent) => void),
+        onPointerLeave: undefined as void | ((v: PointerEvent) => void),
       };
       // Whether to attach these at all is necessarily decided once: their
       // presence is what makes the host view listen for pointer enter/leave.

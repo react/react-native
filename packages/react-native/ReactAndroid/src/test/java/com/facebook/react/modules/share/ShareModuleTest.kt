@@ -39,8 +39,7 @@ class ShareModuleTest {
     ReactNativeFeatureFlagsForTests.setUp()
     activityController = Robolectric.buildActivity(FragmentActivity::class.java)
     val activity = activityController.create().start().resume().get()
-    val applicationContext =
-        ReactTestHelper.createTestReactApplicationContext(RuntimeEnvironment.getApplication())
+    val applicationContext = ReactTestHelper.createTestReactApplicationContext()
     applicationContext.onNewIntent(activity, Intent())
     shareModule = ShareModule(applicationContext)
   }

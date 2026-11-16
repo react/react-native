@@ -11,10 +11,11 @@
 import type {EventOccurrence} from './PointerEventSupport';
 import type {PointerEvent} from 'react-native';
 
+import RNTesterText from '../../../components/RNTesterText';
 import {EventTracker} from './PointerEventSupport';
 import * as React from 'react';
 import {useState} from 'react';
-import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 const eventsToTrack = ['onClick'];
 
@@ -65,15 +66,15 @@ export default component PointerEventAccessibility() {
         </Pressable>
       </View>
       <Pressable onPress={() => setEventsSeen([])}>
-        <Text key={0} style={styles.reset}>
+        <RNTesterText key={0} style={styles.reset}>
           Reset events
-        </Text>
+        </RNTesterText>
       </Pressable>
       <ScrollView style={styles.eventsLog}>
         {eventsSeen.map((occurrence, ii) => (
-          <Text key={`${ii}-${occurrence.id}-${occurrence.eventName}`}>
+          <RNTesterText key={`${ii}-${occurrence.id}-${occurrence.eventName}`}>
             {occurrence.id} {occurrence.eventName}
-          </Text>
+          </RNTesterText>
         ))}
       </ScrollView>
     </View>

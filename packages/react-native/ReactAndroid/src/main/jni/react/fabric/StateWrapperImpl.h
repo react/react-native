@@ -32,9 +32,11 @@ class StateWrapperImpl : public jni::HybridClass<StateWrapperImpl, StateWrapper>
   std::shared_ptr<const State> getState() const;
 
  private:
-  std::shared_ptr<const State> state_;
+  friend HybridBase;
 
-  static void initHybrid(jni::alias_ref<jhybridobject> jobj);
+  explicit StateWrapperImpl(std::shared_ptr<const State> state) : state_(std::move(state)) {}
+
+  std::shared_ptr<const State> state_;
 };
 
 } // namespace facebook::react

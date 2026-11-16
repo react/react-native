@@ -116,11 +116,6 @@ xcbeautifyFormat() {
   xcbeautify --report junit --report-path "$REPORTS_DIR/ios/results.xml"
 }
 
-preloadBundlesRNIntegrationTests() {
-  # Preload IntegrationTests bundles (packages/rn-tester/)
-  curl -s 'http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=ios&dev=true' -o /dev/null
-}
-
 preloadBundlesRNTester() {
   # Preload RNTesterApp bundles (packages/rn-tester/)
   curl -s 'http://localhost:8081/js/RNTesterApp.ios.bundle?platform=ios&dev=true' -o /dev/null
@@ -143,7 +138,6 @@ main() {
     yarn start --max-workers=1 || echo "Can't start packager automatically" &
     waitForPackager
     preloadBundlesRNTester
-    preloadBundlesRNIntegrationTests
 
     buildForTesting
 

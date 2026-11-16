@@ -21,6 +21,9 @@
 
 using namespace facebook::react;
 
+@interface RCTTextLayoutManager () <NSLayoutManagerDelegate>
+@end
+
 @implementation RCTTextLayoutManager {
   SimpleThreadSafeCache<AttributedString, std::shared_ptr<void>, 256> _cache;
 }
@@ -37,6 +40,18 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
     case EllipsizeMode::Middle:
       return NSLineBreakByTruncatingMiddle;
   }
+}
+
+// Text is laid out with an unbounded height, as during measurement, so that lines and attachments end up where
+// measurement placed them. A container clamped to the frame height makes TextKit squeeze the remaining content into
+// the last line that fits. The paragraph view clips the drawing to its bounds.
+static CGSize RCTTextLayoutSizeForFrameSize(CGSize frameSize, const ParagraphAttributes &paragraphAttributes)
+{
+  if (paragraphAttributes.adjustsFontSizeToFit) {
+    // Font scaling shrinks the text until it fits the frame height.
+    return frameSize;
+  }
+  return CGSize{frameSize.width, CGFLOAT_MAX};
 }
 
 - (TextMeasurement)measureNSAttributedString:(NSAttributedString *)attributedString
@@ -136,7 +151,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
-                                                  size:frame.size];
+                                                  size:RCTTextLayoutSizeForFrameSize(frame.size, paragraphAttributes)];
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
@@ -445,6 +460,10 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
 
   NSLayoutManager *layoutManager = [NSLayoutManager new];
   layoutManager.usesFontLeading = NO;
+  if (ReactNativeFeatureFlags::fixTextInlineViewLineHeight() &&
+      [attributedString containsAttachmentsInRange:NSMakeRange(0, attributedString.length)]) {
+    layoutManager.delegate = self;
+  }
   [layoutManager addTextContainer:textContainer];
 
   NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:attributedString];
@@ -467,6 +486,47 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return textStorage;
 }
 
+#pragma mark - NSLayoutManagerDelegate
+
+- (BOOL)layoutManager:(NSLayoutManager *)layoutManager
+    shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
+         lineFragmentUsedRect:(inout CGRect *)lineFragmentUsedRect
+               baselineOffset:(inout CGFloat *)baselineOffset
+              inTextContainer:(NSTextContainer *)textContainer
+                forGlyphRange:(NSRange)glyphRange
+{
+  NSTextStorage *textStorage = layoutManager.textStorage;
+  NSRange characterRange = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:nil];
+
+  // Tallest space any attachment on this line needs above the baseline, counting the NSBaselineOffset lift that
+  // RCTApplyBaselineOffset gives the text.
+  __block CGFloat requiredAscent = 0;
+  [textStorage enumerateAttribute:NSAttachmentAttributeName
+                          inRange:characterRange
+                          options:0
+                       usingBlock:^(NSTextAttachment *attachment, NSRange range, __unused BOOL *stop) {
+                         if (attachment == nil) {
+                           return;
+                         }
+                         CGFloat baselineShift = [[textStorage attribute:NSBaselineOffsetAttributeName
+                                                                 atIndex:range.location
+                                                          effectiveRange:nil] doubleValue];
+                         requiredAscent = MAX(attachment.bounds.size.height + baselineShift, requiredAscent);
+                       }];
+
+  // maximumLineHeight (from lineHeight) caps the line even when an attachment is taller.
+  // Inline views aren't subject to lineHeight, so add the missing height above the baseline.
+  CGFloat missingHeight = requiredAscent - *baselineOffset;
+  if (missingHeight <= 0) {
+    return NO;
+  }
+
+  lineFragmentRect->size.height += missingHeight;
+  lineFragmentUsedRect->size.height += missingHeight;
+  *baselineOffset += missingHeight;
+  return YES;
+}
+
 - (std::shared_ptr<const EventEmitter>)getEventEmitterWithAttributeString:(const AttributedString &)attributedString
                                                       paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                                                                     frame:(CGRect)frame
@@ -475,7 +535,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
-                                                  size:frame.size];
+                                                  size:RCTTextLayoutSizeForFrameSize(frame.size, paragraphAttributes)];
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
@@ -506,7 +566,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
-                                                  size:frame.size];
+                                                  size:RCTTextLayoutSizeForFrameSize(frame.size, paragraphAttributes)];
 
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
