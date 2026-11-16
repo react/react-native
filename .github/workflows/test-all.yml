@@ -3,6 +3,10 @@ name: Test All
 on:
   workflow_dispatch:
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '**/__docs__/**'
+      - '**/LICENSE'
   push:
     branches:
       - main
@@ -20,80 +24,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  check_code_changes:
-    runs-on: ubuntu-latest
-    if: github.repository == 'react/react-native'
-    outputs:
-      any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change == 'true' || github.event_name != 'pull_request' }}
-      should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || github.event_name != 'pull_request' }}
-      should_test_ios: ${{ steps.filter_exclusions.outputs.should_test_ios == 'true' || github.event_name != 'pull_request' }}
-      debugger_shell: ${{ steps.filter_inclusions.outputs.debugger_shell }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Check for code changes (exclusion patterns)
-        uses: dorny/paths-filter@209e61402dbca8aa44f967535da6666b284025ed
-        id: filter_exclusions
-        with:
-          predicate-quantifier: every
-          filters: |
-            any_code_change:
-              - '**'
-              - '!**/__docs__/**'
-              - '!**/*.md'
-              - '!**/LICENSE'
-            should_test_android:
-              # Not an isolated iOS change
-              - '**'
-              - '!packages/react-native/React/**'
-              - '!packages/react-native/ReactApple/**'
-              - '!packages/react-native/**/*.m'
-              - '!packages/react-native/**/*.mm'
-              - '!packages/react-native/**/*.podspec'
-              - '!packages/rn-tester/RNTester/**'
-              - '!packages/rn-tester/RNTesterPods*/**'
-              - '!packages/rn-tester/Podfile*'
-            should_test_ios:
-              # Not an isolated Android change
-              - '**'
-              - '!gradle/**'
-              - '!gradle*'
-              - '!packages/gradle-plugin/**'
-              - '!packages/react-native/ReactAndroid/**'
-              - '!packages/react-native/**/*.java'
-              - '!packages/react-native/**/*.kt'
-              - '!packages/react-native/**/*.gradle*'
-              - '!packages/react-native-popup-menu-android/**'
-              - '!packages/rn-tester/android/**'
-      - name: Check for code changes (inclusion patterns)
-        uses: dorny/paths-filter@209e61402dbca8aa44f967535da6666b284025ed
-        id: filter_inclusions
-        with:
-          filters: |
-            debugger_shell:
-              - 'packages/debugger-shell/**'
-              - 'scripts/debugger-shell/**'
-
-  test_android:
-    needs: check_code_changes
-    if: |
-      needs.check_code_changes.outputs.any_code_change == 'true' &&
-      needs.check_code_changes.outputs.should_test_android == 'true'
-    uses: ./.github/workflows/test-android.yml
-    secrets: inherit
-
-  test_ios:
-    needs: check_code_changes
-    if: |
-      needs.check_code_changes.outputs.any_code_change == 'true' &&
-      needs.check_code_changes.outputs.should_test_ios == 'true'
-    uses: ./.github/workflows/test-ios.yml
-    secrets: inherit
-
   build_fantom_runner:
     runs-on: 8-core-ubuntu
-    needs: [check_code_changes, lint]
-    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    needs: lint
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
@@ -135,8 +68,7 @@ jobs:
 
   test_react_common_cxx:
     runs-on: 8-core-ubuntu
-    needs: [check_code_changes, lint]
-    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    needs: lint
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
@@ -215,8 +147,7 @@ jobs:
 
   test_js:
     runs-on: ubuntu-latest
-    needs: [check_code_changes, lint]
-    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    needs: lint
     strategy:
       fail-fast: false
       matrix:
@@ -231,8 +162,7 @@ jobs:
 
   build_js_types:
     runs-on: ubuntu-latest
-    needs: [check_code_changes, lint]
-    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    needs: lint
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -246,21 +176,3 @@ jobs:
       - name: Validate generated types
         shell: bash
         run: yarn test-generated-typescript
-
-  build_debugger_shell:
-    runs-on: macos-26
-    needs: check_code_changes
-    if: needs.check_code_changes.outputs.debugger_shell == 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
-      - name: Install dependencies
-        uses: ./.github/actions/yarn-install
-      - name: Build packages
-        shell: bash
-        run: yarn build --prepack
-      - name: Verify debugger-shell build
-        shell: bash
-        run: node scripts/debugger-shell/build-binary.js

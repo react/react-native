@@ -1,0 +1,40 @@
+name: Build Debugger Shell
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'packages/debugger-shell/**'
+      - 'scripts/debugger-shell/**'
+  push:
+    branches:
+      - main
+      - '*-stable'
+    paths:
+      - 'packages/debugger-shell/**'
+      - 'scripts/debugger-shell/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build_debugger_shell:
+    runs-on: macos-26
+    if: github.repository == 'react/react-native'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build packages
+        shell: bash
+        run: yarn build --prepack
+      - name: Verify debugger-shell build
+        shell: bash
+        run: node scripts/debugger-shell/build-binary.js
