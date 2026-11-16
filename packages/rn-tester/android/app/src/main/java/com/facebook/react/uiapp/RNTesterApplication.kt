@@ -127,6 +127,8 @@ internal class RNTesterApplication : Application(), ReactApplication {
     // Must run before loadReactNative so E2E-provided system properties are readable by the
     // feature flag overrides applied during React Native startup.
     FBRNTesterEndToEndHelper.initializeConfig(this)
-    loadReactNative(this)
+    // Start the ReactHost right away so the React instance is created while the first Activity
+    // is being created.
+    loadReactNative(this, true)
   }
 }

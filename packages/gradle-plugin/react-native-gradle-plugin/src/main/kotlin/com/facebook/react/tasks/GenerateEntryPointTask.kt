@@ -70,6 +70,7 @@ abstract class GenerateEntryPointTask : DefaultTask() {
         import android.content.Context;
         import android.content.res.Resources;
 
+        import com.facebook.react.ReactApplication;
         import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
         import com.facebook.react.common.annotations.internal.LegacyArchitectureLogger;
         import com.facebook.react.views.view.WindowUtilKt;
@@ -82,9 +83,21 @@ abstract class GenerateEntryPointTask : DefaultTask() {
           *
           * The `loadReactNative(this)` method invocation should be called inside the
           * application onCreate otherwise the app won't load correctly.            
+          *
+          * `loadReactNative(this, true)` additionally starts the ReactHost right away, so the
+          * React instance (JS runtime, TurboModules, bundle evaluation) is created on the
+          * ReactHost background thread while the first Activity is being created, instead of
+          * only once that Activity starts its surface. This makes the first React content
+          * appear earlier at the cost of a slightly later first (empty) frame, and it creates
+          * the React instance for every process start, including ones that never show an
+          * Activity (e.g. a headless task or a push service).
           */
         public class ReactNativeApplicationEntryPoint {
           public static void loadReactNative(Context context) {
+            loadReactNative(context, false);
+          }
+
+          public static void loadReactNative(Context context, boolean startReactHost) {
             SoLoader.init(context, OpenSourceMergedSoMapping.INSTANCE);
             
             if ({{packageName}}.BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
@@ -93,6 +106,10 @@ abstract class GenerateEntryPointTask : DefaultTask() {
             
             if ({{packageName}}.BuildConfig.IS_EDGE_TO_EDGE_ENABLED) {
               WindowUtilKt.setEdgeToEdgeFeatureFlagOn();
+            }
+
+            if (startReactHost && context instanceof ReactApplication) {
+              ((ReactApplication) context).getReactHost().start();
             }
           }
         }
