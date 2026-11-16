@@ -18,7 +18,6 @@
 #import <React/RCTLog.h>
 #import <React/RCTReloadCommand.h>
 #import <React/RCTUtils.h>
-#import <atomic>
 
 #import "CoreModulesPlugins.h"
 
@@ -123,12 +122,6 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 
 @end
 
-#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-static RCTHandlerToken reloadToken;
-static RCTHandlerToken devMenuToken;
-static constinit std::atomic<int> numInitializedModules{0};
-#endif
-
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
 }
@@ -190,27 +183,25 @@ RCT_EXPORT_MODULE()
 #endif
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  if (numInitializedModules++ == 0) {
-    reloadToken = [self
-        addNotificationHandler:^(id params) {
-          RCTTriggerReloadCommandListeners(@"Global hotkey");
-        }
-                         queue:dispatch_get_main_queue()
-                     forMethod:@"reload"];
+  [self
+      addNotificationHandler:^(id params) {
+        RCTTriggerReloadCommandListeners(@"Global hotkey");
+      }
+                       queue:dispatch_get_main_queue()
+                   forMethod:@"reload"];
 #if RCT_DEV_MENU
-    __weak __typeof(self) weakSelf = self;
-    devMenuToken = [self
-        addNotificationHandler:^(id params) {
-          __typeof(self) strongSelf = weakSelf;
-          if (strongSelf == nullptr) {
-            return;
-          }
-          [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
+  __weak __typeof(self) weakSelf = self;
+  [self
+      addNotificationHandler:^(id params) {
+        __typeof(self) strongSelf = weakSelf;
+        if (strongSelf == nullptr) {
+          return;
         }
-                         queue:dispatch_get_main_queue()
-                     forMethod:@"devMenu"];
+        [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
+      }
+                       queue:dispatch_get_main_queue()
+                   forMethod:@"devMenu"];
 #endif
-  }
 #endif
 
 #if RCT_ENABLE_INSPECTOR
@@ -227,13 +218,8 @@ RCT_EXPORT_MODULE()
 - (void)invalidate
 {
   [super invalidate];
-#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  if (--numInitializedModules == 0) {
-    [_packagerConnection removeHandler:reloadToken];
-#if RCT_DEV_MENU
-    [_packagerConnection removeHandler:devMenuToken];
-#endif
-  }
+#if RCT_DEV
+  [_packagerConnection stop];
 #endif
 }
 
