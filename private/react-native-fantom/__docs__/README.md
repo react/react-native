@@ -662,8 +662,8 @@ has simple examples you can learn from.
 #### Are tests executed on Github CI?
 
 Yes. The [Test All](../../../.github/workflows/test-all.yml) workflow builds the
-Fantom runner and runs the full suite on GitHub Actions for every PR that
-changes code. The tests also run as part of the PR import process.
+Fantom runner and runs the tests on GitHub Actions for every PR that changes
+code. The tests also run as part of the PR import process.
 
 #### Can I gate individual tests within a suite to only run, or not run, with a specific feature flag?
 
