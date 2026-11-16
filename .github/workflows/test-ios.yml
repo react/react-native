@@ -2,11 +2,6 @@ name: Test iOS
 
 on:
   workflow_call:
-    inputs:
-      release-type:
-        description: The type of release to build, one of nightly, release or dry-run
-        type: string
-        required: true
 
 jobs:
   prebuild_apple_dependencies:
@@ -97,7 +92,7 @@ jobs:
       - name: Build NPM Package
         uses: ./.github/actions/build-npm-package
         with:
-          release-type: ${{ inputs.release-type }}
+          release-type: dry-run
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   test_e2e_ios_templateapp:
