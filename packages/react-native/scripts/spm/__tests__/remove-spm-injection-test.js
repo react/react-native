@@ -712,12 +712,11 @@ describe('removeSpmInjection — the surgical inverse of add', () => {
       xcodeprojPath,
     });
     rebaseDebugOnUserXcconfig(xcodeprojPath);
-    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    logSpy.mockClear();
 
     removeSpmInjection({appRoot, xcodeprojPath});
 
     const logged = logSpy.mock.calls.map(([line]) => line).join('\n');
-    logSpy.mockRestore();
     expect(pbxprojOf(xcodeprojPath)).toContain(
       'baseConfigurationReference = CC0000000000000000000001 /* App.xcconfig */;',
     );
