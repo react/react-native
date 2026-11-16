@@ -12,6 +12,7 @@
 
 import typeof FillRateHelperT from './Lists/FillRateHelper';
 import typeof ViewabilityHelperT from './Lists/ViewabilityHelper';
+import type VirtualizedListInstanceT from './Lists/VirtualizedList';
 import typeof VirtualizedListT from './Lists/VirtualizedList';
 import type {AnyVirtualizedSectionList as AnyVirtualizedSectionListT} from './Lists/VirtualizedSectionList';
 
@@ -38,6 +39,7 @@ export type {
   SectionData,
 } from './Lists/VirtualizedSectionList';
 export type {FillRateInfo} from './Lists/FillRateHelper';
+export type VirtualizedListInstance = VirtualizedListInstanceT;
 
 export default {
   keyExtractor,
