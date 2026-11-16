@@ -724,8 +724,7 @@ export function enqueueModalSizeUpdate(
 
 /**
  * Sets the color scheme that `@media (prefers-color-scheme: ...)` conditional
- * values match. It applies to props that are set after this call. Views that
- * are already rendered keep their values.
+ * values match, and updates the rendered views.
  */
 export function setColorScheme(colorScheme: 'light' | 'dark') {
   NativeFantom.setColorScheme(colorScheme);

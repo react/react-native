@@ -169,29 +169,74 @@ describe('conditional values', () => {
     expect(output(root)).toEqual(<rn-view opacity="0.5" />);
   });
 
-  it('uses the color scheme when the props are set', () => {
+  it('updates rendered views when the color scheme changes', () => {
     const root = Fantom.createRoot();
-    render(
-      root,
-      <View key="a" style={{backgroundColor: whiteOrBlack, opacity: 1}} />,
-    );
+    render(root, <View style={{backgroundColor: whiteOrBlack}} />);
+    expect(output(root)).toEqual(<rn-view backgroundColor={WHITE} />);
 
     Fantom.setColorScheme('dark');
+    expect(output(root)).toEqual(<rn-view backgroundColor={BLACK} />);
 
-    // Rendered views keep their values until their conditions are resolved
-    // again.
+    Fantom.setColorScheme('light');
+    expect(output(root)).toEqual(<rn-view backgroundColor={WHITE} />);
+  });
+
+  it('updates only the stale views of each rendered tree', () => {
+    const first = Fantom.createRoot();
+    render(
+      first,
+      <View nativeID="P" collapsable={false}>
+        <View nativeID="A" style={{backgroundColor: whiteOrBlack}} />
+        <View nativeID="B" style={{backgroundColor: 'red'}} />
+      </View>,
+    );
+    const second = Fantom.createRoot();
+    render(
+      second,
+      <View nativeID="C" style={{backgroundColor: whiteOrBlack}} />,
+    );
+    first.takeMountingManagerLogs();
+    second.takeMountingManagerLogs();
+
+    Fantom.setColorScheme('dark');
+    expect(first.takeMountingManagerLogs()).toEqual([
+      'Update {type: "View", nativeID: "A"}',
+    ]);
+    expect(second.takeMountingManagerLogs()).toEqual([
+      'Update {type: "View", nativeID: "C"}',
+    ]);
+    expect(output(first)).toEqual(
+      <rn-view>
+        <rn-view key="0" backgroundColor={BLACK} />
+        <rn-view key="1" backgroundColor={RED} />
+      </rn-view>,
+    );
+    expect(output(second)).toEqual(<rn-view backgroundColor={BLACK} />);
+  });
+
+  it('makes no native updates without stale views', () => {
+    const root = Fantom.createRoot();
+    render(root, <View style={{backgroundColor: 'red'}} />);
+    root.takeMountingManagerLogs();
+
+    Fantom.setColorScheme('dark');
+    expect(root.takeMountingManagerLogs()).toEqual([]);
+
+    render(root, <View style={{backgroundColor: whiteOrBlack}} />);
+    root.takeMountingManagerLogs();
+    // The same color scheme again.
+    Fantom.setColorScheme('dark');
+    expect(root.takeMountingManagerLogs()).toEqual([]);
+  });
+
+  it('keeps the updated value after a React update', () => {
+    const root = Fantom.createRoot();
+    render(root, <View style={{backgroundColor: whiteOrBlack, opacity: 1}} />);
+
+    Fantom.setColorScheme('dark');
     render(
       root,
-      <View key="a" style={{backgroundColor: whiteOrBlack, opacity: 0.5}} />,
-    );
-    expect(output(root)).toEqual(
-      <rn-view backgroundColor={WHITE} opacity="0.5" />,
-    );
-
-    // A new view uses the new color scheme.
-    render(
-      root,
-      <View key="b" style={{backgroundColor: whiteOrBlack, opacity: 0.5}} />,
+      <View style={{backgroundColor: whiteOrBlack, opacity: 0.5}} />,
     );
     expect(output(root)).toEqual(
       <rn-view backgroundColor={BLACK} opacity="0.5" />,

@@ -87,20 +87,25 @@ std::optional<ConditionalValuesResolution> resolveConditionalValues(
   const auto* sourceValues =
       sourceProps != nullptr ? sourceProps->conditionalValues.get() : nullptr;
 
+  std::optional<MediaFeatures> features;
   if (!mayHaveConditionalValues(rawProps)) {
     if (sourceValues == nullptr) {
       return std::nullopt;
     }
-    // Only a new value for a prop with a conditional value changes something.
-    auto isAnyReplaced = false;
-    for (const auto& item : sourceValues->items()) {
-      if (rawProps.hasProperty(item.first.c_str())) {
-        isAnyReplaced = true;
-        break;
+    // Stale values are resolved again, even without new props.
+    features = getMediaFeatures(contextContainer);
+    if (*features == sourceProps->conditionalValuesFeatures) {
+      // Only a new value for a prop with a conditional value changes something.
+      auto isAnyReplaced = false;
+      for (const auto& item : sourceValues->items()) {
+        if (rawProps.hasProperty(item.first.c_str())) {
+          isAnyReplaced = true;
+          break;
+        }
       }
-    }
-    if (!isAnyReplaced) {
-      return std::nullopt;
+      if (!isAnyReplaced) {
+        return std::nullopt;
+      }
     }
   }
 
@@ -113,7 +118,6 @@ std::optional<ConditionalValuesResolution> resolveConditionalValues(
   auto conditionalValues = sourceValues != nullptr
       ? *sourceValues
       : folly::dynamic(folly::dynamic::object());
-  std::optional<MediaFeatures> features;
   for (auto& item : values.items()) {
     const auto* conditionalValue = item.second.isObject()
         ? item.second.get_ptr(kConditionalValueKey)
@@ -130,12 +134,25 @@ std::optional<ConditionalValuesResolution> resolveConditionalValues(
     item.second = resolveConditionalValue(*conditionalValue, *features);
   }
 
+  auto sourceFeatures = sourceProps != nullptr
+      ? sourceProps->conditionalValuesFeatures
+      : MediaFeatures{};
+  // All conditional values of the props are resolved for the same features.
+  if (features && *features != sourceFeatures) {
+    for (const auto& item : conditionalValues.items()) {
+      if (values.count(item.first) == 0) {
+        values[item.first] = resolveConditionalValue(item.second, *features);
+      }
+    }
+  }
+
   return ConditionalValuesResolution{
       .rawProps = RawProps(std::move(values)),
       .conditionalValues = conditionalValues.empty()
           ? nullptr
           : std::make_shared<const folly::dynamic>(
                 std::move(conditionalValues)),
+      .features = features ? *features : sourceFeatures,
   };
 }
 

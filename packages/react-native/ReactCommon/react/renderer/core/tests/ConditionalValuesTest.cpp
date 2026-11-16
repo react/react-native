@@ -128,9 +128,11 @@ TEST(ConditionalValuesTest, propsKeepTheConditionalValuesOfTheSource) {
   Props source;
   source.conditionalValues = std::make_shared<const folly::dynamic>(
       folly::dynamic::object("opacity", 1));
+  source.conditionalValuesFeatures = kDark;
 
   // The iterator-setter path copies the source.
   EXPECT_EQ(Props(source).conditionalValues, source.conditionalValues);
+  EXPECT_EQ(Props(source).conditionalValuesFeatures, kDark);
 
   // The classic path constructs from the source and the raw props.
   RawPropsParser parser;
@@ -141,6 +143,7 @@ TEST(ConditionalValuesTest, propsKeepTheConditionalValuesOfTheSource) {
   PropsParserContext context{-1, contextContainer};
   Props props(context, source, rawProps);
   EXPECT_EQ(props.conditionalValues, source.conditionalValues);
+  EXPECT_EQ(props.conditionalValuesFeatures, kDark);
   EXPECT_EQ(props.nativeId, "a");
 }
 
@@ -174,10 +177,14 @@ folly::dynamic withFlag(folly::dynamic values) {
   return values;
 }
 
-Props propsWith(folly::dynamic conditionalValues) {
+// By default, the values were resolved for the features `resolveValues` uses.
+Props propsWith(
+    folly::dynamic conditionalValues,
+    const MediaFeatures& features = kDark) {
   Props props;
   props.conditionalValues =
       std::make_shared<const folly::dynamic>(std::move(conditionalValues));
+  props.conditionalValuesFeatures = features;
   return props;
 }
 
@@ -275,6 +282,65 @@ TEST(ConditionalValuesTest, mergesNewValuesWithStoredValues) {
               "borderWidth", halfOrQuarter())));
 }
 
+TEST(ConditionalValuesTest, stampsTheFeaturesOfNewValues) {
+  auto values = withFlag(folly::dynamic::object("opacity", sent(oneOrTwo())));
+  EXPECT_EQ(resolveValues(nullptr, values, kDark)->features, kDark);
+  EXPECT_EQ(resolveValues(nullptr, values, kLight)->features, kLight);
+}
+
+TEST(ConditionalValuesTest, newValuesResolveAStaleSourceAgain) {
+  auto source =
+      propsWith(folly::dynamic::object("opacity", oneOrTwo()), kLight);
+  auto result = resolveValues(
+      &source,
+      withFlag(folly::dynamic::object("borderWidth", sent(halfOrQuarter()))),
+      kDark);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(
+      result->rawProps.toDynamic(),
+      folly::dynamic(
+          folly::dynamic::object("borderWidth", 0.25)("opacity", 2)));
+  EXPECT_EQ(result->features, kDark);
+}
+
+TEST(ConditionalValuesTest, anyUpdateResolvesAStaleSourceAgain) {
+  auto source = propsWith(
+      folly::dynamic::object("opacity", oneOrTwo())(
+          "borderWidth", halfOrQuarter()),
+      kLight);
+  auto result =
+      resolveValues(&source, folly::dynamic::object("opacity", 3), kDark);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(
+      result->rawProps.toDynamic(),
+      folly::dynamic(
+          folly::dynamic::object("opacity", 3)("borderWidth", 0.25)));
+  EXPECT_EQ(
+      *result->conditionalValues,
+      folly::dynamic(folly::dynamic::object("borderWidth", halfOrQuarter())));
+  EXPECT_EQ(result->features, kDark);
+}
+
+// The walk after a media features change clones stale views without props.
+TEST(ConditionalValuesTest, anEmptyUpdateResolvesAStaleSourceAgain) {
+  auto source =
+      propsWith(folly::dynamic::object("opacity", oneOrTwo()), kLight);
+  auto result =
+      resolveConditionalValues(&source, RawProps(), containerWith(kDark).get());
+  ASSERT_TRUE(result);
+  EXPECT_EQ(
+      result->rawProps.toDynamic(),
+      folly::dynamic(folly::dynamic::object("opacity", 2)));
+  EXPECT_EQ(*result->conditionalValues, *source.conditionalValues);
+  EXPECT_EQ(result->features, kDark);
+}
+
+TEST(ConditionalValuesTest, anEmptyUpdateChangesNothingForAnUpToDateSource) {
+  auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()), kDark);
+  EXPECT_FALSE(resolveConditionalValues(
+      &source, RawProps(), containerWith(kDark).get()));
+}
+
 TEST(ConditionalValuesTest, aNewValueReplacesTheStoredValue) {
   auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()));
   auto result = resolveValues(
@@ -334,9 +400,13 @@ namespace {
 // Clones props 3 times with `descriptor`, like React updates do.
 template <typename DescriptorT, typename PropsT>
 void expectClonePropsResolvesConditionalValues() {
+  auto store = std::make_shared<MediaFeaturesStore>();
+  store->set(kDark);
+  auto descriptorContainer = std::make_shared<const ContextContainer>();
+  descriptorContainer->insert(kMediaFeaturesStoreKey, store);
   auto descriptor = std::make_shared<DescriptorT>(ComponentDescriptorParameters{
       .eventDispatcher = {},
-      .contextContainer = containerWith(kDark),
+      .contextContainer = descriptorContainer,
       .flavor = nullptr});
   // An empty container, like `ShadowNode::clone` passes for `setNativeProps`.
   ContextContainer contextContainer;
@@ -352,15 +422,25 @@ void expectClonePropsResolvesConditionalValues() {
           withFlag(folly::dynamic::object("opacity", sent(halfOrQuarter())))));
   EXPECT_EQ(opacity(created), 0.25);
   ASSERT_NE(created->conditionalValues, nullptr);
+  EXPECT_EQ(created->conditionalValuesFeatures, kDark);
 
   auto updated = descriptor->cloneProps(
       context, created, RawProps(folly::dynamic::object("nativeID", "a")));
   EXPECT_EQ(opacity(updated), 0.25);
   EXPECT_EQ(updated->nativeId, "a");
   EXPECT_EQ(updated->conditionalValues, created->conditionalValues);
+  EXPECT_EQ(updated->conditionalValuesFeatures, kDark);
+
+  // After a media features change, a clone without props resolves again.
+  store->set(kLight);
+  auto refreshed = descriptor->cloneProps(context, updated, RawProps());
+  EXPECT_EQ(opacity(refreshed), 0.5);
+  EXPECT_EQ(refreshed->nativeId, "a");
+  EXPECT_EQ(*refreshed->conditionalValues, *updated->conditionalValues);
+  EXPECT_EQ(refreshed->conditionalValuesFeatures, kLight);
 
   auto replaced = descriptor->cloneProps(
-      context, updated, RawProps(folly::dynamic::object("opacity", 0.75)));
+      context, refreshed, RawProps(folly::dynamic::object("opacity", 0.75)));
   EXPECT_EQ(opacity(replaced), 0.75);
   EXPECT_EQ(replaced->conditionalValues, nullptr);
 }

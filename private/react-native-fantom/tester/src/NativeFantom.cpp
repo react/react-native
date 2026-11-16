@@ -261,12 +261,7 @@ void NativeFantom::enqueueModalSizeUpdate(
 void NativeFantom::setColorScheme(
     jsi::Runtime& runtime,
     const std::string& colorScheme) {
-  auto contextContainer = UIManagerBinding::getBinding(runtime)
-                              ->getUIManager()
-                              .getContextContainer();
-  auto store = contextContainer->at<std::shared_ptr<MediaFeaturesStore>>(
-      kMediaFeaturesStoreKey);
-  store->set(
+  UIManagerBinding::getBinding(runtime)->getUIManager().setMediaFeatures(
       {.colorScheme =
            colorScheme == "dark" ? ColorScheme::Dark : ColorScheme::Light});
 }

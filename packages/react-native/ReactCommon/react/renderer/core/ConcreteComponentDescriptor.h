@@ -157,6 +157,7 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
     }
     if (conditionalValues) {
       shadowNodeProps->conditionalValues = std::move(conditionalValues->conditionalValues);
+      shadowNodeProps->conditionalValuesFeatures = conditionalValues->features;
     }
 
 #ifdef RN_SERIALIZABLE_STATE

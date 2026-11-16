@@ -220,6 +220,12 @@ class UIManager final : public ShadowTreeDelegate {
 
   void updateShadowTree(std::unordered_map<Tag, folly::dynamic> &&tagToProps);
 
+  /*
+   * Sets the media features that conditional style values match, and resolves
+   * the conditional values of rendered views again. Thread-safe.
+   */
+  void setMediaFeatures(MediaFeatures mediaFeatures) const;
+
 #pragma mark - ContextContainer
   std::shared_ptr<const ContextContainer> getContextContainer() const;
 
