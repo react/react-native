@@ -51,29 +51,35 @@ function generateCode(
   }
 
   const libraryName = schemaInfo.library.config.name;
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), libraryName));
-  const tmpOutputDir = path.join(tmpDir, 'out');
-  fs.mkdirSync(tmpOutputDir, {recursive: true});
-
-  codegenLog(`Generating Native Code for ${libraryName} - ${platform}`);
-  const useLocalIncludePaths = includesGeneratedCode;
-  generateSpecsCLIExecutor.generateSpecFromInMemorySchema(
-    platform,
-    schemaInfo.schema,
-    tmpOutputDir,
-    libraryName,
-    'com.facebook.fbreact.specs',
-    schemaInfo.library.config.type,
-    useLocalIncludePaths,
+  const tmpDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'react-native-codegen-'),
   );
+  try {
+    const tmpOutputDir = path.join(tmpDir, 'out');
+    fs.mkdirSync(tmpOutputDir, {recursive: true});
 
-  // Finally, copy artifacts to the final output directory.
-  const outputDir = forceOutputPath
-    ? outputPath
-    : (reactNativeCoreLibraryOutputPath(libraryName, platform) ?? outputPath);
-  fs.mkdirSync(outputDir, {recursive: true});
-  cpSyncRecursiveIfChanged(tmpOutputDir, outputDir);
-  codegenLog(`Generated artifacts: ${outputDir}`);
+    codegenLog(`Generating Native Code for ${libraryName} - ${platform}`);
+    const useLocalIncludePaths = includesGeneratedCode;
+    generateSpecsCLIExecutor.generateSpecFromInMemorySchema(
+      platform,
+      schemaInfo.schema,
+      tmpOutputDir,
+      libraryName,
+      'com.facebook.fbreact.specs',
+      schemaInfo.library.config.type,
+      useLocalIncludePaths,
+    );
+
+    // Finally, copy artifacts to the final output directory.
+    const outputDir = forceOutputPath
+      ? outputPath
+      : (reactNativeCoreLibraryOutputPath(libraryName, platform) ?? outputPath);
+    fs.mkdirSync(outputDir, {recursive: true});
+    cpSyncRecursiveIfChanged(tmpOutputDir, outputDir);
+    codegenLog(`Generated artifacts: ${outputDir}`);
+  } finally {
+    fs.rmSync(tmpDir, {recursive: true, force: true});
+  }
 }
 
 function reactNativeCoreLibraryOutputPath(
