@@ -5,6 +5,9 @@ packages/react-native/sdks/**
 ; Ignore fb_internal modules
 packages/react-native/src/fb_internal/**
 
+; Ignore files excluded from the open-source repository
+**/*.fb.*
+
 ; Ignore the codegen e2e tests
 packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
 
