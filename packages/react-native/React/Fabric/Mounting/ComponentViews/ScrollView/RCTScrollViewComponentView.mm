@@ -309,11 +309,18 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
            oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
 {
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
-  if (layoutMetrics.layoutDirection != oldLayoutMetrics.layoutDirection) {
-    CGAffineTransform transform = (layoutMetrics.layoutDirection == LayoutDirection::LeftToRight)
-        ? CGAffineTransformIdentity
-        : CGAffineTransformMakeScale(-1, 1);
+  [self _updateRightToLeftTransform];
+}
 
+// In RTL, a horizontal scroll view is mirrored (with its content view mirrored back) so it starts at the right edge.
+// A vertical one is left as is: mirroring it also mirrors the views UIKit adds to the scroll view outside the
+// content view, such as the navigation bar's large title on iOS 26.
+- (void)_updateRightToLeftTransform
+{
+  const auto &scrollViewProps = static_cast<const ScrollViewProps &>(*_props);
+  BOOL mirrored = _layoutMetrics.layoutDirection == LayoutDirection::RightToLeft && scrollViewProps.horizontal;
+  CGAffineTransform transform = mirrored ? CGAffineTransformMakeScale(-1, 1) : CGAffineTransformIdentity;
+  if (!CGAffineTransformEqualToTransform(_scrollView.transform, transform)) {
     _containerView.transform = transform;
     _scrollView.transform = transform;
   }
@@ -463,6 +470,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 
   [super updateProps:props oldProps:oldProps];
+  [self _updateRightToLeftTransform];
 
   // Must run after `super updateProps:` so it is based on the latest calculated view.
   ((RCTEnhancedScrollView *)_scrollView).inverted = [self isInverted];
