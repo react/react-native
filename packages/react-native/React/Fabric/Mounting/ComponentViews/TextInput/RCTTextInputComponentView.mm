@@ -157,9 +157,33 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (UITraitCollection.currentTraitCollection.preferredContentSizeCategory !=
       previousTraitCollection.preferredContentSizeCategory) {
     const auto &newTextInputProps = static_cast<const TextInputProps &>(*_props);
-    _backedTextInputView.defaultTextAttributes =
+    NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+    defaultAttributes[RCTAttributedStringEventEmitterKey] =
+        _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
+    _backedTextInputView.defaultTextAttributes = defaultAttributes;
+    // `UITextField` applies `defaultTextAttributes` to its whole text, which drops the attributes of nested <Text>
+    // children (color, font family, ...). The state was already mounted, so re-apply its attributed string.
+    [self _reapplyStateAttributedString];
   }
+}
+
+- (void)_reapplyStateAttributedString
+{
+  if (!_state || _backedTextInputView.markedTextRange) {
+    return;
+  }
+  const auto &data = _state->getData();
+  if (data.reactTreeAttributedString.isEmpty() || _mostRecentEventCount != data.mostRecentEventCount) {
+    return;
+  }
+  NSAttributedString *attributedString = RCTNSAttributedStringFromAttributedStringBox(data.attributedStringBox);
+  if (![attributedString.string isEqualToString:_backedTextInputView.attributedText.string]) {
+    return;
+  }
+  _comingFromJS = YES;
+  [self _setAttributedString:attributedString];
+  _comingFromJS = NO;
 }
 
 - (void)reactUpdateResponderOffsetForScrollView:(RCTScrollViewComponentView *)scrollView
