@@ -28,6 +28,7 @@ function _wrapRegExp() { _wrapRegExp = function (e, r) { return new BabelRegExp(
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+var Status = require("flow-enums-runtime").Mirrored(["Active", "Inactive", "Pending"]);
 var _count = _classPrivateFieldLooseKey("count");
 var _instances = _classPrivateFieldLooseKey("instances");
 var _increment = _classPrivateFieldLooseKey("increment");

@@ -407,7 +407,9 @@ describe('react-native-babel-preset transform snapshots', () => {
         const s: Status = Status.Active;
       `;
       const result = transformCode(code, {dev: false});
-      expect(result).toContain('Status');
+      expect(result).toContain(
+        'var Status = require("flow-enums-runtime").Mirrored(["Active", "Inactive"]);',
+      );
     });
 
     it('preserves classes with hermes-stable profile in prod', () => {
