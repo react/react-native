@@ -17,9 +17,7 @@ const PROJECT_ROOT = path.sep === '/' ? '/my/project' : 'C:\\my\\project';
 const RN_ROOT = path.join(PROJECT_ROOT, 'node_modules', 'react-native');
 
 // The transformer memoizes its resolved Babel config in a module-level
-// closure, keyed on nothing - so a fresh module instance is required for every
-// distinct `options` shape, or later variants silently reuse the first
-// variant's config.
+// closure, so a fresh module instance keeps each test independent.
 beforeEach(() => {
   jest.resetModules();
 });
@@ -171,9 +169,8 @@ describe.each([false, true])(
 );
 
 test('the two import-support modes really do produce different output', () => {
-  // Guards the test setup itself: without a module reset between variants the
-  // memoized config leaks and the parameterized suite above would silently run
-  // the same configuration twice.
+  // Guards the test setup itself: the parameterized suite above must really
+  // run two different configurations.
   const src = "import {Platform} from 'react-native';\nconst x = Other.thing;";
 
   const lowered = transformToCode(src, {experimentalImportSupport: false});
