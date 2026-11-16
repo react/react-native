@@ -103,7 +103,12 @@ internal class ReactInstance(
 
   val reactQueueConfiguration: ReactQueueConfiguration
   val fabricUIManager: FabricUIManager
-  val javaScriptContextHolder: JavaScriptContextHolder
+  // The JS runtime is created on the JS thread; the holder is resolved on first use so instance
+  // creation does not wait for it (getJavaScriptContext blocks until the runtime exists).
+  private val javaScriptContextHolderDelegate = lazy {
+    JavaScriptContextHolder(getJavaScriptContext())
+  }
+  val javaScriptContextHolder: JavaScriptContextHolder by javaScriptContextHolderDelegate
 
   val nativeModules: Collection<NativeModule>
     get() = turboModuleManager.modules
@@ -160,8 +165,6 @@ internal class ReactInstance(
             isProfiling,
             reactHostInspectorTarget,
         )
-
-    javaScriptContextHolder = JavaScriptContextHolder(getJavaScriptContext())
 
     // Set up TurboModules
     Systrace.beginSection(Systrace.TRACE_TAG_REACT, "ReactInstance.initialize#initTurboModules")
@@ -421,7 +424,9 @@ internal class ReactInstance(
     fabricUIManager.invalidate()
     javaTimerManager.onInstanceDestroy()
     mHybridData.resetNative()
-    javaScriptContextHolder.clear()
+    if (javaScriptContextHolderDelegate.isInitialized()) {
+      javaScriptContextHolder.clear()
+    }
   }
 
   /* --- Native methods --- */

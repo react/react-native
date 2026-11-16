@@ -58,8 +58,15 @@ JReactInstance::JReactInstance(
 
   jBindingsInstaller_ = jni::make_global(jBindingsInstaller);
 
+  // The runtime is created on the JS thread (as its first task), so the
+  // ReactHost thread can continue with the TurboModule and Fabric setup while
+  // the runtime is being created.
   instance_ = std::make_unique<ReactInstance>(
-      jsRuntimeFactory->cthis()->createJSRuntime(sharedJSMessageQueueThread),
+      [jsRuntimeFactory = jni::make_global(jsRuntimeFactory),
+       sharedJSMessageQueueThread]() {
+        return jsRuntimeFactory->cthis()->createJSRuntime(
+            sharedJSMessageQueueThread);
+      },
       sharedJSMessageQueueThread,
       timerManager,
       std::move(onJsError),
