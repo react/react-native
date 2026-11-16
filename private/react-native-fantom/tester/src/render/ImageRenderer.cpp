@@ -385,7 +385,12 @@ void paintView(
       const auto& state =
           static_cast<const ConcreteState<ScrollViewState>&>(*view.state)
               .getData();
-      canvas.translate(-state.contentOffset.x, -state.contentOffset.y);
+      auto contentOffset = state.contentOffset;
+      if (metrics.layoutDirection == LayoutDirection::RightToLeft) {
+        contentOffset.x = state.getContentSize().width -
+            metrics.frame.size.width - contentOffset.x;
+      }
+      canvas.translate(-contentOffset.x, -contentOffset.y);
     }
   }
   for (const auto& child : view.children) {

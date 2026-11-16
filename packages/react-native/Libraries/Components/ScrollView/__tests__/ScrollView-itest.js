@@ -261,3 +261,35 @@ describe('onScroll', () => {
     });
   });
 });
+
+describe('horizontal ScrollView in RTL', () => {
+  it('agrees on the scroll offset in onScroll, scrollLeft and child positions', () => {
+    const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 100});
+    const scrollViewRef = createRef<HostInstance>();
+    const childRef = createRef<HostInstance>();
+    const onScroll = jest.fn();
+
+    Fantom.runTask(() => {
+      root.render(
+        <ScrollView
+          horizontal={true}
+          onScroll={event => {
+            onScroll(event.nativeEvent);
+          }}
+          ref={scrollViewRef}
+          style={{direction: 'rtl', height: 100, width: 100}}>
+          <View style={{height: 100, width: 100}} />
+          <View ref={childRef} style={{height: 100, width: 100}} />
+          <View style={{height: 100, width: 100}} />
+        </ScrollView>,
+      );
+    });
+
+    Fantom.scrollTo(scrollViewRef, {x: 50, y: 0});
+
+    const [entry] = onScroll.mock.lastCall;
+    expect(entry.contentOffset).toEqual({x: 50, y: 0});
+    expect(nullthrows(scrollViewRef.current).scrollLeft).toBe(50);
+    expect(nullthrows(childRef.current).getBoundingClientRect().x).toBe(50);
+  });
+});
