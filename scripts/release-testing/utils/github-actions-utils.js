@@ -25,6 +25,7 @@ type CIHeaders = {
 type WorkflowRun = {
   id: number,
   name: string,
+  head_sha: string,
   run_number: number,
   status: "queued" | "in_progress" | "completed",
   workflow_id: number,
@@ -140,31 +141,38 @@ async function initialize(
     'X-GitHub-Api-Version': '2022-11-28',
   };
 
-  const testAllWorkflows = (await _getActionRunsOnBranch()).workflow_runs
-    .filter(w => w.name === 'Test All')
-    .sort((a, b) => {
-      // Date.getTime is needed to make Flow happy with arithmetic
-      return (
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    });
+  const runs = (await _getActionRunsOnBranch()).workflow_runs.sort((a, b) => {
+    // Date.getTime is needed to make Flow happy with arithmetic
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
-  if (testAllWorkflows.length === 0) {
-    console.error('No Test-All workflow found');
+  // Android artifacts come from Test Android, and the npm package and iOS
+  // artifacts from the Test iOS run for the same commit.
+  const androidRuns = runs.filter(w => w.name === 'Test Android');
+  if (androidRuns.length === 0) {
+    console.error('No Test Android workflow found');
     process.exit(1);
   }
 
-  console.log(`\nUsing github workflow run ${testAllWorkflows[0].run_number}`);
-  console.log(
-    `https://github.com/facebook/react-native/actions/runs/${testAllWorkflows[0].id}\n`,
-  );
-
-  let workflow = testAllWorkflows[0];
+  let workflow = androidRuns[0];
   if (useLastSuccessfulPipeline) {
     workflow =
-      testAllWorkflows.find(
+      androidRuns.find(
         wf => wf.status === 'completed' && wf.conclusion === 'success',
       ) ?? workflow;
+  }
+  const iosWorkflow = runs.find(
+    w => w.name === 'Test iOS' && w.head_sha === workflow.head_sha,
+  );
+  if (iosWorkflow == null) {
+    throw new Error(`No Test iOS workflow found for ${workflow.head_sha}`);
+  }
+
+  for (const run of [workflow, iosWorkflow]) {
+    console.log(`\nUsing ${run.name} run ${run.run_number}`);
+    console.log(
+      `https://github.com/facebook/react-native/actions/runs/${run.id}\n`,
+    );
   }
 
   const commit = workflow.head_commit;
@@ -185,7 +193,14 @@ ${styleText('magentaBright', quote(commit.message))}
     ),
   );
 
-  artifacts = await _getArtifacts(workflow.id);
+  const [androidArtifacts, iosArtifacts] = await Promise.all([
+    _getArtifacts(workflow.id),
+    _getArtifacts(iosWorkflow.id),
+  ]);
+  artifacts = {
+    total_count: androidArtifacts.total_count + iosArtifacts.total_count,
+    artifacts: [...androidArtifacts.artifacts, ...iosArtifacts.artifacts],
+  };
 }
 
 function downloadArtifact(

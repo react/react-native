@@ -4,7 +4,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# Copies Test All's test results for one run attempt to GCS, for
+# Copies a test workflow's test results for one run attempt to GCS, for
 # upload-test-results.yml. Artifacts, including those from forks, are treated
 # as inert data: only each one's results.json is copied, after validation, and
 # nothing in them is executed.
