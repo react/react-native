@@ -515,7 +515,8 @@ void FabricMountingManagerTestHelper::registerNatives() {
           "executeDeleteMutation",
           FabricMountingManagerTestHelper::executeDeleteMutation),
       makeNativeMethod(
-          "commitQueuedView", FabricMountingManagerTestHelper::commitQueuedView),
+          "commitQueuedView",
+          FabricMountingManagerTestHelper::commitQueuedView),
       makeNativeMethod(
           "dropFamily", FabricMountingManagerTestHelper::dropFamily),
       makeNativeMethod(

@@ -460,9 +460,9 @@ class FabricMountingManagerInstrumentationTest {
   }
 
   /**
-   * A commit can create and delete a view before the queue drains, when the view is flattened
-   * again by the next commit. The drain must not register the tag again: its next Create would be
-   * skipped and the view would never exist.
+   * A commit can create and delete a view before the queue drains, when the view is flattened again
+   * by the next commit. The drain must not register the tag again: its next Create would be skipped
+   * and the view would never exist.
    */
   @Test
   fun native_drainPreallocationQueue_skipsViewThatACommitCreatedAndDeleted() {
