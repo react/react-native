@@ -2,11 +2,6 @@ name: Test Android
 
 on:
   workflow_call:
-    inputs:
-      release-type:
-        description: The type of release to build, one of nightly, release or dry-run
-        type: string
-        required: true
 
 jobs:
   build_android:
@@ -28,7 +23,7 @@ jobs:
       - name: Build Android
         uses: ./.github/actions/build-android
         with:
-          release-type: ${{ inputs.release-type }}
+          release-type: dry-run
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   build_npm_package:
@@ -49,7 +44,7 @@ jobs:
       - name: Build NPM Package
         uses: ./.github/actions/build-npm-package
         with:
-          release-type: ${{ inputs.release-type }}
+          release-type: dry-run
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
           skip-apple-prebuilts: true
           artifact-suffix: -android
