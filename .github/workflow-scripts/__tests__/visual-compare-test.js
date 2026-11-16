@@ -13,6 +13,7 @@ const {
   comparePlatform,
   resolveContext,
   stageBaseline,
+  upsertComment,
 } = require('../visual/compare-run');
 const {buildManifest, sha256} = require('../visual/manifest');
 const {readPngDimensions} = require('../visual/png');
@@ -386,6 +387,40 @@ describe('visual comparison', () => {
       expect(
         fs.readdirSync(path.join(outDir, 'baseline-blobs', 'blobs')),
       ).toEqual([`${sha256(black)}.png`]);
+    });
+  });
+
+  describe('upsertComment', () => {
+    const fakeGitHub = existing => {
+      const calls = [];
+      return {
+        calls,
+        findComment: async () => existing,
+        comment: async (prNumber, body) =>
+          calls.push(['comment', prNumber, body]),
+        updateComment: async (id, body) => calls.push(['update', id, body]),
+      };
+    };
+
+    test.each([
+      [
+        'posts a comment for new differences',
+        null,
+        true,
+        [['comment', 1, 'report']],
+      ],
+      ['posts nothing without differences', null, false, []],
+      ['updates an earlier comment', {id: 7}, true, [['update', 7, 'report']]],
+      [
+        'updates an earlier comment once differences are gone',
+        {id: 7},
+        false,
+        [['update', 7, 'report']],
+      ],
+    ])('%s', async (_, existing, hasContent, expected) => {
+      const github = fakeGitHub(existing);
+      await upsertComment({github, prNumber: 1, body: 'report', hasContent});
+      expect(github.calls).toEqual(expected);
     });
   });
 
