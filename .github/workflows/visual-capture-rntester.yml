@@ -1,9 +1,9 @@
-# Untrusted half of RNTester visual regression testing. Called from Test All
-# once the RNTester Release build for a platform is ready, it captures the
+# Untrusted half of RNTester visual regression testing. Called from Test
+# Android and Test iOS once the RNTester Release build is ready, it captures the
 # visual flows on one canonical device and uploads the PNGs plus a manifest as
 # an artifact. It has no secrets and no storage access: comparison and
 # publication happen in visual-compare-rntester.yml, which runs from the
-# default branch when Test All completes.
+# default branch when the calling workflow completes.
 name: Visual Capture RNTester
 
 on:
