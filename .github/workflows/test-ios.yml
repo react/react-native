@@ -1,10 +1,56 @@
 name: Test iOS
 
 on:
-  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    # A pull request whose changed files all match these patterns doesn't
+    # need this platform tested.
+    paths-ignore:
+      # Not code
+      - '**/*.md'
+      - '**/__docs__/**'
+      - '**/LICENSE'
+      # Android sources and build files
+      - 'packages/react-native/ReactAndroid/**'
+      - 'packages/gradle-plugin/**'
+      - 'packages/react-native-popup-menu-android/**'
+      - '**/*.java'
+      - '**/*.kt'
+      - '**/*.kts'
+      - '**/*.gradle'
+      - '**/*.android.js'
+      - '**/gradlew'
+      - '**/gradlew.bat'
+      - '**/gradle.properties'
+      - '**/gradle/**'
+      - '**/android/**'
+      # Android CI
+      - '.github/workflows/test-all.yml'
+      - '.github/workflows/build-android-templateapp.yml'
+      - '.github/workflows/e2e-android-*.yml'
+      - '.github/workflows/test-android.yml'
+      - '.github/actions/build-android/**'
+      - '.github/actions/maestro-android/**'
+      - '.github/actions/setup-gradle/**'
+  push:
+    branches:
+      - main
+      - '*-stable'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  # A new push to a pull request makes the previous run obsolete, so cancel it
+  # instead of spending (macOS) runner time on it. Runs on branches are never
+  # cancelled: each one gets its own group.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   prebuild_apple_dependencies:
+    if: github.repository == 'react/react-native'
     uses: ./.github/workflows/prebuild-ios-dependencies.yml
     secrets: inherit
 

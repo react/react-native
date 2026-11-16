@@ -1,6 +1,7 @@
 # Trusted half of RNTester visual regression testing. Runs from the default
-# branch after Test All completes, including for pull requests from forks, and
-# compares whatever visual-capture-rntester.yml captured in that run. The
+# branch after Test Android or Test iOS completes, including for pull requests
+# from forks, and compares whatever visual-capture-rntester.yml captured in
+# that run. The
 # capture artifacts are treated as inert data: they are validated before any
 # image is decoded, and nothing in them is executed.
 #
@@ -12,15 +13,16 @@ name: Visual Compare RNTester
 
 on:
   workflow_run:
-    workflows: [Test All]
+    workflows: [Test Android, Test iOS]
     types: [completed]
 
 permissions:
   contents: read
 
 concurrency:
-  # Serializes baseline publication on the default branch.
-  group: ${{ github.workflow }}-${{ github.event.workflow_run.event == 'push' && 'main' || github.event.workflow_run.id }}
+  # Serializes baseline publication on the default branch, and the Android and
+  # iOS reports for a pull request head, which read each other's results.
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.event == 'push' && 'main' || github.event.workflow_run.head_sha }}
   cancel-in-progress: false
 
 env:
@@ -32,7 +34,7 @@ env:
 
 jobs:
   find_captures:
-    # Test All can fail for reasons unrelated to rendering, so a failed run is
+    # A test run can fail for reasons unrelated to rendering, so a failed run is
     # still compared. A platform with no capture is reported as such. Pushes
     # to other branches have no baseline to compare with or publish. Pull
     # requests into other branches are skipped in compare-run.js, because
@@ -116,6 +118,7 @@ jobs:
           CAPTURE_HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
           CAPTURE_RUN_ID: ${{ github.event.workflow_run.id }}
           CAPTURE_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          CAPTURE_WORKFLOW: ${{ github.event.workflow_run.name }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: node .github/workflow-scripts/visual/compare-run.js prepare
       - name: Check for files to upload
