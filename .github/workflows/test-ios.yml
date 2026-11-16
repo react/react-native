@@ -1,0 +1,161 @@
+name: Test iOS
+
+on:
+  workflow_call:
+    inputs:
+      release-type:
+        description: The type of release to build, one of nightly, release or dry-run
+        type: string
+        required: true
+
+jobs:
+  prebuild_apple_dependencies:
+    uses: ./.github/workflows/prebuild-ios-dependencies.yml
+    secrets: inherit
+
+  prebuild_react_native_core:
+    uses: ./.github/workflows/prebuild-ios-core.yml
+    with:
+      use-hermes-prebuilt: ${{ !endsWith(github.ref_name, '-stable') }}
+    secrets: inherit
+    needs: [prebuild_apple_dependencies]
+
+  test_ios_rntester:
+    runs-on: macos-15-large
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Run it
+        uses: ./.github/actions/test-ios-rntester
+        with:
+          flavor: ${{ matrix.flavor }}
+
+  # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
+  test_ios_rntester_cocoapods:
+    runs-on: macos-15-large
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Run it
+        uses: ./.github/actions/test-ios-rntester
+        with:
+          flavor: Debug
+          dependency-manager: cocoapods
+
+  test_e2e_ios_rntester:
+    needs: test_ios_rntester
+    uses: ./.github/workflows/e2e-ios-rntester.yml
+    secrets: inherit
+
+  # Each flow already gets a retry inside the job, so a flow that failed is
+  # reported straight away. These retries only re-run jobs that stopped before
+  # running every flow, and they skip flows that already passed.
+  test_e2e_ios_rntester_retry_1:
+    needs: test_e2e_ios_rntester
+    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.retryable == 'true' }}
+    uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      retry-attempt: 1
+    secrets: inherit
+
+  test_e2e_ios_rntester_retry_2:
+    needs: test_e2e_ios_rntester_retry_1
+    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.retryable == 'true' }}
+    uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      fail-on-error: true
+      retry-attempt: 2
+    secrets: inherit
+
+  test_visual_ios_rntester:
+    needs: test_ios_rntester
+    uses: ./.github/workflows/visual-capture-rntester.yml
+    with:
+      platform: ios
+
+  build_npm_package:
+    runs-on: 8-core-ubuntu
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        TERM: 'dumb'
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Build NPM Package
+        uses: ./.github/actions/build-npm-package
+        with:
+          release-type: ${{ inputs.release-type }}
+          gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
+  test_e2e_ios_templateapp:
+    needs: [build_npm_package, prebuild_apple_dependencies]
+    uses: ./.github/workflows/e2e-ios-templateapp.yml
+    secrets: inherit
+
+  test_e2e_ios_templateapp_retry_1:
+    needs: test_e2e_ios_templateapp
+    if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-ios-templateapp.yml
+    secrets: inherit
+
+  test_e2e_ios_templateapp_retry_2:
+    needs: test_e2e_ios_templateapp_retry_1
+    if: ${{ always() && needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      fail-on-error: true
+    secrets: inherit
+
+  test_ios_spm_newapp:
+    needs:
+      [
+        build_npm_package,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+      ]
+    uses: ./.github/workflows/test-ios-spm-newapp.yml
+    secrets: inherit
+
+  test_ios_helloworld:
+    runs-on: macos-15
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    strategy:
+      matrix:
+        flavor: [Debug, Release]
+    env:
+      PROJECT_NAME: iOSTemplateProject
+      YARN_ENABLE_IMMUTABLE_INSTALLS: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: ./.github/actions/test-ios-helloworld
+        with:
+          flavor: ${{ matrix.flavor }}
+
+  # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
+  test_ios_helloworld_cocoapods:
+    runs-on: macos-15
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    env:
+      PROJECT_NAME: iOSTemplateProject
+      YARN_ENABLE_IMMUTABLE_INSTALLS: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: ./.github/actions/test-ios-helloworld
+        with:
+          flavor: Debug
+          dependency-manager: cocoapods
