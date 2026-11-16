@@ -23,13 +23,14 @@ const {
   APPROVAL_LABEL,
   APPROVER_PERMISSIONS,
   GATE_CHECK_NAME,
+  differenceFingerprint,
   gateDecision,
 } = require('./approval');
 const {createGitHubClient} = require('./github');
 const {
   approvalKey,
   fetchJsonOrNull,
-  listPrefixes,
+  latestPlatformResults,
   publicUrl,
 } = require('./storage');
 const fs = require('node:fs');
@@ -41,26 +42,6 @@ function requireEnv(name) {
     throw new Error(`${name} is required`);
   }
   return value;
-}
-
-/** The results of the most recent comparison for a PR head, or null. */
-async function latestResults({bucket, publicBaseUrl, prNumber, headSha}) {
-  const runs = await listPrefixes(
-    bucket,
-    `reports/pull/${prNumber}/${headSha}/`,
-  );
-  const latest = runs
-    .map(prefix => {
-      const match = /\/(\d+)-(\d+)\/$/.exec(prefix);
-      return match == null
-        ? null
-        : {prefix, runId: Number(match[1]), attempt: Number(match[2])};
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.runId - a.runId || b.attempt - a.attempt)[0];
-  return latest == null
-    ? null
-    : fetchJsonOrNull(publicUrl(publicBaseUrl, `${latest.prefix}results.json`));
 }
 
 async function prepare() {
@@ -83,13 +64,13 @@ async function prepare() {
 
   const prNumber = event.pull_request.number;
   const headSha = event.pull_request.head.sha;
-  const results = await latestResults({
+  const platforms = await latestPlatformResults({
     bucket: requireEnv('VISUAL_BUCKET'),
     publicBaseUrl: requireEnv('VISUAL_PUBLIC_BASE_URL'),
     prNumber,
     headSha,
   });
-  const fingerprint = results?.fingerprint ?? null;
+  const fingerprint = differenceFingerprint(platforms);
 
   if (event.action === 'labeled') {
     const approver = event.sender.login;
@@ -103,7 +84,7 @@ async function prepare() {
       writeState(null);
       return;
     }
-    if (results == null) {
+    if (platforms.length === 0) {
       await github.removeLabel(prNumber, APPROVAL_LABEL);
       await github.comment(
         prNumber,
@@ -179,5 +160,3 @@ if (require.main === module) {
     process.exitCode = 1;
   });
 }
-
-module.exports = {latestResults};

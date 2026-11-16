@@ -23,6 +23,7 @@ const {
   baselineImageKey,
   baselinePrefix,
   blobKey,
+  newestPerPlatform,
   publicUrl,
   reportPrefix,
 } = require('../visual/storage');
@@ -87,6 +88,35 @@ describe('visual reports and approval', () => {
       expect(publicUrl('https://cdn.example/bucket/', 'a b/c#d.png')).toBe(
         'https://cdn.example/bucket/a%20b/c%23d.png',
       );
+    });
+
+    test('keeps the newest comparison of each platform across runs', () => {
+      const platforms = newestPerPlatform([
+        {
+          reportPrefix: 'reports/pull/12/x/36-1',
+          platforms: [{platform: 'ios', results: ['ios, rerun']}],
+        },
+        {
+          reportPrefix: 'reports/pull/12/x/35-1',
+          platforms: [{platform: 'android', results: ['android']}],
+        },
+        {
+          reportPrefix: 'reports/pull/12/x/34-1',
+          platforms: [{platform: 'ios', results: ['ios, first run']}],
+        },
+      ]);
+      expect(platforms).toEqual([
+        {
+          platform: 'android',
+          results: ['android'],
+          reportPrefix: 'reports/pull/12/x/35-1',
+        },
+        {
+          platform: 'ios',
+          results: ['ios, rerun'],
+          reportPrefix: 'reports/pull/12/x/36-1',
+        },
+      ]);
     });
   });
 
