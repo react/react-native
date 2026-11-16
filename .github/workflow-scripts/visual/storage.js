@@ -144,6 +144,56 @@ async function listPrefixes(bucket, prefix) {
   return prefixes;
 }
 
+function newestPerPlatform(statesNewestFirst) {
+  const byPlatform = new Map();
+  for (const state of statesNewestFirst) {
+    for (const platform of state.platforms) {
+      if (!byPlatform.has(platform.platform)) {
+        byPlatform.set(platform.platform, {
+          ...platform,
+          reportPrefix: state.reportPrefix,
+        });
+      }
+    }
+  }
+  return [...byPlatform.values()].sort((a, b) =>
+    a.platform.localeCompare(b.platform),
+  );
+}
+
+async function latestPlatformResults({
+  bucket,
+  publicBaseUrl,
+  prNumber,
+  headSha,
+  current = null,
+}) {
+  const runs = (
+    await listPrefixes(bucket, `reports/pull/${prNumber}/${headSha}/`)
+  )
+    .map(prefix => {
+      const match = /\/(\d+)-(\d+)\/$/.exec(prefix);
+      return match == null
+        ? null
+        : {prefix, runId: Number(match[1]), attempt: Number(match[2])};
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.runId - a.runId || b.attempt - a.attempt);
+  const states = current == null ? [] : [current];
+  for (const run of runs) {
+    if (current != null && run.prefix === `${current.reportPrefix}/`) {
+      continue;
+    }
+    const state = await fetchJsonOrNull(
+      publicUrl(publicBaseUrl, `${run.prefix}results.json`),
+    );
+    if (state != null) {
+      states.push(state);
+    }
+  }
+  return newestPerPlatform(states);
+}
+
 /**
  * Returns the first of `candidateShas` (newest first) that has a published
  * baseline for `environmentKey`, with its manifest, or null.
@@ -173,7 +223,9 @@ module.exports = {
   fetchBuffer,
   fetchJsonOrNull,
   findBaseline,
+  latestPlatformResults,
   listPrefixes,
+  newestPerPlatform,
   publicUrl,
   reportPrefix,
 };

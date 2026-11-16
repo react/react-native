@@ -130,6 +130,14 @@ function createGitHubClient({
       return result?.permission ?? 'none';
     },
 
+    async findCheckRun(headSha, name) {
+      const result = await request(
+        'GET',
+        `/commits/${headSha}/check-runs?check_name=${encodeURIComponent(name)}&filter=latest`,
+      );
+      return result?.check_runs?.[0] ?? null;
+    },
+
     createCheckRun({name, headSha, conclusion, output, detailsUrl}) {
       return request('POST', '/check-runs', {
         name,
