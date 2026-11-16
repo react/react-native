@@ -18,6 +18,7 @@
 #import <React/RCTLog.h>
 #import <React/RCTReloadCommand.h>
 #import <React/RCTUtils.h>
+#import <atomic>
 
 #import "CoreModulesPlugins.h"
 
@@ -127,11 +128,15 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 // RCTTriggerReloadCommandListeners reloads every host, so only one live instance handles packager commands.
 // Accessed on the main queue only.
 static __weak RCTDevSettings *packagerCommandOwner;
+// Counts packager reloads. A reload replaces every instance, so an instance of an earlier generation
+// must not handle a command again, also when it is not invalidated yet.
+static constinit std::atomic<NSUInteger> packagerReloadGeneration{0};
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
   BOOL _invalidated;
+  NSUInteger _packagerReloadGeneration;
 }
 
 @property (nonatomic, strong) Class executorClass;
@@ -191,12 +196,14 @@ RCT_EXPORT_MODULE()
 #endif
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+  _packagerReloadGeneration = packagerReloadGeneration;
   __weak __typeof(self) weakSelf = self;
   [self
       addNotificationHandler:^(id params) {
         if (![weakSelf _claimPackagerCommand]) {
           return;
         }
+        packagerReloadGeneration++;
         RCTTriggerReloadCommandListeners(@"Global hotkey");
       }
                        queue:dispatch_get_main_queue()
@@ -224,7 +231,7 @@ RCT_EXPORT_MODULE()
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 - (BOOL)_claimPackagerCommand
 {
-  if (_invalidated) {
+  if (_invalidated || _packagerReloadGeneration != packagerReloadGeneration) {
     return NO;
   }
   if (packagerCommandOwner != nil && packagerCommandOwner != self) {
