@@ -48,7 +48,7 @@ function isTSXSource(fileName /*: string */) {
  * default RN babelrc file and uses that.
  */
 const getBabelRC = (function () {
-  let babelRC /*: ?BabelCoreOptions */ = null;
+  const babelRCs /*: Map<string, BabelCoreOptions> */ = new Map();
 
   /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
    * LTI update could not be added via codemod */
@@ -57,6 +57,8 @@ const getBabelRC = (function () {
     extendsBabelConfigPath,
     ...options
   }) {
+    const cacheKey = JSON.stringify(options);
+    let babelRC = babelRCs.get(cacheKey);
     if (babelRC != null) {
       return babelRC;
     }
@@ -65,6 +67,7 @@ const getBabelRC = (function () {
       plugins: [],
       extends: extendsBabelConfigPath,
     };
+    babelRCs.set(cacheKey, babelRC);
 
     if (extendsBabelConfigPath) {
       return babelRC;

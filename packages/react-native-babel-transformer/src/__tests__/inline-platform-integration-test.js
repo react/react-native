@@ -185,6 +185,17 @@ test('the two import-support modes really do produce different output', () => {
   expect(preserved).not.toContain('require');
 });
 
+test('inlines each platform from one module instance', () => {
+  const src = "import {Platform} from 'react-native';\nconst os = Platform.OS;";
+
+  const ios = transformToCode(src, {platform: 'ios'});
+  const android = transformToCode(src, {platform: 'android'});
+
+  expect(ios).toContain('"ios"');
+  expect(android).toContain('"android"');
+  expect(android).not.toContain('"ios"');
+});
+
 test('inlines before the preset lowers ESM to CommonJS interop', () => {
   // Guards the ordering contract: if the plugin ran after the RN preset's
   // import transform, it would see `_reactNative.Platform.OS` and the
