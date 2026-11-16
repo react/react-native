@@ -61,8 +61,9 @@ to test cases that are hard to reproduce manually.
 
 ## 🚀 Usage
 
-Create a file with the `-itest.js` suffix anywhere you would normally create a
-Jest unit test file.
+Create a file with the `-itest.js` suffix, or `-itest.ts` or `-itest.tsx` for a
+test written in TypeScript, anywhere you would normally create a Jest unit test
+file.
 
 The high level structure of Fantom tests is similar to Jest unit tests. However,
 only a subset of Jest's Global API is currently available. For example,
@@ -249,7 +250,8 @@ hi
     that limitation. Prefer a short comment explaining why the internal access
     is necessary.
 - Place test files in `__tests__` directories alongside the code being tested.
-- Benchmark tests use the `-benchmark-itest.js` suffix.
+- Benchmark tests use the `-benchmark-itest.js`, `-benchmark-itest.ts` or
+  `-benchmark-itest.tsx` suffix.
 - Use `Fantom.runTask()` to render and run synchronous operations; it ensures
   the React work is flushed before assertions.
 - Access elements through refs and use `nullthrows` for type-safe access to the
@@ -655,9 +657,10 @@ change this.
 
 #### Where can I find examples of tests?
 
-Look for files with the `-itest.js` suffix to find existing tests. The Fantom
-test for its public API ([`Fantom-itest.js`](../src/__tests__/Fantom-itest.js))
-has simple examples you can learn from.
+Look for files with the `-itest.js`, `-itest.ts` or `-itest.tsx` suffix to find
+existing tests. The Fantom test for its public API
+([`Fantom-itest.js`](../src/__tests__/Fantom-itest.js)) has simple examples you
+can learn from.
 
 #### Are tests executed on Github CI?
 
@@ -722,8 +725,8 @@ Fantom tests are meant to be written, executed and reported as regular Jests
 tests. To accomplish that, **Fantom is implemented as a Jest test runner**.
 
 Fantom provides a [Jest configuration](../config/jest.config.js) to use
-[its runner](../runner/runner.js) for any tests matching the `-itest.js` suffix
-within the repository.
+[its runner](../runner/runner.js) for any tests matching the `-itest.js`,
+`-itest.ts` or `-itest.tsx` suffix within the repository.
 
 When Jest runs, for every file that matches that configuration, it calls into
 the Fantom runner, which receives the path to the test file along with different
