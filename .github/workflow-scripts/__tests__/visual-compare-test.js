@@ -11,6 +11,7 @@
 const {compareCapture, compareImages, policyFor} = require('../visual/compare');
 const {
   comparePlatform,
+  platformsForWorkflow,
   resolveContext,
   stageBaseline,
 } = require('../visual/compare-run');
@@ -386,6 +387,17 @@ describe('visual comparison', () => {
       expect(
         fs.readdirSync(path.join(outDir, 'baseline-blobs', 'blobs')),
       ).toEqual([`${sha256(black)}.png`]);
+    });
+  });
+
+  describe('platformsForWorkflow', () => {
+    test.each([
+      ['Test Android', ['android']],
+      ['Test iOS', ['ios']],
+      ['Test All', ['android', 'ios']],
+      [undefined, ['android', 'ios']],
+    ])('%s captures %j', (workflowName, platforms) => {
+      expect(platformsForWorkflow(workflowName)).toEqual(platforms);
     });
   });
 

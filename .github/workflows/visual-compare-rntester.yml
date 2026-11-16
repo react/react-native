@@ -19,8 +19,9 @@ permissions:
   contents: read
 
 concurrency:
-  # Serializes baseline publication on the default branch.
-  group: ${{ github.workflow }}-${{ github.event.workflow_run.event == 'push' && 'main' || github.event.workflow_run.id }}
+  # Serializes baseline publication on the default branch, and the Android and
+  # iOS reports for a pull request head, which read each other's results.
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.event == 'push' && 'main' || github.event.workflow_run.head_sha }}
   cancel-in-progress: false
 
 env:
@@ -116,6 +117,7 @@ jobs:
           CAPTURE_HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
           CAPTURE_RUN_ID: ${{ github.event.workflow_run.id }}
           CAPTURE_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          CAPTURE_WORKFLOW: ${{ github.event.workflow_run.name }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: node .github/workflow-scripts/visual/compare-run.js prepare
       - name: Check for files to upload

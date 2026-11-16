@@ -42,6 +42,7 @@ const {
   fetchBuffer,
   fetchJsonOrNull,
   findBaseline,
+  latestPlatformResults,
   publicUrl,
   reportPrefix,
 } = require('./storage');
@@ -50,6 +51,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PLATFORMS = ['android', 'ios'];
+const WORKFLOW_PLATFORMS = {
+  'Test Android': ['android'],
+  'Test iOS': ['ios'],
+};
 // The default Actions token posts as this bot. Only its comments are edited.
 const COMMENT_AUTHOR = 'github-actions[bot]';
 
@@ -59,6 +64,10 @@ function requireEnv(name) {
     throw new Error(`${name} is required`);
   }
   return value;
+}
+
+function platformsForWorkflow(workflowName) {
+  return WORKFLOW_PLATFORMS[workflowName] ?? PLATFORMS;
 }
 
 function writeFile(filePath, contents) {
@@ -231,7 +240,7 @@ function missingCapture(platform, context) {
     results: [],
     error: {
       title: 'no capture',
-      summary: `Test All run ${context.runId} has no ${platform} capture, so there is nothing to compare. Its capture job failed or didn't run: check the run for a build or capture failure.`,
+      summary: `Run ${context.runId} has no ${platform} capture, so there is nothing to compare. Its capture job failed or didn't run: check the run for a build or capture failure.`,
     },
   };
 }
@@ -299,7 +308,9 @@ async function prepare() {
   const prefix = reportPrefix(context);
 
   const platforms = [];
-  for (const expectedPlatform of PLATFORMS) {
+  for (const expectedPlatform of platformsForWorkflow(
+    process.env.CAPTURE_WORKFLOW,
+  )) {
     const captureDir = path.join(
       artifactsDir,
       `visual-capture-${expectedPlatform}`,
@@ -367,6 +378,27 @@ async function prepare() {
   }
 }
 
+function imageUrlFor(publicBaseUrl, platform, prefix) {
+  const expectedById = new Map(
+    platform.results
+      .filter(result => result.expected != null)
+      .map(result => [result.id, result.expected]),
+  );
+  return (kind, id) =>
+    kind === 'expected'
+      ? publicUrl(
+          publicBaseUrl,
+          baselineImageKey(
+            {environmentKey: platform.environmentKey, ...platform.baseline},
+            expectedById.get(id),
+          ),
+        )
+      : publicUrl(
+          publicBaseUrl,
+          `${prefix}/${platform.platform}/${kind}/${id}.png`,
+        );
+}
+
 async function report() {
   const github = createGitHubClient();
   const outDir = requireEnv('OUT_DIR');
@@ -377,30 +409,13 @@ async function report() {
   if (state == null) {
     return;
   }
-  const {context, reportPrefix: prefix, fingerprint} = state;
+  const {context, reportPrefix: prefix} = state;
   const detailsUrl = publicUrl(publicBaseUrl, `${prefix}/results.json`);
 
   const summaryLines = [];
-  const commentPlatforms = [];
+  const checkUrls = new Map();
   for (const platform of state.platforms) {
-    const expectedById = new Map(
-      platform.results
-        .filter(result => result.expected != null)
-        .map(result => [result.id, result.expected]),
-    );
-    const imageUrl = (kind, id) =>
-      kind === 'expected'
-        ? publicUrl(
-            publicBaseUrl,
-            baselineImageKey(
-              {environmentKey: platform.environmentKey, ...platform.baseline},
-              expectedById.get(id),
-            ),
-          )
-        : publicUrl(
-            publicBaseUrl,
-            `${prefix}/${platform.platform}/${kind}/${id}.png`,
-          );
+    const imageUrl = imageUrlFor(publicBaseUrl, platform, prefix);
     const output = renderCheckOutput({...platform, imageUrl});
     const {hasDifferences} = summarize(platform.results);
     const checkRun = await github.createCheckRun({
@@ -415,7 +430,7 @@ async function report() {
       output,
       detailsUrl,
     });
-    commentPlatforms.push({...platform, imageUrl, checkUrl: checkRun.html_url});
+    checkUrls.set(platform.platform, checkRun.html_url);
     summaryLines.push(
       `## ${output.title}`,
       '',
@@ -427,6 +442,32 @@ async function report() {
   }
 
   if (context.kind === 'pull') {
+    const platforms = await latestPlatformResults({
+      bucket: requireEnv('VISUAL_BUCKET'),
+      publicBaseUrl,
+      prNumber: context.prNumber,
+      headSha: context.headSha,
+      current: state,
+    });
+    const fingerprint = differenceFingerprint(platforms);
+    const commentPlatforms = [];
+    for (const platform of platforms) {
+      const checkUrl =
+        checkUrls.get(platform.platform) ??
+        (
+          await github.findCheckRun(
+            context.headSha,
+            `${CHECK_NAME_PREFIX} (${platform.platform})`,
+          )
+        )?.html_url ??
+        publicUrl(publicBaseUrl, `${platform.reportPrefix}/results.json`);
+      commentPlatforms.push({
+        ...platform,
+        imageUrl: imageUrlFor(publicBaseUrl, platform, platform.reportPrefix),
+        checkUrl,
+      });
+    }
+
     const labels = await github.labels(context.prNumber);
     const approval =
       fingerprint == null
@@ -511,4 +552,9 @@ if (require.main === module) {
   });
 }
 
-module.exports = {comparePlatform, resolveContext, stageBaseline};
+module.exports = {
+  comparePlatform,
+  platformsForWorkflow,
+  resolveContext,
+  stageBaseline,
+};
