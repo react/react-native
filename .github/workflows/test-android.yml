@@ -1,0 +1,175 @@
+name: Test Android
+
+on:
+  workflow_call:
+    inputs:
+      release-type:
+        description: The type of release to build, one of nightly, release or dry-run
+        type: string
+        required: true
+
+jobs:
+  build_android:
+    runs-on: 8-core-ubuntu
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
+        ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Build Android
+        uses: ./.github/actions/build-android
+        with:
+          release-type: ${{ inputs.release-type }}
+          gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
+  build_npm_package:
+    runs-on: 8-core-ubuntu
+    needs: build_android
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        TERM: 'dumb'
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Build NPM Package
+        uses: ./.github/actions/build-npm-package
+        with:
+          release-type: ${{ inputs.release-type }}
+          gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+          skip-apple-prebuilts: true
+          artifact-suffix: -android
+
+  test_e2e_rntester:
+    needs: build_android
+    uses: ./.github/workflows/e2e-android-rntester.yml
+    secrets: inherit
+
+  test_e2e_rntester_retry_1:
+    needs: test_e2e_rntester
+    if: ${{ always() && needs.test_e2e_rntester.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-rntester.yml
+    with:
+      retry-attempt: 1
+    secrets: inherit
+
+  test_e2e_rntester_retry_2:
+    needs: test_e2e_rntester_retry_1
+    if: ${{ always() && needs.test_e2e_rntester_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-rntester.yml
+    with:
+      fail-on-error: true
+      retry-attempt: 2
+    secrets: inherit
+
+  test_visual_rntester:
+    needs: build_android
+    uses: ./.github/workflows/visual-capture-rntester.yml
+    with:
+      platform: android
+
+  build_templateapp:
+    needs: [build_npm_package, build_android]
+    uses: ./.github/workflows/build-android-templateapp.yml
+    secrets: inherit
+
+  test_e2e_templateapp:
+    needs: build_templateapp
+    uses: ./.github/workflows/e2e-android-templateapp.yml
+    secrets: inherit
+
+  test_e2e_templateapp_retry_1:
+    needs: test_e2e_templateapp
+    if: ${{ always() && needs.test_e2e_templateapp.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-templateapp.yml
+    with:
+      retry-attempt: 1
+    secrets: inherit
+
+  test_e2e_templateapp_retry_2:
+    needs: test_e2e_templateapp_retry_1
+    if: ${{ always() && needs.test_e2e_templateapp_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-templateapp.yml
+    with:
+      fail-on-error: true
+      retry-attempt: 2
+    secrets: inherit
+
+  test_helloworld:
+    runs-on: 4-core-ubuntu
+    needs: [build_npm_package, build_android]
+    container:
+      image: reactnativecommunity/react-native-android:latest
+    env:
+      # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in conatiners
+      # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+      LC_ALL: C.UTF8
+      YARN_ENABLE_IMMUTABLE_INSTALLS: false
+      TERM: 'dumb'
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+      TARGET_ARCHITECTURE: 'arm64-v8a'
+      REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup git safe folders
+        run: git config --global --add safe.directory '*'
+      - name: Download npm package artifact
+        uses: ./.github/actions/download-artifact
+        with:
+          name: react-native-package-android
+          path: build
+      - name: Download maven-local artifact
+        uses: ./.github/actions/download-artifact
+        with:
+          name: maven-local
+          path: /tmp/maven-local
+      - name: Setup gradle
+        uses: ./.github/actions/setup-gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+      - name: Run yarn install
+        uses: ./.github/actions/yarn-install
+      - name: Set Hermes prebuilt version
+        shell: bash
+        run: |
+          node ./scripts/releases/use-hermes-prebuilt.js
+      - name: Run yarn install again, with the correct hermes version
+        uses: ./.github/actions/yarn-install
+      - name: Prepare the Helloworld application
+        shell: bash
+        run: node ./scripts/e2e/init-project-e2e.js --useHelloWorld --pathToLocalReactNative "$GITHUB_WORKSPACE/build/$(cat build/react-native-package-version)"
+      - name: Build the Helloworld application for ${{ matrix.flavor }} with Architecture set to New Architecture.
+        shell: bash
+        run: |
+          cd private/helloworld/android
+          args=()
+          if [[ ${{ matrix.flavor }} == "Release" ]]; then
+            args+=(--prod)
+          fi
+          yarn build android "${args[@]}" -P reactNativeArchitectures="$TARGET_ARCHITECTURE" -P react.internal.mavenLocalRepo="/tmp/maven-local"
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: helloworld-apk-${{ matrix.flavor }}-NewArch-hermes
+          path: ./private/helloworld/android/app/build/outputs/apk/
+          compression-level: 0

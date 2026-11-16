@@ -42,7 +42,7 @@ jobs:
         if: matrix.flavor == 'debug'
         uses: ./.github/actions/download-artifact
         with:
-          name: react-native-package
+          name: react-native-package-android
           path: /tmp/react-native-tmp
       - name: Prepare Metro workspace
         if: matrix.flavor == 'debug'
