@@ -222,9 +222,9 @@ void FabricMountingManagerTestHelper::drainPreallocationQueue() {
   mountingManager_->drainPreallocateViewsQueue();
 }
 
-void FabricMountingManagerTestHelper::executeCreateMutation(
+void FabricMountingManagerTestHelper::executeMutation(
     jint surfaceId,
-    jint tag) {
+    ShadowViewMutation mutation) {
   auto telemetry = TransactionTelemetry{};
   telemetry.willCommit();
   telemetry.willDiff();
@@ -233,11 +233,27 @@ void FabricMountingManagerTestHelper::executeCreateMutation(
   telemetry.didLayout();
   telemetry.didCommit();
   mountingManager_->executeMount(
-      MountingTransaction{
-          surfaceId,
-          0,
-          {ShadowViewMutation::CreateMutation(makeShadowView(surfaceId, tag))},
-          telemetry});
+      MountingTransaction{surfaceId, 0, {std::move(mutation)}, telemetry});
+}
+
+void FabricMountingManagerTestHelper::executeCreateMutation(
+    jint surfaceId,
+    jint tag) {
+  executeMutation(
+      surfaceId,
+      ShadowViewMutation::CreateMutation(makeShadowView(surfaceId, tag)));
+}
+
+void FabricMountingManagerTestHelper::executeDeleteMutation(
+    jint surfaceId,
+    jint tag) {
+  executeMutation(
+      surfaceId,
+      ShadowViewMutation::DeleteMutation(makeShadowView(surfaceId, tag)));
+}
+
+void FabricMountingManagerTestHelper::commitQueuedView(jint tag) {
+  queuedShadowNodes_.at(tag)->setMounted(true);
 }
 
 void FabricMountingManagerTestHelper::dropFamily(jint tag) {
@@ -495,6 +511,11 @@ void FabricMountingManagerTestHelper::registerNatives() {
       makeNativeMethod(
           "executeCreateMutation",
           FabricMountingManagerTestHelper::executeCreateMutation),
+      makeNativeMethod(
+          "executeDeleteMutation",
+          FabricMountingManagerTestHelper::executeDeleteMutation),
+      makeNativeMethod(
+          "commitQueuedView", FabricMountingManagerTestHelper::commitQueuedView),
       makeNativeMethod(
           "dropFamily", FabricMountingManagerTestHelper::dropFamily),
       makeNativeMethod(
