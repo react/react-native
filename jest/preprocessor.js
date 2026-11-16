@@ -66,7 +66,7 @@ module.exports = {
       // node specific transforms only
       return babelTransformSync(src, {
         filename: file,
-        sourceType: 'script',
+        sourceType: 'unambiguous',
         ...nodeBabelOptions,
         plugins: [
           ...(nodeBabelOptions.plugins ?? []),
