@@ -1,6 +1,7 @@
 # Trusted half of RNTester visual regression testing. Runs from the default
-# branch after Test All completes, including for pull requests from forks, and
-# compares whatever visual-capture-rntester.yml captured in that run. The
+# branch after Test Android or Test iOS completes, including for pull requests
+# from forks, and compares whatever visual-capture-rntester.yml captured in
+# that run. The
 # capture artifacts are treated as inert data: they are validated before any
 # image is decoded, and nothing in them is executed.
 #
@@ -12,7 +13,7 @@ name: Visual Compare RNTester
 
 on:
   workflow_run:
-    workflows: [Test All]
+    workflows: [Test Android, Test iOS]
     types: [completed]
 
 permissions:
@@ -33,7 +34,7 @@ env:
 
 jobs:
   find_captures:
-    # Test All can fail for reasons unrelated to rendering, so a failed run is
+    # A test run can fail for reasons unrelated to rendering, so a failed run is
     # still compared. A platform with no capture is reported as such. Pushes
     # to other branches have no baseline to compare with or publish. Pull
     # requests into other branches are skipped in compare-run.js, because
