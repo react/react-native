@@ -29,8 +29,14 @@ const PLAIN = fs.readFileSync(
 );
 
 let scaffoldedAppRoots = [];
+let logSpy;
+
+beforeEach(() => {
+  logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+});
 
 afterEach(() => {
+  logSpy.mockRestore();
   for (const appRoot of scaffoldedAppRoots) {
     fs.rmSync(appRoot, {recursive: true, force: true});
   }
