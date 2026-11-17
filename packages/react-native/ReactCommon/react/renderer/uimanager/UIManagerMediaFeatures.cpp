@@ -96,11 +96,16 @@ void UIManager::setMediaFeatures(MediaFeatures mediaFeatures) const {
   (*store)->set(mediaFeatures);
 
   // Each commit resolves the outdated conditional values in
-  // `shadowTreeWillCommit`, so a commit without changes is enough.
+  // `shadowTreeWillCommit`, so a commit without changes is enough. A tree
+  // without conditional values has nothing to update.
   shadowTreeRegistry_.enumerate(
       [&](const ShadowTree& shadowTree, bool& /*stop*/) {
         shadowTree.commit(
-            [](const RootShadowNode& oldRootShadowNode) {
+            [](const RootShadowNode& oldRootShadowNode)
+                -> RootShadowNode::Unshared {
+              if (!oldRootShadowNode.subtreeHasConditionalValues()) {
+                return nullptr;
+              }
               return std::make_shared<RootShadowNode>(
                   oldRootShadowNode, ShadowNodeFragment{});
             },

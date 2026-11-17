@@ -254,6 +254,19 @@ TEST_F(UIManagerMediaFeaturesTest, aCommitOfAnOlderTreeResolvesAChange) {
   EXPECT_FLOAT_EQ(committedOpacity(), 0.5);
 }
 
+TEST_F(UIManagerMediaFeaturesTest, aChangeDoesNotCommitATreeWithoutThem) {
+  reactCommit(uiManager_->createNode(
+      viewTag_,
+      "View",
+      surfaceId_,
+      RawProps(folly::dynamic::object("opacity", 1)),
+      nullptr));
+  auto revisionNumber = shadowTree_->getCurrentRevision().number;
+
+  uiManager_->setMediaFeatures({.colorScheme = ColorScheme::Dark});
+  EXPECT_EQ(shadowTree_->getCurrentRevision().number, revisionNumber);
+}
+
 TEST_F(UIManagerMediaFeaturesTest, aChangeDoesNotCloneViewsThatDoNotReadIt) {
   // The query reads a feature that the color scheme change does not change.
   auto props = folly::parseJson(R"({
