@@ -619,8 +619,12 @@ void FabricMountingManager::executeMount(
   std::vector<CppMountItem> cppUpdateEventEmitterMountItems;
 
   // Views created by this transaction, with the state and event emitter their
-  // Create item already passes to Java. Their Insert doesn't need to pass them
-  // again.
+  // Create item already passes to Java. Their Insert skips its UpdateState and
+  // UpdateEventEmitter items when they would carry the same objects. The
+  // pointers are compared rather than assumed equal because the mutation list
+  // is not always a single diff: schedulerDidFinishTransaction merges pending
+  // transactions (MountingTransaction::mergeWith) and mounting override
+  // delegates rewrite it, so one tag can appear with more than one revision.
   struct CreatedView {
     const State* state;
     const EventEmitter* eventEmitter;
@@ -865,8 +869,8 @@ void FabricMountingManager::executeMount(
 
           // EventEmitter
           // On insert we update the event emitter, as we do not pass it in
-          // when preallocating views. A view created by this transaction
-          // already got it with its Create item.
+          // when preallocating views. A view created by this transaction got
+          // it with its Create item, so skip it unless the emitter changed.
           if (!createdWithSameEventEmitter) {
             (maintainMutationOrder ? cppCommonMountItems
                                    : cppUpdateEventEmitterMountItems)
