@@ -126,9 +126,9 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 // Each instance has its own packager connection, and a packager sends a command to every connection to it.
 // reload: the first handler triggers a reload, which retires every instance before the next handler runs.
-// devMenu: retires no instance, so for each packager the first live instance that claims it owns it until it
-// retires. A retired owner counts as no owner. Main queue only.
-static NSMapTable<NSString *, RCTDevSettings *> *devMenuOwners;
+// devMenu: retires no instance, so the first live instance that claims it owns it until it retires, also for
+// hosts on another packager. A retired owner counts as no owner. Main queue only.
+static __weak RCTDevSettings *devMenuOwner;
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
@@ -215,7 +215,7 @@ RCT_EXPORT_MODULE()
   [self
       addNotificationHandler:^(__unused id params) {
         __typeof(self) strongSelf = weakSelf;
-        if ([strongSelf _claimDevMenuForPackager:[strongSelf.bundleManager.bundleConfig getPackagerServerHost]]) {
+        if ([strongSelf _claimDevMenu]) {
           [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
         }
       }
@@ -236,21 +236,17 @@ RCT_EXPORT_MODULE()
   return !_retired;
 }
 
-- (BOOL)_claimDevMenuForPackager:(NSString *)packager
+- (BOOL)_claimDevMenu
 {
   RCTAssertMainQueue();
   if (_retired) {
     return NO;
   }
-  if (devMenuOwners == nil) {
-    devMenuOwners = [NSMapTable strongToWeakObjectsMapTable];
-  }
-  NSString *key = packager ?: @"";
-  RCTDevSettings *owner = [devMenuOwners objectForKey:key];
+  RCTDevSettings *owner = devMenuOwner;
   if (owner != nil && owner != self && !owner->_retired) {
     return NO;
   }
-  [devMenuOwners setObject:self forKey:key];
+  devMenuOwner = self;
   return YES;
 }
 

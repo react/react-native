@@ -5,100 +5,153 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <React/RCTBundleManager.h>
 #import <React/RCTDevSettings.h>
+#import <React/RCTPackagerConnection.h>
 #import <React/RCTReloadCommand.h>
 #import <XCTest/XCTest.h>
 
-#if RCT_DEV
+#if RCT_DEV && RCT_DEV_MENU
 
 @interface RCTDevSettings (Tests)
-- (BOOL)_canHandlePackagerReload;
-- (BOOL)_claimDevMenuForPackager:(NSString *)packager;
+- (BOOL)_claimDevMenu;
 - (void)invalidate;
 @end
+
+@interface RCTPackagerConnection (Tests)
+- (void)reconnectingWebSocket:(id)webSocket didReceiveMessage:(id)message;
+@end
+
+static NSString *const kReloadMessage = @"{\"version\":2,\"method\":\"reload\"}";
 
 @interface RCTDevSettingsTests : XCTestCase
 @end
 
 @implementation RCTDevSettingsTests {
   NSMutableArray<RCTDevSettings *> *_instances;
+  RCTBundleManager *_bundleManager;
+  NSUInteger _reloads;
+  id _reloadObserver;
 }
 
 - (void)setUp
 {
   [super setUp];
   _instances = [NSMutableArray new];
+  // An explicit packager host, so no instance sends a /status request.
+  RCTBundleConfiguration *config = [[RCTBundleConfiguration alloc] initWithPackagerServerScheme:@"http"
+                                                                             packagerServerHost:@"localhost:1"
+                                                                                     bundlePath:nil];
+  _bundleManager = [[RCTBundleManager alloc] initWithBundleConfig:config];
+  RCTBridgelessBundleURLGetter getter = ^NSURL * {
+    return [NSURL URLWithString:@"http://localhost:1/index.bundle"];
+  };
+  [_bundleManager setBridgelessBundleURLGetter:getter andSetter:nil andDefaultGetter:getter];
+  _reloads = 0;
+  __weak __typeof(self) weakSelf = self;
+  _reloadObserver = [[NSNotificationCenter defaultCenter] addObserverForName:RCTTriggerReloadCommandNotification
+                                                                      object:nil
+                                                                       queue:nil
+                                                                  usingBlock:^(__unused NSNotification *note) {
+                                                                    __typeof(self) strongSelf = weakSelf;
+                                                                    if (strongSelf != nil) {
+                                                                      strongSelf->_reloads++;
+                                                                    }
+                                                                  }];
 }
 
 - (void)tearDown
 {
+  [[NSNotificationCenter defaultCenter] removeObserver:_reloadObserver];
   for (RCTDevSettings *instance in _instances) {
     [instance invalidate];
   }
   _instances = nil;
+  _bundleManager = nil;
   [super tearDown];
 }
 
-- (RCTDevSettings *)newInstance
+- (RCTDevSettings *)newInitializedInstance
 {
   RCTDevSettings *instance = [[RCTDevSettings alloc] initWithDataSource:nil];
+  instance.bundleManager = _bundleManager;
+  [instance initialize];
   [_instances addObject:instance];
   return instance;
 }
 
-- (void)postReloadNotification
+- (void)deliverReloadTo:(RCTDevSettings *)instance
 {
-  [[NSNotificationCenter defaultCenter] postNotificationName:RCTTriggerReloadCommandNotification object:nil];
+  [instance.packagerConnection reconnectingWebSocket:nil didReceiveMessage:kReloadMessage];
 }
 
-- (void)testReloadRetiresEveryInstanceAndNotTheReplacement
+- (void)drainMainQueue
 {
-  RCTDevSettings *a = [self newInstance];
-  RCTDevSettings *b = [self newInstance];
-  XCTAssertTrue([a _canHandlePackagerReload]);
-  XCTAssertTrue([b _canHandlePackagerReload]);
-
-  [self postReloadNotification];
-
-  XCTAssertFalse([a _canHandlePackagerReload]);
-  XCTAssertFalse([b _canHandlePackagerReload]);
-  XCTAssertTrue([[self newInstance] _canHandlePackagerReload]);
+  [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
 }
 
-- (void)testDevMenuOwnerOtherInstanceDoesNotBlockReload
+- (void)testNewInstanceHandlesReloadBeforeOldInstanceInvalidates
 {
-  RCTDevSettings *a = [self newInstance];
-  RCTDevSettings *b = [self newInstance];
-  XCTAssertTrue([a _claimDevMenuForPackager:@"test-owner:8081"]);
-  XCTAssertTrue([b _canHandlePackagerReload]);
+  RCTDevSettings *oldInstance = [self newInitializedInstance];
+  RCTDevSettings *newInstance = [self newInitializedInstance];
+  XCTAssertNotNil(oldInstance);
+
+  [self deliverReloadTo:newInstance];
+  [self drainMainQueue];
+
+  XCTAssertEqual(_reloads, 1u);
 }
 
-- (void)testDevMenuHasOneOwnerPerPackager
+- (void)testOneCommandOnTwoConnectionsReloadsOnce
 {
-  RCTDevSettings *a = [self newInstance];
-  RCTDevSettings *b = [self newInstance];
-  XCTAssertTrue([a _claimDevMenuForPackager:@"test-per-packager:8081"]);
-  XCTAssertTrue([a _claimDevMenuForPackager:@"test-per-packager:8081"]);
-  XCTAssertFalse([b _claimDevMenuForPackager:@"test-per-packager:8081"]);
-  XCTAssertTrue([b _claimDevMenuForPackager:@"test-per-packager:8082"]);
+  RCTDevSettings *a = [self newInitializedInstance];
+  RCTDevSettings *b = [self newInitializedInstance];
+
+  [self deliverReloadTo:a];
+  [self deliverReloadTo:b];
+  [self drainMainQueue];
+
+  XCTAssertEqual(_reloads, 1u);
 }
 
-- (void)testRetiredDevMenuOwnerDoesNotBlock
+- (void)testReplacementHandlesTheNextReload
 {
-  RCTDevSettings *a = [self newInstance];
-  RCTDevSettings *b = [self newInstance];
-  XCTAssertTrue([a _claimDevMenuForPackager:@"test-retired:8081"]);
+  RCTDevSettings *a = [self newInitializedInstance];
+  [self deliverReloadTo:a];
+  [self drainMainQueue];
+
+  RCTDevSettings *replacement = [self newInitializedInstance];
+  [self deliverReloadTo:a];
+  [self deliverReloadTo:replacement];
+  [self drainMainQueue];
+
+  XCTAssertEqual(_reloads, 2u);
+}
+
+- (void)testDevMenuOwnerDoesNotBlockReload
+{
+  RCTDevSettings *a = [self newInitializedInstance];
+  RCTDevSettings *b = [self newInitializedInstance];
+  XCTAssertTrue([a _claimDevMenu]);
+
+  [self deliverReloadTo:b];
+  [self drainMainQueue];
+
+  XCTAssertEqual(_reloads, 1u);
+}
+
+- (void)testDevMenuHasOneLiveOwner
+{
+  RCTDevSettings *a = [self newInitializedInstance];
+  RCTDevSettings *b = [self newInitializedInstance];
+  XCTAssertTrue([a _claimDevMenu]);
+  XCTAssertTrue([a _claimDevMenu]);
+  XCTAssertFalse([b _claimDevMenu]);
 
   [a invalidate];
 
-  XCTAssertFalse([a _claimDevMenuForPackager:@"test-retired:8081"]);
-  XCTAssertFalse([a _canHandlePackagerReload]);
-  XCTAssertTrue([b _claimDevMenuForPackager:@"test-retired:8081"]);
-
-  [self postReloadNotification];
-
-  XCTAssertFalse([b _claimDevMenuForPackager:@"test-retired:8081"]);
-  XCTAssertTrue([[self newInstance] _claimDevMenuForPackager:@"test-retired:8081"]);
+  XCTAssertFalse([a _claimDevMenu]);
+  XCTAssertTrue([b _claimDevMenu]);
 }
 
 @end
