@@ -647,9 +647,17 @@ RootShadowNode::Unshared UIManager::shadowTreeWillCommit(
     const ShadowTree::CommitOptions& commitOptions) const {
   TraceSection s("UIManager::shadowTreeWillCommit");
 
+  // A commit can have views with conditional values resolved for older media
+  // features, for example the shadow nodes that React holds. This runs before
+  // the commit hooks, so that they see the resolved values.
+  auto resultRootShadowNode = newRootShadowNode;
+  if (auto resolvedRootShadowNode =
+          resolveOutdatedConditionalValues(*newRootShadowNode)) {
+    resultRootShadowNode = std::move(resolvedRootShadowNode);
+  }
+
   std::shared_lock lock(commitHookMutex_);
 
-  auto resultRootShadowNode = newRootShadowNode;
   for (auto* commitHook : commitHooks_) {
     resultRootShadowNode = commitHook->shadowTreeWillCommit(
         shadowTree, oldRootShadowNode, resultRootShadowNode, commitOptions);

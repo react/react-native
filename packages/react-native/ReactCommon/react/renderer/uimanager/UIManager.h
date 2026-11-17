@@ -17,6 +17,7 @@
 #include <folly/dynamic.h>
 #include <jsi/jsi.h>
 
+#include <react/renderer/core/MediaFeatures.h>
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 #include <react/renderer/mounting/ShadowTreeRegistry.h>
@@ -220,6 +221,13 @@ class UIManager final : public ShadowTreeDelegate {
 
   void updateShadowTree(std::unordered_map<Tag, folly::dynamic> &&tagToProps);
 
+  /*
+   * Sets the media features that conditional style values match, and resolves
+   * the values of rendered views that depend on a changed feature. Can be
+   * called on any thread; concurrent calls end with the last set value.
+   */
+  void setMediaFeatures(MediaFeatures mediaFeatures) const;
+
 #pragma mark - ContextContainer
   std::shared_ptr<const ContextContainer> getContextContainer() const;
 
@@ -250,6 +258,12 @@ class UIManager final : public ShadowTreeDelegate {
   std::shared_ptr<const ShadowNode> getShadowNodeInSubtree(
       const ShadowNode &shadowNode,
       const std::shared_ptr<const ShadowNode> &ancestorShadowNode) const;
+
+  /*
+   * Returns a clone of the root in which the views with outdated conditional
+   * values resolve them again. Returns null if there are none.
+   */
+  RootShadowNode::Unshared resolveOutdatedConditionalValues(const RootShadowNode &rootShadowNode) const;
 
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   UIManagerDelegate *delegate_{};

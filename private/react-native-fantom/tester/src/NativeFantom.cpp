@@ -261,14 +261,15 @@ void NativeFantom::enqueueModalSizeUpdate(
 void NativeFantom::setColorScheme(
     jsi::Runtime& runtime,
     const std::string& colorScheme) {
-  auto contextContainer = UIManagerBinding::getBinding(runtime)
-                              ->getUIManager()
-                              .getContextContainer();
-  auto store = contextContainer->at<std::shared_ptr<MediaFeaturesStore>>(
-      kMediaFeaturesStoreKey);
-  store->set(
+  // Platforms call it on the UI thread, where clones do not update the shadow
+  // node references of React.
+  auto wasEnabled =
+      ShadowNode::getUseRuntimeShadowNodeReferenceUpdateOnThread();
+  ShadowNode::setUseRuntimeShadowNodeReferenceUpdateOnThread(false);
+  UIManagerBinding::getBinding(runtime)->getUIManager().setMediaFeatures(
       {.colorScheme =
            colorScheme == "dark" ? ColorScheme::Dark : ColorScheme::Light});
+  ShadowNode::setUseRuntimeShadowNodeReferenceUpdateOnThread(wasEnabled);
 }
 
 jsi::Function NativeFantom::createShadowNodeReferenceCounter(

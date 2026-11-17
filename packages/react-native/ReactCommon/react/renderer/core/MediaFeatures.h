@@ -70,6 +70,7 @@ class MediaFeaturesStore final {
 
  private:
   std::atomic<MediaFeatures> features_{MediaFeatures{}};
+  // A larger `MediaFeatures` needs a mutex instead.
   static_assert(std::atomic<MediaFeatures>::is_always_lock_free);
 };
 

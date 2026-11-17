@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @flow strict-local
- * @fantom_flags enableCppPropsIteratorSetter:*
+ * @fantom_flags enableCppPropsIteratorSetter:* useSharedAnimatedBackend:*
  * @format
  */
 
@@ -18,7 +18,7 @@ import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import {View} from 'react-native';
+import {Animated, Text, View, useAnimatedValue} from 'react-native';
 
 const DARK = '@media (prefers-color-scheme: dark)';
 const LIGHT = '@media (prefers-color-scheme: light)';
@@ -169,29 +169,220 @@ describe('conditional values', () => {
     expect(output(root)).toEqual(<rn-view opacity="0.5" />);
   });
 
-  it('uses the color scheme when the props are set', () => {
+  it('updates rendered views when the color scheme changes', () => {
     const root = Fantom.createRoot();
-    render(
-      root,
-      <View key="a" style={{backgroundColor: whiteOrBlack, opacity: 1}} />,
-    );
+    render(root, <View style={{backgroundColor: whiteOrBlack}} />);
+    expect(output(root)).toEqual(<rn-view backgroundColor={WHITE} />);
 
     Fantom.setColorScheme('dark');
+    expect(output(root)).toEqual(<rn-view backgroundColor={BLACK} />);
 
-    // Rendered views keep their values until their conditions are resolved
-    // again.
+    Fantom.setColorScheme('light');
+    expect(output(root)).toEqual(<rn-view backgroundColor={WHITE} />);
+  });
+
+  it('updates the layout when the color scheme changes', () => {
+    const root = Fantom.createRoot();
+    const ref = createRef<HostInstance>();
     render(
       root,
-      <View key="a" style={{backgroundColor: whiteOrBlack, opacity: 0.5}} />,
+      <View
+        ref={ref}
+        style={{width: conditional(100, DARK, 200), height: 10}}
+      />,
     );
+    const width = () => nullthrows(ref.current).getBoundingClientRect().width;
+    expect(width()).toBe(100);
+
+    Fantom.setColorScheme('dark');
+    expect(width()).toBe(200);
+  });
+
+  it('keeps the conditional value after a native animation', () => {
+    const root = Fantom.createRoot();
+    let opacity;
+    function App({testID}: {testID: string}) {
+      opacity = useAnimatedValue(1);
+      return (
+        <Animated.View
+          testID={testID}
+          style={{backgroundColor: whiteOrBlack, opacity}}
+        />
+      );
+    }
+    render(root, <App testID="a" />);
+
+    Fantom.runTask(() => {
+      Animated.timing(nullthrows(opacity), {
+        toValue: 0.5,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    });
+    Fantom.unstable_produceFramesForDuration(200);
+    Fantom.runWorkLoop();
     expect(output(root)).toEqual(
       <rn-view backgroundColor={WHITE} opacity="0.5" />,
     );
 
-    // A new view uses the new color scheme.
+    Fantom.setColorScheme('dark');
+    expect(output(root)).toEqual(
+      <rn-view backgroundColor={BLACK} opacity="0.5" />,
+    );
+
+    render(root, <App testID="b" />);
+    expect(output(root)).toEqual(
+      <rn-view backgroundColor={BLACK} opacity="0.5" />,
+    );
+  });
+
+  it('keeps the updated value when React updates another view', () => {
+    const root = Fantom.createRoot();
+    const renderWithOpacity = (opacity: number) =>
+      render(
+        root,
+        <View collapsable={false}>
+          <View style={{backgroundColor: whiteOrBlack}} />
+          <View style={{opacity}} />
+        </View>,
+      );
+    renderWithOpacity(1);
+
+    // React still has the views from before this change.
+    Fantom.setColorScheme('dark');
+    renderWithOpacity(0.5);
+    expect(output(root)).toEqual(
+      <rn-view>
+        <rn-view key="0" backgroundColor={BLACK} />
+        <rn-view key="1" opacity="0.5" />
+      </rn-view>,
+    );
+  });
+
+  it('keeps the updated value after two React updates of another view', () => {
+    const root = Fantom.createRoot();
+    const renderWithOpacity = (opacity: number) =>
+      render(
+        root,
+        <View collapsable={false}>
+          <View style={{backgroundColor: whiteOrBlack}} />
+          <View style={{opacity}} />
+        </View>,
+      );
+    renderWithOpacity(1);
+
+    Fantom.setColorScheme('dark');
+    // Only the first React commit after the change resolves the values again.
+    renderWithOpacity(0.5);
+    renderWithOpacity(0.25);
+    expect(output(root)).toEqual(
+      <rn-view>
+        <rn-view key="0" backgroundColor={BLACK} />
+        <rn-view key="1" opacity="0.25" />
+      </rn-view>,
+    );
+  });
+
+  it('updates only the views with conditional values, on each surface', () => {
+    const first = Fantom.createRoot();
+    render(
+      first,
+      <View nativeID="P" collapsable={false}>
+        <View nativeID="A" style={{backgroundColor: whiteOrBlack}} />
+        <View nativeID="B" style={{backgroundColor: 'red'}} />
+      </View>,
+    );
+    const second = Fantom.createRoot();
+    render(
+      second,
+      <View nativeID="C" style={{backgroundColor: whiteOrBlack}} />,
+    );
+    first.takeMountingManagerLogs();
+    second.takeMountingManagerLogs();
+
+    Fantom.setColorScheme('dark');
+    expect(first.takeMountingManagerLogs()).toEqual([
+      'Update {type: "View", nativeID: "A"}',
+    ]);
+    expect(second.takeMountingManagerLogs()).toEqual([
+      'Update {type: "View", nativeID: "C"}',
+    ]);
+    expect(output(first)).toEqual(
+      <rn-view>
+        <rn-view key="0" backgroundColor={BLACK} />
+        <rn-view key="1" backgroundColor={RED} />
+      </rn-view>,
+    );
+    expect(output(second)).toEqual(<rn-view backgroundColor={BLACK} />);
+  });
+
+  it('makes no native updates without conditional values', () => {
+    const root = Fantom.createRoot();
+    render(root, <View style={{backgroundColor: 'red'}} />);
+    root.takeMountingManagerLogs();
+
+    Fantom.setColorScheme('dark');
+    expect(root.takeMountingManagerLogs()).toEqual([]);
+
+    render(root, <View style={{backgroundColor: whiteOrBlack}} />);
+    root.takeMountingManagerLogs();
+    // The same color scheme again.
+    Fantom.setColorScheme('dark');
+    expect(root.takeMountingManagerLogs()).toEqual([]);
+  });
+
+  // Black is not in the output of text: it is the default text color.
+  it('updates the color of a text when the color scheme changes', () => {
+    const root = Fantom.createRoot();
     render(
       root,
-      <View key="b" style={{backgroundColor: whiteOrBlack, opacity: 0.5}} />,
+      <Text style={{color: conditional('white', DARK, 'navy')}}>hello</Text>,
+    );
+    const textOutput = () =>
+      root.getRenderedOutput({props: ['foregroundColor']}).toJSX();
+    expect(textOutput()).toEqual(
+      <rn-paragraph foregroundColor={WHITE}>hello</rn-paragraph>,
+    );
+
+    Fantom.setColorScheme('dark');
+    expect(textOutput()).toEqual(
+      <rn-paragraph foregroundColor={NAVY}>hello</rn-paragraph>,
+    );
+  });
+
+  it('updates the color of a nested text when the color scheme changes', () => {
+    const root = Fantom.createRoot();
+    render(
+      root,
+      <Text>
+        hello{' '}
+        <Text style={{color: conditional('white', DARK, 'navy')}}>world</Text>
+      </Text>,
+    );
+    const expected = (innerColor: string) => ({
+      type: 'Paragraph',
+      props: {foregroundColor: 'rgba(0, 0, 0, 0)'},
+      children: [
+        'hello ',
+        {type: 'Text', props: {foregroundColor: innerColor}, children: 'world'},
+      ],
+    });
+    const nestedOutput = () =>
+      root.getRenderedOutput({props: ['foregroundColor']}).toJSON();
+    expect(nestedOutput()).toEqual(expected(WHITE));
+
+    Fantom.setColorScheme('dark');
+    expect(nestedOutput()).toEqual(expected(NAVY));
+  });
+
+  it('keeps the updated value after a React update', () => {
+    const root = Fantom.createRoot();
+    render(root, <View style={{backgroundColor: whiteOrBlack, opacity: 1}} />);
+
+    Fantom.setColorScheme('dark');
+    render(
+      root,
+      <View style={{backgroundColor: whiteOrBlack, opacity: 0.5}} />,
     );
     expect(output(root)).toEqual(
       <rn-view backgroundColor={BLACK} opacity="0.5" />,

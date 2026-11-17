@@ -465,6 +465,10 @@ void Scheduler::reportMount(SurfaceId surfaceId) const {
   uiManager_->reportMount(surfaceId);
 }
 
+void Scheduler::setMediaFeatures(MediaFeatures mediaFeatures) const {
+  uiManager_->setMediaFeatures(mediaFeatures);
+}
+
 std::shared_ptr<const ContextContainer> Scheduler::getContextContainer() const {
   return contextContainer_;
 }

@@ -114,6 +114,13 @@ class Scheduler final : public UIManagerDelegate {
 
   void reportMount(SurfaceId surfaceId) const;
 
+#pragma mark - Media features
+  /*
+   * Changes the media features that conditional style values match, for
+   * example the color scheme, and updates the rendered views.
+   */
+  void setMediaFeatures(MediaFeatures mediaFeatures) const;
+
 #pragma mark - Event listeners
   void addEventListener(std::shared_ptr<const EventListener> listener);
   void removeEventListener(const std::shared_ptr<const EventListener> &listener);
