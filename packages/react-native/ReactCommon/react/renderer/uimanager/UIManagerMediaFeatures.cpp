@@ -67,6 +67,13 @@ std::shared_ptr<ShadowNode> cloneViewsWithConditionalValues(
 
 } // namespace
 
+RootShadowNode::Unshared UIManager::cloneWithResolvedConditionalValues(
+    const RootShadowNode& rootShadowNode) const {
+  PropsParserContext context{rootShadowNode.getSurfaceId(), *contextContainer_};
+  return std::static_pointer_cast<RootShadowNode>(
+      cloneViewsWithConditionalValues(rootShadowNode, context));
+}
+
 void UIManager::setMediaFeatures(MediaFeatures mediaFeatures) const {
   auto store = contextContainer_->find<std::shared_ptr<MediaFeaturesStore>>(
       kMediaFeaturesStoreKey);
@@ -76,64 +83,27 @@ void UIManager::setMediaFeatures(MediaFeatures mediaFeatures) const {
   (*store)->set(mediaFeatures);
   mediaFeaturesGeneration_++;
 
-  shadowTreeRegistry_.enumerate([&](const ShadowTree& shadowTree,
-                                    bool& /*stop*/) {
-    PropsParserContext context{shadowTree.getSurfaceId(), *contextContainer_};
-    shadowTree.commit(
-        [&](const RootShadowNode& oldRootShadowNode)
-            -> RootShadowNode::Unshared {
-          return std::static_pointer_cast<RootShadowNode>(
-              cloneViewsWithConditionalValues(oldRootShadowNode, context));
-        },
-        {});
-  });
+  shadowTreeRegistry_.enumerate(
+      [&](const ShadowTree& shadowTree, bool& /*stop*/) {
+        shadowTree.commit(
+            [&](const RootShadowNode& oldRootShadowNode) {
+              return cloneWithResolvedConditionalValues(oldRootShadowNode);
+            },
+            {});
+      });
 }
 
-RootShadowNode::Unshared UIManager::resolveConditionalValuesInReactCommit(
-    const ShadowTree& shadowTree,
-    const RootShadowNode::Unshared& rootShadowNode) const {
-  auto generation = mediaFeaturesGeneration_.load();
-  if (generation == 0) {
-    return rootShadowNode;
-  }
-  auto surfaceId = shadowTree.getSurfaceId();
-  {
-    std::lock_guard lock(mediaFeaturesCommitStatesMutex_);
-    if (mediaFeaturesCommitStates_[surfaceId].resolvedGeneration ==
-        generation) {
-      return rootShadowNode;
-    }
-  }
-
-  PropsParserContext context{surfaceId, *contextContainer_};
-  auto newRootShadowNode =
-      cloneViewsWithConditionalValues(*rootShadowNode, context);
-  auto resultRootShadowNode = newRootShadowNode
-      ? std::static_pointer_cast<RootShadowNode>(newRootShadowNode)
-      : rootShadowNode;
-
-  // The commit can still fail and run again, so the generation is resolved only
-  // when this root is committed.
-  std::lock_guard lock(mediaFeaturesCommitStatesMutex_);
-  auto& state = mediaFeaturesCommitStates_[surfaceId];
-  state.pendingGeneration = generation;
-  state.pendingRootShadowNode = resultRootShadowNode;
-  return resultRootShadowNode;
+uint64_t UIManager::getReactMediaFeaturesGeneration(SurfaceId surfaceId) const {
+  std::lock_guard lock(reactMediaFeaturesGenerationsMutex_);
+  auto it = reactMediaFeaturesGenerations_.find(surfaceId);
+  return it != reactMediaFeaturesGenerations_.end() ? it->second : 0;
 }
 
-void UIManager::reactCommitDidResolveConditionalValues(
-    const ShadowTree& shadowTree,
-    const RootShadowNode::Shared& rootShadowNode) const {
-  std::lock_guard lock(mediaFeaturesCommitStatesMutex_);
-  auto it = mediaFeaturesCommitStates_.find(shadowTree.getSurfaceId());
-  if (it == mediaFeaturesCommitStates_.end()) {
-    return;
-  }
-  auto& state = it->second;
-  if (state.pendingRootShadowNode.lock() == rootShadowNode) {
-    state.resolvedGeneration = state.pendingGeneration;
-    state.pendingRootShadowNode.reset();
-  }
+void UIManager::setReactMediaFeaturesGeneration(
+    SurfaceId surfaceId,
+    uint64_t generation) const {
+  std::lock_guard lock(reactMediaFeaturesGenerationsMutex_);
+  reactMediaFeaturesGenerations_[surfaceId] = generation;
 }
 
 } // namespace facebook::react

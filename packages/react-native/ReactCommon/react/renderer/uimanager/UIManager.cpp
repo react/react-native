@@ -201,20 +201,37 @@ void UIManager::completeSurface(
 
   ShadowTree::CommitStatus result;
 
+  // React builds its commits from the shadow nodes that it holds, which can
+  // have values resolved before the last media features change.
+  auto mediaFeaturesGeneration = mediaFeaturesGeneration_.load();
+  bool shouldResolveConditionalValues =
+      getReactMediaFeaturesGeneration(surfaceId) != mediaFeaturesGeneration;
+
   shadowTreeRegistry_.visit(surfaceId, [&](const ShadowTree& shadowTree) {
     result = shadowTree.commit(
         [&](const RootShadowNode& oldRootShadowNode) {
-          return std::make_shared<RootShadowNode>(
+          auto newRootShadowNode = std::make_shared<RootShadowNode>(
               oldRootShadowNode,
               ShadowNodeFragment{
                   .props = ShadowNodeFragment::propsPlaceholder(),
                   .children = rootChildren,
               });
+          if (shouldResolveConditionalValues) {
+            if (auto resolvedRootShadowNode =
+                    cloneWithResolvedConditionalValues(*newRootShadowNode)) {
+              return resolvedRootShadowNode;
+            }
+          }
+          return newRootShadowNode;
         },
         commitOptions);
   });
 
   if (result == ShadowTree::CommitStatus::Succeeded) {
+    if (shouldResolveConditionalValues) {
+      setReactMediaFeaturesGeneration(surfaceId, mediaFeaturesGeneration);
+    }
+
     // It's safe to update the visible revision of the shadow tree immediately
     // after we commit a specific one.
     lazyShadowTreeRevisionConsistencyManager_->updateCurrentRevision(surfaceId);
@@ -295,8 +312,8 @@ ShadowTree::Unique UIManager::stopSurface(SurfaceId surfaceId) const {
   // `ShadowTree`.
   auto shadowTree = getShadowTreeRegistry().remove(surfaceId);
   {
-    std::lock_guard lock(mediaFeaturesCommitStatesMutex_);
-    mediaFeaturesCommitStates_.erase(surfaceId);
+    std::lock_guard lock(reactMediaFeaturesGenerationsMutex_);
+    reactMediaFeaturesGenerations_.erase(surfaceId);
   }
   if (shadowTree) {
     // We execute JavaScript/React part of the process at the very end to
@@ -656,13 +673,6 @@ RootShadowNode::Unshared UIManager::shadowTreeWillCommit(
         shadowTree, oldRootShadowNode, resultRootShadowNode, commitOptions);
   }
 
-  if (resultRootShadowNode &&
-      (commitOptions.source == ShadowTree::CommitSource::React ||
-       commitOptions.source == ShadowTree::CommitSource::AnimationEndSync)) {
-    resultRootShadowNode =
-        resolveConditionalValuesInReactCommit(shadowTree, resultRootShadowNode);
-  }
-
   return resultRootShadowNode;
 }
 
@@ -690,8 +700,6 @@ void UIManager::shadowTreeDidCommit(
     const std::vector<const LayoutableShadowNode*>& affectedLayoutableNodes)
     const noexcept {
   TraceSection s("UIManager::shadowTreeDidCommit");
-
-  reactCommitDidResolveConditionalValues(shadowTree, rootShadowNode);
 
   std::shared_lock lock(commitHookMutex_);
 

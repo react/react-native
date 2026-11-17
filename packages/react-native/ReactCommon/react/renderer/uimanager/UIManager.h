@@ -260,25 +260,17 @@ class UIManager final : public ShadowTreeDelegate {
       const std::shared_ptr<const ShadowNode> &ancestorShadowNode) const;
 
   /*
-   * React commits are built from the shadow nodes that React holds, which can
-   * be older than the last media features change. The first React commit
-   * after a change resolves all conditional values again. See
-   * `UIManagerMediaFeatures.cpp`.
+   * Returns a clone of the root in which every view with conditional values
+   * resolves them again. Returns null if no view has them.
    */
-  RootShadowNode::Unshared resolveConditionalValuesInReactCommit(
-      const ShadowTree &shadowTree,
-      const RootShadowNode::Unshared &rootShadowNode) const;
-  void reactCommitDidResolveConditionalValues(
-      const ShadowTree &shadowTree,
-      const RootShadowNode::Shared &rootShadowNode) const;
+  RootShadowNode::Unshared cloneWithResolvedConditionalValues(const RootShadowNode &rootShadowNode) const;
 
-  struct MediaFeaturesCommitState {
-    // The last generation that a React commit of the surface resolved.
-    uint64_t resolvedGeneration{0};
-    // The generation and the root of a React commit that is not done yet.
-    uint64_t pendingGeneration{0};
-    std::weak_ptr<const RootShadowNode> pendingRootShadowNode;
-  };
+  /*
+   * The media features generation that the last React commit of the surface
+   * resolved. See `completeSurface`.
+   */
+  uint64_t getReactMediaFeaturesGeneration(SurfaceId surfaceId) const;
+  void setReactMediaFeaturesGeneration(SurfaceId surfaceId, uint64_t generation) const;
 
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   UIManagerDelegate *delegate_{};
@@ -295,8 +287,8 @@ class UIManager final : public ShadowTreeDelegate {
 
   // Increases with each media features change.
   mutable std::atomic<uint64_t> mediaFeaturesGeneration_{0};
-  mutable std::mutex mediaFeaturesCommitStatesMutex_;
-  mutable std::unordered_map<SurfaceId, MediaFeaturesCommitState> mediaFeaturesCommitStates_;
+  mutable std::mutex reactMediaFeaturesGenerationsMutex_;
+  mutable std::unordered_map<SurfaceId, uint64_t> reactMediaFeaturesGenerations_;
 
   mutable std::shared_mutex mountHookMutex_;
   mutable std::vector<UIManagerMountHook *> mountHooks_;
