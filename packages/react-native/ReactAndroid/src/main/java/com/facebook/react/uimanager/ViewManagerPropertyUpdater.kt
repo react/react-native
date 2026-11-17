@@ -101,6 +101,16 @@ public object ViewManagerPropertyUpdater {
     return props
   }
 
+  /**
+   * Looks up and caches the prop setters of [managerClass], so that the first prop update of a view
+   * of that class does not pay for the lookup (a `$$PropsSetter` class lookup and, when there is
+   * none, a scan of the class hierarchy for [com.facebook.react.uimanager.annotations.ReactProp]
+   * methods). Safe to call from any thread.
+   */
+  internal fun preloadManagerSetter(managerClass: Class<out ViewManager<*, *>>) {
+    @Suppress("UNCHECKED_CAST") findManagerSetter(managerClass as Class<out ViewManager<View, *>>)
+  }
+
   private fun <V : View> findManagerSetter(
       managerClass: Class<out ViewManager<V, *>>,
   ): ViewManagerSetter<ViewManager<V, *>, V> {

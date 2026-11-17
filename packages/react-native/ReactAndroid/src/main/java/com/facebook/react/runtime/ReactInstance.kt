@@ -66,10 +66,18 @@ import com.facebook.react.uimanager.UIConstantsProviderBinding
 import com.facebook.react.uimanager.UIConstantsProviderBinding.ConstantsForViewManagerProvider
 import com.facebook.react.uimanager.UIManagerModuleConstantsHelper
 import com.facebook.react.uimanager.ViewManager
+import com.facebook.react.uimanager.ViewManagerPropertyUpdater
 import com.facebook.react.uimanager.ViewManagerRegistry
 import com.facebook.react.uimanager.ViewManagerResolver
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.util.RNLog
+import com.facebook.react.views.image.ReactImageManager
+import com.facebook.react.views.scroll.ReactNestedScrollViewManager
+import com.facebook.react.views.scroll.ReactScrollViewManager
+import com.facebook.react.views.text.PreparedLayoutTextViewManager
+import com.facebook.react.views.text.ReactTextViewManager
+import com.facebook.react.views.textinput.ReactTextInputManager
+import com.facebook.react.views.view.ReactViewManager
 import com.facebook.soloader.SoLoader
 import com.facebook.systrace.Systrace
 import com.facebook.systrace.SystraceMessage
@@ -269,6 +277,8 @@ internal class ReactInstance(
 
     // Initialize the FabricUIManager
     fabricUIManager.initialize()
+
+    preloadCoreViewManagerPropSetters()
 
     Systrace.endSection(Systrace.TRACE_TAG_REACT)
     Systrace.endSection(Systrace.TRACE_TAG_REACT)
@@ -582,6 +592,49 @@ internal class ReactInstance(
 
     init {
       SoLoader.loadLibrary("rninstance")
+    }
+
+    /**
+     * The first prop update of each view manager class looks up its prop setters: a `$$PropsSetter`
+     * class lookup that fails unless the app generates one, then a reflective scan for `@ReactProp`
+     * methods over the class and its superclasses, all on the UI thread during the first mount. Do
+     * that for the core components almost every first screen uses on a background thread while the
+     * JS bundle loads. The setters are cached in thread-safe maps; if the UI thread gets there
+     * first, it computes them itself as before.
+     */
+    private fun preloadCoreViewManagerPropSetters() {
+      val viewManagerClasses: List<Class<out ViewManager<*, *>>> =
+          listOf(
+              ReactViewManager::class.java,
+              if (ReactNativeFeatureFlags.enablePreparedTextLayout())
+                  PreparedLayoutTextViewManager::class.java
+              else ReactTextViewManager::class.java,
+              ReactImageManager::class.java,
+              if (ReactNativeFeatureFlags.useNestedScrollViewAndroid())
+                  ReactNestedScrollViewManager::class.java
+              else ReactScrollViewManager::class.java,
+              ReactTextInputManager::class.java,
+          )
+      Thread(
+              {
+                Systrace.beginSection(
+                    Systrace.TRACE_TAG_REACT,
+                    "ReactInstance.preloadCoreViewManagerPropSetters",
+                )
+                try {
+                  for (viewManagerClass in viewManagerClasses) {
+                    ViewManagerPropertyUpdater.preloadManagerSetter(viewManagerClass)
+                  }
+                } catch (e: RuntimeException) {
+                  // The UI thread computes the setters again on first use and reports the error.
+                  FLog.w(TAG, "Failed to preload view manager prop setters", e)
+                } finally {
+                  Systrace.endSection(Systrace.TRACE_TAG_REACT)
+                }
+              },
+              "ReactPropSetterPreload",
+          )
+          .start()
     }
 
     private fun createConstants(
