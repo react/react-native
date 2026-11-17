@@ -263,6 +263,10 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/Linking/LinkingExample'),
     },
     {
+      key: 'MediaQueriesExample',
+      module: require('../examples/MediaQueries/MediaQueriesExample'),
+    },
+    {
       key: 'NativeAnimationsExample',
       module: require('../examples/NativeAnimation/NativeAnimationsExample'),
     },
