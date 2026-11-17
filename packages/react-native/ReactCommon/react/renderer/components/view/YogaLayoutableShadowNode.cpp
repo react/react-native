@@ -806,8 +806,9 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       // node exclusively ownes the child node).
       react_native_assert(YGNodeGetOwner(childYogaNode) == &yogaNode_);
 
-      // We are about to mutate layout metrics of the node.
-      childNode.ensureUnsealed();
+      // `setLayoutMetrics` below enforces the seal when the metrics change.
+      // Identical metrics on a node shared with a sealed tree are a no-op,
+      // not a mutation.
 
       auto newLayoutMetrics = layoutMetricsFromYogaNode(*childYogaNode);
       newLayoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
