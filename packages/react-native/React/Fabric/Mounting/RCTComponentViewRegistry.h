@@ -50,6 +50,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nullable UIView<RCTComponentViewProtocol> *)findComponentViewWithTag:(facebook::react::Tag)tag;
 
+/**
+ * Creates a fresh component view of the given kind and keeps it for the next `dequeue` of that
+ * kind. Unlike the recycle pool, this is used for views that have never been mounted, so it is
+ * valid for component views that opt out of recycling.
+ */
+- (void)preallocateComponentViewWithComponentHandle:(facebook::react::ComponentHandle)componentHandle;
+
 @end
 
 NS_ASSUME_NONNULL_END

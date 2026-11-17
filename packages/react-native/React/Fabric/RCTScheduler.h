@@ -42,6 +42,13 @@ NS_ASSUME_NONNULL_BEGIN
                        forShadowView:(const facebook::react::ShadowView &)shadowView;
 
 - (void)schedulerDidSynchronouslyUpdateViewOnUIThread:(facebook::react::Tag)reactTag props:(folly::dynamic)props;
+
+/*
+ * Called on the JS thread when a new ShadowNode that will form a view has been created, so that
+ * the host can create its view ahead of the mount.
+ */
+- (void)schedulerDidRequestPreliminaryViewAllocationWithComponentHandle:
+    (facebook::react::ComponentHandle)componentHandle;
 @end
 
 /**

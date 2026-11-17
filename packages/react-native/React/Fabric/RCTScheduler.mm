@@ -45,8 +45,12 @@ class SchedulerDelegateProxy : public SchedulerDelegate {
 
   void schedulerDidRequestPreliminaryViewAllocation(const ShadowNode &shadowNode) override
   {
-    // Does nothing.
-    // This delegate method is not currently used on iOS.
+    if (!shadowNode.getTraits().check(ShadowNodeTraits::Trait::FormsView)) {
+      return;
+    }
+    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    [scheduler.delegate
+        schedulerDidRequestPreliminaryViewAllocationWithComponentHandle:shadowNode.getComponentHandle()];
   }
 
   void schedulerDidDispatchCommand(
