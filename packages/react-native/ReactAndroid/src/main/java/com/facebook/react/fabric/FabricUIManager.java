@@ -92,6 +92,7 @@ import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.FabricEventDispatcher;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.uimanager.events.SynchronousEventReceiver;
+import com.facebook.react.views.common.UiModeUtils;
 import com.facebook.react.views.text.PreparedLayout;
 import com.facebook.react.views.text.ReactTextViewManager;
 import com.facebook.react.views.text.ReactTextViewManagerCallback;
@@ -1116,6 +1117,14 @@ public class FabricUIManager
 
   void setBinding(FabricUIManagerBinding binding) {
     mBinding = binding;
+  }
+
+  /** Updates the media features, for example the color scheme, from the configuration. */
+  @UiThread
+  public void onConfigurationChanged(Context context) {
+    if (mBinding != null) {
+      mBinding.setDarkMode(UiModeUtils.isDarkMode(context));
+    }
   }
 
   /**
