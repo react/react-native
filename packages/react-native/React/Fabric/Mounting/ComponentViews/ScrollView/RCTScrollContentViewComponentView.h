@@ -33,4 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+RCT_EXTERN Class<RCTComponentViewProtocol> RCTScrollContentViewCls(void);
+
 NS_ASSUME_NONNULL_END
