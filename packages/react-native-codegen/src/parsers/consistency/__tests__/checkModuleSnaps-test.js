@@ -29,6 +29,7 @@ const tsExtraCases = [
   'NATIVE_MODULE_WITH_COMPLEX_ARRAY2',
   'NATIVE_MODULE_WITH_INTERSECTION_TYPES',
   'NATIVE_MODULE_WITH_NESTED_INTERFACES',
+  'NATIVE_MODULE_WITH_RECORD',
 ];
 const ignoredCases /*: Array<string> */ = [];
 

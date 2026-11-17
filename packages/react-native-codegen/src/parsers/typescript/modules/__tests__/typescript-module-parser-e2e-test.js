@@ -19,6 +19,7 @@ const {
   MissingTypeParameterGenericParserError,
   UnnamedFunctionParamParserError,
   UnsupportedGenericParserError,
+  UnsupportedRecordTypeParserError,
   UnsupportedTypeAnnotationParserError,
 } = require('../../../errors');
 const {unwrapNullable} = require('../../../parsers-commons');
@@ -266,6 +267,60 @@ describe('TypeScript Module Parser', () => {
             expect(paramTypeAnnotation.type).toBe(
               'GenericObjectTypeAnnotation',
             );
+          });
+
+          describe('Record Types', () => {
+            it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Record<string, number>' as a dictionary`, () => {
+              const [paramTypeAnnotation] = parseParamType(
+                'arg',
+                'Record<string, number>',
+              );
+              expect(paramTypeAnnotation).toEqual({
+                type: 'GenericObjectTypeAnnotation',
+                dictionaryValueType: {type: 'NumberTypeAnnotation'},
+              });
+            });
+
+            it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Record<string, T>' as the same schema as '{[key: string]: T}'`, () => {
+              const [recordTypeAnnotation] = parseParamType(
+                'arg',
+                'Record<string, unknown>',
+              );
+              const [indexSignatureTypeAnnotation] = parseParamType(
+                'arg',
+                '{[key: string]: unknown}',
+              );
+              expect(recordTypeAnnotation).toEqual(
+                indexSignatureTypeAnnotation,
+              );
+            });
+
+            it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Readonly<Record<string, Animal>>'`, () => {
+              const [paramTypeAnnotation, module] = parseParamType(
+                'arg',
+                'Readonly<Record<string, Animal>>',
+              );
+              expect(paramTypeAnnotation).toEqual({
+                type: 'GenericObjectTypeAnnotation',
+                dictionaryValueType: {
+                  type: 'TypeAliasTypeAnnotation',
+                  name: 'Animal',
+                },
+              });
+              expectAnimalTypeAliasToExist(module);
+            });
+
+            it(`should not parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Record<number, string>'`, () => {
+              expect(() =>
+                parseParamType('arg', 'Record<number, string>'),
+              ).toThrow(UnsupportedRecordTypeParserError);
+            });
+
+            it(`should not parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Record' without two type arguments`, () => {
+              expect(() => parseParamType('arg', 'Record<string>')).toThrow(
+                UnsupportedRecordTypeParserError,
+              );
+            });
           });
 
           describe('Reserved Types', () => {
@@ -977,6 +1032,16 @@ describe('TypeScript Module Parser', () => {
             expect(returnTypeAnnotation.type).toBe(
               'GenericObjectTypeAnnotation',
             );
+          });
+
+          it(`should parse methods that have ${RETURN_TYPE_DESCRIPTION} return of type 'Readonly<Record<string, string>>' as a dictionary`, () => {
+            const [returnTypeAnnotation] = parseReturnType(
+              'Readonly<Record<string, string>>',
+            );
+            expect(returnTypeAnnotation).toEqual({
+              type: 'GenericObjectTypeAnnotation',
+              dictionaryValueType: {type: 'StringTypeAnnotation'},
+            });
           });
 
           describe('Object Literals Types', () => {
