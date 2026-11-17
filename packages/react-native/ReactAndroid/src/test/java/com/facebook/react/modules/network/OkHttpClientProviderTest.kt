@@ -89,6 +89,20 @@ class OkHttpClientProviderTest {
   }
 
   @Test
+  fun testCreatedClientsShareTlsSetupButNotDispatcherOrPool() {
+    val first = OkHttpClientProvider.createClientBuilder().build()
+    val second = OkHttpClientProvider.createClientBuilder().build()
+
+    // The platform trust manager / SSL socket factory are resolved once and reused ...
+    assertThat(second.sslSocketFactory()).isSameAs(first.sslSocketFactory())
+    assertThat(second.x509TrustManager).isSameAs(first.x509TrustManager)
+    // ... while each client keeps its own dispatcher, connection pool and cookie jar.
+    assertThat(second.dispatcher()).isNotSameAs(first.dispatcher())
+    assertThat(second.connectionPool()).isNotSameAs(first.connectionPool())
+    assertThat(second.cookieJar()).isNotSameAs(first.cookieJar())
+  }
+
+  @Test
   fun testCreateClientBuilderWithContextUsesDefaultCacheSize() {
     val mockContext = mock<Context>()
     val mockCacheDir = File("mockCacheDir")
