@@ -18,7 +18,7 @@ using namespace facebook::react;
 
 #if TARGET_OS_IOS
 
-static State::Shared RCTMakeTextInputState(NSString *wordFontFamily)
+static State::Shared RCTMakeTextInputState(NSString *wordFontFamily, const char *endText = " end")
 {
   auto baseAttributes = TextAttributes::defaultTextAttributes();
   baseAttributes.fontSize = 18;
@@ -28,7 +28,7 @@ static State::Shared RCTMakeTextInputState(NSString *wordFontFamily)
   AttributedString attributedString;
   attributedString.appendFragment({.string = "plain ", .textAttributes = baseAttributes, .parentShadowView = {}});
   attributedString.appendFragment({.string = "word", .textAttributes = wordAttributes, .parentShadowView = {}});
-  attributedString.appendFragment({.string = " end", .textAttributes = baseAttributes, .parentShadowView = {}});
+  attributedString.appendFragment({.string = endText, .textAttributes = baseAttributes, .parentShadowView = {}});
   attributedString.setBaseTextAttributes(baseAttributes);
 
   auto data = std::make_shared<const TextInputState>(
@@ -51,6 +51,21 @@ static NSString *RCTFontFamilyAtIndex(UITextField *textField, NSUInteger index)
   return font.familyName;
 }
 
+static BOOL RCTHasOriginalFont(UITextField *textField)
+{
+  __block BOOL hasOriginalFont = NO;
+  [textField.attributedText enumerateAttribute:@"NSOriginalFont"
+                                       inRange:NSMakeRange(0, textField.attributedText.length)
+                                       options:0
+                                    usingBlock:^(id value, NSRange range, BOOL *stop) {
+                                      if (value) {
+                                        hasOriginalFont = YES;
+                                        *stop = YES;
+                                      }
+                                    }];
+  return hasOriginalFont;
+}
+
 @interface RCTTextInputComponentViewTests : XCTestCase
 @end
 
@@ -67,6 +82,22 @@ static NSString *RCTFontFamilyAtIndex(UITextField *textField, NSUInteger index)
   [view traitCollectionDidChange:RCTOtherContentSizeTraitCollection()];
 
   XCTAssertEqualObjects(textField.attributedText.string, @"plain word end");
+  XCTAssertEqualObjects(RCTFontFamilyAtIndex(textField, 6), @"Courier");
+  XCTAssertNotEqualObjects(RCTFontFamilyAtIndex(textField, 0), @"Courier");
+}
+
+- (void)testContentSizeChangeKeepsNestedTextAttributesWithEmoji
+{
+  RCTTextInputComponentView *view = [[RCTTextInputComponentView alloc] initWithFrame:CGRectMake(0, 0, 200, 40)];
+  UITextField *textField = (UITextField *)view.subviews.firstObject;
+  [view updateState:RCTMakeTextInputState(@"Courier", " end \xF0\x9F\x98\x80") oldState:nullptr];
+  XCTAssertEqualObjects(RCTFontFamilyAtIndex(textField, 6), @"Courier");
+  // UIKit draws the emoji with a fallback font and keeps the font it replaced in NSOriginalFont.
+  XCTAssertTrue(RCTHasOriginalFont(textField));
+
+  [view traitCollectionDidChange:RCTOtherContentSizeTraitCollection()];
+
+  XCTAssertEqualObjects(textField.attributedText.string, @"plain word end \U0001F600");
   XCTAssertEqualObjects(RCTFontFamilyAtIndex(textField, 6), @"Courier");
   XCTAssertNotEqualObjects(RCTFontFamilyAtIndex(textField, 0), @"Courier");
 }

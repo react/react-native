@@ -170,7 +170,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)_reapplyStateAttributedString
 {
-  if (!_state || _backedTextInputView.markedTextRange) {
+  // Replacing the text breaks dictation and Korean input, as in `_textOf:equals:`.
+  NSString *primaryLanguage = _backedTextInputView.textInputMode.primaryLanguage;
+  if (!_state || _backedTextInputView.markedTextRange || [primaryLanguage isEqualToString:@"dictation"] ||
+      [primaryLanguage isEqualToString:@"ko-KR"]) {
     return;
   }
   const auto &data = _state->getData();
@@ -181,8 +184,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (![attributedString.string isEqualToString:_backedTextInputView.attributedText.string]) {
     return;
   }
+  // Skip `_textOf:equals:`: it compares only the strings, which are equal here, when the text has an emoji
+  // (NSOriginalFont) or is secure.
   _comingFromJS = YES;
-  [self _setAttributedString:attributedString];
+  [self _replaceAttributedString:attributedString];
   _comingFromJS = NO;
 }
 
@@ -877,6 +882,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if ([self _textOf:attributedString equals:_backedTextInputView.attributedText]) {
     return;
   }
+  [self _replaceAttributedString:attributedString];
+}
+
+- (void)_replaceAttributedString:(NSAttributedString *)attributedString
+{
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
   _backedTextInputView.attributedText = attributedString;
