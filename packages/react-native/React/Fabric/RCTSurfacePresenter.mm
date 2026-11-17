@@ -63,6 +63,19 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
  private:
   __weak RCTSurfacePresenter *surfacePresenter_;
 };
+
+// The key window can be missing at startup. Only on the main thread.
+UITraitCollection *currentTraitCollection()
+{
+  return RCTKeyWindow().traitCollection ?: UITraitCollection.currentTraitCollection;
+}
+
+MediaFeatures mediaFeaturesFromTraitCollection(UITraitCollection *traitCollection)
+{
+  return {
+      .colorScheme =
+          traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark ? ColorScheme::Dark : ColorScheme::Light};
+}
 } // namespace
 
 @implementation RCTSurfacePresenter {
@@ -109,11 +122,16 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
       _mergeRunLoopObserver->enable();
     }
 
+    [self _insertMediaFeaturesStore];
     _scheduler = [self _createScheduler];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_applicationWillTerminate)
                                                  name:UIApplicationWillTerminateNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_userInterfaceStyleDidChange:)
+                                                 name:RCTUserInterfaceStyleDidChangeNotification
                                                object:nil];
   }
 
@@ -334,6 +352,36 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
 - (void)_applicationWillTerminate
 {
   [self suspend];
+}
+
+#pragma mark - Media features
+
+// Before the scheduler is created, so that the first commit uses the current
+// media features.
+- (void)_insertMediaFeaturesStore
+{
+  _contextContainer->insert(kMediaFeaturesStoreKey, std::make_shared<MediaFeaturesStore>());
+  auto store = _contextContainer->at<std::shared_ptr<MediaFeaturesStore>>(kMediaFeaturesStoreKey);
+  store->set(mediaFeaturesFromTraitCollection(currentTraitCollection()));
+}
+
+- (void)_userInterfaceStyleDidChange:(NSNotification *)notification
+{
+  UITraitCollection *traitCollection =
+      notification.userInfo[RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey];
+  [self _updateMediaFeatures:traitCollection ?: currentTraitCollection()];
+}
+
+- (void)_updateMediaFeatures:(UITraitCollection *)traitCollection
+{
+  auto mediaFeatures = mediaFeaturesFromTraitCollection(traitCollection);
+  if (RCTScheduler *scheduler = [self scheduler]) {
+    [scheduler setMediaFeatures:mediaFeatures];
+  } else {
+    // Suspended: the next scheduler reads the store.
+    auto store = [self contextContainer]->at<std::shared_ptr<MediaFeaturesStore>>(kMediaFeaturesStoreKey);
+    store->set(mediaFeatures);
+  }
 }
 
 #pragma mark - RCTSchedulerDelegate
