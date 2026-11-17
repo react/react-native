@@ -401,9 +401,17 @@ using namespace facebook::react;
 
     RCTScreenSize();
     RCTScreenScale();
-    RCTSwitchSize();
 
     dispatch_semaphore_signal(moduleSetupComplete);
+
+    // RCTSwitchSize measures a UISwitch, which costs several milliseconds the first time (class
+    // loading). Warm it after startup instead of before the JS thread can start, and not right
+    // away either: on phones with two performance cores an extra main-thread task during the first
+    // render only competes with it. RCTSwitchSize still measures synchronously if a Switch is laid
+    // out before this runs.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(500 * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
+      RCTSwitchSize();
+    });
   });
 
   RCTLogSetBridgelessModuleRegistry(_bridgeModuleDecorator.moduleRegistry);
