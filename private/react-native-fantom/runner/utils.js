@@ -105,7 +105,7 @@ export function getBuckModesForPlatform({
         `@//fbcode/mode/${mode}`,
         // The tester and hermesc binaries are copied out of `buck-out`, so
         // they cannot depend on shared libraries next to them.
-        '--modifier=ovr_config//build_mode/constraints:static',
+        '--modifier=ovr_config//build_mode/constraints:default_link_style[static]',
       );
       break;
     }

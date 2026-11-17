@@ -27,7 +27,7 @@ class ScrollContentViewState final {
   /*
    * The safe area the content is laid out clear of, as a floor on the padding
    * the style sets. The enclosing scroll view sets the pair of edges across
-   * its scrollable axis.
+   * its scrollable axis for `automatic` and `always`.
    */
   EdgeInsets safeAreaPadding{};
 

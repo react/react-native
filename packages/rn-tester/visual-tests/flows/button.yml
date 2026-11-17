@@ -6,7 +6,7 @@ appId: ${APP_ID}
       EXAMPLE_URL: rntester://example/ButtonExample/default-styling
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'button_default_styling'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000
@@ -20,7 +20,7 @@ appId: ${APP_ID}
       EXAMPLE_URL: rntester://example/ButtonExample/disabled
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'disabled_button'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000
@@ -34,7 +34,7 @@ appId: ${APP_ID}
       EXAMPLE_URL: rntester://example/ButtonExample/color-red
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'cancel_button'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000
@@ -48,7 +48,7 @@ appId: ${APP_ID}
       EXAMPLE_URL: rntester://example/ButtonExample/two-buttons-flexbox
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'two_cancel_button'
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 5000
