@@ -124,11 +124,11 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 @end
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-// Each instance has its own packager connection, and the packager sends a command to every connection.
+// Each instance has its own packager connection, and a packager sends a command to every connection to it.
 // reload: the first handler triggers a reload, which retires every instance before the next handler runs.
-// devMenu: retires no instance, so the first live instance that claims a command owns commands until it retires.
-// A retired owner counts as no owner.
-static __weak RCTDevSettings *packagerCommandOwner;
+// devMenu: retires no instance, so for each packager the first live instance that claims it owns it until it
+// retires. A retired owner counts as no owner. Main queue only.
+static NSMapTable<NSString *, RCTDevSettings *> *devMenuOwners;
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
@@ -202,17 +202,25 @@ RCT_EXPORT_MODULE()
 #endif
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+  __weak __typeof(self) weakSelf = self;
   [self
-      _addPackagerCommandHandler:^(__unused RCTDevSettings *settings) {
-        RCTTriggerReloadCommandListeners(@"Global hotkey");
+      addNotificationHandler:^(__unused id params) {
+        if ([weakSelf _canHandlePackagerReload]) {
+          RCTTriggerReloadCommandListeners(@"Global hotkey");
+        }
       }
-                       forMethod:@"reload"];
+                       queue:dispatch_get_main_queue()
+                   forMethod:@"reload"];
 #if RCT_DEV_MENU
   [self
-      _addPackagerCommandHandler:^(RCTDevSettings *settings) {
-        [[settings.moduleRegistry moduleForName:"DevMenu"] show];
+      addNotificationHandler:^(__unused id params) {
+        __typeof(self) strongSelf = weakSelf;
+        if ([strongSelf _claimDevMenuForPackager:[strongSelf.bundleManager.bundleConfig getPackagerServerHost]]) {
+          [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
+        }
       }
-                       forMethod:@"devMenu"];
+                       queue:dispatch_get_main_queue()
+                   forMethod:@"devMenu"];
 #endif
 #endif
 
@@ -223,31 +231,26 @@ RCT_EXPORT_MODULE()
 }
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-- (void)_addPackagerCommandHandler:(void (^)(RCTDevSettings *settings))handler forMethod:(NSString *)method
+- (BOOL)_canHandlePackagerReload
 {
-  __weak __typeof(self) weakSelf = self;
-  [self
-      addNotificationHandler:^(__unused id params) {
-        __typeof(self) strongSelf = weakSelf;
-        if ([strongSelf _claimPackagerCommand]) {
-          handler(strongSelf);
-        }
-      }
-                       queue:dispatch_get_main_queue()
-                   forMethod:method];
+  return !_retired;
 }
 
-- (BOOL)_claimPackagerCommand
+- (BOOL)_claimDevMenuForPackager:(NSString *)packager
 {
   RCTAssertMainQueue();
   if (_retired) {
     return NO;
   }
-  RCTDevSettings *owner = packagerCommandOwner;
+  if (devMenuOwners == nil) {
+    devMenuOwners = [NSMapTable strongToWeakObjectsMapTable];
+  }
+  NSString *key = packager ?: @"";
+  RCTDevSettings *owner = [devMenuOwners objectForKey:key];
   if (owner != nil && owner != self && !owner->_retired) {
     return NO;
   }
-  packagerCommandOwner = self;
+  [devMenuOwners setObject:self forKey:key];
   return YES;
 }
 
