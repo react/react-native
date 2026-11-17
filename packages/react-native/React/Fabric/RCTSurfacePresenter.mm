@@ -360,6 +360,7 @@ MediaFeatures mediaFeaturesFromTraitCollection(UITraitCollection *traitCollectio
 // media features.
 - (void)_insertMediaFeaturesStore
 {
+  RCTAssertMainQueue();
   _contextContainer->insert(kMediaFeaturesStoreKey, std::make_shared<MediaFeaturesStore>());
   auto store = _contextContainer->at<std::shared_ptr<MediaFeaturesStore>>(kMediaFeaturesStoreKey);
   store->set(mediaFeaturesFromTraitCollection(currentTraitCollection()));
