@@ -18,7 +18,7 @@ import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
 const DARK = '@media (prefers-color-scheme: dark)';
 const LIGHT = '@media (prefers-color-scheme: light)';
@@ -250,6 +250,50 @@ describe('conditional values', () => {
     // The same color scheme again.
     Fantom.setColorScheme('dark');
     expect(root.takeMountingManagerLogs()).toEqual([]);
+  });
+
+  // Black is not in the output of text: it is the default text color.
+  it('updates the color of a text when the color scheme changes', () => {
+    const root = Fantom.createRoot();
+    render(
+      root,
+      <Text style={{color: conditional('white', DARK, 'navy')}}>hello</Text>,
+    );
+    const textOutput = () =>
+      root.getRenderedOutput({props: ['foregroundColor']}).toJSX();
+    expect(textOutput()).toEqual(
+      <rn-paragraph foregroundColor={WHITE}>hello</rn-paragraph>,
+    );
+
+    Fantom.setColorScheme('dark');
+    expect(textOutput()).toEqual(
+      <rn-paragraph foregroundColor={NAVY}>hello</rn-paragraph>,
+    );
+  });
+
+  it('updates the color of a nested text when the color scheme changes', () => {
+    const root = Fantom.createRoot();
+    render(
+      root,
+      <Text>
+        hello{' '}
+        <Text style={{color: conditional('white', DARK, 'navy')}}>world</Text>
+      </Text>,
+    );
+    const expected = (innerColor: string) => ({
+      type: 'Paragraph',
+      props: {foregroundColor: 'rgba(0, 0, 0, 0)'},
+      children: [
+        'hello ',
+        {type: 'Text', props: {foregroundColor: innerColor}, children: 'world'},
+      ],
+    });
+    const nestedOutput = () =>
+      root.getRenderedOutput({props: ['foregroundColor']}).toJSON();
+    expect(nestedOutput()).toEqual(expected(WHITE));
+
+    Fantom.setColorScheme('dark');
+    expect(nestedOutput()).toEqual(expected(NAVY));
   });
 
   it('keeps the updated value after a React update', () => {
