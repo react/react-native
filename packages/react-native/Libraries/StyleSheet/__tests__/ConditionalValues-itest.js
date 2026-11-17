@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @flow strict-local
- * @fantom_flags enableCppPropsIteratorSetter:*
+ * @fantom_flags enableCppPropsIteratorSetter:* useSharedAnimatedBackend:*
  * @format
  */
 
@@ -18,7 +18,7 @@ import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import {Text, View} from 'react-native';
+import {Animated, Text, View, useAnimatedValue} from 'react-native';
 
 const DARK = '@media (prefers-color-scheme: dark)';
 const LIGHT = '@media (prefers-color-scheme: light)';
@@ -196,6 +196,44 @@ describe('conditional values', () => {
 
     Fantom.setColorScheme('dark');
     expect(width()).toBe(200);
+  });
+
+  it('keeps the conditional value after a native animation', () => {
+    const root = Fantom.createRoot();
+    let opacity;
+    function App({testID}: {testID: string}) {
+      opacity = useAnimatedValue(1);
+      return (
+        <Animated.View
+          testID={testID}
+          style={{backgroundColor: whiteOrBlack, opacity}}
+        />
+      );
+    }
+    render(root, <App testID="a" />);
+
+    Fantom.runTask(() => {
+      Animated.timing(nullthrows(opacity), {
+        toValue: 0.5,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    });
+    Fantom.unstable_produceFramesForDuration(200);
+    Fantom.runWorkLoop();
+    expect(output(root)).toEqual(
+      <rn-view backgroundColor={WHITE} opacity="0.5" />,
+    );
+
+    Fantom.setColorScheme('dark');
+    expect(output(root)).toEqual(
+      <rn-view backgroundColor={BLACK} opacity="0.5" />,
+    );
+
+    render(root, <App testID="b" />);
+    expect(output(root)).toEqual(
+      <rn-view backgroundColor={BLACK} opacity="0.5" />,
+    );
   });
 
   it('keeps the updated value when React updates another view', () => {
