@@ -123,11 +123,20 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
       &static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode)
            .yogaConfig_;
 
+  // An unowned source can be appended and laid out again after this clone is
+  // committed (React does this when it shows a hidden subtree again), so it
+  // must not keep owning the children it now shares with this clone.
+  auto& sourceYogaNode =
+      static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode).yogaNode_;
+  if (YGNodeGetOwner(&sourceYogaNode) == nullptr) {
+    updateYogaChildrenOwnersIfNeeded(sourceYogaNode);
+  }
+
   YGNodeSetContext(&yogaNode_, this);
   yogaNode_.setOwner(nullptr);
   YGNodeSetConfig(
       &yogaNode_, &initializeYogaConfig(yogaConfig_, previousConfig));
-  updateYogaChildrenOwnersIfNeeded();
+  updateYogaChildrenOwnersIfNeeded(yogaNode_);
 
   // We do not need to reconfigure this subtree before the next layout pass if
   // the previous node with the same props and children has already been
@@ -332,7 +341,8 @@ bool YogaLayoutableShadowNode::shouldNewRevisionDirtyMeasurement(
 //
 // No-op in the common case: right after a clone, children's owner
 // pointers still reference the source node, not us.
-void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
+/*static*/ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded(
+    yoga::Node& yogaNode) {
   // Magic constant intentionally recognisable in debuggers when the address
   // pops up. `reinterpret_cast` is not constexpr, so this is a runtime-
   // initialised function-local static.
@@ -340,8 +350,8 @@ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
   static auto* const kDetachedYogaNodeOwnerSentinel =
       reinterpret_cast<yoga::Node*>(0xBADC0FFEE0DDF000ULL);
   // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
-  for (auto& childYogaNode : yogaNode_.getChildren()) {
-    if (YGNodeGetOwner(childYogaNode) == &yogaNode_) {
+  for (auto& childYogaNode : yogaNode.getChildren()) {
+    if (YGNodeGetOwner(childYogaNode) == &yogaNode) {
       childYogaNode->setOwner(kDetachedYogaNodeOwnerSentinel);
     }
   }
