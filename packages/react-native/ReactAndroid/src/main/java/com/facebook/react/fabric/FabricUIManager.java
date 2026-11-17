@@ -1121,6 +1121,7 @@ public class FabricUIManager
 
   /** Updates the media features, for example the color scheme, from the configuration. */
   @UiThread
+  @UnstableReactNativeAPI
   public void onConfigurationChanged(Context context) {
     if (mBinding != null) {
       mBinding.setDarkMode(UiModeUtils.isDarkMode(context));
