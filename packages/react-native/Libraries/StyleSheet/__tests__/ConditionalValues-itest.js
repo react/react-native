@@ -181,6 +181,23 @@ describe('conditional values', () => {
     expect(output(root)).toEqual(<rn-view backgroundColor={WHITE} />);
   });
 
+  it('updates the layout when the color scheme changes', () => {
+    const root = Fantom.createRoot();
+    const ref = createRef<HostInstance>();
+    render(
+      root,
+      <View
+        ref={ref}
+        style={{width: conditional(100, DARK, 200), height: 10}}
+      />,
+    );
+    const width = () => nullthrows(ref.current).getBoundingClientRect().width;
+    expect(width()).toBe(100);
+
+    Fantom.setColorScheme('dark');
+    expect(width()).toBe(200);
+  });
+
   it('keeps the updated value when React updates another view', () => {
     const root = Fantom.createRoot();
     const renderWithOpacity = (opacity: number) =>
