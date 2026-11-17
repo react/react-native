@@ -126,17 +126,16 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 // Each instance has its own packager connection, and the packager sends a command to every connection.
 // RCTTriggerReloadCommandListeners reloads every host, so only one live instance handles packager commands.
-// Accessed on the main queue only.
+// A retired owner counts as no owner. Accessed on the main queue only.
 static __weak RCTDevSettings *packagerCommandOwner;
-// Counts packager reloads. A reload replaces every instance, so an instance of an earlier generation
-// must not handle a command again, also when it is not invalidated yet.
-static constinit std::atomic<NSUInteger> packagerReloadGeneration{0};
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
-  BOOL _invalidated;
-  NSUInteger _packagerReloadGeneration;
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+  // Set by any reload and by invalidate. A retired instance never handles a packager command.
+  std::atomic<bool> _retired;
+#endif
 }
 
 @property (nonatomic, strong) Class executorClass;
@@ -185,6 +184,12 @@ RCT_EXPORT_MODULE()
                                              selector:@selector(jsLoaded:)
                                                  name:@"RCTInstanceDidLoadBundle"
                                                object:nil];
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(reloadCommandTriggered:)
+                                                 name:RCTTriggerReloadCommandNotification
+                                               object:nil];
+#endif
   }
   return self;
 }
@@ -196,29 +201,17 @@ RCT_EXPORT_MODULE()
 #endif
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  _packagerReloadGeneration = packagerReloadGeneration;
-  __weak __typeof(self) weakSelf = self;
   [self
-      addNotificationHandler:^(id params) {
-        if (![weakSelf _claimPackagerCommand]) {
-          return;
-        }
-        packagerReloadGeneration++;
+      _addPackagerCommandHandler:^(__unused RCTDevSettings *settings) {
         RCTTriggerReloadCommandListeners(@"Global hotkey");
       }
-                       queue:dispatch_get_main_queue()
-                   forMethod:@"reload"];
+                       forMethod:@"reload"];
 #if RCT_DEV_MENU
   [self
-      addNotificationHandler:^(id params) {
-        __typeof(self) strongSelf = weakSelf;
-        if (![strongSelf _claimPackagerCommand]) {
-          return;
-        }
-        [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
+      _addPackagerCommandHandler:^(RCTDevSettings *settings) {
+        [[settings.moduleRegistry moduleForName:"DevMenu"] show];
       }
-                       queue:dispatch_get_main_queue()
-                   forMethod:@"devMenu"];
+                       forMethod:@"devMenu"];
 #endif
 #endif
 
@@ -229,16 +222,36 @@ RCT_EXPORT_MODULE()
 }
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+- (void)_addPackagerCommandHandler:(void (^)(RCTDevSettings *settings))handler forMethod:(NSString *)method
+{
+  __weak __typeof(self) weakSelf = self;
+  [self
+      addNotificationHandler:^(__unused id params) {
+        __typeof(self) strongSelf = weakSelf;
+        if ([strongSelf _claimPackagerCommand]) {
+          handler(strongSelf);
+        }
+      }
+                       queue:dispatch_get_main_queue()
+                   forMethod:method];
+}
+
 - (BOOL)_claimPackagerCommand
 {
-  if (_invalidated || _packagerReloadGeneration != packagerReloadGeneration) {
+  if (_retired) {
     return NO;
   }
-  if (packagerCommandOwner != nil && packagerCommandOwner != self) {
+  RCTDevSettings *owner = packagerCommandOwner;
+  if (owner != nil && owner != self && !owner->_retired) {
     return NO;
   }
   packagerCommandOwner = self;
   return YES;
+}
+
+- (void)reloadCommandTriggered:(__unused NSNotification *)notification
+{
+  _retired = true;
 }
 #endif
 
@@ -250,13 +263,11 @@ RCT_EXPORT_MODULE()
 - (void)invalidate
 {
   [super invalidate];
-  _invalidated = YES;
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  if (packagerCommandOwner == self) {
-    packagerCommandOwner = nil;
-  }
+  _retired = true;
 #endif
 #if RCT_DEV
+  // stop removes the handlers, but a command already queued on the main queue still runs; _retired stops it.
   [_packagerConnection stop];
 #endif
 }
