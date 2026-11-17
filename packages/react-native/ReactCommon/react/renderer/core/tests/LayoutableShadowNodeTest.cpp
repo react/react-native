@@ -995,6 +995,135 @@ TEST(LayoutableShadowNodeTest, includeViewportOffset) {
 }
 
 /*
+ * ┌─────────────────────────────┐
+ * │<Root viewportOffset>        │
+ * │ ┌──────────────────────────┐│
+ * │ │<Modal viewportOffset>    ││
+ * │ │     ┌───────────┐        ││
+ * │ │     │<View>     │        ││
+ * │ │     │           │        ││
+ * │ │     └───────────┘        ││
+ * │ └──────────────────────────┘│
+ * └─────────────────────────────┘
+ */
+// We're not running these on Android for the same reason as
+// `relativeLayoutMetricsOnNodesCrossingRootKindNode`.
+#ifndef ANDROID
+TEST(
+    LayoutableShadowNodeTest,
+    includeViewportOffsetOnNodesCrossingRootKindNode) {
+  auto builder = simpleComponentBuilder();
+  auto childShadowNode = std::shared_ptr<ViewShadowNode>{};
+
+  // clang-format off
+  auto element =
+      Element<RootShadowNode>()
+        .props([] {
+          auto sharedProps = std::make_shared<RootProps>();
+          sharedProps->layoutContext.viewportOffset = {.x=100, .y=200};
+          return sharedProps;
+        })
+        .children({
+          Element<ModalHostViewShadowNode>()
+            .finalize([](ModalHostViewShadowNode &shadowNode){
+              auto layoutMetrics = EmptyLayoutMetrics;
+              layoutMetrics.frame.origin = {.x=10, .y=20};
+              shadowNode.setLayoutMetrics(layoutMetrics);
+              shadowNode.setStateData(
+                  ModalHostViewState{Size{}, Point{.x=30, .y=40}});
+            })
+            .children({
+              Element<ViewShadowNode>()
+              .reference(childShadowNode)
+              .finalize([](ViewShadowNode &shadowNode){
+                auto layoutMetrics = EmptyLayoutMetrics;
+                layoutMetrics.frame.origin = {.x=1, .y=2};
+                shadowNode.setLayoutMetrics(layoutMetrics);
+              })
+            })
+        });
+  // clang-format on
+
+  auto rootShadowNode = builder.build(element);
+
+  // The modal is a RootKindNode, so the view is only offset by the viewport
+  // offset of the modal, and not by the one of the root.
+  auto layoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
+      childShadowNode->getFamily(),
+      *rootShadowNode,
+      {.includeTransform = true, .includeViewportOffset = true});
+  EXPECT_EQ(layoutMetrics.frame.origin.x, 31);
+  EXPECT_EQ(layoutMetrics.frame.origin.y, 42);
+
+  layoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
+      childShadowNode->getFamily(),
+      *rootShadowNode,
+      {.includeTransform = true, .includeViewportOffset = false});
+  EXPECT_EQ(layoutMetrics.frame.origin.x, 1);
+  EXPECT_EQ(layoutMetrics.frame.origin.y, 2);
+}
+
+/*
+ * ┌─────────────────────────────┐
+ * │<Root viewportOffset>        │
+ * │ ┌──────────────────────────┐│
+ * │ │<Modal viewportOffset>    ││
+ * │ └──────────────────────────┘│
+ * └─────────────────────────────┘
+ */
+TEST(LayoutableShadowNodeTest, includeViewportOffsetOnRootKindNode) {
+  auto builder = simpleComponentBuilder();
+  auto modalShadowNode = std::shared_ptr<ModalHostViewShadowNode>{};
+
+  // clang-format off
+  auto element =
+      Element<RootShadowNode>()
+        .props([] {
+          auto sharedProps = std::make_shared<RootProps>();
+          sharedProps->layoutContext.viewportOffset = {.x=100, .y=200};
+          return sharedProps;
+        })
+        .children({
+          Element<ModalHostViewShadowNode>()
+            .reference(modalShadowNode)
+            .finalize([](ModalHostViewShadowNode &shadowNode){
+              auto layoutMetrics = EmptyLayoutMetrics;
+              layoutMetrics.frame.origin = {.x=10, .y=20};
+              layoutMetrics.frame.size = {.width=50, .height=60};
+              shadowNode.setLayoutMetrics(layoutMetrics);
+              shadowNode.setStateData(
+                  ModalHostViewState{Size{}, Point{.x=30, .y=40}});
+            })
+        });
+  // clang-format on
+
+  auto rootShadowNode = builder.build(element);
+
+  // The modal is measured from an outside tree perspective, so it is offset by
+  // the viewport offset of the root, and not by its own one.
+  auto layoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
+      modalShadowNode->getFamily(),
+      *rootShadowNode,
+      {.includeTransform = true, .includeViewportOffset = true});
+  EXPECT_EQ(layoutMetrics.frame.origin.x, 110);
+  EXPECT_EQ(layoutMetrics.frame.origin.y, 220);
+
+  // Its own viewport offset doesn't clip it either.
+  layoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
+      modalShadowNode->getFamily(),
+      *rootShadowNode,
+      {.includeTransform = true,
+       .includeViewportOffset = true,
+       .enableOverflowClipping = true,
+       .clipSpecifiedAncestor = false});
+  EXPECT_EQ(layoutMetrics.frame.origin.x, 110);
+  EXPECT_EQ(layoutMetrics.frame.origin.y, 220);
+  EXPECT_EQ(layoutMetrics.frame.size.width, 50);
+  EXPECT_EQ(layoutMetrics.frame.size.height, 60);
+}
+#endif
+
+/*
  * ┌───────────────────────────────┐
  * │ <View verticallyInverted>     │
  * │                               │
