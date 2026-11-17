@@ -17,6 +17,16 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
+jest.mock('../codegen-utils', () => ({
+  getCodegen: () => ({
+    generate: ({outputDirectory}: {outputDirectory: string}) => {
+      const {writeFileSync} = require('node:fs');
+      const {join} = require('node:path');
+      writeFileSync(join(outputDirectory, 'TestSpec.h'), 'generated code');
+    },
+  }),
+}));
+
 let root: string;
 let temp: string;
 let output: string;
@@ -45,7 +55,9 @@ it('removes temporary artifacts after copying the generated files', () => {
     'ios',
   );
 
-  expect(fs.readdirSync(output)).not.toHaveLength(0);
+  expect(fs.readFileSync(path.join(output, 'TestSpec.h'), 'utf8')).toBe(
+    'generated code',
+  );
   expect(fs.readdirSync(temp)).toEqual([]);
 });
 
