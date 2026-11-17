@@ -65,6 +65,7 @@ jobs:
               - '**'
               - '!**/__docs__/**'
               - '!**/*.md'
+              - '!**/LICENSE'
             should_test_android:
               # Not an isolated iOS change
               - '**'
