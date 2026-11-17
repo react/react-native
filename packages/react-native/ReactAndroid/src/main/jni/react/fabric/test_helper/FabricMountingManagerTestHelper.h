@@ -35,6 +35,10 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   void queuePreallocation(jint surfaceId, jint tag);
   void drainPreallocationQueue();
   void executeCreateMutation(jint surfaceId, jint tag);
+  void executeDeleteMutation(jint surfaceId, jint tag);
+  // Marks the family of a view queued by queuePreallocation as part of a
+  // committed tree, as ShadowTree's commit does.
+  void commitQueuedView(jint tag);
   void dropFamily(jint tag);
   void destroyUnmountedView(jint surfaceId, jint tag);
   void destroyCommittedView(jint surfaceId, jint tag);
@@ -65,6 +69,8 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   friend HybridBase;
 
   explicit FabricMountingManagerTestHelper(jni::alias_ref<JFabricUIManager::javaobject> jFabricUIManager);
+
+  void executeMutation(jint surfaceId, ShadowViewMutation mutation);
 
   static void initHybrid(
       jni::alias_ref<jhybridobject> jobj,
