@@ -14,6 +14,7 @@ import com.facebook.react.bridge.UIManager
 import com.facebook.react.bridge.UIManagerProvider
 import com.facebook.react.fabric.events.EventBeatManager
 import com.facebook.react.uimanager.ViewManagerRegistry
+import com.facebook.react.views.common.UiModeUtils
 import com.facebook.systrace.Systrace
 
 /**
@@ -65,6 +66,7 @@ public class FabricUIManagerProviderImpl(
           fabricUIManager,
           eventBeatManager,
           componentFactory,
+          UiModeUtils.isDarkMode(context.currentActivity ?: context),
       )
     } else {
       throw IllegalStateException(
