@@ -254,7 +254,7 @@ export function runCommandSync(
     status: result.status,
     signal: result.signal,
     error: result.error,
-    stdout: result.stdout.toString(),
+    stdout: result.stdout?.toString() ?? '',
     stderr: result.stderr?.toString() ?? '',
   };
 }
