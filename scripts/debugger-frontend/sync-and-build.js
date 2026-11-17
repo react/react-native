@@ -193,7 +193,7 @@ async function buildDebuggerFrontend(
     await cleanPackageFiles(destPathInPackage);
 
     await copyFrontendFilesToPackage(buildPath, destPathInPackage);
-    await copyLicenseToPackage(checkoutPath, [packagePath, destPathInPackage]);
+    await copyLicenseToPackage(checkoutPath, destPathInPackage);
   }
   await generateBuildInfo({
     checkoutPath,
@@ -334,18 +334,14 @@ async function copyFrontendFilesToPackage(
 
 async function copyLicenseToPackage(
   checkoutPath /*: string */,
-  destDirs /*: ReadonlyArray<string> */,
+  destPathInPackage /*: string */,
 ) {
   process.stdout.write(
     'Copying LICENSE from devtools-frontend to debugger-frontend package\n\n',
   );
-  await Promise.all(
-    destDirs.map(destDir =>
-      fs.copyFile(
-        path.join(checkoutPath, 'LICENSE'),
-        path.join(destDir, 'LICENSE'),
-      ),
-    ),
+  await fs.copyFile(
+    path.join(checkoutPath, 'LICENSE'),
+    path.join(destPathInPackage, 'LICENSE'),
   );
 }
 
