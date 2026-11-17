@@ -125,15 +125,16 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 // Each instance has its own packager connection, and the packager sends a command to every connection.
-// RCTTriggerReloadCommandListeners reloads every host, so only one live instance handles packager commands.
-// A retired owner counts as no owner. Accessed on the main queue only.
+// reload: the first handler triggers a reload, which retires every instance before the next handler runs.
+// devMenu: retires no instance, so the first live instance that claims a command owns commands until it retires.
+// A retired owner counts as no owner.
 static __weak RCTDevSettings *packagerCommandOwner;
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  // Set by any reload and by invalidate. A retired instance never handles a packager command.
+  // Set by RCTTriggerReloadCommandListeners and by invalidate. A retired instance never handles a packager command.
   std::atomic<bool> _retired;
 #endif
 }
@@ -186,7 +187,7 @@ RCT_EXPORT_MODULE()
                                                object:nil];
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(reloadCommandTriggered:)
+                                             selector:@selector(_retire:)
                                                  name:RCTTriggerReloadCommandNotification
                                                object:nil];
 #endif
@@ -238,6 +239,7 @@ RCT_EXPORT_MODULE()
 
 - (BOOL)_claimPackagerCommand
 {
+  RCTAssertMainQueue();
   if (_retired) {
     return NO;
   }
@@ -249,7 +251,7 @@ RCT_EXPORT_MODULE()
   return YES;
 }
 
-- (void)reloadCommandTriggered:(__unused NSNotification *)notification
+- (void)_retire:(__unused NSNotification *)notification
 {
   _retired = true;
 }
@@ -264,7 +266,7 @@ RCT_EXPORT_MODULE()
 {
   [super invalidate];
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  _retired = true;
+  [self _retire:nil];
 #endif
 #if RCT_DEV
   // stop removes the handlers, but a command already queued on the main queue still runs; _retired stops it.
