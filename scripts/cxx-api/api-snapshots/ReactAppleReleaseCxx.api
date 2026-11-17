@@ -1614,6 +1614,7 @@ interface RCTScheduler : public NSObject {
   public virtual void removeEventListener:(const std::shared_ptr<facebook::react::EventListener>& listener);
   public virtual void reportMount:(facebook::react::SurfaceId surfaceId);
   public virtual void setupAnimationDriver:(const facebook::react::SurfaceHandler& surfaceHandler);
+  public virtual void stopObservingLayoutAnimations();
   public virtual void unregisterSurface:(const facebook::react::SurfaceHandler& surfaceHandler);
 }
 
