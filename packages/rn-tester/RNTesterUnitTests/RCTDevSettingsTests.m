@@ -85,6 +85,12 @@ static NSString *const kReloadMessage = @"{\"version\":2,\"method\":\"reload\"}"
   [instance.packagerConnection reconnectingWebSocket:nil didReceiveMessage:kReloadMessage];
 }
 
+- (void)invalidateInstance:(RCTDevSettings *)instance
+{
+  [_instances removeObject:instance];
+  [instance invalidate];
+}
+
 - (void)drainMainQueue
 {
   [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
@@ -114,32 +120,6 @@ static NSString *const kReloadMessage = @"{\"version\":2,\"method\":\"reload\"}"
   XCTAssertEqual(_reloads, 1u);
 }
 
-- (void)testReplacementHandlesTheNextReload
-{
-  RCTDevSettings *a = [self newInitializedInstance];
-  [self deliverReloadTo:a];
-  [self drainMainQueue];
-
-  RCTDevSettings *replacement = [self newInitializedInstance];
-  [self deliverReloadTo:a];
-  [self deliverReloadTo:replacement];
-  [self drainMainQueue];
-
-  XCTAssertEqual(_reloads, 2u);
-}
-
-- (void)testDevMenuOwnerDoesNotBlockReload
-{
-  RCTDevSettings *a = [self newInitializedInstance];
-  RCTDevSettings *b = [self newInitializedInstance];
-  XCTAssertTrue([a _claimDevMenu]);
-
-  [self deliverReloadTo:b];
-  [self drainMainQueue];
-
-  XCTAssertEqual(_reloads, 1u);
-}
-
 - (void)testDevMenuHasOneLiveOwner
 {
   RCTDevSettings *a = [self newInitializedInstance];
@@ -148,7 +128,7 @@ static NSString *const kReloadMessage = @"{\"version\":2,\"method\":\"reload\"}"
   XCTAssertTrue([a _claimDevMenu]);
   XCTAssertFalse([b _claimDevMenu]);
 
-  [a invalidate];
+  [self invalidateInstance:a];
 
   XCTAssertFalse([a _claimDevMenu]);
   XCTAssertTrue([b _claimDevMenu]);

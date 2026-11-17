@@ -124,17 +124,14 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 @end
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-// Each instance has its own packager connection, and a packager sends a command to every connection to it.
-// reload: the first handler triggers a reload, which retires every instance before the next handler runs.
-// devMenu: retires no instance, so the first live instance that claims it owns it until it retires, also for
-// hosts on another packager. A retired owner counts as no owner. Main queue only.
+// A packager sends each command to every connection, one per instance. The first reload handler retires every
+// instance before the next one runs. devMenu retires nobody, so one live instance owns it until it retires.
 static __weak RCTDevSettings *devMenuOwner;
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  // Set by RCTTriggerReloadCommandListeners and by invalidate. A retired instance never handles a packager command.
   std::atomic<bool> _retired;
 #endif
 }
