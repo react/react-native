@@ -44,6 +44,26 @@ class Scheduler final : public UIManagerDelegate {
       const SchedulerToolbox &schedulerToolbox,
       UIManagerAnimationDelegate *animationDelegate,
       SchedulerDelegate *delegate);
+
+  /*
+   * Same as above, but adopts a `UIManager` created with
+   * `createUIManagerWithBinding`: its JS binding has already been scheduled, so
+   * the constructor does not install it again. Lets a platform install the
+   * binding (which must precede bundle evaluation) before paying for the rest
+   * of the Scheduler (component registry, event dispatcher, ...).
+   */
+  Scheduler(
+      const SchedulerToolbox &schedulerToolbox,
+      UIManagerAnimationDelegate *animationDelegate,
+      SchedulerDelegate *delegate,
+      std::shared_ptr<UIManager> uiManager);
+
+  /*
+   * Creates the `UIManager` and schedules the installation of its JS binding
+   * through the toolbox's bindings executor (or runtime executor). The result
+   * must be handed to the constructor above.
+   */
+  static std::shared_ptr<UIManager> createUIManagerWithBinding(const SchedulerToolbox &schedulerToolbox);
   ~Scheduler() override;
 
 #pragma mark - Surface Management

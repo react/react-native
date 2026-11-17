@@ -33,6 +33,16 @@ internal class FabricUIManagerBinding : HybridClassBase() {
       componentsRegistry: ComponentFactory,
   )
 
+  private external fun prepareFabricUIManager(
+      runtimeExecutor: RuntimeExecutor,
+      runtimeScheduler: RuntimeScheduler,
+      uiManager: FabricUIManager,
+      eventBeatManager: EventBeatManager,
+      componentsRegistry: ComponentFactory,
+  )
+
+  private external fun completeFabricUIManagerInstall()
+
   external fun startSurface(surfaceId: Int, moduleName: String, initialProps: NativeMap?)
 
   external fun startSurfaceWithConstraints(
@@ -105,6 +115,35 @@ internal class FabricUIManagerBinding : HybridClassBase() {
         eventBeatManager,
         componentFactory,
     )
+    setPixelDensity(getDisplayMetricDensity())
+  }
+
+  /**
+   * First half of [register]: creates the UIManager and schedules its JS binding, which must run on
+   * the JS thread before the bundle is evaluated. Follow with [completeRegistration], which may run
+   * after the bundle load has been posted so that evaluation does not wait for it.
+   */
+  fun prepare(
+      runtimeExecutor: RuntimeExecutor,
+      runtimeScheduler: RuntimeScheduler,
+      fabricUIManager: FabricUIManager,
+      eventBeatManager: EventBeatManager,
+      componentFactory: ComponentFactory,
+  ) {
+    fabricUIManager.setBinding(this)
+
+    prepareFabricUIManager(
+        runtimeExecutor,
+        runtimeScheduler,
+        fabricUIManager,
+        eventBeatManager,
+        componentFactory,
+    )
+  }
+
+  /** Second half of [register]: builds the Scheduler. */
+  fun completeRegistration() {
+    completeFabricUIManagerInstall()
     setPixelDensity(getDisplayMetricDensity())
   }
 

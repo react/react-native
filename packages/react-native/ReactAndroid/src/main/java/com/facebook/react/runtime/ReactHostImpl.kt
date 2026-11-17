@@ -1057,6 +1057,12 @@ public class ReactHostImpl(
                 stateTracker.enterState(method, "Loading JS Bundle")
                 instance.loadJSBundle(bundleLoader)
 
+                // Build the Fabric Scheduler while the JS thread evaluates the bundle. Its JS
+                // binding was already scheduled by the ReactInstance constructor, ahead of the
+                // bundle, so evaluation sees the same globals as before.
+                stateTracker.enterState(method, "Initializing Fabric")
+                instance.initializeFabric()
+
                 stateTracker.enterState(
                     method,
                     "DevSupportManager.onNewReactContextCreated()",
