@@ -97,11 +97,12 @@ describe('package file structure', () => {
     for (const name of Object.keys(packages)) {
       const {packageJson, path: packagePath} = packages[name];
       const licensePath = path.join(packagePath, 'LICENSE');
+      const licenseIds = (packageJson.license ?? '').split(/\s+(?:AND|OR)\s+/);
 
       if (!existsSync(licensePath)) {
         violations.push(`${name}: missing LICENSE`);
       } else if (
-        packageJson.license === 'MIT' &&
+        licenseIds.includes('MIT') &&
         readFileSync(licensePath, 'utf8') !== rootLicense
       ) {
         violations.push(`${name}: LICENSE does not match the root LICENSE`);
