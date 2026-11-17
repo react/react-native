@@ -622,9 +622,12 @@ void FabricMountingManager::executeMount(
   // Create item already passes to Java. Their Insert skips its UpdateState and
   // UpdateEventEmitter items when they would carry the same objects. The
   // pointers are compared rather than assumed equal because the mutation list
-  // is not always a single diff: schedulerDidFinishTransaction merges pending
-  // transactions (MountingTransaction::mergeWith) and mounting override
-  // delegates rewrite it, so one tag can appear with more than one revision.
+  // is not always a single diff: schedulerDidFinishTransaction concatenates
+  // pending transactions (MountingTransaction::mergeWith), so one tag can
+  // appear with more than one revision.
+  // TODO: Simplify this to a plain set of tags once transactions are pulled
+  // in schedulerShouldRenderTransactions, i.e. when
+  // enableAccumulatedUpdatesInRawPropsAndroid is rolled out.
   struct CreatedView {
     const State* state;
     const EventEmitter* eventEmitter;
