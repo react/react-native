@@ -13,6 +13,7 @@
 #include <react/debug/flags.h>
 #include <react/renderer/components/modal/ModalHostViewShadowNode.h>
 #include <react/renderer/components/scrollview/ScrollViewShadowNode.h>
+#include <react/renderer/core/MediaFeatures.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <algorithm>
 #include <fstream>
@@ -255,6 +256,19 @@ void NativeFantom::enqueueModalSizeUpdate(
   state->updateState(ModalHostViewState(
       {.width = static_cast<Float>(width),
        .height = static_cast<Float>(height)}));
+}
+
+void NativeFantom::setColorScheme(
+    jsi::Runtime& runtime,
+    const std::string& colorScheme) {
+  auto contextContainer = UIManagerBinding::getBinding(runtime)
+                              ->getUIManager()
+                              .getContextContainer();
+  auto store = contextContainer->at<std::shared_ptr<MediaFeaturesStore>>(
+      kMediaFeaturesStoreKey);
+  store->set(
+      {.colorScheme =
+           colorScheme == "dark" ? ColorScheme::Dark : ColorScheme::Light});
 }
 
 jsi::Function NativeFantom::createShadowNodeReferenceCounter(

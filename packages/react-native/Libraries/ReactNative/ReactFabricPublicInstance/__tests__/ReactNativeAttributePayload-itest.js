@@ -12,6 +12,9 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {AttributeConfiguration} from '../../../Renderer/shims/ReactNativeTypes';
 
+import ReactNativeStyleAttributes from '../../../Components/View/ReactNativeStyleAttributes';
+import processColor from '../../../StyleSheet/processColor';
+
 const {create, diff} = require('../ReactNativeAttributePayload');
 
 describe('ReactNativeAttributePayload.create', () => {
@@ -491,5 +494,340 @@ describe('ReactNativeAttributePayload.diff', () => {
       ),
     ).toEqual({a: nextFunction});
     expect(process).toBeCalled();
+  });
+});
+
+describe('ReactNativeAttributePayload with conditional style values', () => {
+  const DARK = '@media (prefers-color-scheme: dark)';
+  const validAttributes: AttributeConfiguration = {
+    style: ReactNativeStyleAttributes,
+  };
+  const white = processColor('white');
+  const black = processColor('black');
+  const red = processColor('red');
+  const conditional = {default: 'white', [DARK]: 'black'};
+  // A conditional value, as native gets it.
+  const sent = (defaultValue: unknown, value: unknown) => ({
+    $conditionalValue: {
+      default: defaultValue,
+      conditions: [{query: {colorScheme: 'dark'}, value}],
+    },
+  });
+  const whiteOrBlack = sent(white, black);
+  const flag = {$hasConditionalValues: true};
+
+  it('create: sends the default and the processed conditions', () => {
+    expect(
+      create(
+        {style: {width: 100, backgroundColor: conditional}},
+        validAttributes,
+      ),
+    ).toEqual({width: 100, backgroundColor: whiteOrBlack, ...flag});
+  });
+
+  it('create: a later plain value replaces the conditions', () => {
+    // A later plain value wins. The flag stays, and native handles that.
+    expect(
+      create(
+        {style: [{backgroundColor: conditional}, {backgroundColor: 'red'}]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: red, ...flag});
+  });
+
+  it('create: leaves the value as it is if the style does not allow conditions', () => {
+    const value = {default: 1, [DARK]: 0.5};
+    expect(create({style: {opacity: value}}, {style: {opacity: true}})).toEqual(
+      {opacity: value},
+    );
+  });
+
+  it('diff: sends nothing when the value is the same', () => {
+    expect(
+      diff(
+        {style: [{backgroundColor: {default: 'white', [DARK]: 'black'}}]},
+        {style: [{backgroundColor: {default: 'white', [DARK]: 'black'}}]},
+        validAttributes,
+      ),
+    ).toEqual(null);
+  });
+
+  it('diff: sends the default and the conditions when a condition changes', () => {
+    expect(
+      diff(
+        {style: {width: 100, backgroundColor: conditional}},
+        {
+          style: {
+            width: 100,
+            backgroundColor: {default: 'white', [DARK]: 'red'},
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: sent(white, red), ...flag});
+  });
+
+  it('diff: sends the plain value when the value stops being conditional', () => {
+    expect(
+      diff(
+        {style: {backgroundColor: conditional}},
+        {style: {backgroundColor: 'white'}},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: white});
+  });
+
+  it('diff: sends the default and the conditions when a value becomes conditional', () => {
+    expect(
+      diff(
+        {style: [{width: 100}, {backgroundColor: 'white'}]},
+        {style: [{width: 100}, {backgroundColor: conditional}]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: whiteOrBlack, ...flag});
+  });
+
+  it('diff: clears the value when the style is removed', () => {
+    expect(
+      diff({style: {backgroundColor: conditional}}, {}, validAttributes),
+    ).toEqual({backgroundColor: null});
+  });
+
+  it('diff: a plain value added later in the array replaces the conditions', () => {
+    const base = {backgroundColor: conditional};
+    expect(
+      diff(
+        {style: [base]},
+        {style: [base, {backgroundColor: 'red'}]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: red});
+  });
+
+  it('diff: removing a later plain value restores the earlier conditions', () => {
+    const base = {backgroundColor: conditional};
+    expect(
+      diff(
+        {style: [base, {backgroundColor: 'red'}]},
+        {style: [base]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: whiteOrBlack, ...flag});
+  });
+
+  it('diff: an earlier change does not hide a later conditional value', () => {
+    const base = {backgroundColor: conditional};
+    expect(
+      diff(
+        {style: [{backgroundColor: 'red'}, base]},
+        {style: [{backgroundColor: 'blue'}, base]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: whiteOrBlack, ...flag});
+  });
+
+  it('diff: compares conditional values deeply for attributes with a custom diff', () => {
+    expect(
+      diff(
+        {
+          style: {
+            shadowOffset: {
+              default: {width: 1, height: 1},
+              [DARK]: {width: 2, height: 2},
+            },
+          },
+        },
+        {
+          style: {
+            shadowOffset: {
+              default: {width: 1, height: 1},
+              [DARK]: {width: 3, height: 3},
+            },
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({
+      shadowOffset: sent({width: 1, height: 1}, {width: 3, height: 3}),
+      ...flag,
+    });
+  });
+
+  it('never sends undefined for a conditional value', () => {
+    const plain = {backgroundColor: 'red'};
+    // A later plain value wins. The flag stays, and native handles that.
+    expect(
+      diff(
+        {style: [{backgroundColor: 'blue'}, plain]},
+        {
+          style: [
+            {backgroundColor: {default: 'notacolor', [DARK]: 'white'}},
+            plain,
+          ],
+        },
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: red, ...flag});
+  });
+
+  it('diff: a changed later plain value replaces earlier conditions', () => {
+    // A later plain value wins. The flag stays, and native handles that.
+    expect(
+      diff(
+        {style: [{backgroundColor: 'blue'}, {backgroundColor: 'red'}]},
+        {style: [{backgroundColor: conditional}, {backgroundColor: 'green'}]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: processColor('green'), ...flag});
+  });
+
+  it('create: a user style key cannot set the native keys', () => {
+    expect(
+      create(
+        {
+          style: {
+            backgroundColor: 'red',
+            $hasConditionalValues: true,
+            $conditionalValue: {default: 1},
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: red});
+  });
+
+  it('create: leaves a non-style prop with a default key as it is', () => {
+    const value = {default: 1};
+    expect(
+      create(
+        {config: value, style: {opacity: 1}},
+        {config: true, style: ReactNativeStyleAttributes},
+      ),
+    ).toEqual({config: value, opacity: 1});
+  });
+
+  it('create: sends null for an invalid default', () => {
+    expect(
+      create(
+        {style: {backgroundColor: {default: 'notacolor', [DARK]: 'black'}}},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: sent(null, black), ...flag});
+  });
+
+  it('create: sends null for a value without a default', () => {
+    const errors: Array<unknown> = [];
+    const originalError = console.error;
+    // $FlowExpectedError[cannot-write]
+    console.error = (message: unknown) => {
+      errors.push(message);
+    };
+    try {
+      expect(
+        create(
+          {style: {width: 100, backgroundColor: {[DARK]: 'black'}}},
+          validAttributes,
+        ),
+      ).toEqual({width: 100, backgroundColor: null});
+    } finally {
+      // $FlowExpectedError[cannot-write]
+      console.error = originalError;
+    }
+    expect(errors.length).toBe(1);
+  });
+
+  it('create: sends a default without conditions as a plain value', () => {
+    expect(
+      create({style: {backgroundColor: {default: 'white'}}}, validAttributes),
+    ).toEqual({backgroundColor: white});
+  });
+
+  it('create: keeps null values as null', () => {
+    expect(
+      create(
+        {style: {backgroundColor: {default: null, [DARK]: null}}},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: sent(null, null), ...flag});
+  });
+
+  it('create: sends raw values for a prop without a processor, and each key', () => {
+    expect(
+      create(
+        {
+          style: {
+            opacity: {default: 1, [DARK]: 0.5},
+            backgroundColor: conditional,
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({
+      opacity: sent(1, 0.5),
+      backgroundColor: whiteOrBlack,
+      ...flag,
+    });
+  });
+
+  it('create: finds conditional values in nested arrays', () => {
+    expect(
+      create(
+        {style: [{width: 1}, [null, [{backgroundColor: conditional}]]]},
+        validAttributes,
+      ),
+    ).toEqual({width: 1, backgroundColor: whiteOrBlack, ...flag});
+  });
+
+  it('create: a later explicit undefined clears the value and its conditions', () => {
+    // A later plain value wins. The flag stays, and native handles that.
+    expect(
+      create(
+        {style: [{backgroundColor: conditional}, {backgroundColor: undefined}]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: null, ...flag});
+  });
+
+  it('diff: handles a style that changes between an array and an object', () => {
+    expect(
+      diff(
+        {style: [{backgroundColor: conditional}]},
+        {style: {backgroundColor: {default: 'white', [DARK]: 'black'}}},
+        validAttributes,
+      ),
+    ).toEqual(null);
+    expect(
+      diff(
+        {style: {backgroundColor: conditional}},
+        {style: [{backgroundColor: conditional}, {backgroundColor: 'red'}]},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: red});
+    expect(
+      diff(
+        {style: [{width: 1}, {backgroundColor: 'red'}]},
+        {style: {width: 1, backgroundColor: conditional}},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: whiteOrBlack, ...flag});
+  });
+
+  it('does not carry the flag over to the next payload', () => {
+    create({style: {backgroundColor: conditional}}, validAttributes);
+    expect(create({style: {backgroundColor: 'red'}}, validAttributes)).toEqual({
+      backgroundColor: red,
+    });
+    diff(
+      {style: {backgroundColor: 'red'}},
+      {style: {backgroundColor: conditional}},
+      validAttributes,
+    );
+    expect(
+      diff(
+        {style: {backgroundColor: 'red'}},
+        {style: {backgroundColor: 'blue'}},
+        validAttributes,
+      ),
+    ).toEqual({backgroundColor: processColor('blue')});
   });
 });
