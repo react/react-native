@@ -45,11 +45,13 @@ static UIColor *RCTPausedInDebuggerBackgroundColor(void)
         dismissButton:NO];
 }
 
+#if !TARGET_OS_TV
 // Below the loading banners' windows, so they stay readable and tappable above the dimming while the app is paused.
 - (UIWindowLevel)windowLevel
 {
   return UIWindowLevelStatusBar + 1;
 }
+#endif
 
 - (BOOL)dimsBackground
 {
