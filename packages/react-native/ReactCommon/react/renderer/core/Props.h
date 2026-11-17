@@ -13,7 +13,6 @@
 
 #include <React/RendererDebug.h>
 #include <folly/dynamic.h>
-#include <react/renderer/core/MediaFeatures.h>
 #include <react/renderer/core/PropsMacros.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
@@ -69,11 +68,6 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
    * Null if there are none.
    */
   std::shared_ptr<const folly::dynamic> conditionalValues;
-
-  /*
-   * The media features that `conditionalValues` were resolved for.
-   */
-  MediaFeatures conditionalValuesFeatures;
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic rawProps = folly::dynamic::object();

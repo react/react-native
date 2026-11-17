@@ -55,11 +55,6 @@ struct ConditionalValuesResolution {
    * none.
    */
   std::shared_ptr<const folly::dynamic> conditionalValues;
-
-  /*
-   * The media features that `conditionalValues` are resolved for.
-   */
-  MediaFeatures features;
 };
 
 /*

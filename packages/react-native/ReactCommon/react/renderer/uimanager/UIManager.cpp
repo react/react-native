@@ -294,6 +294,10 @@ ShadowTree::Unique UIManager::stopSurface(SurfaceId surfaceId) const {
   // Waiting for all concurrent commits to be finished and unregistering the
   // `ShadowTree`.
   auto shadowTree = getShadowTreeRegistry().remove(surfaceId);
+  {
+    std::lock_guard lock(mediaFeaturesCommitStatesMutex_);
+    mediaFeaturesCommitStates_.erase(surfaceId);
+  }
   if (shadowTree) {
     // We execute JavaScript/React part of the process at the very end to
     // minimize any visible side-effects of stopping the Surface. Any possible
@@ -652,6 +656,13 @@ RootShadowNode::Unshared UIManager::shadowTreeWillCommit(
         shadowTree, oldRootShadowNode, resultRootShadowNode, commitOptions);
   }
 
+  if (resultRootShadowNode &&
+      (commitOptions.source == ShadowTree::CommitSource::React ||
+       commitOptions.source == ShadowTree::CommitSource::AnimationEndSync)) {
+    resultRootShadowNode =
+        resolveConditionalValuesInReactCommit(shadowTree, resultRootShadowNode);
+  }
+
   return resultRootShadowNode;
 }
 
@@ -679,6 +690,8 @@ void UIManager::shadowTreeDidCommit(
     const std::vector<const LayoutableShadowNode*>& affectedLayoutableNodes)
     const noexcept {
   TraceSection s("UIManager::shadowTreeDidCommit");
+
+  reactCommitDidResolveConditionalValues(shadowTree, rootShadowNode);
 
   std::shared_lock lock(commitHookMutex_);
 

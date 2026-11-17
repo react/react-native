@@ -181,7 +181,30 @@ describe('conditional values', () => {
     expect(output(root)).toEqual(<rn-view backgroundColor={WHITE} />);
   });
 
-  it('updates only the stale views of each rendered tree', () => {
+  it('keeps the updated value when React updates another view', () => {
+    const root = Fantom.createRoot();
+    const renderWithOpacity = (opacity: number) =>
+      render(
+        root,
+        <View collapsable={false}>
+          <View style={{backgroundColor: whiteOrBlack}} />
+          <View style={{opacity}} />
+        </View>,
+      );
+    renderWithOpacity(1);
+
+    // React still has the views from before this change.
+    Fantom.setColorScheme('dark');
+    renderWithOpacity(0.5);
+    expect(output(root)).toEqual(
+      <rn-view>
+        <rn-view key="0" backgroundColor={BLACK} />
+        <rn-view key="1" opacity="0.5" />
+      </rn-view>,
+    );
+  });
+
+  it('updates only the views with conditional values, on each surface', () => {
     const first = Fantom.createRoot();
     render(
       first,
@@ -214,7 +237,7 @@ describe('conditional values', () => {
     expect(output(second)).toEqual(<rn-view backgroundColor={BLACK} />);
   });
 
-  it('makes no native updates without stale views', () => {
+  it('makes no native updates without conditional values', () => {
     const root = Fantom.createRoot();
     render(root, <View style={{backgroundColor: 'red'}} />);
     root.takeMountingManagerLogs();
