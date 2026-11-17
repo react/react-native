@@ -98,6 +98,7 @@ import com.facebook.react.views.text.ReactTextViewManagerCallback;
 import com.facebook.react.views.text.ReactTypefaceUtils;
 import com.facebook.react.views.text.TextEffectRegistry;
 import com.facebook.react.views.text.TextLayoutManager;
+import com.facebook.systrace.Systrace;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -919,6 +920,59 @@ public class FabricUIManager
     return mViewTransitionSnapshotManager;
   }
 
+  /** Time the off-frame preallocation drain may occupy the main thread per run. */
+  private static final long PREALLOCATION_DRAIN_BUDGET_NS = 4_000_000L;
+
+  private final Runnable mPreallocationDrainRunnable = this::drainPreallocationOffFrame;
+
+  /**
+   * Called from C++ (FabricMountingManager::maybePreallocateShadowNode) once per batch of queued
+   * preallocations: runs the drain on the main thread as soon as it is free, rather than in the
+   * next DISPATCH_UI frame callback, which also only runs once the host is resumed.
+   */
+  @SuppressLint("NotInvokedPrivateMethod") // Called from C++ via JNI
+  @SuppressWarnings("unused")
+  @AnyThread
+  @ThreadConfined(ANY)
+  private void schedulePreallocationDrain() {
+    if (mDestroyed || ReactNativeFeatureFlags.disableViewPreallocationAndroid()) {
+      return;
+    }
+    // Until the first frame callback has run (the host has been resumed and drawn at least once)
+    // the queue is drained by the frame callback as before: when React Native is started from
+    // Application.onCreate the first render happens while the Activity is being created, and
+    // extra main-looper work there delays its first frame. The pending flag on the C++ side is
+    // cleared by that drain, so the next batch asks again.
+    if (!mDispatchUIFrameCallback.mHasRunFrame) {
+      return;
+    }
+    UiThreadUtil.runOnUiThread(mPreallocationDrainRunnable);
+  }
+
+  @UiThread
+  @ThreadConfined(UI)
+  private void drainPreallocationOffFrame() {
+    FabricUIManagerBinding binding = mBinding;
+    if (mDestroyed || binding == null || !mDispatchUIFrameCallback.mIsMountingEnabled) {
+      return;
+    }
+    Systrace.beginSection(Systrace.TRACE_TAG_REACT, "FabricUIManager::preallocateOffFrame");
+    try {
+      binding.drainPreallocateViewsQueue();
+      mMountItemDispatcher.dispatchPreMountItemsWithBudget(PREALLOCATION_DRAIN_BUDGET_NS);
+    } catch (Exception ex) {
+      FLog.e(TAG, "Exception thrown during off-frame view preallocation", ex);
+      mDispatchUIFrameCallback.mIsMountingEnabled = false;
+      throw ex;
+    } finally {
+      Systrace.endSection(Systrace.TRACE_TAG_REACT);
+    }
+    if (mMountItemDispatcher.hasPendingPreMountItems()) {
+      // Give input and frames a chance to run, then continue with the rest.
+      UiThreadUtil.runOnUiThread(mPreallocationDrainRunnable);
+    }
+  }
+
   @SuppressLint("NotInvokedPrivateMethod")
   @SuppressWarnings("unused")
   @AnyThread
@@ -1639,6 +1693,9 @@ public class FabricUIManager
 
     private volatile boolean mIsMountingEnabled = true;
 
+    /** Set once the first DISPATCH_UI frame callback has run; gates off-frame preallocation. */
+    private volatile boolean mHasRunFrame = false;
+
     private volatile boolean mShouldSchedule = false;
 
     private final AtomicBoolean mScheduleTaskPending = new AtomicBoolean(false);
@@ -1704,6 +1761,8 @@ public class FabricUIManager
         FLog.w(TAG, "Not flushing pending UI operations: FabricUIManager is destroyed");
         return;
       }
+
+      mHasRunFrame = true;
 
       // Drain pending React revision merges first so that animations,
       // preallocation, and mount items operate against the latest revision.

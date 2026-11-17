@@ -1085,6 +1085,7 @@ void FabricMountingManager::drainPreallocateViewsQueue() {
   {
     std::lock_guard lock(preallocateMutex_);
     std::swap(queuedViews, preallocatedViewsQueue_);
+    preallocateDrainScheduled_.store(false);
   }
 
   bool pullModel =
@@ -1185,6 +1186,17 @@ void FabricMountingManager::maybePreallocateShadowNode(
     preallocatedViewsQueue_.push_back(
         {.shadowView = std::move(shadowView),
          .family = shadowNode.getFamilyShared()});
+  }
+
+  // Ask the main thread to drain the queue as soon as it is free, instead of
+  // waiting for the next DISPATCH_UI frame callback (which also requires the
+  // host to be resumed). One request per batch: the flag is cleared when the
+  // queue is drained.
+  if (!preallocateDrainScheduled_.exchange(true)) {
+    static auto schedulePreallocationDrain =
+        JFabricUIManager::javaClassStatic()->getMethod<void()>(
+            "schedulePreallocationDrain");
+    schedulePreallocationDrain(javaUIManager_);
   }
 }
 

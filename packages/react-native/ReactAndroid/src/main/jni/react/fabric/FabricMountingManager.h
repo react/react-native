@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -121,6 +122,13 @@ class FabricMountingManager final {
    * A queue of views to be preallocated on the Java side.
    */
   std::vector<QueuedView> preallocatedViewsQueue_{};
+
+  /*
+   * True while a drain of preallocatedViewsQueue_ has been requested from the
+   * main thread and has not run yet, so each batch of queued views asks the
+   * Java side once.
+   */
+  std::atomic<bool> preallocateDrainScheduled_{false};
 
   enum class AllocatedViewState { Preallocated, Mounted };
 

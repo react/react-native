@@ -372,6 +372,21 @@ internal class MountItemDispatcher(
     dispatchPreMountItemsImpl(deadline)
   }
 
+  /**
+   * Executes pre-mount items for at most [budgetNanos] from now. Used outside the frame callback,
+   * when the main thread has nothing else to do, so that preallocation does not wait for a frame.
+   */
+  @UiThread
+  @ThreadConfined(UI)
+  fun dispatchPreMountItemsWithBudget(budgetNanos: Long) {
+    if (preMountItems.isEmpty()) {
+      return
+    }
+    dispatchPreMountItemsImpl(System.nanoTime() + budgetNanos)
+  }
+
+  fun hasPendingPreMountItems(): Boolean = !preMountItems.isEmpty()
+
   private fun dispatchPreMountItemsImpl(deadline: Long) {
     Systrace.beginSection(Systrace.TRACE_TAG_REACT, "MountItemDispatcher::premountViews")
 
