@@ -176,8 +176,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       [primaryLanguage isEqualToString:@"ko-KR"]) {
     return;
   }
+  // Before iOS 17, UIKit calls this before the state with the new size is mounted.
   const auto &data = _state->getData();
-  if (data.reactTreeAttributedString.isEmpty() || _mostRecentEventCount != data.mostRecentEventCount) {
+  if (data.reactTreeAttributedString.isEmpty() || _mostRecentEventCount != data.mostRecentEventCount ||
+      data.reactTreeAttributedString.getBaseTextAttributes().fontSizeMultiplier != RCTFontSizeMultiplier()) {
     return;
   }
   NSAttributedString *attributedString = RCTNSAttributedStringFromAttributedStringBox(data.attributedStringBox);

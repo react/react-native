@@ -6,6 +6,7 @@
  */
 
 #import <React/RCTTextInputComponentView.h>
+#import <React/RCTUtils.h>
 #import <XCTest/XCTest.h>
 #import <react/renderer/attributedstring/AttributedString.h>
 #import <react/renderer/attributedstring/AttributedStringBox.h>
@@ -18,10 +19,14 @@ using namespace facebook::react;
 
 #if TARGET_OS_IOS
 
-static State::Shared RCTMakeTextInputState(NSString *wordFontFamily, const char *endText = " end")
+static State::Shared RCTMakeTextInputState(
+    NSString *wordFontFamily,
+    const char *endText = " end",
+    Float fontSizeMultiplier = RCTFontSizeMultiplier())
 {
   auto baseAttributes = TextAttributes::defaultTextAttributes();
   baseAttributes.fontSize = 18;
+  baseAttributes.fontSizeMultiplier = fontSizeMultiplier;
   auto wordAttributes = baseAttributes;
   wordAttributes.fontFamily = wordFontFamily.UTF8String;
 
@@ -112,6 +117,22 @@ static BOOL RCTHasOriginalFont(UITextField *textField)
   [view traitCollectionDidChange:RCTOtherContentSizeTraitCollection()];
 
   XCTAssertEqualObjects(textField.attributedText.string, @"typed");
+}
+
+- (void)testContentSizeChangeDoesNotApplyStateWithOldFontSizeWithEmoji
+{
+  RCTTextInputComponentView *view = [[RCTTextInputComponentView alloc] initWithFrame:CGRectMake(0, 0, 200, 40)];
+  UITextField *textField = (UITextField *)view.subviews.firstObject;
+  // Before iOS 17, the trait change comes before the state with the new size is mounted.
+  [view updateState:RCTMakeTextInputState(@"Courier", " end \xF0\x9F\x98\x80", RCTFontSizeMultiplier() + 1)
+           oldState:nullptr];
+  XCTAssertTrue(RCTHasOriginalFont(textField));
+  UIFont *oldSizeFont = [textField.attributedText attribute:NSFontAttributeName atIndex:0 effectiveRange:NULL];
+
+  [view traitCollectionDidChange:RCTOtherContentSizeTraitCollection()];
+
+  UIFont *font = [textField.attributedText attribute:NSFontAttributeName atIndex:0 effectiveRange:NULL];
+  XCTAssertNotEqual(font.pointSize, oldSizeFont.pointSize);
 }
 
 @end
