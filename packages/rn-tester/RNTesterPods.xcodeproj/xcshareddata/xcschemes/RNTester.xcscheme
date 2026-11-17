@@ -32,6 +32,9 @@
             reference = "container:RNTester/RNTester.xctestplan"
             default = "YES">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:RNTester/RNTesterPointerTests.xctestplan">
+         </TestPlanReference>
       </TestPlans>
    </TestAction>
    <LaunchAction

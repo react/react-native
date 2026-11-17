@@ -726,6 +726,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
     _activePointers.clear();
     _identifierPool.reset();
   }
+
+  _primaryTouchPointerId = -1;
 }
 
 - (BOOL)canPreventGestureRecognizer:(UIGestureRecognizer *)preventedGestureRecognizer
