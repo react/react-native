@@ -182,6 +182,20 @@ TEST_F(UIManagerMediaFeaturesTest, reactCommitResolvesAChangeDuringIt) {
   EXPECT_FLOAT_EQ(committedOpacity(), 0.5);
 }
 
+TEST_F(
+    UIManagerMediaFeaturesTest,
+    firstConditionalViewResolvesAChangeDuringItsCommit) {
+  // The committed tree has no conditional values yet, only the React commit.
+  SetMediaFeaturesDuringCommitHook commitHook;
+  commitHook.mediaFeatures = MediaFeatures{.colorScheme = ColorScheme::Dark};
+  uiManager_->registerCommitHook(commitHook);
+  reactCommit(createView());
+  uiManager_->unregisterCommitHook(commitHook);
+
+  EXPECT_FALSE(commitHook.mediaFeatures.has_value());
+  EXPECT_FLOAT_EQ(committedOpacity(), 0.5);
+}
+
 TEST_F(UIManagerMediaFeaturesTest, cancelledReactCommitDoesNotSaveTheChange) {
   auto view = createView();
   reactCommit(view);
@@ -254,17 +268,22 @@ TEST_F(UIManagerMediaFeaturesTest, aCommitOfAnOlderTreeResolvesAChange) {
   EXPECT_FLOAT_EQ(committedOpacity(), 0.5);
 }
 
-TEST_F(UIManagerMediaFeaturesTest, aChangeDoesNotCommitATreeWithoutThem) {
+TEST_F(UIManagerMediaFeaturesTest, aChangeDoesNotCloneViewsOfATreeWithoutThem) {
   reactCommit(uiManager_->createNode(
       viewTag_,
       "View",
       surfaceId_,
       RawProps(folly::dynamic::object("opacity", 1)),
       nullptr));
-  auto revisionNumber = shadowTree_->getCurrentRevision().number;
+  auto revisionBeforeChange = shadowTree_->getCurrentRevision();
 
+  // The change commits only a new root.
   uiManager_->setMediaFeatures({.colorScheme = ColorScheme::Dark});
-  EXPECT_EQ(shadowTree_->getCurrentRevision().number, revisionNumber);
+  auto revision = shadowTree_->getCurrentRevision();
+  EXPECT_EQ(revision.number, revisionBeforeChange.number + 1);
+  EXPECT_EQ(
+      revision.rootShadowNode->getChildren().front(),
+      revisionBeforeChange.rootShadowNode->getChildren().front());
 }
 
 TEST_F(UIManagerMediaFeaturesTest, aChangeDoesNotCloneViewsThatDoNotReadIt) {
