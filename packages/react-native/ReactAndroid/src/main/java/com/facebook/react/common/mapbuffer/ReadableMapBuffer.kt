@@ -207,6 +207,15 @@ private constructor(
   override fun getMapBuffer(key: Int): ReadableMapBuffer =
       readMapBufferValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.MAP))
 
+  /** A copy of the serialized bytes of the nested map buffer at [key]. */
+  internal fun getMapBufferBytes(key: Int): ByteArray {
+    val position = getTypedValueOffsetForKey(key, MapBuffer.DataType.MAP)
+    val result = ByteArray(buffer.getInt(position + Int.SIZE_BYTES))
+    buffer.position(offsetForDynamicData + buffer.getInt(position))
+    buffer.get(result, 0, result.size)
+    return result
+  }
+
   override fun getMapBufferList(key: Int): List<ReadableMapBuffer> =
       readMapBufferListValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.MAP_BUFFER_LIST))
 

@@ -92,6 +92,7 @@ public class TextAttributeProps private constructor() {
     private set
 
   internal var textTransform: TextTransform = TextTransform.NONE
+    private set
 
   public var isUnderlineTextDecorationSet: Boolean = false
     private set

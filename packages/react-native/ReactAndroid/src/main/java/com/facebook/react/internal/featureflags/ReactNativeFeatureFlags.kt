@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c65f172e91f823049cf508cc70663c64>>
+ * @generated SignedSource<<88b1def3e424604bccb25ad88dbd2644>>
  */
 
 /**
@@ -311,6 +311,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableNativeCSSParsing(): Boolean = accessor.enableNativeCSSParsing()
+
+  /**
+   * On Android, reuse the TextAttributeProps parsed for text attributes that arrive serialized identically, instead of parsing them again for every text fragment that is measured.
+   */
+  @JvmStatic
+  public fun enableParsedTextAttributesCacheAndroid(): Boolean = accessor.enableParsedTextAttributesCacheAndroid()
 
   /**
    * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.

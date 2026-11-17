@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<dcfcca254ea381db5ac0cc2ea2a6a66b>>
+ * @generated SignedSource<<97f0e1b121ac41c2c91e756c7ff99bda>>
  */
 
 /**
@@ -116,6 +116,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableMutationObserverByDefault(): Boolean
 
   @DoNotStrip public fun enableNativeCSSParsing(): Boolean
+
+  @DoNotStrip public fun enableParsedTextAttributesCacheAndroid(): Boolean
 
   @DoNotStrip public fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean
 

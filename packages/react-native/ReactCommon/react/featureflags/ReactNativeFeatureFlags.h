@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0a8759cd09aa452417aaa3720da346ae>>
+ * @generated SignedSource<<1af82c3ac94a9f5c69c4507b7d198ae3>>
  */
 
 /**
@@ -275,6 +275,11 @@ class ReactNativeFeatureFlags {
    * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
    */
   RN_EXPORT static bool enableNativeCSSParsing();
+
+  /**
+   * On Android, reuse the TextAttributeProps parsed for text attributes that arrive serialized identically, instead of parsing them again for every text fragment that is measured.
+   */
+  RN_EXPORT static bool enableParsedTextAttributesCacheAndroid();
 
   /**
    * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.

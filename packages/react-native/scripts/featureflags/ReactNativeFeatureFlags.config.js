@@ -555,6 +555,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableParsedTextAttributesCacheAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-18',
+        description:
+          'On Android, reuse the TextAttributeProps parsed for text attributes that arrive serialized identically, instead of parsing them again for every text fragment that is measured.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enablePreallocatedPropsDiffOnInsertAndroid: {
       defaultValue: false,
       metadata: {

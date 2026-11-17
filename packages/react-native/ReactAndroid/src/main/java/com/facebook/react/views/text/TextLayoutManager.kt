@@ -309,6 +309,7 @@ internal object TextLayoutManager {
       ops: MutableList<SetSpanOperation>,
       outputReactTags: IntArray?,
       textEffectRegistry: TextEffectRegistry?,
+      attributePropsCache: TextAttributePropsCache? = null,
   ) {
     // Track pending text effects to coalesce consecutive fragments with the same effects into
     // single spans, avoiding duplicate draws (e.g. multiple accent marks in HighlighterTextSpan).
@@ -331,7 +332,7 @@ internal object TextLayoutManager {
       val start = sb.length
 
       val textAttributes =
-          TextAttributeProps.fromMapBuffer(fragment.getMapBuffer(FR_KEY_TEXT_ATTRIBUTES))
+          parseTextAttributes(fragment, FR_KEY_TEXT_ATTRIBUTES, attributePropsCache)
 
       sb.append(
           TextTransform.apply(fragment.getString(FR_KEY_STRING), textAttributes.textTransform),
@@ -519,13 +520,14 @@ internal object TextLayoutManager {
       fragments: MapBuffer,
       outputReactTags: IntArray?,
       textEffectRegistry: TextEffectRegistry?,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): Spannable {
     val text = StringBuilder()
     val parsedFragments = ArrayList<FragmentAttributes>(fragments.count)
 
     for (i in 0 until fragments.count) {
       val fragment = fragments.getMapBuffer(i)
-      val props = TextAttributeProps.fromMapBuffer(fragment.getMapBuffer(FR_KEY_TEXT_ATTRIBUTES))
+      val props = parseTextAttributes(fragment, FR_KEY_TEXT_ATTRIBUTES, attributePropsCache)
       val fragmentText = TextTransform.apply(fragment.getString(FR_KEY_STRING), props.textTransform)
       text.append(fragmentText)
       parsedFragments.add(
@@ -757,6 +759,14 @@ internal object TextLayoutManager {
     return spannable
   }
 
+  private fun parseTextAttributes(
+      parent: MapBuffer,
+      key: Int,
+      attributePropsCache: TextAttributePropsCache?,
+  ): TextAttributeProps =
+      attributePropsCache?.get(parent, key)
+          ?: TextAttributeProps.fromMapBuffer(parent.getMapBuffer(key))
+
   @VisibleForTesting
   internal fun inlineViewSizeToPixels(size: Double): Int =
       ceil(PixelUtil.toPixelFromDIP(size).toDouble()).toInt()
@@ -790,6 +800,7 @@ internal object TextLayoutManager {
       attributedString: MapBuffer,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry?,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): Spannable =
       getOrCreateSpannableForText(
           assets,
@@ -797,6 +808,7 @@ internal object TextLayoutManager {
           attributedString,
           reactTextViewManagerCallback,
           textEffectRegistry,
+          attributePropsCache,
       )
 
   @OptIn(UnstableReactNativeAPI::class)
@@ -806,6 +818,7 @@ internal object TextLayoutManager {
       attributedString: MapBuffer,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry?,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): Spannable {
     val text: Spannable?
     if (attributedString.contains(AS_KEY_CACHE_ID)) {
@@ -820,6 +833,7 @@ internal object TextLayoutManager {
               reactTextViewManagerCallback,
               null,
               textEffectRegistry,
+              attributePropsCache,
           )
     }
 
@@ -834,6 +848,7 @@ internal object TextLayoutManager {
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       outputReactTags: IntArray?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): Spannable {
     if (ReactNativeFeatureFlags.enableAndroidTextMeasurementOptimizations()) {
       val spannable =
@@ -843,6 +858,7 @@ internal object TextLayoutManager {
               fragments,
               outputReactTags,
               textEffectRegistry,
+              attributePropsCache,
           )
 
       reactTextViewManagerCallback?.onPostProcessSpannable(spannable)
@@ -863,6 +879,7 @@ internal object TextLayoutManager {
           ops,
           outputReactTags,
           textEffectRegistry,
+          attributePropsCache,
       )
 
       // TODO T31905686: add support for inline Images
@@ -1231,6 +1248,7 @@ internal object TextLayoutManager {
       heightYogaMeasureMode: YogaMeasureMode,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): Layout {
     val text =
         getOrCreateSpannableForText(
@@ -1239,6 +1257,7 @@ internal object TextLayoutManager {
             attributedString,
             reactTextViewManagerCallback,
             textEffectRegistry,
+            attributePropsCache,
         )
 
     val paint: TextPaint
@@ -1246,7 +1265,7 @@ internal object TextLayoutManager {
       paint = text.getSpans(0, 0, ReactTextPaintHolderSpan::class.java)[0].textPaint
     } else {
       val baseTextAttributes =
-          TextAttributeProps.fromMapBuffer(attributedString.getMapBuffer(AS_KEY_BASE_ATTRIBUTES))
+          parseTextAttributes(attributedString, AS_KEY_BASE_ATTRIBUTES, attributePropsCache)
       paint = scratchPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment)
     }
 
@@ -1417,6 +1436,7 @@ internal object TextLayoutManager {
       heightYogaMeasureMode: YogaMeasureMode,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): PreparedLayout =
       createPreparedLayout(
           assets,
@@ -1429,6 +1449,7 @@ internal object TextLayoutManager {
           heightYogaMeasureMode,
           reactTextViewManagerCallback,
           textEffectRegistry,
+          attributePropsCache,
       )
 
   @JvmStatic
@@ -1444,6 +1465,7 @@ internal object TextLayoutManager {
       heightYogaMeasureMode: YogaMeasureMode,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): PreparedLayout {
     val fragments = attributedString.getMapBuffer(AS_KEY_FRAGMENTS)
     val reactTags = IntArray(fragments.count)
@@ -1455,9 +1477,10 @@ internal object TextLayoutManager {
             reactTextViewManagerCallback,
             reactTags,
             textEffectRegistry,
+            attributePropsCache,
         )
     val baseTextAttributes =
-        TextAttributeProps.fromMapBuffer(attributedString.getMapBuffer(AS_KEY_BASE_ATTRIBUTES))
+        parseTextAttributes(attributedString, AS_KEY_BASE_ATTRIBUTES, attributePropsCache)
     val result =
         createLayout(
             text,
@@ -1629,6 +1652,7 @@ internal object TextLayoutManager {
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       attachmentsPositions: FloatArray?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): Long =
       measureText(
           assets,
@@ -1642,6 +1666,7 @@ internal object TextLayoutManager {
           reactTextViewManagerCallback,
           attachmentsPositions,
           textEffectRegistry,
+          attributePropsCache,
       )
 
   @JvmStatic
@@ -1658,6 +1683,7 @@ internal object TextLayoutManager {
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       attachmentsPositions: FloatArray?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): Long {
     // TODO(5578671): Handle text direction (see View#getTextDirectionHeuristic)
     val layout =
@@ -1672,6 +1698,7 @@ internal object TextLayoutManager {
             heightYogaMeasureMode,
             reactTextViewManagerCallback,
             textEffectRegistry,
+            attributePropsCache,
         )
 
     val maximumNumberOfLines =
@@ -1941,6 +1968,7 @@ internal object TextLayoutManager {
       height: Float,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): WritableArray =
       measureLines(
           assetManager,
@@ -1951,6 +1979,7 @@ internal object TextLayoutManager {
           height,
           reactTextViewManagerCallback,
           textEffectRegistry,
+          attributePropsCache,
       )
 
   @JvmStatic
@@ -1964,6 +1993,7 @@ internal object TextLayoutManager {
       height: Float,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       textEffectRegistry: TextEffectRegistry? = null,
+      attributePropsCache: TextAttributePropsCache? = null,
   ): WritableArray {
     val layout =
         createLayoutForMeasurement(
@@ -1977,6 +2007,7 @@ internal object TextLayoutManager {
             YogaMeasureMode.EXACTLY,
             reactTextViewManagerCallback,
             textEffectRegistry,
+            attributePropsCache,
         )
     return FontMetricsUtil.getFontMetrics(
         layout.text,

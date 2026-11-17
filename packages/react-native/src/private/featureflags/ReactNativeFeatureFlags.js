@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8817847943e654f2ce61fc39af75baf8>>
+ * @generated SignedSource<<8b9685ffd4ae5e432530251e5d9abcbd>>
  * @flow strict
  * @noformat
  */
@@ -95,6 +95,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableMountingCoordinatorPullModelAndroid: Getter<boolean>,
   enableMutationObserverByDefault: Getter<boolean>,
   enableNativeCSSParsing: Getter<boolean>,
+  enableParsedTextAttributesCacheAndroid: Getter<boolean>,
   enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
@@ -405,6 +406,10 @@ export const enableMutationObserverByDefault: Getter<boolean> = createNativeFlag
  * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
  */
 export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('enableNativeCSSParsing', false);
+/**
+ * On Android, reuse the TextAttributeProps parsed for text attributes that arrive serialized identically, instead of parsing them again for every text fragment that is measured.
+ */
+export const enableParsedTextAttributesCacheAndroid: Getter<boolean> = createNativeFlagGetter('enableParsedTextAttributesCacheAndroid', false);
 /**
  * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
  */

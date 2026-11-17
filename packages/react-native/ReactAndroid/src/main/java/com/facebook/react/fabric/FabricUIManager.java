@@ -96,6 +96,7 @@ import com.facebook.react.views.text.PreparedLayout;
 import com.facebook.react.views.text.ReactTextViewManager;
 import com.facebook.react.views.text.ReactTextViewManagerCallback;
 import com.facebook.react.views.text.ReactTypefaceUtils;
+import com.facebook.react.views.text.TextAttributePropsCache;
 import com.facebook.react.views.text.TextEffectRegistry;
 import com.facebook.react.views.text.TextLayoutManager;
 import java.util.ArrayList;
@@ -185,6 +186,7 @@ public class FabricUIManager
   private final ViewManagerRegistry mViewManagerRegistry;
 
   private final TextEffectRegistry mTextEffectRegistry = new TextEffectRegistry();
+  private final TextAttributePropsCache mTextAttributePropsCache = new TextAttributePropsCache();
 
   private final BatchEventDispatchedListener mBatchEventDispatchedListener;
 
@@ -583,7 +585,8 @@ public class FabricUIManager
             textViewManager instanceof ReactTextViewManagerCallback
                 ? (ReactTextViewManagerCallback) textViewManager
                 : null,
-            mTextEffectRegistry);
+            mTextEffectRegistry,
+            getTextAttributePropsCache());
   }
 
   public @Nullable Integer getColor(int surfaceId, String[] resourcePaths) {
@@ -675,7 +678,8 @@ public class FabricUIManager
             ? (ReactTextViewManagerCallback) textViewManager
             : null,
         attachmentsPositions,
-        mTextEffectRegistry);
+        mTextEffectRegistry,
+        getTextAttributePropsCache());
   }
 
   @AnyThread
@@ -702,7 +706,8 @@ public class FabricUIManager
         textViewManager instanceof ReactTextViewManagerCallback
             ? (ReactTextViewManagerCallback) textViewManager
             : null,
-        mTextEffectRegistry);
+        mTextEffectRegistry,
+        getTextAttributePropsCache());
   }
 
   @AnyThread
@@ -736,6 +741,12 @@ public class FabricUIManager
         getYogaMeasureMode(minWidth, maxWidth),
         getYogaSize(minHeight, maxHeight),
         getYogaMeasureMode(minHeight, maxHeight));
+  }
+
+  private @Nullable TextAttributePropsCache getTextAttributePropsCache() {
+    return ReactNativeFeatureFlags.enableParsedTextAttributesCacheAndroid()
+        ? mTextAttributePropsCache
+        : null;
   }
 
   @UnstableReactNativeAPI
