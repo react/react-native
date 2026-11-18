@@ -548,5 +548,28 @@ describe('conditional values', () => {
         </rn-view>,
       );
     });
+
+    it('updates a native condition when the color scheme changes', () => {
+      setNativeStyle({backgroundColor: whiteOrBlack});
+      Fantom.setColorScheme('light');
+      expect(parentOutput()).toEqual(
+        <rn-view backgroundColor={WHITE}>
+          <rn-view />
+        </rn-view>,
+      );
+      // React and the clone apply the `setNativeProps` props again.
+      renderView({opacity: 0.5});
+      expect(parentOutput()).toEqual(
+        <rn-view backgroundColor={WHITE} opacity="0.5">
+          <rn-view />
+        </rn-view>,
+      );
+      changeChild();
+      expect(parentOutput()).toEqual(
+        <rn-view backgroundColor={WHITE} opacity="0.5">
+          <rn-view opacity="0.25" />
+        </rn-view>,
+      );
+    });
   });
 });
