@@ -19,6 +19,7 @@ import android.text.TextUtils
 import android.text.style.ReplacementSpan
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.createBitmap
@@ -245,6 +246,70 @@ class ReactTextViewTest {
     view.recycleView()
 
     assertThat(view.useBoundsForWidth).isFalse()
+  }
+
+  @Test
+  fun attachRestoresSelectableFocusWithoutRebuildingLayout() {
+    val view = selectableTextView()
+    // The `accessible` prop is applied after `selectable` and clears the focusability selection
+    // needs.
+    view.isFocusable = false
+    val layout = view.layout
+
+    view.onAttachedToWindow()
+
+    assertThat(view.isFocusableInTouchMode).isTrue()
+    assertThat(view.layout).isSameAs(layout)
+  }
+
+  @Test
+  fun firstTouchAfterAttachRefreshesSelectableTextOnce() {
+    val view = selectableTextView()
+    view.onAttachedToWindow()
+    val layout = view.layout
+
+    view.touchDown()
+    val refreshedLayout = view.layout
+
+    assertThat(refreshedLayout).isNotSameAs(layout)
+    assertThat(view.isTextSelectable).isTrue()
+    assertThat(view.isFocusableInTouchMode).isTrue()
+    assertThat(view.isLongClickable).isTrue()
+
+    view.touchDown()
+
+    assertThat(view.layout).isSameAs(refreshedLayout)
+  }
+
+  @Test
+  fun touchWithoutAttachDoesNotRefreshSelectableText() {
+    val view = selectableTextView()
+    val layout = view.layout
+
+    view.touchDown()
+
+    assertThat(view.layout).isSameAs(layout)
+  }
+
+  private fun selectableTextView(): ReactTextView {
+    val view = ReactTextView(RuntimeEnvironment.getApplication())
+    view.setText(textUpdate(SpannableString("Selectable text"), textAttributes()))
+    view.setTextIsSelectable(true)
+    view.measure(
+        View.MeasureSpec.makeMeasureSpec(200, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(60, View.MeasureSpec.EXACTLY),
+    )
+    view.layout(0, 0, 200, 60)
+    return view
+  }
+
+  private fun View.touchDown() {
+    val down = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 10f, 10f, 0)
+    onTouchEvent(down)
+    down.recycle()
+    val cancel = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_CANCEL, 10f, 10f, 0)
+    onTouchEvent(cancel)
+    cancel.recycle()
   }
 
   private fun layoutAndDraw(view: TestReactTextView, width: Int, height: Int) {

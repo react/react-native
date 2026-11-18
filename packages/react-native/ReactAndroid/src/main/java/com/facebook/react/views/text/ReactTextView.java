@@ -81,6 +81,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   private float mLetterSpacing;
   private int mLinkifyMaskType;
   private boolean mTextIsSelectable;
+  private boolean mNeedsSelectableRefresh;
   private boolean mShouldAdjustSpannableFontSize;
   private Overflow mOverflow = Overflow.VISIBLE;
 
@@ -141,6 +142,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     mAdjustsFontSizeToFit = false;
     mLinkifyMaskType = 0;
     mTextIsSelectable = false;
+    mNeedsSelectableRefresh = false;
     mShouldAdjustSpannableFontSize = false;
     mEllipsizeLocation = TextUtils.TruncateAt.END;
     mFontSize = Float.NaN;
@@ -548,14 +550,31 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   public void onAttachedToWindow() {
     super.onAttachedToWindow();
 
-    // This is a workaround to ensure the text becomes selectable as it doesn't work if we call
-    // `setTextIsSelectable(true)` directly when setTextIsSelectable was already true.
     if (mTextIsSelectable) {
-      setTextIsSelectable(false);
-      setTextIsSelectable(true);
+      // Selection needs the view to be focusable in touch mode, which `setTextIsSelectable(true)`
+      // turns on, but props applied after it (such as `accessible`, through `setFocusable`) can
+      // turn it off again.
+      setFocusableInTouchMode(true);
+      // Selection can also stop working after the view is re-attached, which turning
+      // `textIsSelectable` off and on again repairs. Both calls set the text again and rebuild its
+      // layout, so defer them to the first touch instead of doing them on every attach: a clipped
+      // list re-attaches each row that scrolls back into view, but few of them are touched.
+      mNeedsSelectableRefresh = true;
     } else {
       setTextIsSelectable(false);
     }
+  }
+
+  @Override
+  public boolean onTouchEvent(MotionEvent event) {
+    if (mNeedsSelectableRefresh && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+      mNeedsSelectableRefresh = false;
+      if (mTextIsSelectable) {
+        setTextIsSelectable(false);
+        setTextIsSelectable(true);
+      }
+    }
+    return super.onTouchEvent(event);
   }
 
   @Override
