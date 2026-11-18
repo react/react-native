@@ -1365,7 +1365,7 @@ interface RCTMountingManager : public NSObject {
   public virtual void attachSurfaceToView:surfaceId:(UIView* view, facebook::react::SurfaceId surfaceId);
   public virtual void detachSurfaceFromView:surfaceId:(UIView* view, facebook::react::SurfaceId surfaceId);
   public virtual void dispatchCommand:commandName:args:(ReactTag reactTag, NSString* commandName, NSArray* args);
-  public virtual void mountPendingTransactions();
+  public virtual void performPendingOperations();
   public virtual void scheduleTransaction:(std::shared_ptr<const facebook::react::MountingCoordinator> mountingCoordinator);
   public virtual void sendAccessibilityEvent:eventType:(ReactTag reactTag, NSString* eventType);
   public virtual void setContextContainer:(std::shared_ptr<const facebook::react::ContextContainer> contextContainer);

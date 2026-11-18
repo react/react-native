@@ -304,12 +304,13 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
       return [mountingManager.componentViewRegistry findComponentViewWithTag:tag].window.layer;
     };
     auto pendingMountPerformer = [weakMountingManager, weakSelf]() {
-      // With commit branching merged on the main thread, the React revision
-      // the beat promoted is still waiting for its merge; merging it here
-      // mounts it inline (this runs on the main thread).
-      [weakSelf _drainPendingReactRevisionMerges];
+      // Runs on the main thread. The work other threads scheduled runs first,
+      // in order. With commit branching merged on the main thread, the React
+      // revision the beat promoted is still waiting for its merge; merging it
+      // mounts it inline, after that work.
       RCTMountingManager *mountingManager = weakMountingManager;
-      [mountingManager mountPendingTransactions];
+      [mountingManager performPendingOperations];
+      [weakSelf _drainPendingReactRevisionMerges];
     };
     return std::make_unique<AppleEventBeat>(
         std::move(ownerBox),

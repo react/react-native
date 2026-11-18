@@ -49,14 +49,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)scheduleTransaction:(std::shared_ptr<const facebook::react::MountingCoordinator>)mountingCoordinator;
 
 /**
- * Performs right away the transactions that were scheduled from another thread and have not been performed yet,
- * instead of waiting for the main queue to get to them (they become no-ops when it does). With
- * `enableSameFrameMountForDiscreteEvents`, every transaction scheduled from another thread is recorded for this;
- * without it the list stays empty and this does nothing. Does nothing either while a transaction is being performed
- * or while a command or accessibility event scheduled from another thread has not run yet, so
- * those keep their order. Used for discrete events. Must be called on the main thread.
+ * With `enableSameFrameMountForDiscreteEvents`, runs right away, in the order they were scheduled, the transactions,
+ * commands, accessibility events and responder changes that other threads scheduled and the main queue has not run
+ * yet. Their main queue blocks then find nothing left to do. Called while a transaction or another drain is in
+ * progress, it runs once that finishes instead. Without the flag nothing is queued and this does nothing.
+ * For React Native's event beat; must be called on the main thread.
  */
-- (void)mountPendingTransactions;
+- (void)performPendingOperations;
 
 /**
  * Dispatch a command to be performed on the main thread.

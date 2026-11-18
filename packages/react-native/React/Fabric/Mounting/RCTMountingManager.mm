@@ -26,9 +26,8 @@
 #import <React/RCTConversions.h>
 #import <React/RCTMountingTransactionObserverCoordinator.h>
 
-#include <atomic>
+#include <deque>
 #include <mutex>
-#include <vector>
 
 using namespace facebook::react;
 
@@ -149,14 +148,17 @@ static void RCTPerformMountInstructions(
   BOOL _transactionInFlight;
   BOOL _followUpTransactionRequired;
   std::shared_ptr<const ContextContainer> _contextContainer;
-  std::mutex _pendingTransactionsMutex;
-  std::vector<std::shared_ptr<const MountingCoordinator>> _pendingTransactions;
-  // Commands and accessibility events handed to the main queue and not run
-  // yet. (Responder changes only flag an existing view and stay ungated, so
-  // responder-based taps keep the early mount.) While any is outstanding, `mountPendingTransactions`
-  // does nothing, so they keep running before the transactions scheduled
-  // after them (main queue order).
-  std::atomic<int> _pendingMainQueueOperations;
+  // With `enableSameFrameMountForDiscreteEvents`, the main thread work that
+  // other threads schedule (transactions, commands, accessibility events and
+  // responder changes) goes through this one FIFO queue, so it runs in the
+  // order it was scheduled whether the main queue or
+  // `performPendingOperations` gets to it first.
+  std::mutex _pendingOperationsMutex;
+  std::deque<dispatch_block_t> _pendingOperations;
+  BOOL _performingPendingOperations;
+  // `performPendingOperations` was called while it could not run; the
+  // transaction or the drain in progress runs it when it finishes.
+  BOOL _pendingOperationsDeferred;
 }
 
 - (instancetype)init
@@ -198,6 +200,13 @@ static void RCTPerformMountInstructions(
 
 - (void)scheduleTransaction:(std::shared_ptr<const MountingCoordinator>)mountingCoordinator
 {
+  if (ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
+    [self _performInOrder:^{
+      [self initiateTransaction:*mountingCoordinator];
+    }];
+    return;
+  }
+
   if (RCTIsMainQueue()) {
     // Already on the proper thread, so:
     // * No need to do a thread jump;
@@ -207,58 +216,81 @@ static void RCTPerformMountInstructions(
     return;
   }
 
-  if (ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
-    // Recorded so that `mountPendingTransactions` can perform it before the
-    // main queue gets to the block below.
-    {
-      std::lock_guard<std::mutex> lock(_pendingTransactionsMutex);
-      _pendingTransactions.push_back(std::move(mountingCoordinator));
-    }
-    RCTExecuteOnMainQueue(^{
-      [self mountPendingTransactions];
-    });
-    return;
-  }
-
   RCTExecuteOnMainQueue(^{
     RCTAssertMainQueue();
     [self initiateTransaction:*mountingCoordinator];
   });
 }
 
-- (void)_executeOrderedOnMainQueue:(dispatch_block_t)block
+/*
+ * Runs `operation` on the main thread after every operation scheduled before
+ * it through this method. Called from another thread, the operation is queued
+ * and a main queue block drains the queue (or `performPendingOperations` does,
+ * earlier). Called on the main thread, the queue is drained first and the
+ * operation runs right away, unless a transaction or a drain is in progress:
+ * then the operation is nested inside it and runs right away, as it does
+ * without the queue.
+ */
+- (void)_performInOrder:(dispatch_block_t)operation
 {
-  if (!ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
-    RCTExecuteOnMainQueue(block);
+  if (RCTIsMainQueue()) {
+    if (!_transactionInFlight && !_performingPendingOperations) {
+      [self performPendingOperations];
+    }
+    operation();
     return;
   }
-  _pendingMainQueueOperations++;
+
+  {
+    std::lock_guard<std::mutex> lock(_pendingOperationsMutex);
+    _pendingOperations.push_back(operation);
+  }
   RCTExecuteOnMainQueue(^{
-    block();
-    self->_pendingMainQueueOperations--;
+    [self performPendingOperations];
   });
 }
 
-- (void)mountPendingTransactions
+- (void)performPendingOperations
 {
   RCTAssertMainQueue();
-  if (_transactionInFlight || _pendingMainQueueOperations > 0) {
-    // Inside a transaction, or with main queue operations that must run first:
-    // the follow-up loop or the main queue blocks flush the list.
+  if (_transactionInFlight || _performingPendingOperations) {
+    // Not re-entrant: the transaction or the drain in progress runs the queue
+    // once it finishes.
+    _pendingOperationsDeferred = YES;
     return;
   }
-  std::vector<std::shared_ptr<const MountingCoordinator>> pendingTransactions;
-  {
-    std::lock_guard<std::mutex> lock(_pendingTransactionsMutex);
-    pendingTransactions.swap(_pendingTransactions);
+
+  _performingPendingOperations = YES;
+  @try {
+    while (true) {
+      dispatch_block_t operation;
+      {
+        std::lock_guard<std::mutex> lock(_pendingOperationsMutex);
+        if (_pendingOperations.empty()) {
+          break;
+        }
+        operation = _pendingOperations.front();
+        _pendingOperations.pop_front();
+      }
+      operation();
+    }
+  } @finally {
+    _performingPendingOperations = NO;
   }
-  for (const auto &mountingCoordinator : pendingTransactions) {
-    [self initiateTransaction:*mountingCoordinator];
-  }
+  // The loop above ran until the queue was empty; every operation queued
+  // since has its own main queue block.
+  _pendingOperationsDeferred = NO;
 }
 
 - (void)dispatchCommand:(ReactTag)reactTag commandName:(NSString *)commandName args:(NSArray *)args
 {
+  if (ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
+    [self _performInOrder:^{
+      [self synchronouslyDispatchCommandOnUIThread:reactTag commandName:commandName args:args];
+    }];
+    return;
+  }
+
   if (RCTIsMainQueue()) {
     // Already on the proper thread, so:
     // * No need to do a thread jump;
@@ -267,13 +299,20 @@ static void RCTPerformMountInstructions(
     return;
   }
 
-  [self _executeOrderedOnMainQueue:^{
+  RCTExecuteOnMainQueue(^{
     [self synchronouslyDispatchCommandOnUIThread:reactTag commandName:commandName args:args];
-  }];
+  });
 }
 
 - (void)sendAccessibilityEvent:(ReactTag)reactTag eventType:(NSString *)eventType
 {
+  if (ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
+    [self _performInOrder:^{
+      [self synchronouslyDispatchAccessbilityEventOnUIThread:reactTag eventType:eventType];
+    }];
+    return;
+  }
+
   if (RCTIsMainQueue()) {
     // Already on the proper thread, so:
     // * No need to do a thread jump;
@@ -282,9 +321,9 @@ static void RCTPerformMountInstructions(
     return;
   }
 
-  [self _executeOrderedOnMainQueue:^{
+  RCTExecuteOnMainQueue(^{
     [self synchronouslyDispatchAccessbilityEventOnUIThread:reactTag eventType:eventType];
-  }];
+  });
 }
 
 - (void)initiateTransaction:(const MountingCoordinator &)mountingCoordinator
@@ -303,6 +342,10 @@ static void RCTPerformMountInstructions(
     [self performTransaction:mountingCoordinator];
     _transactionInFlight = NO;
   } while (_followUpTransactionRequired);
+
+  if (_pendingOperationsDeferred) {
+    [self performPendingOperations];
+  }
 }
 
 - (void)performTransaction:(const MountingCoordinator &)mountingCoordinator
@@ -332,10 +375,15 @@ static void RCTPerformMountInstructions(
            forShadowView:(const facebook::react::ShadowView &)shadowView
 {
   ReactTag reactTag = shadowView.tag;
-  RCTExecuteOnMainQueue(^{
+  dispatch_block_t operation = ^{
     UIView<RCTComponentViewProtocol> *componentView = [self->_componentViewRegistry findComponentViewWithTag:reactTag];
     [componentView setIsJSResponder:isJSResponder];
-  });
+  };
+  if (ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
+    [self _performInOrder:operation];
+    return;
+  }
+  RCTExecuteOnMainQueue(operation);
 }
 
 - (void)synchronouslyUpdateViewOnUIThread:(ReactTag)reactTag
