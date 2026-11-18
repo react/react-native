@@ -864,6 +864,9 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
         TMPL::syncMethodCallEnd(moduleName, methodName);
         return returnValue;
       }
+      throw std::runtime_error(
+          "Unexpected return type " + returnType +
+          " for number method: " + std::string(methodName));
     }
     case StringKind: {
       auto returnString =
