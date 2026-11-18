@@ -23,6 +23,8 @@
 
 namespace facebook::react {
 
+class MediaFeaturesStore;
+
 using ShadowTreeCommitTransaction = std::function<RootShadowNode::Unshared(const RootShadowNode &oldRootShadowNode)>;
 
 /*
@@ -165,6 +167,7 @@ class ShadowTree final {
 
   const SurfaceId surfaceId_;
   const ShadowTreeDelegate &delegate_;
+  const std::shared_ptr<const MediaFeaturesStore> mediaFeaturesStore_;
   mutable std::shared_mutex revisionMutex_;
   mutable std::recursive_mutex revisionMutexRecursive_;
   mutable CommitMode commitMode_{CommitMode::Normal}; // Protected by `revisionMutex_`.

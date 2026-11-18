@@ -33,6 +33,23 @@ TEST(RawPropsTest, emptyPropsHaveNoDynamicSource) {
   EXPECT_EQ(RawProps(nullptr).getDynamic(), nullptr);
 }
 
+TEST(RawPropsTest, hasPropertyWithoutParse) {
+  EXPECT_FALSE(RawProps().hasProperty("opacity"));
+  EXPECT_FALSE(RawProps(nullptr).hasProperty("opacity"));
+
+  const auto dynamicProps = RawProps(folly::dynamic::object("opacity", 0.5));
+  EXPECT_TRUE(dynamicProps.hasProperty("opacity"));
+  EXPECT_FALSE(dynamicProps.hasProperty("width"));
+
+  auto runtime = facebook::hermes::makeHermesRuntime();
+  auto object = jsi::Object(*runtime);
+  object.setProperty(*runtime, "opacity", 0.5);
+  const auto jsiProps = RawProps(*runtime, jsi::Value(*runtime, object));
+  EXPECT_TRUE(jsiProps.hasProperty("opacity"));
+  EXPECT_FALSE(jsiProps.hasProperty("width"));
+  EXPECT_FALSE(RawProps(*runtime, jsi::Value::null()).hasProperty("opacity"));
+}
+
 TEST(RawPropsTest, jsiPropsHaveNoDynamicSource) {
   auto runtime = facebook::hermes::makeHermesRuntime();
   auto object = jsi::Object(*runtime);

@@ -20,6 +20,7 @@
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 #include <react/renderer/core/LayoutContext.h>
+#include <react/renderer/core/MediaFeatures.h>
 #include <react/renderer/mounting/MountingOverrideDelegate.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>
 #include <react/renderer/observers/events/EventPerformanceLogger.h>
@@ -38,6 +39,11 @@ Scheduler::Scheduler(
     SchedulerDelegate* delegate)
     : runtimeExecutor_(schedulerToolbox.runtimeExecutor),
       contextContainer_(schedulerToolbox.contextContainer) {
+  // A platform can insert a store with its initial media features first;
+  // `insert` keeps it.
+  contextContainer_->insert(
+      kMediaFeaturesStoreKey, std::make_shared<MediaFeaturesStore>());
+
   // Creating a container for future `EventDispatcher` instance.
   eventDispatcher_ = std::make_shared<std::optional<const EventDispatcher>>();
 
@@ -457,6 +463,10 @@ void Scheduler::uiManagerDidStartSurface(const ShadowTree& shadowTree) {
 
 void Scheduler::reportMount(SurfaceId surfaceId) const {
   uiManager_->reportMount(surfaceId);
+}
+
+void Scheduler::setMediaFeatures(MediaFeatures mediaFeatures) const {
+  uiManager_->setMediaFeatures(mediaFeatures);
 }
 
 std::shared_ptr<const ContextContainer> Scheduler::getContextContainer() const {

@@ -38,6 +38,7 @@
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 #include <react/renderer/core/ConcreteShadowNode.h>
 #include <react/renderer/core/ConcreteState.h>
+#include <react/renderer/core/ConditionalValues.h>
 #include <react/renderer/core/EventBeat.h>
 #include <react/renderer/core/EventDispatcher.h>
 #include <react/renderer/core/EventEmitter.h>
@@ -55,6 +56,7 @@
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/LayoutPrimitives.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
+#include <react/renderer/core/MediaFeatures.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsMacros.h>
 #include <react/renderer/core/PropsParserContext.h>

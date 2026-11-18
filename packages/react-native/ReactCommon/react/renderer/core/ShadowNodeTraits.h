@@ -99,6 +99,10 @@ class ShadowNodeTraits {
 
     // Scroll container for descendant views, independent of user scrolling.
     FormsScrollContainer = 1 << 16,
+
+    // A descendant has conditional values. `replaceChild` can leave it set
+    // after the last one is removed, which only costs a walk.
+    ChildrenHaveConditionalValues = 1 << 17,
   };
 
   /*
