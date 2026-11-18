@@ -1896,9 +1896,9 @@ DynamicColorIOS({
 // Test you cannot set internals of ColorValue directly
 const OpaqueTest1 = () => (
   <View
-    // @ts-expect-error
     style={{
       backgroundColor: {
+        // @ts-expect-error
         resource_paths: ['?attr/colorControlNormal'],
       },
     }}
@@ -1907,9 +1907,9 @@ const OpaqueTest1 = () => (
 
 const OpaqueTest2 = () => (
   <View
-    // @ts-expect-error
     style={{
       backgroundColor: {
+        // @ts-expect-error
         semantic: 'string',
         dynamic: {
           light: 'light',

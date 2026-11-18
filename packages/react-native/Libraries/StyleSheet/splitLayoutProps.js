@@ -8,16 +8,17 @@
  * @format
  */
 
-import type {ViewStyle} from './StyleSheetTypes';
+import type {ViewStyle, WithConditionalStyleValues} from './StyleSheetTypes';
 
-type MutableViewStyle = {-readonly [K in keyof ViewStyle]: ViewStyle[K]};
+type Style = WithConditionalStyleValues<ViewStyle>;
+type MutableStyle = {-readonly [K in keyof Style]: Style[K]};
 
-export default function splitLayoutProps(props: ?ViewStyle): {
-  outer: ?ViewStyle,
-  inner: ?ViewStyle,
+export default function splitLayoutProps(props: ?Style): {
+  outer: ?Style,
+  inner: ?Style,
 } {
-  let outer: ?MutableViewStyle = null;
-  let inner: ?MutableViewStyle = null;
+  let outer: ?MutableStyle = null;
+  let inner: ?MutableStyle = null;
 
   if (props != null) {
     outer = {};
