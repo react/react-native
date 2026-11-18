@@ -93,12 +93,12 @@ class EventBeat {
   virtual void request() const;
 
   /*
-   * Same as `request`, for a discrete event (a touch starting or ending, a
-   * click, a text input change) that the view with the given tag (or `kNoTag`)
+   * Same as `request`, for a discrete user input (a touch ending, a click, a
+   * key press or a text change) that the view with the given tag (or `kNoTag`)
    * has just enqueued. The beat callback still runs on the JavaScript thread.
-   * Platform implementations may use the hint to have the effects of the event
-   * mounted in the frame of the input that caused it; the default
-   * implementation is `request`.
+   * Platform implementations may use the hint to have the effects of the input
+   * mounted in the frame that delivered it; the default implementation is
+   * `request`.
    */
   virtual void requestForDiscreteEvent(Tag tag) const;
 
@@ -161,8 +161,6 @@ class EventBeat {
    * runs the beat on the calling thread.
    */
   bool isSynchronousRequestPending() const;
-
-  RuntimeScheduler &getRuntimeScheduler() const;
 
   BeatCallback beatCallback_;
   std::function<void()> induceCallback_;

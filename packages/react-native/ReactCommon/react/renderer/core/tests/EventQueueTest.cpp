@@ -61,16 +61,18 @@ class EventQueueTest : public testing::Test {
  protected:
   void SetUp() override {
     ReactNativeFeatureFlags::dangerouslyReset();
-    runtimeScheduler_ = std::make_unique<RuntimeScheduler>(
-        [](std::function<void(jsi::Runtime&)>&& /*callback*/) {});
   }
 
   void TearDown() override {
     eventQueue_.reset();
+    runtimeScheduler_.reset();
     ReactNativeFeatureFlags::dangerouslyReset();
   }
 
+  // Call after overriding feature flags: the runtime scheduler reads them.
   void makeEventQueue() {
+    runtimeScheduler_ = std::make_unique<RuntimeScheduler>(
+        [](std::function<void(jsi::Runtime&)>&& /*callback*/) {});
     auto ownerBox = std::make_shared<EventBeat::OwnerBox>();
     auto eventBeat = std::make_unique<RecordingEventBeat>(
         ownerBox, *runtimeScheduler_, requests_, discreteRequests_);
@@ -88,9 +90,9 @@ class EventQueueTest : public testing::Test {
         std::move(eventBeat));
   }
 
-  void enqueue(RawEvent::Category category) {
+  void enqueue(const std::string& type, RawEvent::Category category) {
     eventQueue_->enqueueEvent(RawEvent(
-        "event",
+        type,
         std::make_shared<ValueFactoryEventPayload>(ValueFactory{}),
         nullptr,
         {},
@@ -104,35 +106,52 @@ class EventQueueTest : public testing::Test {
   std::unique_ptr<EventQueue> eventQueue_;
 };
 
-TEST_F(EventQueueTest, discreteEventsUseTheDiscreteRequestWhenEnabled) {
+TEST_F(EventQueueTest, tapEndsAndTypingUseTheDiscreteRequestWhenEnabled) {
   ReactNativeFeatureFlags::override(
       std::make_unique<SameFrameMountForDiscreteEventsFeatureFlags>());
   makeEventQueue();
 
-  enqueue(RawEvent::Category::Discrete);
-  enqueue(RawEvent::Category::ContinuousStart);
-  enqueue(RawEvent::Category::ContinuousEnd);
-  EXPECT_EQ(discreteRequests_->size(), 3u);
+  enqueue("topTouchEnd", RawEvent::Category::ContinuousEnd);
+  enqueue("topClick", RawEvent::Category::Discrete);
+  enqueue("topChange", RawEvent::Category::Unspecified);
+  enqueue("topKeyPress", RawEvent::Category::Unspecified);
+  enqueue("topSubmitEditing", RawEvent::Category::Discrete);
+  EXPECT_EQ(discreteRequests_->size(), 5u);
   EXPECT_EQ(*requests_, 0);
   // No event target: no view attribution.
   EXPECT_EQ(discreteRequests_->front(), kNoTag);
-
-  // Continuous and unattributed events keep the ordinary request, so scrolls
-  // and drags never make the main thread wait.
-  enqueue(RawEvent::Category::Continuous);
-  enqueue(RawEvent::Category::Unspecified);
-  enqueue(RawEvent::Category::Idle);
-  EXPECT_EQ(discreteRequests_->size(), 3u);
-  EXPECT_EQ(*requests_, 3);
 }
 
-TEST_F(EventQueueTest, discreteEventsUseTheOrdinaryRequestByDefault) {
+TEST_F(
+    EventQueueTest,
+    touchStartsHoverAndContinuousEventsKeepTheOrdinaryRequest) {
+  ReactNativeFeatureFlags::override(
+      std::make_unique<SameFrameMountForDiscreteEventsFeatureFlags>());
   makeEventQueue();
 
-  enqueue(RawEvent::Category::Discrete);
-  enqueue(RawEvent::Category::ContinuousEnd);
+  // The first frame of every scroll, pointer hover transitions and continuous
+  // events never make the main thread wait, whatever their category.
+  enqueue("topTouchStart", RawEvent::Category::ContinuousStart);
+  enqueue("topPointerDown", RawEvent::Category::ContinuousStart);
+  enqueue("topPointerUp", RawEvent::Category::ContinuousEnd);
+  enqueue("topPointerEnter", RawEvent::Category::ContinuousStart);
+  enqueue("topPointerLeave", RawEvent::Category::ContinuousEnd);
+  enqueue("topPointerOver", RawEvent::Category::ContinuousStart);
+  enqueue("topPointerOut", RawEvent::Category::ContinuousStart);
+  enqueue("topTouchMove", RawEvent::Category::Continuous);
+  enqueue("topFocus", RawEvent::Category::Unspecified);
   EXPECT_EQ(discreteRequests_->size(), 0u);
-  EXPECT_EQ(*requests_, 2);
+  EXPECT_EQ(*requests_, 9);
+}
+
+TEST_F(EventQueueTest, tapEndsAndTypingUseTheOrdinaryRequestByDefault) {
+  makeEventQueue();
+
+  enqueue("topTouchEnd", RawEvent::Category::ContinuousEnd);
+  enqueue("topClick", RawEvent::Category::Discrete);
+  enqueue("topChange", RawEvent::Category::Unspecified);
+  EXPECT_EQ(discreteRequests_->size(), 0u);
+  EXPECT_EQ(*requests_, 3);
 }
 
 } // namespace facebook::react

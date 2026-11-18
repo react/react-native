@@ -107,6 +107,11 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
   SchedulerPriority getCurrentPriorityLevel() const noexcept override;
 
   /*
+   * Whether the work loop is running. Can be called from any thread.
+   */
+  bool isRunningTask() const noexcept override;
+
+  /*
    * Returns current monotonic time. This time is not related to wall clock
    * time.
    *

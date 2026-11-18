@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d7c7c3baef283beeaa572d3a8a753add>>
+ * @generated SignedSource<<2c1e3e1e5c8acfb19bfda14667abcc19>>
  */
 
 /**
@@ -337,7 +337,7 @@ public object ReactNativeFeatureFlags {
   public fun enableResizeObserverByDefault(): Boolean = accessor.enableResizeObserverByDefault()
 
   /**
-   * On iOS, mounts the effects of discrete events (touch start/end, click, text input change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the display's maximum refresh rate) and otherwise falls back to the asynchronous main queue mount, which presents the change one frame later.
+   * On iOS, mounts the effects of a tap ending (touch end, click) or of typing (change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; when it is idle as the input arrives, the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the screen's maximum refresh rate) and then runs the resulting mounts and commands, in order. Otherwise the asynchronous main queue path presents the change one frame later.
    */
   @JvmStatic
   public fun enableSameFrameMountForDiscreteEvents(): Boolean = accessor.enableSameFrameMountForDiscreteEvents()
@@ -505,7 +505,7 @@ public object ReactNativeFeatureFlags {
   public fun redBoxV2IOS(): Boolean = accessor.redBoxV2IOS()
 
   /**
-   * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the display's maximum refresh rate. 8 ms keeps the input frame within budget at 60 Hz while covering the JavaScript work of a typical tap or keystroke. Zero or less disables the wait.
+   * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the screen's maximum refresh rate. Zero or less disables the wait.
    */
   @JvmStatic
   public fun sameFrameMountForDiscreteEventsTimeoutMs(): Double = accessor.sameFrameMountForDiscreteEventsTimeoutMs()

@@ -45,10 +45,6 @@ bool EventBeat::isSynchronousRequestPending() const {
   return isSynchronousRequested_;
 }
 
-RuntimeScheduler& EventBeat::getRuntimeScheduler() const {
-  return runtimeScheduler_;
-}
-
 void EventBeat::setBeatCallback(BeatCallback beatCallback) {
   beatCallback_ = std::move(beatCallback);
 }

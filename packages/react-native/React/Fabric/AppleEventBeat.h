@@ -36,14 +36,17 @@ class RuntimeScheduler;
  * of the tree Core Animation is laying out when the request is made from
  * layout.
  *
- * A discrete event (see `EventBeat::requestForDiscreteEvent`) enqueued on the
- * main thread schedules the same display-phase hook. There, the beat is
- * induced as usual (its callback runs on the JavaScript thread) and the main
- * thread waits, for at most `sameFrameMountForDiscreteEventsTimeoutMs`, until
- * the JavaScript thread has processed it, then mounts the resulting
- * transactions, so the effects of the input are part of the Core Animation
- * commit of the frame that delivered it. On timeout nothing is mounted early
- * and the transactions take the asynchronous main queue path.
+ * A discrete user input (see `EventBeat::requestForDiscreteEvent`) enqueued
+ * on the main thread while the JavaScript thread is idle schedules the same
+ * display-phase hook. There, the beat is induced as usual (its callback runs on
+ * the JavaScript thread) and the main thread waits, for at most
+ * `sameFrameMountForDiscreteEventsTimeoutMs` and never more than half a frame
+ * of the input's screen, until the JavaScript thread has processed it, then
+ * runs the main thread work that resulted (transactions and commands, in
+ * order), so the effects of the input are part of the Core Animation commit of
+ * the frame that delivered it. An input that arrives while the JavaScript
+ * thread is busy does not wait. On timeout nothing runs early and the work
+ * takes the asynchronous main queue path.
  */
 class AppleEventBeat : public EventBeat, public RunLoopObserver::Delegate {
  public:
@@ -55,8 +58,9 @@ class AppleEventBeat : public EventBeat, public RunLoopObserver::Delegate {
   using WindowLayerResolver = std::function<CALayer *(Tag)>;
 
   /*
-   * Mounts the transactions that were handed to the mounting layer but not
-   * mounted yet. Called on the main thread.
+   * Runs, in order, the main thread work (transactions, commands) that was
+   * handed to the mounting layer and has not run yet. Called on the main
+   * thread.
    */
   using PendingMountPerformer = std::function<void()>;
 
@@ -86,6 +90,7 @@ class AppleEventBeat : public EventBeat, public RunLoopObserver::Delegate {
   bool scheduleDisplayPhaseInduce(Tag tag) const;
   void waitForBeatAndMount() const;
 
+  RuntimeScheduler &runtimeScheduler_;
   std::unique_ptr<const RunLoopObserver> uiRunLoopObserver_;
   WindowLayerResolver windowLayerResolver_;
   PendingMountPerformer pendingMountPerformer_;
@@ -118,12 +123,10 @@ class AppleEventBeat : public EventBeat, public RunLoopObserver::Delegate {
   mutable std::optional<uint64_t> discreteEventTurn_;
 
   /*
-   * Adaptive back-off: after consecutive timeouts (a JavaScript thread that is
-   * busy, or blocked on the main thread), the wait is skipped for a while.
-   * Main thread only.
+   * The maximum refresh rate of the screen showing the view that received the
+   * pending discrete input. Main thread only.
    */
-  mutable int consecutiveTimeouts_{0};
-  mutable CFTimeInterval skipWaitsUntil_{0};
+  mutable NSInteger discreteEventMaximumFramesPerSecond_{0};
 };
 
 } // namespace facebook::react

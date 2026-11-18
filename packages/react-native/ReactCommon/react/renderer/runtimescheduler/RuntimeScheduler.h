@@ -52,6 +52,7 @@ class RuntimeSchedulerBase : public facebook::hermes::IEventLoopControl {
   virtual void cancelTask(Task &task) noexcept = 0;
   virtual bool getShouldYield() noexcept = 0;
   virtual SchedulerPriority getCurrentPriorityLevel() const noexcept = 0;
+  virtual bool isRunningTask() const noexcept = 0;
   virtual HighResTimeStamp now() const noexcept = 0;
   virtual void callExpiredTasks(jsi::Runtime &runtime) = 0;
   virtual void scheduleRenderingUpdate(SurfaceId surfaceId, RuntimeSchedulerRenderingUpdate &&renderingUpdate) = 0;
@@ -142,6 +143,16 @@ class RuntimeScheduler final : public RuntimeSchedulerBase {
    * Thread synchronization must be enforced externally.
    */
   SchedulerPriority getCurrentPriorityLevel() const noexcept override;
+
+  /*
+   * Whether the JavaScript thread is currently running tasks of this
+   * scheduler. A caller on another thread can use it to tell an idle
+   * JavaScript thread, which picks up newly scheduled work right away, from a
+   * busy one. The answer can be stale as soon as it is returned.
+   *
+   * Can be called from any thread.
+   */
+  bool isRunningTask() const noexcept override;
 
   /*
    * Returns current monotonic time. This time is not related to wall clock

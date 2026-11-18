@@ -11,6 +11,7 @@
 #import <React/RCTUtils.h>
 #import <dispatch/dispatch.h>
 
+#include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
@@ -56,13 +57,6 @@
 
 namespace facebook::react {
 
-namespace {
-// After this many consecutive timeouts, discrete events skip the wait for
-// `kBackOffInterval` seconds and use the asynchronous mount.
-constexpr int kMaxConsecutiveTimeouts = 3;
-constexpr CFTimeInterval kBackOffInterval = 1.0;
-} // namespace
-
 AppleEventBeat::AppleEventBeat(
     std::shared_ptr<OwnerBox> ownerBox,
     std::unique_ptr<const RunLoopObserver> uiRunLoopObserver,
@@ -70,6 +64,7 @@ AppleEventBeat::AppleEventBeat(
     WindowLayerResolver windowLayerResolver,
     PendingMountPerformer pendingMountPerformer)
     : EventBeat(std::move(ownerBox), runtimeScheduler),
+      runtimeScheduler_(runtimeScheduler),
       uiRunLoopObserver_(std::move(uiRunLoopObserver)),
       windowLayerResolver_(std::move(windowLayerResolver)),
       pendingMountPerformer_(std::move(pendingMountPerformer)),
@@ -126,7 +121,13 @@ void AppleEventBeat::requestForDiscreteEvent(Tag tag) const
 {
   EventBeat::requestForDiscreteEvent(tag);
 
-  if (pendingMountPerformer_ && scheduleDisplayPhaseInduce(tag)) {
+  // Waiting only pays off when the JavaScript thread can start on the input
+  // right away. When it is in the middle of other work, the wait would mostly
+  // cover that work and time out, so the input takes the ordinary path.
+  if (!pendingMountPerformer_ || runtimeScheduler_.isRunningTask()) {
+    return;
+  }
+  if (scheduleDisplayPhaseInduce(tag)) {
     // Consumed by the display phase this schedules, whether or not the run
     // loop observer induces the beat first.
     discreteEventTurn_ = currentTurn_;
@@ -152,46 +153,45 @@ bool AppleEventBeat::scheduleDisplayPhaseInduce(Tag tag) const
     [hostLayer addSublayer:layer];
   }
   [layer setNeedsDisplay];
+  // A window's layer has the window as its delegate.
+  id hostLayerDelegate = hostLayer.delegate;
+  discreteEventMaximumFramesPerSecond_ = [hostLayerDelegate isKindOfClass:[UIWindow class]]
+      ? ((UIWindow *)hostLayerDelegate).screen.maximumFramesPerSecond
+      : 0;
   return true;
 }
 
 void AppleEventBeat::waitForBeatAndMount() const
 {
-  // Never wait longer than half a frame at the display's maximum refresh rate:
+  // Never wait longer than half a frame at the screen's maximum refresh rate:
   // past that point waiting delays the commit of the input's frame itself.
-  NSInteger maximumFramesPerSecond = RCTKeyWindow().screen.maximumFramesPerSecond;
-  double halfFrameMs = 500.0 / (maximumFramesPerSecond > 0 ? maximumFramesPerSecond : 60);
+  NSInteger maximumFramesPerSecond =
+      discreteEventMaximumFramesPerSecond_ > 0 ? discreteEventMaximumFramesPerSecond_ : 60;
+  double halfFrameMs = 500.0 / maximumFramesPerSecond;
   double timeoutMs = std::min(ReactNativeFeatureFlags::sameFrameMountForDiscreteEventsTimeoutMs(), halfFrameMs);
-  CFTimeInterval now = CACurrentMediaTime();
-  if (timeoutMs <= 0 || now < skipWaitsUntil_) {
+  if (timeoutMs <= 0) {
     return;
   }
 
-  // The runtime scheduler runs tasks by expiration time, and a task scheduled
-  // later at the same (immediate) priority expires later (should two
-  // timestamps ever be equal, the marker may run first: the wait then ends
-  // early and the frame behaves as without this change), so this task runs after the beat
-  // task scheduled by `induce` (or by the run loop observer, if it already ran
-  // this turn), after that task's microtasks and its "update the rendering"
-  // step, where React Native hands committed transactions to the mounting
-  // layer. It also runs after the task the JavaScript thread is executing
-  // and any task that expired earlier, which the timeout bounds.
+  TraceSection s("AppleEventBeat::waitForBeatAndMount");
+
+  // Ordering invariant: the runtime scheduler runs tasks by expiration time,
+  // so this immediate-priority task, scheduled after the beat task (scheduled
+  // by `induce`, or by the run loop observer if it already ran this turn),
+  // runs after it: after its microtasks and its "update the rendering" step,
+  // where committed transactions and commands are handed to the mounting
+  // layer. Should two expiration times be equal, the marker may run first; the
+  // wait then ends early and the frame behaves as without this change.
+  //
   // The JavaScript work stays on the JavaScript thread; the main thread only
-  // waits, and never longer than the timeout, so a JavaScript thread that is
-  // blocked (for example on a synchronous call to the main thread) cannot
-  // deadlock it.
+  // waits, never longer than the timeout, so a JavaScript thread blocked on
+  // the main thread cannot deadlock it.
   dispatch_semaphore_t beatDidRun = dispatch_semaphore_create(0);
-  getRuntimeScheduler().scheduleWork(
-      [beatDidRun](jsi::Runtime & /*runtime*/) { dispatch_semaphore_signal(beatDidRun); });
+  runtimeScheduler_.scheduleWork([beatDidRun](jsi::Runtime & /*runtime*/) { dispatch_semaphore_signal(beatDidRun); });
   auto timeout = dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(timeoutMs * NSEC_PER_MSEC));
   if (dispatch_semaphore_wait(beatDidRun, timeout) != 0) {
-    if (++consecutiveTimeouts_ >= kMaxConsecutiveTimeouts) {
-      consecutiveTimeouts_ = 0;
-      skipWaitsUntil_ = CACurrentMediaTime() + kBackOffInterval;
-    }
     return;
   }
-  consecutiveTimeouts_ = 0;
   pendingMountPerformer_();
 }
 

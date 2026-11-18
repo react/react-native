@@ -258,7 +258,8 @@ class RuntimeThread {
 
 #pragma mark - Discrete events
 
-- (std::unique_ptr<AppleEventBeat>)makeDiscreteEventBeatWithTimeoutMs:(double)timeoutMs mountCount:(std::shared_ptr<int>)mountCount
+- (std::unique_ptr<AppleEventBeat>)makeDiscreteEventBeatWithTimeoutMs:(double)timeoutMs
+                                                           mountCount:(std::shared_ptr<int>)mountCount
 {
   ReactNativeFeatureFlags::dangerouslyReset();
   ReactNativeFeatureFlags::override(std::make_unique<SameFrameMountFeatureFlags>(timeoutMs));
@@ -311,33 +312,55 @@ class RuntimeThread {
   XCTAssertEqual(*mountCount, 1);
 }
 
-- (void)testDiscreteEventFallsBackWhenTheJavaScriptThreadIsBusy
+- (dispatch_semaphore_t)blockTheJavaScriptThread
+{
+  // Keep the JavaScript thread busy (as a long task, or a synchronous call to
+  // the main thread, would) until the returned semaphore is signalled.
+  dispatch_semaphore_t started = dispatch_semaphore_create(0);
+  dispatch_semaphore_t release = dispatch_semaphore_create(0);
+  _runtimeScheduler->scheduleWork([started, release](facebook::jsi::Runtime &) {
+    dispatch_semaphore_signal(started);
+    dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
+  });
+  dispatch_semaphore_wait(started, DISPATCH_TIME_FOREVER);
+  return release;
+}
+
+- (void)testDiscreteEventDoesNotWaitWhenTheJavaScriptThreadIsBusy
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:1000 mountCount:mountCount];
+
+  dispatch_semaphore_t release = [self blockTheJavaScriptThread];
+  _eventBeat->requestForDiscreteEvent(42);
+  XCTAssertEqual(_hostLayer.sublayers.count, 0u, @"an input that arrives while JavaScript is busy does not wait");
+
+  dispatch_semaphore_signal(release);
+  // The beat still runs on the JavaScript thread, on the ordinary path.
+  _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
+  [self waitForBeatCount:1];
+  XCTAssertEqual(*mountCount, 0);
+}
+
+- (void)testDiscreteEventWaitIsBoundedWhenTheJavaScriptThreadBecomesBusy
 {
   auto mountCount = std::make_shared<int>(0);
   _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:5 mountCount:mountCount];
 
-  // Keep the JavaScript thread busy (as a long task, or a synchronous call to
-  // the main thread, would) until the display phase has given up.
-  dispatch_semaphore_t release = dispatch_semaphore_create(0);
-  _runtimeScheduler->scheduleWork(
-      [release](facebook::jsi::Runtime &) { dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER); });
-
+  // Idle when the input arrives, busy by the display phase.
   _eventBeat->requestForDiscreteEvent(42);
+  CALayer *flusher = self.flusherLayer;
+  dispatch_semaphore_t release = [self blockTheJavaScriptThread];
+
   CFTimeInterval start = CACurrentMediaTime();
-  [self.flusherLayer display];
+  [flusher display];
   CFTimeInterval waited = CACurrentMediaTime() - start;
 
-  XCTAssertEqual(*mountCount, 0, @"nothing is mounted early after a timeout");
+  XCTAssertEqual(*mountCount, 0, @"nothing runs early after a timeout");
   XCTAssertLessThan(waited, 0.5, @"the wait is bounded by the timeout");
 
   dispatch_semaphore_signal(release);
-  // The beat still runs on the JavaScript thread; its transactions take the
-  // asynchronous main queue path.
-  NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:2];
-  while (*_beatCount == 0 && [deadline timeIntervalSinceNow] > 0) {
-    [NSThread sleepForTimeInterval:0.001];
-  }
-  XCTAssertEqual(*_beatCount, 1);
+  [self waitForBeatCount:1];
 }
 
 - (void)testDiscreteEventWithoutAPendingMountPerformerKeepsTheObserverTiming
@@ -394,29 +417,6 @@ class RuntimeThread {
   _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
   [flusher display];
   XCTAssertEqual(*mountCount, 0, @"a stale discrete request must not make an unrelated display wait");
-}
-
-- (void)testConsecutiveTimeoutsBackOff
-{
-  auto mountCount = std::make_shared<int>(0);
-  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:8 mountCount:mountCount];
-
-  dispatch_semaphore_t release = dispatch_semaphore_create(0);
-  _runtimeScheduler->scheduleWork(
-      [release](facebook::jsi::Runtime &) { dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER); });
-
-  for (int i = 0; i < 3; i++) {
-    _eventBeat->requestForDiscreteEvent(42);
-    [self.flusherLayer display];
-    _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
-  }
-  _eventBeat->requestForDiscreteEvent(42);
-  CFTimeInterval start = CACurrentMediaTime();
-  [self.flusherLayer display];
-  // A wait would take the full timeout (8 ms) with the JavaScript thread blocked.
-  XCTAssertLessThan(CACurrentMediaTime() - start, 0.006, @"after three timeouts in a row the wait is skipped");
-  XCTAssertEqual(*mountCount, 0);
-  dispatch_semaphore_signal(release);
 }
 
 - (void)waitForBeatCount:(int)count

@@ -24,24 +24,22 @@ EventQueue::EventQueue(
 
 namespace {
 
-// The categories React maps to its discrete event priority regardless of
-// other events in the queue (see `EventQueueProcessor`).
-bool isDiscreteCategory(RawEvent::Category category) {
-  switch (category) {
-    case RawEvent::Category::Discrete:
-    case RawEvent::Category::ContinuousStart:
-    case RawEvent::Category::ContinuousEnd:
-      return true;
-    default:
-      return false;
-  }
+// The user inputs whose effects `EventBeat::requestForDiscreteEvent` may mount
+// in the frame that delivered them: the end of a tap and typing. Touch starts
+// (the first frame of every scroll) and pointer hover transitions are left
+// out on purpose: they are frequent and rarely change what is on screen.
+bool isSameFrameMountCandidate(const RawEvent& rawEvent) {
+  const auto& type = rawEvent.type;
+  return type == "topTouchEnd" || type == "topClick" || type == "topChange" ||
+      type == "topKeyPress" || type == "topSubmitEditing";
 }
 
 } // namespace
 
 void EventQueue::enqueueEvent(RawEvent&& rawEvent) const {
-  const auto isDiscrete = isDiscreteCategory(rawEvent.category) &&
-      ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents();
+  const auto isDiscrete =
+      ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents() &&
+      isSameFrameMountCandidate(rawEvent);
   const auto tag = isDiscrete && rawEvent.eventTarget
       ? rawEvent.eventTarget->getTag()
       : kNoTag;

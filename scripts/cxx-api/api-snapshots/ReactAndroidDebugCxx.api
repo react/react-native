@@ -1099,7 +1099,6 @@ class facebook::react::Error {
 class facebook::react::EventBeat {
   protected bool isSynchronousRequestPending() const;
   protected facebook::react::EventBeat::BeatCallback beatCallback_;
-  protected facebook::react::RuntimeScheduler& getRuntimeScheduler() const;
   protected mutable std::atomic<bool> isEventBeatRequested_;
   protected std::function<void()> induceCallback_;
   protected std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox_;

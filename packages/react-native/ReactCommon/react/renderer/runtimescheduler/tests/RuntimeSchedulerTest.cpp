@@ -515,6 +515,27 @@ TEST_P(RuntimeSchedulerTest, getCurrentPriorityLevel) {
       SchedulerPriority::NormalPriority);
 }
 
+TEST_P(RuntimeSchedulerTest, isRunningTask) {
+  bool wasRunningTaskInsideTask = false;
+  auto callback = createHostFunctionFromLambda(
+      [this, &wasRunningTaskInsideTask](bool /*didUserCallbackTimeout*/) {
+        wasRunningTaskInsideTask = runtimeScheduler_->isRunningTask();
+        return jsi::Value::undefined();
+      });
+
+  EXPECT_FALSE(runtimeScheduler_->isRunningTask());
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::NormalPriority, std::move(callback));
+  // Scheduled but not started: the JavaScript thread is still idle.
+  EXPECT_FALSE(runtimeScheduler_->isRunningTask());
+
+  stubQueue_->tick();
+
+  EXPECT_TRUE(wasRunningTaskInsideTask);
+  EXPECT_FALSE(runtimeScheduler_->isRunningTask());
+}
+
 TEST_P(RuntimeSchedulerTest, scheduleWorkWithYielding) {
   bool wasCalled = false;
   runtimeScheduler_->scheduleWork(

@@ -140,6 +140,10 @@ void RuntimeScheduler_Modern::cancelTask(Task& task) noexcept {
   task.callback.reset();
 }
 
+bool RuntimeScheduler_Modern::isRunningTask() const noexcept {
+  return isRunningEventLoop_;
+}
+
 SchedulerPriority RuntimeScheduler_Modern::getCurrentPriorityLevel()
     const noexcept {
   return currentPriority_;
@@ -284,10 +288,12 @@ void RuntimeScheduler_Modern::runEventLoop(jsi::Runtime& runtime) {
   // Unit test normalTaskYieldsToSynchronousAccessAndResumes covers this
   // scenario.
   auto topPriorityTask = selectTask();
+  isRunningEventLoop_ = true;
   while (topPriorityTask && syncTaskRequests_ == 0) {
     runEventLoopTick(runtime, *topPriorityTask);
     topPriorityTask = selectTask();
   }
+  isRunningEventLoop_ = false;
 
   currentPriority_ = previousPriority;
 }

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3f477b1c4ed8859f1f94c8bed0044a3b>>
+ * @generated SignedSource<<ec525c7df40ce079da4abe2375951b4d>>
  */
 
 /**
@@ -297,7 +297,7 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableResizeObserverByDefault();
 
   /**
-   * On iOS, mounts the effects of discrete events (touch start/end, click, text input change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the display's maximum refresh rate) and otherwise falls back to the asynchronous main queue mount, which presents the change one frame later.
+   * On iOS, mounts the effects of a tap ending (touch end, click) or of typing (change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; when it is idle as the input arrives, the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the screen's maximum refresh rate) and then runs the resulting mounts and commands, in order. Otherwise the asynchronous main queue path presents the change one frame later.
    */
   RN_EXPORT static bool enableSameFrameMountForDiscreteEvents();
 
@@ -437,7 +437,7 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool redBoxV2IOS();
 
   /**
-   * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the display's maximum refresh rate. 8 ms keeps the input frame within budget at 60 Hz while covering the JavaScript work of a typical tap or keystroke. Zero or less disables the wait.
+   * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the screen's maximum refresh rate. Zero or less disables the wait.
    */
   RN_EXPORT static double sameFrameMountForDiscreteEventsTimeoutMs();
 

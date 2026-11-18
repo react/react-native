@@ -120,6 +120,10 @@ void RuntimeScheduler_Legacy::cancelTask(Task& task) noexcept {
   task.callback.reset();
 }
 
+bool RuntimeScheduler_Legacy::isRunningTask() const noexcept {
+  return isPerformingWork_;
+}
+
 SchedulerPriority RuntimeScheduler_Legacy::getCurrentPriorityLevel()
     const noexcept {
   return currentPriority_;
