@@ -145,6 +145,9 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
     yogaTreeHasBeenConfigured_ =
         static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode)
             .yogaTreeHasBeenConfigured_;
+    overflowInsetNeedsUpdate_ =
+        static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode)
+            .overflowInsetNeedsUpdate_;
   }
 
   if (fragment.props) {
@@ -236,6 +239,7 @@ void YogaLayoutableShadowNode::appendChild(
 
   // Calling the base class (`ShadowNode`) method.
   LayoutableShadowNode::appendChild(childNode);
+  overflowInsetNeedsUpdate_ = true;
 
   if (getTraits().check(ShadowNodeTraits::Trait::LeafYogaNode)) {
     // This node is a declared leaf.
@@ -277,6 +281,16 @@ void YogaLayoutableShadowNode::replaceChild(
       dynamic_cast<const YogaLayoutableShadowNode*>(&oldChild);
   auto layoutableNewChild =
       std::dynamic_pointer_cast<const YogaLayoutableShadowNode>(newChild);
+
+  // A clone made by Yoga's clone-on-write (`adoptYogaChild()` and
+  // `cloneChildInPlace()`) has the same props and layout metrics, so it doesn't
+  // change the content bounds of this node. Any other replacement can.
+  if (layoutableOldChild == nullptr || layoutableNewChild == nullptr ||
+      oldChild.getProps() != newChild->getProps() ||
+      layoutableOldChild->layoutMetrics_ !=
+          layoutableNewChild->layoutMetrics_) {
+    overflowInsetNeedsUpdate_ = true;
+  }
 
   if (layoutableOldChild == nullptr && layoutableNewChild == nullptr) {
     // No need to mutate yogaLayoutableChildren_
@@ -765,6 +779,9 @@ void YogaLayoutableShadowNode::layoutTree(
     layoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
     layoutMetrics.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
     layoutMetrics.wasLeftAndRightSwapped = swapLeftAndRight;
+    // The metrics of a root can also be set from outside, like those of a
+    // clipped text attachment, so its `overflowInset` is always computed again.
+    overflowInsetNeedsUpdate_ = true;
     setLayoutMetrics(layoutMetrics);
     yogaNode_.setHasNewLayout(false);
   }
@@ -790,6 +807,9 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
   // Reading data from a dirtied node does not make sense.
   react_native_assert(!YGNodeIsDirty(&yogaNode_));
 
+  const bool skipUnchangedOverflowInset =
+      ReactNativeFeatureFlags::skipUnchangedOverflowInsetInLayout();
+  bool anyChildHasNewLayout = false;
   for (auto childYogaNode : yogaNode_.getChildren()) {
     auto& childNode = shadowNodeFromContext(childYogaNode);
 
@@ -797,6 +817,7 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
     react_native_assert(&childNode.yogaNode_ == childYogaNode);
 
     if (childYogaNode->getHasNewLayout()) {
+      anyChildHasNewLayout = true;
       childYogaNode->setHasNewLayout(false);
 
       // Reading data from a dirtied node does not make sense.
@@ -828,6 +849,13 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
         layoutContext.affectedNodes->push_back(&childNode);
       }
 
+      if (skipUnchangedOverflowInset &&
+          newLayoutMetrics.displayType != DisplayType::None) {
+        // The child's `layout()` below computes `overflowInset` again when it
+        // can have changed.
+        newLayoutMetrics.overflowInset = childNode.layoutMetrics_.overflowInset;
+      }
+
       childNode.setLayoutMetrics(newLayoutMetrics);
 
       if (newLayoutMetrics.displayType != DisplayType::None) {
@@ -836,7 +864,16 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
     }
   }
 
-  if (YGNodeStyleGetOverflow(&yogaNode_) == YGOverflowVisible) {
+  if (YGNodeStyleGetOverflow(&yogaNode_) != YGOverflowVisible) {
+    layoutMetrics_.overflowInset = {};
+  } else if (
+      !skipUnchangedOverflowInset || overflowInsetNeedsUpdate_ ||
+      anyChildHasNewLayout) {
+    // Yoga also sets `hasNewLayout` on a node whose layout it takes from its
+    // cache, without laying out its children again. So the content bounds are
+    // computed again only when a child has a new layout or something else
+    // they depend on changed.
+    //
     // Note that the parent node's overflow layout is NOT affected by its
     // transform matrix. That transform matrix is applied on the parent node
     // as well as all of its child nodes, which won't cause changes on the
@@ -848,9 +885,8 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
     auto contentBounds = getContentBounds();
     layoutMetrics_.overflowInset =
         calculateOverflowInset(layoutMetrics_.frame, contentBounds);
-  } else {
-    layoutMetrics_.overflowInset = {};
   }
+  overflowInsetNeedsUpdate_ = false;
 }
 
 Rect YogaLayoutableShadowNode::getContentBounds() const {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3e619f92c56f90a6ff3eea0c48d027a7>>
+ * @generated SignedSource<<102745c7905cf47d85a19c30e50bf8a9>>
  */
 
 /**
@@ -783,6 +783,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::skipUnchangedChildrenInDifferentiator();
+  }
+
+  bool skipUnchangedOverflowInsetInLayout() override {
+    auto value = values_["skipUnchangedOverflowInsetInLayout"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::skipUnchangedOverflowInsetInLayout();
   }
 
   bool syncAndroidClipBoundsWithOverflow() override {

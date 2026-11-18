@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f7a31d0435905a87a8ce08a517f9e17d>>
+ * @generated SignedSource<<358f98df922b0d9dbd89d8f8e903ac29>>
  */
 
 /**
@@ -191,6 +191,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun skipActivityIdentityAssertionOnHostPause(): Boolean
 
   @DoNotStrip @JvmStatic public external fun skipUnchangedChildrenInDifferentiator(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun skipUnchangedOverflowInsetInLayout(): Boolean
 
   @DoNotStrip @JvmStatic public external fun syncAndroidClipBoundsWithOverflow(): Boolean
 

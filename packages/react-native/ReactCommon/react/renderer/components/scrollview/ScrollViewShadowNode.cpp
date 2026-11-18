@@ -43,6 +43,8 @@ void ScrollViewShadowNode::updateScrollContentOffsetIfNeeded() {
       if (layoutMetrics.frame.origin.x != 0) {
         layoutMetrics.frame.origin.x = 0;
         layoutableNode->setLayoutMetrics(layoutMetrics);
+        // The next layout has to compute `overflowInset` with this origin.
+        overflowInsetNeedsUpdate_ = true;
       }
     }
   }

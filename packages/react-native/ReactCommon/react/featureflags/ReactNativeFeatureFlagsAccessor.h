@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<782d0e42e0854fc260d458a29ea52b8f>>
+ * @generated SignedSource<<c7f922fa2ccef8aedf66e1832c1de472>>
  */
 
 /**
@@ -116,6 +116,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool shouldTriggerResponderTransferOnScrollAndroid();
   bool skipActivityIdentityAssertionOnHostPause();
   bool skipUnchangedChildrenInDifferentiator();
+  bool skipUnchangedOverflowInsetInLayout();
   bool syncAndroidClipBoundsWithOverflow();
   bool traceTurboModulePromiseRejectionsOnAndroid();
   bool updateRuntimeShadowNodeReferencesOnCommit();
@@ -143,7 +144,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 99> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -227,6 +228,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> shouldTriggerResponderTransferOnScrollAndroid_;
   std::atomic<std::optional<bool>> skipActivityIdentityAssertionOnHostPause_;
   std::atomic<std::optional<bool>> skipUnchangedChildrenInDifferentiator_;
+  std::atomic<std::optional<bool>> skipUnchangedOverflowInsetInLayout_;
   std::atomic<std::optional<bool>> syncAndroidClipBoundsWithOverflow_;
   std::atomic<std::optional<bool>> traceTurboModulePromiseRejectionsOnAndroid_;
   std::atomic<std::optional<bool>> updateRuntimeShadowNodeReferencesOnCommit_;

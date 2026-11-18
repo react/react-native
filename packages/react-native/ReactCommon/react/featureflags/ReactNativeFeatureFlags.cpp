@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9b64fa4c8329098d9c2977ad2a162fbf>>
+ * @generated SignedSource<<2f8d7b1943ee966572fa7e0ab4354680>>
  */
 
 /**
@@ -352,6 +352,10 @@ bool ReactNativeFeatureFlags::skipActivityIdentityAssertionOnHostPause() {
 
 bool ReactNativeFeatureFlags::skipUnchangedChildrenInDifferentiator() {
   return getAccessor().skipUnchangedChildrenInDifferentiator();
+}
+
+bool ReactNativeFeatureFlags::skipUnchangedOverflowInsetInLayout() {
+  return getAccessor().skipUnchangedOverflowInsetInLayout();
 }
 
 bool ReactNativeFeatureFlags::syncAndroidClipBoundsWithOverflow() {

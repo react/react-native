@@ -933,6 +933,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    skipUnchangedOverflowInsetInLayout: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-13',
+        description:
+          'Layout keeps the overflowInset of a node from its previous revision, instead of computing it again from its children, when neither the node nor its children changed.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     syncAndroidClipBoundsWithOverflow: {
       defaultValue: false,
       metadata: {

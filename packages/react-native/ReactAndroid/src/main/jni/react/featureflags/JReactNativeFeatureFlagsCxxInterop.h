@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5fcb0abec30cc84df7a627d008f6c92a>>
+ * @generated SignedSource<<6d35a981b8b0d5c65c478e80ae6cca93>>
  */
 
 /**
@@ -274,6 +274,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool skipUnchangedChildrenInDifferentiator(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool skipUnchangedOverflowInsetInLayout(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool syncAndroidClipBoundsWithOverflow(
