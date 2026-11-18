@@ -73,6 +73,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reportMount:(facebook::react::SurfaceId)surfaceId;
 
+- (void)setMediaFeatures:(facebook::react::MediaFeatures)mediaFeatures;
+
 - (void)addEventListener:(const std::shared_ptr<facebook::react::EventListener> &)listener;
 
 - (void)removeEventListener:(const std::shared_ptr<facebook::react::EventListener> &)listener;
