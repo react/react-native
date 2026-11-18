@@ -919,7 +919,7 @@ const definitions: FeatureFlagDefinitions = {
         description:
           "Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the screen's maximum refresh rate. Zero or less disables the wait.",
         expectedReleaseValue: 8,
-        purpose: 'operational',
+        purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
     },
