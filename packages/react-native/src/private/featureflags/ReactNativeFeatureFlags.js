@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<11b7327fcffff2eee05b10a32a6cc575>>
+ * @generated SignedSource<<88f1a44656a015be48d676b23dd0b6da>>
  * @flow strict
  * @noformat
  */
@@ -69,6 +69,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
+  enableDiscretePriorityForTextInputEvents: Getter<boolean>,
   enableDoubleMeasurementFixAndroid: Getter<boolean>,
   enableEagerRootViewAttachment: Getter<boolean>,
   enableExclusivePropsUpdateAndroid: Getter<boolean>,
@@ -303,6 +304,10 @@ export const enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean> = 
  * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.
  */
 export const enableDestroyShadowTreeRevisionAsync: Getter<boolean> = createNativeFlagGetter('enableDestroyShadowTreeRevisionAsync', false);
+/**
+ * Dispatches the `change`, `keyPress` and `submitEditing` events of text inputs with the discrete event category, so React renders their updates at its discrete priority, as it does for text input on the web. Other text input events keep the default category.
+ */
+export const enableDiscretePriorityForTextInputEvents: Getter<boolean> = createNativeFlagGetter('enableDiscretePriorityForTextInputEvents', false);
 /**
  * When enabled a subset of components will avoid double measurement on Android.
  */

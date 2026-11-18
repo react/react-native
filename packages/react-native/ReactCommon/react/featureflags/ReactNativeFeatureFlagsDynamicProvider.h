@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d6df45ace90d01c9a4ab12388ca2a1ec>>
+ * @generated SignedSource<<9630359eab5e07fa9c18b190506e2455>>
  */
 
 /**
@@ -234,6 +234,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableDestroyShadowTreeRevisionAsync();
+  }
+
+  bool enableDiscretePriorityForTextInputEvents() override {
+    auto value = values_["enableDiscretePriorityForTextInputEvents"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableDiscretePriorityForTextInputEvents();
   }
 
   bool enableDoubleMeasurementFixAndroid() override {

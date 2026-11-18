@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c419b4b40382dfea53b997bc5aa8ee61>>
+ * @generated SignedSource<<62f2801cbd231f8557507c1aa104a6cb>>
  */
 
 /**
@@ -108,6 +108,10 @@ bool ReactNativeFeatureFlags::enableCustomFocusSearchOnClippedElementsAndroid() 
 
 bool ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync() {
   return getAccessor().enableDestroyShadowTreeRevisionAsync();
+}
+
+bool ReactNativeFeatureFlags::enableDiscretePriorityForTextInputEvents() {
+  return getAccessor().enableDiscretePriorityForTextInputEvents();
 }
 
 bool ReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid() {

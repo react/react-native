@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<948d719851e35073ff394bbb9f20189c>>
+ * @generated SignedSource<<4b4d3cedc9adf223917f625e175a37ba>>
  */
 
 /**
@@ -45,6 +45,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableCppPropsIteratorSetterCache: Boolean? = null
   private var enableCustomFocusSearchOnClippedElementsAndroidCache: Boolean? = null
   private var enableDestroyShadowTreeRevisionAsyncCache: Boolean? = null
+  private var enableDiscretePriorityForTextInputEventsCache: Boolean? = null
   private var enableDoubleMeasurementFixAndroidCache: Boolean? = null
   private var enableEagerRootViewAttachmentCache: Boolean? = null
   private var enableExclusivePropsUpdateAndroidCache: Boolean? = null
@@ -331,6 +332,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableDestroyShadowTreeRevisionAsync()
       accessedFeatureFlags.add("enableDestroyShadowTreeRevisionAsync")
       enableDestroyShadowTreeRevisionAsyncCache = cached
+    }
+    return cached
+  }
+
+  override fun enableDiscretePriorityForTextInputEvents(): Boolean {
+    var cached = enableDiscretePriorityForTextInputEventsCache
+    if (cached == null) {
+      cached = currentProvider.enableDiscretePriorityForTextInputEvents()
+      accessedFeatureFlags.add("enableDiscretePriorityForTextInputEvents")
+      enableDiscretePriorityForTextInputEventsCache = cached
     }
     return cached
   }

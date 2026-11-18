@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2c1e3e1e5c8acfb19bfda14667abcc19>>
+ * @generated SignedSource<<2fc3104a74638958199ef04411044d38>>
  */
 
 /**
@@ -155,6 +155,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableDestroyShadowTreeRevisionAsync(): Boolean = accessor.enableDestroyShadowTreeRevisionAsync()
+
+  /**
+   * Dispatches the `change`, `keyPress` and `submitEditing` events of text inputs with the discrete event category, so React renders their updates at its discrete priority, as it does for text input on the web. Other text input events keep the default category.
+   */
+  @JvmStatic
+  public fun enableDiscretePriorityForTextInputEvents(): Boolean = accessor.enableDiscretePriorityForTextInputEvents()
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.

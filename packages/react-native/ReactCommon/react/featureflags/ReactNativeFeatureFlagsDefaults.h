@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<815644e45cde2468327b6e30df6083d5>>
+ * @generated SignedSource<<7291041c60e484754cd46b4e2b0b5ca7>>
  */
 
 /**
@@ -110,6 +110,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableDestroyShadowTreeRevisionAsync() override {
+    return false;
+  }
+
+  bool enableDiscretePriorityForTextInputEvents() override {
     return false;
   }
 

@@ -13,12 +13,12 @@ namespace facebook::react {
 
 /*
  * Text the user types is a discrete input (as `input`, `keypress` and `change`
- * are on the web). The category only differs from the default when
- * `enableSameFrameMountForDiscreteEvents` is on, so that the events can be
- * mounted in the frame of the keystroke.
+ * are on the web), which React renders at its discrete priority. The category
+ * only differs from the default when
+ * `enableDiscretePriorityForTextInputEvents` is on.
  */
 static RawEvent::Category userInputCategory() {
-  return ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()
+  return ReactNativeFeatureFlags::enableDiscretePriorityForTextInputEvents()
       ? RawEvent::Category::Discrete
       : RawEvent::Category::Unspecified;
 }

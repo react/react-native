@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ec525c7df40ce079da4abe2375951b4d>>
+ * @generated SignedSource<<6424ea6b0dbf93b2e35211919213e375>>
  */
 
 /**
@@ -145,6 +145,11 @@ class ReactNativeFeatureFlags {
    * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.
    */
   RN_EXPORT static bool enableDestroyShadowTreeRevisionAsync();
+
+  /**
+   * Dispatches the `change`, `keyPress` and `submitEditing` events of text inputs with the discrete event category, so React renders their updates at its discrete priority, as it does for text input on the web. Other text input events keep the default category.
+   */
+  RN_EXPORT static bool enableDiscretePriorityForTextInputEvents();
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.
