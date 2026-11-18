@@ -70,6 +70,7 @@ import com.facebook.react.uimanager.ViewManagerRegistry
 import com.facebook.react.uimanager.ViewManagerResolver
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.util.RNLog
+import com.facebook.react.views.common.UiModeUtils
 import com.facebook.soloader.SoLoader
 import com.facebook.systrace.Systrace
 import com.facebook.systrace.SystraceMessage
@@ -265,6 +266,7 @@ internal class ReactInstance(
         fabricUIManager,
         eventBeatManager,
         componentFactory,
+        UiModeUtils.isDarkMode(context.currentActivity ?: context),
     )
 
     // Initialize the FabricUIManager

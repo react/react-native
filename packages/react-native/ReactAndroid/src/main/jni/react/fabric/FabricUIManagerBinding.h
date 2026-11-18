@@ -66,7 +66,8 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
       jni::alias_ref<JRuntimeScheduler::javaobject> runtimeSchedulerHolder,
       jni::alias_ref<JFabricUIManager::javaobject> javaUIManager,
       EventBeatManager *eventBeatManager,
-      ComponentFactory *componentsRegistry);
+      ComponentFactory *componentsRegistry,
+      jboolean isDarkMode);
 
   void startSurface(jint surfaceId, jni::alias_ref<jstring> moduleName, NativeMap *initialProps);
 
@@ -126,6 +127,8 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   void schedulerDidClearPendingSnapshots() override;
 
   void setPixelDensity(float pointScaleFactor);
+
+  void setMediaFeatures(jboolean isDarkMode);
 
   void driveCxxAnimations();
 
