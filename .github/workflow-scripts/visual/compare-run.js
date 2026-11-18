@@ -465,9 +465,7 @@ async function report() {
         headSha: context.headSha,
         gateSummary: decision.summary,
       }),
-      hasContent:
-        fingerprint != null ||
-        commentPlatforms.some(platform => platform.error != null),
+      hasContent: fingerprint != null,
     });
   }
 
@@ -477,9 +475,10 @@ async function report() {
 }
 
 /**
- * Keeps one report comment per PR up to date. A PR that never had
- * differences gets no comment. Once it has one, later runs edit it, including
- * to say the differences are gone.
+ * Keeps one report comment per PR up to date. A PR that never had visual
+ * differences gets no comment, since the check runs report everything else,
+ * including a platform with no capture. Once it has one, later runs edit it,
+ * including to say the differences are gone.
  */
 async function upsertComment({github, prNumber, body, hasContent}) {
   const existing = await github.findComment(
@@ -511,4 +510,9 @@ if (require.main === module) {
   });
 }
 
-module.exports = {comparePlatform, resolveContext, stageBaseline};
+module.exports = {
+  comparePlatform,
+  resolveContext,
+  stageBaseline,
+  upsertComment,
+};
