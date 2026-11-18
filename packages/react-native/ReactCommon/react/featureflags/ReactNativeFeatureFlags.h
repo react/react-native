@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0a8759cd09aa452417aaa3720da346ae>>
+ * @generated SignedSource<<c012669db7d678ea9eb9807e7af401a4>>
  */
 
 /**
@@ -215,6 +215,11 @@ class ReactNativeFeatureFlags {
    * Dispatches state updates for content offset changes synchronously on the main thread.
    */
   RN_EXPORT static bool enableImmediateUpdateModeForContentOffsetChanges();
+
+  /**
+   * Apply ScrollContentView state updates synchronously on the main thread.
+   */
+  RN_EXPORT static bool enableImmediateUpdateModeForScrollContentView();
 
   /**
    * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
