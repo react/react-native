@@ -86,7 +86,7 @@ declare var global: {
   readonly structuredClone: typeof structuredClone,
 
   // Undeclared properties are implicitly `any`.
-  [string | symbol]: any,
+  [key: string | symbol]: any,
 };
 
 // Declared as a bare global so unqualified `__DEV__` references type-check as

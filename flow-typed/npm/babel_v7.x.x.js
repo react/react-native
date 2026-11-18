@@ -480,7 +480,7 @@ declare module '@babel/core' {
   declare export type Presets = Array<PresetEntry>;
 
   // See https://babeljs.io/docs/en/next/options#code-generator-options
-  declare export type BabelCoreOptions = {|
+  declare export type BabelCoreOptions = {
     // Primary options
 
     /**
@@ -943,16 +943,16 @@ declare module '@babel/core' {
      * A root path to include on generated module names.
      */
     moduleRoot?: string,
-  |};
+  };
 
-  declare export type TransformResult<T = BabelFileMetadata> = {|
+  declare export type TransformResult<T = BabelFileMetadata> = {
     metadata: T,
     options: BabelCoreOptions,
     code: string,
     map: _BabelSourceMap | null,
     ast: BabelNodeFile | null,
     ignored?: boolean,
-  |};
+  };
 
   declare type TransformCallback<TMetadata> =
     | ((error: Error, result: null) => unknown)
@@ -1252,13 +1252,13 @@ declare module '@babel/generator' {
   declare export default (
     ast: BabelNode,
     options?: Options,
-    code?: string | {[string]: string, ...},
+    code?: string | {[filename: string]: string, ...},
   ) => GeneratorResult;
 
   declare export default (
     ast: BabelNode,
     options?: Options,
-    code?: string | {|[filename: string]: string|},
+    code?: string | {[filename: string]: string},
   ) => GeneratorResult;
 }
 
@@ -1308,7 +1308,8 @@ declare module '@babel/template' {
     syntacticPlaceholders?: ?boolean,
   };
 
-  declare export type PublicReplacements = {[string]: ?Node} | Array<?Node>;
+  declare export type PublicReplacements =
+    {[index: string]: ?Node} | Array<?Node>;
 
   declare export type TemplateBuilder<T> = {
     // Build a new builder, merging the given options with the previous ones.

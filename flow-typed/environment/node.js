@@ -1109,13 +1109,13 @@ declare module 'crypto' {
     salt: string | Buffer,
     keylen: number,
     options:
-      | {|N?: number, r?: number, p?: number, maxmem?: number|}
-      | {|
+      | {N?: number, r?: number, p?: number, maxmem?: number}
+      | {
           cost?: number,
           blockSize?: number,
           parallelization?: number,
           maxmem?: number,
-        |},
+        },
     callback: (err: ?Error, derivedKey: Buffer) => void,
   ): void;
   declare function scrypt(
@@ -1129,13 +1129,13 @@ declare module 'crypto' {
     salt: string | Buffer,
     keylen: number,
     options?:
-      | {|N?: number, r?: number, p?: number, maxmem?: number|}
-      | {|
+      | {N?: number, r?: number, p?: number, maxmem?: number}
+      | {
           cost?: number,
           blockSize?: number,
           parallelization?: number,
           maxmem?: number,
-        |},
+        },
   ): Buffer;
   declare function privateDecrypt(
     private_key: crypto$key,
@@ -1630,7 +1630,7 @@ declare module 'fs' {
   ): void;
   declare function unlinkSync(path: string): void;
 
-  declare type RmDirOptions = {|
+  declare type RmDirOptions = {
     /**
      * If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
      * `EPERM` error is encountered, Node.js will retry the operation with a linear
@@ -1656,7 +1656,7 @@ declare module 'fs' {
      * @default 100
      */
     retryDelay?: number | void,
-  |};
+  };
 
   declare function rmdir(
     path: PathLike,
@@ -1669,7 +1669,7 @@ declare module 'fs' {
   ): void;
   declare function rmdirSync(path: PathLike, options?: RmDirOptions): void;
 
-  declare type RmOptions = {|
+  declare type RmOptions = {
     /**
      * When `true`, exceptions will be ignored if `path` does not exist.
      * @default false
@@ -1696,7 +1696,7 @@ declare module 'fs' {
      * @default 100
      */
     retryDelay?: number | void,
-  |};
+  };
 
   /**
    * Asynchronously removes files and directories (modeled on the standard POSIX `rm`utility). No arguments other than a possible exception are given to the
@@ -2723,7 +2723,7 @@ declare class https$Server extends tls$Server {
   timeout: number;
 }
 
-type requestOptions = {|
+type requestOptions = {
   auth?: string,
   defaultPort?: number,
   family?: number,
@@ -2738,7 +2738,7 @@ type requestOptions = {|
   setHost?: boolean,
   socketPath?: string,
   timeout?: number,
-|};
+};
 
 type http$requestOptions = {
   ...requestOptions,
@@ -3524,11 +3524,11 @@ declare module 'node:sqlite' {
     ): boolean;
   }
 
-  declare export var constants: {|
+  declare export var constants: {
     readonly SQLITE_CHANGESET_OMIT: number,
     readonly SQLITE_CHANGESET_REPLACE: number,
     readonly SQLITE_CHANGESET_ABORT: number,
-  |};
+  };
 }
 
 type readline$InterfaceCompleter = (
@@ -3546,7 +3546,7 @@ declare class readline$Interface extends events$EventEmitter {
   prompt(preserveCursor?: boolean): void;
   question(
     query: string,
-    optionsOrCallback: {|signal?: AbortSignal|} | ((answer: string) => void),
+    optionsOrCallback: {signal?: AbortSignal} | ((answer: string) => void),
     callback?: (answer: string) => void,
   ): void;
   resume(): void;
@@ -4098,7 +4098,7 @@ type tls$Certificate = {
   fingerprint256: string,
   ext_key_usage?: Array<string>,
   subjectaltname?: string,
-  infoAccess?: {[string]: Array<string>, ...},
+  infoAccess?: {[key: string]: Array<string>, ...},
   issuerCertificate?: tls$Certificate,
   ...
 };
@@ -4281,7 +4281,7 @@ declare module 'timers/promises' {
 }
 
 declare module 'url' {
-  declare type Url = {|
+  declare type Url = {
     protocol: string | null,
     slashes: boolean | null,
     auth: string | null,
@@ -4290,21 +4290,21 @@ declare module 'url' {
     hostname: string | null,
     hash: string | null,
     search: string | null,
-    query: string | null | {[string]: string, ...},
+    query: string | null | {[key: string]: string, ...},
     pathname: string | null,
     path: string | null,
     href: string,
-  |};
+  };
 
-  declare type UrlWithStringQuery = {|
+  declare type UrlWithStringQuery = {
     ...Url,
     query: string | null,
-  |};
+  };
 
-  declare type UrlWithParsedQuery = {|
+  declare type UrlWithParsedQuery = {
     ...Url,
-    query: {[string]: string, ...},
-  |};
+    query: {[key: string]: string, ...},
+  };
 
   declare function parse(
     urlStr: string,
@@ -4345,7 +4345,7 @@ declare module 'url' {
         | string
         | URLSearchParams
         | Array<[string, string]>
-        | {[string]: string, ...},
+        | {[key: string]: string, ...},
     ): void;
     append(name: string, value: string): void;
     delete(name: string, value?: void): void;
@@ -4494,30 +4494,30 @@ type util$ParseArgsOptionToValue<TOption> = TOption['type'] extends 'boolean'
     : empty;
 
 type util$ParseArgsOptionsToValues<TOptions> = {
-  [key in keyof TOptions]: util$ParseArgsOptionToValue<{|
+  [key in keyof TOptions]: util$ParseArgsOptionToValue<{
     multiple: false,
     ...TOptions[key],
-  |}>,
+  }>,
 };
 
 type util$ParseArgsToken =
-  | {|
+  | {
       kind: 'option',
       index: number,
       name: string,
       rawName: string,
       value?: string,
       inlineValue?: boolean,
-    |}
-  | {|
+    }
+  | {
       kind: 'positional',
       index: number,
       value: string,
-    |}
-  | {|
+    }
+  | {
       kind: 'option-terminator',
       index: number,
-    |};
+    };
 
 declare module 'util' {
   declare function debuglog(section: string): (data: any, ...args: any) => void;
@@ -4535,7 +4535,7 @@ declare module 'util' {
   declare function stripVTControlCharacters(str: string): string;
 
   declare function parseArgs<
-    TOptions extends {readonly [string]: util$ParseArgsOption} = {},
+    TOptions extends {readonly [key: string]: util$ParseArgsOption} = {},
   >(config: {
     args?: Array<string>,
     options?: TOptions,
@@ -4549,7 +4549,7 @@ declare module 'util' {
   };
 
   declare function parseArgs<
-    TOptions extends {[string]: util$ParseArgsOption} = {},
+    TOptions extends {[key: string]: util$ParseArgsOption} = {},
   >(config: {
     args?: Array<string>,
     options?: TOptions,
@@ -4836,7 +4836,7 @@ type zlib$brotliOptions = {
   finishFlush?: number,
   chunkSize?: number,
   params?: {
-    [number]: boolean | number,
+    [key: number]: boolean | number,
     ...
   },
   maxOutputLength?: number,
@@ -4848,7 +4848,7 @@ type zlib$zstdOptions = {
   finishFlush?: number,
   chunkSize?: number,
   params?: {
-    [number]: boolean | number,
+    [key: number]: boolean | number,
     ...
   },
   maxOutputLength?: number,
@@ -5781,7 +5781,7 @@ declare module 'worker_threads' {
     off(event: string | Symbol, listener: (...args: any[]) => void): this;
   }
 
-  declare type WorkerOptions = {|
+  declare type WorkerOptions = {
     env?: any,
     eval?: boolean,
     workerData?: any,
@@ -5789,7 +5789,7 @@ declare module 'worker_threads' {
     stdout?: boolean,
     stderr?: boolean,
     execArgv?: string[],
-  |};
+  };
 
   declare class Worker extends events$EventEmitter {
     readonly stdin: stream$Writable | null;
