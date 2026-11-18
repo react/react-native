@@ -340,7 +340,10 @@ describe('structuredClone', () => {
     const value = new AggregateError([innerError, {foo: 'bar'}], 'outer');
     const clone = structuredClone(value);
     const clonedErrors = Array.from(clone.errors);
-    const clonedInnerError = ensureInstance(clonedErrors[0], TypeError);
+    const clonedInnerError = ensureInstance<TypeError>(
+      clonedErrors[0],
+      TypeError,
+    );
 
     expect(clone).not.toBe(value);
     expect(clone).toBeInstanceOf(AggregateError);
