@@ -26,6 +26,10 @@
 #import <React/RCTConversions.h>
 #import <React/RCTMountingTransactionObserverCoordinator.h>
 
+#include <atomic>
+#include <mutex>
+#include <vector>
+
 using namespace facebook::react;
 
 static SurfaceId RCTSurfaceIdForView(UIView *view)
@@ -145,6 +149,14 @@ static void RCTPerformMountInstructions(
   BOOL _transactionInFlight;
   BOOL _followUpTransactionRequired;
   std::shared_ptr<const ContextContainer> _contextContainer;
+  std::mutex _pendingTransactionsMutex;
+  std::vector<std::shared_ptr<const MountingCoordinator>> _pendingTransactions;
+  // Commands and accessibility events handed to the main queue and not run
+  // yet. (Responder changes only flag an existing view and stay ungated, so
+  // responder-based taps keep the early mount.) While any is outstanding, `mountPendingTransactions`
+  // does nothing, so they keep running before the transactions scheduled
+  // after them (main queue order).
+  std::atomic<int> _pendingMainQueueOperations;
 }
 
 - (instancetype)init
@@ -195,10 +207,54 @@ static void RCTPerformMountInstructions(
     return;
   }
 
+  if (ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
+    // Recorded so that `mountPendingTransactions` can perform it before the
+    // main queue gets to the block below.
+    {
+      std::lock_guard<std::mutex> lock(_pendingTransactionsMutex);
+      _pendingTransactions.push_back(std::move(mountingCoordinator));
+    }
+    RCTExecuteOnMainQueue(^{
+      [self mountPendingTransactions];
+    });
+    return;
+  }
+
   RCTExecuteOnMainQueue(^{
     RCTAssertMainQueue();
     [self initiateTransaction:*mountingCoordinator];
   });
+}
+
+- (void)_executeOrderedOnMainQueue:(dispatch_block_t)block
+{
+  if (!ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()) {
+    RCTExecuteOnMainQueue(block);
+    return;
+  }
+  _pendingMainQueueOperations++;
+  RCTExecuteOnMainQueue(^{
+    block();
+    self->_pendingMainQueueOperations--;
+  });
+}
+
+- (void)mountPendingTransactions
+{
+  RCTAssertMainQueue();
+  if (_transactionInFlight || _pendingMainQueueOperations > 0) {
+    // Inside a transaction, or with main queue operations that must run first:
+    // the follow-up loop or the main queue blocks flush the list.
+    return;
+  }
+  std::vector<std::shared_ptr<const MountingCoordinator>> pendingTransactions;
+  {
+    std::lock_guard<std::mutex> lock(_pendingTransactionsMutex);
+    pendingTransactions.swap(_pendingTransactions);
+  }
+  for (const auto &mountingCoordinator : pendingTransactions) {
+    [self initiateTransaction:*mountingCoordinator];
+  }
 }
 
 - (void)dispatchCommand:(ReactTag)reactTag commandName:(NSString *)commandName args:(NSArray *)args
@@ -211,9 +267,9 @@ static void RCTPerformMountInstructions(
     return;
   }
 
-  RCTExecuteOnMainQueue(^{
+  [self _executeOrderedOnMainQueue:^{
     [self synchronouslyDispatchCommandOnUIThread:reactTag commandName:commandName args:args];
-  });
+  }];
 }
 
 - (void)sendAccessibilityEvent:(ReactTag)reactTag eventType:(NSString *)eventType
@@ -226,9 +282,9 @@ static void RCTPerformMountInstructions(
     return;
   }
 
-  RCTExecuteOnMainQueue(^{
+  [self _executeOrderedOnMainQueue:^{
     [self synchronouslyDispatchAccessbilityEventOnUIThread:reactTag eventType:eventType];
-  });
+  }];
 }
 
 - (void)initiateTransaction:(const MountingCoordinator &)mountingCoordinator

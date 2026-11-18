@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3e619f92c56f90a6ff3eea0c48d027a7>>
+ * @generated SignedSource<<d6df45ace90d01c9a4ab12388ca2a1ec>>
  */
 
 /**
@@ -506,6 +506,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableResizeObserverByDefault();
   }
 
+  bool enableSameFrameMountForDiscreteEvents() override {
+    auto value = values_["enableSameFrameMountForDiscreteEvents"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableSameFrameMountForDiscreteEvents();
+  }
+
   bool enableSwiftUIBasedFilters() override {
     auto value = values_["enableSwiftUIBasedFilters"];
     if (!value.isNull()) {
@@ -747,6 +756,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::redBoxV2IOS();
+  }
+
+  double sameFrameMountForDiscreteEventsTimeoutMs() override {
+    auto value = values_["sameFrameMountForDiscreteEventsTimeoutMs"];
+    if (!value.isNull()) {
+      return value.getDouble();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::sameFrameMountForDiscreteEventsTimeoutMs();
   }
 
   bool shouldPressibilityUseW3CPointerEventsForHover() override {

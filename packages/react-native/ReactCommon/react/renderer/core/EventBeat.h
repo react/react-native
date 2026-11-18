@@ -93,6 +93,16 @@ class EventBeat {
   virtual void request() const;
 
   /*
+   * Same as `request`, for a discrete event (a touch starting or ending, a
+   * click, a text input change) that the view with the given tag (or `kNoTag`)
+   * has just enqueued. The beat callback still runs on the JavaScript thread.
+   * Platform implementations may use the hint to have the effects of the event
+   * mounted in the frame of the input that caused it; the default
+   * implementation is `request`.
+   */
+  virtual void requestForDiscreteEvent(Tag tag) const;
+
+  /*
    * Communicates to the Beat that a consumer (for example EventQueue) is
    * waiting for the coming beat. A consumer must request coming beat after the
    * previous beat happened to receive a next coming one.
@@ -145,6 +155,14 @@ class EventBeat {
    * Receiver might ignore the call if a beat was not requested.
    */
   void induce() const;
+
+  /*
+   * Whether a synchronous request is pending, i.e. whether the next `induce`
+   * runs the beat on the calling thread.
+   */
+  bool isSynchronousRequestPending() const;
+
+  RuntimeScheduler &getRuntimeScheduler() const;
 
   BeatCallback beatCallback_;
   std::function<void()> induceCallback_;

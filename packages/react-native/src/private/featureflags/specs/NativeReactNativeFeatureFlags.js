@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e21323b07d15a319816f210ba88bfcfc>>
+ * @generated SignedSource<<ce50247ac8b82554caf248e5b87413b2>>
  * @flow strict
  * @noformat
  */
@@ -76,6 +76,7 @@ export interface Spec extends TurboModule {
   readonly enablePreparedTextLayout?: () => boolean;
   readonly enablePropsUpdateReconciliationAndroid?: () => boolean;
   readonly enableResizeObserverByDefault?: () => boolean;
+  readonly enableSameFrameMountForDiscreteEvents?: () => boolean;
   readonly enableSwiftUIBasedFilters?: () => boolean;
   readonly enableViewCulling?: () => boolean;
   readonly enableViewRecycling?: () => boolean;
@@ -103,6 +104,7 @@ export interface Spec extends TurboModule {
   readonly preventShadowTreeCommitExhaustion?: () => boolean;
   readonly redBoxV2Android?: () => boolean;
   readonly redBoxV2IOS?: () => boolean;
+  readonly sameFrameMountForDiscreteEventsTimeoutMs?: () => number;
   readonly shouldPressibilityUseW3CPointerEventsForHover?: () => boolean;
   readonly shouldTriggerResponderTransferOnScrollAndroid?: () => boolean;
   readonly skipActivityIdentityAssertionOnHostPause?: () => boolean;

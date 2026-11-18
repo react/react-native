@@ -1365,6 +1365,7 @@ interface RCTMountingManager : public NSObject {
   public virtual void attachSurfaceToView:surfaceId:(UIView* view, facebook::react::SurfaceId surfaceId);
   public virtual void detachSurfaceFromView:surfaceId:(UIView* view, facebook::react::SurfaceId surfaceId);
   public virtual void dispatchCommand:commandName:args:(ReactTag reactTag, NSString* commandName, NSArray* args);
+  public virtual void mountPendingTransactions();
   public virtual void scheduleTransaction:(std::shared_ptr<const facebook::react::MountingCoordinator> mountingCoordinator);
   public virtual void sendAccessibilityEvent:eventType:(ReactTag reactTag, NSString* eventType);
   public virtual void setContextContainer:(std::shared_ptr<const facebook::react::ContextContainer> contextContainer);
@@ -3432,11 +3433,13 @@ class facebook::react::ActivityIndicatorViewProps : public facebook::react::Host
 class facebook::react::AppleEventBeat : public facebook::react::EventBeat, public facebook::react::RunLoopObserver::Delegate {
   public AppleEventBeat(const facebook::react::AppleEventBeat&) = delete;
   public AppleEventBeat(facebook::react::AppleEventBeat&&) = delete;
-  public AppleEventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, std::unique_ptr<const facebook::react::RunLoopObserver> uiRunLoopObserver, facebook::react::RuntimeScheduler& RuntimeScheduler, facebook::react::AppleEventBeat::WindowLayerResolver windowLayerResolver);
+  public AppleEventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, std::unique_ptr<const facebook::react::RunLoopObserver> uiRunLoopObserver, facebook::react::RuntimeScheduler& RuntimeScheduler, facebook::react::AppleEventBeat::WindowLayerResolver windowLayerResolver, facebook::react::AppleEventBeat::PendingMountPerformer pendingMountPerformer = nullptr);
   public facebook::react::AppleEventBeat& operator=(const facebook::react::AppleEventBeat&) = delete;
   public facebook::react::AppleEventBeat& operator=(facebook::react::AppleEventBeat&&) = delete;
+  public using PendingMountPerformer = std::function<void()>;
   public using WindowLayerResolver = std::function<CALayer*(facebook::react::Tag)>;
   public virtual void activityDidChange(const facebook::react::RunLoopObserver::Delegate* delegate, facebook::react::RunLoopObserver::Activity activity) const noexcept override;
+  public virtual void requestForDiscreteEvent(facebook::react::Tag tag) const override;
   public virtual void requestSynchronous(facebook::react::Tag tag) const override;
   public void requestSynchronous() const;
   public ~AppleEventBeat() override;
@@ -3619,7 +3622,9 @@ class facebook::react::Error {
 }
 
 class facebook::react::EventBeat {
+  protected bool isSynchronousRequestPending() const;
   protected facebook::react::EventBeat::BeatCallback beatCallback_;
+  protected facebook::react::RuntimeScheduler& getRuntimeScheduler() const;
   protected mutable std::atomic<bool> isEventBeatRequested_;
   protected std::function<void()> induceCallback_;
   protected std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox_;
@@ -3630,6 +3635,7 @@ class facebook::react::EventBeat {
   public using BeatCallback = std::function<void(facebook::jsi::Runtime& runtime)>;
   public using Factory = std::function<std::unique_ptr<facebook::react::EventBeat>(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox)>;
   public virtual void request() const;
+  public virtual void requestForDiscreteEvent(facebook::react::Tag tag) const;
   public virtual void requestSynchronous(facebook::react::Tag tag) const;
   public virtual ~EventBeat() = default;
   public void requestSynchronous() const;

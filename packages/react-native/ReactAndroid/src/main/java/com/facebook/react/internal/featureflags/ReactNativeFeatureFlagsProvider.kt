@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<dcfcca254ea381db5ac0cc2ea2a6a66b>>
+ * @generated SignedSource<<1d1ef1bd197236c8b9da8e610dc113c4>>
  */
 
 /**
@@ -125,6 +125,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableResizeObserverByDefault(): Boolean
 
+  @DoNotStrip public fun enableSameFrameMountForDiscreteEvents(): Boolean
+
   @DoNotStrip public fun enableSwiftUIBasedFilters(): Boolean
 
   @DoNotStrip public fun enableViewCulling(): Boolean
@@ -178,6 +180,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun redBoxV2Android(): Boolean
 
   @DoNotStrip public fun redBoxV2IOS(): Boolean
+
+  @DoNotStrip public fun sameFrameMountForDiscreteEventsTimeoutMs(): Double
 
   @DoNotStrip public fun shouldPressibilityUseW3CPointerEventsForHover(): Boolean
 

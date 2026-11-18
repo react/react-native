@@ -7,7 +7,21 @@
 
 #include "TextInputEventEmitter.h"
 
+#include <react/featureflags/ReactNativeFeatureFlags.h>
+
 namespace facebook::react {
+
+/*
+ * Text the user types is a discrete input (as `input`, `keypress` and `change`
+ * are on the web). The category only differs from the default when
+ * `enableSameFrameMountForDiscreteEvents` is on, so that the events can be
+ * mounted in the frame of the keystroke.
+ */
+static RawEvent::Category userInputCategory() {
+  return ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents()
+      ? RawEvent::Category::Discrete
+      : RawEvent::Category::Unspecified;
+}
 
 static jsi::Value textInputMetricsPayload(
     jsi::Runtime& runtime,
@@ -144,7 +158,10 @@ void TextInputEventEmitter::onBlur(const Metrics& textInputMetrics) const {
 
 void TextInputEventEmitter::onChange(const Metrics& textInputMetrics) const {
   dispatchTextInputEvent(
-      "change", textInputMetrics, /* includeSelectionState */ true);
+      "change",
+      textInputMetrics,
+      /* includeSelectionState */ true,
+      userInputCategory());
 }
 
 void TextInputEventEmitter::onContentSizeChange(
@@ -165,14 +182,21 @@ void TextInputEventEmitter::onEndEditing(
 
 void TextInputEventEmitter::onSubmitEditing(
     const Metrics& textInputMetrics) const {
-  dispatchTextInputEvent("submitEditing", textInputMetrics);
+  dispatchTextInputEvent(
+      "submitEditing",
+      textInputMetrics,
+      /* includeSelectionState */ false,
+      userInputCategory());
 }
 
 void TextInputEventEmitter::onKeyPress(
     const KeyPressMetrics& keyPressMetrics) const {
-  dispatchEvent("keyPress", [keyPressMetrics](jsi::Runtime& runtime) {
-    return keyPressMetricsPayload(runtime, keyPressMetrics);
-  });
+  dispatchEvent(
+      "keyPress",
+      [keyPressMetrics](jsi::Runtime& runtime) {
+        return keyPressMetricsPayload(runtime, keyPressMetrics);
+      },
+      userInputCategory());
 }
 
 void TextInputEventEmitter::onScroll(const Metrics& textInputMetrics) const {
@@ -184,12 +208,15 @@ void TextInputEventEmitter::onScroll(const Metrics& textInputMetrics) const {
 void TextInputEventEmitter::dispatchTextInputEvent(
     const std::string& name,
     const Metrics& textInputMetrics,
-    bool includeSelectionState) const {
+    bool includeSelectionState,
+    RawEvent::Category category) const {
   dispatchEvent(
-      name, [includeSelectionState, textInputMetrics](jsi::Runtime& runtime) {
+      name,
+      [includeSelectionState, textInputMetrics](jsi::Runtime& runtime) {
         return textInputMetricsPayload(
             runtime, textInputMetrics, includeSelectionState);
-      });
+      },
+      category);
 }
 
 void TextInputEventEmitter::dispatchTextInputContentSizeChangeEvent(

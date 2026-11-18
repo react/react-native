@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9b64fa4c8329098d9c2977ad2a162fbf>>
+ * @generated SignedSource<<c419b4b40382dfea53b997bc5aa8ee61>>
  */
 
 /**
@@ -230,6 +230,10 @@ bool ReactNativeFeatureFlags::enableResizeObserverByDefault() {
   return getAccessor().enableResizeObserverByDefault();
 }
 
+bool ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents() {
+  return getAccessor().enableSameFrameMountForDiscreteEvents();
+}
+
 bool ReactNativeFeatureFlags::enableSwiftUIBasedFilters() {
   return getAccessor().enableSwiftUIBasedFilters();
 }
@@ -336,6 +340,10 @@ bool ReactNativeFeatureFlags::redBoxV2Android() {
 
 bool ReactNativeFeatureFlags::redBoxV2IOS() {
   return getAccessor().redBoxV2IOS();
+}
+
+double ReactNativeFeatureFlags::sameFrameMountForDiscreteEventsTimeoutMs() {
+  return getAccessor().sameFrameMountForDiscreteEventsTimeoutMs();
 }
 
 bool ReactNativeFeatureFlags::shouldPressibilityUseW3CPointerEventsForHover() {

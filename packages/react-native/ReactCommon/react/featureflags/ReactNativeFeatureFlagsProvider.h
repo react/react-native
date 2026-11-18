@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<60437c0aafa9d1f8de97120056c42970>>
+ * @generated SignedSource<<d29167c2f467c8fd7296ed7bb7ae089c>>
  */
 
 /**
@@ -78,6 +78,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enablePreparedTextLayout() = 0;
   virtual bool enablePropsUpdateReconciliationAndroid() = 0;
   virtual bool enableResizeObserverByDefault() = 0;
+  virtual bool enableSameFrameMountForDiscreteEvents() = 0;
   virtual bool enableSwiftUIBasedFilters() = 0;
   virtual bool enableViewCulling() = 0;
   virtual bool enableViewRecycling() = 0;
@@ -105,6 +106,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool preventShadowTreeCommitExhaustion() = 0;
   virtual bool redBoxV2Android() = 0;
   virtual bool redBoxV2IOS() = 0;
+  virtual double sameFrameMountForDiscreteEventsTimeoutMs() = 0;
   virtual bool shouldPressibilityUseW3CPointerEventsForHover() = 0;
   virtual bool shouldTriggerResponderTransferOnScrollAndroid() = 0;
   virtual bool skipActivityIdentityAssertionOnHostPause() = 0;

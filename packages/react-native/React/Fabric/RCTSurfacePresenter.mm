@@ -294,7 +294,8 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
   toolbox.bridgelessBindingsExecutor = _bridgelessBindingsExecutor;
 
   __weak RCTMountingManager *weakMountingManager = _mountingManager;
-  toolbox.eventBeatFactory = [runtimeScheduler, weakMountingManager](
+  __weak RCTSurfacePresenter *weakSelf = self;
+  toolbox.eventBeatFactory = [runtimeScheduler, weakMountingManager, weakSelf](
                                  std::shared_ptr<EventBeat::OwnerBox> ownerBox) -> std::unique_ptr<EventBeat> {
     auto runLoopObserver =
         std::make_unique<const MainRunLoopObserver>(RunLoopObserver::Activity::BeforeWaiting, ownerBox->owner);
@@ -302,8 +303,20 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
       RCTMountingManager *mountingManager = weakMountingManager;
       return [mountingManager.componentViewRegistry findComponentViewWithTag:tag].window.layer;
     };
+    auto pendingMountPerformer = [weakMountingManager, weakSelf]() {
+      // With commit branching merged on the main thread, the React revision
+      // the beat promoted is still waiting for its merge; merging it here
+      // mounts it inline (this runs on the main thread).
+      [weakSelf _drainPendingReactRevisionMerges];
+      RCTMountingManager *mountingManager = weakMountingManager;
+      [mountingManager mountPendingTransactions];
+    };
     return std::make_unique<AppleEventBeat>(
-        std::move(ownerBox), std::move(runLoopObserver), *runtimeScheduler, std::move(windowLayerResolver));
+        std::move(ownerBox),
+        std::move(runLoopObserver),
+        *runtimeScheduler,
+        std::move(windowLayerResolver),
+        std::move(pendingMountPerformer));
   };
 
   RCTScheduler *scheduler = [[RCTScheduler alloc] initWithToolbox:toolbox];

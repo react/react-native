@@ -597,6 +597,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableSameFrameMountForDiscreteEvents: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          'On iOS, mounts the effects of discrete events (touch start/end, click, text input change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the display\'s maximum refresh rate) and otherwise falls back to the asynchronous main queue mount, which presents the change one frame later.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableSwiftUIBasedFilters: {
       defaultValue: false,
       metadata: {
@@ -887,6 +898,17 @@ const definitions: FeatureFlagDefinitions = {
           'Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    sameFrameMountForDiscreteEventsTimeoutMs: {
+      defaultValue: 8,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          'Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the display\'s maximum refresh rate. 8 ms keeps the input frame within budget at 60 Hz while covering the JavaScript work of a typical tap or keystroke. Zero or less disables the wait.',
+        expectedReleaseValue: 8,
+        purpose: 'operational',
       },
       ossReleaseStage: 'none',
     },

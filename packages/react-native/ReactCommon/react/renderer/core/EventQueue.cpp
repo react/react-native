@@ -22,7 +22,30 @@ EventQueue::EventQueue(
       [this](jsi::Runtime& runtime) { onBeat(runtime); });
 }
 
+namespace {
+
+// The categories React maps to its discrete event priority regardless of
+// other events in the queue (see `EventQueueProcessor`).
+bool isDiscreteCategory(RawEvent::Category category) {
+  switch (category) {
+    case RawEvent::Category::Discrete:
+    case RawEvent::Category::ContinuousStart:
+    case RawEvent::Category::ContinuousEnd:
+      return true;
+    default:
+      return false;
+  }
+}
+
+} // namespace
+
 void EventQueue::enqueueEvent(RawEvent&& rawEvent) const {
+  const auto isDiscrete = isDiscreteCategory(rawEvent.category) &&
+      ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents();
+  const auto tag = isDiscrete && rawEvent.eventTarget
+      ? rawEvent.eventTarget->getTag()
+      : kNoTag;
+
   {
     std::scoped_lock lock(queueMutex_);
 
@@ -53,7 +76,11 @@ void EventQueue::enqueueEvent(RawEvent&& rawEvent) const {
     }
   }
 
-  onEnqueue();
+  if (isDiscrete) {
+    eventBeat_->requestForDiscreteEvent(tag);
+  } else {
+    onEnqueue();
+  }
 }
 
 void EventQueue::enqueueUniqueEvent(RawEvent&& rawEvent) const {

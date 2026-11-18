@@ -49,6 +49,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)scheduleTransaction:(std::shared_ptr<const facebook::react::MountingCoordinator>)mountingCoordinator;
 
 /**
+ * Performs right away the transactions that were scheduled from another thread and have not been performed yet,
+ * instead of waiting for the main queue to get to them (they become no-ops when it does). With
+ * `enableSameFrameMountForDiscreteEvents`, every transaction scheduled from another thread is recorded for this;
+ * without it the list stays empty and this does nothing. Does nothing either while a transaction is being performed
+ * or while a command or accessibility event scheduled from another thread has not run yet, so
+ * those keep their order. Used for discrete events. Must be called on the main thread.
+ */
+- (void)mountPendingTransactions;
+
+/**
  * Dispatch a command to be performed on the main thread.
  * Can be called from any thread.
  */

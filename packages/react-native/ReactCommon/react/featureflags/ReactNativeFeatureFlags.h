@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0a8759cd09aa452417aaa3720da346ae>>
+ * @generated SignedSource<<3f477b1c4ed8859f1f94c8bed0044a3b>>
  */
 
 /**
@@ -297,6 +297,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableResizeObserverByDefault();
 
   /**
+   * On iOS, mounts the effects of discrete events (touch start/end, click, text input change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the display's maximum refresh rate) and otherwise falls back to the asynchronous main queue mount, which presents the change one frame later.
+   */
+  RN_EXPORT static bool enableSameFrameMountForDiscreteEvents();
+
+  /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
    */
   RN_EXPORT static bool enableSwiftUIBasedFilters();
@@ -430,6 +435,11 @@ class ReactNativeFeatureFlags {
    * Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.
    */
   RN_EXPORT static bool redBoxV2IOS();
+
+  /**
+   * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the display's maximum refresh rate. 8 ms keeps the input frame within budget at 60 Hz while covering the JavaScript work of a typical tap or keystroke. Zero or less disables the wait.
+   */
+  RN_EXPORT static double sameFrameMountForDiscreteEventsTimeoutMs();
 
   /**
    * Function used to enable / disable Pressibility from using W3C Pointer Events for its hover callbacks
