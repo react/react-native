@@ -15,7 +15,7 @@ exports[`GenerateModuleH can generate a header file NativeModule specs 1`] = `
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
-#include <folly/Range.h>
+#include <span>
 
 namespace facebook::react {
 
@@ -33,8 +33,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -43,7 +58,7 @@ private:
   }
 
   static jsi::Value invoke_getReadOnlyArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getReadOnlyArray) == 2,
       \\"Expected getReadOnlyArray(...) to have 2 parameters\\");
@@ -52,7 +67,7 @@ private:
   }
 
   static jsi::Value invoke_getArrayWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArrayWithAlias) == 3,
       \\"Expected getArrayWithAlias(...) to have 3 parameters\\");
@@ -75,8 +90,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getBoolean(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBoolean) == 2,
       \\"Expected getBoolean(...) to have 2 parameters\\");
@@ -85,7 +115,7 @@ private:
   }
 
   static jsi::Value invoke_getBooleanWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBooleanWithAlias) == 2,
       \\"Expected getBooleanWithAlias(...) to have 2 parameters\\");
@@ -107,8 +137,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -117,7 +162,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallbackWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallbackWithAlias) == 2,
       \\"Expected getValueWithCallbackWithAlias(...) to have 2 parameters\\");
@@ -375,8 +420,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getStatusRegular(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusRegular) == 2,
       \\"Expected getStatusRegular(...) to have 2 parameters\\");
@@ -385,7 +445,7 @@ private:
   }
 
   static jsi::Value invoke_getStatusStr(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusStr) == 2,
       \\"Expected getStatusStr(...) to have 2 parameters\\");
@@ -394,7 +454,7 @@ private:
   }
 
   static jsi::Value invoke_getStatusNum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusNum) == 2,
       \\"Expected getStatusNum(...) to have 2 parameters\\");
@@ -403,7 +463,7 @@ private:
   }
 
   static jsi::Value invoke_getStatusLowerCase(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusLowerCase) == 2,
       \\"Expected getStatusLowerCase(...) to have 2 parameters\\");
@@ -412,7 +472,7 @@ private:
   }
 
   static jsi::Value invoke_getStateType(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateType) == 5,
       \\"Expected getStateType(...) to have 5 parameters\\");
@@ -424,7 +484,7 @@ private:
   }
 
   static jsi::Value invoke_getStateTypeWithEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateTypeWithEnums) == 2,
       \\"Expected getStateTypeWithEnums(...) to have 2 parameters\\");
@@ -450,8 +510,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -460,7 +535,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -469,7 +544,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -478,7 +553,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -487,7 +562,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -516,8 +591,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -526,7 +616,7 @@ private:
   }
 
   static jsi::Value invoke_getNumberWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumberWithAlias) == 2,
       \\"Expected getNumberWithAlias(...) to have 2 parameters\\");
@@ -551,8 +641,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObject) == 2,
       \\"Expected getGenericObject(...) to have 2 parameters\\");
@@ -561,7 +666,7 @@ private:
   }
 
   static jsi::Value invoke_getGenericObjectReadOnly(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectReadOnly) == 2,
       \\"Expected getGenericObjectReadOnly(...) to have 2 parameters\\");
@@ -570,7 +675,7 @@ private:
   }
 
   static jsi::Value invoke_getGenericObjectWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectWithAlias) == 2,
       \\"Expected getGenericObjectWithAlias(...) to have 2 parameters\\");
@@ -579,7 +684,7 @@ private:
   }
 
   static jsi::Value invoke_difficultObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::difficultObject) == 2,
       \\"Expected difficultObject(...) to have 2 parameters\\");
@@ -678,6 +783,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getSomeObj) == 1,
@@ -693,7 +813,7 @@ private:
   }
 
   static jsi::Value invoke_getSomeObjFromPartialSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getSomeObjFromPartialSomeObj) == 2,
       \\"Expected getSomeObjFromPartialSomeObj(...) to have 2 parameters\\");
@@ -702,7 +822,7 @@ private:
   }
 
   static jsi::Value invoke_getPartialPartial(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getPartialPartial) == 3,
       \\"Expected getPartialPartial(...) to have 3 parameters\\");
@@ -725,8 +845,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -735,7 +870,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromiseWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromiseWithAlias) == 2,
       \\"Expected getValueWithPromiseWithAlias(...) to have 2 parameters\\");
@@ -808,6 +943,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -823,7 +973,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -832,7 +982,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -841,7 +991,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -850,7 +1000,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -859,7 +1009,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -868,7 +1018,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -877,7 +1027,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -886,7 +1036,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -895,7 +1045,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -906,7 +1056,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -915,7 +1065,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -988,6 +1138,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -1003,7 +1168,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1012,7 +1177,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1021,7 +1186,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1030,7 +1195,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1039,7 +1204,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1048,7 +1213,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1057,7 +1222,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1066,7 +1231,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1075,7 +1240,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1086,7 +1251,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1095,7 +1260,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1168,6 +1333,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -1183,7 +1363,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1192,7 +1372,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1201,7 +1381,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1210,7 +1390,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1219,7 +1399,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1228,7 +1408,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1237,7 +1417,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1246,7 +1426,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1255,7 +1435,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1266,7 +1446,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1275,7 +1455,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1350,6 +1530,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -1365,7 +1560,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1374,7 +1569,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1383,7 +1578,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1392,7 +1587,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1401,7 +1596,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1410,7 +1605,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1419,7 +1614,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1428,7 +1623,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1437,7 +1632,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1448,7 +1643,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1457,7 +1652,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1532,6 +1727,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -1547,7 +1757,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1556,7 +1766,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1565,7 +1775,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1574,7 +1784,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1583,7 +1793,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1592,7 +1802,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1601,7 +1811,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1610,7 +1820,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1619,7 +1829,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1630,7 +1840,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1639,7 +1849,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1661,8 +1871,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1671,7 +1896,7 @@ private:
   }
 
   static jsi::Value invoke_getStringWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStringWithAlias) == 2,
       \\"Expected getStringWithAlias(...) to have 2 parameters\\");
@@ -1699,7 +1924,7 @@ exports[`GenerateModuleH can generate a header file NativeModule specs with assu
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
-#include <folly/Range.h>
+#include <span>
 
 namespace facebook::react {
 
@@ -1717,8 +1942,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1727,7 +1967,7 @@ private:
   }
 
   static jsi::Value invoke_getReadOnlyArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getReadOnlyArray) == 2,
       \\"Expected getReadOnlyArray(...) to have 2 parameters\\");
@@ -1736,7 +1976,7 @@ private:
   }
 
   static jsi::Value invoke_getArrayWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArrayWithAlias) == 3,
       \\"Expected getArrayWithAlias(...) to have 3 parameters\\");
@@ -1759,8 +1999,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getBoolean(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBoolean) == 2,
       \\"Expected getBoolean(...) to have 2 parameters\\");
@@ -1769,7 +2024,7 @@ private:
   }
 
   static jsi::Value invoke_getBooleanWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBooleanWithAlias) == 2,
       \\"Expected getBooleanWithAlias(...) to have 2 parameters\\");
@@ -1791,8 +2046,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1801,7 +2071,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallbackWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallbackWithAlias) == 2,
       \\"Expected getValueWithCallbackWithAlias(...) to have 2 parameters\\");
@@ -2059,8 +2329,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getStatusRegular(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusRegular) == 2,
       \\"Expected getStatusRegular(...) to have 2 parameters\\");
@@ -2069,7 +2354,7 @@ private:
   }
 
   static jsi::Value invoke_getStatusStr(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusStr) == 2,
       \\"Expected getStatusStr(...) to have 2 parameters\\");
@@ -2078,7 +2363,7 @@ private:
   }
 
   static jsi::Value invoke_getStatusNum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusNum) == 2,
       \\"Expected getStatusNum(...) to have 2 parameters\\");
@@ -2087,7 +2372,7 @@ private:
   }
 
   static jsi::Value invoke_getStatusLowerCase(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusLowerCase) == 2,
       \\"Expected getStatusLowerCase(...) to have 2 parameters\\");
@@ -2096,7 +2381,7 @@ private:
   }
 
   static jsi::Value invoke_getStateType(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateType) == 5,
       \\"Expected getStateType(...) to have 5 parameters\\");
@@ -2108,7 +2393,7 @@ private:
   }
 
   static jsi::Value invoke_getStateTypeWithEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateTypeWithEnums) == 2,
       \\"Expected getStateTypeWithEnums(...) to have 2 parameters\\");
@@ -2134,8 +2419,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2144,7 +2444,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2153,7 +2453,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2162,7 +2462,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2171,7 +2471,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2200,8 +2500,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2210,7 +2525,7 @@ private:
   }
 
   static jsi::Value invoke_getNumberWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumberWithAlias) == 2,
       \\"Expected getNumberWithAlias(...) to have 2 parameters\\");
@@ -2235,8 +2550,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObject) == 2,
       \\"Expected getGenericObject(...) to have 2 parameters\\");
@@ -2245,7 +2575,7 @@ private:
   }
 
   static jsi::Value invoke_getGenericObjectReadOnly(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectReadOnly) == 2,
       \\"Expected getGenericObjectReadOnly(...) to have 2 parameters\\");
@@ -2254,7 +2584,7 @@ private:
   }
 
   static jsi::Value invoke_getGenericObjectWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectWithAlias) == 2,
       \\"Expected getGenericObjectWithAlias(...) to have 2 parameters\\");
@@ -2263,7 +2593,7 @@ private:
   }
 
   static jsi::Value invoke_difficultObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::difficultObject) == 2,
       \\"Expected difficultObject(...) to have 2 parameters\\");
@@ -2362,6 +2692,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getSomeObj) == 1,
@@ -2377,7 +2722,7 @@ private:
   }
 
   static jsi::Value invoke_getSomeObjFromPartialSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getSomeObjFromPartialSomeObj) == 2,
       \\"Expected getSomeObjFromPartialSomeObj(...) to have 2 parameters\\");
@@ -2386,7 +2731,7 @@ private:
   }
 
   static jsi::Value invoke_getPartialPartial(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getPartialPartial) == 3,
       \\"Expected getPartialPartial(...) to have 3 parameters\\");
@@ -2409,8 +2754,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2419,7 +2779,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromiseWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromiseWithAlias) == 2,
       \\"Expected getValueWithPromiseWithAlias(...) to have 2 parameters\\");
@@ -2492,6 +2852,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -2507,7 +2882,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2516,7 +2891,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2525,7 +2900,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2534,7 +2909,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2543,7 +2918,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2552,7 +2927,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -2561,7 +2936,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -2570,7 +2945,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -2579,7 +2954,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -2590,7 +2965,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2599,7 +2974,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2672,6 +3047,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -2687,7 +3077,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2696,7 +3086,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2705,7 +3095,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2714,7 +3104,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2723,7 +3113,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2732,7 +3122,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -2741,7 +3131,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -2750,7 +3140,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -2759,7 +3149,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -2770,7 +3160,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2779,7 +3169,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2852,6 +3242,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -2867,7 +3272,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2876,7 +3281,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2885,7 +3290,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2894,7 +3299,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2903,7 +3308,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2912,7 +3317,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -2921,7 +3326,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -2930,7 +3335,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -2939,7 +3344,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -2950,7 +3355,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2959,7 +3364,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -3034,6 +3439,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -3049,7 +3469,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -3058,7 +3478,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -3067,7 +3487,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -3076,7 +3496,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -3085,7 +3505,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -3094,7 +3514,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -3103,7 +3523,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -3112,7 +3532,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -3121,7 +3541,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -3132,7 +3552,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -3141,7 +3561,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -3216,6 +3636,21 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
@@ -3231,7 +3666,7 @@ private:
   }
 
   static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -3240,7 +3675,7 @@ private:
   }
 
   static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -3249,7 +3684,7 @@ private:
   }
 
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -3258,7 +3693,7 @@ private:
   }
 
   static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -3267,7 +3702,7 @@ private:
   }
 
   static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -3276,7 +3711,7 @@ private:
   }
 
   static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -3285,7 +3720,7 @@ private:
   }
 
   static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -3294,7 +3729,7 @@ private:
   }
 
   static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -3303,7 +3738,7 @@ private:
   }
 
   static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -3314,7 +3749,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -3323,7 +3758,7 @@ private:
   }
 
   static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -3345,8 +3780,23 @@ protected:
   }
   
 private:
+  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage-in-container\\")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
   static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -3355,7 +3805,7 @@ private:
   }
 
   static jsi::Value invoke_getStringWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
-    const folly::Range<const jsi::Value*> args(argv, count);
+    const auto args = makeArgumentSpan(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStringWithAlias) == 2,
       \\"Expected getStringWithAlias(...) to have 2 parameters\\");

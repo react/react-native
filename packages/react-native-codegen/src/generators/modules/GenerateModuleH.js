@@ -174,6 +174,25 @@ const ModuleSpecClassDeclarationTemplate = ({
   moduleFunctions: string[],
   methods: ReadonlyArray<Readonly<{methodName: string, paramCount: number}>>,
 }>) => {
+  const argumentSpan = methods.some(({paramCount}) => paramCount > 0)
+    ? `  static std::span<const jsi::Value> makeArgumentSpan(const jsi::Value* args, size_t count) {
+#ifdef __clang__
+#if __has_warning("-Wunsafe-buffer-usage-in-container")
+#pragma clang unsafe_buffer_usage begin
+#endif
+#endif
+    // JSI supplies the argument pointer and its corresponding count.
+    return {args, count};
+#ifdef __clang__
+#if __has_warning("-Wunsafe-buffer-usage-in-container")
+#pragma clang unsafe_buffer_usage end
+#endif
+#endif
+  }
+
+`
+    : '';
+
   return `${enums}${structs}
 template <typename T>
 class JSI_EXPORT ${hasteModuleName}CxxSpec : public TurboModule {
@@ -192,7 +211,7 @@ ${methods
   }
   ${moduleEventEmitters.map(e => e.emitFunction).join('\n')}
 private:
-${moduleFunctions.join('\n\n')}
+${argumentSpan}${moduleFunctions.join('\n\n')}
 };`;
 };
 
@@ -215,7 +234,7 @@ const FileTemplate = ({
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
-#include <folly/Range.h>
+#include <span>
 
 namespace facebook::react {
 
@@ -621,7 +640,7 @@ function translateFunctionToCpp(
     methodCallArgs = `,\n      ${methodCallArgs}`;
   }
 
-  return `  static jsi::Value invoke_${prop.name}(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* ${args.length > 0 ? 'argv' : '/*args*/'}, size_t ${args.length > 0 ? 'count' : '/*count*/'}) {${args.length > 0 ? '\n    const folly::Range<const jsi::Value*> args(argv, count);' : ''}
+  return `  static jsi::Value invoke_${prop.name}(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* ${args.length > 0 ? 'argv' : '/*args*/'}, size_t ${args.length > 0 ? 'count' : '/*count*/'}) {${args.length > 0 ? '\n    const auto args = makeArgumentSpan(argv, count);' : ''}
     static_assert(
       bridging::getParameterCount(&T::${prop.name}) == ${paramTypes.length},
       "Expected ${prop.name}(...) to have ${paramTypes.length} parameters");
