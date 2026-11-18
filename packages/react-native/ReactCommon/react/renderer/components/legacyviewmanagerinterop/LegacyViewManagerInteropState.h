@@ -11,7 +11,7 @@
 
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
-#import <memory>
+#include <memory>
 
 namespace facebook::react {
 
