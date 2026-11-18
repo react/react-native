@@ -313,13 +313,26 @@ public class ReactModalHostView(context: ThemedReactContext) :
     newDialog.setOnKeyListener(
         object : DialogInterface.OnKeyListener {
           override fun onKey(dialog: DialogInterface, keyCode: Int, event: KeyEvent): Boolean {
+            val isCloseKey = keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ESCAPE
+            // Like Dialog.onKeyUp and Activity.onKeyUp, only a press that went down in this dialog
+            // and was not canceled may close it. On Android 16, a Back key press with the keyboard
+            // open is handled by the IME's OnBackInvokedCallback, which hides the keyboard, and the
+            // ACTION_UP is then forwarded here marked as canceled. Without this check, that single
+            // press also closed the Modal.
+            val keyDispatcherState = newDialog.window?.decorView?.keyDispatcherState
+            if (isCloseKey && event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+              keyDispatcherState?.startTracking(event, dialog)
+            }
             if (event.action == KeyEvent.ACTION_UP) {
               // We need to stop the BACK button and ESCAPE key from closing the dialog by default
               // so we capture that event and instead inform JS so that it can make the decision as
               // to whether or not to allow the back/escape key to close the dialog. If it chooses
               // to, it can just set visible to false on the Modal and the Modal will go away
-              if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ESCAPE) {
-                handleCloseAction()
+              if (isCloseKey) {
+                keyDispatcherState?.handleUpEvent(event)
+                if (event.isTracking && !event.isCanceled) {
+                  handleCloseAction()
+                }
                 return true
               } else {
                 // We redirect the rest of the key events to the current activity, since the
