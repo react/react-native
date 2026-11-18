@@ -132,7 +132,7 @@ class FileReader extends EventTarget {
         }
         this._blob = null;
 
-        const base64 = text.split(',')[1];
+        const base64 = text.split(',')[1] ?? '';
         const typedArray = toByteArray(base64);
 
         // $FlowFixMe[incompatible-type]
