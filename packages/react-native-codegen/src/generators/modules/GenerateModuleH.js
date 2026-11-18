@@ -215,6 +215,8 @@ const FileTemplate = ({
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
+#include <folly/Range.h>
+
 namespace facebook::react {
 
 ${modules.join('\n\n')}
@@ -619,7 +621,7 @@ function translateFunctionToCpp(
     methodCallArgs = `,\n      ${methodCallArgs}`;
   }
 
-  return `  static jsi::Value invoke_${prop.name}(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* ${args.length > 0 ? 'args' : '/*args*/'}, size_t ${args.length > 0 ? 'count' : '/*count*/'}) {
+  return `  static jsi::Value invoke_${prop.name}(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* ${args.length > 0 ? 'argv' : '/*args*/'}, size_t ${args.length > 0 ? 'count' : '/*count*/'}) {${args.length > 0 ? '\n    const folly::Range<const jsi::Value*> args(argv, count);' : ''}
     static_assert(
       bridging::getParameterCount(&T::${prop.name}) == ${paramTypes.length},
       "Expected ${prop.name}(...) to have ${paramTypes.length} parameters");

@@ -15,6 +15,8 @@ exports[`GenerateModuleH can generate a header file NativeModule specs 1`] = `
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
+#include <folly/Range.h>
+
 namespace facebook::react {
 
 
@@ -31,7 +33,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -39,7 +42,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getReadOnlyArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getReadOnlyArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getReadOnlyArray) == 2,
       \\"Expected getReadOnlyArray(...) to have 2 parameters\\");
@@ -47,7 +51,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getArrayWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArrayWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArrayWithAlias) == 3,
       \\"Expected getArrayWithAlias(...) to have 3 parameters\\");
@@ -70,7 +75,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getBoolean(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBoolean(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBoolean) == 2,
       \\"Expected getBoolean(...) to have 2 parameters\\");
@@ -78,7 +84,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value invoke_getBooleanWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBooleanWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBooleanWithAlias) == 2,
       \\"Expected getBooleanWithAlias(...) to have 2 parameters\\");
@@ -100,7 +107,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -108,7 +116,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithCallbackWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallbackWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallbackWithAlias) == 2,
       \\"Expected getValueWithCallbackWithAlias(...) to have 2 parameters\\");
@@ -366,7 +375,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getStatusRegular(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusRegular(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusRegular) == 2,
       \\"Expected getStatusRegular(...) to have 2 parameters\\");
@@ -374,7 +384,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStatusStr(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusStr(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusStr) == 2,
       \\"Expected getStatusStr(...) to have 2 parameters\\");
@@ -382,7 +393,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStatusNum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusNum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusNum) == 2,
       \\"Expected getStatusNum(...) to have 2 parameters\\");
@@ -390,7 +402,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStatusLowerCase(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusLowerCase(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusLowerCase) == 2,
       \\"Expected getStatusLowerCase(...) to have 2 parameters\\");
@@ -398,7 +411,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStateType(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStateType(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateType) == 5,
       \\"Expected getStateType(...) to have 5 parameters\\");
@@ -409,7 +423,8 @@ private:
       count <= 3 ? throw jsi::JSError(rt, \\"Expected argument in position 3 to be passed\\") : args[3].asString(rt));
   }
 
-  static jsi::Value invoke_getStateTypeWithEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStateTypeWithEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateTypeWithEnums) == 2,
       \\"Expected getStateTypeWithEnums(...) to have 2 parameters\\");
@@ -435,7 +450,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -443,7 +459,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -451,7 +468,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -459,7 +477,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -467,7 +486,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -496,7 +516,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -504,7 +525,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value invoke_getNumberWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumberWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumberWithAlias) == 2,
       \\"Expected getNumberWithAlias(...) to have 2 parameters\\");
@@ -529,7 +551,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObject) == 2,
       \\"Expected getGenericObject(...) to have 2 parameters\\");
@@ -537,7 +560,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getGenericObjectReadOnly(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getGenericObjectReadOnly(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectReadOnly) == 2,
       \\"Expected getGenericObjectReadOnly(...) to have 2 parameters\\");
@@ -545,7 +569,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getGenericObjectWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getGenericObjectWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectWithAlias) == 2,
       \\"Expected getGenericObjectWithAlias(...) to have 2 parameters\\");
@@ -553,7 +578,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_difficultObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_difficultObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::difficultObject) == 2,
       \\"Expected difficultObject(...) to have 2 parameters\\");
@@ -666,7 +692,8 @@ private:
     return bridging::callFromJs<jsi::Object>(rt, &T::getPartialSomeObj,  static_cast<NativePartialAnnotationTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value invoke_getSomeObjFromPartialSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getSomeObjFromPartialSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getSomeObjFromPartialSomeObj) == 2,
       \\"Expected getSomeObjFromPartialSomeObj(...) to have 2 parameters\\");
@@ -674,7 +701,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getPartialPartial(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getPartialPartial(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getPartialPartial) == 3,
       \\"Expected getPartialPartial(...) to have 3 parameters\\");
@@ -697,7 +725,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -705,7 +734,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value invoke_getValueWithPromiseWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromiseWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromiseWithAlias) == 2,
       \\"Expected getValueWithPromiseWithAlias(...) to have 2 parameters\\");
@@ -792,7 +822,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -800,7 +831,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -808,7 +840,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -816,7 +849,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -824,7 +858,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -832,7 +867,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -840,7 +876,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -848,7 +885,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -856,7 +894,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -866,7 +905,8 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asObject(rt));
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -874,7 +914,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -961,7 +1002,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleArraysCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -969,7 +1011,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -977,7 +1020,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -985,7 +1029,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -993,7 +1038,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1001,7 +1047,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1009,7 +1056,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1017,7 +1065,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1025,7 +1074,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1035,7 +1085,8 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1043,7 +1094,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1130,7 +1182,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleNullableCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1138,7 +1191,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1146,7 +1200,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1154,7 +1209,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asString(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1162,7 +1218,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1170,7 +1227,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1178,7 +1236,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1186,7 +1245,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1194,7 +1254,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1204,7 +1265,8 @@ private:
       count <= 2 || args[2].isNull() || args[2].isUndefined() ? std::nullopt : std::make_optional(args[2].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1212,7 +1274,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1301,7 +1364,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleNullableAndOptionalCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1309,7 +1373,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1317,7 +1382,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1325,7 +1391,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asString(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1333,7 +1400,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1341,7 +1409,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1349,7 +1418,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1357,7 +1427,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1365,7 +1436,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1375,7 +1447,8 @@ private:
       count <= 2 || args[2].isNull() || args[2].isUndefined() ? std::nullopt : std::make_optional(args[2].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1383,7 +1456,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asFunction(rt)));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1472,7 +1546,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleOptionalCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1480,7 +1555,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1488,7 +1564,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1496,7 +1573,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asString(rt)));
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1504,7 +1582,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1512,7 +1591,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -1520,7 +1600,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -1528,7 +1609,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1536,7 +1618,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1546,7 +1629,8 @@ private:
       count <= 2 || args[2].isUndefined() ? std::nullopt : std::make_optional(args[2].asObject(rt)));
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1554,7 +1638,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asFunction(rt)));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -1576,7 +1661,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1584,7 +1670,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));
   }
 
-  static jsi::Value invoke_getStringWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStringWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStringWithAlias) == 2,
       \\"Expected getStringWithAlias(...) to have 2 parameters\\");
@@ -1612,6 +1699,8 @@ exports[`GenerateModuleH can generate a header file NativeModule specs with assu
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
+#include <folly/Range.h>
+
 namespace facebook::react {
 
 
@@ -1628,7 +1717,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1636,7 +1726,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getReadOnlyArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getReadOnlyArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getReadOnlyArray) == 2,
       \\"Expected getReadOnlyArray(...) to have 2 parameters\\");
@@ -1644,7 +1735,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getArrayWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArrayWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArrayWithAlias) == 3,
       \\"Expected getArrayWithAlias(...) to have 3 parameters\\");
@@ -1667,7 +1759,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getBoolean(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBoolean(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBoolean) == 2,
       \\"Expected getBoolean(...) to have 2 parameters\\");
@@ -1675,7 +1768,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value invoke_getBooleanWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBooleanWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBooleanWithAlias) == 2,
       \\"Expected getBooleanWithAlias(...) to have 2 parameters\\");
@@ -1697,7 +1791,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -1705,7 +1800,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithCallbackWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallbackWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallbackWithAlias) == 2,
       \\"Expected getValueWithCallbackWithAlias(...) to have 2 parameters\\");
@@ -1963,7 +2059,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getStatusRegular(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusRegular(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusRegular) == 2,
       \\"Expected getStatusRegular(...) to have 2 parameters\\");
@@ -1971,7 +2068,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStatusStr(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusStr(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusStr) == 2,
       \\"Expected getStatusStr(...) to have 2 parameters\\");
@@ -1979,7 +2077,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStatusNum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusNum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusNum) == 2,
       \\"Expected getStatusNum(...) to have 2 parameters\\");
@@ -1987,7 +2086,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStatusLowerCase(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStatusLowerCase(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStatusLowerCase) == 2,
       \\"Expected getStatusLowerCase(...) to have 2 parameters\\");
@@ -1995,7 +2095,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getStateType(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStateType(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateType) == 5,
       \\"Expected getStateType(...) to have 5 parameters\\");
@@ -2006,7 +2107,8 @@ private:
       count <= 3 ? throw jsi::JSError(rt, \\"Expected argument in position 3 to be passed\\") : args[3].asString(rt));
   }
 
-  static jsi::Value invoke_getStateTypeWithEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStateTypeWithEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStateTypeWithEnums) == 2,
       \\"Expected getStateTypeWithEnums(...) to have 2 parameters\\");
@@ -2032,7 +2134,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2040,7 +2143,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2048,7 +2152,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2056,7 +2161,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2064,7 +2170,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2093,7 +2200,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2101,7 +2209,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value invoke_getNumberWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumberWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumberWithAlias) == 2,
       \\"Expected getNumberWithAlias(...) to have 2 parameters\\");
@@ -2126,7 +2235,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObject) == 2,
       \\"Expected getGenericObject(...) to have 2 parameters\\");
@@ -2134,7 +2244,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getGenericObjectReadOnly(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getGenericObjectReadOnly(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectReadOnly) == 2,
       \\"Expected getGenericObjectReadOnly(...) to have 2 parameters\\");
@@ -2142,7 +2253,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getGenericObjectWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getGenericObjectWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getGenericObjectWithAlias) == 2,
       \\"Expected getGenericObjectWithAlias(...) to have 2 parameters\\");
@@ -2150,7 +2262,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_difficultObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_difficultObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::difficultObject) == 2,
       \\"Expected difficultObject(...) to have 2 parameters\\");
@@ -2263,7 +2376,8 @@ private:
     return bridging::callFromJs<jsi::Object>(rt, &T::getPartialSomeObj,  static_cast<NativePartialAnnotationTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value invoke_getSomeObjFromPartialSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getSomeObjFromPartialSomeObj(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getSomeObjFromPartialSomeObj) == 2,
       \\"Expected getSomeObjFromPartialSomeObj(...) to have 2 parameters\\");
@@ -2271,7 +2385,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getPartialPartial(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getPartialPartial(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getPartialPartial) == 3,
       \\"Expected getPartialPartial(...) to have 3 parameters\\");
@@ -2294,7 +2409,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2302,7 +2418,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value invoke_getValueWithPromiseWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromiseWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromiseWithAlias) == 2,
       \\"Expected getValueWithPromiseWithAlias(...) to have 2 parameters\\");
@@ -2389,7 +2506,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2397,7 +2515,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2405,7 +2524,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2413,7 +2533,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2421,7 +2542,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2429,7 +2551,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -2437,7 +2560,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -2445,7 +2569,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -2453,7 +2578,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -2463,7 +2589,8 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asObject(rt));
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2471,7 +2598,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2558,7 +2686,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleArraysCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2566,7 +2695,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2574,7 +2704,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2582,7 +2713,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2590,7 +2722,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2598,7 +2731,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -2606,7 +2740,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -2614,7 +2749,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -2622,7 +2758,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -2632,7 +2769,8 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2640,7 +2778,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2727,7 +2866,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleNullableCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2735,7 +2875,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2743,7 +2884,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2751,7 +2893,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asString(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2759,7 +2902,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2767,7 +2911,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -2775,7 +2920,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -2783,7 +2929,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -2791,7 +2938,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -2801,7 +2949,8 @@ private:
       count <= 2 || args[2].isNull() || args[2].isUndefined() ? std::nullopt : std::make_optional(args[2].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2809,7 +2958,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2898,7 +3048,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleNullableAndOptionalCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -2906,7 +3057,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -2914,7 +3066,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -2922,7 +3075,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asString(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -2930,7 +3084,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -2938,7 +3093,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -2946,7 +3102,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -2954,7 +3111,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -2962,7 +3120,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -2972,7 +3131,8 @@ private:
       count <= 2 || args[2].isNull() || args[2].isUndefined() ? std::nullopt : std::make_optional(args[2].asObject(rt)));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2980,7 +3140,8 @@ private:
       count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asFunction(rt)));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -3069,7 +3230,8 @@ private:
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleOptionalCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -3077,7 +3239,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));
   }
 
-  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -3085,7 +3248,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));
   }
 
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -3093,7 +3257,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asString(rt)));
   }
 
-  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -3101,7 +3266,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asArray(rt)));
   }
 
-  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -3109,7 +3275,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectShape(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getObjectShape) == 2,
       \\"Expected getObjectShape(...) to have 2 parameters\\");
@@ -3117,7 +3284,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getAlias) == 2,
       \\"Expected getAlias(...) to have 2 parameters\\");
@@ -3125,7 +3293,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -3133,7 +3302,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asNumber()));
   }
 
-  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -3143,7 +3313,8 @@ private:
       count <= 2 || args[2].isUndefined() ? std::nullopt : std::make_optional(args[2].asObject(rt)));
   }
 
-  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -3151,7 +3322,8 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt).asFunction(rt)));return jsi::Value::undefined();
   }
 
-  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -3173,7 +3345,8 @@ protected:
   }
   
 private:
-  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -3181,7 +3354,8 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));
   }
 
-  static jsi::Value invoke_getStringWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStringWithAlias(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* argv, size_t count) {
+    const folly::Range<const jsi::Value*> args(argv, count);
     static_assert(
       bridging::getParameterCount(&T::getStringWithAlias) == 2,
       \\"Expected getStringWithAlias(...) to have 2 parameters\\");
