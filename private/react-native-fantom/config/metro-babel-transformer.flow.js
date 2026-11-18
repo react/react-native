@@ -24,7 +24,6 @@ const transform: BabelTransformer['transform'] = (
     ...args,
     plugins: [
       ...(args.plugins ?? []),
-      // $FlowExpectedError[untyped-import]
       require('./babel-plugins/inject-debugger-statements-in-tests'),
       ...(args.options.customTransformOptions?.collectCoverage === 'true'
         ? [
@@ -61,6 +60,7 @@ module.exports = {
       fs.readFileSync(
         require.resolve('./babel-plugins/inject-debugger-statements-in-tests'),
       ),
+      fs.readFileSync(require.resolve('./fantomTestFiles')),
     ];
     cacheKeyParts.forEach(part => key.update(part));
     return key.digest('hex');

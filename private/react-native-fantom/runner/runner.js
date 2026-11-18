@@ -28,6 +28,7 @@ import type {
   HermesVariant,
 } from './utils';
 
+import {getFantomTestName} from '../config/fantomTestFiles';
 import {printBenchmarkResultsRanking} from './benchmarkUtils';
 import {createBundle, createSourceMap} from './bundling';
 import {shouldCollectCoverage} from './coverageUtils';
@@ -553,7 +554,7 @@ module.exports = async function runTest(
         const formattedFantomConfig = formatFantomConfig(testConfig);
         if (formattedFantomConfig) {
           result.ancestorTitles.unshift(
-            `${path.basename(testPath, '-itest.js')} (${formatFantomConfig(testConfig)})`,
+            `${getFantomTestName(testPath)} (${formattedFantomConfig})`,
           );
         }
       });

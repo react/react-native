@@ -31,7 +31,7 @@ Architecture notes live in `__docs__` directories beside the code they describe,
 | Command | Purpose |
 | --- | --- |
 | `yarn test <path>` | Jest unit tests, found in `__tests__` directories |
-| `yarn fantom <path>` | [Fantom](private/react-native-fantom/__docs__/README.md) integration tests, named `*-itest.js` — builds a native tester on first run, and runs as `Platform.OS === 'android'`, so an iOS-only branch needs Jest |
+| `yarn fantom <path>` | [Fantom](private/react-native-fantom/__docs__/README.md) integration tests, named `*-itest.js`, `*-itest.ts` or `*-itest.tsx` — builds a native tester on first run, and runs as `Platform.OS === 'android'`, so an iOS-only branch needs Jest |
 | `yarn lint` | ESLint (`--max-warnings 0`) |
 | `yarn flow-check` | Flow |
 | `yarn format` | Format JavaScript/TypeScript, C/C++/Objective-C/protobuf, Kotlin, Java, Python, and Swift sources |
