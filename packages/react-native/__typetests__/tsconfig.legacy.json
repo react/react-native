@@ -6,5 +6,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "customConditions": ["react-native-legacy-deep-imports"]
-  }
+  },
+  // Conditional style values exist only in the generated types.
+  "exclude": ["stylesheet-conditional-values.tsx"]
 }

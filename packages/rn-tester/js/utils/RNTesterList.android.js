@@ -281,6 +281,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/Layout/LayoutExample'),
     },
     {
+      key: 'MediaQueriesExample',
+      category: 'UI',
+      module: require('../examples/MediaQueries/MediaQueriesExample'),
+    },
+    {
       key: 'NativeAnimationsExample',
       category: 'UI',
       module: require('../examples/NativeAnimation/NativeAnimationsExample'),
