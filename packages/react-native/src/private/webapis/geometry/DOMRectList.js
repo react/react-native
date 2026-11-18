@@ -19,7 +19,6 @@ import {setPlatformObject} from '../webidl/PlatformObjects';
 // IMPORTANT: The Flow type definition for this module is defined in `DOMRectList.js.flow`
 // because Flow only supports indexers in classes in declaration files.
 
-// $FlowFixMe[incompatible-type] Flow doesn't understand [Symbol.iterator]() {} and thinks this class doesn't implement the Iterable interface.
 export default class DOMRectList implements Iterable<DOMRectReadOnly> {
   #length: number;
 
@@ -58,8 +57,7 @@ export default class DOMRectList implements Iterable<DOMRectReadOnly> {
     return arrayLike[index];
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow does not support computed properties in classes.
-  [Symbol.iterator](): Iterator<DOMRectReadOnly> {
+  [Symbol.iterator](): IteratorObject<DOMRectReadOnly> {
     return createValueIterator(this);
   }
 }

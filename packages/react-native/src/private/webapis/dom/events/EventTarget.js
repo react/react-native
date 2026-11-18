@@ -64,6 +64,9 @@ type EventListenerRegistration = {
 type ListenersMap = Map<string, Map<EventListener, EventListenerRegistration>>;
 
 export default class EventTarget {
+  [CAPTURING_LISTENERS_KEY]: ListenersMap | void;
+  [BUBBLING_LISTENERS_KEY]: ListenersMap | void;
+
   addEventListener(
     type: string,
     callback: EventListener | null,
@@ -239,8 +242,6 @@ export default class EventTarget {
    * Should implement the "get the parent" algorithm
    * (see https://dom.spec.whatwg.org/#get-the-parent).
    */
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_THE_PARENT_KEY](): EventTarget | null {
     return null;
   }
@@ -250,8 +251,6 @@ export default class EventTarget {
    * `dispatchEvent` return contract: returns `false` if the event was
    * canceled (i.e. `event.defaultPrevented`), otherwise `true`.
    */
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [INTERNAL_DISPATCH_METHOD_KEY](
     event: Event,
     rethrowListenerErrors?: boolean,
@@ -504,10 +503,8 @@ function getListenersForPhase(
   isCapture: boolean,
 ): ?ListenersMap {
   return isCapture
-    ? // $FlowExpectedError[prop-missing]
-      eventTarget[CAPTURING_LISTENERS_KEY]
-    : // $FlowExpectedError[prop-missing]
-      eventTarget[BUBBLING_LISTENERS_KEY];
+    ? eventTarget[CAPTURING_LISTENERS_KEY]
+    : eventTarget[BUBBLING_LISTENERS_KEY];
 }
 
 function setListenersMap(
@@ -516,17 +513,15 @@ function setListenersMap(
   listenersMap: ListenersMap,
 ): void {
   if (isCapture) {
-    // $FlowExpectedError[prop-missing]
     eventTarget[CAPTURING_LISTENERS_KEY] = listenersMap;
   } else {
-    // $FlowExpectedError[prop-missing]
     eventTarget[BUBBLING_LISTENERS_KEY] = listenersMap;
   }
 }
 
 const EVENT_DISPATCH_FLAG = Symbol('Event.dispatch');
 
-function getEventDispatchFlag(event: Event): boolean {
+function getEventDispatchFlag(event: Event): boolean | void {
   // $FlowExpectedError[prop-missing]
   return event[EVENT_DISPATCH_FLAG];
 }
