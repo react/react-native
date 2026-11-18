@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #import "RCTViewManager.h"
 
 #import "RCTAssert.h"
@@ -744,3 +746,5 @@ CGFloat RCTJSONParseOnlyNumber(id json)
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

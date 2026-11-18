@@ -28,7 +28,9 @@ export default function patchWeakRef(): void {
   const originalDeref = WeakRef.prototype.deref;
 
   // $FlowExpectedError[cannot-write]
-  WeakRef.prototype.deref = function patchedDeref<T>(this: WeakRef<T>): T {
+  WeakRef.prototype.deref = function patchedDeref<T extends WeakKey>(
+    this: WeakRef<T>,
+  ): T {
     // Lazily require the module to avoid loading it before the test logic.
     const Fantom = require('@react-native/fantom');
 

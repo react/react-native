@@ -326,6 +326,47 @@ static RCTViewComponentView *makeViewWithExpandedState(std::optional<bool> expan
   XCTAssertNil(view.accessibilityValue);
 }
 
+#pragma mark - accessibilityValue for a range
+
+static RCTViewComponentView *makeViewWithValueRange(int min, int max, int now)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto props = std::make_shared<ViewProps>();
+  props->accessible = true;
+  AccessibilityValue accessibilityValue;
+  accessibilityValue.min = min;
+  accessibilityValue.max = max;
+  accessibilityValue.now = now;
+  props->accessibilityValue = accessibilityValue;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  return view;
+}
+
+static NSString *percentString(double fraction)
+{
+  return [NSNumberFormatter localizedStringFromNumber:@(fraction) numberStyle:NSNumberFormatterPercentStyle];
+}
+
+- (void)testAccessibilityValueIsThePositionInTheRange
+{
+  XCTAssertEqualObjects(makeViewWithValueRange(0, 10, 5).accessibilityValue, percentString(0.5));
+  XCTAssertEqualObjects(makeViewWithValueRange(10, 20, 15).accessibilityValue, percentString(0.5));
+  XCTAssertEqualObjects(makeViewWithValueRange(10, 20, 10).accessibilityValue, percentString(0));
+  XCTAssertEqualObjects(makeViewWithValueRange(-10, 10, 10).accessibilityValue, percentString(1));
+}
+
+- (void)testAccessibilityValueIsNilForAnEmptyRange
+{
+  XCTAssertNil(makeViewWithValueRange(5, 5, 5).accessibilityValue);
+  XCTAssertNil(makeViewWithValueRange(20, 10, 15).accessibilityValue);
+}
+
+- (void)testAccessibilityValueIsNilOutsideTheRange
+{
+  XCTAssertNil(makeViewWithValueRange(0, 10, 15).accessibilityValue);
+  XCTAssertNil(makeViewWithValueRange(10, 20, 5).accessibilityValue);
+}
+
 #pragma mark - outline style on square corners (#57841)
 
 static RCTViewComponentView *makeViewWithOutlineStyle(OutlineStyle outlineStyle)

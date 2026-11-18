@@ -661,9 +661,9 @@ has simple examples you can learn from.
 
 #### Are tests executed on Github CI?
 
-Fantom tests are currently tied to Meta's infrastructure and do not run outside
-of Meta's CI. We are working on migrating Fantom to Github CI. If you submit a
-PR, the tests will run as part of the PR import process.
+Yes. The [Test All](../../../.github/workflows/test-all.yml) workflow builds the
+Fantom runner and runs the tests on GitHub Actions for every PR that changes
+code. The tests also run as part of the PR import process.
 
 #### Can I gate individual tests within a suite to only run, or not run, with a specific feature flag?
 

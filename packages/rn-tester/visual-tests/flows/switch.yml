@@ -40,7 +40,7 @@ appId: ${APP_ID}
       EXAMPLE_URL: rntester://example/SwitchExample/disabled
 - extendedWaitUntil:
     visible:
-      id: 'example-container'
+      id: 'disabled-initial-off'
     timeout: 15000
 - assertVisible:
     id: 'disabled-initial-off'

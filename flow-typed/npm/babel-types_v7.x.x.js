@@ -3854,7 +3854,7 @@ declare module "@babel/types" {
     key: string,
     index?: number,
   }>;
-  declare export type TraversalHandler<T> = (BabelNode, TraversalAncestors, T) => void;
+  declare export type TraversalHandler<T> = (node: BabelNode, parent: TraversalAncestors, state: T) => void;
   declare export type TraversalHandlers<T> = {
     enter?: TraversalHandler<T>,
     exit?: TraversalHandler<T>,
@@ -3862,7 +3862,7 @@ declare module "@babel/types" {
   declare export function traverse<T>(n: BabelNode, handler: TraversalHandler<T> | TraversalHandlers<T>, state?: T): void;
   declare export function traverseFast<T>(n: Node, h: TraversalHandler<T>, state?: T): void;
   declare export function shallowEqual(actual: Object, expected: Object): boolean
-  declare export function buildMatchMemberExpression(match: string, allowPartial?: boolean): (?BabelNode) => boolean
+  declare export function buildMatchMemberExpression(match: string, allowPartial?: boolean): (member: ?BabelNode) => boolean
   declare export function is(type: string, n: BabelNode, opts: Object): boolean;
   declare export function isBinding(node: BabelNode, parent: BabelNode, grandparent?: BabelNode): boolean
   declare export function isBlockScoped(node: BabelNode): boolean

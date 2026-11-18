@@ -53,7 +53,7 @@ declare type rxjs$ObservableInput<T> =
   rxjs$SubscribableOrPromise<T> | Array<T> | Iterable<T>;
 
 declare type rxjs$InteropObservable<T> = {
-  [string | unknown]: () => rxjs$Subscribable<T>,
+  [key: string | unknown]: () => rxjs$Subscribable<T>,
   ...
 };
 /** OBSERVER INTERFACES */

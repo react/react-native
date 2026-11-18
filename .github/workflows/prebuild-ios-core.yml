@@ -102,12 +102,15 @@ jobs:
         with:
           name: prebuild-ios-core-headers-${{ matrix.flavor }}-${{ matrix.slice }}
           path: packages/react-native/.build/headers
+      - name: Compress slice to preserve symlinks
+        run: |
+          tar -czf "$RUNNER_TEMP/prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}.tar.gz" \
+            -C packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products .
       - name: Upload artifacts
         uses: ./.github/actions/upload-artifact
         with:
           name: prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}
-          path: |
-            packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          path: ${{ runner.temp }}/prebuild-ios-core-slice-${{ matrix.flavor }}-${{ matrix.slice }}.tar.gz
       - name: Save Cache
         uses: actions/cache/save@v5
         if: ${{ github.ref == 'refs/heads/main' && inputs.version-type == '' && steps.restore-ios-slice.outputs.cache-hit != 'true' }}
@@ -166,8 +169,15 @@ jobs:
         uses: ./.github/actions/download-artifact
         with:
           pattern: prebuild-ios-core-slice-${{ matrix.flavor }}-*
-          path: packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          path: ${{ runner.temp }}/prebuild-slices
           merge-multiple: true
+      - name: Extract slices
+        if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          for archive in "$RUNNER_TEMP"/prebuild-slices/*.tar.gz; do
+            tar -xzf "$archive" -C packages/react-native/.build/output/spm/${{ matrix.flavor }}/Build/Products
+          done
       - name: Download headers
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/download-artifact

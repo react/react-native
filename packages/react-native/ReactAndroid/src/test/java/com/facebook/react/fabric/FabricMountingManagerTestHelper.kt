@@ -41,6 +41,10 @@ private constructor(fabricUIManager: FabricUIManager) : HybridClassBase() {
 
   external fun executeCreateMutation(surfaceId: Int, tag: Int)
 
+  external fun executeDeleteMutation(surfaceId: Int, tag: Int)
+
+  external fun commitQueuedView(tag: Int)
+
   external fun dropFamily(tag: Int)
 
   external fun destroyUnmountedView(surfaceId: Int, tag: Int)

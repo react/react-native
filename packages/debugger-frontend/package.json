@@ -13,7 +13,7 @@
     "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/debugger-frontend"
   },
-  "license": "BSD-3-Clause",
+  "license": "MIT AND BSD-3-Clause",
   "files": [
     "index.js",
     "dist",

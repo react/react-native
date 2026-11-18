@@ -64,20 +64,20 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getArrayBuffer\\"] = MethodMetadata {.argCount = 0, .invoker = __getArrayBuffer};
-    methodMap_[\\"voidArrayBuffer\\"] = MethodMetadata {.argCount = 1, .invoker = __voidArrayBuffer};
-    methodMap_[\\"voidNullableArrayBuffer\\"] = MethodMetadata {.argCount = 1, .invoker = __voidNullableArrayBuffer};
+    methodMap_[\\"getArrayBuffer\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getArrayBuffer};
+    methodMap_[\\"voidArrayBuffer\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_voidArrayBuffer};
+    methodMap_[\\"voidNullableArrayBuffer\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_voidNullableArrayBuffer};
   }
   
 private:
-  static jsi::Value __getArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getArrayBuffer) == 1,
       \\"Expected getArrayBuffer(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::ArrayBuffer>(rt, &T::getArrayBuffer,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __voidArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_voidArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::voidArrayBuffer) == 2,
       \\"Expected voidArrayBuffer(...) to have 2 parameters\\");
@@ -85,7 +85,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).getArrayBuffer(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __voidNullableArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_voidNullableArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::voidNullableArrayBuffer) == 2,
       \\"Expected voidNullableArrayBuffer(...) to have 2 parameters\\");
@@ -125,11 +125,11 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"promiseArrayBuffer\\"] = MethodMetadata {.argCount = 0, .invoker = __promiseArrayBuffer};
+    methodMap_[\\"promiseArrayBuffer\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_promiseArrayBuffer};
   }
   
 private:
-  static jsi::Value __promiseArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_promiseArrayBuffer(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::promiseArrayBuffer) == 1,
       \\"Expected promiseArrayBuffer(...) to have 1 parameters\\");
@@ -168,17 +168,17 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"difficult\\"] = MethodMetadata {.argCount = 1, .invoker = __difficult};
-    methodMap_[\\"optionals\\"] = MethodMetadata {.argCount = 1, .invoker = __optionals};
-    methodMap_[\\"optionalMethod\\"] = MethodMetadata {.argCount = 3, .invoker = __optionalMethod};
-    methodMap_[\\"getArrays\\"] = MethodMetadata {.argCount = 1, .invoker = __getArrays};
-    methodMap_[\\"getNullableObject\\"] = MethodMetadata {.argCount = 0, .invoker = __getNullableObject};
-    methodMap_[\\"getNullableGenericObject\\"] = MethodMetadata {.argCount = 0, .invoker = __getNullableGenericObject};
-    methodMap_[\\"getNullableArray\\"] = MethodMetadata {.argCount = 0, .invoker = __getNullableArray};
+    methodMap_[\\"difficult\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_difficult};
+    methodMap_[\\"optionals\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_optionals};
+    methodMap_[\\"optionalMethod\\"] = MethodMetadata {.argCount = 3, .invoker = invoke_optionalMethod};
+    methodMap_[\\"getArrays\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getArrays};
+    methodMap_[\\"getNullableObject\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getNullableObject};
+    methodMap_[\\"getNullableGenericObject\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getNullableGenericObject};
+    methodMap_[\\"getNullableArray\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getNullableArray};
   }
   
 private:
-  static jsi::Value __difficult(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_difficult(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::difficult) == 2,
       \\"Expected difficult(...) to have 2 parameters\\");
@@ -186,7 +186,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __optionals(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_optionals(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::optionals) == 2,
       \\"Expected optionals(...) to have 2 parameters\\");
@@ -194,7 +194,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __optionalMethod(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_optionalMethod(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::optionalMethod) == 4,
       \\"Expected optionalMethod(...) to have 4 parameters\\");
@@ -204,7 +204,7 @@ private:
       count <= 2 || args[2].isUndefined() ? std::nullopt : std::make_optional(args[2].asObject(rt).asArray(rt)));return jsi::Value::undefined();
   }
 
-  static jsi::Value __getArrays(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArrays(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getArrays) == 2,
       \\"Expected getArrays(...) to have 2 parameters\\");
@@ -212,21 +212,21 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __getNullableObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getNullableObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getNullableObject) == 1,
       \\"Expected getNullableObject(...) to have 1 parameters\\");
     auto result = bridging::callFromJs<std::optional<jsi::Object>>(rt, &T::getNullableObject,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value __getNullableGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getNullableGenericObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getNullableGenericObject) == 1,
       \\"Expected getNullableGenericObject(...) to have 1 parameters\\");
     auto result = bridging::callFromJs<std::optional<jsi::Object>>(rt, &T::getNullableGenericObject,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value __getNullableArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getNullableArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getNullableArray) == 1,
       \\"Expected getNullableArray(...) to have 1 parameters\\");
@@ -706,37 +706,37 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getArray\\"] = MethodMetadata {.argCount = 1, .invoker = __getArray};
-    methodMap_[\\"getBool\\"] = MethodMetadata {.argCount = 1, .invoker = __getBool};
-    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = __getConstants};
-    methodMap_[\\"getCustomEnum\\"] = MethodMetadata {.argCount = 1, .invoker = __getCustomEnum};
-    methodMap_[\\"getCustomHostObject\\"] = MethodMetadata {.argCount = 0, .invoker = __getCustomHostObject};
-    methodMap_[\\"consumeCustomHostObject\\"] = MethodMetadata {.argCount = 1, .invoker = __consumeCustomHostObject};
-    methodMap_[\\"getBinaryTreeNode\\"] = MethodMetadata {.argCount = 1, .invoker = __getBinaryTreeNode};
-    methodMap_[\\"getGraphNode\\"] = MethodMetadata {.argCount = 1, .invoker = __getGraphNode};
-    methodMap_[\\"getNumEnum\\"] = MethodMetadata {.argCount = 1, .invoker = __getNumEnum};
-    methodMap_[\\"getStrEnum\\"] = MethodMetadata {.argCount = 1, .invoker = __getStrEnum};
-    methodMap_[\\"getMap\\"] = MethodMetadata {.argCount = 1, .invoker = __getMap};
-    methodMap_[\\"getNumber\\"] = MethodMetadata {.argCount = 1, .invoker = __getNumber};
-    methodMap_[\\"getObject\\"] = MethodMetadata {.argCount = 1, .invoker = __getObject};
-    methodMap_[\\"getSet\\"] = MethodMetadata {.argCount = 1, .invoker = __getSet};
-    methodMap_[\\"getString\\"] = MethodMetadata {.argCount = 1, .invoker = __getString};
-    methodMap_[\\"getUnion\\"] = MethodMetadata {.argCount = 4, .invoker = __getUnion};
-    methodMap_[\\"getValue\\"] = MethodMetadata {.argCount = 3, .invoker = __getValue};
-    methodMap_[\\"getValueWithCallback\\"] = MethodMetadata {.argCount = 1, .invoker = __getValueWithCallback};
-    methodMap_[\\"getValueWithPromise\\"] = MethodMetadata {.argCount = 1, .invoker = __getValueWithPromise};
-    methodMap_[\\"getWithWithOptionalArgs\\"] = MethodMetadata {.argCount = 1, .invoker = __getWithWithOptionalArgs};
-    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = __voidFunc};
-    methodMap_[\\"setMenu\\"] = MethodMetadata {.argCount = 1, .invoker = __setMenu};
-    methodMap_[\\"emitCustomDeviceEvent\\"] = MethodMetadata {.argCount = 1, .invoker = __emitCustomDeviceEvent};
-    methodMap_[\\"voidFuncThrows\\"] = MethodMetadata {.argCount = 0, .invoker = __voidFuncThrows};
-    methodMap_[\\"getObjectThrows\\"] = MethodMetadata {.argCount = 1, .invoker = __getObjectThrows};
-    methodMap_[\\"voidFuncAssert\\"] = MethodMetadata {.argCount = 0, .invoker = __voidFuncAssert};
-    methodMap_[\\"getObjectAssert\\"] = MethodMetadata {.argCount = 1, .invoker = __getObjectAssert};
+    methodMap_[\\"getArray\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getArray};
+    methodMap_[\\"getBool\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getBool};
+    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getConstants};
+    methodMap_[\\"getCustomEnum\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getCustomEnum};
+    methodMap_[\\"getCustomHostObject\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getCustomHostObject};
+    methodMap_[\\"consumeCustomHostObject\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_consumeCustomHostObject};
+    methodMap_[\\"getBinaryTreeNode\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getBinaryTreeNode};
+    methodMap_[\\"getGraphNode\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getGraphNode};
+    methodMap_[\\"getNumEnum\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getNumEnum};
+    methodMap_[\\"getStrEnum\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getStrEnum};
+    methodMap_[\\"getMap\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getMap};
+    methodMap_[\\"getNumber\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getNumber};
+    methodMap_[\\"getObject\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getObject};
+    methodMap_[\\"getSet\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getSet};
+    methodMap_[\\"getString\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getString};
+    methodMap_[\\"getUnion\\"] = MethodMetadata {.argCount = 4, .invoker = invoke_getUnion};
+    methodMap_[\\"getValue\\"] = MethodMetadata {.argCount = 3, .invoker = invoke_getValue};
+    methodMap_[\\"getValueWithCallback\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getValueWithCallback};
+    methodMap_[\\"getValueWithPromise\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getValueWithPromise};
+    methodMap_[\\"getWithWithOptionalArgs\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getWithWithOptionalArgs};
+    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_voidFunc};
+    methodMap_[\\"setMenu\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_setMenu};
+    methodMap_[\\"emitCustomDeviceEvent\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_emitCustomDeviceEvent};
+    methodMap_[\\"voidFuncThrows\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_voidFuncThrows};
+    methodMap_[\\"getObjectThrows\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getObjectThrows};
+    methodMap_[\\"voidFuncAssert\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_voidFuncAssert};
+    methodMap_[\\"getObjectAssert\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getObjectAssert};
   }
   
 private:
-  static jsi::Value __getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -744,7 +744,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value __getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -752,14 +752,14 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value __getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
       \\"Expected getConstants(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::Object>(rt, &T::getConstants,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __getCustomEnum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getCustomEnum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getCustomEnum) == 2,
       \\"Expected getCustomEnum(...) to have 2 parameters\\");
@@ -767,14 +767,14 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value __getCustomHostObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getCustomHostObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getCustomHostObject) == 1,
       \\"Expected getCustomHostObject(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::Object>(rt, &T::getCustomHostObject,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __consumeCustomHostObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_consumeCustomHostObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::consumeCustomHostObject) == 2,
       \\"Expected consumeCustomHostObject(...) to have 2 parameters\\");
@@ -782,7 +782,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __getBinaryTreeNode(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBinaryTreeNode(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getBinaryTreeNode) == 2,
       \\"Expected getBinaryTreeNode(...) to have 2 parameters\\");
@@ -790,7 +790,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __getGraphNode(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getGraphNode(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getGraphNode) == 2,
       \\"Expected getGraphNode(...) to have 2 parameters\\");
@@ -798,7 +798,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __getNumEnum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumEnum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getNumEnum) == 2,
       \\"Expected getNumEnum(...) to have 2 parameters\\");
@@ -806,7 +806,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value __getStrEnum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStrEnum(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getStrEnum) == 2,
       \\"Expected getStrEnum(...) to have 2 parameters\\");
@@ -814,7 +814,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));
   }
 
-  static jsi::Value __getMap(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getMap(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getMap) == 2,
       \\"Expected getMap(...) to have 2 parameters\\");
@@ -822,7 +822,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -830,7 +830,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value __getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -838,7 +838,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __getSet(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getSet(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getSet) == 2,
       \\"Expected getSet(...) to have 2 parameters\\");
@@ -846,7 +846,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value __getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -854,7 +854,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));
   }
 
-  static jsi::Value __getUnion(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getUnion(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getUnion) == 5,
       \\"Expected getUnion(...) to have 5 parameters\\");
@@ -865,7 +865,7 @@ private:
       count <= 3 ? throw jsi::JSError(rt, \\"Expected argument in position 3 to be passed\\") : args[3].asObject(rt));
   }
 
-  static jsi::Value __getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -875,7 +875,7 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asObject(rt));
   }
 
-  static jsi::Value __getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -883,7 +883,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -891,7 +891,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value __getWithWithOptionalArgs(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getWithWithOptionalArgs(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getWithWithOptionalArgs) == 2,
       \\"Expected getWithWithOptionalArgs(...) to have 2 parameters\\");
@@ -899,14 +899,14 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asBool()));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
   }
 
-  static jsi::Value __voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::voidFunc) == 1,
       \\"Expected voidFunc(...) to have 1 parameters\\");
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value __setMenu(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_setMenu(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::setMenu) == 2,
       \\"Expected setMenu(...) to have 2 parameters\\");
@@ -914,7 +914,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __emitCustomDeviceEvent(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_emitCustomDeviceEvent(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::emitCustomDeviceEvent) == 2,
       \\"Expected emitCustomDeviceEvent(...) to have 2 parameters\\");
@@ -922,14 +922,14 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __voidFuncThrows(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_voidFuncThrows(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::voidFuncThrows) == 1,
       \\"Expected voidFuncThrows(...) to have 1 parameters\\");
     bridging::callFromJs<void>(rt, &T::voidFuncThrows,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value __getObjectThrows(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectThrows(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getObjectThrows) == 2,
       \\"Expected getObjectThrows(...) to have 2 parameters\\");
@@ -937,14 +937,14 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __voidFuncAssert(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_voidFuncAssert(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::voidFuncAssert) == 1,
       \\"Expected voidFuncAssert(...) to have 1 parameters\\");
     bridging::callFromJs<void>(rt, &T::voidFuncAssert,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value __getObjectAssert(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObjectAssert(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getObjectAssert) == 2,
       \\"Expected getObjectAssert(...) to have 2 parameters\\");
@@ -1076,7 +1076,7 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = __voidFunc};
+    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_voidFunc};
     eventEmitterMap_[\\"onEvent1\\"] = std::make_shared<AsyncEventEmitter<>>();
     eventEmitterMap_[\\"onEvent2\\"] = std::make_shared<AsyncEventEmitter<jsi::Value>>();
     eventEmitterMap_[\\"onEvent3\\"] = std::make_shared<AsyncEventEmitter<jsi::Value>>();
@@ -1148,7 +1148,7 @@ protected:
     });
   }
 private:
-  static jsi::Value __voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::voidFunc) == 1,
       \\"Expected voidFunc(...) to have 1 parameters\\");
@@ -1257,19 +1257,19 @@ public:
 
 protected:
   AliasTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{AliasTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = __getConstants};
-    methodMap_[\\"cropImage\\"] = MethodMetadata {.argCount = 1, .invoker = __cropImage};
+    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getConstants};
+    methodMap_[\\"cropImage\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_cropImage};
   }
   
 private:
-  static jsi::Value __getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
       \\"Expected getConstants(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::Object>(rt, &T::getConstants,  static_cast<AliasTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __cropImage(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_cropImage(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::cropImage) == 2,
       \\"Expected cropImage(...) to have 2 parameters\\");
@@ -1558,21 +1558,21 @@ public:
 
 protected:
   NativeCameraRollManagerCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeCameraRollManagerCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = __getConstants};
-    methodMap_[\\"getPhotos\\"] = MethodMetadata {.argCount = 1, .invoker = __getPhotos};
-    methodMap_[\\"saveToCameraRoll\\"] = MethodMetadata {.argCount = 2, .invoker = __saveToCameraRoll};
-    methodMap_[\\"deletePhotos\\"] = MethodMetadata {.argCount = 1, .invoker = __deletePhotos};
+    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getConstants};
+    methodMap_[\\"getPhotos\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getPhotos};
+    methodMap_[\\"saveToCameraRoll\\"] = MethodMetadata {.argCount = 2, .invoker = invoke_saveToCameraRoll};
+    methodMap_[\\"deletePhotos\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_deletePhotos};
   }
   
 private:
-  static jsi::Value __getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
       \\"Expected getConstants(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::Object>(rt, &T::getConstants,  static_cast<NativeCameraRollManagerCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __getPhotos(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getPhotos(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getPhotos) == 2,
       \\"Expected getPhotos(...) to have 2 parameters\\");
@@ -1580,7 +1580,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __saveToCameraRoll(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_saveToCameraRoll(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::saveToCameraRoll) == 3,
       \\"Expected saveToCameraRoll(...) to have 3 parameters\\");
@@ -1589,7 +1589,7 @@ private:
       count <= 1 ? throw jsi::JSError(rt, \\"Expected argument in position 1 to be passed\\") : args[1].asString(rt));
   }
 
-  static jsi::Value __deletePhotos(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_deletePhotos(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::deletePhotos) == 2,
       \\"Expected deletePhotos(...) to have 2 parameters\\");
@@ -1761,15 +1761,15 @@ public:
 
 protected:
   NativeExceptionsManagerCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeExceptionsManagerCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"reportFatalException\\"] = MethodMetadata {.argCount = 3, .invoker = __reportFatalException};
-    methodMap_[\\"reportSoftException\\"] = MethodMetadata {.argCount = 3, .invoker = __reportSoftException};
-    methodMap_[\\"reportException\\"] = MethodMetadata {.argCount = 1, .invoker = __reportException};
-    methodMap_[\\"updateExceptionMessage\\"] = MethodMetadata {.argCount = 3, .invoker = __updateExceptionMessage};
-    methodMap_[\\"dismissRedbox\\"] = MethodMetadata {.argCount = 0, .invoker = __dismissRedbox};
+    methodMap_[\\"reportFatalException\\"] = MethodMetadata {.argCount = 3, .invoker = invoke_reportFatalException};
+    methodMap_[\\"reportSoftException\\"] = MethodMetadata {.argCount = 3, .invoker = invoke_reportSoftException};
+    methodMap_[\\"reportException\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_reportException};
+    methodMap_[\\"updateExceptionMessage\\"] = MethodMetadata {.argCount = 3, .invoker = invoke_updateExceptionMessage};
+    methodMap_[\\"dismissRedbox\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_dismissRedbox};
   }
   
 private:
-  static jsi::Value __reportFatalException(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_reportFatalException(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::reportFatalException) == 4,
       \\"Expected reportFatalException(...) to have 4 parameters\\");
@@ -1779,7 +1779,7 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asNumber());return jsi::Value::undefined();
   }
 
-  static jsi::Value __reportSoftException(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_reportSoftException(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::reportSoftException) == 4,
       \\"Expected reportSoftException(...) to have 4 parameters\\");
@@ -1789,7 +1789,7 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asNumber());return jsi::Value::undefined();
   }
 
-  static jsi::Value __reportException(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_reportException(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::reportException) == 2,
       \\"Expected reportException(...) to have 2 parameters\\");
@@ -1797,7 +1797,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __updateExceptionMessage(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_updateExceptionMessage(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::updateExceptionMessage) == 4,
       \\"Expected updateExceptionMessage(...) to have 4 parameters\\");
@@ -1807,7 +1807,7 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asNumber());return jsi::Value::undefined();
   }
 
-  static jsi::Value __dismissRedbox(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_dismissRedbox(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::dismissRedbox) == 1,
       \\"Expected dismissRedbox(...) to have 1 parameters\\");
@@ -1901,38 +1901,38 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = __getConstants};
-    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = __voidFunc};
-    methodMap_[\\"getBool\\"] = MethodMetadata {.argCount = 1, .invoker = __getBool};
-    methodMap_[\\"getNumber\\"] = MethodMetadata {.argCount = 1, .invoker = __getNumber};
-    methodMap_[\\"getString\\"] = MethodMetadata {.argCount = 1, .invoker = __getString};
-    methodMap_[\\"getArray\\"] = MethodMetadata {.argCount = 1, .invoker = __getArray};
-    methodMap_[\\"getObject\\"] = MethodMetadata {.argCount = 1, .invoker = __getObject};
-    methodMap_[\\"getRootTag\\"] = MethodMetadata {.argCount = 1, .invoker = __getRootTag};
-    methodMap_[\\"getValue\\"] = MethodMetadata {.argCount = 3, .invoker = __getValue};
-    methodMap_[\\"getEnumReturn\\"] = MethodMetadata {.argCount = 0, .invoker = __getEnumReturn};
-    methodMap_[\\"getValueWithCallback\\"] = MethodMetadata {.argCount = 1, .invoker = __getValueWithCallback};
-    methodMap_[\\"getValueWithPromise\\"] = MethodMetadata {.argCount = 1, .invoker = __getValueWithPromise};
-    methodMap_[\\"getValueWithOptionalArg\\"] = MethodMetadata {.argCount = 1, .invoker = __getValueWithOptionalArg};
-    methodMap_[\\"getEnums\\"] = MethodMetadata {.argCount = 2, .invoker = __getEnums};
+    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getConstants};
+    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_voidFunc};
+    methodMap_[\\"getBool\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getBool};
+    methodMap_[\\"getNumber\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getNumber};
+    methodMap_[\\"getString\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getString};
+    methodMap_[\\"getArray\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getArray};
+    methodMap_[\\"getObject\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getObject};
+    methodMap_[\\"getRootTag\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getRootTag};
+    methodMap_[\\"getValue\\"] = MethodMetadata {.argCount = 3, .invoker = invoke_getValue};
+    methodMap_[\\"getEnumReturn\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getEnumReturn};
+    methodMap_[\\"getValueWithCallback\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getValueWithCallback};
+    methodMap_[\\"getValueWithPromise\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getValueWithPromise};
+    methodMap_[\\"getValueWithOptionalArg\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getValueWithOptionalArg};
+    methodMap_[\\"getEnums\\"] = MethodMetadata {.argCount = 2, .invoker = invoke_getEnums};
   }
   
 private:
-  static jsi::Value __getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
       \\"Expected getConstants(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::Object>(rt, &T::getConstants,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::voidFunc) == 1,
       \\"Expected voidFunc(...) to have 1 parameters\\");
     bridging::callFromJs<void>(rt, &T::voidFunc,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
   }
 
-  static jsi::Value __getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getBool(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getBool) == 2,
       \\"Expected getBool(...) to have 2 parameters\\");
@@ -1940,7 +1940,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value __getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getNumber(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getNumber) == 2,
       \\"Expected getNumber(...) to have 2 parameters\\");
@@ -1948,7 +1948,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value __getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getString(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getString) == 2,
       \\"Expected getString(...) to have 2 parameters\\");
@@ -1956,7 +1956,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asString(rt));
   }
 
-  static jsi::Value __getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getArray(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getArray) == 2,
       \\"Expected getArray(...) to have 2 parameters\\");
@@ -1964,7 +1964,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asArray(rt));
   }
 
-  static jsi::Value __getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getObject(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getObject) == 2,
       \\"Expected getObject(...) to have 2 parameters\\");
@@ -1972,7 +1972,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt));
   }
 
-  static jsi::Value __getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getRootTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getRootTag) == 2,
       \\"Expected getRootTag(...) to have 2 parameters\\");
@@ -1980,7 +1980,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asNumber());
   }
 
-  static jsi::Value __getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValue(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getValue) == 4,
       \\"Expected getValue(...) to have 4 parameters\\");
@@ -1990,14 +1990,14 @@ private:
       count <= 2 ? throw jsi::JSError(rt, \\"Expected argument in position 2 to be passed\\") : args[2].asObject(rt));
   }
 
-  static jsi::Value __getEnumReturn(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getEnumReturn(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getEnumReturn) == 1,
       \\"Expected getEnumReturn(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::Value>(rt, &T::getEnumReturn,  static_cast<NativeSampleTurboModuleCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithCallback(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getValueWithCallback) == 2,
       \\"Expected getValueWithCallback(...) to have 2 parameters\\");
@@ -2005,7 +2005,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asObject(rt).asFunction(rt));return jsi::Value::undefined();
   }
 
-  static jsi::Value __getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithPromise(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getValueWithPromise) == 2,
       \\"Expected getValueWithPromise(...) to have 2 parameters\\");
@@ -2013,7 +2013,7 @@ private:
       count <= 0 ? throw jsi::JSError(rt, \\"Expected argument in position 0 to be passed\\") : args[0].asBool());
   }
 
-  static jsi::Value __getValueWithOptionalArg(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getValueWithOptionalArg(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getValueWithOptionalArg) == 2,
       \\"Expected getValueWithOptionalArg(...) to have 2 parameters\\");
@@ -2021,7 +2021,7 @@ private:
       count <= 0 || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)));
   }
 
-  static jsi::Value __getEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getEnums(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getEnums) == 3,
       \\"Expected getEnums(...) to have 3 parameters\\");
@@ -2062,7 +2062,7 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getStringLiteral\\"] = MethodMetadata {.argCount = 1, .invoker = __getStringLiteral};
+    methodMap_[\\"getStringLiteral\\"] = MethodMetadata {.argCount = 1, .invoker = invoke_getStringLiteral};
     eventEmitterMap_[\\"literalEvent\\"] = std::make_shared<AsyncEventEmitter<jsi::Value>>();
   }
   
@@ -2073,7 +2073,7 @@ protected:
     });
   }
 private:
-  static jsi::Value __getStringLiteral(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getStringLiteral(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getStringLiteral) == 2,
       \\"Expected getStringLiteral(...) to have 2 parameters\\");
@@ -2113,11 +2113,11 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = __voidFunc};
+    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_voidFunc};
   }
   
 private:
-  static jsi::Value __voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::voidFunc) == 1,
       \\"Expected voidFunc(...) to have 1 parameters\\");
@@ -2133,19 +2133,19 @@ public:
 
 protected:
   NativeSampleTurboModule2CxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModule2CxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = __getConstants};
-    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = __voidFunc};
+    methodMap_[\\"getConstants\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_getConstants};
+    methodMap_[\\"voidFunc\\"] = MethodMetadata {.argCount = 0, .invoker = invoke_voidFunc};
   }
   
 private:
-  static jsi::Value __getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_getConstants(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::getConstants) == 1,
       \\"Expected getConstants(...) to have 1 parameters\\");
     return bridging::callFromJs<jsi::Object>(rt, &T::getConstants,  static_cast<NativeSampleTurboModule2CxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
   }
 
-  static jsi::Value __voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
+  static jsi::Value invoke_voidFunc(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
     static_assert(
       bridging::getParameterCount(&T::voidFunc) == 1,
       \\"Expected voidFunc(...) to have 1 parameters\\");
@@ -2184,11 +2184,11 @@ public:
 
 protected:
   NativeSampleTurboModuleCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeSampleTurboModuleCxxSpec::kModuleName}, jsInvoker) {
-    methodMap_[\\"getUnion\\"] = MethodMetadata {.argCount = 5, .invoker = __getUnion};
+    methodMap_[\\"getUnion\\"] = MethodMetadata {.argCount = 5, .invoker = invoke_getUnion};
   }
   
 private:
-  static jsi::Value __getUnion(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  static jsi::Value invoke_getUnion(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
     static_assert(
       bridging::getParameterCount(&T::getUnion) == 6,
       \\"Expected getUnion(...) to have 6 parameters\\");

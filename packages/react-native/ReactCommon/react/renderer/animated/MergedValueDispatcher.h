@@ -31,7 +31,7 @@ class MergedValueDispatcher {
    *
    * @param dispatchFunction - function that dispatches to the target
    * thread.
-   * @param latestValueFunction - function that will be called on the target
+   * @param mergedValueFunction - function that will be called on the target
    * thread with all values merged.
    */
   explicit MergedValueDispatcher(DispatchFunction dispatchFunction, MergedValueFunction mergedValueFunction);

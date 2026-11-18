@@ -18,6 +18,7 @@ end
 
 header_search_paths = [
   "$(PODS_ROOT)/Headers/Private/React-Core",
+  "$(PODS_ROOT)/Headers/Private/Yoga",
   "$(PODS_TARGET_SRCROOT)/../../../..",
   "$(PODS_TARGET_SRCROOT)/../../../../..",
 ]
@@ -50,6 +51,7 @@ Pod::Spec.new do |s|
   s.dependency "React-CoreModules"
   s.dependency "React-NativeModulesApple"
   s.dependency "React-RCTFabric"
+  s.dependency "Yoga"
   s.dependency "React-RuntimeCore"
   s.dependency "React-Mapbuffer"
   s.dependency "React-jserrorhandler"
