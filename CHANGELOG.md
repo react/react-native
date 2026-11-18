@@ -1,5 +1,37 @@
 # Changelog
 
+## v0.89.0-rc.2
+
+### Added
+- **Text**: Shared animation backend can update the text of `Text` nodes through `AnimatedProps::text` ([70008bf90c](https://github.com/react/react-native/commit/70008bf90c845c0dae2390b86c3e5b82f634ce16) by [@bartlomiejbloniarz](https://github.com/bartlomiejbloniarz))
+
+#### iOS specific
+- **StatusBar**: `StatusBar.getVerticalBarEdgeIOS()` and `useVerticalBarEdgeIOS()` (vertical bar on iPhone Duo) ([5f9a64b3dd](https://github.com/react/react-native/commit/5f9a64b3dd9da37a90a1e83de7abc3ccc56b61b7) by [@huntie](https://github.com/huntie))
+
+### Changed
+- [0.89] Update debugger-frontend from dbc1c52...a16b8c8 ([d9e48d8d50](https://github.com/react/react-native/commit/d9e48d8d506780361a0df0b59b34ccbeed0b8855) by [@huntie](https://github.com/huntie))
+- **Animated**: Promote C++ Native Animated to stable (`cxxNativeAnimatedEnabled`) ([a81429b9c2](https://github.com/react/react-native/commit/a81429b9c2148f029ed9059f5c2aa7009a996ea1) by [@zeyap](https://github.com/zeyap))
+- Enable the shared animation backend (`useSharedAnimatedBackend`, `optimizedAnimatedPropUpdates`) in open source ([a3d675034b](https://github.com/react/react-native/commit/a3d675034b4ff9583fb46b9e8f94f35e2a669070) by [@bartlomiejbloniarz](https://github.com/bartlomiejbloniarz))
+- **React Native DevTools**: Frame timings and screenshots in the Performance panel are enabled by default ([dac56f15c7](https://github.com/react/react-native/commit/dac56f15c75b2fef189109a3f6f721cea09f45db) by [@huntie](https://github.com/huntie))
+
+#### Android specific
+- `fetch` responses are no longer Base64-encoded for DevTools when no debugger is attached ([f40b7acd9a](https://github.com/react/react-native/commit/f40b7acd9a3b8d96f1d6b753be450d39240f3921) by [@hryhoriiK97](https://github.com/hryhoriiK97))
+
+#### iOS specific
+- **CocoaPods**: `react-native spm add --deintegrate` keeps the Podfile, and `pod install` stops with an error on an app that uses SwiftPM. `react-native spm deinit` and then `pod install` take an app back to CocoaPods. ([b255245daa](https://github.com/react/react-native/commit/b255245daaa0674e2587b75ce997268127dec6ea) by [@chrfalch](https://github.com/chrfalch))
+
+### Fixed
+- Interpolate gradient color stops outside the 0–100% range instead of clamping them ([7caaa57d39](https://github.com/react/react-native/commit/7caaa57d39594c3858410005473af592ae2ef14c) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+- **LogBox**: Keep the inspector's message, code frames and stacks clear of horizontal safe area insets ([b09d297df9](https://github.com/react/react-native/commit/b09d297df9c7a49eeb268543ca8e66c1087a8c0f) by [@huntie](https://github.com/huntie))
+
+#### iOS specific
+- **Animated**: Native-driven `Animated.event` mappings receive events delivered through `RCTEventDispatcher` observers when C++ Native Animated is enabled ([3aed1720fd](https://github.com/react/react-native/commit/3aed1720fdc95d904edd3c88f5025f405a2439f7) by [@zeyap](https://github.com/zeyap))
+- **ScrollView**: `contentInsetAdjustmentBehavior` keeps content clear of the safe area across the scrollable axis, such as the rail on iPhone Duo and the notch in landscape ([abaeb07a4b](https://github.com/react/react-native/commit/abaeb07a4b10d14656a1fd5888be2c3b8dcbad80) by [@huntie](https://github.com/huntie))
+- **ScrollView**: `contentInsetAdjustmentBehavior` now pads content by the larger of the safe area or `contentContainerStyle` padding. Previously, it added the two. ([0ca7b7bba3](https://github.com/react/react-native/commit/0ca7b7bba36bc285d904c11b54df01db4e60ee2e) by [@huntie](https://github.com/huntie))
+- **ScrollView**: Preserve native refresh-control and keyboard insets during ScrollView safe-area updates ([cd4276270a](https://github.com/react/react-native/commit/cd4276270a73fb8f85c8226fb771163f87bb1091) by [@javache](https://github.com/javache))
+- **SwiftPM**: Scaffolded library packages define `RCT_NEW_ARCH_ENABLED=1`, as CocoaPods does ([57b6fa1509](https://github.com/react/react-native/commit/57b6fa1509954248e2589061d3b52257092954ef) by [@chrfalch](https://github.com/chrfalch))
+- **SwiftPM**: SwiftPM autolinking no longer reports a library as mixed Swift/Objective-C because of Swift files its podspec does not compile ([30501c4ee4](https://github.com/react/react-native/commit/30501c4ee498d8e38c1dff7b4848fb2c2b3c92b9) by [@chrfalch](https://github.com/chrfalch))
+
 ## v0.89.0-rc.1
 
 ### Added
