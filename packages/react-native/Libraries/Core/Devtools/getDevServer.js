@@ -14,7 +14,7 @@ let _cachedDevServerURL: ?string;
 let _cachedFullBundleURL: ?string;
 const FALLBACK = 'http://localhost:8081/';
 
-type DevServerInfo = {
+export type DevServerInfo = {
   url: string,
   fullBundleUrl: ?string,
   bundleLoadedFromServer: boolean,
