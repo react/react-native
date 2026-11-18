@@ -9,9 +9,11 @@
 
 #include <FBReactNativeSpec/FBReactNativeSpecJSI.h>
 #include <react/http/IHttpClient.h>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace facebook::react {
 
@@ -64,11 +66,27 @@ class Requests {
   std::atomic<bool> stopped_{false};
 };
 
+// Converts a response body into the value delivered to JS for a responseType
+// that NetworkingModule does not encode itself, e.g. "blob". Mirrors
+// NetworkingModule.ResponseHandler on Android.
+class INetworkingResponseHandler {
+ public:
+  virtual ~INetworkingResponseHandler() = default;
+
+  virtual bool supports(const std::string &responseType) const = 0;
+
+  // Called on the JavaScript thread with owned, undecoded response bytes.
+  virtual jsi::Value toResponseData(jsi::Runtime &rt, std::vector<uint8_t> body) = 0;
+};
+
 // Implementation of "Networking" TurboModule
 class NetworkingModule : public NativeNetworkingAndroidCxxSpec<NetworkingModule>,
                          public std::enable_shared_from_this<NetworkingModule> {
  public:
-  NetworkingModule(std::shared_ptr<CallInvoker> jsInvoker, const HttpClientFactory &httpClientFactory);
+  NetworkingModule(
+      std::shared_ptr<CallInvoker> jsInvoker,
+      const HttpClientFactory &httpClientFactory,
+      std::shared_ptr<INetworkingResponseHandler> responseHandler = nullptr);
 
   ~NetworkingModule() override;
 
@@ -114,6 +132,7 @@ class NetworkingModule : public NativeNetworkingAndroidCxxSpec<NetworkingModule>
   void didCompleteNetworkResponse(uint32_t requestId, const std::string &error, bool timeoutError);
 
   std::unique_ptr<IHttpClient> httpClient_;
+  std::shared_ptr<INetworkingResponseHandler> responseHandler_;
   Requests requests_;
 };
 

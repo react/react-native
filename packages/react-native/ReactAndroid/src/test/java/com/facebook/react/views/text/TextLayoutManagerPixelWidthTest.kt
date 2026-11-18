@@ -20,11 +20,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.GraphicsMode
-import org.robolectric.annotation.TextLayoutMode
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@TextLayoutMode(TextLayoutMode.Mode.REALISTIC)
 class TextLayoutManagerPixelWidthTest {
   private val text = SpannableString("Add payment method")
   private val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }

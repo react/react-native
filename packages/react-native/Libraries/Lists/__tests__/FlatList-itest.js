@@ -42,6 +42,7 @@ function testPropPropagatedToMountingLayer<TValue>({
       expect(root.getRenderedOutput({props: [propName]}).toJSX()).toEqual(
         <rn-scrollView
           {...{
+            // $FlowFixMe[incompatible-type] jsx_intrinsic_elements rollout
             [propName]: JSON.stringify(value),
           }}>
           {renderChildrenForValue != null ? (

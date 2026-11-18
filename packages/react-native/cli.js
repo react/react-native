@@ -14,6 +14,10 @@
 // $FlowFixMe[untyped-import]
 const {name} = require('./package.json');
 const {styleText} = require('node:util');
+const {major} = require('semver');
+
+const COMMUNITY_CLI_PACKAGE = '@react-native-community/cli';
+const MIN_SUPPORTED_CLI_MAJOR = 21;
 
 const deprecated = () => {
   throw new Error(
@@ -26,7 +30,18 @@ function findCommunityCli(startDir /*: string */ = process.cwd()) {
   // `@react-native-community/cli` starting from the `react-native` directory.
   // Instead, we should use the project root, which we assume to be the cwd.
   const options /*: {paths?: Array<string>, ...} */ = {paths: [startDir]};
-  const rncli = require.resolve('@react-native-community/cli', options);
+  const rncli = require.resolve(COMMUNITY_CLI_PACKAGE, options);
+  const manifestPath = require.resolve(
+    `${COMMUNITY_CLI_PACKAGE}/package.json`,
+    options,
+  );
+  // $FlowFixMe[unsupported-syntax]
+  const {version} = require(manifestPath);
+  if (major(version) < MIN_SUPPORTED_CLI_MAJOR) {
+    throw new Error(
+      `Refusing to use ${COMMUNITY_CLI_PACKAGE}, as the installed version is incompatible with this version of React Native. Please upgrade ${COMMUNITY_CLI_PACKAGE} dependencies to ${MIN_SUPPORTED_CLI_MAJOR}.x.x.`,
+    );
+  }
   // $FlowFixMe[unsupported-syntax]
   return require(rncli);
 }
@@ -70,9 +85,11 @@ function main() {
   } catch (e) {
     if (isMissingCliDependency(e)) {
       warnWithExplicitDependency();
-      process.exit(1);
+    } else {
+      console.error(String(e));
     }
-    throw e;
+    process.exitCode = 1;
+    return;
   }
 }
 

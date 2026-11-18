@@ -23,6 +23,7 @@ import NativeFantom, {
 import * as Benchmark from './Benchmark';
 import {getConstants} from './Constants';
 import getFantomRenderedOutput from './getFantomRenderedOutput';
+import Screenshot from './Screenshot';
 import {Dimensions, LogBox} from 'react-native';
 import {
   getInternalInstanceHandleFromPublicInstance,
@@ -120,6 +121,7 @@ class Root {
   #devicePixelRatio: number;
   #fontScale: number;
   #document: ?Document;
+  #destroyed: boolean = false;
 
   constructor(config?: RootConfig) {
     this.#viewportWidth = config?.viewportWidth ?? DEFAULT_VIEWPORT_WIDTH;
@@ -188,6 +190,17 @@ class Root {
     popDimensions(this.#surfaceId);
     NativeFantom.flushMessageQueue();
     this.#document = null;
+    this.#destroyed = true;
+  }
+
+  /**
+   * Captures the mounted pixels without flushing pending React work.
+   */
+  takeScreenshot(): Screenshot {
+    if (this.#destroyed) {
+      throw new Error('Cannot capture a screenshot of a destroyed root.');
+    }
+    return new Screenshot(NativeFantom.takeScreenshot(this.#surfaceId));
   }
 
   getRenderedOutput(config: RenderOutputConfig = {}): FantomRenderedOutput {
@@ -204,6 +217,7 @@ class Root {
 export type {Root};
 
 export {NativeEventCategory};
+export type {default as Screenshot} from './Screenshot';
 
 const DEFAULT_TASK_PRIORITY = unstable_ImmediatePriority;
 
@@ -777,7 +791,7 @@ export function takeJSMemoryHeapSnapshot(): void {
       // a very specific shape).
       errorMessage +=
         ' If you want to take JS heap snapshots in optimized builds, ' +
-        'please call Fantom with FANTOM_ENABLE_MEMORY_INSTRUMENTATION=1 ' +
+        'please call Fantom with FANTOM_ENABLE_JS_MEMORY_INSTRUMENTATION=1 ' +
         '(only works locally with Buck).';
     }
 

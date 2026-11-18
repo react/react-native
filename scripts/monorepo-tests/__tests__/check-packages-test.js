@@ -14,6 +14,7 @@ import {
   getReactNativePackage,
   getWorkspaceRoot,
 } from '../../shared/monorepoUtils';
+import {existsSync, readFileSync} from 'node:fs';
 import path from 'node:path';
 import {globSync} from 'tinyglobby';
 
@@ -86,5 +87,28 @@ describe('package file structure', () => {
     });
 
     expect(npmignoreFiles).toEqual([]);
+  });
+
+  test('published packages must contain a LICENSE file', async () => {
+    const packages = await getPackages({includeReactNative: true});
+    const rootLicense = readFileSync(path.join(REPO_ROOT, 'LICENSE'), 'utf8');
+    const violations: Array<string> = [];
+
+    for (const name of Object.keys(packages)) {
+      const {packageJson, path: packagePath} = packages[name];
+      const licensePath = path.join(packagePath, 'LICENSE');
+      const licenseIds = (packageJson.license ?? '').split(/\s+(?:AND|OR)\s+/);
+
+      if (!existsSync(licensePath)) {
+        violations.push(`${name}: missing LICENSE`);
+      } else if (
+        licenseIds.includes('MIT') &&
+        readFileSync(licensePath, 'utf8') !== rootLicense
+      ) {
+        violations.push(`${name}: LICENSE does not match the root LICENSE`);
+      }
+    }
+
+    expect(violations).toEqual([]);
   });
 });

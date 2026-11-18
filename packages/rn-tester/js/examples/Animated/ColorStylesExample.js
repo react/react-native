@@ -12,6 +12,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTConfigurationBlock from '../../components/RNTConfigurationBlock';
 import RNTesterButton from '../../components/RNTesterButton';
+import RNTesterText from '../../components/RNTesterText';
 import ToggleNativeDriver from './utils/ToggleNativeDriver';
 import * as React from 'react';
 import {useState} from 'react';
@@ -108,13 +109,13 @@ component AnimatedView(useNativeDriver: boolean) {
           style={[styles.animatedView, interpolationAnimatedStyle]}
         />
       </View>
-      <Text style={styles.animatedText}>
+      <RNTesterText style={styles.animatedText}>
         <Text>The </Text>
         <Animated.Text style={animatedFirstSpanTextStyle}>quick</Animated.Text>
         <Text> brown </Text>
         <Animated.Text style={animatedSecondSpanTextStyle}>fox</Animated.Text>
         <Text> jumps over the lazy dog</Text>
-      </Text>
+      </RNTesterText>
       <Animated.Image
         style={[styles.animatedImage, animatedImageStyle]}
         source={require('../../assets/bunny.png')}

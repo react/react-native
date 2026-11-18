@@ -11,6 +11,9 @@
 
 #include <React/Graphics.h>
 #include <React/View.h>
+#include <optional>
+#include <string>
+#include <utility>
 #include "AnimatedProps.h"
 
 namespace facebook::react {
@@ -18,6 +21,7 @@ namespace facebook::react {
 struct AnimatedPropsBuilder {
   std::vector<std::unique_ptr<AnimatedPropBase>> props;
   std::unique_ptr<RawProps> rawProps;
+  std::optional<std::string> text;
 
   void setOpacity(Float value)
   {
@@ -227,6 +231,10 @@ struct AnimatedPropsBuilder {
   {
     props.push_back(std::make_unique<AnimatedProp<BackfaceVisibility>>(BACKFACE_VISIBILITY, value));
   }
+  void setText(std::string value)
+  {
+    text = std::move(value);
+  }
   void storeDynamic(folly::dynamic &d)
   {
     rawProps = std::make_unique<RawProps>(std::move(d));
@@ -237,7 +245,7 @@ struct AnimatedPropsBuilder {
   }
   AnimatedProps get()
   {
-    return AnimatedProps{std::move(props), std::move(rawProps)};
+    return AnimatedProps{std::move(props), std::move(rawProps), std::exchange(text, std::nullopt)};
   }
 };
 

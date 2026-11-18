@@ -1092,7 +1092,17 @@ void FabricMountingManager::drainPreallocateViewsQueue() {
   {
     std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
     for (auto& [shadowView, family] : queuedViews) {
-      if (pullModel && family.expired()) {
+      auto queuedFamily = family.lock();
+      if (pullModel && queuedFamily == nullptr) {
+        continue;
+      }
+      // Once a family is part of a committed tree, its view is executeMount's
+      // to create. The commit can run before this drain and both create and
+      // delete the view, e.g. when it is flattened again by the next commit;
+      // registering the tag now would leave it allocated with no view behind
+      // it, and its next Create would be skipped. executeMount takes
+      // allocatedViewsMutex_ after the commit has marked the family mounted.
+      if (queuedFamily != nullptr && queuedFamily->hasBeenMounted()) {
         continue;
       }
       auto allocatedViewsIterator =
@@ -1317,9 +1327,10 @@ void FabricMountingManager::synchronouslyUpdateViewOnUIThread(
       JFabricUIManager::javaClassStatic()
           ->getMethod<void(jint, ReadableMap::javaobject)>(
               "synchronouslyUpdateViewOnUIThread");
-  auto propsMap = reinterpret_cast<ReadableMap::javaobject>(
-      ReadableNativeMap::newObjectCxxArgs(props).release());
-  synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap);
+  auto propsMap = jni::adopt_local(
+      reinterpret_cast<ReadableMap::javaobject>(
+          ReadableNativeMap::newObjectCxxArgs(props).release()));
+  synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap.get());
 }
 
 void FabricMountingManager::synchronouslyUpdateAnimatedProps(

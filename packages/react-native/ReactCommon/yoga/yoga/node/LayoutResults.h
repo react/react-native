@@ -9,6 +9,7 @@
 
 #include <array>
 
+#include <yoga/YGMacros.h>
 #include <yoga/debug/AssertFatal.h>
 #include <yoga/enums/Dimension.h>
 #include <yoga/enums/Direction.h>
@@ -28,18 +29,22 @@ struct LayoutResults {
   FloatOptional computedFlexBasis = {};
 
   // Per-flex-item floor along the main axis derived from CSS Flexbox §4.5
-  // automatic minimum sizing. Set by `resolveFlexibleLength` when the parent's
-  // config does NOT carry the `MinSizeUndefinedInsteadOfAuto` errata and the
-  // item has no explicit main-axis `min-{width,height}`. Read by the
-  // shrink/bound machinery to keep items at least this large. `Undefined`
+  // automatic minimum sizing, applied when the parent's config does NOT carry
+  // the `MinSizeUndefinedInsteadOfAuto` errata and the item has no explicit
+  // main-axis `min-{width,height}`. Computed on first use by the shrink/grow
+  // bound machinery and valid while `computedAutoMinMainSizeResolved()` is
+  // set; `resolveFlexibleLength` resets both for each flex line. `Undefined`
   // means "no auto-min applies."
   FloatOptional computedAutoMinMainSize = {};
 
-  // Memoized min-content sizes for §4.5, indexed by dimension and valid only
-  // during layout generation `minContentGeneration`. A leaf stores its measured
-  // min-content without padding and border, which doesn't depend on the owner.
-  // A container stores its full min-content, which depends on
-  // `minContentOwnerWidth` through percentage padding and margins.
+  // Memoized min-content sizes for §4.5, indexed by dimension, with the layout
+  // generation each was computed in (0 for none). Like `cachedMeasurements`,
+  // they hold until the node, its config or its direction changes. A leaf
+  // stores its measured min-content without padding and border, which doesn't
+  // depend on the owner. A container stores its full min-content, which
+  // depends on `minContentOwnerWidth` when its own percentage padding, or a
+  // percentage padding or margin below it, resolves against it
+  // (`minContentResolvesAgainstOwnerWidth`).
   std::array<uint32_t, 2> minContentGeneration = {};
   std::array<float, 2> minContentOwnerWidth = {{YGUndefined, YGUndefined}};
   std::array<float, 2> minContent = {{YGUndefined, YGUndefined}};
@@ -69,6 +74,28 @@ struct LayoutResults {
 
   void setHadOverflow(bool hadOverflow) {
     hadOverflow_ = hadOverflow;
+  }
+
+  bool computedAutoMinMainSizeResolved() const {
+    return computedAutoMinMainSizeResolved_;
+  }
+
+  void setComputedAutoMinMainSizeResolved(bool resolved) {
+    computedAutoMinMainSizeResolved_ = resolved;
+  }
+
+  bool minContentResolvesAgainstOwnerWidth(Dimension axis) const {
+    return axis == Dimension::Width
+        ? minContentWidthResolvesAgainstOwnerWidth_
+        : minContentHeightResolvesAgainstOwnerWidth_;
+  }
+
+  void setMinContentResolvesAgainstOwnerWidth(Dimension axis, bool resolves) {
+    if (axis == Dimension::Width) {
+      minContentWidthResolvesAgainstOwnerWidth_ = resolves;
+    } else {
+      minContentHeightResolvesAgainstOwnerWidth_ = resolves;
+    }
   }
 
   float dimension(Dimension axis) const {
@@ -127,11 +154,14 @@ struct LayoutResults {
     padding_[yoga::to_underlying(physicalEdge)] = dimension;
   }
 
-  bool operator==(LayoutResults layout) const;
+  YG_EXPORT bool operator==(LayoutResults layout) const;
 
  private:
   Direction direction_ : bitCount<Direction>() = Direction::Inherit;
   bool hadOverflow_ : 1 = false;
+  bool computedAutoMinMainSizeResolved_ : 1 = false;
+  bool minContentWidthResolvesAgainstOwnerWidth_ : 1 = false;
+  bool minContentHeightResolvesAgainstOwnerWidth_ : 1 = false;
 
   std::array<float, 2> dimensions_ = {{YGUndefined, YGUndefined}};
   std::array<float, 2> measuredDimensions_ = {{YGUndefined, YGUndefined}};

@@ -13,7 +13,7 @@ import {extract, parse} from 'jest-docblock';
 
 type DocblockPragmas = {[key: string]: string | string[]};
 
-const FANTOM_BENCHMARK_FILENAME_RE = /[Bb]enchmark-itest\./g;
+const FANTOM_BENCHMARK_FILENAME_RE = /[Bb]enchmark-itest\./;
 
 export function shouldCollectCoverage(
   testPath: string,

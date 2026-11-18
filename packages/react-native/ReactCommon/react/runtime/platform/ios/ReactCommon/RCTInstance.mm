@@ -29,6 +29,7 @@
 #import <React/RCTLogBox.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTRedBox.h>
+#import <React/RCTScheduler.h>
 #import <React/RCTSurfacePresenter.h>
 #import <ReactCommon/RCTTurboModule.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
@@ -42,7 +43,6 @@
 #import <react/renderer/core/EventEmitterListener.h>
 #import <react/runtime/ReactInstance.h>
 #import <react/utils/ContextContainer.h>
-#import <react/utils/FollyConvert.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #import "ObjCTimerRegistry.h"
@@ -174,6 +174,13 @@ using namespace facebook::react;
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args
 {
+  const char *moduleNameStr = [moduleName UTF8String];
+  const char *methodNameStr = [method UTF8String];
+  if (moduleNameStr == nullptr || methodNameStr == nullptr) {
+    return;
+  }
+  // The arguments are converted on the JS thread, like the values of codegen's AsyncEventEmitter.
+  NSArray *callArgs = [args copy];
   // This is called from arbitrary threads, while -invalidate destroys _reactInstance on
   // the JS thread, so checking _valid and dereferencing have to happen as one step.
   std::lock_guard<std::mutex> lock(_invalidationMutex);
@@ -181,7 +188,12 @@ using namespace facebook::react;
     return;
   }
   _reactInstance->callFunctionOnModule(
-      [moduleName UTF8String] ?: "", [method UTF8String] ?: "", convertIdToFollyDynamic(args ? args : @[]));
+      moduleNameStr, methodNameStr, [callArgs](jsi::Runtime &runtime, std::vector<jsi::Value> &jsArgs) {
+        jsArgs.reserve(callArgs.count);
+        for (id arg in callArgs) {
+          jsArgs.push_back(TurboModuleConvertUtils::convertObjCObjectToJSIValue(runtime, arg));
+        }
+      });
 }
 
 - (void)invalidate
@@ -195,28 +207,36 @@ using namespace facebook::react;
   }
   // suspend shouldn't be called under _invalidationMutex: it notifies surface observers,
   // which can call callFunctionOnJSModule and deadlock on the same mutex.
+  // Queued rendering updates capture the scheduler's delegate by raw pointer.
+  // Stop its run-loop observer on main, but keep it alive until queued JS work
+  // has drained. Release it before the runtime so its queued JSI handles remain valid.
+  __block RCTScheduler *scheduler = _surfacePresenter.scheduler;
   [_surfacePresenter suspend];
-  [_jsThreadManager dispatchToJSThread:^{
-    /**
-     * Every TurboModule is invalidated on its own method queue.
-     * TurboModuleManager invalidate blocks the calling thread until all TurboModules are invalidated.
-     */
-    [self->_turboModuleManager invalidate];
+  RCTExecuteOnMainQueue(^{
+    [scheduler stopObservingLayoutAnimations];
+    [self->_jsThreadManager dispatchToJSThread:^{
+      /**
+       * Every TurboModule is invalidated on its own method queue.
+       * TurboModuleManager invalidate blocks the calling thread until all TurboModules are invalidated.
+       */
+      [self->_turboModuleManager invalidate];
 
-    // Clean up all the Resources
-    self->_reactInstance = nullptr;
-    self->_jsRuntimeFactory = nullptr;
-    self->_appTMMDelegate = nil;
-    self->_delegate = nil;
-    [self->_displayLink invalidate];
-    self->_displayLink = nil;
+      // Clean up all the Resources
+      scheduler = nil;
+      self->_reactInstance = nullptr;
+      self->_jsRuntimeFactory = nullptr;
+      self->_appTMMDelegate = nil;
+      self->_delegate = nil;
+      [self->_displayLink invalidate];
+      self->_displayLink = nil;
 
-    self->_turboModuleManager = nil;
-    self->_performanceLogger = nil;
+      self->_turboModuleManager = nil;
+      self->_performanceLogger = nil;
 
-    // Terminate the JavaScript thread, so that no other work executes after this block.
-    self->_jsThreadManager = nil;
-  }];
+      // Terminate the JavaScript thread, so that no other work executes after this block.
+      self->_jsThreadManager = nil;
+    }];
+  });
 }
 
 - (std::shared_ptr<CallInvoker>)jsCallInvoker

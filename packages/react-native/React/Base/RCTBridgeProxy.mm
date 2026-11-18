@@ -262,38 +262,9 @@ using namespace facebook;
   return (RCTBridge *)self;
 }
 
-- (void)setBatchedBridge
-{
-  [self logError:@"This method is not supported. No-oping." cmd:_cmd];
-}
-
-- (RCTBridgeModuleListProvider)moduleProvider
-{
-  [self logWarning:@"This method is not supported. Returning empty block" cmd:_cmd];
-  return ^{
-    return @[];
-  };
-}
-
 - (RCTModuleRegistry *)moduleRegistry
 {
   return _moduleRegistry;
-}
-
-/**
- * RCTBridge (RCTCxxBridge)
- */
-
-- (RCTBridge *)parentBridge
-{
-  [self logWarning:@"This method is not supported. Returning bridge proxy." cmd:_cmd];
-  return (RCTBridge *)self;
-}
-
-- (BOOL)moduleSetupComplete
-{
-  [self logWarning:@"This method is not supported. Returning YES." cmd:_cmd];
-  return YES;
 }
 
 - (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules
@@ -304,48 +275,12 @@ using namespace facebook;
            cmd:_cmd];
 }
 
-- (void)updateModuleWithInstance:(id<RCTBridgeModule>)instance
-{
-  [self logError:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (void)startProfiling
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (void)stopProfiling:(void (^)(NSData *))callback
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (id)callNativeModule:(NSUInteger)moduleID method:(NSUInteger)methodID params:(NSArray *)params
-{
-  [self logError:@"This method is not supported. Nooping and returning nil." cmd:_cmd];
-  return nil;
-}
-
-- (void)logMessage:(NSString *)message level:(NSString *)level
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (void)_immediatelyCallTimer:(NSNumber *)timer
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
 /**
  * RCTBridge (RCTUIManager)
  */
 - (RCTUIManager *)uiManager
 {
   return (RCTUIManager *)_uiManagerProxy;
-}
-
-- (RCTBridgeProxy *)object
-{
-  return self;
 }
 
 /**

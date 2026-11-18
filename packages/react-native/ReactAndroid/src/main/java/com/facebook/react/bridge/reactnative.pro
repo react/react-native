@@ -18,6 +18,15 @@
 -keep class **$$ReactModuleInfoProvider
 -keep class com.facebook.react.bridge.ReadableType { *; }
 
+# Let tools outside the app's own code identify the views React Native renders.
+# Keep in sync with ReactAndroid/proguard-rules.pro, which explains each rule.
+-keep class com.facebook.react.uimanager.UIManagerHelper {
+    public static *** getUIManager(...);
+}
+-keep interface com.facebook.react.bridge.UIManager {
+    android.view.View resolveView(int);
+}
+
 -keepnames class com.facebook.quicklog.QuickPerformanceLogger {
   void markerAnnotate(int,int,java.lang.String,java.lang.String);
   void markerTag(int,int,java.lang.String);

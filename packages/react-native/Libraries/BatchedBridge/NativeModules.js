@@ -132,9 +132,11 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
           hasSuccessCallback,
           'Cannot have a non-function arg after a function arg.',
         );
-      // $FlowFixMe[incompatible-type]
-      const onSuccess: ?(unknown) => void = hasSuccessCallback ? lastArg : null;
-      const onFail: ?(unknown) => void = hasErrorCallback
+      const onSuccess: ?(v: unknown) => void = hasSuccessCallback
+        ? // $FlowFixMe[incompatible-type]
+          lastArg
+        : null;
+      const onFail: ?(v: unknown) => void = hasErrorCallback
         ? // $FlowFixMe[incompatible-type]
           secondLastArg
         : null;

@@ -161,9 +161,9 @@ void TurboModuleBinding::install(
 }
 
 TurboModuleBinding::~TurboModuleBinding() {
-  LongLivedObjectCollection::get(runtime_).clear();
+  LongLivedObjectCollection::get(runtime_).clear(runtime_);
   if (longLivedObjectCollection_) {
-    longLivedObjectCollection_->clear();
+    longLivedObjectCollection_->clear(runtime_);
   }
 }
 

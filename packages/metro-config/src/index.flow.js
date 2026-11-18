@@ -64,9 +64,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
       },
     },
     transformer: {
-      allowOptionalDependencies: true,
       assetRegistryPath: 'react-native/asset-registry',
-      asyncRequireModulePath: 'metro:runtime/modules/asyncRequire',
       babelTransformerPath:
         require.resolve('@react-native/metro-babel-transformer'),
       getTransformOptions: async () => ({
@@ -76,7 +74,6 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
         },
       }),
     },
-    watchFolders: [],
   };
 
   const metroDefaults = getBaseConfig.getDefaultValues(projectRoot);

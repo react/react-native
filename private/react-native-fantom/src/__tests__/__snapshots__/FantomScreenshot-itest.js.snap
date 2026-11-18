@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Fantom screenshot snapshots captures a mounted root and its update 1`] = `
+Object {
+  "hash": "7ce176afc63d276869ec36bb0ad16f57098496278cfa87967206be51e2752102",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots captures a mounted root and its update: updated 2`] = `
+Object {
+  "hash": "6776b08d89b43a18000707a6c428ff070d3416f812e7841862688ce23de01eba",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots renders gray text, translucent layers and a resized image consistently 1`] = `
+Object {
+  "hash": "a8cc60158a96a1cbeb3fcc00440de4873c49088ce57742f4fa2d0cada28879db",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots renders gray text, translucent layers and a resized image consistently at pixel ratio 1 1`] = `
+Object {
+  "hash": "730d828dd3fdb645695a9013cc7fe33521d447922aa6e370808d74d675c6447e",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots renders gray text, translucent layers and a resized image consistently at pixel ratio 1.5 1`] = `
+Object {
+  "hash": "ca9a34175147ddee02d02c2ab46c9515c8d7205650d437e837ac2ea50d7b1af4",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots renders gray text, translucent layers and a resized image consistently at pixel ratio 2 1`] = `
+Object {
+  "hash": "f4c961ba63f504075bfa5dc72a33f363b1ae15ec39551ea6c7078f819f508b40",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots renders scaled text and inputs like equivalent explicit font sizes: fontScale 1 1`] = `
+Object {
+  "hash": "51f11368745b4752dbbe86dcfa8006f5a90c6b4532edc5459be6c2dffde65164",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots renders scaled text and inputs like equivalent explicit font sizes: fontScale 2 2`] = `
+Object {
+  "hash": "d6787d29529adbc2b9a7f77e30d28dfbd301d6b7a7d7662aebe528b6852dcf5d",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots retains pixels across root updates and destruction and compares dimensions: retained blue 2`] = `
+Object {
+  "hash": "6776b08d89b43a18000707a6c428ff070d3416f812e7841862688ce23de01eba",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots retains pixels across root updates and destruction and compares dimensions: retained red 1`] = `
+Object {
+  "hash": "7ce176afc63d276869ec36bb0ad16f57098496278cfa87967206be51e2752102",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screenshot snapshots uses the same snapshot numbering for screenshots and other values 1`] = `"before screenshot"`;
+
+exports[`Fantom screenshot snapshots uses the same snapshot numbering for screenshots and other values 3`] = `"after screenshot"`;
+
+exports[`Fantom screenshot snapshots uses the same snapshot numbering for screenshots and other values: screen 2`] = `
+Object {
+  "hash": "7ce176afc63d276869ec36bb0ad16f57098496278cfa87967206be51e2752102",
+  "type": "Screenshot",
+}
+`;

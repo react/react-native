@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Fantom screen snapshots captures the default New App Screen 1`] = `
+Object {
+  "hash": "5597b8c0ba6b4d0b508b6cfb6b311b4ed637534357438c68e6515ec27144118c",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screen snapshots captures the feed and its scrolled viewport 1`] = `
+Object {
+  "hash": "a71fd606e25d99e9afc33d276138ae2db1d42352ec0995d23bdaefab811eba17",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screen snapshots captures the feed and its scrolled viewport: scrolled 2`] = `
+Object {
+  "hash": "033cb89f80f8db1e3c408dded78240ce04f006b48e239220de330d43e4a61ce9",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screen snapshots captures the travel screen, entered text, and scrolling 1`] = `
+Object {
+  "hash": "e0b9e388c8a46c11c7ed39be08f1a076544832b74e6b784f5c4f271fe25867de",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screen snapshots captures the travel screen, entered text, and scrolling: entered text 2`] = `
+Object {
+  "hash": "58c4eff04819a3ae95cba4a78c488bae92a28ea17692564877920f5333b7d28f",
+  "type": "Screenshot",
+}
+`;
+
+exports[`Fantom screen snapshots captures the travel screen, entered text, and scrolling: scrolled 3`] = `
+Object {
+  "hash": "88171d2631826041e43b4936215241ef648c0b7c741b2dcbb302d21af6fe646f",
+  "type": "Screenshot",
+}
+`;

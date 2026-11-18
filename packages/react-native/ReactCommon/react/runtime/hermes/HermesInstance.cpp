@@ -10,12 +10,21 @@
 #include <hermes/inspector-modern/chrome/HermesRuntimeTargetDelegate.h>
 #include <jsi/jsilib.h>
 #include <jsinspector-modern/InspectorFlags.h>
+#include <logger/react_native_log.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+
+#include <mutex>
 
 using namespace facebook::hermes;
 using namespace facebook::jsi;
 
 namespace facebook::react {
+
+static void hermesFatalHandler(const std::string& reason) {
+  react_native_log_fatal(reason.c_str());
+}
+
+static constinit std::once_flag fatalHandlerFlag;
 
 class HermesJSRuntime : public JSRuntime {
  public:
@@ -52,6 +61,14 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
     std::shared_ptr<MessageQueueThread> msgQueueThread,
     bool allocInOldGenBeforeTTI) noexcept {
   assert(msgQueueThread != nullptr);
+
+  std::call_once(fatalHandlerFlag, []() {
+    auto* fatalHandlerInterface =
+        jsi::castInterface<ISetFatalHandler>(makeHermesRootAPI());
+    if (fatalHandlerInterface) {
+      fatalHandlerInterface->setFatalHandler(hermesFatalHandler);
+    }
+  });
 
   auto gcConfig = ::hermes::vm::GCConfig::Builder()
                       // Default to 3GB
