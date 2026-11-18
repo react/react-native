@@ -83,6 +83,32 @@ describe('EventTarget', () => {
     expect(methods.size).toBe(0);
   });
 
+  it('resets dispatch state so an Event can be reused', () => {
+    const event = new Event('custom');
+    const target = new EventTarget();
+    let calls = 0;
+
+    target.addEventListener('custom', received => {
+      calls++;
+      expect(received).toBe(event);
+      expect(received.eventPhase).toBe(Event.AT_TARGET);
+      expect(received.currentTarget).toBe(target);
+      expect(received.composedPath()).toEqual([target]);
+      expect(received.composedPath()).not.toBe(received.composedPath());
+    });
+
+    expect(target.dispatchEvent(event)).toBe(true);
+    expect(event.eventPhase).toBe(Event.NONE);
+    expect(event.currentTarget).toBeNull();
+    expect(event.composedPath()).toEqual([]);
+
+    expect(target.dispatchEvent(event)).toBe(true);
+    expect(event.eventPhase).toBe(Event.NONE);
+    expect(event.currentTarget).toBeNull();
+    expect(event.composedPath()).toEqual([]);
+    expect(calls).toBe(2);
+  });
+
   describe('addEventListener', () => {
     it('should throw an error if event or callback are NOT passed', () => {
       const eventTarget = new EventTarget();

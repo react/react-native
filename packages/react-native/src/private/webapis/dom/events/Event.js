@@ -16,9 +16,12 @@
 // flowlint unsafe-getters-setters:off
 
 import type EventTarget from './EventTarget';
+import type {EventInitWithTimestamp} from './internals/EventInternals';
 
 import {setPlatformObject} from '../../webidl/PlatformObjects';
 import {
+  BUBBLED_PROP_NAME_KEY,
+  CAPTURED_PROP_NAME_KEY,
   COMPOSED_PATH_KEY,
   CURRENT_TARGET_KEY,
   EVENT_INIT_TIMESTAMP_KEY,
@@ -70,37 +73,16 @@ export default class Event {
   _defaultPrevented: boolean = false;
   _timeStamp: number;
 
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
-  [COMPOSED_PATH_KEY]: boolean = [];
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
+  [COMPOSED_PATH_KEY]: ReadonlyArray<EventTarget> = [];
   [CURRENT_TARGET_KEY]: EventTarget | null = null;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
-  [EVENT_PHASE_KEY]: boolean = Event.NONE;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
+  [EVENT_PHASE_KEY]: EventPhase = Event.NONE;
   [IN_PASSIVE_LISTENER_FLAG_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [IS_TRUSTED_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [STOP_IMMEDIATE_PROPAGATION_FLAG_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [STOP_PROPAGATION_FLAG_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [TARGET_KEY]: EventTarget | null = null;
+  [BUBBLED_PROP_NAME_KEY]: string | null | void;
+  [CAPTURED_PROP_NAME_KEY]: string | null | void;
 
   constructor(type: string, options?: ?EventInit) {
     if (arguments.length < 1) {
@@ -139,8 +121,9 @@ export default class Event {
     // For internal construction of events using a custom timestamp (instead of
     // event object creation), for use cases like dispatching events from the
     // host platform using the original timestamps.
-    // $FlowExpectedError[prop-missing]
-    const initTimestamp: number | void = options?.[EVENT_INIT_TIMESTAMP_KEY];
+    const initTimestamp: number | void = (
+      options as EventInitWithTimestamp | null | void
+    )?.[EVENT_INIT_TIMESTAMP_KEY];
     this._timeStamp =
       initTimestamp !== undefined ? initTimestamp : performance.now();
   }

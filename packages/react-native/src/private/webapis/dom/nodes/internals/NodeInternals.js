@@ -63,11 +63,10 @@ function getPublicInstanceFromInternalInstanceHandle(
   return cachedGetPublicInstanceFromInternalInstanceHandle(instanceHandle);
 }
 
-const INSTANCE_HANDLE_KEY = Symbol('internalInstanceHandle');
-const OWNER_DOCUMENT_KEY = Symbol('ownerDocument');
+export const INSTANCE_HANDLE_KEY = Symbol('internalInstanceHandle');
+export const OWNER_DOCUMENT_KEY = Symbol('ownerDocument');
 
 export function getInstanceHandle(node: ReadOnlyNode): InstanceHandle {
-  // $FlowExpectedError[prop-missing]
   return node[INSTANCE_HANDLE_KEY];
 }
 
@@ -75,14 +74,12 @@ export function setInstanceHandle(
   node: ReadOnlyNode,
   instanceHandle: InstanceHandle,
 ): void {
-  // $FlowExpectedError[prop-missing]
   node[INSTANCE_HANDLE_KEY] = instanceHandle;
 }
 
 export function getOwnerDocument(
   node: ReadOnlyNode,
 ): ReactNativeDocument | null {
-  // $FlowExpectedError[prop-missing]
   return node[OWNER_DOCUMENT_KEY] ?? null;
 }
 
@@ -90,7 +87,6 @@ export function setOwnerDocument(
   node: ReadOnlyNode,
   ownerDocument: ReactNativeDocument | null,
 ): void {
-  // $FlowExpectedError[prop-missing]
   node[OWNER_DOCUMENT_KEY] = ownerDocument;
 }
 
