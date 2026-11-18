@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e21323b07d15a319816f210ba88bfcfc>>
+ * @generated SignedSource<<9e5c3896a783839b188cb8c23589df03>>
  * @flow strict
  * @noformat
  */
@@ -60,6 +60,7 @@ export interface Spec extends TurboModule {
   readonly enableImagePrefetchingAndroid?: () => boolean;
   readonly enableImageTransparentTintColor?: () => boolean;
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
+  readonly enableImmediateUpdateModeForScrollContentView?: () => boolean;
   readonly enableImperativeEvents?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
   readonly enableInteractableResponderViews?: () => boolean;

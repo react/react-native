@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<80dd5355f9f95d594f04d6b41fc785f5>>
+ * @generated SignedSource<<9ef15f2ab900b3afa8d01fcdbf9de178>>
  */
 
 /**
@@ -246,6 +246,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableImmediateUpdateModeForContentOffsetChanges() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImmediateUpdateModeForContentOffsetChanges");
+    return method(javaProvider_);
+  }
+
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImmediateUpdateModeForScrollContentView");
     return method(javaProvider_);
   }
 
@@ -806,6 +812,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffs
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForScrollContentView(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableImperativeEvents(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableImperativeEvents();
@@ -1257,6 +1268,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableImmediateUpdateModeForContentOffsetChanges",
         JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffsetChanges),
+      makeNativeMethod(
+        "enableImmediateUpdateModeForScrollContentView",
+        JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForScrollContentView),
       makeNativeMethod(
         "enableImperativeEvents",
         JReactNativeFeatureFlagsCxxInterop::enableImperativeEvents),

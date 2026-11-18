@@ -428,6 +428,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableImmediateUpdateModeForScrollContentView: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          'Apply ScrollContentView state updates synchronously on the main thread.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableImperativeEvents: {
       defaultValue: false,
       metadata: {
