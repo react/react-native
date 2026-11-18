@@ -52,7 +52,8 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void dispatchTextInputEvent(
       const std::string &name,
       const Metrics &textInputMetrics,
-      bool includeSelectionState = false) const;
+      bool includeSelectionState = false,
+      RawEvent::Category category = RawEvent::Category::Unspecified) const;
 
   void dispatchTextInputContentSizeChangeEvent(const std::string &name, const Metrics &textInputMetrics) const;
 };

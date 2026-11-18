@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c65f172e91f823049cf508cc70663c64>>
+ * @generated SignedSource<<2fc3104a74638958199ef04411044d38>>
  */
 
 /**
@@ -155,6 +155,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableDestroyShadowTreeRevisionAsync(): Boolean = accessor.enableDestroyShadowTreeRevisionAsync()
+
+  /**
+   * Dispatches the `change`, `keyPress` and `submitEditing` events of text inputs with the discrete event category, so React renders their updates at its discrete priority, as it does for text input on the web. Other text input events keep the default category.
+   */
+  @JvmStatic
+  public fun enableDiscretePriorityForTextInputEvents(): Boolean = accessor.enableDiscretePriorityForTextInputEvents()
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.
@@ -337,6 +343,12 @@ public object ReactNativeFeatureFlags {
   public fun enableResizeObserverByDefault(): Boolean = accessor.enableResizeObserverByDefault()
 
   /**
+   * On iOS, mounts the effects of a tap ending (touch end, click) or of typing (change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; when it is idle as the input arrives, the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the screen's maximum refresh rate) and then runs the resulting mounts and commands, in order. Otherwise the asynchronous main queue path presents the change one frame later.
+   */
+  @JvmStatic
+  public fun enableSameFrameMountForDiscreteEvents(): Boolean = accessor.enableSameFrameMountForDiscreteEvents()
+
+  /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
    */
   @JvmStatic
@@ -497,6 +509,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun redBoxV2IOS(): Boolean = accessor.redBoxV2IOS()
+
+  /**
+   * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the screen's maximum refresh rate. Zero or less disables the wait.
+   */
+  @JvmStatic
+  public fun sameFrameMountForDiscreteEventsTimeoutMs(): Double = accessor.sameFrameMountForDiscreteEventsTimeoutMs()
 
   /**
    * Function used to enable / disable Pressibility from using W3C Pointer Events for its hover callbacks

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8817847943e654f2ce61fc39af75baf8>>
+ * @generated SignedSource<<88f1a44656a015be48d676b23dd0b6da>>
  * @flow strict
  * @noformat
  */
@@ -69,6 +69,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
+  enableDiscretePriorityForTextInputEvents: Getter<boolean>,
   enableDoubleMeasurementFixAndroid: Getter<boolean>,
   enableEagerRootViewAttachment: Getter<boolean>,
   enableExclusivePropsUpdateAndroid: Getter<boolean>,
@@ -99,6 +100,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
+  enableSameFrameMountForDiscreteEvents: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
   enableViewCulling: Getter<boolean>,
   enableViewRecycling: Getter<boolean>,
@@ -126,6 +128,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   preventShadowTreeCommitExhaustion: Getter<boolean>,
   redBoxV2Android: Getter<boolean>,
   redBoxV2IOS: Getter<boolean>,
+  sameFrameMountForDiscreteEventsTimeoutMs: Getter<number>,
   shouldPressibilityUseW3CPointerEventsForHover: Getter<boolean>,
   shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean>,
   skipActivityIdentityAssertionOnHostPause: Getter<boolean>,
@@ -302,6 +305,10 @@ export const enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean> = 
  */
 export const enableDestroyShadowTreeRevisionAsync: Getter<boolean> = createNativeFlagGetter('enableDestroyShadowTreeRevisionAsync', false);
 /**
+ * Dispatches the `change`, `keyPress` and `submitEditing` events of text inputs with the discrete event category, so React renders their updates at its discrete priority, as it does for text input on the web. Other text input events keep the default category.
+ */
+export const enableDiscretePriorityForTextInputEvents: Getter<boolean> = createNativeFlagGetter('enableDiscretePriorityForTextInputEvents', false);
+/**
  * When enabled a subset of components will avoid double measurement on Android.
  */
 export const enableDoubleMeasurementFixAndroid: Getter<boolean> = createNativeFlagGetter('enableDoubleMeasurementFixAndroid', false);
@@ -422,6 +429,10 @@ export const enablePropsUpdateReconciliationAndroid: Getter<boolean> = createNat
  */
 export const enableResizeObserverByDefault: Getter<boolean> = createNativeFlagGetter('enableResizeObserverByDefault', false);
 /**
+ * On iOS, mounts the effects of a tap ending (touch end, click) or of typing (change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; when it is idle as the input arrives, the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the screen's maximum refresh rate) and then runs the resulting mounts and commands, in order. Otherwise the asynchronous main queue path presents the change one frame later.
+ */
+export const enableSameFrameMountForDiscreteEvents: Getter<boolean> = createNativeFlagGetter('enableSameFrameMountForDiscreteEvents', false);
+/**
  * When enabled, it will use SwiftUI for filter effects like blur on iOS.
  */
 export const enableSwiftUIBasedFilters: Getter<boolean> = createNativeFlagGetter('enableSwiftUIBasedFilters', false);
@@ -529,6 +540,10 @@ export const redBoxV2Android: Getter<boolean> = createNativeFlagGetter('redBoxV2
  * Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.
  */
 export const redBoxV2IOS: Getter<boolean> = createNativeFlagGetter('redBoxV2IOS', false);
+/**
+ * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the screen's maximum refresh rate. Zero or less disables the wait.
+ */
+export const sameFrameMountForDiscreteEventsTimeoutMs: Getter<number> = createNativeFlagGetter('sameFrameMountForDiscreteEventsTimeoutMs', 8);
 /**
  * Function used to enable / disable Pressibility from using W3C Pointer Events for its hover callbacks
  */

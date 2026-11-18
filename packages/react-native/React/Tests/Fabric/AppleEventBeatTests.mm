@@ -64,6 +64,24 @@ class BridgelessFeatureFlags : public ReactNativeFeatureFlagsDefaults {
   }
 };
 
+class SameFrameMountFeatureFlags : public BridgelessFeatureFlags {
+ public:
+  explicit SameFrameMountFeatureFlags(double timeoutMs) : timeoutMs_(timeoutMs) {}
+
+  bool enableSameFrameMountForDiscreteEvents() override
+  {
+    return true;
+  }
+
+  double sameFrameMountForDiscreteEventsTimeoutMs() override
+  {
+    return timeoutMs_;
+  }
+
+ private:
+  double timeoutMs_;
+};
+
 /*
  * A real JavaScript-thread stand-in: `induce` blocks the calling thread until
  * another thread hands it the runtime, so the executor cannot run inline.
@@ -236,6 +254,178 @@ class RuntimeThread {
 {
   _eventBeat->requestSynchronous(kNoTag);
   XCTAssertEqual(_hostLayer.sublayers.count, 0u);
+}
+
+#pragma mark - Discrete events
+
+- (std::unique_ptr<AppleEventBeat>)makeDiscreteEventBeatWithTimeoutMs:(double)timeoutMs
+                                                           mountCount:(std::shared_ptr<int>)mountCount
+{
+  ReactNativeFeatureFlags::dangerouslyReset();
+  ReactNativeFeatureFlags::override(std::make_unique<SameFrameMountFeatureFlags>(timeoutMs));
+  _eventBeat.reset();
+  CALayer *hostLayer = _hostLayer;
+  auto runLoopObserver =
+      std::make_unique<const StubRunLoopObserver>(RunLoopObserver::Activity::BeforeWaiting, _ownerBox->owner);
+  auto eventBeat = std::make_unique<AppleEventBeat>(
+      _ownerBox,
+      std::move(runLoopObserver),
+      *_runtimeScheduler,
+      [hostLayer](Tag) -> CALayer * { return hostLayer; },
+      [mountCount]() { (*mountCount)++; });
+  auto beatCount = _beatCount;
+  eventBeat->setBeatCallback([beatCount](facebook::jsi::Runtime &) { (*beatCount)++; });
+  return eventBeat;
+}
+
+- (void)testDiscreteEventIsProcessedOnTheJavaScriptThreadAndMountedFromTheDisplayPhase
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:1000 mountCount:mountCount];
+
+  _eventBeat->requestForDiscreteEvent(42);
+  XCTAssertEqual(*_beatCount, 0, @"nothing runs before the display phase");
+
+  [self.flusherLayer display];
+  // The display phase waited for the beat (run by the runtime thread, not this
+  // one), then mounted.
+  XCTAssertEqual(*_beatCount, 1);
+  XCTAssertEqual(*mountCount, 1);
+
+  // Consumed: a later display in a new turn neither waits nor mounts.
+  _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
+  [self.flusherLayer display];
+  XCTAssertEqual(*mountCount, 1);
+}
+
+- (void)testDiscreteEventWaitsForABeatTheRunLoopObserverAlreadyInduced
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:1000 mountCount:mountCount];
+
+  _eventBeat->requestForDiscreteEvent(42);
+  // Where the run loop observer runs before Core Animation's commit, it
+  // induces the beat first; the display phase still waits for it and mounts.
+  _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
+  [self.flusherLayer display];
+  XCTAssertEqual(*_beatCount, 1);
+  XCTAssertEqual(*mountCount, 1);
+}
+
+- (dispatch_semaphore_t)blockTheJavaScriptThread
+{
+  // Keep the JavaScript thread busy (as a long task, or a synchronous call to
+  // the main thread, would) until the returned semaphore is signalled.
+  dispatch_semaphore_t started = dispatch_semaphore_create(0);
+  dispatch_semaphore_t release = dispatch_semaphore_create(0);
+  _runtimeScheduler->scheduleWork([started, release](facebook::jsi::Runtime &) {
+    dispatch_semaphore_signal(started);
+    dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
+  });
+  dispatch_semaphore_wait(started, DISPATCH_TIME_FOREVER);
+  return release;
+}
+
+- (void)testDiscreteEventDoesNotWaitWhenTheJavaScriptThreadIsBusy
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:1000 mountCount:mountCount];
+
+  dispatch_semaphore_t release = [self blockTheJavaScriptThread];
+  _eventBeat->requestForDiscreteEvent(42);
+  XCTAssertEqual(_hostLayer.sublayers.count, 0u, @"an input that arrives while JavaScript is busy does not wait");
+
+  dispatch_semaphore_signal(release);
+  // The beat still runs on the JavaScript thread, on the ordinary path.
+  _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
+  [self waitForBeatCount:1];
+  XCTAssertEqual(*mountCount, 0);
+}
+
+- (void)testDiscreteEventWaitIsBoundedWhenTheJavaScriptThreadBecomesBusy
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:5 mountCount:mountCount];
+
+  // Idle when the input arrives, busy by the display phase.
+  _eventBeat->requestForDiscreteEvent(42);
+  CALayer *flusher = self.flusherLayer;
+  dispatch_semaphore_t release = [self blockTheJavaScriptThread];
+
+  CFTimeInterval start = CACurrentMediaTime();
+  [flusher display];
+  CFTimeInterval waited = CACurrentMediaTime() - start;
+
+  XCTAssertEqual(*mountCount, 0, @"nothing runs early after a timeout");
+  XCTAssertLessThan(waited, 0.5, @"the wait is bounded by the timeout");
+
+  dispatch_semaphore_signal(release);
+  [self waitForBeatCount:1];
+}
+
+- (void)testDiscreteEventWithoutAPendingMountPerformerKeepsTheObserverTiming
+{
+  ReactNativeFeatureFlags::dangerouslyReset();
+  ReactNativeFeatureFlags::override(std::make_unique<SameFrameMountFeatureFlags>(1000));
+  // `setUp` built the beat without a pending mount performer.
+  _eventBeat->requestForDiscreteEvent(42);
+  XCTAssertEqual(_hostLayer.sublayers.count, 0u);
+}
+
+- (void)testDiscreteEventWithoutATagDoesNotAttachAFlusher
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:1000 mountCount:mountCount];
+  _eventBeat->requestForDiscreteEvent(kNoTag);
+  XCTAssertEqual(_hostLayer.sublayers.count, 0u);
+}
+
+- (void)testZeroTimeoutDisablesTheWait
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:0 mountCount:mountCount];
+
+  _eventBeat->requestForDiscreteEvent(42);
+  [self.flusherLayer display];
+  XCTAssertEqual(*mountCount, 0, @"no wait, no early mount");
+  [self waitForBeatCount:1];
+}
+
+- (void)testNoWaitAfterASynchronousInduceInTheSameDisplay
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:1000 mountCount:mountCount];
+
+  _eventBeat->requestForDiscreteEvent(42);
+  _eventBeat->requestSynchronous(42);
+  [self.flusherLayer display];
+  // The synchronous induce ran the beat (and would have mounted) on this
+  // thread; the discrete wait and the pending-mount pass are skipped.
+  XCTAssertEqual(*_beatCount, 1);
+  XCTAssertEqual(*mountCount, 0);
+}
+
+- (void)testDiscreteEventIsNotHonouredByADisplayTwoTurnsLater
+{
+  auto mountCount = std::make_shared<int>(0);
+  _eventBeat = [self makeDiscreteEventBeatWithTimeoutMs:1000 mountCount:mountCount];
+
+  _eventBeat->requestForDiscreteEvent(42);
+  CALayer *flusher = self.flusherLayer;
+  // The flusher's display did not run in the request's turn or the next one.
+  _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
+  _eventBeat->activityDidChange(_eventBeat.get(), RunLoopObserver::Activity::BeforeWaiting);
+  [flusher display];
+  XCTAssertEqual(*mountCount, 0, @"a stale discrete request must not make an unrelated display wait");
+}
+
+- (void)waitForBeatCount:(int)count
+{
+  NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:2];
+  while (*_beatCount < count && [deadline timeIntervalSinceNow] > 0) {
+    [NSThread sleepForTimeInterval:0.001];
+  }
+  XCTAssertEqual(*_beatCount, count);
 }
 
 @end

@@ -22,7 +22,28 @@ EventQueue::EventQueue(
       [this](jsi::Runtime& runtime) { onBeat(runtime); });
 }
 
+namespace {
+
+// The user inputs whose effects `EventBeat::requestForDiscreteEvent` may mount
+// in the frame that delivered them: the end of a tap and typing. Touch starts
+// (the first frame of every scroll) and pointer hover transitions are left
+// out on purpose: they are frequent and rarely change what is on screen.
+bool isSameFrameMountCandidate(const RawEvent& rawEvent) {
+  const auto& type = rawEvent.type;
+  return type == "topTouchEnd" || type == "topClick" || type == "topChange" ||
+      type == "topKeyPress" || type == "topSubmitEditing";
+}
+
+} // namespace
+
 void EventQueue::enqueueEvent(RawEvent&& rawEvent) const {
+  const auto isDiscrete =
+      ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents() &&
+      isSameFrameMountCandidate(rawEvent);
+  const auto tag = isDiscrete && rawEvent.eventTarget
+      ? rawEvent.eventTarget->getTag()
+      : kNoTag;
+
   {
     std::scoped_lock lock(queueMutex_);
 
@@ -53,7 +74,11 @@ void EventQueue::enqueueEvent(RawEvent&& rawEvent) const {
     }
   }
 
-  onEnqueue();
+  if (isDiscrete) {
+    eventBeat_->requestForDiscreteEvent(tag);
+  } else {
+    onEnqueue();
+  }
 }
 
 void EventQueue::enqueueUniqueEvent(RawEvent&& rawEvent) const {

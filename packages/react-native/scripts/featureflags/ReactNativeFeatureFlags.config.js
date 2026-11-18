@@ -278,6 +278,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableDiscretePriorityForTextInputEvents: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-18',
+        description:
+          'Dispatches the `change`, `keyPress` and `submitEditing` events of text inputs with the discrete event category, so React renders their updates at its discrete priority, as it does for text input on the web. Other text input events keep the default category.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableDoubleMeasurementFixAndroid: {
       defaultValue: false,
       metadata: {
@@ -597,6 +608,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableSameFrameMountForDiscreteEvents: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          "On iOS, mounts the effects of a tap ending (touch end, click) or of typing (change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; when it is idle as the input arrives, the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the screen's maximum refresh rate) and then runs the resulting mounts and commands, in order. Otherwise the asynchronous main queue path presents the change one frame later.",
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableSwiftUIBasedFilters: {
       defaultValue: false,
       metadata: {
@@ -886,6 +908,17 @@ const definitions: FeatureFlagDefinitions = {
         description:
           'Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.',
         expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    sameFrameMountForDiscreteEventsTimeoutMs: {
+      defaultValue: 8,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          "Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the screen's maximum refresh rate. Zero or less disables the wait.",
+        expectedReleaseValue: 8,
         purpose: 'experimentation',
       },
       ossReleaseStage: 'none',

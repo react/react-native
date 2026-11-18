@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0a8759cd09aa452417aaa3720da346ae>>
+ * @generated SignedSource<<6424ea6b0dbf93b2e35211919213e375>>
  */
 
 /**
@@ -145,6 +145,11 @@ class ReactNativeFeatureFlags {
    * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.
    */
   RN_EXPORT static bool enableDestroyShadowTreeRevisionAsync();
+
+  /**
+   * Dispatches the `change`, `keyPress` and `submitEditing` events of text inputs with the discrete event category, so React renders their updates at its discrete priority, as it does for text input on the web. Other text input events keep the default category.
+   */
+  RN_EXPORT static bool enableDiscretePriorityForTextInputEvents();
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.
@@ -297,6 +302,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableResizeObserverByDefault();
 
   /**
+   * On iOS, mounts the effects of a tap ending (touch end, click) or of typing (change, key press, submit) in the Core Animation commit of the frame that delivered the input. JavaScript keeps running on the JavaScript thread; when it is idle as the input arrives, the main thread waits for it for at most `sameFrameMountForDiscreteEventsTimeoutMs` (never more than half a frame at the screen's maximum refresh rate) and then runs the resulting mounts and commands, in order. Otherwise the asynchronous main queue path presents the change one frame later.
+   */
+  RN_EXPORT static bool enableSameFrameMountForDiscreteEvents();
+
+  /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
    */
   RN_EXPORT static bool enableSwiftUIBasedFilters();
@@ -430,6 +440,11 @@ class ReactNativeFeatureFlags {
    * Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.
    */
   RN_EXPORT static bool redBoxV2IOS();
+
+  /**
+   * Upper bound, in milliseconds, of the main thread wait used by `enableSameFrameMountForDiscreteEvents`; the effective bound is also capped at half a frame at the screen's maximum refresh rate. Zero or less disables the wait.
+   */
+  RN_EXPORT static double sameFrameMountForDiscreteEventsTimeoutMs();
 
   /**
    * Function used to enable / disable Pressibility from using W3C Pointer Events for its hover callbacks

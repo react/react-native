@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<782d0e42e0854fc260d458a29ea52b8f>>
+ * @generated SignedSource<<ca64ce32a42cc27f777263beb58a3b69>>
  */
 
 /**
@@ -55,6 +55,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableCppPropsIteratorSetter();
   bool enableCustomFocusSearchOnClippedElementsAndroid();
   bool enableDestroyShadowTreeRevisionAsync();
+  bool enableDiscretePriorityForTextInputEvents();
   bool enableDoubleMeasurementFixAndroid();
   bool enableEagerRootViewAttachment();
   bool enableExclusivePropsUpdateAndroid();
@@ -85,6 +86,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enablePreparedTextLayout();
   bool enablePropsUpdateReconciliationAndroid();
   bool enableResizeObserverByDefault();
+  bool enableSameFrameMountForDiscreteEvents();
   bool enableSwiftUIBasedFilters();
   bool enableViewCulling();
   bool enableViewRecycling();
@@ -112,6 +114,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool preventShadowTreeCommitExhaustion();
   bool redBoxV2Android();
   bool redBoxV2IOS();
+  double sameFrameMountForDiscreteEventsTimeoutMs();
   bool shouldPressibilityUseW3CPointerEventsForHover();
   bool shouldTriggerResponderTransferOnScrollAndroid();
   bool skipActivityIdentityAssertionOnHostPause();
@@ -143,7 +146,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 98> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 101> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -166,6 +169,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
   std::atomic<std::optional<bool>> enableCustomFocusSearchOnClippedElementsAndroid_;
   std::atomic<std::optional<bool>> enableDestroyShadowTreeRevisionAsync_;
+  std::atomic<std::optional<bool>> enableDiscretePriorityForTextInputEvents_;
   std::atomic<std::optional<bool>> enableDoubleMeasurementFixAndroid_;
   std::atomic<std::optional<bool>> enableEagerRootViewAttachment_;
   std::atomic<std::optional<bool>> enableExclusivePropsUpdateAndroid_;
@@ -196,6 +200,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enablePreparedTextLayout_;
   std::atomic<std::optional<bool>> enablePropsUpdateReconciliationAndroid_;
   std::atomic<std::optional<bool>> enableResizeObserverByDefault_;
+  std::atomic<std::optional<bool>> enableSameFrameMountForDiscreteEvents_;
   std::atomic<std::optional<bool>> enableSwiftUIBasedFilters_;
   std::atomic<std::optional<bool>> enableViewCulling_;
   std::atomic<std::optional<bool>> enableViewRecycling_;
@@ -223,6 +228,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> preventShadowTreeCommitExhaustion_;
   std::atomic<std::optional<bool>> redBoxV2Android_;
   std::atomic<std::optional<bool>> redBoxV2IOS_;
+  std::atomic<std::optional<double>> sameFrameMountForDiscreteEventsTimeoutMs_;
   std::atomic<std::optional<bool>> shouldPressibilityUseW3CPointerEventsForHover_;
   std::atomic<std::optional<bool>> shouldTriggerResponderTransferOnScrollAndroid_;
   std::atomic<std::optional<bool>> skipActivityIdentityAssertionOnHostPause_;

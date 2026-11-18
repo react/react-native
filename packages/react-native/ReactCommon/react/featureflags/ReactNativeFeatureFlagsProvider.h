@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<60437c0aafa9d1f8de97120056c42970>>
+ * @generated SignedSource<<a5a852d52f77ca05bba602bca2b1aaa2>>
  */
 
 /**
@@ -48,6 +48,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableCppPropsIteratorSetter() = 0;
   virtual bool enableCustomFocusSearchOnClippedElementsAndroid() = 0;
   virtual bool enableDestroyShadowTreeRevisionAsync() = 0;
+  virtual bool enableDiscretePriorityForTextInputEvents() = 0;
   virtual bool enableDoubleMeasurementFixAndroid() = 0;
   virtual bool enableEagerRootViewAttachment() = 0;
   virtual bool enableExclusivePropsUpdateAndroid() = 0;
@@ -78,6 +79,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enablePreparedTextLayout() = 0;
   virtual bool enablePropsUpdateReconciliationAndroid() = 0;
   virtual bool enableResizeObserverByDefault() = 0;
+  virtual bool enableSameFrameMountForDiscreteEvents() = 0;
   virtual bool enableSwiftUIBasedFilters() = 0;
   virtual bool enableViewCulling() = 0;
   virtual bool enableViewRecycling() = 0;
@@ -105,6 +107,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool preventShadowTreeCommitExhaustion() = 0;
   virtual bool redBoxV2Android() = 0;
   virtual bool redBoxV2IOS() = 0;
+  virtual double sameFrameMountForDiscreteEventsTimeoutMs() = 0;
   virtual bool shouldPressibilityUseW3CPointerEventsForHover() = 0;
   virtual bool shouldTriggerResponderTransferOnScrollAndroid() = 0;
   virtual bool skipActivityIdentityAssertionOnHostPause() = 0;

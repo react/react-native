@@ -182,4 +182,24 @@ TEST_F(EventBeatTest, synchronousRequestIsNotStrandedBehindScheduledBeat) {
   EXPECT_EQ(stubQueue_->size(), 0);
 }
 
+TEST_F(EventBeatTest, discreteRequestDefaultsToAnAsynchronousRequest) {
+  int beatCount = 0;
+  eventBeat_->setBeatCallback(
+      [&beatCount](jsi::Runtime& /*runtime*/) { beatCount++; });
+
+  // Platforms without a same-frame mount treat a discrete event like any
+  // other: the beat is scheduled on the JavaScript thread at induce.
+  eventBeat_->requestForDiscreteEvent(42);
+  eventBeat_->induce();
+  EXPECT_EQ(beatCount, 0);
+  EXPECT_EQ(stubQueue_->size(), 1);
+
+  stubQueue_->tick();
+  EXPECT_EQ(beatCount, 1);
+
+  // The request was consumed.
+  eventBeat_->induce();
+  EXPECT_EQ(stubQueue_->size(), 0);
+}
+
 } // namespace facebook::react

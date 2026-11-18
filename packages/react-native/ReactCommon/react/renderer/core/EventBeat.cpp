@@ -25,6 +25,10 @@ void EventBeat::request() const {
   isEventBeatRequested_ = true;
 }
 
+void EventBeat::requestForDiscreteEvent(Tag /*tag*/) const {
+  request();
+}
+
 void EventBeat::requestSynchronous() const {
   requestSynchronous(kNoTag);
 }
@@ -35,6 +39,10 @@ void EventBeat::requestSynchronous(Tag /*tag*/) const {
       "Unexpected state: EventBeat::setBeatCallback was not called before EventBeat::requestSynchronous.");
   isSynchronousRequested_ = true;
   request();
+}
+
+bool EventBeat::isSynchronousRequestPending() const {
+  return isSynchronousRequested_;
 }
 
 void EventBeat::setBeatCallback(BeatCallback beatCallback) {

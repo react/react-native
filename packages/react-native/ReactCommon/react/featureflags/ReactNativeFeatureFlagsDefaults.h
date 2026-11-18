@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<edaa18da7b657e91ed3b2e5231cc0ac2>>
+ * @generated SignedSource<<7291041c60e484754cd46b4e2b0b5ca7>>
  */
 
 /**
@@ -110,6 +110,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableDestroyShadowTreeRevisionAsync() override {
+    return false;
+  }
+
+  bool enableDiscretePriorityForTextInputEvents() override {
     return false;
   }
 
@@ -233,6 +237,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableSameFrameMountForDiscreteEvents() override {
+    return false;
+  }
+
   bool enableSwiftUIBasedFilters() override {
     return false;
   }
@@ -339,6 +347,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
 
   bool redBoxV2IOS() override {
     return false;
+  }
+
+  double sameFrameMountForDiscreteEventsTimeoutMs() override {
+    return 8.0;
   }
 
   bool shouldPressibilityUseW3CPointerEventsForHover() override {

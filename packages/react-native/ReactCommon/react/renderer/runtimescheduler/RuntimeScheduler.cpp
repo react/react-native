@@ -109,6 +109,10 @@ SchedulerPriority RuntimeScheduler::getCurrentPriorityLevel() const noexcept {
   return runtimeSchedulerImpl_->getCurrentPriorityLevel();
 }
 
+bool RuntimeScheduler::isRunningTask() const noexcept {
+  return runtimeSchedulerImpl_->isRunningTask();
+}
+
 HighResTimeStamp RuntimeScheduler::now() const noexcept {
   return runtimeSchedulerImpl_->now();
 }

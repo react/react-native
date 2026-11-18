@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<bcc1a490800e984e516519e8200db82b>>
+ * @generated SignedSource<<ca4326f5a24fb1496c5e9359e102c45d>>
  */
 
 /**
@@ -147,6 +147,11 @@ bool NativeReactNativeFeatureFlags::enableCustomFocusSearchOnClippedElementsAndr
 bool NativeReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync();
+}
+
+bool NativeReactNativeFeatureFlags::enableDiscretePriorityForTextInputEvents(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableDiscretePriorityForTextInputEvents();
 }
 
 bool NativeReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid(
@@ -299,6 +304,11 @@ bool NativeReactNativeFeatureFlags::enableResizeObserverByDefault(
   return ReactNativeFeatureFlags::enableResizeObserverByDefault();
 }
 
+bool NativeReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents();
+}
+
 bool NativeReactNativeFeatureFlags::enableSwiftUIBasedFilters(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableSwiftUIBasedFilters();
@@ -432,6 +442,11 @@ bool NativeReactNativeFeatureFlags::redBoxV2Android(
 bool NativeReactNativeFeatureFlags::redBoxV2IOS(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::redBoxV2IOS();
+}
+
+double NativeReactNativeFeatureFlags::sameFrameMountForDiscreteEventsTimeoutMs(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::sameFrameMountForDiscreteEventsTimeoutMs();
 }
 
 bool NativeReactNativeFeatureFlags::shouldPressibilityUseW3CPointerEventsForHover(

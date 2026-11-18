@@ -117,6 +117,13 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
   SchedulerPriority getCurrentPriorityLevel() const noexcept override;
 
   /*
+   * Whether the event loop is running on the JavaScript thread (from the
+   * first task it picks to the end of the last one's "update the rendering"
+   * step). Can be called from any thread.
+   */
+  bool isRunningTask() const noexcept override;
+
+  /*
    * Returns current monotonic time. This time is not related to wall clock
    * time.
    *
@@ -162,6 +169,8 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
   std::atomic<uint64_t> nextTaskQueueSourceId_{0};
 
   std::atomic<uint_fast8_t> syncTaskRequests_{0};
+
+  std::atomic_bool isRunningEventLoop_{false};
 
   std::priority_queue<std::shared_ptr<Task>, std::vector<std::shared_ptr<Task>>, TaskPriorityComparer> taskQueue_;
 

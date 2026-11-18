@@ -1803,6 +1803,7 @@ class facebook::react::EventAnimationDriver {
 }
 
 class facebook::react::EventBeat {
+  protected bool isSynchronousRequestPending() const;
   protected facebook::react::EventBeat::BeatCallback beatCallback_;
   protected mutable std::atomic<bool> isEventBeatRequested_;
   protected std::function<void()> induceCallback_;
@@ -1814,6 +1815,7 @@ class facebook::react::EventBeat {
   public using BeatCallback = std::function<void(facebook::jsi::Runtime& runtime)>;
   public using Factory = std::function<std::unique_ptr<facebook::react::EventBeat>(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox)>;
   public virtual void request() const;
+  public virtual void requestForDiscreteEvent(facebook::react::Tag tag) const;
   public virtual void requestSynchronous(facebook::react::Tag tag) const;
   public virtual ~EventBeat() = default;
   public void requestSynchronous() const;
@@ -3438,6 +3440,7 @@ class facebook::react::RuntimeScheduler : public facebook::react::RuntimeSchedul
   public facebook::react::RuntimeScheduler& operator=(const facebook::react::RuntimeScheduler&) = delete;
   public facebook::react::RuntimeScheduler& operator=(facebook::react::RuntimeScheduler&&) = delete;
   public virtual bool getShouldYield() noexcept override;
+  public virtual bool isRunningTask() const noexcept override;
   public virtual facebook::react::HighResTimeStamp now() const noexcept override;
   public virtual facebook::react::SchedulerPriority getCurrentPriorityLevel() const noexcept override;
   public virtual std::shared_ptr<facebook::react::Task> scheduleIdleTask(facebook::jsi::Function&& callback, facebook::react::HighResDuration timeout = timeoutForSchedulerPriority(facebook::react::SchedulerPriority::IdlePriority)) noexcept override;
@@ -3461,6 +3464,7 @@ class facebook::react::RuntimeScheduler : public facebook::react::RuntimeSchedul
 
 class facebook::react::RuntimeSchedulerBase : public facebook::hermes::IEventLoopControl {
   public virtual bool getShouldYield() noexcept = 0;
+  public virtual bool isRunningTask() const noexcept = 0;
   public virtual facebook::react::HighResTimeStamp now() const noexcept = 0;
   public virtual facebook::react::SchedulerPriority getCurrentPriorityLevel() const noexcept = 0;
   public virtual std::shared_ptr<facebook::react::Task> scheduleIdleTask(facebook::jsi::Function&& callback, facebook::react::HighResDuration timeout = timeoutForSchedulerPriority(facebook::react::SchedulerPriority::IdlePriority)) noexcept = 0;

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9b64fa4c8329098d9c2977ad2a162fbf>>
+ * @generated SignedSource<<62f2801cbd231f8557507c1aa104a6cb>>
  */
 
 /**
@@ -108,6 +108,10 @@ bool ReactNativeFeatureFlags::enableCustomFocusSearchOnClippedElementsAndroid() 
 
 bool ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync() {
   return getAccessor().enableDestroyShadowTreeRevisionAsync();
+}
+
+bool ReactNativeFeatureFlags::enableDiscretePriorityForTextInputEvents() {
+  return getAccessor().enableDiscretePriorityForTextInputEvents();
 }
 
 bool ReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid() {
@@ -230,6 +234,10 @@ bool ReactNativeFeatureFlags::enableResizeObserverByDefault() {
   return getAccessor().enableResizeObserverByDefault();
 }
 
+bool ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents() {
+  return getAccessor().enableSameFrameMountForDiscreteEvents();
+}
+
 bool ReactNativeFeatureFlags::enableSwiftUIBasedFilters() {
   return getAccessor().enableSwiftUIBasedFilters();
 }
@@ -336,6 +344,10 @@ bool ReactNativeFeatureFlags::redBoxV2Android() {
 
 bool ReactNativeFeatureFlags::redBoxV2IOS() {
   return getAccessor().redBoxV2IOS();
+}
+
+double ReactNativeFeatureFlags::sameFrameMountForDiscreteEventsTimeoutMs() {
+  return getAccessor().sameFrameMountForDiscreteEventsTimeoutMs();
 }
 
 bool ReactNativeFeatureFlags::shouldPressibilityUseW3CPointerEventsForHover() {

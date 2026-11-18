@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f7a31d0435905a87a8ce08a517f9e17d>>
+ * @generated SignedSource<<ca86f10a56e3e3c1b7b8976757d242c7>>
  */
 
 /**
@@ -70,6 +70,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableDestroyShadowTreeRevisionAsync(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun enableDiscretePriorityForTextInputEvents(): Boolean
+
   @DoNotStrip @JvmStatic public external fun enableDoubleMeasurementFixAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableEagerRootViewAttachment(): Boolean
@@ -130,6 +132,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableResizeObserverByDefault(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun enableSameFrameMountForDiscreteEvents(): Boolean
+
   @DoNotStrip @JvmStatic public external fun enableSwiftUIBasedFilters(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableViewCulling(): Boolean
@@ -183,6 +187,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun redBoxV2Android(): Boolean
 
   @DoNotStrip @JvmStatic public external fun redBoxV2IOS(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun sameFrameMountForDiscreteEventsTimeoutMs(): Double
 
   @DoNotStrip @JvmStatic public external fun shouldPressibilityUseW3CPointerEventsForHover(): Boolean
 

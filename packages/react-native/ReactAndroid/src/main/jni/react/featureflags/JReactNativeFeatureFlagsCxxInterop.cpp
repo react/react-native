@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<80dd5355f9f95d594f04d6b41fc785f5>>
+ * @generated SignedSource<<6ba8f921930e65ce1e1350b9a168e07c>>
  */
 
 /**
@@ -162,6 +162,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableDestroyShadowTreeRevisionAsync() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableDestroyShadowTreeRevisionAsync");
+    return method(javaProvider_);
+  }
+
+  bool enableDiscretePriorityForTextInputEvents() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableDiscretePriorityForTextInputEvents");
     return method(javaProvider_);
   }
 
@@ -345,6 +351,12 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
+  bool enableSameFrameMountForDiscreteEvents() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableSameFrameMountForDiscreteEvents");
+    return method(javaProvider_);
+  }
+
   bool enableSwiftUIBasedFilters() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableSwiftUIBasedFilters");
@@ -504,6 +516,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool redBoxV2IOS() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("redBoxV2IOS");
+    return method(javaProvider_);
+  }
+
+  double sameFrameMountForDiscreteEventsTimeoutMs() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jdouble()>("sameFrameMountForDiscreteEventsTimeoutMs");
     return method(javaProvider_);
   }
 
@@ -736,6 +754,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync(
   return ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableDiscretePriorityForTextInputEvents(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableDiscretePriorityForTextInputEvents();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableDoubleMeasurementFixAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid();
@@ -886,6 +909,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableResizeObserverByDefault(
   return ReactNativeFeatureFlags::enableResizeObserverByDefault();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableSameFrameMountForDiscreteEvents(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableSameFrameMountForDiscreteEvents();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableSwiftUIBasedFilters(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableSwiftUIBasedFilters();
@@ -1019,6 +1047,11 @@ bool JReactNativeFeatureFlagsCxxInterop::redBoxV2Android(
 bool JReactNativeFeatureFlagsCxxInterop::redBoxV2IOS(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::redBoxV2IOS();
+}
+
+double JReactNativeFeatureFlagsCxxInterop::sameFrameMountForDiscreteEventsTimeoutMs(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::sameFrameMountForDiscreteEventsTimeoutMs();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::shouldPressibilityUseW3CPointerEventsForHover(
@@ -1216,6 +1249,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableDestroyShadowTreeRevisionAsync",
         JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync),
       makeNativeMethod(
+        "enableDiscretePriorityForTextInputEvents",
+        JReactNativeFeatureFlagsCxxInterop::enableDiscretePriorityForTextInputEvents),
+      makeNativeMethod(
         "enableDoubleMeasurementFixAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableDoubleMeasurementFixAndroid),
       makeNativeMethod(
@@ -1306,6 +1342,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableResizeObserverByDefault",
         JReactNativeFeatureFlagsCxxInterop::enableResizeObserverByDefault),
       makeNativeMethod(
+        "enableSameFrameMountForDiscreteEvents",
+        JReactNativeFeatureFlagsCxxInterop::enableSameFrameMountForDiscreteEvents),
+      makeNativeMethod(
         "enableSwiftUIBasedFilters",
         JReactNativeFeatureFlagsCxxInterop::enableSwiftUIBasedFilters),
       makeNativeMethod(
@@ -1386,6 +1425,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "redBoxV2IOS",
         JReactNativeFeatureFlagsCxxInterop::redBoxV2IOS),
+      makeNativeMethod(
+        "sameFrameMountForDiscreteEventsTimeoutMs",
+        JReactNativeFeatureFlagsCxxInterop::sameFrameMountForDiscreteEventsTimeoutMs),
       makeNativeMethod(
         "shouldPressibilityUseW3CPointerEventsForHover",
         JReactNativeFeatureFlagsCxxInterop::shouldPressibilityUseW3CPointerEventsForHover),

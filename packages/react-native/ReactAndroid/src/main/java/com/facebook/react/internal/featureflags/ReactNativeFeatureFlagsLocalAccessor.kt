@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4e53ce712d5e472d8a9dfa673a108aa5>>
+ * @generated SignedSource<<4b4d3cedc9adf223917f625e175a37ba>>
  */
 
 /**
@@ -45,6 +45,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableCppPropsIteratorSetterCache: Boolean? = null
   private var enableCustomFocusSearchOnClippedElementsAndroidCache: Boolean? = null
   private var enableDestroyShadowTreeRevisionAsyncCache: Boolean? = null
+  private var enableDiscretePriorityForTextInputEventsCache: Boolean? = null
   private var enableDoubleMeasurementFixAndroidCache: Boolean? = null
   private var enableEagerRootViewAttachmentCache: Boolean? = null
   private var enableExclusivePropsUpdateAndroidCache: Boolean? = null
@@ -75,6 +76,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableResizeObserverByDefaultCache: Boolean? = null
+  private var enableSameFrameMountForDiscreteEventsCache: Boolean? = null
   private var enableSwiftUIBasedFiltersCache: Boolean? = null
   private var enableViewCullingCache: Boolean? = null
   private var enableViewRecyclingCache: Boolean? = null
@@ -102,6 +104,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var preventShadowTreeCommitExhaustionCache: Boolean? = null
   private var redBoxV2AndroidCache: Boolean? = null
   private var redBoxV2IOSCache: Boolean? = null
+  private var sameFrameMountForDiscreteEventsTimeoutMsCache: Double? = null
   private var shouldPressibilityUseW3CPointerEventsForHoverCache: Boolean? = null
   private var shouldTriggerResponderTransferOnScrollAndroidCache: Boolean? = null
   private var skipActivityIdentityAssertionOnHostPauseCache: Boolean? = null
@@ -329,6 +332,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableDestroyShadowTreeRevisionAsync()
       accessedFeatureFlags.add("enableDestroyShadowTreeRevisionAsync")
       enableDestroyShadowTreeRevisionAsyncCache = cached
+    }
+    return cached
+  }
+
+  override fun enableDiscretePriorityForTextInputEvents(): Boolean {
+    var cached = enableDiscretePriorityForTextInputEventsCache
+    if (cached == null) {
+      cached = currentProvider.enableDiscretePriorityForTextInputEvents()
+      accessedFeatureFlags.add("enableDiscretePriorityForTextInputEvents")
+      enableDiscretePriorityForTextInputEventsCache = cached
     }
     return cached
   }
@@ -633,6 +646,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
     return cached
   }
 
+  override fun enableSameFrameMountForDiscreteEvents(): Boolean {
+    var cached = enableSameFrameMountForDiscreteEventsCache
+    if (cached == null) {
+      cached = currentProvider.enableSameFrameMountForDiscreteEvents()
+      accessedFeatureFlags.add("enableSameFrameMountForDiscreteEvents")
+      enableSameFrameMountForDiscreteEventsCache = cached
+    }
+    return cached
+  }
+
   override fun enableSwiftUIBasedFilters(): Boolean {
     var cached = enableSwiftUIBasedFiltersCache
     if (cached == null) {
@@ -899,6 +922,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.redBoxV2IOS()
       accessedFeatureFlags.add("redBoxV2IOS")
       redBoxV2IOSCache = cached
+    }
+    return cached
+  }
+
+  override fun sameFrameMountForDiscreteEventsTimeoutMs(): Double {
+    var cached = sameFrameMountForDiscreteEventsTimeoutMsCache
+    if (cached == null) {
+      cached = currentProvider.sameFrameMountForDiscreteEventsTimeoutMs()
+      accessedFeatureFlags.add("sameFrameMountForDiscreteEventsTimeoutMs")
+      sameFrameMountForDiscreteEventsTimeoutMsCache = cached
     }
     return cached
   }

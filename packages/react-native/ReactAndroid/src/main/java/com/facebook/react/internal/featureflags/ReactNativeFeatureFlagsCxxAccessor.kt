@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4bcfd7705680a00615bddc6ffeccfe4b>>
+ * @generated SignedSource<<8e77b35ad276751cbd44b7e9a12f8672>>
  */
 
 /**
@@ -41,6 +41,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableCppPropsIteratorSetterCache: Boolean? = null
   private var enableCustomFocusSearchOnClippedElementsAndroidCache: Boolean? = null
   private var enableDestroyShadowTreeRevisionAsyncCache: Boolean? = null
+  private var enableDiscretePriorityForTextInputEventsCache: Boolean? = null
   private var enableDoubleMeasurementFixAndroidCache: Boolean? = null
   private var enableEagerRootViewAttachmentCache: Boolean? = null
   private var enableExclusivePropsUpdateAndroidCache: Boolean? = null
@@ -71,6 +72,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableResizeObserverByDefaultCache: Boolean? = null
+  private var enableSameFrameMountForDiscreteEventsCache: Boolean? = null
   private var enableSwiftUIBasedFiltersCache: Boolean? = null
   private var enableViewCullingCache: Boolean? = null
   private var enableViewRecyclingCache: Boolean? = null
@@ -98,6 +100,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var preventShadowTreeCommitExhaustionCache: Boolean? = null
   private var redBoxV2AndroidCache: Boolean? = null
   private var redBoxV2IOSCache: Boolean? = null
+  private var sameFrameMountForDiscreteEventsTimeoutMsCache: Double? = null
   private var shouldPressibilityUseW3CPointerEventsForHoverCache: Boolean? = null
   private var shouldTriggerResponderTransferOnScrollAndroidCache: Boolean? = null
   private var skipActivityIdentityAssertionOnHostPauseCache: Boolean? = null
@@ -304,6 +307,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableDestroyShadowTreeRevisionAsync()
       enableDestroyShadowTreeRevisionAsyncCache = cached
+    }
+    return cached
+  }
+
+  override fun enableDiscretePriorityForTextInputEvents(): Boolean {
+    var cached = enableDiscretePriorityForTextInputEventsCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableDiscretePriorityForTextInputEvents()
+      enableDiscretePriorityForTextInputEventsCache = cached
     }
     return cached
   }
@@ -578,6 +590,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
+  override fun enableSameFrameMountForDiscreteEvents(): Boolean {
+    var cached = enableSameFrameMountForDiscreteEventsCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableSameFrameMountForDiscreteEvents()
+      enableSameFrameMountForDiscreteEventsCache = cached
+    }
+    return cached
+  }
+
   override fun enableSwiftUIBasedFilters(): Boolean {
     var cached = enableSwiftUIBasedFiltersCache
     if (cached == null) {
@@ -817,6 +838,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.redBoxV2IOS()
       redBoxV2IOSCache = cached
+    }
+    return cached
+  }
+
+  override fun sameFrameMountForDiscreteEventsTimeoutMs(): Double {
+    var cached = sameFrameMountForDiscreteEventsTimeoutMsCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.sameFrameMountForDiscreteEventsTimeoutMs()
+      sameFrameMountForDiscreteEventsTimeoutMsCache = cached
     }
     return cached
   }
