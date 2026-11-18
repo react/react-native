@@ -105,7 +105,7 @@ static std::shared_ptr<void> constructCoordinator(
   RCTBridgeProxy *bridgeProxy;
   auto optionalBridgeProxy = contextContainer->find<std::shared_ptr<void>>("RCTBridgeProxy");
   if (optionalBridgeProxy) {
-    bridgeProxy = unwrapManagedObjectWeakly(optionalBridgeProxy.value());
+    bridgeProxy = unwrapManagedObject(optionalBridgeProxy.value());
   }
 
   auto componentName = *std::static_pointer_cast<const std::string>(flavor);
