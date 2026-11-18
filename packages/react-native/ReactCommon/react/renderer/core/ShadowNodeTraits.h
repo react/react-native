@@ -93,6 +93,10 @@ class ShadowNodeTraits {
     // **Deprecated**: This trait is deprecated and will be removed in a future
     // version of React Native.
     DirtyYogaNode = 1 << 14,
+
+    // A descendant has conditional values. `replaceChild` can leave it set
+    // after the last one is removed, which only costs a walk.
+    ChildrenHaveConditionalValues = 1 << 15,
   };
 
   /*

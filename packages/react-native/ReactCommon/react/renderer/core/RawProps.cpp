@@ -105,6 +105,19 @@ bool RawProps::isEmpty() const noexcept {
   return mode_ == Mode::Empty;
 }
 
+bool RawProps::hasProperty(const char* name) const {
+  switch (mode_) {
+    case Mode::Empty:
+      return false;
+    case Mode::JSI:
+      return value_.isObject() &&
+          value_.getObject(*runtime_).hasProperty(*runtime_, name);
+    case Mode::Dynamic:
+      return dynamic_.isObject() && dynamic_.count(name) > 0;
+  }
+  return false;
+}
+
 /*
  * Returns a const unowning pointer to `RawValue` of a prop with a given name.
  * Returns `nullptr` if a prop with the given name does not exist.

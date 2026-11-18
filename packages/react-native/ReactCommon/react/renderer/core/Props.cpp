@@ -26,7 +26,8 @@ Props::Props(
           rawProps,
           "nativeID",
           sourceProps.nativeId,
-          {})) {}
+          {})),
+      conditionalValues(sourceProps.conditionalValues) {}
 
 void Props::setProp(
     const PropsParserContext& context,

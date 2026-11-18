@@ -514,6 +514,27 @@ void UIManager::setNativeProps_DEPRECATED(
       });
 }
 
+void UIManager::setMediaFeatures(MediaFeatures mediaFeatures) const {
+  auto store = contextContainer_->find<std::shared_ptr<MediaFeaturesStore>>(
+      kMediaFeaturesStoreKey);
+  if (!store || (*store)->get() == mediaFeatures) {
+    return;
+  }
+  (*store)->set(mediaFeatures);
+
+  // `ShadowTree::tryCommit` resolves the outdated values, so an empty commit is
+  // enough. Commit every tree: a React commit in progress can add new ones.
+  shadowTreeRegistry_.enumerate(
+      [&](const ShadowTree& shadowTree, bool& /*stop*/) {
+        shadowTree.commit(
+            [](const RootShadowNode& oldRootShadowNode) {
+              return std::make_shared<RootShadowNode>(
+                  oldRootShadowNode, ShadowNodeFragment{});
+            },
+            {});
+      });
+}
+
 void UIManager::sendAccessibilityEvent(
     const std::shared_ptr<const ShadowNode>& shadowNode,
     const std::string& eventType) {
