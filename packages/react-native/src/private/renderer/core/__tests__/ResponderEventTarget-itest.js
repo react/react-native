@@ -12,7 +12,7 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
-import {View} from 'react-native';
+import {PanResponder, View} from 'react-native';
 
 // Helpers for common touch event payloads
 function touchStart(identifier: number = 0): {
@@ -129,6 +129,41 @@ describe('Responder System', () => {
     });
 
     expect(onResponderRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles a touch without an identifier', () => {
+    const root = Fantom.createRoot();
+    const ref = React.createRef<React.ElementRef<typeof View>>();
+    const onPanResponderGrant = jest.fn();
+    const onPanResponderRelease = jest.fn();
+    const panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant,
+      onPanResponderRelease,
+    });
+
+    Fantom.runTask(() => {
+      root.render(<View ref={ref} {...panResponder.panHandlers} />);
+    });
+
+    const touch = {pageX: 0, pageY: 0, timestamp: 0};
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onTouchStart',
+      {touches: [touch], changedTouches: [touch]},
+      {category: Fantom.NativeEventCategory.Discrete},
+    );
+
+    expect(onPanResponderGrant).toHaveBeenCalledTimes(1);
+
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onTouchEnd',
+      {touches: [], changedTouches: [touch]},
+      {category: Fantom.NativeEventCategory.Discrete},
+    );
+
+    expect(onPanResponderRelease).toHaveBeenCalledTimes(1);
   });
 
   it('releases the responder when the touched view unmounts before the touch ends', () => {
