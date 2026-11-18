@@ -779,14 +779,15 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   }
 
   override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
-    // Ignore generic motion events (joystick, mouse wheel, trackpad) if scrolling is disabled
-    if (!scrollEnabled) return false
-
     // We do not dispatch the motion event if its children are not supposed to receive it
     if (!PointerEvents.canChildrenBeTouchTarget(pointerEvents)) return false
 
     // Handle ACTION_SCROLL events (mouse wheel, trackpad, joystick)
     if (ev.actionMasked == MotionEvent.ACTION_SCROLL) {
+      // Ignore them if scrolling is disabled. Hover events still reach the content, which
+      // TalkBack's touch exploration relies on.
+      if (!scrollEnabled) return false
+
       val hScroll = ev.getAxisValue(MotionEvent.AXIS_HSCROLL)
       if (hScroll != 0f) {
         // Perform the scroll
