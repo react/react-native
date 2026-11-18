@@ -117,6 +117,16 @@ describe('structuredClone', () => {
     expectDataCloneError(() => structuredClone(Promise.resolve(4)));
   });
 
+  it('does not write to WeakMap, WeakSet, or Promise prototypes', () => {
+    Object.freeze(WeakMap.prototype);
+    Object.freeze(WeakSet.prototype);
+    Object.freeze(Promise.prototype);
+
+    expectDataCloneError(() => structuredClone(new WeakMap()));
+    expectDataCloneError(() => structuredClone(new WeakSet()));
+    expectDataCloneError(() => structuredClone(new Promise(() => {})));
+  });
+
   it('clones simple objects', () => {
     const value = {foo: 'bar'};
     const clone = structuredClone(value);
