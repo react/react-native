@@ -1158,6 +1158,30 @@ class facebook::react::StateUpdate {
   public using FailureCallback = std::function<void()>;
 }
 
+class facebook::react::TokenStreamWriter {
+  public TokenStreamWriter(const facebook::react::TokenStreamWriter&) = delete;
+  public TokenStreamWriter(facebook::react::TokenStreamWriter&&) = delete;
+  public TokenStreamWriter(size_t maxBytes = std::numeric_limits<int32_t>::max());
+  public facebook::react::TokenStreamWriter& operator=(const facebook::react::TokenStreamWriter&) = delete;
+  public facebook::react::TokenStreamWriter& operator=(facebook::react::TokenStreamWriter&&) = delete;
+  public folly::Expected<facebook::react::TokenStreamWriter::ValueRange, facebook::react::TokenStreamWriter::Error> write(const folly::dynamic& value);
+  public folly::Expected<std::vector<uint8_t>, facebook::react::TokenStreamWriter::Error> finish();
+  public ~TokenStreamWriter() = default;
+}
+
+enum facebook::react::TokenStreamWriter::Error : uint8_t {
+  AlreadyFinished,
+  InvalidUnicode,
+  NonStringKey,
+  SizeLimitExceeded,
+}
+
+struct facebook::react::TokenStreamWriter::ValueRange {
+  public bool operator==(const facebook::react::TokenStreamWriter::ValueRange&) const = default;
+  public uint32_t length;
+  public uint32_t offset;
+}
+
 class facebook::react::TouchEventEmitter : public facebook::react::EventEmitter {
   public TouchEventEmitter(facebook::react::SharedEventTarget eventTarget, facebook::react::EventDispatcher::Weak eventDispatcher);
   public void onClick(facebook::react::PointerEvent event) const;
