@@ -66,6 +66,9 @@ function getState(): NonNullable<typeof lazyState> {
     new NativeEventEmitter<{
       appearanceChanged: [NativeAppearancePreferences],
     }>(NativeAppearance).addListener('appearanceChanged', newAppearance => {
+      if (state.appearance?.colorScheme === newAppearance.colorScheme) {
+        return;
+      }
       state.appearance = {
         colorScheme: newAppearance.colorScheme,
       };
@@ -114,6 +117,7 @@ export function setColorScheme(colorScheme: ColorSchemeOverride): void {
   const state = getState();
   const {NativeAppearance} = state;
   if (NativeAppearance != null) {
+    const prevColorScheme = getColorScheme();
     NativeAppearance.setColorScheme(colorScheme);
     state.appearance = {
       colorScheme:
@@ -121,6 +125,9 @@ export function setColorScheme(colorScheme: ColorSchemeOverride): void {
           ? NativeAppearance.getColorScheme()
           : colorScheme,
     };
+    if (state.appearance.colorScheme !== prevColorScheme) {
+      state.eventEmitter.emit('change', state.appearance);
+    }
   }
 }
 
