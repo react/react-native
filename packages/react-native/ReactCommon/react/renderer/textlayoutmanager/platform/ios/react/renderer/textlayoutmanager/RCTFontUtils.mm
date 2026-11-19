@@ -385,6 +385,33 @@ static UIFontDescriptorSystemDesign RCTGetFontDescriptorSystemDesign(NSString *f
   return systemDesigns[family];
 }
 
+// Picking a face instantiates every face in the family, so resolved fonts are cached.
+static NSCache<NSString *, UIFont *> *RCTCustomFontCache(void)
+{
+  static NSCache<NSString *, UIFont *> *cache;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    cache = [NSCache new];
+    [NSNotificationCenter.defaultCenter
+        addObserverForName:(NSNotificationName)kCTFontManagerRegisteredFontsChangedNotification
+                    object:nil
+                     queue:nil
+                usingBlock:^(NSNotification *) {
+                  [cache removeAllObjects];
+                }];
+  });
+  return cache;
+}
+
+static NSString *RCTCustomFontCacheKey(const RCTFontProperties &fontProperties, CGFloat effectiveFontSize)
+{
+  return [NSString stringWithFormat:@"%@/%.1f/%.2f/%ld",
+                                    fontProperties.family,
+                                    effectiveFontSize,
+                                    fontProperties.weight,
+                                    (long)fontProperties.style];
+}
+
 UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
 {
   RCTFontProperties defaultFontProperties = RCTDefaultFontProperties();
@@ -406,6 +433,9 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
     // Handle system font as special case. This ensures that we preserve
     // the specific metrics of the standard system font as closely as possible.
     font = RCTDefaultFontWithFontProperties(fontProperties);
+  } else if (
+      (font = [RCTCustomFontCache() objectForKey:RCTCustomFontCacheKey(fontProperties, effectiveFontSize)]) != nil) {
+    // Resolved before; variants and variation settings are applied below.
   } else {
     NSArray<NSString *> *fontNames = [UIFont fontNamesForFamilyName:fontProperties.family];
     UIFontWeight fontWeight = fontProperties.weight;
@@ -446,6 +476,10 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
         // single font families like Impact
         font = [UIFont fontWithName:fontNames[0] size:effectiveFontSize];
       }
+    }
+
+    if (font != nil) {
+      [RCTCustomFontCache() setObject:font forKey:RCTCustomFontCacheKey(fontProperties, effectiveFontSize)];
     }
   }
 
