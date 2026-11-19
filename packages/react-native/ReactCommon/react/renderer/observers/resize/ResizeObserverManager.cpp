@@ -127,10 +127,12 @@ void ResizeObserverManager::connect(
   }
 
   notifyResizeObserversFunction_ = std::move(notifyResizeObserversFunction);
+  runtimeScheduler_ = &runtimeScheduler;
+  pendingWake_ = std::make_shared<std::atomic<bool>>(false);
+  shadowTreeRegistry_ = &uiManager.getShadowTreeRegistry();
 
   runtimeScheduler.setResizeObserverDelegate(this);
   uiManager.registerCommitHook(*this);
-  shadowTreeRegistry_ = &uiManager.getShadowTreeRegistry();
   commitHookRegistered_ = true;
 }
 
@@ -145,7 +147,11 @@ void ResizeObserverManager::disconnect(
   }
 
   runtimeScheduler.setResizeObserverDelegate(nullptr);
+  // UIManager holds its hook mutex during dispatch; unregister takes it
+  // exclusively and waits for in-flight calls before these members are reset.
   uiManager.unregisterCommitHook(*this);
+  runtimeScheduler_ = nullptr;
+  pendingWake_.reset();
   shadowTreeRegistry_ = nullptr;
 
   // May run from inside `broadcastActiveResizeObservations` (a callback can
@@ -195,9 +201,8 @@ void ResizeObserverManager::shadowTreeDidCommit(
         affectedLayoutableNodes) noexcept {
   TraceSection s{"ResizeObserverManager::shadowTreeDidCommit"};
 
-  // Runs on the commit hook (any thread), so it only collects which observed
-  // targets went dirty; it must not compute observations or notify JS.
-  // `runResizeObservations` (JS thread) does that against the latest tree.
+  // The commit hook only collects dirty families. Sizes are computed by the
+  // resize-observation rendering step on the JS thread.
   auto surfaceId = shadowTree.getSurfaceId();
 
   std::unordered_set<const ShadowNodeFamily*> observedFamilies;
@@ -223,13 +228,23 @@ void ResizeObserverManager::shadowTreeDidCommit(
     }
   }
 
-  std::unique_lock lock(dirtyFamiliesMutex_);
-  // Record the commit even with no dirty family, so `runResizeObservations`
-  // re-checks for removed targets (they aren't in `affectedLayoutableNodes`).
-  committedSurfaceIds_.insert(surfaceId);
-  if (!newlyDirtyFamilies.empty()) {
+  {
+    std::unique_lock lock(dirtyFamiliesMutex_);
+    // Record the commit even with no dirty family, so `runResizeObservations`
+    // re-checks for removed targets (they aren't in `affectedLayoutableNodes`).
+    committedSurfaceIds_.insert(surfaceId);
+    if (newlyDirtyFamilies.empty()) {
+      return;
+    }
+
     auto& dirtyFamilies = dirtyFamiliesBySurfaceId_[surfaceId];
     dirtyFamilies.insert(newlyDirtyFamilies.begin(), newlyDirtyFamilies.end());
+  }
+
+  auto pendingWake = pendingWake_;
+  if (!pendingWake->exchange(true)) {
+    runtimeScheduler_->scheduleWork(
+        [pendingWake](jsi::Runtime&) { pendingWake->store(false); });
   }
 }
 

@@ -17,6 +17,7 @@
 #include <react/renderer/runtimescheduler/RuntimeSchedulerResizeObserverDelegate.h>
 #include <react/renderer/uimanager/UIManager.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -112,6 +113,8 @@ class ResizeObserverManager final : public UIManagerCommitHook, public RuntimeSc
   std::mutex dirtyFamiliesMutex_;
 
   std::function<void(jsi::Runtime &, bool)> notifyResizeObserversFunction_;
+  RuntimeScheduler *runtimeScheduler_{nullptr};
+  std::shared_ptr<std::atomic<bool>> pendingWake_;
   bool commitHookRegistered_{};
 
   // Set for the duration of `runResizeObservations`. The broadcast runs JS,
