@@ -28,6 +28,17 @@ TEST(AndroidTextInputPropsDiffTest, eventHandlerPropsAreSent) {
   });
 }
 
+// Text typed into an empty input uses the color of the native view, not the
+// color in the attributed string of the state.
+TEST(AndroidTextInputPropsDiffTest, colorIsSent) {
+  using folly::dynamic;
+  expectPayloadsMatchRawProps<AndroidTextInputProps>({
+      {dynamic::object("color", static_cast<int32_t>(0xFFFF0000))},
+      {dynamic::object("color", 0)},
+      {dynamic::object("color", nullptr)},
+  });
+}
+
 } // namespace facebook::react
 
 #endif

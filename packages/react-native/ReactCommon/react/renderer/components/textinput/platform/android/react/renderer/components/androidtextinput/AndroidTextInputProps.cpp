@@ -33,6 +33,12 @@ hasValue(const RawProps& rawProps, bool defaultValue, const char* name) {
   return false;
 }
 
+// ReactTextInputManager resets a color to the platform default for null, while
+// 0 is transparent.
+static folly::dynamic colorOrNull(const SharedColor& color) {
+  return color ? folly::dynamic(*color) : folly::dynamic(nullptr);
+}
+
 AndroidTextInputProps::AndroidTextInputProps(
     const PropsParserContext &context,
     const AndroidTextInputProps &sourceProps,
@@ -608,6 +614,11 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
 
   if (textTransform != oldProps->textTransform) {
     result["textTransform"] = textTransform;
+  }
+
+  if (textAttributes.foregroundColor !=
+      oldProps->textAttributes.foregroundColor) {
+    result["color"] = colorOrNull(textAttributes.foregroundColor);
   }
 
   if (letterSpacing != oldProps->letterSpacing) {
