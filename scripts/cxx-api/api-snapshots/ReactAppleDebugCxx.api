@@ -3977,6 +3977,7 @@ class facebook::react::KeyboardAvoidingViewEventEmitter : public facebook::react
 struct facebook::react::KeyboardAvoidingViewEventEmitter::OnKeyboardInsetChange {
   public facebook::react::Float inset;
   public facebook::react::Float maxHeight;
+  public facebook::react::Float settledInset;
 }
 
 class facebook::react::KeyboardAvoidingViewProps : public facebook::react::HostPlatformViewProps {

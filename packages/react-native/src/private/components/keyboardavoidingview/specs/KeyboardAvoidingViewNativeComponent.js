@@ -21,6 +21,7 @@ import codegenNativeComponent from '../../../../../Libraries/Utilities/codegenNa
 type KeyboardInsetChangeEvent = Readonly<{
   inset: Float,
   maxHeight: Float,
+  settledInset: Float,
 }>;
 
 type KeyboardAvoidingViewNativeProps = Readonly<{

@@ -16,6 +16,7 @@ internal class KeyboardInsetChangeEvent(
     viewTag: Int,
     private val inset: Float,
     private val maxHeight: Float,
+    private val settledInset: Float,
 ) : Event<KeyboardInsetChangeEvent>(surfaceId, viewTag) {
 
   override fun getEventName(): String = EVENT_NAME
@@ -24,6 +25,7 @@ internal class KeyboardInsetChangeEvent(
       Arguments.createMap().apply {
         putDouble("inset", inset.toDouble())
         putDouble("maxHeight", maxHeight.toDouble())
+        putDouble("settledInset", settledInset.toDouble())
       }
 
   companion object {

@@ -45,8 +45,11 @@ using namespace facebook::react;
   CGFloat _guideOwnerBottomSafeArea;
   BOOL _isTrackingViewLaidOut;
   CGFloat _keyboardInset;
+  // Changes once per keyboard animation: at its end, or at the start of a hide.
+  CGFloat _settledInset;
+  NSUInteger _keyboardAnimationCount;
   // `height` shrinks this view, so measure it while the keyboard doesn't overlap.
-  CGFloat _restingHeight;
+  CGFloat _heightWithoutKeyboard;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -148,13 +151,28 @@ using namespace facebook::react;
   UIViewAnimationCurve curve =
       (UIViewAnimationCurve)[notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
 
+  _keyboardAnimationCount++;
+  __weak __typeof(self) weakSelf = self;
+
   [UIView animateWithDuration:duration
-                        delay:0
-                      options:(UIViewAnimationOptions)curve << 16 | UIViewAnimationOptionBeginFromCurrentState
-                   animations:^{
-                     [trackingContainerView layoutIfNeeded];
-                   }
-                   completion:nil];
+      delay:0
+      options:(UIViewAnimationOptions)curve << 16 | UIViewAnimationOptionBeginFromCurrentState
+      animations:^{
+        [trackingContainerView layoutIfNeeded];
+      }
+      completion:^(__unused BOOL finished) {
+        __typeof(self) strongSelf = weakSelf;
+
+        if (strongSelf == nil) {
+          return;
+        }
+
+        strongSelf->_keyboardAnimationCount--;
+
+        if (strongSelf->_keyboardAnimationCount == 0) {
+          [strongSelf _updateKeyboardInset];
+        }
+      }];
 }
 
 - (CGFloat)_hiddenKeyboardTrackingHeight
@@ -210,7 +228,7 @@ using namespace facebook::react;
   const auto &props = static_cast<const KeyboardAvoidingViewProps &>(*_props);
 
   if (_keyboardInset == 0) {
-    _restingHeight = _layoutMetrics.frame.size.height;
+    _heightWithoutKeyboard = _layoutMetrics.frame.size.height;
   }
 
   CGFloat inset = 0;
@@ -218,19 +236,24 @@ using namespace facebook::react;
 
   if (props.enabled && isKeyboardVisible) {
     CGFloat keyboardY = CGRectGetMinY(_trackingView.frame) - props.keyboardVerticalOffset;
-    inset = MAX(_layoutMetrics.frame.origin.y + _restingHeight - keyboardY, 0);
+    inset = MAX(_layoutMetrics.frame.origin.y + _heightWithoutKeyboard - keyboardY, 0);
   }
 
-  if (inset == _keyboardInset) {
+  // During an animation, `inset` is already the end value.
+  CGFloat settledInset = (_keyboardAnimationCount == 0 || inset == 0) ? inset : _settledInset;
+
+  if (inset == _keyboardInset && settledInset == _settledInset) {
     return;
   }
 
   _keyboardInset = inset;
-  CGFloat maxHeight = inset > 0 ? MAX(_restingHeight - inset, 0) : INFINITY;
+  _settledInset = settledInset;
+  CGFloat maxHeight = inset > 0 ? MAX(_heightWithoutKeyboard - inset, 0) : INFINITY;
 
   // A `folly::dynamic` payload, which C++ Native Animated can read.
   _eventEmitter->dispatchUniqueEvent(
-      "keyboardInsetChange", folly::dynamic::object("inset", inset)("maxHeight", maxHeight));
+      "keyboardInsetChange",
+      folly::dynamic::object("inset", inset)("maxHeight", maxHeight)("settledInset", settledInset));
 }
 
 #pragma mark - RCTComponentViewProtocol
@@ -251,7 +274,8 @@ using namespace facebook::react;
 {
   [super prepareForRecycle];
   _keyboardInset = 0;
-  _restingHeight = 0;
+  _settledInset = 0;
+  _heightWithoutKeyboard = 0;
 }
 
 @end

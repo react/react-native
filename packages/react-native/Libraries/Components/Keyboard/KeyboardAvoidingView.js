@@ -34,7 +34,7 @@ type KeyboardAvoidingViewPropsCore = Readonly<{
   /**
    * Specify how to react to the presence of the keyboard.
    */
-  behavior?: ?('height' | 'position' | 'padding'),
+  behavior?: ?('height' | 'position' | 'padding' | 'translate-with-padding'),
 
   /**
    * The style of the content container (View) when `behavior` is 'position'.
@@ -138,9 +138,15 @@ class KeyboardAvoidingView extends React.Component<
   viewRef: {current: React.ElementRef<typeof View> | null, ...};
   _initialFrameHeight: number = 0;
   _bottom: number = 0;
+
   _keyboardInset: Animated.Value = new Animated.Value(0);
   // Yoga reads an infinite `maxHeight` as unset, unlike 0.
   _keyboardMaxHeight: Animated.Value = new Animated.Value(Infinity);
+  _keyboardSettledInset: Animated.Value = new Animated.Value(0);
+  _keyboardTranslateY: Animated.Node = Animated.multiply(
+    this._keyboardInset,
+    -1,
+  );
 
   constructor(props: KeyboardAvoidingViewProps) {
     super(props);
@@ -194,6 +200,7 @@ class KeyboardAvoidingView extends React.Component<
           nativeEvent: {
             inset: this._keyboardInset,
             maxHeight: this._keyboardMaxHeight,
+            settledInset: this._keyboardSettledInset,
           },
         },
       ],
@@ -359,6 +366,10 @@ class KeyboardAvoidingView extends React.Component<
             style,
             behavior === 'height' && {maxHeight: this._keyboardMaxHeight},
             behavior === 'padding' && {paddingBottom: this._keyboardInset},
+            behavior === 'translate-with-padding' && {
+              paddingTop: this._keyboardSettledInset,
+              transform: [{translateY: this._keyboardTranslateY}],
+            },
           ]}
           {...props}>
           {behavior === 'position' ? (
@@ -414,6 +425,7 @@ class KeyboardAvoidingView extends React.Component<
         );
 
       case 'padding':
+      case 'translate-with-padding':
         return (
           <View
             ref={this.viewRef}

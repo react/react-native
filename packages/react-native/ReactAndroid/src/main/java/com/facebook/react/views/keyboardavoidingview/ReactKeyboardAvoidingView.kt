@@ -42,8 +42,10 @@ internal class ReactKeyboardAvoidingView(context: Context) : ReactViewGroup(cont
 
   // All values below are in dp.
   private var keyboardInset = 0f
+  // Changes once per keyboard animation: at its end, or at the start of a hide.
+  private var settledInset = 0f
   // `height` shrinks this view, so measure it while the keyboard doesn't overlap.
-  private var restingHeight = 0f
+  private var heightWithoutKeyboard = 0f
 
   private val updateRunnable = Runnable {
     isUpdateScheduled = false
@@ -66,6 +68,21 @@ internal class ReactKeyboardAvoidingView(context: Context) : ReactViewGroup(cont
           if (animation.isImeAnimation()) {
             isAnimating = true
           }
+        }
+
+        override fun onStart(
+            animation: WindowInsetsAnimationCompat,
+            bounds: WindowInsetsAnimationCompat.BoundsCompat,
+        ): WindowInsetsAnimationCompat.BoundsCompat {
+          // Root insets hold the end value.
+          if (
+              animation.isImeAnimation() &&
+                  settledInset != 0f &&
+                  (!isAvoidanceEnabled || keyboardOverlap(currentKeyboardHeight()) == 0f)
+          ) {
+            dispatchInsetChange(keyboardInset, 0f)
+          }
+          return bounds
         }
 
         override fun onProgress(
@@ -134,28 +151,42 @@ internal class ReactKeyboardAvoidingView(context: Context) : ReactViewGroup(cont
 
     val frameY = top.toFloat().pxToDp()
     val keyboardY = rootView.height.toFloat().pxToDp() - keyboardHeight - keyboardVerticalOffset
-    return maxOf(frameY + restingHeight - keyboardY, 0f)
+    return maxOf(frameY + heightWithoutKeyboard - keyboardY, 0f)
   }
 
   @UiThread
   private fun updateKeyboardInset(keyboardHeight: Float) {
     if (keyboardInset == 0f) {
-      restingHeight = height.toFloat().pxToDp()
+      heightWithoutKeyboard = height.toFloat().pxToDp()
     }
 
     val inset = if (isAvoidanceEnabled) keyboardOverlap(keyboardHeight) else 0f
+    dispatchInsetChange(inset, if (!isAnimating || inset == 0f) inset else settledInset)
+  }
 
-    if (inset == keyboardInset) {
+  @UiThread
+  private fun dispatchInsetChange(inset: Float, settled: Float) {
+    if (inset == keyboardInset && settled == settledInset) {
       return
     }
 
     val reactContext = context as? ReactContext ?: return
     val eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext) ?: return
+
     keyboardInset = inset
-    val maxHeight = if (inset > 0f) maxOf(restingHeight - inset, 0f) else Float.POSITIVE_INFINITY
+    settledInset = settled
+
+    val maxHeight =
+        if (inset > 0f) maxOf(heightWithoutKeyboard - inset, 0f) else Float.POSITIVE_INFINITY
 
     eventDispatcher.dispatchEvent(
-        KeyboardInsetChangeEvent(UIManagerHelper.getSurfaceId(this), id, inset, maxHeight)
+        KeyboardInsetChangeEvent(
+            UIManagerHelper.getSurfaceId(this),
+            id,
+            inset,
+            maxHeight,
+            settled,
+        )
     )
   }
 }

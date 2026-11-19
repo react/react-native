@@ -11,12 +11,14 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {SafeAreaInsets} from 'react-native';
 
 import * as React from 'react';
 import {useState} from 'react';
 import {
   Alert,
   Button,
+  FlatList,
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -95,11 +97,7 @@ const BehaviorPicker = (props: {
 }) => {
   return (
     <View>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-        }}>
+      <View style={{flexDirection: 'row', justifyContent: 'center'}}>
         {BEHAVIORS.map(behavior => {
           const selected = props.behavior === behavior;
           return (
@@ -265,6 +263,144 @@ const KeyboardAvoidingScrollView = () => {
   );
 };
 
+type ChatMessage = {
+  id: string,
+  text: string,
+  isSent: boolean,
+};
+
+const CHAT_LINES = [
+  'Hey! Are we still on for tonight?',
+  'Yes, 8pm works for me.',
+  'Great. Same place as last time?',
+  'Sure. Should I book a table?',
+  'Please do, it gets busy on Fridays.',
+  'Done, table for four.',
+  'Who else is coming?',
+  'Sam and Alex.',
+];
+
+const INITIAL_CHAT_MESSAGES: Array<ChatMessage> = Array.from(
+  {length: 40},
+  (_, index) => ({
+    id: String(index),
+    text: CHAT_LINES[index % CHAT_LINES.length],
+    isSent: index % 3 === 0,
+  }),
+);
+
+const ChatBubble = ({message}: {message: ChatMessage}) => {
+  return (
+    <View
+      style={[
+        styles.chatBubble,
+        message.isSent ? styles.chatBubbleSent : styles.chatBubbleReceived,
+      ]}>
+      <Text style={message.isSent ? styles.chatBubbleSentText : null}>
+        {message.text}
+      </Text>
+    </View>
+  );
+};
+
+const KeyboardAvoidingChat = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [native, setNative] = useState(true);
+  const [messages, setMessages] = useState(INITIAL_CHAT_MESSAGES);
+  const [draft, setDraft] = useState('');
+  const [insets, setInsets] = useState<SafeAreaInsets | null>(null);
+  const [keyboardVerticalOffset, setKeyboardVerticalOffset] = useState(0);
+
+  const sendMessage = () => {
+    const text = draft.trim();
+
+    if (text === '') {
+      return;
+    }
+
+    setMessages(prevMessages => [
+      {id: String(Date.now()), text, isSent: true},
+      ...prevMessages,
+    ]);
+
+    setDraft('');
+  };
+
+  return (
+    <View>
+      <Modal animationType="fade" visible={modalOpen}>
+        <View
+          experimental_onSafeAreaInsetsChange={event => {
+            setInsets(event.nativeEvent.insets);
+          }}
+          style={[
+            styles.chatContainer,
+            insets != null && {
+              paddingBottom: insets.bottom,
+              paddingLeft: insets.left,
+              paddingRight: insets.right,
+              paddingTop: insets.top,
+            },
+          ]}>
+          <View style={styles.chatHeader}>
+            <NativeToggle native={native} setNative={setNative} />
+            <CloseButton setModalOpen={setModalOpen} />
+          </View>
+
+          <View
+            onLayout={event => {
+              setKeyboardVerticalOffset(event.nativeEvent.layout.y);
+            }}
+            style={styles.chatClip}>
+            <KeyboardAvoidingView
+              behavior="translate-with-padding"
+              experimental_native={native}
+              keyboardVerticalOffset={keyboardVerticalOffset}
+              style={styles.chatKeyboardAvoidingView}>
+              <FlatList
+                data={messages}
+                inverted
+                keyboardDismissMode="interactive"
+                keyExtractor={item => item.id}
+                renderItem={({item}) => <ChatBubble message={item} />}
+                contentContainerStyle={styles.chatListContent}
+              />
+
+              <View style={styles.chatComposer}>
+                <TextInput
+                  testID="keyboard_avoiding_view_chat_input"
+                  placeholder="Message"
+                  value={draft}
+                  onChangeText={setDraft}
+                  onSubmitEditing={sendMessage}
+                  submitBehavior="submit"
+                  style={styles.chatInput}
+                />
+
+                <Button
+                  testID="keyboard_avoiding_view_chat_send"
+                  title="Send"
+                  onPress={sendMessage}
+                />
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+        </View>
+      </Modal>
+
+      <View>
+        <Pressable onPress={() => setModalOpen(true)}>
+          <Text
+            style={styles.touchableText}
+            testID="keyboard_avoiding_view_chat_open">
+            Open Example
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
@@ -334,6 +470,64 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
+  chatContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  chatHeader: {
+    alignItems: 'center',
+    borderBottomColor: '#dddddd',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+  },
+  chatClip: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  chatKeyboardAvoidingView: {
+    flex: 1,
+  },
+  chatListContent: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  chatBubble: {
+    borderRadius: 16,
+    marginVertical: 4,
+    maxWidth: '75%',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  chatBubbleSent: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'blue',
+  },
+  chatBubbleSentText: {
+    color: 'white',
+  },
+  chatBubbleReceived: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#eeeeee',
+  },
+  chatComposer: {
+    alignItems: 'center',
+    borderTopColor: '#dddddd',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  chatInput: {
+    borderColor: '#dddddd',
+    borderRadius: 20,
+    borderWidth: 1,
+    flex: 1,
+    minHeight: 40,
+    paddingHorizontal: 12,
+  },
   behaviorDescription: {
     textAlign: 'center',
     alignSelf: 'center',
@@ -385,6 +579,15 @@ exports.examples = [
         'TextInputs should still be visible when focused.') as string,
     render(): React.Node {
       return <KeyboardAvoidingScrollView />;
+    },
+  },
+  {
+    title: 'Keyboard Avoiding View with a chat',
+    description:
+      ('An inverted message list and a composer with behavior="translate-with-padding". ' +
+        'The view moves up with the keyboard, and lays out once when the keyboard settles.') as string,
+    render(): React.Node {
+      return <KeyboardAvoidingChat />;
     },
   },
 ] as Array<RNTesterModuleExample>;
