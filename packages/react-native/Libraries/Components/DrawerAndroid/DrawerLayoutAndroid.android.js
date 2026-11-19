@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
@@ -48,6 +46,7 @@ class DrawerLayoutAndroid
   extends React.Component<DrawerLayoutAndroidProps, DrawerLayoutAndroidState>
   implements DrawerLayoutAndroidMethods
 {
+  // $FlowFixMe[unsafe-getters-setters]
   static get positions(): unknown {
     console.warn(
       'Setting DrawerLayoutAndroid drawerPosition using `DrawerLayoutAndroid.positions` is deprecated. Instead pass the string value "left" or "right"',

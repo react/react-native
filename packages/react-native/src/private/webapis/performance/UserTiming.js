@@ -8,7 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
 import type {
   DOMHighResTimeStamp,
   PerformanceEntryInit,
@@ -56,6 +55,7 @@ class PerformanceMarkTemplate extends PerformanceEntry {
     this.__detail = markOptions?.detail ?? null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get detail(): DetailType {
     return this.__detail;
   }
@@ -96,6 +96,7 @@ class PerformanceMeasureTemplate extends PerformanceEntry {
     this.__detail = init?.detail ?? null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get detail(): DetailType {
     return this.__detail;
   }

@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventCallback} from '../../src/private/webapis/dom/events/EventTarget';
 import type Blob from './Blob';
 
@@ -227,62 +225,77 @@ class FileReader extends EventTarget {
     }
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get readyState(): ReadyState {
     return this._readyState;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get error(): ?DOMException {
     return this._error;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get result(): ?ReaderResult {
     return this._result;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onabort(): EventCallback | null {
     return getEventHandlerAttribute(this, 'abort');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onabort(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'abort', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onerror(): EventCallback | null {
     return getEventHandlerAttribute(this, 'error');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onerror(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'error', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onload(): EventCallback | null {
     return getEventHandlerAttribute(this, 'load');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onload(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'load', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onloadstart(): EventCallback | null {
     return getEventHandlerAttribute(this, 'loadstart');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onloadstart(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'loadstart', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onloadend(): EventCallback | null {
     return getEventHandlerAttribute(this, 'loadend');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onloadend(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'loadend', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onprogress(): EventCallback | null {
     return getEventHandlerAttribute(this, 'progress');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onprogress(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'progress', listener);
   }

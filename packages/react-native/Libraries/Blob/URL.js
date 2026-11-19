@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type Blob from './Blob';
 
 import NativeBlobModule from './NativeBlobModule';
@@ -125,11 +123,13 @@ export class URL {
     }
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get hash(): string {
     const hashMatch = this._url.match(/#([^/]*)/);
     return hashMatch ? `#${hashMatch[1]}` : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get host(): string {
     const hostMatch = this._url.match(/^https?:\/\/(?:[^@]+@)?([^:/?#]+)/);
     const portMatch = this._url.match(/:(\d+)(?=[/?#]|$)/);
@@ -138,45 +138,54 @@ export class URL {
       : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get hostname(): string {
     const hostnameMatch = this._url.match(/^https?:\/\/(?:[^@]+@)?([^:/?#]+)/);
     return hostnameMatch ? hostnameMatch[1] : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get href(): string {
     return this.toString();
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get origin(): string {
     const matches = this._url.match(/^(https?:\/\/[^/]+)/);
     return matches ? matches[1] : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get password(): string {
     const passwordMatch = this._url.match(/https?:\/\/.*:(.*)@/);
     return passwordMatch ? passwordMatch[1] : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get pathname(): string {
     const pathMatch = this._url.match(/https?:\/\/[^/]+(\/[^?#]*)?/);
     return pathMatch ? pathMatch[1] || '/' : '/';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get port(): string {
     const portMatch = this._url.match(/:(\d+)(?=[/?#]|$)/);
     return portMatch ? portMatch[1] : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get protocol(): string {
     const protocolMatch = this._url.match(/^([a-zA-Z][a-zA-Z\d+\-.]*):/);
     return protocolMatch ? protocolMatch[1] + ':' : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get search(): string {
     const searchMatch = this._url.match(/\?([^#]*)/);
     return searchMatch ? `?${searchMatch[1]}` : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set search(value: string) {
     // Remove leading '?' if present
     const searchString = value.startsWith('?') ? value.slice(1) : value;
@@ -195,6 +204,7 @@ export class URL {
     this._searchParamsInstance = null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get searchParams(): URLSearchParams {
     if (this._searchParamsInstance == null) {
       this._searchParamsInstance = new URLSearchParams(this.search);
@@ -225,6 +235,7 @@ export class URL {
     }
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get username(): string {
     const usernameMatch = this._url.match(/^https?:\/\/([^:@]+)(?::[^@]*)?@/);
     return usernameMatch ? usernameMatch[1] : '';

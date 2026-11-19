@@ -13,8 +13,6 @@
  * See https://websockets.spec.whatwg.org/#the-closeevent-interface.
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventInit} from '../../dom/events/Event';
 
 import Event from '../../dom/events/Event';
@@ -38,14 +36,17 @@ export default class CloseEvent extends Event {
     this._reason = options?.reason != null ? String(options.reason) : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get wasClean(): boolean {
     return this._wasClean;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get code(): number {
     return this._code;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get reason(): string {
     return this._reason;
   }

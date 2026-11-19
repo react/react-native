@@ -26,7 +26,7 @@ import * as React from 'react';
 const VirtualizedSectionList = VirtualizedLists.VirtualizedSectionList;
 
 type DefaultSectionT = {
-  // flowlint-next-line unclear-type:off
+  // $FlowFixMe[unclear-type]
   [key: string]: any,
 };
 
@@ -173,7 +173,7 @@ export type SectionListProps<ItemT, SectionT = DefaultSectionT> = {
  * @see https://reactnative.dev/docs/sectionlist
  */
 export default class SectionList<
-  // flowlint-next-line unclear-type:off
+  // $FlowFixMe[unclear-type]
   ItemT = any,
   SectionT = DefaultSectionT,
 > extends React.PureComponent<SectionListProps<ItemT, SectionT>> {

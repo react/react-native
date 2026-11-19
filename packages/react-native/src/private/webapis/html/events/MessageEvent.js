@@ -13,8 +13,6 @@
  * See https://html.spec.whatwg.org/multipage/comms.html#messageevent.
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventInit} from '../../dom/events/Event';
 
 import Event from '../../dom/events/Event';
@@ -42,14 +40,17 @@ export default class MessageEvent extends Event {
     this._lastEventId = String(options?.lastEventId ?? '');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get data(): unknown {
     return this._data;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get origin(): string {
     return this._origin;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get lastEventId(): string {
     return this._lastEventId;
   }

@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {ArrayLike} from '../../utils/ArrayLikeUtils';
 
 import {createValueIterator} from '../../utils/ArrayLikeUtils';
@@ -43,6 +41,7 @@ export default class HTMLCollection<T> implements Iterable<T>, ArrayLike<T> {
     this._length = elements.length;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get length(): number {
     return this._length;
   }
