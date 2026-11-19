@@ -318,4 +318,24 @@ describe('XMLHttpRequest', function () {
       'also-here: Mr. PB\r\newok: lego\r\nfoo-test: 1, 2\r\n__custom: token\r\n',
     );
   });
+  it('should abort late native request when aborted before requestId was delivered', function () {
+    const NativeModules = require('../../BatchedBridge/NativeModules').default;
+    const abortSpy = jest.spyOn(NativeModules.Networking, 'abortRequest');
+    let capturedCallback;
+    jest.spyOn(NativeModules.Networking, 'sendRequest').mockImplementation((...args) => {
+      capturedCallback = args[8];
+    });
+
+    xhr.open('GET', 'http://example.com');
+    xhr.send();
+    xhr.abort();
+
+    // Simulate late native request creation callback arriving after abort
+    expect(abortSpy).not.toHaveBeenCalled();
+    capturedCallback(999);
+    expect(abortSpy).toHaveBeenCalledWith(999);
+    // Ensure this late request ID did not corrupt the XHR state
+    // $FlowFixMe[prop-missing]
+    expect(xhr._requestId).toBeNull();
+  });
 });
