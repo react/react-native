@@ -6365,7 +6365,7 @@ public class com/facebook/react/views/textinput/ReactTextInputManager : com/face
 	public final fun setFontStyle (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setFontVariant (Lcom/facebook/react/views/textinput/ReactEditText;Lcom/facebook/react/bridge/ReadableArray;)V
 	public final fun setFontVariationSettings (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
-	public final fun setFontWeight (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
+	public final fun setFontWeight (Lcom/facebook/react/views/textinput/ReactEditText;Lcom/facebook/react/bridge/Dynamic;)V
 	public final fun setImportantForAutofill (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/textinput/ReactEditText;Z)V
 	public final fun setInlineImageLeft (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
