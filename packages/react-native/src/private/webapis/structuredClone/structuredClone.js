@@ -17,6 +17,10 @@ import {
 const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
 
 const ObjectPrototype = Object.prototype;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const mapForEach = Map.prototype.forEach;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const setForEach = Set.prototype.forEach;
 
 // Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
@@ -160,12 +164,12 @@ function structuredCloneInternal(value: unknown): unknown {
     const result = new Map<unknown, unknown>();
     memory.set(value, result);
 
-    for (const [innerKey, innerValue] of value) {
+    mapForEach.call(value, (innerValue: unknown, innerKey: unknown) => {
       result.set(
         structuredCloneInternal(innerKey),
         structuredCloneInternal(innerValue),
       );
-    }
+    });
 
     return result;
   }
@@ -174,9 +178,9 @@ function structuredCloneInternal(value: unknown): unknown {
     const result = new Set<unknown>();
     memory.set(value, result);
 
-    for (const innerValue of value) {
+    setForEach.call(value, (innerValue: unknown) => {
       result.add(structuredCloneInternal(innerValue));
-    }
+    });
 
     return result;
   }
