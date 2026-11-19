@@ -11,6 +11,7 @@
 
 #include <react/renderer/components/view/BackgroundImagePropsConversions.h>
 #include <react/renderer/components/view/BoxShadowPropsConversions.h>
+#include <react/renderer/components/view/ClipPathPropsConversions.h>
 #include <react/renderer/components/view/FilterPropsConversions.h>
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/components/view/primitives.h>
@@ -327,7 +328,19 @@ BaseViewProps::BaseViewProps(
           rawProps,
           "removeClippedSubviews",
           sourceProps.removeClippedSubviews,
-          false)) {}
+          false)),
+      clipPath([&]() -> std::unique_ptr<ClipPath> {
+        auto optionalClipPath = convertRawProp(
+            context,
+            rawProps,
+            "clipPath",
+            sourceProps.clipPath ? std::make_optional(*sourceProps.clipPath)
+                                 : std::nullopt,
+            std::nullopt);
+        return optionalClipPath
+            ? std::make_unique<ClipPath>(std::move(*optionalClipPath))
+            : nullptr;
+      }()) {}
 
 #define VIEW_EVENT_CASE(eventType)                      \
   case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): { \
@@ -392,47 +405,55 @@ void BaseViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(filter);
     RAW_SET_PROP_SWITCH_CASE_BASIC(boxShadow);
     RAW_SET_PROP_SWITCH_CASE_BASIC(mixBlendMode);
-    // events field
-    VIEW_EVENT_CASE(PointerEnter);
-    VIEW_EVENT_CASE(PointerEnterCapture);
-    VIEW_EVENT_CASE(PointerMove);
-    VIEW_EVENT_CASE(PointerMoveCapture);
-    VIEW_EVENT_CASE(PointerLeave);
-    VIEW_EVENT_CASE(PointerLeaveCapture);
-    VIEW_EVENT_CASE(PointerOver);
-    VIEW_EVENT_CASE(PointerOverCapture);
-    VIEW_EVENT_CASE(PointerOut);
-    VIEW_EVENT_CASE(PointerOutCapture);
-    VIEW_EVENT_CASE(Click);
-    VIEW_EVENT_CASE(ClickCapture);
-    VIEW_EVENT_CASE(PointerDown);
-    VIEW_EVENT_CASE(PointerDownCapture);
-    VIEW_EVENT_CASE(PointerUp);
-    VIEW_EVENT_CASE(PointerUpCapture);
-    VIEW_EVENT_CASE(GotPointerCapture);
-    VIEW_EVENT_CASE(LostPointerCapture);
-    VIEW_EVENT_CASE(MoveShouldSetResponder);
-    VIEW_EVENT_CASE(MoveShouldSetResponderCapture);
-    VIEW_EVENT_CASE(StartShouldSetResponder);
-    VIEW_EVENT_CASE(StartShouldSetResponderCapture);
-    VIEW_EVENT_CASE(ResponderGrant);
-    VIEW_EVENT_CASE(ResponderReject);
-    VIEW_EVENT_CASE(ResponderStart);
-    VIEW_EVENT_CASE(ResponderEnd);
-    VIEW_EVENT_CASE(ResponderRelease);
-    VIEW_EVENT_CASE(ResponderMove);
-    VIEW_EVENT_CASE(ResponderTerminate);
-    VIEW_EVENT_CASE(ResponderTerminationRequest);
-    VIEW_EVENT_CASE(ShouldBlockNativeResponder);
-    VIEW_EVENT_CASE(TouchStart);
-    VIEW_EVENT_CASE(TouchMove);
-    VIEW_EVENT_CASE(TouchEnd);
-    VIEW_EVENT_CASE(TouchCancel);
-    // BorderRadii
-    SET_CASCADED_RECTANGLE_CORNERS(borderRadii, "border", "Radius", value);
-    SET_CASCADED_RECTANGLE_EDGES(borderColors, "border", "Color", value);
-    SET_CASCADED_RECTANGLE_CORNERS(borderCurves, "border", "Curve", value);
-    SET_CASCADED_RECTANGLE_EDGES(borderStyles, "border", "Style", value);
+    case CONSTEXPR_RAW_PROPS_KEY_HASH("clipPath"): {
+      std::optional<ClipPath> parsedClipPath;
+      fromRawValue(context, value, parsedClipPath);
+      clipPath = parsedClipPath
+          ? std::make_unique<ClipPath>(std::move(*parsedClipPath))
+          : nullptr;
+      return;
+    }
+      // events field
+      VIEW_EVENT_CASE(PointerEnter);
+      VIEW_EVENT_CASE(PointerEnterCapture);
+      VIEW_EVENT_CASE(PointerMove);
+      VIEW_EVENT_CASE(PointerMoveCapture);
+      VIEW_EVENT_CASE(PointerLeave);
+      VIEW_EVENT_CASE(PointerLeaveCapture);
+      VIEW_EVENT_CASE(PointerOver);
+      VIEW_EVENT_CASE(PointerOverCapture);
+      VIEW_EVENT_CASE(PointerOut);
+      VIEW_EVENT_CASE(PointerOutCapture);
+      VIEW_EVENT_CASE(Click);
+      VIEW_EVENT_CASE(ClickCapture);
+      VIEW_EVENT_CASE(PointerDown);
+      VIEW_EVENT_CASE(PointerDownCapture);
+      VIEW_EVENT_CASE(PointerUp);
+      VIEW_EVENT_CASE(PointerUpCapture);
+      VIEW_EVENT_CASE(GotPointerCapture);
+      VIEW_EVENT_CASE(LostPointerCapture);
+      VIEW_EVENT_CASE(MoveShouldSetResponder);
+      VIEW_EVENT_CASE(MoveShouldSetResponderCapture);
+      VIEW_EVENT_CASE(StartShouldSetResponder);
+      VIEW_EVENT_CASE(StartShouldSetResponderCapture);
+      VIEW_EVENT_CASE(ResponderGrant);
+      VIEW_EVENT_CASE(ResponderReject);
+      VIEW_EVENT_CASE(ResponderStart);
+      VIEW_EVENT_CASE(ResponderEnd);
+      VIEW_EVENT_CASE(ResponderRelease);
+      VIEW_EVENT_CASE(ResponderMove);
+      VIEW_EVENT_CASE(ResponderTerminate);
+      VIEW_EVENT_CASE(ResponderTerminationRequest);
+      VIEW_EVENT_CASE(ShouldBlockNativeResponder);
+      VIEW_EVENT_CASE(TouchStart);
+      VIEW_EVENT_CASE(TouchMove);
+      VIEW_EVENT_CASE(TouchEnd);
+      VIEW_EVENT_CASE(TouchCancel);
+      // BorderRadii
+      SET_CASCADED_RECTANGLE_CORNERS(borderRadii, "border", "Radius", value);
+      SET_CASCADED_RECTANGLE_EDGES(borderColors, "border", "Color", value);
+      SET_CASCADED_RECTANGLE_CORNERS(borderCurves, "border", "Curve", value);
+      SET_CASCADED_RECTANGLE_EDGES(borderStyles, "border", "Style", value);
   }
 }
 
