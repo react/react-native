@@ -121,7 +121,7 @@ internal object TextLayoutManager {
 
   // Sizes arrive in pixels converted from Yoga's floating point DIPs, so a whole number of pixels
   // can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
-  private const val PIXEL_SIZE_TOLERANCE = 0.001f
+  internal const val PIXEL_SIZE_TOLERANCE: Float = 0.001f
 
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
@@ -1497,6 +1497,27 @@ internal object TextLayoutManager {
     )
   }
 
+  /**
+   * How much taller rounding line heights up to whole pixels made a layout than the line heights
+   * its text asks for. StaticLayout applies every line height span in a paragraph to each of its
+   * lines, and the last one sets the line's height.
+   */
+  private fun lineHeightRounding(layout: Layout): Float {
+    val text = layout.text as? Spanned ?: return 0f
+    var rounding = 0f
+    for (line in 0 until layout.lineCount) {
+      val lineStart = layout.getLineStart(line)
+      val paragraphStart = TextUtils.lastIndexOf(text, '\n', lineStart - 1) + 1
+      val paragraphEnd =
+          TextUtils.indexOf(text, '\n', lineStart).let { if (it < 0) text.length else it }
+      val span =
+          text.getSpans(paragraphStart, paragraphEnd, CustomLineHeightSpan::class.java).lastOrNull()
+              ?: continue
+      rounding += span.lineHeight - span.height
+    }
+    return rounding
+  }
+
   @JvmStatic
   fun adjustSpannableFontToFit(
       text: Spannable,
@@ -1593,7 +1614,8 @@ internal object TextLayoutManager {
       val singleLineTextExceedsWidth = text.length == 1 && layout.getLineWidth(0) > width
       val exceedsHeight =
           heightYogaMeasureMode != YogaMeasureMode.UNDEFINED &&
-              layout.height > height + PIXEL_SIZE_TOLERANCE
+              layout.height > height + PIXEL_SIZE_TOLERANCE &&
+              layout.height - lineHeightRounding(layout) > height + PIXEL_SIZE_TOLERANCE
       val exceedsMaximumNumberOfLines =
           maximumNumberOfLines != ReactConstants.UNSET &&
               maximumNumberOfLines != 0 &&
