@@ -99,6 +99,9 @@ internal class OutsetBoxShadowDrawable(
           inset(-spreadExtent, -spreadExtent)
           offset(offsetX.dpToPx(), offsetY.dpToPx())
         }
+    if (shadowRect.isEmpty) {
+      return
+    }
 
     canvas.save().let { saveCount ->
       if (computedBorderRadii?.hasRoundedBorders() == true) {
