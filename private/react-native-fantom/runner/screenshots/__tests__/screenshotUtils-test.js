@@ -184,8 +184,13 @@ it('continues generating differences after missing, corrupt or unwritable files'
 it('creates new images next to Jest snapshots', () => {
   const result = createResult(true, false);
   processScreenshotResults(getConfig(), [result], 'new', passedTests);
-  expect(result.expectedPath).toContain(
-    '__snapshots__/example-test.js.screenshots/',
+  expect(result.expectedPath).toBe(
+    path.join(
+      directory,
+      '__snapshots__',
+      'example-test.js.screenshots',
+      'image.png',
+    ),
   );
   expect(fs.readFileSync(result.expectedPath, 'utf8')).toBe('new image');
   expect(
