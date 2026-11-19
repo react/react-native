@@ -75,7 +75,7 @@ jobs:
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "/tmp/RNTestProject"
       - name: Verify app supports the arm64 simulator
-        run: lipo -verify_arch arm64 /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app/RNTestProject
+        run: lipo /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app/RNTestProject -verify_arch arm64
       - name: Upload app
         uses: ./.github/actions/upload-artifact
         with:
