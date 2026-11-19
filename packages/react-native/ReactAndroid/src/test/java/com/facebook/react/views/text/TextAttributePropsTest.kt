@@ -206,6 +206,28 @@ class TextAttributePropsTest {
     assertThat(textDecorationLine("underline-strikethrough")).isEqualTo(true to true)
   }
 
+  @Test
+  fun letterSpacingIsUnsetWithZeroFontSize() {
+    val textAttributes =
+        TextAttributeProps.fromMapBuffer(
+            WritableMapBuffer().put(TextAttributeProps.TA_KEY_FONT_SIZE, 0.0),
+        )
+
+    assertThat(textAttributes.letterSpacing).isNaN()
+  }
+
+  @Test
+  fun letterSpacingIsZeroWithZeroFontSize() {
+    val textAttributes =
+        TextAttributeProps.fromMapBuffer(
+            WritableMapBuffer()
+                .put(TextAttributeProps.TA_KEY_FONT_SIZE, 0.0)
+                .put(TextAttributeProps.TA_KEY_LETTER_SPACING, 2.0),
+        )
+
+    assertThat(textAttributes.letterSpacing).isEqualTo(0f)
+  }
+
   /** Returns whether underline and line-through are set for the given textDecorationLine. */
   private fun textDecorationLine(value: String): Pair<Boolean, Boolean> {
     val textAttributes =
