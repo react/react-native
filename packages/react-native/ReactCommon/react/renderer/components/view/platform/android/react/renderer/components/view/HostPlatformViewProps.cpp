@@ -528,7 +528,11 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (focusable != oldProps->focusable) {
-    result["focusable"] = focusable;
+    if (focusable.has_value()) {
+      result["focusable"] = focusable.value();
+    } else {
+      result["focusable"] = folly::dynamic(nullptr);
+    }
   }
 
   if (needsOffscreenAlphaCompositing !=

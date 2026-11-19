@@ -1,0 +1,34 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+tags:
+  - android-only
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp
+      - stopApp
+      - openLink: rntester://example/FocusEventsExample/keyboard-focus-exclusion
+      - runFlow: ./helpers/confirm-open-link.yml
+      - extendedWaitUntil:
+          visible:
+            id: 'keyboard_focus_view_input'
+          timeout: 120000
+      - tapOn:
+          id: 'keyboard_focus_view_input'
+      - pressKey: Remote Dpad Down
+      - assertVisible:
+          id: 'keyboard_focus_view_next'
+          focused: true
+      - assertVisible:
+          id: 'keyboard_focus_view_excluded'
+          focused: false
+      - tapOn:
+          id: 'keyboard_focus_scroll_input'
+      - pressKey: Remote Dpad Down
+      - assertVisible:
+          id: 'keyboard_focus_scroll_next'
+          focused: true
+      - assertVisible:
+          id: 'keyboard_focus_scroll_excluded'
+          focused: false

@@ -21,14 +21,14 @@ inline bool formsStackingContext(const ViewProps &viewProps)
 
 inline bool formsView(const ViewProps &viewProps)
 {
-  return viewProps.nativeBackground.has_value() || viewProps.nativeForeground.has_value() || viewProps.focusable ||
-      viewProps.needsOffscreenAlphaCompositing || viewProps.renderToHardwareTextureAndroid ||
-      viewProps.screenReaderFocusable;
+  return viewProps.nativeBackground.has_value() || viewProps.nativeForeground.has_value() ||
+      viewProps.focusable.value_or(false) || viewProps.needsOffscreenAlphaCompositing ||
+      viewProps.renderToHardwareTextureAndroid || viewProps.screenReaderFocusable;
 }
 
 inline bool isKeyboardFocusable(const ViewProps &viewProps)
 {
-  return viewProps.focusable;
+  return viewProps.focusable.value_or(false);
 }
 
 } // namespace facebook::react::HostPlatformViewTraitsInitializer

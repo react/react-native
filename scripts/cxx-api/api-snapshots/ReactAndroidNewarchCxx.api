@@ -1330,11 +1330,11 @@ class facebook::react::HighResTimeStamp {
 class facebook::react::HostPlatformViewProps : public facebook::react::BaseViewProps {
   public HostPlatformViewProps() = default;
   public HostPlatformViewProps(const facebook::react::PropsParserContext& context, const facebook::react::HostPlatformViewProps& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
-  public bool focusable;
   public bool needsOffscreenAlphaCompositing;
   public bool renderToHardwareTextureAndroid;
   public bool screenReaderFocusable;
   public facebook::react::Float elevation;
+  public std::optional<bool> focusable;
   public std::optional<facebook::react::NativeDrawable> nativeBackground;
   public std::optional<facebook::react::NativeDrawable> nativeForeground;
   public std::optional<int> nextFocusDown;
