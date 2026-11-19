@@ -18,12 +18,14 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URL
 import java.nio.channels.Channels
+import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPOutputStream
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -57,7 +59,7 @@ internal object RequestBodyUtil {
       val fileContentUri = Uri.parse(fileContentUriStr)
 
       if (fileContentUri.scheme?.startsWith("http") == true) {
-        return getDownloadFileInputStream(context, fileContentUri)
+        return FileInputStream(downloadFile(context, fileContentUri))
       }
 
       if (fileContentUriStr.startsWith("data:")) {
@@ -80,11 +82,69 @@ internal object RequestBodyUtil {
   }
 
   /**
+   * Creates a [RequestBody] for the file given by its contentUri, which may be a `content://`,
+   * `file://` or `android.resource://` URI, an `http(s)://` URL or a base64 `data:` URI. Returns
+   * null if the file has not been found or if an error has occurred.
+   *
+   * The body opens a new stream each time it is written after the first, so OkHttp can resend it
+   * when it retries a request.
+   */
+  @JvmStatic
+  fun create(context: Context, mediaType: MediaType?, fileContentUriStr: String): RequestBody? {
+    try {
+      val fileContentUri = Uri.parse(fileContentUriStr)
+
+      if (fileContentUri.scheme?.startsWith("http") == true) {
+        val file = downloadFile(context, fileContentUri)
+        return UriRequestBody(mediaType, file.length()) { FileInputStream(file) }
+      }
+
+      if (fileContentUriStr.startsWith("data:")) {
+        val decodedDataUrString =
+            Base64.decode(
+                fileContentUriStr
+                    .split(",".toRegex())
+                    .dropLastWhile { it.isEmpty() }
+                    .toTypedArray()[1],
+                Base64.DEFAULT,
+            )
+        return UriRequestBody(mediaType, decodedDataUrString.size.toLong()) {
+          ByteArrayInputStream(decodedDataUrString)
+        }
+      }
+
+      val contentResolver = context.contentResolver
+      val openStream = {
+        contentResolver.openInputStream(fileContentUri)
+            ?: throw FileNotFoundException("Could not open $fileContentUriStr")
+      }
+      // Opening the file here fails the request early if it can't be read. available() is a guess
+      // (e.g. 0 for pipe-backed providers); if it's too low, OkHttp fails the upload
+      val firstStream = openStream()
+      val contentLength =
+          try {
+            firstStream.available().toLong()
+          } catch (e: IOException) {
+            firstStream.close()
+            throw e
+          }
+      // The first write uses the stream opened here, so the file is only opened again on a retry
+      val pendingStream = AtomicReference<InputStream?>(firstStream)
+      return UriRequestBody(mediaType, contentLength) {
+        pendingStream.getAndSet(null) ?: openStream()
+      }
+    } catch (e: Exception) {
+      FLog.e(ReactConstants.TAG, "Could not retrieve file for contentUri $fileContentUriStr", e)
+      return null
+    }
+  }
+
+  /**
    * Download and cache a file locally. This should be used when document picker returns a URI that
-   * points to a file on the network. Returns input stream for the downloaded file.
+   * points to a file on the network. Returns the downloaded file.
    */
   @Throws(IOException::class)
-  private fun getDownloadFileInputStream(context: Context, uri: Uri): InputStream {
+  private fun downloadFile(context: Context, uri: Uri): File {
     val outputDir = context.applicationContext.cacheDir
     val file = File.createTempFile(NAME, TEMP_FILE_SUFFIX, outputDir)
     file.deleteOnExit()
@@ -94,10 +154,10 @@ internal object RequestBodyUtil {
       url.openStream().use { `is` ->
         Channels.newChannel(`is`).use { channel ->
           stream.channel.transferFrom(channel, 0, Long.MAX_VALUE)
-          return FileInputStream(file)
         }
       }
     }
+    return file
   }
 
   /** Creates a [RequestBody] from a mediaType and gzip-ed body string. */
