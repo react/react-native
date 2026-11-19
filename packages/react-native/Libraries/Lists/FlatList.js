@@ -306,7 +306,7 @@ export type FlatListProps<ItemT> = Readonly<{
  *
  * Also inherits [ScrollView Props](docs/scrollview.html#props), unless it is nested in another FlatList of same orientation.
  */
-// flowlint-next-line unclear-type:off
+// $FlowFixMe[unclear-type]
 class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
   /**
    * Scrolls to the end of the content. May be janky without `getItemLayout` prop.
