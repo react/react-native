@@ -623,10 +623,11 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   }
 
   override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
-    if (!scrollEnabled) return false
     if (!PointerEvents.canChildrenBeTouchTarget(pointerEvents)) return false
 
     if (ev.actionMasked == MotionEvent.ACTION_SCROLL) {
+      // Hover events still reach the content, which TalkBack's touch exploration relies on.
+      if (!scrollEnabled) return false
       val vScroll = ev.getAxisValue(MotionEvent.AXIS_VSCROLL)
       if (vScroll != 0f) {
         enableFpsListener()

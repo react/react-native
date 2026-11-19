@@ -317,9 +317,21 @@ public open class ReactViewGroup public constructor(context: Context?) :
     return super.onHoverEvent(event)
   }
 
-  override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
-    // We do not dispatch the motion event if its children are not supposed to receive it
+  override fun onInterceptHoverEvent(event: MotionEvent): Boolean {
+    // We keep the hover event for this view if the children are not supposed to receive it.
     if (!canChildrenBeTouchTarget(pointerEvents)) {
+      return true
+    }
+    return super.onInterceptHoverEvent(event)
+  }
+
+  override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
+    // We do not dispatch the motion event if its children are not supposed to receive it. A hover
+    // event still reaches a view that is a touch target, and onInterceptHoverEvent keeps it there.
+    if (
+        !canChildrenBeTouchTarget(pointerEvents) &&
+            !(isHoverEvent(ev) && canBeTouchTarget(pointerEvents))
+    ) {
       return false
     }
 
@@ -1155,5 +1167,13 @@ public open class ReactViewGroup public constructor(context: Context?) :
     private fun setViewClipped(view: View, clipped: Boolean) {
       view.setTag(R.id.view_clipped, clipped)
     }
+
+    private fun isHoverEvent(event: MotionEvent): Boolean =
+        when (event.actionMasked) {
+          MotionEvent.ACTION_HOVER_ENTER,
+          MotionEvent.ACTION_HOVER_MOVE,
+          MotionEvent.ACTION_HOVER_EXIT -> true
+          else -> false
+        }
   }
 }

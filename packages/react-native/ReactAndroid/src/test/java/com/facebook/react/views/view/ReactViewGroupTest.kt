@@ -12,12 +12,15 @@ import android.content.Context
 import android.graphics.BlendMode
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.view.InputDevice
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.facebook.react.R
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.HasElevatedDescendantCache
+import com.facebook.react.uimanager.PointerEvents
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -264,6 +267,79 @@ class ReactViewGroupTest {
     // cached result must be unaffected.
     HasElevatedDescendantCache.invalidateAncestors(inner)
     assertThat(outer.hasOverlappingRendering()).isTrue()
+  }
+
+  @Test
+  fun `pointer events - a box-only view receives hover and keeps it from its children`() {
+    val (rvg, child) = hoverTarget(PointerEvents.BOX_ONLY)
+    var viewHovered = false
+    var childHovered = false
+    rvg.setOnHoverListener { _, _ ->
+      viewHovered = true
+      true
+    }
+    child.setOnHoverListener { _, _ ->
+      childHovered = true
+      true
+    }
+
+    dispatchHover(rvg, MotionEvent.ACTION_HOVER_ENTER)
+
+    assertThat(viewHovered).isTrue()
+    assertThat(childHovered).isFalse()
+  }
+
+  @Test
+  fun `pointer events - a none view and its children receive no hover`() {
+    val (rvg, child) = hoverTarget(PointerEvents.NONE)
+    var hovered = false
+    rvg.setOnHoverListener { _, _ ->
+      hovered = true
+      true
+    }
+    child.setOnHoverListener { _, _ ->
+      hovered = true
+      true
+    }
+
+    assertThat(dispatchHover(rvg, MotionEvent.ACTION_HOVER_ENTER)).isFalse()
+    assertThat(hovered).isFalse()
+  }
+
+  @Test
+  fun `pointer events - a box-only view keeps other generic motion events from its children`() {
+    val (rvg, child) = hoverTarget(PointerEvents.BOX_ONLY)
+    var childReceived = false
+    child.setOnGenericMotionListener { _, _ ->
+      childReceived = true
+      true
+    }
+    val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_SCROLL, 50f, 50f, 0)
+    event.source = InputDevice.SOURCE_MOUSE
+
+    assertThat(rvg.dispatchGenericMotionEvent(event)).isFalse()
+    assertThat(childReceived).isFalse()
+    event.recycle()
+  }
+
+  private fun hoverTarget(pointerEvents: PointerEvents): Pair<ReactViewGroup, View> {
+    val rvg = ReactViewGroup(context)
+    rvg.pointerEvents = pointerEvents
+    val child = View(context)
+    rvg.addView(child)
+    child.layout(0, 0, 100, 100)
+    rvg.layout(0, 0, 100, 100)
+    return rvg to child
+  }
+
+  private fun dispatchHover(view: View, action: Int): Boolean {
+    val event = MotionEvent.obtain(0L, 0L, action, 50f, 50f, 0)
+    event.source = InputDevice.SOURCE_STYLUS
+    return try {
+      view.dispatchGenericMotionEvent(event)
+    } finally {
+      event.recycle()
+    }
   }
 
   // Mirrors the ViewManager mount/unmount hooks: attach/detach the child, then refresh the cache.
