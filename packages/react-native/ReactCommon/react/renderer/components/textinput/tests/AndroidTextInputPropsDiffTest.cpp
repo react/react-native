@@ -39,6 +39,22 @@ TEST(AndroidTextInputPropsDiffTest, colorIsSent) {
   });
 }
 
+TEST(AndroidTextInputPropsDiffTest, removedColorsAreSentAsNull) {
+  using folly::dynamic;
+  for (const auto* prop :
+       {"placeholderTextColor",
+        "selectionColor",
+        "selectionHandleColor",
+        "cursorColor",
+        "underlineColorAndroid",
+        "textShadowColor"}) {
+    expectPayloadsMatchRawProps<AndroidTextInputProps>({
+        {dynamic::object(prop, static_cast<int32_t>(0xFFFF0000))},
+        {dynamic::object(prop, nullptr)},
+    });
+  }
+}
+
 } // namespace facebook::react
 
 #endif
