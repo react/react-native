@@ -158,6 +158,7 @@ AndroidTextInputProps::AndroidTextInputProps(
           {false})),
       fontWeight(convertRawProp(context, rawProps, "fontWeight", sourceProps.fontWeight, {})),
       fontFamily(convertRawProp(context, rawProps, "fontFamily", sourceProps.fontFamily, {})),
+      fontVariant(convertRawProp(context, rawProps, "fontVariant", sourceProps.fontVariant, {})),
       onKeyPress(convertRawProp(context, rawProps, "onKeyPress", sourceProps.onKeyPress, {false})),
       onSelectionChange(convertRawProp(context, rawProps,
           "onSelectionChange",
@@ -244,6 +245,7 @@ void AndroidTextInputProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(includeFontPadding);
     RAW_SET_PROP_SWITCH_CASE_BASIC(fontWeight);
     RAW_SET_PROP_SWITCH_CASE_BASIC(fontFamily);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(fontVariant);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onKeyPress);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onSelectionChange);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onContentSizeChange);
@@ -647,6 +649,11 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
 
   if (fontFamily != oldProps->fontFamily) {
     result["fontFamily"] = fontFamily;
+  }
+
+  if (fontVariant != oldProps->fontVariant) {
+    result["fontVariant"] =
+        fontVariant.has_value() ? toDynamic(fontVariant.value()) : nullptr;
   }
 
   if (textAttributes.fontVariationSettings !=

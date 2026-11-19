@@ -67,6 +67,18 @@ TEST(AndroidTextInputPropsDiffTest, removedFontSizeIsSentAsNull) {
   });
 }
 
+// ReactTextInputManager reads an array, and supports values that the
+// FontVariant enum in the text attributes can't represent.
+TEST(AndroidTextInputPropsDiffTest, fontVariantIsSentAsAnArray) {
+  using folly::dynamic;
+  expectPayloadsMatchRawProps<AndroidTextInputProps>({
+      {dynamic::object(
+          "fontVariant", dynamic::array("small-caps", "common-ligatures"))},
+      {dynamic::object("fontVariant", dynamic::array())},
+      {dynamic::object("fontVariant", nullptr)},
+  });
+}
+
 } // namespace facebook::react
 
 #endif
