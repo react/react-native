@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "jni.h"
+#include "jni.h" // @manual=fbsource//xplat/yoga/lib/jni:jni
 
 namespace YGJNIVanilla {
 void registerNatives(JNIEnv* env);
