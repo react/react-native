@@ -83,6 +83,15 @@ interface Spec extends TurboModule {
     viewportOffsetX?: number,
     viewportOffsetY?: number,
   ) => RootTag;
+  updateSurfaceConstraints: (
+    surfaceId: RootTag,
+    viewportWidth: number,
+    viewportHeight: number,
+    devicePixelRatio: number,
+    fontScale: number,
+    viewportOffsetX: number,
+    viewportOffsetY: number,
+  ) => void;
   stopSurface: (surfaceId: RootTag) => void;
   enqueueNativeEvent: (
     shadowNode: unknown /* ShadowNode */,

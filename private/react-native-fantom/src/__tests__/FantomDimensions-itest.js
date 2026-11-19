@@ -13,9 +13,12 @@
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {Root, RootConfig} from '@react-native/fantom';
+import type {HostInstance} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
+import {createRef} from 'react';
 import {Dimensions, PixelRatio, View, useWindowDimensions} from 'react-native';
 
 let roots: Array<Root>;
@@ -173,6 +176,217 @@ it('restores the latest surviving root and then defaults when all roots are dest
   }
   expect(PixelRatio.get()).toBe(3);
   expect(PixelRatio.getFontScale()).toBe(1);
+});
+
+it('updates font scale and notifies mounted components without changing other metrics', () => {
+  const root = createRoot({
+    viewportWidth: 640,
+    viewportHeight: 480,
+    devicePixelRatio: 2,
+    viewportOffsetX: 10,
+    viewportOffsetY: 20,
+  });
+  Fantom.runTask(() => root.render(<WindowMetrics />));
+
+  const previousDimensions = Dimensions.get('window');
+
+  root.updateSurfaceConstraints({fontScale: 1.5});
+
+  expect(root.getRenderedOutput({props: ['testID']}).toJSX()).toEqual(
+    <rn-view testID="640x480@2:1.5" />,
+  );
+  for (const dimension of ['window', 'screen']) {
+    expect(Dimensions.get(dimension)).toEqual({
+      width: 640,
+      height: 480,
+      scale: 2,
+      fontScale: 1.5,
+    });
+  }
+  expect(previousDimensions.fontScale).toBe(1);
+  expect(PixelRatio.get()).toBe(2);
+  expect(PixelRatio.getFontScale()).toBe(1.5);
+});
+
+it('updates native constraints on the UI thread before running JavaScript', () => {
+  const root = createRoot({
+    viewportWidth: 120,
+    viewportHeight: 140,
+    devicePixelRatio: 2,
+  });
+  const viewRef = createRef<HostInstance>();
+  Fantom.runTask(() => {
+    root.render(
+      <View
+        ref={viewRef}
+        collapsable={false}
+        style={{width: '100%', height: '100%'}}>
+        <WindowMetrics />
+      </View>,
+    );
+  });
+  const view = nullthrows(viewRef.current);
+  const previousDimensions = Dimensions.get('window');
+  const changes = jest.fn();
+  const subscription = Dimensions.addEventListener('change', changes);
+
+  try {
+    Fantom.runOnUIThread(() => {
+      root.enqueueUpdateSurfaceConstraints({
+        viewportWidth: 200,
+        viewportHeight: 240,
+        devicePixelRatio: 4,
+        fontScale: 1.5,
+        viewportOffsetX: 25,
+        viewportOffsetY: 35,
+      });
+    });
+
+    const bounds = view.getBoundingClientRect();
+    expect(bounds.x).toBe(25);
+    expect(bounds.y).toBe(35);
+    expect(bounds.width).toBe(200);
+    expect(bounds.height).toBe(240);
+    expect(Dimensions.get('window')).toBe(previousDimensions);
+    expect(changes).not.toHaveBeenCalled();
+    expect(root.getRenderedOutput({props: ['testID']}).toJSX()).toEqual(
+      <rn-view>
+        <rn-view testID="120x140@2:1" />
+      </rn-view>,
+    );
+
+    Fantom.runWorkLoop();
+
+    expect(changes).toHaveBeenCalledTimes(1);
+    expect(Dimensions.get('window')).toEqual({
+      width: 200,
+      height: 240,
+      scale: 4,
+      fontScale: 1.5,
+    });
+    expect(previousDimensions).toEqual({
+      width: 120,
+      height: 140,
+      scale: 2,
+      fontScale: 1,
+    });
+    expect(root.getRenderedOutput({props: ['testID']}).toJSX()).toEqual(
+      <rn-view>
+        <rn-view testID="200x240@4:1.5" />
+      </rn-view>,
+    );
+    expect(viewRef.current).toBe(view);
+  } finally {
+    subscription.remove();
+  }
+});
+
+it('updates constraints within an existing JavaScript task without nesting the work loop', () => {
+  const root = createRoot({viewportWidth: 120, viewportHeight: 140});
+  Fantom.runTask(() => root.render(<WindowMetrics />));
+
+  Fantom.runTask(() => {
+    root.updateSurfaceConstraints({viewportWidth: 200, fontScale: 1.5});
+    expect(Dimensions.get('window').width).toBe(120);
+  });
+
+  expect(Dimensions.get('window')).toEqual({
+    width: 200,
+    height: 140,
+    scale: 3,
+    fontScale: 1.5,
+  });
+  expect(root.getRenderedOutput({props: ['testID']}).toJSX()).toEqual(
+    <rn-view testID="200x140@3:1.5" />,
+  );
+});
+
+it('merges queued partial updates without losing earlier native changes', () => {
+  const root = createRoot({
+    viewportWidth: 120,
+    viewportHeight: 140,
+    devicePixelRatio: 2,
+  });
+  const changes: Array<string> = [];
+  const subscription = Dimensions.addEventListener('change', ({window}) => {
+    changes.push(
+      `${window.width}x${window.height}@${window.scale}:${window.fontScale}`,
+    );
+  });
+
+  try {
+    Fantom.runOnUIThread(() => {
+      root.enqueueUpdateSurfaceConstraints({viewportWidth: 210});
+      root.enqueueUpdateSurfaceConstraints({fontScale: 1.75});
+    });
+    expect(changes).toEqual([]);
+
+    Fantom.runWorkLoop();
+
+    expect(changes).toEqual(['210x140@2:1', '210x140@2:1.75']);
+    expect(Dimensions.get('window')).toEqual({
+      width: 210,
+      height: 140,
+      scale: 2,
+      fontScale: 1.75,
+    });
+  } finally {
+    subscription.remove();
+  }
+});
+
+it('applies pixel-ratio changes to native layout rounding', () => {
+  const root = createRoot({devicePixelRatio: 2});
+  const viewRef = createRef<HostInstance>();
+  Fantom.runTask(() => {
+    root.render(<View ref={viewRef} style={{width: 10.25, height: 20.25}} />);
+  });
+  const view = nullthrows(viewRef.current);
+  expect(view.getBoundingClientRect().width).toBe(10.5);
+  expect(view.getBoundingClientRect().height).toBe(20.5);
+
+  root.updateSurfaceConstraints({devicePixelRatio: 4});
+
+  expect(view.getBoundingClientRect().width).toBe(10.25);
+  expect(view.getBoundingClientRect().height).toBe(20.25);
+  expect(PixelRatio.get()).toBe(4);
+});
+
+it('updates existing dimensions without changing root creation order', () => {
+  const first = createRoot({viewportWidth: 100});
+  const second = createRoot({viewportWidth: 200});
+  const third = createRoot({viewportWidth: 300});
+  expect(warn).toHaveBeenCalledTimes(2);
+
+  first.updateSurfaceConstraints({viewportWidth: 400});
+
+  expect(warn).toHaveBeenCalledTimes(2);
+  third.destroy();
+  roots.pop();
+  expect(Dimensions.get('window').width).toBe(200);
+  second.destroy();
+  roots.pop();
+  expect(Dimensions.get('window').width).toBe(400);
+  first.destroy();
+  roots.pop();
+  expect(Dimensions.get('window').width).toBe(390);
+});
+
+it('does not restore dimensions from a queued update after root destruction', () => {
+  const root = createRoot({viewportWidth: 640});
+  Fantom.runOnUIThread(() => {
+    root.enqueueUpdateSurfaceConstraints({viewportWidth: 900});
+  });
+
+  root.destroy();
+  roots.pop();
+
+  expect(Dimensions.get('window').width).toBe(390);
+  expect(() =>
+    root.enqueueUpdateSurfaceConstraints({viewportWidth: 900}),
+  ).toThrow('Cannot update the constraints of a destroyed root.');
+  createRoot();
+  expect(warn).not.toHaveBeenCalled();
 });
 
 it('notifies mounted components when another root changes the metrics', () => {
