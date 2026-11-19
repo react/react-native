@@ -20,6 +20,8 @@ import EventTarget from '../events/EventTarget';
 import {EVENT_TARGET_GET_THE_PARENT_KEY} from '../events/internals/EventTargetInternals';
 import {createNodeList} from '../oldstylecollections/NodeList';
 import {
+  INSTANCE_HANDLE_KEY,
+  OWNER_DOCUMENT_KEY,
   getNativeNodeReference,
   getOwnerDocument,
   getPublicInstanceFromInstanceHandle,
@@ -43,6 +45,9 @@ import NativeDOM from './specs/NativeDOM';
 
 /** @build-types protected-constructor */
 class ReadOnlyNode extends EventTarget {
+  [INSTANCE_HANDLE_KEY]: InstanceHandle;
+  [OWNER_DOCUMENT_KEY]: ReactNativeDocument | null;
+
   constructor(
     instanceHandle: InstanceHandle,
     // This will be null for the document node itself.
@@ -323,9 +328,16 @@ setPlatformObject(ReadOnlyNode);
     'parentNode',
   )?.get;
   if (parentNodeGetter != null) {
-    // $FlowExpectedError[prop-missing]
-    // $FlowExpectedError[invalid-computed-prop]
-    ReadOnlyNode.prototype[EVENT_TARGET_GET_THE_PARENT_KEY] = parentNodeGetter;
+    Object.defineProperty(
+      ReadOnlyNode.prototype,
+      EVENT_TARGET_GET_THE_PARENT_KEY,
+      {
+        value: parentNodeGetter,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      },
+    );
   }
 }
 

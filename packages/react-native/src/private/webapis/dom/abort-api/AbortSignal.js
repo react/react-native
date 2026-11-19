@@ -41,8 +41,8 @@ import EventTarget from '../events/EventTarget';
 import {dispatchTrustedEvent} from '../events/internals/EventTargetInternals';
 import {AbortController} from './AbortController';
 
-const ABORTED_KEY: symbol = Symbol('aborted');
-const REASON_KEY: symbol = Symbol('reason');
+const ABORTED_KEY = Symbol('aborted');
+const REASON_KEY = Symbol('reason');
 
 /**
  * The signal class.
@@ -131,18 +131,13 @@ export class AbortSignal extends EventTarget {
     return controller.signal;
   }
 
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [ABORTED_KEY]: boolean = false;
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [REASON_KEY]: unknown;
 
   /**
    * Returns `true` if this `AbortSignal`'s `AbortController` has signaled to abort, and `false` otherwise.
    */
   get aborted(): boolean {
-    // $FlowExpectedError[prop-missing]
     const aborted = this[ABORTED_KEY];
     if (typeof aborted !== 'boolean') {
       throw new TypeError(
@@ -156,7 +151,6 @@ export class AbortSignal extends EventTarget {
   }
 
   get reason(): unknown {
-    // $FlowExpectedError[prop-missing]
     return this[REASON_KEY];
   }
 
@@ -192,14 +186,10 @@ export function abortSignal(
     'AbortError',
   ),
 ): void {
-  // $FlowExpectedError[invalid-compare]
-  // $FlowExpectedError[prop-missing]
   if (signal[ABORTED_KEY] !== false) {
     return;
   }
-  // $FlowExpectedError[prop-missing]
   signal[ABORTED_KEY] = true;
-  // $FlowExpectedError[prop-missing]
   signal[REASON_KEY] = reason;
   dispatchTrustedEvent(signal, new Event('abort'));
 }

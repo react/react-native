@@ -23,7 +23,7 @@ import {setIsTrusted} from './EventInternals';
  * Use this symbol as key for a method to implement the "get the parent"
  * algorithm in an `EventTarget` subclass.
  */
-export const EVENT_TARGET_GET_THE_PARENT_KEY: symbol = Symbol(
+export const EVENT_TARGET_GET_THE_PARENT_KEY = Symbol(
   'EventTarget[get the parent]',
 );
 
@@ -43,11 +43,9 @@ export const EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY: symbol = Symbol(
  * This is only exposed to implement the method in `EventTarget`.
  * Do NOT use this directly (use the `dispatchTrustedEvent` method instead).
  */
-export const INTERNAL_DISPATCH_METHOD_KEY: symbol = Symbol(
-  'EventTarget[dispatch]',
-);
+export const INTERNAL_DISPATCH_METHOD_KEY = Symbol('EventTarget[dispatch]');
 
-const EVENT_DISPATCH_PARENT_CACHE_KEY: symbol = Symbol(
+const EVENT_DISPATCH_PARENT_CACHE_KEY = Symbol(
   'EventTarget[dispatch parent cache]',
 );
 
@@ -61,7 +59,6 @@ export function getEventTargetParent(target: EventTarget): EventTarget | null {
   if (cached !== undefined) {
     return cached;
   }
-  // $FlowExpectedError[prop-missing] symbol-keyed method
   const parent: EventTarget | null = target[EVENT_TARGET_GET_THE_PARENT_KEY]();
   // $FlowExpectedError[prop-missing] symbol-keyed slot
   target[EVENT_DISPATCH_PARENT_CACHE_KEY] = parent;
@@ -91,7 +88,6 @@ export function dispatchTrustedEvent(
 ): boolean {
   setIsTrusted(event, true);
 
-  // $FlowExpectedError[prop-missing]
   return eventTarget[INTERNAL_DISPATCH_METHOD_KEY](
     event,
     rethrowListenerErrors,

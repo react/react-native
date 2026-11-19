@@ -18,6 +18,8 @@ exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WI
 
 exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_PROMISE_WITHOUT_TYPE 1`] = `"Module NativeSampleTurboModule: Generic 'Promise' must have type parameters."`;
 
+exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_RECORD_WITH_NUMBER_KEY 1`] = `"Module NativeSampleTurboModule: 'Record' is only supported as Record<string, T>."`;
+
 exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_UNNAMED_PARAMS 1`] = `"Module NativeSampleTurboModule: All function parameters must be named."`;
 
 exports[`RN Codegen TypeScript Parser Fails with error message NUMERIC_VALUES_ENUM_NATIVE_MODULE 1`] = `"Module NativeSampleTurboModule: Failed parsing the enum SomeEnum in NativeSampleTurboModule with the error: Enum values can not be mixed. They all must be either blank, number, or string values."`;
@@ -3211,6 +3213,123 @@ exports[`RN Codegen TypeScript Parser can generate fixture NATIVE_MODULE_WITH_PR
                 }
               },
               'params': []
+            }
+          }
+        ]
+      },
+      'moduleName': 'SampleTurboModule'
+    }
+  }
+}"
+`;
+
+exports[`RN Codegen TypeScript Parser can generate fixture NATIVE_MODULE_WITH_RECORD 1`] = `
+"{
+  'modules': {
+    'NativeSampleTurboModule': {
+      'type': 'NativeModule',
+      'aliasMap': {
+        'Rule': {
+          'type': 'ObjectTypeAnnotation',
+          'properties': [
+            {
+              'name': 'target',
+              'optional': false,
+              'typeAnnotation': {
+                'type': 'StringTypeAnnotation'
+              }
+            },
+            {
+              'name': 'matched',
+              'optional': false,
+              'typeAnnotation': {
+                'type': 'GenericObjectTypeAnnotation',
+                'dictionaryValueType': {
+                  'type': 'GenericObjectTypeAnnotation'
+                }
+              }
+            }
+          ]
+        }
+      },
+      'enumMap': {},
+      'spec': {
+        'eventEmitters': [],
+        'methods': [
+          {
+            'name': 'setOptions',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'VoidTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'options',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'GenericObjectTypeAnnotation',
+                    'dictionaryValueType': {
+                      'type': 'GenericObjectTypeAnnotation'
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            'name': 'getOptions',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'GenericObjectTypeAnnotation',
+                'dictionaryValueType': {
+                  'type': 'NumberTypeAnnotation'
+                }
+              },
+              'params': []
+            }
+          },
+          {
+            'name': 'getNames',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'GenericObjectTypeAnnotation',
+                'dictionaryValueType': {
+                  'type': 'NullableTypeAnnotation',
+                  'typeAnnotation': {
+                    'type': 'StringTypeAnnotation'
+                  }
+                }
+              },
+              'params': []
+            }
+          },
+          {
+            'name': 'configure',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'VoidTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'rules',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'ArrayTypeAnnotation',
+                    'elementType': {
+                      'type': 'TypeAliasTypeAnnotation',
+                      'name': 'Rule'
+                    }
+                  }
+                }
+              ]
             }
           }
         ]

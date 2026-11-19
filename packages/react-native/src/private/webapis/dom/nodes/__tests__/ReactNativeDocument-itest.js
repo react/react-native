@@ -52,7 +52,12 @@ describe('ReactNativeDocument', () => {
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
-      root.render(<View ref={nodeRef} />);
+      root.render(
+        <View ref={nodeRef} collapsable={false}>
+          <View collapsable={false} />
+          <View collapsable={false} />
+        </View>,
+      );
     });
 
     const element = nullthrows(nodeRef.current);
@@ -65,6 +70,29 @@ describe('ReactNativeDocument', () => {
     expect(documentElement.childNodes.length).toBe(1);
     expect(documentElement.childNodes[0]).toBe(element);
     expect(element.parentNode).toBe(documentElement);
+
+    const expectedChildren = [element.firstChild, element.lastChild];
+    const nodes = element.childNodes;
+    const nodeIterator: IteratorObject<unknown> = nodes[Symbol.iterator]();
+    expect(nodes.length).toBe(2);
+    expect(nodes.item(0)).toBe(expectedChildren[0]);
+    expect(nodes.item(1)).toBe(expectedChildren[1]);
+    expect(Array.from(nodes)).toEqual(expectedChildren);
+    expect([...nodes]).toEqual(expectedChildren);
+    expect(nodeIterator[Symbol.iterator]()).toBe(nodeIterator);
+    expect([...nodeIterator]).toEqual(expectedChildren);
+
+    const children = element.children;
+    const childIterator: IteratorObject<unknown> = children[Symbol.iterator]();
+    expect(children.length).toBe(2);
+    expect(children.item(0)).toBe(expectedChildren[0]);
+    expect(children.item(1)).toBe(expectedChildren[1]);
+    expect(Array.from(children)).toEqual(expectedChildren);
+    expect([...children]).toEqual(expectedChildren);
+    expect(childIterator[Symbol.iterator]()).toBe(childIterator);
+    expect([...childIterator]).toEqual(expectedChildren);
+
+    Fantom.runTask(() => root.destroy());
   });
 
   it('allows traversal through document-specific methods', () => {

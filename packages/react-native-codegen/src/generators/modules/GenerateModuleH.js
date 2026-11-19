@@ -215,11 +215,25 @@ const FileTemplate = ({
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
+// JSI provides the argument pointer and corresponding count to generated invokers.
+#ifdef __clang__
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#endif
+
 namespace facebook::react {
 
 ${modules.join('\n\n')}
 
 } // namespace facebook::react
+
+#ifdef __clang__
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic pop
+#endif
+#endif
 `;
 };
 

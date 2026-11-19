@@ -10,17 +10,17 @@
 
 import type {ViewStyle} from './StyleSheetTypes';
 
+type MutableViewStyle = {-readonly [K in keyof ViewStyle]: ViewStyle[K]};
+
 export default function splitLayoutProps(props: ?ViewStyle): {
   outer: ?ViewStyle,
   inner: ?ViewStyle,
 } {
-  let outer: ?ViewStyle = null;
-  let inner: ?ViewStyle = null;
+  let outer: ?MutableViewStyle = null;
+  let inner: ?MutableViewStyle = null;
 
   if (props != null) {
-    // $FlowFixMe[incompatible-exact] Will contain a subset of keys from `props`.
     outer = {};
-    // $FlowFixMe[incompatible-exact] Will contain a subset of keys from `props`.
     inner = {};
 
     for (const prop of Object.keys(props)) {
@@ -53,13 +53,11 @@ export default function splitLayoutProps(props: ?ViewStyle): {
         case 'rowGap':
         case 'columnGap':
         case 'gap':
-          // $FlowFixMe[cannot-write]
           // $FlowFixMe[incompatible-use]
           // $FlowFixMe[prop-missing]
           outer[prop] = props[prop];
           break;
         default:
-          // $FlowFixMe[cannot-write]
           // $FlowFixMe[incompatible-use]
           // $FlowFixMe[prop-missing]
           inner[prop] = props[prop];

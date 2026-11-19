@@ -283,6 +283,11 @@ using namespace facebook;
   return (RCTUIManager *)_uiManagerProxy;
 }
 
+- (RCTBridgeProxy *)object
+{
+  return self;
+}
+
 /**
  * NSProxy setup
  */
