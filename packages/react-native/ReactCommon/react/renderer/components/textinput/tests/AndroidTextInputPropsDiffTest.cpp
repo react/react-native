@@ -79,6 +79,18 @@ TEST(AndroidTextInputPropsDiffTest, fontVariantIsSentAsAnArray) {
   });
 }
 
+// ReactTextInputManager treats an empty string differently from null for these:
+// a blank IME action label, or a warning about an invalid value.
+TEST(AndroidTextInputPropsDiffTest, removedStringsAreSentAsNull) {
+  using folly::dynamic;
+  expectPayloadsMatchRawProps<AndroidTextInputProps>({
+      {dynamic::object("returnKeyLabel", "Go")("autoComplete", "email")(
+          "textAlign", "center")},
+      {dynamic::object("returnKeyLabel", nullptr)("autoComplete", nullptr)(
+          "textAlign", nullptr)},
+  });
+}
+
 } // namespace facebook::react
 
 #endif
