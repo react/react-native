@@ -81,7 +81,6 @@ Object.defineProperties(AbortController.prototype, {
   abort: {enumerable: true},
 });
 
-//$FlowExpectedError[cannot-write]
 Object.defineProperty(AbortController.prototype, Symbol.toStringTag, {
   configurable: true,
   value: 'AbortController',

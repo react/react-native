@@ -217,7 +217,6 @@ const Switch: component(
       native.value != null && native.value !== jsValue;
     if (
       shouldUpdateNativeSwitch &&
-      // $FlowFixMe[method-unbinding]
       nativeSwitchRef.current?.setNativeProps != null
     ) {
       if (Platform.OS === 'android') {

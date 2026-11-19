@@ -84,7 +84,6 @@ export const PerformanceEntry_public: typeof PerformanceEntry =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceEntry_public.prototype = PerformanceEntry.prototype;
 
 setPlatformObject(PerformanceEntry);

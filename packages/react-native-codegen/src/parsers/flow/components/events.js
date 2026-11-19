@@ -42,8 +42,6 @@ const {
 const {getTypeArguments} = require('../../utils');
 
 function getPropertyType(
-  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
-   * LTI update could not be added via codemod */
   name: string,
   optional: boolean,
   typeAnnotation: $FlowFixMe,

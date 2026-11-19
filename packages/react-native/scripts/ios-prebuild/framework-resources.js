@@ -171,7 +171,6 @@ function mergePrivacyManifests(
 
 /** Parses a single `PrivacyInfo.xcprivacy` (plist) file into an object. */
 function readPrivacyManifest(filePath /*: string */) /*: PrivacyManifest */ {
-  // $FlowFixMe[incompatible-return] plist.parse returns a loose PlistValue.
   return plist.parse(fs.readFileSync(filePath, 'utf8'));
 }
 

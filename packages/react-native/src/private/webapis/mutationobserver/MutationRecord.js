@@ -99,5 +99,4 @@ export const MutationRecord_public: typeof MutationRecord =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 MutationRecord_public.prototype = MutationRecord.prototype;

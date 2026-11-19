@@ -93,5 +93,4 @@ export const HTMLCollection_public: typeof HTMLCollection =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 HTMLCollection_public.prototype = HTMLCollection.prototype;

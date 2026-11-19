@@ -166,7 +166,6 @@ function createJSXElementForTestComparison(
   key?: ?string,
 ): React.Node {
   const Tag = type;
-  // $FlowFixMe[prop-missing] jsx_intrinsic_elements rollout
   return <Tag key={key} {...props} />;
 }
 

@@ -32,7 +32,6 @@ describe('Native Animated', () => {
   }
 
   function createViewInstance(): React.ElementRef<React.ElementType> {
-    // $FlowFixMe[incompatible-type]
     return {};
   }
 
@@ -111,7 +110,6 @@ describe('Native Animated', () => {
         expect.any(Number),
         0.5,
       );
-      // $FlowFixMe[method-unbinding]
       expect(ref.current?.setNativeProps).not.toHaveBeenCalled();
     });
 

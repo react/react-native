@@ -356,7 +356,6 @@ export function getDefinedEventHandlers(
     return [];
   }
   // WARNING: This uses React private API (fiber internals).
-  // $FlowExpectedError[incompatible-type]
   const memoizedProps = (
     instanceHandle as {memoizedProps?: {[key: string]: unknown}}
   ).memoizedProps;

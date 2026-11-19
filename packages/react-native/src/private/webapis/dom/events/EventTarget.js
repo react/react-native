@@ -226,7 +226,6 @@ export default class EventTarget {
    * from the bubble pass — it cannot be derived from `event.eventPhase`,
    * which is `AT_TARGET` during both passes through the target node.
    */
-  // $FlowExpectedError[unsupported-syntax]
   // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
     event: Event,
@@ -475,7 +474,6 @@ function invokeListeners(
     try {
       if (typeof callback === 'function') {
         callback.call(eventTarget, event);
-        // $FlowExpectedError[method-unbinding]
       } else if (typeof callback.handleEvent === 'function') {
         callback.handleEvent(event);
       }

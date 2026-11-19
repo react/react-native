@@ -2472,7 +2472,6 @@ function readMarker(
 ) /*: ?{targetUuid?: ?string, generatedSources?: {[key: string]: Array<string>}, scriptPhases?: {[key: string]: string}, linkedFrameworks?: Array<{id: string, frameworkName: string}>, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: unknown, buildSettingChanges?: Array<BuildSettingChange>, xcconfig?: XcconfigRecord, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, gitignore?: GitignoreRecord, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
-    // $FlowFixMe[incompatible-return] JSON.parse returns any
     return JSON.parse(fs.readFileSync(markerPath, 'utf8'));
   } catch {
     return null;
@@ -3213,7 +3212,6 @@ function removeSpmInjection(
   if (!fs.existsSync(markerPath)) {
     return {status: 'absent'};
   }
-  // $FlowFixMe[incompatible-type] JSON.parse returns any
   const marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
   const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
   let text = fs.readFileSync(pbxprojPath, 'utf8');

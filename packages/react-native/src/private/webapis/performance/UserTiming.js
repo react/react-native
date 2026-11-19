@@ -81,7 +81,6 @@ export const PerformanceMark: typeof PerformanceMarkTemplate =
     this.__detail = markOptions?.detail ?? null;
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceMark.prototype = PerformanceMarkTemplate.prototype;
 
 class PerformanceMeasureTemplate extends PerformanceEntry {
@@ -117,7 +116,6 @@ export const PerformanceMeasure: typeof PerformanceMeasureTemplate =
     this.__detail = init.detail ?? null;
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceMeasure.prototype = PerformanceMeasureTemplate.prototype;
 
 export const PerformanceMeasure_public: typeof PerformanceMeasure =
@@ -129,5 +127,4 @@ export const PerformanceMeasure_public: typeof PerformanceMeasure =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceMeasure_public.prototype = PerformanceMeasure.prototype;

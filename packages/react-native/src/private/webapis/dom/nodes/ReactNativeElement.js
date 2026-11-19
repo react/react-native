@@ -288,7 +288,6 @@ class ReactNativeElement extends ReadOnlyElement {
   // pre-resolved on the event during construction. Reading them directly
   // avoids the `getEventTypePropName(eventType, isCapture)` hash lookup per
   // ancestor per phase.
-  // $FlowExpectedError[unsupported-syntax]
   // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
     event: Event,
@@ -356,7 +355,6 @@ export const ReactNativeElement_public: typeof ReactNativeElement =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReactNativeElement_public.prototype = ReactNativeElement.prototype;
 
 // The public imperative EventTarget API (`addEventListener`,

@@ -23,11 +23,8 @@ export type ExtendedError = Error &
     cause?: {
       name: string,
       message: string,
-      // $FlowFixMe[unclear-type]
       stackElements?: ReadonlyArray<Object>,
-      // $FlowFixMe[unclear-type]
       stackSymbols?: ReadonlyArray<Object>,
-      // $FlowFixMe[unclear-type]
       stackReturnAddresses?: ReadonlyArray<Object>,
     },
   };

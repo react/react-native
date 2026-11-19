@@ -124,7 +124,6 @@ class DrawerLayoutAndroid
    * LTI update could not be added via codemod */
   _onDrawerSlide = event => {
     if (this.props.onDrawerSlide) {
-      // $FlowFixMe[unused-promise]
       this.props.onDrawerSlide(event);
     }
     if (this.props.keyboardDismissMode === 'on-drag') {

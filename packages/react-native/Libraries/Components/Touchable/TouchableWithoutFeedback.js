@@ -287,6 +287,5 @@ export default function TouchableWithoutFeedback(
     elementProps.accessibilityLabel = accessibilityLabel;
   }
 
-  // $FlowFixMe[incompatible-type]
   return cloneElement(element, elementProps, ...children);
 }

@@ -810,8 +810,6 @@ type ScrollViewBaseProps = Readonly<{
    *
    * See [RefreshControl](docs/refreshcontrol.html).
    */
-  /* $FlowFixMe[unclear-type] - how to handle generic type without existential
-   * operator? */
   refreshControl?: ?React.MixedElement,
   children?: React.Node,
   /**
@@ -1113,7 +1111,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
         UIManager.measureLayout(
           nodeHandle,
           nullthrows(findNodeHandle<$FlowFixMe>(this)),
-          // $FlowFixMe[method-unbinding] added when improving typing for this parameters
           /* $FlowFixMe[incompatible-type] Error exposed after fixing this
            * typing unsoundness in flow */
           this._textInputFocusError,
@@ -1123,7 +1120,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
         nodeHandle.measureLayout(
           this._innerView.nativeInstance,
           this._inputMeasureAndScrollToKeyboard,
-          // $FlowFixMe[method-unbinding] added when improving typing for this parameters
           /* $FlowFixMe[incompatible-type] Error exposed after fixing this
            * typing unsoundness in flow */
           this._textInputFocusError,
@@ -1797,14 +1793,10 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       this.props.contentContainerStyle,
     ];
     if (__DEV__ && this.props.style !== undefined) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
       const style = flattenStyle(this.props.style);
       const childLayoutProps = (
         ['alignItems', 'justifyContent'] as const
-      ).filter(
-        // $FlowFixMe[incompatible-use]
-        prop => style && style[prop] !== undefined,
-      );
+      ).filter(prop => style && style[prop] !== undefined);
       invariant(
         childLayoutProps.length === 0,
         'ScrollView child layout (' +
@@ -1839,7 +1831,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
           return (
             <StickyHeaderComponent
               key={key}
-              /* $FlowFixMe[incompatible-type] */
               ref={ref => this._setStickyHeaderRef(key, ref)}
               nextHeaderLayoutY={this._headerLayoutYs.get(
                 this._getKeyForIndex(nextIndex, children),
@@ -1973,7 +1964,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       if (Platform.OS === 'ios') {
         // On iOS the RefreshControl is a child of the ScrollView.
         return (
-          // $FlowFixMe[incompatible-type] - Flow only knows element refs.
           <NativeScrollView {...props} ref={scrollViewRef}>
             {refreshControl}
             {contentContainer}
@@ -1995,7 +1985,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
             // Nested scroll should always be enabled to allow the child scroll view to handle events before passing them to the refresh control parent
             nestedScrollEnabled={props.nestedScrollEnabled ?? true}
             style={StyleSheet.compose(baseStyle, inner)}
-            // $FlowFixMe[incompatible-type] - Flow only knows element refs.
             ref={scrollViewRef}>
             {contentContainer}
           </NativeScrollView>,
@@ -2003,7 +1992,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       }
     }
     return (
-      // $FlowFixMe[incompatible-type] - Flow only knows element refs.
       <NativeScrollView {...props} ref={scrollViewRef}>
         {contentContainer}
       </NativeScrollView>

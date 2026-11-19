@@ -271,5 +271,4 @@ export const ReadOnlyElement_public: typeof ReadOnlyElement =
     throw new TypeError("Failed to construct 'Element': Illegal constructor");
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyElement_public.prototype = ReadOnlyElement.prototype;

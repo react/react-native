@@ -113,5 +113,4 @@ export const NodeList_public: typeof NodeList =
     throw new TypeError("Failed to construct 'NodeList': Illegal constructor");
   };
 
-// $FlowExpectedError[prop-missing]
 NodeList_public.prototype = NodeList.prototype;

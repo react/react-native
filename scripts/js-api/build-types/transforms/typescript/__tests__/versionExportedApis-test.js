@@ -11,7 +11,6 @@
 const createVersionExportedApis = require('../versionExportedApis');
 const babel = require('@babel/core');
 const {diff} = require('jest-diff');
-// $FlowFixMe[untyped-import] prettier flow types don't exist on GitHub repo
 const prettier = require('prettier');
 
 async function translate(code: string): Promise<string> {

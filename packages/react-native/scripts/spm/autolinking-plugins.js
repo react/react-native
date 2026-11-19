@@ -116,7 +116,6 @@ function discoverPlugins(
     if (denied.has(dep.name)) {
       continue;
     }
-    // $FlowFixMe[incompatible-use] config has a dynamic shape
     const rel = readSwiftpmConfig(
       dep.root,
       readConfig(dep.root),
@@ -145,11 +144,9 @@ function discoverPlugins(
     const resolved =
       typeof fn === 'function'
         ? fn
-        : // $FlowFixMe[incompatible-use] interop shapes
-          typeof fn?.default === 'function'
+        : typeof fn?.default === 'function'
           ? fn.default
-          : // $FlowFixMe[incompatible-use]
-            typeof fn?.plugin === 'function'
+          : typeof fn?.plugin === 'function'
             ? fn.plugin
             : null;
     if (resolved == null) {
@@ -215,17 +212,11 @@ function invokePlugins(
           `${typeof result}; expected an object or undefined.`,
       );
     }
-    // $FlowFixMe[incompatible-use] validated field-by-field below
     const pkgs = result.packageDependencies ?? [];
-    // $FlowFixMe[incompatible-use]
     const prods = result.productDependencies ?? [];
-    // $FlowFixMe[incompatible-use]
     const srcs = result.generatedSources ?? [];
-    // $FlowFixMe[incompatible-use]
     const rawFrameworks = result.flavoredFrameworks ?? [];
-    // $FlowFixMe[incompatible-use]
     const rawWatch = result.watchPaths ?? [];
-    // $FlowFixMe[incompatible-use]
     const rawScriptPhases = result.scriptPhases ?? [];
     if (!Array.isArray(rawFrameworks)) {
       throw new Error(

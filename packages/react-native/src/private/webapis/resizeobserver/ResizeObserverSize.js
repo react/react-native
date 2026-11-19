@@ -66,5 +66,4 @@ export const ResizeObserverSize_public: typeof ResizeObserverSize =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ResizeObserverSize_public.prototype = ResizeObserverSize.prototype;

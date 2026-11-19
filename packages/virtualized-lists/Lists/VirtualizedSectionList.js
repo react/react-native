@@ -610,7 +610,6 @@ function ItemWithSeparator<ItemT>(
       LeadingSeparatorComponent
     ) : (
       // $FlowFixMe[not-a-component]
-      // $FlowFixMe[incompatible-type]
       <LeadingSeparatorComponent
         highlighted={leadingSeparatorHiglighted}
         {...leadingSeparatorProps}
@@ -622,7 +621,6 @@ function ItemWithSeparator<ItemT>(
       SeparatorComponent
     ) : (
       // $FlowFixMe[not-a-component]
-      // $FlowFixMe[incompatible-type]
       <SeparatorComponent
         highlighted={separatorHighlighted}
         {...separatorProps}

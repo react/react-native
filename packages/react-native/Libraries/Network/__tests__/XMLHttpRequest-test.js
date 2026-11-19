@@ -98,7 +98,6 @@ describe('XMLHttpRequest', function () {
     expect(console.warn).toBeCalledWith(
       "The provided value 'arrayblobbuffertextfile' is not a valid 'responseType'.",
     );
-    // $FlowFixMe[prop-missing]
     console.warn.mockRestore();
 
     xhr.responseType = 'arraybuffer';
