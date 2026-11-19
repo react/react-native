@@ -41,6 +41,8 @@ export interface ImageURISource {
    *
    * - `reload`: The data for the URL will be loaded from the originating source.
    * No existing cache data should be used to satisfy a URL load request.
+   * On iOS, images bundled with the app are then also not kept in the system
+   * image cache once they are no longer shown.
    *
    * - `force-cache`: The existing cached data will be used to satisfy the request,
    * regardless of its age or expiration date. If there is no existing data in the cache
