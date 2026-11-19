@@ -27,6 +27,7 @@ jobs:
       any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change == 'true' || github.event_name != 'pull_request' }}
       should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || github.event_name != 'pull_request' }}
       should_test_ios: ${{ steps.filter_exclusions.outputs.should_test_ios == 'true' || github.event_name != 'pull_request' }}
+      should_test_fantom: ${{ steps.filter_exclusions.outputs.should_test_fantom == 'true' || github.event_name != 'pull_request' }}
       debugger_shell: ${{ steps.filter_inclusions.outputs.debugger_shell }}
     steps:
       - name: Checkout
@@ -65,6 +66,24 @@ jobs:
               - '!packages/react-native/**/*.gradle*'
               - '!packages/react-native-popup-menu-android/**'
               - '!packages/rn-tester/android/**'
+            should_test_fantom:
+              - '**'
+              - '!**/__docs__/**'
+              - '!**/*.md'
+              - '!**/LICENSE'
+              - '!gradle/**'
+              - '!gradle*'
+              - '!packages/gradle-plugin/**'
+              - '!packages/react-native/ReactAndroid/**'
+              - '!packages/react-native/**/*.java'
+              - '!packages/react-native/**/*.kt'
+              - '!packages/react-native/**/*.gradle*'
+              - '!packages/react-native-popup-menu-android/**'
+              - '!packages/react-native/React/**'
+              - '!packages/react-native/ReactApple/**'
+              - '!packages/react-native/**/*.m'
+              - '!packages/react-native/**/*.mm'
+              - '!packages/react-native/**/*.podspec'
       - name: Check for code changes (inclusion patterns)
         uses: dorny/paths-filter@209e61402dbca8aa44f967535da6666b284025ed
         id: filter_inclusions
@@ -260,7 +279,7 @@ jobs:
   build_fantom_runner:
     runs-on: 8-core-ubuntu
     needs: [check_code_changes, lint]
-    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    if: needs.check_code_changes.outputs.should_test_fantom == 'true'
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
