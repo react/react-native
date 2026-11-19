@@ -14,12 +14,18 @@ import EventEmitter, {
 } from '../vendor/emitter/EventEmitter';
 import NativeDeviceInfo, {
   type DimensionsPayload,
+  type DisplayFeature,
   type DisplayMetrics,
   type DisplayMetricsAndroid,
 } from './NativeDeviceInfo';
 import invariant from 'invariant';
 
-export type {DimensionsPayload, DisplayMetrics, DisplayMetricsAndroid};
+export type {
+  DimensionsPayload,
+  DisplayFeature,
+  DisplayMetrics,
+  DisplayMetricsAndroid,
+};
 
 /** @deprecated Use DisplayMetrics */
 export type ScaledSize = DisplayMetrics;
@@ -29,6 +35,7 @@ const eventEmitter = new EventEmitter<{
 }>();
 let dimensionsInitialized = false;
 let dimensions: DimensionsPayload;
+let displayFeatures: $ReadOnlyArray<DisplayFeature> = [];
 
 /**
  * Provides the application window's width and height. Prefer
@@ -92,12 +99,24 @@ class Dimensions {
     }
 
     dimensions = {window, screen};
+    displayFeatures = dims.displayFeatures ?? [];
     if (dimensionsInitialized) {
       // Don't fire 'change' the first time the dimensions are set.
       eventEmitter.emit('change', dimensions);
     } else {
       dimensionsInitialized = true;
     }
+  }
+
+  /**
+   * Returns the display features (such as a hinge or a front-facing camera
+   * cutout) that content should avoid covering. Prefer `useDisplayFeatures`
+   * in React components.
+   *
+   * Empty on every platform today; see the `DisplayFeature` type.
+   */
+  static getDisplayFeatures(): $ReadOnlyArray<DisplayFeature> {
+    return displayFeatures;
   }
 
   /**
