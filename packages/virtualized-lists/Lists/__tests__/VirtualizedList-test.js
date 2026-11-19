@@ -433,8 +433,35 @@ describe('VirtualizedList', () => {
     // Call the onLayout handler
     result.props.onLayout({nativeEvent: {layout: {width: 100, height: 100}}});
 
-    // Both the original and the new onLayout should be called
+    // The original onLayout should still be called
     expect(originalOnLayout).toHaveBeenCalled();
+  });
+
+  it('does not call onLayout with the layout of ListEmptyComponent', () => {
+    const listRef = createRef();
+    const onLayout = jest.fn();
+    const element = <div>Empty</div>;
+
+    act(() => {
+      create(
+        <VirtualizedList
+          ref={listRef}
+          data={[]}
+          onLayout={onLayout}
+          ListEmptyComponent={element}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          renderItem={({item}) => <item value={item.key} />}
+        />,
+      );
+    });
+
+    const result = listRef.current._renderEmptyComponent(element, null);
+    result.props.onLayout({
+      nativeEvent: {layout: {x: 24, y: 24, width: 338, height: 66}},
+    });
+
+    expect(onLayout).not.toHaveBeenCalled();
   });
 
   it('returns the viewableItems correctly in the onViewableItemsChanged callback after changing the data', async () => {
