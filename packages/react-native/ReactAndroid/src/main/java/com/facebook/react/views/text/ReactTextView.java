@@ -248,6 +248,17 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   }
 
   @Override
+  public void draw(Canvas canvas) {
+    BackgroundStyleApplicator.applyClipPathIfPresent(
+        this,
+        canvas,
+        () -> {
+          super.draw(canvas);
+          return null;
+        });
+  }
+
+  @Override
   @SuppressWarnings("try")
   protected void onDraw(Canvas canvas) {
     try (SystraceSection s = new SystraceSection("ReactTextView.onDraw")) {

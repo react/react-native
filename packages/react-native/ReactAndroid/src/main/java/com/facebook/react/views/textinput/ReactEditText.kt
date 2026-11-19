@@ -60,6 +60,7 @@ import com.facebook.react.common.assets.ReactFontManager
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
+import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBackgroundColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBorderColor
@@ -1291,6 +1292,10 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public fun setOverflow(overflow: String?) {
     this.overflow = Overflow.fromString(overflow)
     invalidate()
+  }
+
+  public override fun draw(canvas: Canvas) {
+    BackgroundStyleApplicator.applyClipPathIfPresent(this, canvas) { super.draw(canvas) }
   }
 
   public override fun onDraw(canvas: Canvas) {
