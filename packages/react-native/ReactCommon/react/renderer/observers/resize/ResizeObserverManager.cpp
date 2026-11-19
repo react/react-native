@@ -9,6 +9,7 @@
 #include <cxxreact/TraceSection.h>
 #include <glog/logging.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
+#include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 #include <react/utils/OnScopeExit.h>
 #include <algorithm>
 #include <unordered_set>
@@ -130,7 +131,7 @@ void ResizeObserverManager::connect(
 
   runtimeScheduler.setResizeObserverDelegate(this);
   uiManager.registerCommitHook(*this);
-  shadowTreeRegistry_ = &uiManager.getShadowTreeRegistry();
+  shadowTreeRevisionProvider_ = uiManager.getShadowTreeRevisionProvider();
   commitHookRegistered_ = true;
 }
 
@@ -146,7 +147,7 @@ void ResizeObserverManager::disconnect(
 
   runtimeScheduler.setResizeObserverDelegate(nullptr);
   uiManager.unregisterCommitHook(*this);
-  shadowTreeRegistry_ = nullptr;
+  shadowTreeRevisionProvider_ = nullptr;
 
   // May run from inside `broadcastActiveResizeObservations` (a callback can
   // disconnect the last observer), which copies the callable before invoking
@@ -316,15 +317,13 @@ ResizeObserverManager::gatherActiveResizeObservations(size_t depth) {
   GatherResult gatherResult;
 
   // Null once `disconnect` ran; nothing left to observe against.
-  if (candidateSurfaceIds.empty() || shadowTreeRegistry_ == nullptr) {
+  if (candidateSurfaceIds.empty() || shadowTreeRevisionProvider_ == nullptr) {
     return gatherResult;
   }
 
   for (auto surfaceId : candidateSurfaceIds) {
-    auto rootShadowNode = std::shared_ptr<const RootShadowNode>();
-    shadowTreeRegistry_->visit(surfaceId, [&](const auto& shadowTree) {
-      rootShadowNode = shadowTree.getCurrentRevision().rootShadowNode;
-    });
+    auto rootShadowNode =
+        shadowTreeRevisionProvider_->getCurrentRevision(surfaceId);
 
     if (rootShadowNode == nullptr) {
       // The surface was stopped, so its families are dead and can never report
