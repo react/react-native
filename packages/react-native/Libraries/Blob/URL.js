@@ -63,6 +63,66 @@ function validateBaseUrl(url: string) {
   );
 }
 
+function removeDotSegments(path: string): string {
+  const segments = path.split('/');
+  const output: Array<string> = [];
+  for (const segment of segments) {
+    if (segment === '..') {
+      if (output.length > 1) {
+        output.pop();
+      }
+    } else if (segment !== '.') {
+      output.push(segment);
+    }
+  }
+  const last = segments[segments.length - 1];
+  if (last === '.' || last === '..') {
+    output.push('');
+  }
+  return output.join('/');
+}
+
+function resolveReference(url: string, base: string): string {
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url)) {
+    return url;
+  }
+  const baseMatch = base.match(
+    /^([a-zA-Z][a-zA-Z\d+\-.]*:)?(\/\/[^/?#]*)?([^?#]*)(\?[^#]*)?/,
+  );
+  const refMatch = url.match(/^(\/\/[^/?#]*)?([^?#]*)(\?[^#]*)?(#.*)?$/);
+  if (baseMatch == null || refMatch == null) {
+    return url;
+  }
+  const scheme = baseMatch[1] ?? '';
+  const baseAuthority = baseMatch[2];
+  const basePath = baseMatch[3];
+  const baseQuery = baseMatch[4] ?? '';
+  const [, refAuthority, refPath, refQuery, refFragment] = refMatch;
+
+  let authority = baseAuthority ?? '';
+  let path;
+  let query = refQuery ?? '';
+  if (refAuthority != null) {
+    authority = refAuthority;
+    path = removeDotSegments(refPath);
+  } else if (refPath === '') {
+    path = basePath;
+    query = refQuery ?? baseQuery;
+  } else if (refPath.startsWith('/')) {
+    path = removeDotSegments(refPath);
+  } else if (baseAuthority != null && basePath === '') {
+    path = removeDotSegments(`/${refPath}`);
+  } else {
+    path = removeDotSegments(
+      basePath.slice(0, basePath.lastIndexOf('/') + 1) + refPath,
+    );
+  }
+  if (authority !== '' && path === '') {
+    path = '/';
+  }
+  return `${scheme}${authority}${path}${query}${refFragment ?? ''}`;
+}
+
 export class URL {
   _url: string;
   _searchParamsInstance: ?URLSearchParams = null;
@@ -81,7 +141,11 @@ export class URL {
   // $FlowFixMe[missing-local-annot]
   constructor(url: string, base?: string | URL) {
     let baseUrl = null;
-    if (base == null || base === '' || validateBaseUrl(url)) {
+    if (
+      base == null ||
+      base === '' ||
+      (validateBaseUrl(url) && !url.startsWith('//'))
+    ) {
       this._url = url;
       if (this._url.includes('#')) {
         const split = this._url.split('#');
@@ -111,17 +175,7 @@ export class URL {
       } else {
         baseUrl = base.toString();
       }
-      if (baseUrl.endsWith('/')) {
-        baseUrl = baseUrl.slice(0, baseUrl.length - 1);
-      }
-      let path = url;
-      if (!path.startsWith('/')) {
-        path = `/${path}`;
-      }
-      if (baseUrl.endsWith(path)) {
-        path = '';
-      }
-      this._url = `${baseUrl}${path}`;
+      this._url = resolveReference(url, baseUrl);
     }
   }
 
