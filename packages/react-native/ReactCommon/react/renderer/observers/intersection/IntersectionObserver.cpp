@@ -18,16 +18,14 @@
 
 namespace facebook::react {
 
-// Parse a normalized rootMargin string that's always in the format:
+// Parse a normalized margin string that's always in the format:
 // "top right bottom left" where each value is either "Npx" or "N%"
 // The string is already validated and normalized by JS.
-// Returns a vector of 4 MarginValue structures (top, right, bottom, left).
-// Returns an empty vector if parsing fails.
-std::vector<MarginValue> parseNormalizedRootMargin(
-    const std::string& marginStr) {
-  // If unset or set to default, return empty so we don't apply any margins
+// Returns std::nullopt if the margin is a no-op or parsing fails.
+std::optional<EdgeMargins> parseNormalizedMargin(const std::string& marginStr) {
+  // If unset or set to default, return nullopt so we don't apply any margins
   if (marginStr.empty() || marginStr == "0px 0px 0px 0px") {
-    return {};
+    return std::nullopt;
   }
 
   std::vector<MarginValue> values;
@@ -45,9 +43,9 @@ std::vector<MarginValue> parseNormalizedRootMargin(
 
     if (std::holds_alternative<CSSLength>(parsed)) {
       auto length = std::get<CSSLength>(parsed);
-      // Only support px units for rootMargin (per W3C spec)
+      // Only support px units for margins (per W3C spec)
       if (length.unit != CSSLengthUnit::Px) {
-        return {};
+        return std::nullopt;
       }
       values.push_back({length.value, false});
     } else if (std::holds_alternative<CSSPercentage>(parsed)) {
@@ -55,42 +53,21 @@ std::vector<MarginValue> parseNormalizedRootMargin(
       values.push_back({percentage.value, true});
     } else {
       // Invalid token
-      return {};
+      return std::nullopt;
     }
   }
 
   // Should have exactly 4 values since JS normalizes to this format
   if (values.size() != 4) {
-    return {};
+    return std::nullopt;
   }
 
-  return values;
+  return EdgeMargins{
+      .left = values[3],
+      .top = values[0],
+      .right = values[1],
+      .bottom = values[2]};
 }
-
-namespace {
-
-// Convert margin values to actual pixel values based on root rect.
-// Per W3C spec: top/bottom percentages use height, left/right use width.
-EdgeInsets calculateRootMarginInsets(
-    const std::vector<MarginValue>& margins,
-    const Rect& rootRect) {
-  Float top = margins[0].isPercentage
-      ? (margins[0].value / 100.0f) * rootRect.size.height
-      : margins[0].value;
-  Float right = margins[1].isPercentage
-      ? (margins[1].value / 100.0f) * rootRect.size.width
-      : margins[1].value;
-  Float bottom = margins[2].isPercentage
-      ? (margins[2].value / 100.0f) * rootRect.size.height
-      : margins[2].value;
-  Float left = margins[3].isPercentage
-      ? (margins[3].value / 100.0f) * rootRect.size.width
-      : margins[3].value;
-
-  return EdgeInsets{left, top, right, bottom};
-}
-
-} // namespace
 
 IntersectionObserver::IntersectionObserver(
     IntersectionObserverObserverId intersectionObserverId,
@@ -98,14 +75,16 @@ IntersectionObserver::IntersectionObserver(
     ShadowNodeFamily::Shared targetShadowNodeFamily,
     std::vector<Float> thresholds,
     std::optional<std::vector<Float>> rootThresholds,
-    std::vector<MarginValue> rootMargins)
+    std::optional<EdgeMargins> rootMargins,
+    std::optional<EdgeMargins> scrollMargins)
     : intersectionObserverId_(intersectionObserverId),
       observationRootShadowNodeFamily_(
           std::move(observationRootShadowNodeFamily)),
       targetShadowNodeFamily_(std::move(targetShadowNodeFamily)),
       thresholds_(std::move(thresholds)),
       rootThresholds_(std::move(rootThresholds)),
-      rootMargins_(std::move(rootMargins)) {}
+      rootMargins_(rootMargins),
+      scrollMargins_(scrollMargins) {}
 
 static std::shared_ptr<const ShadowNode> getShadowNode(
     const ShadowNodeFamily::AncestorList& ancestors) {
@@ -152,13 +131,15 @@ static Rect getBoundingRect(const ShadowNodeFamily::AncestorList& ancestors) {
 
 // Returns std::nullopt if the target is entirely clipped by an ancestor.
 static std::optional<Rect> getClippedTargetBoundingRect(
-    const ShadowNodeFamily::AncestorList& targetAncestors) {
+    const ShadowNodeFamily::AncestorList& targetAncestors,
+    const std::optional<EdgeMargins>& scrollMargins) {
   auto layoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
       targetAncestors,
       {/* .includeTransform = */ .includeTransform = true,
        /* .includeViewportOffset = */ .includeViewportOffset = true,
        /* .applyParentClipping = */ .enableOverflowClipping = true,
-       /* .clipSpecifiedAncestor = */ .clipSpecifiedAncestor = false});
+       /* .clipSpecifiedAncestor = */ .clipSpecifiedAncestor = false,
+       /* .clipMargin = */ .clipMargin = scrollMargins});
 
   if (layoutMetrics == EmptyLayoutMetrics) {
     return std::nullopt;
@@ -198,24 +179,26 @@ static std::optional<Rect> intersectOrNull(
 // https://w3c.github.io/IntersectionObserver/#calculate-intersection-rect-algo
 static std::optional<Rect> computeIntersection(
     const Rect& rootBoundingRect,
-    const Rect& rootMarginBoundingRect,
+    const Rect& rootClipRect,
     const Rect& targetBoundingRect,
     const ShadowNodeFamily::AncestorList& targetToRootAncestors,
-    bool hasExplicitRoot) {
+    bool hasExplicitRoot,
+    const std::optional<EdgeMargins>& scrollMargins) {
   // Use intersectOrNull to properly distinguish between edge-adjacent
   // (valid intersection) and separated rectangles (no intersection)
   auto absoluteIntersectionRect =
-      intersectOrNull(rootMarginBoundingRect, targetBoundingRect);
+      intersectOrNull(rootClipRect, targetBoundingRect);
   if (!absoluteIntersectionRect.has_value()) {
     return std::nullopt;
   }
 
   // Clip against ancestors *until* the observation root (scroll views or
-  // overflow: hidden between target and root). The root itself is not a
-  // clipper here; intersecting with rootMarginBoundingRect is the spec's
-  // final clip against the root intersection rectangle.
+  // overflow: hidden between target and root), dilating each of those clip
+  // rects by scrollMargin. The root itself is not a clipper here; intersecting
+  // with rootClipRect is the spec's final clip against the root intersection
+  // rectangle.
   auto clippedTargetFromRoot =
-      getClippedTargetBoundingRect(targetToRootAncestors);
+      getClippedTargetBoundingRect(targetToRootAncestors, scrollMargins);
   if (!clippedTargetFromRoot.has_value()) {
     // Don't fall through with an empty rect: at the origin, it would count as
     // edge-adjacent to any root rect containing the origin.
@@ -229,7 +212,7 @@ static std::optional<Rect> computeIntersection(
       .size=clippedTargetFromRoot->size}
       : *clippedTargetFromRoot;
 
-  return intersectOrNull(rootMarginBoundingRect, clippedTargetBoundingRect);
+  return intersectOrNull(rootClipRect, clippedTargetBoundingRect);
 }
 
 static Float getHighestThresholdCrossed(
@@ -264,13 +247,27 @@ IntersectionObserver::updateIntersectionObservation(
   auto rootMarginBoundingRect = rootBoundingRect;
 
   // Apply rootMargin to expand/contract the root bounding rect
-  if (!rootMargins_.empty()) {
+  if (rootMargins_.has_value()) {
     // Calculate the actual insets based on current root dimensions
     // (converts percentages to pixels)
-    auto insets = calculateRootMarginInsets(rootMargins_, rootBoundingRect);
+    auto insets = resolveEdgeMargins(*rootMargins_, rootBoundingRect.size);
     // Use outsetBy to expand the root rect (positive values expand, negative
     // contract)
     rootMarginBoundingRect = outsetBy(rootBoundingRect, insets);
+  }
+
+  // Per spec, scrollMargin also applies to a scrollable root. It only dilates
+  // the rect targets are clipped against, not `rootBounds` (the root
+  // intersection rectangle, which only rootMargin dilates).
+  auto rootClipRect = rootMarginBoundingRect;
+  if (scrollMargins_.has_value() && hasExplicitRoot) {
+    auto rootNode = std::dynamic_pointer_cast<const LayoutableShadowNode>(
+        getShadowNode(rootAncestors));
+    if (rootNode != nullptr && rootNode->isScrollContainer()) {
+      rootClipRect = outsetBy(
+          rootClipRect,
+          resolveEdgeMargins(*scrollMargins_, rootBoundingRect.size));
+    }
   }
 
   auto targetAncestors = targetShadowNodeFamily_->getAncestors(rootShadowNode);
@@ -290,10 +287,11 @@ IntersectionObserver::updateIntersectionObservation(
 
   auto intersection = computeIntersection(
       rootBoundingRect,
-      rootMarginBoundingRect,
+      rootClipRect,
       targetBoundingRect,
       targetToRootAncestors,
-      hasExplicitRoot);
+      hasExplicitRoot,
+      scrollMargins_);
 
   auto intersectionRect =
       intersection.has_value() ? intersection.value() : Rect{};

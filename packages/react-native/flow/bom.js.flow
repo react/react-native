@@ -436,6 +436,7 @@ declare type IntersectionObserverCallback = (
 declare type IntersectionObserverOptions = {
   root?: Node | null,
   rootMargin?: string,
+  scrollMargin?: string,
   threshold?: number | Array<number>,
   // React Native-specific extension. Thresholds expressed as a fraction of the
   // root's size (instead of the target's size).
@@ -443,8 +444,8 @@ declare type IntersectionObserverOptions = {
   ...
 };
 
-// The `delay`, `scrollMargin` and `trackVisibility` options are not supported
-// in React Native and will throw if provided.
+// The `delay` and `trackVisibility` options are not supported in React Native
+// and will throw if provided.
 declare class IntersectionObserver {
   constructor(
     callback: IntersectionObserverCallback,
@@ -454,6 +455,7 @@ declare class IntersectionObserver {
   observe(target: Element): void;
   readonly root: Element | null;
   readonly rootMargin: string;
+  readonly scrollMargin: string;
   // React Native-specific extension. The thresholds expressed as a fraction of
   // the root's size (set via the `rnRootThreshold` option).
   readonly rnRootThresholds: ReadonlyArray<number> | null;
