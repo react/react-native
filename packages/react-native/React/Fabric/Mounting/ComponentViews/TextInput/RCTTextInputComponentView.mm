@@ -62,6 +62,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   UIView<RCTBackedTextInputViewProtocol, RCTBackedTextInputViewPendingEdit> *_backedTextInputView;
   NSUInteger _mostRecentEventCount;
   NSAttributedString *_lastStringStateWasUpdatedWith;
+  // The React styles currently applied to the multiline input.
+  NSAttributedString *_lastAppliedMultilineReactText;
 
   /*
    * UIKit uses either UITextField or UITextView as its UIKit element for <TextInput>. UITextField is for single line
@@ -364,6 +366,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (!_state) {
     assert(false && "State is `null` for <TextInput> component.");
+    _lastAppliedMultilineReactText = nil;
     _backedTextInputView.attributedText = nil;
     return;
   }
@@ -376,21 +379,22 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (_mostRecentEventCount == _state->getData().mostRecentEventCount) {
     NSAttributedString *attributedString = RCTNSAttributedStringFromAttributedStringBox(data.attributedStringBox);
-    BOOL sameText = [attributedString.string isEqualToString:_backedTextInputView.attributedText.string];
+    NSAttributedString *nativeText = _backedTextInputView.attributedText;
+    BOOL sameText = [attributedString.string isEqualToString:nativeText.string];
     if (!sameText) {
       [_backedTextInputView rct_invalidatePendingTextInputEdit];
     }
     _comingFromJS = YES;
-    BOOL handled = NO;
-    if (sameText && oldState && [_backedTextInputView isKindOfClass:[RCTUITextView class]] &&
-        data.attributedStringBox.getMode() == AttributedStringBox::Mode::Value) {
-      const auto &oldData = static_cast<const TextInputShadowNode::ConcreteState &>(*oldState).getData();
-      handled = [self
-          _applyMultilineStyleUpdate:attributedString
-                   previousReactText:RCTNSAttributedStringFromAttributedString(oldData.reactTreeAttributedString)];
-    }
-    if (!handled) {
-      [self _setAttributedString:attributedString];
+    BOOL tracksReactStyle = [_backedTextInputView isKindOfClass:[RCTUITextView class]] &&
+        data.attributedStringBox.getMode() == AttributedStringBox::Mode::Value;
+    if (!(sameText && tracksReactStyle &&
+          [self _applyMultilineStyleUpdate:attributedString previousReactText:_lastAppliedMultilineReactText])) {
+      if ([self _setAttributedString:attributedString]) {
+        _lastAppliedMultilineReactText = tracksReactStyle ? attributedString : nil;
+      } else if (
+          sameText && tracksReactStyle && [self _multilineReactText:attributedString matchesNativeText:nativeText]) {
+        _lastAppliedMultilineReactText = attributedString;
+      }
     }
     _comingFromJS = NO;
   }
@@ -421,6 +425,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _mostRecentEventCount = 0;
   _comingFromJS = NO;
   _lastStringStateWasUpdatedWith = nil;
+  _lastAppliedMultilineReactText = nil;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
   _backedTextInputView.inputAccessoryViewID = nil;
@@ -640,6 +645,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   const auto &props = static_cast<const TextInputProps &>(*_props);
 
   if (props.traits.clearTextOnFocus) {
+    _lastAppliedMultilineReactText = nil;
     _backedTextInputView.attributedText = nil;
     [self textInputDidChange];
   }
@@ -670,7 +676,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (value && ![value isEqualToString:_backedTextInputView.attributedText.string]) {
     NSAttributedString *attributedString =
         [[NSAttributedString alloc] initWithString:value attributes:_backedTextInputView.defaultTextAttributes];
-    [self _setAttributedString:attributedString];
+    if ([self _setAttributedString:attributedString]) {
+      _lastAppliedMultilineReactText = nil;
+    }
     [self _updateState];
   }
 
@@ -820,6 +828,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     return;
   }
   NSAttributedString *attributedString = _backedTextInputView.attributedText;
+  if (_lastAppliedMultilineReactText &&
+      ![_lastAppliedMultilineReactText.string isEqualToString:attributedString.string]) {
+    _lastAppliedMultilineReactText = nil;
+  }
   auto data = _state->getData();
   _lastStringStateWasUpdatedWith = attributedString;
   data.attributedStringBox = RCTAttributedStringBoxFromNSAttributedString(attributedString);
@@ -859,10 +871,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView setSelectedTextRange:range notifyDelegate:YES];
 }
 
-- (void)_setAttributedString:(NSAttributedString *)attributedString
+- (BOOL)_setAttributedString:(NSAttributedString *)attributedString
 {
   if ([self _textOf:attributedString equals:_backedTextInputView.attributedText]) {
-    return;
+    return NO;
   }
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
@@ -893,6 +905,34 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [self _restoreTextSelectionAndIgnoreCaretChange:YES];
   [self _updateTypingAttributes];
   _lastStringStateWasUpdatedWith = attributedString;
+  return YES;
+}
+
+- (BOOL)_multilineReactText:(NSAttributedString *)text matchesNativeText:(NSAttributedString *)nativeText
+{
+  if ([self _shouldCompareTextWithoutAttributes]) {
+    return NO;
+  }
+
+  // A native edit can leave UIKit's fallback font on a React text echo.
+  __block NSMutableAttributedString *comparableText = nil;
+  [nativeText enumerateAttribute:@"NSOriginalFont"
+                         inRange:NSMakeRange(0, nativeText.length)
+                         options:0
+                      usingBlock:^(id font, NSRange range, BOOL *stop) {
+                        if (font) {
+                          if (!comparableText) {
+                            comparableText = [nativeText mutableCopy];
+                          }
+                          [comparableText addAttribute:NSFontAttributeName value:font range:range];
+                          [comparableText removeAttribute:@"NSOriginalFont" range:range];
+                        }
+                      }];
+  return RCTIsAttributedStringEffectivelySame(
+      text,
+      comparableText ?: nativeText,
+      _originalTypingAttributes,
+      static_cast<const TextInputProps &>(*_props).textAttributes);
 }
 
 - (BOOL)_applyMultilineStyleUpdate:(NSAttributedString *)text previousReactText:(NSAttributedString *)previousReactText
@@ -955,6 +995,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     [self _updateTypingAttributes];
     _lastStringStateWasUpdatedWith = textView.attributedText;
   }
+  _lastAppliedMultilineReactText = text;
   return YES;
 }
 
@@ -986,6 +1027,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)_setMultiline:(BOOL)multiline
 {
+  _lastAppliedMultilineReactText = nil;
   [_backedTextInputView removeFromSuperview];
   UIView<RCTBackedTextInputViewProtocol, RCTBackedTextInputViewPendingEdit> *backedTextInputView =
       multiline ? [RCTUITextView new] : [RCTUITextField new];
