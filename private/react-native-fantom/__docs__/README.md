@@ -113,6 +113,10 @@ values. If another root is still alive and the new metrics differ from the
 current global dimensions, Fantom applies the new values and emits a warning.
 Call `root.destroy()` when a root is no longer needed.
 
+`root.updateSurfaceConstraints(width, height)` changes native root constraints
+without rendering React or flushing pending work. Use it to test root and
+relative child layout when a native host resizes the surface.
+
 Each root also uses its `fontScale` for native text and text-input measurement,
 including line heights and wrapping. `allowFontScaling={false}` opts a component
 out, and `maxFontSizeMultiplier` caps its scale. Existing roots retain their own
