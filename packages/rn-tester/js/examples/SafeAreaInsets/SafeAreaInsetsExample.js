@@ -13,11 +13,11 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {SafeAreaInsetsChangeEvent} from 'react-native';
 
+import RNTesterButton from '../../components/RNTesterButton';
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useCallback, useState} from 'react';
 import {
-  Button,
   Modal,
   Platform,
   ScrollView,
@@ -105,13 +105,15 @@ function FullScreenModalContent({onClose}: {onClose: () => void}): React.Node {
           the same frame, without the content jumping.
         </RNTesterText>
         {!applied ? (
-          <Button onPress={() => setApplied(true)} title="Apply insets" />
+          <RNTesterButton onPress={() => setApplied(true)}>
+            Apply insets
+          </RNTesterButton>
         ) : null}
         <TextInput
           placeholder="Focus to show the keyboard"
           style={styles.keyboardProbe}
         />
-        <Button onPress={onClose} title="Close" />
+        <RNTesterButton onPress={onClose}>Close</RNTesterButton>
       </View>
     </View>
   );
@@ -129,10 +131,9 @@ function FullScreenExample(): React.Node {
         supportedOrientations={['portrait', 'landscape']}>
         <FullScreenModalContent onClose={() => setModalVisible(false)} />
       </Modal>
-      <Button
-        onPress={() => setModalVisible(true)}
-        title="Present a full screen modal"
-      />
+      <RNTesterButton onPress={() => setModalVisible(true)}>
+        Present a full screen modal
+      </RNTesterButton>
     </View>
   );
 }
@@ -174,9 +175,11 @@ function FeedbackLoopModalContent({
           a second, once, while the counter keeps climbing.
         </RNTesterText>
         {!looping ? (
-          <Button onPress={() => setLooping(true)} title="Start the loop" />
+          <RNTesterButton onPress={() => setLooping(true)}>
+            Start the loop
+          </RNTesterButton>
         ) : null}
-        <Button onPress={onClose} title="Close" />
+        <RNTesterButton onPress={onClose}>Close</RNTesterButton>
       </View>
     </View>
   );
@@ -194,10 +197,9 @@ function FeedbackLoopExample(): React.Node {
         supportedOrientations={['portrait', 'landscape']}>
         <FeedbackLoopModalContent onClose={() => setModalVisible(false)} />
       </Modal>
-      <Button
-        onPress={() => setModalVisible(true)}
-        title="Present a view that loops"
-      />
+      <RNTesterButton onPress={() => setModalVisible(true)}>
+        Present a view that loops
+      </RNTesterButton>
     </View>
   );
 }
@@ -313,7 +315,7 @@ component GeometryModal(
           bottom: (rootInsets?.bottom ?? 0) + 12,
           right: 12,
         }}>
-        <Button title="Close" onPress={onClose} />
+        <RNTesterButton onPress={onClose}>Close</RNTesterButton>
       </View>
     </View>
   );
@@ -324,20 +326,20 @@ component GeometryExample() {
   const [cancellingRotations, setCancellingRotations] = useState(false);
   return (
     <View>
-      <Button
-        title="Scale 2"
+      <RNTesterButton
         onPress={() => {
           setCancellingRotations(false);
           setVisible(true);
-        }}
-      />
-      <Button
-        title="Cancel rotations"
+        }}>
+        Scale 2
+      </RNTesterButton>
+      <RNTesterButton
         onPress={() => {
           setCancellingRotations(true);
           setVisible(true);
-        }}
-      />
+        }}>
+        Cancel rotations
+      </RNTesterButton>
       <Modal
         visible={visible}
         statusBarTranslucent
@@ -398,22 +400,22 @@ function ScrollBenchmark(): React.Node {
     <View style={styles.bench}>
       <View style={styles.benchControls}>
         {[0, 1, 50].map(count => (
-          <Button
+          <RNTesterButton
             key={count}
-            title={`${count} observers`}
             onPress={() => {
               benchEventCount = 0;
               setObserverCount(count);
-            }}
-          />
+            }}>
+            {count} observers
+          </RNTesterButton>
         ))}
-        <Button
-          title="Read counters"
+        <RNTesterButton
           onPress={() => {
             setEventCount(benchEventCount);
             setRenderCount(c => c + 1);
-          }}
-        />
+          }}>
+          Read counters
+        </RNTesterButton>
       </View>
       <RNTesterText>
         {`observers: ${observerCount}, inset events since change: ${eventCount} (read ${renderCount})`}

@@ -43,7 +43,7 @@ it.each([
     try {
       const renderer = await create(<Example />);
       mountedRenderer = renderer;
-      const button = renderer.root.findByProps({title});
+      const button = renderer.root.findByProps({children: title});
       await TestRenderer.act(() => button.props.onPress());
       const root = renderer.root.findByProps({
         testID: 'safe-area-geometry-root',
@@ -145,7 +145,7 @@ it.each([
       expect(StyleSheet.flatten(observer.props.style)).toEqual(
         expectedObserverStyle,
       );
-      const close = renderer.root.findByProps({title: 'Close'});
+      const close = renderer.root.findByProps({children: 'Close'});
       await TestRenderer.act(() => close.props.onPress());
       expect(renderer.root.findByType(Modal).props.visible).toBe(false);
     } finally {
