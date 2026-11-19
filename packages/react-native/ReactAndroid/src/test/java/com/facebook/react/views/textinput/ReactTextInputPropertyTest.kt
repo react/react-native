@@ -561,6 +561,19 @@ class ReactTextInputPropertyTest {
   }
 
   @Test
+  fun testFontWeightAcceptsANumber() {
+    manager.updateProperties(view, buildStyles())
+    val defaultTypeface = view.typeface
+    manager.updateProperties(view, buildStyles("fontWeight", "700"))
+    val boldTypeface = view.typeface
+    assertThat(boldTypeface).isNotEqualTo(defaultTypeface)
+
+    manager.updateProperties(view, buildStyles("fontWeight", null))
+    manager.updateProperties(view, buildStyles("fontWeight", 700.0))
+    assertThat(view.typeface).isEqualTo(boldTypeface)
+  }
+
+  @Test
   fun testFontVariationSettingsOverrideFontWeightRegardlessOfPropOrder() {
     manager.updateProperties(
         view,

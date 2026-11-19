@@ -412,9 +412,10 @@ export type ScrollViewPropsIOS = Readonly<{
    *   false.
    *
    * Note: With any value other than `'never'`, point-valued
-   * `contentContainerStyle` padding on edges where an inset applies is
-   * absorbed by the inset, instead of adding to it. See
-   * `contentContainerStyle`.
+   * `contentContainerStyle` padding on an edge with a safe area inset counts
+   * toward the inset, instead of adding to it. Along the scrollable axis, the
+   * padding still adds to an inset that includes a navigation bar, tab bar or
+   * toolbar. See `contentContainerStyle`.
    *
    * @default `'never'`
    * @platform ios
@@ -530,9 +531,11 @@ type ScrollViewBaseProps = Readonly<{
    * applied slightly differently than with a regular `<View>`:
    *
    * - Point values: If a system safe area inset applies on a given edge, the
-   *   **greater of** the `padding` or inset length will be applied. An edge
-   *   without an inset, such as the top of a ScrollView below a header, keeps
-   *   its full `padding`.
+   *   **greater of** the `padding` or inset length will be applied. Along the
+   *   scrollable axis, an inset that includes a navigation bar, tab bar or
+   *   toolbar is the exception: the `padding` adds to it, keeping its spacing
+   *   from the bar. An edge without an inset, such as the top of a ScrollView
+   *   below a custom header, keeps its full `padding`.
    * - Percentage values: Across the scrollable axis, used directly, overriding
    *   any safe area padding. Along it, the safe area inset still applies, and
    *   the `padding` adds to it.

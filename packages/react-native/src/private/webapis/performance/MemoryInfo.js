@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
 type MemoryInfoLike = {
@@ -35,6 +33,7 @@ export default class MemoryInfo {
   /**
    * The maximum size of the heap, in bytes, that is available to the context
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get jsHeapSizeLimit(): ?number {
     return this.#jsHeapSizeLimit;
   }
@@ -42,6 +41,7 @@ export default class MemoryInfo {
   /**
    * The total allocated heap size, in bytes
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get totalJSHeapSize(): ?number {
     return this.#totalJSHeapSize;
   }
@@ -49,6 +49,7 @@ export default class MemoryInfo {
   /**
    * The currently active segment of JS heap, in bytes.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get usedJSHeapSize(): ?number {
     return this.#usedJSHeapSize;
   }

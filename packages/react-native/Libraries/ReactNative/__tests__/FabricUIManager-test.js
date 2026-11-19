@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 describe('FabricUIManager', () => {
   let getFabricUIManager;
 
@@ -42,9 +40,11 @@ describe('FabricUIManager', () => {
     it('should only access the cached properties of global binding once', () => {
       let incrementingProp = 0;
       global.nativeFabricUIManager = {
+        // $FlowFixMe[unsafe-getters-setters]
         get createNode() {
           return jest.fn();
         },
+        // $FlowFixMe[unsafe-getters-setters]
         get incrementingProp() {
           return incrementingProp++;
         },

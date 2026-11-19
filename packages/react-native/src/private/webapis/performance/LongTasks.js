@@ -8,7 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
 import type {
   PerformanceEntryInit,
   PerformanceEntryJSON,
@@ -46,6 +45,7 @@ export class PerformanceLongTaskTiming extends PerformanceEntry {
     super('longtask', init);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get attribution(): ReadonlyArray<TaskAttributionTiming> {
     return EMPTY_ATTRIBUTION;
   }

@@ -27,8 +27,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {AbortSignal} from './AbortSignal';
 
 const SIGNAL_KEY = Symbol('aborted');
@@ -50,6 +48,7 @@ export class AbortController {
   /**
    * Returns the `AbortSignal` object associated with this object.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get signal(): AbortSignal {
     return getSignal(this);
   }

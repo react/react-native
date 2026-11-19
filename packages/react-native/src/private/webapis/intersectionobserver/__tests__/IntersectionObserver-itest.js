@@ -3976,6 +3976,69 @@ describe('IntersectionObserver', () => {
       expect(entries[0].isIntersecting).toBe(false);
       expect(entries[0].intersectionRatio).toBe(0);
     });
+
+    describe('targets fully clipped by an intermediate ScrollView', () => {
+      // The target (150..200) is inside the 1000x1000 viewport but entirely
+      // clipped by the 100x100 ScrollView. With a threshold of 0, even an
+      // edge-adjacent intersection would count, so this checks that a fully
+      // clipped target is not mistaken for one.
+      function renderFullyClippedTarget(): HostInstance {
+        const nodeRef = React.createRef<HostInstance>();
+
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView style={{width: 100, height: 100, flexGrow: 0}}>
+              <View
+                style={{width: 50, height: 50, marginTop: 150}}
+                ref={nodeRef}
+              />
+            </ScrollView>,
+          );
+        });
+
+        return nullthrows(nodeRef.current);
+      }
+
+      it('should not report them as intersecting with the default threshold', () => {
+        const node = renderFullyClippedTarget();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback);
+          observer.observe(node);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        expect(entries[0].isIntersecting).toBe(false);
+        expect(entries[0].intersectionRatio).toBe(0);
+      });
+
+      it('should not report them as intersecting with rootMargin', () => {
+        const node = renderFullyClippedTarget();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            rootMargin: '500px 0px',
+          });
+          observer.observe(node);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        expect(entries[0].isIntersecting).toBe(false);
+        expect(entries[0].intersectionRatio).toBe(0);
+      });
+    });
   });
 
   describe('unobserve(target)', () => {

@@ -10,6 +10,7 @@
 #import <React/RCTAssert.h>
 #import <React/RCTConstants.h>
 #import <React/RCTScrollEvent.h>
+#import <React/RCTUtils.h>
 
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/scrollview/RCTComponentViewHelpers.h>
@@ -92,6 +93,27 @@ static BOOL RCTPadsContentForSafeArea(ContentInsetAdjustmentBehavior contentInse
 {
   return contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Automatic ||
       contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Always;
+}
+
+static UIEdgeInsets RCTWindowSafeAreaInsetsInView(UIView *view)
+{
+  UIWindow *window = view.window;
+  if (window == nil) {
+    return UIEdgeInsetsZero;
+  }
+  UIEdgeInsets insets = window.safeAreaInsets;
+  CGRect frame = [view convertRect:view.bounds toView:nil];
+  CGRect bounds = window.bounds;
+  return UIEdgeInsetsMake(
+      MAX(0, insets.top - CGRectGetMinY(frame)),
+      MAX(0, insets.left - CGRectGetMinX(frame)),
+      MAX(0, insets.bottom - (CGRectGetMaxY(bounds) - CGRectGetMaxY(frame))),
+      MAX(0, insets.right - (CGRectGetMaxX(bounds) - CGRectGetMaxX(frame))));
+}
+
+static CGFloat RCTWindowSafeAreaContentInset(CGFloat contentInset, CGFloat windowSafeAreaInset)
+{
+  return RCTRoundPixelValue(contentInset) > RCTRoundPixelValue(windowSafeAreaInset) ? 0 : contentInset;
 }
 
 @interface RCTScrollViewComponentView () <
@@ -904,10 +926,14 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 }
 
 /*
- * Hands the content container the safe area to lay its content out clear of: along the scrollable axis, the content
- * inset UIKit adds for the safe area, which point-valued padding counts toward, unless
- * `contentInsetAdjustmentBehavior` is `never`; and across the axis, the pair of insets it pads by, for `automatic`
- * and `always`. Content still scrolls under the system UI along the axis.
+ * Hands the content container the safe area to lay its content out clear of.
+ *
+ * Along the scrollable axis, UIKit adds the safe area as a content inset unless `contentInsetAdjustmentBehavior` is
+ * `never`. On an edge where the window's safe area (the status bar, sensor housing or home indicator) alone makes up
+ * that inset, the content container's padding counts toward it. On an edge where a view controller's navigation bar,
+ * tab bar or toolbar adds to it, the padding adds on top, keeping the content's spacing from that bar.
+ *
+ * Across the axis, for `automatic` and `always`, the content container is padded by the whole safe area.
  */
 - (void)_updateContentViewSafeAreaPadding
 {
@@ -921,12 +947,13 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (props.contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never) {
     UIEdgeInsets adjusted = scrollView.adjustedContentInset;
     UIEdgeInsets current = scrollView.contentInset;
+    UIEdgeInsets window = RCTWindowSafeAreaInsetsInView(scrollView);
     if (props.horizontal) {
-      contentInset.left = adjusted.left - current.left;
-      contentInset.right = adjusted.right - current.right;
+      contentInset.left = RCTWindowSafeAreaContentInset(adjusted.left - current.left, window.left);
+      contentInset.right = RCTWindowSafeAreaContentInset(adjusted.right - current.right, window.right);
     } else {
-      contentInset.top = adjusted.top - current.top;
-      contentInset.bottom = adjusted.bottom - current.bottom;
+      contentInset.top = RCTWindowSafeAreaContentInset(adjusted.top - current.top, window.top);
+      contentInset.bottom = RCTWindowSafeAreaContentInset(adjusted.bottom - current.bottom, window.bottom);
     }
   }
   if (scrollView.padsContentForSafeArea) {

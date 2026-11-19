@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import typeof AnimatedFlatList from './components/AnimatedFlatList';
 import typeof AnimatedImage from './components/AnimatedImage';
 import typeof AnimatedScrollView from './components/AnimatedScrollView';
@@ -29,36 +27,42 @@ export default {
   /**
    * @deprecated Use `AnimatedFlatList` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get FlatList(): AnimatedFlatList<> {
     return require('./components/AnimatedFlatList').default;
   },
   /**
    * @deprecated Use `AnimatedImage` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get Image(): AnimatedImage {
     return require('./components/AnimatedImage').default;
   },
   /**
    * @deprecated Use `AnimatedScrollView` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get ScrollView(): AnimatedScrollView {
     return require('./components/AnimatedScrollView').default;
   },
   /**
    * @deprecated Use `AnimatedSectionList` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get SectionList(): AnimatedSectionList<> {
     return require('./components/AnimatedSectionList').default;
   },
   /**
    * @deprecated Use `AnimatedText` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get Text(): AnimatedText {
     return require('./components/AnimatedText').default;
   },
   /**
    * @deprecated Use `AnimatedView` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get View(): AnimatedView {
     return require('./components/AnimatedView').default;
   },
