@@ -219,6 +219,153 @@ describe('computeViewableItems', function () {
   });
 });
 
+describe('computeViewableItems with a pinned sticky header', function () {
+  // Header A, rows a1-a3, header B, row b1. The viewport is 200 tall.
+  let measuredProps: CellMetricProps = props;
+  beforeEach(() => {
+    rowFrames = {
+      headerA: {y: 0, height: 50},
+      a1: {y: 50, height: 80},
+      a2: {y: 130, height: 80},
+      a3: {y: 210, height: 80},
+      headerB: {y: 290, height: 50},
+      b1: {y: 340, height: 80},
+    };
+    data = [
+      {key: 'headerA'},
+      {key: 'a1'},
+      {key: 'a2'},
+      {key: 'a3'},
+      {key: 'headerB'},
+      {key: 'b1'},
+    ];
+    measuredProps = {
+      ...props,
+      data,
+      getItem: (items, index) => items[index],
+    };
+  });
+
+  it('excludes content behind the header and reports the header where it is drawn', function () {
+    const helper = new ViewabilityHelper({itemVisiblePercentThreshold: 100});
+    const listMetrics = createMeasuredListMetrics();
+    // a2 is drawn at 30-110, partly behind header A at 0-50.
+    expect(
+      helper.computeViewableItems(measuredProps, 100, 200, listMetrics),
+    ).toEqual([2, 3]);
+    expect(
+      helper.computeViewableItems(
+        measuredProps,
+        100,
+        200,
+        listMetrics,
+        undefined,
+        {
+          coveredLength: 50,
+          cellIndex: 0,
+        },
+      ),
+    ).toEqual([0, 3]);
+  });
+
+  it('only counts the part of an item outside the header', function () {
+    const helper = new ViewabilityHelper({itemVisiblePercentThreshold: 50});
+    const listMetrics = createMeasuredListMetrics();
+    const pinnedStickyHeader = {coveredLength: 50, cellIndex: 0};
+    // a2 has 40 of 80 pixels outside the header.
+    expect(
+      helper.computeViewableItems(
+        measuredProps,
+        120,
+        200,
+        listMetrics,
+        undefined,
+        pinnedStickyHeader,
+      ),
+    ).toEqual([0, 2, 3, 4]);
+    expect(
+      helper.computeViewableItems(
+        measuredProps,
+        121,
+        200,
+        listMetrics,
+        undefined,
+        pinnedStickyHeader,
+      ),
+    ).toEqual([0, 3, 4]);
+  });
+
+  it('measures view area coverage against the whole viewport', function () {
+    const listMetrics = createMeasuredListMetrics();
+    const pinnedStickyHeader = {coveredLength: 50, cellIndex: 0};
+    // 60 pixels of a2 are outside the header: 30% of the viewport.
+    expect(
+      new ViewabilityHelper({
+        viewAreaCoveragePercentThreshold: 30,
+      }).computeViewableItems(
+        measuredProps,
+        100,
+        200,
+        listMetrics,
+        undefined,
+        pinnedStickyHeader,
+      ),
+    ).toEqual([0, 2, 3]);
+    expect(
+      new ViewabilityHelper({
+        viewAreaCoveragePercentThreshold: 31,
+      }).computeViewableItems(
+        measuredProps,
+        100,
+        200,
+        listMetrics,
+        undefined,
+        pinnedStickyHeader,
+      ),
+    ).toEqual([0, 3]);
+  });
+
+  it('places a header that is being pushed out above the next header', function () {
+    const helper = new ViewabilityHelper({itemVisiblePercentThreshold: 25});
+    const listMetrics = createMeasuredListMetrics();
+    // Header B is at 30, so header A is drawn at -20 to 30 and covers a3.
+    expect(
+      helper.computeViewableItems(measuredProps, 260, 200, listMetrics),
+    ).toEqual([3, 4, 5]);
+    expect(
+      helper.computeViewableItems(
+        measuredProps,
+        260,
+        200,
+        listMetrics,
+        undefined,
+        {
+          coveredLength: 30,
+          cellIndex: 0,
+        },
+      ),
+    ).toEqual([0, 4, 5]);
+  });
+
+  it('only excludes content when the header is not a list item', function () {
+    const helper = new ViewabilityHelper({itemVisiblePercentThreshold: 100});
+    const listMetrics = createMeasuredListMetrics();
+    expect(
+      helper.computeViewableItems(
+        measuredProps,
+        100,
+        200,
+        listMetrics,
+        undefined,
+        {
+          coveredLength: 50,
+          cellIndex: null,
+        },
+      ),
+    ).toEqual([3]);
+  });
+});
+
 describe('onUpdate', function () {
   it.each([
     ['view area coverage', {viewAreaCoveragePercentThreshold: 0}],
