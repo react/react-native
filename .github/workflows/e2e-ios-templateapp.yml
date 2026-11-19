@@ -17,7 +17,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-26-large
+    runs-on: macos-26
     outputs:
       failure-debug: ${{ steps.report-status.outputs.failure-debug }}
       failure-release: ${{ steps.report-status.outputs.failure-release }}
@@ -74,6 +74,8 @@ jobs:
             -sdk "iphonesimulator" \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "/tmp/RNTestProject"
+      - name: Verify app supports the arm64 simulator
+        run: lipo /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app/RNTestProject -verify_arch arm64
       - name: Upload app
         uses: ./.github/actions/upload-artifact
         with:
@@ -100,7 +102,8 @@ jobs:
 
   test:
     needs: build
-    runs-on: macos-26-large
+    # Standard arm64 runner: run the simulator natively, as RNTester does.
+    runs-on: macos-26
     outputs:
       status: ${{ steps.report-status.outputs.status }}
       failure-debug: ${{ steps.report-status.outputs.failure-debug }}
@@ -160,6 +163,8 @@ jobs:
           maestro-flow: ./scripts/e2e/.maestro/
           flavor: ${{ matrix.flavor }}
           working-directory: /tmp/RNTestProject
+          device-model: iPhone-17-Pro
+          device-os: iOS-26-2
       - name: Report status
         id: report-status
         if: always()

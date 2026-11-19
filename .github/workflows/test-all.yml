@@ -91,7 +91,7 @@ jobs:
     needs: [prebuild_apple_dependencies]
 
   test_ios_rntester:
-    runs-on: macos-15-large
+    runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     strategy:
@@ -108,7 +108,7 @@ jobs:
 
   # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
   test_ios_rntester_cocoapods:
-    runs-on: macos-15-large
+    runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     steps:
