@@ -261,6 +261,16 @@ class UnsupportedObjectPropertyWithIndexerTypeAnnotationParserError extends Pars
   }
 }
 
+class UnsupportedRecordTypeParserError extends ParserError {
+  constructor(nativeModuleName: string, recordTypeAST: $FlowFixMe) {
+    super(
+      nativeModuleName,
+      recordTypeAST,
+      "'Record' is only supported as Record<string, T>.",
+    );
+  }
+}
+
 class UnsupportedObjectPropertyValueTypeAnnotationParserError extends ParserError {
   constructor(
     nativeModuleName: string,
@@ -477,6 +487,7 @@ module.exports = {
   UnsupportedObjectPropertyWithIndexerTypeAnnotationParserError,
   UnsupportedObjectPropertyValueTypeAnnotationParserError,
   UnsupportedObjectDirectRecursivePropertyParserError,
+  UnsupportedRecordTypeParserError,
   UnusedModuleInterfaceParserError,
   MoreThanOneModuleRegistryCallsParserError,
   UntypedModuleRegistryCallParserError,

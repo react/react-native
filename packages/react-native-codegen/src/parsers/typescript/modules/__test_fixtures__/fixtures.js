@@ -1045,8 +1045,40 @@ export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
 
 `;
 
+const NATIVE_MODULE_WITH_RECORD = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @format
+ */
+
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
+
+export type Options = Readonly<Record<string, number>>;
+
+export interface Rule {
+  readonly target: string;
+  readonly matched: Record<string, unknown>;
+}
+
+export interface Spec extends TurboModule {
+  readonly setOptions: (options: Record<string, unknown>) => void;
+  readonly getOptions: () => Options;
+  readonly getNames: () => Readonly<Record<string, string | null>>;
+  readonly configure: (rules: ReadonlyArray<Rule>) => void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
 module.exports = {
   NATIVE_MODULE_WITH_ARRAY_BUFFER,
+  NATIVE_MODULE_WITH_RECORD,
   NATIVE_MODULE_WITH_OBJECT_WITH_OBJECT_DEFINED_IN_FILE_AS_PROPERTY,
   NATIVE_MODULE_WITH_ARRAY_WITH_UNION_AND_TOUPLE,
   NATIVE_MODULE_WITH_ARRAY2_WITH_UNION_AND_TOUPLE,

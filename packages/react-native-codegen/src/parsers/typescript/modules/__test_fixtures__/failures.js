@@ -307,6 +307,27 @@ export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
 
 `;
 
+const NATIVE_MODULES_WITH_RECORD_WITH_NUMBER_KEY = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @format
+ */
+
+import type {TurboModule} from 'react-native';
+import {TurboModuleRegistry} from 'react-native';
+
+export interface Spec extends TurboModule {
+  readonly getMap: (a: Record<number, string>) => string;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
 module.exports = {
   NATIVE_MODULES_WITH_UNNAMED_PARAMS,
   NATIVE_MODULES_WITH_PROMISE_WITHOUT_TYPE,
@@ -321,4 +342,5 @@ module.exports = {
   MAP_WITH_EXTRA_KEYS_NATIVE_MODULE,
   NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY,
   NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_EVENT_EMITTER,
+  NATIVE_MODULES_WITH_RECORD_WITH_NUMBER_KEY,
 };
