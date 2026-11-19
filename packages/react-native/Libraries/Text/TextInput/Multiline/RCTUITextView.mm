@@ -396,6 +396,9 @@ static UIColor *defaultPlaceholderColor(void)
   _placeholderView.attributedText = [[NSAttributedString alloc] initWithString:_placeholder ?: @""
                                                                     attributes:[self _placeholderTextAttributes]];
   [self _invalidatePlaceholderVisibility];
+  // `layoutSubviews` sizes the placeholder label to fit its text, and the new text may need a different size. Nothing
+  // else lays the label out again when this view keeps its size (also after it is recycled).
+  [self setNeedsLayout];
 }
 
 - (NSDictionary<NSAttributedStringKey, id> *)_placeholderTextAttributes
