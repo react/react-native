@@ -536,13 +536,6 @@ function InternalTextInput(props: TextInputProps): React.Node {
   const flattenedStyle = flattenStyle<TextStyleProp>(props.style);
   if (flattenedStyle != null) {
     let overrides: ?{...TextStyle} = null;
-    if (typeof flattenedStyle?.fontWeight === 'number') {
-      overrides = overrides || ({} as {...TextStyle});
-      overrides.fontWeight =
-        // $FlowFixMe[incompatible-type]
-        flattenedStyle.fontWeight.toString() as TextStyle['fontWeight'];
-    }
-
     if (flattenedStyle.verticalAlign != null) {
       overrides = overrides || ({} as {...TextStyle});
       overrides.textAlignVertical =
