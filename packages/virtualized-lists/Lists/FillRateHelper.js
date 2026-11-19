@@ -38,7 +38,7 @@ let _minSampleCount = 10;
 let _sampleRate = DEBUG ? 1 : null;
 
 /**
- * A helper class for detecting when the maximem fill rate of `VirtualizedList` is exceeded.
+ * A helper class for detecting when the maximum fill rate of `VirtualizedList` is exceeded.
  * By default the sampling rate is set to zero and this will do nothing. If you want to collect
  * samples (e.g. to log them), make sure to call `FillRateHelper.setSampleRate(0.0-1.0)`.
  *
