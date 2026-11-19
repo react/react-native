@@ -99,7 +99,6 @@ describe('LogBoxInspectorStackFrames', () => {
       expect(
         getCollapseMessage(
           createCollapsedFrames(
-            // $FlowFixMe[incompatible-type]
             [stackOne, stackTwo, stackThree].filter(i => i != null),
           ),
           collapsed,

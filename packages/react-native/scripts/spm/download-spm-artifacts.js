@@ -378,7 +378,6 @@ async function exists(url /*: string */) /*: Promise<boolean> */ {
   }
 
   try {
-    // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
     const res = await fetch(url, {method: 'HEAD'});
     return res.status === 200;
   } catch {
@@ -491,7 +490,6 @@ function resolveLocalHermesCompilerVersion(
     const pkgPath = require.resolve('hermes-compiler/package.json', {
       paths: [rnRoot],
     });
-    // $FlowFixMe[incompatible-type] JSON.parse returns any
     const pkg /*: {version: string} */ = JSON.parse(
       fs.readFileSync(pkgPath, 'utf8'),
     );
@@ -666,7 +664,6 @@ async function downloadOnce(
 ) /*: Promise<void> */ {
   const tmpPath = destPath + '.download';
   try {
-    // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
     const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`HTTP ${res.status} ${res.statusText}: ${url}`);
@@ -728,7 +725,6 @@ async function downloadOnce(
     if (res.body) {
       // fetch() returns a Web ReadableStream, not a Node.js Readable.
       // Convert it so we can pipe to a file stream and track progress.
-      // $FlowFixMe[prop-missing] stream.Readable.fromWeb not in Flow stubs
       const nodeReadable = stream.Readable.fromWeb(res.body);
 
       await new Promise((resolve, reject) => {
@@ -1256,7 +1252,6 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   let rawVersion = args.version;
   let rnVersion = args.version;
   if (rnVersion == null) {
-    // $FlowFixMe[incompatible-type] JSON.parse returns any
     const rnPkg /*: {version: string} */ = JSON.parse(
       fs.readFileSync(path.join(rnRoot, 'package.json'), 'utf8'),
     );

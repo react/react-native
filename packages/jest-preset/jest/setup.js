@@ -43,8 +43,6 @@ Object.defineProperties(global, {
     configurable: true,
     enumerable: true,
     value: {
-      // $FlowFixMe[method-unbinding]
-      // $FlowFixMe[incompatible-type]
       now: jest.fn(Date.now),
     },
     writable: true,
@@ -177,7 +175,6 @@ mock(
 mock(
   // $FlowFixMe[cannot-resolve-module]
   'm#react-native/Libraries/ReactNative/RendererProxy',
-  // $FlowFixMe[incompatible-type] - `./mocks/RendererProxy` is incomplete.
   'm#./mocks/RendererProxy',
 );
 mock(

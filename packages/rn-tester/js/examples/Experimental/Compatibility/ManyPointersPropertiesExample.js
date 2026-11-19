@@ -48,7 +48,6 @@ function ManyPointersPropertiesExample(): React.Node {
   const [data, setData] = useState<{}>({});
   const onPointerMove = (event: PointerEvent) => {
     const pointerId = event.nativeEvent.pointerId;
-    // $FlowFixMe[invalid-computed-prop]
     // $FlowFixMe[incompatible-type]
     setData({...data, [pointerId]: event.nativeEvent});
   };

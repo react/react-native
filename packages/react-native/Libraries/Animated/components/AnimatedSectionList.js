@@ -14,7 +14,6 @@ import SectionList, {type SectionListProps} from '../../Lists/SectionList';
 import createAnimatedComponent from '../createAnimatedComponent';
 import * as React from 'react';
 
-// $FlowFixMe[incompatible-type]
 const AnimatedSectionList: component<
   // $FlowExpectedError[unclear-type]
   ItemT = any,

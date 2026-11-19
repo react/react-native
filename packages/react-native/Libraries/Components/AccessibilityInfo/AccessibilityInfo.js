@@ -451,7 +451,6 @@ const AccessibilityInfo = {
    */
   addEventListener<K extends keyof AccessibilityEventDefinitions>(
     eventName: K,
-    // $FlowFixMe[incompatible-type] - Flow bug with unions and generics (T128099423)
     handler: (...rest: AccessibilityEventDefinitions[K]) => void,
   ): EventSubscription {
     const deviceEventName = EventNames.get(eventName);

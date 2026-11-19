@@ -79,5 +79,4 @@ export const ReadOnlyCharacterData_public: typeof ReadOnlyCharacterData =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyCharacterData_public.prototype = ReadOnlyCharacterData.prototype;

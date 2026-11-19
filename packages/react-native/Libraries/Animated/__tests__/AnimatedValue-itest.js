@@ -28,11 +28,9 @@ describe('AnimatedValue', () => {
       original.apply(NativeAnimatedHelper.API, args),
     );
     // $FlowFixMe[prop-missing]
-    // $FlowFixMe[cannot-write]
     NativeAnimatedHelper.API[name] = spy;
     restoreAPI.push(() => {
       // $FlowFixMe[prop-missing]
-      // $FlowFixMe[cannot-write]
       NativeAnimatedHelper.API[name] = original;
     });
     return spy;
@@ -234,7 +232,6 @@ describe('AnimatedValue', () => {
 
       emitMockUpdate(node, 123, 50);
 
-      // $FlowFixMe[method-unbinding]
       const original = node.__onAnimatedValueUpdateReceived;
       const spy = jest.fn((...args: Array<unknown>) =>
         /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing

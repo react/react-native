@@ -47,7 +47,6 @@ const ProgressBarAndroid: component(
   ...props: ProgressBarAndroidProps
 ) = function ProgressBarAndroid({
   ref: forwardedRef,
-  // $FlowFixMe[incompatible-type]
   styleAttr = 'Normal',
   indeterminate = true,
   animating = true,

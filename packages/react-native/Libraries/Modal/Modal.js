@@ -340,7 +340,6 @@ class Modal extends React.Component<ModalProps, ModalState> {
         navigationBarTranslucent={this.props.navigationBarTranslucent}
         identifier={this._identifier}
         style={styles.modal}
-        // $FlowFixMe[method-unbinding] added when improving typing for this parameters
         /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
          * unsoundness in flow */
         onStartShouldSetResponder={this._shouldSetResponder}
@@ -376,9 +375,6 @@ const styles = StyleSheet.create({
   /* $FlowFixMe[incompatible-type] Natural Inference rollout. See
    * https://fburl.com/workplace/6291gfvu */
   container: {
-    /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb) This
-     * comment suppresses an error found when Flow v0.111 was deployed. To see
-     * the error, delete this comment and run Flow. */
     // $FlowFixMe[incompatible-type]
     [side]: 0,
     top: 0,
@@ -405,7 +401,6 @@ function Wrapper({
 }
 
 Wrapper.displayName = 'Modal';
-// $FlowExpectedError[prop-missing]
 Wrapper.Context = VirtualizedListContextResetter;
 
 export default Wrapper;

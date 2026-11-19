@@ -28,7 +28,6 @@ function Position(left: number, top: number) {
   this.top = top;
 }
 
-// $FlowFixMe[prop-missing]
 // $FlowFixMe[missing-this-annot]
 Position.prototype.destructor = function () {
   this.left = null;

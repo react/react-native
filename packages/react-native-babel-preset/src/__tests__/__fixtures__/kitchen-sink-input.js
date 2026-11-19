@@ -128,7 +128,6 @@ function mergeConfigs<T extends {}>(
   base: T,
   ...overrides: ReadonlyArray<Partial<T>>
 ): T {
-  // $FlowExpectedError[incompatible-return] - Testing spread syntax
   // $FlowExpectedError[incompatible-type] - Testing spread syntax
   return {...base, ...overrides.reduce((acc, o) => ({...acc, ...o}), {})};
 }

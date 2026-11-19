@@ -223,8 +223,6 @@ export const AbortSignal_public: typeof AbortSignal =
   };
 
 // Copy static properties ('length', 'name', 'prototype', 'abort', 'any', 'timeout') so that callers accessing them via the public constructor (e.g. `AbortSignal.timeout(0)`) still work.
-// $FlowFixMe[unsafe-object-assign]
-// $FlowFixMe[not-an-object]
 Object.getOwnPropertyNames(AbortSignal).forEach(methodName => {
   Object.defineProperty(
     AbortSignal_public,

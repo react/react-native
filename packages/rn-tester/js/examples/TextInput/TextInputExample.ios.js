@@ -103,7 +103,6 @@ class TextInputAccessoryViewChangeKeyboardExample extends React.Component<
         <RNTesterText>
           Set InputAccessoryView with ID & switch keyboard:
         </RNTesterText>
-        {/* $FlowFixMe[incompatible-use] */}
         <ExampleTextInput
           inputAccessoryViewID={inputAccessoryViewID}
           onChangeText={text => this.setState({text})}

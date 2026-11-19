@@ -49,7 +49,6 @@ export type ShareActionSheetIOSOptions = Readonly<{
 export type ShareActionSheetError = Readonly<{
   domain: string,
   code: string,
-  // $FlowFixMe[unclear-type]
   userInfo?: ?Object,
   message: string,
 }>;
@@ -127,11 +126,8 @@ const ActionSheetIOS = {
     RCTActionSheetManager.showActionSheetWithOptions(
       {
         ...remainingOptions,
-        // $FlowFixMe[incompatible-type]
         tintColor: processedTintColor,
-        // $FlowFixMe[incompatible-type]
         cancelButtonTintColor: processedCancelButtonTintColor,
-        // $FlowFixMe[incompatible-type]
         disabledButtonTintColor: processedDisabledButtonTintColor,
         destructiveButtonIndices,
       },
@@ -156,9 +152,7 @@ const ActionSheetIOS = {
    */
   showShareActionSheetWithOptions(
     options: ShareActionSheetIOSOptions,
-    // $FlowFixMe[unclear-type]
     failureCallback: Function | ((error: ShareActionSheetError) => void),
-    // $FlowFixMe[unclear-type]
     successCallback: Function | ((success: boolean, method: ?string) => void),
   ) {
     invariant(

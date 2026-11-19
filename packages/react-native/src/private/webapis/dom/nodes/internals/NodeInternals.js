@@ -98,7 +98,6 @@ export function getPublicInstanceFromInstanceHandle(
     getPublicInstanceFromInternalInstanceHandle(instanceHandle);
 
   if (mixedPublicInstance != null) {
-    // $FlowExpectedError[incompatible-type] React defines public instances as "mixed" because it can't access the definition from React Native.
     return mixedPublicInstance;
   }
 

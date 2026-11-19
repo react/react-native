@@ -24,7 +24,6 @@ export default function patchWeakRef(): void {
 
   initialized = true;
 
-  // $FlowExpectedError[method-unbinding]
   const originalDeref = WeakRef.prototype.deref;
 
   // $FlowExpectedError[cannot-write]

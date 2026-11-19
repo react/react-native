@@ -35,12 +35,9 @@ describe('UIManager', () => {
     try {
       // $FlowExpectedError[cannot-write]
       global.RN$Bridgeless = true;
-      // $FlowExpectedError[cannot-write]
       global.RN$LegacyInterop_UIManager_getConstants = getConstants;
-      // $FlowExpectedError[cannot-write]
       global.RN$LegacyInterop_UIManager_getConstantsForViewManager =
         getConstantsForViewManager;
-      // $FlowExpectedError[cannot-write]
       global.RN$LegacyInterop_UIManager_getDefaultEventTypes = jest.fn(
         () => ({}),
       );
@@ -60,12 +57,9 @@ describe('UIManager', () => {
     } finally {
       // $FlowExpectedError[cannot-write]
       global.RN$Bridgeless = originalBridgelessValue;
-      // $FlowExpectedError[cannot-write]
       global.RN$LegacyInterop_UIManager_getConstants = originalGetConstants;
-      // $FlowExpectedError[cannot-write]
       global.RN$LegacyInterop_UIManager_getConstantsForViewManager =
         originalGetConstantsForViewManager;
-      // $FlowExpectedError[cannot-write]
       global.RN$LegacyInterop_UIManager_getDefaultEventTypes =
         originalGetDefaultEventTypes;
       jest.resetModules();

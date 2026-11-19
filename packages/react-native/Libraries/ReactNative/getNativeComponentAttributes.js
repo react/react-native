@@ -138,7 +138,6 @@ function attachDefaultEventTypes(
   }
 }
 
-// $FlowFixMe[method-unbinding]
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 // TODO: Figure out how to avoid all this runtime initialization cost.

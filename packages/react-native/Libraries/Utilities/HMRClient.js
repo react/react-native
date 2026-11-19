@@ -388,8 +388,6 @@ function showCompileError() {
   const message = currentCompileErrorMessage;
   currentCompileErrorMessage = null;
 
-  /* $FlowFixMe[class-object-subtyping] added when improving typing for this
-   * parameters */
   // $FlowFixMe[incompatible-type]
   const error: ExtendedError = new Error(message);
   // Symbolicating compile errors is wasted effort

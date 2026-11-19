@@ -334,8 +334,7 @@ function diffProperties(
       if (shouldUpdate) {
         const nextValue =
           typeof attributeConfig.process === 'function'
-            ? // $FlowFixMe[incompatible-use] found when upgrading Flow
-              attributeConfig.process(nextProp)
+            ? attributeConfig.process(nextProp)
             : nextProp;
         (updatePayload || (updatePayload = {} as {[key: string]: unknown}))[
           propKey

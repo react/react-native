@@ -806,7 +806,6 @@ describe('<Text>', () => {
       const root = Fantom.createRoot();
       Fantom.runTask(() => {
         root.render(
-          // $FlowFixMe[prop-missing]
           <Text onPress={() => {}} role="button">
             {TEST_TEXT}
           </Text>,

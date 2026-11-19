@@ -833,7 +833,6 @@ const HorizontalScrollView = (props: {
   return (
     <View style={{direction}}>
       <RNTesterText style={styles.text}>{title}</RNTesterText>
-      {/* $FlowFixMe[incompatible-use] */}
       <ScrollView
         ref={scrollRef}
         automaticallyAdjustContentInsets={false}
@@ -1346,7 +1345,6 @@ const InvertStickyHeaders = () => {
   const _scrollView = useRef<?React.ElementRef<typeof ScrollView>>(null);
   return (
     <View>
-      {/* $FlowFixMe[incompatible-use] */}
       <ScrollView
         ref={_scrollView}
         style={[styles.scrollView, {height: 200}]}
@@ -1388,7 +1386,6 @@ const MultipleStickyHeaders = () => {
   const stickyHeaderStyle = {backgroundColor: 'yellow'};
   return (
     <View>
-      {/* $FlowFixMe[incompatible-use] */}
       <ScrollView
         ref={_scrollView}
         style={[styles.scrollView, {height: 200}]}

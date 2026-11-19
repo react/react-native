@@ -51,20 +51,11 @@ export type Response =
   | {[key: string]: unknown, ...};
 
 type XHRInterceptor = interface {
-  requestSent(
-    id: number,
-    url: string,
-    method: string,
-    /* $FlowFixMe[unclear-type] Interceptors annotate the header map with
-     * differing value types, which an invariant indexer would reject. */
-    headers: Object,
-  ): void,
+  requestSent(id: number, url: string, method: string, headers: Object): void,
   responseReceived(
     id: number,
     url: string,
     status: number,
-    /* $FlowFixMe[unclear-type] Interceptors annotate the header map with
-     * differing value types, which an invariant indexer would reject. */
     headers: Object,
   ): void,
   dataReceived(id: number, data: string): void,
