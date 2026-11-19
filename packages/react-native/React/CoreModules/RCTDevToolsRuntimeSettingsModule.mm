@@ -10,6 +10,8 @@
 
 #import "CoreModulesPlugins.h"
 
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
+
 struct Config {
   bool shouldReloadAndProfile = false;
   bool recordChangeDescriptions = false;
@@ -51,7 +53,13 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getReloadAndProfileConfig)
 
 @end
 
+#endif // REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
+
 Class RCTDevToolsRuntimeSettingsCls(void)
 {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
   return RCTDevToolsRuntimeSettingsModule.class;
+#else
+  return nil;
+#endif
 }
