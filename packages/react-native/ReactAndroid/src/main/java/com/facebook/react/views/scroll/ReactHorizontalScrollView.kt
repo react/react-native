@@ -37,6 +37,7 @@ import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.HasChildPressedStateDelay
+import com.facebook.react.uimanager.HiddenSubtreeFocusHelper
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions
@@ -565,6 +566,16 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   }
 
   override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    addPageFocusables(views, direction, focusableMode)
+    HiddenSubtreeFocusHelper.removeHiddenFocusables(this, views, firstAddedIndex)
+  }
+
+  override fun onRequestFocusInDescendants(direction: Int, previouslyFocusedRect: Rect?): Boolean =
+      !HiddenSubtreeFocusHelper.hidesDescendants(this) &&
+          super.onRequestFocusInDescendants(direction, previouslyFocusedRect)
+
+  private fun addPageFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
     if (pagingEnabled && !pagedArrowScrolling) {
       // Only add elements within the current page to list of focusables
       val candidateViews = ArrayList<View>()
