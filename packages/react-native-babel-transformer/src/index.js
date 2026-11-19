@@ -48,7 +48,7 @@ function isTSXSource(fileName /*: string */) {
  * default RN babelrc file and uses that.
  */
 const getBabelRC = (function () {
-  let babelRC /*: ?BabelCoreOptions */ = null;
+  const babelRCs /*: Map<string, BabelCoreOptions> */ = new Map();
 
   /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
    * LTI update could not be added via codemod */
@@ -57,6 +57,8 @@ const getBabelRC = (function () {
     extendsBabelConfigPath,
     ...options
   }) {
+    const cacheKey = JSON.stringify(options);
+    let babelRC = babelRCs.get(cacheKey);
     if (babelRC != null) {
       return babelRC;
     }
@@ -65,6 +67,7 @@ const getBabelRC = (function () {
       plugins: [],
       extends: extendsBabelConfigPath,
     };
+    babelRCs.set(cacheKey, babelRC);
 
     if (extendsBabelConfigPath) {
       return babelRC;
@@ -92,15 +95,12 @@ const getBabelRC = (function () {
       // If we found a babel config file, extend our config off of it
       // otherwise the default config will be used
       if (fs.existsSync(projectBabelRCPath)) {
-        // $FlowFixMe[incompatible-use] `extends` is missing in null or undefined.
         babelRC.extends = projectBabelRCPath;
       }
     }
 
     // If a babel config file doesn't exist in the project then
     // the default preset for react-native will be used instead.
-    // $FlowFixMe[incompatible-use] `extends` is missing in null or undefined.
-    // $FlowFixMe[incompatible-type] `extends` is missing in null or undefined.
     if (!babelRC.extends) {
       const {
         babelRuntimeModuleName,
@@ -109,7 +109,6 @@ const getBabelRC = (function () {
         ...presetOptions
       } = options;
 
-      // $FlowFixMe[incompatible-use] `presets` is missing in null or undefined.
       babelRC.presets = [
         [
           require('@react-native/babel-preset'),
