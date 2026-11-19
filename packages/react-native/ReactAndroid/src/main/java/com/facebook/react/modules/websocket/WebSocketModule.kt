@@ -105,22 +105,35 @@ public class WebSocketModule(context: ReactApplicationContext) :
       socketID: Double,
   ) {
     val id = socketID.toInt()
-    val okHttpBuilder =
-        OkHttpClientProvider.getOkHttpClient()
-            .newBuilder()
-            // Don't let BridgeInterceptor overwrite a caller-supplied Cookie header.
-            .cookieJar(CookieJar.NO_COOKIES)
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(0, TimeUnit.MINUTES) // Disable timeouts for read
+    // Prefer the DevTools request ID created by the JS caller, which carries
+    // the request initiator stack trace for CDP reporting.
+    val devToolsRequestId =
+        if (
+            isInspectorNetworkReportingEnabled() &&
+                options?.hasKey("unstable_devToolsRequestId") == true &&
+                options.getType("unstable_devToolsRequestId") == ReadableType.String
+        ) {
+          options.getString("unstable_devToolsRequestId")
+        } else {
+          null
+        }
+    val builder: Request.Builder
+    val cookie: String?
+    val defaultOrigin: String
+    try {
+      builder = Request.Builder().tag(id).url(url)
+      cookie = getCookie(url)
+      defaultOrigin = getDefaultOrigin(url)
+    } catch (e: IllegalArgumentException) {
+      if (devToolsRequestId != null) {
+        // Consume the saved JS initiator even though no transport will be created.
+        InspectorNetworkReporter.reportWebSocketCreated(devToolsRequestId, url)
+        InspectorNetworkReporter.reportWebSocketClosed(devToolsRequestId)
+      }
+      notifyWebSocketFailed(id, e.message)
+      return
+    }
 
-    applyCustomBuilder(okHttpBuilder)
-
-    val client = okHttpBuilder.build()
-
-    val builder = Request.Builder().tag(id).url(url)
-
-    val cookie = this.getCookie(url)
     if (cookie != null) {
       builder.addHeader("Cookie", cookie)
     }
@@ -148,7 +161,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
     }
 
     if (!hasOriginHeader) {
-      builder.addHeader("origin", getDefaultOrigin(url))
+      builder.addHeader("origin", defaultOrigin)
     }
 
     if (protocols != null && protocols.size() > 0) {
@@ -168,18 +181,20 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
     val request = builder.build()
 
+    val okHttpBuilder =
+        OkHttpClientProvider.getOkHttpClient()
+            .newBuilder()
+            // Don't let BridgeInterceptor overwrite a caller-supplied Cookie header.
+            .cookieJar(CookieJar.NO_COOKIES)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(0, TimeUnit.MINUTES) // Disable timeouts for read
+
+    applyCustomBuilder(okHttpBuilder)
+
+    val client = okHttpBuilder.build()
+
     if (isInspectorNetworkReportingEnabled()) {
-      // Prefer the DevTools request ID created by the JS caller, which carries
-      // the request initiator stack trace for CDP reporting.
-      val devToolsRequestId =
-          if (
-              options?.hasKey("unstable_devToolsRequestId") == true &&
-                  options.getType("unstable_devToolsRequestId") == ReadableType.String
-          ) {
-            options.getString("unstable_devToolsRequestId")
-          } else {
-            null
-          }
       val requestId = devToolsRequestId ?: UUID.randomUUID().toString()
       inspectorRequestIds[id] = requestId
       InspectorNetworkReporter.reportWebSocketCreated(requestId, url)
