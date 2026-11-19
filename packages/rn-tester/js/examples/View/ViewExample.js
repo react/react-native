@@ -13,6 +13,7 @@
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 
 import RNTesterText from '../../components/RNTesterText';
+import ViewBorderCurveExample from './ViewBorderCurveExample';
 import * as React from 'react';
 import {useState} from 'react';
 import {
@@ -925,6 +926,34 @@ export default {
             )}
           </View>
         );
+      },
+    },
+    {
+      title: 'Border Curve (iOS)',
+      name: 'border-curve',
+      render(): React.Node {
+        return <ViewBorderCurveExample />;
+      },
+    },
+    {
+      title: 'Border Curve Circular Control (iOS)',
+      name: 'border-curve-circular',
+      render(): React.Node {
+        return <ViewBorderCurveExample continuous={false} />;
+      },
+    },
+    {
+      title: 'Border Curve Boundaries (iOS)',
+      name: 'border-curve-boundaries',
+      render(): React.Node {
+        return <ViewBorderCurveExample boundaryCases />;
+      },
+    },
+    {
+      title: 'Border Curve Boundaries Circular Control (iOS)',
+      name: 'border-curve-boundaries-circular',
+      render(): React.Node {
+        return <ViewBorderCurveExample boundaryCases continuous={false} />;
       },
     },
     {

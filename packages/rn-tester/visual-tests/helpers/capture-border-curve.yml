@@ -1,0 +1,34 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: 'Open'
+    commands:
+      - tapOn: 'Open'
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
+- openLink: rntester://example/ViewExample/${EXAMPLE}
+- tapOn:
+    text: 'Open'
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: 'view-border-curve-example'
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${WAIT_FOR_IMAGES}
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: 'border-curve-image-loaded'
+          timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/view/${EXAMPLE}
+    cropOn:
+      id: 'view-border-curve-example'
