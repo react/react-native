@@ -340,11 +340,18 @@ class BaseViewManagerTest {
               mutableListOf<String>(),
               arrayOfNulls(0),
           )
-          ReactAxOrderHelper.disableFocusForSubtree(previous, mutableListOf<String>())
+          AccessibilityOrderHolds().disableFocusForSubtree(previous, emptyList<String>())
         }
 
     Assertions.assertThat(recycled.getTag(R.id.accessibility_order_parent)).isNull()
-    Assertions.assertThat(recycled.getTag(R.id.original_focusability)).isNull()
+    viewManager.updateProperties(
+        recycled,
+        ReactStylesDiffMap(
+            JavaOnlyMap.of("focusable", true, ViewProps.SCREEN_READER_FOCUSABLE, true)
+        ),
+    )
+    Assertions.assertThat(recycled.isFocusable).isTrue()
+    Assertions.assertThat(ViewCompat.isScreenReaderFocusable(recycled)).isTrue()
   }
 
   @Test
@@ -417,6 +424,20 @@ class BaseViewManagerTest {
     viewManager.setElevation(view, Float.NaN)
 
     Assertions.assertThat(view.elevation).isEqualTo(0f)
+  }
+
+  @Test
+  fun testScreenReaderFocusableSetWhileAnAccessibilityOrderHoldsFocusWaitsForItToLetGo() {
+    val manager = ReactScrollViewManager()
+    val scrollView = createView(manager, JavaOnlyMap())
+    val holds = AccessibilityOrderHolds()
+    holds.disableFocusForSubtree(scrollView, emptyList<String>())
+
+    manager.setScreenReaderFocusable(scrollView, true)
+
+    Assertions.assertThat(ViewCompat.isScreenReaderFocusable(scrollView)).isFalse()
+    holds.restoreFocusability()
+    Assertions.assertThat(ViewCompat.isScreenReaderFocusable(scrollView)).isTrue()
   }
 
   private fun recycleView(

@@ -515,21 +515,18 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.IMPORTANT_FOR_ACCESSIBILITY)
   public void setImportantForAccessibility(
       @NonNull T view, @Nullable String importantForAccessibility) {
-    if (importantForAccessibility == null || importantForAccessibility.equals("auto")) {
-      view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
-    } else if (importantForAccessibility.equals("yes")) {
-      view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
-    } else if (importantForAccessibility.equals("no")) {
-      view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-    } else if (importantForAccessibility.equals("no-hide-descendants")) {
-      view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+    @Nullable
+    Integer mode =
+        ImportantForAccessibilityHelper.parseImportantForAccessibility(importantForAccessibility);
+    if (mode != null) {
+      view.setImportantForAccessibility(mode);
     }
   }
 
   @ReactProp(name = ViewProps.SCREEN_READER_FOCUSABLE)
   public void setScreenReaderFocusable(@NonNull T view, boolean screenReaderFocusable) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-      view.setScreenReaderFocusable(screenReaderFocusable);
+      ReactAxOrderHelper.internal_setScreenReaderFocusable(view, screenReaderFocusable);
     }
   }
 

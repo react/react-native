@@ -12,7 +12,14 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTesterText from '../../components/RNTesterText';
 import {useState} from 'react';
-import {Alert, Pressable, StyleSheet, TextInput, View} from 'react-native';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 
 type SectionProps = {
   children: React.Node,
@@ -33,16 +40,29 @@ const FocusEventSection = ({children}: SectionProps): React.Node => {
   );
 };
 
-const ViewExampleInnerRow = ({focusable}: {focusable: boolean}) => {
+type ViewExampleInnerRowProps = {
+  accessible?: boolean,
+  focusable: boolean,
+  testID?: string,
+};
+
+const ViewExampleInnerRow = ({
+  accessible,
+  focusable,
+  testID,
+}: ViewExampleInnerRowProps) => {
   const [focused, setFocused] = useState(false);
   return (
     <View
+      accessible={accessible}
       focusable={focusable}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      style={[styles.viewInnerRow]}>
+      style={[styles.viewInnerRow]}
+      testID={testID}>
       <RNTesterText style={styles.viewInnerRowTextColor}>
         Focusable: {focusable ? 'true' : 'false'}
+        {accessible === true ? ', accessible: true' : ''}
       </RNTesterText>
       <RNTesterText style={styles.viewInnerRowTextColor}>
         Focused: {focused ? 'true' : 'false'}
@@ -59,6 +79,44 @@ const ViewExample = () => {
       <ViewExampleInnerRow focusable={false} />
       <ViewExampleInnerRow focusable={true} />
     </FocusEventSection>
+  );
+};
+
+const KeyboardFocusExclusionExample = () => {
+  return (
+    <>
+      <RNTesterText style={styles.sectionSubtitle}>
+        Tap a text input, then press Tab: focus passes over the accessible view
+        with focusable=false.
+      </RNTesterText>
+      <TextInput
+        placeholder="In a View"
+        style={styles.textInput}
+        testID="keyboard_focus_view_input"
+      />
+      <ViewExampleInnerRow
+        accessible={true}
+        focusable={false}
+        testID="keyboard_focus_view_excluded"
+      />
+      <ViewExampleInnerRow focusable={true} testID="keyboard_focus_view_next" />
+      <ScrollView style={styles.scrollView}>
+        <TextInput
+          placeholder="In a ScrollView"
+          style={styles.textInput}
+          testID="keyboard_focus_scroll_input"
+        />
+        <ViewExampleInnerRow
+          accessible={true}
+          focusable={false}
+          testID="keyboard_focus_scroll_excluded"
+        />
+        <ViewExampleInnerRow
+          focusable={true}
+          testID="keyboard_focus_scroll_next"
+        />
+      </ScrollView>
+    </>
   );
 };
 
@@ -126,6 +184,10 @@ const styles = StyleSheet.create({
     padding: 8,
     rowGap: 16,
   },
+  scrollView: {
+    height: 180,
+    marginTop: 4,
+  },
   sectionSubtitle: {
     paddingBottom: 8,
   },
@@ -172,6 +234,13 @@ export default {
       title: 'View Example',
       render: function (): React.Node {
         return <ViewExample />;
+      },
+    },
+    {
+      title: 'Keyboard Focus Exclusion Example',
+      name: 'keyboard-focus-exclusion',
+      render: function (): React.Node {
+        return <KeyboardFocusExclusionExample />;
       },
     },
     {
