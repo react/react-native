@@ -295,8 +295,6 @@ export default function structuredClone<T>(value: T): T {
   }
 }
 
-const NON_SERIALIZABLE_OBJECT_KEY = Symbol('nonSerializableObject');
-
 function cloneArrayBuffer(value: ArrayBuffer): ArrayBuffer {
   const existingClone = memory.get(value);
   if (existingClone instanceof ArrayBuffer) {
@@ -392,16 +390,11 @@ function createErrorClone(value: Error): Error {
 }
 
 function isNonSerializableObject<T extends interface {}>(obj: T): boolean {
-  // $FlowExpectedError[invalid-in-lhs]
-  return NON_SERIALIZABLE_OBJECT_KEY in obj;
+  // Built-in prototypes must not be written to because Hardened JS
+  // environments (SES) freeze them, so the non-serializable
+  // built-ins are detected with `instanceof` instead of marking the
+  // prototypes with e.g. Symbol('nonSerializableObject').
+  return (
+    obj instanceof WeakMap || obj instanceof WeakSet || obj instanceof Promise
+  );
 }
-
-function markClassAsNonSerializable<T>(cls: Class<T>): void {
-  // $FlowExpectedError[incompatible-use]
-  cls.prototype[NON_SERIALIZABLE_OBJECT_KEY] = true;
-}
-
-// Non-serializable built-ins.
-markClassAsNonSerializable(WeakMap);
-markClassAsNonSerializable(WeakSet);
-markClassAsNonSerializable(Promise);
