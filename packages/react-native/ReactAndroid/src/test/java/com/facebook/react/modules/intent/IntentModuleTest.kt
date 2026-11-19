@@ -7,6 +7,8 @@
 
 package com.facebook.react.modules.intent
 
+import android.content.Intent
+import android.provider.Settings
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -62,6 +64,21 @@ class IntentModuleTest {
     // the next resume, and the promise is left pending (neither resolved nor rejected).
     verify(context, times(2)).addLifecycleEventListener(any())
     assertThat(promise.resolved).isEqualTo(0)
+    assertThat(promise.rejected).isEqualTo(0)
+  }
+
+  @Test
+  fun openSettings_withNullActivity_startsSettingsFromApplicationContext() {
+    whenever(context.currentActivity).thenReturn(null)
+
+    val promise = SimplePromise()
+    intentModule.openSettings(promise)
+
+    val intentCaptor = argumentCaptor<Intent>()
+    verify(context).startActivity(intentCaptor.capture())
+    assertThat(intentCaptor.firstValue.action)
+        .isEqualTo(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    assertThat(promise.resolved).isEqualTo(1)
     assertThat(promise.rejected).isEqualTo(0)
   }
 
