@@ -10,22 +10,24 @@
 
 #if RCT_DEV_MENU
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class RCTJSStackFrame;
 
 @protocol RCTRedBoxControllerActionDelegate <NSObject>
 
 - (void)redBoxController:(UIViewController *)redBoxController openStackFrameInEditor:(RCTJSStackFrame *)stackFrame;
-- (void)reloadFromRedBoxController:(UIViewController *)redBoxController;
+- (void)reloadFromRedBoxController:(nullable UIViewController *)redBoxController;
 - (void)loadExtraDataViewController;
 
 @end
 
 @protocol RCTRedBoxControlling <NSObject>
 
-@property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
+@property (nonatomic, weak, nullable) id<RCTRedBoxControllerActionDelegate> actionDelegate;
 
 - (void)showErrorMessage:(NSString *)message
-               withStack:(NSArray<RCTJSStackFrame *> *)stack
+               withStack:(nullable NSArray<RCTJSStackFrame *> *)stack
                 isUpdate:(BOOL)isUpdate
              errorCookie:(int)errorCookie;
 
@@ -38,5 +40,7 @@
 @property (nonatomic, strong, nullable) NSURL *bundleURL;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif

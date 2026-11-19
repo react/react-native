@@ -37,7 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @parameter: rootView - The root view to customize.
  */
+// Preserve the legacy customization signature without warning on protocol import.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)customizeRootView:(RCTRootView *)rootView;
+#pragma clang diagnostic pop
 
 /**
  * It creates the RootViewController.
