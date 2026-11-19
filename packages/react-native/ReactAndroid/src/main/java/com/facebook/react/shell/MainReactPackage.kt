@@ -48,6 +48,7 @@ import com.facebook.react.modules.websocket.WebSocketModule
 import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.views.drawer.ReactDrawerLayoutManager
 import com.facebook.react.views.image.ReactImageManager
+import com.facebook.react.views.keyboardavoidingview.ReactKeyboardAvoidingViewManager
 import com.facebook.react.views.modal.ReactModalHostManager
 import com.facebook.react.views.progressbar.ReactProgressBarViewManager
 import com.facebook.react.views.safeareaview.ReactSafeAreaViewManager
@@ -144,6 +145,7 @@ constructor(private val config: MainPackageConfig? = null) :
           ReactDrawerLayoutManager(),
           ReactHorizontalScrollViewManager(),
           ReactHorizontalScrollContainerViewManager(),
+          ReactKeyboardAvoidingViewManager(),
           ReactProgressBarViewManager(),
           if (ReactNativeFeatureFlags.useNestedScrollViewAndroid()) ReactNestedScrollViewManager()
           else ReactScrollViewManager(),
@@ -176,6 +178,8 @@ constructor(private val config: MainPackageConfig? = null) :
               ModuleSpec.viewManagerSpec { ReactHorizontalScrollViewManager() },
           ReactHorizontalScrollContainerViewManager.REACT_CLASS to
               ModuleSpec.viewManagerSpec { ReactHorizontalScrollContainerViewManager() },
+          ReactKeyboardAvoidingViewManager.REACT_CLASS to
+              ModuleSpec.viewManagerSpec { ReactKeyboardAvoidingViewManager() },
           ReactProgressBarViewManager.REACT_CLASS to
               ModuleSpec.viewManagerSpec { ReactProgressBarViewManager() },
           ReactSafeAreaViewManager.REACT_CLASS to

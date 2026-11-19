@@ -422,6 +422,9 @@ using facebook::react::GradientDirection = std::variant<facebook::react::Float, 
 using facebook::react::HostPlatformTouch = facebook::react::BaseTouch;
 using facebook::react::HostPlatformViewEventEmitter = facebook::react::BaseViewEventEmitter;
 using facebook::react::ImageSources = std::vector<facebook::react::ImageSource>;
+using facebook::react::KeyboardAvoidingViewComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::KeyboardAvoidingViewShadowNode>;
+using facebook::react::KeyboardAvoidingViewShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::KeyboardAvoidingViewComponentName, facebook::react::KeyboardAvoidingViewProps, facebook::react::KeyboardAvoidingViewEventEmitter, facebook::react::KeyboardAvoidingViewState>;
+using facebook::react::KeyboardAvoidingViewState = facebook::react::StateData;
 using facebook::react::ModalHostViewSupportedOrientationsMask = uint32_t;
 using facebook::react::NativeMethodCallFunc = std::function<void()>;
 using facebook::react::PromiseSetupFunctionType = std::function<void(facebook::jsi::Runtime& rt, std::shared_ptr<facebook::react::Promise>)>;
@@ -679,6 +682,7 @@ JSI_EXPORT const char facebook::react::ActivityIndicatorViewComponentName[];
 JSI_EXPORT const char facebook::react::AndroidDrawerLayoutComponentName[];
 JSI_EXPORT const char facebook::react::AndroidSwipeRefreshLayoutComponentName[];
 JSI_EXPORT const char facebook::react::DebuggingOverlayComponentName[];
+JSI_EXPORT const char facebook::react::KeyboardAvoidingViewComponentName[];
 JSI_EXPORT const char facebook::react::PullToRefreshViewComponentName[];
 JSI_EXPORT const char facebook::react::UnimplementedNativeViewComponentName[];
 
@@ -1703,6 +1707,25 @@ struct facebook::react::JavaTurboModule::InitParams {
   public std::shared_ptr<facebook::react::CallInvoker> jsInvoker;
   public std::shared_ptr<facebook::react::NativeMethodCallInvoker> nativeMethodCallInvoker;
   public std::string moduleName;
+}
+
+class facebook::react::KeyboardAvoidingViewEventEmitter : public facebook::react::BaseViewEventEmitter {
+  public void onKeyboardInsetChange(facebook::react::KeyboardAvoidingViewEventEmitter::OnKeyboardInsetChange value) const;
+}
+
+struct facebook::react::KeyboardAvoidingViewEventEmitter::OnKeyboardInsetChange {
+  public facebook::react::Float inset;
+  public facebook::react::Float maxHeight;
+  public facebook::react::Float settledInset;
+}
+
+class facebook::react::KeyboardAvoidingViewProps : public facebook::react::HostPlatformViewProps {
+  public KeyboardAvoidingViewProps() = default;
+  public KeyboardAvoidingViewProps(const facebook::react::PropsParserContext& context, const facebook::react::KeyboardAvoidingViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public bool enabled;
+  public facebook::react::Float keyboardVerticalOffset;
+  public virtual facebook::react::ComponentName getDiffPropsImplementationTarget() const override;
+  public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
 }
 
 class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode {
