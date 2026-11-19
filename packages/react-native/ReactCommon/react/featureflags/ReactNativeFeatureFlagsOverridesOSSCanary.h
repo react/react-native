@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<153a8b43c146142cba2df3fa5d865562>>
+ * @generated SignedSource<<a1bae43cd758186d0ef2bd0bbc0784ee>>
  */
 
 /**
@@ -46,6 +46,10 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
   }
 
   bool fixBorderlessRippleAndroid() override {
+    return true;
+  }
+
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
     return true;
   }
 
