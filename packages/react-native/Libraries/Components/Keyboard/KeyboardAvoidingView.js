@@ -19,12 +19,11 @@ import type {KeyboardEvent, KeyboardMetrics} from './Keyboard';
 import LayoutAnimation from '../../LayoutAnimation/LayoutAnimation';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import Platform from '../../Utilities/Platform';
-import {type EventSubscription} from '../../vendor/emitter/EventEmitter';
 import AccessibilityInfo from '../AccessibilityInfo/AccessibilityInfo';
 import View from '../View/View';
 import Keyboard from './Keyboard';
 import * as React from 'react';
-import {createRef} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 type KeyboardAvoidingViewPropsCore = Readonly<{
   /**
@@ -59,124 +58,121 @@ export type KeyboardAvoidingViewProps = Readonly<{
   ...KeyboardAvoidingViewPropsCore,
 }>;
 
-type KeyboardAvoidingViewState = {
-  bottom: number,
-};
-
 /**
  * Automatically adjusts its height, position, or bottom padding based on the
  * keyboard height to remain visible while the virtual keyboard is displayed.
  *
  * @see https://reactnative.dev/docs/keyboardavoidingview
  */
-class KeyboardAvoidingView extends React.Component<
-  KeyboardAvoidingViewProps,
-  KeyboardAvoidingViewState,
-> {
-  _frame: ?ViewLayout = null;
-  _keyboardEvent: ?KeyboardEvent = null;
-  _subscriptions: Array<EventSubscription> = [];
-  viewRef: {current: React.ElementRef<typeof View> | null, ...};
-  _initialFrameHeight: number = 0;
-  _bottom: number = 0;
+const KeyboardAvoidingView: component(
+  ref?: React.RefSetter<React.ElementRef<typeof View>>,
+  ...props: KeyboardAvoidingViewProps
+) = ({
+  ref,
+  behavior,
+  children,
+  contentContainerStyle,
+  enabled = true,
+  keyboardVerticalOffset = 0,
+  style,
+  onLayout,
+  ...props
+}: {
+  ref?: React.RefSetter<React.ElementRef<typeof View>>,
+  ...KeyboardAvoidingViewProps,
+}): React.Node => {
+  const [bottom, setBottom] = useState<number>(0);
 
-  constructor(props: KeyboardAvoidingViewProps) {
-    super(props);
-    this.state = {bottom: 0};
-    this.viewRef = createRef();
-  }
+  const frame = useRef<?ViewLayout>(null);
+  const keyboardEvent = useRef<?KeyboardEvent>(null);
+  const initialFrameHeight = useRef<number>(0);
+  const bottomValue = useRef<number>(0);
 
-  async _relativeKeyboardHeight(
-    keyboardFrame: KeyboardMetrics,
-  ): Promise<number> {
-    const frame = this._frame;
-    if (!frame || !keyboardFrame) {
-      return 0;
-    }
-
-    // On iOS when Prefer Cross-Fade Transitions is enabled, the keyboard position
-    // & height is reported differently (0 instead of Y position value matching height of frame)
-    if (
-      Platform.OS === 'ios' &&
-      keyboardFrame.screenY === 0 &&
-      (await AccessibilityInfo.prefersCrossFadeTransitions())
-    ) {
-      return 0;
-    }
-
-    const keyboardY =
-      keyboardFrame.screenY - (this.props.keyboardVerticalOffset ?? 0);
-
-    if (this.props.behavior === 'height') {
-      return Math.max(
-        this.state.bottom + frame.y + frame.height - keyboardY,
-        0,
-      );
-    }
-
-    // Calculate the displacement needed for the view such that it
-    // no longer overlaps with the keyboard
-    return Math.max(frame.y + frame.height - keyboardY, 0);
-  }
-
-  _onKeyboardChange = (event: ?KeyboardEvent) => {
-    this._keyboardEvent = event;
-    // $FlowFixMe[unused-promise]
-    this._updateBottomIfNecessary();
+  // Mirror the latest props/state so the (stable) keyboard subscription
+  // callbacks can read them like the original class component read
+  // `this.props` / `this.state`, without resubscribing on every render.
+  const latest = useRef<{
+    behavior: ?('height' | 'position' | 'padding'),
+    enabled: boolean,
+    keyboardVerticalOffset: number,
+    bottom: number,
+    onLayout: ?(event: ViewLayoutEvent) => unknown,
+  }>({
+    behavior,
+    enabled: enabled ?? true,
+    keyboardVerticalOffset,
+    bottom,
+    onLayout,
+  });
+  latest.current = {
+    behavior,
+    enabled: enabled ?? true,
+    keyboardVerticalOffset,
+    bottom,
+    onLayout,
   };
 
-  _onKeyboardHide = (event: ?KeyboardEvent) => {
-    this._keyboardEvent = null;
-    // $FlowFixMe[unused-promise]
-    this._updateBottomIfNecessary();
-  };
+  const relativeKeyboardHeight = useCallback(
+    async (keyboardFrame: KeyboardMetrics): Promise<number> => {
+      const currentFrame = frame.current;
+      if (!currentFrame || !keyboardFrame) {
+        return 0;
+      }
 
-  _onLayout = async (event: ViewLayoutEvent) => {
-    event.persist();
+      // On iOS when Prefer Cross-Fade Transitions is enabled, the keyboard position
+      // & height is reported differently (0 instead of Y position value matching height of frame)
+      if (
+        Platform.OS === 'ios' &&
+        keyboardFrame.screenY === 0 &&
+        (await AccessibilityInfo.prefersCrossFadeTransitions())
+      ) {
+        return 0;
+      }
 
-    const oldFrame = this._frame;
-    this._frame = event.nativeEvent.layout;
-    if (!this._initialFrameHeight) {
-      // save the initial frame height, before the keyboard is visible
-      this._initialFrameHeight = this._frame.height;
-    }
+      const keyboardY =
+        keyboardFrame.screenY - latest.current.keyboardVerticalOffset;
 
-    // update bottom height for the first time or when the height is changed
-    if (!oldFrame || oldFrame.height !== this._frame.height) {
-      await this._updateBottomIfNecessary();
-    }
+      if (latest.current.behavior === 'height') {
+        return Math.max(
+          latest.current.bottom +
+            currentFrame.y +
+            currentFrame.height -
+            keyboardY,
+          0,
+        );
+      }
 
-    if (this.props.onLayout) {
-      this.props.onLayout(event);
-    }
-  };
+      // Calculate the displacement needed for the view such that it
+      // no longer overlaps with the keyboard
+      return Math.max(currentFrame.y + currentFrame.height - keyboardY, 0);
+    },
+    [],
+  );
 
   // Avoid unnecessary renders if the KeyboardAvoidingView is disabled.
-  _setBottom = (value: number) => {
-    const enabled = this.props.enabled ?? true;
-    this._bottom = value;
-    if (enabled) {
-      this.setState({bottom: value});
+  const setBottomValue = useCallback((value: number) => {
+    bottomValue.current = value;
+    if (latest.current.enabled) {
+      setBottom(value);
     }
-  };
+  }, []);
 
-  _updateBottomIfNecessary = async () => {
-    if (this._keyboardEvent == null) {
-      this._setBottom(0);
+  const updateBottomIfNecessary = useCallback(async () => {
+    if (keyboardEvent.current == null) {
+      setBottomValue(0);
       return;
     }
 
-    const {duration, easing, endCoordinates} = this._keyboardEvent;
-    const height = await this._relativeKeyboardHeight(endCoordinates);
+    const {duration, easing, endCoordinates} = keyboardEvent.current;
+    const height = await relativeKeyboardHeight(endCoordinates);
 
-    if (this._bottom === height) {
+    if (bottomValue.current === height) {
       return;
     }
 
-    this._setBottom(height);
+    setBottomValue(height);
 
-    const enabled = this.props.enabled ?? true;
-    if (enabled && duration && easing) {
+    if (latest.current.enabled && duration && easing) {
       LayoutAnimation.configureNext({
         // We have to pass the duration equal to minimal accepted duration defined here: RCTLayoutAnimation.m
         duration: duration > 10 ? duration : 10,
@@ -186,126 +182,145 @@ class KeyboardAvoidingView extends React.Component<
         },
       });
     }
-  };
+  }, [relativeKeyboardHeight, setBottomValue]);
 
-  componentDidUpdate(
-    _: KeyboardAvoidingViewProps,
-    prevState: KeyboardAvoidingViewState,
-  ): void {
-    const enabled = this.props.enabled ?? true;
-    if (enabled && this._bottom !== prevState.bottom) {
-      this.setState({bottom: this._bottom});
-    }
-  }
+  const onKeyboardChange = useCallback(
+    (event: ?KeyboardEvent) => {
+      keyboardEvent.current = event;
+      // $FlowFixMe[unused-promise]
+      updateBottomIfNecessary();
+    },
+    [updateBottomIfNecessary],
+  );
 
-  componentDidMount(): void {
+  const onKeyboardHide = useCallback(
+    (_event: ?KeyboardEvent) => {
+      keyboardEvent.current = null;
+      // $FlowFixMe[unused-promise]
+      updateBottomIfNecessary();
+    },
+    [updateBottomIfNecessary],
+  );
+
+  const onLayoutHandler = useCallback(
+    async (event: ViewLayoutEvent) => {
+      event.persist();
+
+      const oldFrame = frame.current;
+      const newFrame = event.nativeEvent.layout;
+      frame.current = newFrame;
+      if (!initialFrameHeight.current) {
+        // save the initial frame height, before the keyboard is visible
+        initialFrameHeight.current = newFrame.height;
+      }
+
+      // update bottom height for the first time or when the height is changed
+      if (!oldFrame || oldFrame.height !== newFrame.height) {
+        await updateBottomIfNecessary();
+      }
+
+      latest.current.onLayout?.(event);
+    },
+    [updateBottomIfNecessary],
+  );
+
+  // componentDidMount + componentWillUnmount
+  useEffect(() => {
     if (!Keyboard.isVisible()) {
-      this._keyboardEvent = null;
-      this._setBottom(0);
+      keyboardEvent.current = null;
+      setBottomValue(0);
     }
 
-    if (Platform.OS === 'ios') {
-      this._subscriptions = [
-        // When undocked, split or floating, iOS will emit
-        // UIKeyboardWillHideNotification notification.
-        // UIKeyboardWillChangeFrameNotification will be emitted before
-        // UIKeyboardWillHideNotification, so we need to listen to
-        // keyboardWillHide and keyboardWillShow instead of
-        // keyboardWillChangeFrame.
-        Keyboard.addListener('keyboardWillHide', this._onKeyboardHide),
-        Keyboard.addListener('keyboardWillShow', this._onKeyboardChange),
-      ];
-    } else {
-      this._subscriptions = [
-        Keyboard.addListener('keyboardDidHide', this._onKeyboardHide),
-        Keyboard.addListener('keyboardDidShow', this._onKeyboardChange),
-      ];
+    const subscriptions =
+      Platform.OS === 'ios'
+        ? [
+            // When undocked, split or floating, iOS will emit
+            // UIKeyboardWillHideNotification notification.
+            // UIKeyboardWillChangeFrameNotification will be emitted before
+            // UIKeyboardWillHideNotification, so we need to listen to
+            // keyboardWillHide and keyboardWillShow instead of
+            // keyboardWillChangeFrame.
+            Keyboard.addListener('keyboardWillHide', onKeyboardHide),
+            Keyboard.addListener('keyboardWillShow', onKeyboardChange),
+          ]
+        : [
+            Keyboard.addListener('keyboardDidHide', onKeyboardHide),
+            Keyboard.addListener('keyboardDidShow', onKeyboardChange),
+          ];
+
+    return () => {
+      subscriptions.forEach(subscription => {
+        subscription.remove();
+      });
+    };
+  }, [onKeyboardChange, onKeyboardHide, setBottomValue]);
+
+  // componentDidUpdate: when enabled, keep the rendered bottom in sync with the
+  // latest computed value (e.g. after `enabled` flips from false to true).
+  useEffect(() => {
+    if ((enabled ?? true) && bottomValue.current !== bottom) {
+      setBottom(bottomValue.current);
     }
-  }
+  }, [enabled, bottom]);
 
-  componentWillUnmount(): void {
-    this._subscriptions.forEach(subscription => {
-      subscription.remove();
-    });
-  }
+  const bottomHeight = enabled === true ? bottom : 0;
+  switch (behavior) {
+    case 'height':
+      let heightStyle;
+      if (frame.current != null && bottom > 0) {
+        // Note that we only apply a height change when there is keyboard present,
+        // i.e. bottom is greater than 0. If we remove that condition,
+        // frame.current.height will never go back to its original value.
+        // When height changes, we need to disable flex.
+        heightStyle = {
+          height: initialFrameHeight.current - bottomHeight,
+          flex: 0,
+        };
+      }
+      return (
+        <View
+          ref={ref}
+          style={StyleSheet.compose(style, heightStyle)}
+          onLayout={onLayoutHandler}
+          {...props}>
+          {children}
+        </View>
+      );
 
-  render(): React.Node {
-    const {
-      behavior,
-      children,
-      contentContainerStyle,
-      enabled = true,
-      // eslint-disable-next-line no-unused-vars
-      keyboardVerticalOffset = 0,
-      style,
-      onLayout,
-      ...props
-    } = this.props;
-    const bottomHeight = enabled === true ? this.state.bottom : 0;
-    switch (behavior) {
-      case 'height':
-        let heightStyle;
-        if (this._frame != null && this.state.bottom > 0) {
-          // Note that we only apply a height change when there is keyboard present,
-          // i.e. this.state.bottom is greater than 0. If we remove that condition,
-          // this.frame.height will never go back to its original value.
-          // When height changes, we need to disable flex.
-          heightStyle = {
-            height: this._initialFrameHeight - bottomHeight,
-            flex: 0,
-          };
-        }
-        return (
+    case 'position':
+      return (
+        <View ref={ref} style={style} onLayout={onLayoutHandler} {...props}>
           <View
-            ref={this.viewRef}
-            style={StyleSheet.compose(style, heightStyle)}
-            onLayout={this._onLayout}
-            {...props}>
+            style={StyleSheet.compose(contentContainerStyle, {
+              bottom: bottomHeight,
+            })}>
             {children}
           </View>
-        );
+        </View>
+      );
 
-      case 'position':
-        return (
-          <View
-            ref={this.viewRef}
-            style={style}
-            onLayout={this._onLayout}
-            {...props}>
-            <View
-              style={StyleSheet.compose(contentContainerStyle, {
-                bottom: bottomHeight,
-              })}>
-              {children}
-            </View>
-          </View>
-        );
+    case 'padding':
+      return (
+        <View
+          ref={ref}
+          style={StyleSheet.compose(style, {paddingBottom: bottomHeight})}
+          onLayout={onLayoutHandler}
+          {...props}>
+          {children}
+        </View>
+      );
 
-      case 'padding':
-        return (
-          <View
-            ref={this.viewRef}
-            style={StyleSheet.compose(style, {paddingBottom: bottomHeight})}
-            onLayout={this._onLayout}
-            {...props}>
-            {children}
-          </View>
-        );
-
-      default:
-        return (
-          <View
-            ref={this.viewRef}
-            onLayout={this._onLayout}
-            style={style}
-            {...props}>
-            {children}
-          </View>
-        );
-    }
+    default:
+      return (
+        <View ref={ref} onLayout={onLayoutHandler} style={style} {...props}>
+          {children}
+        </View>
+      );
   }
-}
+};
 
-export type KeyboardAvoidingViewInstance = KeyboardAvoidingView;
+KeyboardAvoidingView.displayName = 'KeyboardAvoidingView';
+
+export type KeyboardAvoidingViewInstance = React.ElementRef<typeof View>;
 
 export default KeyboardAvoidingView;
