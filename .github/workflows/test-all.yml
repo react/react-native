@@ -153,23 +153,66 @@ jobs:
     with:
       platform: ios
 
-  test_e2e_ios_templateapp:
-    needs: [build_npm_package, prebuild_apple_dependencies, check_code_changes]
+  build_ios_templateapp:
+    needs:
+      [
+        build_npm_package,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
     if: needs.check_code_changes.outputs.should_test_ios == 'true'
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    secrets: inherit
+
+  build_ios_templateapp_retry_1:
+    needs: build_ios_templateapp
+    if: ${{ !cancelled() && (needs.build_ios_templateapp.outputs.status == 'failure' || needs.build_ios_templateapp.result == 'failure') }}
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.build_ios_templateapp.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.build_ios_templateapp.outputs.results || '{}' }}
+    secrets: inherit
+
+  build_ios_templateapp_retry_2:
+    needs: build_ios_templateapp_retry_1
+    if: ${{ !cancelled() && (needs.build_ios_templateapp_retry_1.outputs.status == 'failure' || needs.build_ios_templateapp_retry_1.result == 'failure') }}
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.build_ios_templateapp_retry_1.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.build_ios_templateapp_retry_1.outputs.results || '{}' }}
+      fail-on-error: true
+    secrets: inherit
+
+  test_e2e_ios_templateapp:
+    needs:
+      [
+        build_ios_templateapp,
+        build_ios_templateapp_retry_1,
+        build_ios_templateapp_retry_2,
+      ]
+    if: ${{ !cancelled() && (needs.build_ios_templateapp.outputs.status == 'success' || needs.build_ios_templateapp_retry_1.outputs.status == 'success' || needs.build_ios_templateapp_retry_2.outputs.status == 'success') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_1:
     needs: test_e2e_ios_templateapp
-    if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
+    if: ${{ !cancelled() && (needs.test_e2e_ios_templateapp.outputs.status == 'failure' || needs.test_e2e_ios_templateapp.result == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.test_e2e_ios_templateapp.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.test_e2e_ios_templateapp.outputs.results || '{}' }}
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_2:
     needs: test_e2e_ios_templateapp_retry_1
-    if: ${{ always() && needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' }}
+    if: ${{ !cancelled() && (needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' || needs.test_e2e_ios_templateapp_retry_1.result == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
+      flavors: ${{ needs.test_e2e_ios_templateapp_retry_1.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.test_e2e_ios_templateapp_retry_1.outputs.results || '{}' }}
+      retry-attempt: 2
       fail-on-error: true
     secrets: inherit
 
