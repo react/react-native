@@ -1184,6 +1184,10 @@ class facebook::react::AndroidTextInputProps : public facebook::react::BaseTextI
   public bool hasPaddingTop;
   public bool hasPaddingVertical;
   public bool includeFontPadding;
+  public bool onContentSizeChange;
+  public bool onKeyPress;
+  public bool onScroll;
+  public bool onSelectionChange;
   public bool secureTextEntry;
   public bool selectTextOnFocus;
   public bool showSoftInputOnFocus;
