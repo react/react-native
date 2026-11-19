@@ -34,22 +34,23 @@ using namespace facebook::react;
 @end
 
 @implementation RCTKeyboardAvoidingViewComponentView {
-  RCTKeyboardTrackingView *_trackingView;
-  // Window subview, so no other code manages it and its frames are in window coordinates.
-  UIView *_trackingContainerView;
-  // The window guide never updates, and the guide of this view moves on resize.
-  __weak UIView *_guideOwnerView;
+  BOOL _isTrackingViewLaidOut;
   BOOL _isUpdateScheduled;
+  CGFloat _guideOwnerBottomSafeArea;
+  CGFloat _keyboardInset;
   CGFloat _minTrackingHeight;
   CGSize _guideOwnerSize;
-  CGFloat _guideOwnerBottomSafeArea;
-  BOOL _isTrackingViewLaidOut;
-  CGFloat _keyboardInset;
-  // Changes once per keyboard animation: at its end, or at the start of a hide.
-  CGFloat _settledInset;
   NSUInteger _keyboardAnimationCount;
+  RCTKeyboardTrackingView *_trackingView;
+
+  // The window guide never updates, and the guide of this view moves on resize.
+  __weak UIView *_guideOwnerView;
   // `height` shrinks this view, so measure it while the keyboard doesn't overlap.
   CGFloat _heightWithoutKeyboard;
+  // Changes once per keyboard animation: at its end, or at the start of a hide.
+  CGFloat _settledInset;
+  // Window subview, so no other code manages it and its frames are in window coordinates.
+  UIView *_trackingContainerView;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
