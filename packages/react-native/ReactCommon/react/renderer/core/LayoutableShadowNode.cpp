@@ -159,8 +159,11 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
     auto isRootNode = currentShadowNode->getTraits().check(
         ShadowNodeTraits::Trait::RootNodeKind);
 
+    // The transform of a node with a `RootNodeKind` trait is its viewport
+    // offset, which only applies to its descendants. We don't apply it to the
+    // measured node because we measure it from an outside tree perspective.
     auto shouldApplyTransformation = (policy.includeTransform && !isRootNode) ||
-        (policy.includeViewportOffset && isRootNode);
+        (policy.includeViewportOffset && isRootNode && i != 0);
 
     // Move frame to the coordinate space of the current node.
     resultFrame.origin += currentFrame.origin;
@@ -185,7 +188,10 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
         (i != size - 1 || policy.clipSpecifiedAncestor)) {
       auto overflowInset = currentShadowNode->getLayoutMetrics().overflowInset;
       auto overflowRect = insetBy(
-          currentFrame * currentShadowNode->getTransform(), overflowInset);
+          shouldApplyTransformation
+              ? currentFrame * currentShadowNode->getTransform()
+              : currentFrame,
+          overflowInset);
       resultFrame = Rect::intersect(resultFrame, overflowRect);
       if (resultFrame.size.width == 0 && resultFrame.size.height == 0) {
         return EmptyLayoutMetrics;
