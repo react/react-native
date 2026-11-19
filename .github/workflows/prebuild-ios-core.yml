@@ -52,6 +52,8 @@ jobs:
       - name: Setup xcode
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: 27.2.0
       - name: Yarn Install
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
@@ -161,6 +163,8 @@ jobs:
       - name: Setup xcode
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: 27.2.0
       - name: Yarn Install
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
