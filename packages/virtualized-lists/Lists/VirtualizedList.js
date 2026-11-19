@@ -1152,12 +1152,6 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     return cloneElement(element, {
-      onLayout: (event: LayoutChangeEvent) => {
-        // $FlowFixMe[prop-missing] React.Element internal inspection
-        if (element.props.onLayout) {
-          element.props.onLayout(event);
-        }
-      },
       // $FlowFixMe[prop-missing] React.Element internal inspection
       style: StyleSheet.compose(inversionStyle, element.props.style),
     });

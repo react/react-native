@@ -373,7 +373,7 @@ describe('VirtualizedList', () => {
     expect(result).toBe(fragment);
   });
 
-  it('empty component clones the element and adds onLayout and style props if not a Fragment', () => {
+  it('empty component clones the element and adds the style prop if not a Fragment', () => {
     const listRef = createRef();
     const element = <div>Test</div>;
     const inversionStyle = {transform: [{scaleY: -1}]};
@@ -396,14 +396,14 @@ describe('VirtualizedList', () => {
       inversionStyle,
     );
 
-    // The result should be a cloned element with additional props
+    // The result should be a cloned element with the inversion style
     expect(result).not.toBe(element);
     expect(result.props).toEqual(
       expect.objectContaining({
-        onLayout: expect.any(Function),
         style: inversionStyle,
       }),
     );
+    expect(result.props.onLayout).toBeUndefined();
   });
 
   it('empty component preserves original onLayout handler if present', () => {
@@ -440,7 +440,8 @@ describe('VirtualizedList', () => {
   it('does not call onLayout with the layout of ListEmptyComponent', () => {
     const listRef = createRef();
     const onLayout = jest.fn();
-    const element = <div>Empty</div>;
+    const emptyOnLayout = jest.fn();
+    const element = <div onLayout={emptyOnLayout}>Empty</div>;
 
     act(() => {
       create(
@@ -461,6 +462,7 @@ describe('VirtualizedList', () => {
       nativeEvent: {layout: {x: 24, y: 24, width: 338, height: 66}},
     });
 
+    expect(emptyOnLayout).toHaveBeenCalledTimes(1);
     expect(onLayout).not.toHaveBeenCalled();
   });
 
