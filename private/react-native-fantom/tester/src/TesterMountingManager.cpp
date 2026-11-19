@@ -9,9 +9,11 @@
 #include "stubs/StubComponentRegistryFactory.h"
 
 #include <glog/logging.h>
+#include <react/renderer/componentregistry/componentNameByReactViewName.h>
 #include <react/renderer/components/root/RootShadowNode.h>
 #include <react/renderer/core/DynamicPropsUtilities.h>
 #include <react/renderer/scheduler/Scheduler.h>
+#include <algorithm>
 
 namespace facebook::react {
 
@@ -119,6 +121,15 @@ folly::dynamic TesterMountingManager::getViewFabricUpdateProps(
 
 ComponentRegistryFactory TesterMountingManager::getComponentRegistryFactory() {
   return getDefaultComponentRegistryFactory(textLayoutManager_);
+}
+
+bool TesterMountingManager::hasComponent(const std::string& name) {
+  const auto componentName = componentNameByReactViewName(name);
+  return std::ranges::any_of(
+      getFantomComponentDescriptorProviders(),
+      [&componentName](const auto& provider) {
+        return componentName == provider.name;
+      });
 }
 
 StubViewTree TesterMountingManager::getViewTree(SurfaceId surfaceId) {

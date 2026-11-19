@@ -9,6 +9,8 @@
 
 #include "FantomTextInput.h"
 
+#include <array>
+
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/image/ImageComponentDescriptor.h>
@@ -23,6 +25,25 @@
 
 namespace facebook::react {
 
+inline const auto &getFantomComponentDescriptorProviders()
+{
+  static const std::array providers{
+      concreteComponentDescriptorProvider<ImageComponentDescriptor>(),
+      concreteComponentDescriptorProvider<LayoutConformanceComponentDescriptor>(),
+      concreteComponentDescriptorProvider<ParagraphComponentDescriptor>(),
+      concreteComponentDescriptorProvider<ScrollViewComponentDescriptor>(),
+      concreteComponentDescriptorProvider<RawTextComponentDescriptor>(),
+      concreteComponentDescriptorProvider<SelectableParagraphComponentDescriptor>(),
+      concreteComponentDescriptorProvider<TextComponentDescriptor>(),
+      concreteComponentDescriptorProvider<ViewComponentDescriptor>(),
+      concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>(),
+      concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomAndroidTextInputName>>(),
+      concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomSinglelineTextInputName>>(),
+      concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomMultilineTextInputName>>(),
+  };
+  return providers;
+}
+
 inline ComponentRegistryFactory getDefaultComponentRegistryFactory(std::shared_ptr<TextLayoutManager> textLayoutManager)
 {
   return [textLayoutManager = std::move(textLayoutManager)](
@@ -31,21 +52,9 @@ inline ComponentRegistryFactory getDefaultComponentRegistryFactory(std::shared_p
     contextContainer->insert("TextLayoutManager", textLayoutManager);
     static const auto providerRegistry = []() {
       auto providerRegistry = std::make_shared<ComponentDescriptorProviderRegistry>();
-      providerRegistry->add(concreteComponentDescriptorProvider<ImageComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<LayoutConformanceComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<ParagraphComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<ScrollViewComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<RawTextComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<SelectableParagraphComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<TextComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<ViewComponentDescriptor>());
-      providerRegistry->add(concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());
-      providerRegistry->add(
-          concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomAndroidTextInputName>>());
-      providerRegistry->add(
-          concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomSinglelineTextInputName>>());
-      providerRegistry->add(
-          concreteComponentDescriptorProvider<FantomTextInputComponentDescriptor<FantomMultilineTextInputName>>());
+      for (const auto &provider : getFantomComponentDescriptorProviders()) {
+        providerRegistry->add(provider);
+      }
       return providerRegistry;
     }();
     return providerRegistry->createComponentDescriptorRegistry(

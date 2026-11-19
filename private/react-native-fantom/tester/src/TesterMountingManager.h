@@ -34,6 +34,7 @@ class TesterMountingManager : public IMountingManager {
   void onUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) override;
 
   ComponentRegistryFactory getComponentRegistryFactory() override;
+  bool hasComponent(const std::string &name) override;
 
   std::vector<std::string> takeMountingLogs(SurfaceId surfaceId);
 
