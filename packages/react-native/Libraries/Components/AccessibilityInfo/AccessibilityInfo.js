@@ -528,10 +528,15 @@ const AccessibilityInfo = {
   },
 
   /**
-   * Get the recommended timeout in milliseconds the user needs, as specified
-   * in the device's Accessibility settings.
+   * Get the recommended timeout in milliseconds the user needs, given the
+   * timeout the app would otherwise use.
    *
-   * @platform android
+   * On Android 10 (API 29) and later, this follows the "Time to take action"
+   * accessibility setting; earlier versions resolve to `originalTimeout`.
+   * iOS has no such setting, so React Native allows three times
+   * `originalTimeout` while Switch Control is running, because moving between
+   * elements one switch press at a time is slow, and `originalTimeout`
+   * otherwise.
    */
   getRecommendedTimeoutMillis(originalTimeout: number): Promise<number> {
     if (Platform.OS === 'android') {
@@ -548,7 +553,20 @@ const AccessibilityInfo = {
         }
       });
     } else {
-      return Promise.resolve(originalTimeout);
+      return new Promise(resolve => {
+        if (
+          NativeAccessibilityManagerIOS?.getRecommendedTimeoutMillis != null
+        ) {
+          NativeAccessibilityManagerIOS.getRecommendedTimeoutMillis(
+            originalTimeout,
+            resolve,
+          );
+        } else {
+          // An existing API, so new JS on an older binary keeps resolving the
+          // value it always did on iOS rather than rejecting.
+          resolve(originalTimeout);
+        }
+      });
     }
   },
 };
