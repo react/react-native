@@ -186,21 +186,43 @@ describe('XMLHttpRequest', function () {
     xhr.open('GET', 'blabla');
     xhr.send();
     setRequestId(5);
+    xhr.__didReceiveResponse(requestId, 200, {});
     // $FlowFixMe[incompatible-type]
     xhr.__didCompleteResponse(requestId, null);
 
     expect(xhr.readyState).toBe(xhr.DONE);
 
-    expect(xhr.onreadystatechange).toHaveBeenCalledTimes(2);
+    expect(xhr.onreadystatechange).toHaveBeenCalledTimes(3);
     expect(xhr.onload).toHaveBeenCalledTimes(1);
     expect(xhr.onloadend).toHaveBeenCalledTimes(1);
     expect(xhr.onerror).not.toBeCalled();
     expect(xhr.ontimeout).not.toBeCalled();
 
-    expect(handleReadyStateChange).toHaveBeenCalledTimes(2);
+    expect(handleReadyStateChange).toHaveBeenCalledTimes(3);
     expect(handleLoad).toHaveBeenCalledTimes(1);
     expect(handleLoadEnd).toHaveBeenCalledTimes(1);
     expect(handleError).not.toBeCalled();
+    expect(handleTimeout).not.toBeCalled();
+  });
+
+  it('should call onerror function when the request completes without a response', function () {
+    xhr.open('GET', 'blabla');
+    xhr.send();
+    setRequestId(11);
+    // $FlowFixMe[incompatible-type]
+    xhr.__didCompleteResponse(requestId, null);
+
+    expect(xhr.readyState).toBe(xhr.DONE);
+    expect(xhr.status).toBe(0);
+
+    expect(xhr.onerror).toHaveBeenCalledTimes(1);
+    expect(xhr.onloadend).toHaveBeenCalledTimes(1);
+    expect(xhr.onload).not.toBeCalled();
+    expect(xhr.ontimeout).not.toBeCalled();
+
+    expect(handleError).toHaveBeenCalledTimes(1);
+    expect(handleLoadEnd).toHaveBeenCalledTimes(1);
+    expect(handleLoad).not.toBeCalled();
     expect(handleTimeout).not.toBeCalled();
   });
 
