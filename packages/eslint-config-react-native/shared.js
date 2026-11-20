@@ -190,7 +190,12 @@ module.exports = {
     'no-undef-init': 1, // disallow use of undefined when initializing variables
     'no-unused-vars': [
       1,
-      {vars: 'all', args: 'none', ignoreRestSiblings: true},
+      {
+        vars: 'all',
+        args: 'none',
+        caughtErrors: 'none',
+        ignoreRestSiblings: true,
+      },
     ], // disallow declaration of variables that are not used in the code
     'no-use-before-define': 0, // disallow use of variables before they are defined
 
