@@ -63,6 +63,7 @@ RCT_EXPORT_MODULE()
 {
   [self hideOutsideTouchShield];
   UIControl *shield = [[UIControl alloc] initWithFrame:window.bounds];
+  shield.isAccessibilityElement = NO;
   shield.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   [shield addTarget:self action:@selector(outsideTouchShieldTouched) forControlEvents:UIControlEventTouchDown];
   [window addSubview:shield];
@@ -88,7 +89,9 @@ RCT_EXPORT_MODULE()
 - (void)presentViewController:(UIViewController *)alertController
        onParentViewController:(UIViewController *)parentViewController
                 anchorViewTag:(NSNumber *)anchorViewTag
+          outsideTouchHandler:(dispatch_block_t)outsideTouchHandler
 {
+  [self hideOutsideTouchShield];
   alertController.modalPresentationStyle = UIModalPresentationPopover;
   UIView *sourceView = parentViewController.view;
   UIView *anchorView = [self anchorViewForTag:anchorViewTag];
@@ -112,6 +115,10 @@ RCT_EXPORT_MODULE()
     // and the outside touch shield blocks the background while the sheet is shown.
     alertController.popoverPresentationController.sourceView = sourceView;
     alertController.popoverPresentationController.sourceRect = sourceView.bounds;
+  }
+  // iPad keeps its popover behaviour, so the shield is only added on iPhone.
+  if (presentsFromAnchor && [UIDevice.currentDevice userInterfaceIdiom] != UIUserInterfaceIdiomPad) {
+    [self showOutsideTouchShieldInWindow:parentViewController.view.window handler:outsideTouchHandler];
   }
   [parentViewController presentViewController:alertController animated:YES completion:nil];
 }
@@ -256,24 +263,24 @@ RCT_EXPORT_MODULE()
 
     [self->_alertControllers addObject:alertController];
 
-    UIView *anchorView = nil;
-    if (@available(iOS 26.0, *)) {
-      anchorView = [self anchorViewForTag:anchorViewTag];
-    }
-    if (anchorView != nil) {
-      [self showOutsideTouchShieldInWindow:anchorView.window
-                                   handler:^{
-                                     [alertController dismissViewControllerAnimated:YES completion:nil];
-                                     [self->_alertControllers removeObject:alertController];
-                                     [self hideOutsideTouchShield];
-                                     // As in UIKit, a tap outside the popover selects the cancel button, if any.
-                                     if (!callbackInvoked && cancelButtonIndex >= 0) {
-                                       callbackInvoked = true;
-                                       callback(@[ @(cancelButtonIndex) ]);
-                                     }
-                                   }];
-    }
-    [self presentViewController:alertController onParentViewController:controller anchorViewTag:anchorViewTag];
+    __weak RCTActionSheetManager *weakSelf = self;
+    [self presentViewController:alertController
+         onParentViewController:controller
+                  anchorViewTag:anchorViewTag
+            outsideTouchHandler:^{
+              RCTActionSheetManager *strongSelf = weakSelf;
+              if (strongSelf == nil) {
+                return;
+              }
+              [alertController dismissViewControllerAnimated:YES completion:nil];
+              [strongSelf->_alertControllers removeObject:alertController];
+              [strongSelf hideOutsideTouchShield];
+              // As in UIKit, a tap outside the popover selects the cancel button, if any.
+              if (!callbackInvoked && cancelButtonIndex >= 0) {
+                callbackInvoked = true;
+                callback(@[ @(cancelButtonIndex) ]);
+              }
+            }];
   });
 }
 
@@ -345,8 +352,30 @@ RCT_EXPORT_MODULE()
     }
 
     UIViewController *controller = RCTPresentedViewController();
+    __weak RCTActionSheetManager *weakSelf = self;
+    __weak UIActivityViewController *weakShareController = shareController;
+    __block bool callbackInvoked = false;
+    dispatch_block_t outsideTouchHandler = [^{
+      [weakSelf hideOutsideTouchShield];
+      [weakShareController dismissViewControllerAnimated:YES completion:nil];
+      // Same result as closing the share sheet: not completed, no activity.
+      if (!callbackInvoked) {
+        callbackInvoked = true;
+        successCallback(@[ @NO, [NSNull null] ]);
+      }
+    } copy];
     shareController.completionWithItemsHandler =
         ^(NSString *activityType, BOOL completed, __unused NSArray *returnedItems, NSError *activityError) {
+          // Backing out of an activity calls this with the share sheet still open, so the shield stays.
+          // A later sheet may have its own shield by now, so only this sheet's shield is removed.
+          RCTActionSheetManager *strongSelf = weakSelf;
+          if ((activityError != nullptr || completed || activityType == nil) &&
+              strongSelf.outsideTouchHandler == outsideTouchHandler) {
+            [strongSelf hideOutsideTouchShield];
+          }
+          if (callbackInvoked) {
+            return;
+          }
           if (activityError != nullptr) {
             failureCallback(@[ RCTJSErrorFromNSError(activityError) ]);
           } else if (completed || activityType == nil) {
@@ -364,7 +393,10 @@ RCT_EXPORT_MODULE()
       shareController.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
     }
 
-    [self presentViewController:shareController onParentViewController:controller anchorViewTag:anchorViewTag];
+    [self presentViewController:shareController
+         onParentViewController:controller
+                  anchorViewTag:anchorViewTag
+            outsideTouchHandler:outsideTouchHandler];
   });
 }
 
