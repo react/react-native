@@ -418,26 +418,11 @@ void Node::clearChildren() {
 // Other Methods
 
 void Node::cloneChildrenIfNeeded() {
-  size_t i = 0;
-  for (Node*& child : children_) {
-    if (child->getOwner() != this) {
-      child = resolveRef(config_->cloneNode(child, this, i));
-      child->setOwner(this);
-
-      if (child->style().display() == Display::Contents) [[unlikely]] {
-        // The contents node's children are treated as children of the
-        // contents node's parent for layout purposes, so they need
-        // to be cloned as well.
-        child->cloneChildrenIfNeeded();
-      } else if (child->hasContentsChildren()) [[unlikely]] {
-        child->cloneContentsChildrenIfNeeded();
-      }
-    }
-    i += 1;
+  for (size_t i = 0; i < children_.size(); i++) {
+    cloneChildIfNeeded(i);
   }
 }
 
-// cloneChildrenIfNeeded keeps its own copy: every layout runs it per child.
 void Node::cloneChildIfNeeded(size_t index) {
   Node*& child = children_[index];
   if (child->getOwner() == this) {
