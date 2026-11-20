@@ -460,13 +460,13 @@ void Runtime::deleteProperty(const Object& object, const Value& name) {
 }
 
 size_t Runtime::push(const Array& arr, const Value* elements, size_t count) {
-  size_t newSize = size(arr);
+  uint64_t newSize = size(arr);
   for (size_t i = 0; i < count; i++) {
-    arr.setProperty(*this, Value((int)newSize), elements[i]);
+    arr.setProperty(*this, Value(static_cast<double>(newSize)), elements[i]);
     ++newSize;
   }
-  arr.setProperty(*this, "length", Value((int)newSize));
-  return newSize;
+  arr.setProperty(*this, "length", Value(static_cast<double>(newSize)));
+  return static_cast<size_t>(newSize);
 }
 
 void Runtime::setRuntimeDataImpl(
