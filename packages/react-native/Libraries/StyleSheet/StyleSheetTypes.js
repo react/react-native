@@ -1178,6 +1178,7 @@ type ____FlattenStyleProp_Helper<
     : TStyleProp extends ReadonlyArray<infer V>
       ? ____FlattenStyleProp_Helper<
           V,
+          // $FlowFixMe[incompatible-use]
           Depth extends number ? FlattenDepthLimiter[Depth] : 0,
         >
       : TStyleProp;

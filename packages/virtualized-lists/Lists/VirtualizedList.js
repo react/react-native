@@ -1652,6 +1652,7 @@ class VirtualizedList extends StateSafePureComponent<
             this._notifyCrossOrientationChildren();
           }
         },
+        // $FlowFixMe[missing-local-annot]
         error => {
           console.warn(
             "VirtualizedList: Encountered an error while measuring a list's" +
