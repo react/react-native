@@ -312,7 +312,13 @@ public open class ReactViewGroup public constructor(context: Context?) :
     @Suppress("DEPRECATION")
     if (ReactFeatureFlags.dispatchPointerEvents) {
       // Match the logic from onTouchEvent if pointer events are enabled
-      return canBeTouchTarget(pointerEvents)
+      val isTouchTarget = canBeTouchTarget(pointerEvents)
+      // A view that stopped being a touch target while hovered still takes its exit
+      if (isTouchTarget || event.actionMasked == MotionEvent.ACTION_HOVER_EXIT) {
+        // View's own handling sends the accessibility hover events explore-by-touch relies on
+        super.onHoverEvent(event)
+      }
+      return isTouchTarget
     }
     return super.onHoverEvent(event)
   }
