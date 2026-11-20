@@ -334,7 +334,9 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
 
 - (void)_applicationWillTerminate
 {
+  RCTScheduler *scheduler = [self scheduler];
   [self suspend];
+  [scheduler stopObservingLayoutAnimations];
 }
 
 #pragma mark - RCTSchedulerDelegate
