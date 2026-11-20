@@ -228,6 +228,26 @@ class AdjustingFontSize extends React.Component<
   }
 }
 
+function AdjustsFontSizeToFitHeightExample(props: {}): React.Node {
+  // Each label fits its container's width at its full font size but is too
+  // tall for it, so adjustsFontSizeToFit shrinks it to fit the height. Every
+  // label should be fully visible and vertically centered in its box.
+  return (
+    <View testID="text-adjusts-font-size-to-fit-height">
+      {[40, 48, 64].map(fontSize => (
+        <View key={fontSize} style={styles.adjustsFontSizeToFitHeightBox}>
+          <Text
+            adjustsFontSizeToFit={true}
+            numberOfLines={1}
+            style={{fontSize}}>
+            Done
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function TextLinkifyExample(props: {}): React.Node {
   return (
     <>
@@ -1533,6 +1553,11 @@ const examples = [
     },
   },
   {
+    title: 'adjustsFontSizeToFit shrinking to fit a height',
+    name: 'adjustsFontSizeToFitHeight',
+    render: AdjustsFontSizeToFitHeightExample,
+  },
+  {
     title: 'Wrap',
     name: 'wrap',
     render(): React.Node {
@@ -2085,6 +2110,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     fontSize: 16,
     width: 150,
+  },
+  adjustsFontSizeToFitHeightBox: {
+    backgroundColor: '#E4E6EB',
+    height: 40,
+    justifyContent: 'center',
+    marginBottom: 2,
   },
 });
 
