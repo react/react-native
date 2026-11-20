@@ -1151,13 +1151,6 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     return cloneElement(element, {
-      onLayout: (event: LayoutChangeEvent) => {
-        this._onLayoutEmpty(event);
-        // $FlowFixMe[prop-missing] React.Element internal inspection
-        if (element.props.onLayout) {
-          element.props.onLayout(event);
-        }
-      },
       // $FlowFixMe[prop-missing] React.Element internal inspection
       style: StyleSheet.compose(inversionStyle, element.props.style),
     });
@@ -1684,10 +1677,6 @@ class VirtualizedList extends StateSafePureComponent<
     this.props.onLayout && this.props.onLayout(e);
     this._scheduleCellsToRenderUpdate();
     this._maybeCallOnEdgeReached();
-  };
-
-  _onLayoutEmpty = (e: LayoutChangeEvent) => {
-    this.props.onLayout && this.props.onLayout(e);
   };
 
   _getFooterCellKey(): string {

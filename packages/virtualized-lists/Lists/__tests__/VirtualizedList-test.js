@@ -373,7 +373,7 @@ describe('VirtualizedList', () => {
     expect(result).toBe(fragment);
   });
 
-  it('empty component clones the element and adds onLayout and style props if not a Fragment', () => {
+  it('empty component clones the element and adds the style prop if not a Fragment', () => {
     const listRef = createRef();
     const element = <div>Test</div>;
     const inversionStyle = {transform: [{scaleY: -1}]};
@@ -396,14 +396,14 @@ describe('VirtualizedList', () => {
       inversionStyle,
     );
 
-    // The result should be a cloned element with additional props
+    // The result should be a cloned element with the inversion style
     expect(result).not.toBe(element);
     expect(result.props).toEqual(
       expect.objectContaining({
-        onLayout: expect.any(Function),
         style: inversionStyle,
       }),
     );
+    expect(result.props.onLayout).toBeUndefined();
   });
 
   it('empty component preserves original onLayout handler if present', () => {
@@ -433,8 +433,37 @@ describe('VirtualizedList', () => {
     // Call the onLayout handler
     result.props.onLayout({nativeEvent: {layout: {width: 100, height: 100}}});
 
-    // Both the original and the new onLayout should be called
+    // The original onLayout should still be called
     expect(originalOnLayout).toHaveBeenCalled();
+  });
+
+  it('does not call onLayout with the layout of ListEmptyComponent', () => {
+    const listRef = createRef();
+    const onLayout = jest.fn();
+    const emptyOnLayout = jest.fn();
+    const element = <div onLayout={emptyOnLayout}>Empty</div>;
+
+    act(() => {
+      create(
+        <VirtualizedList
+          ref={listRef}
+          data={[]}
+          onLayout={onLayout}
+          ListEmptyComponent={element}
+          getItem={(data, index) => data[index]}
+          getItemCount={data => data.length}
+          renderItem={({item}) => <item value={item.key} />}
+        />,
+      );
+    });
+
+    const result = listRef.current._renderEmptyComponent(element, null);
+    result.props.onLayout({
+      nativeEvent: {layout: {x: 24, y: 24, width: 338, height: 66}},
+    });
+
+    expect(emptyOnLayout).toHaveBeenCalledTimes(1);
+    expect(onLayout).not.toHaveBeenCalled();
   });
 
   it('returns the viewableItems correctly in the onViewableItemsChanged callback after changing the data', async () => {
