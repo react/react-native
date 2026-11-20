@@ -11,10 +11,15 @@ REACT_NATIVE_CCACHE_CONFIGPATH=$SCRIPT_DIR/ccache.conf
 # Provide our config file if none is already provided
 export CCACHE_CONFIGPATH="${CCACHE_CONFIGPATH:-$REACT_NATIVE_CCACHE_CONFIGPATH}"
 
-# Xcode does not export user-defined build settings as environment variables
-# for invoked scripts, so $CCACHE_BINARY may be empty even when set in the
-# project. Fall back to a PATH lookup so ccache is still used.
-CCACHE_BINARY="${CCACHE_BINARY:-$(command -v ccache)}"
+# CCACHE_BINARY does not reach compile tasks, and Xcode app builds may not have Homebrew on PATH.
+if [ -z "$CCACHE_BINARY" ]; then
+    for candidate in "$(command -v ccache)" /opt/homebrew/bin/ccache /usr/local/bin/ccache; do
+        if [ -x "$candidate" ]; then
+            CCACHE_BINARY="$candidate"
+            break
+        fi
+    done
+fi
 
 if [ -n "$CCACHE_BINARY" ]; then
     exec "$CCACHE_BINARY" clang "$@"
