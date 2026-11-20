@@ -128,13 +128,61 @@ class BaseViewManagerTest {
   }
 
   @Test
+  fun testAccessibilityStateBusyGoesToTheStateDescription() {
+    viewManager.setViewState(view, JavaOnlyMap.of("busy", true))
+    Assertions.assertThat(view.contentDescription).isNull()
+    Assertions.assertThat(view.stateDescription).isEqualTo("busy")
+  }
+
+  @Test
+  fun testAccessibilityStateBusyKeepsTheLabelAsTheDescription() {
+    viewManager.setAccessibilityLabel(view, "Results")
+    viewManager.setViewState(view, JavaOnlyMap.of("busy", true))
+    Assertions.assertThat(view.contentDescription).isEqualTo("Results")
+    Assertions.assertThat(view.stateDescription).isEqualTo("busy")
+  }
+
+  @Test
+  fun testAccessibilityStateNotBusyClearsTheStateDescription() {
+    viewManager.setViewState(view, JavaOnlyMap.of("busy", true))
+    viewManager.setViewState(view, JavaOnlyMap.of("busy", false))
+    Assertions.assertThat(view.stateDescription).isNull()
+  }
+
+  @Test
+  fun testAccessibilityStateMixedGoesToTheStateDescription() {
+    viewManager.setViewState(view, JavaOnlyMap.of("checked", "mixed"))
+    Assertions.assertThat(view.contentDescription).isNull()
+    Assertions.assertThat(view.stateDescription).isEqualTo("mixed")
+  }
+
+  @Test
+  fun testAccessibilityValueTextGoesToTheStateDescription() {
+    viewManager.setAccessibilityValue(
+        view,
+        JavaOnlyMap.of("min", 1, "max", 5, "now", 3, "text", "3 of 5"),
+    )
+    Assertions.assertThat(view.contentDescription).isNull()
+    Assertions.assertThat(view.stateDescription).isEqualTo("3 of 5")
+  }
+
+  @Test
+  fun testAccessibilityStateAndValueTextShareTheStateDescription() {
+    viewManager.setViewState(view, JavaOnlyMap.of("busy", true))
+    viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "3 of 5"))
+    Assertions.assertThat(view.stateDescription).isEqualTo("busy, 3 of 5")
+  }
+
+  @Test
   fun testAccessibilityValueWithoutTextRemovesThePreviousText() {
     viewManager.setAccessibilityLabel(view, "Country")
     viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
-    Assertions.assertThat(view.contentDescription).isEqualTo("Country, Ukraine")
+    Assertions.assertThat(view.contentDescription).isEqualTo("Country")
+    Assertions.assertThat(view.stateDescription).isEqualTo("Ukraine")
 
     viewManager.setAccessibilityValue(view, JavaOnlyMap())
     Assertions.assertThat(view.contentDescription).isEqualTo("Country")
+    Assertions.assertThat(view.stateDescription).isNull()
   }
 
   @Test
@@ -150,6 +198,7 @@ class BaseViewManagerTest {
     viewManager.setAccessibilityValue(view, JavaOnlyMap.of("text", "Ukraine"))
     viewManager.setAccessibilityValue(view, null)
     Assertions.assertThat(view.contentDescription).isNull()
+    Assertions.assertThat(view.stateDescription).isNull()
   }
 
   @Test
@@ -236,6 +285,17 @@ class BaseViewManagerTest {
     Assertions.assertThat(recycled.importantForAccessibility)
         .isEqualTo(view.importantForAccessibility)
     Assertions.assertThat(recycled.isScreenReaderFocusable).isEqualTo(view.isScreenReaderFocusable)
+  }
+
+  @Test
+  fun testRecycledViewDropsTheStateDescriptionOfItsPreviousProps() {
+    val recycled =
+        recycleView(
+            JavaOnlyMap.of(ViewProps.ACCESSIBILITY_STATE, JavaOnlyMap.of("busy", true)),
+            beforeDrop = { Assertions.assertThat(it.stateDescription).isEqualTo("busy") },
+        )
+
+    Assertions.assertThat(recycled.stateDescription).isNull()
   }
 
   @Test
