@@ -539,9 +539,9 @@ declare module 'child_process' {
         ? StreamForChannel<FD>
         : E extends string
           ? null
-          : E[FD] extends child_process$StdioPipe
+          : NonNullable<E>[FD] extends child_process$StdioPipe
             ? StreamForChannel<FD>
-            : E[FD] extends string | number
+            : NonNullable<E>[FD] extends string | number
               ? null
               : null | StreamForChannel<FD>
       : PipeByDefault extends true
