@@ -26,6 +26,7 @@ import android.view.ViewGroup
 import android.view.ViewStructure
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
+import android.view.accessibility.AccessibilityNodeInfo
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.bridge.ReactNoCrashSoftException
@@ -40,6 +41,7 @@ import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.touch.OnInterceptTouchEventListener
 import com.facebook.react.touch.ReactHitSlopView
 import com.facebook.react.touch.ReactInterceptingViewGroup
+import com.facebook.react.uimanager.AccessibilityOrderHolds
 import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getPaddingBoxRect
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBackgroundColor
@@ -63,6 +65,7 @@ import com.facebook.react.uimanager.ReactClippingViewGroup
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper.calculateClippingRect
 import com.facebook.react.uimanager.ReactOverflowViewWithInset
 import com.facebook.react.uimanager.ReactPointerEventsView
+import com.facebook.react.uimanager.ScreenReaderFocusableHelper
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderStyle
 import com.facebook.react.uimanager.style.LogicalEdge
@@ -151,6 +154,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
   public var axOrderList: MutableList<String>? = null
 
+  internal var accessibilityOrderHolds: AccessibilityOrderHolds? = null
+    private set
+
   private var childrenLayoutChangeListener: ChildrenLayoutChangeListener? = null
   private var onInterceptTouchEventListener: OnInterceptTouchEventListener? = null
   private var needsOffscreenAlphaCompositing = false
@@ -163,6 +169,11 @@ public open class ReactViewGroup public constructor(context: Context?) :
   private var focusOnAttach = false
   // Receives the HOVER_EXIT that pairs with the last accessibility HOVER_ENTER.
   private var accessibilityHoverSource: View? = null
+
+  internal var focusProps: FocusProps = FocusProps.DEFAULT
+    private set
+
+  private var focusPropsChanged = false
 
   internal var nativeBackgroundMap: ReadableMap? = null
   internal var nativeForegroundMap: ReadableMap? = null
@@ -207,6 +218,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
     accessibilityHoverSource = null
     nativeBackgroundMap = null
     nativeForegroundMap = null
+    focusProps = FocusProps.DEFAULT
+    focusPropsChanged = false
   }
 
   internal open fun recycleView() {
@@ -585,11 +598,48 @@ public open class ReactViewGroup public constructor(context: Context?) :
     updateClippingToRect(clippingRect, excludedViews)
   }
 
+  internal fun updateFocusProps(focusProps: FocusProps) {
+    this.focusProps = focusProps
+    focusPropsChanged = true
+  }
+
+  internal fun applyFocusProps() {
+    if (!focusPropsChanged) {
+      return
+    }
+    focusPropsChanged = false
+    ReactAxOrderHelper.setFocusable(this, focusProps.isFocusable(isFocused))
+    ReactAxOrderHelper.setScreenReaderFocusable(this, focusProps.isScreenReaderFocusable)
+    importantForAccessibility =
+        focusProps.importantForAccessibility(
+            hasContentDescription = !contentDescription.isNullOrEmpty()
+        )
+  }
+
+  override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+    super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+    if (!gainFocus && focusProps.focusableOnlyFromJS) {
+      ReactAxOrderHelper.setFocusable(this, false)
+    }
+  }
+
+  override fun onInitializeAccessibilityNodeInfo(info: AccessibilityNodeInfo) {
+    super.onInitializeAccessibilityNodeInfo(info)
+    ScreenReaderFocusableHelper.initializeAccessibilityNodeInfo(this, info)
+  }
+
   internal fun requestFocusFromJS() {
-    if (isAttachedToWindow) {
-      super.requestFocus(FOCUS_DOWN, null)
-    } else {
+    if (!isAttachedToWindow) {
       focusOnAttach = true
+      return
+    }
+    val grantsFocus = focusProps.focusableOnlyFromJS && !isFocusable
+    if (grantsFocus) {
+      ReactAxOrderHelper.setFocusable(this, true)
+    }
+    super.requestFocus(FOCUS_DOWN, null)
+    if (grantsFocus && !isFocused) {
+      ReactAxOrderHelper.setFocusable(this, false)
     }
   }
 
@@ -1144,11 +1194,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override fun addChildrenForAccessibility(outChildren: ArrayList<View>) {
-    val axOrderParent = getTag(R.id.accessibility_order_parent)
-    var axOrderParentOrderList: MutableList<String>? = null
-    if (axOrderParent is ReactViewGroup) {
-      axOrderParentOrderList = (axOrderParent as ReactViewGroup?)?.axOrderList
-    }
+    val axOrderParent = accessibilityOrderParent()
+    val axOrderParentOrderList = axOrderParent?.axOrderList
 
     val axOrder: MutableList<*>? = axOrderList
     if (axOrder != null) {
@@ -1159,9 +1206,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
         val newAccessibilityStateChangeListener =
             AccessibilityManager.AccessibilityStateChangeListener { enabled ->
               if (!enabled) {
-                for (i in 0..<childCount) {
-                  ReactAxOrderHelper.restoreFocusability(getChildAt(i))
-                }
+                restoreAccessibilityOrderFocusability()
               }
             }
 
@@ -1178,32 +1223,33 @@ public open class ReactViewGroup public constructor(context: Context?) :
       for (i in result.indices) {
         val view = result[i]
         if (view != null) {
-          if (view.isFocusable) {
+          if (ReactAxOrderHelper.isAxOrderElement(view)) {
             outChildren.add(view)
           } else {
             view.addChildrenForAccessibility(outChildren)
           }
         }
       }
-    } else if (axOrderParentOrderList != null) {
-      // view is a container so add its children normally
-      if (!isFocusable) {
+    } else if (axOrderParent != null && axOrderParentOrderList != null) {
+      if (!ReactAxOrderHelper.isAxOrderElement(this)) {
         safeAddChildrenForAccessibility(outChildren)
-        return
-
-        // If this view can coopt, turn the focusability off its children but add them to the tree
-      } else if (isFocusable && (contentDescription == null || contentDescription == "")) {
+      } else if (contentDescription.isNullOrEmpty()) {
+        // A focusable view without a label reads its subtree, so its descendants take no focus.
         safeAddChildrenForAccessibility(outChildren)
         for (i in 0..<childCount) {
-          ReactAxOrderHelper.disableFocusForSubtree(getChildAt(i), axOrderParentOrderList)
+          axOrderParent.disableFocusForAccessibilityOrder(getChildAt(i), axOrderParentOrderList)
         }
-        // if this view is focusable and has a contentDescription then we don't care about its
-        // descendants for accessibility
-      } else if (isFocusable && !(contentDescription == null || contentDescription == "")) {
-        return
       }
     } else {
       safeAddChildrenForAccessibility(outChildren)
+    }
+  }
+
+  // The tag stays on a view that leaves the order's subtree, so it counts only from inside it.
+  private fun accessibilityOrderParent(): ReactViewGroup? {
+    val axOrderParent = getTag(R.id.accessibility_order_parent) as? ReactViewGroup ?: return null
+    return axOrderParent.takeIf {
+      generateSequence(parent) { it.parent }.any { it === axOrderParent }
     }
   }
 
@@ -1221,6 +1267,24 @@ public open class ReactViewGroup public constructor(context: Context?) :
         throw error
       }
     }
+  }
+
+  internal fun dropAccessibilityOrder() {
+    restoreAccessibilityOrderFocusability()
+    axOrderList = null
+    cleanUpAxOrderListener()
+  }
+
+  internal fun restoreAccessibilityOrderFocusability() {
+    val holds = accessibilityOrderHolds ?: return
+    accessibilityOrderHolds = null
+    holds.restoreFocusability()
+  }
+
+  private fun disableFocusForAccessibilityOrder(view: View, axOrderList: List<*>) {
+    val holds =
+        accessibilityOrderHolds ?: AccessibilityOrderHolds().also { accessibilityOrderHolds = it }
+    holds.disableFocusForSubtree(view, axOrderList)
   }
 
   public fun cleanUpAxOrderListener() {

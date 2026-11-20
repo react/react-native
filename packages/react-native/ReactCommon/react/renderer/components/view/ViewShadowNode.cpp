@@ -6,6 +6,7 @@
  */
 
 #include "ViewShadowNode.h"
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/view/HostPlatformViewTraitsInitializer.h>
 #include <react/renderer/components/view/primitives.h>
 
@@ -74,6 +75,13 @@ void ViewShadowNode::initialize() noexcept {
       HostPlatformViewTraitsInitializer::formsView(viewProps) ||
       viewProps.outlineWidth > 0;
 
+#ifdef ANDROID
+  // Only enableImperativeFocus lets ref.focus() reach focusable={false}.
+  formsView = formsView ||
+      (viewProps.focusable.has_value() &&
+       ReactNativeFeatureFlags::enableImperativeFocus());
+#endif
+
   if (formsView) {
     traits_.set(ShadowNodeTraits::Trait::FormsView);
   } else {
@@ -91,6 +99,17 @@ void ViewShadowNode::initialize() noexcept {
   } else {
     traits_.unset(ShadowNodeTraits::Trait::ChildrenFormStackingContext);
   }
+
+#ifdef ANDROID
+  // ReactViewGroup's keyboard focus takes `focusable` over `accessible`.
+  if (viewProps.focusable.has_value()) {
+    if (*viewProps.focusable) {
+      traits_.set(ShadowNodeTraits::Trait::KeyboardFocusable);
+    } else {
+      traits_.unset(ShadowNodeTraits::Trait::KeyboardFocusable);
+    }
+  }
+#endif
 }
 
 } // namespace facebook::react

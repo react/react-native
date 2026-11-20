@@ -1335,6 +1335,7 @@ class facebook::react::HostPlatformViewProps : public facebook::react::BaseViewP
   public bool renderToHardwareTextureAndroid;
   public bool screenReaderFocusable;
   public facebook::react::Float elevation;
+  public std::optional<bool> focusable;
   public std::optional<facebook::react::NativeDrawable> nativeBackground;
   public std::optional<facebook::react::NativeDrawable> nativeForeground;
   public std::optional<int> nextFocusDown;

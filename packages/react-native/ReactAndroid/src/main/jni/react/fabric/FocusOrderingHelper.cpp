@@ -201,13 +201,9 @@ void FocusOrderingHelper::traverseAndUpdateNextFocusableElement(
     Rect sourceRect,
     std::optional<Rect>& nextRect,
     std::shared_ptr<const ShadowNode>& nextNode) {
-  const auto* props =
-      dynamic_cast<const ViewProps*>(currNode->getProps().get());
-
   // We only care about focusable elements since only they can be both
   // focused and present in the hierarchy
-  if (currNode->getTraits().check(ShadowNodeTraits::Trait::KeyboardFocusable) ||
-      (props != nullptr && (props->focusable || props->accessible))) {
+  if (currNode->getTraits().check(ShadowNodeTraits::Trait::KeyboardFocusable)) {
     LayoutMetrics nodeLayoutMetrics = uimanager.getRelativeLayoutMetrics(
         *currNode, parentShadowNode.get(), {.includeTransform = true});
 

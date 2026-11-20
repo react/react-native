@@ -10,89 +10,42 @@ package com.facebook.react.uimanager
 import android.view.View
 import android.view.ViewGroup
 import com.facebook.react.R
+import java.util.Collections
+import java.util.WeakHashMap
 
 /**
  * Helper object for managing accessibility order in React Native views.
  *
- * This object provides utilities to manage the accessibility focus order of views by storing and
- * restoring focusability states, and building ordered lists of views based on accessibility order
- * preferences.
+ * This object provides utilities to build ordered lists of views based on accessibility order
+ * preferences, and to write the focus flags of views whose focus an accessibility order holds.
  */
 public object ReactAxOrderHelper {
-  /**
-   * Cleans up accessibility order state from a view and its children.
-   *
-   * This method removes stored focusability states and accessibility order parent references from
-   * the view hierarchy. It recursively processes all children of ViewGroup instances.
-   *
-   * @param view The view from which to clean up accessibility order state
-   */
-  @JvmStatic
-  public fun cleanUpAxOrder(view: View) {
-    val originalFocusability = view.getTag(R.id.original_focusability) as Boolean?
+  // A focus flag set while an accessibility order holds the view's focus is the one it restores.
+  internal fun setFocusable(view: View, focusable: Boolean) {
+    val originalFocusability = view.originalFocusability
     if (originalFocusability != null) {
-      view.isFocusable = originalFocusability
-    }
-
-    val axOrderParent = view.getTag(R.id.accessibility_order_parent) as View?
-    if (axOrderParent != null) {
-      view.setTag(R.id.accessibility_order_parent, null)
-    }
-
-    if (view is ViewGroup) {
-      for (i in 0..<view.childCount) {
-        cleanUpAxOrder(view.getChildAt(i))
-      }
+      view.setTag(R.id.original_focusability, originalFocusability.copy(focusable = focusable))
+    } else {
+      view.isFocusable = focusable
     }
   }
 
-  /**
-   * Restores the original focusability state of a view and its children.
-   *
-   * This method traverses the view hierarchy and restores the focusability state that was
-   * previously saved with the `R.id.original_focusability` tag. This is typically used after
-   * accessibility order operations are complete to return views to their original state.
-   *
-   * @param view The view whose focusability state should be restored
-   */
   @JvmStatic
-  public fun restoreFocusability(view: View) {
-    val originalFocusability = view.getTag(R.id.original_focusability) as Boolean?
+  @JvmName("internal_setScreenReaderFocusable")
+  internal fun setScreenReaderFocusable(view: View, screenReaderFocusable: Boolean) {
+    val originalFocusability = view.originalFocusability
     if (originalFocusability != null) {
-      view.isFocusable = originalFocusability
-    }
-
-    if (view is ViewGroup) {
-      for (i in 0..<view.childCount) {
-        restoreFocusability(view.getChildAt(i))
-      }
-    }
-  }
-
-  /**
-   * Disables focus for all views in the subtree that are not in the accessibility order list.
-   *
-   * This method recursively traverses the view hierarchy and disables focusability for views that
-   * are not included in the provided accessibility order list. It stores the original focusability
-   * state before modifying it, allowing for later restoration.
-   *
-   * @param view The root view of the subtree to process
-   * @param axOrderList The list of native IDs that should maintain their focusability
-   */
-  public fun disableFocusForSubtree(view: View, axOrderList: MutableList<*>) {
-    if (!axOrderList.contains(view.getTag(R.id.view_tag_native_id))) {
-      if (view.getTag(R.id.original_focusability) == null) {
-        view.setTag(R.id.original_focusability, view.isFocusable)
-      }
-      view.isFocusable = false
-    }
-
-    if (view is ViewGroup) {
-      for (i in 0..<view.childCount) {
-        disableFocusForSubtree(view.getChildAt(i), axOrderList)
-      }
+      view.setTag(
+          R.id.original_focusability,
+          originalFocusability.copy(screenReaderFocusable = screenReaderFocusable),
+      )
+    } else {
+      ScreenReaderFocusableHelper.setScreenReaderFocusable(view, screenReaderFocusable)
     }
   }
+
+  internal fun isAxOrderElement(view: View): Boolean =
+      view.isFocusable || ScreenReaderFocusableHelper.isScreenReaderFocusable(view)
 
   /**
    * Builds an ordered list of views based on accessibility order preferences.
@@ -130,3 +83,60 @@ public object ReactAxOrderHelper {
     }
   }
 }
+
+// Recorded, so a release reaches the held views that have left the order's subtree.
+internal class AccessibilityOrderHolds {
+  private val heldViews: MutableSet<View> = Collections.newSetFromMap(WeakHashMap())
+
+  fun disableFocusForSubtree(view: View, axOrderList: List<*>) {
+    if (!axOrderList.contains(view.getTag(R.id.view_tag_native_id))) {
+      hold(view)
+    }
+
+    if (view is ViewGroup) {
+      for (i in 0..<view.childCount) {
+        disableFocusForSubtree(view.getChildAt(i), axOrderList)
+      }
+    }
+  }
+
+  fun restoreFocusability() {
+    val views = heldViews.toList()
+    heldViews.clear()
+    for (view in views) {
+      val originalFocusability = view.originalFocusability
+      if (originalFocusability?.holds === this) {
+        view.setTag(R.id.original_focusability, null)
+        view.isFocusable = originalFocusability.focusable
+        ScreenReaderFocusableHelper.setScreenReaderFocusable(
+            view,
+            originalFocusability.screenReaderFocusable,
+        )
+      }
+    }
+  }
+
+  private fun hold(view: View) {
+    view.setTag(
+        R.id.original_focusability,
+        view.originalFocusability?.copy(holds = this)
+            ?: OriginalFocusability(
+                holds = this,
+                focusable = view.isFocusable,
+                screenReaderFocusable = ScreenReaderFocusableHelper.isScreenReaderFocusable(view),
+            ),
+    )
+    heldViews.add(view)
+    view.isFocusable = false
+    ScreenReaderFocusableHelper.setScreenReaderFocusable(view, false)
+  }
+}
+
+private data class OriginalFocusability(
+    val holds: AccessibilityOrderHolds,
+    val focusable: Boolean,
+    val screenReaderFocusable: Boolean,
+)
+
+private val View.originalFocusability: OriginalFocusability?
+  get() = getTag(R.id.original_focusability) as? OriginalFocusability

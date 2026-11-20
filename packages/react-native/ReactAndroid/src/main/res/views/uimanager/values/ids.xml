@@ -12,8 +12,11 @@
   <!-- tag is used to store whether the view is coopted by an accessibilityOrder-->
   <item type="id" name="accessibility_order_parent"/>
 
-  <!-- tag is used to store the original focusability value of a view -->
+  <!-- tag is used to store the focusability an accessibilityOrder holds, and the order holding it -->
   <item type="id" name="original_focusability"/>
+
+  <!-- tag is used to store screenReaderFocusable below API 28, where View has no such property -->
+  <item type="id" name="screen_reader_focusable"/>
 
   <!-- tag is used to store the nativeID tag -->
   <item type="id" name="view_tag_instance_handle"/>

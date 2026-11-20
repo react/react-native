@@ -41,7 +41,7 @@ class HostPlatformViewProps : public BaseViewProps {
   std::optional<NativeDrawable> nativeBackground{};
   std::optional<NativeDrawable> nativeForeground{};
 
-  bool focusable{false};
+  std::optional<bool> focusable{};
   bool needsOffscreenAlphaCompositing{false};
   bool renderToHardwareTextureAndroid{false};
   bool screenReaderFocusable{false};
