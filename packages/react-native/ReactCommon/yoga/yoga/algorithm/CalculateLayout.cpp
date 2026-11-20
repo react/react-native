@@ -991,19 +991,26 @@ static MinContentSize measureOrWalkMinContentMainSize(
     // 2. Dynamic min-content callback if set (for Primitives whose
     // min-content depends on state). Otherwise fall back to the regular
     // measure function with `AtMost 0`, which text measurers naturally
-    // answer with longest-word width.
-    const YGSize size = node->hasMinContentMeasureFunc()
-        ? node->measureMinContent(
-              wantRow ? 0.0f : YGUndefined,
-              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
-              wantRow ? YGUndefined : 0.0f,
-              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost)
-        : node->measure(
-              wantRow ? 0.0f : YGUndefined,
-              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
-              wantRow ? YGUndefined : 0.0f,
-              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
-    layout.minContent[axisIndex] = wantRow ? size.width : size.height;
+    // answer with longest-word width. A measure function that doesn't
+    // follow the measure modes isn't called: its answer at `AtMost 0` says
+    // nothing about its min-content, so its content contributes 0.
+    if (node->hasMinContentMeasureFunc()) {
+      const YGSize size = node->measureMinContent(
+          wantRow ? 0.0f : YGUndefined,
+          wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+          wantRow ? YGUndefined : 0.0f,
+          wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
+      layout.minContent[axisIndex] = wantRow ? size.width : size.height;
+    } else if (node->measureFuncFollowsMeasureModes()) {
+      const YGSize size = node->measure(
+          wantRow ? 0.0f : YGUndefined,
+          wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+          wantRow ? YGUndefined : 0.0f,
+          wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
+      layout.minContent[axisIndex] = wantRow ? size.width : size.height;
+    } else {
+      layout.minContent[axisIndex] = 0.0f;
+    }
     layout.minContentGeneration[axisIndex] = generationCount;
     return leafMinContentSize(node, requestedAxis, ownerDirection, ownerWidth);
   }
@@ -1115,7 +1122,10 @@ static MinContentSize computeChildMinContentMainSize(
 //   * Leaf with measure function: invoke it with `AtMost 0` on the
 //     requested axis and `Undefined` on the other. Text measure-funcs
 //     respond with longest-word width; image/collection-like measures
-//     respond with 0 along their scroll axis.
+//     respond with 0 along their scroll axis. A measure function that
+//     doesn't follow the measure modes (see
+//     `YGNodeSetMeasureFuncFollowsMeasureModes`) isn't invoked: without a
+//     static or callback min-content, its content contributes 0.
 //   * Empty leaf: return 0.
 //   * Container: iterate in-flow children. For each, take its
 //     min-content along the container's own main axis (sum into
@@ -2983,6 +2993,8 @@ bool calculateLayoutInternal(
         node->style().computeMarginForAxis(FlexDirection::Row, ownerWidth);
     const float marginAxisColumn =
         node->style().computeMarginForAxis(FlexDirection::Column, ownerWidth);
+    const bool measureFuncFollowsMeasureModes =
+        node->measureFuncFollowsMeasureModes();
 
     // First, try to use the layout cache.
     if (canUseCachedMeasurement(
@@ -2998,7 +3010,8 @@ bool calculateLayoutInternal(
             layout->cachedLayout.computedHeight,
             marginAxisRow,
             marginAxisColumn,
-            node->getConfig()) &&
+            node->getConfig(),
+            measureFuncFollowsMeasureModes) &&
         isCachedForOwnerSize(
             node, layout->cachedLayout, ownerWidth, ownerHeight)) {
       cachedResults = &layout->cachedLayout;
@@ -3018,7 +3031,8 @@ bool calculateLayoutInternal(
                 layout->cachedMeasurements[i].computedHeight,
                 marginAxisRow,
                 marginAxisColumn,
-                node->getConfig()) &&
+                node->getConfig(),
+                measureFuncFollowsMeasureModes) &&
             isCachedForOwnerSize(
                 node, layout->cachedMeasurements[i], ownerWidth, ownerHeight)) {
           cachedResults = &layout->cachedMeasurements[i];

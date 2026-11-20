@@ -530,6 +530,13 @@ public abstract class YogaNodeJNIBase : YogaNode, Cloneable {
     YogaNative.jni_YGNodeSetNodeTypeJNI(nativePointer, nodeType.intValue())
   }
 
+  override fun setMeasureFunctionFollowsMeasureModes(followsMeasureModes: Boolean) {
+    YogaNative.jni_YGNodeSetMeasureFuncFollowsMeasureModesJNI(nativePointer, followsMeasureModes)
+  }
+
+  override val measureFunctionFollowsMeasureModes: Boolean
+    get() = YogaNative.jni_YGNodeGetMeasureFuncFollowsMeasureModesJNI(nativePointer)
+
   override fun setMinContentMeasureFunction(measureFunction: YogaMeasureFunction?) {
     this.minContentMeasureFunction = measureFunction
     YogaNative.jni_YGNodeSetHasMinContentMeasureFuncJNI(nativePointer, measureFunction != null)

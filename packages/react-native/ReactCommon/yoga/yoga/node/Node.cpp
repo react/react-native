@@ -33,6 +33,7 @@ Node::Node(Node&& node) noexcept
       isReferenceBaseline_(node.isReferenceBaseline_),
       isDirty_(node.isDirty_),
       alwaysFormsContainingBlock_(node.alwaysFormsContainingBlock_),
+      measureFuncFollowsMeasureModes_(node.measureFuncFollowsMeasureModes_),
       nodeType_(node.nodeType_),
       context_(node.context_),
       measureFunc_(node.measureFunc_),
