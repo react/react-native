@@ -111,4 +111,46 @@ describe('Switch', () => {
     expect(onValueChange).toHaveBeenCalledWith(true);
     expect(onChange).toHaveBeenCalled();
   });
+
+  describe('web-style accessibility props', () => {
+    it('maps aria-label to accessibilityLabel', () => {
+      const root = render(<Switch value={false} aria-label="Wi-Fi" />);
+
+      expect(
+        root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+      ).toEqual(<rn-androidSwitch accessibilityLabel="Wi-Fi" />);
+    });
+
+    it('gives aria-label precedence over accessibilityLabel', () => {
+      const root = render(
+        <Switch
+          value={false}
+          aria-label="aria value"
+          accessibilityLabel="native value"
+        />,
+      );
+
+      expect(
+        root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+      ).toEqual(<rn-androidSwitch accessibilityLabel="aria value" />);
+    });
+
+    it('maps aria-disabled to accessibilityState', () => {
+      const root = render(<Switch value={false} aria-disabled={true} />);
+
+      expect(
+        root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+      ).toEqual(
+        <rn-androidSwitch accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
+      );
+    });
+
+    it('maps id to nativeID', () => {
+      const root = render(<Switch value={false} id="wifi" />);
+
+      expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+        <rn-androidSwitch nativeID="wifi" />,
+      );
+    });
+  });
 });

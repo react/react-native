@@ -14,6 +14,7 @@ import type {NativeSyntheticEvent} from '../../Types/CoreEventTypes';
 import type {AccessibilityState} from '../View/ViewAccessibility';
 import type {ViewProps} from '../View/ViewPropTypes';
 
+import resolveAriaProps from '../../../src/private/components/view/resolveAriaProps';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import Platform from '../../Utilities/Platform';
 import useMergeRefs from '../../Utilities/useMergeRefs';
@@ -187,7 +188,7 @@ const Switch: component(
     trackColor,
     value,
     ...restProps
-  } = props;
+  } = resolveAriaProps(props);
   const trackColorForFalse = trackColor?.false;
   const trackColorForTrue = trackColor?.true;
 

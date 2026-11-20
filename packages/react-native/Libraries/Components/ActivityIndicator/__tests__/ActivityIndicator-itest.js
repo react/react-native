@@ -55,4 +55,15 @@ describe('ActivityIndicator', () => {
       ),
     ).toEqual(<rn-androidProgressBar width="20" height="20" />);
   });
+
+  it('maps aria-label to accessibilityLabel', () => {
+    const root = Fantom.createRoot();
+    Fantom.runTask(() => {
+      root.render(<ActivityIndicator aria-label="Loading orders" />);
+    });
+
+    expect(
+      root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+    ).toEqual(<rn-androidProgressBar accessibilityLabel="Loading orders" />);
+  });
 });
