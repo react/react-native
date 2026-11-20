@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5d7adbc00208fc9995b1c3e69c677a38>>
+ * @generated SignedSource<<2d0623d35595eba002baeb40062c5ed3>>
  */
 
 /**
@@ -797,9 +797,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   }
 
   override fun onDraw(canvas: Canvas) {
-    if (_overflow != Overflow.VISIBLE) {
-      BackgroundStyleApplicator.clipToPaddingBox(this, canvas)
-    }
+    BackgroundStyleApplicator.updatePaddingBoxClip(this, canvas, _overflow != Overflow.VISIBLE)
     super.onDraw(canvas)
   }
 
