@@ -64,6 +64,7 @@ add_library(
           MethodInvoker.cpp
           ModuleRegistryBuilder.cpp
           OnLoad.cpp
+          RawColorParser.cpp
         SafeReleaseJniRef.cpp
           ScrollEventHelper.cpp
           TouchesHelper.cpp
@@ -83,6 +84,7 @@ target_link_libraries(reactnativejni
         logger
         react_cxxreact
         react_cxxstableapi
+        react_renderer_css
         react_renderer_runtimescheduler
         reactnativejni_common
         rrc_view

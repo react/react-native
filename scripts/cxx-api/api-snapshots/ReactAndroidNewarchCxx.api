@@ -2127,6 +2127,11 @@ class facebook::react::PullToRefreshViewProps : public facebook::react::HostPlat
   public virtual folly::dynamic getDiffProps(const facebook::react::Props* prevProps) const override;
 }
 
+class facebook::react::RawColorParser : public facebook::jni::JavaClass<facebook::react::RawColorParser> {
+  public static constexpr auto * kJavaDescriptor;
+  public static void registerNatives();
+}
+
 class facebook::react::RawProps {
   public RawProps();
   public RawProps(const facebook::react::RawProps& other) noexcept;
