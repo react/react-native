@@ -694,19 +694,15 @@ void zeroOutLayoutRecursively(yoga::Node* const node) {
   // A display: none subtree is zeroed out on every layout pass of its parent.
   // Most of it is usually still zeroed out from an earlier pass, but owned by
   // an earlier tree, so cloning it to zero it out again changes nothing. Only
-  // clone the children, and recurse, when part of the subtree needs it.
+  // clone and recurse into the children whose subtree needs it.
   //
   // This relies on the embedder leaving `hasNewLayout` set under display: none
   // nodes. Children that are skipped keep their owner from the earlier tree.
-  bool didCloneChildren = false;
   for (size_t i = 0; i < node->getChildCount(); i++) {
     if (isLayoutZeroedOutRecursively(node->getChild(i))) {
       continue;
     }
-    if (!didCloneChildren) {
-      node->cloneChildrenIfNeeded();
-      didCloneChildren = true;
-    }
+    node->cloneChildIfNeeded(i);
     zeroOutLayoutRecursively(node->getChild(i));
   }
 }
