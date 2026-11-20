@@ -14,6 +14,23 @@
 
 RCT_EXTERN NSString *const RCTShowDevMenuNotification;
 
+#if RCT_DEV_MENU
+
+/**
+ * The bundler host and port shown in Configure Bundler. Exposed for testing.
+ * The host comes from the bundle URL, then `jsLocation`, then `ipFileHost`, then localhost.
+ * The port comes from the same source as the host, otherwise it is the default Metro port.
+ */
+RCT_EXTERN void RCTDevMenuGetCurrentBundler(
+    NSURL *bundleURL,
+    NSString *jsLocation,
+    NSString *packagerScheme,
+    NSString *ipFileHost,
+    NSString **host,
+    NSNumber **port);
+
+#endif
+
 @interface RCTDevMenuConfiguration : NSObject
 
 #if RCT_DEV_MENU
