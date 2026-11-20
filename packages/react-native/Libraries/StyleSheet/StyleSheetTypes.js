@@ -437,6 +437,24 @@ type ____LayoutStyle_Internal = Readonly<{
    */
   borderWidth?: number,
 
+  /** `borderBlockEndWidth` works like `border-block-end-width` in CSS.
+   * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-block-end-width
+   * for more details.
+   */
+  borderBlockEndWidth?: number,
+
+  /** `borderBlockStartWidth` works like `border-block-start-width` in CSS.
+   * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-block-start-width
+   * for more details.
+   */
+  borderBlockStartWidth?: number,
+
+  /** `borderBlockWidth` works like `border-block-width` in CSS.
+   * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-block-width
+   * for more details.
+   */
+  borderBlockWidth?: number,
+
   /** `borderBottomWidth` works like `border-bottom-width` in CSS.
    * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-bottom-width
    * for more details.
@@ -448,6 +466,24 @@ type ____LayoutStyle_Internal = Readonly<{
    * When direction is `rtl`, `borderEndWidth` is equivalent to `borderLeftWidth`.
    */
   borderEndWidth?: number,
+
+  /** `borderInlineEndWidth` works like `border-inline-end-width` in CSS.
+   * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-inline-end-width
+   * for more details.
+   */
+  borderInlineEndWidth?: number,
+
+  /** `borderInlineStartWidth` works like `border-inline-start-width` in CSS.
+   * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-inline-start-width
+   * for more details.
+   */
+  borderInlineStartWidth?: number,
+
+  /** `borderInlineWidth` works like `border-inline-width` in CSS.
+   * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-inline-width
+   * for more details.
+   */
+  borderInlineWidth?: number,
 
   /** `borderLeftWidth` works like `border-left-width` in CSS.
    * See https://developer.mozilla.org/en-US/docs/Web/CSS/border-left-width
@@ -848,6 +884,9 @@ export type ____ViewStyle_InternalBase = Readonly<{
   borderBlockColor?: ____ColorValue_Internal,
   borderBlockEndColor?: ____ColorValue_Internal,
   borderBlockStartColor?: ____ColorValue_Internal,
+  borderInlineColor?: ____ColorValue_Internal,
+  borderInlineEndColor?: ____ColorValue_Internal,
+  borderInlineStartColor?: ____ColorValue_Internal,
   borderRadius?: number | string,
   borderBottomEndRadius?: number | string,
   borderBottomLeftRadius?: number | string,
@@ -869,6 +908,12 @@ export type ____ViewStyle_InternalBase = Readonly<{
   borderRightWidth?: number,
   borderStartWidth?: number,
   borderTopWidth?: number,
+  borderBlockWidth?: number,
+  borderBlockEndWidth?: number,
+  borderBlockStartWidth?: number,
+  borderInlineWidth?: number,
+  borderInlineEndWidth?: number,
+  borderInlineStartWidth?: number,
   opacity?: number,
   outlineColor?: ____ColorValue_Internal,
   outlineOffset?: number,
