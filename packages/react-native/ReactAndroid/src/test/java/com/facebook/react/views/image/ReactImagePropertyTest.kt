@@ -9,6 +9,7 @@ package com.facebook.react.views.image
 
 import android.graphics.Color
 import android.util.DisplayMetrics
+import android.view.View
 import com.facebook.common.logging.FLog
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder
@@ -98,6 +99,23 @@ class ReactImagePropertyTest {
     val view = viewManager.createViewInstance(themeContext)
     viewManager.setAccessible(view, true)
     assertThat(view.isFocusable).isTrue()
+  }
+
+  @Test
+  fun testFocusableFalseKeepsAccessibleImageOutOfKeyboardFocus() {
+    val viewManager = ReactImageManager()
+    val view = viewManager.createViewInstance(themeContext)
+    viewManager.updateProperties(view, buildStyles("accessible", true, "focusable", false))
+
+    val focusables = ArrayList<View>()
+    view.addFocusables(focusables, View.FOCUS_FORWARD, View.FOCUSABLES_ALL)
+    assertThat(focusables).isEmpty()
+    assertThat(view.requestFocus(View.FOCUS_DOWN, null)).isFalse()
+    assertThat(view.isFocusable).isTrue()
+
+    viewManager.updateProperties(view, buildStyles("focusable", true))
+    view.addFocusables(focusables, View.FOCUS_FORWARD, View.FOCUSABLES_ALL)
+    assertThat(focusables).containsExactly(view)
   }
 
   @Test

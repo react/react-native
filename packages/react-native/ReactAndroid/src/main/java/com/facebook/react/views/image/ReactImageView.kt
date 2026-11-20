@@ -22,6 +22,7 @@ import android.graphics.Shader.TileMode
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.view.View
 import com.facebook.common.internal.Supplier
 import com.facebook.common.references.CloseableReference
 import com.facebook.common.util.UriUtil
@@ -114,6 +115,7 @@ public class ReactImageView(
   private var headers: ReadableMap? = null
   private var resizeMultiplier = 1.0f
   private var resizeMethod = ImageResizeMethod.AUTO
+  internal var excludedFromKeyboardFocus = false
 
   init {
     // Workaround Android bug where ImageView visibility is not propagated to the Drawable, so you
@@ -380,6 +382,22 @@ public class ReactImageView(
   // Disable rasterizing to offscreen layer in order to preserve background effects like box-shadow
   // or outline which may draw outside of bounds.
   public override fun hasOverlappingRendering(): Boolean = false
+
+  public override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    // `accessible` sets isFocusable for accessibility services, `focusable={false}` only drops the
+    // view from keyboard navigation. A focused view stays a candidate so focus can move on from it.
+    if (excludedFromKeyboardFocus && !isFocused) {
+      return
+    }
+    super.addFocusables(views, direction, focusableMode)
+  }
+
+  public override fun requestFocus(direction: Int, previouslyFocusedRect: Rect?): Boolean {
+    if (excludedFromKeyboardFocus) {
+      return false
+    }
+    return super.requestFocus(direction, previouslyFocusedRect)
+  }
 
   public override fun onDraw(canvas: Canvas) {
     BackgroundStyleApplicator.clipToPaddingBoxWithAntiAliasing(this, canvas) {
