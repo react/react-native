@@ -34,13 +34,19 @@ internal object AgpConfiguratorUtils {
                 ext.buildTypes {
                   val debug =
                       getByName("debug").apply {
-                        manifestPlaceholders["usesCleartextTraffic"] = "true"
+                        if (!manifestPlaceholders.containsKey("usesCleartextTraffic")) {
+                          manifestPlaceholders["usesCleartextTraffic"] = "true"
+                        }
                       }
                   getByName("release").apply {
-                    manifestPlaceholders["usesCleartextTraffic"] = "false"
+                    if (!manifestPlaceholders.containsKey("usesCleartextTraffic")) {
+                      manifestPlaceholders["usesCleartextTraffic"] = "false"
+                    }
                   }
                   maybeCreate("debugOptimized").apply {
-                    manifestPlaceholders["usesCleartextTraffic"] = "true"
+                    if (!manifestPlaceholders.containsKey("usesCleartextTraffic")) {
+                      manifestPlaceholders["usesCleartextTraffic"] = "true"
+                    }
                     initWith(debug)
                     matchingFallbacks += listOf("release")
                     externalNativeBuild { cmake { arguments("-DCMAKE_BUILD_TYPE=Release") } }
