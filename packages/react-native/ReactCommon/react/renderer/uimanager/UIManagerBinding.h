@@ -88,7 +88,7 @@ class UIManagerBinding : public jsi::HostObject {
   std::shared_ptr<UIManager> uiManager_;
   std::unique_ptr<jsi::Function> eventHandler_;
   mutable PointerEventsProcessor pointerEventsProcessor_;
-  mutable ReactEventPriority currentEventPriority_;
+  mutable ReactEventPriority currentEventPriority_{ReactEventPriority::Default};
 };
 
 } // namespace facebook::react
