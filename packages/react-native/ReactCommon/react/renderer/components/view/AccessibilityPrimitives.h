@@ -65,6 +65,11 @@ struct AccessibilityState {
   std::optional<bool> expanded{std::nullopt};
   enum CheckedState { Unchecked, Checked, Mixed, None };
   CheckedState checked{CheckedState::None};
+
+  bool isMeaningful() const
+  {
+    return disabled || selected.has_value() || expanded.has_value() || checked == Checked || checked == Unchecked;
+  }
 };
 
 constexpr bool operator==(const AccessibilityState &lhs, const AccessibilityState &rhs)
