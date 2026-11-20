@@ -4,7 +4,7 @@ inputs:
   xcode-version:
     description: 'The xcode version to use'
     required: false
-    default: '16.4.0'
+    default: '27.2.0'
 runs:
   using: 'composite'
   steps:
