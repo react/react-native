@@ -402,11 +402,17 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.ACCESSIBILITY_STATE)
   public void setViewState(@NonNull T view, @Nullable ReadableMap accessibilityState) {
     if (accessibilityState == null) {
+      view.setTag(R.id.accessibility_state, null);
+      view.setTag(R.id.accessibility_state_expanded, null);
+      view.setSelected(false);
       resetDisabledFromAccessibilityState(view);
+      updateViewContentDescription(view);
       return;
     }
     if (accessibilityState.hasKey("expanded")) {
       view.setTag(R.id.accessibility_state_expanded, accessibilityState.getBoolean("expanded"));
+    } else {
+      view.setTag(R.id.accessibility_state_expanded, null);
     }
     if (accessibilityState.hasKey("selected")) {
       boolean prevSelected = view.isSelected();
@@ -435,6 +441,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     // For states which don't have corresponding methods in
     // AccessibilityNodeInfo, update the view's content description
     // here
+    updateViewContentDescription(view);
 
     final ReadableMapKeySetIterator i = accessibilityState.keySetIterator();
     while (i.hasNextKey()) {
@@ -443,7 +450,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
           || state.equals(STATE_EXPANDED)
           || (state.equals(STATE_CHECKED)
               && accessibilityState.getType(STATE_CHECKED) == ReadableType.String)) {
-        updateViewContentDescription(view);
         break;
       } else if (view.isAccessibilityFocused()) {
         // Internally Talkback ONLY uses TYPE_VIEW_CLICKED for "checked" and

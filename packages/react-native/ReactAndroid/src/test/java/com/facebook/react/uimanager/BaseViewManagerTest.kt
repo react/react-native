@@ -153,6 +153,47 @@ class BaseViewManagerTest {
   }
 
   @Test
+  fun testAccessibilityStateCheckedAfterMixedRemovesMixed() {
+    viewManager.setAccessibilityLabel(view, "Toppings")
+    viewManager.setViewState(view, JavaOnlyMap.of("checked", "mixed"))
+    Assertions.assertThat(view.contentDescription).isEqualTo("Toppings, mixed")
+
+    viewManager.setViewState(view, JavaOnlyMap.of("checked", true))
+    Assertions.assertThat(view.contentDescription).isEqualTo("Toppings")
+  }
+
+  @Test
+  fun testAccessibilityStateWithoutBusyRemovesBusy() {
+    viewManager.setAccessibilityLabel(view, "Results")
+    viewManager.setViewState(view, JavaOnlyMap.of("busy", true))
+    Assertions.assertThat(view.contentDescription).isEqualTo("Results, busy")
+
+    viewManager.setViewState(view, JavaOnlyMap())
+    Assertions.assertThat(view.contentDescription).isEqualTo("Results")
+  }
+
+  @Test
+  fun testAccessibilityStateNullRemovesThePreviousState() {
+    viewManager.setAccessibilityLabel(view, "Results")
+    viewManager.setViewState(
+        view,
+        JavaOnlyMap.of("busy", true, "checked", true, "expanded", true, "selected", true),
+    )
+    viewManager.setViewState(view, null)
+    Assertions.assertThat(view.contentDescription).isEqualTo("Results")
+    Assertions.assertThat(view.getTag(R.id.accessibility_state)).isNull()
+    Assertions.assertThat(view.getTag(R.id.accessibility_state_expanded)).isNull()
+    Assertions.assertThat(view.isSelected).isFalse()
+  }
+
+  @Test
+  fun testAccessibilityStateWithoutExpandedRemovesExpanded() {
+    viewManager.setViewState(view, JavaOnlyMap.of("expanded", true))
+    viewManager.setViewState(view, JavaOnlyMap())
+    Assertions.assertThat(view.getTag(R.id.accessibility_state_expanded)).isNull()
+  }
+
+  @Test
   fun testRoleList() {
     viewManager.setRole(view, "list")
     Assertions.assertThat(view.getTag(R.id.role)).isEqualTo(ReactAccessibilityDelegate.Role.LIST)
