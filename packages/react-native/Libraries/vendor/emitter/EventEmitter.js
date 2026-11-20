@@ -101,11 +101,10 @@ export default class EventEmitter<
         'EventEmitter.addListener(...): 2nd argument must be a function.',
       );
     }
-    const registrations = allocate<
-      TEventToArgsMap,
-      keyof TEventToArgsMap,
-      TEventToArgsMap[TEvent],
-    >(this.#registry, eventType);
+    const registrations = allocate<TEventToArgsMap, keyof TEventToArgsMap>(
+      this.#registry,
+      eventType,
+    );
     const registration: Registration<TEventToArgsMap[TEvent]> = {
       context,
       listener,
