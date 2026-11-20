@@ -117,15 +117,18 @@ internal object FilterHelper {
 
   // https://www.w3.org/TR/filter-effects-1/#blurEquivalent
   fun createBlurEffect(sigma: Float, chainedEffects: RenderEffect? = null): RenderEffect? {
-    if (sigma <= 0.5) {
+    // RenderEffect.createBlurEffect takes sigma (standard deviation) directly — it passes
+    // through to Skia's SkImageFilters::Blur(sigmaX, sigmaY). Convert dp→px here; do NOT
+    // apply sigmaToRadius (that formula is for HWUI's box-filter BlurMaskFilter, not RenderEffect).
+    val pxSigma = PixelUtil.toPixelFromDIP(sigma)
+    if (pxSigma <= 0.5f) {
       return null
     }
 
-    val radius: Float = sigmaToRadius(sigma)
     return if (chainedEffects == null) {
-      RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.DECAL)
+      RenderEffect.createBlurEffect(pxSigma, pxSigma, Shader.TileMode.DECAL)
     } else {
-      RenderEffect.createBlurEffect(radius, radius, chainedEffects, Shader.TileMode.DECAL)
+      RenderEffect.createBlurEffect(pxSigma, pxSigma, chainedEffects, Shader.TileMode.DECAL)
     }
   }
 
@@ -199,7 +202,7 @@ internal object FilterHelper {
     val color: Int = if (filterValues.hasKey("color")) filterValues.getInt("color") else Color.BLACK
     val radius: Float =
         if (filterValues.hasKey("standardDeviation"))
-            sigmaToRadius(filterValues.getDouble("standardDeviation").toFloat())
+            PixelUtil.toPixelFromDIP(filterValues.getDouble("standardDeviation").toFloat())
         else 0f
 
     return createDropShadowEffect(offsetX, offsetY, radius, color, chainedEffects)

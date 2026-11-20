@@ -209,6 +209,12 @@ BaseViewProps::BaseViewProps(
           {})),
       filter(
           convertRawProp(context, rawProps, "filter", sourceProps.filter, {})),
+      backdropFilter(convertRawProp(
+          context,
+          rawProps,
+          "backdropFilter",
+          sourceProps.backdropFilter,
+          {})),
       backgroundImage(convertRawProp(
           context,
           rawProps,
@@ -396,6 +402,7 @@ void BaseViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(outlineStyle);
     RAW_SET_PROP_SWITCH_CASE_BASIC(outlineWidth);
     RAW_SET_PROP_SWITCH_CASE_BASIC(filter);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(backdropFilter);
     RAW_SET_PROP_SWITCH_CASE_BASIC(boxShadow);
     RAW_SET_PROP_SWITCH_CASE_BASIC(mixBlendMode);
     // events field
