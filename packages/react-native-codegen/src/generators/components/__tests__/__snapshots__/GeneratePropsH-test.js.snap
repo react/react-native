@@ -1162,7 +1162,7 @@ namespace facebook::react {
 using ArrayPropsNativeComponentSizesMask = uint32_t;
 
 struct ArrayPropsNativeComponentSizesMaskWrapped {
-  ArrayPropsNativeComponentSizesMask value;
+  ArrayPropsNativeComponentSizesMask value{};
 };
 
 enum class ArrayPropsNativeComponentSizes: ArrayPropsNativeComponentSizesMask {
@@ -1764,7 +1764,7 @@ namespace facebook::react {
 using ArrayPropsWithOptionalGenNativeComponentSizesMask = uint32_t;
 
 struct ArrayPropsWithOptionalGenNativeComponentSizesMaskWrapped {
-  ArrayPropsWithOptionalGenNativeComponentSizesMask value;
+  ArrayPropsWithOptionalGenNativeComponentSizesMask value{};
 };
 
 enum class ArrayPropsWithOptionalGenNativeComponentSizes: ArrayPropsWithOptionalGenNativeComponentSizesMask {
@@ -2060,7 +2060,7 @@ namespace facebook::react {
 using ArrayPropsWithOptionalObjectGenNativeComponentSizesMask = uint32_t;
 
 struct ArrayPropsWithOptionalObjectGenNativeComponentSizesMaskWrapped {
-  ArrayPropsWithOptionalObjectGenNativeComponentSizesMask value;
+  ArrayPropsWithOptionalObjectGenNativeComponentSizesMask value{};
 };
 
 enum class ArrayPropsWithOptionalObjectGenNativeComponentSizes: ArrayPropsWithOptionalObjectGenNativeComponentSizesMask {
