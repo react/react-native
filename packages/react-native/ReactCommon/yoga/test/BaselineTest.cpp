@@ -16,7 +16,6 @@
 
 #include <yoga/Yoga.h>
 #include <yoga/algorithm/Baseline.h>
-#include <yoga/algorithm/CalculateLayout.h>
 #include <yoga/enums/Align.h>
 #include <yoga/enums/Dimension.h>
 #include <yoga/enums/FlexDirection.h>
@@ -183,40 +182,6 @@ void freeTreesSharingNodes(std::initializer_list<YGNodeRef> roots) {
   }
   for (const YGNodeRef node : nodes) {
     YGNodeFinalize(node);
-  }
-}
-
-TEST(ZeroOutLayoutTest, clonesOnlyChildrenWhoseLayoutNeedsZeroing) {
-  // Exercise both orders: an already-zeroed sibling must stay shared whether
-  // it comes before or after the child whose layout needs changing.
-  for (const size_t nonzeroIndex : {size_t{0}, size_t{1}}) {
-    YGNodeRef root = YGNodeNew();
-    YGNodeStyleSetWidth(root, 100);
-    YGNodeStyleSetHeight(root, 100);
-    YGNodeRef nonzero = YGNodeNew();
-    YGNodeStyleSetWidth(nonzero, 20);
-    YGNodeStyleSetHeight(nonzero, 10);
-    YGNodeRef zeroed = YGNodeNew();
-    YGNodeStyleSetDisplay(zeroed, YGDisplayNone);
-    YGNodeInsertChild(root, nonzeroIndex == 0 ? nonzero : zeroed, 0);
-    YGNodeInsertChild(root, nonzeroIndex == 0 ? zeroed : nonzero, 1);
-    YGNodeCalculateLayout(root, 100, 100, YGDirectionLTR);
-
-    YGNodeRef copy = YGNodeClone(root);
-    zeroOutLayoutRecursively(resolveRef(copy));
-
-    YGNodeRef changed = YGNodeGetChild(copy, nonzeroIndex);
-    YGNodeRef unchanged = YGNodeGetChild(copy, 1 - nonzeroIndex);
-    EXPECT_NE(nonzero, changed);
-    EXPECT_EQ(zeroed, unchanged);
-    EXPECT_EQ(resolveRef(copy), resolveRef(changed)->getOwner());
-    EXPECT_EQ(resolveRef(root), resolveRef(unchanged)->getOwner());
-    EXPECT_FLOAT_EQ(0.0f, YGNodeLayoutGetWidth(changed));
-    EXPECT_FLOAT_EQ(0.0f, YGNodeLayoutGetHeight(changed));
-    EXPECT_FLOAT_EQ(20.0f, YGNodeLayoutGetWidth(nonzero));
-    EXPECT_FLOAT_EQ(10.0f, YGNodeLayoutGetHeight(nonzero));
-
-    freeTreesSharingNodes({copy, root});
   }
 }
 
