@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.BlendMode
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
@@ -23,6 +24,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewStructure
+import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
@@ -159,6 +161,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
       AccessibilityManager.AccessibilityStateChangeListener? =
       null
   private var focusOnAttach = false
+  // Receives the HOVER_EXIT that pairs with the last accessibility HOVER_ENTER.
+  private var accessibilityHoverSource: View? = null
 
   internal var nativeBackgroundMap: ReadableMap? = null
   internal var nativeForegroundMap: ReadableMap? = null
@@ -200,6 +204,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     backfaceOpacity = 1f
     backfaceVisible = true
     childrenRemovedWhileTransitioning = null
+    accessibilityHoverSource = null
     nativeBackgroundMap = null
     nativeForegroundMap = null
   }
@@ -215,6 +220,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
         allChildren[i]?.removeOnLayoutChangeListener(childrenLayoutChangeListener)
       }
     }
+
+    sendPendingAccessibilityHoverExit()
 
     // Set default field values
     initView()
@@ -312,9 +319,80 @@ public open class ReactViewGroup public constructor(context: Context?) :
     @Suppress("DEPRECATION")
     if (ReactFeatureFlags.dispatchPointerEvents) {
       // Match the logic from onTouchEvent if pointer events are enabled
-      return canBeTouchTarget(pointerEvents)
+      val canBeTarget = canBeTouchTarget(pointerEvents)
+      if (canBeTarget || accessibilityHoverSource != null) {
+        updateAccessibilityHoverState(event)
+      }
+      return canBeTarget
     }
     return super.onHoverEvent(event)
+  }
+
+  /**
+   * Sends the accessibility hover events that [View.onHoverEvent] would send, which hover-based
+   * screen readers rely on. [View.onHoverEvent] can't be used here because it skips them while any
+   * child is under the pointer, including children that pointer events exclude from hit testing.
+   */
+  private fun updateAccessibilityHoverState(event: MotionEvent) {
+    val x = event.x
+    val y = event.y
+    val isHovered =
+        event.actionMasked != MotionEvent.ACTION_HOVER_EXIT &&
+            x >= 0 &&
+            y >= 0 &&
+            x < width &&
+            y < height &&
+            !hasHoverTargetChildAt(this, x, y)
+    if (accessibilityHoverSource != null) {
+      if (!isHovered) {
+        sendPendingAccessibilityHoverExit()
+      }
+      return
+    }
+    if (!isHovered) {
+      return
+    }
+    var source: View? = this
+    while (source != null && !source.isImportantForAccessibility) {
+      source = source.parent as? View
+    }
+    if (source != null) {
+      accessibilityHoverSource = source
+      source.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_HOVER_ENTER)
+    }
+  }
+
+  private fun sendPendingAccessibilityHoverExit() {
+    val hoverSource = accessibilityHoverSource ?: return
+    accessibilityHoverSource = null
+    hoverSource.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_HOVER_EXIT)
+  }
+
+  private fun hasHoverTargetChildAt(parent: ViewGroup, x: Float, y: Float): Boolean {
+    for (i in parent.childCount - 1 downTo 0) {
+      val child = parent.getChildAt(i)
+      if (child.visibility != VISIBLE) {
+        continue
+      }
+      val point = floatArrayOf(x + parent.scrollX - child.left, y + parent.scrollY - child.top)
+      if (!child.matrix.isIdentity) {
+        val inverse = Matrix()
+        child.matrix.invert(inverse)
+        inverse.mapPoints(point)
+      }
+      if (point[0] < 0 || point[1] < 0 || point[0] >= child.width || point[1] >= child.height) {
+        continue
+      }
+      when ((child as? ReactPointerEventsView)?.pointerEvents ?: PointerEvents.AUTO) {
+        PointerEvents.NONE -> continue
+        PointerEvents.BOX_NONE ->
+            if (child is ViewGroup && hasHoverTargetChildAt(child, point[0], point[1])) {
+              return true
+            }
+        else -> return true
+      }
+    }
+    return false
   }
 
   override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
@@ -673,6 +751,11 @@ public open class ReactViewGroup public constructor(context: Context?) :
       requestFocusFromJS()
       focusOnAttach = false
     }
+  }
+
+  override fun onDetachedFromWindow() {
+    sendPendingAccessibilityHoverExit()
+    super.onDetachedFromWindow()
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
