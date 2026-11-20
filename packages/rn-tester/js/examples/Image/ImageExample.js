@@ -284,6 +284,7 @@ class NetworkImageExample extends React.Component<
         <Image
           {...this.props}
           style={[styles.base, styles.visibleOverflow]}
+          // $FlowFixMe[missing-local-annot]
           onLoadStart={e => this.setState({loading: true})}
           onError={e =>
             this.setState({error: e.nativeEvent.error, loading: false})
