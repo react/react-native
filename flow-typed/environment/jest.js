@@ -1003,24 +1003,26 @@ type JestDoneFn = {
   fail: (error: Error) => void,
 };
 
+type JestProvidesCallback =
+  ((done: JestDoneFn) => void) | (() => PromiseLike<unknown>);
+
+type JestProvidesHookCallback = (() => any) | JestProvidesCallback;
+
 /** Runs this function after every test inside this context */
 declare function afterEach(
-  fn: (done: JestDoneFn) => ?Promise<unknown>,
+  fn: JestProvidesHookCallback,
   timeout?: number,
 ): void;
 /** Runs this function before every test inside this context */
 declare function beforeEach(
-  fn: (done: JestDoneFn) => ?Promise<unknown>,
+  fn: JestProvidesHookCallback,
   timeout?: number,
 ): void;
 /** Runs this function after all tests have finished inside this context */
-declare function afterAll(
-  fn: (done: JestDoneFn) => ?Promise<unknown>,
-  timeout?: number,
-): void;
+declare function afterAll(fn: JestProvidesHookCallback, timeout?: number): void;
 /** Runs this function before any tests have started inside this context */
 declare function beforeAll(
-  fn: (done: JestDoneFn) => ?Promise<unknown>,
+  fn: JestProvidesHookCallback,
   timeout?: number,
 ): void;
 
@@ -1049,7 +1051,7 @@ declare var describe: {
       | [ReadonlyArray<string>, string]
   ): (
     name: JestTestName,
-    fn?: (...args: ReadonlyArray<any>) => ?Promise<unknown>,
+    fn?: (...args: ReadonlyArray<any>) => any,
     timeout?: number,
   ) => void,
   ...
@@ -1064,11 +1066,7 @@ declare var it: {
    * @param {Function} Test
    * @param {number} Timeout for the test, in milliseconds.
    */
-  (
-    name: JestTestName,
-    fn?: (done: JestDoneFn) => ?Promise<unknown>,
-    timeout?: number,
-  ): void,
+  (name: JestTestName, fn?: JestProvidesCallback, timeout?: number): void,
   /**
    * Only run this test
    *
@@ -1077,16 +1075,12 @@ declare var it: {
    * @param {number} Timeout for the test, in milliseconds.
    */
   only: {
-    (
-      name: JestTestName,
-      fn?: (done: JestDoneFn) => ?Promise<unknown>,
-      timeout?: number,
-    ): void,
+    (name: JestTestName, fn?: JestProvidesCallback, timeout?: number): void,
     each(
       ...table: Array<Array<unknown> | unknown> | [Array<string>, string]
     ): (
       name: JestTestName,
-      fn?: (...args: Array<any>) => ?Promise<unknown>,
+      fn?: (...args: Array<any>) => any,
       timeout?: number,
     ) => void,
   },
@@ -1098,16 +1092,12 @@ declare var it: {
    * @param {number} Timeout for the test, in milliseconds.
    */
   skip: {
-    (
-      name: JestTestName,
-      fn?: (done: JestDoneFn) => ?Promise<unknown>,
-      timeout?: number,
-    ): void,
+    (name: JestTestName, fn?: JestProvidesCallback, timeout?: number): void,
     each(
       ...table: Array<Array<unknown> | unknown> | [Array<string>, string]
     ): (
       name: JestTestName,
-      fn?: (...args: Array<any>) => ?Promise<unknown>,
+      fn?: (...args: Array<any>) => any,
       timeout?: number,
     ) => void,
   },
@@ -1126,7 +1116,7 @@ declare var it: {
    */
   concurrent(
     name: JestTestName,
-    fn?: (done: JestDoneFn) => ?Promise<unknown>,
+    fn?: JestProvidesCallback,
     timeout?: number,
   ): void,
   /**
@@ -1140,7 +1130,7 @@ declare var it: {
       | [ReadonlyArray<string>, string]
   ): (
     name: JestTestName,
-    fn?: (...args: Array<any>) => ?Promise<unknown>,
+    fn?: (...args: Array<any>) => any,
     timeout?: number,
   ) => void,
   ...
@@ -1148,7 +1138,7 @@ declare var it: {
 
 declare function fit(
   name: JestTestName,
-  fn: (done: JestDoneFn) => ?Promise<unknown>,
+  fn: JestProvidesCallback,
   timeout?: number,
 ): void;
 /** An individual test unit */
