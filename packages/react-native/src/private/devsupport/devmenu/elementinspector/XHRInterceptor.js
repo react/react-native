@@ -14,11 +14,9 @@ import typeof XMLHttpRequestT from '../../../../../Libraries/Network/XMLHttpRequ
 
 const XMLHttpRequest: XMLHttpRequestT =
   require('../../../../../Libraries/Network/XMLHttpRequest').default;
-// $FlowFixMe[method-unbinding]
+
 const originalXHROpen = XMLHttpRequest.prototype.open;
-// $FlowFixMe[method-unbinding]
 const originalXHRSend = XMLHttpRequest.prototype.send;
-// $FlowFixMe[method-unbinding]
 const originalXHRSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
 
 type XHRInterceptorOpenCallback = (

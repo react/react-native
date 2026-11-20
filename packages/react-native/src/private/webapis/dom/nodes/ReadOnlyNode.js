@@ -381,7 +381,6 @@ export const ReadOnlyNode_public: typeof ReadOnlyNode =
     throw new TypeError("Failed to construct 'Node': Illegal constructor");
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyNode_public.prototype = ReadOnlyNode.prototype;
 // Copy static properties (ELEMENT_NODE, DOCUMENT_NODE, TEXT_NODE,
 // DOCUMENT_POSITION_*, etc.) so that callers accessing them via the public

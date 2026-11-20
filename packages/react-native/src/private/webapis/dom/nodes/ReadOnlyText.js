@@ -38,7 +38,6 @@ export const ReadOnlyText_public: typeof ReadOnlyText =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyText_public.prototype = ReadOnlyText.prototype;
 
 // The public imperative EventTarget API (`addEventListener`,

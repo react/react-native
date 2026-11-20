@@ -202,7 +202,6 @@ export default class AnimatedProps extends AnimatedNode {
     return tuples;
   }
 
-  // $FlowFixMe[unclear-type]
   __getAnimatedValue(): Object {
     const props: {[key: string]: unknown} = {};
 
@@ -366,7 +365,6 @@ export default class AnimatedProps extends AnimatedNode {
     }
   }
 
-  // $FlowFixMe[unclear-type]
   __getNativeConfig(): Object {
     const platformConfig = this.__getPlatformConfig();
     const propsConfig: {[key: string]: number} = {};
@@ -391,10 +389,8 @@ export default class AnimatedProps extends AnimatedNode {
 
 // Supported versions of JSC do not implement the newer Object.hasOwn. Remove
 // this shim when they do.
-// $FlowFixMe[method-unbinding]
 const _hasOwnProp = Object.prototype.hasOwnProperty;
 const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
-  // $FlowFixMe[method-unbinding]
   /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
    * unsoundness in flow */
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

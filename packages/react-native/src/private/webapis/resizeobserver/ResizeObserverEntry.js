@@ -142,5 +142,4 @@ export const ResizeObserverEntry_public: typeof ResizeObserverEntry =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ResizeObserverEntry_public.prototype = ResizeObserverEntry.prototype;

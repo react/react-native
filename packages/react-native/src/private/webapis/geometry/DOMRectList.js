@@ -85,5 +85,4 @@ export const DOMRectList_public: typeof DOMRectList =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 DOMRectList_public.prototype = DOMRectList.prototype;

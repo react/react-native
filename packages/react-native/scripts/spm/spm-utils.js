@@ -219,7 +219,6 @@ function readPackageJson(dir /*: string */) /*: any | null */ {
   if (!fs.existsSync(pkgPath)) {
     return null;
   }
-  // $FlowFixMe[incompatible-return] JSON.parse returns any
   return JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 }
 

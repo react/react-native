@@ -178,6 +178,5 @@ export const IntersectionObserverEntry_public: typeof IntersectionObserverEntry 
     );
   };
 
-// $FlowExpectedError[prop-missing]
 IntersectionObserverEntry_public.prototype =
   IntersectionObserverEntry.prototype;

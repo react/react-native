@@ -76,7 +76,6 @@ export const PerformanceEventTiming_public: typeof PerformanceEventTiming =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceEventTiming_public.prototype = PerformanceEventTiming.prototype;
 
 type EventCountsForEachCallbackType =
@@ -97,7 +96,6 @@ function getCachedEventCounts(): Map<string, number> {
   );
   cachedEventCounts = eventCounts;
 
-  // $FlowFixMe[incompatible-type]
   global.queueMicrotask(() => {
     // To be consistent with the calls to the API from the same task,
     // but also not to refetch the data from native too often,
@@ -153,5 +151,4 @@ export const EventCounts_public: typeof EventCounts =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 EventCounts_public.prototype = EventCounts.prototype;

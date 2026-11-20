@@ -551,7 +551,6 @@ function InternalTextInput(props: TextInputProps): React.Node {
     }
 
     if (overrides != null) {
-      // $FlowFixMe[incompatible-type]
       _style = [_style, overrides];
     }
   }
@@ -635,12 +634,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
     };
     textInput =
       (
-        /* $FlowFixMe[prop-missing] the types for AndroidTextInput don't match up
-         * exactly with the props for TextInput. This will need to get fixed */
         /* $FlowFixMe[incompatible-type] the types for AndroidTextInput don't
-         * match up exactly with the props for TextInput. This will need to get
-         * fixed */
-        /* $FlowFixMe[incompatible-type-arg] the types for AndroidTextInput don't
          * match up exactly with the props for TextInput. This will need to get
          * fixed */
         <AndroidTextInput
@@ -667,9 +661,6 @@ function InternalTextInput(props: TextInputProps): React.Node {
           onBlur={_onBlur}
           onChange={_onChange}
           onFocus={_onFocus}
-          /* $FlowFixMe[prop-missing] the types for AndroidTextInput don't match
-           * up exactly with the props for TextInput. This will need to get fixed
-           */
           /* $FlowFixMe[incompatible-type] the types for AndroidTextInput
            * don't match up exactly with the props for TextInput. This will need
            * to get fixed */

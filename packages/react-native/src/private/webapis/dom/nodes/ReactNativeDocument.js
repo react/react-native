@@ -148,5 +148,4 @@ export const ReactNativeDocument_public: typeof ReactNativeDocument =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReactNativeDocument_public.prototype = ReactNativeDocument.prototype;

@@ -233,9 +233,7 @@ function getLocalImports(
       const objectImports = getImports(objectProps);
       // $FlowFixMe[incompatible-type] the type is guaranteed to be ObjectTypeAnnotation<PropTypeAnnotation>
       const localImports = getLocalImports(objectProps);
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       objectImports.forEach(imports.add, imports);
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       localImports.forEach(imports.add, imports);
     }
 
@@ -243,9 +241,7 @@ function getLocalImports(
       imports.add('#include <React/RendererCore.h>');
       const objectImports = getImports(typeAnnotation.properties);
       const localImports = getLocalImports(typeAnnotation.properties);
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       objectImports.forEach(imports.add, imports);
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       localImports.forEach(imports.add, imports);
     }
   });

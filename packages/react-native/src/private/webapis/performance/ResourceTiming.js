@@ -141,6 +141,5 @@ export const PerformanceResourceTiming_public: typeof PerformanceResourceTiming 
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceResourceTiming_public.prototype =
   PerformanceResourceTiming.prototype;

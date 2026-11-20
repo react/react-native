@@ -100,7 +100,6 @@ const getBabelRC = (function () {
     // If a babel config file doesn't exist in the project then
     // the default preset for react-native will be used instead.
     // $FlowFixMe[incompatible-use] `extends` is missing in null or undefined.
-    // $FlowFixMe[incompatible-type] `extends` is missing in null or undefined.
     if (!babelRC.extends) {
       const {
         babelRuntimeModuleName,

@@ -53,7 +53,6 @@ function getHandler(
 
 // Temporary cast until ReadOnlyNode extends EventTarget ungated.
 function asEventTarget(node: ReadOnlyElement): ReadOnlyNodeWithEventTarget {
-  // $FlowFixMe[incompatible-type]
   const eventTarget: ReadOnlyNodeWithEventTarget = node;
   return eventTarget;
 }
@@ -87,7 +86,6 @@ function getResponderParentElement(
 ): ReadOnlyElement | null {
   // `ReadOnlyElement` extends `EventTarget` at runtime when the new
   // event-dispatching pipeline is enabled (the only case this module runs in).
-  // $FlowFixMe[incompatible-type]
   const eventTarget: EventTarget = node;
   const parent = getEventTargetParent(eventTarget);
   if (parent instanceof ReadOnlyElement) {

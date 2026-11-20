@@ -127,7 +127,6 @@ export class URLSearchParams {
     );
   }
 
-  // $FlowFixMe[unsupported-syntax]
   [Symbol.iterator](): IteratorObject<[string, string]> {
     const entries: [string, string][] = [];
 
@@ -137,7 +136,6 @@ export class URLSearchParams {
       }
     }
 
-    // $FlowFixMe[incompatible-use]
     return entries[Symbol.iterator]();
   }
 

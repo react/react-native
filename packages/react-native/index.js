@@ -446,8 +446,6 @@ Object.defineProperty(module.exports, 'Touchable', {
 });
 
 if (__DEV__) {
-  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
-   * attempting to access InteractionManager. */
   /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
    * attempting to access InteractionManager. */
   Object.defineProperty(module.exports, 'InteractionManager', {
@@ -462,8 +460,6 @@ if (__DEV__) {
     },
   });
 
-  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
-   * attempting to access Clipboard. */
   /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
    * attempting to access Clipboard. */
   Object.defineProperty(module.exports, 'Clipboard', {

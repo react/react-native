@@ -211,7 +211,6 @@ Fantom.unstable_benchmark
         beforeEach: () => {
           root = Fantom.createRoot();
           Fantom.runTask(() => root.render(original));
-          // $FlowExpectedError[incompatible-type]
           testViews = reordered;
         },
         afterEach: () => {
@@ -258,7 +257,6 @@ Fantom.unstable_benchmark
         beforeEach: () => {
           root = Fantom.createRoot();
           Fantom.runTask(() => root.render(original));
-          // $FlowExpectedError[incompatible-type]
           testViews = reordered;
         },
         afterEach: () => {

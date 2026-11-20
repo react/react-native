@@ -33,7 +33,6 @@ export const TaskAttributionTiming_public: typeof TaskAttributionTiming =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 TaskAttributionTiming_public.prototype = TaskAttributionTiming.prototype;
 
 const EMPTY_ATTRIBUTION: ReadonlyArray<TaskAttributionTiming> =
@@ -67,6 +66,5 @@ export const PerformanceLongTaskTiming_public: typeof PerformanceLongTaskTiming 
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceLongTaskTiming_public.prototype =
   PerformanceLongTaskTiming.prototype;

@@ -206,11 +206,9 @@ function runExceptionsManagerTests() {
         expect(exceptionData.isFatal).toBe(false);
         expect(logToConsoleInReact).toBe(false);
         expect(console.error).toBeCalledTimes(1);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0]).toBeInstanceOf(
           ExceptionsManager.SyntheticError,
         );
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0].toString()).toBe(message);
       });
 
@@ -250,11 +248,9 @@ function runExceptionsManagerTests() {
         expect(exceptionData.isFatal).toBe(false);
         expect(logToConsoleInReact).toBe(false);
         expect(console.error).toBeCalledTimes(1);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0]).toBeInstanceOf(
           ExceptionsManager.SyntheticError,
         );
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0].toString()).toBe(
           'Unspecified error',
         );
@@ -669,9 +665,7 @@ function runExceptionsManagerTests() {
           "const error = new Error('Some error happened');",
         );
         expect(exceptionData.isFatal).toBe(true);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0]).toHaveLength(1);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0]).toBe(error);
       });
 
@@ -702,9 +696,7 @@ function runExceptionsManagerTests() {
           "const error = new Error('Some error happened');",
         );
         expect(exceptionData.isFatal).toBe(false);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0]).toHaveLength(1);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0]).toBe(error);
       });
 
@@ -731,13 +723,10 @@ function runExceptionsManagerTests() {
         expect(exceptionData.name).toBe(null);
         expect(exceptionData.stack[0].file).toMatch(/ExceptionsManager\.js$/);
         expect(exceptionData.isFatal).toBe(true);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0]).toHaveLength(1);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0]).toBeInstanceOf(
           ExceptionsManager.SyntheticError,
         );
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0].toString()).toBe(message);
       });
 
@@ -768,9 +757,7 @@ function runExceptionsManagerTests() {
         expect(getLineFromFrame(exceptionData.stack[0])).toBe(
           "const error = new Error('Some error happened');",
         );
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0]).toHaveLength(1);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0]).toBe(error);
       });
 
@@ -790,9 +777,7 @@ function runExceptionsManagerTests() {
           expect(logBoxAddException).not.toBeCalled();
           expect(nativeReportException).toBeCalledTimes(1);
         }
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0]).toHaveLength(1);
-        // $FlowFixMe[prop-missing]
         expect(console.error.mock.calls[0][0]).toBe(error);
       });
     });
@@ -870,9 +855,7 @@ function runExceptionsManagerTests() {
           message: 'decorated: ' + beforeDecorator.message,
         });
         expect(mockConsoleError).toBeCalledTimes(2);
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[0][0]).toBe(error);
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[1][0]).toBe(error);
       });
 
@@ -898,7 +881,6 @@ function runExceptionsManagerTests() {
           expect(nativeReportException).toBeCalledTimes(1);
         }
         expect(mockConsoleError).toBeCalledTimes(1);
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[0][0]).toBe(error);
       });
 
@@ -931,11 +913,9 @@ function runExceptionsManagerTests() {
           );
         }
         expect(mockConsoleError).toBeCalledTimes(2);
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[0][0]).toMatch(
           /Logging an error within the decorator/,
         );
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[1][0]).toBe(error);
       });
 
@@ -976,11 +956,9 @@ function runExceptionsManagerTests() {
         }
         expect(mockConsoleError).toBeCalledTimes(2);
         // console.error calls are chained without exception pre-processing, so decorator doesn't apply
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[0][0].toString()).toMatch(
           /Error: Some error happened/,
         );
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[1][0]).toMatch(
           /Logging an error within the decorator/,
         );
@@ -1013,7 +991,6 @@ function runExceptionsManagerTests() {
           );
         }
         expect(mockConsoleError).toBeCalledTimes(1);
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[0][0]).toBe(error);
       });
 
@@ -1043,7 +1020,6 @@ function runExceptionsManagerTests() {
           );
         }
         expect(mockConsoleError).toBeCalledTimes(1);
-        // $FlowFixMe[prop-missing]
         expect(mockConsoleError.mock.calls[0][0].toString()).toMatch(
           /Error: Some error happened/,
         );

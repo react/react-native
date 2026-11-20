@@ -153,7 +153,6 @@ function mergePropsStack(
       for (const prop in cur) {
         // $FlowFixMe[invalid-computed-prop] dynamic merge over the known StackProps keys
         if (cur[prop] != null) {
-          // $FlowFixMe[invalid-computed-prop] dynamic merge over the known StackProps keys
           // $FlowFixMe[prop-missing] dynamic merge over the known StackProps keys
           prev[prop] = cur[prop];
         }

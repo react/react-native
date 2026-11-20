@@ -77,10 +77,8 @@ export default class NativeEventEmitter<
     }
 
     const hasAddListener =
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       !!nativeModule && typeof nativeModule.addListener === 'function';
     const hasRemoveListeners =
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       !!nativeModule && typeof nativeModule.removeListeners === 'function';
 
     if (nativeModule && hasAddListener && hasRemoveListeners) {

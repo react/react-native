@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags enableResizeObserverByDefault:true
+ * @fantom_flags enableResizeObserverByDefault:true enableFabricCommitBranching:*
  * @flow strict-local
  * @format
  */
@@ -20,7 +20,7 @@ import {createShadowNodeReferenceCountingRef} from '../../../__tests__/utilities
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
-import {createRef} from 'react';
+import {createRef, useLayoutEffect} from 'react';
 import {View} from 'react-native';
 
 declare const ResizeObserver: Class<ResizeObserverType>;
@@ -1562,6 +1562,61 @@ describe('ResizeObserver', () => {
   });
 
   describe('delivery timing', () => {
+    it('should report the committed size when observing from a ref callback', () => {
+      const root = Fantom.createRoot();
+      const sizes: Array<[number, number]> = [];
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          const entry = entries[0];
+          sizes.push([
+            entry.contentRect.width,
+            entry.target.getBoundingClientRect().width,
+          ]);
+        });
+        root.render(
+          <View
+            style={{width: 100, height: 50}}
+            ref={node => {
+              if (node != null) {
+                observer.observe(node);
+              }
+            }}
+          />,
+        );
+      });
+      expect(sizes).toEqual([[100, 100]]);
+    });
+
+    it('should report the committed size when observing from a layout effect', () => {
+      const root = Fantom.createRoot();
+      const nodeRef = createRef<HostInstance>();
+      const sizes: Array<[number, number]> = [];
+      component Box(width: number) {
+        useLayoutEffect(() => {
+          const node = nullthrows(nodeRef.current);
+          observer.observe(node);
+          return () => observer.unobserve(node);
+        }, []);
+        return <View ref={nodeRef} style={{width, height: 50}} />;
+      }
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          const entry = entries[0];
+          sizes.push([
+            entry.contentRect.width,
+            entry.target.getBoundingClientRect().width,
+          ]);
+        });
+        root.render(<Box width={100} />);
+      });
+      expect(sizes).toEqual([[100, 100]]);
+      Fantom.runTask(() => root.render(<Box width={200} />));
+      expect(sizes).toEqual([
+        [100, 100],
+        [200, 200],
+      ]);
+    });
+
     it('should deliver observations before a task scheduled from the same tick', () => {
       const nodeRef = createRef<HostInstance>();
       const root = Fantom.createRoot();
