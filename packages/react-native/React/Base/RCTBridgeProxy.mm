@@ -262,46 +262,9 @@ using namespace facebook;
   return (RCTBridge *)self;
 }
 
-- (void)setBatchedBridge
-{
-  [self logError:@"This method is not supported. No-oping." cmd:_cmd];
-}
-
-- (RCTBridgeModuleListProvider)moduleProvider
-{
-  [self logWarning:@"This method is not supported. Returning empty block" cmd:_cmd];
-  return ^{
-    return @[];
-  };
-}
-
 - (RCTModuleRegistry *)moduleRegistry
 {
   return _moduleRegistry;
-}
-
-/**
- * RCTBridge (RCTCxxBridge)
- */
-
-- (RCTBridge *)parentBridge
-{
-  [self logWarning:@"This method is not supported. Returning bridge proxy." cmd:_cmd];
-  return (RCTBridge *)self;
-}
-
-- (BOOL)moduleSetupComplete
-{
-  [self logWarning:@"This method is not supported. Returning YES." cmd:_cmd];
-  return YES;
-}
-
-- (void)start
-{
-  [self
-      logError:
-          @"Starting the bridge proxy does nothing. If you want to start React Native, please use RCTHost start. Nooping"
-           cmd:_cmd];
 }
 
 - (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules
@@ -310,46 +273,6 @@ using namespace facebook;
       logError:
           @"This API is unsupported. Please return all module classes from your app's RCTTurboModuleManagerDelegate getModuleClassFromName:. Nooping."
            cmd:_cmd];
-}
-
-- (void)updateModuleWithInstance:(id<RCTBridgeModule>)instance
-{
-  [self logError:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (void)startProfiling
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (void)stopProfiling:(void (^)(NSData *))callback
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (id)callNativeModule:(NSUInteger)moduleID method:(NSUInteger)methodID params:(NSArray *)params
-{
-  [self logError:@"This method is not supported. Nooping and returning nil." cmd:_cmd];
-  return nil;
-}
-
-- (void)logMessage:(NSString *)message level:(NSString *)level
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-- (void)_immediatelyCallTimer:(NSNumber *)timer
-{
-  [self logWarning:@"This method is not supported. Nooping." cmd:_cmd];
-}
-
-/**
- * RCTBridge (Inspector)
- */
-- (BOOL)inspectable
-{
-  [self logWarning:@"This method is not supported. Returning NO." cmd:_cmd];
-  return NO;
 }
 
 /**

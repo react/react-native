@@ -387,7 +387,7 @@ declare module '@babel/core' {
     buildCodeFrameError<TError extends Error>(
       node: BabelNode,
       msg: string,
-      Class<TError>,
+      Error: Class<TError>,
     ): TError;
 
     mergeSourceMap(map: _BabelSourceMap): _BabelSourceMap;
@@ -408,7 +408,7 @@ declare module '@babel/core' {
 
     parseShebang(): void;
 
-    makeResult<T>(TransformResult<T>): TransformResult<T>;
+    makeResult<T>(result: TransformResult<T>): TransformResult<T>;
 
     generate(): TransformResult<>;
   }
@@ -480,7 +480,7 @@ declare module '@babel/core' {
   declare export type Presets = Array<PresetEntry>;
 
   // See https://babeljs.io/docs/en/next/options#code-generator-options
-  declare export type BabelCoreOptions = {|
+  declare export type BabelCoreOptions = {
     // Primary options
 
     /**
@@ -943,20 +943,20 @@ declare module '@babel/core' {
      * A root path to include on generated module names.
      */
     moduleRoot?: string,
-  |};
+  };
 
-  declare export type TransformResult<T = BabelFileMetadata> = {|
+  declare export type TransformResult<T = BabelFileMetadata> = {
     metadata: T,
     options: BabelCoreOptions,
     code: string,
     map: _BabelSourceMap | null,
     ast: BabelNodeFile | null,
     ignored?: boolean,
-  |};
+  };
 
   declare type TransformCallback<TMetadata> =
-    | ((Error, null) => unknown)
-    | ((null, TransformResult<TMetadata> | null) => unknown);
+    | ((error: Error, result: null) => unknown)
+    | ((error: null, result: TransformResult<TMetadata> | null) => unknown);
 
   /**
    * Transforms the passed in code. Calling a callback with an object with the generated code, source map, and AST.
@@ -1042,7 +1042,8 @@ declare module '@babel/core' {
   declare export function parse(
     code: string,
     options?: BabelCoreOptions,
-    callback: ((error: Error) => void) | ((void, BabelNodeFile) => void),
+    callback:
+      ((error: Error) => void) | ((error: void, ast: BabelNodeFile) => void),
   ): void;
 
   declare export function parseSync(
@@ -1096,8 +1097,8 @@ declare module '@babel/core' {
   declare export function loadOptions(
     options?: unknown,
     callback:
-      | ((error: Error, null) => unknown)
-      | ((null, config: ResolvedConfig | null) => unknown),
+      | ((error: Error, config: null) => unknown)
+      | ((error: null, config: ResolvedConfig | null) => unknown),
   ): void;
   declare export function loadOptionsSync(
     options?: unknown,
@@ -1125,8 +1126,8 @@ declare module '@babel/core' {
   declare export function loadPartialConfig(
     options?: unknown,
     callback:
-      | ((error: Error, null) => unknown)
-      | ((null, config: PartialConfig | null) => unknown),
+      | ((error: Error, config: null) => unknown)
+      | ((error: null, config: PartialConfig | null) => unknown),
   ): void;
   declare export function loadPartialConfigSync(
     options?: unknown,
@@ -1251,13 +1252,13 @@ declare module '@babel/generator' {
   declare export default (
     ast: BabelNode,
     options?: Options,
-    code?: string | {[string]: string, ...},
+    code?: string | {[filename: string]: string, ...},
   ) => GeneratorResult;
 
   declare export default (
     ast: BabelNode,
     options?: Options,
-    code?: string | {|[filename: string]: string|},
+    code?: string | {[filename: string]: string},
   ) => GeneratorResult;
 }
 
@@ -1307,17 +1308,21 @@ declare module '@babel/template' {
     syntacticPlaceholders?: ?boolean,
   };
 
-  declare export type PublicReplacements = {[string]: ?Node} | Array<?Node>;
+  declare export type PublicReplacements =
+    {[index: string]: ?Node} | Array<?Node>;
 
   declare export type TemplateBuilder<T> = {
     // Build a new builder, merging the given options with the previous ones.
     (opts: PublicOpts): TemplateBuilder<T>,
 
     // Building from a string produces an AST builder function by default.
-    (tpl: string, opts: ?PublicOpts): (?PublicReplacements) => T,
+    (tpl: string, opts: ?PublicOpts): (replacements: ?PublicReplacements) => T,
 
     // Building from a template literal produces an AST builder function by default.
-    (tpl: Array<string>, ...args: Array<unknown>): (?PublicReplacements) => T,
+    (
+      tpl: Array<string>,
+      ...args: Array<unknown>
+    ): (replacements: ?PublicReplacements) => T,
 
     // Allow users to explicitly create templates that produce ASTs, skipping
     // the need for an intermediate function.
@@ -1350,13 +1355,13 @@ declare module '@babel/template' {
     (
       tpl: string,
       opts: ?PublicOpts,
-    ): (?PublicReplacements) => Statement | Array<Statement>,
+    ): (replacements: ?PublicReplacements) => Statement | Array<Statement>,
 
     // Building from a template literal produces an AST builder function by default.
     (
       tpl: Array<string>,
       ...args: Array<unknown>
-    ): (?PublicReplacements) => Statement | Array<Statement>,
+    ): (replacements: ?PublicReplacements) => Statement | Array<Statement>,
 
     // Allow users to explicitly create templates that produce ASTs, skipping
     // the need for an intermediate function.

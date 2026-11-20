@@ -10,8 +10,6 @@
 
 import Event, {type EventInit} from '../../webapis/dom/events/Event';
 
-// flowlint unsafe-getters-setters:off
-
 export type DispatchConfig =
   | Readonly<{registrationName: string, dependencies?: ReadonlyArray<string>}>
   | Readonly<{
@@ -30,13 +28,13 @@ export type DispatchConfig =
  * dispatching.
  */
 export default class LegacySyntheticEvent extends Event {
-  _nativeEvent: {[string]: unknown};
+  _nativeEvent: {[key: string]: unknown};
   _dispatchConfig: DispatchConfig | null;
 
   constructor(
     type: string,
     options: EventInit,
-    nativeEvent: {[string]: unknown},
+    nativeEvent: {[key: string]: unknown},
     dispatchConfig?: ?DispatchConfig,
   ) {
     super(type, options);
@@ -44,10 +42,12 @@ export default class LegacySyntheticEvent extends Event {
     this._dispatchConfig = dispatchConfig ?? null;
   }
 
-  get nativeEvent(): {[string]: unknown} {
+  // $FlowFixMe[unsafe-getters-setters]
+  get nativeEvent(): {[key: string]: unknown} {
     return this._nativeEvent;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get dispatchConfig(): DispatchConfig | null {
     return this._dispatchConfig;
   }

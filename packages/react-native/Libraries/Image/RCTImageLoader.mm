@@ -32,7 +32,7 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
   return image.images ? image.images.count * singleImageBytes : singleImageBytes;
 }
 
-static auto currentRequestCount = std::atomic<uint64_t>(0);
+static constinit auto currentRequestCount = std::atomic<uint64_t>(0);
 
 static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLResponse *response)
 {
@@ -85,7 +85,6 @@ static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLRespo
   __weak id<RCTImageRedirectProtocol> _redirectDelegate;
 }
 
-@synthesize bridge = _bridge;
 @synthesize moduleRegistry = _moduleRegistry;
 @synthesize maxConcurrentLoadingTasks = _maxConcurrentLoadingTasks;
 @synthesize maxConcurrentDecodingTasks = _maxConcurrentDecodingTasks;
@@ -134,13 +133,8 @@ RCT_EXPORT_MODULE()
 
     _URLRequestQueue = dispatch_queue_create("com.facebook.react.ImageLoaderURLRequestQueue", DISPATCH_QUEUE_SERIAL);
 
-    // Get loaders, sorted in reverse priority order (highest priority first)
-    if (_loadersProvider != nil) {
-      _loaders = _loadersProvider(self.moduleRegistry);
-    } else {
-      RCTAssert(_bridge, @"Trying to find RCTImageURLLoaders and bridge not set.");
-      _loaders = [_bridge modulesConformingToProtocol:@protocol(RCTImageURLLoader)];
-    }
+    RCTAssert(_loadersProvider != nil, @"Trying to find RCTImageURLLoaders and loaders provider not set.");
+    _loaders = _loadersProvider(self.moduleRegistry);
     _loaders =
         [_loaders sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageURLLoader> a, id<RCTImageURLLoader> b) {
           float priorityA = [a respondsToSelector:@selector(loaderPriority)] ? [a loaderPriority] : 0;
@@ -154,13 +148,8 @@ RCT_EXPORT_MODULE()
           }
         }];
 
-    // Get decoders, sorted in reverse priority order (highest priority first)
-    if (_decodersProvider != nil) {
-      _decoders = _decodersProvider(self.moduleRegistry);
-    } else {
-      RCTAssert(_bridge, @"Trying to find RCTImageDataDecoders and bridge not set.");
-      _decoders = [_bridge modulesConformingToProtocol:@protocol(RCTImageDataDecoder)];
-    }
+    RCTAssert(_decodersProvider != nil, @"Trying to find RCTImageDataDecoders and decoders provider not set.");
+    _decoders = _decodersProvider(self.moduleRegistry);
     _decoders = [_decoders
         sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageDataDecoder> a, id<RCTImageDataDecoder> b) {
           float priorityA = [a respondsToSelector:@selector(decoderPriority)] ? [a decoderPriority] : 0;
@@ -1332,22 +1321,6 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
 {
   resolve([self getImageCacheStatus:uris]);
 }
-@end
-
-/**
- * DEPRECATED!! DO NOT USE
- * Instead use `[_bridge moduleForClass:[RCTImageLoader class]]`
- */
-@implementation RCTBridge (RCTImageLoader)
-
-- (RCTImageLoader *)imageLoader
-{
-  RCTLogWarn(
-      @"Calling bridge.imageLoader is deprecated and will not work in newer versions of RN. Please update to the "
-       "moduleForClass API or turboModuleRegistry API.");
-  return [self moduleForClass:[RCTImageLoader class]];
-}
-
 @end
 
 @implementation RCTBridgeProxy (RCTImageLoader)

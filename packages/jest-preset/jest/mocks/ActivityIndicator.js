@@ -14,6 +14,7 @@ import typeof {ActivityIndicator as TActivityIndicator} from 'react-native';
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;
 
+// $FlowFixMe[incompatible-type]
 const ActivityIndicator = mockComponent(
   'react-native/Libraries/Components/ActivityIndicator/ActivityIndicator',
   null, // instanceMethods

@@ -10,6 +10,7 @@
 
 import type {HostInstance} from 'react-native';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import {Button, StyleSheet, Text, TextInput, View} from 'react-native';
@@ -31,13 +32,9 @@ function roundRect(rect: unknown): ?{
   if (rect == null || typeof rect !== 'object') {
     return null;
   }
-  // $FlowFixMe[prop-missing]
   const x = rect.x;
-  // $FlowFixMe[prop-missing]
   const y = rect.y;
-  // $FlowFixMe[prop-missing]
   const width = rect.width;
-  // $FlowFixMe[prop-missing]
   const height = rect.height;
 
   if (
@@ -94,7 +91,6 @@ component IntersectionObserverClippingRootExample() {
     observer.current = new IntersectionObserver(onObserve, {
       // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
       root: rootNode,
-      // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
       rootMargin: rootMarginValue,
     });
     // $FlowFixMe[incompatible-type]
@@ -120,7 +116,7 @@ component IntersectionObserverClippingRootExample() {
   return (
     <>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Root Margin (px):</Text>
+        <RNTesterText style={styles.label}>Root Margin (px):</RNTesterText>
         <TextInput
           style={styles.input}
           value={rootMarginInput}
@@ -130,9 +126,9 @@ component IntersectionObserverClippingRootExample() {
         />
         <Button title="Submit" onPress={handleSubmit} />
       </View>
-      <Text style={styles.currentMargin}>
+      <RNTesterText style={styles.currentMargin}>
         Current Root Margin: {rootMarginValue}
-      </Text>
+      </RNTesterText>
       <Text style={styles.description}>
         This example shows an explicit root (yellow) that clips its target
         (red). The solid background colors show what is visible. The dashed
@@ -143,19 +139,27 @@ component IntersectionObserverClippingRootExample() {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendBox, styles.legendClipping]} />
-          <Text style={styles.legendText}>Clipped (100x100)</Text>
+          <RNTesterText style={styles.legendText}>
+            Clipped (100x100)
+          </RNTesterText>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendBox, styles.legendRoot]} />
-          <Text style={styles.legendText}>Unclipped Root (200x200)</Text>
+          <RNTesterText style={styles.legendText}>
+            Unclipped Root (200x200)
+          </RNTesterText>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendBox, styles.legendTarget]} />
-          <Text style={styles.legendText}>Target (100x100)</Text>
+          <RNTesterText style={styles.legendText}>
+            Target (100x100)
+          </RNTesterText>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendBox, styles.legendRootMargin]} />
-          <Text style={styles.legendText}>Root + Margin (purple)</Text>
+          <RNTesterText style={styles.legendText}>
+            Root + Margin (purple)
+          </RNTesterText>
         </View>
       </View>
       <View style={styles.visualizationContainer}>

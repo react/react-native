@@ -24,6 +24,16 @@ TEST(CSSTransform, matrix_basic) {
   EXPECT_EQ(matrix.values[5], 6.0f);
 }
 
+TEST(CSSTransform, matrix_leading_dot) {
+  auto val =
+      parseCSSProperty<CSSTransformFunction>("matrix(.5, 0, 0, -.5, 10, 20)");
+  EXPECT_TRUE(std::holds_alternative<CSSMatrix>(val));
+  auto& matrix = std::get<CSSMatrix>(val);
+
+  EXPECT_EQ(matrix.values[0], 0.5f);
+  EXPECT_EQ(matrix.values[3], -0.5f);
+}
+
 TEST(CSSTransform, matrix_funky) {
   auto val =
       parseCSSProperty<CSSTransformFunction>("mAtRiX( 1  , \n2,3, 4, \t5, 6)");
@@ -181,6 +191,16 @@ TEST(CSSTransform, translate_x_pct) {
   EXPECT_EQ(std::get<CSSPercentage>(translate.value).value, 420.0f);
 }
 
+TEST(CSSTransform, translate_x_leading_dot) {
+  auto val = parseCSSProperty<CSSTransformFunction>("translateX(.5px)");
+  EXPECT_TRUE(std::holds_alternative<CSSTranslateX>(val));
+  auto& translate = std::get<CSSTranslateX>(val);
+
+  EXPECT_TRUE(std::holds_alternative<CSSLength>(translate.value));
+  EXPECT_EQ(std::get<CSSLength>(translate.value).value, 0.5f);
+  EXPECT_EQ(std::get<CSSLength>(translate.value).unit, CSSLengthUnit::Px);
+}
+
 TEST(CSSTransform, translate_x_funky) {
   auto val = parseCSSProperty<CSSTransformFunction>("transLaTeX(420%)");
   EXPECT_TRUE(std::holds_alternative<CSSTranslateX>(val));
@@ -222,6 +242,15 @@ TEST(CSSTransform, translate_y_pct) {
 
   EXPECT_TRUE(std::holds_alternative<CSSPercentage>(translate.value));
   EXPECT_EQ(std::get<CSSPercentage>(translate.value).value, 420.0f);
+}
+
+TEST(CSSTransform, translate_y_leading_dot) {
+  auto val = parseCSSProperty<CSSTransformFunction>("translateY(-.25%)");
+  EXPECT_TRUE(std::holds_alternative<CSSTranslateY>(val));
+  auto& translate = std::get<CSSTranslateY>(val);
+
+  EXPECT_TRUE(std::holds_alternative<CSSPercentage>(translate.value));
+  EXPECT_EQ(std::get<CSSPercentage>(translate.value).value, -0.25f);
 }
 
 TEST(CSSTransform, translate_y_funky) {

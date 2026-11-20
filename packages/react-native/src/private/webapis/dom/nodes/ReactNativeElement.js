@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {
   InternalInstanceHandle,
   ViewConfig,
@@ -89,12 +87,14 @@ class ReactNativeElement extends ReadOnlyElement {
     this.__viewConfig = viewConfig;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get offsetHeight(): number {
     return Math.round(
       getBoundingClientRect(this, {includeTransform: false}).height,
     );
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get offsetLeft(): number {
     const node = getNativeElementReference(this);
 
@@ -106,6 +106,7 @@ class ReactNativeElement extends ReadOnlyElement {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get offsetParent(): ReadOnlyElement | null {
     const node = getNativeElementReference(this);
 
@@ -128,6 +129,7 @@ class ReactNativeElement extends ReadOnlyElement {
     return null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get offsetTop(): number {
     const node = getNativeElementReference(this);
 
@@ -139,6 +141,7 @@ class ReactNativeElement extends ReadOnlyElement {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get offsetWidth(): number {
     return Math.round(
       getBoundingClientRect(this, {includeTransform: false}).width,
@@ -285,7 +288,6 @@ class ReactNativeElement extends ReadOnlyElement {
   // pre-resolved on the event during construction. Reading them directly
   // avoids the `getEventTypePropName(eventType, isCapture)` hash lookup per
   // ancestor per phase.
-  // $FlowExpectedError[unsupported-syntax]
   // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
     event: Event,
@@ -353,26 +355,23 @@ export const ReactNativeElement_public: typeof ReactNativeElement =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReactNativeElement_public.prototype = ReactNativeElement.prototype;
 
 // The public imperative EventTarget API (`addEventListener`,
-// `removeEventListener`, `dispatchEvent`) is only inherited by this final class
-// when `enableNativeEventTargetEventDispatching` is enabled (which makes
-// `ReadOnlyNode` extend `EventTarget`). Until that public API is finalized, it
-// is gated behind `enableImperativeEvents`: when off we remove those methods
-// from this final class. Native/internal event dispatch does not rely on these
-// public methods, so removing them is safe.
-if (
-  ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
-  !ReactNativeFeatureFlags.enableImperativeEvents()
-) {
-  const prototype: interface {
-    addEventListener?: unknown,
-    removeEventListener?: unknown,
-    dispatchEvent?: unknown,
-  } = ReactNativeElement.prototype;
-  prototype.addEventListener = undefined;
-  prototype.removeEventListener = undefined;
-  prototype.dispatchEvent = undefined;
+// `removeEventListener`, `dispatchEvent`) is gated behind
+// `enableImperativeEvents` until it is finalized. Native/internal event
+// dispatch does not rely on these public methods.
+if (!ReactNativeFeatureFlags.enableImperativeEvents()) {
+  for (const method of [
+    'addEventListener',
+    'removeEventListener',
+    'dispatchEvent',
+  ]) {
+    Object.defineProperty(ReactNativeElement.prototype, method, {
+      value: undefined,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+  }
 }

@@ -10,6 +10,7 @@ package com.facebook.react.interfaces
 import android.view.Window
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowSoLoader
 import org.junit.Before
 import org.junit.Test
@@ -29,7 +30,8 @@ class ExtraWindowEventListenerTest {
 
   @Before
   fun setUp() {
-    reactContext = ReactTestHelper.createCatalystContextForTest()
+    ReactNativeFeatureFlagsForTests.setUp()
+    reactContext = ReactTestHelper.createTestReactApplicationContext()
     window = mock()
   }
 

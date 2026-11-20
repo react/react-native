@@ -248,15 +248,6 @@ RCT_EXPORT_MODULE()
 
 @end
 
-@implementation RCTBridge (RCTImageStoreManager)
-
-- (RCTImageStoreManager *)imageStoreManager
-{
-  return [self moduleForClass:[RCTImageStoreManager class]];
-}
-
-@end
-
 @implementation RCTBridgeProxy (RCTImageStoreManager)
 
 - (RCTImageStoreManager *)imageStoreManager

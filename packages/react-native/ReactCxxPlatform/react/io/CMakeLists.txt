@@ -14,6 +14,7 @@ add_library(react_cxx_platform_react_io OBJECT ${react_cxx_platform_react_io_SRC
 target_include_directories(react_cxx_platform_react_io PUBLIC ${REACT_CXX_PLATFORM_DIR})
 
 target_link_libraries(react_cxx_platform_react_io
+      folly_runtime
       glog
       jsi
       react_cxx_platform_react_nativemodule

@@ -7,11 +7,6 @@
  * @format
  */
 
-const {
-  publishTemplate,
-  verifyPublishedTemplate,
-} = require('../publishTemplate');
-
 const mockRun = jest.fn();
 const mockSleep = jest.fn();
 const mockGetNpmPackageInfo = jest.fn();
@@ -28,6 +23,11 @@ jest.mock('../utils.js', () => ({
 jest.mock('../verifyPublishedPackage.js', () => ({
   verifyPublishedPackage: mockVerifyPublishedPackage,
 }));
+
+const {
+  publishTemplate,
+  verifyPublishedTemplate,
+} = require('../publishTemplate');
 
 const getMockGithub = () => ({
   rest: {

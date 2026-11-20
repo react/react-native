@@ -13,8 +13,6 @@
 #import <stdatomic.h>
 
 #import "RCTAssert.h"
-#import "RCTBridge+Private.h"
-#import "RCTBridge.h"
 #import "RCTConstants.h"
 #import "RCTShadowView+Layout.h"
 #import "RCTSurfaceDelegate.h"

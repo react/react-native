@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import {
@@ -20,11 +18,13 @@ import {
 type EventCallback = (event: Event) => void;
 
 class EventTargetSubclass extends EventTarget {
+  // $FlowFixMe[unsafe-getters-setters]
   get oncustomevent(): EventCallback | null {
     // $FlowFixMe[incompatible-type] The globals are backed by these implementations.
     return getEventHandlerAttribute(this, 'customEvent');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set oncustomevent(listener: ?EventCallback) {
     // $FlowFixMe[incompatible-type] The globals are backed by these implementations.
     setEventHandlerAttribute(this, 'customEvent', listener);

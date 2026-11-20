@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventCallback} from '../../src/private/webapis/dom/events/EventTarget';
 import type {BlobData} from '../Blob/BlobTypes';
 import type {EventSubscription} from '../vendor/emitter/EventEmitter';
@@ -143,8 +141,10 @@ class WebSocket extends EventTarget {
     );
     this._socketId = nextWebSocketId++;
     this._registerEvents();
+    // Skip this constructor's own frame so that the request initiator stack
+    // starts at the caller of `new WebSocket()`.
     const devToolsRequestId =
-      global.__NETWORK_REPORTER__?.createDevToolsRequestId();
+      global.__NETWORK_REPORTER__?.createDevToolsRequestId(1);
     NativeWebSocketModule.connect(
       url,
       protocolList,
@@ -153,10 +153,12 @@ class WebSocket extends EventTarget {
     );
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get binaryType(): ?BinaryType {
     return this._binaryType;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set binaryType(binaryType: BinaryType): void {
     if (binaryType !== 'blob' && binaryType !== 'arraybuffer') {
       throw new Error("binaryType must be either 'blob' or 'arraybuffer'");
@@ -238,7 +240,7 @@ class WebSocket extends EventTarget {
   _registerEvents(): void {
     this._subscriptions = [
       this._eventEmitter.addListener('websocketMessage', ev => {
-        if (ev.id !== this._socketId) {
+        if (ev.id !== this._socketId || this.readyState !== this.OPEN) {
           return;
         }
         let data: Blob | BlobData | ArrayBuffer | string = ev.data;
@@ -295,34 +297,42 @@ class WebSocket extends EventTarget {
     ];
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onclose(): EventCallback | null {
     return getEventHandlerAttribute(this, 'close');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onclose(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'close', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onerror(): EventCallback | null {
     return getEventHandlerAttribute(this, 'error');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onerror(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'error', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onmessage(): EventCallback | null {
     return getEventHandlerAttribute(this, 'message');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onmessage(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'message', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onopen(): EventCallback | null {
     return getEventHandlerAttribute(this, 'open');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onopen(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'open', listener);
   }

@@ -13,15 +13,17 @@
  * Validates that the PR targets an appropriate base branch.
  *
  * @param {string} baseRef - The base branch ref (e.g., 'main', '0.76-stable')
+ * @param {boolean} [isStacked] - Whether the base branch is the head of another
+ *   open PR, as in a stack of PRs
  * @returns {{message: string, status: 'PASS'|'FAIL', shouldAddPickLabel: boolean}}
  */
-function checkBranchTarget(baseRef) {
+function checkBranchTarget(baseRef, isStacked = false) {
   const isMain = baseRef === 'main';
   const isStable = baseRef.endsWith('-stable');
 
   let message = '';
   let status = 'PASS';
-  if (!isMain && !isStable) {
+  if (!isMain && !isStable && !isStacked) {
     status = 'FAIL';
     message = `> [!CAUTION]
 > **Invalid Base Branch**

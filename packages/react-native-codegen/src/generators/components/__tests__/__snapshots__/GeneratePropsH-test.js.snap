@@ -27,7 +27,7 @@ enum class AllPropStringEnumProp { Option1 };
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, AllPropStringEnumProp &result) {
   auto string = (std::string)value;
   if (string == \\"option1\\") { result = AllPropStringEnumProp::Option1; return; }
-  abort();
+  result = AllPropStringEnumProp::Option1;
 }
 
 static inline std::string toString(const AllPropStringEnumProp &value) {
@@ -53,7 +53,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = AllPropIntEnumProp::IntEnumProp0;
       return;
     default:
-      abort();
+      result = AllPropIntEnumProp::IntEnumProp0;
   }
 }
 
@@ -401,7 +401,7 @@ enum class AllPropWithOptionalGenStringEnumProp { Option1 };
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, AllPropWithOptionalGenStringEnumProp &result) {
   auto string = (std::string)value;
   if (string == \\"option1\\") { result = AllPropWithOptionalGenStringEnumProp::Option1; return; }
-  abort();
+  result = AllPropWithOptionalGenStringEnumProp::Option1;
 }
 
 static inline std::string toString(const AllPropWithOptionalGenStringEnumProp &value) {
@@ -427,7 +427,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = AllPropWithOptionalGenIntEnumProp::IntEnumProp0;
       return;
     default:
-      abort();
+      result = AllPropWithOptionalGenIntEnumProp::IntEnumProp0;
   }
 }
 
@@ -775,7 +775,7 @@ enum class AllPropWithOptionalObjectGenStringEnumProp { Option1 };
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, AllPropWithOptionalObjectGenStringEnumProp &result) {
   auto string = (std::string)value;
   if (string == \\"option1\\") { result = AllPropWithOptionalObjectGenStringEnumProp::Option1; return; }
-  abort();
+  result = AllPropWithOptionalObjectGenStringEnumProp::Option1;
 }
 
 static inline std::string toString(const AllPropWithOptionalObjectGenStringEnumProp &value) {
@@ -801,7 +801,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = AllPropWithOptionalObjectGenIntEnumProp::IntEnumProp0;
       return;
     default:
-      abort();
+      result = AllPropWithOptionalObjectGenIntEnumProp::IntEnumProp0;
   }
 }
 
@@ -3013,7 +3013,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = Int32EnumPropsNativeComponentMaxInterval::MaxInterval2;
       return;
     default:
-      abort();
+      result = Int32EnumPropsNativeComponentMaxInterval::MaxInterval0;
   }
 }
 
@@ -3301,7 +3301,7 @@ enum class ObjectPropsStringEnumProp { Option1 };
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ObjectPropsStringEnumProp &result) {
   auto string = (std::string)value;
   if (string == \\"option1\\") { result = ObjectPropsStringEnumProp::Option1; return; }
-  abort();
+  result = ObjectPropsStringEnumProp::Option1;
 }
 
 static inline std::string toString(const ObjectPropsStringEnumProp &value) {
@@ -3327,7 +3327,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = ObjectPropsIntEnumProp::IntEnumProp0;
       return;
     default:
-      abort();
+      result = ObjectPropsIntEnumProp::IntEnumProp0;
   }
 }
 
@@ -3735,7 +3735,7 @@ enum class ObjectPropsWithOptionalGenStringEnumProp { Option1 };
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ObjectPropsWithOptionalGenStringEnumProp &result) {
   auto string = (std::string)value;
   if (string == \\"option1\\") { result = ObjectPropsWithOptionalGenStringEnumProp::Option1; return; }
-  abort();
+  result = ObjectPropsWithOptionalGenStringEnumProp::Option1;
 }
 
 static inline std::string toString(const ObjectPropsWithOptionalGenStringEnumProp &value) {
@@ -3761,7 +3761,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = ObjectPropsWithOptionalGenIntEnumProp::IntEnumProp0;
       return;
     default:
-      abort();
+      result = ObjectPropsWithOptionalGenIntEnumProp::IntEnumProp0;
   }
 }
 
@@ -4169,7 +4169,7 @@ enum class ObjectPropsWithOptionalObjectGenStringEnumProp { Option1 };
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ObjectPropsWithOptionalObjectGenStringEnumProp &result) {
   auto string = (std::string)value;
   if (string == \\"option1\\") { result = ObjectPropsWithOptionalObjectGenStringEnumProp::Option1; return; }
-  abort();
+  result = ObjectPropsWithOptionalObjectGenStringEnumProp::Option1;
 }
 
 static inline std::string toString(const ObjectPropsWithOptionalObjectGenStringEnumProp &value) {
@@ -4195,7 +4195,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
       result = ObjectPropsWithOptionalObjectGenIntEnumProp::IntEnumProp0;
       return;
     default:
-      abort();
+      result = ObjectPropsWithOptionalObjectGenIntEnumProp::IntEnumProp0;
   }
 }
 
@@ -4651,7 +4651,7 @@ static inline void fromRawValue(const PropsParserContext& context, const RawValu
   if (string == \\"top\\") { result = StringEnumPropsNativeComponentAlignment::Top; return; }
   if (string == \\"center\\") { result = StringEnumPropsNativeComponentAlignment::Center; return; }
   if (string == \\"bottom-right\\") { result = StringEnumPropsNativeComponentAlignment::BottomRight; return; }
-  abort();
+  result = StringEnumPropsNativeComponentAlignment::Center;
 }
 
 static inline std::string toString(const StringEnumPropsNativeComponentAlignment &value) {

@@ -92,6 +92,32 @@ describe('Blob', function () {
     expect(slice.size).toBe(100);
   });
 
+  it.each([
+    [3, 3],
+    [0, 0],
+    [-2, 4],
+    [-10, 0],
+    [10, 6],
+    [undefined, 6],
+  ])('should use an end of %s when start is omitted', (end, expectedSize) => {
+    const blob = new Blob(['abcdef']);
+    const slice = blob.slice(undefined, end, 'text/plain');
+
+    expect(slice.data.offset).toBe(0);
+    expect(slice.size).toBe(expectedSize);
+    expect(slice.type).toBe('text/plain');
+    expect(slice.data.blobId).toBe(blob.data.blobId);
+  });
+
+  it('should preserve the source offset when start is omitted', () => {
+    const blob = new Blob(['abcdefgh']).slice(2, 7);
+    const slice = blob.slice(undefined, 2);
+
+    expect(slice.data.offset).toBe(2);
+    expect(slice.size).toBe(2);
+    expect(blob.size).toBe(5);
+  });
+
   it('should slice a blob with a negative end', () => {
     const blob = new Blob();
     blob.data.size = 34546;

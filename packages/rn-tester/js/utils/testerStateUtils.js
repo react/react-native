@@ -35,7 +35,7 @@ export const initialNavigationState: RNTesterNavigationState = {
 
 const filterEmptySections = (examplesList: ExamplesList): any => {
   const filteredSections: {
-    ['apis' | 'components']: Array<SectionData<RNTesterModuleInfo>>,
+    [key: 'apis' | 'components']: Array<SectionData<RNTesterModuleInfo>>,
   } = {};
   const sectionKeys = Object.keys(examplesList);
 

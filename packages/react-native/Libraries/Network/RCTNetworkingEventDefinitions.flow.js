@@ -22,7 +22,7 @@ export type RCTNetworkingEventDefinitions = Readonly<{
     [
       number, // requestId
       number, // status
-      ?{[string]: string}, // responseHeaders
+      ?{[key: string]: string}, // responseHeaders
       ?string, // responseURL
     ],
   ],

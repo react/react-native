@@ -198,6 +198,24 @@ class TextAttributePropsTest {
     assertThat(textAttributes.lineHeight).isCloseTo(20f * DENSITY, within(0.001f))
   }
 
+  @Test
+  fun mapBufferSetsTextDecorationLine() {
+    assertThat(textDecorationLine("none")).isEqualTo(false to false)
+    assertThat(textDecorationLine("underline")).isEqualTo(true to false)
+    assertThat(textDecorationLine("strikethrough")).isEqualTo(false to true)
+    assertThat(textDecorationLine("underline-strikethrough")).isEqualTo(true to true)
+  }
+
+  /** Returns whether underline and line-through are set for the given textDecorationLine. */
+  private fun textDecorationLine(value: String): Pair<Boolean, Boolean> {
+    val textAttributes =
+        TextAttributeProps.fromMapBuffer(
+            WritableMapBuffer().put(TextAttributeProps.TA_KEY_TEXT_DECORATION_LINE, value),
+        )
+    return textAttributes.isUnderlineTextDecorationSet to
+        textAttributes.isLineThroughTextDecorationSet
+  }
+
   private fun setFontScale(fontScale: Float) {
     DisplayMetricsHolder.setScreenDisplayMetrics(
         DisplayMetrics().apply {

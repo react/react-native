@@ -7,8 +7,6 @@
  * @format
  */
 
-const {verifyArtifactsAreOnMaven} = require('../verifyArtifactsAreOnMaven');
-
 const mockSleep = jest.fn();
 const silence = () => {};
 const mockFetch = jest.fn();
@@ -18,6 +16,8 @@ jest.mock('../utils.js', () => ({
   log: silence,
   sleep: mockSleep,
 }));
+
+const {verifyArtifactsAreOnMaven} = require('../verifyArtifactsAreOnMaven');
 
 process.exit = mockExit;
 global.fetch = mockFetch;

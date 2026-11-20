@@ -31,13 +31,6 @@
     {
       "target" : {
         "containerPath" : "container:RNTesterPods.xcodeproj",
-        "identifier" : "E7DB215222B2F332005AC45F",
-        "name" : "RNTesterIntegrationTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:RNTesterPods.xcodeproj",
         "identifier" : "E7DB209E22B2BA84005AC45F",
         "name" : "RNTesterUnitTests"
       }

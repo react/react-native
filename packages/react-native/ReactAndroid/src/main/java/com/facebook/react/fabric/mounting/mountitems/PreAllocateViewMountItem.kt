@@ -59,7 +59,7 @@ internal class PreAllocateViewMountItem(
     if (FabricUIManager.IS_DEVELOPMENT_ENVIRONMENT) {
       result
           .append(" props: ")
-          .append(props.toString() ?: "<null>")
+          .append(props.toString())
           .append(" state: ")
           .append(stateWrapper?.toString() ?: "<null>")
     }

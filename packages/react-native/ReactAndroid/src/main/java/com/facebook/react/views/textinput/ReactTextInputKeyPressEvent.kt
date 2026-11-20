@@ -16,7 +16,7 @@ internal class ReactTextInputKeyPressEvent(surfaceId: Int, viewId: Int, private 
     Event<ReactTextInputKeyPressEvent>(surfaceId, viewId) {
   override fun getEventName(): String = EVENT_NAME
 
-  override fun getEventData(): WritableMap {
+  protected override fun getEventData(): WritableMap {
     return Arguments.createMap().apply { putString("key", key) }
   }
 

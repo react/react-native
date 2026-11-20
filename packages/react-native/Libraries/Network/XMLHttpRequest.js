@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 'use strict';
 
 import type {
@@ -48,23 +46,14 @@ export type Response =
   | ArrayBufferLike
   | Blob
   | ReadonlyArray<unknown>
-  | {[string]: unknown, ...};
+  | {[key: string]: unknown, ...};
 
 type XHRInterceptor = interface {
-  requestSent(
-    id: number,
-    url: string,
-    method: string,
-    /* $FlowFixMe[unclear-type] Interceptors annotate the header map with
-     * differing value types, which an invariant indexer would reject. */
-    headers: Object,
-  ): void,
+  requestSent(id: number, url: string, method: string, headers: Object): void,
   responseReceived(
     id: number,
     url: string,
     status: number,
-    /* $FlowFixMe[unclear-type] Interceptors annotate the header map with
-     * differing value types, which an invariant indexer would reject. */
     headers: Object,
   ): void,
   dataReceived(id: number, data: string): void,
@@ -104,45 +93,59 @@ const SUPPORTED_RESPONSE_TYPES = {
 };
 
 class XMLHttpRequestEventTarget extends EventTarget {
+  // $FlowFixMe[unsafe-getters-setters]
   get onload(): EventCallback | null {
     return getEventHandlerAttribute(this, 'load');
   }
+  // $FlowFixMe[unsafe-getters-setters]
   set onload(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'load', listener);
   }
+  // $FlowFixMe[unsafe-getters-setters]
   get onloadstart(): EventCallback | null {
     return getEventHandlerAttribute(this, 'loadstart');
   }
+  // $FlowFixMe[unsafe-getters-setters]
   set onloadstart(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'loadstart', listener);
   }
+  // $FlowFixMe[unsafe-getters-setters]
   get onprogress(): EventCallback | null {
     return getEventHandlerAttribute(this, 'progress');
   }
+  // $FlowFixMe[unsafe-getters-setters]
   set onprogress(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'progress', listener);
   }
+  // $FlowFixMe[unsafe-getters-setters]
   get ontimeout(): EventCallback | null {
     return getEventHandlerAttribute(this, 'timeout');
   }
+  // $FlowFixMe[unsafe-getters-setters]
   set ontimeout(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'timeout', listener);
   }
+  // $FlowFixMe[unsafe-getters-setters]
   get onerror(): EventCallback | null {
     return getEventHandlerAttribute(this, 'error');
   }
+  // $FlowFixMe[unsafe-getters-setters]
   set onerror(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'error', listener);
   }
+  // $FlowFixMe[unsafe-getters-setters]
   get onabort(): EventCallback | null {
     return getEventHandlerAttribute(this, 'abort');
   }
+  // $FlowFixMe[unsafe-getters-setters]
   set onabort(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'abort', listener);
   }
+  // $FlowFixMe[unsafe-getters-setters]
   get onloadend(): EventCallback | null {
     return getEventHandlerAttribute(this, 'loadend');
   }
+  // $FlowFixMe[unsafe-getters-setters]
   set onloadend(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'loadend', listener);
   }
@@ -167,7 +170,7 @@ class XMLHttpRequest extends EventTarget {
   DONE: number = DONE;
 
   readyState: number = UNSENT;
-  responseHeaders: ?{[string]: string};
+  responseHeaders: ?{[key: string]: string};
   status: number = 0;
   timeout: number = 0;
   responseURL: ?string;
@@ -181,8 +184,8 @@ class XMLHttpRequest extends EventTarget {
   _aborted: boolean = false;
   _cachedResponse: Response;
   _hasError: boolean = false;
-  _headers: {[string]: string};
-  _lowerCaseResponseHeaders: {[string]: string};
+  _headers: {[key: string]: string};
+  _lowerCaseResponseHeaders: {[key: string]: string};
   _method: ?string = null;
   _perfKey: ?string = null;
   _responseType: ResponseType;
@@ -223,10 +226,12 @@ class XMLHttpRequest extends EventTarget {
     this._timedOut = false;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get responseType(): ResponseType {
     return this._responseType;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set responseType(responseType: ResponseType): void {
     if (this._sent) {
       throw new Error(
@@ -256,6 +261,7 @@ class XMLHttpRequest extends EventTarget {
     this._responseType = responseType;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get responseText(): string {
     if (this._responseType !== '' && this._responseType !== 'text') {
       throw new Error(
@@ -269,6 +275,7 @@ class XMLHttpRequest extends EventTarget {
     return this._response;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get response(): Response {
     const {responseType} = this;
     if (responseType === '' || responseType === 'text') {
@@ -355,7 +362,7 @@ class XMLHttpRequest extends EventTarget {
   __didReceiveResponse(
     requestId: number,
     status: number,
-    responseHeaders: ?{[string]: string},
+    responseHeaders: ?{[key: string]: string},
     responseURL: ?string,
   ): void {
     if (requestId === this._requestId) {
@@ -691,11 +698,11 @@ class XMLHttpRequest extends EventTarget {
     this._reset();
   }
 
-  setResponseHeaders(responseHeaders: ?{[string]: string}): void {
+  setResponseHeaders(responseHeaders: ?{[key: string]: string}): void {
     this.responseHeaders = responseHeaders || null;
-    const headers: {[string]: string} = responseHeaders || {};
+    const headers: {[key: string]: string} = responseHeaders || {};
     this._lowerCaseResponseHeaders = Object.keys(headers).reduce<{
-      [string]: string,
+      [key: string]: string,
     }>((lcaseHeaders, headerName) => {
       lcaseHeaders[headerName.toLowerCase()] = headers[headerName];
       return lcaseHeaders;
@@ -736,66 +743,82 @@ class XMLHttpRequest extends EventTarget {
    * `on<event>` event handling (without JS prototype magic).
    */
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onabort(): EventCallback | null {
     return getEventHandlerAttribute(this, 'abort');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onabort(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'abort', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onerror(): EventCallback | null {
     return getEventHandlerAttribute(this, 'error');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onerror(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'error', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onload(): EventCallback | null {
     return getEventHandlerAttribute(this, 'load');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onload(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'load', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onloadstart(): EventCallback | null {
     return getEventHandlerAttribute(this, 'loadstart');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onloadstart(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'loadstart', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onprogress(): EventCallback | null {
     return getEventHandlerAttribute(this, 'progress');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onprogress(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'progress', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get ontimeout(): EventCallback | null {
     return getEventHandlerAttribute(this, 'timeout');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set ontimeout(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'timeout', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onloadend(): EventCallback | null {
     return getEventHandlerAttribute(this, 'loadend');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onloadend(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'loadend', listener);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onreadystatechange(): EventCallback | null {
     return getEventHandlerAttribute(this, 'readystatechange');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onreadystatechange(listener: ?EventCallback) {
     setEventHandlerAttribute(this, 'readystatechange', listener);
   }

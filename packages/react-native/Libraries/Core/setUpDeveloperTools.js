@@ -10,7 +10,7 @@
 
 import Platform from '../Utilities/Platform';
 
-declare var console: {[string]: $FlowFixMe};
+declare var console: {[key: string]: $FlowFixMe};
 
 /**
  * Sets up developer tools for React Native.

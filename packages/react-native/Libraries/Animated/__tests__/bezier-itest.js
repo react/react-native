@@ -11,7 +11,7 @@
 /**
  * BezierEasing - use bezier curve for transition easing function
  * https://github.com/gre/bezier-easing
- * @copyright 2014-2015 Gaetan Renaudeau. MIT License.
+ * @copyright 2014-2026 Gaetan Renaudeau. MIT License.
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
@@ -108,6 +108,54 @@ describe('bezier', function () {
         };
         allEquals(identity, composed, 100, makeAssertCloseWithPrecision(2));
       });
+    });
+  });
+  describe('precision', function () {
+    it('should match points of the curve', function () {
+      repeat(10)(function () {
+        const a = Math.random(),
+          b = 2 * Math.random() - 0.5,
+          c = Math.random(),
+          d = 2 * Math.random() - 0.5;
+        const easing = bezier(a, b, c, d);
+        for (let i = 1; i < 100; ++i) {
+          const t = i / 100;
+          const x =
+            3 * a * t * (1 - t) * (1 - t) + 3 * c * t * t * (1 - t) + t * t * t;
+          const y =
+            3 * b * t * (1 - t) * (1 - t) + 3 * d * t * t * (1 - t) + t * t * t;
+          assertClose(easing(x), y, 8);
+        }
+      });
+    });
+    it('should be precise near the extremes', function () {
+      // x(t) = t³, y(t) = t² (3 - 2t)
+      const easing = bezier(0, 0, 0, 1);
+      for (const t of [1e-6, 1e-3, 0.999]) {
+        // relative precision
+        assertClose(easing(t * t * t) / (t * t * (3 - 2 * t)), 1, 10);
+      }
+      expect(easing(Number.MIN_VALUE)).toBeGreaterThan(0);
+    });
+    it('should be monotonic on steep curves', function () {
+      const easing = bezier(1, 0, 0, 1);
+      let previous = 0;
+      for (let i = 1; i <= 10000; ++i) {
+        const y = easing(0.49 + (0.02 * i) / 10000);
+        expect(y).toBeGreaterThanOrEqual(previous);
+        previous = y;
+      }
+    });
+  });
+  describe('outside of [0, 1]', function () {
+    it('should saturate to 0 / 1', function () {
+      const easing = bezier(0.25, 0.1, 0.25, 1);
+      expect(easing(-0.5)).toBe(0);
+      expect(easing(1.5)).toBe(1);
+      expect(Number.isNaN(easing(NaN))).toBe(true);
+    });
+    it('should keep linear curves as the identity', function () {
+      expect(bezier(0.3, 0.3, 0.6, 0.6)(-0.5)).toBe(-0.5);
     });
   });
   describe('two same instances', function () {

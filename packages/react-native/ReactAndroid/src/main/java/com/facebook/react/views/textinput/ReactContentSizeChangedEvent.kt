@@ -21,7 +21,7 @@ internal class ReactContentSizeChangedEvent(
 ) : Event<ReactTextChangedEvent>(surfaceId, viewId) {
   override fun getEventName(): String = EVENT_NAME
 
-  override fun getEventData(): WritableMap {
+  protected override fun getEventData(): WritableMap {
     val contentSize = buildReadableMap {
       put("width", contentWidth.toDouble())
       put("height", contentHeight.toDouble())

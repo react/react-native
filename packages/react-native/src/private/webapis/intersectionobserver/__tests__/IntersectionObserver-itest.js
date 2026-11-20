@@ -81,17 +81,14 @@ describe('IntersectionObserver', () => {
 
     it('should accept valid `rootMargin` values', () => {
       expect(() => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         return new IntersectionObserver(() => {}, {rootMargin: '10px'});
       }).not.toThrow();
 
       expect(() => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         return new IntersectionObserver(() => {}, {rootMargin: '10px 20px'});
       }).not.toThrow();
 
       expect(() => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         return new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px 30px 40px',
         });
@@ -100,13 +97,11 @@ describe('IntersectionObserver', () => {
 
     describe('rootMargin', () => {
       it('should parse single value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {rootMargin: '10px'});
         expect(observer.rootMargin).toBe('10px 10px 10px 10px');
       });
 
       it('should parse two value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px',
         });
@@ -114,7 +109,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should parse three value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px 30px',
         });
@@ -122,7 +116,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should parse four value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px 30px 40px',
         });
@@ -130,7 +123,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should handle negative rootMargin values', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '-10px -20px',
         });
@@ -138,7 +130,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should handle percentage rootMargin values', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10% 20%',
         });
@@ -152,7 +143,6 @@ describe('IntersectionObserver', () => {
         });
 
         it('should default to "0px 0px 0px 0px" when rootMargin is undefined', () => {
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           observer = new IntersectionObserver(() => {}, {
             rootMargin: undefined,
           });
@@ -160,7 +150,6 @@ describe('IntersectionObserver', () => {
         });
 
         it('should default to "0px 0px 0px 0px" when rootMargin is empty string', () => {
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           observer = new IntersectionObserver(() => {}, {rootMargin: ''});
           expect(observer.rootMargin).toBe('0px 0px 0px 0px');
         });
@@ -169,7 +158,6 @@ describe('IntersectionObserver', () => {
       describe('parsing failures', () => {
         it('should throw when rootMargin is not a string', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             // $FlowExpectedError[incompatible-type]
             return new IntersectionObserver(() => {}, {rootMargin: 123});
           }).toThrow(
@@ -179,7 +167,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin has too many values', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {
               rootMargin: '10px 20px 30px 40px 50px',
             });
@@ -190,7 +177,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value is missing unit', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {rootMargin: '10'});
           }).toThrow(
             "Failed to construct 'IntersectionObserver': Failed to parse rootMargin: '10' is not a valid length. Only 'px' and '%' units are allowed.",
@@ -199,7 +185,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value has invalid unit', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {rootMargin: '10em'});
           }).toThrow(
             "Failed to construct 'IntersectionObserver': Failed to parse rootMargin: '10em' is not a valid length. Only 'px' and '%' units are allowed.",
@@ -208,7 +193,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value has invalid format', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {
               rootMargin: 'invalid',
             });
@@ -219,7 +203,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin has mixed valid and invalid values', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {
               rootMargin: '10px invalid',
             });
@@ -230,7 +213,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value is only a unit', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {rootMargin: 'px'});
           }).toThrow(
             "Failed to construct 'IntersectionObserver': Failed to parse rootMargin: 'px' is not a valid length. Only 'px' and '%' units are allowed.",
@@ -355,7 +337,6 @@ describe('IntersectionObserver', () => {
     it('should throw if rnRootThreshold is set to an invalid value', () => {
       expect(() => {
         return new IntersectionObserver(() => {}, {
-          // $FlowExpectedError[incompatible-call]
           rnRootThreshold: 2,
         });
       }).toThrow(
@@ -477,7 +458,6 @@ describe('IntersectionObserver', () => {
     describe('unsupported options', () => {
       it('should throw if `delay` option is specified', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] delay is not defined in Flow.
           return new IntersectionObserver(() => {}, {delay: 100});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'delay' option is not supported.",
@@ -486,7 +466,6 @@ describe('IntersectionObserver', () => {
 
       it('should throw if `scrollMargin` option is specified', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] scrollMargin is not defined in Flow.
           return new IntersectionObserver(() => {}, {scrollMargin: '10px'});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'scrollMargin' option is not supported.",
@@ -495,7 +474,6 @@ describe('IntersectionObserver', () => {
 
       it('should throw if `trackVisibility` option is specified', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] trackVisibility is not defined in Flow.
           return new IntersectionObserver(() => {}, {trackVisibility: true});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'trackVisibility' option is not supported.",
@@ -504,7 +482,6 @@ describe('IntersectionObserver', () => {
 
       it('should throw if `delay` option is set to undefined explicitly', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] delay is not defined in Flow.
           return new IntersectionObserver(() => {}, {delay: undefined});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'delay' option is not supported.",
@@ -513,7 +490,6 @@ describe('IntersectionObserver', () => {
 
       it('should throw if `scrollMargin` option is set to null explicitly', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] scrollMargin is not defined in Flow.
           return new IntersectionObserver(() => {}, {scrollMargin: null});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'scrollMargin' option is not supported.",
@@ -531,7 +507,6 @@ describe('IntersectionObserver', () => {
 
       it('should throw if multiple unsupported options are specified', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] delay and trackVisibility are not defined in Flow.
           return new IntersectionObserver(() => {}, {
             delay: 100,
             trackVisibility: true,
@@ -1771,7 +1746,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
             });
             observer.observe(node);
@@ -1833,7 +1807,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: rootNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px 0px 0px 0px',
               threshold: 1,
             });
@@ -1892,7 +1865,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               threshold: 1,
               rnRootThreshold: 0.5,
@@ -1960,7 +1932,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               root: rootNode,
               threshold: 1,
@@ -2024,7 +1995,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               threshold: 1,
             });
@@ -2083,7 +2053,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               threshold: 0.5,
             });
@@ -2142,7 +2111,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
             });
             observer.observe(node);
@@ -2204,7 +2172,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '0px 0px 100px 0px',
             });
             observer.observe(node);
@@ -2249,7 +2216,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2310,7 +2276,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: customRoot,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-40px',
               threshold: 0.3,
             });
@@ -2369,7 +2334,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2425,7 +2389,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-100px',
             });
             observer.observe(node);
@@ -2484,7 +2447,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-100px 0px 0px 0px',
               threshold: 1,
             });
@@ -2543,7 +2505,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-150px',
             });
             observer.observe(node);
@@ -2605,7 +2566,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: rootNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2667,7 +2627,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2728,7 +2687,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '5%',
             });
             observer.observe(node);
@@ -2782,7 +2740,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-25%',
             });
             observer.observe(node);
@@ -2840,7 +2797,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '10% 0px 0px 0px',
             });
             observer.observe(node);
@@ -2894,7 +2850,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-10%',
             });
             observer.observe(node);
@@ -2943,7 +2898,6 @@ describe('IntersectionObserver', () => {
 
         Fantom.runTask(() => {
           observer = new IntersectionObserver(intersectionObserverCallback, {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             rootMargin: '50px',
           });
           observer.observe(node);
@@ -3914,7 +3868,6 @@ describe('IntersectionObserver', () => {
       Fantom.runTask(() => {
         observer = new IntersectionObserver(intersectionObserverCallback, {
           root: scrollNode,
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           rootMargin: '0px 0px 150px 0px',
           threshold: [0.01],
         });
@@ -3963,7 +3916,6 @@ describe('IntersectionObserver', () => {
 
       Fantom.runTask(() => {
         observer = new IntersectionObserver(intersectionObserverCallback, {
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           rootMargin: '0px 0px 150px 0px',
           threshold: [0.01],
         });
@@ -3975,6 +3927,69 @@ describe('IntersectionObserver', () => {
       expect(entries.length).toBe(1);
       expect(entries[0].isIntersecting).toBe(false);
       expect(entries[0].intersectionRatio).toBe(0);
+    });
+
+    describe('targets fully clipped by an intermediate ScrollView', () => {
+      // The target (150..200) is inside the 1000x1000 viewport but entirely
+      // clipped by the 100x100 ScrollView. With a threshold of 0, even an
+      // edge-adjacent intersection would count, so this checks that a fully
+      // clipped target is not mistaken for one.
+      function renderFullyClippedTarget(): HostInstance {
+        const nodeRef = React.createRef<HostInstance>();
+
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView style={{width: 100, height: 100, flexGrow: 0}}>
+              <View
+                style={{width: 50, height: 50, marginTop: 150}}
+                ref={nodeRef}
+              />
+            </ScrollView>,
+          );
+        });
+
+        return nullthrows(nodeRef.current);
+      }
+
+      it('should not report them as intersecting with the default threshold', () => {
+        const node = renderFullyClippedTarget();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback);
+          observer.observe(node);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        expect(entries[0].isIntersecting).toBe(false);
+        expect(entries[0].intersectionRatio).toBe(0);
+      });
+
+      it('should not report them as intersecting with rootMargin', () => {
+        const node = renderFullyClippedTarget();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            rootMargin: '500px 0px',
+          });
+          observer.observe(node);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        expect(entries[0].isIntersecting).toBe(false);
+        expect(entries[0].intersectionRatio).toBe(0);
+      });
     });
   });
 

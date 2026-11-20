@@ -1,0 +1,112 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextInputExample/clipping
+- extendedWaitUntil:
+    visible:
+      id: 'textinput-clipping'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/clipping/default
+    cropOn:
+      id: 'textinput-clipping'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextInputExample/placeholderEllipsizing
+- extendedWaitUntil:
+    visible:
+      id: 'textinput-placeholder-singleline'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/placeholder-ellipsizing/singleline
+    cropOn:
+      id: 'textinput-placeholder-singleline'
+- extendedWaitUntil:
+    visible:
+      id: 'textinput-placeholder-multiline'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/placeholder-ellipsizing/multiline
+    cropOn:
+      id: 'textinput-placeholder-multiline'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextInputExample/textStyles
+- extendedWaitUntil:
+    visible:
+      id: 'text-styles'
+    timeout: 15000
+- assertVisible:
+    id: 'cycle-styles-label'
+    text: 'Cycle 1/6'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/text-styles/cycle-1
+    cropOn:
+      id: 'text-styles'
+- tapOn:
+    id: 'cycle-styles'
+- assertVisible:
+    id: 'cycle-styles-label'
+    text: 'Cycle 2/6'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/text-styles/cycle-2
+    cropOn:
+      id: 'text-styles'
+- tapOn:
+    id: 'cycle-styles'
+- assertVisible:
+    id: 'cycle-styles-label'
+    text: 'Cycle 3/6'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/text-styles/cycle-3
+    cropOn:
+      id: 'text-styles'
+- tapOn:
+    id: 'cycle-styles'
+- assertVisible:
+    id: 'cycle-styles-label'
+    text: 'Cycle 4/6'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/text-styles/cycle-4
+    cropOn:
+      id: 'text-styles'
+- tapOn:
+    id: 'cycle-styles'
+- assertVisible:
+    id: 'cycle-styles-label'
+    text: 'Cycle 5/6'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/text-styles/cycle-5
+    cropOn:
+      id: 'text-styles'
+- tapOn:
+    id: 'cycle-styles'
+- assertVisible:
+    id: 'cycle-styles-label'
+    text: 'Cycle 6/6'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text-input/text-styles/cycle-6
+    cropOn:
+      id: 'text-styles'

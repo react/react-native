@@ -7,9 +7,9 @@
 
 package com.facebook.react.uimanager.events
 
-import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.WritableArray
-import com.facebook.react.bridge.WritableMap
+import com.facebook.proguard.annotations.DoNotStrip
+import com.facebook.react.bridge.ReactNativeJNISoLoader
+import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.systrace.Systrace
 
@@ -17,28 +17,31 @@ import com.facebook.systrace.Systrace
  * Class responsible for generating catalyst touch events based on android
  * [android.view.MotionEvent].
  */
+@DoNotStrip
 internal object TouchesHelper {
-  @JvmField @Deprecated("Not used in New Architecture") val TARGET_KEY: String = "target"
+  init {
+    ReactNativeJNISoLoader.staticInit()
+  }
 
-  private const val TARGET_SURFACE_KEY = "targetSurface"
-  private const val CHANGED_TOUCHES_KEY = "changedTouches"
-  private const val TOUCHES_KEY = "touches"
-  private const val PAGE_X_KEY = "pageX"
-  private const val PAGE_Y_KEY = "pageY"
-  private const val TIMESTAMP_KEY = "timestamp"
-  private const val POINTER_IDENTIFIER_KEY = "identifier"
-
-  private const val LOCATION_X_KEY = "locationX"
-  private const val LOCATION_Y_KEY = "locationY"
+  // Keep in sync with the field indices in TouchesHelper.cpp.
+  const val PAGE_X_INDEX = 0
+  const val PAGE_Y_INDEX = 1
+  const val LOCATION_X_INDEX = 2
+  const val LOCATION_Y_INDEX = 3
+  const val TARGET_SURFACE_INDEX = 4
+  const val TARGET_INDEX = 5
+  const val TIMESTAMP_INDEX = 6
+  const val IDENTIFIER_INDEX = 7
+  const val POINTER_FIELDS = 8
 
   /**
-   * Creates catalyst pointers array in format that is expected by RCTEventEmitter JS module from
-   * given {@param event} instance. This method use {@param reactTarget} parameter to set as a
-   * target view id associated with current gesture.
+   * Fills the pointer data of [nativeCreateTouchPayload]: for each pointer of the
+   * [android.view.MotionEvent], in order, pageX, pageY, locationX, locationY, targetSurface,
+   * target, timestamp and identifier.
    */
-  private fun createPointersArray(event: TouchEvent): Array<WritableMap?> {
+  private fun createPointerData(event: TouchEvent): DoubleArray {
     val motionEvent = event.getMotionEvent()
-    val touches = arrayOfNulls<WritableMap>(motionEvent.pointerCount)
+    val pointerData = DoubleArray(motionEvent.pointerCount * POINTER_FIELDS)
 
     // Calculate the coordinates for the target view.
     // The MotionEvent contains the X,Y of the touch in the coordinate space of the root view
@@ -51,29 +54,27 @@ internal object TouchesHelper {
     val targetViewCoordinateY = motionEvent.y - event.viewY
 
     for (index in 0 until motionEvent.pointerCount) {
-      val touch = Arguments.createMap()
+      val field = index * POINTER_FIELDS
 
       // pageX,Y values are relative to the RootReactView
       // the motionEvent already contains coordinates in that view
-      touch.putDouble(PAGE_X_KEY, motionEvent.getX(index).pxToDp().toDouble())
-      touch.putDouble(PAGE_Y_KEY, motionEvent.getY(index).pxToDp().toDouble())
+      pointerData[field + PAGE_X_INDEX] = motionEvent.getX(index).pxToDp().toDouble()
+      pointerData[field + PAGE_Y_INDEX] = motionEvent.getY(index).pxToDp().toDouble()
 
       // locationX,Y values are relative to the target view
       // To compute the values for the view, we subtract that views location from the event X,Y
       val locationX = motionEvent.getX(index) - targetViewCoordinateX
       val locationY = motionEvent.getY(index) - targetViewCoordinateY
-      touch.putDouble(LOCATION_X_KEY, locationX.pxToDp().toDouble())
-      touch.putDouble(LOCATION_Y_KEY, locationY.pxToDp().toDouble())
+      pointerData[field + LOCATION_X_INDEX] = locationX.pxToDp().toDouble()
+      pointerData[field + LOCATION_Y_INDEX] = locationY.pxToDp().toDouble()
 
-      touch.putInt(TARGET_SURFACE_KEY, event.surfaceId)
-      @Suppress("DEPRECATION") touch.putInt(TARGET_KEY, event.viewTag)
-      touch.putDouble(TIMESTAMP_KEY, event.timestampMs.toDouble())
-      touch.putDouble(POINTER_IDENTIFIER_KEY, motionEvent.getPointerId(index).toDouble())
-
-      touches[index] = touch
+      pointerData[field + TARGET_SURFACE_INDEX] = event.surfaceId.toDouble()
+      pointerData[field + TARGET_INDEX] = event.viewTag.toDouble()
+      pointerData[field + TIMESTAMP_INDEX] = event.timestampMs.toDouble()
+      pointerData[field + IDENTIFIER_INDEX] = motionEvent.getPointerId(index).toDouble()
     }
 
-    return touches
+    return pointerData
   }
 
   /**
@@ -82,8 +83,9 @@ internal object TouchesHelper {
    * more efficient manner.
    *
    * Touches have to be dispatched as separate events for each changed pointer to make JS process
-   * them correctly. To avoid allocations, we preprocess touch events in Java world and then convert
-   * them to native before dispatch.
+   * them correctly. The pointers are collected once into a [DoubleArray], and each event's payload
+   * is built from it in a single JNI call, instead of putting every value into a native map one by
+   * one.
    *
    * @param eventEmitter emitter to dispatch event to
    * @param event the touch event to extract data from
@@ -95,52 +97,44 @@ internal object TouchesHelper {
         "TouchesHelper.sentTouchEventModern(" + event.getEventName() + ")",
     )
     try {
-      val type = event.getTouchEventType()
       val motionEvent = event.getMotionEvent()
-      var touches = createPointersArray(event)
-      val changedTouches: Array<WritableMap?>?
+      val pointerCount = motionEvent.pointerCount
+      // Pointers are passed to native as bit masks of their indices.
+      check(pointerCount < Int.SIZE_BITS) { "Too many pointers: $pointerCount" }
+      val allPointers = (1 shl pointerCount) - 1
+      val changedPointers: Int
+      val touchPointers: Int
 
-      when (type) {
+      when (event.getTouchEventType()) {
         TouchEventType.START -> {
-          val newPointerIndex = motionEvent.actionIndex
-
-          changedTouches = arrayOf(touches[newPointerIndex]?.copy())
+          changedPointers = 1 shl motionEvent.actionIndex
+          touchPointers = allPointers
         }
         TouchEventType.END -> {
-          val finishedPointerIndex = motionEvent.actionIndex
+          changedPointers = 1 shl motionEvent.actionIndex
           /*
-           * Clear finished pointer index for compatibility with W3C touch "end" events, where the
+           * Leave out the finished pointer for compatibility with W3C touch "end" events, where the
            * active touches don't include the set that has just been "ended".
            */
-          val finishedPointer = touches[finishedPointerIndex]
-          touches[finishedPointerIndex] = null
-
-          changedTouches = arrayOf(finishedPointer)
+          touchPointers = allPointers and changedPointers.inv()
         }
         TouchEventType.MOVE -> {
-          changedTouches = arrayOfNulls(touches.size)
-          var i = 0
-          while (i < touches.size) {
-            changedTouches[i] = touches[i]?.copy()
-            i++
-          }
+          changedPointers = allPointers
+          touchPointers = allPointers
         }
         TouchEventType.CANCEL -> {
-          changedTouches = touches
-          touches = arrayOfNulls(0)
+          changedPointers = allPointers
+          touchPointers = 0
         }
       }
 
-      for (touchData in changedTouches) {
+      val pointerData = createPointerData(event)
+      for (pointer in 0 until pointerCount) {
+        if (changedPointers and (1 shl pointer) == 0) {
+          continue
+        }
         val eventData =
-            touchData?.let { td ->
-              val ed = td.copy()
-              val changedTouchesArray = getWritableArray(/* copyObjects */ true, changedTouches)
-              val touchesArray = getWritableArray(/* copyObjects */ true, touches)
-              ed.putArray(CHANGED_TOUCHES_KEY, changedTouchesArray)
-              ed.putArray(TOUCHES_KEY, touchesArray)
-              ed
-            }
+            nativeCreateTouchPayload(pointerData, pointer, changedPointers, touchPointers)
 
         eventEmitter.receiveEvent(
             event.surfaceId,
@@ -158,13 +152,20 @@ internal object TouchesHelper {
     }
   }
 
-  private fun getWritableArray(copyObjects: Boolean, objects: Array<WritableMap?>): WritableArray {
-    val result = Arguments.createArray()
-    for (obj in objects) {
-      if (obj != null) {
-        result.pushMap(if (copyObjects) obj.copy() else obj)
-      }
-    }
-    return result
-  }
+  /**
+   * Creates the payload of a touch event: the fields of pointer [eventPointer] and the
+   * `changedTouches` and `touches` arrays of the pointers whose bits are set in [changedPointers]
+   * and [touchPointers].
+   *
+   * @param pointerData 8 values for each pointer, in order: pageX, pageY, locationX, locationY,
+   *   targetSurface, target, timestamp and identifier.
+   */
+  @DoNotStrip
+  @JvmStatic
+  private external fun nativeCreateTouchPayload(
+      pointerData: DoubleArray,
+      eventPointer: Int,
+      changedPointers: Int,
+      touchPointers: Int,
+  ): WritableNativeMap
 }

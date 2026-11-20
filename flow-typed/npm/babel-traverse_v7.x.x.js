@@ -631,7 +631,7 @@ declare module '@babel/traverse' {
 
     constructor(hub: HubInterface, parent: BabelNode): NodePath<TNode>;
 
-    static get({
+    static get(options: {
       hub: HubInterface,
       parentPath: ?NodePath<>,
       parent: BabelNode,

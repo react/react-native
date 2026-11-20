@@ -44,6 +44,13 @@ TEST(AccessibilityPropsTest, derives_traits_from_role) {
   EXPECT_TRUE(hasTrait(props.accessibilityTraits, AccessibilityTraits::Button));
 }
 
+TEST(AccessibilityPropsTest, derives_adjustable_trait_from_slider_role) {
+  auto props = parse(folly::dynamic::object("role", "slider"));
+
+  EXPECT_TRUE(
+      hasTrait(props.accessibilityTraits, AccessibilityTraits::Adjustable));
+}
+
 TEST(AccessibilityPropsTest, derives_traits_from_accessibility_role) {
   auto props = parse(folly::dynamic::object("accessibilityRole", "image"));
 

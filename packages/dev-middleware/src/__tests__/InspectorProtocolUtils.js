@@ -68,7 +68,6 @@ export async function sendFromTargetToDebugger<
       : debugger_.handle.mock.calls;
   // $FlowFixMe[incompatible-type]
   const [receivedMessage]: [Message] = newHandleCalls.find(
-    // $FlowFixMe[incompatible-type]
     (call: [Message]) => call[0].method === message.method,
   );
   return receivedMessage;
@@ -126,7 +125,7 @@ export async function createAndConnectTarget(
     deviceId = null,
     deviceHostHeader = null,
   }: Readonly<{
-    debuggerHeaders?: ?{[string]: unknown},
+    debuggerHeaders?: ?{[key: string]: unknown},
     debuggerOriginHeader?: ?string,
     deviceId?: ?string,
     deviceHostHeader?: ?string,

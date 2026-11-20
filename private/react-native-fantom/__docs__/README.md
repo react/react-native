@@ -50,14 +50,28 @@ expect(boundingClientRect.width).toBe(100);
 ```
 
 Fantom is designed to make it possible to test the integration between
-JavaScript, React and React Native core - platform agnostic parts. When you are
-making a change to any of these parts, you should consider writing a Fantom test
-for it. It is geared towards engineers working on React Native.
+JavaScript, React and React Native core - platform agnostic parts. It is geared
+towards engineers working on React Native.
 
 With Fantom you can create scenarios close to those how a real product will
 interact with React Native and observe what effects it has on a mock host
 platform. It exposes fine grained controls over scheduling, making it possible
 to test cases that are hard to reproduce manually.
+
+## Fantom or Jest?
+
+Use Fantom for new tests of React Native runtime logic: JavaScript that runs in
+apps using React Native, such as the code in `packages/react-native/Libraries`
+and `packages/react-native/src`. This includes new test cases for a module that
+already has a Jest test: add them to its Fantom test (or create one) instead of
+extending the Jest test.
+
+Use regular Jest for:
+
+- iOS-specific logic that needs a test, because Fantom runs as
+  `Platform.OS === 'android'`.
+- Code that runs in Node.js rather than in apps, such as build tools, scripts,
+  Codegen, the Babel and Metro configuration, the CLI and the dev server.
 
 ## 🚀 Usage
 
@@ -92,6 +106,18 @@ describe('My feature', () => {
 });
 ```
 
+Creating a root sets global `Dimensions` for both `window` and `screen` from its
+`viewportWidth`, `viewportHeight`, `devicePixelRatio`, and optional `fontScale`
+(default `1`). `useWindowDimensions()` and `PixelRatio` report the new root's
+values. If another root is still alive and the new metrics differ from the
+current global dimensions, Fantom applies the new values and emits a warning.
+Call `root.destroy()` when a root is no longer needed.
+
+Each root also uses its `fontScale` for native text and text-input measurement,
+including line heights and wrapping. `allowFontScaling={false}` opts a component
+out, and `maxFontSizeMultiplier` caps its scale. Existing roots retain their own
+native font scale when a new root changes the global display metrics.
+
 For a full API reference, please see the [inline documentation](../src/index.js)
 defined for the methods in the `@react-native/fantom` [module](../src/index.js).
 
@@ -111,6 +137,49 @@ Similar to Jest, you can also run Fantom in watch mode using `--watch`:
 ```shell
 yarn fantom <regexForTestFiles> --watch
 ```
+
+### PNG screenshots
+
+`root.takeScreenshot()` captures the currently mounted Fabric revision into an
+immutable `Screenshot`. Capture after `runTask` to include its mounted updates;
+capture itself does not flush pending React work. The bitmap remains usable
+after later updates or root destruction.
+
+```javascript
+const root = Fantom.createRoot();
+Fantom.runTask(() => root.render(<Screen />));
+const screenshot = root.takeScreenshot();
+expect(screenshot).toMatchSnapshot();
+expect(screenshot.isEqual(root.takeScreenshot())).toBe(true);
+```
+
+The headless renderer paints Yoga's mounted frames with CPU Skia. Text uses the
+same layout and bundled fonts as intrinsic measurement, so the measured sizes
+and painted content agree. `isEqual()` compares bitmap dimensions and pixels in
+memory.
+
+`toMatchSnapshot()` compares a SHA-256 hash of the bitmap dimensions and pixels
+with the value in Jest's `.snap` file. The expected PNG is not read for
+comparison. The runner also keeps an inspectable image in
+`__snapshots__/<test-file>.screenshots/`, named from the test, label and
+assertion number. Capture defers PNG encoding until an image must be saved;
+encoded bytes are cached for repeated saves. A matching hash passes even if the
+PNG is missing, and the runner regenerates that image.
+
+`toMatchInlineSnapshot()` embeds the screenshot's type and hash directly in the
+test source. It does not encode or save an image, so inline failures report a
+text diff.
+
+New snapshots are saved during a normal local run. `--updateSnapshot` (`-u`)
+accepts changed hashes and PNGs together; CI requires an existing matching hash.
+A mismatch leaves the baseline unchanged, saves a difference image alongside the
+received image, and reports all three image paths for inspection. Unused images
+are removed only during a successful snapshot update with no skipped or filtered
+tests. Negated snapshot assertions are unsupported.
+
+See [Rendering](rendering.md) for the painting architecture, supported features,
+font selection and the configuration that keeps shared baselines consistent
+across Linux and macOS.
 
 ### Interactive REPL
 
@@ -606,9 +675,9 @@ has simple examples you can learn from.
 
 #### Are tests executed on Github CI?
 
-Fantom tests are currently tied to Meta's infrastructure and do not run outside
-of Meta's CI. We are working on migrating Fantom to Github CI. If you submit a
-PR, the tests will run as part of the PR import process.
+Yes. The [Test All](../../../.github/workflows/test-all.yml) workflow builds the
+Fantom runner and runs the tests on GitHub Actions for every PR that changes
+code. The tests also run as part of the PR import process.
 
 #### Can I gate individual tests within a suite to only run, or not run, with a specific feature flag?
 

@@ -10,17 +10,6 @@
 
 'use strict';
 
-const {
-  configureAppForSwift,
-  createHardlinks,
-  findXcodeProjectDirectory,
-  generateCodegenArtifacts,
-  prepareHeaders,
-  runIosPrebuild,
-  runPodDeintegrate,
-  setBuildFromSource,
-} = require('../prepare-app-utils');
-
 // Mock child_process module
 jest.mock('node:child_process');
 
@@ -33,8 +22,11 @@ jest.mock('../headers-utils');
 // Mock prepare-app-dependencies-headers module
 jest.mock('../prepare-app-dependencies-headers');
 
-// Mock codegen executor module
-jest.mock('../../codegen/generate-artifacts-executor');
+// Mock codegen executor module. Automocking loads the real module, which reads
+// package.json through the mocked `fs`.
+jest.mock('../../codegen/generate-artifacts-executor', () => ({
+  execute: jest.fn(),
+}));
 
 // Mock path module for absolute paths
 jest.mock('node:path', () => {
@@ -45,6 +37,17 @@ jest.mock('node:path', () => {
     relative: jest.fn((from, to) => to.replace(from + '/', '')),
   };
 });
+
+const {
+  configureAppForSwift,
+  createHardlinks,
+  findXcodeProjectDirectory,
+  generateCodegenArtifacts,
+  prepareHeaders,
+  runIosPrebuild,
+  runPodDeintegrate,
+  setBuildFromSource,
+} = require('../prepare-app-utils');
 
 describe('createHardlinks', () => {
   let mockSymlinkReactNativeHeaders;

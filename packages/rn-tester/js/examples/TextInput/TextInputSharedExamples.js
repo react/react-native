@@ -476,7 +476,6 @@ class SelectionExample extends React.Component<
             testID={`${this.props.testID}-text-input`}
             multiline={this.props.multiline}
             onChangeText={value => this.setState({value})}
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onSelectionChange={this.onSelectionChange.bind(this)}
             ref={textInput => {
               this._textInput = textInput;
@@ -493,30 +492,23 @@ class SelectionExample extends React.Component<
           </RNTesterText>
           <RNTesterText
             testID={`${this.props.testID}-cursor-start`}
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.placeAt.bind(this, 0)}>
             Place at Start (0, 0)
           </RNTesterText>
           <RNTesterText
             testID={`${this.props.testID}-cursor-end`}
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.placeAt.bind(this, length)}>
             Place at End ({length}, {length})
           </RNTesterText>
-          {/* $FlowFixMe[method-unbinding] added when improving typing for this
-           * parameters */}
           {/* $FlowFixMe[invalid-tuple-arity] */}
           <RNTesterText onPress={this.placeAtRandom.bind(this)}>
             Place at Random
           </RNTesterText>
           <RNTesterText
             testID={`${this.props.testID}-select-all`}
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.select.bind(this, 0, length)}>
             Select All
           </RNTesterText>
-          {/* $FlowFixMe[method-unbinding] added when improving typing for this
-           * parameters */}
           {/* $FlowFixMe[invalid-tuple-arity] */}
           <RNTesterText onPress={this.selectRandom.bind(this)}>
             Select Random
@@ -1188,6 +1180,20 @@ module.exports = [
             </Text>
             generic generic generic
           </AutogrowingTextInputExample>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Auto-expanding (uncontrolled)',
+    render: function (): React.Node {
+      return (
+        <View>
+          <ExampleTextInput
+            placeholder="height should grow up to 10 lines"
+            multiline={true}
+            numberOfLines={10}
+          />
         </View>
       );
     },

@@ -109,9 +109,10 @@ function resetTouchRecord(
   touchRecord.previousTimeStamp = timestamp;
 }
 
-function getTouchIdentifier({identifier}: Touch): number {
+function getTouchIdentifier({identifier}: Touch): ?number {
   if (identifier == null) {
-    throw new Error('Touch object is missing identifier.');
+    console.error('Touch object is missing identifier.');
+    return null;
   }
 
   if (__DEV__) {
@@ -129,6 +130,9 @@ function getTouchIdentifier({identifier}: Touch): number {
 
 function recordTouchStart(touch: Touch): void {
   const identifier = getTouchIdentifier(touch);
+  if (identifier == null) {
+    return;
+  }
   const timestamp = timestampForTouch(touch);
   const touchRecord = touchBank[identifier];
   if (touchRecord) {
@@ -140,7 +144,11 @@ function recordTouchStart(touch: Touch): void {
 }
 
 function recordTouchMove(touch: Touch): void {
-  const touchRecord = touchBank[getTouchIdentifier(touch)];
+  const identifier = getTouchIdentifier(touch);
+  if (identifier == null) {
+    return;
+  }
+  const touchRecord = touchBank[identifier];
   if (touchRecord) {
     touchRecord.touchActive = true;
     touchRecord.previousPageX = touchRecord.currentPageX;
@@ -165,7 +173,11 @@ function recordTouchMove(touch: Touch): void {
 }
 
 function recordTouchEnd(touch: Touch): void {
-  const touchRecord = touchBank[getTouchIdentifier(touch)];
+  const identifier = getTouchIdentifier(touch);
+  if (identifier == null) {
+    return;
+  }
+  const touchRecord = touchBank[identifier];
   if (touchRecord) {
     touchRecord.touchActive = false;
     touchRecord.previousPageX = touchRecord.currentPageX;
@@ -206,13 +218,13 @@ function printTouchBank(): string {
   return printed;
 }
 
-let instrumentationCallback: ?(string, TouchEvent) => void;
+let instrumentationCallback: ?(v0: string, v1: TouchEvent) => void;
 
 const ResponderTouchHistoryStore = {
   /**
    * Registers a listener which can be used to instrument every touch event.
    */
-  instrument(callback: (string, TouchEvent) => void): void {
+  instrument(callback: (v0: string, v1: TouchEvent) => void): void {
     instrumentationCallback = callback;
   },
 

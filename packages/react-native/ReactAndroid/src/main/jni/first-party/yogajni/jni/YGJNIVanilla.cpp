@@ -685,6 +685,15 @@ static void jni_YGNodeSetHasMeasureFuncJNI(
       static_cast<bool>(hasMeasureFunc) ? YGJNIMeasureFunc : nullptr);
 }
 
+static void jni_YGNodeSetNodeTypeJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint nodeType) {
+  YGNodeSetNodeType(
+      _jlong2YGNodeRef(nativePointer), static_cast<YGNodeType>(nodeType));
+}
+
 static YGSize YGJNIMinContentMeasureFunc(
     YGNodeConstRef node,
     float width,
@@ -1139,6 +1148,7 @@ static JNINativeMethod methods[] = {
      "(JZ)V",
      (void*)jni_YGNodeSetHasMeasureFuncJNI},
     // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
+    {"jni_YGNodeSetNodeTypeJNI", "(JI)V", (void*)jni_YGNodeSetNodeTypeJNI},
     {"jni_YGNodeSetHasMinContentMeasureFuncJNI",
      "(JZ)V",
      (void*)jni_YGNodeSetHasMinContentMeasureFuncJNI},

@@ -29,7 +29,7 @@ type EventRecordingListener = JestMockFn<[Event], void> & {
 };
 
 function createListener(
-  implementation?: Event => void,
+  implementation?: (v: Event) => void,
 ): EventRecordingListener {
   // $FlowExpectedError[incompatible-type]
   const listener: EventRecordingListener = jest.fn((event: Event) => {
@@ -59,7 +59,6 @@ describe('AbortController', () => {
   it('should not be callable', () => {
     expect(() => {
       // $FlowExpectedError[prop-missing]
-      // $FlowExpectedError[constructor-as-function]
       AbortController();
     }).toThrow('Cannot call a class as a function');
   });
@@ -76,7 +75,6 @@ describe('AbortController', () => {
   });
 
   it('should be stringified as [object AbortController]', () => {
-    // $FlowExpectedError[method-unbinding]
     /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
      * unsoundness in flow */
     expect(Object.prototype.toString.call(controller)).toBe(
@@ -147,7 +145,6 @@ describe('AbortController', () => {
     });
 
     it("should have 'onabort' property which is null by default", () => {
-      // $FlowExpectedError[prop-missing]
       expect(signal.onabort).toBe(null);
     });
 
@@ -168,7 +165,6 @@ describe('AbortController', () => {
     });
 
     it('should be stringified as [object AbortSignal]', () => {
-      // $FlowExpectedError[method-unbinding]
       /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
        * unsoundness in flow */
       expect(Object.prototype.toString.call(signal)).toBe(
@@ -188,7 +184,6 @@ describe('AbortController', () => {
 
       const reason = controller.signal.reason;
       expect(reason).toBeInstanceOf(DOMException);
-      //$FlowExpectedError[incompatible-type]
       const domException: DOMException = reason;
       expect(domException.name).toBe('AbortError');
       expect(domException.message).toBe('signal is aborted without reason');
@@ -245,8 +240,6 @@ describe('AbortController', () => {
 
     it("should fire 'abort' event on 'signal' (onabort)", () => {
       const listener = createListener();
-      // $FlowExpectedError[incompatible-type]
-      // $FlowExpectedError[prop-missing]
       controller.signal.onabort = listener;
       controller.abort();
 
@@ -266,7 +259,6 @@ describe('AbortController', () => {
 
     it("should throw a TypeError if 'this' is not an AbortController object", () => {
       expect(() => {
-        // $FlowExpectedError[method-unbinding]
         /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
          * unsoundness in flow */
         controller.abort.call({});
@@ -290,7 +282,6 @@ describe('AbortController', () => {
     it('should set a default AbortError reason when called without arguments', () => {
       const signal = AbortSignal.abort();
       expect(signal.reason).toBeInstanceOf(DOMException);
-      //$FlowExpectedError[incompatible-type]
       const domException: DOMException = signal.reason;
       expect(domException.name).toBe('AbortError');
       expect(domException.message).toBe('signal is aborted without reason');
@@ -433,7 +424,6 @@ describe('AbortController', () => {
 
       expect(signal.aborted).toBe(true);
       expect(signal.reason).toBeInstanceOf(DOMException);
-      // $FlowExpectedError[incompatible-type]
       const reason: DOMException = signal.reason;
       expect(reason.name).toBe('TimeoutError');
       expect(reason.message).toBe('signal timed out');
@@ -453,14 +443,12 @@ describe('AbortSignal', () => {
   it('should not be callable', () => {
     expect(() => {
       // $FlowExpectedError[prop-missing]
-      // $FlowExpectedError[constructor-as-function]
       AbortSignal();
     }).toThrow("Failed to construct 'AbortSignal': Illegal constructor");
   });
 
   it("should throw a TypeError when it's constructed directly", () => {
     expect(() => {
-      // $FlowExpectedError[cannot-new]
       // eslint-disable-next-line no-new
       new AbortSignal();
     }).toThrow("Failed to construct 'AbortSignal': Illegal constructor");

@@ -6,15 +6,77 @@
  */
 
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
+#include <react/renderer/components/scrollview/ScrollContentViewComponentDescriptor.h>
+#include <react/renderer/components/scrollview/ScrollContentViewState.h>
 #include <react/renderer/components/view/ViewShadowNode.h>
 #include <react/renderer/core/ShadowNodeFragment.h>
+#include <react/renderer/core/StateUpdate.h>
 #include <react/renderer/element/Element.h>
 #include <react/renderer/element/testUtils.h>
 #include <react/renderer/uimanager/UIManager.h>
+#include <react/renderer/uimanager/UIManagerDelegate.h>
+#include <react/utils/OnScopeExit.h>
 
 namespace facebook::react {
+
+namespace {
+
+class RecordingUIManagerDelegate : public UIManagerDelegate {
+ public:
+  std::vector<std::pair<SurfaceId, bool>> transactions;
+
+  void uiManagerDidFinishTransaction(
+      std::shared_ptr<const MountingCoordinator> mountingCoordinator,
+      bool mountSynchronously) override {
+    transactions.emplace_back(
+        mountingCoordinator->getSurfaceId(), mountSynchronously);
+  }
+
+  void uiManagerDidCreateShadowNode(const ShadowNode& /*shadowNode*/) override {
+  }
+  void uiManagerDidDispatchCommand(
+      const std::shared_ptr<const ShadowNode>& /*shadowNode*/,
+      const std::string& /*commandName*/,
+      const folly::dynamic& /*args*/) override {}
+  void uiManagerDidSendAccessibilityEvent(
+      const std::shared_ptr<const ShadowNode>& /*shadowNode*/,
+      const std::string& /*eventType*/) override {}
+  void uiManagerDidSetIsJSResponder(
+      const std::shared_ptr<const ShadowNode>& /*shadowNode*/,
+      bool /*isJSResponder*/,
+      bool /*blockNativeResponder*/) override {}
+  void uiManagerShouldSynchronouslyUpdateViewOnUIThread(
+      Tag /*tag*/,
+      const folly::dynamic& /*props*/) override {}
+  void uiManagerShouldSynchronouslyUpdateAnimatedProps(
+      const std::unordered_map<Tag, AnimatedProps>& /*updates*/) override {}
+  void uiManagerDidUpdateShadowTree(
+      const std::unordered_map<Tag, folly::dynamic>& /*tagToProps*/) override {}
+  void uiManagerShouldAddEventListener(
+      std::shared_ptr<const EventListener> /*listener*/) override {}
+  void uiManagerShouldRemoveEventListener(
+      const std::shared_ptr<const EventListener>& /*listener*/) override {}
+  void uiManagerDidStartSurface(const ShadowTree& /*shadowTree*/) override {}
+  void uiManagerDidFinishReactCommit(
+      const ShadowTree& /*shadowTree*/) override {}
+  void uiManagerShouldAddOnSurfaceStartCallback(
+      OnSurfaceStartCallback&& /*callback*/) override {}
+  void uiManagerDidCaptureViewSnapshot(Tag /*tag*/, SurfaceId /*surfaceId*/)
+      override {}
+  void uiManagerDidSetViewSnapshot(
+      Tag /*sourceTag*/,
+      Tag /*targetTag*/,
+      SurfaceId /*surfaceId*/) override {}
+  void uiManagerDidClearPendingSnapshots() override {}
+};
+
+} // namespace
 
 class FabricUIManagerTest : public ::testing::Test {
  public:
@@ -33,6 +95,9 @@ class FabricUIManagerTest : public ::testing::Test {
         concreteComponentDescriptorProvider<RootComponentDescriptor>());
     componentDescriptorProviderRegistry.add(
         concreteComponentDescriptorProvider<ViewComponentDescriptor>());
+    componentDescriptorProviderRegistry.add(
+        concreteComponentDescriptorProvider<
+            ScrollContentViewComponentDescriptor>());
 
     builder_ = std::make_unique<ComponentBuilder>(componentDescriptorRegistry);
 
@@ -126,6 +191,43 @@ class FabricUIManagerTest : public ::testing::Test {
   ShadowTree* shadowTreePtr_{nullptr};
 };
 
+TEST_F(FabricUIManagerTest, NativeStateUpdateRequestsSynchronousMount) {
+  auto contentNode = builder_->build(
+      Element<ScrollContentViewShadowNode>().tag(viewTag_).surfaceId(
+          surfaceId_));
+  auto rootChildren =
+      std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>();
+  rootChildren->push_back(contentNode);
+  uiManager_->completeSurface(surfaceId_, rootChildren, {});
+
+  auto stateData = ScrollContentViewState{};
+  stateData.safeAreaPadding.top = 20;
+  stateData.safeAreaPadding.bottom = 12;
+  auto expectedStateData =
+      std::make_shared<const ScrollContentViewState>(stateData);
+  ASSERT_NE(contentNode->getStateData(), stateData);
+
+  RecordingUIManagerDelegate delegate;
+  uiManager_->setDelegate(&delegate);
+  auto resetDelegate = OnScopeExit([&]() { uiManager_->setDelegate(nullptr); });
+  auto update = StateUpdate{
+      .family = contentNode->getFamilyShared(),
+      .callback = [expectedStateData](const StateData::Shared& /*oldData*/)
+          -> StateData::Shared { return expectedStateData; }};
+
+  uiManager_->updateState(update);
+
+  const std::vector<std::pair<SurfaceId, bool>> expectedTransactions{
+      {surfaceId_, true}};
+  EXPECT_EQ(delegate.transactions, expectedTransactions);
+  auto updatedNode =
+      std::static_pointer_cast<const ScrollContentViewShadowNode>(
+          currentViewNode());
+  ASSERT_NE(updatedNode->getState(), nullptr);
+  EXPECT_EQ(&updatedNode->getStateData(), expectedStateData.get());
+  EXPECT_EQ(updatedNode->getStateData(), stateData);
+}
+
 // Demonstrates the merge between props set by `setNativeProps_DEPRECATED`
 // (the legacy native-side prop override path) and props supplied by a
 // regular React re-render via `cloneNode`. The native override must
@@ -153,6 +255,62 @@ TEST_F(FabricUIManagerTest, SetNativePropsMergesWithReactRender) {
   auto& merged = static_cast<const ViewProps&>(*rerendered->getProps());
   EXPECT_EQ(merged.nativeId, "from-react");
   EXPECT_FLOAT_EQ(merged.opacity, 0.5);
+}
+
+// Cloning a node whose props already include the props set by
+// `setNativeProps_DEPRECATED` (as Yoga does for every child of a node it lays
+// out) keeps those props instead of parsing them again. Props set later are
+// still applied.
+TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsOnlyOnce) {
+  uiManager_->setNativeProps_DEPRECATED(
+      currentViewNode(), RawProps(folly::dynamic::object("opacity", 0.5)));
+
+  auto first = currentViewNode()->clone({});
+  EXPECT_FLOAT_EQ(
+      static_cast<const ViewProps&>(*first->getProps()).opacity, 0.5);
+
+  auto second = first->clone({});
+  EXPECT_EQ(second->getProps(), first->getProps());
+
+  uiManager_->setNativeProps_DEPRECATED(
+      currentViewNode(), RawProps(folly::dynamic::object("opacity", 0.25)));
+  auto third = second->clone({});
+  EXPECT_NE(third->getProps(), second->getProps());
+  EXPECT_FLOAT_EQ(
+      static_cast<const ViewProps&>(*third->getProps()).opacity, 0.25);
+}
+
+// Another clone of a node whose props don't include the props set by
+// `setNativeProps_DEPRECATED` still applies them, even after a clone of the
+// same node already did.
+TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsToEveryNodeWithoutThem) {
+  auto original = currentViewNode();
+  uiManager_->setNativeProps_DEPRECATED(
+      original, RawProps(folly::dynamic::object("opacity", 0.5)));
+
+  original->clone({});
+  auto second = original->clone({});
+  EXPECT_NE(second->getProps(), original->getProps());
+  EXPECT_FLOAT_EQ(
+      static_cast<const ViewProps&>(*second->getProps()).opacity, 0.5);
+}
+
+// After a React re-render replaces a node's props, the next clone applies the
+// props set by `setNativeProps_DEPRECATED` again.
+TEST_F(FabricUIManagerTest, CloneAppliesSetNativePropsAfterReactRender) {
+  uiManager_->setNativeProps_DEPRECATED(
+      currentViewNode(), RawProps(folly::dynamic::object("opacity", 0.5)));
+  auto applied = currentViewNode()->clone({});
+
+  auto rerendered = uiManager_->cloneNode(
+      *applied,
+      /*children=*/nullptr,
+      RawProps(folly::dynamic::object("nativeID", "from-react")));
+  auto cloned = rerendered->clone({});
+  EXPECT_NE(cloned->getProps(), rerendered->getProps());
+  auto& props = static_cast<const ViewProps&>(*cloned->getProps());
+  EXPECT_EQ(props.nativeId, "from-react");
+  EXPECT_FLOAT_EQ(props.opacity, 0.5);
 }
 
 } // namespace facebook::react

@@ -64,6 +64,7 @@ class TesterAppDelegate {
       float heightDp,
       SurfaceId surfaceId,
       float pointScaleFactor = 1.0f,
+      float fontScale = 1.0f,
       float viewportOffsetX = 0.0f,
       float viewportOffsetY = 0.0f);
 

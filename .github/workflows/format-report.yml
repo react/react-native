@@ -23,7 +23,7 @@ jobs:
       - name: Download formatting report
         id: download
         continue-on-error: true
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: format-results
           path: .format-results

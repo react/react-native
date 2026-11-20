@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import <React/RCTBridge.h>
+#import <React/RCTBridgeModule.h>
 
 @interface RCTDeviceInfo : NSObject <RCTBridgeModule>
 

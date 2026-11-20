@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTInitializing.h>
 #import <React/RCTURLRequestHandler.h>

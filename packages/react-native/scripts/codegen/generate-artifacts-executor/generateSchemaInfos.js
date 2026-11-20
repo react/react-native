@@ -20,7 +20,6 @@ function generateSchemaInfos(
   libraries /*: ReadonlyArray<$FlowFixMe> */,
   platform /*: string */,
 ) /*: Array<$FlowFixMe> */ {
-  // $FlowFixMe[incompatible-type]
   return libraries.map(library => generateSchemaInfo(library, platform));
 }
 
@@ -55,7 +54,7 @@ const APPLE_PLATFORMS = ['ios', 'macos', 'tvos', 'visionos'];
 function extractSupportedApplePlatforms(
   dependency /*: string */,
   dependencyPath /*: string */,
-) /*: ?{[string]: boolean} */ {
+) /*: ?{[key: string]: boolean} */ {
   codegenLog('Searching for podspec in the project dependencies.', true);
   const podspecs = globSync('*.podspec', {
     cwd: dependencyPath,
@@ -91,7 +90,7 @@ function extractSupportedApplePlatforms(
         getCocoaPodsPlatformKey(platform),
       ),
     }),
-    {} /*:: as {[string]: boolean} */,
+    {} /*:: as {[key: string]: boolean} */,
   );
 
   const supportedPlatformsList = Object.keys(supportedPlatformsMap).filter(

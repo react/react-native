@@ -19,9 +19,9 @@ const CLONE_PLATFORM_OBJECT_KEY = Symbol('clonePlatformObject');
  */
 export const setPlatformObject: (<T extends interface {}>(
   obj: Class<T>,
-  options?: {clone: T => T},
+  options?: {clone: (v: T) => T},
 ) => void) &
-  (<T extends interface {}>(obj: T, options?: {clone: T => T}) => void) =
+  (<T extends interface {}>(obj: T, options?: {clone: (v: T) => T}) => void) =
   function setPlatformObject(obj, options) {
     if (typeof obj === 'function') {
       // $FlowExpectedError[prop-missing]
@@ -44,7 +44,6 @@ export const setPlatformObject: (<T extends interface {}>(
  * Indicates if the given object is a platform object.
  */
 export function isPlatformObject<T extends interface {}>(obj: T): boolean {
-  // $FlowExpectedError[invalid-in-lhs]
   return IS_PLATFORM_OBJECT_KEY in obj;
 }
 
@@ -53,7 +52,7 @@ export function isPlatformObject<T extends interface {}>(obj: T): boolean {
  */
 export function getPlatformObjectClone<T extends interface {}>(
   obj: T,
-): (T => T) | void {
+): ((v: T) => T) | void {
   // $FlowExpectedError[prop-missing]
   return obj[CLONE_PLATFORM_OBJECT_KEY];
 }

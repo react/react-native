@@ -53,7 +53,7 @@ class UITask {
 // Protects access to g_uiTask
 std::mutex &g_mutex()
 {
-  static std::mutex mutex;
+  static constinit std::mutex mutex;
   return mutex;
 }
 
@@ -65,13 +65,13 @@ std::condition_variable &g_cv()
 
 std::mutex &g_ticket()
 {
-  static std::mutex ticket;
+  static constinit std::mutex ticket;
   return ticket;
 }
 
 std::optional<UITask> &g_uiTask()
 {
-  static std::optional<UITask> uiTaskQueue;
+  static constinit std::optional<UITask> uiTaskQueue;
   return uiTaskQueue;
 }
 

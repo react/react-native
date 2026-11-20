@@ -12,6 +12,11 @@
 
 #import <React/RCTBackedTextInputDelegateAdapter.h>
 
+@interface RCTBackedTextViewDelegateAdapter (PendingTextInputEdit)
+- (void)invalidatePendingTextInputEdit;
+- (void)schedulePendingTextInputEditWithRange:(NSRange)range replacementText:(NSString *)replacementText;
+@end
+
 @implementation RCTUITextView {
   UILabel *_placeholderView;
   UITextView *_detachedTextView;
@@ -207,6 +212,16 @@ static UIColor *defaultPlaceholderColor(void)
   [super setSelectedTextRange:selectedTextRange];
 }
 
+- (void)rct_invalidatePendingTextInputEdit
+{
+  [_textInputDelegateAdapter invalidatePendingTextInputEdit];
+}
+
+- (void)rct_enqueueTextInputEditWithRange:(NSRange)range replacementText:(NSString *)replacementText
+{
+  [_textInputDelegateAdapter schedulePendingTextInputEditWithRange:range replacementText:replacementText];
+}
+
 // After restoring the previous cursor position, we manually trigger the scroll to the new cursor position (PR 38679).
 - (void)scrollRangeToVisible:(NSRange)range
 {
@@ -331,6 +346,15 @@ static UIColor *defaultPlaceholderColor(void)
   }
 
   return [super canPerformAction:action withSender:sender];
+}
+
+// UIKit queries this when the keyboard becomes active, including when the app returns to the
+// foreground. The default implementation calls `canPerformAction:` with `paste:`, which
+// synchronously queries the system pasteboard on the main thread and can hang the app. TextInput
+// only accepts text, so opt out of image paste; text paste is unaffected.
+- (BOOL)supportsImagePaste
+{
+  return NO;
 }
 
 - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder

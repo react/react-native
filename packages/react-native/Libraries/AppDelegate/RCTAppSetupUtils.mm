@@ -7,10 +7,6 @@
 
 #import "RCTAppSetupUtils.h"
 
-#import <cxxreact/JSExecutor.h>
-#import <react/renderer/runtimescheduler/RuntimeScheduler.h>
-#import <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
-
 // Turbo Module
 #import <React/RCTBundleAssetImageLoader.h>
 #import <React/RCTDataRequestHandler.h>
@@ -91,12 +87,4 @@ id<RCTTurboModule> RCTAppSetupDefaultModuleFromClass(Class moduleClass, id<RCTDe
   }
   // No custom initializer here.
   return [moduleClass new];
-}
-
-std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupDefaultJsExecutorFactory(
-    RCTBridge *bridge,
-    RCTTurboModuleManager *turboModuleManager,
-    const std::shared_ptr<facebook::react::RuntimeScheduler> &runtimeScheduler)
-{
-  return nullptr;
 }

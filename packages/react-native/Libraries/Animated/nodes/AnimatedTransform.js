@@ -19,12 +19,12 @@ import AnimatedNode from './AnimatedNode';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
 type Transform<T = AnimatedNode> = {
-  [string]:
+  [key: string]:
     | number
     | string
     | T
     | ReadonlyArray<number | string | T>
-    | {[string]: number | string | T},
+    | {[key: string]: number | string | T},
 };
 
 function flatAnimatedNodes(
@@ -97,7 +97,6 @@ export default class AnimatedTransform extends AnimatedWithChildren {
   __getValueWithStaticTransforms(
     // $FlowFixMe[unclear-type]
     staticTransforms: ReadonlyArray<any>,
-    // $FlowFixMe[unclear-type]
   ): ReadonlyArray<Object> {
     const values = [];
     mapTransforms(this._transforms, node => {
@@ -176,7 +175,7 @@ export default class AnimatedTransform extends AnimatedWithChildren {
 
 function mapTransforms<T>(
   transforms: ReadonlyArray<Transform<>>,
-  mapFunction: AnimatedNode => T,
+  mapFunction: (v: AnimatedNode) => T,
 ): ReadonlyArray<Transform<T>> {
   return transforms.map(transform => {
     const result: Transform<T> = {};
@@ -190,7 +189,7 @@ function mapTransforms<T>(
           element instanceof AnimatedNode ? mapFunction(element) : element,
         );
       } else if (typeof value === 'object') {
-        const object: {[string]: number | string | T} = {};
+        const object: {[key: string]: number | string | T} = {};
         for (const propertyName in value) {
           const propertyValue = value[propertyName];
           object[propertyName] =

@@ -8,8 +8,6 @@
  * @format
  */
 
-const {getNpmInfo, publishPackage} = require('../npm-utils');
-
 const execMock = jest.fn();
 const getCurrentCommitMock = jest.fn();
 const exitIfNotOnGitMock = jest.fn();
@@ -22,6 +20,8 @@ jest.mock('./../scm-utils', () => ({
   getCurrentCommit: getCurrentCommitMock,
   exitIfNotOnGit: exitIfNotOnGitMock,
 }));
+
+const {getNpmInfo, publishPackage} = require('../npm-utils');
 
 describe('npm-utils', () => {
   beforeEach(() => {

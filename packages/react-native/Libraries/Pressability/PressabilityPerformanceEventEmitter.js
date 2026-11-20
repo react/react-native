@@ -14,8 +14,9 @@ export type PressabilityPerformanceEvent = Readonly<{
   signal: TouchSignal,
   nativeTimestamp: number,
 }>;
-export type PressabilityPerformanceEventListener =
-  PressabilityPerformanceEvent => void;
+export type PressabilityPerformanceEventListener = (
+  v: PressabilityPerformanceEvent,
+) => void;
 
 class PressabilityPerformanceEventEmitter {
   _listeners: Array<PressabilityPerformanceEventListener> = [];

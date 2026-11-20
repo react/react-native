@@ -320,6 +320,8 @@ describe('Fantom', () => {
           viewportOffsetY: 102,
         },
       );
+      rootWithDefaults.destroy();
+      rootWithCustomWidthAndHeight.destroy();
     });
 
     it('throws when trying to render a root outside of a task', () => {

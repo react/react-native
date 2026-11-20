@@ -13,11 +13,11 @@ const PixelRatio = {
   getFontScale: jest.fn(() => PixelRatio.get()) as () => number,
   getPixelSizeForLayoutSize: jest.fn(layoutSize =>
     Math.round(layoutSize * PixelRatio.get()),
-  ) as (number) => number,
+  ) as (v: number) => number,
   roundToNearestPixel: jest.fn(layoutSize => {
     const ratio = PixelRatio.get();
     return Math.round(layoutSize * ratio) / ratio;
-  }) as (number) => number,
+  }) as (v: number) => number,
   startDetecting: jest.fn() as () => void,
 };
 

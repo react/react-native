@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
 type ReactNativeStartupTimingLike = {
@@ -44,6 +42,7 @@ export default class ReactNativeStartupTiming {
   /**
    * Start time of the RN app startup process. This is provided by the platform by implementing the `ReactMarker.setAppStartTime` API in the native platform code.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get startTime(): ?number {
     return this.#startTime;
   }
@@ -51,6 +50,7 @@ export default class ReactNativeStartupTiming {
   /**
    * End time of the RN app startup process.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get endTime(): ?number {
     return this.#endTime;
   }
@@ -58,6 +58,7 @@ export default class ReactNativeStartupTiming {
   /**
    * Start time when RN runtime get initialized. This is when RN infra first kicks in app startup process.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get initializeRuntimeStart(): ?number {
     return this.#initializeRuntimeStart;
   }
@@ -65,6 +66,7 @@ export default class ReactNativeStartupTiming {
   /**
    * Start time of JS bundle being executed. This indicates the RN JS bundle is loaded and start to be evaluated.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get executeJavaScriptBundleEntryPointStart(): ?number {
     return this.#executeJavaScriptBundleEntryPointStart;
   }

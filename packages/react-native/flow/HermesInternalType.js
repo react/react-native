@@ -48,7 +48,7 @@ declare type $HermesInternalType = {
    * @return An object that maps strings to various types of performance
    *    statistics.
    */
-  readonly getInstrumentedStats?: () => {[string]: number | string, ...},
+  readonly getInstrumentedStats?: () => {[key: string]: number | string, ...},
 
   /**
    * Query the VM for any sort of runtime properties that it wants to report.
@@ -59,7 +59,7 @@ declare type $HermesInternalType = {
   readonly getRuntimeProperties?: () => {
     'OSS Release Version': string,
     Build: string,
-    [string]: unknown,
+    [key: string]: unknown,
   },
 
   /**
@@ -95,8 +95,8 @@ declare type $HermesInternalType = {
     options: ?{
       whitelist?: ?Array<unknown>,
       allRejections?: ?boolean,
-      onUnhandled?: ?(number, unknown) => void,
-      onHandled?: ?(number, unknown) => void,
+      onUnhandled?: ?(v0: number, v1: unknown) => void,
+      onHandled?: ?(v0: number, v1: unknown) => void,
     },
   ) => void,
 

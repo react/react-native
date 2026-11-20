@@ -109,8 +109,10 @@ bool Requests::isStopped() {
 
 NetworkingModule::NetworkingModule(
     std::shared_ptr<CallInvoker> jsInvoker,
-    const HttpClientFactory& httpClientFactory)
-    : NativeNetworkingAndroidCxxSpec(jsInvoker) {
+    const HttpClientFactory& httpClientFactory,
+    std::shared_ptr<INetworkingResponseHandler> responseHandler)
+    : NativeNetworkingAndroidCxxSpec(jsInvoker),
+      responseHandler_(std::move(responseHandler)) {
   httpClient_ = httpClientFactory();
 }
 
@@ -296,6 +298,23 @@ void NetworkingModule::didReceiveNetworkData(
     const std::string& responseType,
     std::unique_ptr<folly::IOBuf> buf) {
   if (requests_.isStopped()) {
+    return;
+  }
+
+  if (responseHandler_ != nullptr && responseHandler_->supports(responseType)) {
+    emitDeviceEvent(
+        "didReceiveNetworkData",
+        [requestId,
+         body = buf->to<std::vector<uint8_t>>(),
+         responseHandler = responseHandler_](
+            jsi::Runtime& rt, std::vector<jsi::Value>& args) mutable {
+          args.emplace_back(
+              rt,
+              jsi::Array::createWithElements(
+                  rt,
+                  static_cast<double>(requestId),
+                  responseHandler->toResponseData(rt, std::move(body))));
+        });
     return;
   }
 

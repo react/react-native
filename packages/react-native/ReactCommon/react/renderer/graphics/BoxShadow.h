@@ -32,7 +32,9 @@ struct BoxShadow {
     result["offsetY"] = offsetY;
     result["blurRadius"] = blurRadius;
     result["spreadDistance"] = spreadDistance;
-    result["color"] = *color;
+    if (color) {
+      result["color"] = *color;
+    }
     result["inset"] = inset;
     return result;
   }

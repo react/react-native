@@ -12,7 +12,7 @@ namespace facebook::react {
 #ifdef RN_SERIALIZABLE_STATE
 folly::dynamic ColorStop::toDynamic() const {
   folly::dynamic result = folly::dynamic::object();
-  result["color"] = *color;
+  result["color"] = color ? folly::dynamic(*color) : folly::dynamic(nullptr);
   result["position"] = position.toDynamic();
   return result;
 }

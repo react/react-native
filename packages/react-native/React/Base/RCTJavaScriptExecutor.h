@@ -12,5 +12,3 @@
 
 typedef void (^RCTJavaScriptCompleteBlock)(NSError *__strong)
     __deprecated_msg("This api will be removed along with the bridge.");
-typedef void (^RCTJavaScriptCallback)(__strong id, NSError *__strong)
-    __deprecated_msg("This api will be removed along with the bridge.");

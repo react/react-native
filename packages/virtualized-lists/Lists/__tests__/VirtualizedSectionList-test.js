@@ -22,7 +22,7 @@ function removeOwner(obj: unknown): unknown {
   if (obj === null || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(removeOwner);
 
-  const result: {[string]: unknown} = {};
+  const result: {[key: string]: unknown} = {};
   for (const key of Object.keys(obj)) {
     if (key === '_owner') continue;
     result[key] = removeOwner(obj[key]);
@@ -40,7 +40,6 @@ describe('VirtualizedSectionList', () => {
             // $FlowFixMe[incompatible-type]
             {title: 's1', data: [{key: 'i1'}, {key: 'i2'}, {key: 'i3'}]},
           ]}
-          // $FlowFixMe[missing-local-annot]
           renderItem={({item}) => <item value={item.key} />}
           getItem={(data, key) => data[key]}
           getItemCount={data => data.length}
@@ -179,7 +178,6 @@ describe('VirtualizedSectionList', () => {
     await ReactTestRenderer.act(() => {
       component = ReactTestRenderer.create(
         <VirtualizedSectionList
-          // $FlowFixMe[incompatible-type]
           sections={
             [
               {title: 'outer', data: [{key: 'outer0'}, {key: 'outer1'}]},
@@ -189,7 +187,6 @@ describe('VirtualizedSectionList', () => {
             <VirtualizedSectionList
               sections={
                 [
-                  // $FlowFixMe[incompatible-type]
                   {
                     title: 'inner',
                     data: [
@@ -231,12 +228,10 @@ describe('VirtualizedSectionList', () => {
       },
     }) => {
       const defaultSections = [
-        // $FlowFixMe[incompatible-type]
         {
           title: 's1',
           data: [{key: 'i1.1'}, {key: 'i1.2'}, {key: 'i1.3'}],
         },
-        // $FlowFixMe[incompatible-type]
         {
           title: 's2',
           data: [{key: 'i2.1'}, {key: 'i2.2'}, {key: 'i2.3'}],
@@ -454,9 +449,7 @@ describe('VirtualizedSectionList', () => {
     it('works with varying item heights and no getItemLayout', async () => {
       const {instance, spy} = await createVirtualizedSectionList({
         sections: [
-          // $FlowFixMe[incompatible-type]
           {title: 's1', data: [{key: 'a1'}, {key: 'a2'}]},
-          // $FlowFixMe[incompatible-type]
           {
             title: 's2',
             data: [{key: 'b1'}, {key: 'b2'}, {key: 'b3'}, {key: 'b4'}],

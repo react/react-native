@@ -65,6 +65,10 @@ const platformConfigs = [
     platform: ['linux'],
     arch: ['x64', 'arm64'],
     icon: path.join(ICON_BASE, 'icon.png'),
+    // Chromium's Linux SUID sandbox launch splits the chrome-sandbox path on
+    // whitespace, so the Linux app directory and executable must not contain
+    // spaces. See https://github.com/react/react-native/issues/54906.
+    name: APP_NAME.toLowerCase().replaceAll(' ', '-'),
   },
 ];
 
@@ -98,9 +102,9 @@ async function main() {
   await Promise.all(
     platformConfigs.map(platformConfig =>
       packager({
+        name: APP_NAME,
         ...platformConfig,
         dir: PACKAGE_ROOT,
-        name: APP_NAME,
         appVersion: pkg.version,
         appCopyright: COPYRIGHT,
         appCategoryType: 'public.app-category.developer-tools',

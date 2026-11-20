@@ -40,7 +40,7 @@ export type ScrollViewStickyHeaderProps = Readonly<{
 }>;
 
 interface Instance extends React.ElementRef<typeof Animated.View> {
-  readonly setNextHeaderY: number => void;
+  readonly setNextHeaderY: (v: number) => void;
 }
 
 const ScrollViewStickyHeader: component(
@@ -291,8 +291,6 @@ const ScrollViewStickyHeader: component(
       collapsable={false}
       nativeID={props.nativeID}
       onLayout={_onLayout}
-      /* $FlowFixMe[prop-missing] passthroughAnimatedPropExplicitValues isn't properly
-         included in the Animated.View flow type. */
       ref={ref}
       style={[
         child.props.style,

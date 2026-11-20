@@ -75,7 +75,7 @@ inline void updateTransformProps(
       serializeTransformAxis(operation, "rotate", 0, resultTranslateArray);
       return;
     case TransformOperationType::Perspective:
-      serializeTransformAxis(operation, "perspective", 0, resultTranslateArray);
+      serializeTransformOperationValue("perspective", operation.x, resultTranslateArray);
       return;
     case TransformOperationType::Arbitrary: {
       folly::dynamic result = folly::dynamic::object();

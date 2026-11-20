@@ -20,7 +20,7 @@ const APPLE_PLATFORMS_MACRO_MAP = {
  */
 function generateSupportedApplePlatformsMacro(
   fileTemplate: string,
-  supportedPlatformsMap: ?{[string]: boolean},
+  supportedPlatformsMap: ?{[key: string]: boolean},
 ): string {
   if (!supportedPlatformsMap) {
     return fileTemplate;

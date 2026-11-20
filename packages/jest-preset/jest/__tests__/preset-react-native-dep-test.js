@@ -76,7 +76,7 @@ test(`isolated preset loads when the consumer provides react-native (${RN_ISSUE}
     // Strip resolution-affecting env so the child is genuinely isolated:
     // inherited lookup paths can otherwise make the copy resolve more
     // than the directory layout alone provides.
-    const childEnv: {[string]: string} = {};
+    const childEnv: {[key: string]: string} = {};
     for (const key of Object.keys(process.env)) {
       if (key === 'NODE_PATH' || key === 'NODE_OPTIONS') {
         continue;

@@ -5,24 +5,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO T207169925: Migrate CatalystInstance to Reacthost and remove the Suppress("DEPRECATION")
-// annotation
-@file:Suppress("DEPRECATION")
-
 package com.facebook.react.views.image
 
 import android.graphics.Color
 import android.util.DisplayMetrics
 import com.facebook.common.logging.FLog
 import com.facebook.drawee.backends.pipeline.Fresco
+import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder
 import com.facebook.drawee.drawable.ScalingUtils
+import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.modules.fresco.ReactNetworkImageRequest
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.LengthPercentage
@@ -34,39 +32,42 @@ import com.facebook.react.util.RNLog
 import com.facebook.react.views.imagehelper.ImageSource
 import com.facebook.soloader.SoLoader
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockedStatic
+import org.mockito.Mockito.RETURNS_SELF
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /**
  * Verify that [com.facebook.drawee.drawable.ScalingUtils] properties are being applied correctly by
  * [ReactImageManager].
  */
-@Config(shadows = [ShadowArguments::class])
+@Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class ReactImagePropertyTest {
 
-  private lateinit var context: BridgeReactContext
-  private lateinit var catalystInstanceMock: CatalystInstance
+  private lateinit var context: ReactApplicationContext
   private lateinit var themeContext: ThemedReactContext
   private lateinit var rnLog: MockedStatic<RNLog>
   private lateinit var flogMock: MockedStatic<FLog>
 
   @Before
   fun setup() {
+    ReactNativeFeatureFlagsForTests.setUp()
 
     rnLog = mockStatic(RNLog::class.java)
     rnLog.`when`<Boolean> { RNLog.w(any(), anyString()) }.thenAnswer {}
@@ -74,14 +75,10 @@ class ReactImagePropertyTest {
     flogMock = mockStatic(FLog::class.java)
 
     SoLoader.setInTestMode()
-    context = BridgeReactContext(RuntimeEnvironment.getApplication())
-    catalystInstanceMock = createMockCatalystInstance()
-    context.initializeWithInstance(catalystInstanceMock)
+    context = createTestReactApplicationContext()
     themeContext = ThemedReactContext(context, context, null, -1)
     Fresco.initialize(context)
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
-
-    ReactNativeFeatureFlagsForTests.setUp()
   }
 
   @After
@@ -280,5 +277,28 @@ class ReactImagePropertyTest {
     headers.putString("key", "value")
     viewManager.setHeaders(mockView, headers)
     verify(mockView).setHeaders(headers)
+  }
+
+  @Test
+  fun testHeadersChangeRebuildsImageRequest() {
+    val controllerBuilder = mock<PipelineDraweeControllerBuilder>(defaultAnswer = RETURNS_SELF)
+    val viewManager = ReactImageManager(controllerBuilder)
+    val view = viewManager.createViewInstance(themeContext)
+    val sources = Arguments.createArray()
+    sources.pushMap(JavaOnlyMap.of("uri", "https://example.com/image.png"))
+    viewManager.setSource(view, sources)
+    viewManager.setHeaders(view, JavaOnlyMap.of("Authorization", "token-1"))
+    view.maybeUpdateView()
+
+    viewManager.setHeaders(view, JavaOnlyMap.of("Authorization", "token-2"))
+    view.maybeUpdateView()
+    viewManager.setHeaders(view, JavaOnlyMap.of("Authorization", "token-2"))
+    view.maybeUpdateView()
+
+    val requests = argumentCaptor<ImageRequest>()
+    verify(controllerBuilder, times(2)).setImageRequest(requests.capture())
+    assertThat(requests.firstValue.sourceUri).isEqualTo(requests.secondValue.sourceUri)
+    assertThat((requests.secondValue as ReactNetworkImageRequest).headers)
+        .isEqualTo(JavaOnlyMap.of("Authorization", "token-2"))
   }
 }

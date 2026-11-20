@@ -50,7 +50,7 @@ function genModule(
     return {name: moduleName};
   }
 
-  const module: {[string]: unknown} = {};
+  const module: {[key: string]: unknown} = {};
   methods &&
     methods.forEach((methodName, methodID) => {
       const isPromise =
@@ -101,8 +101,6 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
   if (type === 'promise') {
     fn = function promiseMethodWrapper(...args: Array<unknown>) {
       // In case we reject, capture a useful stack trace here.
-      /* $FlowFixMe[class-object-subtyping] added when improving typing for
-       * this parameters */
       // $FlowFixMe[incompatible-type]
       const enqueueingFrameError: ExtendedError = new Error();
       return new Promise((resolve, reject) => {
@@ -132,9 +130,11 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
           hasSuccessCallback,
           'Cannot have a non-function arg after a function arg.',
         );
-      // $FlowFixMe[incompatible-type]
-      const onSuccess: ?(unknown) => void = hasSuccessCallback ? lastArg : null;
-      const onFail: ?(unknown) => void = hasErrorCallback
+      const onSuccess: ?(v: unknown) => void = hasSuccessCallback
+        ? // $FlowFixMe[incompatible-type]
+          lastArg
+        : null;
+      const onFail: ?(v: unknown) => void = hasErrorCallback
         ? // $FlowFixMe[incompatible-type]
           secondLastArg
         : null;
@@ -173,8 +173,6 @@ function updateErrorWithErrorData(
   errorData: {message: string, ...},
   error: ExtendedError,
 ): ExtendedError {
-  /* $FlowFixMe[class-object-subtyping] added when improving typing for this
-   * parameters */
   // $FlowFixMe[incompatible-type]
   // $FlowFixMe[unsafe-object-assign]
   return Object.assign(error, errorData || {});

@@ -24,7 +24,7 @@ import {
 
 type State = {
   testResults: {
-    [string]: {
+    [key: string]: {
       type: string,
       value: unknown,
       ...
@@ -212,9 +212,6 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
     this.setState(({testResults}) => ({
       testResults: {
         ...testResults,
-        /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
-         * This comment suppresses an error found when Flow v0.111 was
-         * deployed. To see the error, delete this comment and run Flow. */
         [name]: {value: result, type: typeof result},
       },
     }));
@@ -280,7 +277,6 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
             style={[styles.column, styles.button]}
             onPress={() =>
               Object.keys(this._tests).forEach(item =>
-                // $FlowFixMe[incompatible-type]
                 this._setResult(item, this._tests[item]()),
               )
             }>
@@ -297,7 +293,6 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
           </TouchableOpacity>
         </View>
         <FlatList
-          // $FlowFixMe[incompatible-type]
           data={Object.keys(this._tests)}
           keyExtractor={item => item}
           renderItem={({item}: {item: Examples, ...}) => (
@@ -319,7 +314,6 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
               </RNTesterText>
             </View>
             <FlatList
-              // $FlowFixMe[incompatible-type]
               data={Object.keys(this._androidTests)}
               keyExtractor={item => item}
               renderItem={({item}: {item: AndroidExamples, ...}) => (
@@ -346,7 +340,6 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
           </RNTesterText>
         </View>
         <FlatList
-          // $FlowFixMe[incompatible-type]
           data={Object.keys(this._errorTests)}
           keyExtractor={item => item}
           renderItem={({item}: {item: ErrorExamples, ...}) => (

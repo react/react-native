@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import typeof AnimatedFlatList from './components/AnimatedFlatList';
 import typeof AnimatedImage from './components/AnimatedImage';
 import typeof AnimatedScrollView from './components/AnimatedScrollView';
@@ -27,42 +25,44 @@ const Animated: typeof AnimatedImplementation = Platform.isDisableAnimations
 
 export default {
   /**
-   * FlatList and SectionList infer generic Type defined under their `data` and `section` props.
+   * @deprecated Use `AnimatedFlatList` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get FlatList(): AnimatedFlatList<> {
     return require('./components/AnimatedFlatList').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedImage` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get Image(): AnimatedImage {
     return require('./components/AnimatedImage').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedScrollView` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get ScrollView(): AnimatedScrollView {
     return require('./components/AnimatedScrollView').default;
   },
   /**
-   * FlatList and SectionList infer generic Type defined under their `data` and `section` props.
+   * @deprecated Use `AnimatedSectionList` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get SectionList(): AnimatedSectionList<> {
     return require('./components/AnimatedSectionList').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedText` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get Text(): AnimatedText {
     return require('./components/AnimatedText').default;
   },
   /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
+   * @deprecated Use `AnimatedView` instead.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get View(): AnimatedView {
     return require('./components/AnimatedView').default;
   },

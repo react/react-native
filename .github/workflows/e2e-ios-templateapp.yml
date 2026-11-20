@@ -2,117 +2,55 @@ name: E2E iOS Template App
 
 permissions:
   contents: read
+  actions: read
 
 on:
   workflow_call:
     inputs:
+      flavors:
+        description: 'JSON array of configurations to test'
+        type: string
+        default: '["Debug", "Release"]'
+      previous-results:
+        description: 'Results retained from an earlier test attempt in this run'
+        type: string
+        default: '{}'
+      retry-attempt:
+        type: number
+        default: 0
       fail-on-error:
         type: boolean
         default: false
     outputs:
       status:
-        description: 'The result of the E2E tests (success or failure)'
+        description: 'Whether both configurations have passed E2E'
         value: ${{ jobs.report.outputs.status }}
+      results:
+        description: 'Test results for both configurations, including earlier attempts'
+        value: ${{ jobs.report.outputs.results }}
+      failed-flavors:
+        description: 'JSON array of configurations that still need successful E2E'
+        value: ${{ jobs.report.outputs.failed-flavors }}
 
 jobs:
-  build:
-    runs-on: macos-26-large
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [Debug, Release]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup node.js
-        uses: ./.github/actions/setup-node
-      - name: Run yarn
-        uses: ./.github/actions/yarn-install
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6.10
-      - name: Download React Native Package
-        uses: ./.github/actions/download-artifact
-        with:
-          name: react-native-package
-          path: /tmp/react-native-tmp
-      - name: Print /tmp folder
-        run: ls -lR /tmp/react-native-tmp
-      - name: Download ReactNativeDependencies
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/third-party
-      - name: Print third-party folder
-        shell: bash
-        run: ls -lR /tmp/third-party
-      - name: Download React Native Prebuilds
-        uses: ./.github/actions/download-artifact
-        with:
-          name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/ReactCore
-      - name: Print ReactCore folder
-        shell: bash
-        run: ls -lR /tmp/ReactCore
-      - name: Configure git
-        shell: bash
-        run: |
-          git config --global user.email "react-native-bot@meta.com"
-          git config --global user.name "React Native Bot"
-      - name: Build the app
-        run: |
-          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
-          echo "React Native tgs is $REACT_NATIVE_PKG"
-
-          # For stable branches, we want to use the stable branch of the template
-          # In all the other cases, we want to use "main"
-          BRANCH=${{ github.ref_name }}
-          if ! [[ $BRANCH == *-stable* ]]; then
-            BRANCH=main
-          fi
-
-          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
-
-          cd /tmp/RNTestProject/ios
-          bundle install
-          NEW_ARCH_ENABLED=1
-
-          export RCT_USE_LOCAL_RN_DEP=/tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          # Disable prebuilds for now, as they are causing issues with E2E tests for 0.82-stable branch
-          export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ matrix.flavor }}.xcframework.tar.gz"
-          RCT_NEW_ARCH_ENABLED=$NEW_ARCH_ENABLED bundle exec pod install
-
-          xcodebuild \
-            -scheme "RNTestProject" \
-            -workspace RNTestProject.xcworkspace \
-            -configuration "${{ matrix.flavor }}" \
-            -sdk "iphonesimulator" \
-            -destination "generic/platform=iOS Simulator" \
-            -derivedDataPath "/tmp/RNTestProject"
-      - name: Upload app
-        uses: ./.github/actions/upload-artifact
-        with:
-          name: RNTestProject-${{ matrix.flavor }}
-          overwrite: true
-          path: /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app
-
   test:
-    needs: build
-    runs-on: macos-26-large
+    # Standard arm64 runner: run the simulator natively, as RNTester does.
+    runs-on: macos-26
     outputs:
+      debug-result: ${{ steps.report-status.outputs.debug-result }}
+      release-result: ${{ steps.report-status.outputs.release-result }}
       status: ${{ steps.report-status.outputs.status }}
+      failure-debug: ${{ steps.report-status.outputs.failure-debug }}
+      failure-release: ${{ steps.report-status.outputs.failure-release }}
     strategy:
       fail-fast: false
       matrix:
-        flavor: [Debug, Release]
+        flavor: ${{ fromJSON(inputs.flavors) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup node.js
         uses: ./.github/actions/setup-node
-      - name: Run yarn
-        uses: ./.github/actions/yarn-install
       - name: Download app
         uses: ./.github/actions/download-artifact
         with:
@@ -120,20 +58,37 @@ jobs:
           path: /tmp/RNTestProjectBuild/RNTestProject.app
       - name: Check downloaded folder content
         run: ls -l /tmp/RNTestProjectBuild/RNTestProject.app
+      - name: Download previous per-flow test state
+        if: inputs.retry-attempt > 0
+        continue-on-error: true
+        uses: ./.github/actions/download-artifact
+        with:
+          name: e2e_ios_templateapp_state_${{ matrix.flavor }}_${{ github.run_attempt }}
+          path: /tmp/maestro-ios-state
+      - name: Check for unfinished E2E flows
+        id: test-state
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const {prepareTestState} = require('./.github/workflow-scripts/template-app-ci-state');
+            core.setOutput('should-run', prepareTestState('/tmp/maestro-ios-state/results.json', './scripts/e2e/.maestro/'));
+      - name: Run yarn
+        if: steps.test-state.outputs.should-run == 'true'
+        uses: ./.github/actions/yarn-install
       - name: Download React Native Package
-        if: ${{ matrix.flavor == 'Debug' }}
+        if: ${{ steps.test-state.outputs.should-run == 'true' && matrix.flavor == 'Debug' }}
         uses: ./.github/actions/download-artifact
         with:
           name: react-native-package
           path: /tmp/react-native-tmp
       - name: Configure git
-        if: ${{ matrix.flavor == 'Debug' }}
+        if: ${{ steps.test-state.outputs.should-run == 'true' && matrix.flavor == 'Debug' }}
         shell: bash
         run: |
           git config --global user.email "react-native-bot@meta.com"
           git config --global user.name "React Native Bot"
       - name: Prepare project for Metro
-        if: ${{ matrix.flavor == 'Debug' }}
+        if: ${{ steps.test-state.outputs.should-run == 'true' && matrix.flavor == 'Debug' }}
         # In Debug the app loads its bundle from Metro, which must run from an
         # initialized project. Re-initialize it here (JS only — no pods); the
         # native app itself comes prebuilt from the `build` job.
@@ -149,6 +104,7 @@ jobs:
           node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
       - name: Run E2E Tests
         id: run-tests
+        if: steps.test-state.outputs.should-run == 'true'
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
@@ -157,27 +113,66 @@ jobs:
           maestro-flow: ./scripts/e2e/.maestro/
           flavor: ${{ matrix.flavor }}
           working-directory: /tmp/RNTestProject
+          device-model: iPhone-17-Pro
+          device-os: iOS-26-2
+          test-state-path: /tmp/maestro-ios-state/results.json
+      - name: Store per-flow test state
+        if: ${{ !cancelled() && steps.test-state.outputs.should-run == 'true' }}
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: e2e_ios_templateapp_state_${{ matrix.flavor }}_${{ github.run_attempt }}
+          overwrite: true
+          if-no-files-found: warn
+          path: /tmp/maestro-ios-state/results.json
       - name: Report status
         id: report-status
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: echo "status=failure" >> $GITHUB_OUTPUT
+        if: always()
+        uses: actions/github-script@v8
+        env:
+          SHOULD_RUN: ${{ steps.test-state.outputs.should-run }}
+          TEST_OUTCOME: ${{ steps.run-tests.outcome }}
+          STEP_RESULTS: ${{ toJSON(steps) }}
+          JOB_STATUS: ${{ job.status }}
+          TEST_FLAVOR: ${{ matrix.flavor }}
+        with:
+          script: |
+            const {recordJobFailure} = require('./.github/workflow-scripts/report-test-results');
+            const {recordConfigurationResult} = require('./.github/workflow-scripts/template-app-ci-state');
+            recordConfigurationResult({core, flavor: process.env.TEST_FLAVOR,
+              passed: process.env.JOB_STATUS === 'success' &&
+                (process.env.SHOULD_RUN === 'false' || process.env.TEST_OUTCOME === 'success')});
+            await recordJobFailure({github, context, core,
+              steps: JSON.parse(process.env.STEP_RESULTS),
+              flavor: process.env.TEST_FLAVOR,
+              runnerName: process.env.RUNNER_NAME,
+              jobStatus: process.env.JOB_STATUS,
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});
 
   report:
-    needs: [build, test]
-    if: always()
+    needs: test
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.check.outputs.status }}
+      results: ${{ steps.check.outputs.results }}
+      failed-flavors: ${{ steps.check.outputs.failed-flavors }}
     steps:
-      - id: check
-        run: |
-          if [[ "${{ needs.build.result }}" != "success" ||
-                "${{ needs.test.result }}" != "success" ||
-                "${{ needs.test.outputs.status }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-          else
-            echo "status=success" >> $GITHUB_OUTPUT
-          fi
-      - name: Fail if needed
-        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
-        run: exit 1
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Report configuration results
+        id: check
+        uses: actions/github-script@v8
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+          FLAVORS: ${{ inputs.flavors }}
+          PREVIOUS_RESULTS: ${{ inputs.previous-results }}
+          FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+        with:
+          script: |
+            const {reportConfigurationResults} = require('./.github/workflow-scripts/template-app-ci-state');
+            await reportConfigurationResults({context, core,
+              needs: JSON.parse(process.env.JOB_RESULTS), job: 'test',
+              flavors: JSON.parse(process.env.FLAVORS),
+              previousResults: JSON.parse(process.env.PREVIOUS_RESULTS),
+              failOnError: process.env.FAIL_ON_ERROR === 'true',
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});

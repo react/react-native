@@ -60,6 +60,7 @@ const TextImpl: component(
   'aria-expanded': ariaExpanded,
   'aria-hidden': ariaHidden,
   'aria-label': ariaLabel,
+  'aria-live': ariaLive,
   'aria-selected': ariaSelected,
   children,
   ellipsizeMode,
@@ -140,6 +141,11 @@ const TextImpl: component(
     }
   }
 
+  if (ariaLive !== undefined) {
+    processedProps.accessibilityLiveRegion =
+      ariaLive === 'off' ? 'none' : ariaLive;
+  }
+
   const _accessible = Platform.select({
     ios: accessible !== false,
     android:
@@ -203,7 +209,6 @@ const TextImpl: component(
     }
 
     if (overrides != null) {
-      // $FlowFixMe[incompatible-type]
       _style = [_style, overrides];
     }
   }

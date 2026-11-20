@@ -26,7 +26,7 @@ import * as React from 'react';
 const VirtualizedSectionList = VirtualizedLists.VirtualizedSectionList;
 
 type DefaultSectionT = {
-  // flowlint-next-line unclear-type:off
+  // $FlowFixMe[unclear-type]
   [key: string]: any,
 };
 
@@ -173,7 +173,7 @@ export type SectionListProps<ItemT, SectionT = DefaultSectionT> = {
  * @see https://reactnative.dev/docs/sectionlist
  */
 export default class SectionList<
-  // flowlint-next-line unclear-type:off
+  // $FlowFixMe[unclear-type]
   ItemT = any,
   SectionT = DefaultSectionT,
 > extends React.PureComponent<SectionListProps<ItemT, SectionT>> {
@@ -235,7 +235,7 @@ export default class SectionList<
     }
   }
 
-  setNativeProps(props: {[string]: unknown, ...}) {
+  setNativeProps(props: {[key: string]: unknown, ...}) {
     const listRef = this._wrapperListRef && this._wrapperListRef.getListRef();
     if (listRef) {
       listRef.setNativeProps(props);
@@ -258,9 +258,7 @@ export default class SectionList<
         {...restProps}
         stickySectionHeadersEnabled={stickySectionHeadersEnabled}
         ref={this._captureRef}
-        // $FlowFixMe[missing-local-annot]
         getItemCount={items => items.length}
-        // $FlowFixMe[missing-local-annot]
         getItem={(items, index) => items[index]}
       />
     );

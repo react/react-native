@@ -306,7 +306,7 @@ export type FlatListProps<ItemT> = Readonly<{
  *
  * Also inherits [ScrollView Props](docs/scrollview.html#props), unless it is nested in another FlatList of same orientation.
  */
-// flowlint-next-line unclear-type:off
+// $FlowFixMe[unclear-type]
 class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
   /**
    * Scrolls to the end of the content. May be janky without `getItemLayout` prop.
@@ -412,7 +412,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     }
   }
 
-  setNativeProps(props: {[string]: unknown, ...}) {
+  setNativeProps(props: {[key: string]: unknown, ...}) {
     if (this._listRef) {
       this._listRef.setNativeProps(props);
     }
@@ -451,7 +451,6 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     }
   }
 
-  // $FlowFixMe[missing-local-annot]
   componentDidUpdate(prevProps: FlatListProps<ItemT>) {
     invariant(
       prevProps.numColumns === this.props.numColumns,
@@ -483,7 +482,6 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     this._listRef = ref;
   };
 
-  // $FlowFixMe[missing-local-annot]
   _checkProps(props: FlatListProps<ItemT>) {
     const {
       // $FlowFixMe[prop-missing] this prop doesn't exist, is only used for an invariant
@@ -630,10 +628,8 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     const render = (props: ListRenderItemInfo<ItemT>): React.Node => {
       if (ListItemComponent) {
         // $FlowFixMe[not-a-component] Component isn't valid
-        // $FlowFixMe[incompatible-type] Component isn't valid
         return <ListItemComponent {...props} />;
       } else if (renderItem) {
-        // $FlowFixMe[incompatible-type]
         return renderItem(props);
       } else {
         return null;
@@ -686,7 +682,6 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     const renderer = strictMode ? this._memoizedRenderer : this._renderer;
 
     return (
-      // $FlowFixMe[incompatible-exact] - `restProps` (`Props`) is inexact.
       <VirtualizedList
         {...restProps}
         getItem={this._getItem}

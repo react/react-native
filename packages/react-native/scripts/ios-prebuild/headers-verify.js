@@ -30,7 +30,9 @@
  *     b. A privileged-consumer ObjC++ TU (the Expo shape): textually imports
  *        every R9 textual Fabric header against ReactNativeHeaders.
  *     c. A Swift TU: `import React` + `RCTBridge.moduleRegistry` — the Expo
- *        Swift case, proving the R9 modular header is module-visible.
+ *        Swift case, proving the R9 modular header is module-visible. It is
+ *        compiled twice, the second time with RN_STRICT_API defined, so the
+ *        modules also build for apps that opt into the C++ stable API (R13).
  *     d. Swift C++-interop TUs that import React plus every importable module
  *        declared by the composed ReactNativeHeaders module map, then the
  *        shipped inspector umbrella as an isolated probe module, forcing
@@ -233,7 +235,10 @@ function verifyStructural(
   const rnhHeaders = path.join(rnhSlice, 'Headers');
   assertFileEquals(
     path.join(rnhHeaders, 'module.modulemap'),
-    renderNamespaceModuleMap(plan.namespaceModules),
+    renderNamespaceModuleMap(
+      plan.namespaceModules,
+      plan.textualNamespaceHeaders,
+    ),
     'ReactNativeHeaders module map',
   );
   for (const u of plan.namespaceUmbrellas) {
@@ -290,9 +295,16 @@ function renderObjcFixture(plan /*: HeadersSpecPlan */) /*: string */ {
   for (const name of plan.privateReactHeaders.modular) {
     lines.push(`#import <React/${name}>`);
   }
-  // One header per R5 namespace module precompiles the whole module.
+  // One header per R5 namespace module precompiles the whole module. A textual
+  // member (R13) is expanded in place rather than importing its module, so
+  // pick a modular one; a module with only textual members has nothing to
+  // precompile.
+  const textual = new Set(plan.textualNamespaceHeaders);
   for (const ns of Object.keys(plan.namespaceModules).sort()) {
-    lines.push(`#import <${plan.namespaceModules[ns][0]}>`);
+    const member = plan.namespaceModules[ns].find(h => !textual.has(h));
+    if (member != null) {
+      lines.push(`#import <${member}>`);
+    }
   }
   for (const u of plan.namespaceUmbrellas) {
     lines.push(`#import <${u.relPath}>`);
@@ -438,27 +450,47 @@ function runCompileGates(
 
     const swift = path.join(tmp, 'gate-swift.swift');
     fs.writeFileSync(swift, renderSwiftFixture());
-    xcrun(
-      [
-        'swiftc',
-        '-typecheck',
-        '-sdk',
-        sdk,
-        '-target',
-        SIM_TARGET,
-        '-module-cache-path',
-        path.join(tmp, 'mc-swift'),
-        '-F',
-        reactSlice,
-        '-I',
-        rnhHeaders,
-        '-I',
-        depsHeaders,
-        swift,
-      ],
+    const swiftGate = (
+      moduleCache /*: string */,
+      extraArgs /*: Array<string> */,
+      what /*: string */,
+    ) =>
+      xcrun(
+        [
+          'swiftc',
+          '-typecheck',
+          '-sdk',
+          sdk,
+          '-target',
+          SIM_TARGET,
+          '-module-cache-path',
+          path.join(tmp, moduleCache),
+          '-F',
+          reactSlice,
+          '-I',
+          rnhHeaders,
+          '-I',
+          depsHeaders,
+          ...extraArgs,
+          swift,
+        ],
+        what,
+      );
+    swiftGate(
+      'mc-swift',
+      [],
       'Swift gate (import React + RCTBridge.moduleRegistry)',
     );
     log('compile: Swift moduleRegistry fixture OK.');
+    // R13: an app that opts into the C++ stable API defines RN_STRICT_API for
+    // its own code, and the modules it imports are built with that define. A
+    // guard compiled as a module member would fail this build.
+    swiftGate(
+      'mc-swift-strict',
+      ['-Xcc', '-DRN_STRICT_API'],
+      'Swift strict C++ stable API gate (import React with RN_STRICT_API)',
+    );
+    log('compile: Swift fixture with RN_STRICT_API OK.');
 
     const moduleMap = path.join(rnhHeaders, 'module.modulemap');
     const moduleNames = parseModuleNames(moduleMap);

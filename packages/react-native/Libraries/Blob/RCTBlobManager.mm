@@ -46,7 +46,6 @@ static NSString *const kBlobURIScheme = @"blob";
 
 RCT_EXPORT_MODULE(BlobModule)
 
-@synthesize bridge = _bridge;
 @synthesize moduleRegistry = _moduleRegistry;
 @synthesize methodQueue = _methodQueue;
 

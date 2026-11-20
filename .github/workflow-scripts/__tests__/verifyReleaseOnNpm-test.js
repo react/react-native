@@ -7,8 +7,6 @@
  * @format
  */
 
-const {verifyReleaseOnNpm} = require('../verifyReleaseOnNpm');
-
 const mockVerifyPublishedPackage = jest.fn();
 const silence = () => {};
 
@@ -20,6 +18,8 @@ jest.mock('../utils.js', () => ({
 jest.mock('../verifyPublishedPackage.js', () => ({
   verifyPublishedPackage: mockVerifyPublishedPackage,
 }));
+
+const {verifyReleaseOnNpm} = require('../verifyReleaseOnNpm');
 
 describe('#verifyReleaseOnNPM', () => {
   beforeEach(jest.clearAllMocks);

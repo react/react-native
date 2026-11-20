@@ -10,6 +10,12 @@
 
 'use strict';
 
+// Mock all required modules
+jest.mock('../utils');
+jest.mock('../headers-mappings');
+jest.mock('node:fs');
+jest.mock('node:path');
+
 const {
   symlinkCodegenHeaders,
   symlinkHeadersFromPath,
@@ -17,12 +23,6 @@ const {
   symlinkReactCommonHeaders,
   symlinkThirdPartyDependenciesHeaders,
 } = require('../headers-utils');
-
-// Mock all required modules
-jest.mock('../utils');
-jest.mock('../headers-mappings');
-jest.mock('node:fs');
-jest.mock('node:path');
 
 describe('symlinkHeadersFromPath', () => {
   let mockUtils;

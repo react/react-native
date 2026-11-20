@@ -47,6 +47,8 @@ const textViewConfig = {
     onTextLayout: true,
     dataDetectorType: true,
     android_hyphenationFrequency: true,
+    lineBreak: true,
+    wordBreak: true,
     lineBreakStrategyIOS: true,
   },
   directEventTypes: {

@@ -75,7 +75,7 @@ function getNativeComponentAttributes(
     }
   }
 
-  const validAttributes: {[string]: unknown} = {};
+  const validAttributes: {[key: string]: unknown} = {};
 
   for (const key in nativeProps) {
     const typeName = nativeProps[key];
@@ -138,7 +138,6 @@ function attachDefaultEventTypes(
   }
 }
 
-// $FlowFixMe[method-unbinding]
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 // TODO: Figure out how to avoid all this runtime initialization cost.

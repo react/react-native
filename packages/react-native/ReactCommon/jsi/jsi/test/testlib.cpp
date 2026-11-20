@@ -2719,6 +2719,17 @@ TEST_P(JSITest, ArrayBufferDetachedTest) {
     return;
   }
 
+  // Skip the rest if the runtime has no way to detach an ArrayBuffer from JS.
+  bool canDetach =
+      eval(
+          "typeof buf.transfer === 'function' || "
+          "(typeof HermesInternal !== 'undefined' && "
+          " typeof HermesInternal.detachArrayBuffer === 'function')")
+          .getBool();
+  if (!canDetach) {
+    return;
+  }
+
   // Detach the ArrayBuffer. Use transfer() if available, otherwise fall back
   // to HermesInternal.detach for Hermes runtime.
   eval(

@@ -40,7 +40,6 @@
   NSMutableArray<RCTRedBoxButtonPressHandler> *_customButtonHandlers;
 }
 
-@synthesize bridge = _bridge;
 @synthesize moduleRegistry = _moduleRegistry;
 @synthesize bundleManager = _bundleManager;
 

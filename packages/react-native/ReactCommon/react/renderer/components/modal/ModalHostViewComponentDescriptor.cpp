@@ -21,8 +21,8 @@ State::Shared ModalHostViewComponentDescriptor::createInitialState(
 
   int surfaceId = family->getSurfaceId();
 
-  const jni::global_ref<jobject>& fabricUIManager =
-      contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
+  auto fabricUIManager =
+      contextContainer_->at<jni::alias_ref<jobject>>("FabricUIManager");
 
   static auto getEncodedScreenSizeWithoutVerticalInsets =
       jni::findClassStatic(UIManagerJavaDescriptor)

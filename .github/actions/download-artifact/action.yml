@@ -3,11 +3,28 @@ description: Downloads an artifact, retrying transient failures up to two times
 
 inputs:
   name:
-    description: Artifact name
-    required: true
+    description: Artifact name. Leave empty to download by pattern instead.
+    required: false
+    default: ''
+  pattern:
+    description: Glob pattern matching the artifacts to download. Ignored when name is set.
+    required: false
+    default: ''
   path:
     description: Destination path
     required: true
+  merge-multiple:
+    description: Download pattern-matched artifacts into path directly instead of per-artifact subdirectories
+    required: false
+    default: 'false'
+  run-id:
+    description: Download artifacts from a different workflow run. Leave empty for the current run.
+    required: false
+    default: ''
+  github-token:
+    description: Token used for cross-run downloads. Leave empty for same-run downloads.
+    required: false
+    default: ''
 
 outputs:
   download-path:
@@ -24,7 +41,11 @@ runs:
       uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
       with:
         name: ${{ inputs.name }}
+        pattern: ${{ inputs.pattern }}
         path: ${{ inputs.path }}
+        merge-multiple: ${{ inputs.merge-multiple }}
+        run-id: ${{ inputs.run-id }}
+        github-token: ${{ inputs.github-token }}
 
     - name: Wait before attempt 2
       if: ${{ always() && steps.download-1.outcome == 'failure' }}
@@ -40,7 +61,11 @@ runs:
       uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
       with:
         name: ${{ inputs.name }}
+        pattern: ${{ inputs.pattern }}
         path: ${{ inputs.path }}
+        merge-multiple: ${{ inputs.merge-multiple }}
+        run-id: ${{ inputs.run-id }}
+        github-token: ${{ inputs.github-token }}
 
     - name: Wait before attempt 3
       if: ${{ always() && steps.download-2.outcome == 'failure' }}
@@ -56,4 +81,8 @@ runs:
       uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
       with:
         name: ${{ inputs.name }}
+        pattern: ${{ inputs.pattern }}
         path: ${{ inputs.path }}
+        merge-multiple: ${{ inputs.merge-multiple }}
+        run-id: ${{ inputs.run-id }}
+        github-token: ${{ inputs.github-token }}

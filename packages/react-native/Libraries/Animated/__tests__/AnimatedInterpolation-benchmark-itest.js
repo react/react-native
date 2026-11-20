@@ -19,7 +19,7 @@ const CALLS = 1_000_000;
 
 function createInterpolation(
   config: InterpolationConfigType<string>,
-): number => string {
+): (v: number) => string {
   let parentValue = 0;
   const interpolation = new AnimatedInterpolation(
     // $FlowFixMe[incompatible-type]
@@ -32,7 +32,7 @@ function createInterpolation(
   };
 }
 
-function run(interpolation: number => string) {
+function run(interpolation: (v: number) => string) {
   for (let i = 0; i < CALLS; i++) {
     interpolation(i / CALLS);
   }

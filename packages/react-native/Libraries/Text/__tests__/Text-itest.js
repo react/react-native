@@ -323,7 +323,9 @@ describe('<Text>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['selectable']}).toJSX()).toEqual(
-          <rn-paragraph selectable={'true'}>{TEST_TEXT}</rn-paragraph>,
+          <rn-selectableParagraph selectable={'true'}>
+            {TEST_TEXT}
+          </rn-selectableParagraph>,
         );
       });
 
@@ -631,6 +633,22 @@ describe('<Text>', () => {
         );
       });
     });
+
+    describe('aria-live', () => {
+      it('is mapped to accessibilityLiveRegion', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(<Text aria-live="polite">{TEST_TEXT}</Text>);
+        });
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLiveRegion']}).toJSX(),
+        ).toEqual(
+          <rn-paragraph accessibilityLiveRegion="polite">
+            {TEST_TEXT}
+          </rn-paragraph>,
+        );
+      });
+    });
   });
 
   describe('ref', () => {
@@ -788,7 +806,6 @@ describe('<Text>', () => {
       const root = Fantom.createRoot();
       Fantom.runTask(() => {
         root.render(
-          // $FlowFixMe[prop-missing]
           <Text onPress={() => {}} role="button">
             {TEST_TEXT}
           </Text>,

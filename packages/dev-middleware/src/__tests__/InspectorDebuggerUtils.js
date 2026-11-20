@@ -25,7 +25,7 @@ export class DebuggerAgent {
   constructor(
     url: string,
     signal?: AbortSignal,
-    headers?: ?{[string]: unknown},
+    headers?: ?{[key: string]: unknown},
   ) {
     const ws = new WebSocket(url, {
       // The mock server uses a self-signed certificate.
@@ -111,7 +111,6 @@ export class DebuggerMock extends DebuggerAgent {
         : this.handle.mock.calls;
     // $FlowFixMe[incompatible-use]
     // $FlowFixMe[prop-missing]
-    // $FlowFixMe[incompatible-type]
     const [response] = newHandleCalls.find(args => args[0].id === message.id);
     // $FlowFixMe[incompatible-type]
     // $FlowFixMe[incompatible-indexer]
@@ -122,7 +121,7 @@ export class DebuggerMock extends DebuggerAgent {
 export async function createDebuggerMock(
   url: string,
   signal: AbortSignal,
-  headers?: ?{[string]: unknown},
+  headers?: ?{[key: string]: unknown},
 ): Promise<DebuggerMock> {
   const debuggerMock = new DebuggerMock(url, signal, headers);
   await debuggerMock.ready();

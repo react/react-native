@@ -15,11 +15,17 @@ export type {DecayAnimationConfig} from './animations/DecayAnimation';
 export type {SpringAnimationConfig} from './animations/SpringAnimation';
 export type {TimingAnimationConfig} from './animations/TimingAnimation';
 
+/** @deprecated Use `AnimatedFlatList` instead. */
 export {default as FlatList} from './components/AnimatedFlatList';
+/** @deprecated Use `AnimatedImage` instead. */
 export {default as Image} from './components/AnimatedImage';
+/** @deprecated Use `AnimatedScrollView` instead. */
 export {default as ScrollView} from './components/AnimatedScrollView';
+/** @deprecated Use `AnimatedSectionList` instead. */
 export {default as SectionList} from './components/AnimatedSectionList';
+/** @deprecated Use `AnimatedText` instead. */
 export {default as Text} from './components/AnimatedText';
+/** @deprecated Use `AnimatedView` instead. */
 export {default as View} from './components/AnimatedView';
 export {default as Color} from './nodes/AnimatedColor';
 export {AnimatedEvent as Event} from './AnimatedEvent';

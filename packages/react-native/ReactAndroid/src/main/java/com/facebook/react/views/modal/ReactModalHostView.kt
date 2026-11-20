@@ -204,8 +204,14 @@ public class ReactModalHostView(context: ThemedReactContext) :
         }
         val dialogContext =
             ContextUtils.findContextOfType(nonNullDialog.context, Activity::class.java)
-        if (dialogContext == null || !dialogContext.isFinishing) {
-          nonNullDialog.dismiss()
+        // A destroyed Activity (e.g. relaunched on a configuration change without finishing) has
+        // already removed the dialog's window, so dismissing it would throw.
+        if (dialogContext == null || !(dialogContext.isFinishing || dialogContext.isDestroyed)) {
+          try {
+            nonNullDialog.dismiss()
+          } catch (e: IllegalArgumentException) {
+            FLog.e(TAG, "ReactModalHostView: error while dismissing dialog: ", e.message)
+          }
         }
       }
       dialog = null

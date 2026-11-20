@@ -19,7 +19,7 @@ export function createStringifySafeWithLimits(limits: {
   maxStringLimit?: number,
   maxArrayLimit?: number,
   maxObjectKeysLimit?: number,
-}): unknown => string {
+}): (v: unknown) => string {
   const {
     maxDepth = Number.POSITIVE_INFINITY,
     maxStringLimit = Number.POSITIVE_INFINITY,
@@ -64,7 +64,7 @@ export function createStringifySafeWithLimits(limits: {
         retval = `{ ... object with ${keys.length} keys ... }`;
       } else if (keys.length > maxObjectKeysLimit) {
         // Return a sample of the keys.
-        retval = {} as {[string]: unknown};
+        retval = {} as {[key: string]: unknown};
         for (let k of keys.slice(0, maxObjectKeysLimit)) {
           retval[k] = value[k];
         }
@@ -111,7 +111,7 @@ export function createStringifySafeWithLimits(limits: {
   };
 }
 
-const stringifySafe: unknown => string = createStringifySafeWithLimits({
+const stringifySafe: (v: unknown) => string = createStringifySafeWithLimits({
   maxDepth: 10,
   maxStringLimit: 100,
   maxArrayLimit: 50,

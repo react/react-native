@@ -41,6 +41,34 @@ describe('<ScrollView>', () => {
         </rn-scrollView>,
       );
     });
+
+    it('returns persistentScrollbar to its default once the prop is removed', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView persistentScrollbar={true} />);
+      });
+
+      expect(
+        root.getRenderedOutput({props: ['persistentScrollbar']}).toJSX(),
+      ).toEqual(
+        <rn-scrollView persistentScrollbar="true">
+          <rn-view />
+        </rn-scrollView>,
+      );
+
+      Fantom.runTask(() => {
+        root.render(<ScrollView />);
+      });
+
+      expect(
+        root.getRenderedOutput({props: ['persistentScrollbar']}).toJSX(),
+      ).toEqual(
+        <rn-scrollView>
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
   });
 
   describe('ref', () => {

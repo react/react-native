@@ -8,8 +8,11 @@
  * @format
  */
 
+import type {SuiteResults} from './getCompletedBenchmarkResults';
+
 import NativeCPUTime from '../../../packages/react-native/src/private/testing/fantom/specs/NativeCPUTime';
 import {reportBenchmarkResult} from '../runtime/setup';
+import getCompletedBenchmarkResults from './getCompletedBenchmarkResults';
 import {getConstants} from './index';
 import nullthrows from 'nullthrows';
 import {
@@ -17,7 +20,6 @@ import {
   type BenchOptions,
   type FnOptions,
   type FnReturnedObject,
-  type TaskResult,
 } from 'tinybench';
 
 type SyncFn = () => FnReturnedObject | void;
@@ -55,8 +57,6 @@ type InternalTestOptions = Readonly<{
   ...FnOptions,
   only?: boolean,
 }>;
-
-type SuiteResults = Array<Readonly<TaskResult>>;
 
 type TestWithArgName<TestArgType> = string | ((testArg: TestArgType) => string);
 
@@ -176,7 +176,7 @@ export function suite(
       }
 
       const {only, ...options} = task.options ?? {};
-      bench.add(task.name, task.fn, options);
+      bench.add(task.name, task.fn, {...options, async: false});
     }
 
     if (isTestOnly) {
@@ -190,13 +190,14 @@ export function suite(
     const runStartTime = performance.now();
 
     bench.runSync();
+    const results = getCompletedBenchmarkResults(bench.results);
 
     if (!isTestOnly) {
       printBenchmarkResults(bench, runStartTime);
     }
 
     for (const verify of verifyFns) {
-      verify(bench.results);
+      verify(results);
     }
 
     if (!isTestOnly && !NativeCPUTime.hasAccurateCPUTimeNanosForBenchmarks()) {
@@ -215,7 +216,7 @@ export function suite(
       );
     }
     if (!isTestOnly) {
-      reportBenchmarkResult(createBenchmarkResultsObject(bench, tasks));
+      reportBenchmarkResult(createBenchmarkResultsObject(results, tasks));
     }
   });
 
@@ -300,13 +301,13 @@ function printBenchmarkResults(bench: Bench, runStartTime: number) {
 }
 
 function createBenchmarkResultsObject(
-  bench: Bench,
+  results: SuiteResults,
   tasks: Array<TestTask>,
 ): BenchmarkResult {
   return {
     type: 'benchmark-result',
     timings: tasks.map((task, i) => {
-      const result = bench.results[i];
+      const result = results[i];
       const {min, max, mean, p50, p75, p99} = result.latency;
       return {
         name: task.name,

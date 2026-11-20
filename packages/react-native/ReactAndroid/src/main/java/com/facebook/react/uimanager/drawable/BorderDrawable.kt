@@ -306,6 +306,7 @@ internal class BorderDrawable(
          * after drawing is done, we will re-enable it.
          */
         borderPaint.isAntiAlias = false
+        borderPaint.style = Paint.Style.FILL
         val width = bounds.width()
         val height = bounds.height()
         if (borderLeft > 0) {
@@ -566,19 +567,15 @@ internal class BorderDrawable(
 
   private fun updatePathEffect() {
     /** Used for rounded border and rounded background. */
-    this.borderStyle?.let { style ->
-      val pathEffectForBorderStyle =
-          if (this.borderStyle != null) getPathEffect(style, getFullBorderWidth()) else null
-      borderPaint.setPathEffect(pathEffectForBorderStyle)
-    }
+    val pathEffectForBorderStyle =
+        this.borderStyle?.let { style -> getPathEffect(style, getFullBorderWidth()) }
+    borderPaint.setPathEffect(pathEffectForBorderStyle)
   }
 
   private fun updatePathEffect(borderWidth: Int) {
-    this.borderStyle?.let { style ->
-      val pathEffectForBorderStyle =
-          if (this.borderStyle != null) getPathEffect(style, borderWidth.toFloat()) else null
-      borderPaint.setPathEffect(pathEffectForBorderStyle)
-    }
+    val pathEffectForBorderStyle =
+        this.borderStyle?.let { style -> getPathEffect(style, borderWidth.toFloat()) }
+    borderPaint.setPathEffect(pathEffectForBorderStyle)
   }
 
   private fun getPathEffect(style: BorderStyle, borderWidth: Float): PathEffect? {

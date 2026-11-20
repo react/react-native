@@ -24,7 +24,7 @@ import {
 
 type State = {
   testResults: {
-    [string]: {
+    [key: string]: {
       type: string,
       value: unknown,
       ...
@@ -185,14 +185,8 @@ class SampleLegacyModuleExample extends React.Component<{}, State> {
 
   _setResult(name: string, result: unknown) {
     this.setState(({testResults}) => ({
-      /* $FlowFixMe[cannot-spread-indexer] (>=0.122.0 site=react_native_fb)
-       * This comment suppresses an error found when Flow v0.122.0 was
-       * deployed. To see the error, delete this comment and run Flow. */
       testResults: {
         ...testResults,
-        /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
-         * This comment suppresses an error found when Flow v0.111 was
-         * deployed. To see the error, delete this comment and run Flow. */
         [name]: {value: result, type: typeof result},
       },
     }));

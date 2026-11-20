@@ -15,8 +15,7 @@ import {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 const PANGRAMS = {
-  arabic:
-    'صِف خَلقَ خَودِ كَمِثلِ الشَمسِ إِذ بَزَغَت — يَحظى الضَجيعُ بِها نَجلاءَ مِعطارِ',
+  arabic: 'صِف خَلقَ خَودِ كَمِثلِ الشَمسِ إِذ بَزَغَت — يَحظى الضَجيعُ بِها نَجلاءَ مِعطارِ',
   chinese: 'Innovation in China 中国智造，慧及全球 0123456789',
   english: 'The quick brown fox jumps over the lazy dog.',
   emoji: '🙏🏾🚗💩😍🤯👩🏽‍🔧🇨🇦💯',

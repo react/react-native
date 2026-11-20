@@ -1,0 +1,77 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TouchableExample/highlight
+- extendedWaitUntil:
+    visible:
+      id: 'touchable_highlight_text_button'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/touchable/highlight/default
+    cropOn:
+      id: 'touchable_highlight_text_button'
+- tapOn:
+    id: 'touchable_highlight_text_button'
+- assertVisible:
+    id: 'touchable_highlight_console'
+    text: 'TouchableHighlight onPress'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/touchable/highlight/pressed
+    cropOn:
+      id: 'touchable_highlight_console'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TouchableExample/without-feedback
+- extendedWaitUntil:
+    visible:
+      id: 'touchable_without_feedback_button'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/touchable/without-feedback/default
+    cropOn:
+      id: 'example-container'
+- tapOn:
+    id: 'touchable_without_feedback_button'
+- assertVisible:
+    id: 'touchable_without_feedback_console'
+    text: 'TouchableWithoutFeedback onPress'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/touchable/without-feedback/pressed
+    cropOn:
+      id: 'example-container'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TouchableExample/feedback-events
+- extendedWaitUntil:
+    visible:
+      id: 'touchable_feedback_events_button'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/touchable/feedback-events/default
+    cropOn:
+      id: 'touchable_feedback_events'
+- tapOn:
+    id: 'touchable_feedback_events_button'
+- assertVisible:
+    id: 'touchable_feedback_events_console'
+- assertVisible: 'press'
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/touchable/feedback-events/pressed
+    cropOn:
+      id: 'touchable_feedback_events'

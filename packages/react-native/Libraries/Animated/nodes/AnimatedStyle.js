@@ -19,19 +19,23 @@ import AnimatedObject from './AnimatedObject';
 import AnimatedTransform from './AnimatedTransform';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
-export type AnimatedStyleAllowlist = Readonly<{[string]: true}>;
+export type AnimatedStyleAllowlist = Readonly<{[key: string]: true}>;
 
-type FlatStyle = {[string]: unknown};
+type FlatStyle = {[key: string]: unknown};
 type FlatStyleForWeb<TStyle extends FlatStyle> = [unknown, TStyle];
 
 function createAnimatedStyle(
   flatStyle: FlatStyle,
   allowlist: ?AnimatedStyleAllowlist,
   keepUnanimatedValues: boolean,
-): [ReadonlyArray<string>, ReadonlyArray<AnimatedNode>, {[string]: unknown}] {
+): [
+  ReadonlyArray<string>,
+  ReadonlyArray<AnimatedNode>,
+  {[key: string]: unknown},
+] {
   const nodeKeys: Array<string> = [];
   const nodes: Array<AnimatedNode> = [];
-  const style: {[string]: unknown} = {};
+  const style: {[key: string]: unknown} = {};
 
   const keys = Object.keys(flatStyle);
   for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -85,7 +89,7 @@ export default class AnimatedStyle extends AnimatedWithChildren {
   _originalStyleForWeb: ?unknown;
   _nodeKeys: ReadonlyArray<string>;
   _nodes: ReadonlyArray<AnimatedNode>;
-  _style: {[string]: unknown};
+  _style: {[key: string]: unknown};
 
   /**
    * Creates an `AnimatedStyle` if `value` contains `AnimatedNode` instances.
@@ -115,7 +119,7 @@ export default class AnimatedStyle extends AnimatedWithChildren {
   constructor(
     nodeKeys: ReadonlyArray<string>,
     nodes: ReadonlyArray<AnimatedNode>,
-    style: {[string]: unknown},
+    style: {[key: string]: unknown},
     originalStyleForWeb: ?unknown,
     config?: ?AnimatedNodeConfig,
   ) {
@@ -134,7 +138,7 @@ export default class AnimatedStyle extends AnimatedWithChildren {
   }
 
   __getValue(): FlatStyleForWeb<FlatStyle> | FlatStyle {
-    const style: {[string]: unknown} = {};
+    const style: {[key: string]: unknown} = {};
 
     const keys = Object.keys(this._style);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -164,7 +168,7 @@ export default class AnimatedStyle extends AnimatedWithChildren {
    * Mutates the supplied `style` object such that animated nodes are replaced
    * with rasterized values.
    */
-  __replaceAnimatedNodeWithValues(style: {[string]: unknown}): void {
+  __replaceAnimatedNodeWithValues(style: {[key: string]: unknown}): void {
     const keys = Object.keys(style);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
       const key = keys[ii];
@@ -184,9 +188,8 @@ export default class AnimatedStyle extends AnimatedWithChildren {
     }
   }
 
-  // $FlowFixMe[unclear-type]
   __getAnimatedValue(): Object {
-    const style: {[string]: unknown} = {};
+    const style: {[key: string]: unknown} = {};
 
     const nodeKeys = this._nodeKeys;
     const nodes = this._nodes;
@@ -226,10 +229,9 @@ export default class AnimatedStyle extends AnimatedWithChildren {
     super.__makeNative(platformConfig);
   }
 
-  // $FlowFixMe[unclear-type]
   __getNativeConfig(): Object {
     const platformConfig = this.__getPlatformConfig();
-    const styleConfig: {[string]: ?number} = {};
+    const styleConfig: {[key: string]: ?number} = {};
 
     const nodeKeys = this._nodeKeys;
     const nodes = this._nodes;
@@ -253,10 +255,8 @@ export default class AnimatedStyle extends AnimatedWithChildren {
 
 // Supported versions of JSC do not implement the newer Object.hasOwn. Remove
 // this shim when they do.
-// $FlowFixMe[method-unbinding]
 const _hasOwnProp = Object.prototype.hasOwnProperty;
 const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
-  // $FlowFixMe[method-unbinding]
   /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
    * unsoundness in flow */
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

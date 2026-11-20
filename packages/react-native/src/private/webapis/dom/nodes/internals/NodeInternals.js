@@ -63,11 +63,10 @@ function getPublicInstanceFromInternalInstanceHandle(
   return cachedGetPublicInstanceFromInternalInstanceHandle(instanceHandle);
 }
 
-const INSTANCE_HANDLE_KEY = Symbol('internalInstanceHandle');
-const OWNER_DOCUMENT_KEY = Symbol('ownerDocument');
+export const INSTANCE_HANDLE_KEY = Symbol('internalInstanceHandle');
+export const OWNER_DOCUMENT_KEY = Symbol('ownerDocument');
 
 export function getInstanceHandle(node: ReadOnlyNode): InstanceHandle {
-  // $FlowExpectedError[prop-missing]
   return node[INSTANCE_HANDLE_KEY];
 }
 
@@ -75,14 +74,12 @@ export function setInstanceHandle(
   node: ReadOnlyNode,
   instanceHandle: InstanceHandle,
 ): void {
-  // $FlowExpectedError[prop-missing]
   node[INSTANCE_HANDLE_KEY] = instanceHandle;
 }
 
 export function getOwnerDocument(
   node: ReadOnlyNode,
 ): ReactNativeDocument | null {
-  // $FlowExpectedError[prop-missing]
   return node[OWNER_DOCUMENT_KEY] ?? null;
 }
 
@@ -90,7 +87,6 @@ export function setOwnerDocument(
   node: ReadOnlyNode,
   ownerDocument: ReactNativeDocument | null,
 ): void {
-  // $FlowExpectedError[prop-missing]
   node[OWNER_DOCUMENT_KEY] = ownerDocument;
 }
 
@@ -102,7 +98,6 @@ export function getPublicInstanceFromInstanceHandle(
     getPublicInstanceFromInternalInstanceHandle(instanceHandle);
 
   if (mixedPublicInstance != null) {
-    // $FlowExpectedError[incompatible-type] React defines public instances as "mixed" because it can't access the definition from React Native.
     return mixedPublicInstance;
   }
 
@@ -166,7 +161,7 @@ export function getNativeElementReference(
  * Returns the current props for a node managed by React.
  * This accesses React internals (fiber.stateNode.canonical.currentProps).
  */
-export function getCurrentProps(node: ReadOnlyNode): {[string]: unknown} {
+export function getCurrentProps(node: ReadOnlyNode): {[key: string]: unknown} {
   const instanceHandle = getInstanceHandle(node);
   // $FlowExpectedError[incompatible-use] instanceHandle is opaque
   return instanceHandle?.stateNode?.canonical?.currentProps ?? {};

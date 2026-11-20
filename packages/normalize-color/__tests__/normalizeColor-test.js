@@ -53,6 +53,15 @@ it('refuses non-spec compliant colors', () => {
   expect(normalizeColor('rgb(1%, 2%, 3%)')).toBe(null);
 });
 
+it('refuses a string that only contains a functional color', () => {
+  expect(normalizeColor('xxrgb(1, 2, 3)yy')).toBe(null);
+  expect(normalizeColor('rgba(1, 2, 3, 0.5) extra')).toBe(null);
+  expect(normalizeColor('0 0 0 1px rgba(124, 58, 237, 1)')).toBe(null);
+  expect(normalizeColor('drop-shadow(0 0 4px hsl(0, 100%, 50%))')).toBe(null);
+  expect(normalizeColor('hsla(0, 100%, 50%, 1);')).toBe(null);
+  expect(normalizeColor('x hwb(0 0% 0%)')).toBe(null);
+});
+
 it('handles hex6 properly', () => {
   expect(normalizeColor('#000000')).toBe(0x000000ff);
   expect(normalizeColor('#ffffff')).toBe(0xffffffff);
@@ -87,6 +96,7 @@ it('handles rgb properly', () => {
   expect(normalizeColor('rgb(0 0 0 / 0.5)')).toBe(0x00000080);
   expect(normalizeColor('rgb(0 0 0 / 1)')).toBe(0x000000ff);
   expect(normalizeColor('rgb(0, 0, 0, 0.5)')).toBe(0x00000080);
+  expect(normalizeColor('rgb(0 0 0 / 50%)')).toBe(0x00000080);
 });
 
 it('handles rgba properly', () => {
@@ -101,6 +111,8 @@ it('handles rgba properly', () => {
   expect(normalizeColor('rgba(0 0 0 / 1)')).toBe(0x000000ff);
   expect(normalizeColor('rgba(100 15 69 / 0.5)')).toBe(0x640f4580);
   expect(normalizeColor('rgba(0, 0, 0)')).toBe(0x000000ff);
+  expect(normalizeColor('rgba(0, 0, 0, 50%)')).toBe(0x00000080);
+  expect(normalizeColor('rgba(0 0 0 / 100%)')).toBe(0x000000ff);
 });
 
 it('handles hsl properly', () => {
@@ -116,6 +128,9 @@ it('handles hsl properly', () => {
   expect(normalizeColor('hsl(0 0% 0%)')).toBe(0x000000ff);
   expect(normalizeColor('hsl(360 100% 100%)')).toBe(0xffffffff);
   expect(normalizeColor('hsl(180 50% 50%)')).toBe(0x40bfbfff);
+  expect(normalizeColor('hsl(180 50% 50% / 0.2)')).toBe(0x40bfbf33);
+  expect(normalizeColor('hsl(180 50% 50% / 20%)')).toBe(0x40bfbf33);
+  expect(normalizeColor('hsl(180, 50%, 50%, 0.2)')).toBe(0x40bfbf33);
 });
 
 it('handles hsla properly', () => {
@@ -127,6 +142,8 @@ it('handles hsla properly', () => {
   expect(normalizeColor('hsla(360 100% 100% / 1)')).toBe(0xffffffff);
   expect(normalizeColor('hsla(360 100% 100% / 0)')).toBe(0xffffff00);
   expect(normalizeColor('hsla(180 50% 50% / 0.2)')).toBe(0x40bfbf33);
+  expect(normalizeColor('hsla(180, 50%, 50%, 20%)')).toBe(0x40bfbf33);
+  expect(normalizeColor('hsla(180, 50%, 50%)')).toBe(0x40bfbfff);
 });
 
 it('handles hwb properly', () => {
@@ -140,6 +157,7 @@ it('handles hwb properly', () => {
   expect(normalizeColor('hwb(70 50% 0%)')).toBe(0xeaff80ff);
   expect(normalizeColor('hwb(0, 0%, 100%)')).toBe(null);
   expect(normalizeColor('hwb(200 30% 20% / 0.5)')).toBe(0x4da1cc80);
+  expect(normalizeColor('hwb(200 30% 20% / 50%)')).toBe(0x4da1cc80);
 });
 
 it('handles named colors properly', () => {

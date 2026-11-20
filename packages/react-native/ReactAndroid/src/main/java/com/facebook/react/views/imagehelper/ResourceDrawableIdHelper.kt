@@ -31,11 +31,10 @@ public object ResourceDrawableIdHelper {
     }
     val normalizedName = name.lowercase().replace("-", "_")
 
-    // name could be a resource id.
-    try {
-      return normalizedName.toInt()
-    } catch (e: NumberFormatException) {
-      // Do nothing.
+    // name could be a resource id. Most names are not numbers, so this must not throw: an
+    // exception would build a stack trace for every image source.
+    normalizedName.toIntOrNull()?.let {
+      return it
     }
 
     synchronized(this) {

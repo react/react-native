@@ -24,7 +24,7 @@ function __fetchSegment(
     requestedModuleName: string,
     segmentHash: string,
   }>,
-  callback: (?Error) => void,
+  callback: (v: ?Error) => void,
 ) {
   const SegmentFetcher =
     require('./SegmentFetcher/NativeSegmentFetcher').default;
@@ -40,7 +40,8 @@ function __fetchSegment(
     ) => {
       if (errorObject) {
         const error = new Error(errorObject.message);
-        (error as any).code = errorObject.code; // flowlint-line unclear-type: off
+        // $FlowFixMe[unclear-type]
+        (error as any).code = errorObject.code;
         callback(error);
         return;
       }

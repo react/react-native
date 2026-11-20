@@ -11,6 +11,11 @@
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 
+@interface RCTBackedTextFieldDelegateAdapter (PendingTextInputEdit)
+- (void)invalidatePendingTextInputEdit;
+- (void)schedulePendingTextInputEditWithRange:(NSRange)range replacementText:(NSString *)replacementText;
+@end
+
 @implementation RCTUITextField {
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
@@ -168,6 +173,15 @@
     [textAttributes removeObjectForKey:NSForegroundColorAttributeName];
   }
 
+  // UITextField's placeholder label keeps the paragraph style of the previous placeholder and applies it to a
+  // placeholder that has none, so a line height that was removed from the text attributes would still be used.
+  // A paragraph style matching the label's initial one avoids that.
+  if (textAttributes[NSParagraphStyleAttributeName] == nil) {
+    NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
+    paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
+    textAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
+  }
+
   return textAttributes;
 }
 
@@ -180,6 +194,15 @@
   }
 
   return [super canPerformAction:action withSender:sender];
+}
+
+// UIKit queries this when the keyboard becomes active, including when the app returns to the
+// foreground. The default implementation calls `canPerformAction:` with `paste:`, which
+// synchronously queries the system pasteboard on the main thread and can hang the app. TextInput
+// only accepts text, so opt out of image paste; text paste is unaffected.
+- (BOOL)supportsImagePaste
+{
+  return NO;
 }
 
 - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder
@@ -252,6 +275,16 @@
   }
 
   [super setSelectedTextRange:selectedTextRange];
+}
+
+- (void)rct_invalidatePendingTextInputEdit
+{
+  [_textInputDelegateAdapter invalidatePendingTextInputEdit];
+}
+
+- (void)rct_enqueueTextInputEditWithRange:(NSRange)range replacementText:(NSString *)replacementText
+{
+  [_textInputDelegateAdapter schedulePendingTextInputEditWithRange:range replacementText:replacementText];
 }
 
 - (void)scrollRangeToVisible:(NSRange)range

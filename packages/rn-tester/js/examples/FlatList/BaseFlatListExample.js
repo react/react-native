@@ -91,14 +91,11 @@ const BaseFlatListExample: component(
       {props.children}
       <FlatList
         {...props.exampleProps}
-        // $FlowFixMe[incompatible-type]
         ref={ref}
         testID="flat_list"
-        // $FlowFixMe[incompatible-type]
         data={DATA}
         keyExtractor={(item, index) => item + index}
         style={styles.list}
-        // $FlowFixMe[incompatible-type]
         renderItem={Item}
       />
     </View>

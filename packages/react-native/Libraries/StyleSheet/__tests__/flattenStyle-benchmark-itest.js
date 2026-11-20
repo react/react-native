@@ -64,7 +64,6 @@ Fantom.unstable_benchmark
     flattenStyle(nestedSingleArrayStyle);
   })
   .test('flatten nested array with merged styles', () => {
-    // $FlowFixMe[incompatible-call]
     flattenStyle(nestedMergedArrayStyle);
   })
   .test('flatten array with merged styles', () => {

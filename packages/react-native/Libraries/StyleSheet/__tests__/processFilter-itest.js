@@ -144,15 +144,12 @@ describe('processFilter', () => {
     expect(processFilter('')).toEqual([]);
   });
   it('string non filter', () => {
-    // $FlowExpectedError[incompatible-call]
     expect(processFilter('foo: 5')).toEqual([]);
   });
   it('string invalid amount type', () => {
-    // $FlowExpectedError[incompatible-call]
     expect(processFilter('brightness: {}')).toEqual([]);
   });
   it('string brightness(.5)', () => {
-    // $FlowExpectedError[incompatible-call]
     expect(processFilter('brightness(.5)')).toEqual([{brightness: 0.5}]);
   });
 
@@ -166,8 +163,14 @@ function testStandardFilter(filter: string): void {
 
   testNumericFilter(filter, value, [expected]);
   testNumericFilter(filter, -value, []);
-  testUnitFilter(filter, value, 'px', [expected]);
+  testUnitFilter(filter, value, 'px', []);
   testUnitFilter(filter, value, '%', [percentExpected]);
+
+  it('string ' + filter + '()', () => {
+    expect(processFilter(filter + '()')).toEqual([
+      createFilterPrimitive(filter, 1),
+    ]);
+  });
 }
 
 function testNumericFilter(

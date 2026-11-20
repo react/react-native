@@ -28,13 +28,11 @@ import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import org.robolectric.annotation.TextLayoutMode
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE, Build.VERSION_CODES.VANILLA_ICE_CREAM])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@TextLayoutMode(TextLayoutMode.Mode.REALISTIC)
 class TextDecorationStyleTest {
   @Test
   fun fromStringSolid() {

@@ -77,9 +77,7 @@ class RCTHostTracingDelegate : public jsinspector_modern::HostTargetTracingDeleg
 class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::HostTargetDelegate {
  public:
   RCTHostHostTargetDelegate(RCTHost *host)
-      : host_(host),
-        pauseOverlayController_([[RCTPausedInDebuggerOverlayController alloc] init]),
-        networkHelper_([[RCTInspectorNetworkHelper alloc] init])
+      : host_(host)
 #if TARGET_OS_IPHONE && defined(REACT_NATIVE_DEBUGGER_ENABLED)
         ,
         tracingDelegate_(host)
@@ -115,6 +113,9 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
   void onSetPausedInDebuggerMessage(const OverlaySetPausedInDebuggerMessageRequest &request) override
   {
     RCTAssertMainQueue();
+    if (pauseOverlayController_ == nil) {
+      pauseOverlayController_ = [[RCTPausedInDebuggerOverlayController alloc] init];
+    }
     if (!request.message.has_value()) {
       [pauseOverlayController_ hide];
     } else {
@@ -138,6 +139,9 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
   void loadNetworkResource(const RCTInspectorLoadNetworkResourceRequest &params, RCTInspectorNetworkExecutor executor)
       override
   {
+    if (networkHelper_ == nil) {
+      networkHelper_ = [[RCTInspectorNetworkHelper alloc] init];
+    }
     [networkHelper_ loadNetworkResourceWithParams:params executor:executor];
   }
 

@@ -8,11 +8,14 @@
 #pragma once
 
 #include <fbjni/fbjni.h>
+#include <react/jni/JRuntimeExecutor.h>
+#include <react/jni/JRuntimeScheduler.h>
 #include <react/jni/NativeMap.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 
+#include <react/fabric/ComponentFactory.h>
 #include <react/fabric/FabricMountingManager.h>
 
 #include <unordered_map>
@@ -32,6 +35,10 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   void queuePreallocation(jint surfaceId, jint tag);
   void drainPreallocationQueue();
   void executeCreateMutation(jint surfaceId, jint tag);
+  void executeDeleteMutation(jint surfaceId, jint tag);
+  // Marks the family of a view queued by queuePreallocation as part of a
+  // committed tree, as ShadowTree's commit does.
+  void commitQueuedView(jint tag);
   void dropFamily(jint tag);
   void destroyUnmountedView(jint surfaceId, jint tag);
   void destroyCommittedView(jint surfaceId, jint tag);
@@ -45,12 +52,25 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   void overrideFeatureFlags(jboolean fixTextLayoutOnPixelDensityChange);
   void resetFeatureFlags();
 
+  // A FabricUIManagerBinding registered on the helper's FabricUIManager with
+  // these never runs JavaScript: its surfaces mount only what the helper
+  // commits.
+  jni::local_ref<JRuntimeExecutor::jhybridobject> createRuntimeExecutor();
+  jni::local_ref<JRuntimeScheduler::jhybridobject> createRuntimeScheduler();
+  void registerViewComponent(ComponentFactory *componentFactory);
+
+  void commitViews(jint surfaceId, jni::alias_ref<jni::JArrayInt> tags);
+  void recordPulledDeletes(jint surfaceId);
+  jni::local_ref<jni::JArrayInt> pulledDeleteTags();
+
   static void registerNatives();
 
  private:
   friend HybridBase;
 
   explicit FabricMountingManagerTestHelper(jni::alias_ref<JFabricUIManager::javaobject> jFabricUIManager);
+
+  void executeMutation(jint surfaceId, ShadowViewMutation mutation);
 
   static void initHybrid(
       jni::alias_ref<jhybridobject> jobj,
@@ -65,6 +85,9 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
   std::unique_ptr<ShadowTreeDelegate> shadowTreeDelegate_;
   std::unique_ptr<ShadowTree> shadowTree_;
   std::unordered_map<Tag, std::shared_ptr<const ShadowNode>> queuedShadowNodes_;
+  std::shared_ptr<RuntimeScheduler> runtimeScheduler_;
+  class DeleteRecorder;
+  std::shared_ptr<DeleteRecorder> deleteRecorder_;
 };
 
 } // namespace facebook::react

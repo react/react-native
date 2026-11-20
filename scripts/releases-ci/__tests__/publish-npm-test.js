@@ -23,9 +23,15 @@ const getPackagesMock = jest.fn();
 const updateHermesVersionsToPrebuiltMock = jest.fn();
 const getBranchName = jest.fn();
 
+import type {BuildType} from '../../releases/utils/version-utils';
+
 const {REPO_ROOT} = require('../../shared/consts');
-const {publishNpm} = require('../publish-npm');
 const path = require('node:path');
+
+// Required on each call, so that publish-npm picks up the mocks and module
+// registry that each test sets up after this file loads.
+const publishNpm = (buildType: BuildType): Promise<void> =>
+  require('../publish-npm').publishNpm(buildType);
 
 let consoleLog;
 

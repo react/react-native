@@ -24,6 +24,7 @@ import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.tracing.PerformanceTracer
 import com.facebook.systrace.Systrace
 import java.util.Queue
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 internal class MountItemDispatcher(
@@ -33,10 +34,20 @@ internal class MountItemDispatcher(
   private val viewCommandMountItems: Queue<DispatchCommandMountItem> = ConcurrentLinkedQueue()
   private val mountItems: Queue<MountItem> = ConcurrentLinkedQueue()
   private val preMountItems: Queue<MountItem> = ConcurrentLinkedQueue()
+  private val surfaceIdsToPull: MutableSet<Int> = ConcurrentHashMap.newKeySet()
 
-  /** @return true if any mount items, pre-mount items or view commands are still pending */
+  /**
+   * @return true if any mount items, pre-mount items, view commands or pulls of surfaces with an
+   *   attached root view are still pending. The attach schedules the frame that pulls its surface.
+   */
   fun hasPendingItems(): Boolean =
-      !viewCommandMountItems.isEmpty() || !mountItems.isEmpty() || !preMountItems.isEmpty()
+      !viewCommandMountItems.isEmpty() ||
+          !mountItems.isEmpty() ||
+          !preMountItems.isEmpty() ||
+          hasAttachedSurfaceIdsToPull()
+
+  /** Pull model: @return true if any surface has a transaction waiting to be pulled. */
+  fun hasSurfaceIdsToPull(): Boolean = surfaceIdsToPull.isNotEmpty()
 
   // Items can be queued from any thread while the DISPATCH_UI frame callback is disarmed at
   // idle (see FabricUIManager's doFrameGuarded); the listener re-arms it.
@@ -47,6 +58,7 @@ internal class MountItemDispatcher(
   }
 
   private var inDispatch: Boolean = false
+  private var followUpDispatchRequired: Boolean = false
   var batchedExecutionTime: Long = 0L
     private set
 
@@ -66,6 +78,12 @@ internal class MountItemDispatcher(
 
   fun addMountItem(mountItem: MountItem) {
     mountItems.add(mountItem)
+    notifyItemsQueued()
+  }
+
+  /** Pull model: a pull mounts the surface's latest revision, so it is pending at most once. */
+  fun addSurfaceIdToPull(surfaceId: Int) {
+    surfaceIdsToPull.add(surfaceId)
     notifyItemsQueued()
   }
 
@@ -93,24 +111,29 @@ internal class MountItemDispatcher(
   @UiThread
   @ThreadConfined(UI)
   fun tryDispatchMountItems() {
-    // If we're already dispatching, don't reenter.
-    // Reentrance can potentially happen a lot on Android in Fabric because `updateState` from the
-    // mounting layer causes mount items to be dispatched synchronously. We want to 1) make sure we
-    // don't reenter in those cases, but 2) still execute those queued instructions synchronously.
-    // This is a pretty blunt tool, but we might not have better options since we really don't want
-    // to execute anything out-of-order.
+    // If we're already dispatching, don't reenter but signal that a follow-up dispatch is
+    // needed. This follows the same pattern as iOS's RCTMountingManager::initiateTransaction,
+    // which uses _followUpTransactionRequired flag to ensure mount items
+    // enqueued during dispatch (e.g., from synchronous state updates triggered by view layout)
+    // are processed in the same frame rather than deferred to the next one.
     if (inDispatch) {
+      if (ReactNativeFeatureFlags.enableFollowUpMountItemDispatchAndroid()) {
+        followUpDispatchRequired = true
+      }
       return
     }
 
-    inDispatch = true
+    do {
+      followUpDispatchRequired = false
+      inDispatch = true
 
-    try {
-      dispatchMountItems()
-    } finally {
-      // Clean up after running dispatchMountItems - even if an exception was thrown
-      inDispatch = false
-    }
+      try {
+        dispatchMountItems()
+      } finally {
+        // Clean up after running dispatchMountItems - even if an exception was thrown
+        inDispatch = false
+      }
+    } while (followUpDispatchRequired)
 
     // We call didDispatchMountItems regardless of whether we actually dispatched anything, since
     // NativeAnimatedModule relies on this for executing any animations that may have been
@@ -128,7 +151,7 @@ internal class MountItemDispatcher(
       } catch (e: RetryableMountingLayerException) {
         if (item is DispatchCommandMountItem) {
           // Only DispatchCommandMountItem supports retries
-          val mountItem: DispatchCommandMountItem = item as DispatchCommandMountItem
+          val mountItem: DispatchCommandMountItem = item
           // Retrying exactly once
           if (mountItem.getRetries() == 0) {
             mountItem.incrementRetries()
@@ -147,9 +170,10 @@ internal class MountItemDispatcher(
    * Executes view commands, pre mount items and mount items in the respective order:
    * 1. View commands.
    * 2. Pre mount items.
-   * 3. Regular mount items.
+   * 3. Pulls of surfaces with an available transaction and an attached root view (pull model).
+   * 4. Regular mount items.
    *
-   * Does nothing if `viewCommandMountItemsToDispatch` and `mountItemsToDispatch` are empty.
+   * Does nothing if there are no view commands, mount items or surfaces to pull.
    * Nothing should call this directly except for `tryDispatchMountItems`.
    */
   @UiThread
@@ -160,8 +184,13 @@ internal class MountItemDispatcher(
 
     val viewCommandMountItemsToDispatch = getAndResetViewCommandMountItems()
     val mountItemsToDispatch = getAndResetMountItems()
+    val attachedSurfaceIdsToPull = getAttachedSurfaceIdsToPull()
 
-    if (mountItemsToDispatch == null && viewCommandMountItemsToDispatch == null) {
+    if (
+        mountItemsToDispatch == null &&
+            viewCommandMountItemsToDispatch == null &&
+            attachedSurfaceIdsToPull == null
+    ) {
       return
     }
 
@@ -256,7 +285,8 @@ internal class MountItemDispatcher(
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
 
-    mountItemsToDispatch?.let { items ->
+    if (mountItemsToDispatch != null || attachedSurfaceIdsToPull != null) {
+      val items = mountItemsToDispatch.orEmpty()
       Systrace.beginSection(
           Systrace.TRACE_TAG_REACT,
           "MountItemDispatcher::mountViews mountItems to execute",
@@ -268,6 +298,16 @@ internal class MountItemDispatcher(
           "\u269b Native",
           { ->
             val batchedExecutionStartTime = SystemClock.uptimeMillis()
+
+            for (surfaceId in attachedSurfaceIdsToPull.orEmpty()) {
+              surfaceIdsToPull.remove(surfaceId)
+              try {
+                itemDispatchListener.pullTransaction(surfaceId)
+              } catch (e: Throwable) {
+                FLog.e(TAG, "dispatchMountItems: caught exception pulling surface $surfaceId", e)
+                logOrRethrowMountingException(e, surfaceId)
+              }
+            }
 
             for (mountItem in items) {
               if (ReactNativeFeatureFlags.enableFabricLogs()) {
@@ -298,15 +338,7 @@ internal class MountItemDispatcher(
                   }
                 }
 
-                if (mountItem.getSurfaceId() != View.NO_ID) {
-                  mountingManager.getSurfaceManager(mountItem.getSurfaceId())?.printSurfaceState()
-                }
-
-                if (ReactIgnorableMountingException.isIgnorable(e)) {
-                  ReactSoftExceptionLogger.logSoftException(TAG, e)
-                } else {
-                  throw e
-                }
+                logOrRethrowMountingException(e, mountItem.getSurfaceId())
               }
             }
             batchedExecutionTime += SystemClock.uptimeMillis() - batchedExecutionStartTime
@@ -375,6 +407,18 @@ internal class MountItemDispatcher(
     Systrace.endSection(Systrace.TRACE_TAG_REACT)
   }
 
+  private fun logOrRethrowMountingException(e: Throwable, surfaceId: Int) {
+    if (surfaceId != View.NO_ID) {
+      mountingManager.getSurfaceManager(surfaceId)?.printSurfaceState()
+    }
+
+    if (ReactIgnorableMountingException.isIgnorable(e)) {
+      ReactSoftExceptionLogger.logSoftException(TAG, e)
+    } else {
+      throw e
+    }
+  }
+
   private fun executeOrEnqueue(item: MountItem) {
     if (mountingManager.isWaitingForViewAttach(item.getSurfaceId())) {
       if (ReactNativeFeatureFlags.enableFabricLogs()) {
@@ -408,12 +452,25 @@ internal class MountItemDispatcher(
   @UiThread
   private fun getAndResetPreMountItems(): List<MountItem>? = drainConcurrentItemQueue(preMountItems)
 
+  private fun hasAttachedSurfaceIdsToPull(): Boolean =
+      surfaceIdsToPull.any { !mountingManager.isWaitingForViewAttach(it) }
+
+  /** A surface waiting for its root view keeps its pull until the frame after the attach. */
+  @ThreadConfined(UI)
+  @UiThread
+  private fun getAttachedSurfaceIdsToPull(): List<Int>? =
+      if (surfaceIdsToPull.isEmpty()) null
+      else surfaceIdsToPull.filterNot(mountingManager::isWaitingForViewAttach).ifEmpty { null }
+
   interface ItemDispatchListener {
     fun willMountItems(mountItems: List<MountItem>?)
 
     fun didMountItems(mountItems: List<MountItem>?)
 
     fun didDispatchMountItems()
+
+    /** Pull model: pulls the surface's latest transaction and mounts it synchronously. */
+    fun pullTransaction(surfaceId: Int)
 
     /** Called (from any thread) whenever new items are queued into the dispatcher. */
     fun onItemsQueued()

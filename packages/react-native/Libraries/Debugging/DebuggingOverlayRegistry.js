@@ -109,9 +109,7 @@ class DebuggingOverlayRegistry {
     }
 
     // `instanceHandle` => Legacy renderer
-    // $FlowExpectedError[method-unbinding]
     if (instanceHandle.measure != null) {
-      // $FlowFixMe[incompatible-return]
       return instanceHandle;
     }
 
@@ -124,8 +122,6 @@ class DebuggingOverlayRegistry {
     let iterator: ?ReadOnlyElement = instance;
     while (iterator != null) {
       for (const subscriber of this.#registry) {
-        /* $FlowFixMe[invalid-compare] Error discovered during Constant
-         * Condition roll out. See https://fburl.com/workplace/4oq3zi07. */
         if (subscriber.rootViewRef.current === iterator) {
           return subscriber;
         }
@@ -145,7 +141,6 @@ class DebuggingOverlayRegistry {
     for (const subscriber of this.#registry) {
       if (
         subscriber.rootViewRef.current != null &&
-        // $FlowFixMe[incompatible-call] There is a lot of stuff to untangle to make types for refs work.
         isChildPublicInstance(subscriber.rootViewRef.current, instance)
       ) {
         candidates.push(subscriber);
@@ -186,7 +181,6 @@ class DebuggingOverlayRegistry {
           isChildPublicInstance(
             // $FlowFixMe[incompatible-type] There is a lot of stuff to untangle to make types for refs work.
             potentialParent.rootViewRef.current,
-            // $FlowFixMe[incompatible-call] There is a lot of stuff to untangle to make types for refs work.
             potentialChild.rootViewRef.current,
           )
         ) {
@@ -216,7 +210,7 @@ class DebuggingOverlayRegistry {
   }
 
   #onDrawTraceUpdates: (
-    ...ReactDevToolsAgentEvents['drawTraceUpdates']
+    ...rest: ReactDevToolsAgentEvents['drawTraceUpdates']
   ) => void = traceUpdates => {
     const modernNodesUpdates: Array<ModernNodeUpdate> = [];
     const legacyNodesUpdates: Array<LegacyNodeUpdate> = [];
@@ -283,9 +277,7 @@ class DebuggingOverlayRegistry {
         continue;
       }
 
-      const {x: parentX, y: parentY} =
-        // $FlowFixMe[prop-missing] React Native View is not a descendant of ReactNativeElement yet. We should be able to remove it once Paper is no longer supported.
-        rootViewInstance.getBoundingClientRect();
+      const {x: parentX, y: parentY} = rootViewInstance.getBoundingClientRect();
 
       // DebuggingOverlay will scale to the same size as a Root view. Substract Root view position from the element position
       // to calculate the element's position relatively to its parent DebuggingOverlay.
@@ -368,7 +360,7 @@ class DebuggingOverlayRegistry {
   }
 
   #onHighlightElements: (
-    ...ReactDevToolsAgentEvents['showNativeHighlight']
+    ...rest: ReactDevToolsAgentEvents['showNativeHighlight']
   ) => void = nodes => {
     // First clear highlights for every container
     for (const subscriber of this.#registry) {
@@ -431,9 +423,7 @@ class DebuggingOverlayRegistry {
         return;
       }
 
-      const {x: parentX, y: parentY} =
-        // $FlowFixMe[prop-missing] React Native View is not a descendant of ReactNativeElement yet. We should be able to remove it once Paper is no longer supported.
-        rootViewInstance.getBoundingClientRect();
+      const {x: parentX, y: parentY} = rootViewInstance.getBoundingClientRect();
 
       // DebuggingOverlay will scale to the same size as a Root view. Substract Root view position from the element position
       // to calculate the element's position relatively to its parent DebuggingOverlay.
@@ -510,7 +500,7 @@ class DebuggingOverlayRegistry {
   }
 
   #onClearElementsHighlights: (
-    ...ReactDevToolsAgentEvents['hideNativeHighlight']
+    ...rest: ReactDevToolsAgentEvents['hideNativeHighlight']
   ) => void = () => {
     for (const subscriber of this.#registry) {
       subscriber.debuggingOverlayRef.current?.clearElementsHighlight();

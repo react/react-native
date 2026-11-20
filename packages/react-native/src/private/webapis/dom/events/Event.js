@@ -13,12 +13,13 @@
  * See https://dom.spec.whatwg.org/#interface-event.
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type EventTarget from './EventTarget';
+import type {EventInitWithTimestamp} from './internals/EventInternals';
 
 import {setPlatformObject} from '../../webidl/PlatformObjects';
 import {
+  BUBBLED_PROP_NAME_KEY,
+  CAPTURED_PROP_NAME_KEY,
   COMPOSED_PATH_KEY,
   CURRENT_TARGET_KEY,
   EVENT_INIT_TIMESTAMP_KEY,
@@ -70,37 +71,16 @@ export default class Event {
   _defaultPrevented: boolean = false;
   _timeStamp: number;
 
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
-  [COMPOSED_PATH_KEY]: boolean = [];
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
+  [COMPOSED_PATH_KEY]: ReadonlyArray<EventTarget> = [];
   [CURRENT_TARGET_KEY]: EventTarget | null = null;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
-  [EVENT_PHASE_KEY]: boolean = Event.NONE;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
+  [EVENT_PHASE_KEY]: EventPhase = Event.NONE;
   [IN_PASSIVE_LISTENER_FLAG_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [IS_TRUSTED_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [STOP_IMMEDIATE_PROPAGATION_FLAG_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [STOP_PROPAGATION_FLAG_KEY]: boolean = false;
-
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [TARGET_KEY]: EventTarget | null = null;
+  [BUBBLED_PROP_NAME_KEY]: string | null | void;
+  [CAPTURED_PROP_NAME_KEY]: string | null | void;
 
   constructor(type: string, options?: ?EventInit) {
     if (arguments.length < 1) {
@@ -139,16 +119,19 @@ export default class Event {
     // For internal construction of events using a custom timestamp (instead of
     // event object creation), for use cases like dispatching events from the
     // host platform using the original timestamps.
-    // $FlowExpectedError[prop-missing]
-    const initTimestamp: number | void = options?.[EVENT_INIT_TIMESTAMP_KEY];
+    const initTimestamp: number | void = (
+      options as EventInitWithTimestamp | null | void
+    )?.[EVENT_INIT_TIMESTAMP_KEY];
     this._timeStamp =
       initTimestamp !== undefined ? initTimestamp : performance.now();
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get bubbles(): boolean {
     return this._bubbles;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get cancelable(): boolean {
     return this._cancelable;
   }
@@ -159,16 +142,19 @@ export default class Event {
    * `true`). Setting it to `true` stops propagation; setting it to `false` is a
    * no-op. See https://dom.spec.whatwg.org/#dom-event-cancelbubble.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get cancelBubble(): boolean {
     return getStopPropagationFlag(this);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set cancelBubble(value: boolean) {
     if (value) {
       setStopPropagationFlag(this, true);
     }
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get composed(): boolean {
     return this._composed;
   }
@@ -178,34 +164,42 @@ export default class Event {
    * target (single `AT_TARGET` phase) and never captures or bubbles through
    * ancestors.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get rnIsDirect(): boolean {
     return this._rnIsDirect;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get currentTarget(): EventTarget | null {
     return getCurrentTarget(this);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get defaultPrevented(): boolean {
     return this._defaultPrevented;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get eventPhase(): EventPhase {
     return getEventPhase(this);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get isTrusted(): boolean {
     return getIsTrusted(this);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get target(): EventTarget | null {
     return getTarget(this);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get timeStamp(): number {
     return this._timeStamp;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get type(): string {
     return this._type;
   }

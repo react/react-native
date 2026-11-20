@@ -34,18 +34,16 @@ export function createViewConfig(
     ),
     // $FlowFixMe[incompatible-type]
     validAttributes: composeIndexers(
-      // $FlowFixMe[incompatible-call] `style` property confuses Flow.
       PlatformBaseViewConfig.validAttributes,
-      // $FlowFixMe[incompatible-call] `style` property confuses Flow.
       partialViewConfig.validAttributes,
     ),
   };
 }
 
 function composeIndexers<T>(
-  maybeA: ?{readonly [string]: T},
-  maybeB: ?{readonly [string]: T},
-): {readonly [string]: T} {
+  maybeA: ?{readonly [key: string]: T},
+  maybeB: ?{readonly [key: string]: T},
+): {readonly [key: string]: T} {
   return maybeA == null || maybeB == null
     ? (maybeA ?? maybeB ?? {})
     : {...maybeA, ...maybeB};

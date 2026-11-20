@@ -1116,8 +1116,6 @@ export type ____ImageStyleProp_Internal = StyleProp<
 >;
 
 export type ____Styles_Internal = {
-  // $FlowFixMe[incompatible-exact]
-  // $FlowFixMe[incompatible-type]
   readonly [key: string]: Partial<____DangerouslyImpreciseStyle_Internal>,
   ...
 };

@@ -9,14 +9,13 @@
  * @oncall react_native
  */
 
-// $FlowFixMe[unclear-type] We have no Flow types for the Electron API.
 const {app} = require('electron') as any;
 const fs = require('node:fs');
 const path = require('node:path');
 
 type Options = Readonly<{
   name?: string,
-  defaults?: Object,
+  defaults?: {...},
 }>;
 
 /**
@@ -91,12 +90,12 @@ export default class SettingsStore {
     }
   }
 
-  get store(): {[string]: unknown} {
+  get store(): {[key: string]: unknown} {
     try {
       const data = fs.readFileSync(this.path, 'utf8');
       const deserializedData = this._deserialize(data);
       return {
-        ...(deserializedData as any as {[string]: unknown}),
+        ...(deserializedData as any as {[key: string]: unknown}),
       };
     } catch (error) {
       if (error?.code === 'ENOENT') {

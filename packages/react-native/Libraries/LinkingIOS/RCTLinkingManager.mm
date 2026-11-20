@@ -8,7 +8,6 @@
 #import <React/RCTLinkingManager.h>
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
-#import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
@@ -35,6 +34,8 @@ static NSString *const kOpenURLNotification = @"RCTOpenURLNotification";
 @implementation RCTLinkingManager
 
 RCT_EXPORT_MODULE()
+
+@synthesize launchOptions = _launchOptions;
 
 + (void)postNotificationWithURL:(NSURL *)URL
 {
@@ -207,11 +208,10 @@ RCT_EXPORT_MODULE()
 - (void)getInitialURL:(RCTPromiseResolveBlock)resolve reject:(__unused RCTPromiseRejectBlock)reject
 {
   NSURL *initialURL = nil;
-  if (self.bridge.launchOptions[UIApplicationLaunchOptionsURLKey] != nullptr) {
-    initialURL = self.bridge.launchOptions[UIApplicationLaunchOptionsURLKey];
+  if (self.launchOptions[UIApplicationLaunchOptionsURLKey] != nullptr) {
+    initialURL = self.launchOptions[UIApplicationLaunchOptionsURLKey];
   } else {
-    NSDictionary *userActivityDictionary =
-        self.bridge.launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey];
+    NSDictionary *userActivityDictionary = self.launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey];
     if ([userActivityDictionary[UIApplicationLaunchOptionsUserActivityTypeKey] isEqual:NSUserActivityTypeBrowsingWeb]) {
       initialURL = ((NSUserActivity *)userActivityDictionary[@"UIApplicationLaunchOptionsUserActivityKey"]).webpageURL;
     }

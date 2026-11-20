@@ -186,6 +186,46 @@ class ReactTextViewTest {
   }
 
   @Test
+  fun adjustsFontSizeToFitGrowsBackWhenContainerHeightGrows() {
+    val width = 200
+    val tallHeight = 200
+    val shortHeight = 20
+    val largeFontSize = 40
+
+    val text = SpannableString("Hello")
+    text.setSpan(
+        ReactAbsoluteSizeSpan(largeFontSize),
+        0,
+        text.length,
+        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
+
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.layoutParams =
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+    view.setTextColor(Color.BLACK)
+    view.setMinimumFontScale(0.1f)
+    view.setNumberOfLines(0)
+    view.setAdjustFontSizeToFit(true)
+    view.setSpanned(text)
+    view.text = text
+
+    layoutAndDraw(view, width, shortHeight)
+    val fontSizeWhenShort = largestAbsoluteSizeSpan(text)
+
+    // Growing the container without a new text update must fit the text again starting from its
+    // original font size, not from the size it was already shrunk to.
+    layoutAndDraw(view, width, tallHeight)
+    val fontSizeWhenTall = largestAbsoluteSizeSpan(text)
+
+    assertThat(fontSizeWhenShort).isLessThan(largeFontSize)
+    assertThat(fontSizeWhenTall).isEqualTo(largeFontSize)
+  }
+
+  @Test
   @Config(sdk = [35])
   fun breaksLinesOnAdvancesLikeMeasurementOnApi35() {
     // TextLayoutManager measures with an advance-based StaticLayout; on API 35+ a TextView in an

@@ -8,8 +8,6 @@
  * @format
  */
 
-const {isTaggedLatest} = require('../scm-utils');
-
 let execResult = null;
 
 jest
@@ -36,6 +34,8 @@ jest
         filePath.includes('/') ? filePath.split('/')[0] : '.',
       ),
   }));
+
+const {isTaggedLatest} = require('../scm-utils');
 
 describe('scm-utils', () => {
   beforeEach(() => {

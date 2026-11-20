@@ -104,7 +104,6 @@ class AppStateImpl {
       // TODO: see above - this request just populates the value of `currentState`
       // when the module is first initialized. Would be better to get rid of the
       // prop and expose `getCurrentAppState` method directly.
-      // $FlowExpectedError[incompatible-call]
       NativeAppState.getCurrentAppState(appStateData => {
         // It's possible that the state will have changed here & listeners need to be notified
         if (!eventUpdated && this.currentState !== appStateData.app_state) {
@@ -123,7 +122,7 @@ class AppStateImpl {
    */
   addEventListener<K extends AppStateEvent>(
     type: K,
-    handler: (...AppStateEventDefinitions[K]) => void,
+    handler: (...rest: AppStateEventDefinitions[K]) => void,
   ): EventSubscription {
     const emitter = this._emitter;
     if (emitter == null) {
@@ -131,18 +130,15 @@ class AppStateImpl {
     }
     switch (type) {
       case 'change':
-        // $FlowFixMe[invalid-tuple-arity] Flow cannot refine handler based on the event type
-        const changeHandler: AppStateStatus => void = handler;
+        const changeHandler: (v: AppStateStatus) => void = handler;
         return emitter.addListener('appStateDidChange', appStateData => {
           changeHandler(appStateData.app_state);
         });
       case 'memoryWarning':
-        // $FlowFixMe[invalid-tuple-arity] Flow cannot refine handler based on the event type
         const memoryWarningHandler: () => void = handler;
         return emitter.addListener('memoryWarning', memoryWarningHandler);
       case 'blur':
       case 'focus':
-        // $FlowFixMe[invalid-tuple-arity] Flow cannot refine handler based on the event type
         const focusOrBlurHandler: () => void = handler;
         return emitter.addListener('appStateFocusChange', hasFocus => {
           /* $FlowFixMe[invalid-compare] Error discovered during Constant

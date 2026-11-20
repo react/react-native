@@ -110,6 +110,10 @@ using namespace facebook::react;
     return;
   }
 
+  if (!_eventEmitter) {
+    return;
+  }
+
   static_cast<const SwitchEventEmitter &>(*_eventEmitter)
       .onChange(SwitchEventEmitter::OnChange{.value = static_cast<bool>(sender.on)});
 }

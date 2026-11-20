@@ -645,6 +645,14 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override fun shouldDelayChildPressedState(): Boolean =
       hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
+  override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+    if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+      // Defensive cleanup for new gesture
+      stopNestedScroll()
+    }
+    return super.dispatchTouchEvent(ev)
+  }
+
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false
 
@@ -740,7 +748,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
     velocityHelper.calculateVelocity(ev)
     val action = ev.actionMasked
-    if (action == MotionEvent.ACTION_UP && dragging) {
+    if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) && dragging) {
       ReactScrollViewHelper.updateFabricScrollState(this)
 
       val velocityX = velocityHelper.xVelocity
@@ -850,7 +858,10 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
           velocityX
         }
 
-    if (pagingEnabled) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && scrollX <= 0 && correctedVelocityX < 0) {
+      // From Android 12 the platform absorbs this fling; an overscroll here sticks on Android 14.
+      super.fling(correctedVelocityX)
+    } else if (pagingEnabled) {
       flingAndSnap(correctedVelocityX)
     } else if (scroller != null) {
       // FB SCROLLVIEW CHANGE
