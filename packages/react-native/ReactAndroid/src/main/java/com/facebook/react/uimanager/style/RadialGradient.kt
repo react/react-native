@@ -244,7 +244,9 @@ internal class RadialGradient(
 
     val (radiusX, radiusY) = calculateRadius(centerX, centerY, width, height)
 
-    val fixedStops = ColorStopUtils.getFixedColorStops(colorStops, max(radiusX, radiusY))
+    // Length stops resolve against radiusX: the gradient line starts at the center and "extends
+    // toward the right". https://drafts.csswg.org/css-images-3/#radial-color-stops
+    val fixedStops = ColorStopUtils.getFixedColorStops(colorStops, radiusX)
     // Unlike negative stops, stops past the ending shape stay visible outside it, so the radius
     // grows to fit them.
     val radiusScale = max(fixedStops.lastOrNull()?.position ?: 1f, 1f)
