@@ -47,19 +47,16 @@ internal class BackgroundDrawable(
     set(value) {
       if (field != value) {
         field = value
-        backgroundPaint.color = value
+        paintColor = value
         invalidateSelf()
       }
     }
 
+  // [backgroundColor] with the alpha from [setAlpha] applied
+  private var paintColor: Int = Color.TRANSPARENT
+
   private var backgroundRect: RectF = RectF()
   private var backgroundRenderPath: Path? = null
-
-  private val backgroundPaint: Paint =
-      Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = backgroundColor
-      }
 
   override fun invalidateSelf() {
     needUpdatePath = true
@@ -72,8 +69,8 @@ internal class BackgroundDrawable(
   }
 
   override fun setAlpha(alpha: Int) {
-    backgroundPaint.alpha =
-        (((alpha / 255f) * (Color.alpha(backgroundColor) / 255f)) * 255f).roundToInt()
+    val paintAlpha = (((alpha / 255f) * (Color.alpha(backgroundColor) / 255f)) * 255f).roundToInt()
+    paintColor = (paintAlpha shl 24) or (backgroundColor and 0x00FFFFFF)
     invalidateSelf()
   }
 
@@ -83,7 +80,7 @@ internal class BackgroundDrawable(
 
   @Deprecated("Deprecated in Java")
   override fun getOpacity(): Int {
-    val alpha = backgroundPaint.alpha
+    val alpha = Color.alpha(paintColor)
     return when (alpha) {
       255 -> PixelFormat.OPAQUE
       in 1..254 -> PixelFormat.TRANSLUCENT
@@ -96,7 +93,9 @@ internal class BackgroundDrawable(
     canvas.save()
 
     // Draws the View without its border first (with background color fill)
-    if (backgroundPaint.alpha != 0) {
+    if (Color.alpha(paintColor) != 0) {
+      val backgroundPaint = checkNotNull(sharedPaint.get())
+      backgroundPaint.color = paintColor
       if (computedBorderRadius?.isUniform() == true && borderRadius?.hasRoundedBorders() == true) {
         canvas.drawRoundRect(
             backgroundRect,
@@ -183,5 +182,16 @@ internal class BackgroundDrawable(
           Path.Direction.CW,
       )
     }
+  }
+
+  private companion object {
+    // Creating a Paint is a JNI call and a native allocation, and every view with a background
+    // color has one of these drawables. Drawing copies the paint's state, so each thread shares
+    // one.
+    private val sharedPaint: ThreadLocal<Paint> =
+        object : ThreadLocal<Paint>() {
+          override fun initialValue(): Paint =
+              Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        }
   }
 }
