@@ -54,7 +54,6 @@ function collectTypeKeys(
   if (t.isTSTypeReference(node) && t.isIdentifier(node.typeName)) {
     const name = node.typeName.name;
 
-    // $FlowFixMe[invalid-compare]
     if (name === 'Readonly' && node.typeParameters?.params.length === 1) {
       return collectTypeKeys(
         node.typeParameters.params[0],
@@ -65,7 +64,6 @@ function collectTypeKeys(
     }
 
     // Omit<T, K> — return keys of T (a safe superset, avoids under-counting)
-    // $FlowFixMe[invalid-compare]
     if (name === 'Omit' && node.typeParameters?.params.length === 2) {
       return collectTypeKeys(
         node.typeParameters.params[0],

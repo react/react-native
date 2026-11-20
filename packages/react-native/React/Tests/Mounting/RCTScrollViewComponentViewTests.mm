@@ -6,10 +6,25 @@
  */
 
 #import <React/RCTEnhancedScrollView.h>
+#import <React/RCTScrollContentViewComponentView.h>
 #import <React/RCTScrollViewComponentView.h>
 #import <XCTest/XCTest.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
+#import <react/renderer/components/scrollview/ScrollContentViewComponentDescriptor.h>
+#import <react/renderer/components/scrollview/ScrollContentViewState.h>
 #import <react/renderer/components/scrollview/ScrollViewProps.h>
 #import <react/renderer/components/scrollview/ScrollViewShadowNode.h>
+#import <react/renderer/core/EventBeat.h>
+#import <react/renderer/core/EventDispatcher.h>
+#import <react/renderer/core/EventQueueProcessor.h>
+#import <react/renderer/core/StateUpdate.h>
+#import <react/renderer/runtimescheduler/RuntimeScheduler.h>
+#import <react/utils/ContextContainer.h>
+
+#import <functional>
+#import <memory>
+#import <utility>
 
 using facebook::react::Props;
 using facebook::react::ScrollViewProps;
@@ -23,6 +38,125 @@ static Props::Shared makeScrollViewProps(bool automaticallyAdjustKeyboardInsets)
   props->automaticallyAdjustKeyboardInsets = automaticallyAdjustKeyboardInsets;
   return props;
 }
+
+namespace {
+
+using facebook::react::ComponentDescriptorParameters;
+using facebook::react::ContextContainer;
+using facebook::react::EventBeat;
+using facebook::react::EventDispatcher;
+using facebook::react::EventLogger;
+using facebook::react::EventQueue;
+using facebook::react::EventQueueProcessor;
+using facebook::react::ReactNativeFeatureFlags;
+using facebook::react::ReactNativeFeatureFlagsDefaults;
+using facebook::react::RuntimeScheduler;
+using facebook::react::ScrollContentViewComponentDescriptor;
+using facebook::react::ScrollContentViewShadowNode;
+using facebook::react::ScrollContentViewState;
+using facebook::react::ShadowNodeFamily;
+using facebook::react::State;
+using facebook::react::StateData;
+using facebook::react::StatePipe;
+using facebook::react::StateUpdate;
+
+class ImmediateScrollContentFeatureFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  bool enableImmediateUpdateModeForScrollContentView() override
+  {
+    return true;
+  }
+};
+
+class ScopedScrollContentFeatureFlags {
+ public:
+  explicit ScopedScrollContentFeatureFlags(bool enabled)
+  {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    if (enabled) {
+      ReactNativeFeatureFlags::override(std::make_unique<ImmediateScrollContentFeatureFlags>());
+    }
+  }
+
+  ~ScopedScrollContentFeatureFlags()
+  {
+    ReactNativeFeatureFlags::dangerouslyReset();
+  }
+};
+
+class ScrollContentStateDispatch {
+ public:
+  ScrollContentStateDispatch() : runtimeScheduler_([](std::function<void(facebook::jsi::Runtime &)> && /*callback*/) {})
+  {
+    StatePipe statePipe = [this](const StateUpdate &update) {
+      auto data = update.callback(initialData_);
+      if (update.family == contentFamily_) {
+        latestData = *std::static_pointer_cast<const ScrollContentViewState>(data);
+        nativeStateChanges++;
+      } else if (update.family == unrelatedFamily_) {
+        latestUnrelatedData = *std::static_pointer_cast<const ScrollContentViewState>(data);
+        unrelatedStateChanges++;
+      }
+    };
+    auto ownerBox = std::make_shared<EventBeat::OwnerBox>();
+    dispatcher_ = std::make_shared<EventDispatcher>(
+        EventQueueProcessor({}, {}, statePipe, {}),
+        std::make_unique<EventBeat>(ownerBox, runtimeScheduler_),
+        statePipe,
+        std::weak_ptr<EventLogger>{});
+    ownerBox->owner = dispatcher_;
+    descriptor_ = std::make_unique<ScrollContentViewComponentDescriptor>(ComponentDescriptorParameters{
+        .eventDispatcher = dispatcher_, .contextContainer = std::make_shared<ContextContainer>(), .flavor = nullptr});
+    contentFamily_ = descriptor_->createFamily({.tag = 1, .surfaceId = 1, .instanceHandle = nullptr});
+    unrelatedFamily_ = descriptor_->createFamily({.tag = 2, .surfaceId = 1, .instanceHandle = nullptr});
+    flushFamily_ = descriptor_->createFamily({.tag = 3, .surfaceId = 1, .instanceHandle = nullptr});
+    state_ = descriptor_->createInitialState(ScrollContentViewShadowNode::defaultSharedProps(), contentFamily_);
+  }
+
+  const State::Shared &state() const
+  {
+    return state_;
+  }
+
+  void queueUnrelatedState()
+  {
+    auto data = ScrollContentViewState{};
+    data.safeAreaPadding.top = 99;
+    auto newData = std::make_shared<const ScrollContentViewState>(data);
+    dispatcher_->dispatchStateUpdate(
+        {.family = unrelatedFamily_,
+         .callback = [newData](const StateData::Shared & /*oldData*/) -> StateData::Shared { return newData; }},
+        EventQueue::UpdateMode::Asynchronous);
+  }
+
+  void flushQueuedState()
+  {
+    // A distinct-family legacy immediate update drains the dispatcher's private queue without a JavaScript runtime.
+    dispatcher_->dispatchStateUpdate(
+        {.family = flushFamily_,
+         .callback = [data = initialData_](const StateData::Shared & /*oldData*/) -> StateData::Shared {
+           return data;
+         }},
+        EventQueue::UpdateMode::unstable_Immediate);
+  }
+
+  ScrollContentViewState latestData{};
+  ScrollContentViewState latestUnrelatedData{};
+  unsigned nativeStateChanges{0};
+  unsigned unrelatedStateChanges{0};
+
+ private:
+  RuntimeScheduler runtimeScheduler_;
+  std::unique_ptr<ScrollContentViewComponentDescriptor> descriptor_;
+  std::shared_ptr<EventDispatcher> dispatcher_;
+  ShadowNodeFamily::Shared contentFamily_;
+  ShadowNodeFamily::Shared unrelatedFamily_;
+  ShadowNodeFamily::Shared flushFamily_;
+  State::Shared state_;
+  std::shared_ptr<const ScrollContentViewState> initialData_ = std::make_shared<const ScrollContentViewState>();
+};
+
+} // namespace
 
 @interface RCTScrollViewComponentView (Tests)
 - (void)_keyboardWillChangeFrame:(NSNotification *)notification;
@@ -215,6 +349,97 @@ static Props::Shared makeScrollViewProps(bool automaticallyAdjustKeyboardInsets)
   view.baseContentInset = UIEdgeInsetsMake(20, 30, 40, 50);
   [view adjustedContentInsetDidChange];
   XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(view.contentInset, UIEdgeInsetsMake(20, 15, 40, 25)));
+}
+
+- (void)testScrollContentSafeAreaSetterDefaultsToAsynchronousStateUpdate
+{
+  ScopedScrollContentFeatureFlags flags(false);
+  ScrollContentStateDispatch stateDispatch;
+  RCTScrollContentViewComponentView *view = [RCTScrollContentViewComponentView new];
+  [view updateState:stateDispatch.state() oldState:nullptr];
+  XCTAssertFalse(facebook::react::ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView());
+
+  [view setSafeAreaPadding:UIEdgeInsetsMake(20, 0, 10, 0) contentInsetAdjustment:UIEdgeInsetsMake(7, 0, 3, 0)];
+
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 0u);
+  stateDispatch.flushQueuedState();
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.latestData.safeAreaPadding.top, 20);
+  XCTAssertEqual(stateDispatch.latestData.safeAreaPadding.bottom, 10);
+  XCTAssertEqual(stateDispatch.latestData.contentInsetAdjustment.top, 7);
+  XCTAssertEqual(stateDispatch.latestData.contentInsetAdjustment.bottom, 3);
+}
+
+- (void)testScrollContentSafeAreaSetterFlagUsesImmediateStateUpdate
+{
+  ScopedScrollContentFeatureFlags flags(true);
+  ScrollContentStateDispatch stateDispatch;
+  RCTScrollContentViewComponentView *view = [RCTScrollContentViewComponentView new];
+  [view updateState:stateDispatch.state() oldState:nullptr];
+  stateDispatch.queueUnrelatedState();
+  XCTAssertTrue(facebook::react::ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView());
+
+  [view setSafeAreaPadding:UIEdgeInsetsMake(20, 0, 10, 0) contentInsetAdjustment:UIEdgeInsetsMake(7, 0, 3, 0)];
+
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.unrelatedStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.latestUnrelatedData.safeAreaPadding.top, 99);
+  XCTAssertEqual(stateDispatch.latestData.safeAreaPadding.top, 20);
+  XCTAssertEqual(stateDispatch.latestData.contentInsetAdjustment.top, 7);
+
+  [view setSafeAreaPadding:UIEdgeInsetsMake(30, 0, 12, 0) contentInsetAdjustment:UIEdgeInsetsMake(9, 0, 4, 0)];
+
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 2u);
+  XCTAssertEqual(stateDispatch.unrelatedStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.latestData.safeAreaPadding.top, 30);
+  XCTAssertEqual(stateDispatch.latestData.contentInsetAdjustment.top, 9);
+  stateDispatch.flushQueuedState();
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 2u);
+  XCTAssertEqual(stateDispatch.unrelatedStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.latestUnrelatedData.safeAreaPadding.top, 99);
+}
+
+- (void)testScrollContentFinalizeDefaultsToAsynchronousStateUpdate
+{
+  ScopedScrollContentFeatureFlags flags(false);
+  ScrollContentStateDispatch stateDispatch;
+  RCTScrollContentViewComponentView *view = [RCTScrollContentViewComponentView new];
+  [view setSafeAreaPadding:UIEdgeInsetsMake(20, 0, 10, 0) contentInsetAdjustment:UIEdgeInsetsMake(7, 0, 3, 0)];
+  [view updateState:stateDispatch.state() oldState:nullptr];
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 0u);
+  XCTAssertFalse(facebook::react::ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView());
+
+  [view finalizeUpdates:RNComponentViewUpdateMaskState];
+
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 0u);
+  stateDispatch.flushQueuedState();
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.latestData.safeAreaPadding.top, 20);
+  XCTAssertEqual(stateDispatch.latestData.contentInsetAdjustment.top, 7);
+}
+
+- (void)testScrollContentFinalizeFlagUsesImmediateStateUpdate
+{
+  ScopedScrollContentFeatureFlags flags(true);
+  ScrollContentStateDispatch stateDispatch;
+  RCTScrollContentViewComponentView *view = [RCTScrollContentViewComponentView new];
+  [view setSafeAreaPadding:UIEdgeInsetsMake(20, 0, 10, 0) contentInsetAdjustment:UIEdgeInsetsMake(7, 0, 3, 0)];
+  [view updateState:stateDispatch.state() oldState:nullptr];
+  stateDispatch.queueUnrelatedState();
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 0u);
+  XCTAssertTrue(facebook::react::ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView());
+
+  [view finalizeUpdates:RNComponentViewUpdateMaskState];
+
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.unrelatedStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.latestUnrelatedData.safeAreaPadding.top, 99);
+  XCTAssertEqual(stateDispatch.latestData.safeAreaPadding.top, 20);
+  XCTAssertEqual(stateDispatch.latestData.contentInsetAdjustment.top, 7);
+  stateDispatch.flushQueuedState();
+  XCTAssertEqual(stateDispatch.nativeStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.unrelatedStateChanges, 1u);
+  XCTAssertEqual(stateDispatch.latestUnrelatedData.safeAreaPadding.top, 99);
 }
 // NOLINTEND(cppcoreguidelines-pro-type-vararg, misc-throw-by-value-catch-by-reference)
 

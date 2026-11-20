@@ -50,14 +50,28 @@ expect(boundingClientRect.width).toBe(100);
 ```
 
 Fantom is designed to make it possible to test the integration between
-JavaScript, React and React Native core - platform agnostic parts. When you are
-making a change to any of these parts, you should consider writing a Fantom test
-for it. It is geared towards engineers working on React Native.
+JavaScript, React and React Native core - platform agnostic parts. It is geared
+towards engineers working on React Native.
 
 With Fantom you can create scenarios close to those how a real product will
 interact with React Native and observe what effects it has on a mock host
 platform. It exposes fine grained controls over scheduling, making it possible
 to test cases that are hard to reproduce manually.
+
+## Fantom or Jest?
+
+Use Fantom for new tests of React Native runtime logic: JavaScript that runs in
+apps using React Native, such as the code in `packages/react-native/Libraries`
+and `packages/react-native/src`. This includes new test cases for a module that
+already has a Jest test: add them to its Fantom test (or create one) instead of
+extending the Jest test.
+
+Use regular Jest for:
+
+- iOS-specific logic that needs a test, because Fantom runs as
+  `Platform.OS === 'android'`.
+- Code that runs in Node.js rather than in apps, such as build tools, scripts,
+  Codegen, the Babel and Metro configuration, the CLI and the dev server.
 
 ## 🚀 Usage
 

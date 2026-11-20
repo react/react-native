@@ -8,7 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
 import type {
   DOMHighResTimeStamp,
   PerformanceEntryInit,
@@ -56,6 +55,7 @@ class PerformanceMarkTemplate extends PerformanceEntry {
     this.__detail = markOptions?.detail ?? null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get detail(): DetailType {
     return this.__detail;
   }
@@ -81,7 +81,6 @@ export const PerformanceMark: typeof PerformanceMarkTemplate =
     this.__detail = markOptions?.detail ?? null;
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceMark.prototype = PerformanceMarkTemplate.prototype;
 
 class PerformanceMeasureTemplate extends PerformanceEntry {
@@ -96,6 +95,7 @@ class PerformanceMeasureTemplate extends PerformanceEntry {
     this.__detail = init?.detail ?? null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get detail(): DetailType {
     return this.__detail;
   }
@@ -116,7 +116,6 @@ export const PerformanceMeasure: typeof PerformanceMeasureTemplate =
     this.__detail = init.detail ?? null;
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceMeasure.prototype = PerformanceMeasureTemplate.prototype;
 
 export const PerformanceMeasure_public: typeof PerformanceMeasure =
@@ -128,5 +127,4 @@ export const PerformanceMeasure_public: typeof PerformanceMeasure =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceMeasure_public.prototype = PerformanceMeasure.prototype;

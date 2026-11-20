@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {IntersectionObserverId} from './internals/IntersectionObserverManager';
 import type IntersectionObserverEntry from './IntersectionObserverEntry';
 
@@ -131,6 +129,7 @@ export default class IntersectionObserver {
    *
    * NOTE: This cannot currently be configured and `root` is always `null`.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get root(): ReactNativeElement | null {
     return this._root;
   }
@@ -141,6 +140,7 @@ export default class IntersectionObserver {
    * corresponding side in the root element's bounding box before the
    * intersection test is performed.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get rootMargin(): string {
     return this._rootMargin;
   }
@@ -155,6 +155,7 @@ export default class IntersectionObserver {
    * If no value was passed to the constructor, and no `rnRootThreshold`
    * is set, `0` is used.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get thresholds(): ReadonlyArray<number> {
     return this._thresholds;
   }
@@ -166,6 +167,7 @@ export default class IntersectionObserver {
    * Notifications for a target are generated when any of the thresholds specified
    * in `rnRootThreshold` or `threshold` are crossed for that target.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get rnRootThresholds(): ReadonlyArray<number> | null {
     return this._rootThresholds;
   }
@@ -174,6 +176,7 @@ export default class IntersectionObserver {
    * The `delay` option is not supported.
    * @throws {Error} Always throws an error indicating this property is not supported.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get delay(): number {
     throw new Error(
       "Failed to read the 'delay' property from 'IntersectionObserver': This property is not supported.",
@@ -184,6 +187,7 @@ export default class IntersectionObserver {
    * The `scrollMargin` option is not supported.
    * @throws {Error} Always throws an error indicating this property is not supported.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get scrollMargin(): string {
     throw new Error(
       "Failed to read the 'scrollMargin' property from 'IntersectionObserver': This property is not supported.",
@@ -194,6 +198,7 @@ export default class IntersectionObserver {
    * The `trackVisibility` option is not supported.
    * @throws {Error} Always throws an error indicating this property is not supported.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get trackVisibility(): boolean {
     throw new Error(
       "Failed to read the 'trackVisibility' property from 'IntersectionObserver': This property is not supported.",

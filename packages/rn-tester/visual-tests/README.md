@@ -7,7 +7,7 @@ Each test is a [Maestro](https://maestro.dev) flow in `flows/`. Maestro only ope
 ## How it runs in CI
 
 1. Test All builds RNTester Release for Android and iOS. Once a build is ready, the `test_visual_android_rntester` and `test_visual_ios_rntester` jobs (`.github/workflows/visual-capture-rntester.yml`) run every flow in this directory on one canonical device per platform: an API 35 Pixel 7 emulator and an iPhone 17 Pro simulator on iOS 26.2. Any screenshot that differs from the baseline is retaken once, and the retake is kept if it matches, so a notification or other system UI that briefly covers the app doesn't cause a failure. A new test is taken twice too, and if the two captures differ, the report marks it unstable and it isn't published as the baseline. They upload the screenshots and a manifest of the device environment as `visual-capture-android` and `visual-capture-ios` artifacts.
-2. When Test All completes, Visual Compare RNTester (`.github/workflows/visual-compare-rntester.yml`) compares the screenshots with the baseline and reports a `Visual regression (android)` and `Visual regression (ios)` check and a `Visual regression approval` gate, plus a single PR comment with the expected, captured and diff images for anything that changed.
+2. When Test All completes, Visual Compare RNTester (`.github/workflows/visual-compare-rntester.yml`) compares the screenshots with the baseline and reports a `Visual regression (android)` and `Visual regression (ios)` check, which are neutral when there are differences, and a `Visual regression approval` gate, which fails until a maintainer approves them, plus a single PR comment with the expected, captured and diff images for anything that changed.
 3. On pushes to `main`, Visual Compare RNTester also publishes the captures as the baseline for that commit. There's no separate workflow for this: the same run publishes them once it has compared them.
 
 Only `main` and pull requests into it are compared. Stable branches have no baselines, so Visual Compare RNTester skips them.
@@ -36,7 +36,7 @@ The baseline for a PR is the one for the commit it's based on, or the nearest ea
          id: 'text-width-mode-example'
    ```
 
-   `open-example.yml` deep-links to `rntester://example/<module>/<example>`. Wait for something that's only visible once the example has rendered, and crop to the example's `testID` so that the status bar and surrounding UI aren't part of the screenshot.
+   `open-example.yml` deep-links to `rntester://example/<module>/<example>`. Wait for something that's only visible once the example has rendered, and that only this example has (not the generic `example-container`, which a restored previous example also has), and crop to the example's `testID` so that the status bar and surrounding UI aren't part of the screenshot.
 
 3. Open a PR. The new test has no baseline yet, so the report lists it as new, and like any other difference it needs a maintainer's approval (see below). Once the PR lands, `main` is captured with it and later PRs are compared against that.
 

@@ -121,7 +121,6 @@ export default function createAnimatedPropsHook(
 
         // NOTE: This may be called more often than necessary (e.g. when `props`
         // changes), but `setNativeView` already optimizes for that.
-        // $FlowFixMe[incompatible-type]
         node.setNativeView(instance);
 
         // NOTE: When using the JS animation driver, this callback is called on
@@ -169,7 +168,6 @@ export default function createAnimatedPropsHook(
 
           if (!isFabricNode) {
             // Check 4: this is a paper instance, call setNativeProps.
-            // $FlowFixMe[not-a-function] - Assume it's still a function.
             // $FlowFixMe[incompatible-use]
             return instance.setNativeProps(node.__getAnimatedValue());
           }
@@ -184,7 +182,6 @@ export default function createAnimatedPropsHook(
           // This is a Fabric instance and setNativeProps is supported.
 
           // $FlowFixMe[not-a-function] - Assume it's still a function.
-          // $FlowFixMe[incompatible-use]
           instance.setNativeProps(node.__getAnimatedValue());
 
           // Keeping state of Fiber tree and Shadow tree in sync.

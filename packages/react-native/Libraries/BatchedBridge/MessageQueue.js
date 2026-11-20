@@ -74,15 +74,12 @@ class MessageQueue {
 
     // $FlowFixMe[cannot-write]
     this.callFunctionReturnFlushedQueue =
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       this.callFunctionReturnFlushedQueue.bind(this);
     // $FlowFixMe[cannot-write]
-    // $FlowFixMe[method-unbinding] added when improving typing for this parameters
     this.flushedQueue = this.flushedQueue.bind(this);
 
     // $FlowFixMe[cannot-write]
     this.invokeCallbackAndReturnFlushedQueue =
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       this.invokeCallbackAndReturnFlushedQueue.bind(this);
   }
 

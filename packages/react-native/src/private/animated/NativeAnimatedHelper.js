@@ -148,14 +148,11 @@ function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
         // been flushed, use the queue. This is to prevent operations
         // from being executed out of order.
         if (queueOperations || queue.length !== 0) {
-          // $FlowExpectedError[incompatible-call] - Dynamism.
           queue.push(() => method(...args));
         } else if (shouldSignalBatch) {
-          // $FlowExpectedError[incompatible-call] - Dynamism.
           queue.push(() => method(...args));
           scheduleQueueFlush();
         } else {
-          // $FlowExpectedError[incompatible-call] - Dynamism.
           method(...args);
         }
       };
@@ -484,10 +481,8 @@ export default {
   generateNewNodeTag,
   isNativeDriverForced,
   // $FlowExpectedError[unsafe-getters-setters] - unsafe getter lint suppression
-  // $FlowExpectedError[missing-type-arg] - unsafe getter lint suppression
   get nativeEventEmitter(): NativeEventEmitter {
     if (!nativeEventEmitter) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
       nativeEventEmitter = new NativeEventEmitter(
         // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
         // If you want to use the native module on other platforms, please remove this condition and test its behavior

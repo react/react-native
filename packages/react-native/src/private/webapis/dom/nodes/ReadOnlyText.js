@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
 import ReadOnlyCharacterData from './ReadOnlyCharacterData';
 import ReadOnlyNode from './ReadOnlyNode';
@@ -18,6 +16,7 @@ export default class ReadOnlyText extends ReadOnlyCharacterData {
   /**
    * @override
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeName(): string {
     return '#text';
   }
@@ -25,6 +24,7 @@ export default class ReadOnlyText extends ReadOnlyCharacterData {
   /**
    * @override
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeType(): number {
     return ReadOnlyNode.TEXT_NODE;
   }
@@ -38,7 +38,6 @@ export const ReadOnlyText_public: typeof ReadOnlyText =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyText_public.prototype = ReadOnlyText.prototype;
 
 // The public imperative EventTarget API (`addEventListener`,

@@ -28,7 +28,6 @@ export default function useMergeRefs<Instance>(
     (current: Instance) => {
       const cleanups: ReadonlyArray<void | (() => void)> = refs.map(ref => {
         if (typeof ref === 'function') {
-          // $FlowFixMe[incompatible-type] - Flow does not understand ref cleanup.
           const cleanup: void | (() => void) = ref(current);
           return typeof cleanup === 'function'
             ? cleanup

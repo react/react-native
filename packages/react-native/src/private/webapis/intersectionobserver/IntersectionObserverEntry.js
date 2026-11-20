@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type ReactNativeElement from '../dom/nodes/ReactNativeElement';
 import type {NativeIntersectionObserverEntry} from './specs/NativeIntersectionObserver';
 
@@ -46,6 +44,7 @@ export default class IntersectionObserverEntry {
    * The bounds are computed as described in the documentation for
    * [`Element.getBoundingClientRect()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect).
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get boundingClientRect(): DOMRectReadOnly {
     const targetRect = this._nativeEntry.targetRect;
     return new DOMRectReadOnly(
@@ -59,6 +58,7 @@ export default class IntersectionObserverEntry {
   /**
    * Returns the ratio of the `intersectionRect` to the `boundingClientRect`.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get intersectionRatio(): number {
     const intersectionRect = this.intersectionRect;
     const boundingClientRect = this.boundingClientRect;
@@ -78,6 +78,7 @@ export default class IntersectionObserverEntry {
   /**
    * Returns the ratio of the `intersectionRect` to the `boundingRootRect`.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get rnRootIntersectionRatio(): number {
     const intersectionRect = this.intersectionRect;
 
@@ -104,6 +105,7 @@ export default class IntersectionObserverEntry {
   /**
    * Returns a `DOMRectReadOnly` representing the target's visible area.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get intersectionRect(): DOMRectReadOnly {
     const intersectionRect = this._nativeEntry.intersectionRect;
 
@@ -127,6 +129,7 @@ export default class IntersectionObserverEntry {
    * * If it's `false`, then you know the transition is from intersecting to
    * not-intersecting.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get isIntersecting(): boolean {
     return this._nativeEntry.isIntersectingAboveThresholds;
   }
@@ -134,6 +137,7 @@ export default class IntersectionObserverEntry {
   /**
    * Returns a `DOMRectReadOnly` for the intersection observer's root.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get rootBounds(): DOMRectReadOnly {
     const rootRect = this._nativeEntry.rootRect;
     return new DOMRectReadOnly(
@@ -147,6 +151,7 @@ export default class IntersectionObserverEntry {
   /**
    * The `ReactNativeElement` whose intersection with the root changed.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get target(): ReactNativeElement {
     return this._target;
   }
@@ -155,6 +160,7 @@ export default class IntersectionObserverEntry {
    * A `DOMHighResTimeStamp` indicating the time at which the intersection was
    * recorded, relative to the `IntersectionObserver`'s time origin.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get time(): DOMHighResTimeStamp {
     return this._nativeEntry.time;
   }
@@ -178,6 +184,5 @@ export const IntersectionObserverEntry_public: typeof IntersectionObserverEntry 
     );
   };
 
-// $FlowExpectedError[prop-missing]
 IntersectionObserverEntry_public.prototype =
   IntersectionObserverEntry.prototype;

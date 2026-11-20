@@ -150,7 +150,8 @@ static Rect getBoundingRect(const ShadowNodeFamily::AncestorList& ancestors) {
   return layoutMetrics == EmptyLayoutMetrics ? Rect{} : layoutMetrics.frame;
 }
 
-static Rect getClippedTargetBoundingRect(
+// Returns std::nullopt if the target is entirely clipped by an ancestor.
+static std::optional<Rect> getClippedTargetBoundingRect(
     const ShadowNodeFamily::AncestorList& targetAncestors) {
   auto layoutMetrics = LayoutableShadowNode::computeRelativeLayoutMetrics(
       targetAncestors,
@@ -159,7 +160,10 @@ static Rect getClippedTargetBoundingRect(
        /* .applyParentClipping = */ .enableOverflowClipping = true,
        /* .clipSpecifiedAncestor = */ .clipSpecifiedAncestor = false});
 
-  return layoutMetrics == EmptyLayoutMetrics ? Rect{} : layoutMetrics.frame;
+  if (layoutMetrics == EmptyLayoutMetrics) {
+    return std::nullopt;
+  }
+  return layoutMetrics.frame;
 }
 
 // Distinguishes between edge-adjacent vs. no intersection
@@ -212,13 +216,18 @@ static std::optional<Rect> computeIntersection(
   // final clip against the root intersection rectangle.
   auto clippedTargetFromRoot =
       getClippedTargetBoundingRect(targetToRootAncestors);
+  if (!clippedTargetFromRoot.has_value()) {
+    // Don't fall through with an empty rect: at the origin, it would count as
+    // edge-adjacent to any root rect containing the origin.
+    return std::nullopt;
+  }
 
   // Use root origin (without rootMargins) to translate coordinates of
   // clippedTarget from relative to root, to top-level coordinate system
   auto clippedTargetBoundingRect = hasExplicitRoot ? Rect{
-      .origin= rootBoundingRect.origin + clippedTargetFromRoot.origin,
-      .size=clippedTargetFromRoot.size}
-      : clippedTargetFromRoot;
+      .origin= rootBoundingRect.origin + clippedTargetFromRoot->origin,
+      .size=clippedTargetFromRoot->size}
+      : *clippedTargetFromRoot;
 
   return intersectOrNull(rootMarginBoundingRect, clippedTargetBoundingRect);
 }

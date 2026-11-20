@@ -459,6 +459,37 @@ class FabricMountingManagerInstrumentationTest {
     assertThat(helper.isTagAllocated(surfaceId, 42)).isFalse()
   }
 
+  /**
+   * A commit can create and delete a view before the queue drains, when the view is flattened again
+   * by the next commit. The drain must not register the tag again: its next Create would be skipped
+   * and the view would never exist.
+   */
+  @Test
+  fun native_drainPreallocationQueue_skipsViewThatACommitCreatedAndDeleted() {
+    val helper = createTestHelper()
+    helper.startSurface(surfaceId)
+    helper.queuePreallocation(surfaceId, 42)
+    helper.commitQueuedView(42)
+    helper.executeCreateMutation(surfaceId, 42)
+    helper.executeDeleteMutation(surfaceId, 42)
+
+    helper.drainPreallocationQueue()
+
+    assertThat(helper.isTagAllocated(surfaceId, 42)).isFalse()
+  }
+
+  /** A view that no commit has taken yet is still preallocated. */
+  @Test
+  fun native_drainPreallocationQueue_preallocatesViewNotYetCommitted() {
+    val helper = createTestHelper()
+    helper.startSurface(surfaceId)
+    helper.queuePreallocation(surfaceId, 42)
+
+    helper.drainPreallocationQueue()
+
+    assertThat(helper.isTagAllocated(surfaceId, 42)).isTrue()
+  }
+
   /** Without the pull model, a committed family does not destroy its view. */
   @Test
   fun native_destroyCommittedView_keepsPreallocatedView() {

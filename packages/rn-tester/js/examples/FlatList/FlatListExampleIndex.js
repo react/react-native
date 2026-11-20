@@ -17,6 +17,7 @@ import MaintainVisibleContentPosition from './FlatList-maintainVisibleContentPos
 import MultiColumnExample from './FlatList-multiColumn';
 import NestedExample from './FlatList-nested';
 import OnEndReachedExample from './FlatList-onEndReached';
+import OnMomentumScrollExample from './FlatList-onMomentumScroll';
 import OnStartReachedExample from './FlatList-onStartReached';
 import onViewableItemsChangedExample from './FlatList-onViewableItemsChanged';
 import onViewableItemsChanged_horizontal_noWaitForInteraction from './FlatList-onViewableItemsChanged-horizontal-noWaitForInteraction';
@@ -40,6 +41,7 @@ export default {
     MaintainVisibleContentPosition,
     OnStartReachedExample,
     OnEndReachedExample,
+    OnMomentumScrollExample,
     ContentInsetExample,
     InvertedExample,
     onViewableItemsChangedExample,

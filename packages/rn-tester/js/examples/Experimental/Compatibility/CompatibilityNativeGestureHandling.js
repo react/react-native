@@ -39,7 +39,6 @@ function CompatibilityNativeGestureHandling(): React.Node {
           .fill()
           .map((_, index) => {
             return (
-              // $FlowFixMe[incompatible-type]
               <EventfulView
                 // $FlowFixMe[incompatible-type]
                 log={console.log}

@@ -6,15 +6,77 @@
  */
 
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
+#include <react/renderer/components/scrollview/ScrollContentViewComponentDescriptor.h>
+#include <react/renderer/components/scrollview/ScrollContentViewState.h>
 #include <react/renderer/components/view/ViewShadowNode.h>
 #include <react/renderer/core/ShadowNodeFragment.h>
+#include <react/renderer/core/StateUpdate.h>
 #include <react/renderer/element/Element.h>
 #include <react/renderer/element/testUtils.h>
 #include <react/renderer/uimanager/UIManager.h>
+#include <react/renderer/uimanager/UIManagerDelegate.h>
+#include <react/utils/OnScopeExit.h>
 
 namespace facebook::react {
+
+namespace {
+
+class RecordingUIManagerDelegate : public UIManagerDelegate {
+ public:
+  std::vector<std::pair<SurfaceId, bool>> transactions;
+
+  void uiManagerDidFinishTransaction(
+      std::shared_ptr<const MountingCoordinator> mountingCoordinator,
+      bool mountSynchronously) override {
+    transactions.emplace_back(
+        mountingCoordinator->getSurfaceId(), mountSynchronously);
+  }
+
+  void uiManagerDidCreateShadowNode(const ShadowNode& /*shadowNode*/) override {
+  }
+  void uiManagerDidDispatchCommand(
+      const std::shared_ptr<const ShadowNode>& /*shadowNode*/,
+      const std::string& /*commandName*/,
+      const folly::dynamic& /*args*/) override {}
+  void uiManagerDidSendAccessibilityEvent(
+      const std::shared_ptr<const ShadowNode>& /*shadowNode*/,
+      const std::string& /*eventType*/) override {}
+  void uiManagerDidSetIsJSResponder(
+      const std::shared_ptr<const ShadowNode>& /*shadowNode*/,
+      bool /*isJSResponder*/,
+      bool /*blockNativeResponder*/) override {}
+  void uiManagerShouldSynchronouslyUpdateViewOnUIThread(
+      Tag /*tag*/,
+      const folly::dynamic& /*props*/) override {}
+  void uiManagerShouldSynchronouslyUpdateAnimatedProps(
+      const std::unordered_map<Tag, AnimatedProps>& /*updates*/) override {}
+  void uiManagerDidUpdateShadowTree(
+      const std::unordered_map<Tag, folly::dynamic>& /*tagToProps*/) override {}
+  void uiManagerShouldAddEventListener(
+      std::shared_ptr<const EventListener> /*listener*/) override {}
+  void uiManagerShouldRemoveEventListener(
+      const std::shared_ptr<const EventListener>& /*listener*/) override {}
+  void uiManagerDidStartSurface(const ShadowTree& /*shadowTree*/) override {}
+  void uiManagerDidFinishReactCommit(
+      const ShadowTree& /*shadowTree*/) override {}
+  void uiManagerShouldAddOnSurfaceStartCallback(
+      OnSurfaceStartCallback&& /*callback*/) override {}
+  void uiManagerDidCaptureViewSnapshot(Tag /*tag*/, SurfaceId /*surfaceId*/)
+      override {}
+  void uiManagerDidSetViewSnapshot(
+      Tag /*sourceTag*/,
+      Tag /*targetTag*/,
+      SurfaceId /*surfaceId*/) override {}
+  void uiManagerDidClearPendingSnapshots() override {}
+};
+
+} // namespace
 
 class FabricUIManagerTest : public ::testing::Test {
  public:
@@ -33,6 +95,9 @@ class FabricUIManagerTest : public ::testing::Test {
         concreteComponentDescriptorProvider<RootComponentDescriptor>());
     componentDescriptorProviderRegistry.add(
         concreteComponentDescriptorProvider<ViewComponentDescriptor>());
+    componentDescriptorProviderRegistry.add(
+        concreteComponentDescriptorProvider<
+            ScrollContentViewComponentDescriptor>());
 
     builder_ = std::make_unique<ComponentBuilder>(componentDescriptorRegistry);
 
@@ -125,6 +190,43 @@ class FabricUIManagerTest : public ::testing::Test {
   std::unique_ptr<UIManager> uiManager_;
   ShadowTree* shadowTreePtr_{nullptr};
 };
+
+TEST_F(FabricUIManagerTest, NativeStateUpdateRequestsSynchronousMount) {
+  auto contentNode = builder_->build(
+      Element<ScrollContentViewShadowNode>().tag(viewTag_).surfaceId(
+          surfaceId_));
+  auto rootChildren =
+      std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>();
+  rootChildren->push_back(contentNode);
+  uiManager_->completeSurface(surfaceId_, rootChildren, {});
+
+  auto stateData = ScrollContentViewState{};
+  stateData.safeAreaPadding.top = 20;
+  stateData.safeAreaPadding.bottom = 12;
+  auto expectedStateData =
+      std::make_shared<const ScrollContentViewState>(stateData);
+  ASSERT_NE(contentNode->getStateData(), stateData);
+
+  RecordingUIManagerDelegate delegate;
+  uiManager_->setDelegate(&delegate);
+  auto resetDelegate = OnScopeExit([&]() { uiManager_->setDelegate(nullptr); });
+  auto update = StateUpdate{
+      .family = contentNode->getFamilyShared(),
+      .callback = [expectedStateData](const StateData::Shared& /*oldData*/)
+          -> StateData::Shared { return expectedStateData; }};
+
+  uiManager_->updateState(update);
+
+  const std::vector<std::pair<SurfaceId, bool>> expectedTransactions{
+      {surfaceId_, true}};
+  EXPECT_EQ(delegate.transactions, expectedTransactions);
+  auto updatedNode =
+      std::static_pointer_cast<const ScrollContentViewShadowNode>(
+          currentViewNode());
+  ASSERT_NE(updatedNode->getState(), nullptr);
+  EXPECT_EQ(&updatedNode->getStateData(), expectedStateData.get());
+  EXPECT_EQ(updatedNode->getStateData(), stateData);
+}
 
 // Demonstrates the merge between props set by `setNativeProps_DEPRECATED`
 // (the legacy native-side prop override path) and props supplied by a

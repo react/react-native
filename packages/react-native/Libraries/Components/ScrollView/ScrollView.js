@@ -385,16 +385,36 @@ export type ScrollViewPropsIOS = Readonly<{
    * @platform ios
    */
   zoomScale?: ?number,
+
   /**
-   * How the safe area insets modify the content area of the scroll view.
+   * Controls whether and how the ScrollView keeps its content clear of the
+   * system safe areas (iOS only).
    *
-   * Along the scrollable axis, the insets become content insets, so content
-   * scrolls under the system UI. Across it, every value except `'never'` pads
-   * the content container by the insets, so content is laid out clear of the
-   * system UI, such as the rail on iPhone Duo or camera cutout in landscape,
-   * while the container's background still extends edge to edge. On every
-   * edge, the `contentContainerStyle` padding counts toward the inset, so
-   * content sits at the larger of the two.
+   * `'automatic'` is strongly recommended anywhere a ScrollView or FlatList
+   * is the root element of a given screen.
+   *
+   * Along the scrollable axis, `'always'` applies the safe area insets.
+   * `'automatic'` and `'scrollableAxes'` apply them while the content is
+   * scrollable, or while `alwaysBounce*` is true.
+   *
+   * Across the scrollable axis, `'automatic'` and `'always'` also pad the
+   * content container by the insets, such as side insets for an iPhone in
+   * landscape, or the vertical bar on iPhone Duo.
+   *
+   * - **'never'** (default): Applies no insets. Content is laid out and
+   *   scrolls under the system UI.
+   * - **'automatic'**: Applies insets along the scrollable axis, plus padding
+   *   across it.
+   * - **'scrollableAxes'**: Uses UIKit's `.scrollableAxes` insets along the
+   *   scrollable axis only.
+   * - **'always'**: Applies insets on both axes. Unlike `'automatic'`,
+   *   scrollable-axis insets remain when content fits and `alwaysBounce*` is
+   *   false.
+   *
+   * Note: With any value other than `'never'`, point-valued
+   * `contentContainerStyle` padding on edges where an inset applies is
+   * absorbed by the inset, instead of adding to it. See
+   * `contentContainerStyle`.
    *
    * @default `'never'`
    * @platform ios
@@ -509,7 +529,7 @@ type ScrollViewBaseProps = Readonly<{
    * If setting `contentInsetAdjustmentBehavior` (recommended), `padding` is
    * applied slightly differently than with a regular `<View>`:
    *
-   * - Pixel values: If a system safe area inset applies on a given edge, the
+   * - Point values: If a system safe area inset applies on a given edge, the
    *   **greater of** the `padding` or inset length will be applied. An edge
    *   without an inset, such as the top of a ScrollView below a header, keeps
    *   its full `padding`.
@@ -790,8 +810,6 @@ type ScrollViewBaseProps = Readonly<{
    *
    * See [RefreshControl](docs/refreshcontrol.html).
    */
-  /* $FlowFixMe[unclear-type] - how to handle generic type without existential
-   * operator? */
   refreshControl?: ?React.MixedElement,
   children?: React.Node,
   /**
@@ -1093,7 +1111,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
         UIManager.measureLayout(
           nodeHandle,
           nullthrows(findNodeHandle<$FlowFixMe>(this)),
-          // $FlowFixMe[method-unbinding] added when improving typing for this parameters
           /* $FlowFixMe[incompatible-type] Error exposed after fixing this
            * typing unsoundness in flow */
           this._textInputFocusError,
@@ -1103,7 +1120,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
         nodeHandle.measureLayout(
           this._innerView.nativeInstance,
           this._inputMeasureAndScrollToKeyboard,
-          // $FlowFixMe[method-unbinding] added when improving typing for this parameters
           /* $FlowFixMe[incompatible-type] Error exposed after fixing this
            * typing unsoundness in flow */
           this._textInputFocusError,
@@ -1777,14 +1793,10 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       this.props.contentContainerStyle,
     ];
     if (__DEV__ && this.props.style !== undefined) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
       const style = flattenStyle(this.props.style);
       const childLayoutProps = (
         ['alignItems', 'justifyContent'] as const
-      ).filter(
-        // $FlowFixMe[incompatible-use]
-        prop => style && style[prop] !== undefined,
-      );
+      ).filter(prop => style && style[prop] !== undefined);
       invariant(
         childLayoutProps.length === 0,
         'ScrollView child layout (' +
@@ -1819,7 +1831,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
           return (
             <StickyHeaderComponent
               key={key}
-              /* $FlowFixMe[incompatible-type] */
               ref={ref => this._setStickyHeaderRef(key, ref)}
               nextHeaderLayoutY={this._headerLayoutYs.get(
                 this._getKeyForIndex(nextIndex, children),
@@ -1953,7 +1964,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       if (Platform.OS === 'ios') {
         // On iOS the RefreshControl is a child of the ScrollView.
         return (
-          // $FlowFixMe[incompatible-type] - Flow only knows element refs.
           <NativeScrollView {...props} ref={scrollViewRef}>
             {refreshControl}
             {contentContainer}
@@ -1975,7 +1985,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
             // Nested scroll should always be enabled to allow the child scroll view to handle events before passing them to the refresh control parent
             nestedScrollEnabled={props.nestedScrollEnabled ?? true}
             style={StyleSheet.compose(baseStyle, inner)}
-            // $FlowFixMe[incompatible-type] - Flow only knows element refs.
             ref={scrollViewRef}>
             {contentContainer}
           </NativeScrollView>,
@@ -1983,7 +1992,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       }
     }
     return (
-      // $FlowFixMe[incompatible-type] - Flow only knows element refs.
       <NativeScrollView {...props} ref={scrollViewRef}>
         {contentContainer}
       </NativeScrollView>

@@ -203,11 +203,14 @@ LayoutMetrics LayoutableShadowNode::getLayoutMetrics() const {
 }
 
 void LayoutableShadowNode::setLayoutMetrics(LayoutMetrics layoutMetrics) {
-  ensureUnsealed();
-
   if (layoutMetrics_ == layoutMetrics) {
     return;
   }
+
+  // Sealed nodes are immutable, but writing back identical metrics changes
+  // nothing: check first so that propagating an unchanged layout to a node
+  // shared with a sealed tree does not trip the seal.
+  ensureUnsealed();
 
   layoutMetrics_ = layoutMetrics;
 }

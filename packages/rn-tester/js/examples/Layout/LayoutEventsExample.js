@@ -101,14 +101,7 @@ class LayoutEventExample extends React.Component<Props, State> {
           />
           <RNTesterText>
             ViewLayout:{' '}
-            {
-              /* $FlowFixMe[incompatible-type] (>=0.95.0 site=react_native_fb)
-               * This comment suppresses an error found when Flow v0.95 was
-               * deployed. To see the error, delete this comment and run Flow.
-               */
-              // $FlowFixMe[unsafe-addition]
-              JSON.stringify(this.state.viewLayout, null, '  ') + '\n\n'
-            }
+            {JSON.stringify(this.state.viewLayout, null, '  ') + '\n\n'}
           </RNTesterText>
           <RNTesterText onLayout={this.onTextLayout} style={styles.text}>
             A simple piece of text.{this.state.extraText}

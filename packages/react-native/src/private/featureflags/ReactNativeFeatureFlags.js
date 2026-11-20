@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8817847943e654f2ce61fc39af75baf8>>
+ * @generated SignedSource<<705049f8ca1f9561e4fa3ee993023e85>>
  * @flow strict
  * @noformat
  */
@@ -83,6 +83,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableImagePrefetchingAndroid: Getter<boolean>,
   enableImageTransparentTintColor: Getter<boolean>,
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
+  enableImmediateUpdateModeForScrollContentView: Getter<boolean>,
   enableImperativeEvents: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteractableResponderViews: Getter<boolean>,
@@ -357,6 +358,10 @@ export const enableImageTransparentTintColor: Getter<boolean> = createNativeFlag
  * Dispatches state updates for content offset changes synchronously on the main thread.
  */
 export const enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean> = createNativeFlagGetter('enableImmediateUpdateModeForContentOffsetChanges', false);
+/**
+ * Apply ScrollContentView state updates synchronously on the main thread.
+ */
+export const enableImmediateUpdateModeForScrollContentView: Getter<boolean> = createNativeFlagGetter('enableImmediateUpdateModeForScrollContentView', false);
 /**
  * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
  */

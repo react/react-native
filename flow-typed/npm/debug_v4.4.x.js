@@ -15,7 +15,7 @@ declare module 'debug' {
     [formatter: string]: (v: unknown) => string;
   }
 
-  declare type Debugger = {|
+  declare type Debugger = {
     (format: unknown, ...args: Array<unknown>): void,
     color: string,
     diff: number,
@@ -24,9 +24,9 @@ declare module 'debug' {
     namespace: string,
     destroy: () => boolean,
     extend: (namespace: string, delimiter?: string) => Debugger,
-  |};
+  };
 
-  declare type Debug = {|
+  declare type Debug = {
     (namespace: string): Debugger,
     coerce: (val: unknown) => unknown,
     disable: () => string,
@@ -48,7 +48,7 @@ declare module 'debug' {
       showHidden?: boolean | number | null,
       ...
     },
-  |};
+  };
 
   declare module.exports: Debug;
 }

@@ -184,7 +184,7 @@ protected:
   ${hasteModuleName}CxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{${hasteModuleName}CxxSpec::kModuleName}, jsInvoker) {
 ${methods
   .map(({methodName, paramCount}) => {
-    return `    methodMap_["${methodName}"] = MethodMetadata {.argCount = ${paramCount}, .invoker = __${methodName}};`;
+    return `    methodMap_["${methodName}"] = MethodMetadata {.argCount = ${paramCount}, .invoker = invoke_${methodName}};`;
   })
   .join(
     '\n',
@@ -215,11 +215,25 @@ const FileTemplate = ({
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
+// JSI provides the argument pointer and corresponding count to generated invokers.
+#ifdef __clang__
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#endif
+
 namespace facebook::react {
 
 ${modules.join('\n\n')}
 
 } // namespace facebook::react
+
+#ifdef __clang__
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic pop
+#endif
+#endif
 `;
 };
 
@@ -619,7 +633,7 @@ function translateFunctionToCpp(
     methodCallArgs = `,\n      ${methodCallArgs}`;
   }
 
-  return `  static jsi::Value __${prop.name}(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* ${args.length > 0 ? 'args' : '/*args*/'}, size_t ${args.length > 0 ? 'count' : '/*count*/'}) {
+  return `  static jsi::Value invoke_${prop.name}(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* ${args.length > 0 ? 'args' : '/*args*/'}, size_t ${args.length > 0 ? 'count' : '/*count*/'}) {
     static_assert(
       bridging::getParameterCount(&T::${prop.name}) == ${paramTypes.length},
       "Expected ${prop.name}(...) to have ${paramTypes.length} parameters");

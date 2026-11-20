@@ -44,8 +44,11 @@ void TransformAnimatedNode::collectViewUpdates(folly::dynamic& props) {
               manager_->getAnimatedNode<ValueAnimatedNode>(inputTag)) {
         value = node->getValue();
       }
-    } else {
-      value = transform[sValueName].asDouble();
+    } else if (const auto* staticValue = transform.get_ptr(sValueName);
+               staticValue != nullptr && staticValue->isNumber()) {
+      // JS omits the key when the static value is `undefined`; throwing here
+      // would escape the noexcept callers and abort the app.
+      value = staticValue->asDouble();
     }
     if (value) {
       const auto property = transform[sPropertyName].asString();

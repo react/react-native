@@ -731,5 +731,5 @@ let AndroidTextInputNativeComponent =
     () => __INTERNAL_VIEW_CONFIG,
   );
 
-// flowlint-next-line unclear-type:off
+// $FlowFixMe[unclear-type]
 export default AndroidTextInputNativeComponent as any as HostComponent<AndroidTextInputNativeProps>;

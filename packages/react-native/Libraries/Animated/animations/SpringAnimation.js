@@ -360,7 +360,6 @@ export default class SpringAnimation extends Animation {
       this.__notifyAnimationEnd({finished: true});
       return;
     }
-    // $FlowFixMe[method-unbinding] added when improving typing for this parameters
     // $FlowFixMe[invalid-tuple-arity]
     this._animationFrame = requestAnimationFrame(this.onUpdate.bind(this));
   }

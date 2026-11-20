@@ -1,0 +1,149 @@
+name: Build iOS Template App
+
+permissions:
+  contents: read
+  actions: read
+
+on:
+  workflow_call:
+    inputs:
+      flavors:
+        description: 'JSON array of configurations to build'
+        type: string
+        default: '["Debug", "Release"]'
+      previous-results:
+        description: 'Results retained from an earlier build attempt in this run'
+        type: string
+        default: '{}'
+      fail-on-error:
+        type: boolean
+        default: false
+    outputs:
+      status:
+        description: 'Whether both configurations have built successfully'
+        value: ${{ jobs.report.outputs.status }}
+      results:
+        description: 'Build results for both configurations, including earlier attempts'
+        value: ${{ jobs.report.outputs.results }}
+      failed-flavors:
+        description: 'JSON array of configurations that still need a successful build'
+        value: ${{ jobs.report.outputs.failed-flavors }}
+
+jobs:
+  build:
+    runs-on: macos-26
+    outputs:
+      debug-result: ${{ steps.report-status.outputs.debug-result }}
+      release-result: ${{ steps.report-status.outputs.release-result }}
+      failure-debug: ${{ steps.report-status.outputs.failure-debug }}
+      failure-release: ${{ steps.report-status.outputs.failure-release }}
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: ${{ fromJSON(inputs.flavors) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn
+        uses: ./.github/actions/yarn-install
+      - name: Download React Native Package
+        uses: ./.github/actions/download-artifact
+        with:
+          name: react-native-package
+          path: /tmp/react-native-tmp
+      - name: Print /tmp folder
+        run: ls -lR /tmp/react-native-tmp
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global user.email "react-native-bot@meta.com"
+          git config --global user.name "React Native Bot"
+      - name: Create the app
+        run: |
+          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
+          echo "React Native tgs is $REACT_NATIVE_PKG"
+
+          # For stable branches, we want to use the stable branch of the template
+          # In all the other cases, we want to use "main"
+          BRANCH=${{ github.ref_name }}
+          if ! [[ $BRANCH == *-stable* ]]; then
+            BRANCH=main
+          fi
+
+          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
+      - name: Download the XCFrameworks built in this run
+        uses: ./.github/actions/setup-spm-artifacts
+        with:
+          working-directory: /tmp/RNTestProject/ios
+      - name: Convert the app to SwiftPM
+        working-directory: /tmp/RNTestProject/ios
+        run: RN_STRICT_API=1 npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+      - name: Build the app
+        working-directory: /tmp/RNTestProject/ios
+        run: |
+          xcodebuild \
+            -scheme "RNTestProject" \
+            -project RNTestProject.xcodeproj \
+            -configuration "${{ matrix.flavor }}" \
+            -sdk "iphonesimulator" \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "/tmp/RNTestProject"
+      - name: Verify app supports the arm64 simulator
+        run: lipo /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app/RNTestProject -verify_arch arm64
+      - name: Upload app
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: RNTestProject-${{ matrix.flavor }}
+          overwrite: true
+          path: /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app
+      - name: Report status
+        id: report-status
+        if: always()
+        uses: actions/github-script@v8
+        env:
+          STEP_RESULTS: ${{ toJSON(steps) }}
+          JOB_STATUS: ${{ job.status }}
+          TEST_FLAVOR: ${{ matrix.flavor }}
+        with:
+          script: |
+            const {recordJobFailure} = require('./.github/workflow-scripts/report-test-results');
+            const {recordConfigurationResult} = require('./.github/workflow-scripts/template-app-ci-state');
+            recordConfigurationResult({core, flavor: process.env.TEST_FLAVOR,
+              passed: process.env.JOB_STATUS === 'success'});
+            await recordJobFailure({github, context, core,
+              steps: JSON.parse(process.env.STEP_RESULTS),
+              flavor: process.env.TEST_FLAVOR,
+              runnerName: process.env.RUNNER_NAME,
+              jobStatus: process.env.JOB_STATUS,
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});
+
+  report:
+    needs: build
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+      results: ${{ steps.check.outputs.results }}
+      failed-flavors: ${{ steps.check.outputs.failed-flavors }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Report configuration results
+        id: check
+        uses: actions/github-script@v8
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+          FLAVORS: ${{ inputs.flavors }}
+          PREVIOUS_RESULTS: ${{ inputs.previous-results }}
+          FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+        with:
+          script: |
+            const {reportConfigurationResults} = require('./.github/workflow-scripts/template-app-ci-state');
+            await reportConfigurationResults({context, core,
+              needs: JSON.parse(process.env.JOB_RESULTS), job: 'build',
+              flavors: JSON.parse(process.env.FLAVORS),
+              previousResults: JSON.parse(process.env.PREVIOUS_RESULTS),
+              failOnError: process.env.FAIL_ON_ERROR === 'true',
+              attempt: Number(process.env.GITHUB_RUN_ATTEMPT)});
