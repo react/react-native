@@ -187,6 +187,18 @@ static const NSMutableDictionary<NSString *, NSMutableString *> *responseBuffers
 #endif
 }
 
++ (void)maybeStoreResponseBody:(NSString *)requestId text:(NSString *)text
+{
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  auto &networkReporter = NetworkReporter::getInstance();
+  if (!networkReporter.isDebuggingEnabled() || text.length == 0) {
+    return;
+  }
+
+  networkReporter.storeResponseBody(requestId.UTF8String, RCTStringViewFromNSString(text), false);
+#endif
+}
+
 + (void)maybeStoreResponseBodyIncremental:(NSString *)requestId data:(NSString *)data
 {
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED

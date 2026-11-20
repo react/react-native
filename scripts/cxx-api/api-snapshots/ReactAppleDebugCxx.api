@@ -1189,6 +1189,7 @@ interface RCTInspectorNetworkHelper : public NSObject {
 
 interface RCTInspectorNetworkReporter : public NSObject {
   public virtual static void maybeStoreResponseBody:data:base64Encoded:(NSString* requestId, NSData* data, bool base64Encoded);
+  public virtual static void maybeStoreResponseBody:text:(NSString* requestId, NSString* text);
   public virtual static void maybeStoreResponseBodyIncremental:data:(NSString* requestId, NSString* data);
   public virtual static void reportConnectionTiming:request:(NSString* requestId, NSURLRequest* request);
   public virtual static void reportDataReceived:data:(NSString* requestId, NSData* data);
