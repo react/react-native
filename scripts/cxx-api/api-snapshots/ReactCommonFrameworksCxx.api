@@ -153,8 +153,6 @@ using facebook::react::EventPipe = std::function<void(facebook::jsi::Runtime& ru
 using facebook::react::EventPipeConclusion = std::function<void(facebook::jsi::Runtime& runtime)>;
 using facebook::react::EventTag = unsigned int;
 using facebook::react::GradientDirection = std::variant<Float, facebook::react::GradientKeyword>;
-using facebook::react::HostPlatformTouch = facebook::react::BaseTouch;
-using facebook::react::HostPlatformViewEventEmitter = facebook::react::BaseViewEventEmitter;
 using facebook::react::ImageSources = std::vector<facebook::react::ImageSource>;
 using facebook::react::LayoutConformanceComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::LayoutConformanceShadowNode>;
 using facebook::react::LineMeasureCache = facebook::react::SimpleThreadSafeCache<facebook::react::LineMeasureCacheKey, facebook::react::LinesMeasurements, facebook::react::kSimpleThreadSafeCacheSizeCap>;
@@ -205,14 +203,14 @@ using facebook::react::TextMeasureCache = facebook::react::SimpleThreadSafeCache
 using facebook::react::TimePointFunction = std::chrono::steady_clock::time_point(*)();
 using facebook::react::TimerHandle = int;
 using facebook::react::TimerManagerDelegate = facebook::react::PlatformTimerRegistry;
-using facebook::react::Touch = facebook::react::HostPlatformTouch;
+using facebook::react::Touch = HostPlatformTouch;
 using facebook::react::Touches = std::unordered_set<facebook::react::Touch, facebook::react::Touch::Hasher, facebook::react::Touch::Comparator>;
 using facebook::react::TraceSectionUnwrapped = facebook::react::DummyTraceSection;
 using facebook::react::TurboModuleProviderFunctionTypeWithRuntime = std::function<std::shared_ptr<facebook::react::TurboModule>(facebook::jsi::Runtime& runtime, const std::string& name)>;
 using facebook::react::UiTask = std::function<void()>;
 using facebook::react::ValueFactory = std::function<facebook::jsi::Value(facebook::jsi::Runtime& runtime)>;
-using facebook::react::ViewEventEmitter = facebook::react::HostPlatformViewEventEmitter;
-using facebook::react::ViewProps = facebook::react::HostPlatformViewProps;
+using facebook::react::ViewEventEmitter = HostPlatformViewEventEmitter;
+using facebook::react::ViewProps = HostPlatformViewProps;
 using facebook::react::ViewShadowNodeProps = facebook::react::ViewProps;
 using facebook::react::parsePlatformColorFn = facebook::react::SharedColor(*)(const facebook::react::ContextContainer&, int32_t, const facebook::react::RawValue&);
 template <typename GeneratorT, typename ValueT>
@@ -732,7 +730,7 @@ enum facebook::react::AttributedStringBox::Mode {
   Value,
 }
 
-class facebook::react::BaseParagraphProps : public facebook::react::HostPlatformViewProps, public facebook::react::BaseTextProps {
+class facebook::react::BaseParagraphProps : public facebook::react::ViewProps, public facebook::react::BaseTextProps {
   public BaseParagraphProps() = default;
   public BaseParagraphProps(const facebook::react::PropsParserContext& context, const facebook::react::BaseParagraphProps& sourceProps, const facebook::react::RawProps& rawProps);
   public bool isSelectable;
@@ -741,7 +739,7 @@ class facebook::react::BaseParagraphProps : public facebook::react::HostPlatform
   public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
 }
 
-class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatformViewProps {
+class facebook::react::BaseScrollViewProps : public facebook::react::ViewProps {
   public BaseScrollViewProps() = default;
   public BaseScrollViewProps(const facebook::react::PropsParserContext& context, const facebook::react::BaseScrollViewProps& sourceProps, const facebook::react::RawProps& rawProps);
   public Float decelerationRate;
@@ -787,7 +785,7 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
 }
 
-class facebook::react::BaseTextInputProps : public facebook::react::HostPlatformViewProps, public facebook::react::BaseTextProps {
+class facebook::react::BaseTextInputProps : public facebook::react::ViewProps, public facebook::react::BaseTextProps {
   public BaseTextInputProps() = default;
   public BaseTextInputProps(const facebook::react::PropsParserContext& context, const facebook::react::BaseTextInputProps& sourceProps, const facebook::react::RawProps& rawProps);
   public bool autoFocus;
@@ -1235,13 +1233,6 @@ class facebook::react::HighResTimeStamp {
   public static facebook::react::HighResTimeStamp now() noexcept;
 }
 
-class facebook::react::HostPlatformViewProps : public facebook::react::BaseViewProps {
-  public HostPlatformViewProps() = default;
-  public HostPlatformViewProps(const facebook::react::PropsParserContext& context, const facebook::react::HostPlatformViewProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public bool focusable;
-  public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
-}
-
 class facebook::react::IAsyncEventEmitter {
   public IAsyncEventEmitter() noexcept = default;
   public IAsyncEventEmitter(const facebook::react::IAsyncEventEmitter&) = delete;
@@ -1263,7 +1254,7 @@ class facebook::react::ImageErrorInfo {
   public std::vector<std::pair<std::string, std::string>> httpResponseHeaders;
 }
 
-class facebook::react::ImageEventEmitter : public facebook::react::BaseViewEventEmitter {
+class facebook::react::ImageEventEmitter : public facebook::react::ViewEventEmitter {
   public void onError(const facebook::react::ImageErrorInfo& error) const;
   public void onLoad(const facebook::react::ImageSource& source) const;
   public void onLoadEnd() const;
@@ -1283,7 +1274,7 @@ class facebook::react::ImageManager {
   public virtual ~ImageManager();
 }
 
-class facebook::react::ImageProps : public facebook::react::HostPlatformViewProps {
+class facebook::react::ImageProps : public facebook::react::ViewProps {
   public Float blurRadius;
   public Float resizeMultiplier;
   public ImageProps() = default;
@@ -1826,7 +1817,7 @@ class facebook::react::ParagraphComponentDescriptor : public facebook::react::Ba
   public ParagraphComponentDescriptor(const facebook::react::ComponentDescriptorParameters& parameters);
 }
 
-class facebook::react::ParagraphEventEmitter : public facebook::react::BaseViewEventEmitter {
+class facebook::react::ParagraphEventEmitter : public facebook::react::ViewEventEmitter {
   public void onTextLayout(const facebook::react::LinesMeasurements& linesMeasurements) const;
 }
 
@@ -1984,7 +1975,7 @@ struct facebook::react::ReactInstance::JSRuntimeFlags {
   public const std::string runtimeDiagnosticFlags;
 }
 
-class facebook::react::RootProps : public facebook::react::HostPlatformViewProps {
+class facebook::react::RootProps : public facebook::react::ViewProps {
   public RootProps() = default;
   public RootProps(const facebook::react::PropsParserContext& context, const facebook::react::RootProps& sourceProps, const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext);
   public RootProps(const facebook::react::PropsParserContext& context, const facebook::react::RootProps& sourceProps, const facebook::react::RawProps& rawProps);
@@ -2163,7 +2154,7 @@ class facebook::react::SchedulerDelegate {
   public virtual ~SchedulerDelegate() noexcept = default;
 }
 
-class facebook::react::ScrollViewEventEmitter : public facebook::react::BaseViewEventEmitter {
+class facebook::react::ScrollViewEventEmitter : public facebook::react::ViewEventEmitter {
   public using EndDragMetrics = facebook::react::ScrollEndDragEvent;
   public using Metrics = facebook::react::ScrollEvent;
   public void onMomentumScrollBegin(const facebook::react::ScrollEvent& scrollEvent) const;
@@ -2500,7 +2491,7 @@ class facebook::react::TextAttributes : public facebook::react::DebugStringConve
   public void apply(facebook::react::TextAttributes textAttributes);
 }
 
-class facebook::react::TextInputEventEmitter : public facebook::react::BaseViewEventEmitter {
+class facebook::react::TextInputEventEmitter : public facebook::react::ViewEventEmitter {
   public void onBlur(const facebook::react::TextInputEventEmitter::Metrics& textInputMetrics) const;
   public void onChange(const facebook::react::TextInputEventEmitter::Metrics& textInputMetrics) const;
   public void onContentSizeChange(const facebook::react::TextInputEventEmitter::Metrics& textInputMetrics) const;
@@ -5600,11 +5591,6 @@ struct facebook::react::Bridging<std::shared_ptr<T>, std::enable_if_t<std::is_ba
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, std::shared_ptr<T> value);
   public static std::shared_ptr<T> fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value);
 }
-
-
-bool facebook::react::HostPlatformViewTraitsInitializer::formsStackingContext(const facebook::react::ViewProps& props);
-bool facebook::react::HostPlatformViewTraitsInitializer::formsView(const facebook::react::ViewProps& props);
-bool facebook::react::HostPlatformViewTraitsInitializer::isKeyboardFocusable(const facebook::react::ViewProps&);
 
 
 constexpr bool facebook::react::detail::isHexDigit(char c);
