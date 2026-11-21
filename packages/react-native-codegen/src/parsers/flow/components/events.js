@@ -182,7 +182,7 @@ function findEventArgumentsAndType(
   parser: Parser,
   typeAnnotation: $FlowFixMe,
   types: TypeMap,
-  bubblingType: void | 'direct' | 'bubble',
+  bubblingType: ?('direct' | 'bubble'),
   paperName: ?$FlowFixMe,
 ): EventArgumentReturnType {
   throwIfEventHasNoName(typeAnnotation, parser);

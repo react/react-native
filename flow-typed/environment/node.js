@@ -426,7 +426,7 @@ type child_process$spawnSyncRet<T extends string | Buffer> = Readonly<{
   // TODO: subprocess.status may be null in case of error or signal
   status: number,
   signal: string | null,
-  error: Error | void,
+  error: Error | undefined,
 }>;
 
 type child_process$spawnSyncOpts = Readonly<{
