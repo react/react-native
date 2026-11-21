@@ -14,7 +14,11 @@ import com.facebook.jni.annotations.DoNotStrip
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.buildReadableMap
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
+import com.facebook.react.fabric.FabricUIManager
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.uimanager.common.UIManagerType
 import com.facebook.react.views.common.UiModeUtils
 
 /** Module that exposes the user's preferred color scheme. */
@@ -36,6 +40,8 @@ constructor(
   init {
     // Register as a listener for color scheme changes if override is provided
     overrideColorScheme?.addSchemeChangeListener(schemeChangeListener)
+    // The renderer starts from `uiMode`, so send the override.
+    overrideColorScheme?.let { updateMediaFeatures(it.getScheme()) }
   }
 
   /** Optional override to the current color scheme */
@@ -109,7 +115,17 @@ constructor(
     if (lastEmittedColorScheme != newColorScheme) {
       lastEmittedColorScheme = newColorScheme
       emitAppearanceChanged(newColorScheme)
+      updateMediaFeatures(newColorScheme)
     }
+  }
+
+  /** Conditional styles use the same color scheme as `useColorScheme()`. */
+  @OptIn(UnstableReactNativeAPI::class)
+  private fun updateMediaFeatures(colorScheme: String) {
+    val fabricUIManager =
+        UIManagerHelper.getUIManager(reactApplicationContext, UIManagerType.FABRIC)
+            as? FabricUIManager
+    fabricUIManager?.setMediaFeatures(colorScheme == "dark")
   }
 
   /** Sends an event to the JS instance that the preferred color scheme has changed. */

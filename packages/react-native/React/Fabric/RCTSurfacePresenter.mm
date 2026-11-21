@@ -11,6 +11,7 @@
 #import <shared_mutex>
 #import <unordered_set>
 
+#import <React/RCTAppearancePreference.h>
 #import <React/RCTAssert.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTComponentViewFactory.h>
@@ -63,6 +64,19 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
  private:
   __weak RCTSurfacePresenter *surfacePresenter_;
 };
+
+// The key window can be missing at startup. Only on the main thread.
+UITraitCollection *currentTraitCollection()
+{
+  return RCTKeyWindow().traitCollection ?: UITraitCollection.currentTraitCollection;
+}
+
+// The same color scheme as `useColorScheme()`, with the app's overrides.
+MediaFeatures mediaFeaturesFromTraitCollection(UITraitCollection *traitCollection)
+{
+  BOOL isDark = [RCTColorSchemePreference(traitCollection) isEqualToString:@"dark"];
+  return {.colorScheme = isDark ? ColorScheme::Dark : ColorScheme::Light};
+}
 } // namespace
 
 @implementation RCTSurfacePresenter {
@@ -110,10 +124,19 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
     }
 
     _scheduler = [self _createScheduler];
+    __weak __typeof(self) weakSelf = self;
+    // Reads UIKit, so it must run on main. The reload after a fatal JS error (`maxReloadAttempts`) runs this off main.
+    RCTExecuteOnMainQueue(^{
+      [weakSelf _updateMediaFeatures:currentTraitCollection()];
+    });
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_applicationWillTerminate)
                                                  name:UIApplicationWillTerminateNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_userInterfaceStyleDidChange:)
+                                                 name:RCTUserInterfaceStyleDidChangeNotification
                                                object:nil];
   }
 
@@ -335,6 +358,27 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
 - (void)_applicationWillTerminate
 {
   [self suspend];
+}
+
+#pragma mark - Media features
+
+- (void)_userInterfaceStyleDidChange:(NSNotification *)notification
+{
+  UITraitCollection *traitCollection =
+      notification.userInfo[RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey];
+  [self _updateMediaFeatures:traitCollection ?: currentTraitCollection()];
+}
+
+- (void)_updateMediaFeatures:(UITraitCollection *)traitCollection
+{
+  auto mediaFeatures = mediaFeaturesFromTraitCollection(traitCollection);
+  if (RCTScheduler *scheduler = [self scheduler]) {
+    [scheduler setMediaFeatures:mediaFeatures];
+  } else {
+    // Suspended: the next scheduler reads the store.
+    auto store = [self contextContainer]->at<std::shared_ptr<MediaFeaturesStore>>(kMediaFeaturesStoreKey);
+    store->set(mediaFeatures);
+  }
 }
 
 #pragma mark - RCTSchedulerDelegate
