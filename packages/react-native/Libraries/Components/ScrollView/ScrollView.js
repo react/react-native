@@ -2020,7 +2020,7 @@ const styles = StyleSheet.create({
 type RefForwarder<TNativeInstance, TPublicInstance> = {
   getForwardingRef: (
     v: ?React.RefSetter<TPublicInstance>,
-  ) => (v: TNativeInstance | null) => void,
+  ) => (v: TNativeInstance | null) => () => void,
   nativeInstance: TNativeInstance | null,
   publicInstance: TPublicInstance | null,
 };
@@ -2034,20 +2034,36 @@ function createRefForwarder<TNativeInstance, TPublicInstance>(
 ): RefForwarder<TNativeInstance, TPublicInstance> {
   const state: RefForwarder<TNativeInstance, TPublicInstance> = {
     getForwardingRef: memoize(forwardedRef => {
-      return (nativeInstance: TNativeInstance | null): void => {
+      return (nativeInstance: TNativeInstance | null): (() => void) => {
         const publicInstance =
           nativeInstance == null ? null : mutator(nativeInstance);
 
         state.nativeInstance = nativeInstance;
         state.publicInstance = publicInstance;
 
-        if (forwardedRef != null) {
-          if (typeof forwardedRef === 'function') {
-            forwardedRef(publicInstance);
-          } else {
-            forwardedRef.current = publicInstance;
-          }
+        if (typeof forwardedRef === 'function') {
+          const cleanup = forwardedRef(publicInstance);
+          return () => {
+            state.nativeInstance = null;
+            state.publicInstance = null;
+            if (typeof cleanup === 'function') {
+              cleanup();
+            } else {
+              forwardedRef(null);
+            }
+          };
         }
+
+        if (forwardedRef != null) {
+          forwardedRef.current = publicInstance;
+        }
+        return () => {
+          state.nativeInstance = null;
+          state.publicInstance = null;
+          if (forwardedRef != null) {
+            forwardedRef.current = null;
+          }
+        };
       };
     }),
     nativeInstance: null,
