@@ -32,11 +32,39 @@
 
 namespace facebook::react {
 
+struct Scheduler::DelegateState {
+  explicit DelegateState(
+      SchedulerDelegate* delegate,
+      std::shared_ptr<SchedulerDelegate> owner = nullptr)
+      : delegate(delegate), owner(std::move(owner)) {}
+
+  SchedulerDelegate* delegate;
+  std::shared_ptr<SchedulerDelegate> owner;
+  std::atomic<bool> invalidated{false};
+};
+
 Scheduler::Scheduler(
     const SchedulerToolbox& schedulerToolbox,
     UIManagerAnimationDelegate* animationDelegate,
     SchedulerDelegate* delegate)
-    : runtimeExecutor_(schedulerToolbox.runtimeExecutor),
+    : Scheduler(schedulerToolbox, animationDelegate, delegate, nullptr) {}
+
+Scheduler::Scheduler(
+    const SchedulerToolbox& schedulerToolbox,
+    UIManagerAnimationDelegate* animationDelegate,
+    std::shared_ptr<SchedulerDelegate> delegate)
+    : Scheduler(schedulerToolbox, animationDelegate, delegate.get(), delegate) {
+}
+
+Scheduler::Scheduler(
+    const SchedulerToolbox& schedulerToolbox,
+    UIManagerAnimationDelegate* animationDelegate,
+    SchedulerDelegate* delegate,
+    std::shared_ptr<SchedulerDelegate> owner)
+    : delegate_(delegate),
+      delegateState_(
+          std::make_shared<DelegateState>(delegate, std::move(owner))),
+      runtimeExecutor_(schedulerToolbox.runtimeExecutor),
       contextContainer_(schedulerToolbox.contextContainer) {
   // Creating a container for future `EventDispatcher` instance.
   eventDispatcher_ = std::make_shared<std::optional<const EventDispatcher>>();
@@ -156,7 +184,6 @@ Scheduler::Scheduler(
       std::weak_ptr<const ComponentDescriptorRegistry>(
           componentDescriptorRegistry_));
 
-  delegate_ = delegate;
   commitHooks_ = schedulerToolbox.commitHooks;
 
   // Layout events (`onLayout`) are emitted as a standalone consumer of the
@@ -185,6 +212,8 @@ Scheduler::Scheduler(
 }
 
 Scheduler::~Scheduler() {
+  setDelegate(nullptr);
+
   LOG(WARNING) << "Scheduler::~Scheduler() was called (address: " << this
                << ").";
 
@@ -278,11 +307,26 @@ Scheduler::findComponentDescriptorByHandle_DO_NOT_USE_THIS_IS_BROKEN(
 #pragma mark - Delegate
 
 void Scheduler::setDelegate(SchedulerDelegate* delegate) {
-  delegate_ = delegate;
+  std::shared_ptr<DelegateState> previousState;
+  {
+    std::lock_guard lock(delegateStateMutex_);
+    if (delegate_ == delegate) {
+      return;
+    }
+    previousState = std::move(delegateState_);
+    previousState->invalidated.store(true);
+    delegate_ = delegate;
+    delegateState_ = std::make_shared<DelegateState>(delegate);
+  }
 }
 
 SchedulerDelegate* Scheduler::getDelegate() const {
-  return delegate_;
+  return getDelegateState()->delegate;
+}
+
+std::shared_ptr<Scheduler::DelegateState> Scheduler::getDelegateState() const {
+  std::lock_guard lock(delegateStateMutex_);
+  return delegateState_;
 }
 
 #pragma mark - UIManagerAnimationDelegate
@@ -301,22 +345,30 @@ void Scheduler::uiManagerDidFinishTransaction(
     bool mountSynchronously) {
   TraceSection s("Scheduler::uiManagerDidFinishTransaction");
 
-  if (delegate_ != nullptr) {
+  auto delegateState = getDelegateState();
+  if (delegateState->delegate != nullptr) {
     // This is no-op on all platforms except for Android where we need to
     // observe each transaction to be able to mount correctly.
-    delegate_->schedulerDidFinishTransaction(mountingCoordinator);
+    delegateState->delegate->schedulerDidFinishTransaction(mountingCoordinator);
 
     if (!mountSynchronously) {
       auto surfaceId = mountingCoordinator->getSurfaceId();
 
       runtimeScheduler_->scheduleRenderingUpdate(
           surfaceId,
-          [delegate = delegate_,
+          [delegateState,
            mountingCoordinator = std::move(mountingCoordinator)]() {
-            delegate->schedulerShouldRenderTransactions(mountingCoordinator);
+            if (!delegateState->invalidated.load()) {
+              delegateState->delegate->schedulerShouldRenderTransactions(
+                  mountingCoordinator);
+            }
           });
     } else {
-      delegate_->schedulerShouldRenderTransactions(mountingCoordinator);
+      auto currentDelegateState = getDelegateState();
+      if (currentDelegateState->delegate != nullptr) {
+        currentDelegateState->delegate->schedulerShouldRenderTransactions(
+            mountingCoordinator);
+      }
     }
   }
 }
@@ -333,15 +385,19 @@ void Scheduler::uiManagerDidDispatchCommand(
     const folly::dynamic& args) {
   TraceSection s(
       "Scheduler::uiManagerDispatchCommand", "commandName", commandName);
-  if (delegate_ != nullptr) {
+  auto delegateState = getDelegateState();
+  if (delegateState->delegate != nullptr) {
     auto shadowView = ShadowView(*shadowNode);
     runtimeScheduler_->scheduleRenderingUpdate(
         shadowNode->getSurfaceId(),
-        [delegate = delegate_,
+        [delegateState,
          shadowView = std::move(shadowView),
          commandName,
          args]() {
-          delegate->schedulerDidDispatchCommand(shadowView, commandName, args);
+          if (!delegateState->invalidated.load()) {
+            delegateState->delegate->schedulerDidDispatchCommand(
+                shadowView, commandName, args);
+          }
         });
   }
 }
@@ -424,13 +480,17 @@ void Scheduler::uiManagerShouldRemoveEventListener(
 }
 
 void Scheduler::uiManagerDidFinishReactCommit(const ShadowTree& shadowTree) {
-  if (delegate_ == nullptr) {
+  auto delegateState = getDelegateState();
+  if (delegateState->delegate == nullptr) {
     return;
   }
 
   auto surfaceId = shadowTree.getSurfaceId();
   runtimeScheduler_->scheduleRenderingUpdate(
-      surfaceId, [surfaceId, uiManager = uiManager_, delegate = delegate_]() {
+      surfaceId, [surfaceId, uiManager = uiManager_, delegateState]() {
+        if (delegateState->invalidated.load()) {
+          return;
+        }
         bool promoted = false;
 
         uiManager->getShadowTreeRegistry().visit(
@@ -439,7 +499,7 @@ void Scheduler::uiManagerDidFinishReactCommit(const ShadowTree& shadowTree) {
             });
 
         if (promoted) {
-          delegate->schedulerShouldMergeReactRevision(surfaceId);
+          delegateState->delegate->schedulerShouldMergeReactRevision(surfaceId);
         }
       });
 }
