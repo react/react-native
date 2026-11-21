@@ -60,6 +60,19 @@ void NativeFantom::stopSurface(jsi::Runtime& /*runtime*/, SurfaceId surfaceId) {
   appDelegate_.stopSurface(surfaceId);
 }
 
+void NativeFantom::updateSurfaceConstraints(
+    jsi::Runtime& /*runtime*/,
+    SurfaceId surfaceId,
+    double viewportWidth,
+    double viewportHeight,
+    double devicePixelRatio) {
+  appDelegate_.updateSurfaceConstraints(
+      surfaceId,
+      static_cast<float>(viewportWidth),
+      static_cast<float>(viewportHeight),
+      static_cast<float>(devicePixelRatio));
+}
+
 void NativeFantom::produceFramesForDuration(
     jsi::Runtime& /*runtime*/,
     double milliseconds) {
