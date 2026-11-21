@@ -58,6 +58,7 @@ class GenerateEntryPointTaskTest {
             import com.facebook.react.views.view.WindowUtilKt;
             import com.facebook.react.soloader.OpenSourceMergedSoMapping;
             import com.facebook.soloader.SoLoader;
+            import com.facebook.soloader.SystemLoadWrapperSoSource;
 
             /**
               * This class is the entry point for loading React Native using the configuration
@@ -69,6 +70,15 @@ class GenerateEntryPointTaskTest {
             public class ReactNativeApplicationEntryPoint {
               public static void loadReactNative(Context context) {
                 SoLoader.init(context, OpenSourceMergedSoMapping.INSTANCE);
+                // Load libraries with one System.loadLibrary call each and let the dynamic linker resolve
+                // their dependencies, instead of SoLoader reading the ELF dependency lists in Java and
+                // loading every dependency through its own lookup. Libraries the class loader does not
+                // know fall through to SoLoader's own sources.
+                try {
+                  SoLoader.prependSoSource(new SystemLoadWrapperSoSource());
+                } catch (java.io.IOException e) {
+                  throw new RuntimeException(e);
+                }
                 
                 if (com.facebook.react.BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
                   DefaultNewArchitectureEntryPoint.load();
