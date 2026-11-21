@@ -13,8 +13,6 @@
  * See https://dom.spec.whatwg.org/#interface-customevent.
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventInit} from './Event';
 
 import Event from './Event';
@@ -32,6 +30,7 @@ export default class CustomEvent extends Event {
     this._detail = options?.detail;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get detail(): unknown {
     return this._detail;
   }

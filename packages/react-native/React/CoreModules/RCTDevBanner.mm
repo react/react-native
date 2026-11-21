@@ -260,8 +260,12 @@ static NSHashTable<RCTDevBanner *> *RCTDevBannerVisibleBanners(void)
 
 - (UIWindowLevel)windowLevel
 {
+#if TARGET_OS_TV
+  return UIWindowLevelNormal;
+#else
   // Above the paused banner's dimming, so loading messages stay readable and tappable while the app is paused.
   return UIWindowLevelStatusBar + 2;
+#endif
 }
 
 - (BOOL)dimsBackground

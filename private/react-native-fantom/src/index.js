@@ -356,7 +356,6 @@ export function getDefinedEventHandlers(
     return [];
   }
   // WARNING: This uses React private API (fiber internals).
-  // $FlowExpectedError[incompatible-type]
   const memoizedProps = (
     instanceHandle as {memoizedProps?: {[key: string]: unknown}}
   ).memoizedProps;
@@ -791,7 +790,7 @@ export function takeJSMemoryHeapSnapshot(): void {
       // a very specific shape).
       errorMessage +=
         ' If you want to take JS heap snapshots in optimized builds, ' +
-        'please call Fantom with FANTOM_ENABLE_MEMORY_INSTRUMENTATION=1 ' +
+        'please call Fantom with FANTOM_ENABLE_JS_MEMORY_INSTRUMENTATION=1 ' +
         '(only works locally with Buck).';
     }
 

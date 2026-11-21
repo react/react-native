@@ -609,23 +609,18 @@ class Expect {
  * Base methods can't be implemented as an arrow function because they
  * will not be added to the prototype.
  */
-// $FlowExpectedError[method-unbinding]
 /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
  * unsoundness in flow */
 Expect.prototype.toBeCalled = Expect.prototype.toHaveBeenCalled;
-// $FlowExpectedError[method-unbinding]
 /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
  * unsoundness in flow */
 Expect.prototype.toBeCalledTimes = Expect.prototype.toHaveBeenCalledTimes;
-// $FlowExpectedError[method-unbinding]
 /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
  * unsoundness in flow */
 Expect.prototype.toBeCalledWith = Expect.prototype.toHaveBeenCalledWith;
-// $FlowExpectedError[method-unbinding]
 /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
  * unsoundness in flow */
 Expect.prototype.lastCalledWith = Expect.prototype.toHaveBeenLastCalledWith;
-// $FlowExpectedError[method-unbinding]
 /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
  * unsoundness in flow */
 Expect.prototype.nthCalledWith = Expect.prototype.toHaveBeenNthCalledWith;

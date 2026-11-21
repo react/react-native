@@ -439,6 +439,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableImmediateUpdateModeForScrollContentView: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          'Apply ScrollContentView state updates synchronously on the main thread.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableImperativeEvents: {
       defaultValue: false,
       metadata: {
@@ -717,6 +728,17 @@ const definitions: FeatureFlagDefinitions = {
         purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
+    },
+    fixProgrammaticScrollMomentumEventsIOS: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-11',
+        description:
+          'Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'canary',
     },
     fixTextInlineViewLineHeight: {
       defaultValue: false,

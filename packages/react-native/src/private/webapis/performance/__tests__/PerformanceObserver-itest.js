@@ -127,7 +127,6 @@ describe('PerformanceObserver', () => {
       const callback = jest.fn();
       const observer = new PerformanceObserver(callback);
 
-      // $FlowExpectedError[incompatible-call]
       expect(() => observer.observe()).toThrow(
         "Failed to execute 'observe' on 'PerformanceObserver': 1 argument required, but only 0 present.",
       );

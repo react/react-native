@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7f99218b30c0e791572b74f04d4bb801>>
+ * @generated SignedSource<<8c4efedb84acc0926143de2f888b8a6a>>
  */
 
 /**
@@ -255,6 +255,12 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImmediateUpdateModeForScrollContentView");
+    return method(javaProvider_);
+  }
+
   bool enableImperativeEvents() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImperativeEvents");
@@ -408,6 +414,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fixMappingOfEventPrioritiesBetweenFabricAndReact");
+    return method(javaProvider_);
+  }
+
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fixProgrammaticScrollMomentumEventsIOS");
     return method(javaProvider_);
   }
 
@@ -817,6 +829,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffs
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForScrollContentView(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableImperativeEvents(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableImperativeEvents();
@@ -945,6 +962,11 @@ bool JReactNativeFeatureFlagsCxxInterop::fixBorderlessRippleAndroid(
 bool JReactNativeFeatureFlagsCxxInterop::fixMappingOfEventPrioritiesBetweenFabricAndReact(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
+}
+
+bool JReactNativeFeatureFlagsCxxInterop::fixProgrammaticScrollMomentumEventsIOS(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::fixTextInlineViewLineHeight(
@@ -1272,6 +1294,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableImmediateUpdateModeForContentOffsetChanges",
         JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffsetChanges),
       makeNativeMethod(
+        "enableImmediateUpdateModeForScrollContentView",
+        JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForScrollContentView),
+      makeNativeMethod(
         "enableImperativeEvents",
         JReactNativeFeatureFlagsCxxInterop::enableImperativeEvents),
       makeNativeMethod(
@@ -1349,6 +1374,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "fixMappingOfEventPrioritiesBetweenFabricAndReact",
         JReactNativeFeatureFlagsCxxInterop::fixMappingOfEventPrioritiesBetweenFabricAndReact),
+      makeNativeMethod(
+        "fixProgrammaticScrollMomentumEventsIOS",
+        JReactNativeFeatureFlagsCxxInterop::fixProgrammaticScrollMomentumEventsIOS),
       makeNativeMethod(
         "fixTextInlineViewLineHeight",
         JReactNativeFeatureFlagsCxxInterop::fixTextInlineViewLineHeight),

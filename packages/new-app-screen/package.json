@@ -20,7 +20,7 @@
   ],
   "dependencies": {},
   "peerDependencies": {
-    "@types/react": "^19.1.0",
+    "@types/react": "^19.3.0",
     "react": "*",
     "react-native": "1000.0.0"
   },

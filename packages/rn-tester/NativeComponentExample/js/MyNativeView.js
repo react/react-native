@@ -183,7 +183,6 @@ export default function MyNativeView(props: {}): React.Node {
               currentBGColor + 1 >= colors.length ? 0 : currentBGColor + 1;
             let newColor = colors[nextBGColor];
             RNTMyNativeViewCommands.callNativeMethodToChangeBackgroundColor(
-              // $FlowFixMe[incompatible-type]
               ref.current,
               newColor,
             );
@@ -215,7 +214,6 @@ export default function MyNativeView(props: {}): React.Node {
               colors[(randomColorId + 1) % 5],
             ];
             RNTMyNativeViewCommands.callNativeMethodToAddOverlays(
-              // $FlowFixMe[incompatible-type]
               ref.current,
               overlayColors,
             );
@@ -226,7 +224,6 @@ export default function MyNativeView(props: {}): React.Node {
           title="Remove Overlays"
           onPress={() => {
             RNTMyNativeViewCommands.callNativeMethodToRemoveOverlays(
-              // $FlowFixMe[incompatible-type]
               ref.current,
             );
             callNativeMethodToRemoveOverlays(legacyRef.current);
@@ -248,7 +245,6 @@ export default function MyNativeView(props: {}): React.Node {
 
             if (containerRef.current) {
               legacyRef.current?.measureLayout(
-                // $FlowFixMe[incompatible-call]
                 containerRef.current,
                 (x, y, width, height) => {
                   setLegacyMeasureLayout({x, y, width, height});
@@ -286,10 +282,7 @@ export default function MyNativeView(props: {}): React.Node {
       <Button
         title="Fire Legacy Style Event"
         onPress={() => {
-          RNTMyNativeViewCommands.fireLagacyStyleEvent(
-            // $FlowFixMe[incompatible-type]
-            ref.current,
-          );
+          RNTMyNativeViewCommands.fireLagacyStyleEvent(ref.current);
         }}
       />
       <Text style={{color: 'green', textAlign: 'center'}}>

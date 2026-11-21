@@ -42,7 +42,7 @@ const TouchHistoryMath = {
         ? touchHistory.touchBank[touchHistory.indexOfSingleActiveTouch]
         : null;
 
-    if (oneTouchData !== null) {
+    if (oneTouchData != null) {
       if (
         oneTouchData.touchActive &&
         oneTouchData.currentTimeStamp > touchesChangedAfter

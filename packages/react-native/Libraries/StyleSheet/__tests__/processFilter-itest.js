@@ -144,15 +144,12 @@ describe('processFilter', () => {
     expect(processFilter('')).toEqual([]);
   });
   it('string non filter', () => {
-    // $FlowExpectedError[incompatible-call]
     expect(processFilter('foo: 5')).toEqual([]);
   });
   it('string invalid amount type', () => {
-    // $FlowExpectedError[incompatible-call]
     expect(processFilter('brightness: {}')).toEqual([]);
   });
   it('string brightness(.5)', () => {
-    // $FlowExpectedError[incompatible-call]
     expect(processFilter('brightness(.5)')).toEqual([{brightness: 0.5}]);
   });
 

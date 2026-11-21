@@ -11,6 +11,7 @@
 const {compareCapture, compareImages, policyFor} = require('../visual/compare');
 const {
   comparePlatform,
+  platformConclusion,
   resolveContext,
   stageBaseline,
 } = require('../visual/compare-run');
@@ -386,6 +387,16 @@ describe('visual comparison', () => {
       expect(
         fs.readdirSync(path.join(outDir, 'baseline-blobs', 'blobs')),
       ).toEqual([`${sha256(black)}.png`]);
+    });
+  });
+
+  describe('platformConclusion', () => {
+    test.each([
+      ['passes without differences', [{status: 'unchanged'}], null, 'success'],
+      ['is neutral with differences', [{status: 'changed'}], null, 'neutral'],
+      ['is neutral without a comparison', [], {title: 'no capture'}, 'neutral'],
+    ])('%s', (_, results, error, conclusion) => {
+      expect(platformConclusion({results, error})).toBe(conclusion);
     });
   });
 

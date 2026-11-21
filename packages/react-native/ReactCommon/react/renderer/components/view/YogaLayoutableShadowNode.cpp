@@ -123,11 +123,20 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
       &static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode)
            .yogaConfig_;
 
+  // An unowned source can be appended and laid out again after this clone is
+  // committed (React does this when it shows a hidden subtree again), so it
+  // must not keep owning the children it now shares with this clone.
+  auto& sourceYogaNode =
+      static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode).yogaNode_;
+  if (YGNodeGetOwner(&sourceYogaNode) == nullptr) {
+    updateYogaChildrenOwnersIfNeeded(sourceYogaNode);
+  }
+
   YGNodeSetContext(&yogaNode_, this);
   yogaNode_.setOwner(nullptr);
   YGNodeSetConfig(
       &yogaNode_, &initializeYogaConfig(yogaConfig_, previousConfig));
-  updateYogaChildrenOwnersIfNeeded();
+  updateYogaChildrenOwnersIfNeeded(yogaNode_);
 
   // We do not need to reconfigure this subtree before the next layout pass if
   // the previous node with the same props and children has already been
@@ -332,7 +341,8 @@ bool YogaLayoutableShadowNode::shouldNewRevisionDirtyMeasurement(
 //
 // No-op in the common case: right after a clone, children's owner
 // pointers still reference the source node, not us.
-void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
+/*static*/ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded(
+    yoga::Node& yogaNode) {
   // Magic constant intentionally recognisable in debuggers when the address
   // pops up. `reinterpret_cast` is not constexpr, so this is a runtime-
   // initialised function-local static.
@@ -340,8 +350,8 @@ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
   static auto* const kDetachedYogaNodeOwnerSentinel =
       reinterpret_cast<yoga::Node*>(0xBADC0FFEE0DDF000ULL);
   // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
-  for (auto& childYogaNode : yogaNode_.getChildren()) {
-    if (YGNodeGetOwner(childYogaNode) == &yogaNode_) {
+  for (auto& childYogaNode : yogaNode.getChildren()) {
+    if (YGNodeGetOwner(childYogaNode) == &yogaNode) {
       childYogaNode->setOwner(kDetachedYogaNodeOwnerSentinel);
     }
   }
@@ -481,6 +491,18 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   if (props.paddingBlock.isDefined()) {
     result.setPadding(yoga::Edge::Vertical, props.paddingBlock);
   }
+  if (props.borderBlockWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Vertical, props.borderBlockWidth);
+  }
+  if (props.borderInlineWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Horizontal, props.borderInlineWidth);
+  }
+  if (props.borderInlineStartWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Start, props.borderInlineStartWidth);
+  }
+  if (props.borderInlineEndWidth.isDefined()) {
+    result.setBorder(yoga::Edge::End, props.borderInlineEndWidth);
+  }
 
   // Aliases without precedence
   if (result.position(yoga::Edge::Bottom).isUndefined()) {
@@ -500,6 +522,12 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   }
   if (result.padding(yoga::Edge::Bottom).isUndefined()) {
     result.setPadding(yoga::Edge::Bottom, props.paddingBlockEnd);
+  }
+  if (result.border(yoga::Edge::Top).isUndefined()) {
+    result.setBorder(yoga::Edge::Top, props.borderBlockStartWidth);
+  }
+  if (result.border(yoga::Edge::Bottom).isUndefined()) {
+    result.setBorder(yoga::Edge::Bottom, props.borderBlockEndWidth);
   }
 
   return result;
@@ -796,8 +824,9 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       // node exclusively ownes the child node).
       react_native_assert(YGNodeGetOwner(childYogaNode) == &yogaNode_);
 
-      // We are about to mutate layout metrics of the node.
-      childNode.ensureUnsealed();
+      // `setLayoutMetrics` below enforces the seal when the metrics change.
+      // Identical metrics on a node shared with a sealed tree are a no-op,
+      // not a mutation.
 
       auto newLayoutMetrics = layoutMetricsFromYogaNode(*childYogaNode);
       newLayoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
@@ -910,6 +939,8 @@ YGSize YogaLayoutableShadowNode::yogaNodeMeasureCallbackConnector(
   TraceSection s("YogaLayoutableShadowNode::yogaNodeMeasureCallbackConnector");
 
   auto& shadowNode = shadowNodeFromContext(yogaNode);
+  // Measuring may write to the node, so it must not be a committed one.
+  shadowNode.ensureUnsealed();
 
   auto minimumSize = Size{.width = 0, .height = 0};
   auto maximumSize = Size{

@@ -57,7 +57,6 @@ const {
 } = require('./components/componentsUtils');
 const {typeScriptTranslateTypeAnnotation} = require('./modules');
 const {parseTopLevelType} = require('./parseTopLevelType');
-// $FlowFixMe[untyped-import] Use flow-types for @babel/parser
 const babelParser = require('@babel/parser');
 const invariant = require('invariant');
 const fs = require('node:fs');

@@ -92,7 +92,6 @@ component IntersectionObserverExplicitRootExample() {
     observer.current = new IntersectionObserver(onObserve, {
       // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
       root: rootNode,
-      // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
       rootMargin: rootMarginValue,
     });
     // $FlowFixMe[incompatible-type]

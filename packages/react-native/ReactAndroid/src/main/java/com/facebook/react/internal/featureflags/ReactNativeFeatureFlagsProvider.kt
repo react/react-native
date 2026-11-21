@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<54c11a8da7c94b9e891c39015a44a326>>
+ * @generated SignedSource<<e790f5378ffcd393541d04e5105523e9>>
  */
 
 /**
@@ -95,6 +95,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
+  @DoNotStrip public fun enableImmediateUpdateModeForScrollContentView(): Boolean
+
   @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
@@ -146,6 +148,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fixBorderlessRippleAndroid(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
+
+  @DoNotStrip public fun fixProgrammaticScrollMomentumEventsIOS(): Boolean
 
   @DoNotStrip public fun fixTextInlineViewLineHeight(): Boolean
 

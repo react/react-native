@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ac1440710d3578f4fc4d7f9d152b5516>>
+ * @generated SignedSource<<cc40da2ae6b65976e663bd9982d0cd80>>
  */
 
 /**
@@ -222,6 +222,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableImmediateUpdateModeForContentOffsetChanges();
 
   /**
+   * Apply ScrollContentView state updates synchronously on the main thread.
+   */
+  RN_EXPORT static bool enableImmediateUpdateModeForScrollContentView();
+
+  /**
    * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
    */
   RN_EXPORT static bool enableImperativeEvents();
@@ -350,6 +355,11 @@ class ReactNativeFeatureFlags {
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
    */
   RN_EXPORT static bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
+
+  /**
+   * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
+   */
+  RN_EXPORT static bool fixProgrammaticScrollMomentumEventsIOS();
 
   /**
    * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.

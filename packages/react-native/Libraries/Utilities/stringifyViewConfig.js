@@ -9,7 +9,6 @@
  */
 
 export default function stringifyViewConfig(viewConfig: unknown): string {
-  // $FlowFixMe[incompatible-type] JSON.stringify can return void; preserves prior behavior (returns the result directly, not coerced to '')
   return JSON.stringify(
     viewConfig,
     (key, val) => {

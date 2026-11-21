@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0eeac6be64678fe59eeb6f97a31ced96>>
+ * @generated SignedSource<<004791f986cdb21a830d594a57105ae8>>
  */
 
 /**
@@ -173,6 +173,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    return false;
+  }
+
   bool enableImperativeEvents() override {
     return false;
   }
@@ -274,6 +278,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
+    return false;
+  }
+
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
     return false;
   }
 

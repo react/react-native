@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b9e96dead92ef3ce6ed0d19caf743377>>
+ * @generated SignedSource<<4264a4d9a6f3e8366c154af429970cb7>>
  */
 
 /**
@@ -170,6 +170,10 @@ bool ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges()
   return getAccessor().enableImmediateUpdateModeForContentOffsetChanges();
 }
 
+bool ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView() {
+  return getAccessor().enableImmediateUpdateModeForScrollContentView();
+}
+
 bool ReactNativeFeatureFlags::enableImperativeEvents() {
   return getAccessor().enableImperativeEvents();
 }
@@ -272,6 +276,10 @@ bool ReactNativeFeatureFlags::fixBorderlessRippleAndroid() {
 
 bool ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact() {
   return getAccessor().fixMappingOfEventPrioritiesBetweenFabricAndReact();
+}
+
+bool ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS() {
+  return getAccessor().fixProgrammaticScrollMomentumEventsIOS();
 }
 
 bool ReactNativeFeatureFlags::fixTextInlineViewLineHeight() {

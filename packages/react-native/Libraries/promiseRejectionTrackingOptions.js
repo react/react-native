@@ -27,12 +27,10 @@ const rejectionTrackingOptions: NonNullable<Parameters<enable>[0]> = {
     if (rejection === undefined) {
       message = '';
     } else if (
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
        * unsoundness in flow */
       Object.prototype.toString.call(rejection) === '[object Error]'
     ) {
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
        * unsoundness in flow */
       message = Error.prototype.toString.call(rejection);

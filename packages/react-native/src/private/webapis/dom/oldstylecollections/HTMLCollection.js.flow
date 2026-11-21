@@ -21,7 +21,7 @@ declare export default class HTMLCollection<out T>
   readonly length: number;
   item(index: number): T | null;
   namedItem(name: string): T | null;
-  @@iterator(): Iterator<T>;
+  @@iterator(): IteratorObject<T>;
 }
 
 declare export function createHTMLCollection<T>(

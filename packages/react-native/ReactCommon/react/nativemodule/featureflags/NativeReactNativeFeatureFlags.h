@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d39f59a8d5929a4b1cde691774c757f9>>
+ * @generated SignedSource<<8f8684acc5633a629a9a29419498fbfe>>
  */
 
 /**
@@ -110,6 +110,8 @@ class NativeReactNativeFeatureFlags
 
   bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
 
+  bool enableImmediateUpdateModeForScrollContentView(jsi::Runtime& runtime);
+
   bool enableImperativeEvents(jsi::Runtime& runtime);
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
@@ -161,6 +163,8 @@ class NativeReactNativeFeatureFlags
   bool fixBorderlessRippleAndroid(jsi::Runtime& runtime);
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
+
+  bool fixProgrammaticScrollMomentumEventsIOS(jsi::Runtime& runtime);
 
   bool fixTextInlineViewLineHeight(jsi::Runtime& runtime);
 

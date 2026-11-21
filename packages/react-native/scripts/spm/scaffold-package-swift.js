@@ -985,7 +985,6 @@ function scaffoldPackageSwiftForDep(
   }
 
   // autolinking.json may have provided podspecPath; otherwise search dep.root.
-  // $FlowFixMe[prop-missing] dynamic shape from autolinking.json
   const podspecPath /*: ?string */ =
     dep.platforms.ios.podspecPath ?? findPodspecs(dep.root)[0];
   if (podspecPath == null || !fs.existsSync(podspecPath)) {
@@ -1142,7 +1141,6 @@ function collectAutolinkedDeps(
 ) /*: ?Array<AutolinkedDep> */ {
   const {autolinkingJsonPath, remote, onSkipped} = opts;
   /*:: type AutolinkingJson = {dependencies?: ?{[key: string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
-  // $FlowFixMe[incompatible-type] JSON.parse returns any
   const data /*: AutolinkingJson */ = JSON.parse(
     fs.readFileSync(autolinkingJsonPath, 'utf8'),
   );

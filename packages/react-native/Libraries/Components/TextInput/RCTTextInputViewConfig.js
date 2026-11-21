@@ -99,7 +99,6 @@ const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
     fontSize: true,
     fontWeight: true,
     fontVariant: true,
-    // flowlint-next-line untyped-import:off
     textShadowOffset: {
       diff: require('../../Utilities/differ/sizesDiffer').default,
     },

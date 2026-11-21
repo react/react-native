@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9ee0822b36b5ba783acd39faa9edb089>>
+ * @generated SignedSource<<a4e7e2e0827e7663b6ef3e04f5eba7dc>>
  * @flow strict
  * @noformat
  */
@@ -61,6 +61,7 @@ export interface Spec extends TurboModule {
   readonly enableImagePrefetchingAndroid?: () => boolean;
   readonly enableImageTransparentTintColor?: () => boolean;
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
+  readonly enableImmediateUpdateModeForScrollContentView?: () => boolean;
   readonly enableImperativeEvents?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
   readonly enableInteractableResponderViews?: () => boolean;
@@ -87,6 +88,7 @@ export interface Spec extends TurboModule {
   readonly enableVirtualViewContainerStateExperimental?: () => boolean;
   readonly fixBorderlessRippleAndroid?: () => boolean;
   readonly fixMappingOfEventPrioritiesBetweenFabricAndReact?: () => boolean;
+  readonly fixProgrammaticScrollMomentumEventsIOS?: () => boolean;
   readonly fixTextInlineViewLineHeight?: () => boolean;
   readonly fixTextLayoutOnPixelDensityChange?: () => boolean;
   readonly fixYogaFlexBasisFitContentInMainAxis?: () => boolean;

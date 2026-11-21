@@ -71,7 +71,6 @@ function codegenNativeComponent<Props extends {...}>(
   }
 
   return requireNativeComponent<Props>(
-    // $FlowFixMe[incompatible-type]
     componentNameInUse,
   ) as HostComponent<Props>;
 }

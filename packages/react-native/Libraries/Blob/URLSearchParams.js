@@ -8,13 +8,12 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 // Small subset from whatwg-url: https://github.com/jsdom/whatwg-url/tree/master/src
 // The reference code bloat comes from Unicode issues with URLs, so those won't work here.
 export class URLSearchParams {
   _searchParams: Map<string, string[]> = new Map();
 
+  // $FlowFixMe[unsafe-getters-setters]
   get size(): number {
     return this._searchParams.size;
   }
@@ -127,7 +126,6 @@ export class URLSearchParams {
     );
   }
 
-  // $FlowFixMe[unsupported-syntax]
   [Symbol.iterator](): IteratorObject<[string, string]> {
     const entries: [string, string][] = [];
 
@@ -137,7 +135,6 @@ export class URLSearchParams {
       }
     }
 
-    // $FlowFixMe[incompatible-use]
     return entries[Symbol.iterator]();
   }
 

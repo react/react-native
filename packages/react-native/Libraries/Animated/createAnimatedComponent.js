@@ -33,7 +33,7 @@ type Builtin = (
   ...rest: ReadonlyArray<empty>
 ) => unknown | Date | Error | RegExp;
 type ComponentProps<T> =
-  T extends React.ComponentType<infer Props> ? Props : empty;
+  T extends React.ComponentType<infer Props extends {...}> ? Props : empty;
 
 export type WithAnimatedValue<out T> = T extends Builtin | Nullable
   ? T

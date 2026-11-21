@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<16a455a239873bbbbc61ee7aabd71a05>>
+ * @generated SignedSource<<5f768140609950eaa1012ffce22a67f7>>
  */
 
 /**
@@ -247,6 +247,12 @@ public object ReactNativeFeatureFlags {
   public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = accessor.enableImmediateUpdateModeForContentOffsetChanges()
 
   /**
+   * Apply ScrollContentView state updates synchronously on the main thread.
+   */
+  @JvmStatic
+  public fun enableImmediateUpdateModeForScrollContentView(): Boolean = accessor.enableImmediateUpdateModeForScrollContentView()
+
+  /**
    * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
    */
   @JvmStatic
@@ -401,6 +407,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
+
+  /**
+   * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
+   */
+  @JvmStatic
+  public fun fixProgrammaticScrollMomentumEventsIOS(): Boolean = accessor.fixProgrammaticScrollMomentumEventsIOS()
 
   /**
    * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.

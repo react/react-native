@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fc201e86f3e682ee23969ebd90ce80e4>>
+ * @generated SignedSource<<56c862c2dfd50fa0a50578c78bdd661b>>
  * @flow strict
  * @noformat
  */
@@ -84,6 +84,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableImagePrefetchingAndroid: Getter<boolean>,
   enableImageTransparentTintColor: Getter<boolean>,
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
+  enableImmediateUpdateModeForScrollContentView: Getter<boolean>,
   enableImperativeEvents: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteractableResponderViews: Getter<boolean>,
@@ -110,6 +111,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableVirtualViewContainerStateExperimental: Getter<boolean>,
   fixBorderlessRippleAndroid: Getter<boolean>,
   fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean>,
+  fixProgrammaticScrollMomentumEventsIOS: Getter<boolean>,
   fixTextInlineViewLineHeight: Getter<boolean>,
   fixTextLayoutOnPixelDensityChange: Getter<boolean>,
   fixYogaFlexBasisFitContentInMainAxis: Getter<boolean>,
@@ -363,6 +365,10 @@ export const enableImageTransparentTintColor: Getter<boolean> = createNativeFlag
  */
 export const enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean> = createNativeFlagGetter('enableImmediateUpdateModeForContentOffsetChanges', false);
 /**
+ * Apply ScrollContentView state updates synchronously on the main thread.
+ */
+export const enableImmediateUpdateModeForScrollContentView: Getter<boolean> = createNativeFlagGetter('enableImmediateUpdateModeForScrollContentView', false);
+/**
  * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
  */
 export const enableImperativeEvents: Getter<boolean> = createNativeFlagGetter('enableImperativeEvents', false);
@@ -466,6 +472,10 @@ export const fixBorderlessRippleAndroid: Getter<boolean> = createNativeFlagGette
  * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
  */
 export const fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean> = createNativeFlagGetter('fixMappingOfEventPrioritiesBetweenFabricAndReact', false);
+/**
+ * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
+ */
+export const fixProgrammaticScrollMomentumEventsIOS: Getter<boolean> = createNativeFlagGetter('fixProgrammaticScrollMomentumEventsIOS', false);
 /**
  * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
  */

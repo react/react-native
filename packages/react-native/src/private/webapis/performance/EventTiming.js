@@ -8,7 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
 import type {
   DOMHighResTimeStamp,
   PerformanceEntryInit,
@@ -45,14 +44,17 @@ export class PerformanceEventTiming extends PerformanceEntry {
     this.#interactionId = init.interactionId ?? 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get processingStart(): DOMHighResTimeStamp {
     return this.#processingStart;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get processingEnd(): DOMHighResTimeStamp {
     return this.#processingEnd;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get interactionId(): number {
     return this.#interactionId;
   }
@@ -76,7 +78,6 @@ export const PerformanceEventTiming_public: typeof PerformanceEventTiming =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceEventTiming_public.prototype = PerformanceEventTiming.prototype;
 
 type EventCountsForEachCallbackType =
@@ -97,7 +98,6 @@ function getCachedEventCounts(): Map<string, number> {
   );
   cachedEventCounts = eventCounts;
 
-  // $FlowFixMe[incompatible-type]
   global.queueMicrotask(() => {
     // To be consistent with the calls to the API from the same task,
     // but also not to refetch the data from native too often,
@@ -115,6 +115,7 @@ function getCachedEventCounts(): Map<string, number> {
  * https://www.w3.org/TR/event-timing/#eventcounts
  */
 export class EventCounts {
+  // $FlowFixMe[unsafe-getters-setters]
   get size(): number {
     return getCachedEventCounts().size;
   }
@@ -153,5 +154,4 @@ export const EventCounts_public: typeof EventCounts =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 EventCounts_public.prototype = EventCounts.prototype;

@@ -25,7 +25,6 @@ export const ensureMockFunction: (<TArgs extends Array<unknown>, TReturn>(
   }
 
   // $FlowExpectedError[incompatible-type]
-  // $FlowExpectedError[prop-missing]
   return fn;
 };
 

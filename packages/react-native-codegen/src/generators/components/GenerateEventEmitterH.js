@@ -366,7 +366,6 @@ module.exports = {
             const argIncludes = getImports(
               event.typeAnnotation.argument.properties,
             );
-            // $FlowFixMe[method-unbinding]
             argIncludes.forEach(extraIncludes.add, extraIncludes);
           }
         });

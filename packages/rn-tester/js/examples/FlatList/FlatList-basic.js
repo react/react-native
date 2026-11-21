@@ -257,7 +257,6 @@ class FlatListExample extends React.PureComponent<Props, State> {
               this.state.nextLoading ? LoadingComponent : FooterComponent
             }
             ListEmptyComponent={ListEmptyComponent}
-            // $FlowFixMe[missing-empty-array-annot]
             data={this.state.empty ? [] : filteredData}
             debug={this.state.debug}
             disableVirtualization={!this.state.virtualized}

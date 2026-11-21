@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<34885e10ff0a93a40d56fedefbad8848>>
+ * @generated SignedSource<<e8ad1fc403fc638acfb5cca52a9467ab>>
  */
 
 /**
@@ -60,6 +60,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableImagePrefetchingAndroidCache: Boolean? = null
   private var enableImageTransparentTintColorCache: Boolean? = null
   private var enableImmediateUpdateModeForContentOffsetChangesCache: Boolean? = null
+  private var enableImmediateUpdateModeForScrollContentViewCache: Boolean? = null
   private var enableImperativeEventsCache: Boolean? = null
   private var enableImperativeFocusCache: Boolean? = null
   private var enableInteractableResponderViewsCache: Boolean? = null
@@ -86,6 +87,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableVirtualViewContainerStateExperimentalCache: Boolean? = null
   private var fixBorderlessRippleAndroidCache: Boolean? = null
   private var fixMappingOfEventPrioritiesBetweenFabricAndReactCache: Boolean? = null
+  private var fixProgrammaticScrollMomentumEventsIOSCache: Boolean? = null
   private var fixTextInlineViewLineHeightCache: Boolean? = null
   private var fixTextLayoutOnPixelDensityChangeCache: Boolean? = null
   private var fixYogaFlexBasisFitContentInMainAxisCache: Boolean? = null
@@ -484,6 +486,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
     return cached
   }
 
+  override fun enableImmediateUpdateModeForScrollContentView(): Boolean {
+    var cached = enableImmediateUpdateModeForScrollContentViewCache
+    if (cached == null) {
+      cached = currentProvider.enableImmediateUpdateModeForScrollContentView()
+      accessedFeatureFlags.add("enableImmediateUpdateModeForScrollContentView")
+      enableImmediateUpdateModeForScrollContentViewCache = cached
+    }
+    return cached
+  }
+
   override fun enableImperativeEvents(): Boolean {
     var cached = enableImperativeEventsCache
     if (cached == null) {
@@ -740,6 +752,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.fixMappingOfEventPrioritiesBetweenFabricAndReact()
       accessedFeatureFlags.add("fixMappingOfEventPrioritiesBetweenFabricAndReact")
       fixMappingOfEventPrioritiesBetweenFabricAndReactCache = cached
+    }
+    return cached
+  }
+
+  override fun fixProgrammaticScrollMomentumEventsIOS(): Boolean {
+    var cached = fixProgrammaticScrollMomentumEventsIOSCache
+    if (cached == null) {
+      cached = currentProvider.fixProgrammaticScrollMomentumEventsIOS()
+      accessedFeatureFlags.add("fixProgrammaticScrollMomentumEventsIOS")
+      fixProgrammaticScrollMomentumEventsIOSCache = cached
     }
     return cached
   }

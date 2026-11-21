@@ -959,7 +959,6 @@ test('useNativeDriver: JS-side _value is synced before the completion callback f
       if (finished) {
         // $FlowFixMe[prop-missing] _value is internal but stable for testing.
         _valueInCallback = _value._value;
-        // $FlowFixMe[prop-missing]
         _interpolationInCallback = _value
           .interpolate({inputRange: [0, 1], outputRange: [0.5, 1]})
           .__getValue();

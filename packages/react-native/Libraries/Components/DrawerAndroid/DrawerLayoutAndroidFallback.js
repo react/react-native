@@ -64,7 +64,6 @@ export default class DrawerLayoutAndroid
     throw new Error('DrawerLayoutAndroid is only available on Android');
   }
 
-  // $FlowFixMe[unclear-type]
   setNativeProps(nativeProps: Object): void {
     throw new Error('DrawerLayoutAndroid is only available on Android');
   }

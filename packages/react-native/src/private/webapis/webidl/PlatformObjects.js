@@ -44,7 +44,6 @@ export const setPlatformObject: (<T extends interface {}>(
  * Indicates if the given object is a platform object.
  */
 export function isPlatformObject<T extends interface {}>(obj: T): boolean {
-  // $FlowExpectedError[invalid-in-lhs]
   return IS_PLATFORM_OBJECT_KEY in obj;
 }
 

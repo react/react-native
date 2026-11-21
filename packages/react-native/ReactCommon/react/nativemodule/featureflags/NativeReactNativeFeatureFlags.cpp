@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<984f39bf8131d844055083948cf58a72>>
+ * @generated SignedSource<<b0d11665001ed8a8c865c0615597b44b>>
  */
 
 /**
@@ -224,6 +224,11 @@ bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetCha
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
 }
 
+bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView();
+}
+
 bool NativeReactNativeFeatureFlags::enableImperativeEvents(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeEvents();
@@ -352,6 +357,11 @@ bool NativeReactNativeFeatureFlags::fixBorderlessRippleAndroid(
 bool NativeReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
+}
+
+bool NativeReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS();
 }
 
 bool NativeReactNativeFeatureFlags::fixTextInlineViewLineHeight(

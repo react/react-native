@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type NodeList from '../oldstylecollections/NodeList';
 import type {InstanceHandle} from './internals/NodeInternals';
 import type ReactNativeDocument from './ReactNativeDocument';
@@ -20,6 +18,8 @@ import EventTarget from '../events/EventTarget';
 import {EVENT_TARGET_GET_THE_PARENT_KEY} from '../events/internals/EventTargetInternals';
 import {createNodeList} from '../oldstylecollections/NodeList';
 import {
+  INSTANCE_HANDLE_KEY,
+  OWNER_DOCUMENT_KEY,
   getNativeNodeReference,
   getOwnerDocument,
   getPublicInstanceFromInstanceHandle,
@@ -43,6 +43,9 @@ import NativeDOM from './specs/NativeDOM';
 
 /** @build-types protected-constructor */
 class ReadOnlyNode extends EventTarget {
+  [INSTANCE_HANDLE_KEY]: InstanceHandle;
+  [OWNER_DOCUMENT_KEY]: ReactNativeDocument | null;
+
   constructor(
     instanceHandle: InstanceHandle,
     // This will be null for the document node itself.
@@ -55,11 +58,13 @@ class ReadOnlyNode extends EventTarget {
     setInstanceHandle(this, instanceHandle);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get childNodes(): NodeList<ReadOnlyNode> {
     const childNodes = getChildNodes(this);
     return createNodeList(childNodes);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get firstChild(): ReadOnlyNode | null {
     const childNodes = getChildNodes(this);
 
@@ -70,6 +75,7 @@ class ReadOnlyNode extends EventTarget {
     return childNodes[0];
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get isConnected(): boolean {
     const shadowNode = getNativeNodeReference(this);
 
@@ -80,6 +86,7 @@ class ReadOnlyNode extends EventTarget {
     return NativeDOM.isConnected(shadowNode);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get lastChild(): ReadOnlyNode | null {
     const childNodes = getChildNodes(this);
 
@@ -90,6 +97,7 @@ class ReadOnlyNode extends EventTarget {
     return childNodes[childNodes.length - 1];
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nextSibling(): ReadOnlyNode | null {
     const [siblings, position] = getNodeSiblingsAndPosition(this);
 
@@ -104,6 +112,7 @@ class ReadOnlyNode extends EventTarget {
   /**
    * @abstract
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeName(): string {
     throw new TypeError(
       '`nodeName` is abstract and must be implemented in a subclass of `ReadOnlyNode`',
@@ -113,6 +122,7 @@ class ReadOnlyNode extends EventTarget {
   /**
    * @abstract
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeType(): number {
     throw new TypeError(
       '`nodeType` is abstract and must be implemented in a subclass of `ReadOnlyNode`',
@@ -122,16 +132,19 @@ class ReadOnlyNode extends EventTarget {
   /**
    * @abstract
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeValue(): string | null {
     throw new TypeError(
       '`nodeValue` is abstract and must be implemented in a subclass of `ReadOnlyNode`',
     );
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get ownerDocument(): ReactNativeDocument | null {
     return getOwnerDocument(this);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get parentElement(): ReadOnlyElement | null {
     const parentNode = this.parentNode;
 
@@ -146,6 +159,7 @@ class ReadOnlyNode extends EventTarget {
     return null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get parentNode(): ReadOnlyNode | null {
     const shadowNode = getNativeNodeReference(this);
 
@@ -162,6 +176,7 @@ class ReadOnlyNode extends EventTarget {
     return getPublicInstanceFromInstanceHandle(parentInstanceHandle) ?? null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get previousSibling(): ReadOnlyNode | null {
     const [siblings, position] = getNodeSiblingsAndPosition(this);
 
@@ -176,6 +191,7 @@ class ReadOnlyNode extends EventTarget {
   /**
    * @abstract
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get textContent(): string {
     throw new TypeError(
       '`textContent` is abstract and must be implemented in a subclass of `ReadOnlyNode`',
@@ -323,9 +339,16 @@ setPlatformObject(ReadOnlyNode);
     'parentNode',
   )?.get;
   if (parentNodeGetter != null) {
-    // $FlowExpectedError[prop-missing]
-    // $FlowExpectedError[invalid-computed-prop]
-    ReadOnlyNode.prototype[EVENT_TARGET_GET_THE_PARENT_KEY] = parentNodeGetter;
+    Object.defineProperty(
+      ReadOnlyNode.prototype,
+      EVENT_TARGET_GET_THE_PARENT_KEY,
+      {
+        value: parentNodeGetter,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      },
+    );
   }
 }
 
@@ -369,7 +392,6 @@ export const ReadOnlyNode_public: typeof ReadOnlyNode =
     throw new TypeError("Failed to construct 'Node': Illegal constructor");
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyNode_public.prototype = ReadOnlyNode.prototype;
 // Copy static properties (ELEMENT_NODE, DOCUMENT_NODE, TEXT_NODE,
 // DOCUMENT_POSITION_*, etc.) so that callers accessing them via the public

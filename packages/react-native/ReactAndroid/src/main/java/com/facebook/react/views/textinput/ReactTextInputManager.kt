@@ -242,8 +242,16 @@ public open class ReactTextInputManager public constructor() :
   }
 
   @ReactProp(name = ViewProps.FONT_WEIGHT)
-  public fun setFontWeight(view: ReactEditText, fontWeight: String?) {
-    view.setFontWeight(fontWeight)
+  public fun setFontWeight(view: ReactEditText, fontWeight: Dynamic) {
+    // Props 1.0 and 1.5 send the raw JS value, which can be a number (700). Props 2.0 sends
+    // the string from C++, so the number case can go once TextInput uses only Props 2.0.
+    view.setFontWeight(
+        when (fontWeight.type) {
+          ReadableType.Number -> fontWeight.asInt().toString()
+          ReadableType.String -> fontWeight.asString()
+          else -> null
+        }
+    )
   }
 
   @ReactProp(name = ViewProps.FONT_STYLE)

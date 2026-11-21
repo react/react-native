@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e420ba3f733ba95b206cc3f68da8aa08>>
+ * @generated SignedSource<<2b168106c18b58da5f704b9176f16c21>>
  */
 
 /**
@@ -70,6 +70,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableImagePrefetchingAndroid();
   bool enableImageTransparentTintColor();
   bool enableImmediateUpdateModeForContentOffsetChanges();
+  bool enableImmediateUpdateModeForScrollContentView();
   bool enableImperativeEvents();
   bool enableImperativeFocus();
   bool enableInteractableResponderViews();
@@ -96,6 +97,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableVirtualViewContainerStateExperimental();
   bool fixBorderlessRippleAndroid();
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
+  bool fixProgrammaticScrollMomentumEventsIOS();
   bool fixTextInlineViewLineHeight();
   bool fixTextLayoutOnPixelDensityChange();
   bool fixYogaFlexBasisFitContentInMainAxis();
@@ -144,7 +146,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 99> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 101> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -182,6 +184,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableImagePrefetchingAndroid_;
   std::atomic<std::optional<bool>> enableImageTransparentTintColor_;
   std::atomic<std::optional<bool>> enableImmediateUpdateModeForContentOffsetChanges_;
+  std::atomic<std::optional<bool>> enableImmediateUpdateModeForScrollContentView_;
   std::atomic<std::optional<bool>> enableImperativeEvents_;
   std::atomic<std::optional<bool>> enableImperativeFocus_;
   std::atomic<std::optional<bool>> enableInteractableResponderViews_;
@@ -208,6 +211,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableVirtualViewContainerStateExperimental_;
   std::atomic<std::optional<bool>> fixBorderlessRippleAndroid_;
   std::atomic<std::optional<bool>> fixMappingOfEventPrioritiesBetweenFabricAndReact_;
+  std::atomic<std::optional<bool>> fixProgrammaticScrollMomentumEventsIOS_;
   std::atomic<std::optional<bool>> fixTextInlineViewLineHeight_;
   std::atomic<std::optional<bool>> fixTextLayoutOnPixelDensityChange_;
   std::atomic<std::optional<bool>> fixYogaFlexBasisFitContentInMainAxis_;

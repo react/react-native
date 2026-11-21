@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3795a2485df9cdd87b64b3b04460b596>>
+ * @generated SignedSource<<748d6146f38a53368501d707d7664853>>
  */
 
 /**
@@ -371,6 +371,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForContentOffsetChanges();
   }
 
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    auto value = values_["enableImmediateUpdateModeForScrollContentView"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForScrollContentView();
+  }
+
   bool enableImperativeEvents() override {
     auto value = values_["enableImperativeEvents"];
     if (!value.isNull()) {
@@ -603,6 +612,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fixMappingOfEventPrioritiesBetweenFabricAndReact();
+  }
+
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
+    auto value = values_["fixProgrammaticScrollMomentumEventsIOS"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixProgrammaticScrollMomentumEventsIOS();
   }
 
   bool fixTextInlineViewLineHeight() override {

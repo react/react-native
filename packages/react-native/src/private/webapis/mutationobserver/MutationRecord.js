@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type ReactNativeElement from '../dom/nodes/ReactNativeElement';
 import type ReadOnlyNode from '../dom/nodes/ReadOnlyNode';
 import type {NativeMutationRecord} from './specs/NativeMutationObserver';
@@ -43,34 +41,42 @@ export default class MutationRecord {
     this._removedNodes = createNodeList(removedNodes);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get addedNodes(): NodeList<ReadOnlyNode> {
     return this._addedNodes;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get attributeName(): string | null {
     return null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nextSibling(): ReadOnlyNode | null {
     return null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get oldValue(): unknown | null {
     return null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get previousSibling(): ReadOnlyNode | null {
     return null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get removedNodes(): NodeList<ReadOnlyNode> {
     return this._removedNodes;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get target(): ReactNativeElement {
     return this._target;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get type(): MutationType {
     return 'childList';
   }
@@ -93,5 +99,4 @@ export const MutationRecord_public: typeof MutationRecord =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 MutationRecord_public.prototype = MutationRecord.prototype;

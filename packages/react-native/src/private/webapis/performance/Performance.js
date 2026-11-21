@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {
   DOMHighResTimeStamp,
   PerformanceEntryList,
@@ -89,11 +87,13 @@ const getMarkTimeForMeasure = (markName: string): number => {
 export default class Performance {
   #eventCounts: EventCounts = new EventCounts();
 
+  // $FlowFixMe[unsafe-getters-setters]
   get eventCounts(): EventCounts {
     return this.#eventCounts;
   }
 
   // Get the current JS memory information.
+  // $FlowFixMe[unsafe-getters-setters]
   get memory(): MemoryInfo {
     // JSI API implementations may have different variants of names for the JS
     // heap information we need here. We will parse the result based on our
@@ -118,6 +118,7 @@ export default class Performance {
   }
 
   // Startup metrics is not used in web, but only in React Native.
+  // $FlowFixMe[unsafe-getters-setters]
   get rnStartupTiming(): ReactNativeStartupTiming {
     const {
       startTime,
@@ -138,6 +139,7 @@ export default class Performance {
    * performance-related timestamps.
    * https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get timeOrigin(): DOMHighResTimeStamp {
     if (cachedTimeOrigin == null) {
       cachedTimeOrigin = NativePerformance.timeOrigin();
@@ -459,7 +461,6 @@ export const Performance_public: typeof Performance =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 Performance_public.prototype = Performance.prototype;
 
 setPlatformObject(Performance);

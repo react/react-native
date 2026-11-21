@@ -9,6 +9,7 @@
 
 #import <React/RCTI18nUtil.h>
 #import <React/RCTUtils.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/scrollview/ScrollContentViewComponentDescriptor.h>
 #import <react/renderer/components/scrollview/ScrollContentViewState.h>
 #import "RCTConversions.h"
@@ -66,7 +67,10 @@ static EdgeInsets RCTRoundedEdgeInsets(UIEdgeInsets insets)
       [newData](const ScrollContentViewShadowNode::ConcreteState::Data &)
           -> ScrollContentViewShadowNode::ConcreteState::SharedData {
         return std::make_shared<const ScrollContentViewShadowNode::ConcreteState::Data>(newData);
-      });
+      },
+      ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView()
+          ? EventQueue::UpdateMode::unstable_Immediate
+          : EventQueue::UpdateMode::Asynchronous);
 }
 
 #pragma mark - RCTComponentViewProtocol

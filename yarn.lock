@@ -2306,12 +2306,12 @@
   dependencies:
     undici-types "~7.16.0"
 
-"@types/react@^19.1.0":
-  version "19.1.8"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-19.1.8.tgz#ff8395f2afb764597265ced15f8dddb0720ae1c3"
-  integrity sha512-AwAfQ2Wa5bCx9WP8nZL2uMZWod7J7/JSplxbTmBQ5ms6QpqNYm672H0Vu9ZVKVngQ+ii4R/byguVEUZQyeg44g==
+"@types/react@^19.3.0":
+  version "19.3.0"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-19.3.0.tgz#3b3ce8d8c1627fb5ccd4dadd57ef445c5a153b77"
+  integrity sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==
   dependencies:
-    csstype "^3.0.2"
+    csstype "^3.2.2"
 
 "@types/semver@^7.3.12":
   version "7.5.8"
@@ -3603,10 +3603,10 @@ cross-spawn@^7.0.1, cross-spawn@^7.0.2, cross-spawn@^7.0.3, cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-csstype@^3.0.2:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.3.tgz#d80ff294d114fb0e6ac500fbf85b60137d7eff81"
-  integrity sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==
+csstype@^3.2.2:
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.2.3.tgz#ec48c0f3e993e50648c86da559e2610995cf989a"
+  integrity sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==
 
 damerau-levenshtein@^1.0.8:
   version "1.0.8"
@@ -4855,10 +4855,10 @@ flow-api-translator@0.340.0:
     flow-transform "0.340.0"
     typescript "5.3.2"
 
-flow-bin@^0.340.0:
-  version "0.340.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.340.0.tgz#f3edbe6f235c9bc9ff735e5cae1dc8b0a96d55f7"
-  integrity sha512-XourZh2487go6B2RTIssruf5iH1rVATg7IdE8CGfMbey/93RJR5HTsqQEgVK33lmGhew8fTRLZmeSEyMVubMpw==
+flow-bin@^0.341.0:
+  version "0.341.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.341.0.tgz#e10bd44a3031f84d7c091f3380d3dcf53af26b40"
+  integrity sha512-NgsIhAk4TNRXRHro00uu+dI0fUsrL8w1jcdQOIXLVxU9YS6YyrwbvxGJr5RQXtRqeu2ScN+oXfJG7ooMH7HlXw==
 
 flow-enums-runtime@^0.0.6:
   version "0.0.6"
@@ -7858,10 +7858,10 @@ prelude-ls@^1.2.1:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-prettier@3.9.4:
-  version "3.9.4"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.9.4.tgz#a9c477cf1614376bd1f6bbc593d8c0d414bcec87"
-  integrity sha512-yWG/o/4oJfo036EKAfK6ACAoDOfHeRHx4tuxkfBZiauURiaSmYwlpOr5LQqKtIkRD2z1PLteme2WoxEnj4tHTg==
+prettier@3.10.0:
+  version "3.10.0"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.10.0.tgz#b546ab979f85b850be17ed5e41ea6719e3be8681"
+  integrity sha512-mBi4765LgjO1PFjlEs7pUeK0nb1bw71c+N4/ItfeUWNdY5cV2pRKaFpbbFRYmDJMO+5ZwzGxHRqHxFZna7iv5w==
 
 pretty-format@^29.0.0, pretty-format@^29.7.0:
   version "29.7.0"
@@ -8969,10 +8969,10 @@ through@^2.3.6:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
 
-tinybench@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/tinybench/-/tinybench-4.1.0.tgz#090118e51159eb105f3cc2ef5cf371f3f8adc7bf"
-  integrity sha512-8JZoQRJgWWEIIeAmpiNmMHIREmUY3oGX8GRmlmNapLr/qtgMe+K76vM2qabh85hNScnE2lqTVTajVETjuD9Ixg==
+tinybench@^6.2.3:
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/tinybench/-/tinybench-6.2.3.tgz#2e560dfbf17f83ddbe0be0681f8ed0553d2136d5"
+  integrity sha512-Al01C2JIBnO2CXCAPbpAl6sUiOZHeThGtHYNTa51JRw9PyWOCdr+9Ong05R4qg/Sk3+H645E8ov1h2c58ityNw==
 
 tinyglobby@^0.2.15:
   version "0.2.15"

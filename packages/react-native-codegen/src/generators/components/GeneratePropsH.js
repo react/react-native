@@ -893,9 +893,7 @@ module.exports = {
             const extendsImports = getExtendsImports(component.extendsProps);
             const imports = getLocalImports(component.props);
 
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             extendsImports.forEach(allImports.add, allImports);
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             imports.forEach(allImports.add, allImports);
 
             const replacedTemplate = ClassTemplate({

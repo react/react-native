@@ -25,18 +25,15 @@ import * as React from 'react';
 
 component CodeFrameDisplay(codeFrame: CodeFrame) {
   function getFileName() {
-    // $FlowFixMe[incompatible-use]
     const matches = /[^/]*$/.exec(codeFrame.fileName);
     if (matches && matches.length > 0) {
       return matches[0];
     }
 
-    // $FlowFixMe[incompatible-use]
     return codeFrame.fileName;
   }
 
   function getLocation() {
-    // $FlowFixMe[incompatible-use]
     const location = codeFrame.location;
     if (location != null) {
       return ` (${location.row}:${
