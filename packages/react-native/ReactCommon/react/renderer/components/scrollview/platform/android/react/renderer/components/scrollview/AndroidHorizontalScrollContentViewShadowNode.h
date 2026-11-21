@@ -25,8 +25,17 @@ class AndroidHorizontalScrollContentViewShadowNode final
           ScrollViewEventEmitter,
           ScrollViewState> {
  public:
-  using ConcreteViewShadowNode::ConcreteViewShadowNode;
+  AndroidHorizontalScrollContentViewShadowNode(
+      const ShadowNodeFragment &fragment,
+      const ShadowNodeFamily::Shared &family,
+      ShadowNodeTraits traits);
+
+  AndroidHorizontalScrollContentViewShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
+
   void layout(LayoutContext layoutContext) override;
+
+ private:
+  void initialize() noexcept;
 };
 
 } // namespace facebook::react
