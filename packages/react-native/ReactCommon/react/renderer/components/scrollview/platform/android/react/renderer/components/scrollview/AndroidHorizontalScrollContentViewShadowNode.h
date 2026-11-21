@@ -26,13 +26,11 @@ class AndroidHorizontalScrollContentViewShadowNode final
           ScrollViewState> {
  public:
   AndroidHorizontalScrollContentViewShadowNode(
-      const ShadowNodeFragment& fragment,
-      const ShadowNodeFamily::Shared& family,
+      const ShadowNodeFragment &fragment,
+      const ShadowNodeFamily::Shared &family,
       ShadowNodeTraits traits);
 
-  AndroidHorizontalScrollContentViewShadowNode(
-      const ShadowNode& sourceShadowNode,
-      const ShadowNodeFragment& fragment);
+  AndroidHorizontalScrollContentViewShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
 
   void layout(LayoutContext layoutContext) override;
 
