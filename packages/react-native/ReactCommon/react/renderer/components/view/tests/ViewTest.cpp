@@ -10,6 +10,8 @@
 
 #include <gtest/gtest.h>
 
+#include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/modal/ModalHostViewComponentDescriptor.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
@@ -47,6 +49,169 @@ TEST(ViewTest, constexprBaseTraits) {
       ShadowNodeTraits::Trait(
           rootTraits.get() | ShadowNodeTraits::Trait::Unstable_uncullableView));
 }
+
+#ifdef ANDROID
+namespace {
+
+ShadowNodeTraits traitsWithProps(
+    const ShadowNode& shadowNode,
+    const folly::dynamic& rawProps) {
+  ContextContainer contextContainer{};
+  PropsParserContext parserContext{-1, contextContainer};
+  auto props = shadowNode.getComponentDescriptor().cloneProps(
+      parserContext, nullptr, RawProps(rawProps));
+  return shadowNode.clone(ShadowNodeFragment{.props = props})->getTraits();
+}
+
+bool viewFormsView(const folly::dynamic& rawProps) {
+  auto builder = simpleComponentBuilder();
+  std::shared_ptr<ViewShadowNode> view;
+  builder.build(
+      Element<RootShadowNode>().tag(1).children(
+          {Element<ViewShadowNode>().tag(2).reference(view)}));
+  return traitsWithProps(*view, rawProps)
+      .check(ShadowNodeTraits::Trait::FormsView);
+}
+
+class ImperativeFocusFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  bool enableImperativeFocus() override {
+    return true;
+  }
+};
+
+class ImperativeFocusViewTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    ReactNativeFeatureFlags::override(std::make_unique<ImperativeFocusFlags>());
+  }
+
+  void TearDown() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
+  }
+};
+
+template <bool PreparedTextLayout>
+class TextLayoutFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  bool enablePreparedTextLayout() override {
+    return PreparedTextLayout;
+  }
+};
+
+template <bool PreparedTextLayout>
+class TextLayoutTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    ReactNativeFeatureFlags::override(
+        std::make_unique<TextLayoutFlags<PreparedTextLayout>>());
+  }
+
+  void TearDown() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
+  }
+};
+
+using ReactTextViewLayoutTest = TextLayoutTest<false>;
+using PreparedTextLayoutViewTest = TextLayoutTest<true>;
+
+} // namespace
+
+TEST(ViewTest, keyboardFocusableTraitTakesFocusableThenAccessible) {
+  auto builder = simpleComponentBuilder();
+  std::shared_ptr<ViewShadowNode> view;
+  builder.build(
+      Element<RootShadowNode>().tag(1).children(
+          {Element<ViewShadowNode>().tag(2).reference(view)}));
+  auto isKeyboardFocusable = [&](const folly::dynamic& rawProps) {
+    return traitsWithProps(*view, rawProps)
+        .check(ShadowNodeTraits::Trait::KeyboardFocusable);
+  };
+
+  EXPECT_FALSE(isKeyboardFocusable(folly::dynamic::object()));
+  EXPECT_TRUE(isKeyboardFocusable(folly::dynamic::object("accessible", true)));
+  EXPECT_TRUE(isKeyboardFocusable(folly::dynamic::object("focusable", true)));
+  EXPECT_FALSE(isKeyboardFocusable(
+      folly::dynamic::object("accessible", true)("focusable", false)));
+  EXPECT_FALSE(isKeyboardFocusable(folly::dynamic::object("focusable", false)));
+}
+
+TEST(ViewTest, paragraphKeyboardFocusableTraitTakesFocusableThenAccessible) {
+  auto builder = simpleComponentBuilder();
+  std::shared_ptr<ParagraphShadowNode> paragraph;
+  builder.build(
+      Element<RootShadowNode>().tag(1).children(
+          {Element<ParagraphShadowNode>().tag(2).reference(paragraph)}));
+  auto isKeyboardFocusable = [&](const folly::dynamic& rawProps) {
+    return traitsWithProps(*paragraph, rawProps)
+        .check(ShadowNodeTraits::Trait::KeyboardFocusable);
+  };
+
+  EXPECT_FALSE(isKeyboardFocusable(folly::dynamic::object()));
+  EXPECT_TRUE(isKeyboardFocusable(folly::dynamic::object("accessible", true)));
+  EXPECT_TRUE(isKeyboardFocusable(folly::dynamic::object("focusable", true)));
+  EXPECT_TRUE(isKeyboardFocusable(folly::dynamic::object("selectable", true)));
+  EXPECT_FALSE(isKeyboardFocusable(
+      folly::dynamic::object("accessible", true)("focusable", false)));
+  EXPECT_TRUE(isKeyboardFocusable(
+      folly::dynamic::object("selectable", true)("focusable", false)));
+}
+
+TEST_F(
+    ReactTextViewLayoutTest,
+    paragraphKeyboardFocusableTraitTakesLinksReactTextViewDetects) {
+  auto builder = simpleComponentBuilder();
+  std::shared_ptr<ParagraphShadowNode> paragraph;
+  builder.build(
+      Element<RootShadowNode>().tag(1).children(
+          {Element<ParagraphShadowNode>().tag(2).reference(paragraph)}));
+  auto isKeyboardFocusable = [&](const folly::dynamic& rawProps) {
+    return traitsWithProps(*paragraph, rawProps)
+        .check(ShadowNodeTraits::Trait::KeyboardFocusable);
+  };
+
+  EXPECT_TRUE(
+      isKeyboardFocusable(folly::dynamic::object("dataDetectorType", "link")));
+  EXPECT_FALSE(
+      isKeyboardFocusable(folly::dynamic::object("dataDetectorType", "none")));
+  EXPECT_FALSE(isKeyboardFocusable(
+      folly::dynamic::object("dataDetectorType", "link")("focusable", false)));
+}
+
+TEST_F(
+    PreparedTextLayoutViewTest,
+    paragraphKeyboardFocusableTraitIgnoresLinksPreparedLayoutTextViewDoesNotDetect) {
+  auto builder = simpleComponentBuilder();
+  std::shared_ptr<ParagraphShadowNode> paragraph;
+  builder.build(
+      Element<RootShadowNode>().tag(1).children(
+          {Element<ParagraphShadowNode>().tag(2).reference(paragraph)}));
+  auto isKeyboardFocusable = [&](const folly::dynamic& rawProps) {
+    return traitsWithProps(*paragraph, rawProps)
+        .check(ShadowNodeTraits::Trait::KeyboardFocusable);
+  };
+
+  EXPECT_FALSE(
+      isKeyboardFocusable(folly::dynamic::object("dataDetectorType", "link")));
+  EXPECT_TRUE(isKeyboardFocusable(
+      folly::dynamic::object("dataDetectorType", "link")("accessible", true)));
+  EXPECT_TRUE(isKeyboardFocusable(folly::dynamic::object("selectable", true)));
+}
+
+TEST(ViewTest, focusableFalseFormsNoViewWithoutImperativeFocus) {
+  EXPECT_FALSE(viewFormsView(folly::dynamic::object()));
+  EXPECT_FALSE(viewFormsView(folly::dynamic::object("focusable", false)));
+  EXPECT_TRUE(viewFormsView(folly::dynamic::object("focusable", true)));
+}
+
+TEST_F(ImperativeFocusViewTest, explicitFocusableFormsView) {
+  EXPECT_FALSE(viewFormsView(folly::dynamic::object()));
+  EXPECT_TRUE(viewFormsView(folly::dynamic::object("focusable", false)));
+  EXPECT_TRUE(viewFormsView(folly::dynamic::object("focusable", true)));
+}
+#endif
 
 class YogaDirtyFlagTest : public ::testing::Test {
  protected:

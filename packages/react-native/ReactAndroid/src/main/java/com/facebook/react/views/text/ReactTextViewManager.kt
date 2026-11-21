@@ -28,6 +28,7 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.IViewManagerWithChildren
+import com.facebook.react.uimanager.ImportantForAccessibilityHelper
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
@@ -111,6 +112,7 @@ public constructor(
   override fun getShadowNodeClass(): Class<LayoutShadowNode> = LayoutShadowNode::class.java
 
   override fun onAfterUpdateTransaction(view: ReactTextView) {
+    view.applyFocusProps()
     super.onAfterUpdateTransaction(view)
     view.updateView()
   }
@@ -251,7 +253,26 @@ public constructor(
 
   @ReactProp(name = "accessible")
   public fun setAccessible(view: ReactTextView, accessible: Boolean) {
-    view.isFocusable = accessible
+    view.updateFocusProps(view.focusProps.copy(accessible = accessible))
+  }
+
+  @ReactProp(name = "focusable")
+  public fun setFocusable(view: ReactTextView, focusable: Boolean?) {
+    view.updateFocusProps(view.focusProps.copy(focusable = focusable))
+  }
+
+  override fun setScreenReaderFocusable(view: ReactTextView, screenReaderFocusable: Boolean) {
+    view.updateFocusProps(view.focusProps.copy(screenReaderFocusable = screenReaderFocusable))
+  }
+
+  override fun setImportantForAccessibility(
+      view: ReactTextView,
+      importantForAccessibility: String?,
+  ) {
+    val mode =
+        ImportantForAccessibilityHelper.parseImportantForAccessibility(importantForAccessibility)
+            ?: return
+    view.updateFocusProps(view.focusProps.copy(importantForAccessibility = mode))
   }
 
   // maxLines can only be set in master view (block), doesn't really make sense to set in a span
@@ -307,7 +328,7 @@ public constructor(
 
   @ReactProp(name = "selectable")
   public fun setSelectable(view: ReactTextView, isSelectable: Boolean) {
-    view.setTextIsSelectable(isSelectable)
+    view.setSelectable(isSelectable)
   }
 
   @ReactProp(name = "selectionColor", customType = "Color")

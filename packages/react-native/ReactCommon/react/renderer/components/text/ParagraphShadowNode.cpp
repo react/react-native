@@ -60,8 +60,17 @@ const char ParagraphComponentName[] = "Paragraph";
 
 void ParagraphShadowNode::initialize() noexcept {
 #ifdef ANDROID
-  if (getConcreteProps().isSelectable) {
+  // Android selects text, and moves through its links, only in a view that can
+  // take focus; otherwise the text views' keyboard focus takes `focusable` over
+  // `accessible`. PreparedLayoutTextView detects no links.
+  const auto& props = getConcreteProps();
+  bool detectsLinks = !ReactNativeFeatureFlags::enablePreparedTextLayout() &&
+      props.dataDetectorType.has_value() &&
+      *props.dataDetectorType != DataDetectorType::None;
+  if (props.isSelectable || (detectsLinks && !props.focusable.has_value())) {
     traits_.set(ShadowNodeTraits::Trait::KeyboardFocusable);
+  } else if (props.focusable == false) {
+    traits_.unset(ShadowNodeTraits::Trait::KeyboardFocusable);
   }
 #endif
 }

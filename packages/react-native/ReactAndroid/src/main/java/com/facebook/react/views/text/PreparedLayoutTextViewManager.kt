@@ -18,6 +18,7 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.IViewGroupManager
+import com.facebook.react.uimanager.ImportantForAccessibilityHelper
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.PointerEvents
@@ -58,6 +59,11 @@ internal class PreparedLayoutTextViewManager :
   }
 
   override fun getName(): String = REACT_CLASS
+
+  override fun onAfterUpdateTransaction(view: PreparedLayoutTextView) {
+    view.applyFocusProps()
+    super.onAfterUpdateTransaction(view)
+  }
 
   override fun updateViewAccessibility(view: PreparedLayoutTextView) {
     ReactTextViewAccessibilityDelegate.setDelegate(
@@ -108,7 +114,29 @@ internal class PreparedLayoutTextViewManager :
 
   @ReactProp(name = "accessible")
   fun setAccessible(view: PreparedLayoutTextView, accessible: Boolean) {
-    view.isFocusable = accessible
+    view.updateFocusProps(view.focusProps.copy(accessible = accessible))
+  }
+
+  @ReactProp(name = "focusable")
+  fun setFocusable(view: PreparedLayoutTextView, focusable: Boolean?) {
+    view.updateFocusProps(view.focusProps.copy(focusable = focusable))
+  }
+
+  override fun setScreenReaderFocusable(
+      view: PreparedLayoutTextView,
+      screenReaderFocusable: Boolean,
+  ) {
+    view.updateFocusProps(view.focusProps.copy(screenReaderFocusable = screenReaderFocusable))
+  }
+
+  override fun setImportantForAccessibility(
+      view: PreparedLayoutTextView,
+      importantForAccessibility: String?,
+  ) {
+    val mode =
+        ImportantForAccessibilityHelper.parseImportantForAccessibility(importantForAccessibility)
+            ?: return
+    view.updateFocusProps(view.focusProps.copy(importantForAccessibility = mode))
   }
 
   @ReactProp(name = "selectable", defaultBoolean = false)

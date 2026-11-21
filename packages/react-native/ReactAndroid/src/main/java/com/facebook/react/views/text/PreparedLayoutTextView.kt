@@ -21,6 +21,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
+import android.view.accessibility.AccessibilityNodeInfo
 import androidx.annotation.ColorInt
 import androidx.annotation.DoNotInline
 import androidx.annotation.RequiresApi
@@ -30,12 +31,14 @@ import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.ReactCompoundView
 import com.facebook.react.uimanager.RootView
+import com.facebook.react.uimanager.ScreenReaderFocusableHelper
 import com.facebook.react.uimanager.style.Overflow
 import com.facebook.react.views.text.internal.span.AnimatedEffectSpan
 import com.facebook.react.views.text.internal.span.CanvasEffectSpan
 import com.facebook.react.views.text.internal.span.ReactFragmentIndexSpan
 import com.facebook.react.views.text.internal.span.ReactLinkSpan
 import com.facebook.react.views.text.internal.span.TouchableSpan
+import com.facebook.react.views.view.FocusProps
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
@@ -91,6 +94,11 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
 
   @ColorInt var selectionColor: Int? = null
 
+  internal var focusProps: FocusProps = FocusProps.DEFAULT
+    private set
+
+  private var focusPropsChanged = false
+
   val text: CharSequence?
     // Avoid mangling the getter name, to allow black box E2E tests to read text content via
     // reflection. Returns the full logical text, not `layout.text`, which can be an ellipsized
@@ -108,6 +116,8 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     overflow = Overflow.VISIBLE
     selection = null
     selectionColor = null
+    focusProps = FocusProps.DEFAULT
+    focusPropsChanged = false
     lastFrameTimeNanos = 0L
     preparedLayout = null
     hasClickableSpansCache = null
@@ -422,6 +432,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
       clearSelection()
     }
     super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+    focusProps.onFocusChanged(this, gainFocus)
     val accessibilityDelegateCompat = ViewCompat.getAccessibilityDelegate(this)
     if (
         accessibilityDelegateCompat != null &&
@@ -429,6 +440,24 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     ) {
       accessibilityDelegateCompat.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
     }
+  }
+
+  internal fun updateFocusProps(focusProps: FocusProps) {
+    this.focusProps = focusProps
+    focusPropsChanged = true
+  }
+
+  internal fun applyFocusProps() {
+    if (!focusPropsChanged) {
+      return
+    }
+    focusPropsChanged = false
+    focusProps.applyTo(this)
+  }
+
+  override fun onInitializeAccessibilityNodeInfo(info: AccessibilityNodeInfo) {
+    super.onInitializeAccessibilityNodeInfo(info)
+    ScreenReaderFocusableHelper.initializeAccessibilityNodeInfo(this, info)
   }
 
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {

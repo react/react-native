@@ -3733,9 +3733,6 @@ public final class com/facebook/react/uimanager/ReactAccessibilityDelegate$Role$
 public final class com/facebook/react/uimanager/ReactAxOrderHelper {
 	public static final field INSTANCE Lcom/facebook/react/uimanager/ReactAxOrderHelper;
 	public final fun buildAxOrderList (Landroid/view/View;Landroid/view/View;Ljava/util/List;[Landroid/view/View;)V
-	public static final fun cleanUpAxOrder (Landroid/view/View;)V
-	public final fun disableFocusForSubtree (Landroid/view/View;Ljava/util/List;)V
-	public static final fun restoreFocusability (Landroid/view/View;)V
 }
 
 public abstract interface class com/facebook/react/uimanager/ReactClippingProhibitedView {
@@ -6043,6 +6040,7 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	public fun onAttachedToWindow ()V
 	protected fun onDraw (Landroid/graphics/Canvas;)V
 	public final fun onFocusChanged (ZILandroid/graphics/Rect;)V
+	public fun onInitializeAccessibilityNodeInfo (Landroid/view/accessibility/AccessibilityNodeInfo;)V
 	protected fun onLayout (ZIIII)V
 	protected fun onMeasure (II)V
 	protected fun onSizeChanged (IIII)V
@@ -6105,7 +6103,10 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public final fun setDataDetectorType (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setDisabled (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setEllipsizeMode (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
+	public final fun setFocusable (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/Boolean;)V
 	public final fun setFontSize (Lcom/facebook/react/views/text/ReactTextView;F)V
+	public synthetic fun setImportantForAccessibility (Landroid/view/View;Ljava/lang/String;)V
+	public fun setImportantForAccessibility (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setLetterSpacing (Lcom/facebook/react/views/text/ReactTextView;F)V
 	public final fun setLineBreak (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
@@ -6114,6 +6115,8 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public synthetic fun setPadding (Landroid/view/View;IIII)V
 	public fun setPadding (Lcom/facebook/react/views/text/ReactTextView;IIII)V
 	protected final fun setReactTextViewManagerCallback (Lcom/facebook/react/views/text/ReactTextViewManagerCallback;)V
+	public synthetic fun setScreenReaderFocusable (Landroid/view/View;Z)V
+	public fun setScreenReaderFocusable (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setSelectable (Lcom/facebook/react/views/text/ReactTextView;Z)V
 	public final fun setSelectionColor (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/Integer;)V
 	public final fun setTextAlignVertical (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
@@ -6483,7 +6486,9 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	protected fun onAttachedToWindow ()V
 	protected fun onConfigurationChanged (Landroid/content/res/Configuration;)V
 	protected fun onDetachedFromWindow ()V
+	protected fun onFocusChanged (ZILandroid/graphics/Rect;)V
 	public fun onHoverEvent (Landroid/view/MotionEvent;)Z
+	public fun onInitializeAccessibilityNodeInfo (Landroid/view/accessibility/AccessibilityNodeInfo;)V
 	public fun onInterceptTouchEvent (Landroid/view/MotionEvent;)Z
 	protected fun onLayout (ZIIII)V
 	protected fun onMeasure (II)V
@@ -6529,6 +6534,8 @@ public class com/facebook/react/views/view/ReactViewManager : com/facebook/react
 	public fun nextFocusLeft (Lcom/facebook/react/views/view/ReactViewGroup;I)V
 	public fun nextFocusRight (Lcom/facebook/react/views/view/ReactViewGroup;I)V
 	public fun nextFocusUp (Lcom/facebook/react/views/view/ReactViewGroup;I)V
+	public synthetic fun onAfterUpdateTransaction (Landroid/view/View;)V
+	protected fun onAfterUpdateTransaction (Lcom/facebook/react/views/view/ReactViewGroup;)V
 	public synthetic fun onDropViewInstance (Landroid/view/View;)V
 	public fun onDropViewInstance (Lcom/facebook/react/views/view/ReactViewGroup;)V
 	public synthetic fun prepareToRecycleView (Lcom/facebook/react/uimanager/ThemedReactContext;Landroid/view/View;)Landroid/view/View;
@@ -6555,8 +6562,10 @@ public class com/facebook/react/views/view/ReactViewManager : com/facebook/react
 	public fun setExperimentalBackgroundPosition (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun setExperimentalBackgroundRepeat (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun setExperimentalBackgroundSize (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableArray;)V
-	public fun setFocusable (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
+	public fun setFocusable (Lcom/facebook/react/views/view/ReactViewGroup;Ljava/lang/Boolean;)V
 	public fun setHitSlop (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/Dynamic;)V
+	public synthetic fun setImportantForAccessibility (Landroid/view/View;Ljava/lang/String;)V
+	public fun setImportantForAccessibility (Lcom/facebook/react/views/view/ReactViewGroup;Ljava/lang/String;)V
 	public fun setNativeBackground (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableMap;)V
 	public fun setNativeForeground (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableMap;)V
 	public fun setNeedsOffscreenAlphaCompositing (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
@@ -6564,6 +6573,8 @@ public class com/facebook/react/views/view/ReactViewManager : com/facebook/react
 	public fun setOpacity (Lcom/facebook/react/views/view/ReactViewGroup;F)V
 	public fun setOverflow (Lcom/facebook/react/views/view/ReactViewGroup;Ljava/lang/String;)V
 	public fun setPointerEvents (Lcom/facebook/react/views/view/ReactViewGroup;Ljava/lang/String;)V
+	public synthetic fun setScreenReaderFocusable (Landroid/view/View;Z)V
+	public fun setScreenReaderFocusable (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
 	public fun setTVPreferredFocus (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
 	public synthetic fun setTransformProperty (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;Lcom/facebook/react/bridge/ReadableArray;)V
 	protected fun setTransformProperty (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableArray;Lcom/facebook/react/bridge/ReadableArray;)V
