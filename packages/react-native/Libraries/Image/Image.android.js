@@ -164,6 +164,7 @@ let BaseImage: AbstractImageAndroid = ({
   width,
   height,
   resizeMode,
+  tabIndex,
   ...restProps
 }: {
   ref?: React.RefSetter<ImageInstance>,
@@ -297,6 +298,10 @@ let BaseImage: AbstractImageAndroid = ({
 
   if (ariaHidden === true) {
     nativeProps.importantForAccessibility = 'no-hide-descendants';
+  }
+
+  if (tabIndex !== undefined) {
+    nativeProps.focusable = !tabIndex;
   }
 
   const flattenedStyle_ = flattenStyle<ImageStyleProp>(style);

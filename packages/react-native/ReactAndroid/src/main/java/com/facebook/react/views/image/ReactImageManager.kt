@@ -105,6 +105,11 @@ public constructor(
     view.isFocusable = accessible
   }
 
+  @ReactProp(name = "focusable", defaultBoolean = true)
+  public fun setFocusable(view: ReactImageView, focusable: Boolean) {
+    view.excludedFromKeyboardFocus = !focusable
+  }
+
   // In JS this is Image.props.source
   @ReactProp(name = "src")
   public fun setSrc(view: ReactImageView, sources: ReadableArray?) {
