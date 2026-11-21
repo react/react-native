@@ -26,12 +26,8 @@ import kotlin.math.roundToInt
 
 internal class BackgroundDrawable(
     private val context: Context,
-    /*
-     * We assume borderRadius & borderInsets to be shared across multiple drawables
-     * therefore we should manually invalidate this drawable when changing either of them
-     */
-    var borderRadius: BorderRadiusStyle? = null,
-    var borderInsets: BorderInsets? = null,
+    borderRadius: BorderRadiusStyle? = null,
+    borderInsets: BorderInsets? = null,
 ) : Drawable() {
   /**
    * There is a small gap between the edges of adjacent paths, such as between its Border and its
@@ -42,6 +38,22 @@ internal class BackgroundDrawable(
   private var computedBorderInsets: RectF? = null
   private var computedBorderRadius: ComputedBorderRadius? = null
   private var needUpdatePath = true
+
+  /*
+   * We assume borderRadius & borderInsets to be shared across multiple drawables
+   * therefore user should assign them to this drawable again when changing either of them
+   */
+  var borderRadius: BorderRadiusStyle? = borderRadius
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
+
+  var borderInsets: BorderInsets? = borderInsets
+    set(value) {
+      field = value
+      needUpdatePath = true
+    }
 
   var backgroundColor: Int = Color.TRANSPARENT
     set(value) {
@@ -61,14 +73,14 @@ internal class BackgroundDrawable(
         color = backgroundColor
       }
 
-  override fun invalidateSelf() {
-    needUpdatePath = true
-    super.invalidateSelf()
-  }
-
   override fun onBoundsChange(bounds: Rect) {
     super.onBoundsChange(bounds)
     needUpdatePath = true
+  }
+
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    needUpdatePath = true
+    return true
   }
 
   override fun setAlpha(alpha: Int) {
