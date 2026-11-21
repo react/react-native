@@ -11,9 +11,11 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {StyleProp, ViewStyle} from 'react-native';
 
 import RNTexterText from '../../components/RNTesterText';
 import * as React from 'react';
+import {useState} from 'react';
 import {
   Alert,
   Animated,
@@ -22,6 +24,7 @@ import {
   Image,
   PixelRatio,
   Platform,
+  Pressable,
   StyleSheet,
   Switch,
   Text,
@@ -594,6 +597,60 @@ const BorderExample = withRTLState(({isRTL, setRTL}) => {
   );
 });
 
+component DirectionExample() {
+  const [direction, setDirection] = useState<'ltr' | 'rtl'>('ltr');
+  return (
+    <View>
+      <Button
+        onPress={() => setDirection(d => (d === 'ltr' ? 'rtl' : 'ltr'))}
+        title={`direction: ${direction}`}
+        color="gray"
+        accessibilityLabel="Toggle direction style"
+      />
+      <View style={{direction}}>
+        <DirectionBox
+          label="backgroundColor"
+          style={{backgroundColor: '#ddd'}}
+        />
+        <DirectionBox
+          label="border (start: red, end: green)"
+          style={{
+            borderEndColor: 'green',
+            borderStartColor: 'red',
+            borderWidth: 6,
+          }}
+        />
+        <DirectionBox
+          label="backgroundImage"
+          style={{
+            backgroundImage: 'linear-gradient(90deg, #e66465, #9198e5)',
+          }}
+        />
+        {Platform.OS === 'android' && (
+          <DirectionBox label="elevation (Android)" style={{elevation: 2}} />
+        )}
+        {Platform.OS === 'android' && (
+          <Pressable
+            android_ripple={{color: 'red', borderless: false}}
+            style={[styles.directionStyleBox, {backgroundColor: '#ddd'}]}>
+            <RNTexterText style={{textAlign: 'center'}}>
+              ripple (Android)
+            </RNTexterText>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+component DirectionBox(label: string, style?: StyleProp<ViewStyle>) {
+  return (
+    <View style={[styles.directionStyleBox, style]}>
+      <RNTexterText style={{textAlign: 'center'}}>{label}</RNTexterText>
+    </View>
+  );
+}
+
 const directionStyle = (isRTL: boolean) =>
   Platform.OS !== 'android' ? {direction: isRTL ? 'rtl' : 'ltr'} : null;
 
@@ -707,6 +764,13 @@ const styles = StyleSheet.create({
   },
   bold: {
     fontWeight: 'bold',
+  },
+  directionStyleBox: {
+    alignItems: 'center',
+    borderTopStartRadius: 30,
+    height: 60,
+    justifyContent: 'center',
+    marginTop: 8,
   },
   rtlToggler: {
     color: 'gray',
@@ -830,6 +894,15 @@ exports.examples = [
     title: 'Border',
     render: function (): React.MixedElement {
       return <BorderExample />;
+    },
+  },
+  {
+    title: 'Direction Style',
+    description:
+      ("A view's 'direction' style sets the layout direction for it and its " +
+        "children, independent of the app's RTL setting.") as string,
+    render: function (): React.MixedElement {
+      return <DirectionExample />;
     },
   },
 ] as Array<RNTesterModuleExample>;

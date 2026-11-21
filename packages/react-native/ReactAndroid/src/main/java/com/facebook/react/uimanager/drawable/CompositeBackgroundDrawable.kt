@@ -199,6 +199,12 @@ internal class CompositeBackgroundDrawable(
     )
   }
 
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    super.onLayoutDirectionChanged(layoutDirection)
+    invalidateSelf()
+    return true
+  }
+
   /* Android's elevation implementation requires this to be implemented to know where to draw the
   elevation shadow. */
   override fun getOutline(outline: Outline) {
