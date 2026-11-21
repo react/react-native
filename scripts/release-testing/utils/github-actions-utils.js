@@ -11,7 +11,6 @@
 
 'use strict';
 
-const fetch = require('node-fetch');
 const {execSync: exec} = require('node:child_process');
 const {styleText} = require('node:util');
 
@@ -75,41 +74,33 @@ const reactNativeActionsURL = `${reactNativeRepo}actions/runs`;
 
 async function _getActionRunsOnBranch() /*: Promise<WorkflowRuns> */ {
   const url = `${reactNativeActionsURL}?branch=${branch}&per_page=100`;
-  const options = {
+  const options /*: RequestInit */ = {
     method: 'GET',
     headers: ciHeaders,
   };
 
-  // $FlowFixMe[prop-missing] Conflicting .flowconfig in Meta's monorepo
-  // $FlowFixMe[incompatible-type]
   const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(JSON.stringify(await response.json()));
   }
 
-  const body = await response
-    .json /*::<WorkflowRuns>*/
-    ();
+  const body /*: WorkflowRuns */ = await response.json();
   return body;
 }
 
 async function _getArtifacts(run_id /*: number */) /*: Promise<Artifacts> */ {
   const url = `${reactNativeActionsURL}/${run_id}/artifacts?per_page=100`;
-  const options = {
+  const options /*: RequestInit */ = {
     method: 'GET',
     headers: ciHeaders,
   };
 
-  // $FlowFixMe[prop-missing] Conflicting .flowconfig in Meta's monorepo
-  // $FlowFixMe[incompatible-type]
   const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(JSON.stringify(await response.json()));
   }
 
-  const body = await response
-    .json /*::<Artifacts>*/
-    ();
+  const body /*: Artifacts */ = await response.json();
   return body;
 }
 
