@@ -23,6 +23,8 @@
 
 namespace facebook::react {
 
+struct ConditionalValues;
+
 /*
  * Represents the most generic props object.
  */
@@ -60,6 +62,12 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
   setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
 
   std::string nativeId;
+
+  /*
+   * The conditional values that these props were resolved from. Null if there
+   * are none. See `ConditionalValues.h`.
+   */
+  std::shared_ptr<const ConditionalValues> conditionalValues;
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic rawProps = folly::dynamic::object();

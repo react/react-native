@@ -97,8 +97,13 @@ ShadowNode::ShadowNode(
 
   traits_.set(ShadowNodeTraits::Trait::ChildrenAreShared);
 
+  auto childrenHaveConditionalValues = false;
   for (const auto& child : *children_) {
     child->family_->setParent(family_);
+    childrenHaveConditionalValues |= child->subtreeHasConditionalValues();
+  }
+  if (childrenHaveConditionalValues) {
+    traits_.set(ShadowNodeTraits::Trait::ChildrenHaveConditionalValues);
   }
 
   propagateUncullableTraitsFromChildren();
@@ -127,8 +132,15 @@ ShadowNode::ShadowNode(
   traits_.set(ShadowNodeTraits::Trait::ChildrenAreShared);
 
   if (fragment.children) {
+    auto childrenHaveConditionalValues = false;
     for (const auto& child : *children_) {
       child->family_->setParent(family_);
+      childrenHaveConditionalValues |= child->subtreeHasConditionalValues();
+    }
+    if (childrenHaveConditionalValues) {
+      traits_.set(ShadowNodeTraits::Trait::ChildrenHaveConditionalValues);
+    } else {
+      traits_.unset(ShadowNodeTraits::Trait::ChildrenHaveConditionalValues);
     }
     propagateUncullableTraitsFromChildren();
   }
@@ -260,6 +272,9 @@ void ShadowNode::appendChild(const std::shared_ptr<const ShadowNode>& child) {
 
   child->family_->setParent(family_);
   propagateUncullableTraitsFromChildren();
+  if (child->subtreeHasConditionalValues()) {
+    traits_.set(ShadowNodeTraits::Trait::ChildrenHaveConditionalValues);
+  }
 }
 
 void ShadowNode::replaceChild(
@@ -270,6 +285,9 @@ void ShadowNode::replaceChild(
 
   cloneChildrenIfShared();
   newChild->family_->setParent(family_);
+  if (newChild->subtreeHasConditionalValues()) {
+    traits_.set(ShadowNodeTraits::Trait::ChildrenHaveConditionalValues);
+  }
 
   auto& children =
       const_cast<std::vector<std::shared_ptr<const ShadowNode>>&>(*children_);
@@ -323,6 +341,11 @@ void ShadowNode::propagateUncullableTraitsFromChildren() {
     }
     traits_.unset(ShadowNodeTraits::Trait::Unstable_uncullableTrace);
   }
+}
+
+bool ShadowNode::subtreeHasConditionalValues() const {
+  return props_->conditionalValues != nullptr ||
+      traits_.check(ShadowNodeTraits::Trait::ChildrenHaveConditionalValues);
 }
 
 void ShadowNode::setMounted(bool mounted) const {
