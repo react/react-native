@@ -606,6 +606,7 @@ export default class Pressability {
           }
         };
       }
+      // $FlowFixMe[incompatible-type] `void` is not `undefined` under experimental.ts_void
       return {
         ...focusEventHandlers,
         ...responderEventHandlers,

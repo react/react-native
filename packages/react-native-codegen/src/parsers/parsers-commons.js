@@ -1332,7 +1332,7 @@ function handleEventHandler(
     parser: Parser,
     typeAnnotation: $FlowFixMe,
     types: TypeDeclarationMap,
-    bubblingType: void | 'direct' | 'bubble',
+    bubblingType: ?('direct' | 'bubble'),
     paperName: ?$FlowFixMe,
   ) => EventArgumentReturnType,
 ): EventArgumentReturnType {

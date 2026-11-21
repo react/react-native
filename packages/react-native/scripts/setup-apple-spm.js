@@ -1213,6 +1213,7 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
     log('Generating autolinking.json (CLI config)...');
     autolinkingConfigResult = generateAutolinkingConfigOrFailClosed({
       projectRoot,
+      // $FlowFixMe[incompatible-type] `void` is not `undefined` under experimental.ts_void
       configCommand: resolveExplicitConfigCommand(args, appRoot),
     });
     if (autolinkingConfigResult == null) {
