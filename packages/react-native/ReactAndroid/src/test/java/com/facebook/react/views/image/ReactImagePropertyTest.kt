@@ -7,6 +7,7 @@
 
 package com.facebook.react.views.image
 
+import android.app.Activity
 import android.graphics.Color
 import android.util.DisplayMetrics
 import android.view.View
@@ -51,6 +52,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -128,6 +130,7 @@ class ReactImagePropertyTest {
     val root = LinearLayout(themeContext).apply { orientation = LinearLayout.VERTICAL }
     root.addView(image, LinearLayout.LayoutParams(50, 50))
     root.addView(next, LinearLayout.LayoutParams(50, 50))
+    Robolectric.buildActivity(Activity::class.java).setup().get().setContentView(root)
     root.measure(
         View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY),
         View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY),
