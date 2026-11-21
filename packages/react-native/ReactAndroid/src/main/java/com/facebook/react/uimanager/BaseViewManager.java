@@ -272,6 +272,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.BACKDROP_FILTER, customType = "Filter")
   public void setBackdropFilter(@NonNull T view, @Nullable ReadableArray backdropFilter) {
     view.setTag(R.id.backdrop_filter, backdropFilter);
+    view.invalidate();
     if (view.getParent() instanceof View) {
       ((View) view.getParent()).invalidate();
     }
