@@ -49,6 +49,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)scheduleTransaction:(std::shared_ptr<const facebook::react::MountingCoordinator>)mountingCoordinator;
 
 /**
+ * Creates a component view of the given kind on the main thread ahead of the mount that will use
+ * it, so that view construction happens while the main thread is otherwise idle (typically while
+ * the JS thread is still rendering). Can be called from any thread.
+ */
+- (void)preallocateComponentViewWithComponentHandle:(facebook::react::ComponentHandle)componentHandle;
+
+/**
  * Dispatch a command to be performed on the main thread.
  * Can be called from any thread.
  */

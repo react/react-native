@@ -20,10 +20,13 @@ using namespace facebook;
 using namespace facebook::react;
 
 const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
+const NSInteger RCTComponentViewRegistryPreallocationMaxSizePerKind = 64;
 
 @implementation RCTComponentViewRegistry {
   std::unordered_map<Tag, RCTComponentViewDescriptor> _registry;
   std::unordered_map<ComponentHandle, std::vector<RCTComponentViewDescriptor>> _recyclePool;
+  // Fresh, never-mounted views created ahead of their mount (see preallocateComponentViewWithComponentHandle:).
+  std::unordered_map<ComponentHandle, std::vector<RCTComponentViewDescriptor>> _preallocatedViews;
 }
 
 - (instancetype)init
@@ -93,6 +96,12 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
   auto &recycledViews = _recyclePool[componentHandle];
 
   if (recycledViews.empty()) {
+    auto preallocated = _preallocatedViews.find(componentHandle);
+    if (preallocated != _preallocatedViews.end() && !preallocated->second.empty()) {
+      auto componentViewDescriptor = preallocated->second.back();
+      preallocated->second.pop_back();
+      return componentViewDescriptor;
+    }
     return [self.componentViewFactory createComponentViewWithComponentHandle:componentHandle];
   }
 
@@ -119,9 +128,23 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
   recycledViews.push_back(componentViewDescriptor);
 }
 
+- (void)preallocateComponentViewWithComponentHandle:(ComponentHandle)componentHandle
+{
+  RCTAssertMainQueue();
+  // A recycled view will be used first anyway; and keep the number of views created ahead of time
+  // for one kind bounded in case nodes are created without ever being mounted.
+  if (!_recyclePool[componentHandle].empty() ||
+      _preallocatedViews[componentHandle].size() >= RCTComponentViewRegistryPreallocationMaxSizePerKind) {
+    return;
+  }
+  _preallocatedViews[componentHandle].push_back(
+      [self.componentViewFactory createComponentViewWithComponentHandle:componentHandle]);
+}
+
 - (void)handleApplicationDidReceiveMemoryWarningNotification
 {
   _recyclePool.clear();
+  _preallocatedViews.clear();
 }
 
 @end

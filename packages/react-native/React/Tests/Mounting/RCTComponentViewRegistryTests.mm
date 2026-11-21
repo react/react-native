@@ -84,4 +84,23 @@ using namespace facebook::react;
       @"Should throw: `Attempt to enqueue unregistered component`");
 }
 
+- (void)testPreallocatedViewsAreHandedOutByDequeue
+{
+  auto handle = [RCTViewComponentView componentDescriptorProvider].handle;
+  [_componentViewRegistry preallocateComponentViewWithComponentHandle:handle];
+  [_componentViewRegistry preallocateComponentViewWithComponentHandle:handle];
+
+  auto first = [_componentViewRegistry dequeueComponentViewWithComponentHandle:handle tag:2];
+  auto second = [_componentViewRegistry dequeueComponentViewWithComponentHandle:handle tag:3];
+  XCTAssertNotNil(first.view);
+  XCTAssertNotNil(second.view);
+  XCTAssertNotEqual(first.view, second.view);
+  XCTAssertEqual(first.view.tag, 2);
+  XCTAssertEqual(second.view.tag, 3);
+
+  // A third dequeue, with nothing preallocated, still creates a view.
+  auto third = [_componentViewRegistry dequeueComponentViewWithComponentHandle:handle tag:4];
+  XCTAssertNotNil(third.view);
+}
+
 @end

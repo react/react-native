@@ -449,6 +449,11 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
   }
 }
 
+- (void)schedulerDidRequestPreliminaryViewAllocationWithComponentHandle:(ComponentHandle)componentHandle
+{
+  [_mountingManager preallocateComponentViewWithComponentHandle:componentHandle];
+}
+
 #pragma mark - RCTMountingManagerDelegate
 
 - (void)mountingManager:(RCTMountingManager *)mountingManager willMountComponentsWithRootTag:(ReactTag)rootTag
