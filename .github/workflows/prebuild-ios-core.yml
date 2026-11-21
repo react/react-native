@@ -16,7 +16,7 @@ on:
 
 jobs:
   build-rn-slice:
-    runs-on: macos-15
+    runs-on: xcode-27
     strategy:
       fail-fast: false
       matrix:
@@ -52,6 +52,8 @@ jobs:
       - name: Setup xcode
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: 27.2.0
       - name: Yarn Install
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
@@ -121,7 +123,7 @@ jobs:
             packages/react-native/.build/headers
 
   compose-xcframework:
-    runs-on: macos-15
+    runs-on: xcode-27
     needs: [build-rn-slice]
     strategy:
       fail-fast: false
@@ -161,6 +163,8 @@ jobs:
       - name: Setup xcode
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: 27.2.0
       - name: Yarn Install
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
