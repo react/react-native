@@ -64,6 +64,15 @@ public object YogaNative {
 
   @JvmStatic public external fun jni_YGNodeIsReferenceBaselineJNI(nativePointer: Long): Boolean
 
+  @JvmStatic
+  public external fun jni_YGNodeSetMeasureFuncFollowsMeasureModesJNI(
+      nativePointer: Long,
+      followsMeasureModes: Boolean,
+  )
+
+  @JvmStatic
+  public external fun jni_YGNodeGetMeasureFuncFollowsMeasureModesJNI(nativePointer: Long): Boolean
+
   @JvmStatic public external fun jni_YGNodeRemoveAllChildrenJNI(nativePointer: Long)
 
   @JvmStatic public external fun jni_YGNodeRemoveChildJNI(nativePointer: Long, childPointer: Long)

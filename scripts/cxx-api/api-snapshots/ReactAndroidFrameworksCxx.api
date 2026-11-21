@@ -10931,7 +10931,7 @@ template <typename EnumT>
 concept facebook::yoga::HasOrdinality = (facebook::yoga::ordinalCount<EnumT>()> 0);
 YGLogger facebook::yoga::getDefaultLogger();
 bool facebook::yoga::calculateLayoutInternal(facebook::yoga::Node* node, float availableWidth, float availableHeight, facebook::yoga::Direction ownerDirection, facebook::yoga::SizingMode widthSizingMode, facebook::yoga::SizingMode heightSizingMode, float ownerWidth, float ownerHeight, bool performLayout, facebook::yoga::LayoutPassReason reason, facebook::yoga::LayoutData& layoutMarkerData, uint32_t depth, uint32_t generationCount);
-bool facebook::yoga::canUseCachedMeasurement(facebook::yoga::SizingMode widthMode, float availableWidth, facebook::yoga::SizingMode heightMode, float availableHeight, facebook::yoga::SizingMode lastWidthMode, float lastAvailableWidth, facebook::yoga::SizingMode lastHeightMode, float lastAvailableHeight, float lastComputedWidth, float lastComputedHeight, float marginRow, float marginColumn, const facebook::yoga::Config* config);
+bool facebook::yoga::canUseCachedMeasurement(facebook::yoga::SizingMode widthMode, float availableWidth, facebook::yoga::SizingMode heightMode, float availableHeight, facebook::yoga::SizingMode lastWidthMode, float lastAvailableWidth, facebook::yoga::SizingMode lastHeightMode, float lastAvailableHeight, float lastComputedWidth, float lastComputedHeight, float marginRow, float marginColumn, const facebook::yoga::Config* config, bool measureFuncFollowsMeasureModes);
 bool facebook::yoga::configUpdateInvalidatesLayout(const facebook::yoga::Config& oldConfig, const facebook::yoga::Config& newConfig);
 bool facebook::yoga::inexactEquals(const facebook::yoga::StyleLength& a, const facebook::yoga::StyleLength& b);
 bool facebook::yoga::inexactEquals(const facebook::yoga::StyleSizeLength& a, const facebook::yoga::StyleSizeLength& b);
@@ -11129,6 +11129,7 @@ class facebook::yoga::Node : public YGNode {
   public bool isLayoutDimensionDefined(facebook::yoga::FlexDirection axis);
   public bool isNodeFlexible();
   public bool isReferenceBaseline() const;
+  public bool measureFuncFollowsMeasureModes() const noexcept;
   public bool removeChild(facebook::yoga::Node* child);
   public const facebook::yoga::Config* getConfig() const;
   public const facebook::yoga::LayoutResults& getLayout() const;
@@ -11191,6 +11192,7 @@ class facebook::yoga::Node : public YGNode {
   public void setLayoutPosition(float position, facebook::yoga::PhysicalEdge edge);
   public void setLineIndex(size_t lineIndex);
   public void setMeasureFunc(YGMeasureFunc measureFunc);
+  public void setMeasureFuncFollowsMeasureModes(bool measureFuncFollowsMeasureModes);
   public void setMinContentHeight(facebook::yoga::FloatOptional minContentHeight) noexcept;
   public void setMinContentMeasureFunc(YGMinContentMeasureFunc minContentMeasureFunc);
   public void setMinContentWidth(facebook::yoga::FloatOptional minContentWidth) noexcept;

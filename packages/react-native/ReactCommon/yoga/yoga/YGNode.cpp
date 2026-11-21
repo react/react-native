@@ -310,6 +310,21 @@ bool YGNodeHasMeasureFunc(YGNodeConstRef node) {
   return resolveRef(node)->hasMeasureFunc();
 }
 
+void YGNodeSetMeasureFuncFollowsMeasureModes(
+    YGNodeRef nodeRef,
+    bool measureFuncFollowsMeasureModes) {
+  const auto node = resolveRef(nodeRef);
+  if (node->measureFuncFollowsMeasureModes() !=
+      measureFuncFollowsMeasureModes) {
+    node->setMeasureFuncFollowsMeasureModes(measureFuncFollowsMeasureModes);
+    node->markDirtyAndPropagate();
+  }
+}
+
+bool YGNodeGetMeasureFuncFollowsMeasureModes(YGNodeConstRef node) {
+  return resolveRef(node)->measureFuncFollowsMeasureModes();
+}
+
 void YGNodeSetMinContentMeasureFunc(
     YGNodeRef node,
     YGMinContentMeasureFunc minContentMeasureFunc) {
@@ -413,5 +428,6 @@ bool YGNodeCanUseCachedMeasurement(
       lastComputedHeight,
       marginRow,
       marginColumn,
-      resolveRef(config));
+      resolveRef(config),
+      /*measureFuncFollowsMeasureModes=*/true);
 }

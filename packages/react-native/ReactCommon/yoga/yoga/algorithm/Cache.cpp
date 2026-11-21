@@ -55,7 +55,8 @@ bool canUseCachedMeasurement(
     const float lastComputedHeight,
     const float marginRow,
     const float marginColumn,
-    const yoga::Config* const config) {
+    const yoga::Config* const config,
+    const bool measureFuncFollowsMeasureModes) {
   if ((yoga::isDefined(lastComputedHeight) && lastComputedHeight < 0) ||
       ((yoga::isDefined(lastComputedWidth)) && lastComputedWidth < 0)) {
     return false;
@@ -83,6 +84,13 @@ bool canUseCachedMeasurement(
       yoga::inexactEquals(effectiveLastWidth, effectiveWidth);
   const bool hasSameHeightSpec = lastHeightMode == heightMode &&
       yoga::inexactEquals(effectiveLastHeight, effectiveHeight);
+
+  // A measure function that doesn't follow the measure modes may size the node
+  // differently under any other spec, so nothing is inferred from a measurement
+  // under another: only the same spec reuses it.
+  if (!measureFuncFollowsMeasureModes) {
+    return hasSameWidthSpec && hasSameHeightSpec;
+  }
 
   const bool widthIsCompatible =
       hasSameWidthSpec ||
