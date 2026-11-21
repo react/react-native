@@ -533,7 +533,7 @@ declare module '@babel/traverse' {
 
     bindingIdentifierEquals(name: string, node: BabelNode): boolean;
 
-    getBinding(name: string): Binding | void;
+    getBinding(name: string): Binding | undefined;
 
     getOwnBinding(name: string): Binding | void;
 

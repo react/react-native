@@ -16,7 +16,7 @@ import {HardwareBackPressEvent} from './HardwareBackPressEvent';
 const DEVICE_BACK_EVENT = 'hardwareBackPress';
 
 type BackPressEventName = 'backPress' | 'hardwareBackPress';
-type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean;
+type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean | void;
 
 const _backPressSubscriptions: Array<BackPressHandler> = [];
 
