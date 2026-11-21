@@ -1959,6 +1959,7 @@ class facebook::react::RawValue {
 class facebook::react::ReactInstance {
   public ReactInstance(const facebook::react::ReactInstance&) = delete;
   public ReactInstance(facebook::react::ReactInstance&&) = delete;
+  public ReactInstance(facebook::react::ReactInstance::JSRuntimeProvider runtimeProvider, std::shared_ptr<facebook::react::MessageQueueThread> jsMessageQueueThread, std::shared_ptr<facebook::react::TimerManager> timerManager, facebook::react::JsErrorHandler::OnJsError onJsError, facebook::react::jsinspector_modern::HostTarget* parentInspectorTarget = nullptr);
   public ReactInstance(std::unique_ptr<JSRuntime> runtime, std::shared_ptr<facebook::react::MessageQueueThread> jsMessageQueueThread, std::shared_ptr<facebook::react::TimerManager> timerManager, facebook::react::JsErrorHandler::OnJsError onJsError, facebook::react::jsinspector_modern::HostTarget* parentInspectorTarget = nullptr);
   public facebook::react::ReactInstance& operator=(const facebook::react::ReactInstance&) = delete;
   public facebook::react::ReactInstance& operator=(facebook::react::ReactInstance&&) = delete;
@@ -1968,6 +1969,7 @@ class facebook::react::ReactInstance {
   public std::shared_ptr<facebook::react::RuntimeScheduler> getRuntimeScheduler() noexcept;
   public using ArgFactory = std::function<void(facebook::jsi::Runtime& runtime, std::vector<facebook::jsi::Value>& args)>;
   public using BindingsInstallFunc = std::function<void(facebook::jsi::Runtime& runtime)>;
+  public using JSRuntimeProvider = std::function<std::unique_ptr<JSRuntime>()>;
   public void callFunctionOnModule(const std::string& moduleName, const std::string& methodName, facebook::react::ReactInstance::ArgFactory&& argFactory);
   public void callFunctionOnModule(const std::string& moduleName, const std::string& methodName, folly::dynamic&& args);
   public void handleMemoryPressureJs(int pressureLevel);

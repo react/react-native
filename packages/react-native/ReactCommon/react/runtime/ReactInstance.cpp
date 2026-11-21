@@ -23,8 +23,10 @@
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
 #include <react/utils/jsi-utils.h>
+#include <condition_variable>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <utility>
 
 namespace facebook::react {
@@ -64,32 +66,134 @@ std::string getSyntheticBundlePath(uint32_t bundleId) {
 
 } // namespace
 
+/**
+ * Owns the JSRuntime. It is shared with the JS-thread task that creates the
+ * runtime lazily and with the tasks queued through the RuntimeExecutor, which
+ * only hold it weakly: the runtime is destroyed together with the instance.
+ */
+class ReactInstance::RuntimeHolder {
+ public:
+  std::shared_ptr<JSRuntime> get() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return runtime_;
+  }
+
+  // Called on the JS thread (lazy creation) or synchronously by the
+  // constructor. Drops the runtime if the instance was destroyed meanwhile.
+  void set(std::shared_ptr<JSRuntime> runtime) {
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      if (!destroyed_) {
+        runtime_ = std::move(runtime);
+      }
+    }
+    runtimeAvailable_.notify_all();
+  }
+
+  std::shared_ptr<JSRuntime> waitForRuntime() {
+    std::unique_lock<std::mutex> lock(mutex_);
+    runtimeAvailable_.wait(
+        lock, [this] { return runtime_ != nullptr || destroyed_; });
+    return runtime_;
+  }
+
+  // Unblocks waiters and makes a late `set` a no-op. The runtime stays owned
+  // by the holder: it is destroyed with the holder, after the other members of
+  // the instance (JSI values in particular) have been destroyed.
+  std::shared_ptr<JSRuntime> markDestroyed() {
+    std::shared_ptr<JSRuntime> runtime;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      destroyed_ = true;
+      runtime = runtime_;
+    }
+    runtimeAvailable_.notify_all();
+    return runtime;
+  }
+
+ private:
+  std::mutex mutex_;
+  std::condition_variable runtimeAvailable_;
+  std::shared_ptr<JSRuntime> runtime_;
+  bool destroyed_{false};
+};
+
 ReactInstance::ReactInstance(
     std::unique_ptr<JSRuntime> runtime,
     std::shared_ptr<MessageQueueThread> jsMessageQueueThread,
     std::shared_ptr<TimerManager> timerManager,
     JsErrorHandler::OnJsError onJsError,
     jsinspector_modern::HostTarget* parentInspectorTarget)
-    : runtime_(std::move(runtime)),
+    : ReactInstance(
+          std::shared_ptr<JSRuntime>(std::move(runtime)),
+          nullptr,
+          std::move(jsMessageQueueThread),
+          std::move(timerManager),
+          std::move(onJsError),
+          parentInspectorTarget) {}
+
+ReactInstance::ReactInstance(
+    JSRuntimeProvider runtimeProvider,
+    std::shared_ptr<MessageQueueThread> jsMessageQueueThread,
+    std::shared_ptr<TimerManager> timerManager,
+    JsErrorHandler::OnJsError onJsError,
+    jsinspector_modern::HostTarget* parentInspectorTarget)
+    : ReactInstance(
+          nullptr,
+          std::move(runtimeProvider),
+          std::move(jsMessageQueueThread),
+          std::move(timerManager),
+          std::move(onJsError),
+          parentInspectorTarget) {}
+
+ReactInstance::ReactInstance(
+    std::shared_ptr<JSRuntime> runtime,
+    JSRuntimeProvider runtimeProvider,
+    std::shared_ptr<MessageQueueThread> jsMessageQueueThread,
+    std::shared_ptr<TimerManager> timerManager,
+    JsErrorHandler::OnJsError onJsError,
+    jsinspector_modern::HostTarget* parentInspectorTarget)
+    : runtimeHolder_(std::make_shared<RuntimeHolder>()),
       jsMessageQueueThread_(std::move(jsMessageQueueThread)),
       timerManager_(std::move(timerManager)),
       jsErrorHandler_(std::make_shared<JsErrorHandler>(std::move(onJsError))),
       parentInspectorTarget_(parentInspectorTarget) {
+  if (runtime == nullptr && parentInspectorTarget_ != nullptr) {
+    // The inspector registration below needs the runtime synchronously.
+    runtime = runtimeProvider();
+  }
+  if (runtime != nullptr) {
+    runtimeHolder_->set(std::move(runtime));
+  } else {
+    // Create the runtime on the JS thread. This is the first task queued on
+    // it, so every RuntimeExecutor callback (queued below, in FIFO order)
+    // finds the runtime in place.
+    jsMessageQueueThread_->runOnQueue(
+        [holder = runtimeHolder_, provider = std::move(runtimeProvider)]() {
+          TraceSection s("ReactInstance::createJSRuntime");
+          holder->set(provider());
+        });
+  }
+
   RuntimeExecutor runtimeExecutor =
-      [weakRuntime = std::weak_ptr(runtime_),
+      [weakHolder = std::weak_ptr(runtimeHolder_),
        weakTimerManager = std::weak_ptr(timerManager_),
        weakJsThread = std::weak_ptr(jsMessageQueueThread_),
        jsErrorHandler = jsErrorHandler_](auto callback) {
-        if (weakRuntime.expired()) {
+        if (weakHolder.expired()) {
           return;
         }
 
         if (auto jsThread = weakJsThread.lock()) {
           jsThread->runOnQueue([jsErrorHandler,
-                                weakRuntime,
+                                weakHolder,
                                 weakTimerManager,
                                 callback = std::move(callback)]() {
-            auto runtime = weakRuntime.lock();
+            auto holder = weakHolder.lock();
+            if (!holder) {
+              return;
+            }
+            auto runtime = holder->get();
             if (!runtime) {
               return;
             }
@@ -146,7 +250,8 @@ ReactInstance::ReactInstance(
       //   creation task to finish before starting the destruction.
       inspectorTarget_ = &hostTarget.registerInstance(*this);
       runtimeInspectorTarget_ = &inspectorTarget_->registerRuntime(
-          runtime_->getRuntimeTargetDelegate(), getUnbufferedRuntimeExecutor());
+          runtimeHolder_->get()->getRuntimeTargetDelegate(),
+          getUnbufferedRuntimeExecutor());
       bufferedRuntimeExecutorThatWaitsForInspectorSetup->flush();
     });
   } else {
@@ -177,7 +282,10 @@ ReactInstance::~ReactInstance() noexcept {
   // This is thread safe because there is no JSI call at this point, and there
   // won't be any concurrent calls to getEventLoopControl().
   // We need to clear this pointer before runtimeScheduler_ is destroyed.
-  setHermesEventLoopControl(runtime_->getRuntime(), nullptr);
+  // `markDestroyed` also makes a lazy creation that has not run yet a no-op.
+  if (auto runtime = runtimeHolder_->markDestroyed()) {
+    setHermesEventLoopControl(runtime->getRuntime(), nullptr);
+  }
 
   if (timerManager_ != nullptr) {
     timerManager_->quit();
@@ -498,7 +606,7 @@ void ReactInstance::initializeRuntime(
     RuntimeSchedulerBinding::createAndInstallIfNeeded(
         runtime, runtimeScheduler_);
 
-    runtime_->unstable_initializeOnJsThread();
+    runtimeHolder_->get()->unstable_initializeOnJsThread();
 
     defineReactInstanceFlags(runtime, options);
 
@@ -798,7 +906,8 @@ void ReactInstance::handleMemoryPressureJs(int pressureLevel) {
 }
 
 void* ReactInstance::getJavaScriptContext() {
-  return &runtime_->getRuntime();
+  auto runtime = runtimeHolder_->waitForRuntime();
+  return runtime != nullptr ? &runtime->getRuntime() : nullptr;
 }
 
 } // namespace facebook::react
