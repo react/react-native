@@ -1674,7 +1674,7 @@ declare module 'fs' {
      * When `true`, exceptions will be ignored if `path` does not exist.
      * @default false
      */
-    force?: boolean | void,
+    force?: boolean | undefined,
     /**
      * If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
      * `EPERM` error is encountered, Node.js will retry the operation with a linear
@@ -1683,19 +1683,19 @@ declare module 'fs' {
      * `true`.
      * @default 0
      */
-    maxRetries?: number | void,
+    maxRetries?: number | undefined,
     /**
      * If `true`, perform a recursive directory removal. In
      * recursive mode, operations are retried on failure.
      * @default false
      */
-    recursive?: boolean | void,
+    recursive?: boolean | undefined,
     /**
      * The amount of time in milliseconds to wait between retries.
      * This option is ignored if the `recursive` option is not `true`.
      * @default 100
      */
-    retryDelay?: number | void,
+    retryDelay?: number | undefined,
   };
 
   /**
@@ -5624,7 +5624,7 @@ declare class Process extends events$EventEmitter {
   cwd(): string;
   disconnect?: () => void;
   domain?: domain$Domain;
-  env: {[key: string]: string | void, ...};
+  env: {[key: string]: string | undefined, ...};
   emitWarning(warning: string | Error): void;
   emitWarning(
     warning: string,
