@@ -10,11 +10,13 @@
 
 import type {PluginObj} from '@babel/core';
 
+const path = require('node:path');
+
 function createDefaultExportNameReplacer(filePath: string): PluginObj<unknown> {
   return {
     visitor: {
       Identifier(node) {
-        const fileName = filePath.split('/').pop() ?? '';
+        const fileName = path.basename(filePath);
         const moduleName = fileName.split('.')[0];
 
         if (node.node.name === '$$EXPORT_DEFAULT_DECLARATION$$') {
