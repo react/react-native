@@ -86,6 +86,9 @@
   <!-- tag is used to store backdrop filter effects to apply behind the view -->
   <item type="id" name="backdrop_filter"/>
 
+  <!-- tag is used to store the RenderNode drawing a native backdrop filter (SDK 37.2+) -->
+  <item type="id" name="backdrop_filter_node"/>
+
   <!-- tag is used to store mixBlendMode effects to apply to the view -->
   <item type="id" name="mix_blend_mode"/>
 

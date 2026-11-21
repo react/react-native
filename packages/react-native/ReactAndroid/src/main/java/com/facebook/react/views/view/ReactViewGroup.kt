@@ -1056,6 +1056,14 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override fun draw(canvas: Canvas) {
+    // Drawn before an isolated layer is opened: inside the layer there is no backdrop to filter.
+    val backdropFilter = getTag(R.id.backdrop_filter) as? ReadableArray
+    if (backdropFilter != null) {
+      NativeBackdropFilter.drawBehindSelf(canvas, this, backdropFilter)
+    } else if (getTag(R.id.backdrop_filter_node) != null) {
+      NativeBackdropFilter.clear(this)
+    }
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && needsIsolatedLayer(this)) {
       // Check if the view is a stacking context and has children, if it does, do the rendering
       // offscreen and then composite back. This follows the idea of group isolation on blending
@@ -1088,7 +1096,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     hasBackdropFilterChild =
         (0 until childCount).any { getChildAt(it).getTag(R.id.backdrop_filter) != null }
 
-    if (hasBackdropFilterChild && width > 0 && height > 0) {
+    if (hasBackdropFilterChild && width > 0 && height > 0 && !NativeBackdropFilter.isSupported) {
       val bmp =
           backdropBitmap?.takeIf { it.width == width && it.height == height }
               ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
@@ -1117,8 +1125,23 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
     val backdropFilter: ReadableArray? =
         if (hasBackdropFilterChild) child.getTag(R.id.backdrop_filter) as? ReadableArray else null
+    // On SDK 37.2+ the backdrop is drawn natively: a ReactViewGroup draws its own (see [draw]),
+    // any other view is drawn here. Below that, the snapshot taken in [dispatchDraw] is filtered.
+    val drawnNatively =
+        backdropFilter != null &&
+            NativeBackdropFilter.isSupported &&
+            (child is ReactViewGroup ||
+                (child.visibility == VISIBLE &&
+                    NativeBackdropFilter.drawBehindChild(canvas, child, backdropFilter)))
+    if (
+        backdropFilter == null &&
+            child !is ReactViewGroup &&
+            child.getTag(R.id.backdrop_filter_node) != null
+    ) {
+      NativeBackdropFilter.clear(child)
+    }
     val snapBitmap = backdropBitmap
-    if (backdropFilter != null && snapBitmap != null) {
+    if (backdropFilter != null && !drawnNatively && snapBitmap != null) {
       val childLeft = child.left
       val childTop = child.top
       val srcLeft = childLeft.coerceAtLeast(0).coerceAtMost(snapBitmap.width)
