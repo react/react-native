@@ -5612,6 +5612,26 @@ type process$CPUUsage = {
   ...
 };
 
+type process$ResourceUsage = {
+  fsRead: number,
+  fsWrite: number,
+  involuntaryContextSwitches: number,
+  ipcReceived: number,
+  ipcSent: number,
+  majorPageFault: number,
+  maxRSS: number,
+  minorPageFault: number,
+  sharedMemorySize: number,
+  signalsCount: number,
+  swappedOut: number,
+  systemCPUTime: number,
+  unsharedDataSize: number,
+  unsharedStackSize: number,
+  userCPUTime: number,
+  voluntaryContextSwitches: number,
+  ...
+};
+
 declare class Process extends events$EventEmitter {
   abort(): void;
   allowedNodeEnvironmentFlags: Set<string>;
@@ -5680,6 +5700,7 @@ declare class Process extends events$EventEmitter {
     libUrl: string,
     ...
   };
+  resourceUsage(): process$ResourceUsage;
   send?: (
     message: any,
     sendHandleOrCallback?: net$Socket | net$Server | any,
