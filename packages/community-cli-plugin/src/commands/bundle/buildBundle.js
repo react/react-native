@@ -15,6 +15,7 @@ import loadMetroConfig from '../../utils/loadMetroConfig';
 import parseKeyValueParamArray from '../../utils/parseKeyValueParamArray';
 import saveAssets from './saveAssets';
 import {runBuild} from 'metro';
+import * as metroBundle from 'metro/private/shared/output/bundle';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
 import {styleText} from 'node:util';
@@ -95,6 +96,7 @@ async function buildBundleWithConfig(
     sourceMapUrl = path.basename(sourceMapUrl);
   }
 
+  const output = bundleImpl ?? metroBundle;
   const runBuildOptions: RunBuildOptions = {
     assets: args.assetsDest != null,
     bundleOut: args.bundleOutput,
@@ -102,7 +104,20 @@ async function buildBundleWithConfig(
     dev: args.dev,
     entry: args.entryFile,
     minify: args.minify !== undefined ? args.minify : !args.dev,
-    output: bundleImpl,
+    output: {
+      ...output,
+      // runBuild only forwards a subset of the CLI's output options to save.
+      save: (bundle, options, log) =>
+        output.save(
+          bundle,
+          {
+            ...options,
+            bundleEncoding: args.bundleEncoding,
+            sourcemapSourcesRoot: args.sourcemapSourcesRoot,
+          },
+          log,
+        ),
+    },
     platform: args.platform,
     sourceMap: args.sourcemapOutput != null,
     sourceMapOut: args.sourcemapOutput,
