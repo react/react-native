@@ -103,6 +103,7 @@ internal class ReactInstance(
 
   val reactQueueConfiguration: ReactQueueConfiguration
   val fabricUIManager: FabricUIManager
+  private val fabricBinding: FabricUIManagerBinding
   val javaScriptContextHolder: JavaScriptContextHolder
 
   val nativeModules: Collection<NativeModule>
@@ -258,8 +259,12 @@ internal class ReactInstance(
     // Misc initialization that needs to be done before Fabric init
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(context)
 
-    val binding = FabricUIManagerBinding()
-    binding.register(
+    // Only the first half here: it schedules the UIManager JS binding, which has to be installed
+    // before the bundle is evaluated. The Scheduler (component registry, event dispatcher) is
+    // built in initializeFabric(), which the host calls after posting the bundle load, so the JS
+    // thread does not wait for it.
+    fabricBinding = FabricUIManagerBinding()
+    fabricBinding.prepare(
         getBufferedRuntimeExecutor(),
         getRuntimeScheduler(),
         fabricUIManager,
@@ -267,10 +272,18 @@ internal class ReactInstance(
         componentFactory,
     )
 
-    // Initialize the FabricUIManager
-    fabricUIManager.initialize()
-
     Systrace.endSection(Systrace.TRACE_TAG_REACT)
+    Systrace.endSection(Systrace.TRACE_TAG_REACT)
+  }
+
+  /**
+   * Second half of the Fabric setup (see the constructor). Must run on the ReactHost thread before
+   * any surface is started; the host calls it right after posting the bundle load.
+   */
+  fun initializeFabric() {
+    Systrace.beginSection(Systrace.TRACE_TAG_REACT, "ReactInstance.initializeFabric")
+    fabricBinding.completeRegistration()
+    fabricUIManager.initialize()
     Systrace.endSection(Systrace.TRACE_TAG_REACT)
   }
 

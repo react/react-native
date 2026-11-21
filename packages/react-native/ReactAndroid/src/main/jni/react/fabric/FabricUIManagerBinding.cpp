@@ -567,6 +567,22 @@ void FabricUIManagerBinding::installFabricUIManager(
     EventBeatManager* eventBeatManager,
     ComponentFactory* componentsRegistry) {
   TraceSection s("FabricUIManagerBinding::installFabricUIManager");
+  prepareFabricUIManager(
+      runtimeExecutorHolder,
+      runtimeSchedulerHolder,
+      javaUIManager,
+      eventBeatManager,
+      componentsRegistry);
+  completeFabricUIManagerInstall();
+}
+
+void FabricUIManagerBinding::prepareFabricUIManager(
+    jni::alias_ref<JRuntimeExecutor::javaobject> runtimeExecutorHolder,
+    jni::alias_ref<JRuntimeScheduler::javaobject> runtimeSchedulerHolder,
+    jni::alias_ref<JFabricUIManager::javaobject> javaUIManager,
+    EventBeatManager* eventBeatManager,
+    ComponentFactory* componentsRegistry) {
+  TraceSection s("FabricUIManagerBinding::prepareFabricUIManager");
 
   enableFabricLogs_ = ReactNativeFeatureFlags::enableFabricLogs();
 
@@ -599,7 +615,7 @@ void FabricUIManagerBinding::installFabricUIManager(
   }
 
   EventBeat::Factory eventBeatFactory =
-      [eventBeatManager, &runtimeScheduler, globalJavaUiManager](
+      [eventBeatManager, runtimeScheduler, globalJavaUiManager](
           std::shared_ptr<EventBeat::OwnerBox> ownerBox)
       -> std::unique_ptr<EventBeat> {
     return std::make_unique<AndroidEventBeat>(
@@ -631,10 +647,29 @@ void FabricUIManagerBinding::installFabricUIManager(
 
   toolbox.animationChoreographer = animationChoreographer_;
 
+  // Schedules the UIManager binding on the JS thread now: it must be installed
+  // before the bundle is evaluated (the C++ Animated module reads it).
+  pendingUIManager_ = Scheduler::createUIManagerWithBinding(toolbox);
+  pendingToolbox_ = std::move(toolbox);
+}
+
+void FabricUIManagerBinding::completeFabricUIManagerInstall() {
+  TraceSection s("FabricUIManagerBinding::completeFabricUIManagerInstall");
+
+  std::unique_lock lock(installMutex_);
+  if (!pendingToolbox_.has_value()) {
+    LOG(ERROR)
+        << "FabricUIManagerBinding::completeFabricUIManagerInstall() called without prepareFabricUIManager()";
+    return;
+  }
+  auto toolbox = std::move(*pendingToolbox_);
+  pendingToolbox_.reset();
+
   animationDriver_ = std::make_shared<LayoutAnimationDriver>(
-      runtimeExecutor, contextContainer, this);
-  scheduler_ =
-      std::make_shared<Scheduler>(toolbox, animationDriver_.get(), this);
+      toolbox.runtimeExecutor, toolbox.contextContainer, this);
+  scheduler_ = std::make_shared<Scheduler>(
+      toolbox, animationDriver_.get(), this, std::move(pendingUIManager_));
+  pendingUIManager_ = nullptr;
 }
 
 void FabricUIManagerBinding::uninstallFabricUIManager() {
@@ -645,6 +680,8 @@ void FabricUIManagerBinding::uninstallFabricUIManager() {
   }
 
   std::unique_lock lock(installMutex_);
+  pendingToolbox_.reset();
+  pendingUIManager_ = nullptr;
   animationDriver_ = nullptr;
   scheduler_ = nullptr;
   animationChoreographer_ = nullptr;
@@ -919,6 +956,12 @@ void FabricUIManagerBinding::registerNatives() {
       makeNativeMethod(
           "installFabricUIManager",
           FabricUIManagerBinding::installFabricUIManager),
+      makeNativeMethod(
+          "prepareFabricUIManager",
+          FabricUIManagerBinding::prepareFabricUIManager),
+      makeNativeMethod(
+          "completeFabricUIManagerInstall",
+          FabricUIManagerBinding::completeFabricUIManagerInstall),
       makeNativeMethod("startSurface", FabricUIManagerBinding::startSurface),
       makeNativeMethod(
           "startSurfaceWithConstraints",
