@@ -15,3 +15,9 @@ target_include_directories(devtoolsruntimesettings PUBLIC .)
 
 target_link_libraries(devtoolsruntimesettings jsi react_codegen_rncore react_cxxstableapi)
 target_compile_reactnative_options(devtoolsruntimesettings PRIVATE)
+
+if(${CMAKE_BUILD_TYPE} MATCHES Debug OR REACT_NATIVE_DEBUG_OPTIMIZED)
+  target_compile_options(devtoolsruntimesettings PRIVATE
+          -DREACT_NATIVE_DEBUGGER_ENABLED_DEVONLY=1
+  )
+endif ()
