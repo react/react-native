@@ -211,7 +211,7 @@ function emitReactFrameworkHeaders(
     fs.mkdirSync(path.join(fwk, 'Modules'), {recursive: true});
     fs.writeFileSync(
       path.join(fwk, 'Modules', 'module.modulemap'),
-      renderReactModuleMap(plan.privateReactHeaders),
+      renderReactModuleMap(plan.privateReactHeaders, plan.excludedReactHeaders),
     );
     if (privacyManifest != null) {
       fs.writeFileSync(
