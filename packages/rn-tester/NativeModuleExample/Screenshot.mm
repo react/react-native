@@ -9,6 +9,8 @@
 
 #import <React/RCTUIManager.h>
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 @implementation ScreenshotManager
 
 RCT_EXPORT_MODULE();
@@ -83,3 +85,5 @@ RCT_EXPORT_METHOD(
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

@@ -220,6 +220,8 @@ RCT_EXTERN_C_END
  */
 @property (nonatomic, strong, readonly) dispatch_queue_t methodQueue RCT_DEPRECATED;
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
+
 /**
  * Wrap the parameter line of your method implementation with this macro to
  * expose it to JS. By default the exposed method will match the first part of
@@ -370,6 +372,8 @@ RCT_EXTERN_C_END
     static RCTMethodInfo config = {#js_name, #method, is_blocking_synchronous_method};                       \
     return &config;                                                                                          \
   }
+
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 
 /**
  * Most modules can be used from any thread. All of the modules exported non-sync method will be called on its

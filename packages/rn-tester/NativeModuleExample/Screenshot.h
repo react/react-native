@@ -7,5 +7,9 @@
 
 #import <React/RCTViewManager.h>
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 @interface ScreenshotManager : RCTViewManager
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

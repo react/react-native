@@ -48,9 +48,16 @@ RCT_EXPORT_MODULE();
   self.valid = NO;
 }
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXPORT_METHOD(
     test : (__unused NSString *)a : (__unused NSNumber *)b : (__unused RCTResponseSenderBlock)
         c : (__unused RCTResponseErrorBlock)d)
+#else
+- (void)test:(__unused NSString *)
+           a:(__unused NSNumber *)b
+            :(__unused RCTResponseSenderBlock)c
+            :(__unused RCTResponseErrorBlock)d
+#endif
 {
 }
 
