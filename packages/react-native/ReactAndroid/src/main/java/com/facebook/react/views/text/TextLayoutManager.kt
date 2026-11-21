@@ -123,6 +123,9 @@ internal object TextLayoutManager {
   // can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
   private const val PIXEL_SIZE_TOLERANCE = 0.001f
 
+  // Large enough to avoid wrapping while leaving room for Android layout arithmetic.
+  private const val VISUAL_BOUNDS_PROBE_WIDTH = Int.MAX_VALUE / 2
+
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
   // These wrappers mirror Android 15 APIs but use reflection because some internal targets still
@@ -897,19 +900,38 @@ internal object TextLayoutManager {
       maxNumberOfLines: Int,
       paint: TextPaint,
   ): Layout {
-    // If our text is boring, and fully fits in the available space, we can represent the text
-    // layout as a BoringLayout
+    val layoutWidth =
+        when {
+          widthYogaMeasureMode == YogaMeasureMode.EXACTLY -> ceil(width).toInt()
+          widthYogaMeasureMode == YogaMeasureMode.AT_MOST &&
+              boring != null &&
+              boring.width > floorPixelWidth(width) -> floorPixelWidth(width)
+          else -> {
+            val desiredWidth =
+                getDesiredWidth(
+                    text,
+                    boring,
+                    includeFontPadding,
+                    textBreakStrategy,
+                    hyphenationFrequency,
+                    lineBreakStyle,
+                    lineBreakWordStyle,
+                    alignment,
+                    justificationMode,
+                    paint,
+                )
+            if (widthYogaMeasureMode == YogaMeasureMode.AT_MOST) {
+              min(desiredWidth, floorPixelWidth(width))
+            } else {
+              desiredWidth
+            }
+          }
+        }
     if (
         boring != null &&
             (widthYogaMeasureMode == YogaMeasureMode.UNDEFINED ||
                 boring.width <= floorPixelWidth(width))
     ) {
-      // Guard uses floor() but layout width below uses ceil() for EXACTLY mode intentionally:
-      // text that barely fails the floor-based guard falls through to StaticLayout, which also
-      // ceils for EXACTLY — no wrapping results, just a slightly less optimal layout class in a
-      // rare subpixel edge case.
-      val layoutWidth =
-          if (widthYogaMeasureMode == YogaMeasureMode.EXACTLY) ceil(width).toInt() else boring.width
       return BoringLayout.make(
           text,
           paint,
@@ -922,24 +944,6 @@ internal object TextLayoutManager {
       )
     }
 
-    // Layout.getDesiredWidth is a full measuring pass over the text, so only run it when its
-    // result can affect the layout width. It cannot when the width is EXACTLY, nor when the text
-    // was boring but did not fit: boring.width is the unwrapped width of the same text and we only
-    // get here if it exceeds the floored width, so the minimum of both is the floored width.
-    val layoutWidth =
-        when {
-          widthYogaMeasureMode == YogaMeasureMode.EXACTLY -> ceil(width).toInt()
-          widthYogaMeasureMode == YogaMeasureMode.AT_MOST && boring != null ->
-              floorPixelWidth(width)
-          else -> {
-            val desiredWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
-            if (widthYogaMeasureMode == YogaMeasureMode.AT_MOST) {
-              min(desiredWidth, floorPixelWidth(width))
-            } else {
-              desiredWidth
-            }
-          }
-        }
     // Bounds-based width is limited to text with RTL characters. An EXACTLY width usually comes
     // from an earlier advance-based AT_MOST measurement, and LTR glyph bounds that are wider than
     // their advances (some OEM fonts) would make a single line overflow that width and ellipsize.
@@ -1054,6 +1058,52 @@ internal object TextLayoutManager {
     val drawingBounds = computeDrawingBoundingBox(layout) ?: return 0
 
     return ceil(drawingBounds.right - layout.width).toInt().coerceAtLeast(0)
+  }
+
+  private fun getDesiredWidth(
+      text: Spannable,
+      boring: BoringLayout.Metrics?,
+      includeFontPadding: Boolean,
+      textBreakStrategy: Int,
+      hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
+      alignment: Layout.Alignment,
+      justificationMode: Int,
+      paint: TextPaint,
+  ): Int {
+    val advanceWidth = boring?.width ?: ceil(Layout.getDesiredWidth(text, paint)).toInt()
+
+    if (
+        Build.VERSION.SDK_INT < VERSION_CODE_VANILLA_ICE_CREAM || setUseBoundsForWidthMethod == null
+    ) {
+      return advanceWidth
+    }
+
+    val visualBoundsLayout =
+        buildLayout(
+            text,
+            VISUAL_BOUNDS_PROBE_WIDTH,
+            includeFontPadding,
+            textBreakStrategy,
+            hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
+            alignment,
+            justificationMode,
+            null,
+            ReactConstants.UNSET,
+            paint,
+            enableStartOverhang = true,
+            shiftDrawingOffsetForStartOverhang = false,
+        )
+
+    var visualBoundsWidth = 0f
+    for (i in 0 until visualBoundsLayout.lineCount) {
+      visualBoundsWidth = max(visualBoundsWidth, visualBoundsLayout.getLineMax(i))
+    }
+
+    return max(advanceWidth, ceil(visualBoundsWidth).toInt())
   }
 
   private fun buildLayout(
