@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
+
 #import <XCTest/XCTest.h>
 
 #import <React/RCTArrayBuffer.h>
@@ -397,3 +399,5 @@ class ExceptionCapturingNativeMethodCallInvoker : public NativeMethodCallInvoker
 }
 
 @end
+
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
