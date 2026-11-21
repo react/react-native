@@ -14,12 +14,14 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Color
 import android.os.Build
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewStructure
+import android.view.Window
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -401,8 +403,18 @@ public class ReactModalHostView(context: ThemedReactContext) :
       // Navigation bar cannot be translucent without status bar being translucent too
       if (navigationBarTranslucent) {
         dialogWindow.enableEdgeToEdge()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && transparent) {
-          dialogWindow.isNavigationBarContrastEnforced = false
+        if (transparent) {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            dialogWindow.isNavigationBarContrastEnforced = false
+          } else {
+            // Before Android 10, enableEdgeToEdge adds the contrast scrim as a window color.
+            dialogWindow.navigationBarColor = Color.TRANSPARENT
+          }
+          if (activityWindow != null) {
+            // enableEdgeToEdge resets the button style from the system theme on every update.
+            WindowInsetsControllerCompat(dialogWindow, dialogWindow.decorView)
+                .isAppearanceLightNavigationBars = isAppearanceLightNavigationBars(activityWindow)
+          }
         }
       } else {
         dialogWindow.disableEdgeToEdge()
@@ -461,6 +473,18 @@ public class ReactModalHostView(context: ThemedReactContext) :
       dialogWindow.decorView.systemUiVisibility = activityWindow.decorView.systemUiVisibility
     }
   }
+
+  private fun isAppearanceLightNavigationBars(window: Window): Boolean =
+      when {
+        Build.VERSION.SDK_INT > Build.VERSION_CODES.R ->
+            WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars
+        // SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR exists from API 26. On Android 11 the compat getter
+        // marks the window appearance as app-controlled, after which the systemUiVisibility light
+        // flags (used up to R, e.g. by StatusBar) are ignored.
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
+            (window.decorView.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) != 0
+        else -> false
+      }
 
   /**
    * Syncs the visibility of the system bars based on their visibility in the root window insets.
