@@ -394,7 +394,7 @@ public class ReactImageView(
 
   public override fun requestFocus(direction: Int, previouslyFocusedRect: Rect?): Boolean {
     if (excludedFromKeyboardFocus) {
-      return false
+      return focusSearch(direction)?.requestFocus(direction, previouslyFocusedRect) ?: false
     }
     return super.requestFocus(direction, previouslyFocusedRect)
   }

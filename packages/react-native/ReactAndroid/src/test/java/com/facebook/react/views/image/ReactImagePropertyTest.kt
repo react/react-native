@@ -10,6 +10,7 @@ package com.facebook.react.views.image
 import android.graphics.Color
 import android.util.DisplayMetrics
 import android.view.View
+import android.widget.LinearLayout
 import com.facebook.common.logging.FLog
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder
@@ -116,6 +117,26 @@ class ReactImagePropertyTest {
     viewManager.updateProperties(view, buildStyles("focusable", true))
     view.addFocusables(focusables, View.FOCUS_FORWARD, View.FOCUSABLES_ALL)
     assertThat(focusables).containsExactly(view)
+  }
+
+  @Test
+  fun testFocusableFalseImageHandsFocusToNextView() {
+    val viewManager = ReactImageManager()
+    val image = viewManager.createViewInstance(themeContext)
+    viewManager.updateProperties(image, buildStyles("accessible", true, "focusable", false))
+    val next = View(themeContext).apply { isFocusable = true }
+    val root = LinearLayout(themeContext).apply { orientation = LinearLayout.VERTICAL }
+    root.addView(image, LinearLayout.LayoutParams(50, 50))
+    root.addView(next, LinearLayout.LayoutParams(50, 50))
+    root.measure(
+        View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY),
+    )
+    root.layout(0, 0, 100, 100)
+
+    assertThat(image.requestFocus(View.FOCUS_DOWN, null)).isTrue()
+    assertThat(next.isFocused).isTrue()
+    assertThat(image.isFocused).isFalse()
   }
 
   @Test
