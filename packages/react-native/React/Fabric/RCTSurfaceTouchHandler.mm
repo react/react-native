@@ -14,6 +14,7 @@
 
 #import "RCTConversions.h"
 #import "RCTSurfacePointerHandler.h"
+#import "RCTSurfaceTouchHandler+Internal.h"
 #import "RCTTouchableComponentViewProtocol.h"
 
 #if !TARGET_OS_TV
@@ -35,6 +36,12 @@ struct ActiveTouch {
    * A component view on which the touch was begun.
    */
   __strong UIView<RCTComponentViewProtocol> *componentView = nil;
+
+  /*
+   * `cancelTouchesInView:` cancelled the touch. UIKit still delivers it, so it
+   * stays registered until it ends, but it dispatches nothing more.
+   */
+  bool isCancelled = false;
 
   struct Hasher {
     size_t operator()(const ActiveTouch &activeTouch) const
@@ -241,6 +248,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
       RCTLogWarn(@"Inconsistency between local and UIKit touch registries");
       continue;
     }
+    if (iterator->second.isCancelled) {
+      continue;
+    }
     activeTouches.push_back(iterator->second);
   }
 
@@ -265,7 +275,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   }
 
   for (const auto &pair : _activeTouches) {
-    if (!pair.second.eventEmitter) {
+    if (!pair.second.eventEmitter || pair.second.isCancelled) {
       continue;
     }
 
@@ -280,7 +290,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
     event.targetTouches.clear();
 
     for (const auto &pair : _activeTouches) {
-      if (pair.second.eventEmitter == eventEmitter) {
+      if (pair.second.eventEmitter == eventEmitter && !pair.second.isCancelled) {
         event.targetTouches.insert(pair.second.touch);
       }
     }
@@ -367,6 +377,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
     activeTouches.reserve(_activeTouches.size());
 
     for (const auto &pair : _activeTouches) {
+      if (pair.second.isCancelled) {
+        continue;
+      }
       activeTouches.push_back(pair.second);
     }
 
@@ -415,6 +428,32 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 {
   [self setEnabled:NO];
   [self setEnabled:YES];
+}
+
+#pragma mark - Internal Interface
+
+- (void)cancelTouchesInView:(UIView *)view
+{
+  std::vector<ActiveTouch> cancelledTouches;
+  for (const auto &pair : _activeTouches) {
+    if (!pair.second.isCancelled && [pair.first.view isDescendantOfView:view]) {
+      cancelledTouches.push_back(pair.second);
+    }
+  }
+
+  if (cancelledTouches.empty()) {
+    return;
+  }
+
+  // The cancel goes out while the touches still count as active, as it does
+  // from `touchesCancelled:withEvent:`.
+  [self _dispatchActiveTouches:cancelledTouches eventType:RCTTouchEventTypeTouchCancel];
+
+  for (auto &pair : _activeTouches) {
+    if ([pair.first.view isDescendantOfView:view]) {
+      pair.second.isCancelled = true;
+    }
+  }
 }
 
 @end

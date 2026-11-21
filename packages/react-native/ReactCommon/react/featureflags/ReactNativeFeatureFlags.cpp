@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fefa483947602384bd254d00eec4d699>>
+ * @generated SignedSource<<4264a4d9a6f3e8366c154af429970cb7>>
  */
 
 /**
@@ -144,6 +144,10 @@ bool ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid() {
 
 bool ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() {
   return getAccessor().enableIOSCompressedTextFrameAdjustment();
+}
+
+bool ReactNativeFeatureFlags::enableIOSPartialTextSelection() {
+  return getAccessor().enableIOSPartialTextSelection();
 }
 
 bool ReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine() {
