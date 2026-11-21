@@ -77,6 +77,7 @@ declare const AccessibilityInfo_default: {
       queue?: boolean
     },
   ): void
+  getEnabledAccessibilityServices(): Promise<Array<string>>
   getRecommendedTimeoutMillis(originalTimeout: number): Promise<number>
   isAccessibilityServiceEnabled(): Promise<boolean>
   isBoldTextEnabled(): Promise<boolean>

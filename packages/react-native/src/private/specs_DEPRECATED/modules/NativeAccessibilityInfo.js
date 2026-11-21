@@ -28,6 +28,9 @@ export interface Spec extends TurboModule {
   readonly isAccessibilityServiceEnabled?: ?(
     onSuccess: (isAccessibilityServiceEnabled: boolean) => void,
   ) => void;
+  readonly getEnabledAccessibilityServices?: ?(
+    onSuccess: (enabledAccessibilityServices: Array<string>) => void,
+  ) => void;
   readonly setAccessibilityFocus: (reactTag: number) => void;
   readonly announceForAccessibility: (announcement: string) => void;
   readonly getRecommendedTimeoutMillis?: (

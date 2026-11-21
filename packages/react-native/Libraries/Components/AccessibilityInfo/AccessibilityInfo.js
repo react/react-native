@@ -405,6 +405,42 @@ const AccessibilityInfo = {
   },
 
   /**
+   * Query the accessibility services that are currently enabled.
+   *
+   * Returns a promise which resolves to an array of service IDs, such as
+   * `com.google.android.marvin.talkback/.TalkBackService`. The array is empty
+   * when no service is enabled.
+   *
+   * @platform android
+   */
+  getEnabledAccessibilityServices(): Promise<Array<string>> {
+    return new Promise((resolve, reject) => {
+      if (Platform.OS === 'android') {
+        if (
+          NativeAccessibilityInfoAndroid != null &&
+          NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices != null
+        ) {
+          NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices(
+            resolve,
+          );
+        } else {
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices is not available',
+            ),
+          );
+        }
+      } else {
+        reject(
+          new Error(
+            'getEnabledAccessibilityServices is only available on Android',
+          ),
+        );
+      }
+    });
+  },
+
+  /**
    * Add an event handler. Supported events:
    *
    * - `reduceMotionChanged`: Fires when the state of the reduce motion toggle changes.

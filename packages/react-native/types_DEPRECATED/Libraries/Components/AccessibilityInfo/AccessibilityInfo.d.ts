@@ -133,6 +133,17 @@ export interface AccessibilityInfoStatic {
   isAccessibilityServiceEnabled(): Promise<boolean>;
 
   /**
+   * Query the accessibility services that are currently enabled.
+   *
+   * Returns a promise which resolves to an array of service IDs, such as
+   * `com.google.android.marvin.talkback/.TalkBackService`. The array is empty
+   * when no service is enabled.
+   *
+   * @platform android
+   */
+  getEnabledAccessibilityServices(): Promise<Array<string>>;
+
+  /**
    * Add an event handler. Supported events:
    * - announcementFinished: iOS-only event. Fires when the screen reader has finished making an announcement.
    *                         The argument to the event handler is a dictionary with these keys:
