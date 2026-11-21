@@ -161,7 +161,7 @@ constructor(
       @Suppress("DEPRECATION_ERROR") // Conflicting okhttp versions
       val container = client.cookieJar() as CookieJarContainer
 
-      val handler = ForwardingCookieHandler()
+      val handler = ForwardingCookieHandler(context.applicationContext)
       container.setCookieJar(JavaNetCookieJar(handler))
       val builder =
           OkHttpImagePipelineConfigFactory.newBuilder(context.applicationContext, client)

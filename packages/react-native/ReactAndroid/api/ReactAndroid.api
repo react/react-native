@@ -2785,6 +2785,8 @@ public abstract interface class com/facebook/react/modules/network/CustomClientB
 
 public final class com/facebook/react/modules/network/ForwardingCookieHandler : java/net/CookieHandler {
 	public fun <init> ()V
+	public fun <init> (Landroid/content/Context;)V
+	public synthetic fun <init> (Landroid/content/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lcom/facebook/react/bridge/ReactContext;)V
 	public final fun addCookies (Ljava/lang/String;Ljava/util/List;)V
 	public final fun clearCookies (Lcom/facebook/react/bridge/Callback;)V
