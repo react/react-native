@@ -9,6 +9,7 @@ package com.facebook.react.uimanager
 
 import android.view.KeyEvent as AndroidKeyEvent
 import android.view.View
+import android.view.ViewGroup
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.uimanager.events.KeyDownEvent
 import com.facebook.react.uimanager.events.KeyUpEvent
@@ -19,9 +20,10 @@ import com.facebook.react.uimanager.events.KeyUpEvent
  * phases.
  *
  * The keydown and keyup events provide a code indicating which key is pressed. The event target is
- * derived from the currently focused Android view.
+ * derived from the currently focused Android view. While no view in the window holds focus, as
+ * after a touch in touch mode, the target is the view [TapFocusTracker] holds focused for it.
  */
-internal class JSKeyDispatcher {
+internal class JSKeyDispatcher(private val rootViewGroup: ViewGroup) {
   private var focusedViewTag: Int = View.NO_ID
 
   fun handleKeyEvent(
@@ -29,7 +31,13 @@ internal class JSKeyDispatcher {
       eventDispatcher: EventDispatcher,
       surfaceId: Int,
   ) {
-    if (focusedViewTag == View.NO_ID) {
+    val targetTag =
+        if (rootViewGroup.rootView.findFocus() != null) {
+          focusedViewTag
+        } else {
+          TapFocusTracker.findFocusedView(rootViewGroup)?.id ?: View.NO_ID
+        }
+    if (targetTag == View.NO_ID) {
       return
     }
 
@@ -38,7 +46,7 @@ internal class JSKeyDispatcher {
         eventDispatcher.dispatchEvent(
             KeyDownEvent(
                 surfaceId,
-                focusedViewTag,
+                targetTag,
                 keyEvent,
             ),
         )
@@ -47,7 +55,7 @@ internal class JSKeyDispatcher {
         eventDispatcher.dispatchEvent(
             KeyUpEvent(
                 surfaceId,
-                focusedViewTag,
+                targetTag,
                 keyEvent,
             ),
         )
