@@ -30,6 +30,7 @@ platforms:
       - '*/platform/windows/*'
       - '*/platform/macos/*'
       - '*/platform/ios/*'
+      - '*/platform/tvos/*'
       - '*/platform/android/*'
     input_filter: false
     definitions:
@@ -63,6 +64,7 @@ platforms:
       - '*/platform/windows/*'
       - '*/platform/macos/*'
       - '*/platform/ios/*'
+      - '*/platform/tvos/*'
     exclude_symbols:
       - 'InputAccessory'
       - 'IOS'

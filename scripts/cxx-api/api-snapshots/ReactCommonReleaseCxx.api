@@ -105,8 +105,6 @@ using facebook::react::EventPipe = std::function<void(facebook::jsi::Runtime& ru
 using facebook::react::EventPipeConclusion = std::function<void(facebook::jsi::Runtime& runtime)>;
 using facebook::react::EventTag = unsigned int;
 using facebook::react::GradientDirection = std::variant<Float, facebook::react::GradientKeyword>;
-using facebook::react::HostPlatformTouch = facebook::react::BaseTouch;
-using facebook::react::HostPlatformViewEventEmitter = facebook::react::BaseViewEventEmitter;
 using facebook::react::ImageSources = std::vector<facebook::react::ImageSource>;
 using facebook::react::NativeMethodCallFunc = std::function<void()>;
 using facebook::react::PromiseSetupFunctionType = std::function<void(facebook::jsi::Runtime& rt, std::shared_ptr<facebook::react::Promise>)>;
@@ -129,12 +127,12 @@ using facebook::react::Tag = int32_t;
 using facebook::react::TelemetryClock = std::chrono::steady_clock;
 using facebook::react::TelemetryDuration = std::chrono::nanoseconds;
 using facebook::react::TelemetryTimePoint = facebook::react::TelemetryClock::time_point;
-using facebook::react::Touch = facebook::react::HostPlatformTouch;
+using facebook::react::Touch = HostPlatformTouch;
 using facebook::react::Touches = std::unordered_set<facebook::react::Touch, facebook::react::Touch::Hasher, facebook::react::Touch::Comparator>;
 using facebook::react::TurboModuleProviderFunctionTypeWithRuntime = std::function<std::shared_ptr<facebook::react::TurboModule>(facebook::jsi::Runtime& runtime, const std::string& name)>;
 using facebook::react::ValueFactory = std::function<facebook::jsi::Value(facebook::jsi::Runtime& runtime)>;
-using facebook::react::ViewEventEmitter = facebook::react::HostPlatformViewEventEmitter;
-using facebook::react::ViewProps = facebook::react::HostPlatformViewProps;
+using facebook::react::ViewEventEmitter = HostPlatformViewEventEmitter;
+using facebook::react::ViewProps = HostPlatformViewProps;
 using facebook::react::ViewShadowNodeProps = facebook::react::ViewProps;
 using facebook::react::parsePlatformColorFn = facebook::react::SharedColor(*)(const facebook::react::ContextContainer&, int32_t, const facebook::react::RawValue&);
 template <typename T>
@@ -672,13 +670,6 @@ class facebook::react::HighResTimeStamp {
   public static facebook::react::HighResDuration unsafeOriginFromUnixTimeStamp() noexcept;
   public static facebook::react::HighResTimeStamp fromDOMHighResTimeStamp(double units);
   public static facebook::react::HighResTimeStamp now() noexcept;
-}
-
-class facebook::react::HostPlatformViewProps : public facebook::react::BaseViewProps {
-  public HostPlatformViewProps() = default;
-  public HostPlatformViewProps(const facebook::react::PropsParserContext& context, const facebook::react::HostPlatformViewProps& sourceProps, const facebook::react::RawProps& rawProps);
-  public bool focusable;
-  public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
 }
 
 class facebook::react::IAsyncEventEmitter {
@@ -2542,11 +2533,6 @@ struct facebook::react::Bridging<std::shared_ptr<T>, std::enable_if_t<std::is_ba
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, std::shared_ptr<T> value);
   public static std::shared_ptr<T> fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value);
 }
-
-
-bool facebook::react::HostPlatformViewTraitsInitializer::formsStackingContext(const facebook::react::ViewProps& props);
-bool facebook::react::HostPlatformViewTraitsInitializer::formsView(const facebook::react::ViewProps& props);
-bool facebook::react::HostPlatformViewTraitsInitializer::isKeyboardFocusable(const facebook::react::ViewProps&);
 
 
 template <typename JSReturnT, typename ReturnT>
