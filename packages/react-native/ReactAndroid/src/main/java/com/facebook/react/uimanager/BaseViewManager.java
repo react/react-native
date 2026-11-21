@@ -157,6 +157,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     // https://android.googlesource.com/platform/frameworks/base/+/a175a5b/core/java/android/view/View.java#4493
     view.setNextFocusDownId(View.NO_ID);
     view.setNextFocusForwardId(View.NO_ID);
+    view.setNextFocusLeftId(View.NO_ID);
     view.setNextFocusRightId(View.NO_ID);
     view.setNextFocusUpId(View.NO_ID);
 
