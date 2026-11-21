@@ -11,8 +11,12 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import type {HostInstance} from 'react-native';
+
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
+import {createRef} from 'react';
 import {View} from 'react-native';
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
@@ -59,6 +63,26 @@ describe('<View> native CSS parsing', () => {
       expect(root.getRenderedOutput({props: ['transform']}).toJSX()).toEqual(
         <rn-view transform='[{"translateX": 10}]' />,
       );
+    });
+
+    it('ignores a transform string holding a number that parses to infinity', () => {
+      const root = Fantom.createRoot();
+
+      const viewRef = createRef<HostInstance>();
+      Fantom.runTask(() => {
+        root.render(
+          <View
+            ref={viewRef}
+            style={{width: 10, height: 10, transform: 'scale(3e1000)'}}
+          />,
+        );
+      });
+
+      const viewBounds = nullthrows(viewRef.current).getBoundingClientRect();
+      expect(viewBounds.x).toBe(0);
+      expect(viewBounds.y).toBe(0);
+      expect(viewBounds.width).toBe(10);
+      expect(viewBounds.height).toBe(10);
     });
   });
 

@@ -154,9 +154,10 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
 
 inline CATransform3D RCTCATransform3DFromTransformMatrix(const facebook::react::Transform &transformMatrix)
 {
-  // Core Animation needs a finite transform: a NaN in one hides the layer and can hide its siblings.
+  // Core Animation needs a finite transform: a NaN in one hides the layer and can hide its siblings. React Native
+  // holds a transform's numbers as floats, so an entry past the largest float is not finite either.
   for (const auto value : transformMatrix.matrix) {
-    if (!std::isfinite(value)) {
+    if (!std::isfinite(static_cast<float>(value))) {
       return CATransform3DIdentity;
     }
   }

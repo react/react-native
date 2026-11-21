@@ -181,6 +181,46 @@ class SkewMatrixHelperTest {
   }
 
   @Test
+  fun buildAffine2DMatrix_pivotIsViewCenter_whenTransformOriginIsNotFinite() {
+    // skewX 20deg around pivot (50, 50) introduces MTRANS_X = -tan(20deg) * 50.
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("skewX", "20deg"))
+    val tan20 = Math.tan(Math.toRadians(20.0)).toFloat()
+    for (origin in
+        listOf(
+            JavaOnlyArray.of(Double.NaN, 0.0),
+            JavaOnlyArray.of(0.0, Double.POSITIVE_INFINITY),
+            JavaOnlyArray.of(0.0, 0.0, Double.NaN),
+        )) {
+      val values =
+          matrixValues(SkewMatrixHelper.buildAffine2DMatrix(transforms, 100f, 100f, origin))
+      assertThat(values[Matrix.MTRANS_X])
+          .describedAs("$origin")
+          .isCloseTo(-tan20 * 50f, within(EPSILON))
+    }
+  }
+
+  @Test
+  fun buildAffine2DMatrix_pivotIsViewCenter_whenTransformOriginDepthIsPastTheLargestFloat() {
+    // skewX 20deg around pivot (50, 50) introduces MTRANS_X = -tan(20deg) * 50.
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("skewX", "20deg"))
+    val tan20 = Math.tan(Math.toRadians(20.0)).toFloat()
+    val origin = JavaOnlyArray.of(0.0, 0.0, 1e39)
+    val values = matrixValues(SkewMatrixHelper.buildAffine2DMatrix(transforms, 100f, 100f, origin))
+    assertThat(values[Matrix.MTRANS_X]).isCloseTo(-tan20 * 50f, within(EPSILON))
+  }
+
+  @Test
+  fun buildAffine2DMatrix_pivotRespectsTransformOrigin_withADepth() {
+    // A finite depth, or one that is not a number, leaves the pivot where the origin puts it.
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("skewX", "20deg"))
+    for (origin in listOf(JavaOnlyArray.of(0.0, 0.0, 5.0), JavaOnlyArray.of(0.0, 0.0, "5px"))) {
+      val values =
+          matrixValues(SkewMatrixHelper.buildAffine2DMatrix(transforms, 100f, 100f, origin))
+      assertThat(values[Matrix.MTRANS_X]).describedAs("$origin").isCloseTo(0f, within(EPSILON))
+    }
+  }
+
+  @Test
   fun emptyMapInTransforms_doesNotThrow() {
     // Regression test for T274692242: an empty map in the transforms array caused
     // NoSuchElementException from keySetIterator().nextKey() without hasNextKey() guard.

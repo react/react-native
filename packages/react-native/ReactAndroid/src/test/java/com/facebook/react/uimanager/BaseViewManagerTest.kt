@@ -9,6 +9,7 @@
 
 package com.facebook.react.uimanager
 
+import android.graphics.Matrix
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.View.OnFocusChangeListener
@@ -30,6 +31,7 @@ import com.facebook.react.views.scroll.ReactScrollViewManager
 import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.react.views.view.ReactViewManager
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowSoLoader
 import java.util.Locale
 import org.assertj.core.api.Assertions
 import org.junit.After
@@ -43,7 +45,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
-@Config(shadows = [ShadowArguments::class])
+@Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class BaseViewManagerTest {
   private lateinit var viewManager: BaseViewManager<ReactViewGroup, *>
@@ -417,6 +419,114 @@ class BaseViewManagerTest {
     viewManager.setElevation(view, Float.NaN)
 
     Assertions.assertThat(view.elevation).isEqualTo(0f)
+  }
+
+  @Test
+  fun testSkewedTransformHoldingANonFiniteNumberIsIgnored() {
+    val skewed = createView(JavaOnlyMap.of(ViewProps.TRANSFORM, JavaOnlyArray.of(skewX10)))
+    Assertions.assertThat(skewed.getTag(R.id.skew_animation_matrix)).isNotNull()
+
+    for (nonFiniteNumber in
+        doubleArrayOf(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)) {
+      viewManager.updateProperties(
+          skewed,
+          ReactStylesDiffMap(
+              JavaOnlyMap.of(
+                  ViewProps.TRANSFORM,
+                  JavaOnlyArray.of(skewX10, JavaOnlyMap.of("scale", nonFiniteNumber)),
+              )
+          ),
+      )
+
+      Assertions.assertThat(skewed.getTag(R.id.skew_animation_matrix))
+          .describedAs("$nonFiniteNumber")
+          .isNull()
+    }
+  }
+
+  @Test
+  fun testSkewedTransformWithAnAnglePastTheLargestFloatIsIgnored() {
+    // An angle with a unit is held in degrees, so 1e37rad is past the largest float.
+    for (angle in listOf("1e39deg", "1e37rad")) {
+      val skewed = createView(JavaOnlyMap.of(ViewProps.TRANSFORM, JavaOnlyArray.of(skewX10)))
+      Assertions.assertThat(skewed.getTag(R.id.skew_animation_matrix)).isNotNull()
+
+      viewManager.updateProperties(
+          skewed,
+          ReactStylesDiffMap(
+              JavaOnlyMap.of(
+                  ViewProps.TRANSFORM,
+                  JavaOnlyArray.of(JavaOnlyMap.of("skewX", angle)),
+              )
+          ),
+      )
+
+      Assertions.assertThat(skewed.getTag(R.id.skew_animation_matrix)).describedAs(angle).isNull()
+    }
+  }
+
+  @Test
+  fun testSkewedTransformAboutAnOriginPastTheLargestFloatIsIgnored() {
+    val skewed = createView(JavaOnlyMap())
+    skewed.layout(0, 0, 100, 100)
+    val rotatedAndSkewed = JavaOnlyArray.of(JavaOnlyMap.of("rotate", "45deg"), skewX10)
+    viewManager.updateProperties(
+        skewed,
+        ReactStylesDiffMap(JavaOnlyMap.of(ViewProps.TRANSFORM, rotatedAndSkewed)),
+    )
+    Assertions.assertThat(skewed.getTag(R.id.skew_animation_matrix)).isNotNull()
+
+    viewManager.updateProperties(
+        skewed,
+        ReactStylesDiffMap(
+            JavaOnlyMap.of(
+                ViewProps.TRANSFORM,
+                rotatedAndSkewed,
+                ViewProps.TRANSFORM_ORIGIN,
+                JavaOnlyArray.of("1e37%", "0%", 0.0),
+            )
+        ),
+    )
+
+    Assertions.assertThat(skewed.getTag(R.id.skew_animation_matrix)).isNull()
+  }
+
+  @Test
+  fun testSkewedTransformWithANonFiniteOriginTurnsAboutTheCenter() {
+    // skewX 10deg about a 100 x 100 view's center introduces MTRANS_X = -tan(10deg) * 50.
+    val aboutTheCenter = -Math.tan(Math.toRadians(10.0)).toFloat() * 50f
+    for ((origin, translateX) in
+        listOf(
+            JavaOnlyArray.of(Double.NaN, 0.0, 0.0) to aboutTheCenter,
+            JavaOnlyArray.of(0.0, 0.0, 0.0) to 0f,
+        )) {
+      val view = createView(JavaOnlyMap())
+      view.layout(0, 0, 100, 100)
+      viewManager.updateProperties(
+          view,
+          ReactStylesDiffMap(
+              JavaOnlyMap.of(
+                  ViewProps.TRANSFORM,
+                  JavaOnlyArray.of(skewX10),
+                  ViewProps.TRANSFORM_ORIGIN,
+                  origin,
+              )
+          ),
+      )
+
+      Assertions.assertThat(skewMatrixValues(view, "$origin")[Matrix.MTRANS_X])
+          .describedAs("$origin")
+          .isCloseTo(translateX, Assertions.within(1e-4f))
+    }
+  }
+
+  private val skewX10: JavaOnlyMap
+    get() = JavaOnlyMap.of("skewX", "10deg")
+
+  private fun skewMatrixValues(view: View, description: String): FloatArray {
+    val matrix = view.getTag(R.id.skew_animation_matrix)
+    Assertions.assertThat(matrix).describedAs(description).isInstanceOf(Matrix::class.java)
+    return FloatArray(9).also { (matrix as Matrix).getValues(it) }
   }
 
   private fun recycleView(

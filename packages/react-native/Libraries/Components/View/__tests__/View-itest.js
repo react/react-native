@@ -255,6 +255,75 @@ describe('<View>', () => {
             expect(viewBounds.height).toBe(expectedBounds.height);
           });
         });
+
+        [
+          ['a NaN translate', [{translateX: NaN}], undefined],
+          ['an infinite scale', [{scale: Infinity}], undefined],
+          [
+            'a NaN matrix entry',
+            [{matrix: [NaN, 0, 0, 0, 1, 0, 0, 0, 1]}],
+            undefined,
+          ],
+          [
+            'a NaN after a finite operation',
+            [{translateX: 10}, {scaleY: NaN}],
+            undefined,
+          ],
+          [
+            'a NaN translate around its corner',
+            [{translateX: NaN}],
+            'top left',
+          ],
+        ].forEach(([description, transform, transformOrigin]) => {
+          it(`ignores a transform holding ${description}`, () => {
+            const root = Fantom.createRoot();
+
+            const viewRef = createRef<HostInstance>();
+            Fantom.runTask(() => {
+              root.render(
+                <View
+                  ref={viewRef}
+                  style={{width: 10, height: 10, transform, transformOrigin}}
+                />,
+              );
+            });
+
+            const viewBounds = nullthrows(
+              viewRef.current,
+            ).getBoundingClientRect();
+            expect(viewBounds.x).toBe(0);
+            expect(viewBounds.y).toBe(0);
+            expect(viewBounds.width).toBe(10);
+            expect(viewBounds.height).toBe(10);
+          });
+        });
+
+        it('ignores a transform origin holding NaN', () => {
+          const root = Fantom.createRoot();
+
+          const viewRef = createRef<HostInstance>();
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                ref={viewRef}
+                style={{
+                  width: 10,
+                  height: 10,
+                  transform: [{scaleX: 2}],
+                  transformOrigin: [NaN, 0, 0],
+                }}
+              />,
+            );
+          });
+
+          const viewBounds = nullthrows(
+            viewRef.current,
+          ).getBoundingClientRect();
+          expect(viewBounds.x).toBe(-5);
+          expect(viewBounds.y).toBe(0);
+          expect(viewBounds.width).toBe(20);
+          expect(viewBounds.height).toBe(10);
+        });
       });
 
       describe('aspectRatio', () => {
