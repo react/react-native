@@ -12,6 +12,31 @@ namespace facebook::react {
 const char AndroidHorizontalScrollContentViewShadowNodeComponentName[] =
     "AndroidHorizontalScrollContentView";
 
+AndroidHorizontalScrollContentViewShadowNode::
+    AndroidHorizontalScrollContentViewShadowNode(
+        const ShadowNodeFragment& fragment,
+        const ShadowNodeFamily::Shared& family,
+        ShadowNodeTraits traits)
+    : ConcreteViewShadowNode(fragment, family, traits) {
+  initialize();
+}
+
+AndroidHorizontalScrollContentViewShadowNode::
+    AndroidHorizontalScrollContentViewShadowNode(
+        const ShadowNode& sourceShadowNode,
+        const ShadowNodeFragment& fragment)
+    : ConcreteViewShadowNode(sourceShadowNode, fragment) {
+  initialize();
+}
+
+void AndroidHorizontalScrollContentViewShadowNode::initialize() noexcept {
+  if (getConcreteProps().collapsableChildren) {
+    traits_.unset(ShadowNodeTraits::Trait::ChildrenFormStackingContext);
+  } else {
+    traits_.set(ShadowNodeTraits::Trait::ChildrenFormStackingContext);
+  }
+}
+
 void AndroidHorizontalScrollContentViewShadowNode::layout(
     LayoutContext layoutContext) {
   ConcreteViewShadowNode::layout(layoutContext);
