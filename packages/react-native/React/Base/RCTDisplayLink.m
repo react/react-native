@@ -26,7 +26,6 @@
 {
   if ((self = [super init])) {
     _frameUpdateObserver = observer;
-    _jsDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(_jsThreadUpdate:)];
 
     __weak typeof(self) weakSelf = self;
     observer.pauseCallback = ^{
@@ -59,7 +58,14 @@
 - (void)addToRunLoop:(NSRunLoop *)runLoop
 {
   _runLoop = runLoop;
+  // Create the display link in the same call that schedules it. When iOS moves an app to another display
+  // (e.g. iPhone Duo unfolding while the app comes to the foreground), it retargets the app's display links
+  // to that display, but only the ones already scheduled on a run loop. A link created earlier on the main
+  // thread and scheduled later on the JS thread could miss that and stay bound to a display that no longer
+  // refreshes, which stalls every JS timer.
+  _jsDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(_jsThreadUpdate:)];
   [_jsDisplayLink addToRunLoop:runLoop forMode:NSRunLoopCommonModes];
+  [self updateJSDisplayLinkState];
 }
 
 - (void)dealloc
