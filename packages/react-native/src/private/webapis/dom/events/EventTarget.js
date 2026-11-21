@@ -64,8 +64,8 @@ type EventListenerRegistration = {
 type ListenersMap = Map<string, Map<EventListener, EventListenerRegistration>>;
 
 export default class EventTarget {
-  [CAPTURING_LISTENERS_KEY]: ListenersMap | void;
-  [BUBBLING_LISTENERS_KEY]: ListenersMap | void;
+  [CAPTURING_LISTENERS_KEY]: ?ListenersMap;
+  [BUBBLING_LISTENERS_KEY]: ?ListenersMap;
 
   addEventListener(
     type: string,

@@ -26,7 +26,7 @@ type TBackHandler = {
   exitApp(): void,
   addEventListener(
     eventName: BackPressEventName,
-    handler: (event: HardwareBackPressEvent) => ?boolean,
+    handler: (event: HardwareBackPressEvent) => ?boolean | void,
   ): {remove: () => void, ...},
 };
 
