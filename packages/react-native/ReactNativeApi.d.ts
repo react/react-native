@@ -3118,6 +3118,7 @@ declare type ModalProps = ModalBaseProps &
   ModalPropsAndroid &
   ViewProps
 declare type ModalPropsAndroid = {
+  blurBehindRadius?: number
   hardwareAccelerated?: boolean
   navigationBarTranslucent?: boolean
   statusBarTranslucent?: boolean

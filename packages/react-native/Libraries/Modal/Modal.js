@@ -182,6 +182,23 @@ export type ModalPropsAndroid = {
    * @platform android
    */
   navigationBarTranslucent?: ?boolean,
+
+  /**
+   * Blurs the content behind the modal, in dp, with the system window blur
+   * (`WindowManager.LayoutParams#setBlurBehindRadius`). Use it with
+   * `transparent`, otherwise the modal's own background covers the blur.
+   *
+   * When the device does not support cross-window blur, or the user turned it
+   * off (battery saver, "Allow window-level blurs"), the window behind is
+   * dimmed instead.
+   *
+   * Requires Android 12 (API 31) or newer; ignored on older versions.
+   *
+   * @default 0
+   *
+   * @platform android
+   */
+  blurBehindRadius?: ?number,
 };
 
 export type ModalProps = {
@@ -338,6 +355,7 @@ class Modal extends React.Component<ModalProps, ModalState> {
         visible={this.props.visible}
         statusBarTranslucent={this.props.statusBarTranslucent}
         navigationBarTranslucent={this.props.navigationBarTranslucent}
+        blurBehindRadius={this.props.blurBehindRadius}
         identifier={this._identifier}
         style={styles.modal}
         /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing

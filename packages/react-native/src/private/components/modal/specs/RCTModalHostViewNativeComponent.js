@@ -11,6 +11,7 @@
 import type {ViewProps} from '../../../../../Libraries/Components/View/ViewPropTypes';
 import type {
   DirectEventHandler,
+  Float,
   Int32,
   WithDefault,
 } from '../../../../../Libraries/Types/CodegenTypes';
@@ -73,6 +74,14 @@ type RCTModalHostViewNativeProps = Readonly<{
    * See https://reactnative.dev/docs/modal#hardwareaccelerated
    */
   hardwareAccelerated?: WithDefault<boolean, false>,
+
+  /**
+   * The `blurBehindRadius` prop blurs the content behind the modal window, in
+   * dp, using the system window blur. Android 12+ only.
+   *
+   * See https://reactnative.dev/docs/modal#blurbehindradius-android
+   */
+  blurBehindRadius?: WithDefault<Float, 0>,
 
   /**
    * The `onRequestClose` callback is called when the user taps the hardware

@@ -20,12 +20,14 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewStructure
+import android.view.Window
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.FrameLayout
 import androidx.activity.ComponentDialog
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -43,6 +45,7 @@ import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.config.ReactFeatureFlags
 import com.facebook.react.uimanager.JSPointerDispatcher
 import com.facebook.react.uimanager.JSTouchDispatcher
+import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.RootView
 import com.facebook.react.uimanager.StateWrapper
@@ -55,6 +58,8 @@ import com.facebook.react.views.view.disableEdgeToEdge
 import com.facebook.react.views.view.enableEdgeToEdge
 import com.facebook.react.views.view.isEdgeToEdgeFeatureFlagOn
 import com.facebook.react.views.view.setStatusBarTranslucency
+import java.util.function.Consumer
+import kotlin.math.roundToInt
 
 /**
  * ReactModalHostView is a view that sits in the view hierarchy representing a Modal view.
@@ -106,6 +111,13 @@ public class ReactModalHostView(context: ThemedReactContext) :
       createNewDialog = true
     }
 
+  /**
+   * Radius, in dp, of the system blur applied to the windows behind the modal. Applied with
+   * [WindowManager.LayoutParams.FLAG_BLUR_BEHIND] on Android 12 (API 31) and newer. `0` disables
+   * it. Changing it does not recreate the dialog.
+   */
+  public var blurBehindRadius: Float = 0f
+
   public var stateWrapper: StateWrapper?
     get() = dialogRootViewGroup.stateWrapper
     public set(stateWrapper) {
@@ -125,6 +137,11 @@ public class ReactModalHostView(context: ThemedReactContext) :
   // creation through the theme
   // but transparency does not since we can access the window to update the property.
   private var createNewDialog = false
+
+  // Listens for the system turning cross-window blur on or off (battery saver, the "Allow
+  // window-level blurs" setting, tunnel mode) while a blurred modal is showing.
+  private var crossWindowBlurListener: Consumer<Boolean>? = null
+  private var crossWindowBlurWindowManager: WindowManager? = null
 
   init {
     dialogRootViewGroup = DialogRootViewGroup(context)
@@ -197,6 +214,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
   private fun dismiss() {
     UiThreadUtil.assertOnUiThread()
 
+    unregisterCrossWindowBlurListener()
     dialog?.let { nonNullDialog ->
       if (nonNullDialog.isShowing) {
         nonNullDialog.window?.let { window ->
@@ -409,7 +427,11 @@ public class ReactModalHostView(context: ThemedReactContext) :
         dialogWindow.setStatusBarTranslucency(statusBarTranslucent)
       }
 
-      if (transparent) {
+      // When a blur was asked for but the system can't draw it, dim the windows behind instead so
+      // the modal is still set apart from the content it covers.
+      val blurBehindApplied = updateBlurBehind(dialogWindow)
+      val dimForMissingBlur = blurBehindRadius > 0f && !blurBehindApplied
+      if (transparent && !dimForMissingBlur) {
         dialogWindow.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
       } else {
         dialogWindow.setDimAmount(0.5f)
@@ -424,6 +446,64 @@ public class ReactModalHostView(context: ThemedReactContext) :
       // window manager
       FLog.e(TAG, "ReactModalHostView: error while setting window flags: ", e.message)
     }
+  }
+
+  /**
+   * Applies [blurBehindRadius] to the dialog window. Returns whether the system will draw the blur:
+   * false below Android 12, when the radius is 0, and when cross-window blur is currently disabled.
+   */
+  private fun updateBlurBehind(dialogWindow: Window): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+      return false
+    }
+    val radiusPx = blurBehindRadius.dpToPx().roundToInt()
+    if (radiusPx <= 0) {
+      unregisterCrossWindowBlurListener()
+      setWindowBlurBehind(dialogWindow, 0)
+      return false
+    }
+    registerCrossWindowBlurListener(dialogWindow.windowManager)
+    val blurEnabled = dialogWindow.windowManager.isCrossWindowBlurEnabled
+    setWindowBlurBehind(dialogWindow, if (blurEnabled) radiusPx else 0)
+    return blurEnabled
+  }
+
+  @RequiresApi(Build.VERSION_CODES.S)
+  private fun setWindowBlurBehind(dialogWindow: Window, radiusPx: Int) {
+    // Only touch the window when something changes: every attribute update relayouts the dialog
+    // window, and most modals never use the blur.
+    val attributes = dialogWindow.attributes
+    val blurFlag = if (radiusPx > 0) WindowManager.LayoutParams.FLAG_BLUR_BEHIND else 0
+    val flagUnchanged =
+        (attributes.flags and WindowManager.LayoutParams.FLAG_BLUR_BEHIND) == blurFlag
+    if (flagUnchanged && attributes.blurBehindRadius == radiusPx) {
+      return
+    }
+    attributes.flags =
+        (attributes.flags and WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()) or blurFlag
+    attributes.blurBehindRadius = radiusPx
+    dialogWindow.attributes = attributes
+  }
+
+  @RequiresApi(Build.VERSION_CODES.S)
+  private fun registerCrossWindowBlurListener(windowManager: WindowManager) {
+    if (crossWindowBlurListener != null) {
+      return
+    }
+    // The listener is also called right away with the current state; it runs on the main thread.
+    val listener = Consumer<Boolean> { if (dialog != null) updateProperties() }
+    crossWindowBlurListener = listener
+    crossWindowBlurWindowManager = windowManager
+    windowManager.addCrossWindowBlurEnabledListener(context.mainExecutor, listener)
+  }
+
+  private fun unregisterCrossWindowBlurListener() {
+    val listener = crossWindowBlurListener ?: return
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      crossWindowBlurWindowManager?.removeCrossWindowBlurEnabledListener(listener)
+    }
+    crossWindowBlurListener = null
+    crossWindowBlurWindowManager = null
   }
 
   /**

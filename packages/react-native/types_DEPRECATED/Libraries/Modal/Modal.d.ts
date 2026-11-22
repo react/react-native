@@ -108,6 +108,13 @@ export interface ModalPropsAndroid {
    *  Determines whether your modal should go under the system navigationbar.
    */
   navigationBarTranslucent?: boolean | undefined;
+
+  /**
+   *  Blurs the content behind the modal, in dp, with the system window blur.
+   *  Use it with `transparent`. Falls back to a dim when cross-window blur is
+   *  unavailable. Android 12 (API 31)+ only.
+   */
+  blurBehindRadius?: number | undefined;
 }
 
 export type ModalProps = ModalBaseProps &

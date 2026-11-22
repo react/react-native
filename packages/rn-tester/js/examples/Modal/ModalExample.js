@@ -10,6 +10,7 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import ModalBlurBehind from './ModalBlurBehind';
 import ModalOnShow from './ModalOnShow';
 import ModalPresentation from './ModalPresentation';
 
@@ -22,4 +23,5 @@ export const description = 'Component for presenting modal views.';
 export const examples: Array<RNTesterModuleExample> = [
   ModalPresentation,
   ModalOnShow,
+  ModalBlurBehind,
 ];
