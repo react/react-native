@@ -353,6 +353,8 @@ internal class BackgroundImageDrawable(
       backgroundSize: BackgroundSize?,
       repeat: BackgroundRepeat?,
   ): Pair<Float, Float> {
+    // Gradients have no natural size or aspect ratio, so `cover` and `contain` size them to the
+    // positioning area, which is the image size passed in.
     var finalWidth = imageWidth
     var finalHeight = imageHeight
 

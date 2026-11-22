@@ -217,11 +217,63 @@ describe('processBackgroundSize', () => {
     ]);
   });
 
-  it('should return empty array for unsupported cover keyword', () => {
-    expect(processBackgroundSize('cover')).toEqual([]);
+  // Test cover and contain keywords
+  it('should parse cover', () => {
+    expect(processBackgroundSize('cover')).toEqual(['cover']);
   });
 
-  it('should return empty array for unsupported contain keyword', () => {
-    expect(processBackgroundSize('contain')).toEqual([]);
+  it('should parse contain', () => {
+    expect(processBackgroundSize('contain')).toEqual(['contain']);
+  });
+
+  it('should parse mixed case cover and contain', () => {
+    expect(processBackgroundSize('  COVER  , Contain')).toEqual([
+      'cover',
+      'contain',
+    ]);
+  });
+
+  it('should keep other layers next to cover and contain', () => {
+    expect(processBackgroundSize('10px auto, cover, 50%, contain')).toEqual([
+      {x: 10, y: 'auto'},
+      'cover',
+      {x: '50%', y: 'auto'},
+      'contain',
+    ]);
+  });
+
+  it('should match the array form for cover', () => {
+    expect(processBackgroundSize('10px auto, cover')).toEqual(
+      processBackgroundSize([{x: 10, y: 'auto'}, 'cover']),
+    );
+  });
+
+  it('should handle array with cover and contain', () => {
+    expect(processBackgroundSize([{x: 100, y: 'auto'}, 'contain'])).toEqual([
+      {x: 100, y: 'auto'},
+      'contain',
+    ]);
+  });
+
+  it('should reject cover or contain combined with a size', () => {
+    expect(processBackgroundSize('cover 10px')).toEqual([]);
+    expect(processBackgroundSize('10px contain')).toEqual([]);
+    expect(processBackgroundSize('auto cover')).toEqual([]);
+  });
+
+  it('should reject cover and contain in one layer', () => {
+    expect(processBackgroundSize('cover contain')).toEqual([]);
+    expect(processBackgroundSize('cover cover')).toEqual([]);
+  });
+
+  it('should reject every layer when a cover layer is invalid', () => {
+    expect(processBackgroundSize('10px auto, cover 10px')).toEqual([]);
+  });
+
+  it('should reject every layer when a layer has more than two values', () => {
+    expect(
+      processBackgroundSize('40px 40px, cover 10px auto, contain'),
+    ).toEqual([]);
+    expect(processBackgroundSize('10px, 10px 20px 30px, 50%')).toEqual([]);
   });
 });
