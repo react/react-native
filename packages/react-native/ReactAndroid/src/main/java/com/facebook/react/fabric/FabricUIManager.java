@@ -92,6 +92,7 @@ import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.FabricEventDispatcher;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.uimanager.events.SynchronousEventReceiver;
+import com.facebook.react.views.modal.ModalContentInsetsKt;
 import com.facebook.react.views.text.PreparedLayout;
 import com.facebook.react.views.text.ReactTextViewManager;
 import com.facebook.react.views.text.ReactTextViewManagerCallback;
@@ -767,15 +768,14 @@ public class FabricUIManager
   }
 
   /**
-   * This method is used to get the encoded screen size without vertical insets for a given surface.
-   * It's used by the Modal component to determine the size of the screen without vertical insets.
+   * Returns initial Modal content bounds, excluding only system bars that the Dialog fits around.
    * The method is private as it's accessed via JNI from C++.
    *
    * @param surfaceId The surface ID of the surface for which the Modal is going to render.
-   * @return The encoded screen size as a long (both width and height) are represented without
-   *     vertical insets.
+   * @return The encoded content width and height in dp for the initial Modal layout.
    */
-  private long getEncodedScreenSizeWithoutVerticalInsets(int surfaceId) {
+  private long getEncodedScreenSizeWithoutVerticalInsets(
+      int surfaceId, boolean statusBarTranslucent, boolean navigationBarTranslucent) {
     ThemedReactContext context =
         mMountingManager
             .getSurfaceManagerEnforced(surfaceId, "getEncodedScreenSizeWithoutVerticalInsets")
@@ -785,7 +785,10 @@ public class FabricUIManager
       return 0;
     } else {
       return DisplayMetricsHolder.getEncodedScreenSizeWithoutVerticalInsets(
-          context.getCurrentActivity());
+          context.getCurrentActivity(),
+          ModalContentInsetsKt.modalContentFitsTopInset(statusBarTranslucent),
+          ModalContentInsetsKt.modalContentFitsBottomInset(
+              statusBarTranslucent, navigationBarTranslucent));
     }
   }
 

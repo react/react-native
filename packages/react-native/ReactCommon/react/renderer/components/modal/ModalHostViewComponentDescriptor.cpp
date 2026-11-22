@@ -13,11 +13,8 @@ namespace facebook::react {
 State::Shared ModalHostViewComponentDescriptor::createInitialState(
     const Props::Shared& props,
     const ShadowNodeFamily::Shared& family) const {
-  // For Android, we need to get the size of the screen without the vertical
-  // insets to correctly position the modal on the first rendering.
-  // For this reason we provide the `createInitialState` implementation
-  // that will query FabricUIManager for the size of the screen without
-  // vertical insets.
+  // Match the Dialog's system bar configuration before its first measurement.
+  const auto& modalProps = static_cast<const ModalHostViewProps&>(*props);
 
   int surfaceId = family->getSurfaceId();
 
@@ -26,10 +23,14 @@ State::Shared ModalHostViewComponentDescriptor::createInitialState(
 
   static auto getEncodedScreenSizeWithoutVerticalInsets =
       jni::findClassStatic(UIManagerJavaDescriptor)
-          ->getMethod<jlong(jint)>("getEncodedScreenSizeWithoutVerticalInsets");
+          ->getMethod<jlong(jint, jboolean, jboolean)>(
+              "getEncodedScreenSizeWithoutVerticalInsets");
 
-  auto result =
-      getEncodedScreenSizeWithoutVerticalInsets(fabricUIManager, surfaceId);
+  auto result = getEncodedScreenSizeWithoutVerticalInsets(
+      fabricUIManager,
+      surfaceId,
+      modalProps.statusBarTranslucent,
+      modalProps.navigationBarTranslucent);
 
   // Inspired from yogaMeasureToSize from conversions.h
   int32_t wBits = 0xFFFFFFFF & (result >> 32);

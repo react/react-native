@@ -17,6 +17,9 @@ import android.view.View
 import android.view.Window
 import android.view.WindowInsets
 import androidx.annotation.RequiresApi
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
@@ -31,6 +34,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
@@ -112,13 +116,38 @@ class DisplayMetricsHolderTest {
         .thenReturn(android.graphics.Insets.of(10, 20, 10, 20))
 
     // Should return a non-zero encoded value
-    val encoded = DisplayMetricsHolder.getEncodedScreenSizeWithoutVerticalInsets(activity)
+    val encoded =
+        DisplayMetricsHolder.getEncodedScreenSizeWithoutVerticalInsets(activity, true, true)
     assertThat(encoded).isNotZero()
   }
 
   @Test
+  fun getEncodedScreenSizeWithoutVerticalInsets_subtractsTopAndBottomInsets() =
+      assertEncodedScreenSize(
+          subtractTopInset = true,
+          subtractBottomInset = true,
+          expectedHeightPx = 950f,
+      )
+
+  @Test
+  fun getEncodedScreenSizeWithoutVerticalInsets_subtractsOnlyBottomInset() =
+      assertEncodedScreenSize(
+          subtractTopInset = false,
+          subtractBottomInset = true,
+          expectedHeightPx = 970f,
+      )
+
+  @Test
+  fun getEncodedScreenSizeWithoutVerticalInsets_doesNotSubtractInsets() =
+      assertEncodedScreenSize(
+          subtractTopInset = false,
+          subtractBottomInset = false,
+          expectedHeightPx = 1000f,
+      )
+
+  @Test
   fun getEncodedScreenSizeWithoutVerticalInsets_returnsZeroIfActivityIsNull() {
-    val encoded = DisplayMetricsHolder.getEncodedScreenSizeWithoutVerticalInsets(null)
+    val encoded = DisplayMetricsHolder.getEncodedScreenSizeWithoutVerticalInsets(null, true, true)
     assertThat(encoded).isZero()
   }
 
@@ -203,6 +232,49 @@ class DisplayMetricsHolderTest {
 
     // Metrics should still be set from resource display metrics
     assertThat(DisplayMetricsHolder.getScreenDisplayMetrics()).isNotNull()
+  }
+
+  private fun assertEncodedScreenSize(
+      subtractTopInset: Boolean,
+      subtractBottomInset: Boolean,
+      expectedHeightPx: Float,
+  ) {
+    DisplayMetricsHolder.initDisplayMetrics(context)
+    val activity: Activity = mock()
+    val window: Window = mock()
+    val decorView: View = mock()
+    whenever(activity.window).thenReturn(window)
+    whenever(window.decorView).thenReturn(decorView)
+    val rootInsets: WindowInsetsCompat = mock()
+    whenever(
+            rootInsets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or
+                    WindowInsetsCompat.Type.navigationBars() or
+                    WindowInsetsCompat.Type.displayCutout()
+            )
+        )
+        .thenReturn(Insets.of(0, 20, 0, 30))
+    DisplayMetricsHolder.setScreenDisplayMetrics(
+        DisplayMetrics().apply {
+          setTo(displayMetrics)
+          widthPixels = 600
+          heightPixels = 1000
+        }
+    )
+    mockStatic(ViewCompat::class.java).use { viewCompat ->
+      viewCompat
+          .`when`<WindowInsetsCompat?> { ViewCompat.getRootWindowInsets(decorView) }
+          .thenReturn(rootInsets)
+      val encoded =
+          DisplayMetricsHolder.getEncodedScreenSizeWithoutVerticalInsets(
+              activity,
+              subtractTopInset,
+              subtractBottomInset,
+          )
+      assertThat(Float.fromBits((encoded shr 32).toInt())).isEqualTo(PixelUtil.toDIPFromPixel(600f))
+      assertThat(Float.fromBits(encoded.toInt()))
+          .isEqualTo(PixelUtil.toDIPFromPixel(expectedHeightPx))
+    }
   }
 
   private fun overrideWindowDensityFlag(enabled: Boolean) {

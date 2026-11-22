@@ -88,19 +88,25 @@ public object DisplayMetricsHolder {
   }
 
   /**
-   * Returns the encoded screen size without vertical insets.
+   * Returns the encoded screen size, subtracting the requested vertical insets.
    *
    * This is needed to render components that needs to be correctly positioned on the screen on
    * their first frame. Modal is one of such components.
    *
    * @param activity the [Activity] to get the insets from.
+   * @param subtractTopInset whether the content fits below the top system inset.
+   * @param subtractBottomInset whether the content fits above the bottom system inset.
    * @return the encoded screen size as a [Long] value, where the first 32 bits represent the width
    *   and the last 32 bits represent the height in dp (density-independent pixels).
    */
   // This annotation can be removed once FabricUIManager is migrated to Kotlin
   @JvmName("getEncodedScreenSizeWithoutVerticalInsets")
   @JvmStatic
-  internal fun getEncodedScreenSizeWithoutVerticalInsets(activity: Activity?): Long {
+  internal fun getEncodedScreenSizeWithoutVerticalInsets(
+      activity: Activity?,
+      subtractTopInset: Boolean,
+      subtractBottomInset: Boolean,
+  ): Long {
     val windowInsets = activity?.window?.decorView?.let(ViewCompat::getRootWindowInsets) ?: return 0
     val insets =
         windowInsets.getInsets(
@@ -108,7 +114,8 @@ public object DisplayMetricsHolder {
                 WindowInsetsCompat.Type.navigationBars() or
                 WindowInsetsCompat.Type.displayCutout(),
         )
-    val verticalInsets = insets.top + insets.bottom
+    val verticalInsets =
+        (if (subtractTopInset) insets.top else 0) + (if (subtractBottomInset) insets.bottom else 0)
     return encodeFloatsToLong(
         (checkNotNull(screenDisplayMetrics).widthPixels).toFloat().pxToDp(),
         (checkNotNull(screenDisplayMetrics).heightPixels - verticalInsets).toFloat().pxToDp(),
