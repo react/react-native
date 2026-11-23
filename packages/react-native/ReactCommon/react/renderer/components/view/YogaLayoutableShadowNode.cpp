@@ -283,7 +283,7 @@ void YogaLayoutableShadowNode::replaceChild(
     return;
   }
 
-  bool suggestedIndexAccurate = suggestedIndex >= 0 &&
+  bool suggestedIndexAccurate =
       suggestedIndex < yogaLayoutableChildren_.size() &&
       yogaLayoutableChildren_[suggestedIndex].get() == layoutableOldChild;
 
