@@ -14,6 +14,7 @@
 
 @implementation RCTNetworkTask {
   NSMutableData *_data;
+  int64_t _receivedLength;
   id<RCTURLRequestHandler> _handler;
   dispatch_queue_t _callbackQueue;
   std::mutex _mutex;
@@ -50,6 +51,7 @@ static constinit auto currentRequestId = std::atomic<NSUInteger>(0);
     _handler = handler;
     _callbackQueue = callbackQueue;
     _atomicStatus = RCTNetworkTaskPending;
+    _buffersResponseData = YES;
 
     dispatch_queue_set_specific(callbackQueue, (__bridge void *)self, (__bridge void *)self, NULL);
   }
@@ -179,25 +181,28 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
     // NSData is not thread-safe and this method could be called from different threads as
     // RCTURLRequestHandlers does not provide any guarantee of which thread we are called on.
     std::lock_guard<std::mutex> lock(_mutex);
-    if (!_data) {
-      _data = [NSMutableData new];
-    }
-    @try {
-      [_data appendData:data];
-    } @catch (NSException *exception) {
-      _atomicStatus = RCTNetworkTaskFinished;
-      if (_completionBlock) {
-        RCTURLRequestCompletionBlock completionBlock = _completionBlock;
-        [self dispatchCallback:^{
-          completionBlock(
-              self->_response, nil, RCTErrorWithMessage(exception.reason ?: @"Request's received data too long."));
-        }];
+    if (_buffersResponseData) {
+      if (!_data) {
+        _data = [NSMutableData new];
       }
-      [self invalidate];
-      return;
+      @try {
+        [_data appendData:data];
+      } @catch (NSException *exception) {
+        _atomicStatus = RCTNetworkTaskFinished;
+        if (_completionBlock) {
+          RCTURLRequestCompletionBlock completionBlock = _completionBlock;
+          [self dispatchCallback:^{
+            completionBlock(
+                self->_response, nil, RCTErrorWithMessage(exception.reason ?: @"Request's received data too long."));
+          }];
+        }
+        [self invalidate];
+        return;
+      }
     }
 
-    length = _data.length;
+    _receivedLength += data.length;
+    length = _receivedLength;
   }
 
   int64_t total = _response.expectedContentLength;
