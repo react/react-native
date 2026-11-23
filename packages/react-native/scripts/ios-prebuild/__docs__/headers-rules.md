@@ -234,27 +234,28 @@ emitted as a one-line redirect shim (`#import <owner>`). Shims that are
 namespace-module members are fine: they import the owning module, so
 declarations stay single-owned.
 
-**R12 — a namespace module's own umbrella stays in ReactNativeHeaders.** The C++
-stable API ships one umbrella per module, physically nested inside it
-(`ReactCommon/react/debug/React/Debug.h`), so its natural path is
-`React/Debug.h` and R1 would hoist it into the framework. It must not be:
-**ReactNativeHeaders is the lower layer** — `React.framework` imports it
-(`RCTCallInvoker.h` → `<ReactCommon/CallInvoker.h>`). A framework-owned umbrella
-makes every `#include <React/X.h>` inside a lowercase-namespace header an import
-of module `React`, closing a cycle:
+**R12 — a namespace module's own umbrella is an `exclude header` of module
+`React`.** The C++ stable API ships one umbrella per module, physically nested
+inside it (`ReactCommon/react/debug/React/Debug.h`), so its natural path is
+`React/Debug.h` and R1 hoists it into the framework. **ReactNativeHeaders is the
+lower layer** — `React.framework` imports it (`RCTCallInvoker.h` →
+`<ReactCommon/CallInvoker.h>`). A framework header that belongs to module
+`React` makes every `#include <React/X.h>` inside a lowercase-namespace header
+an import of module `React`, closing a cycle:
 
 ```text
 React -> ReactNativeHeaders_react -> React
 ```
 
-Found empirically: `react/timing/primitives.h` -> `<React/Debug.h>`. This is the
-same two-module-ownership failure as `UMBRELLA_CXX_GUARDED_EXCLUSIONS`
-(`RCTFrameTimingsObserver.h`, which reaches the same `primitives.h`), in the
-opposite direction. They are `objc-blocked` by construction (they re-export
-their module's C++ surface), so they were never R4 umbrella or R5 module
-members; `planFromInventory` fails closed if one ever becomes a modular
-candidate, since its R5 module would be named `React` and alias the framework
-module.
+Found empirically: `react/timing/primitives.h` -> `<React/Debug.h>`. The React
+module map therefore lists each of these umbrellas as `exclude header`, so it is
+included textually and creates no module edge. They cannot ship in
+ReactNativeHeaders instead: a `React/` dir next to `react/` in one `Headers/`
+root merges with it on a case-insensitive filesystem, and every `<react/...>`
+include then warns with `-Wnonportable-include-path` (or does not resolve on a
+case-sensitive one). `planFromInventory` fails closed if one ever becomes a
+modular candidate, since it would then join the umbrella and bring the cycle
+back.
 
 ## Stage 3 — Emission (headers-compose.js)
 

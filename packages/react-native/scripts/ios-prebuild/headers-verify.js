@@ -211,7 +211,7 @@ function verifyStructural(
   const fwk = path.join(reactSlice, 'React.framework');
   assertFileEquals(
     path.join(fwk, 'Modules', 'module.modulemap'),
-    renderReactModuleMap(plan.privateReactHeaders),
+    renderReactModuleMap(plan.privateReactHeaders, plan.excludedReactHeaders),
     'React module map',
   );
   assertFileEquals(
@@ -593,6 +593,8 @@ function runCompileGates(
         SIM_TARGET,
         '-module-cache-path',
         path.join(tmp, 'mc-swift-cxx-interop-probe'),
+        '-F',
+        reactSlice,
         '-I',
         cxxInteropProbeHeaders,
         '-I',
