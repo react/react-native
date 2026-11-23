@@ -79,6 +79,21 @@ function approvalKey(prNumber, fingerprint) {
   return `approvals/pull/${prNumber}/${fingerprint}.json`;
 }
 
+/**
+ * The Google Cloud Storage bucket named in config.json, and the public URL
+ * its objects are read from. Uploads go to the same bucket.
+ */
+function storageLocation(config) {
+  const bucket = config?.bucket;
+  if (
+    typeof bucket !== 'string' ||
+    !/^[a-z0-9][a-z0-9._-]+[a-z0-9]$/.test(bucket)
+  ) {
+    throw new Error(`Invalid bucket in the visual config: ${String(bucket)}`);
+  }
+  return {bucket, publicBaseUrl: `https://storage.googleapis.com/${bucket}`};
+}
+
 function publicUrl(publicBaseUrl, key) {
   return `${publicBaseUrl.replace(/\/$/, '')}/${key
     .split('/')
@@ -176,4 +191,5 @@ module.exports = {
   listPrefixes,
   publicUrl,
   reportPrefix,
+  storageLocation,
 };

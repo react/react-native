@@ -26,8 +26,6 @@ concurrency:
 env:
   OUT_DIR: /tmp/visual-out
   VISUAL_ARTIFACTS_DIR: /tmp/visual-artifacts
-  VISUAL_BUCKET: ${{ vars.VISUAL_BUCKET }}
-  VISUAL_PUBLIC_BASE_URL: ${{ vars.VISUAL_PUBLIC_BASE_URL }}
   VISUAL_CONFIG: packages/rn-tester/visual-tests/config.json
 
 jobs:
@@ -136,6 +134,7 @@ jobs:
       - name: Upload report and baseline
         if: steps.staged.outputs.upload == 'true'
         run: |
+          VISUAL_BUCKET=$(jq -er .bucket "$VISUAL_CONFIG")
           # Objects are write-once; --no-clobber makes a rerun skip what an
           # earlier attempt already uploaded.
           gcloud storage cp --recursive --no-clobber "$OUT_DIR/upload/*" "gs://$VISUAL_BUCKET/"

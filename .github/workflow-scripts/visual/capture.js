@@ -18,6 +18,7 @@
 
 const {readAndroidEnvironment, readIosEnvironment} = require('./manifest');
 const {retakeScreenshots} = require('./retake');
+const {storageLocation} = require('./storage');
 const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -32,9 +33,10 @@ node capture.js <platform> <app_path> <app_id> <flows_dir> <output_dir> [ios_udi
 Installs the app, then runs every flow in <flows_dir> in one Maestro
 invocation, writing screenshots under <output_dir>. Failed flows are retried
 up to ${DEFAULT_ATTEMPTS} attempts in total (VISUAL_CAPTURE_ATTEMPTS). With
-VISUAL_PUBLIC_BASE_URL set, screenshots that differ from the baseline or have
-none are retaken once, and the IDs of new screenshots whose two captures
-differ are written as a JSON array to VISUAL_UNSTABLE_PATH.
+VISUAL_CONFIG set to the visual config, screenshots that differ from the
+baseline in the bucket it names, or have none, are retaken once, and the IDs
+of new screenshots whose two captures differ are written as a JSON array to
+VISUAL_UNSTABLE_PATH.
 `;
 
 /** The flows directly inside `flowsDir`, sorted. Helpers live elsewhere. */
@@ -200,9 +202,12 @@ async function main(args = process.argv.slice(2)) {
     summary.push(...pending.map(flow => `- \`${flow}\``));
   }
 
-  const publicBaseUrl = process.env.VISUAL_PUBLIC_BASE_URL;
-  if (publicBaseUrl != null && publicBaseUrl !== '') {
+  const configPath = process.env.VISUAL_CONFIG;
+  if (configPath != null && configPath !== '') {
     try {
+      const {publicBaseUrl} = storageLocation(
+        JSON.parse(fs.readFileSync(configPath, 'utf8')),
+      );
       const {unstable, lines} = await retakeScreenshots({
         platform,
         environment:
