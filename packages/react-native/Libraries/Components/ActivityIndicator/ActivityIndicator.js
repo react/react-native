@@ -158,7 +158,6 @@ const ActivityIndicator: component(
       onLayout={onLayout}
       style={StyleSheet.compose(styles.container, style)}>
       {Platform.OS === 'android' ? (
-        // $FlowFixMe[prop-missing] Flow doesn't know when this is the android component
         // $FlowFixMe[incompatible-type]
         <PlatformActivityIndicator {...nativeProps} {...androidProps} />
       ) : (

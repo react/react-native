@@ -30,25 +30,21 @@ describe('Event', () => {
     expect(Event.BUBBLING_PHASE).toBe(3);
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       Event.NONE = 'NONE';
     }).toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       Event.CAPTURING_PHASE = 'CAPTURING_PHASE';
     }).toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       Event.AT_TARGET = 'AT_TARGET';
     }).toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       Event.BUBBLING_PHASE = 'BUBBLING_PHASE';
     }).toThrow();
@@ -63,25 +59,21 @@ describe('Event', () => {
     expect(event.BUBBLING_PHASE).toBe(3);
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       event.NONE = 'NONE';
     }).toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       event.CAPTURING_PHASE = 'CAPTURING_PHASE';
     }).toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       event.AT_TARGET = 'AT_TARGET';
     }).toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       // $FlowExpectedError[cannot-write]
       event.BUBBLING_PHASE = 'BUBBLING_PHASE';
     }).toThrow();
@@ -130,7 +122,6 @@ describe('Event', () => {
     }).not.toThrow();
 
     expect(() => {
-      // $FlowExpectedError[incompatible-type]
       return new Event('custom', () => {});
     }).not.toThrow();
   });

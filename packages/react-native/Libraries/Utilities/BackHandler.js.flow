@@ -51,7 +51,7 @@ type TBackHandler = {
    */
   addEventListener(
     eventName: BackPressEventName,
-    handler: (event: HardwareBackPressEvent) => ?boolean,
+    handler: (event: HardwareBackPressEvent) => ?boolean | void,
     options?: BackHandlerOptions,
   ): BackHandlerSubscription,
 };

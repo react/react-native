@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ae29758d271fb9fd4c462375349dc990>>
+ * @generated SignedSource<<dd4563222126cb731e94969ce124df5e>>
  */
 
 /**
@@ -276,6 +276,10 @@ bool ReactNativeFeatureFlags::fixBorderlessRippleAndroid() {
 
 bool ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact() {
   return getAccessor().fixMappingOfEventPrioritiesBetweenFabricAndReact();
+}
+
+bool ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS() {
+  return getAccessor().fixProgrammaticScrollMomentumEventsIOS();
 }
 
 bool ReactNativeFeatureFlags::fixTextInlineViewLineHeight() {

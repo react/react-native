@@ -1430,7 +1430,6 @@ function compareArrayTypesOutOfOrder(
         potentiallyRemovedElements,
         // I'm not sure how I should fix this FlowFixMe. It returns `undefined`
         // and has existed since the day it was written. Fixing it might break things.
-        // $FlowFixMe[method-unbinding] added when improving typing for this parameters
         nestedChanges.concat[[oldTypePosn, newTypePosn, currentResult]],
       );
     case 'error':

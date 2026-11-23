@@ -21,10 +21,8 @@ const {getCommands} = require('./commands');
 const {getEvents} = require('./events');
 const {categorizeProps} = require('./extends');
 
-// $FlowFixMe[unclear-type] TODO(T108222691): Use flow-types for @babel/parser
 type PropsAST = Object;
 
-// $FlowFixMe[signature-verification-failure] TODO(T108222691): Use flow-types for @babel/parser
 function buildComponentSchema(
   ast: $FlowFixMe,
   parser: Parser,

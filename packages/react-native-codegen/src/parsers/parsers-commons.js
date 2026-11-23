@@ -1131,8 +1131,6 @@ function buildPropSchema(
   };
 }
 
-/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
- * LTI update could not be added via codemod */
 function getEventArgument(
   argumentProps: PropAST,
   parser: Parser,
@@ -1334,7 +1332,7 @@ function handleEventHandler(
     parser: Parser,
     typeAnnotation: $FlowFixMe,
     types: TypeDeclarationMap,
-    bubblingType: void | 'direct' | 'bubble',
+    bubblingType: ?('direct' | 'bubble'),
     paperName: ?$FlowFixMe,
   ) => EventArgumentReturnType,
 ): EventArgumentReturnType {

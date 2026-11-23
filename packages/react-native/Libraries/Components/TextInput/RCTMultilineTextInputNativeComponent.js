@@ -39,5 +39,5 @@ const MultilineTextInputNativeComponent: HostComponent<{...}> =
     () => __INTERNAL_VIEW_CONFIG,
   );
 
-// flowlint-next-line unclear-type:off
+// $FlowFixMe[unclear-type]
 export default MultilineTextInputNativeComponent as any as HostComponent<{...}>;

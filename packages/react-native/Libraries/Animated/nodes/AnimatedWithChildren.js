@@ -75,7 +75,6 @@ export default class AnimatedWithChildren extends AnimatedNode {
       const children = this._children;
       for (let ii = 0, length = children.length; ii < length; ii++) {
         const child = children[ii];
-        // $FlowFixMe[method-unbinding] added when improving typing for this parameters
         if (child.__getValue) {
           child.__callListeners(child.__getValue());
         }

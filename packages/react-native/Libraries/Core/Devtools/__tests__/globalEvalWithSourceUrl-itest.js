@@ -15,7 +15,6 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 const SOURCE_URL = 'split-chunk-under-test.bundle';
 
 function getHelper(): (code: string, sourceUrl?: string) => unknown {
-  // $FlowFixMe[prop-missing]
   const helper = global.globalEvalWithSourceUrl;
   if (typeof helper !== 'function') {
     throw new Error(
@@ -41,7 +40,6 @@ describe('globalEvalWithSourceUrl', () => {
   });
 
   it('is installed on the bridgeless runtime', () => {
-    // $FlowFixMe[prop-missing]
     expect(typeof global.globalEvalWithSourceUrl).toBe('function');
   });
 

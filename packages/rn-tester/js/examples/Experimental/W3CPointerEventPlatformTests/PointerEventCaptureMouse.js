@@ -44,7 +44,6 @@ function PointerEventCaptureMouseTestCase(
     if (target0 != null && isPointerCaptureRef.current === false) {
       isPointerCaptureRef.current = true;
       try {
-        // $FlowFixMe[prop-missing]
         target0.setPointerCapture(evt.nativeEvent.pointerId);
       } catch {}
     }
@@ -81,9 +80,7 @@ function PointerEventCaptureMouseTestCase(
       }
       if (isPointerCaptureRef.current && target0 != null) {
         const {clientX, clientY} = evt.nativeEvent;
-        const {left, right, top, bottom} =
-          // $FlowFixMe[prop-missing]
-          target0.getBoundingClientRect();
+        const {left, right, top, bottom} = target0.getBoundingClientRect();
 
         if (!pointermoveCaptureGot0Ref.current) {
           harness.test(

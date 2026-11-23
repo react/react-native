@@ -27,6 +27,7 @@ jobs:
       any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change == 'true' || github.event_name != 'pull_request' }}
       should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || github.event_name != 'pull_request' }}
       should_test_ios: ${{ steps.filter_exclusions.outputs.should_test_ios == 'true' || github.event_name != 'pull_request' }}
+      should_test_fantom: ${{ steps.filter_exclusions.outputs.should_test_fantom == 'true' || github.event_name != 'pull_request' }}
       debugger_shell: ${{ steps.filter_inclusions.outputs.debugger_shell }}
     steps:
       - name: Checkout
@@ -65,6 +66,24 @@ jobs:
               - '!packages/react-native/**/*.gradle*'
               - '!packages/react-native-popup-menu-android/**'
               - '!packages/rn-tester/android/**'
+            should_test_fantom:
+              - '**'
+              - '!**/__docs__/**'
+              - '!**/*.md'
+              - '!**/LICENSE'
+              - '!gradle/**'
+              - '!gradle*'
+              - '!packages/gradle-plugin/**'
+              - '!packages/react-native/ReactAndroid/**'
+              - '!packages/react-native/**/*.java'
+              - '!packages/react-native/**/*.kt'
+              - '!packages/react-native/**/*.gradle*'
+              - '!packages/react-native-popup-menu-android/**'
+              - '!packages/react-native/React/**'
+              - '!packages/react-native/ReactApple/**'
+              - '!packages/react-native/**/*.m'
+              - '!packages/react-native/**/*.mm'
+              - '!packages/react-native/**/*.podspec'
       - name: Check for code changes (inclusion patterns)
         uses: dorny/paths-filter@209e61402dbca8aa44f967535da6666b284025ed
         id: filter_inclusions
@@ -91,7 +110,7 @@ jobs:
     needs: [prebuild_apple_dependencies]
 
   test_ios_rntester:
-    runs-on: macos-15-large
+    runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     strategy:
@@ -108,7 +127,7 @@ jobs:
 
   # The CocoaPods opt-out stays supported, so CI keeps one CocoaPods build per test app.
   test_ios_rntester_cocoapods:
-    runs-on: macos-15-large
+    runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     steps:
@@ -153,23 +172,66 @@ jobs:
     with:
       platform: ios
 
-  test_e2e_ios_templateapp:
-    needs: [build_npm_package, prebuild_apple_dependencies, check_code_changes]
+  build_ios_templateapp:
+    needs:
+      [
+        build_npm_package,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
     if: needs.check_code_changes.outputs.should_test_ios == 'true'
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    secrets: inherit
+
+  build_ios_templateapp_retry_1:
+    needs: build_ios_templateapp
+    if: ${{ !cancelled() && (needs.build_ios_templateapp.outputs.status == 'failure' || needs.build_ios_templateapp.result == 'failure') }}
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.build_ios_templateapp.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.build_ios_templateapp.outputs.results || '{}' }}
+    secrets: inherit
+
+  build_ios_templateapp_retry_2:
+    needs: build_ios_templateapp_retry_1
+    if: ${{ !cancelled() && (needs.build_ios_templateapp_retry_1.outputs.status == 'failure' || needs.build_ios_templateapp_retry_1.result == 'failure') }}
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.build_ios_templateapp_retry_1.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.build_ios_templateapp_retry_1.outputs.results || '{}' }}
+      fail-on-error: true
+    secrets: inherit
+
+  test_e2e_ios_templateapp:
+    needs:
+      [
+        build_ios_templateapp,
+        build_ios_templateapp_retry_1,
+        build_ios_templateapp_retry_2,
+      ]
+    if: ${{ !cancelled() && (needs.build_ios_templateapp.outputs.status == 'success' || needs.build_ios_templateapp_retry_1.outputs.status == 'success' || needs.build_ios_templateapp_retry_2.outputs.status == 'success') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_1:
     needs: test_e2e_ios_templateapp
-    if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
+    if: ${{ !cancelled() && (needs.test_e2e_ios_templateapp.outputs.status == 'failure' || needs.test_e2e_ios_templateapp.result == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.test_e2e_ios_templateapp.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.test_e2e_ios_templateapp.outputs.results || '{}' }}
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_2:
     needs: test_e2e_ios_templateapp_retry_1
-    if: ${{ always() && needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' }}
+    if: ${{ !cancelled() && (needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' || needs.test_e2e_ios_templateapp_retry_1.result == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
+      flavors: ${{ needs.test_e2e_ios_templateapp_retry_1.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.test_e2e_ios_templateapp_retry_1.outputs.results || '{}' }}
+      retry-attempt: 2
       fail-on-error: true
     secrets: inherit
 
@@ -217,7 +279,7 @@ jobs:
   build_fantom_runner:
     runs-on: 8-core-ubuntu
     needs: [check_code_changes, lint]
-    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    if: needs.check_code_changes.outputs.should_test_fantom == 'true'
     container:
       image: reactnativecommunity/react-native-android:latest
       env:

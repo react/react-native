@@ -367,6 +367,17 @@ async function prepare() {
   }
 }
 
+/**
+ * A platform check reports what it found without failing: differences are
+ * neutral, and the approval gate is the only check that fails until they're
+ * approved, so an approved PR has no failing visual checks.
+ */
+function platformConclusion(platform) {
+  return platform.error == null && !summarize(platform.results).hasDifferences
+    ? 'success'
+    : 'neutral';
+}
+
 async function report() {
   const github = createGitHubClient();
   const outDir = requireEnv('OUT_DIR');
@@ -402,16 +413,10 @@ async function report() {
             `${prefix}/${platform.platform}/${kind}/${id}.png`,
           );
     const output = renderCheckOutput({...platform, imageUrl});
-    const {hasDifferences} = summarize(platform.results);
     const checkRun = await github.createCheckRun({
       name: `${CHECK_NAME_PREFIX} (${platform.platform})`,
       headSha: context.headSha,
-      conclusion:
-        platform.error != null
-          ? 'neutral'
-          : hasDifferences
-            ? 'failure'
-            : 'success',
+      conclusion: platformConclusion(platform),
       output,
       detailsUrl,
     });
@@ -511,4 +516,9 @@ if (require.main === module) {
   });
 }
 
-module.exports = {comparePlatform, resolveContext, stageBaseline};
+module.exports = {
+  comparePlatform,
+  platformConclusion,
+  resolveContext,
+  stageBaseline,
+};

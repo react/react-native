@@ -15,6 +15,14 @@ exports[`GenerateModuleH can generate a header file NativeModule specs 1`] = `
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
+// JSI provides the argument pointer and corresponding count to generated invokers.
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage\\")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored \\"-Wunsafe-buffer-usage\\"
+#endif
+#endif
+
 namespace facebook::react {
 
 
@@ -1594,6 +1602,12 @@ private:
 };
 
 } // namespace facebook::react
+
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage\\")
+#pragma clang diagnostic pop
+#endif
+#endif
 "
 `;
 
@@ -1612,6 +1626,14 @@ exports[`GenerateModuleH can generate a header file NativeModule specs with assu
 #include <React/Bridging.h>
 #include <React/NativeModuleCore.h>
 
+// JSI provides the argument pointer and corresponding count to generated invokers.
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage\\")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored \\"-Wunsafe-buffer-usage\\"
+#endif
+#endif
+
 namespace facebook::react {
 
 
@@ -3191,5 +3213,11 @@ private:
 };
 
 } // namespace facebook::react
+
+#ifdef __clang__
+#if __has_warning(\\"-Wunsafe-buffer-usage\\")
+#pragma clang diagnostic pop
+#endif
+#endif
 "
 `;

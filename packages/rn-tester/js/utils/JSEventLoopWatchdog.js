@@ -12,7 +12,11 @@
 
 type Handler = {
   onIterate?: () => void,
-  onStall: (params: {lastInterval: number, busyTime: number, ...}) => ?string,
+  onStall: (params: {
+    lastInterval: number,
+    busyTime: number,
+    ...
+  }) => ?string | void,
   ...
 };
 

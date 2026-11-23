@@ -345,7 +345,6 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       expect(config.onHoverIn).toBeCalled();
     });
@@ -358,7 +357,6 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       expect(config.onHoverIn).toBeCalled();
     });
@@ -371,7 +369,6 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       expect(config.onHoverIn).toBeCalled();
     });
@@ -384,7 +381,6 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       jest.advanceTimersByTime(499);
       expect(config.onHoverIn).not.toBeCalled();
@@ -400,7 +396,6 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       expect(config.onHoverIn).toBeCalled();
     });
@@ -438,13 +433,11 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       invariant(
         typeof handlers.onMouseLeave === 'function',
         'Expected to find "onMouseLeave" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseLeave(createMockMouseEvent('onMouseLeave'));
       expect(config.onHoverOut).toBeCalled();
     });
@@ -457,13 +450,11 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       invariant(
         typeof handlers.onMouseLeave === 'function',
         'Expected to find "onMouseLeave" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseLeave(createMockMouseEvent('onMouseLeave'));
       expect(config.onHoverOut).toBeCalled();
     });
@@ -476,13 +467,11 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       invariant(
         typeof handlers.onMouseLeave === 'function',
         'Expected to find "onMouseLeave" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseLeave(createMockMouseEvent('onMouseLeave'));
       jest.advanceTimersByTime(
         ONE_MILLISECOND_BEFORE_CONFIGURED_LONG_PRESS_DURATION,
@@ -500,13 +489,11 @@ describe('Pressability', () => {
         typeof handlers.onMouseEnter === 'function',
         'Expected to find "onMouseEnter" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseEnter(createMockMouseEvent('onMouseEnter'));
       invariant(
         typeof handlers.onMouseLeave === 'function',
         'Expected to find "onMouseLeave" function',
       );
-      // $FlowExpectedError[not-a-function]
       handlers.onMouseLeave(createMockMouseEvent('onMouseLeave'));
       expect(config.onHoverOut).toBeCalled();
     });
@@ -896,9 +883,7 @@ describe('Pressability', () => {
         handlers.onResponderMove(
           createMockPressEvent({
             registrationName: 'onResponderMove',
-            // $FlowFixMe[unsafe-addition]
             pageX: mockRegion.width + mockSlop.right / 2,
-            // $FlowFixMe[unsafe-addition]
             pageY: mockRegion.height + mockSlop.bottom / 2,
           }),
         );
@@ -932,9 +917,7 @@ describe('Pressability', () => {
         handlers.onResponderMove(
           createMockPressEvent({
             registrationName: 'onResponderMove',
-            // $FlowFixMe[unsafe-addition]
             pageX: mockRegion.width + mockSlop.right / 2,
-            // $FlowFixMe[unsafe-addition]
             pageY: mockRegion.height + mockSlop.bottom / 2,
           }),
         );

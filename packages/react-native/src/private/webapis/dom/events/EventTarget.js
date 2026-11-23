@@ -64,8 +64,8 @@ type EventListenerRegistration = {
 type ListenersMap = Map<string, Map<EventListener, EventListenerRegistration>>;
 
 export default class EventTarget {
-  [CAPTURING_LISTENERS_KEY]: ListenersMap | void;
-  [BUBBLING_LISTENERS_KEY]: ListenersMap | void;
+  [CAPTURING_LISTENERS_KEY]: ?ListenersMap;
+  [BUBBLING_LISTENERS_KEY]: ?ListenersMap;
 
   addEventListener(
     type: string,
@@ -226,7 +226,6 @@ export default class EventTarget {
    * from the bubble pass — it cannot be derived from `event.eventPhase`,
    * which is `AT_TARGET` during both passes through the target node.
    */
-  // $FlowExpectedError[unsupported-syntax]
   // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
     event: Event,
@@ -475,7 +474,6 @@ function invokeListeners(
     try {
       if (typeof callback === 'function') {
         callback.call(eventTarget, event);
-        // $FlowExpectedError[method-unbinding]
       } else if (typeof callback.handleEvent === 'function') {
         callback.handleEvent(event);
       }

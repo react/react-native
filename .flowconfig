@@ -43,6 +43,7 @@ flow-typed/
 packages/react-native/flow/
 
 [options]
+experimental.tslib_syntax=true
 builtin_lib=core-only
 
 emoji=true
@@ -118,4 +119,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.340.0
+^0.342.0

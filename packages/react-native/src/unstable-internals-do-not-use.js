@@ -58,68 +58,84 @@ import typeof insetsDiffer from '../Libraries/Utilities/differ/insetsDiffer';
 import typeof pointsDiffer from '../Libraries/Utilities/differ/pointsDiffer';
 import typeof HMRClient from '../Libraries/Utilities/HMRClient';
 
-// flowlint unsafe-getters-setters:off
 // eslint-disable-next-line @react-native/monorepo/no-commonjs-exports
 module.exports = {
+  // $FlowFixMe[unsafe-getters-setters]
   get AppContainer(): AppContainer {
     return require('../Libraries/ReactNative/AppContainer').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get AssetSourceResolver(): AssetSourceResolver {
     return require('../Libraries/Image/AssetSourceResolver').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get ConditionallyIgnoredEventHandlers(): ConditionallyIgnoredEventHandlers<{
     readonly [name: string]: true,
   }> {
     return require('../Libraries/NativeComponent/ViewConfigIgnore')
       .ConditionallyIgnoredEventHandlers;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get customDirectEventTypes(): customDirectEventTypes {
     return require('../Libraries/Renderer/shims/ReactNativeViewConfigRegistry')
       .customDirectEventTypes;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get dispatchCommand(): dispatchCommand {
     return require('../Libraries/ReactNative/RendererProxy').dispatchCommand;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get DevLoadingView(): DevLoadingView {
     return require('../Libraries/Utilities/DevLoadingView').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get getDevServer(): getDevServer {
     return require('../Libraries/Core/Devtools/getDevServer').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get HMRClient(): HMRClient {
     if (__DEV__) {
       return require('../Libraries/Utilities/HMRClient').default;
     }
     return require('../Libraries/Utilities/HMRClientProdShim').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get NativeExceptionsManager(): NativeExceptionsManager {
     return require('../Libraries/Core/NativeExceptionsManager').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get NativeRedBox(): NativeRedBox {
     return require('../Libraries/NativeModules/specs/NativeRedBox').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get NativeSourceCode(): NativeSourceCode {
     return require('../Libraries/NativeModules/specs/NativeSourceCode').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get PressabilityDebugView(): PressabilityDebugView {
     return require('../Libraries/Pressability/PressabilityDebug')
       .PressabilityDebugView;
   },
   // Generated Codegen modules can be emitted outside this package, so they
   // cannot use package-relative imports to access these implementations.
+  // $FlowFixMe[unsafe-getters-setters]
   get colorAttribute(): colorAttribute {
     return require('../Libraries/Components/View/ReactNativeStyleAttributes')
       .colorAttribute;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get insetsDiffer(): insetsDiffer {
     return require('../Libraries/Utilities/differ/insetsDiffer').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get pointsDiffer(): pointsDiffer {
     return require('../Libraries/Utilities/differ/pointsDiffer').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get processColorArray(): processColorArray {
     return require('../Libraries/StyleSheet/processColorArray').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get Renderer(): Renderer {
     return require('../Libraries/ReactNative/RendererProxy');
   },

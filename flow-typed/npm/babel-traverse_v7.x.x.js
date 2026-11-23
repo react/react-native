@@ -533,13 +533,13 @@ declare module '@babel/traverse' {
 
     bindingIdentifierEquals(name: string, node: BabelNode): boolean;
 
-    getBinding(name: string): Binding | void;
+    getBinding(name: string): Binding | undefined;
 
-    getOwnBinding(name: string): Binding | void;
+    getOwnBinding(name: string): Binding | undefined;
 
-    getBindingIdentifier(name: string): BabelNodeIdentifier | void;
+    getBindingIdentifier(name: string): BabelNodeIdentifier | undefined;
 
-    getOwnBindingIdentifier(name: string): BabelNodeIdentifier | void;
+    getOwnBindingIdentifier(name: string): BabelNodeIdentifier | undefined;
 
     hasOwnBinding(name: string): boolean;
 

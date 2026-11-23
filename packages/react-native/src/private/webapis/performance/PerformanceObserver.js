@@ -64,7 +64,6 @@ export const PerformanceObserverEntryList_public: typeof PerformanceObserverEntr
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceObserverEntryList_public.prototype =
   PerformanceObserverEntryList.prototype;
 

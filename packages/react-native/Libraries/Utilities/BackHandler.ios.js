@@ -11,7 +11,7 @@
 import type {HardwareBackPressEvent} from './HardwareBackPressEvent';
 
 type BackPressEventName = 'backPress' | 'hardwareBackPress';
-type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean;
+type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean | void;
 
 type BackHandlerOptions = {
   intercept?: boolean,

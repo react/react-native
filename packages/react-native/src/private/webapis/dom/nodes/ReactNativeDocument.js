@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {RootTag} from '../../../../../Libraries/ReactNative/RootTag';
 import type {ViewConfig} from '../../../../../Libraries/Renderer/shims/ReactNativeTypes';
 import type HTMLCollection from '../oldstylecollections/HTMLCollection';
@@ -41,40 +39,49 @@ export default class ReactNativeDocument extends ReadOnlyNode {
     this._documentElement = createDocumentElement(rootTag, this);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get childElementCount(): number {
     // just `documentElement`.
     return 1;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get children(): HTMLCollection<ReadOnlyElement> {
     return createHTMLCollection([this.documentElement]);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get documentElement(): ReactNativeElement {
     return this._documentElement;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get firstElementChild(): ReadOnlyElement | null {
     return this.documentElement;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get lastElementChild(): ReadOnlyElement | null {
     return this.documentElement;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeName(): string {
     return '#document';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeType(): number {
     return ReadOnlyNode.DOCUMENT_NODE;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeValue(): null {
     return null;
   }
 
   // $FlowExpectedError[incompatible-type] This is defined as returning string in Node, but it's actually null in Document.
+  // $FlowFixMe[unsafe-getters-setters]
   get textContent(): null {
     return null;
   }
@@ -148,5 +155,4 @@ export const ReactNativeDocument_public: typeof ReactNativeDocument =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReactNativeDocument_public.prototype = ReactNativeDocument.prototype;

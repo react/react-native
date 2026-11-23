@@ -38,11 +38,11 @@ polyfillGlobal(
   'AbortController',
   () =>
     require('../../src/private/webapis/dom/abort-api/AbortController')
-      .AbortController, // flowlint-line untyped-import:off
+      .AbortController,
 );
 polyfillGlobal(
   'AbortSignal',
   () =>
     require('../../src/private/webapis/dom/abort-api/AbortSignal')
-      .AbortSignal_public, // flowlint-line untyped-import:off
+      .AbortSignal_public,
 );

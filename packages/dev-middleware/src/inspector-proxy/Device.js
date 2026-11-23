@@ -500,7 +500,6 @@ export default class Device {
     });
 
     const cdpDebugLogging = this.#cdpDebugLogging;
-    // $FlowFixMe[method-unbinding]
     const sendFunc = socket.send;
     // $FlowFixMe[cannot-write]
     socket.send = function (message: string) {
@@ -1156,7 +1155,6 @@ export default class Device {
   // Fetch text, raising an exception if the text could not be fetched,
   // or is too large.
   async #fetchText(url: URL): Promise<string> {
-    // $FlowFixMe[incompatible-call] Suppress arvr node-fetch flow error
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error('HTTP ' + response.status + ' ' + response.statusText);

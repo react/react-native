@@ -291,8 +291,6 @@ const ScrollViewStickyHeader: component(
       collapsable={false}
       nativeID={props.nativeID}
       onLayout={_onLayout}
-      /* $FlowFixMe[prop-missing] passthroughAnimatedPropExplicitValues isn't properly
-         included in the Animated.View flow type. */
       ref={ref}
       style={[
         child.props.style,

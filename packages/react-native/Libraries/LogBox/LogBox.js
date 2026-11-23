@@ -200,7 +200,6 @@ if (__DEV__) {
           let componentStack = result.componentStack;
           if (
             (!componentStack || componentStack.length === 0) &&
-            // $FlowExpectedError[prop-missing]
             React.captureOwnerStack
           ) {
             const ownerStack = React.captureOwnerStack();

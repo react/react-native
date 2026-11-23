@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fe98ee422313f062504eae1cfcd212bb>>
+ * @generated SignedSource<<7bce18c01d40cf5005d3a70278d6e500>>
  */
 
 /**
@@ -414,6 +414,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fixMappingOfEventPrioritiesBetweenFabricAndReact");
+    return method(javaProvider_);
+  }
+
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fixProgrammaticScrollMomentumEventsIOS");
     return method(javaProvider_);
   }
 
@@ -958,6 +964,11 @@ bool JReactNativeFeatureFlagsCxxInterop::fixMappingOfEventPrioritiesBetweenFabri
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::fixProgrammaticScrollMomentumEventsIOS(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::fixTextInlineViewLineHeight(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::fixTextInlineViewLineHeight();
@@ -1363,6 +1374,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "fixMappingOfEventPrioritiesBetweenFabricAndReact",
         JReactNativeFeatureFlagsCxxInterop::fixMappingOfEventPrioritiesBetweenFabricAndReact),
+      makeNativeMethod(
+        "fixProgrammaticScrollMomentumEventsIOS",
+        JReactNativeFeatureFlagsCxxInterop::fixProgrammaticScrollMomentumEventsIOS),
       makeNativeMethod(
         "fixTextInlineViewLineHeight",
         JReactNativeFeatureFlagsCxxInterop::fixTextInlineViewLineHeight),

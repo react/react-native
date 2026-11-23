@@ -9,7 +9,7 @@
   "devDependencies": {
     "@monorepo/pkg-a": "0.0.1",
     "@monorepo/pkg-c": "0.0.0",
-    "@types/react": "^19.1.0",
+    "@types/react": "^19.3.0",
     "@types/react-test-renderer": "^19.0.0"
   }
 }

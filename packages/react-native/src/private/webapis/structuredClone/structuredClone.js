@@ -81,7 +81,6 @@ function structuredCloneInternal(value: unknown): unknown {
   }
 
   // Simple object fast path
-  // $FlowFixMe[prop-missing] Why doesn't Flow know about Object.prototype?
   if (Object.getPrototypeOf(value) === ObjectPrototype) {
     const result = {};
     memory.set(value, result);
@@ -392,7 +391,6 @@ function createErrorClone(value: Error): Error {
 }
 
 function isNonSerializableObject<T extends interface {}>(obj: T): boolean {
-  // $FlowExpectedError[invalid-in-lhs]
   return NON_SERIALIZABLE_OBJECT_KEY in obj;
 }
 

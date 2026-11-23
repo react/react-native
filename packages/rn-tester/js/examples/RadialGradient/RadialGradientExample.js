@@ -287,6 +287,25 @@ exports.examples = [
     },
   },
   {
+    title: 'Length color stops on a tall ellipse',
+    description:
+      'Length stops are measured along the horizontal radius: red reaches 40px right and 120px down.',
+    name: 'length-color-stops-tall-ellipse',
+    render(): React.Node {
+      return (
+        <GradientBox
+          testID="radial-gradient-length-color-stops-tall-ellipse"
+          style={{
+            backgroundImage:
+              'radial-gradient(ellipse 50px 150px at center, red 40px, blue 40px)',
+            width: 100,
+            height: 300,
+          }}
+        />
+      );
+    },
+  },
+  {
     title: 'Color stops outside 0–100%',
     name: 'out-of-range-color-stops',
     render(): React.Node {

@@ -23,7 +23,6 @@ function asEventTarget(node: ?interface {}): EventTarget {
   if (node == null) {
     throw new Error('Expected non-null node');
   }
-  // $FlowFixMe[incompatible-return] ReadOnlyNode extends EventTarget at runtime
   // $FlowFixMe[incompatible-type]
   return node;
 }
@@ -1735,7 +1734,6 @@ describe('EventTarget-based Event Dispatching', () => {
       );
 
       expect(handler).toHaveBeenCalled();
-      // $FlowFixMe[prop-missing] Flow's global Event type omits static constants.
       expect(observedPhase).toBe(Event.AT_TARGET);
       // Event path is just the target node.
       expect(observedPathLength).toBe(1);

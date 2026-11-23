@@ -12,13 +12,18 @@ import android.content.Context
 import android.graphics.BlendMode
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.view.InputDevice
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.accessibility.AccessibilityEvent
 import android.widget.FrameLayout
 import com.facebook.react.R
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.HasElevatedDescendantCache
+import com.facebook.react.uimanager.PointerEvents
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,6 +39,177 @@ class ReactViewGroupTest {
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
     context = Robolectric.buildActivity(Activity::class.java).create().get()
+  }
+
+  @After
+  fun tearDown() {
+    @Suppress("DEPRECATION")
+    com.facebook.react.config.ReactFeatureFlags.dispatchPointerEvents = false
+  }
+
+  @Test
+  fun `hover with pointer events - sends accessibility hover enter and exit`() {
+    enablePointerEvents()
+    val rvg = hoverableView()
+
+    assertThat(rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_ENTER, 10f))).isTrue()
+    assertThat(rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 20f))).isTrue()
+    assertThat(rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_EXIT, 20f))).isTrue()
+
+    assertThat(rvg.sentAccessibilityEvents)
+        .containsExactly(
+            AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
+            AccessibilityEvent.TYPE_VIEW_HOVER_EXIT,
+        )
+  }
+
+  @Test
+  fun `hover with pointer events - sends hover exit when the pointer moves out of the view`() {
+    enablePointerEvents()
+    val rvg = hoverableView()
+
+    rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 10f))
+    rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 150f))
+
+    assertThat(rvg.sentAccessibilityEvents)
+        .containsExactly(
+            AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
+            AccessibilityEvent.TYPE_VIEW_HOVER_EXIT,
+        )
+  }
+
+  @Test
+  fun `hover with pointer events - a hovered child attributes the hover to its accessible parent`() {
+    enablePointerEvents()
+    val parent = hoverableView()
+    val overlay = ReactViewGroup(parent.context)
+    parent.addView(overlay)
+    overlay.layout(0, 0, 100, 100)
+
+    assertThat(overlay.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_ENTER, 10f))).isTrue()
+
+    assertThat(parent.sentAccessibilityEvents)
+        .containsExactly(AccessibilityEvent.TYPE_VIEW_HOVER_ENTER)
+  }
+
+  @Test
+  fun `hover with pointer events - a child with pointerEvents none does not block the parent hover`() {
+    enablePointerEvents()
+    val parent = hoverableView()
+    val overlay = ReactViewGroup(parent.context).apply { pointerEvents = PointerEvents.NONE }
+    parent.addView(overlay)
+    overlay.layout(0, 0, 100, 100)
+
+    assertThat(
+            parent.dispatchGenericMotionEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 10f)),
+        )
+        .isTrue()
+
+    assertThat(parent.sentAccessibilityEvents)
+        .containsExactly(AccessibilityEvent.TYPE_VIEW_HOVER_ENTER)
+  }
+
+  @Test
+  fun `hover with pointer events - a child under the pointer keeps the parent hover silent`() {
+    enablePointerEvents()
+    val parent = hoverableView()
+    val label = View(parent.context)
+    parent.addView(label)
+    label.layout(0, 0, 50, 50)
+
+    parent.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 10f))
+    assertThat(parent.sentAccessibilityEvents).isEmpty()
+
+    parent.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 80f))
+    assertThat(parent.sentAccessibilityEvents)
+        .containsExactly(AccessibilityEvent.TYPE_VIEW_HOVER_ENTER)
+  }
+
+  @Test
+  fun `hover with pointer events - a view that cannot be a touch target sends no hover events`() {
+    enablePointerEvents()
+    val rvg = hoverableView()
+    rvg.pointerEvents = PointerEvents.BOX_NONE
+
+    assertThat(rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_ENTER, 10f))).isFalse()
+
+    assertThat(rvg.sentAccessibilityEvents).isEmpty()
+  }
+
+  @Test
+  fun `hover with pointer events - a view with no accessible ancestor sends enter once it becomes accessible`() {
+    enablePointerEvents()
+    val rvg = AccessibilityEventRecordingViewGroup(context)
+    rvg.layout(0, 0, 100, 100)
+
+    rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 10f))
+    assertThat(rvg.sentAccessibilityEvents).isEmpty()
+
+    rvg.contentDescription = "Button"
+    rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 20f))
+    rvg.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_EXIT, 20f))
+
+    assertThat(rvg.sentAccessibilityEvents)
+        .containsExactly(
+            AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
+            AccessibilityEvent.TYPE_VIEW_HOVER_EXIT,
+        )
+  }
+
+  @Test
+  fun `hover with pointer events - hover exit goes to the view that got hover enter`() {
+    enablePointerEvents()
+    val parent = hoverableView()
+    val overlay = AccessibilityEventRecordingViewGroup(parent.context)
+    parent.addView(overlay)
+    overlay.layout(0, 0, 100, 100)
+
+    overlay.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 10f))
+    overlay.contentDescription = "Overlay"
+    overlay.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_EXIT, 10f))
+
+    assertThat(parent.sentAccessibilityEvents)
+        .containsExactly(
+            AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
+            AccessibilityEvent.TYPE_VIEW_HOVER_EXIT,
+        )
+    assertThat(overlay.sentAccessibilityEvents).isEmpty()
+  }
+
+  @Test
+  fun `hover with pointer events - recycling a hovered view sends the pending hover exit`() {
+    enablePointerEvents()
+    val parent = hoverableView()
+    val overlay = ReactViewGroup(parent.context)
+    parent.addView(overlay)
+    overlay.layout(0, 0, 100, 100)
+
+    overlay.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 10f))
+    overlay.recycleView()
+
+    assertThat(parent.sentAccessibilityEvents)
+        .containsExactly(
+            AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
+            AccessibilityEvent.TYPE_VIEW_HOVER_EXIT,
+        )
+  }
+
+  @Test
+  fun `hover with pointer events - detaching a hovered view sends the pending hover exit`() {
+    enablePointerEvents()
+    val parent = hoverableView()
+    val overlay = ReactViewGroup(parent.context)
+    parent.addView(overlay)
+    overlay.layout(0, 0, 100, 100)
+
+    overlay.onHoverEvent(hoverEvent(MotionEvent.ACTION_HOVER_MOVE, 10f))
+    parent.removeView(overlay)
+
+    assertThat(parent.sentAccessibilityEvents)
+        .containsExactly(
+            AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
+            AccessibilityEvent.TYPE_VIEW_HOVER_EXIT,
+        )
   }
 
   @Test
@@ -278,6 +454,35 @@ class ReactViewGroupTest {
   }
 
   private fun elevatedChild(): View = View(context).apply { elevation = 10f }
+
+  private fun enablePointerEvents() {
+    @Suppress("DEPRECATION")
+    com.facebook.react.config.ReactFeatureFlags.dispatchPointerEvents = true
+  }
+
+  // Accessibility hover events are only sent from views attached to a window.
+  private fun hoverableView(): AccessibilityEventRecordingViewGroup {
+    val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+    val view =
+        AccessibilityEventRecordingViewGroup(activity).apply { contentDescription = "Button" }
+    activity.setContentView(view)
+    view.layout(0, 0, 100, 100)
+    return view
+  }
+
+  private fun hoverEvent(action: Int, position: Float): MotionEvent =
+      MotionEvent.obtain(0, 0, action, position, position, 0).apply {
+        source = InputDevice.SOURCE_MOUSE
+      }
+}
+
+private class AccessibilityEventRecordingViewGroup(context: Context) : ReactViewGroup(context) {
+  val sentAccessibilityEvents = mutableListOf<Int>()
+
+  override fun sendAccessibilityEvent(eventType: Int) {
+    sentAccessibilityEvents.add(eventType)
+    super.sendAccessibilityEvent(eventType)
+  }
 }
 
 class TestView(context: Context, yPos: Int) : View(context) {

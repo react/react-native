@@ -20,7 +20,6 @@ function generateSchemaInfos(
   libraries /*: ReadonlyArray<$FlowFixMe> */,
   platform /*: string */,
 ) /*: Array<$FlowFixMe> */ {
-  // $FlowFixMe[incompatible-type]
   return libraries.map(library => generateSchemaInfo(library, platform));
 }
 

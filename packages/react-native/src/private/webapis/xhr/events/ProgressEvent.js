@@ -13,8 +13,6 @@
  * See https://xhr.spec.whatwg.org/#interface-progressevent.
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventInit} from '../../dom/events/Event';
 
 import Event from '../../dom/events/Event';
@@ -38,14 +36,17 @@ export default class ProgressEvent extends Event {
     this._total = Number(options?.total) || 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get lengthComputable(): boolean {
     return this._lengthComputable;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get loaded(): number {
     return this._loaded;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get total(): number {
     return this._total;
   }

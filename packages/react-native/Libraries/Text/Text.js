@@ -209,7 +209,6 @@ const TextImpl: component(
     }
 
     if (overrides != null) {
-      // $FlowFixMe[incompatible-type]
       _style = [_style, overrides];
     }
   }

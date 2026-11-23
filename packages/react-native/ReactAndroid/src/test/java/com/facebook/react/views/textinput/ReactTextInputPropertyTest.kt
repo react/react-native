@@ -267,6 +267,20 @@ class ReactTextInputPropertyTest {
   }
 
   @Test
+  fun testClearingAccessibilityDisabledPreservesNonEditableInput() {
+    for (state in listOf(JavaOnlyMap(), JavaOnlyMap.of("disabled", null), null)) {
+      manager.updateProperties(
+          view,
+          buildStyles("editable", false, "accessibilityState", JavaOnlyMap.of("disabled", true)),
+      )
+
+      manager.updateProperties(view, buildStyles("accessibilityState", state))
+
+      assertThat(view.isEnabled).isFalse()
+    }
+  }
+
+  @Test
   fun testAutoCompleteExtendedHints() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
       return
@@ -558,6 +572,19 @@ class ReactTextInputPropertyTest {
 
     manager.updateProperties(view, buildStyles("fontVariationSettings", null))
     assertThat(view.parsedFontVariationSettings).isNull()
+  }
+
+  @Test
+  fun testFontWeightAcceptsANumber() {
+    manager.updateProperties(view, buildStyles())
+    val defaultTypeface = view.typeface
+    manager.updateProperties(view, buildStyles("fontWeight", "700"))
+    val boldTypeface = view.typeface
+    assertThat(boldTypeface).isNotEqualTo(defaultTypeface)
+
+    manager.updateProperties(view, buildStyles("fontWeight", null))
+    manager.updateProperties(view, buildStyles("fontWeight", 700.0))
+    assertThat(view.typeface).isEqualTo(boldTypeface)
   }
 
   @Test

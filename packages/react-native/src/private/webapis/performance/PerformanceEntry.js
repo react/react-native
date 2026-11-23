@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
 export type DOMHighResTimeStamp = number;
@@ -47,18 +45,22 @@ export class PerformanceEntry {
     this.__duration = init.duration;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get name(): string {
     return this.__name;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get entryType(): PerformanceEntryType {
     return this.__entryType;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get startTime(): DOMHighResTimeStamp {
     return this.__startTime;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get duration(): DOMHighResTimeStamp {
     return this.__duration;
   }
@@ -82,7 +84,6 @@ export const PerformanceEntry_public: typeof PerformanceEntry =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceEntry_public.prototype = PerformanceEntry.prototype;
 
 setPlatformObject(PerformanceEntry);

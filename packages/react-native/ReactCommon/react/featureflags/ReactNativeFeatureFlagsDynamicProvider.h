@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ae5c7644d3983e65c38b8151b904b92b>>
+ * @generated SignedSource<<af33426cdf5c486bc7da51699933b568>>
  */
 
 /**
@@ -612,6 +612,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fixMappingOfEventPrioritiesBetweenFabricAndReact();
+  }
+
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
+    auto value = values_["fixProgrammaticScrollMomentumEventsIOS"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixProgrammaticScrollMomentumEventsIOS();
   }
 
   bool fixTextInlineViewLineHeight() override {

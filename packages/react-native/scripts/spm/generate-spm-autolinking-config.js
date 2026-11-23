@@ -96,7 +96,6 @@ function resolveDefaultConfigCommand(
       '@react-native-community/cli/package.json',
       {paths: [projectRoot]},
     );
-    // $FlowFixMe[unclear-type] package.json has dynamic shape
     const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
     const bin = pkgJson.bin;
     const binPath =

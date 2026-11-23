@@ -30,14 +30,11 @@ function flattenStyleArrayInto<
     }
 
     if (Array.isArray(style)) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
       flattenStyleArrayInto(result, style);
       continue;
     }
 
-    // $FlowFixMe[invalid-in-rhs]
     for (const key in style) {
-      // $FlowFixMe[incompatible-use]
       // $FlowFixMe[invalid-computed-prop]
       // $FlowFixMe[prop-missing]
       result[key] = style[key];
@@ -49,7 +46,6 @@ function flattenStyle<
   TStyleProp extends ____DangerouslyImpreciseAnimatedStyleProp_Internal,
 >(
   style: ?TStyleProp,
-  // $FlowFixMe[underconstrained-implicit-instantiation]
 ): ?NonAnimatedNodeObject<____FlattenStyleProp_Internal<TStyleProp>> {
   if (style === null || typeof style !== 'object') {
     return undefined;
@@ -61,7 +57,6 @@ function flattenStyle<
   }
 
   const result: {[key: string]: $FlowFixMe} = {};
-  // $FlowFixMe[underconstrained-implicit-instantiation]
   flattenStyleArrayInto(result, style);
 
   // $FlowFixMe[incompatible-type]
