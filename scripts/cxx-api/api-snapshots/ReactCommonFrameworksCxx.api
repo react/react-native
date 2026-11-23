@@ -145,6 +145,7 @@ using facebook::react::ComponentRegistryFactory = std::function<facebook::react:
 using facebook::react::CornerInsets = facebook::react::RectangleCorners<Float>;
 using facebook::react::DispatchEvent = std::function<void(const facebook::react::ShadowNode& targetNode, const std::string& type, facebook::react::ReactEventPriority priority, const facebook::react::EventPayload& payload)>;
 using facebook::react::EdgeInsets = facebook::react::RectangleEdges<Float>;
+using facebook::react::EdgeMargins = facebook::react::RectangleEdges<facebook::react::MarginValue>;
 using facebook::react::EndResult = NativeAnimatedTurboModuleEndResult<bool, std::optional<double>, std::optional<double>>;
 using facebook::react::EventEmitterListener = facebook::react::EventListenerT<facebook::react::Tag, const std::string&, const facebook::react::EventPayload&>;
 using facebook::react::EventEmitterListenerContainer = facebook::react::EventListenerContainerT<facebook::react::Tag, const std::string&, const facebook::react::EventPayload&>;
@@ -325,6 +326,7 @@ facebook::react::ColorComponents facebook::react::colorComponentsFromColor(faceb
 facebook::react::ColorSpace facebook::react::getDefaultColorSpace();
 facebook::react::ComponentRegistryFactory facebook::react::getDefaultComponentRegistryFactory();
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
+facebook::react::EdgeInsets facebook::react::resolveEdgeMargins(const facebook::react::EdgeMargins& margins, const facebook::react::Size& size) noexcept;
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
 facebook::react::ParagraphAttributes facebook::react::convertRawProp(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::ParagraphAttributes& sourceParagraphAttributes, const facebook::react::ParagraphAttributes& defaultParagraphAttributes);
 facebook::react::Rect facebook::react::insetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& insets) noexcept;
@@ -1528,6 +1530,8 @@ class facebook::react::LayoutableShadowNode : public facebook::react::ShadowNode
   public virtual bool canBeTouchTarget() const;
   public virtual bool canChildrenBeTouchTarget() const;
   public virtual bool getIsLayoutClean() const = 0;
+  public virtual bool hasContentClip() const;
+  public virtual bool isScrollContainer() const;
   public virtual const facebook::react::LayoutableShadowNode* asLayoutable() const override;
   public virtual facebook::react::Point getContentOriginOffset(bool includeTransform) const;
   public virtual facebook::react::Size measure(const facebook::react::LayoutContext& layoutContext, const facebook::react::LayoutConstraints& layoutConstraints) const;
@@ -1544,6 +1548,7 @@ struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public std::optional<facebook::react::EdgeMargins> clipMargin;
 }
 
 class facebook::react::LineMeasureCacheKey {
@@ -2839,6 +2844,8 @@ class facebook::react::YogaLayoutableShadowNode : public facebook::react::Layout
   public using ListOfShared = std::vector<facebook::react::YogaLayoutableShadowNode::Shared>;
   public using Shared = std::shared_ptr<const facebook::react::YogaLayoutableShadowNode>;
   public virtual bool getIsLayoutClean() const override;
+  public virtual bool hasContentClip() const override;
+  public virtual bool isScrollContainer() const override;
   public virtual void appendChild(const std::shared_ptr<const facebook::react::ShadowNode>& child) override;
   public virtual void completeClone(const facebook::react::ShadowNode&, const facebook::react::ShadowNodeFragment&) override;
   public virtual void dirtyLayout() override;
@@ -4517,6 +4524,12 @@ struct facebook::react::LinearGradient {
 struct facebook::react::Magic32 {
   public uint32_t reserved_;
   public uint32_t value;
+}
+
+struct facebook::react::MarginValue {
+  public Float value;
+  public bool isPercentage;
+  public bool operator==(const facebook::react::MarginValue& rhs) const noexcept = default;
 }
 
 struct facebook::react::MeasuredPreparedTextLayout {

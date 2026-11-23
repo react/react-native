@@ -178,6 +178,23 @@ bool YogaLayoutableShadowNode::getIsLayoutClean() const {
   return !YGNodeIsDirty(&yogaNode_);
 }
 
+bool YogaLayoutableShadowNode::hasContentClip() const {
+  return YGNodeStyleGetOverflow(&yogaNode_) != YGOverflowVisible;
+}
+
+bool YogaLayoutableShadowNode::isScrollContainer() const {
+  // No `default`, so new `overflow` values must be classified explicitly
+  // (-Wswitch).
+  switch (YGNodeStyleGetOverflow(&yogaNode_)) {
+    case YGOverflowHidden:
+    case YGOverflowScroll:
+      return true;
+    case YGOverflowVisible:
+      return false;
+  }
+  return false;
+}
+
 #pragma mark - Mutating Methods
 
 void YogaLayoutableShadowNode::enableMeasurement() {
