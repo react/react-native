@@ -6058,11 +6058,12 @@ struct facebook::react::CornerRadii {
 }
 
 struct facebook::react::CppMountItem {
+  public const facebook::react::ShadowView& newChildShadowView;
+  public const facebook::react::ShadowView& oldChildShadowView;
   public facebook::react::CppMountItem::Type type;
-  public facebook::react::ShadowView newChildShadowView;
-  public facebook::react::ShadowView oldChildShadowView;
   public facebook::react::Tag parentTag;
   public int index;
+  public static const facebook::react::ShadowView& emptyShadowView();
   public static facebook::react::CppMountItem CreateMountItem(const facebook::react::ShadowView& shadowView);
   public static facebook::react::CppMountItem DeleteMountItem(const facebook::react::ShadowView& shadowView);
   public static facebook::react::CppMountItem InsertMountItem(facebook::react::Tag parentTag, const facebook::react::ShadowView& shadowView, int index);

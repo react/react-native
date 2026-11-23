@@ -57,6 +57,22 @@ TEST_F(MountItemTest, testCreateAndDeleteUseOppositeShadowViewSlots) {
   EXPECT_EQ(-1, deleteItem.index);
 }
 
+TEST_F(MountItemTest, testItemsReferenceTheirShadowViews) {
+  const auto oldShadowView =
+      makeShadowView("View", /*surfaceId=*/11, /*tag=*/101);
+  const auto newShadowView =
+      makeShadowView("View", /*surfaceId=*/11, /*tag=*/101);
+
+  const auto updateItem =
+      CppMountItem::UpdatePropsMountItem(oldShadowView, newShadowView);
+  const auto createItem = CppMountItem::CreateMountItem(newShadowView);
+
+  EXPECT_EQ(&oldShadowView, &updateItem.oldChildShadowView);
+  EXPECT_EQ(&newShadowView, &updateItem.newChildShadowView);
+  EXPECT_EQ(&newShadowView, &createItem.newChildShadowView);
+  EXPECT_EQ(&CppMountItem::emptyShadowView(), &createItem.oldChildShadowView);
+}
+
 TEST_F(MountItemTest, testInsertAndRemovePreserveParentIndexAndChildSlot) {
   constexpr Tag kParentTag = 501;
   constexpr int kIndex = 3;

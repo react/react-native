@@ -39,6 +39,9 @@ struct CppMountItem final {
 
   static CppMountItem UpdateOverflowInsetMountItem(const ShadowView &shadowView);
 
+  // Empty view for the side a mount item does not use.
+  static const ShadowView &emptyShadowView();
+
 #pragma mark - Type
 
   enum Type {
@@ -60,8 +63,12 @@ struct CppMountItem final {
 
   Type type = {Create};
   Tag parentTag = kNoTag;
-  ShadowView oldChildShadowView = {};
-  ShadowView newChildShadowView = {};
+  // Not owned: these point into a MountingTransaction's mutations, or at
+  // emptyShadowView(). The transaction must stay alive until the item is
+  // written into the JNI batch. Copying the views would cost three atomic
+  // reference count updates per view on creation and again on destruction.
+  const ShadowView &oldChildShadowView;
+  const ShadowView &newChildShadowView;
   int index = {};
 };
 
