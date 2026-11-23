@@ -15,10 +15,6 @@ import Image from '../../Image/Image';
 import createAnimatedComponent from '../createAnimatedComponent';
 import * as React from 'react';
 
-export default createAnimatedComponent<
-  $FlowFixMe,
-  React.ElementRef<typeof Image>,
->(Image as $FlowFixMe) as AnimatedComponentType<
-  ImageProps,
-  React.ElementRef<typeof Image>,
->;
+export default createAnimatedComponent<$FlowFixMe>(
+  Image as $FlowFixMe,
+) as AnimatedComponentType<ImageProps, React.ElementRef<typeof Image>>;

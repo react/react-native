@@ -12,6 +12,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.text.Layout
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
@@ -27,6 +28,7 @@ import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.ReactStylesDiffMap
+import com.facebook.react.views.text.internal.span.CanvasEffectSpan
 import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
@@ -128,6 +130,39 @@ class ReactTextViewTest {
     assertThat(view.paint.typeface).isNotNull
     assertThat(view.textSize).isEqualTo(expectedTextSize)
     assertThat(view.letterSpacing).isEqualTo(expectedLetterSpacing)
+  }
+
+  @Test
+  fun effectSpansPaintAfterFramePreservingUpdateWithoutRemeasure() {
+    val width = 200
+    val height = 100
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.layoutParams =
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+    view.setTextColor(Color.BLACK)
+    view.setTextSize(TypedValue.COMPLEX_UNIT_PX, 24f)
+    val plain = SpannableString("Hello")
+    view.setSpanned(plain)
+    view.text = plain
+    view.measure(
+        View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+    )
+    view.layout(0, 0, width, height)
+    assertThat(view.layout).isNotNull()
+
+    val span = RecordingCanvasEffectSpan()
+    val decorated = SpannableString("Hello")
+    decorated.setSpan(span, 0, decorated.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    view.setSpanned(decorated)
+    view.text = decorated
+    view.drawTextForTest(Canvas(createBitmap(width, height)))
+
+    assertThat(view.layout).isNotNull()
+    assertThat(span.drawCalls + span.preDrawCalls).isGreaterThan(0)
   }
 
   @Test
@@ -348,6 +383,19 @@ class ReactTextViewTest {
   private class TestReactTextView(context: Context) : ReactTextView(context) {
     fun drawTextForTest(canvas: Canvas) {
       super.draw(canvas)
+    }
+  }
+
+  private class RecordingCanvasEffectSpan : CanvasEffectSpan() {
+    var preDrawCalls = 0
+    var drawCalls = 0
+
+    override fun onPreDraw(start: Int, end: Int, canvas: Canvas, layout: Layout) {
+      preDrawCalls++
+    }
+
+    override fun onDraw(start: Int, end: Int, canvas: Canvas, layout: Layout) {
+      drawCalls++
     }
   }
 

@@ -32,6 +32,7 @@ class ScreenshotExample extends React.Component<{...}, $FlowFixMe> {
               style={[style.button, {color: theme.LabelColor}]}>
               Click to take a screenshot
             </Text>
+            {/* $FlowFixMe[incompatible-use] `void` is not `undefined` under experimental.ts_void */}
             <Image
               style={[style.image, {backgroundColor: theme.LabelColor}]}
               source={{uri: this.state.uri}}

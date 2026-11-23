@@ -2557,6 +2557,22 @@ TEST_P(JSITest, ArrayPush) {
   EXPECT_EQ(arr.getValueAtIndex(rd, 1).getNumber(), 2);
   EXPECT_EQ(arr.getValueAtIndex(rd, 2).getNumber(), 3);
   EXPECT_TRUE(arr.getValueAtIndex(rd, 3).isUndefined());
+
+  // Push to an array whose length doesn't fit in an int
+  arr =
+      eval("var a = []; a.length = 2147483648; a;").getObject(rd).getArray(rd);
+  EXPECT_NO_THROW(newLength = arr.push(rd, 1));
+  EXPECT_EQ(newLength, 2147483649);
+  EXPECT_EQ(arr.length(rd), 2147483649);
+  EXPECT_TRUE(Value::strictEquals(rd, arr.getProperty(rd, "2147483648"), 1));
+
+  // Push past the maximum array length. As in JS, the element is stored under
+  // the non-index key "4294967295", then setting 'length' throws a RangeError.
+  arr =
+      eval("var a = []; a.length = 4294967295; a;").getObject(rd).getArray(rd);
+  EXPECT_THROW(arr.push(rd, 1), JSError);
+  EXPECT_EQ(arr.length(rd), 4294967295);
+  EXPECT_TRUE(Value::strictEquals(rd, arr.getProperty(rd, "4294967295"), 1));
 }
 
 TEST_P(JSITest, UInt8ArrayTest) {

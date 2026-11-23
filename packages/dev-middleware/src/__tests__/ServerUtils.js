@@ -74,7 +74,7 @@ export function withServerForEachTest(options: CreateServerOptions): Readonly<{
     Object.defineProperty(ref, 'app', {value: app});
     Object.defineProperty(ref, 'port', {value: server.address().port});
   });
-  afterEach(done => {
+  afterEach((done: JestDoneFn) => {
     server.close(() => done());
   });
   return ref;

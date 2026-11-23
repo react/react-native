@@ -12,10 +12,16 @@
 
 std::shared_ptr<facebook::react::TurboModule>
 ReactDevToolsRuntimeSettingsModuleProvider(
-    std::shared_ptr<facebook::react::CallInvoker> jsInvoker) {
+    [[maybe_unused]] std::shared_ptr<facebook::react::CallInvoker> jsInvoker) {
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
   return std::make_shared<facebook::react::DevToolsRuntimeSettingsModule>(
       std::move(jsInvoker));
+#else
+  return nullptr;
+#endif
 }
+
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
 
 namespace facebook::react {
 
@@ -35,3 +41,5 @@ DevToolsRuntimeSettingsModule::getReloadAndProfileConfig(jsi::Runtime& /*rt*/) {
 };
 
 } // namespace facebook::react
+
+#endif // REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY

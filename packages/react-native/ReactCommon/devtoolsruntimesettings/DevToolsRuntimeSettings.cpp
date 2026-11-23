@@ -7,6 +7,8 @@
 
 #include "DevToolsRuntimeSettings.h"
 
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
+
 namespace facebook::react {
 
 void DevToolsRuntimeSettings::setReloadAndProfileConfig(
@@ -25,3 +27,5 @@ DevToolsRuntimeSettings::getReloadAndProfileConfig() const {
 };
 
 } // namespace facebook::react
+
+#endif // REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY

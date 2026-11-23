@@ -566,6 +566,7 @@ module.exports = async function runTest(
       });
     }
 
+    // $FlowFixMe[incompatible-type] `void` is not `undefined` under experimental.ts_void
     testResultsByConfig.push(testResults);
 
     coverageMap = processedResult.coverageMap || {};

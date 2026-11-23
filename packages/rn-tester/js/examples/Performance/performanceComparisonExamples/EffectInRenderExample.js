@@ -41,6 +41,7 @@ function ItemFetcherBadExample(props: {
     onFetched(items);
     // $FlowFixMe[incompatible-type]
   }, console.error);
+  return undefined;
 }
 
 function ItemFetcherGoodExample(props: {
@@ -64,6 +65,7 @@ function ItemFetcherGoodExample(props: {
       // $FlowFixMe[incompatible-type]
     }, console.error);
   }, [onFetched, count]);
+  return undefined;
 }
 
 const ItemFetcherBadExampleMemo = memo(ItemFetcherBadExample);

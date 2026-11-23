@@ -19,3 +19,9 @@ target_link_libraries(react_nativemodule_devtoolsruntimesettings
 )
 target_compile_reactnative_options(react_nativemodule_devtoolsruntimesettings PRIVATE)
 target_compile_options(react_nativemodule_devtoolsruntimesettings PRIVATE -Wpedantic)
+
+if(${CMAKE_BUILD_TYPE} MATCHES Debug OR REACT_NATIVE_DEBUG_OPTIMIZED)
+  target_compile_options(react_nativemodule_devtoolsruntimesettings PRIVATE
+          -DREACT_NATIVE_DEBUGGER_ENABLED_DEVONLY=1
+  )
+endif ()
