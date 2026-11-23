@@ -14,6 +14,8 @@ import android.view.KeyEvent;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import com.facebook.react.bridge.UiThreadUtil;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.PermissionAwareActivity;
 import com.facebook.react.modules.core.PermissionListener;
@@ -28,6 +30,9 @@ public abstract class ReactActivity extends AppCompatActivity
 
   // Due to enforced predictive back on targetSdk 36, 'onBackPressed()' is disabled by default.
   // Using a workaround to trigger it manually.
+  // With the enablePredictiveBackAndroid feature flag, the callback is disabled in onCreate, so
+  // Android handles back and plays its predictive back animation until JS (a BackHandler listener
+  // with `intercept: true`) or native code turns it on.
   private final OnBackPressedCallback mBackPressedCallback =
       new OnBackPressedCallback(true) {
         @Override
@@ -37,6 +42,26 @@ public abstract class ReactActivity extends AppCompatActivity
           setEnabled(true);
         }
       };
+
+  /**
+   * The callback React Native registers on Android 16+ with targetSdk 36+ to receive back. Native
+   * navigation libraries and brownfield hosts can disable it to handle back themselves.
+   */
+  public OnBackPressedCallback getBackPressedCallback() {
+    return mBackPressedCallback;
+  }
+
+  /**
+   * Called from JS while at least one BackHandler listener asks for back ({@code true}) or none
+   * does ({@code false}). Has no effect unless the enablePredictiveBackAndroid feature flag is on.
+   */
+  public void setInterceptEnabled(boolean enabled) {
+    UiThreadUtil.assertOnUiThread();
+    if (!ReactNativeFeatureFlags.enablePredictiveBackAndroid()) {
+      return;
+    }
+    mBackPressedCallback.setEnabled(enabled);
+  }
 
   @SuppressWarnings("this-escape")
   protected ReactActivity() {
@@ -61,6 +86,9 @@ public abstract class ReactActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     mDelegate.onCreate(savedInstanceState);
     if (AndroidVersion.isAtLeastTargetSdk36(this)) {
+      if (ReactNativeFeatureFlags.enablePredictiveBackAndroid()) {
+        mBackPressedCallback.setEnabled(false);
+      }
       getOnBackPressedDispatcher().addCallback(this, mBackPressedCallback);
     }
   }
@@ -121,13 +149,16 @@ public abstract class ReactActivity extends AppCompatActivity
 
   @Override
   public void invokeDefaultOnBackPressed() {
+    if (isFinishing()) {
+      return;
+    }
     // Disabling callback so the fallback logic (finish activity) can run
     // as super.onBackPressed() will call all enabled callbacks in the dispatcher.
+    boolean wasEnabled = mBackPressedCallback.isEnabled();
     mBackPressedCallback.setEnabled(false);
     super.onBackPressed();
-    // Re-enable callback to ensure custom back handling works after activity resume
-    // Without this, the callback remains disabled when the app returns from background
-    mBackPressedCallback.setEnabled(true);
+    // Restore the previous state: JS or native code may have disabled it on purpose.
+    mBackPressedCallback.setEnabled(wasEnabled);
   }
 
   @Override

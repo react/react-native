@@ -134,6 +134,9 @@ const RNTesterApp = ({
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
       handleHardwareBackPress,
+      // Ask for back only while an example is open. On the examples list,
+      // Android handles back and plays its predictive back animation.
+      {intercept: activeModuleKey != null},
     );
     return () => subscription.remove();
   }, [activeModuleKey, handleBackPress]);

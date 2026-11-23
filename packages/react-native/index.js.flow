@@ -295,7 +295,11 @@ export type {
   PackagerAsset,
 } from './src/private/assets/AssetRegistry';
 
-export type {BackPressEventName} from './Libraries/Utilities/BackHandler';
+export type {
+  BackHandlerOptions,
+  BackHandlerSubscription,
+  BackPressEventName,
+} from './Libraries/Utilities/BackHandler';
 export {default as BackHandler} from './Libraries/Utilities/BackHandler';
 
 export {default as codegenNativeComponent} from './Libraries/Utilities/codegenNativeComponent';
