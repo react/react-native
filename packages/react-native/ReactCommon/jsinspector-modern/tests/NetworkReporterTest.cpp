@@ -864,6 +864,51 @@ TEST_P(NetworkReporterTest, testTwoSessionsReceiveNetworkEvents) {
   secondary.toPage().sendMessage(R"({"id": 4, "method": "Network.disable"})");
 }
 
+TEST_P(NetworkReporterTest, testReportsDecodedBodyLengthForImages) {
+  this->startTracing();
+
+  auto reportImageResponse = [](const std::string& requestId,
+                                int contentLength) {
+    NetworkReporter::getInstance().reportRequestStart(
+        requestId,
+        {
+            .url = "https://trace.example.com/image.png",
+            .httpMethod = "GET",
+        },
+        0,
+        std::nullopt);
+    NetworkReporter::getInstance().reportConnectionTiming(
+        requestId, std::nullopt);
+    NetworkReporter::getInstance().reportResponseStart(
+        requestId,
+        {
+            .url = "https://trace.example.com/image.png",
+            .statusCode = 200,
+            .headers = Headers{{"Content-Type", "image/png"}},
+        },
+        contentLength);
+    NetworkReporter::getInstance().reportResponseEnd(requestId, 4096);
+  };
+
+  reportImageResponse("known-length", 2048);
+  reportImageResponse("unknown-length", -1);
+
+  auto allTraceEvents = endTracingAndCollectEvents();
+
+  EXPECT_THAT(
+      allTraceEvents,
+      Contains(AllOf(
+          AtJsonPtr("/name", "ResourceFinish"),
+          AtJsonPtr("/args/data/requestId", "known-length"),
+          AtJsonPtr("/args/data/decodedBodyLength", 2048))));
+  EXPECT_THAT(
+      allTraceEvents,
+      Contains(AllOf(
+          AtJsonPtr("/name", "ResourceFinish"),
+          AtJsonPtr("/args/data/requestId", "unknown-length"),
+          AtJsonPtr("/args/data/decodedBodyLength", 0))));
+}
+
 struct NetworkReporterTracingTestParams {
   bool enableNetworkDomain;
 
