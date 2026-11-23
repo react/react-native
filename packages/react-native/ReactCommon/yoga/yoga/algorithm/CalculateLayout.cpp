@@ -1523,7 +1523,8 @@ static void justifyMainAxis(
     const float availableInnerMainDim,
     const float availableInnerCrossDim,
     const float availableInnerWidth,
-    const bool performLayout) {
+    const bool performLayout,
+    const bool isNodeBaselineLayout) {
   const auto& style = node->style();
 
   const float leadingPaddingAndBorderMain =
@@ -1619,7 +1620,6 @@ static void justifyMainAxis(
 
   float maxAscentForCurrentLine = 0;
   float maxDescentForCurrentLine = 0;
-  bool isNodeBaselineLayout = isBaselineLayout(node);
   for (auto child : flexLine.itemsInFlow) {
     const LayoutResults& childLayout = child->getLayout();
     if (child->style().flexStartMarginIsAuto(mainAxis, direction) &&
@@ -2021,6 +2021,7 @@ static void calculateLayoutImpl(
 
   // Max main dimension of all the lines.
   float maxLineMainDim = 0;
+  const bool isNodeBaselineLayout = isBaselineLayout(node);
   for (; startOfLineIterator != node->getLayoutChildren().end(); lineCount++) {
     auto flexLine = calculateFlexLine(
         node,
@@ -2159,7 +2160,8 @@ static void calculateLayoutImpl(
         availableInnerMainDim,
         availableInnerCrossDim,
         availableInnerWidth,
-        performLayout);
+        performLayout,
+        isNodeBaselineLayout);
 
     float containerCrossAxis = availableInnerCrossDim;
     if (sizingModeCrossDim == SizingMode::MaxContent ||
@@ -2321,7 +2323,7 @@ static void calculateLayoutImpl(
 
   // STEP 8: MULTI-LINE CONTENT ALIGNMENT
   // currentLead stores the size of the cross dim
-  if (performLayout && (isNodeFlexWrap || isBaselineLayout(node))) {
+  if (performLayout && (isNodeFlexWrap || isNodeBaselineLayout)) {
     float leadPerLine = 0;
     float currentLead = leadingPaddingAndBorderCross;
     float extraSpacePerLine = 0;
