@@ -233,6 +233,19 @@ TEST(ScrollContentViewShadowNodeTest, keepsColumnPaddingBeyondTheContentInset) {
   EXPECT_EQ(style.padding(Edge::Bottom), StyleLength::points(66));
 }
 
+TEST(ScrollContentViewShadowNodeTest, keepsColumnPaddingBelowANavigationBar) {
+  yoga::Style style;
+  style.setPadding(Edge::Vertical, StyleLength::points(20));
+
+  ScrollContentViewShadowNode::padForSafeArea(
+      style,
+      stateWithContentInset({.left = 0, .top = 0, .right = 0, .bottom = 34}),
+      kLTR);
+
+  EXPECT_EQ(style.padding(Edge::Top), StyleLength::points(20));
+  EXPECT_EQ(style.padding(Edge::Bottom), StyleLength::points(0));
+}
+
 TEST(ScrollContentViewShadowNodeTest, reducesRowPaddingByTheContentInsetInRTL) {
   yoga::Style style;
   style.setPadding(Edge::Horizontal, StyleLength::points(100));

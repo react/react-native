@@ -32,9 +32,10 @@ class ScrollContentViewState final {
   EdgeInsets safeAreaPadding{};
 
   /*
-   * The content inset UIKit adds for the safe area along the scrollable axis,
-   * which the padding the style sets on those edges counts toward. The
-   * enclosing scroll view sets the pair of edges along its scrollable axis.
+   * The content inset UIKit adds along the scrollable axis on each edge where
+   * the window's safe area alone makes it up, which the padding the style sets
+   * on that edge counts toward. Zero on an edge where a navigation bar, tab
+   * bar or toolbar adds to the inset, so the padding adds on top.
    */
   EdgeInsets contentInsetAdjustment{};
 

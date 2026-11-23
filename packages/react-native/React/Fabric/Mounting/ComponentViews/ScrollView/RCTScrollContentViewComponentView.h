@@ -24,8 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UIEdgeInsets safeAreaPadding;
 
 /*
- * The content inset UIKit adds for the safe area along the scrollable axis, which the content container's own padding
- * on those edges counts toward. The enclosing scroll view sets the pair of insets along its scrollable axis.
+ * The content inset UIKit adds along the scrollable axis on each edge where the window's safe area alone makes it up,
+ * which the content container's own padding on that edge counts toward. Zero on an edge where a navigation bar, tab bar
+ * or toolbar adds to the inset, so the padding adds on top.
  */
 @property (nonatomic, readonly) UIEdgeInsets contentInsetAdjustment;
 
