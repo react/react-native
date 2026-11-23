@@ -9,11 +9,16 @@
 
 namespace facebook::react {
 
+const ShadowView& CppMountItem::emptyShadowView() {
+  static const ShadowView emptyShadowView{};
+  return emptyShadowView;
+}
+
 CppMountItem CppMountItem::CreateMountItem(const ShadowView& shadowView) {
   return {
       .type = CppMountItem::Type::Create,
       .parentTag = {},
-      .oldChildShadowView = {},
+      .oldChildShadowView = emptyShadowView(),
       .newChildShadowView = shadowView,
       .index = -1};
 }
@@ -22,7 +27,7 @@ CppMountItem CppMountItem::DeleteMountItem(const ShadowView& shadowView) {
       .type = CppMountItem::Type::Delete,
       .parentTag = {},
       .oldChildShadowView = shadowView,
-      .newChildShadowView = {},
+      .newChildShadowView = emptyShadowView(),
       .index = -1};
 }
 CppMountItem CppMountItem::InsertMountItem(
@@ -32,7 +37,7 @@ CppMountItem CppMountItem::InsertMountItem(
   return {
       .type = CppMountItem::Type::Insert,
       .parentTag = parentTag,
-      .oldChildShadowView = {},
+      .oldChildShadowView = emptyShadowView(),
       .newChildShadowView = shadowView,
       .index = index};
 }
@@ -44,7 +49,7 @@ CppMountItem CppMountItem::RemoveMountItem(
       .type = CppMountItem::Type::Remove,
       .parentTag = parentTag,
       .oldChildShadowView = shadowView,
-      .newChildShadowView = {},
+      .newChildShadowView = emptyShadowView(),
       .index = index};
 }
 CppMountItem CppMountItem::UpdatePropsMountItem(
@@ -61,7 +66,7 @@ CppMountItem CppMountItem::UpdateStateMountItem(const ShadowView& shadowView) {
   return {
       .type = CppMountItem::Type::UpdateState,
       .parentTag = {},
-      .oldChildShadowView = {},
+      .oldChildShadowView = emptyShadowView(),
       .newChildShadowView = shadowView,
       .index = -1};
 }
@@ -71,7 +76,7 @@ CppMountItem CppMountItem::UpdateLayoutMountItem(
   return {
       .type = CppMountItem::Type::UpdateLayout,
       .parentTag = parentTag,
-      .oldChildShadowView = {},
+      .oldChildShadowView = emptyShadowView(),
       .newChildShadowView = shadowView,
       .index = -1};
 }
@@ -80,7 +85,7 @@ CppMountItem CppMountItem::UpdateEventEmitterMountItem(
   return {
       .type = CppMountItem::Type::UpdateEventEmitter,
       .parentTag = kNoTag,
-      .oldChildShadowView = {},
+      .oldChildShadowView = emptyShadowView(),
       .newChildShadowView = shadowView,
       .index = -1};
 }
@@ -89,7 +94,7 @@ CppMountItem CppMountItem::UpdatePaddingMountItem(
   return {
       .type = CppMountItem::Type::UpdatePadding,
       .parentTag = kNoTag,
-      .oldChildShadowView = {},
+      .oldChildShadowView = emptyShadowView(),
       .newChildShadowView = shadowView,
       .index = -1};
 }
@@ -98,7 +103,7 @@ CppMountItem CppMountItem::UpdateOverflowInsetMountItem(
   return {
       .type = CppMountItem::Type::UpdateOverflowInset,
       .parentTag = kNoTag,
-      .oldChildShadowView = {},
+      .oldChildShadowView = emptyShadowView(),
       .newChildShadowView = shadowView,
       .index = -1};
 }

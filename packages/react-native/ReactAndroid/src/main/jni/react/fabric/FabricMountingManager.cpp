@@ -31,6 +31,7 @@
 #include <array>
 #include <cfenv>
 #include <cmath>
+#include <deque>
 #include <string_view>
 #include <vector>
 
@@ -633,6 +634,7 @@ void FabricMountingManager::executeMount(
     const EventEmitter* eventEmitter;
   };
   std::unordered_map<Tag, CreatedView> createdViews;
+  std::deque<ShadowView> preallocatedShadowViews;
 
   {
     std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
@@ -802,12 +804,16 @@ void FabricMountingManager::executeMount(
                                        : cppUpdatePropsMountItems)
                     .push_back(
                         CppMountItem::UpdatePropsMountItem(
-                            {}, newChildShadowView));
+                            CppMountItem::emptyShadowView(),
+                            newChildShadowView));
               } else if (auto& preallocatedProps =
                              allocatedView->second.preallocatedProps;
                          preallocatedProps != nullptr) {
                 if (preallocatedProps != newChildShadowView.props) {
-                  auto preallocatedShadowView = newChildShadowView;
+                  // Mount items hold references, so the copy must outlive
+                  // them.
+                  auto& preallocatedShadowView =
+                      preallocatedShadowViews.emplace_back(newChildShadowView);
                   preallocatedShadowView.props = preallocatedProps;
                   (maintainMutationOrder ? cppCommonMountItems
                                          : cppUpdatePropsMountItems)
@@ -825,7 +831,8 @@ void FabricMountingManager::executeMount(
                                        : cppUpdatePropsMountItems)
                     .push_back(
                         CppMountItem::UpdatePropsMountItem(
-                            {}, newChildShadowView));
+                            CppMountItem::emptyShadowView(),
+                            newChildShadowView));
               }
             }
 
