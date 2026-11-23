@@ -10,7 +10,7 @@
 const {log, getNpmPackageInfo, sleep} = require('./utils');
 
 const SLEEP_S = 10;
-const MAX_RETRIES = 3 * 6; // 18 attempts. Waiting between attempt: 10 s. Total time: 3 mins.
+const MAX_RETRIES = 15 * 6; // 90 attempts. Waiting between attempt: 10 s. Total time: 15 mins.
 
 async function verifyPublishedPackage(
   packageName,
@@ -24,8 +24,8 @@ async function verifyPublishedPackage(
   while (count-- > 0) {
     try {
       const json = await getNpmPackageInfo(packageName, tag ? tag : version);
-      log(`🎉 Found ${packageName}@${version} on npm`);
       if (!tag) {
+        log(`🎉 Found ${packageName}@${version} on npm`);
         return;
       }
 
