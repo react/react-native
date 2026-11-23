@@ -1195,6 +1195,7 @@ interface RCTInspectorNetworkReporter : public NSObject {
   public virtual static void reportDataReceived:data:(NSString* requestId, NSData* data);
   public virtual static void reportRequestFailed:cancelled:(NSString* requestId, BOOL cancelled);
   public virtual static void reportRequestStart:request:encodedDataLength:(NSString* requestId, NSURLRequest* request, int encodedDataLength);
+  public virtual static void reportRequestStart:request:encodedDataLength:redirectResponse:(NSString* requestId, NSURLRequest* request, int encodedDataLength, NSHTTPURLResponse* redirectResponse);
   public virtual static void reportResponseEnd:encodedDataLength:(NSString* requestId, int encodedDataLength);
   public virtual static void reportResponseStart:response:statusCode:headers:(NSString* requestId, NSURLResponse* response, int statusCode, NSDictionary<NSString*, NSString*>* headers);
 }
