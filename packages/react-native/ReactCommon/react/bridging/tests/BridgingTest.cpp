@@ -233,6 +233,20 @@ TEST_F(BridgingTest, functionTest) {
       func.call(rt, object, jsi::String::createFromAscii(rt, "foo"))
           .asString(rt)
           .utf8(rt));
+
+  // Test with JSI values taken by const reference.
+  func = bridging::toJs(
+      rt,
+      [this](const jsi::Object& obj, const jsi::Value& key) {
+        return obj.getProperty(rt, key.asString(rt)).asString(rt).utf8(rt);
+      },
+      invoker);
+
+  EXPECT_EQ(
+      "bar"s,
+      func.call(rt, object, jsi::String::createFromAscii(rt, "foo"))
+          .asString(rt)
+          .utf8(rt));
 }
 
 TEST_F(BridgingTest, syncCallbackTest) {

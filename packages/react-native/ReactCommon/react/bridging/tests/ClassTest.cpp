@@ -50,6 +50,18 @@ struct TestClass {
     return buffer;
   }
 
+  size_t keyCount(jsi::Runtime& rt, const jsi::Object& obj) {
+    return obj.getPropertyNames(rt).size(rt);
+  }
+
+  double callFunction(jsi::Runtime& rt, const jsi::Function& func) {
+    return func.call(rt).asNumber();
+  }
+
+  bool isObject(jsi::Runtime& /*unused*/, const jsi::Value& value) {
+    return value.isObject();
+  }
+
  private:
   std::shared_ptr<CallInvoker> invoker_;
 };
@@ -119,6 +131,61 @@ TEST_F(BridgingTest, arrayBufferCallFromJsTest) {
   auto out = bridging::callFromJs<jsi::ArrayBuffer>(
       rt, &TestClass::echo, invoker, &instance, std::move(buf2));
   EXPECT_EQ(9, out.size(rt));
+}
+
+TEST_F(BridgingTest, jsiReferenceArgumentCallFromJsTest) {
+  // Converting to a JSI reference type must yield an owned value, not a
+  // reference to a temporary destroyed inside fromJs.
+  static_assert(
+      !std::is_reference_v<decltype(bridging::fromJs<const jsi::Object&>(
+          rt, std::declval<jsi::Object>(), invoker))>);
+  static_assert(
+      !std::is_reference_v<decltype(bridging::fromJs<const jsi::Function&>(
+          rt, std::declval<const jsi::Value&>(), invoker))>);
+  static_assert(
+      !std::is_reference_v<decltype(bridging::fromJs<const jsi::Value&>(
+          rt, std::declval<jsi::Value>(), invoker))>);
+
+  auto instance = TestClass(invoker);
+
+  // Methods taking JSI values by const reference must be called with a value
+  // that outlives the call, both for rvalue and lvalue arguments.
+  EXPECT_EQ(
+      2,
+      bridging::callFromJs<size_t>(
+          rt,
+          &TestClass::keyCount,
+          invoker,
+          &instance,
+          eval("({opacity: 0.5, width: 10})").asObject(rt)));
+
+  auto object = eval("({opacity: 0.5, width: 10})").asObject(rt);
+  EXPECT_EQ(
+      2,
+      bridging::callFromJs<size_t>(
+          rt, &TestClass::keyCount, invoker, &instance, object));
+
+  EXPECT_EQ(
+      42.0,
+      bridging::callFromJs<double>(
+          rt,
+          &TestClass::callFunction,
+          invoker,
+          &instance,
+          function("() => 42")));
+
+  EXPECT_TRUE(
+      bridging::callFromJs<bool>(
+          rt,
+          &TestClass::isObject,
+          invoker,
+          &instance,
+          eval("({opacity: 0.5})")));
+
+  auto value = eval("({opacity: 0.5})");
+  EXPECT_TRUE(
+      bridging::callFromJs<bool>(
+          rt, &TestClass::isObject, invoker, &instance, value));
 }
 
 struct MethodReturnTypeCastingTestObject {

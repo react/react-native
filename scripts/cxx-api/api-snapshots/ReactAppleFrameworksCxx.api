@@ -10780,7 +10780,7 @@ decltype(facebook::react::Bridging<facebook::react::bridging::remove_cvref_t<Ret
 template <typename ReturnT, typename JSArgT>
 decltype(facebook::react::Bridging<facebook::react::bridging::remove_cvref_t<ReturnT>>::fromJs(rt, facebook::react::bridging::convert(rt, std::forward<JSArgT>(value)), jsInvoker)) facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
 template <typename ReturnT, typename JSArgT>
-decltype(static_cast<ReturnT>(std::move(facebook::react::bridging::convert(rt, std::forward<JSArgT>(value))))) facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>&);
+facebook::react::bridging::remove_cvref_t<decltype(static_cast<ReturnT>(std::move(facebook::react::bridging::convert(rt, std::forward<JSArgT>(value)))))> facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>&);
 template <typename ReturnT, typename... ArgsT>
 constexpr size_t facebook::react::bridging::getParameterCount(ReturnT(*)(ArgsT...));
 template <typename T, std::enable_if_t<is_jsi_v<T>, int> = 0>
