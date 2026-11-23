@@ -163,6 +163,26 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   XCTAssertEqual(reactSubviews.count, 1u);
 }
 
+- (void)testAnyViewRemovesClippedSubviewsFollowsPropsRecyclingAndDeallocation
+{
+  XCTAssertFalse([RCTViewComponentView anyViewRemovesClippedSubviews]);
+
+  @autoreleasepool {
+    RCTViewComponentView *view = [RCTViewComponentView new];
+    [view updateProps:makeViewProps(true) oldProps:ViewShadowNode::defaultSharedProps()];
+    XCTAssertTrue([RCTViewComponentView anyViewRemovesClippedSubviews]);
+
+    [view prepareForRecycle];
+    XCTAssertFalse([RCTViewComponentView anyViewRemovesClippedSubviews]);
+
+    [view updateProps:makeViewProps(true) oldProps:nullptr];
+    XCTAssertTrue([RCTViewComponentView anyViewRemovesClippedSubviews]);
+  }
+
+  // The view is deallocated with `removeClippedSubviews` still on.
+  XCTAssertFalse([RCTViewComponentView anyViewRemovesClippedSubviews]);
+}
+
 #pragma mark - hitTest against non-invertible transforms (#50797)
 
 - (void)testHitTestReturnsNilForZeroScaleYView
