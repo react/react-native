@@ -420,7 +420,10 @@ let reactCoreModules = RNTarget(
   path: "React/CoreModules",
   linkedFrameworks: ["Accessibility"],
   excludedPaths: ["PlatformStubs/RCTStatusBarManager.mm"],
-  dependencies: [.reactNativeDependencies, .jsi, .yoga, .reactTurboModuleCore, .reactFeatureFlags]
+  dependencies: [.reactNativeDependencies, .jsi, .yoga, .reactTurboModuleCore, .reactFeatureFlags],
+  defines: [
+    CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY", to: "1", .when(configuration: BuildConfiguration.debug))
+  ]
 )
 
 /// React-runtimeCore.podspec
