@@ -35,6 +35,18 @@
          encodedDataLength:(int)encodedDataLength;
 
 /**
+ * Report a network request that is about to be sent after following a
+ * redirect, under the same `requestId` as the request that was redirected.
+ * `encodedDataLength` is the size of `redirectResponse`.
+ *
+ * - Corresponds to `Network.requestWillBeSent` with `redirectResponse` in CDP.
+ */
++ (void)reportRequestStart:(NSString *)requestId
+                   request:(NSURLRequest *)request
+         encodedDataLength:(int)encodedDataLength
+          redirectResponse:(NSHTTPURLResponse *)redirectResponse;
+
+/**
  * Report timestamp for sending the network request, and (in a debug build)
  * provide final headers to be reported via CDP.
  *
