@@ -11,6 +11,7 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import com.facebook.fbreact.specs.NativeAppearanceSpec
 import com.facebook.jni.annotations.DoNotStrip
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.buildReadableMap
@@ -37,11 +38,26 @@ constructor(
     onConfigurationChanged(activity ?: reactApplicationContext)
   }
 
+  private val lifecycleEventListener =
+      object : LifecycleEventListener {
+        override fun onHostResume() = updateMediaFeatures(getColorScheme())
+
+        override fun onHostPause() = Unit
+
+        override fun onHostDestroy() = Unit
+      }
+
   init {
     // Register as a listener for color scheme changes if override is provided
     overrideColorScheme?.addSchemeChangeListener(schemeChangeListener)
-    // The renderer starts from `uiMode`, so send the override.
-    overrideColorScheme?.let { updateMediaFeatures(it.getScheme()) }
+  }
+
+  public override fun initialize() {
+    super.initialize()
+    // Use a lifecycle listener since the renderer starts before the activity is available, so we
+    // send the color scheme again on resume. Added here and not in `init`, since a package that
+    // replaces this module also creates an instance that is never used.
+    reactApplicationContext.addLifecycleEventListener(lifecycleEventListener)
   }
 
   /** Optional override to the current color scheme */
@@ -77,7 +93,7 @@ constructor(
       return overrideColorScheme.getScheme()
     }
 
-    return if (UiModeUtils.isDarkMode(context)) "dark" else "light"
+    return if (UiModeUtils.isAppDarkMode(context)) "dark" else "light"
   }
 
   public override fun getColorScheme(): String {
@@ -146,6 +162,7 @@ constructor(
 
   public override fun invalidate() {
     overrideColorScheme?.removeSchemeChangeListener(schemeChangeListener)
+    reactApplicationContext.removeLifecycleEventListener(lifecycleEventListener)
     invalidatePlatformColorCache()
     super.invalidate()
   }

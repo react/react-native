@@ -266,7 +266,7 @@ internal class ReactInstance(
         fabricUIManager,
         eventBeatManager,
         componentFactory,
-        UiModeUtils.isDarkMode(context.currentActivity ?: context),
+        UiModeUtils.isAppDarkMode(context),
     )
 
     // Initialize the FabricUIManager

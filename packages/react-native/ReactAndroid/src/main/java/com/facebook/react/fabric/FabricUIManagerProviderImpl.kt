@@ -66,7 +66,7 @@ public class FabricUIManagerProviderImpl(
           fabricUIManager,
           eventBeatManager,
           componentFactory,
-          UiModeUtils.isDarkMode(context.currentActivity ?: context),
+          UiModeUtils.isAppDarkMode(context),
       )
     } else {
       throw IllegalStateException(
