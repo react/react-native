@@ -46,6 +46,48 @@ describe('VirtualizedList', () => {
     expect(component).toMatchSnapshot();
   });
 
+  it('keeps cell refs stable when the list re-renders', async () => {
+    const listRef = createRef();
+    const renderItem = jest.fn(({item}) => <item value={item.key} />);
+    const props = {
+      data: [{key: 'i1'}, {key: 'i2'}, {key: 'i3'}],
+      renderItem,
+      getItem: (data, index) => data[index],
+      getItemCount: data => data.length,
+    };
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList ref={listRef} {...props} style={{opacity: 1}} />,
+      );
+    });
+
+    const cellRefs = listRef.current._cellRefs;
+    expect(Object.keys(cellRefs)).toEqual(['i1', 'i2', 'i3']);
+    const refWrites = jest.fn();
+    listRef.current._cellRefs = new Proxy(cellRefs, {
+      set(target, key, value) {
+        refWrites(key, value);
+        target[key] = value;
+        return true;
+      },
+    });
+    renderItem.mockClear();
+
+    // Re-render the list with a prop that doesn't affect the cells.
+    await act(() => {
+      component.update(
+        <VirtualizedList ref={listRef} {...props} style={{opacity: 0.5}} />,
+      );
+    });
+
+    expect(renderItem).not.toHaveBeenCalled();
+    expect(refWrites).not.toHaveBeenCalled();
+    for (const key of ['i1', 'i2', 'i3']) {
+      expect(listRef.current._cellRefs[key]).not.toBeNull();
+    }
+  });
+
   it('renders simple list using ListItemComponent', async () => {
     function ListItemComponent({item}) {
       return <item value={item.key} />;

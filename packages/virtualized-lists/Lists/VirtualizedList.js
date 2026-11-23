@@ -1016,9 +1016,7 @@ class VirtualizedList extends StateSafePureComponent<
           onUpdateSeparators={this._onUpdateSeparators}
           onCellFocusCapture={this._onCellFocusCapture}
           onUnmount={this._onCellUnmount}
-          ref={ref => {
-            this._cellRefs[key] = ref;
-          }}
+          ref={this._getCellRefCallback(key)}
           renderItem={renderItem}
           {...(shouldListenForLayout && {
             onCellLayout: this._onCellLayout,
@@ -1468,6 +1466,11 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _cellRefs: {[key: string]: null | CellRenderer<any>} = {};
+  // Ref callbacks are cached per cell key so that re-rendering the list does
+  // not hand every cell a new ref function, which would make React detach and
+  // re-attach each cell's ref on every commit.
+  _cellRefCallbacks: Map<string, (ref: null | CellRenderer<any>) => void> =
+    new Map();
   _fillRateHelper: FillRateHelper;
   _listMetrics: ListMetricsAggregator = new ListMetricsAggregator();
   _footerLength = 0;
@@ -1601,8 +1604,22 @@ class VirtualizedList extends StateSafePureComponent<
     }
   };
 
+  _getCellRefCallback(
+    cellKey: string,
+  ): (ref: null | CellRenderer<any>) => void {
+    let callback = this._cellRefCallbacks.get(cellKey);
+    if (callback == null) {
+      callback = ref => {
+        this._cellRefs[cellKey] = ref;
+      };
+      this._cellRefCallbacks.set(cellKey, callback);
+    }
+    return callback;
+  }
+
   _onCellUnmount = (cellKey: string) => {
     delete this._cellRefs[cellKey];
+    this._cellRefCallbacks.delete(cellKey);
     this._listMetrics.notifyCellUnmounted(cellKey);
   };
 
