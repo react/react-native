@@ -100,6 +100,10 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
     view.isFocusable = accessible
   }
 
+  override fun resetDisabledFromAccessibilityState(view: ReactViewGroup) {
+    view.isEnabled = true
+  }
+
   @ReactProp(name = ViewProps.ACCESSIBILITY_ORDER)
   public open fun setAccessibilityOrder(view: ReactViewGroup, nativeIds: ReadableArray?) {
     if (!ReactNativeFeatureFlags.enableAccessibilityOrder()) {
